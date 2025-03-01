@@ -20,4 +20,9 @@ export class UserRepository implements IUserRepository {
     const isValid = await bcrypt.compare(password, user.password);
     return isValid ? user : null;
   }
+
+  async updatePassword(email: string, newPassword: string): Promise<User> {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    return prisma.user.update({ where: { email }, data: { password: hashedPassword } });
+  }
 }

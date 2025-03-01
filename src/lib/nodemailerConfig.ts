@@ -1,4 +1,3 @@
-'use server';
 // nodemailerConfig.ts
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
@@ -6,15 +5,14 @@ dotenv.config();
 
 const createTransporter = (): nodemailer.Transporter => {
   const smtpConfig = {
+    service: 'Gmail',
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587', 10),
-    secure: process.env.SMTP_SECURE === 'true',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_SECURE === 'false',
+    debug: true,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
-    },
-    tls: {
-      rejectUnauthorized: false, // Chỉ dùng trong dev
     },
   };
 

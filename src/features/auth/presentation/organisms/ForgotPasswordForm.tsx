@@ -4,46 +4,93 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Formik, Form, Field, ErrorMessage, FormikHelpers } from 'formik';
 import { resetPasswordSchema } from '@/shared/schemas/forgotPassword';
 import { generatedOtpForgotPassword } from '../../application/use-cases/emailUseCase';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useRouter } from 'next/navigation';
 
 const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) => {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [inputOtp, setInputOtp] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
-  const [isOtpVerified, setIsOtpVerified] = useState(false); // Trạng thái mới cho việc verify OTP
-  const resetPasswordSchemaObj = resetPasswordSchema(newPassword, confirmPassword);
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const [alert, setAlert] = useState<{
+    message: string;
+    variant: 'default' | 'destructive';
+  } | null>(null);
+  const resetPasswordSchemaObj = resetPasswordSchema();
+  const router = useRouter();
 
-  const onSubmitForgotPassword = async () => {
-    const otp = await generatedOtpForgotPassword(email);
-    console.log('🚀 ~ onSubmitForgotPassword ~ otp:', otp);
-    setOtp(otp);
-    setIsOtpSent(true);
-  };
-
-  // Xử lý xác nhận OTP
-  const handleOtpSubmit = (e: FormEvent<HTMLFormElement>) => {
+  // Hàm gửi OTP qua email
+  const onSubmitForgotPassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const inputOtp = (document.getElementById('otp') as HTMLInputElement)?.value;
-    if (otp === inputOtp) {
-      setIsOtpVerified(true);
-    } else {
-      alert('Invalid OTP. Please try again');
+    try {
+      const otp = await generatedOtpForgotPassword(email);
+      setOtp(otp);
+      setIsOtpSent(true);
+      setAlert(null); // Reset alert nếu có
+    } catch (error) {
+      setAlert({ message: 'Failed to send OTP', variant: 'destructive' });
     }
   };
 
-  // Xử lý reset password
-  const handleResetPassword = (e: FormEvent<HTMLFormElement>) => {
+  // Hàm xử lý xác nhận OTP
+  const handleOtpSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (otp === inputOtp) {
+      setIsOtpVerified(true);
+      setAlert(null); // Reset alert nếu thành công
+    } else {
+      setAlert({ message: 'Invalid OTP. Please try again', variant: 'destructive' });
+      setInputOtp(''); // Reset input nếu sai
+    }
+  };
+
+  // Hàm xử lý submit reset password
+  const handleResetPasswordSubmit = async (
+    values: { newPassword: string; confirmPassword: string },
+    { setSubmitting }: FormikHelpers<{ newPassword: string; confirmPassword: string }>,
+  ) => {
+    try {
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          newPassword: values.newPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to reset password');
+      }
+
+      const data = await response.json();
+      setAlert({ message: 'Password reset successfully!', variant: 'default' });
+      router.push('/dashboard');
+    } catch (error: any) {
+      setAlert({ message: error.message || 'Failed to reset password', variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <div className={cn('flex flex-col gap-6 max-w-md mx-auto', className)} {...props}>
       <Card className="overflow-hidden">
         <CardContent className="p-6 md:p-8">
+          {/* Hiển thị Alert nếu có */}
+          {alert && (
+            <Alert variant={alert.variant} className="mb-6">
+              <AlertDescription>{alert.message}</AlertDescription>
+            </Alert>
+          )}
+
           {!isOtpSent ? (
             // Form nhập email
             <form onSubmit={onSubmitForgotPassword} className="flex flex-col gap-6">
@@ -80,8 +127,8 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
                 <Input
                   id="otp"
                   type="text"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
+                  value={inputOtp}
+                  onChange={(e) => setInputOtp(e.target.value)}
                   placeholder="Enter 6-digit code"
                   maxLength={6}
                   required
@@ -96,11 +143,7 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
             <Formik
               initialValues={{ newPassword: '', confirmPassword: '' }}
               validationSchema={resetPasswordSchemaObj}
-              onSubmit={(values, { setSubmitting }) => {
-                console.log('Reset password with:', { email, ...values });
-                // Logic reset password (gọi API ở đây)
-                setSubmitting(false);
-              }}
+              onSubmit={handleResetPasswordSubmit}
             >
               {({ isSubmitting }) => (
                 <Form className="flex flex-col gap-6">

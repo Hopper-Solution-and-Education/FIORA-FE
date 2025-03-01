@@ -14,9 +14,10 @@ export async function generatedOtpForgotPassword(email: string): Promise<string>
 
   try {
     await transporter.sendMail(mailOptions);
+
+    return generatedOtp;
   } catch (error) {
     console.error('Error sending OTP email:', error);
     throw new Error('Failed to send OTP email');
   }
-  return generatedOtp;
 }
