@@ -11,6 +11,7 @@
     "generate": "npx prisma generate"
   },
   "dependencies": {
+    "@amplitude/analytics-browser": "^2.11.13",
     "@hookform/resolvers": "^4.1.2",
     "@prisma/client": "^6.4.1",
     "@radix-ui/react-avatar": "^1.1.3",
