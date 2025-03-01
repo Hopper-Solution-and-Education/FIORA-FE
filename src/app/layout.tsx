@@ -7,7 +7,8 @@ import Header from '@/components/common/Header';
 import { SessionTimeoutModal } from '@/components/common/SessionTimeoutModal';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { swrOptions } from '@/lib/swrConfig';
-import { ReduxProvider } from '@/store/provider';
+import { AmplitudeProvider } from '@/providers/AmplitudeContextProvider';
+import { ReduxProvider } from '@/providers/ReduxProvider';
 import { SessionProvider } from 'next-auth/react';
 import { SWRConfig } from 'swr';
 
@@ -22,23 +23,25 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <SWRConfig value={swrOptions}>
-          <ReduxProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <SessionProvider>
-                <div className="flex flex-col min-h-screen">
-                  <Header />
-                  <main>{children}</main>
-                  <Footer />
-                  <SessionTimeoutModal />
-                </div>
-              </SessionProvider>
-            </ThemeProvider>
-          </ReduxProvider>
+          <AmplitudeProvider>
+            <ReduxProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <SessionProvider>
+                  <div className="flex flex-col min-h-screen">
+                    <Header />
+                    <main>{children}</main>
+                    <Footer />
+                    <SessionTimeoutModal />
+                  </div>
+                </SessionProvider>
+              </ThemeProvider>
+            </ReduxProvider>
+          </AmplitudeProvider>
         </SWRConfig>
       </body>
     </html>

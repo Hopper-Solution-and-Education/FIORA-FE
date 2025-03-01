@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { motion } from 'framer-motion';
 import { useCallback } from 'react';
@@ -13,7 +14,7 @@ import KPSSection from './organisms/KPSSection';
 import { PartnerLogo } from './organisms/PartnerLogo';
 import { ReviewSection } from './organisms/ReviewSection';
 import VisionMission from './organisms/VisionMission';
-import { Button } from '@/components/ui/button';
+import useAmplitudeContext from '@/hooks/useAmplitudeContext';
 
 // Framer Motion Variants
 const fadeIn = {
@@ -28,9 +29,13 @@ const zoomIn = {
 
 const LandingPage = () => {
   const { isShowDialog } = useAppSelector((state) => state.landing);
+  const { trackEvent } = useAmplitudeContext();
   const dispatch = useAppDispatch();
   const handleShowDialog = useCallback(
     (isShow: boolean) => {
+      trackEvent('Show Dialog Click', {
+        text: 'Show Dialog Click',
+      });
       dispatch(changeShowDialog(isShow));
     },
     [isShowDialog],
