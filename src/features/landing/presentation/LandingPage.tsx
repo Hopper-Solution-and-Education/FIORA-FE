@@ -1,6 +1,8 @@
 'use client';
 
+import PageContainer from '@/components/layouts/PageContainer';
 import { Button } from '@/components/ui/button';
+import useAmplitudeContext from '@/hooks/useAmplitudeContext';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { motion } from 'framer-motion';
 import { useCallback } from 'react';
@@ -14,7 +16,6 @@ import KPSSection from './organisms/KPSSection';
 import { PartnerLogo } from './organisms/PartnerLogo';
 import { ReviewSection } from './organisms/ReviewSection';
 import VisionMission from './organisms/VisionMission';
-import useAmplitudeContext from '@/hooks/useAmplitudeContext';
 
 // Framer Motion Variants
 const fadeIn = {

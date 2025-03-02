@@ -28,7 +28,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/(root)/auth/sign-in/forgot-password"
+    "src/app/(auth)/auth/sign-in/forgot-password"
   ],
   "exclude": ["node_modules"],
   "experimentalDecorators": true,
