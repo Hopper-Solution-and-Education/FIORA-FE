@@ -1,7 +1,7 @@
-import { UserRepository } from '@/features/auth/infrastructure/repositories/userRepository';
+import { userRepository as UserRepository } from '@/features/auth/infrastructure/repositories/userRepository';
 
 export class ReNewPasswordUseCase {
-  constructor(private userRepository: UserRepository) {}
+  constructor(private userRepository: typeof UserRepository) {}
 
   async resetPassword(email: string, newPassword: string) {
     try {

@@ -1,14 +1,14 @@
 import { FormEvent, useState } from 'react';
-import { cn } from '@/lib/utils';
+import { cn, generateOtp } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Formik, Form, Field, ErrorMessage, FormikHelpers } from 'formik';
-import { resetPasswordSchema } from '@/shared/schemas/forgotPassword';
-import { generatedOtpForgotPassword } from '../../application/use-cases/emailUseCase';
+import { Formik, Form, Field, FormikHelpers } from 'formik';
+import { validatePassword, validateConfirmPassword } from '@/shared/validation/signUpValidation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useRouter } from 'next/navigation';
+import { sendOtp } from '@/lib/sendGrid';
 
 const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) => {
   const [email, setEmail] = useState('');
@@ -20,17 +20,20 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
     message: string;
     variant: 'default' | 'destructive';
   } | null>(null);
-  const resetPasswordSchemaObj = resetPasswordSchema();
+  const [fieldErrors, setFieldErrors] = useState({
+    newPassword: '',
+    confirmPassword: '',
+  });
   const router = useRouter();
 
   // Hàm gửi OTP qua email
   const onSubmitForgotPassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const otp = await generatedOtpForgotPassword(email);
+      const otp = await sendOtp(email, generateOtp());
       setOtp(otp);
       setIsOtpSent(true);
-      setAlert(null); // Reset alert nếu có
+      setAlert(null);
     } catch (error) {
       setAlert({ message: 'Failed to send OTP', variant: 'destructive' });
     }
@@ -41,11 +44,24 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
     e.preventDefault();
     if (otp === inputOtp) {
       setIsOtpVerified(true);
-      setAlert(null); // Reset alert nếu thành công
+      setAlert(null);
     } else {
       setAlert({ message: 'Invalid OTP. Please try again', variant: 'destructive' });
-      setInputOtp(''); // Reset input nếu sai
+      setInputOtp('');
     }
+  };
+
+  // Hàm validate form reset password
+  const validateResetPasswordForm = (newPassword: string, confirmPassword: string) => {
+    const passwordError = validatePassword(newPassword);
+    const confirmPasswordError = validateConfirmPassword(confirmPassword, newPassword);
+
+    setFieldErrors({
+      newPassword: passwordError,
+      confirmPassword: confirmPasswordError,
+    });
+
+    return !passwordError && !confirmPasswordError;
   };
 
   // Hàm xử lý submit reset password
@@ -53,6 +69,11 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
     values: { newPassword: string; confirmPassword: string },
     { setSubmitting }: FormikHelpers<{ newPassword: string; confirmPassword: string }>,
   ) => {
+    if (!validateResetPasswordForm(values.newPassword, values.confirmPassword)) {
+      setSubmitting(false);
+      return;
+    }
+
     try {
       const response = await fetch('/api/auth/forgot-password', {
         method: 'POST',
@@ -78,6 +99,29 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Xử lý thay đổi input và validate real-time
+  const handleFieldChange = (
+    field: string,
+    value: string,
+    setFieldValue: (field: string, value: any) => void,
+    password?: string,
+  ) => {
+    switch (field) {
+      case 'newPassword':
+        setFieldValue('newPassword', value); // Cập nhật giá trị qua Formik
+        setFieldErrors((prev) => ({ ...prev, newPassword: validatePassword(value) }));
+        break;
+      case 'confirmPassword':
+        setFieldValue('confirmPassword', value); // Cập nhật giá trị qua Formik
+        setFieldErrors((prev) => ({
+          ...prev,
+          confirmPassword: validateConfirmPassword(value, password || ''),
+        }));
+        break;
+    }
+    setAlert(null);
   };
 
   return (
@@ -138,35 +182,20 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
               </Button>
             </form>
           ) : (
-            // Form nhập mật khẩu mới (đã làm lớn hơn)
+            // Form nhập mật khẩu mới
             <Formik
               initialValues={{ newPassword: '', confirmPassword: '' }}
-              validationSchema={resetPasswordSchemaObj}
               onSubmit={handleResetPasswordSubmit}
             >
-              {({ isSubmitting }) => (
+              {({ isSubmitting, values, setFieldValue }) => (
                 <Form className="flex flex-col gap-8">
-                  {' '}
-                  {/* Tăng gap từ 6 lên 8 */}
                   <div className="flex flex-col items-center text-center gap-3">
-                    {' '}
-                    {/* Thêm gap-3 */}
-                    <h1 className="text-3xl font-bold">Reset Password</h1>{' '}
-                    {/* Tăng từ 2xl lên 3xl */}
-                    <p className="text-lg text-muted-foreground">
-                      Enter your new password below
-                    </p>{' '}
-                    {/* Tăng từ mặc định lên lg */}
+                    <h1 className="text-3xl font-bold">Reset Password</h1>
+                    <p className="text-lg text-muted-foreground">Enter your new password below</p>
                   </div>
                   <div className="grid gap-6">
-                    {' '}
-                    {/* Tăng gap từ 4 lên 6 */}
                     <div className="grid gap-3">
-                      {' '}
-                      {/* Tăng gap từ 2 lên 3 */}
                       <Label htmlFor="new-password" className="text-base">
-                        {' '}
-                        {/* Tăng từ mặc định lên base */}
                         New Password
                       </Label>
                       <Field
@@ -175,21 +204,21 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
                         name="newPassword"
                         type="password"
                         placeholder="Enter new password"
-                        className="h-12 text-base" // Tăng chiều cao và cỡ chữ
+                        className={cn(
+                          'h-12 text-base',
+                          fieldErrors.newPassword && 'border-red-500',
+                        )}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          handleFieldChange('newPassword', e.target.value, setFieldValue)
+                        }
                         required
                       />
-                      <ErrorMessage
-                        name="newPassword"
-                        component="div"
-                        className="text-base text-red-500" // Tăng cỡ chữ lỗi
-                      />
+                      {fieldErrors.newPassword && (
+                        <p className="text-base text-red-500">{fieldErrors.newPassword}</p>
+                      )}
                     </div>
                     <div className="grid gap-3">
-                      {' '}
-                      {/* Tăng gap từ 2 lên 3 */}
                       <Label htmlFor="confirm-password" className="text-base">
-                        {' '}
-                        {/* Tăng từ mặc định lên base */}
                         Confirm Password
                       </Label>
                       <Field
@@ -198,21 +227,26 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
                         name="confirmPassword"
                         type="password"
                         placeholder="Confirm new password"
-                        className="h-12 text-base" // Tăng chiều cao và cỡ chữ
+                        className={cn(
+                          'h-12 text-base',
+                          fieldErrors.confirmPassword && 'border-red-500',
+                        )}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          handleFieldChange(
+                            'confirmPassword',
+                            e.target.value,
+                            setFieldValue,
+                            values.newPassword,
+                          )
+                        }
                         required
                       />
-                      <ErrorMessage
-                        name="confirmPassword"
-                        component="div"
-                        className="text-base text-red-500" // Tăng cỡ chữ lỗi
-                      />
+                      {fieldErrors.confirmPassword && (
+                        <p className="text-base text-red-500">{fieldErrors.confirmPassword}</p>
+                      )}
                     </div>
                   </div>
-                  <Button
-                    type="submit"
-                    className="w-full h-12 text-lg" // Tăng chiều cao và cỡ chữ nút
-                    disabled={isSubmitting}
-                  >
+                  <Button type="submit" className="w-full h-12 text-lg" disabled={isSubmitting}>
                     Reset Password
                   </Button>
                 </Form>

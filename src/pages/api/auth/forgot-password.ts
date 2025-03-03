@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { UserRepository } from '@/features/auth/infrastructure/repositories/userRepository';
+import { userRepository } from '@/features/auth/infrastructure/repositories/userRepository';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { ReNewPasswordUseCase } from '@/features/auth/application/use-cases/reNewPassword';
 
@@ -12,8 +12,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { email, newPassword } = req.body;
 
     // Khởi tạo repository và use case
-    const userRepository = new UserRepository();
-    const reNewPasswordUseCase = new ReNewPasswordUseCase(userRepository);
+    const user = userRepository;
+    const reNewPasswordUseCase = new ReNewPasswordUseCase(user);
 
     // Gọi use case để reset password
     const updatedUser = await reNewPasswordUseCase.resetPassword(email, newPassword);
