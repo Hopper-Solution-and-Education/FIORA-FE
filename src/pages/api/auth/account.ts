@@ -1,7 +1,3 @@
-import { AccountUseCase } from '@/features/auth/application/use-cases/accountUseCase';
-import { SignUpUseCase } from '@/features/auth/application/use-cases/signUpUseCase';
-import { AccountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
-import { UserRepository } from '@/features/auth/infrastructure/repositories/userRepository';
 import prisma from '@/infrastructure/database/prisma';
 import { errorHandler, NotFoundError } from '@/lib/errors';
 import redis from '@/lib/redis';
@@ -9,12 +5,6 @@ import { sendEmail } from '@/lib/sendGrid';
 import { validateAccount } from '@/shared/validation/accountValidation';
 import { Decimal } from '@prisma/client/runtime/library';
 import { NextApiRequest, NextApiResponse } from 'next';
-
-const userRepository = new UserRepository();
-const accountRepository = new AccountRepository();
-
-const signUpUseCase = new SignUpUseCase(userRepository);
-const accountUseCase = new AccountUseCase(accountRepository);
 
 // Create a new account
 export async function POST(request: NextApiRequest, response: NextApiResponse) {

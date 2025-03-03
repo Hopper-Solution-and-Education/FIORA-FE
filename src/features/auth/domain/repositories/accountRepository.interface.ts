@@ -1,4 +1,4 @@
-import type { Account } from '@prisma/client'; // Sử dụng Account từ Prisma Client
+import type { Account, AccountType } from '@prisma/client'; // Sử dụng Account từ Prisma Client
 
 export interface Pagination {
   skip: number;
@@ -23,4 +23,6 @@ export interface AccountCreation {
   description?: string;
   accountName?: string;
   icon?: string;
+  parentId?: string;
+  type: AccountType;
 }

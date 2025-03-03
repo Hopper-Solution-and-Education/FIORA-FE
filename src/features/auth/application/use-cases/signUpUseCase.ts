@@ -10,7 +10,7 @@ export class SignUpUseCase {
   async execute(email: string, password: string): Promise<User> {
     const userFound = await this.userRepository.findByEmail(email);
     if (userFound) {
-      throw new ConflictError('Email đã tồn tại');
+      throw new ConflictError('Email already exists');
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     return await this.userRepository.createUser({ email, hashedPassword });

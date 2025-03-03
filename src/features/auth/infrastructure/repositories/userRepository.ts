@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import { IUserRepository } from '@/features/auth/domain/repositories/userRepository.interface';
 import prisma from '@/infrastructure/database/prisma';
 
-export class UserRepository implements IUserRepository {
+class UserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {
     return prisma.user.findUnique({ where: { email } });
   }
@@ -29,3 +29,6 @@ export class UserRepository implements IUserRepository {
     });
   }
 }
+
+const userRepository = new UserRepository();
+export { userRepository };

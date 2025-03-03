@@ -45,3 +45,5 @@ export class AccountRepository implements IAccountRepository {
     });
   }
 }
+
+export const accountRepository = new AccountRepository();

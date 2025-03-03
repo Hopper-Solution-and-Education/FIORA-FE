@@ -62,6 +62,14 @@ export class InternalServerError extends AppError {
   }
 }
 
+export class BadRequestError extends AppError {
+  constructor(message: string, details?: Record<string, any>) {
+    super(400, message, details);
+    this.name = 'BadRequestError';
+    Object.setPrototypeOf(this, BadRequestError.prototype);
+  }
+}
+
 // Centralized error handler for API routes
 export const errorHandler = async (
   handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>,
