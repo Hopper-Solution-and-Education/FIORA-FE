@@ -13,7 +13,12 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-export function UserNav() {
+
+type UserNavProps = {
+  handleSignOut?: () => void;
+};
+
+export function UserNav({ handleSignOut }: UserNavProps) {
   const { data: session } = useSession();
   if (session) {
     return (
@@ -50,7 +55,7 @@ export function UserNav() {
             <DropdownMenuItem>New Team</DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => signOut()}>
+          <DropdownMenuItem onClick={() => (handleSignOut ? handleSignOut() : signOut())}>
             Log out
             <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
           </DropdownMenuItem>

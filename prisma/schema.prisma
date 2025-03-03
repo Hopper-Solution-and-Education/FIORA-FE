@@ -61,27 +61,38 @@ model VerificationToken {
 }
 
 enum MediaType {
-  image
-  video
-  embedded
+  IMAGE
+  VIDEO
+  EMBEDDED
 }
+
+enum SectionType {
+  BANNER
+  VISION_MISSION
+  KPS
+  PARTNER_LOGO
+}
+
 model Media {
   media_id      Int       @id @default(autoincrement())
   media_type    MediaType
-  media_url     String?
-  embed_code    String?
+  media_url     String? // Dành cho hình ảnh/video
+  embed_code    String? // Dành cho video nhúng (YouTube, Vimeo,...)
   description   String?
   uploaded_by   String?
-  uploaded_date DateTime      @default(now())
-  banners       Banner[]
+  uploaded_date DateTime  @default(now())
+  
+  // Liên kết với Section
+  section_id    Int?
+  section       Section? @relation(fields: [section_id], references: [section_id])
 }
 
-model Banner {
-  banner_id    Int       @id @default(autoincrement())
-  media        Media     @relation(fields: [media_id], references: [media_id])
-  media_id     Int
-  text         String?
-  order        Int
-  created_at   DateTime      @default(now())
-  updated_at   DateTime      @updatedAt
+model Section {
+  section_id    Int       @id @default(autoincrement())
+  section_type  SectionType
+  name          String
+  order         Int
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  medias        Media[]
 }

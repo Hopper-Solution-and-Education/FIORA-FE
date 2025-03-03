@@ -8,6 +8,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { useEffect } from 'react';
 import { SWRConfig } from 'swr';
 import { SessionTimeoutModal } from '@/components/common/SessionTimeoutModal';
+import KBar from '@/components/kbar';
 import { AmplitudeProvider } from '@/components/providers/AmplitudeContextProvider';
 import { GrowthBookAppProvider } from '@/components/providers/GrowthBookProvider';
 import { ReduxProvider } from '@/components/providers/ReduxProvider';
@@ -41,22 +42,24 @@ export default function RootLayout({
           <SWRConfig value={swrOptions}>
             <NextTopLoader showSpinner={false} />
             <NuqsAdapter>
-              <AmplitudeProvider>
-                <ReduxProvider>
-                  <ThemeProvider
-                    attribute="class"
-                    defaultTheme="system"
-                    enableSystem
-                    disableTransitionOnChange
-                  >
-                    <SessionProvider>
-                      <Toaster />
-                      <main>{children}</main>
-                      <SessionTimeoutModal />
-                    </SessionProvider>
-                  </ThemeProvider>
-                </ReduxProvider>
-              </AmplitudeProvider>
+              <KBar>
+                <AmplitudeProvider>
+                  <ReduxProvider>
+                    <ThemeProvider
+                      attribute="class"
+                      defaultTheme="system"
+                      enableSystem
+                      disableTransitionOnChange
+                    >
+                      <SessionProvider>
+                        <Toaster />
+                        <main>{children}</main>
+                        <SessionTimeoutModal />
+                      </SessionProvider>
+                    </ThemeProvider>
+                  </ReduxProvider>
+                </AmplitudeProvider>
+              </KBar>
             </NuqsAdapter>
           </SWRConfig>
         </GrowthBookAppProvider>
