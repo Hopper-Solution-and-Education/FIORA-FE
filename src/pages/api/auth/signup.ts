@@ -1,18 +1,16 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { SignUpUseCase } from '@/features/auth/application/use-cases/signUpUseCase';
-import { UserRepository } from '@/features/auth/infrastructure/repositories/userRepository';
-import { errorHandler, InternalServerError } from '@/lib/errors';
+import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
+import { UserUSeCaseInstance } from '@/features/auth/application/use-cases/userUseCase';
+import { InternalServerError } from '@/lib/errors';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { AccountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
-import { AccountUseCase } from '@/features/auth/application/use-cases/accountUseCase';
+import { NextApiRequest, NextApiResponse } from 'next';
 
-const userRepository = new UserRepository();
-const accountRepository = new AccountRepository();
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method === 'POST') {
+    return POST(req, res);
+  }
+}
 
-const signUpUseCase = new SignUpUseCase(userRepository);
-const accountUseCase = new AccountUseCase(accountRepository);
-
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function POST(req: NextApiRequest, res: NextApiResponse) {
   const { email, password } = req.body;
 
   // const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Always 6 digits
@@ -38,24 +36,20 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   //   }
   // }
 
-  const userCreationRes = await signUpUseCase.execute(email, password);
+  const userCreationRes = await UserUSeCaseInstance.execute(email, password);
 
   if (!userCreationRes) {
     throw new InternalServerError('Không thể tạo tài khoản');
   }
 
   // create new Account
-  await accountUseCase.create({
-    accountName: 'wallet account',
-    description: 'Ví tiền',
-    icon: 'wallet',
+  await AccountUseCaseInstance.create({
+    name: 'Ví tiền payment',
     userId: userCreationRes.id,
+    balance: 0,
+    currency: 'VND',
+    type: 'Payment',
   });
 
-  res.status(RESPONSE_CODE.OK).json({ message: 'Đăng ký thành công' });
+  res.status(RESPONSE_CODE.CREATED).json({ message: 'Đăng ký thành công', user: userCreationRes });
 }
-
-const errorHandlerWrapper = (req: NextApiRequest, res: NextApiResponse) =>
-  errorHandler(handler, req, res);
-
-export default errorHandlerWrapper;

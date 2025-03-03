@@ -1,10 +1,14 @@
 // infrastructure/repositories/accountRepository.ts
 import prisma from '@/infrastructure/database/prisma';
-import { Account } from '@prisma/client';
-import { IAccountRepository } from '../../domain/repositories/accountRepository.interface';
+import { Account, Prisma } from '@prisma/client';
+import {
+  IAccountRepository,
+  Pagination,
+  SelectOptions,
+} from '../../domain/repositories/accountRepository.interface';
 
 export class AccountRepository implements IAccountRepository {
-  async create(account: Omit<Account, 'id'>): Promise<Account> {
+  async create(account: Prisma.AccountUncheckedCreateInput): Promise<Account> {
     return prisma.account.create({ data: account });
   }
 
@@ -42,6 +46,31 @@ export class AccountRepository implements IAccountRepository {
     await prisma.account.update({
       where: { id: parentId },
       data: { balance: totalBalance },
+    });
+  }
+
+  async findMany(
+    where: Prisma.AccountWhereInput,
+    options: SelectOptions,
+    pagination?: Pagination,
+  ): Promise<Account[]> {
+    const paginate = {} as { skip?: number; take?: number };
+    if (pagination) {
+      const { page, size } = pagination;
+      const skip = (page - 1) * size;
+      const take = size;
+      paginate.skip = skip;
+      paginate.take = take;
+    }
+
+    const { include, select } = options;
+
+    return prisma.account.findMany({
+      where,
+      skip: paginate.skip,
+      take: paginate.take,
+      ...(select ? { select } : {}),
+      ...(include ? { include } : {}),
     });
   }
 }

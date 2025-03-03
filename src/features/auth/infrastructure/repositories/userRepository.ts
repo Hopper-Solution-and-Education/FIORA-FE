@@ -22,6 +22,11 @@ class UserRepository implements IUserRepository {
     return isValid ? user : null;
   }
 
+  async checkIsExistedUserById(id: string): Promise<User | null> {
+    const user = await prisma.user.findUnique({ where: { id } });
+    return user;
+  }
+
   async verifyUser(email: string): Promise<User> {
     return prisma.user.update({
       where: { email },
@@ -30,5 +35,4 @@ class UserRepository implements IUserRepository {
   }
 }
 
-const userRepository = new UserRepository();
-export { userRepository };
+export const userRepository = new UserRepository();

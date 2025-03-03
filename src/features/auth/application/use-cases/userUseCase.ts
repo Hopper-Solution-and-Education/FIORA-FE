@@ -1,11 +1,12 @@
 import bcrypt from 'bcrypt';
 
-import { UserRepository } from '@/features/auth/infrastructure/repositories/userRepository';
 import { User } from '@prisma/client';
+import { IUserRepository } from '../../domain/repositories/userRepository.interface';
 import { ConflictError } from '@/lib/errors';
+import { userRepository } from '../../infrastructure/repositories/userRepository';
 
-export class SignUpUseCase {
-  constructor(private userRepository: UserRepository) {}
+class UserUseCase {
+  constructor(private userRepository: IUserRepository) {}
 
   async execute(email: string, password: string): Promise<User> {
     const userFound = await this.userRepository.findByEmail(email);
@@ -21,7 +22,13 @@ export class SignUpUseCase {
     return user;
   }
 
+  async checkExistedUserById(id: string): Promise<User | null> {
+    return this.userRepository.checkIsExistedUserById(id);
+  }
+
   async verifyUser(email: string): Promise<User> {
     return this.userRepository.verifyUser(email);
   }
 }
+
+export const UserUSeCaseInstance = new UserUseCase(userRepository);
