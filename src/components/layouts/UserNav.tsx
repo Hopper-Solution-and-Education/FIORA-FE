@@ -1,6 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
+import { Icons } from '@/components/Icon';
+import { globalNavItems } from '@/shared/constants/data';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import {
@@ -19,14 +22,19 @@ type UserNavProps = {
 };
 
 export function UserNav({ handleSignOut }: UserNavProps) {
+  const router = useRouter();
   const { data: session } = useSession();
+
   if (session) {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={session.user?.image ?? ''} alt={session.user?.name ?? ''} />
+              <AvatarImage
+                src={session.user?.image ?? 'https://placehold.co/400'}
+                alt={session.user?.name ?? ''}
+              />
               <AvatarFallback>{session.user?.name?.[0]}</AvatarFallback>
             </Avatar>
           </Button>
@@ -40,19 +48,17 @@ export function UserNav({ handleSignOut }: UserNavProps) {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>
-              Profile
-              <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              Billing
-              <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              Settings
-              <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem>New Team</DropdownMenuItem>
+            {globalNavItems.map((item) => {
+              const Icon = item.icon ? Icons[item.icon] : Icons.logo;
+              return (
+                <DropdownMenuItem key={item.title} onClick={() => router.push(item.url)}>
+                  <span>{item.title}</span>
+                  <DropdownMenuShortcut>
+                    <Icon {...item.props} />
+                  </DropdownMenuShortcut>
+                </DropdownMenuItem>
+              );
+            })}
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => (handleSignOut ? handleSignOut() : signOut())}>

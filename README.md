@@ -49,7 +49,7 @@ _If you are looking for a React admin dashboard starter, here is the [repo](http
 ```plaintext
 src/
 ├── app/ # Next.js App Router directory
-│ ├── (auth)/ # Auth route group
+│ ├── (client)/ # Auth route group
 │ │ ├── (signin)/
 │ ├── (dashboard)/ # Dashboard route group
 │ │ ├── layout.tsx
