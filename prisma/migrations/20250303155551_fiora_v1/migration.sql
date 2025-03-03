@@ -1,5 +1,8 @@
 -- CreateEnum
-CREATE TYPE "MediaType" AS ENUM ('image', 'video', 'embedded');
+CREATE TYPE "MediaType" AS ENUM ('IMAGE', 'VIDEO', 'EMBEDDED');
+
+-- CreateEnum
+CREATE TYPE "SectionType" AS ENUM ('BANNER', 'VISION_MISSION', 'KPS', 'PARTNER_LOGO');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -65,20 +68,21 @@ CREATE TABLE "Media" (
     "description" TEXT,
     "uploaded_by" TEXT,
     "uploaded_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "section_id" INTEGER,
 
     CONSTRAINT "Media_pkey" PRIMARY KEY ("media_id")
 );
 
 -- CreateTable
-CREATE TABLE "Banner" (
-    "banner_id" SERIAL NOT NULL,
-    "media_id" INTEGER NOT NULL,
-    "text" TEXT,
+CREATE TABLE "Section" (
+    "section_id" SERIAL NOT NULL,
+    "section_type" "SectionType" NOT NULL,
+    "name" TEXT NOT NULL,
     "order" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Banner_pkey" PRIMARY KEY ("banner_id")
+    CONSTRAINT "Section_pkey" PRIMARY KEY ("section_id")
 );
 
 -- CreateIndex
@@ -97,4 +101,4 @@ ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Banner" ADD CONSTRAINT "Banner_media_id_fkey" FOREIGN KEY ("media_id") REFERENCES "Media"("media_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Media" ADD CONSTRAINT "Media_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("section_id") ON DELETE SET NULL ON UPDATE CASCADE;

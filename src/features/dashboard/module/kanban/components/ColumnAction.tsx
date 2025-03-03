@@ -1,16 +1,6 @@
 // components/ColumnActions.tsx
 'use client';
 
-import { AlertDialogFooter, AlertDialogHeader } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import { UniqueIdentifier } from '@dnd-kit/core';
 import {
   AlertDialog,
@@ -23,6 +13,16 @@ import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 import React, { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
+import { AlertDialogFooter, AlertDialogHeader } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import { removeColumn, updateColumn } from '../slices';
 
 interface ColumnActionsProps {

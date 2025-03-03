@@ -1,12 +1,12 @@
+import PageContainer from '@/components/layouts/PageContainer';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AreaGraph } from './components/AreaGraph';
 
 import BarGraph from './components/BarGraph';
 import PieGraph from './components/PieGraph';
 import RecentSales from './components/RecentSales';
-import PageContainer from '@/components/layouts/PageContainer';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function HomePage() {
   return (

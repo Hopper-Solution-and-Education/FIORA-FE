@@ -1,19 +1,18 @@
 'use client';
-import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { EMAIL_REGEX, PASSWORD_REGEX } from '@/shared/constants';
+import { cn } from '@/lib/utils';
 import {
   validateConfirmPassword,
   validateEmail,
   validatePassword,
 } from '@/shared/validation/signUpValidation';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Validation regex patterns
 

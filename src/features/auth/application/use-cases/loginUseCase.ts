@@ -1,5 +1,5 @@
-import { UserRepository } from '@/features/auth/infrastructure/repositories/userRepository';
 import { cookies } from 'next/headers';
+import { UserRepository } from '@/features/auth/infrastructure/repositories/userRepository';
 
 export class LoginUseCase {
   constructor(private userRepository: UserRepository) {}

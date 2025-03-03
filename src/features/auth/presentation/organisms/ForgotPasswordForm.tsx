@@ -1,10 +1,10 @@
+import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { FormEvent, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import { resetPasswordSchema } from '@/shared/schemas/forgotPassword';
 import { generatedOtpForgotPassword } from '../../application/use-cases/emailUseCase';
 
