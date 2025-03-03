@@ -1,3 +1,5 @@
+import Footer from '@/components/common/Footer';
+import Header from '@/components/common/Header';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -10,5 +12,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <>{children}</>;
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main>{children}</main>
+      <Footer />
+    </div>
+  );
 }

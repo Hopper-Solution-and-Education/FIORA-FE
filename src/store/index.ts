@@ -1,7 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import storage from 'redux-persist/lib/storage';
 import apiMiddleware from './middleware/apiMiddleware';
 import rootReducer from './rootReducer';
+
+// for redux persist - use it later
+const persistConfig = {
+  key: 'root',
+  storage,
+};
 
 export const store = configureStore({
   reducer: rootReducer,

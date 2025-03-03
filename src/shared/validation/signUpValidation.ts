@@ -20,4 +20,10 @@ const validateConfirmPassword = (value: string, passwordValue: string) => {
   return '';
 };
 
-export { validateEmail, validatePassword, validateConfirmPassword };
+const validateOtp = (otp: string) => {
+  if (!otp) return 'OTP is required';
+  if (otp.length !== 6) return 'OTP must be 6 digits';
+  return '';
+};
+
+export { validateEmail, validatePassword, validateConfirmPassword, validateOtp };

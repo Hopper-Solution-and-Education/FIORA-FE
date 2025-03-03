@@ -28,7 +28,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
         rememberMe,
         redirect: false, // Không redirect tự động, để tự xử lý
       });
-
       if (res?.ok) {
         router.push('/dashboard'); // Đăng nhập thành công, chuyển hướng
       } else {

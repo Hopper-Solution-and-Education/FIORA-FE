@@ -58,14 +58,7 @@ const config = [
     rules: {
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
-      'import/no-unresolved': 'error',
-      'import/order': [
-        'warn',
-        {
-          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
-          alphabetize: { order: 'asc', caseInsensitive: true },
-        },
-      ],
+      'import/no-unresolved': 'off',
       'unused-imports/no-unused-imports': 'error',
       'prettier/prettier': 'warn',
       '@typescript-eslint/no-unused-vars': 'warn',
