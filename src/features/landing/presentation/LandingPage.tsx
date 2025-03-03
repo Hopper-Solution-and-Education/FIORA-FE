@@ -1,15 +1,8 @@
 'use client';
 
-import PageContainer from '@/components/layouts/PageContainer';
-import { Button } from '@/components/ui/button';
-import useAmplitudeContext from '@/hooks/useAmplitudeContext';
-import { useAppDispatch, useAppSelector } from '@/store';
 import { motion } from 'framer-motion';
-import { useCallback } from 'react';
-import { changeShowDialog } from '../slices';
 import OTS from './components/OTS';
 import { ScrollToTop } from './components/ScrollToTop';
-import SettingModal from './components/SettingModal';
 import { Banner } from './organisms/Banner';
 import { FioraSystem } from './organisms/FioraSystem';
 import KPSSection from './organisms/KPSSection';
@@ -29,19 +22,6 @@ const zoomIn = {
 };
 
 const LandingPage = () => {
-  const { isShowDialog } = useAppSelector((state) => state.landing);
-  const { trackEvent } = useAmplitudeContext();
-  const dispatch = useAppDispatch();
-  const handleShowDialog = useCallback(
-    (isShow: boolean) => {
-      trackEvent('Show Dialog Click', {
-        text: 'Show Dialog Click',
-      });
-      dispatch(changeShowDialog(isShow));
-    },
-    [isShowDialog],
-  );
-
   return (
     <>
       {/* Banner - Slide Up Effect */}
@@ -115,8 +95,6 @@ const LandingPage = () => {
       >
         <OTS />
       </motion.div>
-      <Button onClick={() => handleShowDialog(!isShowDialog)}>Open Dialog</Button>
-      <SettingModal isOpen={isShowDialog} onClose={() => handleShowDialog(!isShowDialog)} />
     </>
   );
 };

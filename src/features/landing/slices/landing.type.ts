@@ -1,9 +1,15 @@
+import { Media } from '../domain/models/Media';
+
 interface LandingStateType {
-  isShowDialog: boolean;
+  media: Media[];
+  loading: boolean;
+  error: string | null;
 }
 
 const initialLandingState: LandingStateType = {
-  isShowDialog: false,
+  media: [],
+  loading: false,
+  error: null,
 };
 
 export { initialLandingState };

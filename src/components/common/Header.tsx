@@ -1,26 +1,24 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronRight, HelpCircle, Menu, Moon, Search, Settings, Sun, X } from 'lucide-react';
+import { ChevronRight, HelpCircle, Menu, Moon, Settings, Sun, X } from 'lucide-react';
+import Link from 'next/link';
 import { signOut, useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import SettingModal from '../../features/landing/presentation/components/SettingModal';
-import { Input } from '../ui/input';
+import { UserNav } from '../layouts/UserNav';
+import SearchInput from '../SearchInput';
 
 type HeaderProps = {
-  onHandlePressSetting: () => void;
   onHandlePressHelp: () => void;
 };
 
-const menuItems = ({ onHandlePressHelp, onHandlePressSetting }: HeaderProps) => [
+const menuItems = ({ onHandlePressHelp }: HeaderProps) => [
   { href: '#Help', label: 'Help', icon: <HelpCircle size={18} />, onClick: onHandlePressHelp },
   {
-    href: '#Setting',
+    href: '/dashboard',
     label: 'Setting',
     icon: <Settings size={18} />,
-    onClick: onHandlePressSetting,
   },
   { href: '#pricing', label: 'Pricing' },
 ];
@@ -30,10 +28,8 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { theme, setTheme } = useTheme();
-  const [isSettingOpen, setIsSettingOpen] = useState(false); // State quản lý modal
 
   const toggleMenu = () => setIsMenuOpen((prevState) => !prevState);
-  const toggleSetting = () => setIsSettingOpen((prevState) => !prevState); // Toggle modal
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -62,38 +58,28 @@ export default function Header() {
           </motion.div>
 
           <div className="relative mx-2 w-full max-w-md sm:max-w-sm md:max-w-md lg:max-w-lg">
-            <Input
-              type="text"
-              className="w-full h-12 px-4 pl-12 focus:ring-2 focus:ring-primary text-sm placeholder-gray-200"
-              placeholder="Search anything here!"
-            />
-            <Search
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500"
-              size={20}
-            />
+            <SearchInput />
           </div>
 
           {/* Navigation */}
           <nav className="hidden md:flex space-x-1">
-            {menuItems({ onHandlePressHelp: () => {}, onHandlePressSetting: toggleSetting }).map(
-              (item, index) => (
-                <motion.div
-                  key={item.href}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
+            {menuItems({ onHandlePressHelp: () => {} }).map((item, index) => (
+              <motion.div
+                key={item.href}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <Link
+                  href={'/dashboard'}
+                  className="relative flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 ease-in-out px-4 py-2 group cursor-pointer"
                 >
-                  <button
-                    onClick={item.onClick}
-                    className="relative flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 ease-in-out px-4 py-2 group cursor-pointer"
-                  >
-                    {item.icon && <span className="mr-1">{item.icon}</span>}
-                    {item.label}
-                    <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-in-out" />
-                  </button>
-                </motion.div>
-              ),
-            )}
+                  {item.icon && <span className="mr-1">{item.icon}</span>}
+                  {item.label}
+                  <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-in-out" />
+                </Link>
+              </motion.div>
+            ))}
           </nav>
 
           {/* Action Buttons */}
@@ -113,12 +99,7 @@ export default function Header() {
 
             {/* Auth Links */}
             {session ? (
-              <a
-                onClick={() => signOut({ callbackUrl: '/auth/sign-in' })}
-                className="hidden sm:inline-flex text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 cursor-pointer"
-              >
-                Hello {session.user?.email}, Log out
-              </a>
+              <UserNav handleSignOut={() => signOut({ callbackUrl: '/auth/sign-in' })} />
             ) : (
               <>
                 <Link
@@ -160,19 +141,17 @@ export default function Header() {
             className="md:hidden bg-background/95 backdrop-blur-md"
           >
             <div className="container mx-auto px-4 py-4 space-y-4">
-              {menuItems({ onHandlePressHelp: () => {}, onHandlePressSetting: toggleSetting }).map(
-                (item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="flex items-center text-base font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 ease-in-out px-4 py-2"
-                    onClick={toggleMenu}
-                  >
-                    {item.icon && <span className="mr-2">{item.icon}</span>}
-                    {item.label}
-                  </Link>
-                ),
-              )}
+              {menuItems({ onHandlePressHelp: () => {} }).map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center text-base font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 ease-in-out px-4 py-2"
+                  onClick={toggleMenu}
+                >
+                  {item.icon && <span className="mr-2">{item.icon}</span>}
+                  {item.label}
+                </Link>
+              ))}
               <div className="pt-4 space-y-4">
                 <Link
                   href="/auth/sign-in"
@@ -193,7 +172,6 @@ export default function Header() {
           </motion.div>
         )}
       </AnimatePresence>
-      <SettingModal isOpen={isSettingOpen} onClose={toggleSetting} />
     </header>
   );
 }
