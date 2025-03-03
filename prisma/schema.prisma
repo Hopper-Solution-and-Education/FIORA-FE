@@ -8,31 +8,33 @@ generator client {
 }
 
 model User {
-  id            String               @id @default(uuid()) @db.Uuid
-  name          String?
-  email         String               @unique
-  password      String?
-  emailVerified Boolean?             @default(false)
-  image         String?
-  accounts      UserAuthentication[]
-  sessions      Session[]
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
+  id             String               @id @default(uuid()) @db.Uuid
+  name           String?
+  email          String               @unique
+  password       String?
+  emailVerified  Boolean?             @default(false)
+  image          String?
+  authentication UserAuthentication[]
+  sessions       Session[]
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  accounts       Account[]            @relation("UserAccounts")
 }
 
 model Account {
   id          String      @id @default(uuid()) @db.Uuid
-  userId      String
+  userId      String      @db.Uuid
   icon        String?
   name        String      @db.VarChar(50)
   description String?     @db.VarChar(1000)
   type        AccountType @default(Payment)
   currency    Currency    @default(VND)
-  limit       Decimal?    @db.Decimal(13, 2)
-  balance     Decimal     @default(0) @db.Decimal(13, 2)
-  parentId    String?
+  limit       Decimal?    @default(0) @db.Decimal(13, 2)
+  balance     Decimal?    @default(0) @db.Decimal(13, 2)
+  parentId    String?     @db.Uuid
   parent      Account?    @relation("ChildAccounts", fields: [parentId], references: [id])
   children    Account[]   @relation("ChildAccounts")
+  user        User        @relation("UserAccounts", fields: [userId], references: [id])
 
   @@index([userId]) // Index for faster queries on userId
   @@index([parentId]) // Index for faster queries on parentId
@@ -40,7 +42,7 @@ model Account {
 
 model UserAuthentication {
   id                String  @id @default(uuid()) @db.Uuid
-  userId            String
+  userId            String  @unique @db.Uuid
   type              String
   provider          String
   providerAccountId String
@@ -63,7 +65,7 @@ model UserAuthentication {
 model Session {
   id           String   @id @default(uuid()) @db.Uuid
   sessionToken String   @unique
-  userId       String
+  userId       String   @db.Uuid
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id])
 
@@ -98,8 +100,8 @@ model Media {
 
 model Banner {
   id         String   @id @default(uuid()) @db.Uuid
-  media      Media    @relation(fields: [id], references: [id])
-  media_id   Int
+  media_id   String   @db.Uuid // Changed to String @db.Uuid to match Media.id
+  media      Media    @relation(fields: [media_id], references: [id])
   text       String?
   order      Int
   created_at DateTime @default(now())

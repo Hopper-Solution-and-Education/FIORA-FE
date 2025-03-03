@@ -2,15 +2,21 @@ import bcrypt from 'bcryptjs';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { SignUpUseCase } from '@/features/auth/application/use-cases/signUpUseCase';
 import { UserRepository } from '@/features/auth/infrastructure/repositories/userRepository';
-import { ConflictError, errorHandler } from '@/lib/errors';
+import { ConflictError, errorHandler, InternalServerError } from '@/lib/errors';
 import redis from '@/lib/redis';
 import { sendEmail } from '@/lib/sendGrid';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { AccountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
+import { AccountUseCase } from '@/features/auth/application/use-cases/accountUseCase';
+
+const userRepository = new UserRepository();
+const accountRepository = new AccountRepository();
+
+const signUpUseCase = new SignUpUseCase(userRepository);
+const accountUseCase = new AccountUseCase(accountRepository);
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { email, password } = req.body;
-  const userRepository = new UserRepository();
-  const signUpUseCase = new SignUpUseCase(userRepository);
 
   const userFound = await userRepository.findByEmail(email);
 
@@ -38,7 +44,13 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  await signUpUseCase.execute(email, hashedPassword);
+  const userCreationRes = await signUpUseCase.execute(email, hashedPassword);
+  if (!userCreationRes) {
+    throw new InternalServerError('Không thể tạo tài khoản');
+  }
+  await accountUseCase.create({
+    userId: userCreationRes.id,
+  });
 
   await redis.setEx(`otp:${email}`, 5 * 60, otp); // Expire in 5 minutes
   // Send OTP to email

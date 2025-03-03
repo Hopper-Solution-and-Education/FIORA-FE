@@ -1,3 +1,5 @@
+'use server';
+
 import { UserRepository } from '@/features/auth/infrastructure/repositories/userRepository';
 import { cookies } from 'next/headers';
 

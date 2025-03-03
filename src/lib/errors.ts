@@ -84,7 +84,7 @@ export const errorHandler = async (
 // Normalize errors into AppError instances
 const normalizeError = (error: unknown): AppError => {
   if (error instanceof AppError) return error;
-//   if (error instanceof z.ZodError) return new ValidationError('Validation failed', error.errors);
+  //   if (error instanceof z.ZodError) return new ValidationError('Validation failed', error.errors);
   console.log({ error });
   return new InternalServerError();
 };
