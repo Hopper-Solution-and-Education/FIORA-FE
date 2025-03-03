@@ -19,6 +19,8 @@ import GoogleButton from '../common/GoogleButton';
 import MetaButton from '../common/MetaButton';
 import TermCondition from '../common/TermCondition';
 import { VerifyOTPForm } from './VerifyForm';
+import { useRouter } from 'next/navigation';
+// import { Router, useRouter } from 'next/router';
 
 // Validation regex patterns
 
@@ -28,7 +30,7 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>)
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isVerificationStep, setIsVerificationStep] = useState(false); // Toggle between registration and verification
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null); // State for error messages
   // State for field-specific errors
   const [fieldErrors, setFieldErrors] = useState({
@@ -97,7 +99,10 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>)
       const data = await res.json();
 
       setSuccessMessage(data.message); // e.g., "Check your email for OTP"
-      setIsVerificationStep(true); // Switch to OTP verification step
+      // setIsVerificationStep(true); // Switch to OTP verification step
+      setTimeout(() => {
+        router.push('/auth/sign-in');
+      }, 1500);
     } catch (err: any) {
       setError(err.message || 'An error occurred during sign up');
     }

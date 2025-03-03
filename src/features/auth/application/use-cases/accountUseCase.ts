@@ -4,13 +4,9 @@ import { AccountType, Currency } from '@prisma/client';
 import { AccountCreation } from '../../domain/repositories/accountRepository.interface';
 import { AccountRepository } from '../../infrastructure/repositories/accountRepository';
 import { Decimal } from '@prisma/client/runtime/library';
-import { UserRepository } from '../../infrastructure/repositories/userRepository';
 
 export class AccountUseCase {
-  constructor(
-    private accountRepository: AccountRepository,
-    private userRepository: UserRepository,
-  ) {}
+  constructor(private accountRepository: AccountRepository) {}
 
   async create(params: AccountCreation): Promise<void> {
     const { accountName = '', description = '', icon = '', userId } = params;

@@ -11,7 +11,7 @@ export class UserRepository implements IUserRepository {
 
   async createUser(user: { email: string; hashedPassword: string }): Promise<User> {
     return prisma.user.create({
-      data: { email: user.email, password: user.hashedPassword, emailVerified: false },
+      data: { email: user.email, password: user.hashedPassword, emailVerified: true },
     });
   }
 
