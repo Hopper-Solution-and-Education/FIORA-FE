@@ -2,15 +2,19 @@
 import { Inter } from 'next/font/google';
 import './globals.css';
 
-import Footer from '@/components/common/Footer';
-import Header from '@/components/common/Header';
-import { SessionTimeoutModal } from '@/components/common/SessionTimeoutModal';
-import { ThemeProvider } from '@/components/providers/theme-provider';
-import { swrOptions } from '@/lib/swrConfig';
-import { AmplitudeProvider } from '@/providers/AmplitudeContextProvider';
-import { ReduxProvider } from '@/providers/ReduxProvider';
 import { SessionProvider } from 'next-auth/react';
+import NextTopLoader from 'nextjs-toploader';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
+import { useEffect } from 'react';
 import { SWRConfig } from 'swr';
+import { SessionTimeoutModal } from '@/components/common/SessionTimeoutModal';
+import { AmplitudeProvider } from '@/components/providers/AmplitudeContextProvider';
+import { GrowthBookAppProvider } from '@/components/providers/GrowthBookProvider';
+import { ReduxProvider } from '@/components/providers/ReduxProvider';
+import { ThemeProvider } from '@/components/providers/theme-provider';
+import { Toaster } from '@/components/ui/sonner';
+import growthbook from '@/lib/growthbook';
+import { swrOptions } from '@/lib/swrConfig';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,30 +23,43 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  useEffect(() => {
+    console.log('====================================');
+    console.log(
+      process.env.NEXT_PUBLIC_GROWTHBOOK_API_HOST,
+      process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
+    );
+    console.log('====================================');
+
+    growthbook.init({ streaming: true });
+  }, []);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <SWRConfig value={swrOptions}>
-          <AmplitudeProvider>
-            <ReduxProvider>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-              >
-                <SessionProvider>
-                  <div className="flex flex-col min-h-screen">
-                    <Header />
-                    <main>{children}</main>
-                    <Footer />
-                    <SessionTimeoutModal />
-                  </div>
-                </SessionProvider>
-              </ThemeProvider>
-            </ReduxProvider>
-          </AmplitudeProvider>
-        </SWRConfig>
+        <GrowthBookAppProvider>
+          <SWRConfig value={swrOptions}>
+            <NextTopLoader showSpinner={false} />
+            <NuqsAdapter>
+              <AmplitudeProvider>
+                <ReduxProvider>
+                  <ThemeProvider
+                    attribute="class"
+                    defaultTheme="system"
+                    enableSystem
+                    disableTransitionOnChange
+                  >
+                    <SessionProvider>
+                      <Toaster />
+                      <main>{children}</main>
+                      <SessionTimeoutModal />
+                    </SessionProvider>
+                  </ThemeProvider>
+                </ReduxProvider>
+              </AmplitudeProvider>
+            </NuqsAdapter>
+          </SWRConfig>
+        </GrowthBookAppProvider>
       </body>
     </html>
   );

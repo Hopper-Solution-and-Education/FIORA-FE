@@ -1,4 +1,4 @@
-import { AmplitudeContext } from '@/providers/AmplitudeContextProvider';
+import { AmplitudeContext } from '@/components/providers/AmplitudeContextProvider';
 import { useContext } from 'react';
 
 const useAmplitudeContext = () => {
