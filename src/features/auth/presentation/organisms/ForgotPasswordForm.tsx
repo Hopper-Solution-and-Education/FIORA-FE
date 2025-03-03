@@ -54,7 +54,7 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
     { setSubmitting }: FormikHelpers<{ newPassword: string; confirmPassword: string }>,
   ) => {
     try {
-      const response = await fetch('/api/auth/signin', {
+      const response = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +84,6 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
     <div className={cn('flex flex-col gap-6 max-w-md mx-auto', className)} {...props}>
       <Card className="overflow-hidden">
         <CardContent className="p-6 md:p-8">
-          {/* Hiển thị Alert nếu có */}
           {alert && (
             <Alert variant={alert.variant} className="mb-6">
               <AlertDescription>{alert.message}</AlertDescription>
@@ -139,53 +138,81 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
               </Button>
             </form>
           ) : (
-            // Form nhập mật khẩu mới
+            // Form nhập mật khẩu mới (đã làm lớn hơn)
             <Formik
               initialValues={{ newPassword: '', confirmPassword: '' }}
               validationSchema={resetPasswordSchemaObj}
               onSubmit={handleResetPasswordSubmit}
             >
               {({ isSubmitting }) => (
-                <Form className="flex flex-col gap-6">
-                  <div className="flex flex-col items-center text-center">
-                    <h1 className="text-2xl font-bold">Reset Password</h1>
-                    <p className="text-balance text-muted-foreground">Enter your new password</p>
+                <Form className="flex flex-col gap-8">
+                  {' '}
+                  {/* Tăng gap từ 6 lên 8 */}
+                  <div className="flex flex-col items-center text-center gap-3">
+                    {' '}
+                    {/* Thêm gap-3 */}
+                    <h1 className="text-3xl font-bold">Reset Password</h1>{' '}
+                    {/* Tăng từ 2xl lên 3xl */}
+                    <p className="text-lg text-muted-foreground">
+                      Enter your new password below
+                    </p>{' '}
+                    {/* Tăng từ mặc định lên lg */}
                   </div>
-                  <div className="grid gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="new-password">New Password</Label>
+                  <div className="grid gap-6">
+                    {' '}
+                    {/* Tăng gap từ 4 lên 6 */}
+                    <div className="grid gap-3">
+                      {' '}
+                      {/* Tăng gap từ 2 lên 3 */}
+                      <Label htmlFor="new-password" className="text-base">
+                        {' '}
+                        {/* Tăng từ mặc định lên base */}
+                        New Password
+                      </Label>
                       <Field
                         as={Input}
                         id="new-password"
                         name="newPassword"
                         type="password"
                         placeholder="Enter new password"
+                        className="h-12 text-base" // Tăng chiều cao và cỡ chữ
                         required
                       />
                       <ErrorMessage
                         name="newPassword"
                         component="div"
-                        className="text-sm text-red-500"
+                        className="text-base text-red-500" // Tăng cỡ chữ lỗi
                       />
                     </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <div className="grid gap-3">
+                      {' '}
+                      {/* Tăng gap từ 2 lên 3 */}
+                      <Label htmlFor="confirm-password" className="text-base">
+                        {' '}
+                        {/* Tăng từ mặc định lên base */}
+                        Confirm Password
+                      </Label>
                       <Field
                         as={Input}
                         id="confirm-password"
                         name="confirmPassword"
                         type="password"
                         placeholder="Confirm new password"
+                        className="h-12 text-base" // Tăng chiều cao và cỡ chữ
                         required
                       />
                       <ErrorMessage
                         name="confirmPassword"
                         component="div"
-                        className="text-sm text-red-500"
+                        className="text-base text-red-500" // Tăng cỡ chữ lỗi
                       />
                     </div>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  <Button
+                    type="submit"
+                    className="w-full h-12 text-lg" // Tăng chiều cao và cỡ chữ nút
+                    disabled={isSubmitting}
+                  >
                     Reset Password
                   </Button>
                 </Form>
