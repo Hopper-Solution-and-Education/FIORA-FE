@@ -1,17 +1,18 @@
 // infrastructure/repositories/userRepository.ts
 import { User } from '@prisma/client';
+import bcrypt from 'bcrypt';
 import { IUserRepository } from '@/features/auth/domain/repositories/userRepository.interface';
 import prisma from '@/infrastructure/database/prisma';
-import bcrypt from 'bcrypt';
 
-export class UserRepository implements IUserRepository {
+class UserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {
     return prisma.user.findUnique({ where: { email } });
   }
 
-  async createUser(user: { email: string; password: string }): Promise<User> {
-    const hashedPassword = await bcrypt.hash(user.password, 10);
-    return prisma.user.create({ data: { email: user.email, password: hashedPassword } });
+  async createUser(user: { email: string; hashedPassword: string }): Promise<User> {
+    return prisma.user.create({
+      data: { email: user.email, password: user.hashedPassword, emailVerified: true },
+    });
   }
 
   async verifyPassword(email: string, password: string): Promise<User | null> {
@@ -20,4 +21,18 @@ export class UserRepository implements IUserRepository {
     const isValid = await bcrypt.compare(password, user.password);
     return isValid ? user : null;
   }
+
+  async checkIsExistedUserById(id: string): Promise<User | null> {
+    const user = await prisma.user.findUnique({ where: { id } });
+    return user;
+  }
+
+  async verifyUser(email: string): Promise<User> {
+    return prisma.user.update({
+      where: { email },
+      data: { emailVerified: true },
+    });
+  }
 }
+
+export const userRepository = new UserRepository();
