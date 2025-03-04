@@ -1,8 +1,10 @@
-import { cookies } from 'next/headers';
-import { UserRepository } from '@/features/auth/infrastructure/repositories/userRepository';
+'use server';
 
+import { cookies } from 'next/headers';
+import { IUserRepository } from '../../domain/repositories/userRepository.interface';
+import { userRepository } from '../../infrastructure/repositories/userRepository';
 export class LoginUseCase {
-  constructor(private userRepository: UserRepository) {}
+  constructor(private userRepository: IUserRepository) {}
 
   async execute(email: string, password: string, rememberMe: boolean): Promise<void> {
     const user = await this.userRepository.verifyPassword(email, password);
@@ -28,3 +30,5 @@ export class LoginUseCase {
     });
   }
 }
+
+export const LoginUseCaseInstance = new LoginUseCase(userRepository);

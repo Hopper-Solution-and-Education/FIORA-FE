@@ -1,10 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/infrastructure/database/prisma';
 import bcrypt from 'bcrypt';
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-
-const prisma = new PrismaClient();
 
 // Extend the User interface to include rememberMe
 declare module 'next-auth' {

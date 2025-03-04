@@ -2,27 +2,48 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
- 
+
 generator client {
   provider = "prisma-client-js"
 }
 
 model User {
-  id            String   @id @default(cuid())
-  name          String?
-  email         String   @unique
-  password      String?
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String               @id @default(uuid()) @db.Uuid
+  name           String?
+  email          String               @unique
+  password       String?
+  emailVerified  Boolean?             @default(false)
+  image          String?
+  authentication UserAuthentication[]
+  sessions       Session[]
+  categories     Category[]           @relation("UserCategories") // Added this field
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  accounts       Account[]            @relation("UserAccounts")
 }
 
 model Account {
-  id                String   @id @default(cuid())
-  userId            String
+  id          String      @id @default(uuid()) @db.Uuid
+  userId      String      @db.Uuid
+  icon        String?
+  name        String      @db.VarChar(50)
+  description String?     @db.VarChar(1000)
+  type        AccountType @default(Payment)
+  currency    Currency    @default(VND)
+  limit       Decimal?    @default(0) @db.Decimal(13, 2)
+  balance     Decimal?    @default(0) @db.Decimal(13, 2)
+  parentId    String?     @db.Uuid
+  parent      Account?    @relation("ChildAccounts", fields: [parentId], references: [id])
+  children    Account[]   @relation("ChildAccounts")
+  user        User        @relation("UserAccounts", fields: [userId], references: [id])
+
+  @@index([userId]) // Index for faster queries on userId
+  @@index([parentId]) // Index for faster queries on parentId
+}
+
+model UserAuthentication {
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @unique @db.Uuid
   type              String
   provider          String
   providerAccountId String
@@ -33,30 +54,28 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
   user              User     @relation(fields: [userId], references: [id])
+
   @@unique([provider, providerAccountId])
 }
 
 model Session {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid()) @db.Uuid
   sessionToken String   @unique
-  userId       String
+  userId       String   @db.Uuid
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
- 
+
   @@id([identifier, token])
 }
 
@@ -73,26 +92,69 @@ enum SectionType {
   PARTNER_LOGO
 }
 
+
 model Media {
-  media_id      Int       @id @default(autoincrement())
+  id            String    @id @default(uuid()) @db.Uuid
   media_type    MediaType
   media_url     String? // Dành cho hình ảnh/video
   embed_code    String? // Dành cho video nhúng (YouTube, Vimeo,...)
   description   String?
   uploaded_by   String?
-  uploaded_date DateTime  @default(now())
-  
-  // Liên kết với Section
   section_id    Int?
-  section       Section? @relation(fields: [section_id], references: [section_id])
+  section       Section?  @relation(fields: [section_id], references: [section_id])
+  uploaded_date DateTime  @default(now())
+  banners       Banner[]
 }
 
 model Section {
-  section_id    Int       @id @default(autoincrement())
-  section_type  SectionType
-  name          String
-  order         Int
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
-  medias        Media[]
+  section_id   Int         @id @default(autoincrement())
+  section_type SectionType
+  name         String
+  order        Int
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+  medias       Media[]
+}
+
+enum CategoryType {
+  Expense
+  Income
+}
+
+model Category {
+  id            String       @id @default(uuid()) @db.Uuid
+  userId        String
+  type          CategoryType
+  icon          String
+  name          String       @db.VarChar(50)
+  description   String?      @db.VarChar(1000)
+  parentId      String?      @db.Uuid
+  parent        Category?    @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
+  subCategories Category[]   @relation("SubCategories")
+  user          User         @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Banner {
+  id         String   @id @default(uuid()) @db.Uuid
+  media_id   String   @db.Uuid // Changed to String @db.Uuid to match Media.id
+  media      Media    @relation(fields: [media_id], references: [id])
+  text       String?
+  order      Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+enum AccountType {
+  Payment
+  Saving
+  CreditCard
+  Debt
+  Lending
+}
+
+enum Currency {
+  VND
+  USD
 }

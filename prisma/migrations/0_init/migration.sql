@@ -1,16 +1,19 @@
 -- CreateEnum
-CREATE TYPE "MediaType" AS ENUM ('IMAGE', 'VIDEO', 'EMBEDDED');
+CREATE TYPE "MediaType" AS ENUM ('image', 'video', 'embedded');
 
 -- CreateEnum
-CREATE TYPE "SectionType" AS ENUM ('BANNER', 'VISION_MISSION', 'KPS', 'PARTNER_LOGO');
+CREATE TYPE "AccountType" AS ENUM ('Payment', 'Saving', 'CreditCard', 'Debt', 'Lending');
+
+-- CreateEnum
+CREATE TYPE "Currency" AS ENUM ('VND', 'USD');
 
 -- CreateTable
 CREATE TABLE "User" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "name" TEXT,
     "email" TEXT NOT NULL,
     "password" TEXT,
-    "emailVerified" TIMESTAMP(3),
+    "emailVerified" BOOLEAN DEFAULT false,
     "image" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -20,8 +23,24 @@ CREATE TABLE "User" (
 
 -- CreateTable
 CREATE TABLE "Account" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "id" UUID NOT NULL,
+    "userId" UUID NOT NULL,
+    "icon" TEXT,
+    "name" VARCHAR(50) NOT NULL,
+    "description" VARCHAR(1000),
+    "type" "AccountType" NOT NULL DEFAULT 'Payment',
+    "currency" "Currency" NOT NULL DEFAULT 'VND',
+    "limit" DECIMAL(13,2) DEFAULT 0,
+    "balance" DECIMAL(13,2) DEFAULT 0,
+    "parentId" UUID,
+
+    CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserAuthentication" (
+    "id" UUID NOT NULL,
+    "userId" UUID NOT NULL,
     "type" TEXT NOT NULL,
     "provider" TEXT NOT NULL,
     "providerAccountId" TEXT NOT NULL,
@@ -35,14 +54,14 @@ CREATE TABLE "Account" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "UserAuthentication_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Session" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "sessionToken" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
     "expires" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -61,44 +80,58 @@ CREATE TABLE "VerificationToken" (
 
 -- CreateTable
 CREATE TABLE "Media" (
-    "media_id" SERIAL NOT NULL,
+    "id" UUID NOT NULL,
     "media_type" "MediaType" NOT NULL,
     "media_url" TEXT,
     "embed_code" TEXT,
     "description" TEXT,
     "uploaded_by" TEXT,
     "uploaded_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "section_id" INTEGER,
 
-    CONSTRAINT "Media_pkey" PRIMARY KEY ("media_id")
+    CONSTRAINT "Media_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Section" (
-    "section_id" SERIAL NOT NULL,
-    "section_type" "SectionType" NOT NULL,
-    "name" TEXT NOT NULL,
+CREATE TABLE "Banner" (
+    "id" UUID NOT NULL,
+    "media_id" UUID NOT NULL,
+    "text" TEXT,
     "order" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Section_pkey" PRIMARY KEY ("section_id")
+    CONSTRAINT "Banner_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Account_provider_providerAccountId_key" ON "Account"("provider", "providerAccountId");
+CREATE INDEX "Account_userId_idx" ON "Account"("userId");
+
+-- CreateIndex
+CREATE INDEX "Account_parentId_idx" ON "Account"("parentId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserAuthentication_userId_key" ON "UserAuthentication"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserAuthentication_provider_providerAccountId_key" ON "UserAuthentication"("provider", "providerAccountId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
 
 -- AddForeignKey
+ALTER TABLE "Account" ADD CONSTRAINT "Account_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserAuthentication" ADD CONSTRAINT "UserAuthentication_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Media" ADD CONSTRAINT "Media_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("section_id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Banner" ADD CONSTRAINT "Banner_media_id_fkey" FOREIGN KEY ("media_id") REFERENCES "Media"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
