@@ -1,5 +1,4 @@
 'use client';
-
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,13 +12,13 @@ import {
 } from '@/shared/validation/signUpValidation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import AppleButton from '../common/AppleButton';
 import GoogleButton from '../common/GoogleButton';
 import MetaButton from '../common/MetaButton';
 import TermCondition from '../common/TermCondition';
 import { VerifyOTPForm } from './VerifyForm';
-import { useRouter } from 'next/navigation';
 // import { Router, useRouter } from 'next/router';
 
 // Validation regex patterns

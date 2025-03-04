@@ -31,6 +31,9 @@ import {
   UserPen,
   UserX2Icon,
   X,
+  Trello,
+  UtensilsCrossed,
+  Banknote,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -83,4 +86,7 @@ export const Icons = {
   ),
   twitter: Twitter,
   check: Check,
+  trello: Trello,
+  utensilsCrossed: UtensilsCrossed,
+  banknote: Banknote,
 };
