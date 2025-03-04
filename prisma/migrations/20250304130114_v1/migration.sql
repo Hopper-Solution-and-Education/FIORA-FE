@@ -1,5 +1,8 @@
 -- CreateEnum
-CREATE TYPE "MediaType" AS ENUM ('image', 'video', 'embedded');
+CREATE TYPE "MediaType" AS ENUM ('IMAGE', 'VIDEO', 'EMBEDDED');
+
+-- CreateEnum
+CREATE TYPE "SectionType" AS ENUM ('BANNER', 'VISION_MISSION', 'KPS', 'PARTNER_LOGO');
 
 -- CreateEnum
 CREATE TYPE "AccountType" AS ENUM ('Payment', 'Saving', 'CreditCard', 'Debt', 'Lending');
@@ -80,27 +83,28 @@ CREATE TABLE "VerificationToken" (
 
 -- CreateTable
 CREATE TABLE "Media" (
-    "id" UUID NOT NULL,
+    "id" SERIAL NOT NULL,
     "media_type" "MediaType" NOT NULL,
     "media_url" TEXT,
     "embed_code" TEXT,
     "description" TEXT,
     "uploaded_by" TEXT,
     "uploaded_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "section_id" INTEGER,
 
     CONSTRAINT "Media_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Banner" (
-    "id" UUID NOT NULL,
-    "media_id" UUID NOT NULL,
-    "text" TEXT,
+CREATE TABLE "Section" (
+    "section_id" SERIAL NOT NULL,
+    "section_type" "SectionType" NOT NULL,
+    "name" TEXT NOT NULL,
     "order" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Banner_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Section_pkey" PRIMARY KEY ("section_id")
 );
 
 -- CreateIndex
@@ -134,5 +138,4 @@ ALTER TABLE "UserAuthentication" ADD CONSTRAINT "UserAuthentication_userId_fkey"
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Banner" ADD CONSTRAINT "Banner_media_id_fkey" FOREIGN KEY ("media_id") REFERENCES "Media"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
+ALTER TABLE "Media" ADD CONSTRAINT "Media_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("section_id") ON DELETE SET NULL ON UPDATE CASCADE;

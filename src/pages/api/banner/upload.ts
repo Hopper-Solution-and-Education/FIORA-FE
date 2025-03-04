@@ -21,15 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-    // Tạo Banner record
-    const banner = await prisma.banner.create({
-      data: {
-        media_id: media.media_id,
-        order: 0,
-      },
-    });
-
-    return res.status(201).json({ success: true, banner });
+    return res.status(201).json({ success: true });
   } catch (error) {
     return res.status(500).json({ error: 'Something went wrong' });
   }

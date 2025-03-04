@@ -19,6 +19,7 @@ model User {
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
   accounts       Account[]            @relation("UserAccounts")
+  Recommendation Recommendation[]
 }
 
 model Account {
@@ -95,14 +96,13 @@ enum SectionType {
 }
 
 model Media {
-  id            String    @id @default(uuid()) @db.Uuid
+  id            Int    @id @default(autoincrement())
   media_type    MediaType
   media_url     String? // Dành cho hình ảnh/video
   embed_code    String? // Dành cho video nhúng (YouTube, Vimeo,...)
   description   String?
   uploaded_by   String?
   uploaded_date DateTime  @default(now())
-  
   // Liên kết với Section
   section_id    Int?
   section       Section? @relation(fields: [section_id], references: [section_id])
@@ -116,4 +116,28 @@ model Section {
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
   medias        Media[]
+}
+
+model Recommendation {
+  id           String   @id @default(uuid()) // System generated UUID
+  userId       String?  @unique @map("user_id") // Optional: if blank, applies to all users
+  title        String   @db.VarChar(100) // Title of recommendation
+  description  String   @db.VarChar(1000) // Recommendation details
+  link         String?  // Deep link redirection
+  image        String?  // Embedded image link
+  attachments  String[] // Array of file links (IMG, PNG, PDF, DOC, Excel, PowerPoint)
+  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum AccountType {
+  Payment
+  Saving
+  CreditCard
+  Debt
+  Lending
+}
+
+enum Currency {
+  VND
+  USD
 }
