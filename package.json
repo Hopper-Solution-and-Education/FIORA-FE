@@ -53,6 +53,8 @@
     "formik": "^2.4.6",
     "framer-motion": "^12.4.7",
     "inversify": "^6.2.2",
+    "jsonwebtoken": "^9.0.2",
+    "jwt-decode": "^4.0.0",
     "kbar": "^0.1.0-beta.45",
     "lodash": "^4.17.21",
     "lucia-auth": "^1.8.0",
