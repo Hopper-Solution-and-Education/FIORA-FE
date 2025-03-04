@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Table,
   TableBody,
@@ -42,130 +42,7 @@ interface Account {
 
 export default function AccountsTable() {
   const [page, setPage] = useState(1);
-  const [selectedRows, setSelectedRows] = useState<string[]>([]);
-
-  const accounts: Account[] = [
-    {
-      id: 'acc_001',
-      icon: 'credit-card',
-      name: 'Main Credit Card',
-      description: 'Personal expenses credit card',
-      type: 'Credit',
-      currency: 'USD',
-      limit: 5000,
-      balance: 1250.75,
-    },
-    {
-      id: 'acc_002',
-      icon: 'wallet',
-      name: 'Checking Account',
-      description: 'Daily transactions account',
-      type: 'Checking',
-      currency: 'USD',
-      limit: null,
-      balance: 3450.2,
-    },
-    {
-      id: 'acc_003',
-      icon: 'piggy-bank',
-      name: 'Savings',
-      description: 'Emergency fund savings',
-      type: 'Savings',
-      currency: 'USD',
-      limit: null,
-      balance: 12500.0,
-    },
-    {
-      id: 'acc_004',
-      icon: 'landmark',
-      name: 'Investment Portfolio',
-      description: 'Stock market investments',
-      type: 'Investment',
-      currency: 'USD',
-      limit: null,
-      balance: 28750.5,
-    },
-    {
-      id: 'acc_005',
-      icon: 'credit-card',
-      name: 'Business Credit Card',
-      description: 'Business expenses only',
-      type: 'Credit',
-      currency: 'USD',
-      limit: 10000,
-      balance: 4320.15,
-    },
-    {
-      id: 'acc_006',
-      icon: 'wallet',
-      name: 'Euro Account',
-      description: 'European transactions',
-      type: 'Checking',
-      currency: 'EUR',
-      limit: null,
-      balance: 2150.0,
-    },
-    {
-      id: 'acc_007',
-      icon: 'piggy-bank',
-      name: 'Vacation Fund',
-      description: 'Saving for annual vacation',
-      type: 'Savings',
-      currency: 'USD',
-      limit: null,
-      balance: 3200.0,
-    },
-    {
-      id: 'acc_008',
-      icon: 'bitcoin',
-      name: 'Crypto Wallet',
-      description: 'Cryptocurrency investments',
-      type: 'Investment',
-      currency: 'BTC',
-      limit: null,
-      balance: 0.45,
-    },
-    {
-      id: 'acc_009',
-      icon: 'pound-sterling',
-      name: 'UK Account',
-      description: 'British pound account',
-      type: 'Checking',
-      currency: 'GBP',
-      limit: null,
-      balance: 1800.0,
-    },
-    {
-      id: 'acc_010',
-      icon: 'credit-card',
-      name: 'Rewards Card',
-      description: 'Points and cashback card',
-      type: 'Credit',
-      currency: 'USD',
-      limit: 3000,
-      balance: 875.25,
-    },
-    {
-      id: 'acc_011',
-      icon: 'landmark',
-      name: 'Retirement Fund',
-      description: 'Long-term retirement savings',
-      type: 'Investment',
-      currency: 'USD',
-      limit: null,
-      balance: 87500.0,
-    },
-    {
-      id: 'acc_012',
-      icon: 'wallet',
-      name: 'Joint Account',
-      description: 'Shared household expenses',
-      type: 'Checking',
-      currency: 'USD',
-      limit: null,
-      balance: 5430.8,
-    },
-  ];
+  const [accounts, setAccounts] = useState<Account[]>([]);
 
   const itemsPerPage = 10;
   const totalPages = Math.ceil(accounts.length / itemsPerPage);
@@ -173,19 +50,27 @@ export default function AccountsTable() {
   const endIndex = startIndex + itemsPerPage;
   const currentAccounts = accounts.slice(startIndex, endIndex);
 
-  const handleSelectAll = () => {
-    if (selectedRows.length === currentAccounts.length) {
-      setSelectedRows([]);
-    } else {
-      setSelectedRows(currentAccounts.map((account) => account.id));
-    }
-  };
+  useEffect(() => {
+    console.log('Fetching accounts...');
+    fetchAccounts();
+  }, []);
 
-  const handleSelectRow = (id: string) => {
-    if (selectedRows.includes(id)) {
-      setSelectedRows(selectedRows.filter((rowId) => rowId !== id));
-    } else {
-      setSelectedRows([...selectedRows, id]);
+  const fetchAccounts = async () => {
+    try {
+      const response = await fetch('/api/accounts/lists', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAccounts(data.accounts);
+      } else {
+        console.error('Failed to fetch accounts');
+      }
+    } catch (error) {
+      console.error('Failed to fetch accounts', error);
     }
   };
 
@@ -228,10 +113,7 @@ export default function AccountsTable() {
   };
 
   const formatCurrency = (amount: number, currency: string) => {
-    if (currency === 'BTC') {
-      return `${getCurrencySymbol(currency)}${amount.toFixed(8)}`;
-    }
-    return `${getCurrencySymbol(currency)}${amount.toFixed(2)}`;
+    return `${getCurrencySymbol(currency)}${amount}`;
   };
 
   return (

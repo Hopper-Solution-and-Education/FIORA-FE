@@ -55,7 +55,6 @@ const expenseIncomeSlice = createSlice({
         state.categories.error =
           (action.payload as { message: string })?.message || 'Unknown error';
       });
-
     // Update Category
     builder
       .addCase(updateCategory.pending, (state) => {

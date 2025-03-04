@@ -1,0 +1,133 @@
+interface Account {
+  id: string;
+  icon: string;
+  name: string;
+  description: string;
+  type: string;
+  currency: string;
+  limit: number | null;
+  balance: number;
+}
+
+export const accounts: Account[] = [
+  {
+    id: 'acc_001',
+    icon: 'Wallet',
+    name: 'Main Credit Card',
+    description: 'Personal expenses credit card',
+    type: 'Credit',
+    currency: 'USD',
+    limit: 5000,
+    balance: 1250.75,
+  },
+  {
+    id: 'acc_002',
+    icon: 'Wallet',
+    name: 'Checking Account',
+    description: 'Daily transactions account',
+    type: 'Checking',
+    currency: 'USD',
+    limit: null,
+    balance: 3450.2,
+  },
+  {
+    id: 'acc_003',
+    icon: 'Wallet',
+    name: 'Savings',
+    description: 'Emergency fund savings',
+    type: 'Savings',
+    currency: 'USD',
+    limit: null,
+    balance: 12500.0,
+  },
+  {
+    id: 'acc_004',
+    icon: 'Wallet',
+    name: 'Investment Portfolio',
+    description: 'Stock market investments',
+    type: 'Investment',
+    currency: 'USD',
+    limit: null,
+    balance: 28750.5,
+  },
+  {
+    id: 'acc_005',
+    icon: 'Wallet',
+    name: 'Business Credit Card',
+    description: 'Business expenses only',
+    type: 'Credit',
+    currency: 'USD',
+    limit: 10000,
+    balance: 4320.15,
+  },
+  {
+    id: 'acc_006',
+    icon: 'Wallet',
+    name: 'Euro Account',
+    description: 'European transactions',
+    type: 'Checking',
+    currency: 'EUR',
+    limit: null,
+    balance: 2150.0,
+  },
+  {
+    id: 'acc_007',
+    icon: 'Wallet',
+    name: 'Vacation Fund',
+    description: 'Saving for annual vacation',
+    type: 'Savings',
+    currency: 'USD',
+    limit: null,
+    balance: 3200.0,
+  },
+  {
+    id: 'acc_008',
+    icon: 'Wallet',
+    name: 'Crypto Wallet',
+    description: 'Cryptocurrency investments',
+    type: 'Investment',
+    currency: 'BTC',
+    limit: null,
+    balance: 0.45,
+  },
+  {
+    id: 'acc_009',
+    icon: 'Wallet',
+    name: 'UK Account',
+    description: 'British pound account',
+    type: 'Checking',
+    currency: 'GBP',
+    limit: null,
+    balance: 1800.0,
+  },
+  {
+    id: 'acc_010',
+    icon: 'Wallet',
+    name: 'Rewards Card',
+    description: 'Points and cashback card',
+    type: 'Credit',
+    currency: 'USD',
+    limit: 3000,
+    balance: 875.25,
+  },
+  {
+    id: 'acc_011',
+    icon: 'Wallet',
+    name: 'Retirement Fund',
+    description: 'Long-term retirement savings',
+    type: 'Investment',
+    currency: 'USD',
+    limit: null,
+    balance: 87500.0,
+  },
+  {
+    id: 'acc_012',
+    icon: 'Wallet',
+    name: 'Joint Account',
+    description: 'Shared household expenses',
+    type: 'Checking',
+    currency: 'USD',
+    limit: null,
+    balance: 5430.8,
+  },
+];

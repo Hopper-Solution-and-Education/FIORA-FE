@@ -35,7 +35,7 @@ export default function ExpenseIncomeSettingPage() {
     data: swrData,
     error: swrError,
     isLoading: swrLoading,
-  } = useCustomSWR<Category[]>('/categories');
+  } = useCustomSWR<Category[]>('/api/categories/expense-income');
 
   // Sync SWR data with Redux
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function ExpenseIncomeSettingPage() {
   const handleCreateOrUpdateCategory = (category: Partial<Category>) => {
     if (selectedCategory) {
       dispatch(updateCategory({ ...selectedCategory, ...category })).then(() =>
-        mutate('/categories'),
+        mutate('/api/categories/expenses-income'),
       );
     } else {
       dispatch(
@@ -56,7 +56,7 @@ export default function ExpenseIncomeSettingPage() {
           type: (category.type as CategoryTypeEnum) || CategoryTypeEnum.EXPENSE,
           subCategories: [],
         }),
-      ).then(() => mutate('/categories'));
+      ).then(() => mutate('/api/categories/expenses-income'));
     }
     dispatch(setDialogOpen(false));
     dispatch(setSelectedCategory(null));
