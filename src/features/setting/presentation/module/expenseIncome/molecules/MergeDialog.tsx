@@ -8,6 +8,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Category } from '../../../settingSlices/expenseIncomeSlides/types';
 import SubCategoryList from '../organisms/SubCategoryList';
 
 interface MergeDialogProps {
@@ -17,7 +18,7 @@ interface MergeDialogProps {
   setSelectedCategory: (category: any) => void;
   newCategory: any;
   setNewCategory: (category: any) => void;
-  handleCreateOrUpdateCategory: () => void;
+  handleCreateOrUpdateCategory: (category: Partial<Category>) => void;
 }
 
 const MergeDialog: React.FC<MergeDialogProps> = ({
@@ -51,7 +52,7 @@ const MergeDialog: React.FC<MergeDialogProps> = ({
           editable
         />
         <DialogFooter>
-          <Button onClick={handleCreateOrUpdateCategory}>
+          <Button onClick={() => handleCreateOrUpdateCategory}>
             {selectedCategory ? 'Update' : 'Create'}
           </Button>
         </DialogFooter>

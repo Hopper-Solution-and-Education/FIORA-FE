@@ -1,87 +1,115 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect } from 'react';
+import { mutate } from 'swr';
 import { Button } from '@/components/ui/button';
-import { CategoryType } from '../../types';
+import {
+  setDialogOpen,
+  setDeleteConfirmOpen,
+  setSelectedCategory,
+  setCategories,
+} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
+import {
+  CategoryTypeEnum,
+  Category,
+} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
+import { useCustomSWR } from '@/lib/swrConfig';
+import { useAppDispatch, useAppSelector } from '@/store';
+import {
+  createCategory,
+  deleteCategory,
+  updateCategory,
+} from '../../settingSlices/expenseIncomeSlides/actions';
 import DeleteDialog from './molecules/DeleteDialog';
 import MergeDialog from './molecules/MergeDialog';
 import CategoryTable from './organisms/CategoryTable';
 
-const defaultCategories: CategoryType[] = [
-  {
-    id: '1',
-    name: 'Food and Drink',
-    type: 'EXPENSE',
-    subCategories: [{ id: '1', name: 'Breakfast' }],
-  },
-  { id: '2', name: 'Stay and Rest', type: 'EXPENSE', subCategories: [{ id: '1', name: 'Hotel' }] },
-  {
-    id: '3',
-    name: 'Salary',
-    type: 'INCOME',
-    subCategories: [
-      { id: '1', name: 'Main Job' },
-      { id: '2', name: 'Part-time Job' },
-    ],
-  },
-  { id: '4', name: 'Saving', type: 'INCOME', subCategories: [{ id: '1', name: 'Bank Interest' }] },
-];
+export default function ExpenseIncomeSettingPage() {
+  const dispatch = useAppDispatch();
+  const { categories, selectedCategory, dialogOpen, deleteConfirmOpen } = useAppSelector(
+    (state) => state.expenseIncome,
+  );
 
-export default function ExpenseIncomeSettingPage2() {
-  const [categories, setCategories] = useState(defaultCategories);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryType>();
-  const [newCategory, setNewCategory] = useState({ name: '', type: 'EXPENSE', subCategories: [] });
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  // Fetch categories with SWR
+  const {
+    data: swrData,
+    error: swrError,
+    isLoading: swrLoading,
+  } = useCustomSWR<Category[]>('/categories');
 
-  const handleCreateOrUpdateCategory = () => {
+  // Sync SWR data with Redux
+  useEffect(() => {
+    if (swrData && !swrLoading && !swrError) {
+      dispatch(setCategories(swrData));
+    }
+  }, [swrData, swrLoading, swrError, dispatch]);
+
+  const handleCreateOrUpdateCategory = (category: Partial<Category>) => {
     if (selectedCategory) {
-      setCategories(
-        categories.map((cat) => (cat.id === selectedCategory.id ? selectedCategory : cat)),
+      dispatch(updateCategory({ ...selectedCategory, ...category })).then(() =>
+        mutate('/categories'),
       );
     } else {
-      setCategories([...categories, { ...newCategory, id: String(categories.length + 1) }]);
+      dispatch(
+        createCategory({
+          name: category.name || '',
+          type: (category.type as CategoryTypeEnum) || CategoryTypeEnum.EXPENSE,
+          subCategories: [],
+        }),
+      ).then(() => mutate('/categories'));
     }
-    setDialogOpen(false);
-    setSelectedCategory(undefined);
+    dispatch(setDialogOpen(false));
+    dispatch(setSelectedCategory(null));
   };
 
   const handleDeleteCategory = () => {
-    setCategories(categories.filter((category) => category.id !== selectedCategory?.id));
-    setDeleteConfirmOpen(false);
+    if (selectedCategory) {
+      dispatch(deleteCategory(selectedCategory.id));
+    }
+    dispatch(setDeleteConfirmOpen(false));
   };
+
+  const newCategory = {
+    name: '',
+    type: CategoryTypeEnum.EXPENSE,
+    subCategories: [],
+  };
+
+  if (swrLoading || categories.isLoading) return <div>Loading...</div>;
+  if (swrError) return <div>Error: {swrError.message}</div>;
+  if (categories.error) return <div>Error: {categories.error}</div>;
 
   return (
     <section>
-      <Button onClick={() => setDialogOpen(true)}>Add New Category</Button>
+      <Button onClick={() => dispatch(setDialogOpen(true))}>Add New Category</Button>
       {['EXPENSE', 'INCOME'].map((type) => (
         <div key={type} className="mb-6">
           <h2 className="text-xl font-semibold mb-2">
             {type === 'EXPENSE' ? 'Expense Categories' : 'Income Categories'}
           </h2>
           <CategoryTable
-            categories={categories}
+            categories={categories.data || []}
             type={type}
-            setSelectedCategory={setSelectedCategory}
-            setDeleteConfirmOpen={setDeleteConfirmOpen}
-            setDialogOpen={setDialogOpen}
+            setSelectedCategory={(cat) => dispatch(setSelectedCategory(cat))}
+            setDeleteConfirmOpen={(open) => dispatch(setDeleteConfirmOpen(open))}
+            setDialogOpen={(open) => dispatch(setDialogOpen(open))}
           />
         </div>
       ))}
 
       <MergeDialog
         dialogOpen={dialogOpen}
-        setDialogOpen={setDialogOpen}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
+        setDialogOpen={(open) => dispatch(setDialogOpen(open))}
+        selectedCategory={selectedCategory || undefined}
+        setSelectedCategory={(cat) => dispatch(setSelectedCategory(cat))}
         newCategory={newCategory}
-        setNewCategory={setNewCategory}
+        setNewCategory={() => {}} // Handled in Redux
         handleCreateOrUpdateCategory={handleCreateOrUpdateCategory}
       />
 
       <DeleteDialog
         deleteConfirmOpen={deleteConfirmOpen}
-        setDeleteConfirmOpen={setDeleteConfirmOpen}
+        setDeleteConfirmOpen={(open) => dispatch(setDeleteConfirmOpen(open))}
         handleDeleteCategory={handleDeleteCategory}
       />
     </section>

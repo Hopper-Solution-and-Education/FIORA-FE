@@ -8,13 +8,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { CategoryType } from '../../../types';
+import { Category } from '../../../settingSlices/expenseIncomeSlides/types';
 import SubCategoryList from './SubCategoryList';
 
 interface CategoryTableProps {
-  categories: CategoryType[];
+  categories: Category[];
   type: string;
-  setSelectedCategory: (category: any) => void;
+  setSelectedCategory: (cat: Category | null) => void;
   setDeleteConfirmOpen: (open: boolean) => void;
   setDialogOpen: (open: boolean) => void;
 }
