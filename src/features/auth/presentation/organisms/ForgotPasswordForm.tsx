@@ -19,7 +19,6 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
 
   const onSubmitForgotPassword = async () => {
     const otp = await generatedOtpForgotPassword(email);
-    console.log('🚀 ~ onSubmitForgotPassword ~ otp:', otp);
     setOtp(otp);
     setIsOtpSent(true);
   };
@@ -33,11 +32,6 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
     } else {
       alert('Invalid OTP. Please try again');
     }
-  };
-
-  // Xử lý reset password
-  const handleResetPassword = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
   };
 
   return (
