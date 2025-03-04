@@ -2,16 +2,15 @@ import bcrypt from 'bcrypt';
 
 import { User } from '@prisma/client';
 import { IUserRepository } from '../../domain/repositories/userRepository.interface';
-import { ConflictError } from '@/lib/errors';
 import { userRepository } from '../../infrastructure/repositories/userRepository';
 
 class UserUseCase {
   constructor(private userRepository: IUserRepository) {}
 
-  async execute(email: string, password: string): Promise<User> {
+  async execute(email: string, password: string): Promise<User | null> {
     const userFound = await this.userRepository.findByEmail(email);
     if (userFound) {
-      throw new ConflictError('Email already exists');
+      return null;
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     return await this.userRepository.createUser({ email, hashedPassword });
