@@ -27,6 +27,11 @@ class UserRepository implements IUserRepository {
     return user;
   }
 
+  async updatePassword(email: string, newPassword: string): Promise<User> {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    return prisma.user.update({ where: { email }, data: { password: hashedPassword } });
+  }
+
   async verifyUser(email: string): Promise<User> {
     return prisma.user.update({
       where: { email },

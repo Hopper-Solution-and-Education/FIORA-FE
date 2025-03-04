@@ -54,6 +54,33 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>)
     return !emailError && !passwordError && !confirmPasswordError;
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null); // Clear any global errors
+    setFieldErrors({ email: '', password: '', confirmPassword: '' }); // Clear field-specific errors
+
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Sign up failed');
+      }
+
+      router.push('/auth/sign-in');
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during sign up');
+    }
+  };
+
   const handleFieldChange = (field: string, value: string) => {
     switch (field) {
       case 'email':
