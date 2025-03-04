@@ -2,22 +2,23 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
- 
+
 generator client {
   provider = "prisma-client-js"
 }
 
 model User {
-  id            String   @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String?
-  email         String   @unique
+  email         String     @unique
   password      String?
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  categories    Category[] @relation("UserCategories") // Added this field
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 }
 
 model Account {
@@ -33,10 +34,8 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
   user              User     @relation(fields: [userId], references: [id])
   @@unique([provider, providerAccountId])
 }
@@ -47,16 +46,14 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
- 
   @@id([identifier, token])
 }
 
@@ -81,10 +78,8 @@ model Media {
   description   String?
   uploaded_by   String?
   uploaded_date DateTime  @default(now())
-  
-  // Liên kết với Section
   section_id    Int?
-  section       Section? @relation(fields: [section_id], references: [section_id])
+  section       Section?  @relation(fields: [section_id], references: [section_id])
 }
 
 model Section {
@@ -95,4 +90,24 @@ model Section {
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
   medias        Media[]
+}
+
+enum CategoryType {
+  Expense
+  Income
+}
+
+model Category {
+  id            String        @id @default(uuid()) @db.Uuid
+  userId        String
+  type          CategoryType
+  icon          String
+  name          String        @db.VarChar(50)
+  description   String?       @db.VarChar(1000)
+  parentId      String?       @db.Uuid
+  parent        Category?     @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
+  subCategories Category[]    @relation("SubCategories")
+  user          User          @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
