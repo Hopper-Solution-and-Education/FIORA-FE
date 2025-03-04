@@ -2,6 +2,20 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import expenseIncomeServices from '@/features/setting/services/expenseIncomeServices';
 import { Category } from '../types';
 
+export const fetchCategories = createAsyncThunk(
+  'expenseIncome/fetchCategories',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await expenseIncomeServices.getCategories();
+      return response;
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.message || 'Failed to fetch categories! Please try again!',
+      });
+    }
+  },
+);
+
 export const createCategory = createAsyncThunk(
   'expenseIncome/createCategory',
   async (category: Omit<Category, 'id'>, { rejectWithValue }) => {

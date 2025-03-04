@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createCategory, deleteCategory, updateCategory } from './actions';
+import { fetchCategories, createCategory, deleteCategory, updateCategory } from './actions';
 import { Category, initialExpenseIncomeState } from './types';
 
 const expenseIncomeSlice = createSlice({
@@ -23,6 +23,20 @@ const expenseIncomeSlice = createSlice({
     reset: () => initialExpenseIncomeState,
   },
   extraReducers: (builder) => {
+    // Fetch Categories
+    builder
+      .addCase(fetchCategories.pending, (state) => {
+        state.categories.isLoading = true;
+      })
+      .addCase(fetchCategories.fulfilled, (state, action) => {
+        state.categories.isLoading = false;
+        state.categories.data = action.payload;
+      })
+      .addCase(fetchCategories.rejected, (state, action) => {
+        state.categories.isLoading = false;
+        state.categories.error =
+          (action.payload as { message: string })?.message || 'Unknown error';
+      });
     // Create Category
     builder
       .addCase(createCategory.pending, (state) => {
