@@ -8,6 +8,7 @@ WORKDIR /app
 RUN apk add --no-cache libc6-compat
 
 # Copy và cài đặt dependencies
+COPY prisma ./prisma/
 COPY package.json package-lock.json ./
 RUN npm install --legacy-peer-deps
 
