@@ -1,14 +1,30 @@
 import { CategoryType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
+import { getServerSession } from 'next-auth';
 import { categoryUseCase } from '@/features/setting/application/use-cases/categoryUseCase';
-import authOptions from '@/pages/api/auth/[...nextauth]';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { authOptions } from '../auth/[...nextauth]';
+
+// Define the expected session structure
+
+export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {
+  const session = await getServerSession(req, res, authOptions);
+
+  if (!session) {
+    return null;
+  }
+
+  const currentTime = Math.floor(Date.now() / 1000);
+  if (session.expiredTime < currentTime) {
+    return null; // Session expired
+  }
+
+  return session;
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Get the session using NextAuth's getServerSession
-  const session: { user?: { id?: string } } | null = await getServerSession(req, res, authOptions);
-  console.log('session', session);
+  const session = await getUserSession(req, res);
+
   if (!session || !session.user?.id) {
     return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
   }
