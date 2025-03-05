@@ -34,6 +34,9 @@ export function SessionTimeoutModal() {
         setIsVisible(true);
       }, timeLeft - 40000);
       return () => clearTimeout(timeout);
+    } else {
+      // Logout when session is expired
+      setLogoutTriggered(true);
     }
   }, [session, status]);
 

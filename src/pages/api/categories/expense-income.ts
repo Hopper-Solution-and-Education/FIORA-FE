@@ -14,8 +14,12 @@ export async function getUserSession(req: NextApiRequest, res: NextApiResponse) 
     return null;
   }
 
-  const currentTime = Math.floor(Date.now() / 1000);
-  if (session.expiredTime < currentTime) {
+  const currentTime = Date.now();
+  const timeLeft = session.expiredTime - currentTime;
+  if (timeLeft <= 0) {
+    console.log('Session expired: ', session.expiredTime, currentTime);
+    console.log('Time left: ', timeLeft);
+    console.log('Session expired');
     return null; // Session expired
   }
 
@@ -24,7 +28,6 @@ export async function getUserSession(req: NextApiRequest, res: NextApiResponse) 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getUserSession(req, res);
-
   if (!session || !session.user?.id) {
     return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
   }
