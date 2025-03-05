@@ -1,5 +1,5 @@
-import PageContainer from '@/components/layouts/PageContainer';
 import { Separator } from '@radix-ui/react-dropdown-menu';
+import PageContainer from '@/components/layouts/PageContainer';
 import { DashboardHeading } from '../../../components/DashboardHeading';
 
 const AccountProfilePage = () => {

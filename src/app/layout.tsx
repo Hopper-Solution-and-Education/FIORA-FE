@@ -14,7 +14,6 @@ import { GrowthBookAppProvider } from '@/components/providers/GrowthBookProvider
 import { ReduxProvider } from '@/components/providers/ReduxProvider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
-import growthbook from '@/lib/growthbook';
 import { swrOptions } from '@/lib/swrConfig';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -25,14 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   useEffect(() => {
-    console.log('====================================');
-    console.log(
-      process.env.NEXT_PUBLIC_GROWTHBOOK_API_HOST,
-      process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
-    );
-    console.log('====================================');
-
-    growthbook.init({ streaming: true });
+    // growthbook.init({ streaming: true });
   }, []);
 
   return (

@@ -1,6 +1,7 @@
+import { combineReducers } from '@reduxjs/toolkit';
 import taskSlice from '@/features/dashboard/module/kanban/slices';
 import landingSlices from '@/features/landing/slices';
-import { combineReducers } from '@reduxjs/toolkit';
+import expenseIncomeReducer from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
 import dialogSlices from './slices/dialog.slice';
 import settingSlices from './slices/setting.slice';
 import budgetSlice from '@/features/dashboard/module/budget-control/slices/budgetSlice';
@@ -11,6 +12,7 @@ const reducer = {
   landing: landingSlices,
   task: taskSlice,
   budget: budgetSlice,
+  expenseIncome: expenseIncomeReducer,
 };
 
 const rootReducer = combineReducers(reducer);

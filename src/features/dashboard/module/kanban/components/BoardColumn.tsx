@@ -4,12 +4,12 @@ import { CSS } from '@dnd-kit/utilities';
 import { cva } from 'class-variance-authority';
 import { GripVertical } from 'lucide-react';
 import { useMemo } from 'react';
-import { TaskCard } from './TaskCard';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import ColumnActions from './ColumnAction';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Task } from '../slices/types/kanbanTask.type';
+import ColumnActions from './ColumnAction';
+import { TaskCard } from './TaskCard';
 
 export interface Column {
   id: UniqueIdentifier;

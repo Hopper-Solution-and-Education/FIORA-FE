@@ -1,10 +1,10 @@
+import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { FormEvent, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import { resetPasswordSchema } from '@/shared/schemas/forgotPassword';
 import { generatedOtpForgotPassword } from '../../application/use-cases/emailUseCase';
 
@@ -19,7 +19,6 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
 
   const onSubmitForgotPassword = async () => {
     const otp = await generatedOtpForgotPassword(email);
-    console.log('🚀 ~ onSubmitForgotPassword ~ otp:', otp);
     setOtp(otp);
     setIsOtpSent(true);
   };
@@ -97,7 +96,6 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
               initialValues={{ newPassword: '', confirmPassword: '' }}
               validationSchema={resetPasswordSchemaObj}
               onSubmit={(values, { setSubmitting }) => {
-                console.log('Reset password with:', { email, ...values });
                 // Logic reset password (gọi API ở đây)
                 setSubmitting(false);
               }}

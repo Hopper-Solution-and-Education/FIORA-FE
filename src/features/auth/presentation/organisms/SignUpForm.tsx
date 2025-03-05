@@ -5,22 +5,20 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import AppleButton from '@/features/auth/presentation/common/AppleButton';
+import GoogleButton from '@/features/auth/presentation/common/GoogleButton';
+import MetaButton from '@/features/auth/presentation/common/MetaButton';
+import TermCondition from '@/features/auth/presentation/common/TermCondition';
+import { VerifyOTPForm } from '@/features/auth/presentation/organisms/VerifyForm';
 import { cn } from '@/lib/utils';
 import {
   validateConfirmPassword,
   validateEmail,
   validatePassword,
 } from '@/shared/validation/signUpValidation';
-import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
-import AppleButton from '../common/AppleButton';
-import GoogleButton from '../common/GoogleButton';
-import MetaButton from '../common/MetaButton';
-import TermCondition from '../common/TermCondition';
-import { VerifyOTPForm } from './VerifyForm';
 import { useRouter } from 'next/navigation';
-// import { Router, useRouter } from 'next/router';
+import { useState } from 'react';
 
 // Validation regex patterns
 
@@ -214,16 +212,6 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>)
                 </div>
               </>
             )}
-          </div>
-
-          <div className="relative hidden bg-muted md:block">
-            <Image
-              src="/placeholder.svg"
-              alt="Image"
-              layout="fill"
-              objectFit="cover"
-              className="absolute inset-0 dark:brightness-[0.2] dark:grayscale"
-            />
           </div>
         </CardContent>
       </Card>

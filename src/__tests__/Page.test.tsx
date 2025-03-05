@@ -1,8 +1,8 @@
+import { screen } from '@testing-library/react';
 import Page from '@/app/dashboard/product/page';
 import AccountPage from '@/app/dashboard/profile/page';
 import { renderWithProviders } from '@/lib/test-utils';
 import '@testing-library/jest-dom';
-import { screen } from '@testing-library/react';
 
 describe('Page', () => {
   // testing with client components
