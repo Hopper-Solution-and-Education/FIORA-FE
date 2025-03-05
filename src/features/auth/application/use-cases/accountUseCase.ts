@@ -1,4 +1,4 @@
-import { Account, AccountType, Currency } from '@prisma/client';
+import { Account, AccountType, Currency, Prisma } from '@prisma/client';
 import { IAccountRepository } from '../../domain/repositories/accountRepository.interface';
 import { Decimal } from '@prisma/client/runtime/library';
 import { accountRepository } from '../../infrastructure/repositories/accountRepository';
@@ -12,7 +12,7 @@ const descriptions = {
     'Đây là tài khoản dùng để ghi nhận các khoản tiền bạn cho người khác vay, chẳng hạn như bạn bè, gia đình, hoặc đối tác kinh doanh. Nó theo dõi số tiền người khác nợ bạn.',
   ['Saving']:
     'Tài khoản này dành riêng cho việc tích lũy tiền tiết kiệm và theo dõi lãi suất phát sinh từ số tiền đó. Nó không dùng cho giao dịch hàng ngày mà tập trung vào mục tiêu dài hạn như tiết kiệm mua nhà, xe, hoặc dự phòng',
-  ['Investment']:
+  ['CreditCard']:
     'Đây là loại tài khoản đại diện cho thẻ tín dụng, dùng để chi tiêu hàng ngày hoặc chuyển khoản nội bộ (giữa các tài khoản cùng hệ thống). Nó cho phép bạn "vay trước" một khoản tiền từ hạn mức tín dụng do bạn tự thiết lập.',
 };
 
@@ -22,9 +22,10 @@ export class AccountUseCase {
   async create(params: {
     userId: string;
     name: string;
-    type: AccountType;
+    type: 'Payment' | 'Debt' | 'Lending' | 'Saving' | 'CreditCard';
     currency: Currency;
     balance: number;
+    icon: string;
     parentId?: string;
     limit?: number; // For Credit Card only
   }): Promise<any> {
@@ -34,24 +35,31 @@ export class AccountUseCase {
       currency = 'VND',
       balance = 0,
       limit,
+      icon,
       parentId,
       userId,
     } = params;
 
-    if (parentId) {
-      await this.validateParentAccount(parentId, type);
+    const accountFound = await this.accountRepository.findByCondition({
+      type,
+      parentId: null,
+      userId,
+    });
+
+    if (accountFound) {
+      // await this.validateParentAccount(parentId.pa, type);
       const subAaccount = await this.accountRepository.create({
         type,
         name,
         description: descriptions[type as keyof typeof descriptions],
-        icon: 'icon',
+        icon: icon,
         userId,
         balance,
         currency,
         limit: type === AccountType.CreditCard ? limit : new Decimal(0),
-        parentId: parentId || null,
+        parentId: accountFound.id,
       });
-      await this.updateParentBalance(parentId);
+      await this.updateParentBalance(accountFound.id);
 
       return subAaccount;
     } else {
@@ -59,7 +67,7 @@ export class AccountUseCase {
         type,
         name,
         description: descriptions[type as keyof typeof descriptions],
-        icon: 'icon',
+        icon: icon,
         userId,
         balance,
         currency,
@@ -103,8 +111,44 @@ export class AccountUseCase {
     return this.accountRepository.findById(id);
   }
 
+  async findByCondition(where: Prisma.AccountWhereInput) {
+    return this.accountRepository.findMany(where, { select: { balance: true } });
+  }
+
   async findAll(): Promise<Account[] | []> {
     return this.accountRepository.findAll();
+  }
+
+  async isOnlyMasterAccount(id: string, type: AccountType): Promise<boolean> {
+    const masterAccount = await this.accountRepository.findByCondition({
+      userId: id,
+      type,
+    });
+
+    return masterAccount ? true : false;
+  }
+
+  async findAllAccountByUserId(userId: string): Promise<Account[] | []> {
+    return this.accountRepository.findAllAccountByUserId(userId);
+  }
+
+  async getAllParentAccount(userId: string): Promise<Account[] | []> {
+    return this.accountRepository.findManyWithCondition(
+      {
+        AND: {
+          userId,
+          parentId: null,
+        },
+      },
+      {
+        id: true,
+        name: true,
+        type: true,
+        balance: true,
+        limit: true,
+        parentId: true,
+      },
+    );
   }
 }
 

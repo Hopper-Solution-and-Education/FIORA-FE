@@ -67,10 +67,64 @@ export class AccountRepository implements IAccountRepository {
 
     return prisma.account.findMany({
       where,
+      // skip: paginate.skip,
+      // take: paginate.take,
+      // ...(select ? { select } : {}),
+      // ...(include ? { include } : {}),
+    });
+  }
+
+  async findByCondition(where: Prisma.AccountWhereInput): Promise<Account | null> {
+    return prisma.account.findFirst({ where });
+  }
+
+  async findAllAccountByUserId(userId: string): Promise<any> {
+    return prisma.account.groupBy({
+      by: ['type'],
+      where: {
+        AND: {
+          userId: '99b4ca81-5348-4058-a66a-245f720115fa',
+          parentId: null,
+        },
+      },
+      _sum: {
+        balance: true,
+      },
+    });
+  }
+
+  async findManyWithConditions(
+    where: Prisma.AccountWhereInput,
+    options: SelectOptions,
+    pagination?: Pagination,
+  ): Promise<Account[]> {
+    const paginate = {} as { skip?: number; take?: number };
+    if (pagination) {
+      const { page, size } = pagination;
+      const skip = (page - 1) * size;
+      const take = size;
+      paginate.skip = skip;
+      paginate.take = take;
+    }
+
+    const { include, select } = options;
+
+    return prisma.account.findMany({
+      where,
       skip: paginate.skip,
       take: paginate.take,
       ...(select ? { select } : {}),
       ...(include ? { include } : {}),
+    });
+  }
+
+  async findManyWithCondition(
+    where: Prisma.AccountWhereInput,
+    select?: Prisma.AccountSelect,
+  ): Promise<Account[] | []> {
+    return prisma.account.findMany({
+      where,
+      select,
     });
   }
 }

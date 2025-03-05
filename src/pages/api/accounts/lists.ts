@@ -35,7 +35,9 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const accounts = await AccountUseCaseInstance.findAll();
+    const accounts = await AccountUseCaseInstance.getAllParentAccount(
+      '99b4ca81-5348-4058-a66a-245f720115fa',
+    );
     res.status(200).json({ accounts });
   } catch (error: any) {
     res.status(error.status).json({ error: error.message });
