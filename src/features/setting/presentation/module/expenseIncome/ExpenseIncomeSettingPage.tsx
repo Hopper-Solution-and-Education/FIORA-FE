@@ -1,10 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { mutate } from 'swr';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import LucieIcon from '@/features/setting/presentation/module/expenseIncome/molecules/LucieIcon';
 import {
   setCategories,
@@ -19,6 +24,8 @@ import {
 import { useCustomSWR } from '@/lib/swrConfig';
 import { Response } from '@/shared/types/Common.types';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { useEffect, useState } from 'react';
+import { mutate } from 'swr';
 import {
   createCategory,
   deleteCategory,
@@ -29,6 +36,8 @@ import MergeDialog from './molecules/MergeDialog';
 import CategoryTable from './organisms/CategoryTable';
 
 export default function ExpenseIncomeSettingPage() {
+  const [selectedMainCategory, setSelectedMainCategory] = useState<Category | null>(null);
+  const [isDetailDialogOpen, setDetailDialogOpen] = useState(false);
   const dispatch = useAppDispatch();
   const { categories, selectedCategory, dialogOpen, deleteConfirmOpen } = useAppSelector(
     (state) => state.expenseIncome,
@@ -79,7 +88,10 @@ export default function ExpenseIncomeSettingPage() {
     subCategories: [],
   };
 
-  const [selectedMainCategory, setSelectedMainCategory] = useState<Category | null>(null);
+  const handleDisplayDetailCategoryDialog = (category: Category) => {
+    setSelectedMainCategory(category);
+    setDetailDialogOpen(true);
+  };
 
   if (swrLoading || categories.isLoading) return <div>Loading...</div>;
   if (swrError) return <div>Error: {swrError.message}</div>;
@@ -107,7 +119,7 @@ export default function ExpenseIncomeSettingPage() {
                   <CardContent className="flex justify-between items-center">
                     <Button
                       variant="outline"
-                      onClick={() => dispatch(setSelectedCategory(category))}
+                      onClick={() => handleDisplayDetailCategoryDialog(category)}
                     >
                       Adjust
                       <Icons.pencil className="ml-2" />
@@ -115,9 +127,9 @@ export default function ExpenseIncomeSettingPage() {
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => setSelectedMainCategory(category)}
+                      onClick={() => dispatch(setDeleteConfirmOpen(true))}
                     >
-                      <Icons.eye />
+                      <Icons.trash />
                     </Button>
                   </CardContent>
                 </Card>
@@ -129,7 +141,6 @@ export default function ExpenseIncomeSettingPage() {
       {/* EXPENSE SETTING */}
       <div>
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Expense Categories</h2>
-        {/* Show List of Main Expense Categories */}
         <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           {categories.data?.map(
             (category: Category) =>
@@ -147,7 +158,7 @@ export default function ExpenseIncomeSettingPage() {
                   <CardContent className="flex justify-between items-center">
                     <Button
                       variant="outline"
-                      onClick={() => dispatch(setSelectedCategory(category))}
+                      onClick={() => handleDisplayDetailCategoryDialog(category)}
                     >
                       Adjust
                       <Icons.pencil className="ml-2" />
@@ -155,9 +166,9 @@ export default function ExpenseIncomeSettingPage() {
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => setSelectedMainCategory(category)}
+                      onClick={() => dispatch(setDeleteConfirmOpen(true))}
                     >
-                      <Icons.eye />
+                      <Icons.trash />
                     </Button>
                   </CardContent>
                 </Card>
@@ -166,12 +177,14 @@ export default function ExpenseIncomeSettingPage() {
         </div>
       </div>
 
-      {/* Subcategory Table */}
-      {selectedMainCategory && (
-        <div className="mt-4">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">
-            Subcategories of {selectedMainCategory.name}
-          </h3>
+      {/* ShadCN Dialog for displaying the category table */}
+      <Dialog open={isDetailDialogOpen} onOpenChange={setDetailDialogOpen}>
+        <DialogContent>
+          <DialogTitle>Subcategories of {selectedMainCategory?.name}</DialogTitle>
+          <DialogDescription>
+            Below is a table of subcategories related to the selected category.
+          </DialogDescription>
+
           <CategoryTable
             categories={categories.data || []}
             type={CategoryTypeEnum.EXPENSE}
@@ -180,8 +193,14 @@ export default function ExpenseIncomeSettingPage() {
             setDialogOpen={(open) => dispatch(setDialogOpen(open))}
             setSelectedMainCategory={(cat) => setSelectedMainCategory(cat)} // Pass this to handle subcategories
           />
-        </div>
-      )}
+
+          <div className="mt-4 flex justify-end">
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Button
         onClick={() => dispatch(setDialogOpen(true))}
@@ -196,7 +215,7 @@ export default function ExpenseIncomeSettingPage() {
         selectedCategory={selectedCategory || undefined}
         setSelectedCategory={(cat) => dispatch(setSelectedCategory(cat))}
         newCategory={newCategory}
-        setNewCategory={() => {}} // Handled in Redux
+        setNewCategory={() => {}}
         handleCreateOrUpdateCategory={handleCreateOrUpdateCategory}
       />
 
