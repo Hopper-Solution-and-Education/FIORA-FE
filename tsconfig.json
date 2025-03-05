@@ -28,8 +28,9 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/(auth)/auth/sign-in/forgot-password",
-    "commitlint.config.ts"
+    "src/app/(client)/auth/sign-in/forgot-password",
+    "commitlint.config.ts",
+    "next-auth.d.ts"
   ],
   "exclude": ["node_modules"],
   "experimentalDecorators": true,

@@ -1,10 +1,9 @@
-import KBar from '@/components/kbar';
+import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import AppSidebar from '@/components/layouts/AppSidebar';
 import Header from '@/components/layouts/DashboardHeader';
 import SessionGuard from '@/components/layouts/SessionGuard';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import type { Metadata } from 'next';
-import { cookies } from 'next/headers';
 
 export const metadata: Metadata = {
   title: 'Fiora Dashboard',
@@ -18,17 +17,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <SessionGuard>
-      <KBar>
-        <SidebarProvider defaultOpen={defaultOpen}>
-          <AppSidebar />
-          <SidebarInset>
-            <Header />
-            {/* page main content */}
-            {children}
-            {/* page main content ends */}
-          </SidebarInset>
-        </SidebarProvider>
-      </KBar>
+      <SidebarProvider defaultOpen={defaultOpen}>
+        <AppSidebar />
+        <SidebarInset>
+          <Header />
+          {/* page main content */}
+          {children}
+          {/* page main content ends */}
+        </SidebarInset>
+      </SidebarProvider>
     </SessionGuard>
   );
 }
