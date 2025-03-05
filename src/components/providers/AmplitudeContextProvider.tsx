@@ -29,8 +29,6 @@ const AmplitudeProvider: React.FC<AmplitudeProviderProps> = ({ children }) => {
         sessions: true,
       },
     });
-
-    console.log('Amplitude initialized.');
   }, []);
 
   const trackEvent = (eventName: string, eventProperties?: Record<string, any>) => {

@@ -1,12 +1,13 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import expenseIncomeServices from '@/features/setting/services/expenseIncomeServices';
+import { Response } from '@/shared/types/Common.types';
 import { Category } from '../types';
 
 export const fetchCategories = createAsyncThunk(
   'expenseIncome/fetchCategories',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await expenseIncomeServices.getCategories();
+      const response: Response<Category[]> = await expenseIncomeServices.getCategories();
       return response;
     } catch (error: any) {
       return rejectWithValue({

@@ -24,13 +24,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   useEffect(() => {
-    console.log('====================================');
-    console.log(
-      process.env.NEXT_PUBLIC_GROWTHBOOK_API_HOST,
-      process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
-    );
-    console.log('====================================');
-
     // growthbook.init({ streaming: true });
   }, []);
 

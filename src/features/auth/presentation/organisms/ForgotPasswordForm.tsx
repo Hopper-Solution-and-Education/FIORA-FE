@@ -19,7 +19,6 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
 
   const onSubmitForgotPassword = async () => {
     const otp = await generatedOtpForgotPassword(email);
-    console.log('🚀 ~ onSubmitForgotPassword ~ otp:', otp);
     setOtp(otp);
     setIsOtpSent(true);
   };
@@ -97,7 +96,6 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
               initialValues={{ newPassword: '', confirmPassword: '' }}
               validationSchema={resetPasswordSchemaObj}
               onSubmit={(values, { setSubmitting }) => {
-                console.log('Reset password with:', { email, ...values });
                 // Logic reset password (gọi API ở đây)
                 setSubmitting(false);
               }}

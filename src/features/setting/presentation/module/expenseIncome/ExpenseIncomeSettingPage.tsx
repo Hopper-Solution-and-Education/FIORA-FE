@@ -14,6 +14,7 @@ import {
   Category,
 } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
 import { useCustomSWR } from '@/lib/swrConfig';
+import { Response } from '@/shared/types/Common.types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import {
   createCategory,
@@ -35,7 +36,7 @@ export default function ExpenseIncomeSettingPage() {
     data: swrData,
     error: swrError,
     isLoading: swrLoading,
-  } = useCustomSWR<Category[]>('/api/categories/expense-income');
+  } = useCustomSWR<Response<Category[]>>('/api/categories/expense-income');
 
   // Sync SWR data with Redux
   useEffect(() => {
@@ -82,10 +83,10 @@ export default function ExpenseIncomeSettingPage() {
   return (
     <section>
       <Button onClick={() => dispatch(setDialogOpen(true))}>Add New Category</Button>
-      {['EXPENSE', 'INCOME'].map((type) => (
+      {[CategoryTypeEnum.EXPENSE, CategoryTypeEnum.INCOME].map((type) => (
         <div key={type} className="mb-6">
           <h2 className="text-xl font-semibold mb-2">
-            {type === 'EXPENSE' ? 'Expense Categories' : 'Income Categories'}
+            {type === CategoryTypeEnum.EXPENSE ? 'Expense Categories' : 'Income Categories'}
           </h2>
           <CategoryTable
             categories={categories.data || []}

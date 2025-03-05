@@ -26,6 +26,10 @@ const CategoryTable: React.FC<CategoryTableProps> = ({
   setDeleteConfirmOpen,
   setDialogOpen,
 }) => {
+  if (!categories || categories.length === 0) {
+    return <div>No data</div>;
+  }
+
   return (
     <Table>
       <TableHeader>

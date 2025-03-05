@@ -55,7 +55,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const categories = await categoryUseCase.getCategories(userId);
-    return res.status(RESPONSE_CODE.OK).json({ categories });
+    return res.status(RESPONSE_CODE.OK).json({
+      message: 'Lấy danh sách danh mục thành công',
+      data: categories,
+    });
   } catch (error: any) {
     res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }

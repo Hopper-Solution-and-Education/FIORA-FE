@@ -27,9 +27,6 @@ const LandingPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       const response = await httpClient.get('/api/banner/media');
-      console.log('====================================');
-      console.log(response);
-      console.log('====================================');
     };
 
     fetchData();
