@@ -31,6 +31,7 @@ import {
   UserPen,
   UserX2Icon,
   X,
+  Wallet,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -81,6 +82,7 @@ export const Icons = {
       ></path>
     </svg>
   ),
+  Wallet,
   twitter: Twitter,
   check: Check,
 };
