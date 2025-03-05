@@ -17,12 +17,3 @@ export interface BudgetData {
   trueExpense: number[];
   trueIncome: number[];
 }
-
-export interface BudgetActions {
-  setTotalExpense: (value: number) => void;
-  setTotalIncome: (value: number) => void;
-  handleEdit: (key: string | number, value: string, type?: BudgetType) => void;
-  toggleEdit: (key: string | number) => void;
-  handleBlur: (key: string | number) => void;
-  generateBudget: () => void;
-}

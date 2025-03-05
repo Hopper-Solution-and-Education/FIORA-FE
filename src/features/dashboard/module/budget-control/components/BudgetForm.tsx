@@ -6,20 +6,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
-import { BudgetActions, BudgetData } from '../types/budget';
+import { useAppDispatch } from '@/store';
+import { generateBudget, setTotalExpense, setTotalIncome } from '../slices/budgetSlice';
+import { BudgetData } from '../types/budget';
 
 interface BudgetFormProps {
   data: Pick<BudgetData, 'totalExpense' | 'totalIncome'>;
-  actions: Pick<BudgetActions, 'setTotalExpense' | 'setTotalIncome' | 'generateBudget'>;
 }
 
-export function BudgetForm({ data, actions }: BudgetFormProps) {
+export function BudgetForm({ data }: BudgetFormProps) {
   const { totalExpense, totalIncome } = data;
-  const { setTotalExpense, setTotalIncome, generateBudget } = actions;
+
+  const dispatch = useAppDispatch();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    generateBudget();
+    dispatch(generateBudget());
   };
 
   return (
@@ -36,7 +38,7 @@ export function BudgetForm({ data, actions }: BudgetFormProps) {
                 type="number"
                 placeholder="Enter total expense"
                 value={totalExpense || ''}
-                onChange={(e) => setTotalExpense(Number(e.target.value))}
+                onChange={(e) => dispatch(setTotalExpense(Number(e.target.value)))}
               />
             </TableCell>
           </TableRow>
@@ -50,7 +52,7 @@ export function BudgetForm({ data, actions }: BudgetFormProps) {
                 type="number"
                 placeholder="Enter total income"
                 value={totalIncome || ''}
-                onChange={(e) => setTotalIncome(Number(e.target.value))}
+                onChange={(e) => dispatch(setTotalIncome(Number(e.target.value)))}
               />
             </TableCell>
           </TableRow>

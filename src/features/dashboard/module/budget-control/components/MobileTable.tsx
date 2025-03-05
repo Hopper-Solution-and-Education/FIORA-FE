@@ -8,20 +8,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useAppDispatch } from '@/store';
 import { MONTHS } from '../hooks/useBudgetControl';
-import { BudgetActions, BudgetData } from '../types/budget';
+import { handleBlur, handleEdit, toggleEdit } from '../slices/budgetSlice';
+import { BudgetData } from '../types/budget';
 import { EditableCell } from './EditableCell';
 
 interface MobileTableProps {
   data: Pick<BudgetData, 'editableValues' | 'trueExpense'>;
-  actions: Pick<BudgetActions, 'handleEdit' | 'toggleEdit' | 'handleBlur'>;
   editing: { [key: string]: boolean };
   monthlyAmount: number;
 }
 
-export function MobileTable({ data, actions, editing, monthlyAmount }: MobileTableProps) {
+export function MobileTable({ data, editing, monthlyAmount }: MobileTableProps) {
   const { editableValues, trueExpense } = data;
-  const { handleEdit, toggleEdit, handleBlur } = actions;
+  const dispatch = useAppDispatch();
 
   return (
     <Table className="w-full">
@@ -38,17 +39,17 @@ export function MobileTable({ data, actions, editing, monthlyAmount }: MobileTab
             <TableCell className="text-center">{month}</TableCell>
             <EditableCell
               value={editableValues[month] ?? monthlyAmount}
-              onEdit={(value) => handleEdit(month, value)}
+              onEdit={(value) => dispatch(handleEdit({ key: month, value, type: 'expense' }))}
               isEditing={!!editing[`mobile-expense-${month}`]}
-              onToggleEdit={() => toggleEdit(`mobile-expense-${month}`)}
-              onBlur={() => handleBlur(`mobile-expense-${month}`)}
+              onToggleEdit={() => dispatch(toggleEdit(`mobile-expense-${month}`))}
+              onBlur={() => dispatch(handleBlur(`mobile-expense-${month}`))}
             />
             <EditableCell
               value={trueExpense[index]}
-              onEdit={(value) => handleEdit(index, value)}
+              onEdit={(value) => dispatch(handleEdit({ key: index, value, type: 'expense' }))}
               isEditing={!!editing[`mobile-true-expense-${index}`]}
-              onToggleEdit={() => toggleEdit(`mobile-true-expense-${index}`)}
-              onBlur={() => handleBlur(`mobile-true-expense-${index}`)}
+              onToggleEdit={() => dispatch(toggleEdit(`mobile-true-expense-${index}`))}
+              onBlur={() => dispatch(handleBlur(`mobile-true-expense-${index}`))}
             />
           </TableRow>
         ))}

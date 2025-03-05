@@ -29,7 +29,7 @@ export const navItems: NavItem[] = [
     items: [
       {
         title: 'Budget Planning',
-        url: '/dashboard/budget-planning',
+        url: '/dashboard/budget-control',
         icon: 'userPen',
         shortcut: ['m', 'm'],
       },

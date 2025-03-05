@@ -8,35 +8,30 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useAppDispatch } from '@/store';
 import { MONTHS } from '../hooks/useBudgetControl';
-import { BudgetActions, BudgetData } from '../types/budget';
+import { handleBlur, handleEdit, toggleEdit } from '../slices/budgetSlice';
+import { BudgetData } from '../types/budget';
 import { EditableCell } from './EditableCell';
 
 interface MonthlyTableProps {
   data: Pick<BudgetData, 'editableValues' | 'plannedIncome' | 'trueExpense' | 'trueIncome'>;
-  actions: Pick<BudgetActions, 'handleEdit' | 'toggleEdit' | 'handleBlur'>;
   editing: { [key: string]: boolean };
   monthlyAmount: number;
   monthlyIncome: number;
 }
 
-export function MonthlyTable({
-  data,
-  actions,
-  editing,
-  monthlyAmount,
-  monthlyIncome,
-}: MonthlyTableProps) {
+export function MonthlyTable({ data, editing, monthlyAmount, monthlyIncome }: MonthlyTableProps) {
   const { editableValues, plannedIncome, trueExpense, trueIncome } = data;
-  const { handleEdit, toggleEdit, handleBlur } = actions;
+  const dispatch = useAppDispatch();
 
   return (
     <Table className="w-full">
       <TableHeader>
         <TableRow>
-          <TableCell>Months</TableCell>
+          <TableCell></TableCell>
           {MONTHS.map((month, index) => (
-            <TableHead key={index} className="text-center">
+            <TableHead key={index} className="text-center font-bold">
               {month}
             </TableHead>
           ))}
@@ -45,60 +40,60 @@ export function MonthlyTable({
       <TableBody>
         {/* KH Chi (Planned Expense) */}
         <TableRow>
-          <TableCell>KH Chi</TableCell>
-          {MONTHS.map((month, index) => (
+          <TableCell className="font-bold">KH Chi</TableCell>
+          {MONTHS.map((month) => (
             <EditableCell
               key={`expense-${month}`}
               value={editableValues[month] ?? monthlyAmount}
-              onEdit={(value) => handleEdit(month, value)}
+              onEdit={(value) => dispatch(handleEdit({ key: month, value, type: 'expense' }))}
               isEditing={!!editing[`expense-${month}`]}
-              onToggleEdit={() => toggleEdit(`expense-${month}`)}
-              onBlur={() => handleBlur(`expense-${month}`)}
+              onToggleEdit={() => dispatch(toggleEdit(`expense-${month}`))}
+              onBlur={() => dispatch(handleBlur(`expense-${month}`))}
             />
           ))}
         </TableRow>
 
         {/* Thực chi (Actual Expense) */}
         <TableRow>
-          <TableCell>Thực chi</TableCell>
+          <TableCell className="font-bold">Thực chi</TableCell>
           {trueExpense.map((value, index) => (
             <EditableCell
               key={`true-expense-${index}`}
               value={value}
-              onEdit={(value) => handleEdit(index, value)}
+              onEdit={(value) => dispatch(handleEdit({ key: index, value, type: 'expense' }))}
               isEditing={!!editing[`true-expense-${index}`]}
-              onToggleEdit={() => toggleEdit(`true-expense-${index}`)}
-              onBlur={() => handleBlur(`true-expense-${index}`)}
+              onToggleEdit={() => dispatch(toggleEdit(`true-expense-${index}`))}
+              onBlur={() => dispatch(handleBlur(`true-expense-${index}`))}
             />
           ))}
         </TableRow>
 
         {/* KH Thu (Planned Income) */}
         <TableRow>
-          <TableCell>KH Thu</TableCell>
-          {MONTHS.map((month, index) => (
+          <TableCell className="font-bold">KH Thu</TableCell>
+          {MONTHS.map((month) => (
             <EditableCell
               key={`income-${month}`}
               value={plannedIncome[month] ?? monthlyIncome}
-              onEdit={(value) => handleEdit(month, value, 'income')}
+              onEdit={(value) => dispatch(handleEdit({ key: month, value, type: 'income' }))}
               isEditing={!!editing[`income-${month}`]}
-              onToggleEdit={() => toggleEdit(`income-${month}`)}
-              onBlur={() => handleBlur(`income-${month}`)}
+              onToggleEdit={() => dispatch(toggleEdit(`income-${month}`))}
+              onBlur={() => dispatch(handleBlur(`income-${month}`))}
             />
           ))}
         </TableRow>
 
         {/* Thực Thu (Actual Income) */}
         <TableRow>
-          <TableCell>Thực Thu</TableCell>
+          <TableCell className="font-bold">Thực Thu</TableCell>
           {trueIncome.map((value, index) => (
             <EditableCell
               key={`true-income-${index}`}
               value={value}
-              onEdit={(value) => handleEdit(index, value, 'income')}
+              onEdit={(value) => dispatch(handleEdit({ key: index, value, type: 'income' }))}
               isEditing={!!editing[`true-income-${index}`]}
-              onToggleEdit={() => toggleEdit(`true-income-${index}`)}
-              onBlur={() => handleBlur(`true-income-${index}`)}
+              onToggleEdit={() => dispatch(toggleEdit(`true-income-${index}`))}
+              onBlur={() => dispatch(handleBlur(`true-income-${index}`))}
             />
           ))}
         </TableRow>
