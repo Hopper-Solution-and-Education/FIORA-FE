@@ -17,7 +17,6 @@ import { Toaster } from '@/components/ui/sonner';
 import { swrOptions } from '@/lib/swrConfig';
 
 const inter = Inter({ subsets: ['latin'] });
-
 export default function RootLayout({
   children,
 }: Readonly<{
