@@ -6,5 +6,4 @@ export interface IUserRepository {
   verifyPassword(email: string, password: string): Promise<User | null>;
   verifyUser(email: string): Promise<User>;
   checkIsExistedUserById(id: string): Promise<User | null>;
-  updatePassword(email: string, newPassword: string): Promise<User>;
 }

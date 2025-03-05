@@ -1,4 +1,5 @@
 import { userRepository as UserRepository } from '@/features/auth/infrastructure/repositories/userRepository';
+import bcrypt from 'bcrypt';
 
 export class ReNewPasswordUseCase {
   constructor(private userRepository: typeof UserRepository) {}
@@ -6,6 +7,7 @@ export class ReNewPasswordUseCase {
   async resetPassword(email: string, newPassword: string) {
     try {
       // Gọi hàm updatePassword để cập nhật mật khẩu
+      newPassword = await bcrypt.hash(newPassword, 10);
       const updatedUser = await this.userRepository.updatePassword(email, newPassword);
       return updatedUser;
     } catch (error) {

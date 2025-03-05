@@ -1,5 +1,6 @@
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
 import { UserUSeCaseInstance } from '@/features/auth/application/use-cases/userUseCase';
+import { InternalServerError } from '@/lib/errors';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -37,8 +38,8 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
 
   const userCreationRes = await UserUSeCaseInstance.execute(email, password);
 
-  if (userCreationRes === null) {
-    return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: 'Đăng ký thất bại' });
+  if (!userCreationRes) {
+    throw new InternalServerError('Không thể tạo tài khoản');
   }
 
   // create new Account

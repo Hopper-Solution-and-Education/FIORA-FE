@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       message: 'Password reset successfully',
       user: updatedUser,
     });
-  } catch (error) {
+  } catch (error: any) {
     res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: 'Failed to reset password' });
   }
 }

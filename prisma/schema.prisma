@@ -18,10 +18,10 @@ model User {
   image          String?
   authentication UserAuthentication[]
   sessions       Session[]
-  categories     Category[]           @relation("UserCategories") // Added this field
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
   accounts       Account[]            @relation("UserAccounts")
+  categories     Category[]           @relation("UserCategories")
 }
 
 model Account {
@@ -44,8 +44,8 @@ model Account {
 }
 
 model UserAuthentication {
-  id                String   @id @default(uuid()) @db.Uuid
-  userId            String   @unique @db.Uuid
+  id                String  @id @default(uuid()) @db.Uuid
+  userId            String  @unique @db.Uuid
   type              String
   provider          String
   providerAccountId String
@@ -56,8 +56,10 @@ model UserAuthentication {
   scope             String?
   id_token          String?
   session_state     String?
+
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+
   user              User     @relation(fields: [userId], references: [id])
 
   @@unique([provider, providerAccountId])
@@ -94,7 +96,6 @@ enum SectionType {
   PARTNER_LOGO
 }
 
-
 model Media {
   id            String    @id @default(uuid()) @db.Uuid
   media_type    MediaType
@@ -102,40 +103,8 @@ model Media {
   embed_code    String? // Dành cho video nhúng (YouTube, Vimeo,...)
   description   String?
   uploaded_by   String?
-  section_id    Int?
-  section       Section?  @relation(fields: [section_id], references: [section_id])
   uploaded_date DateTime  @default(now())
   banners       Banner[]
-}
-
-model Section {
-  section_id   Int         @id @default(autoincrement())
-  section_type SectionType
-  name         String
-  order        Int
-  created_at   DateTime    @default(now())
-  updated_at   DateTime    @updatedAt
-  medias       Media[]
-}
-
-enum CategoryType {
-  Expense
-  Income
-}
-
-model Category {
-  id            String       @id @default(uuid()) @db.Uuid
-  userId        String
-  type          CategoryType
-  icon          String
-  name          String       @db.VarChar(50)
-  description   String?      @db.VarChar(1000)
-  parentId      String?      @db.Uuid
-  parent        Category?    @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
-  subCategories Category[]   @relation("SubCategories")
-  user          User         @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
 }
 
 model Banner {
@@ -147,6 +116,27 @@ model Banner {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }
+
+enum CategoryType {
+  Expense
+  Income
+}
+
+model Category {
+  id            String        @id @default(uuid()) @db.Uuid
+  userId        String        @db.Uuid
+  type          CategoryType
+  icon          String
+  name          String        @db.VarChar(50)
+  description   String?       @db.VarChar(1000)
+  parentId      String?       @db.Uuid
+  parent        Category?     @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
+  subCategories Category[]    @relation("SubCategories")
+  user          User          @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
 
 enum AccountType {
   Payment

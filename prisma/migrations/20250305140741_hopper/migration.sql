@@ -92,37 +92,9 @@ CREATE TABLE "Media" (
     "embed_code" TEXT,
     "description" TEXT,
     "uploaded_by" TEXT,
-    "section_id" INTEGER,
     "uploaded_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Media_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Section" (
-    "section_id" SERIAL NOT NULL,
-    "section_type" "SectionType" NOT NULL,
-    "name" TEXT NOT NULL,
-    "order" INTEGER NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Section_pkey" PRIMARY KEY ("section_id")
-);
-
--- CreateTable
-CREATE TABLE "Category" (
-    "id" UUID NOT NULL,
-    "userId" TEXT NOT NULL,
-    "type" "CategoryType" NOT NULL,
-    "icon" TEXT NOT NULL,
-    "name" VARCHAR(50) NOT NULL,
-    "description" VARCHAR(1000),
-    "parentId" UUID,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -135,6 +107,21 @@ CREATE TABLE "Banner" (
     "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Banner_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Category" (
+    "id" UUID NOT NULL,
+    "userId" UUID NOT NULL,
+    "type" "CategoryType" NOT NULL,
+    "icon" TEXT NOT NULL,
+    "name" VARCHAR(50) NOT NULL,
+    "description" VARCHAR(1000),
+    "parentId" UUID,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -168,13 +155,10 @@ ALTER TABLE "UserAuthentication" ADD CONSTRAINT "UserAuthentication_userId_fkey"
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Media" ADD CONSTRAINT "Media_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("section_id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Banner" ADD CONSTRAINT "Banner_media_id_fkey" FOREIGN KEY ("media_id") REFERENCES "Media"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Category" ADD CONSTRAINT "Category_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Category" ADD CONSTRAINT "Category_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Banner" ADD CONSTRAINT "Banner_media_id_fkey" FOREIGN KEY ("media_id") REFERENCES "Media"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

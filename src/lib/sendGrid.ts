@@ -31,7 +31,7 @@ export const sendOtp = async (to: string, otp: string) => {
     await sgMail.send(msg);
     return otp;
   } catch (error) {
-    console.error('Failed to send email', error);
+    console.error(error);
     throw new InternalServerError('Failed to send email');
   }
 };
