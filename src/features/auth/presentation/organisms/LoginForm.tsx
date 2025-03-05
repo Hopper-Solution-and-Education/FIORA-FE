@@ -24,6 +24,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
         rememberMe,
         redirect: false,
       });
+      console.log(res);
       if (res?.ok) {
         router.push('/dashboard');
       } else {
@@ -137,7 +138,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
               </label>
 
               <div className="text-center text-sm">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link href="/auth/sign-up" className="underline underline-offset-4">
                   Sign up
                 </Link>
