@@ -1,18 +1,20 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { mutate } from 'swr';
+import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import LucieIcon from '@/features/setting/presentation/module/expenseIncome/molecules/LucieIcon';
 import {
-  setDialogOpen,
-  setDeleteConfirmOpen,
-  setSelectedCategory,
   setCategories,
+  setDeleteConfirmOpen,
+  setDialogOpen,
+  setSelectedCategory,
 } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
 import {
-  CategoryTypeEnum,
   Category,
+  CategoryTypeEnum,
 } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
 import { useCustomSWR } from '@/lib/swrConfig';
 import { Response } from '@/shared/types/Common.types';
@@ -77,126 +79,116 @@ export default function ExpenseIncomeSettingPage() {
     subCategories: [],
   };
 
+  const [selectedMainCategory, setSelectedMainCategory] = useState<Category | null>(null);
+
   if (swrLoading || categories.isLoading) return <div>Loading...</div>;
   if (swrError) return <div>Error: {swrError.message}</div>;
   if (categories.error) return <div>Error: {categories.error}</div>;
 
   return (
-    <section>
-      {/* I. EXPENSE SETTING */}
-      {/* SHOW LIST OF MAIN EXPENSES CATEGORIES */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$45,231.89</div>
-            <p className="text-xs text-muted-foreground">+20.1% from last month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Subscriptions</CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">+2350</div>
-            <p className="text-xs text-muted-foreground">+180.1% from last month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sales</CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <rect width="20" height="14" x="2" y="5" rx="2" />
-              <path d="M2 10h20" />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">+12,234</div>
-            <p className="text-xs text-muted-foreground">+19% from last month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Now</CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">+573</div>
-            <p className="text-xs text-muted-foreground">+201 since last hour</p>
-          </CardContent>
-        </Card>
+    <section className="space-y-6 p-4">
+      {/* INCOME SETTING */}
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Income Categories</h2>
+        <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+          {categories.data?.map(
+            (category: Category) =>
+              category.type === CategoryTypeEnum.INCOME && (
+                <Card
+                  key={category.id}
+                  className="rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300"
+                >
+                  <CardHeader className="flex flex-row items-center justify-between space-x-2 pb-3">
+                    <LucieIcon iconName={category.icon} />
+                    <CardTitle className="text-lg font-medium text-gray-800">
+                      {category.name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex justify-between items-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => dispatch(setSelectedCategory(category))}
+                    >
+                      Adjust
+                      <Icons.pencil className="ml-2" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setSelectedMainCategory(category)}
+                    >
+                      <Icons.eye />
+                    </Button>
+                  </CardContent>
+                </Card>
+              ),
+          )}
+        </div>
       </div>
 
-      {/* TABLE SHOW CHILDRENT OF MAIN EXPENSES CATEGORIES */}
+      {/* EXPENSE SETTING */}
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Expense Categories</h2>
+        {/* Show List of Main Expense Categories */}
+        <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+          {categories.data?.map(
+            (category: Category) =>
+              category.type === CategoryTypeEnum.EXPENSE && (
+                <Card
+                  key={category.id}
+                  className="rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300"
+                >
+                  <CardHeader className="flex flex-row items-center justify-between space-x-2 pb-3">
+                    <LucieIcon iconName={category.icon} />
+                    <CardTitle className="text-lg font-medium text-gray-800">
+                      {category.name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex justify-between items-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => dispatch(setSelectedCategory(category))}
+                    >
+                      Adjust
+                      <Icons.pencil className="ml-2" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setSelectedMainCategory(category)}
+                    >
+                      <Icons.eye />
+                    </Button>
+                  </CardContent>
+                </Card>
+              ),
+          )}
+        </div>
+      </div>
 
-      {/* II. INCOME SETTING */}
-      {/* SHOW LIST OF MAIN INCOME CATEGORIES */}
-
-      {/* TABLE SHOW CHILDRENT OF MAIN INCOME CATEGORIES */}
-
-      <Button onClick={() => dispatch(setDialogOpen(true))}>Add New Category</Button>
-      {[CategoryTypeEnum.EXPENSE, CategoryTypeEnum.INCOME].map((type) => (
-        <div key={type} className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">
-            {type === CategoryTypeEnum.EXPENSE ? 'Expense Categories' : 'Income Categories'}
-          </h2>
+      {/* Subcategory Table */}
+      {selectedMainCategory && (
+        <div className="mt-4">
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            Subcategories of {selectedMainCategory.name}
+          </h3>
           <CategoryTable
             categories={categories.data || []}
-            type={type}
+            type={CategoryTypeEnum.EXPENSE}
             setSelectedCategory={(cat) => dispatch(setSelectedCategory(cat))}
             setDeleteConfirmOpen={(open) => dispatch(setDeleteConfirmOpen(open))}
             setDialogOpen={(open) => dispatch(setDialogOpen(open))}
+            setSelectedMainCategory={(cat) => setSelectedMainCategory(cat)} // Pass this to handle subcategories
           />
         </div>
-      ))}
+      )}
+
+      <Button
+        onClick={() => dispatch(setDialogOpen(true))}
+        className="mt-6 bg-blue-600 text-white hover:bg-blue-700"
+      >
+        Add New Category
+      </Button>
 
       <MergeDialog
         dialogOpen={dialogOpen}

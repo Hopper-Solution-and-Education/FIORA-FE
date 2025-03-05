@@ -14,13 +14,10 @@ export async function getUserSession(req: NextApiRequest, res: NextApiResponse) 
     return null;
   }
 
-  const currentTime = Date.now();
+  const currentTime = Math.floor(Date.now() / 1000);
   const timeLeft = session.expiredTime - currentTime;
   if (timeLeft <= 0) {
-    console.log('Session expired: ', session.expiredTime, currentTime);
-    console.log('Time left: ', timeLeft);
-    console.log('Session expired');
-    return null; // Session expired
+    return null;
   }
 
   return session;

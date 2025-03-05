@@ -23,16 +23,17 @@ export function SessionTimeoutModal() {
   useEffect(() => {
     if (status === 'loading' || !session) return;
 
-    const expiresAt = session.expiredTime * 1000;
-    const now = Date.now();
+    const expiresAt = session.expiredTime;
+    const now = Math.floor(Date.now() / 1000);
     const timeLeft = expiresAt - now;
 
-    if (timeLeft <= 40000 && timeLeft > 0) {
+    if (timeLeft <= 40 && timeLeft > 0) {
       setIsVisible(true);
-    } else if (timeLeft > 40000) {
+    } else if (timeLeft > 40) {
+      const timeLeftMillisecond = (timeLeft - 40) * 1000; // Convert from second to millisecond
       const timeout = setTimeout(() => {
         setIsVisible(true);
-      }, timeLeft - 40000);
+      }, timeLeftMillisecond);
       return () => clearTimeout(timeout);
     } else {
       // Logout when session is expired
