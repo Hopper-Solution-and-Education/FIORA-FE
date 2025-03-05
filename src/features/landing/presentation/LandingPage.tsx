@@ -1,20 +1,16 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { useAppDispatch, useAppSelector } from '@/store';
 import { motion } from 'framer-motion';
-import { useCallback } from 'react';
-import { changeShowDialog } from '../slices';
+import { useEffect } from 'react';
+import { httpClient } from '@/lib/HttpClient';
 import OTS from './components/OTS';
 import { ScrollToTop } from './components/ScrollToTop';
-import SettingModal from './components/SettingModal';
 import { Banner } from './organisms/Banner';
 import { FioraSystem } from './organisms/FioraSystem';
 import KPSSection from './organisms/KPSSection';
 import { PartnerLogo } from './organisms/PartnerLogo';
 import { ReviewSection } from './organisms/ReviewSection';
 import VisionMission from './organisms/VisionMission';
-import useAmplitudeContext from '@/hooks/useAmplitudeContext';
 
 // Framer Motion Variants
 const fadeIn = {
@@ -28,18 +24,13 @@ const zoomIn = {
 };
 
 const LandingPage = () => {
-  const { isShowDialog } = useAppSelector((state) => state.landing);
-  const { trackEvent } = useAmplitudeContext();
-  const dispatch = useAppDispatch();
-  const handleShowDialog = useCallback(
-    (isShow: boolean) => {
-      trackEvent('Show Dialog Click', {
-        text: 'Show Dialog Click',
-      });
-      dispatch(changeShowDialog(isShow));
-    },
-    [isShowDialog],
-  );
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await httpClient.get('/api/banner/media');
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <>
@@ -114,8 +105,6 @@ const LandingPage = () => {
       >
         <OTS />
       </motion.div>
-      <Button onClick={() => handleShowDialog(!isShowDialog)}>Open Dialog</Button>
-      <SettingModal isOpen={isShowDialog} onClose={() => handleShowDialog(!isShowDialog)} />
     </>
   );
 };
