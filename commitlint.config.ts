@@ -20,6 +20,7 @@ const Configuration: UserConfig = {
         'ci', // Changes to CI configuration files and scripts
         'chore', // Other changes that don't modify src or test files
         'revert', // Reverts a previous commit
+        'merge', // Using for merge branch
       ],
     ],
     'scope-enum': [
