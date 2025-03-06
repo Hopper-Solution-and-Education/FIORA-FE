@@ -23,6 +23,10 @@ model User {
   accounts       Account[]            @relation("UserAccounts")
   Recommendation Recommendation[]
   categories     Category[]           @relation("UserCategories")
+  // BudgetPlan BudgetPlan[]
+  // Transaction Transaction[]
+
+  // Limit Limit[]
 }
 
 model Account {
@@ -39,9 +43,9 @@ model Account {
   parent      Account?    @relation("ChildAccounts", fields: [parentId], references: [id])
   children    Account[]   @relation("ChildAccounts")
   user        User        @relation("UserAccounts", fields: [userId], references: [id])
-
   @@index([userId]) // Index for faster queries on userId
   @@index([parentId]) // Index for faster queries on parentId
+  // Transaction Transaction[] // 
 }
 
 model UserAuthentication {
@@ -81,22 +85,14 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
+// Kien - Landing page - kiểu dữ liệu cho image
 enum MediaType {
   IMAGE
   VIDEO
   EMBEDDED
 }
 
-enum SectionType {
-  BANNER
-  VISION_MISSION
-  KPS
-  PARTNER_LOGO
-  IMAGE
-  VIDEO
-  EMBEDDED
-}
-
+// Kien - landing page - Section type cho image
 enum SectionType {
   BANNER
   VISION_MISSION
@@ -104,6 +100,7 @@ enum SectionType {
   PARTNER_LOGO
 }
 
+// Kien - Media giữ image ở landing page
 model Media {
   id            Int    @id @default(autoincrement())
   media_type    MediaType
@@ -127,6 +124,7 @@ model Section {
   medias        Media[]
 }
 
+// Kien - Home - Recomendation
 model Recommendation {
   id           String   @id @default(uuid()) // System generated UUID
   userId       String?  @unique @map("user_id") // Optional: if blank, applies to all users
@@ -156,6 +154,12 @@ model Category {
   user          User          @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+
+  // BudgetItem BudgetItem[]
+
+  // Transaction Transaction[]
+
+  // Limit Limit[]
 }
 
 
@@ -171,3 +175,99 @@ enum Currency {
   VND
   USD
 }
+
+
+
+
+
+
+
+
+
+
+
+
+// // Model budget planing - Kiên
+// model BudgetPlan {
+//   id         String    @id @default(uuid()) @db.Uuid
+//   userId     String    @db.Uuid
+//   name       String    @db.VarChar(100)  // Tên ngân sách (VD: "Kế hoạch chi tiêu tháng 3")
+//   description String?  @db.VarChar(1000)
+//   startDate  DateTime  // Ngày bắt đầu ngân sách
+//   endDate    DateTime  // Ngày kết thúc ngân sách
+//   totalBudget Decimal  @db.Decimal(13,2) // Tổng ngân sách được cấp phát
+//   status     BudgetStatus @default(Active) // Trạng thái (Active, Completed, Archived)
+//   createdAt  DateTime  @default(now())
+//   updatedAt  DateTime  @updatedAt
+//   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   items      BudgetItem[]  // Liên kết đến các mục chi tiêu của ngân sách
+
+//   @@index([userId])
+// }
+
+
+// enum BudgetStatus {
+//   Active       // Ngân sách đang được áp dụng
+//   Completed    // Ngân sách đã hoàn thành
+//   Archived     // Ngân sách đã được lưu trữ (không còn hiệu lực)
+//   OverBudget   // Ngân sách đã vượt quá hạn mức
+// }
+
+
+// model BudgetItem {
+//   id          String    @id @default(uuid()) @db.Uuid
+//   budgetPlanId String   @db.Uuid
+//   categoryId  String    @db.Uuid
+//   allocated   Decimal   @db.Decimal(13,2) // Ngân sách dự kiến
+//   actualSpent Decimal   @default(0) @db.Decimal(13,2) // Số tiền thực chi
+//   createdAt   DateTime  @default(now())
+//   updatedAt   DateTime  @updatedAt
+//   budgetPlan  BudgetPlan @relation(fields: [budgetPlanId], references: [id], onDelete: Cascade)
+//   category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+//   @@index([budgetPlanId])
+//   @@index([categoryId])
+//   Transaction Transaction[]
+// }
+
+// model Transaction {
+//   id          String    @id @default(uuid()) @db.Uuid
+//   userId      String    @db.Uuid
+//   accountId   String    @db.Uuid
+//   categoryId  String    @db.Uuid
+//   amount      Decimal   @db.Decimal(13,2) // Số tiền của giao dịch
+//   type        CategoryType  // Expense hoặc Income
+//   description String?   @db.VarChar(1000) // Ghi chú giao dịch
+//   date        DateTime  @default(now()) // Ngày giao dịch
+//   budgetItemId String?  @db.Uuid // Liên kết với mục ngân sách nếu có
+//   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   account     Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+//   category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+//   budgetItem  BudgetItem? @relation(fields: [budgetItemId], references: [id], onDelete: SetNull)
+
+//   @@index([userId])
+//   @@index([accountId])
+//   @@index([categoryId])
+// }
+
+// model Limit {
+//   id          String   @id @default(uuid()) @db.Uuid
+//   userId      String   @db.Uuid
+//   categoryId  String   @db.Uuid
+//   amount      Decimal  @db.Decimal(13,2) // Giới hạn chi tiêu
+//   period      LimitPeriod  // Hàng tháng, hàng năm,...
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+//   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+//   @@index([userId])
+//   @@index([categoryId])
+// }
+
+// enum LimitPeriod {
+//   DAILY
+//   WEEKLY
+//   MONTHLY
+//   YEARLY
+// }
