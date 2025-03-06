@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/dialog';
 import LucieIcon from '@/features/setting/presentation/module/expenseIncome/molecules/LucieIcon';
 import {
-  setCategories,
   setDeleteConfirmOpen,
   setDialogOpen,
   setSelectedCategory,
@@ -21,12 +20,10 @@ import {
   Category,
   CategoryTypeEnum,
 } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
-import { useCustomSWR } from '@/lib/swrConfig';
-import { Response } from '@/shared/types/Common.types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect, useState } from 'react';
-import { mutate } from 'swr';
 import {
+  fetchCategories,
   createCategory,
   deleteCategory,
   updateCategory,
@@ -36,32 +33,20 @@ import MergeDialog from './molecules/MergeDialog';
 import CategoryTable from './organisms/CategoryTable';
 
 export default function ExpenseIncomeSettingPage() {
-  const [selectedMainCategory, setSelectedMainCategory] = useState<Category | null>(null);
   const [isDetailDialogOpen, setDetailDialogOpen] = useState(false);
   const dispatch = useAppDispatch();
   const { categories, selectedCategory, dialogOpen, deleteConfirmOpen } = useAppSelector(
     (state) => state.expenseIncome,
   );
 
-  // Fetch categories with SWR
-  const {
-    data: swrData,
-    error: swrError,
-    isLoading: swrLoading,
-  } = useCustomSWR<Response<Category[]>>('/api/categories/expense-income');
-
-  // Sync SWR data with Redux
+  // Fetch categories on mount using Redux thunk
   useEffect(() => {
-    if (swrData && !swrLoading && !swrError) {
-      dispatch(setCategories(swrData));
-    }
-  }, [swrData, swrLoading, swrError, dispatch]);
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   const handleCreateOrUpdateCategory = (category: Partial<Category>) => {
     if (selectedCategory) {
-      dispatch(updateCategory({ ...selectedCategory, ...category })).then(() =>
-        mutate('/api/categories/expenses-income'),
-      );
+      dispatch(updateCategory({ ...selectedCategory, ...category }));
     } else {
       dispatch(
         createCategory({
@@ -69,7 +54,7 @@ export default function ExpenseIncomeSettingPage() {
           type: (category.type as CategoryTypeEnum) || CategoryTypeEnum.EXPENSE,
           subCategories: [],
         }),
-      ).then(() => mutate('/api/categories/expenses-income'));
+      );
     }
     dispatch(setDialogOpen(false));
     dispatch(setSelectedCategory(null));
@@ -82,19 +67,8 @@ export default function ExpenseIncomeSettingPage() {
   };
 
   const handleDisplayDetailCategoryDialog = (category: Category) => {
-    setSelectedMainCategory(category);
+    dispatch(setSelectedCategory(category));
     setDetailDialogOpen(true);
-  };
-
-  // TODO LIST
-  const handleUpdateCategoryName = (categoryId: string, newName: string) => {
-    // Update category name logic here
-    // Dispatch an action to update the category name in Redux or your state
-  };
-
-  const handleUpdateSubCategoryName = (subCategoryId: string, newName: string) => {
-    // Update subcategory name logic here
-    // Dispatch an action to update the subcategory in Redux or your state
   };
 
   const handleDeleteCategory = () => {
@@ -104,16 +78,7 @@ export default function ExpenseIncomeSettingPage() {
     dispatch(setDeleteConfirmOpen(false));
   };
 
-  const handleAddSubCategory = () => {
-    // Handle adding a new subcategory
-  };
-
-  const handleRemoveSubCategory = (subCategoryId: string) => {
-    // Handle removing a subcategory logic here
-  };
-
-  if (swrLoading || categories.isLoading) return <div>Loading...</div>;
-  if (swrError) return <div>Error: {swrError.message}</div>;
+  if (categories.isLoading) return <div>Loading...</div>;
   if (categories.error) return <div>Error: {categories.error}</div>;
 
   return (
@@ -199,18 +164,15 @@ export default function ExpenseIncomeSettingPage() {
       {/* ShadCN Dialog for displaying the category table */}
       <Dialog open={isDetailDialogOpen} onOpenChange={setDetailDialogOpen}>
         <DialogContent>
-          <DialogTitle>Subcategories of {selectedMainCategory?.name}</DialogTitle>
+          <DialogTitle>Subcategories of {selectedCategory?.name}</DialogTitle>
           <DialogDescription>
             Below is a table of subcategories related to the selected category.
           </DialogDescription>
 
           <CategoryTable
-            categories={categories.data || []}
-            type={CategoryTypeEnum.EXPENSE}
             setSelectedCategory={(cat) => dispatch(setSelectedCategory(cat))}
             setDeleteConfirmOpen={(open) => dispatch(setDeleteConfirmOpen(open))}
             setDialogOpen={(open) => dispatch(setDialogOpen(open))}
-            setSelectedMainCategory={(cat) => setSelectedMainCategory(cat)} // Pass this to handle subcategories
           />
 
           <div className="mt-4 flex justify-end">

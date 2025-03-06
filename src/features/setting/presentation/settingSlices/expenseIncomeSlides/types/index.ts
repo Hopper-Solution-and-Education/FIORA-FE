@@ -2,6 +2,17 @@ export enum CategoryTypeEnum {
   EXPENSE = 'Expense',
   INCOME = 'Income',
 }
+export interface RawCategory {
+  id: string;
+  userId: string;
+  type: CategoryTypeEnum;
+  icon: string;
+  name: string;
+  description: string | null;
+  parentId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface Category {
   id: string;
