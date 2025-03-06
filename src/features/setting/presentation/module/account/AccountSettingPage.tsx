@@ -23,7 +23,6 @@ export default function Home() {
   // };
 
   const handleCreateSubmit = async (dataCreate: AccountCreate) => {
-    // create a function submit to create new account
     try {
       const createdRes = await fetch('/api/accounts/create', {
         method: 'POST',
@@ -38,9 +37,11 @@ export default function Home() {
       if (!createdRes.ok) {
         setErrRes(data.message || 'Something went wrong');
         // handle success
+      } else {
+        setSuccessMessage('Account created successfully');
+        setErrRes('');
+        setIsViewModalOpen(true);
       }
-      setIsCreateModalOpen(false);
-      setSuccessMessage('Account created successfully');
     } catch (error: any) {
       setErrRes(error.message || 'Failed to create account');
     }

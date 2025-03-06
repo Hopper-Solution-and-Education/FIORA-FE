@@ -47,7 +47,13 @@ export class AccountUseCase {
     });
 
     if (accountFound) {
-      // await this.validateParentAccount(parentId.pa, type);
+      return {
+        message: 'Master account already exists',
+      };
+    }
+
+    if (parentId) {
+      await this.validateParentAccount(parentId, type);
       const subAaccount = await this.accountRepository.create({
         type,
         name,
@@ -57,9 +63,9 @@ export class AccountUseCase {
         balance,
         currency,
         limit: type === AccountType.CreditCard ? limit : new Decimal(0),
-        parentId: accountFound.id,
+        parentId: parentId,
       });
-      await this.updateParentBalance(accountFound.id);
+      await this.updateParentBalance(parentId);
 
       return subAaccount;
     } else {

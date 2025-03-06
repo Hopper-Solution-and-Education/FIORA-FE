@@ -1,6 +1,8 @@
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
-import { UserUSeCaseInstance } from '@/features/auth/application/use-cases/userUseCase';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]';
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse) {
   switch (request.method) {
@@ -16,25 +18,19 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
   try {
     const body = await request.body;
 
-    const {
-      userId = '99b4ca81-5348-4058-a66a-245f720115fa',
-      name,
-      type,
-      currency,
-      balance = 0,
-      limit,
-      icon,
-      // parentId,
-    } = body;
-
-    const userFound = await UserUSeCaseInstance.checkExistedUserById(userId);
-    if (!userFound) {
-      response.status(404).json({ error: 'User not found' });
+    const session = await getServerSession(request, response, authOptions);
+    console.log('session', session);
+    if (!session || !session.user?.id) {
+      return response.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
     }
+
+    const userId = session.user.id;
+
+    const { name, type, currency, balance = 0, limit, icon, parent } = body;
 
     const isCreateMasterAccount = await AccountUseCaseInstance.isOnlyMasterAccount(userId, type);
     if (isCreateMasterAccount) {
-      return response.status(400).json({ error: 'Master account already exists' });
+      return response.status(400).json({ message: 'Master account already exists' });
     }
     // Create the account
     const account = await AccountUseCaseInstance.create({
@@ -45,7 +41,7 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
       currency,
       balance: balance,
       limit: limit,
-      // parentId,
+      parentId: parent,
     });
 
     // If this is a sub-account, update the parent's balance
