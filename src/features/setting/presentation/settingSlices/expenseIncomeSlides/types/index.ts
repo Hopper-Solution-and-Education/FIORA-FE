@@ -38,3 +38,24 @@ export const initialExpenseIncomeState: ExpenseIncomeState = {
   dialogOpen: false,
   deleteConfirmOpen: false,
 };
+
+export interface Account {
+  id: string;
+  userId: string;
+  icon: string;
+  name: string;
+  description: string;
+  type: string;
+  currency: string;
+  limit: string;
+  balance: string;
+  parentId: string | null;
+}
+
+export interface CreateAccountModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: any) => void;
+  errRes?: string;
+  successMessage: string | null;
+}

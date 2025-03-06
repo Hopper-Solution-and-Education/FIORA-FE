@@ -1,19 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-// import { getServerSession } from 'next-auth/next';
-// import authOptions from '@/pages/api/auth/[...nextauth]';
-import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]';
+
+// Define the expected session structure
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Get the session using NextAuth's getServerSession
-
-  //   const session: { user?: { id?: string } } | null = await getServerSession(req, res, authOptions);
-  //   console.log('session', session);
-  //   if (!session || !session.user?.id) {
-  //     return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
-  //   }
-
-  //   const userId = session.user.id;
 
   try {
     switch (req.method) {
@@ -35,9 +29,15 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const accounts = await AccountUseCaseInstance.getAllParentAccount(
-      '99b4ca81-5348-4058-a66a-245f720115fa',
-    );
+    const session = await getServerSession(req, res, authOptions);
+    console.log('session', session);
+    if (!session || !session.user?.id) {
+      return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
+    }
+
+    const userId = session.user.id;
+
+    const accounts = await AccountUseCaseInstance.getAllParentAccount(userId);
     res.status(200).json({ accounts });
   } catch (error: any) {
     res.status(error.status).json({ error: error.message });

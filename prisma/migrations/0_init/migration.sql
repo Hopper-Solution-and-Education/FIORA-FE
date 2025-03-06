@@ -3,12 +3,9 @@ CREATE TYPE "MediaType" AS ENUM ('IMAGE', 'VIDEO', 'EMBEDDED');
 
 -- CreateEnum
 CREATE TYPE "SectionType" AS ENUM ('BANNER', 'VISION_MISSION', 'KPS', 'PARTNER_LOGO');
-<<<<<<<< HEAD:prisma/migrations/20250304130114_v1/migration.sql
-========
 
 -- CreateEnum
 CREATE TYPE "CategoryType" AS ENUM ('Expense', 'Income');
->>>>>>>> 8368e09959c1375b769191e5f7178fafa6d087f4:prisma/migrations/20250305134434_fiora_v1_0/migration.sql
 
 -- CreateEnum
 CREATE TYPE "AccountType" AS ENUM ('Payment', 'Saving', 'CreditCard', 'Debt', 'Lending');
@@ -114,6 +111,19 @@ CREATE TABLE "Section" (
 );
 
 -- CreateTable
+CREATE TABLE "Recommendation" (
+    "id" TEXT NOT NULL,
+    "user_id" UUID,
+    "title" VARCHAR(100) NOT NULL,
+    "description" VARCHAR(1000) NOT NULL,
+    "link" TEXT,
+    "image" TEXT,
+    "attachments" TEXT[],
+
+    CONSTRAINT "Recommendation_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Category" (
     "id" UUID NOT NULL,
     "userId" UUID NOT NULL,
@@ -146,6 +156,9 @@ CREATE UNIQUE INDEX "UserAuthentication_provider_providerAccountId_key" ON "User
 -- CreateIndex
 CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "Recommendation_user_id_key" ON "Recommendation"("user_id");
+
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
@@ -159,14 +172,14 @@ ALTER TABLE "UserAuthentication" ADD CONSTRAINT "UserAuthentication_userId_fkey"
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-<<<<<<<< HEAD:prisma/migrations/20250304130114_v1/migration.sql
 ALTER TABLE "Media" ADD CONSTRAINT "Media_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("section_id") ON DELETE SET NULL ON UPDATE CASCADE;
-========
-ALTER TABLE "Banner" ADD CONSTRAINT "Banner_media_id_fkey" FOREIGN KEY ("media_id") REFERENCES "Media"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Recommendation" ADD CONSTRAINT "Recommendation_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Category" ADD CONSTRAINT "Category_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Category" ADD CONSTRAINT "Category_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
->>>>>>>> 8368e09959c1375b769191e5f7178fafa6d087f4:prisma/migrations/20250305134434_fiora_v1_0/migration.sql
+

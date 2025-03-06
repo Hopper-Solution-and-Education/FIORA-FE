@@ -1,133 +1,88 @@
-interface Account {
-  id: string;
-  icon: string;
-  name: string;
-  description: string;
-  type: string;
-  currency: string;
-  limit: number | null;
-  balance: number;
-}
+import { Banknote, CreditCard, PiggyBank, TrendingDown, Wallet } from 'lucide-react';
+import { Account } from '../../../settingSlices/expenseIncomeSlides/types';
 
-export const accounts: Account[] = [
+// Define account types and their rules
+const ACCOUNT_TYPES = {
+  PAYMENT: 'Payment',
+  SAVING: 'Saving',
+  CREDIT_CARD: 'CreditCard',
+  DEBT: 'Dept',
+  LENDING: 'Lending',
+};
+
+// Define account type validation rules
+const ACCOUNT_RULES = {
+  [ACCOUNT_TYPES.PAYMENT]: {
+    minBalance: 0,
+    maxBalance: null,
+    description: 'Use to record daily payment and transfer transactions. Balance must be >= 0.',
+  },
+  [ACCOUNT_TYPES.SAVING]: {
+    minBalance: 0,
+    maxBalance: null,
+    description: 'Use to record saving transactions and interest only. Balance must be >= 0.',
+  },
+  [ACCOUNT_TYPES.CREDIT_CARD]: {
+    minBalance: null,
+    maxBalance: 0,
+    description:
+      'Use to record daily payment and transfer (only internal transfer) transactions. Balance must be <= 0.',
+  },
+  [ACCOUNT_TYPES.DEBT]: {
+    minBalance: null,
+    maxBalance: 0,
+    description: 'Use to record loan transactions only. Balance must be <= 0.',
+  },
+  [ACCOUNT_TYPES.LENDING]: {
+    minBalance: 0,
+    maxBalance: null,
+    description: 'Use to record lending transactions only. Balance must be >= 0.',
+  },
+};
+
+// Define icons for each account type
+const ACCOUNT_ICONS = [
+  { id: 'wallet', name: 'Wallet', icon: Wallet, types: [ACCOUNT_TYPES.PAYMENT] },
+  { id: 'piggy-bank', name: 'Piggy Bank', icon: PiggyBank, types: [ACCOUNT_TYPES.SAVING] },
+  { id: 'credit-card', name: 'Credit Card', icon: CreditCard, types: [ACCOUNT_TYPES.CREDIT_CARD] },
+  { id: 'trending-down', name: 'Debt', icon: TrendingDown, types: [ACCOUNT_TYPES.DEBT] },
+  { id: 'banknote', name: 'Lending', icon: Banknote, types: [ACCOUNT_TYPES.LENDING] },
+];
+
+// Sample parent accounts for demo
+const PARENT_ACCOUNTS = [
+  { id: '1', name: 'My Payment Account', type: ACCOUNT_TYPES.PAYMENT },
+  { id: '2', name: 'My Savings', type: ACCOUNT_TYPES.SAVING },
+  { id: '3', name: 'My Credit Cards', type: ACCOUNT_TYPES.CREDIT_CARD },
+  { id: '4', name: 'My Loans', type: ACCOUNT_TYPES.DEBT },
+  { id: '5', name: 'My Lending', type: ACCOUNT_TYPES.LENDING },
+];
+
+const FALLBACK_PARENT_ACCOUNTS: Account[] = [
   {
-    id: 'acc_001',
-    icon: 'Wallet',
-    name: 'Main Credit Card',
-    description: 'Personal expenses credit card',
-    type: 'Credit',
+    id: '1',
+    userId: 'sample-user',
+    icon: 'wallet',
+    name: 'My Payment Account',
+    description: 'Sample payment account',
+    type: ACCOUNT_TYPES.PAYMENT,
     currency: 'USD',
-    limit: 5000,
-    balance: 1250.75,
+    limit: '0',
+    balance: '1000',
+    parentId: null,
   },
   {
-    id: 'acc_002',
-    icon: 'Wallet',
-    name: 'Checking Account',
-    description: 'Daily transactions account',
-    type: 'Checking',
+    id: '2',
+    userId: 'sample-user',
+    icon: 'piggy-bank',
+    name: 'My Savings',
+    description: 'Sample savings account',
+    type: ACCOUNT_TYPES.SAVING,
     currency: 'USD',
-    limit: null,
-    balance: 3450.2,
-  },
-  {
-    id: 'acc_003',
-    icon: 'Wallet',
-    name: 'Savings',
-    description: 'Emergency fund savings',
-    type: 'Savings',
-    currency: 'USD',
-    limit: null,
-    balance: 12500.0,
-  },
-  {
-    id: 'acc_004',
-    icon: 'Wallet',
-    name: 'Investment Portfolio',
-    description: 'Stock market investments',
-    type: 'Investment',
-    currency: 'USD',
-    limit: null,
-    balance: 28750.5,
-  },
-  {
-    id: 'acc_005',
-    icon: 'Wallet',
-    name: 'Business Credit Card',
-    description: 'Business expenses only',
-    type: 'Credit',
-    currency: 'USD',
-    limit: 10000,
-    balance: 4320.15,
-  },
-  {
-    id: 'acc_006',
-    icon: 'Wallet',
-    name: 'Euro Account',
-    description: 'European transactions',
-    type: 'Checking',
-    currency: 'EUR',
-    limit: null,
-    balance: 2150.0,
-  },
-  {
-    id: 'acc_007',
-    icon: 'Wallet',
-    name: 'Vacation Fund',
-    description: 'Saving for annual vacation',
-    type: 'Savings',
-    currency: 'USD',
-    limit: null,
-    balance: 3200.0,
-  },
-  {
-    id: 'acc_008',
-    icon: 'Wallet',
-    name: 'Crypto Wallet',
-    description: 'Cryptocurrency investments',
-    type: 'Investment',
-    currency: 'BTC',
-    limit: null,
-    balance: 0.45,
-  },
-  {
-    id: 'acc_009',
-    icon: 'Wallet',
-    name: 'UK Account',
-    description: 'British pound account',
-    type: 'Checking',
-    currency: 'GBP',
-    limit: null,
-    balance: 1800.0,
-  },
-  {
-    id: 'acc_010',
-    icon: 'Wallet',
-    name: 'Rewards Card',
-    description: 'Points and cashback card',
-    type: 'Credit',
-    currency: 'USD',
-    limit: 3000,
-    balance: 875.25,
-  },
-  {
-    id: 'acc_011',
-    icon: 'Wallet',
-    name: 'Retirement Fund',
-    description: 'Long-term retirement savings',
-    type: 'Investment',
-    currency: 'USD',
-    limit: null,
-    balance: 87500.0,
-  },
-  {
-    id: 'acc_012',
-    icon: 'Wallet',
-    name: 'Joint Account',
-    description: 'Shared household expenses',
-    type: 'Checking',
-    currency: 'USD',
-    limit: null,
-    balance: 5430.8,
+    limit: '0',
+    balance: '5000',
+    parentId: null,
   },
 ];
+
+export { ACCOUNT_TYPES, ACCOUNT_RULES, ACCOUNT_ICONS, PARENT_ACCOUNTS, FALLBACK_PARENT_ACCOUNTS };

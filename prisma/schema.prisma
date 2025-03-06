@@ -5,7 +5,7 @@ datasource db {
 
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["linux-musl-arm64-openssl-3.0.x"]
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
 model User {
@@ -128,7 +128,7 @@ model Section {
 // Kien - Home - Recomendation
 model Recommendation {
   id          String   @id @default(uuid()) // System generated UUID
-  userId      String?  @unique @map("user_id") // Optional: if blank, applies to all users
+  userId      String?  @unique @map("user_id") @db.Uuid // Optional: if blank, applies to all users
   title       String   @db.VarChar(100) // Title of recommendation
   description String   @db.VarChar(1000) // Recommendation details
   link        String? // Deep link redirection

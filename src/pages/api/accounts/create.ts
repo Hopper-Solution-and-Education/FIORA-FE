@@ -27,12 +27,6 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
       // parentId,
     } = body;
 
-    // // Validate account type and balance
-    // const isValid = validateAccount(type, balance, limit);
-    // if (!isValid) {
-    //   response.status(400).json({ error: 'Invalid account type or balance' });
-    // }
-    // Ensure user exists
     const userFound = await UserUSeCaseInstance.checkExistedUserById(userId);
     if (!userFound) {
       response.status(404).json({ error: 'User not found' });

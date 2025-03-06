@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreateAccountModal } from './components/CreateAccountPage';
-import { ViewAccountModal } from './components/AccountDetailPage';
 import { useState } from 'react';
 import { AccountCreate } from '../../types';
 
@@ -13,15 +12,15 @@ export default function Home() {
   const [errRes, setErrRes] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const sampleAccount = {
-    icon: '',
-    type: 'Credit Card',
-    name: 'Citibank Platinum Cashback',
-    currency: '($) USD',
-    limit: '10,000.00',
-    balance: '-4,000.00',
-    parent: 'My Credit Card Account',
-  };
+  // const sampleAccount = {
+  //   icon: '',
+  //   type: 'Credit Card',
+  //   name: 'Citibank Platinum Cashback',
+  //   currency: '($) USD',
+  //   limit: '10,000.00',
+  //   balance: '-4,000.00',
+  //   parent: 'My Credit Card Account',
+  // };
 
   const handleCreateSubmit = async (dataCreate: AccountCreate) => {
     // create a function submit to create new account
@@ -46,8 +45,6 @@ export default function Home() {
       setErrRes(error.message || 'Failed to create account');
     }
   };
-
-  const handleDelete = () => {};
 
   return (
     <main>
@@ -79,16 +76,16 @@ export default function Home() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateSubmit}
-        // errRes={errRes}
-        // successMessage={successMessage}
+        errRes={errRes}
+        successMessage={successMessage}
       />
 
-      <ViewAccountModal
+      {/* <ViewAccountModal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
         accountData={sampleAccount}
         onDelete={handleDelete}
-      />
+      /> */}
     </main>
   );
 }
