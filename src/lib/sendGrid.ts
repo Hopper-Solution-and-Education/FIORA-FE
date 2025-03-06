@@ -1,6 +1,6 @@
+'use server';
 import sgMail from '@sendgrid/mail';
 import { InternalServerError } from './errors';
-console.log(process.env.SENDGRID_API_KEY);
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
 
 export const sendEmail = async (to: string, otp: string, verificationLink: string) => {
@@ -15,6 +15,23 @@ export const sendEmail = async (to: string, otp: string, verificationLink: strin
     await sgMail.send(msg);
   } catch (error) {
     console.error('Failed to send email', error);
+    throw new InternalServerError('Failed to send email');
+  }
+};
+
+export const sendOtp = async (to: string, otp: string) => {
+  try {
+    const msg = {
+      to,
+      from: process.env.SENDER_EMAIL || 'tribui.it.work@gmail.com',
+      subject: 'Verify Your Email - Hopper',
+      html: `<p>Your OTP to reset your password is: <strong>${otp}</strong></p>`,
+    };
+
+    await sgMail.send(msg);
+    return otp;
+  } catch (error) {
+    console.error(error);
     throw new InternalServerError('Failed to send email');
   }
 };

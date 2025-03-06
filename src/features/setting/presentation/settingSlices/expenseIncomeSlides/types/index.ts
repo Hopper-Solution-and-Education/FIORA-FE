@@ -1,6 +1,6 @@
 export enum CategoryTypeEnum {
-  EXPENSE = 'EXPENSE',
-  INCOME = 'INCOME',
+  EXPENSE = 'Expense',
+  INCOME = 'Income',
 }
 
 export interface Category {
@@ -21,6 +21,7 @@ export interface ExpenseIncomeState {
     isLoading: boolean;
     data: Category[] | undefined;
     error: string | null;
+    message?: string;
   };
   selectedCategory: Category | null;
   dialogOpen: boolean;

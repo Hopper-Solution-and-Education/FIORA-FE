@@ -31,9 +31,20 @@ import {
   UserPen,
   UserX2Icon,
   X,
+  Wallet,
   Trello,
   UtensilsCrossed,
   Banknote,
+  BellRing,
+  Pencil,
+  Eye,
+  Home,
+  Car,
+  Phone,
+  ShoppingCart,
+  TrendingUp,
+  PiggyBank,
+  DollarSign,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -84,9 +95,20 @@ export const Icons = {
       ></path>
     </svg>
   ),
+  Wallet,
   twitter: Twitter,
   check: Check,
   trello: Trello,
-  utensilsCrossed: UtensilsCrossed,
   banknote: Banknote,
+  bellRing: BellRing,
+  pencil: Pencil,
+  eye: Eye,
+  utensils: UtensilsCrossed,
+  home: Home,
+  car: Car,
+  phone: Phone,
+  shoppingCart: ShoppingCart,
+  piggyBank: PiggyBank,
+  trendingUp: TrendingUp,
+  dollarSign: DollarSign,
 };

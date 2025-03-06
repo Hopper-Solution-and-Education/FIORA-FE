@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { Response } from '@/shared/types/Common.types';
 import { fetchCategories, createCategory, deleteCategory, updateCategory } from './actions';
 import { Category, initialExpenseIncomeState } from './types';
 
@@ -15,8 +16,8 @@ const expenseIncomeSlice = createSlice({
     setSelectedCategory(state, action: PayloadAction<Category | null>) {
       state.selectedCategory = action.payload;
     },
-    setCategories(state, action: PayloadAction<Category[]>) {
-      state.categories.data = action.payload;
+    setCategories(state, action: PayloadAction<Response<Category[]>>) {
+      state.categories.data = action.payload.data;
       state.categories.isLoading = false;
       state.categories.error = null;
     },
@@ -30,7 +31,7 @@ const expenseIncomeSlice = createSlice({
       })
       .addCase(fetchCategories.fulfilled, (state, action) => {
         state.categories.isLoading = false;
-        state.categories.data = action.payload;
+        state.categories.data = action.payload.data;
       })
       .addCase(fetchCategories.rejected, (state, action) => {
         state.categories.isLoading = false;
@@ -45,9 +46,9 @@ const expenseIncomeSlice = createSlice({
       .addCase(createCategory.fulfilled, (state, action) => {
         state.categories.isLoading = false;
         if (state.categories.data) {
-          state.categories.data.push(action.payload);
+          state.categories.data.push(action.payload.data);
         } else {
-          state.categories.data = [action.payload];
+          state.categories.data = [action.payload.data];
         }
       })
       .addCase(createCategory.rejected, (state, action) => {
@@ -64,7 +65,7 @@ const expenseIncomeSlice = createSlice({
         state.categories.isLoading = false;
         if (state.categories.data) {
           state.categories.data = state.categories.data.map((cat) =>
-            cat.id === action.payload.id ? action.payload : cat,
+            cat.id === action.payload.data.id ? action.payload.data : cat,
           );
         }
       })

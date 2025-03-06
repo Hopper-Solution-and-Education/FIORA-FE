@@ -17,6 +17,7 @@ interface CategoryTableProps {
   setSelectedCategory: (cat: Category | null) => void;
   setDeleteConfirmOpen: (open: boolean) => void;
   setDialogOpen: (open: boolean) => void;
+  setSelectedMainCategory: (cat: Category | null) => void;
 }
 
 const CategoryTable: React.FC<CategoryTableProps> = ({
@@ -25,7 +26,16 @@ const CategoryTable: React.FC<CategoryTableProps> = ({
   setSelectedCategory,
   setDeleteConfirmOpen,
   setDialogOpen,
+  setSelectedMainCategory,
 }) => {
+  const handleCategoryClick = (category: Category) => {
+    setSelectedMainCategory(category);
+  };
+
+  if (!categories || categories.length === 0) {
+    return <div>No data</div>;
+  }
+
   return (
     <Table>
       <TableHeader>
@@ -40,7 +50,14 @@ const CategoryTable: React.FC<CategoryTableProps> = ({
           .filter((category) => category.type === type)
           .map((category) => (
             <TableRow key={category.id}>
-              <TableCell>{category.name}</TableCell>
+              <TableCell>
+                <button
+                  onClick={() => handleCategoryClick(category)}
+                  className="text-blue-600 hover:underline"
+                >
+                  {category.name}
+                </button>
+              </TableCell>
               <TableCell>
                 <SubCategoryList subCategories={category.subCategories} />
               </TableCell>

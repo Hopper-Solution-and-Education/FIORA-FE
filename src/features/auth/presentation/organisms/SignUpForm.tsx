@@ -10,7 +10,6 @@ import {
   validateEmail,
   validatePassword,
 } from '@/shared/validation/signUpValidation';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -213,16 +212,6 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>)
                 </div>
               </>
             )}
-          </div>
-
-          <div className="relative hidden bg-muted md:block">
-            <Image
-              src="/placeholder.svg"
-              alt="Image"
-              layout="fill"
-              objectFit="cover"
-              className="absolute inset-0 dark:brightness-[0.2] dark:grayscale"
-            />
           </div>
         </CardContent>
       </Card>
