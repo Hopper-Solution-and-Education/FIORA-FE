@@ -18,6 +18,8 @@ interface CategoryTableProps {
   setDeleteConfirmOpen: (open: boolean) => void;
   setDialogOpen: (open: boolean) => void;
   setSelectedMainCategory: (cat: Category | null) => void;
+  handleUpdateCategoryName: (categoryId: string, newName: string) => void; // Added
+  handleDeleteCategory: (categoryId: string) => void; // Added
 }
 
 const CategoryTable: React.FC<CategoryTableProps> = ({
@@ -27,6 +29,8 @@ const CategoryTable: React.FC<CategoryTableProps> = ({
   setDeleteConfirmOpen,
   setDialogOpen,
   setSelectedMainCategory,
+  handleUpdateCategoryName,
+  handleDeleteCategory,
 }) => {
   const handleCategoryClick = (category: Category) => {
     setSelectedMainCategory(category);
@@ -59,7 +63,10 @@ const CategoryTable: React.FC<CategoryTableProps> = ({
                 </button>
               </TableCell>
               <TableCell>
-                <SubCategoryList subCategories={category.subCategories} />
+                <SubCategoryList
+                  subCategories={category.subCategories}
+                  editable={true} // Enable editing for subcategories
+                />
               </TableCell>
               <TableCell>
                 <Button
@@ -77,8 +84,7 @@ const CategoryTable: React.FC<CategoryTableProps> = ({
                   size="sm"
                   className="text-red-500"
                   onClick={() => {
-                    setSelectedCategory(category);
-                    setDeleteConfirmOpen(true);
+                    handleDeleteCategory(category.id); // Delete category
                   }}
                 >
                   Delete

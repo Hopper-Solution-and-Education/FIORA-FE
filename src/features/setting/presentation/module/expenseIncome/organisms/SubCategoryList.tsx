@@ -6,23 +6,26 @@ import { Button } from '@/components/ui/button';
 interface SubCategoriesProps {
   subCategories: { id: string; name: string }[];
   editable?: boolean;
+  handleUpdateSubCategoryName: (id: string, newName: string) => void; // Added for updating name
+  handleAddSubCategory: () => void; // Added for adding subcategory
+  handleRemoveSubCategory: (id: string) => void; // Added for removing subcategory
 }
 
-export default function SubCategoryList({ subCategories, editable = false }: SubCategoriesProps) {
+export default function SubCategoryList({
+  subCategories,
+  editable = false,
+  handleUpdateSubCategoryName,
+  handleAddSubCategory,
+  handleRemoveSubCategory,
+}: SubCategoriesProps) {
   const [expanded, setExpanded] = useState(false);
   const [subCategoryList, setSubCategoryList] = useState(subCategories);
 
-  const handleAddSubCategory = () => {
-    setSubCategoryList([...subCategoryList, { id: String(subCategoryList.length + 1), name: '' }]);
-  };
-
-  const handleRemoveSubCategory = (index: any) => {
-    setSubCategoryList(subCategoryList.filter((_, i) => i !== index));
-  };
-
-  const handleChangeSubCategory = (index: any, value: any) => {
-    const updatedSubCategories = [...subCategoryList];
-    updatedSubCategories[index].name = value;
+  const handleChangeSubCategory = (id: string, value: string) => {
+    handleUpdateSubCategoryName(id, value);
+    const updatedSubCategories = subCategoryList.map((sub) =>
+      sub.id === id ? { ...sub, name: value } : sub,
+    );
     setSubCategoryList(updatedSubCategories);
   };
 
@@ -35,7 +38,7 @@ export default function SubCategoryList({ subCategories, editable = false }: Sub
               <input
                 className="border px-2 py-1"
                 value={sub.name}
-                onChange={(e) => handleChangeSubCategory(index, e.target.value)}
+                onChange={(e) => handleChangeSubCategory(sub.id, e.target.value)}
               />
             ) : (
               <span>{sub.name}</span>
@@ -45,7 +48,7 @@ export default function SubCategoryList({ subCategories, editable = false }: Sub
                 size="sm"
                 variant="ghost"
                 className="text-red-500"
-                onClick={() => handleRemoveSubCategory(index)}
+                onClick={() => handleRemoveSubCategory(sub.id)} // Remove subcategory
               >
                 ✕
               </Button>

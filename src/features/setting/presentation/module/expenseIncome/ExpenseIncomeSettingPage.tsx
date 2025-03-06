@@ -75,13 +75,6 @@ export default function ExpenseIncomeSettingPage() {
     dispatch(setSelectedCategory(null));
   };
 
-  const handleDeleteCategory = () => {
-    if (selectedCategory) {
-      dispatch(deleteCategory(selectedCategory.id));
-    }
-    dispatch(setDeleteConfirmOpen(false));
-  };
-
   const newCategory = {
     name: '',
     type: CategoryTypeEnum.EXPENSE,
@@ -91,6 +84,32 @@ export default function ExpenseIncomeSettingPage() {
   const handleDisplayDetailCategoryDialog = (category: Category) => {
     setSelectedMainCategory(category);
     setDetailDialogOpen(true);
+  };
+
+  // TODO LIST
+  const handleUpdateCategoryName = (categoryId: string, newName: string) => {
+    // Update category name logic here
+    // Dispatch an action to update the category name in Redux or your state
+  };
+
+  const handleUpdateSubCategoryName = (subCategoryId: string, newName: string) => {
+    // Update subcategory name logic here
+    // Dispatch an action to update the subcategory in Redux or your state
+  };
+
+  const handleDeleteCategory = () => {
+    if (selectedCategory) {
+      dispatch(deleteCategory(selectedCategory.id));
+    }
+    dispatch(setDeleteConfirmOpen(false));
+  };
+
+  const handleAddSubCategory = () => {
+    // Handle adding a new subcategory
+  };
+
+  const handleRemoveSubCategory = (subCategoryId: string) => {
+    // Handle removing a subcategory logic here
   };
 
   if (swrLoading || categories.isLoading) return <div>Loading...</div>;
