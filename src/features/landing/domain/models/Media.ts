@@ -1,5 +1,5 @@
 export interface Media {
-  media_id: number;
+  id: number;
   media_url: string | null;
   description: string | null;
   uploaded_by: string | null;
