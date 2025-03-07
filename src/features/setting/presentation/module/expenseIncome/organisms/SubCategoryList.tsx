@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Category } from '../../../settingSlices/expenseIncomeSlides/types';
 
 interface SubCategoriesProps {
-  subCategories: Category[];
+  subCategories: Category[] | [];
   editable?: boolean;
 }
 

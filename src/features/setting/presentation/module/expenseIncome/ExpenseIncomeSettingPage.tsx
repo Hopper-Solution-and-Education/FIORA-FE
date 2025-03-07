@@ -26,10 +26,10 @@ import {
   fetchCategories,
   createCategory,
   deleteCategory,
-  updateCategory,
+  // updateCategory,
 } from '../../settingSlices/expenseIncomeSlides/actions';
 import DeleteDialog from './molecules/DeleteDialog';
-import MergeDialog from './molecules/MergeDialog';
+import InsertCategoryDialog from './molecules/InsertCategoryDialog';
 import CategoryTable from './organisms/CategoryTable';
 
 export default function ExpenseIncomeSettingPage() {
@@ -44,18 +44,14 @@ export default function ExpenseIncomeSettingPage() {
     dispatch(fetchCategories());
   }, [dispatch]);
 
-  const handleCreateOrUpdateCategory = (category: Partial<Category>) => {
-    if (selectedCategory) {
-      dispatch(updateCategory({ ...selectedCategory, ...category }));
-    } else {
-      dispatch(
-        createCategory({
-          name: category.name || '',
-          type: (category.type as CategoryTypeEnum) || CategoryTypeEnum.EXPENSE,
-          subCategories: [],
-        }),
-      );
-    }
+  const handleCreateCategory = (category: Partial<Category>) => {
+    dispatch(
+      createCategory({
+        name: category.name || '',
+        type: (category.type as CategoryTypeEnum) || CategoryTypeEnum.EXPENSE,
+        subCategories: [],
+      }),
+    );
     dispatch(setDialogOpen(false));
     dispatch(setSelectedCategory(null));
   };
@@ -190,14 +186,10 @@ export default function ExpenseIncomeSettingPage() {
         Add New Category
       </Button>
 
-      <MergeDialog
+      <InsertCategoryDialog
         dialogOpen={dialogOpen}
         setDialogOpen={(open) => dispatch(setDialogOpen(open))}
-        selectedCategory={selectedCategory || undefined}
-        setSelectedCategory={(cat) => dispatch(setSelectedCategory(cat))}
-        newCategory={newCategory}
-        setNewCategory={() => {}}
-        handleCreateOrUpdateCategory={handleCreateOrUpdateCategory}
+        handleCreateCategory={handleCreateCategory}
       />
 
       <DeleteDialog
