@@ -4,9 +4,10 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Copy node_modules từ local cùng với các file khác
 COPY prisma ./prisma/
 COPY package.json package-lock.json ./
-RUN npm install --legacy-peer-deps
+COPY node_modules ./node_modules/
 
 COPY . .
 RUN npm run build
