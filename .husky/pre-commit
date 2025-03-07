@@ -5,7 +5,7 @@ branchName=$(git rev-parse --abbrev-ref HEAD)
 
 npm run lint-staged
 
-if [[ ! "$branchName" =~ ^(dev|release|feature\/[a-z]+_[a-zA-Z0-9-]+|hotfix\/[a-zA-Z0-9-]+)$ ]]; then
+if [[ ! "$branchName" =~ ^(dev|staging|release|feature\/[a-z]+_[a-zA-Z0-9-]+|hotfix\/[a-zA-Z0-9-]+)$ ]]; then
   echo "❌ ERROR: Branch name không hợp lệ!"
   echo "✔️ Hãy sử dụng các kiểu branch sau:"
   echo "   - dev"
