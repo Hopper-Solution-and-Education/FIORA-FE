@@ -19,18 +19,19 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
     const body = await request.body;
 
     const session = await getServerSession(request, response, authOptions);
-    console.log('session', session);
     if (!session || !session.user?.id) {
       return response.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
     }
 
     const userId = session.user.id;
 
-    const { name, type, currency, balance = 0, limit, icon, parent } = body;
-
-    const isCreateMasterAccount = await AccountUseCaseInstance.isOnlyMasterAccount(userId, type);
-    if (isCreateMasterAccount) {
-      return response.status(400).json({ message: 'Master account already exists' });
+    const { name, type, currency, balance = 0, limit, icon, parentId, isParentSelected } = body;
+    console.log('body', body);
+    if (!isParentSelected && !parentId) {
+      const isCreateMasterAccount = await AccountUseCaseInstance.isOnlyMasterAccount(userId, type);
+      if (isCreateMasterAccount) {
+        return response.status(400).json({ message: 'Master account already exists' });
+      }
     }
     // Create the account
     const account = await AccountUseCaseInstance.create({
@@ -41,12 +42,15 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
       currency,
       balance: balance,
       limit: limit,
-      parentId: parent,
+      parentId: parentId,
     });
 
+    if (!account) {
+      return response.status(400).json({ message: 'Cannot create new account' });
+    }
     // If this is a sub-account, update the parent's balance
     response.status(201).json({ message: 'Account created successfully', account });
   } catch (error: any) {
-    response.status(500).json({ error: error.message });
+    response.status(500).json({ message: error.message });
   }
 }

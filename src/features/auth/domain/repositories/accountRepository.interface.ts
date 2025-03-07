@@ -20,7 +20,7 @@ export interface IAccountRepository {
     options?: SelectOptions,
     pagination?: Pagination,
   ): Promise<Account[]>;
-  update(id: string, account: Partial<Account>): Promise<Account>;
+  update(id: string, account: Prisma.AccountUpdateInput): Promise<Account>;
   delete(id: string): Promise<void>;
   updateParentBalance(parentId: string): Promise<void>;
   findByCondition(where: Prisma.AccountWhereInput): Promise<Account | null>;

@@ -40,21 +40,9 @@ export class AccountUseCase {
       userId,
     } = params;
 
-    const accountFound = await this.accountRepository.findByCondition({
-      type,
-      parentId: null,
-      userId,
-    });
-
-    if (accountFound) {
-      return {
-        message: 'Master account already exists',
-      };
-    }
-
     if (parentId) {
       await this.validateParentAccount(parentId, type);
-      const subAaccount = await this.accountRepository.create({
+      const subAccount = await this.accountRepository.create({
         type,
         name,
         description: descriptions[type as keyof typeof descriptions],
@@ -65,9 +53,17 @@ export class AccountUseCase {
         limit: type === AccountType.CreditCard ? limit : new Decimal(0),
         parentId: parentId,
       });
-      await this.updateParentBalance(parentId);
 
-      return subAaccount;
+      if (!subAccount) {
+        throw new Error('Cannot create sub account');
+      }
+      const updatedParentBalance = await this.updateParentBalance(parentId, type);
+
+      if (!updatedParentBalance) {
+        throw new Error('Cannot update parent balance');
+      }
+
+      return subAccount;
     } else {
       const parentAccount = await this.accountRepository.create({
         type,
@@ -96,21 +92,62 @@ export class AccountUseCase {
     }
   }
 
-  async updateParentBalance(parentId: string): Promise<void> {
+  async updateParentBalance(parentId: string, type: AccountType): Promise<boolean> {
     const subAccounts = await this.accountRepository.findMany(
       { parentId },
-      { select: { balance: true } },
+      { select: { balance: true, limit: true } },
     );
 
     if (subAccounts.length === 0) {
-      return;
+      return true;
     }
-    const totalBalance = subAccounts.reduce(
-      (sum, acc) => sum.plus(acc.balance || new Decimal(0)),
-      new Decimal(0),
-    );
 
-    await this.accountRepository.update(parentId, { balance: totalBalance });
+    // update limit & balance for CreditCard. Since balance is negative, we need to sum it up
+    // and increase the limit
+    if (type === AccountType.CreditCard) {
+      const totalBalance = subAccounts.reduce(
+        (sum, acc) => sum.plus(acc.balance || new Decimal(0)),
+        new Decimal(0),
+      );
+
+      const totalLimit = subAccounts.reduce(
+        (sum, acc) => sum.plus(acc.limit || new Decimal(0)),
+        new Decimal(0),
+      );
+
+      // if total Limit is less than total balance
+
+      const updateRes = await this.accountRepository.update(parentId, {
+        balance: {
+          increment: totalBalance,
+        },
+        limit: {
+          increment: totalLimit,
+        },
+      });
+
+      if (!updateRes) {
+        throw new Error('Cannot update parent account');
+      }
+
+      return true;
+    } else if (type === AccountType.Debt) {
+      const totalBalance = subAccounts.reduce(
+        (sum, acc) => sum.plus(acc.balance || new Decimal(0)),
+        new Decimal(0),
+      );
+
+      const updateRes = await this.accountRepository.update(parentId, { balance: totalBalance });
+      return !!updateRes;
+    } else {
+      const totalBalance = subAccounts.reduce(
+        (sum, acc) => sum.plus(acc.balance || new Decimal(0)),
+        new Decimal(0),
+      );
+
+      const updateRes = await this.accountRepository.update(parentId, { balance: totalBalance });
+      return !!updateRes;
+    }
   }
 
   async findById(id: string): Promise<Account | null> {
@@ -129,6 +166,7 @@ export class AccountUseCase {
     const masterAccount = await this.accountRepository.findByCondition({
       userId: id,
       type,
+      parentId: null,
     });
 
     return masterAccount ? true : false;

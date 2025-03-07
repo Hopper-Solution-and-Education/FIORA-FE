@@ -54,8 +54,5 @@ export interface Account {
 
 export interface CreateAccountModalProps {
   isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (data: any) => void;
-  errRes?: string;
-  successMessage: string | null;
+  setIsCreateModalOpen: (isOpen: boolean) => void;
 }

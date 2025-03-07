@@ -20,7 +20,7 @@ export class AccountRepository implements IAccountRepository {
     return prisma.account.findMany();
   }
 
-  async update(id: string, account: Partial<Account>): Promise<Account> {
+  async update(id: string, account: Prisma.AccountUpdateInput): Promise<Account> {
     return prisma.account.update({ where: { id }, data: account });
   }
 
