@@ -1,9 +1,15 @@
-import type { Prisma, Transaction } from '@prisma/client';
+import { AccountType, type Account, type Prisma, type Transaction } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '../../infrastructure/repositories/transactionRepository';
+import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
+import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
+import { UUID } from 'crypto';
 
 class TransactionUseCase {
-  constructor(private transactionRepository: ITransactionRepository) {}
+  constructor(
+    private transactionRepository: ITransactionRepository,
+    private accountRepository: IAccountRepository,
+  ) {}
 
   async listTransactions(userId: string): Promise<Transaction[]> {
     return this.transactionRepository.getTransactionsByUserId(userId);
@@ -36,6 +42,50 @@ class TransactionUseCase {
     }
     await this.transactionRepository.deleteTransaction(id, userId);
   }
+
+  async createTransaction_Expense(data: Prisma.TransactionCreateInput & { accountId: UUID }) {
+    const account = await this.accountRepository.findById(data.accountId);
+    if (!account) {
+      throw new Error("Can't find account");
+    }
+
+    const type = account.type;
+    if (type !== AccountType.Payment && type !== AccountType.CreditCard) {
+      throw new Error('Mismatched account type. Only Payment or CreditCard accounts are allowed.');
+    }
+
+    switch (type) {
+      case AccountType.Payment: {
+        this.validatePaymentAccount(account, data.amount as number);
+        break;
+      }
+
+      case AccountType.CreditCard: {
+        this.validateCreditCardAccount(account, data.amount as number);
+        break;
+      }
+    }
+  }
+
+  // Tách logic kiểm tra Payment Account
+  private validatePaymentAccount(account: Account, amount: number) {
+    if (account.balance!.toNumber() < amount) {
+      throw new Error(
+        'Payment Account must have balance equal to or greater than the transaction amount.',
+      );
+    }
+  }
+
+  // Tách logic kiểm tra Credit Card
+  private validateCreditCardAccount(account: Account, amount: number) {
+    const limit = account.limit!.toNumber();
+    const balance = account.balance!.toNumber();
+    const availableCredit = limit - balance;
+
+    if (availableCredit - amount < 0) {
+      throw new Error('Credit Card does not have enough available credit limit.');
+    }
+  }
 }
 
-export const transactionUseCase = new TransactionUseCase(transactionRepository);
+export const transactionUseCase = new TransactionUseCase(transactionRepository, accountRepository);
