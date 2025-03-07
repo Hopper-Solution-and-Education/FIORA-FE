@@ -1,14 +1,23 @@
-import { AccountType, type Account, type Prisma, type Transaction } from '@prisma/client';
+import {
+  AccountType,
+  CategoryType,
+  type Account,
+  type Prisma,
+  type Transaction,
+} from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '../../infrastructure/repositories/transactionRepository';
 import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
 import { UUID } from 'crypto';
+import { ICategoryRepository } from '@/features/setting/domain/repositories/categoryRepository.interface';
+import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
 
 class TransactionUseCase {
   constructor(
     private transactionRepository: ITransactionRepository,
     private accountRepository: IAccountRepository,
+    private categoryRepository: ICategoryRepository,
   ) {}
 
   async listTransactions(userId: string): Promise<Transaction[]> {
@@ -65,6 +74,18 @@ class TransactionUseCase {
         break;
       }
     }
+
+    if (!data.toCategory) {
+      throw new Error('Expense Category is required for Expense transaction.');
+    }
+
+    const category = await this.categoryRepository.findCategoryById(data.toCategory as string);
+    if (!category) {
+      throw new Error("Can't find category");
+    }
+    if (category.type !== CategoryType.Expense) {
+      throw new Error('To field must be an Expense Category.');
+    }
   }
 
   // Tách logic kiểm tra Payment Account
@@ -88,4 +109,8 @@ class TransactionUseCase {
   }
 }
 
-export const transactionUseCase = new TransactionUseCase(transactionRepository, accountRepository);
+export const transactionUseCase = new TransactionUseCase(
+  transactionRepository,
+  accountRepository,
+  categoryRepository,
+);
