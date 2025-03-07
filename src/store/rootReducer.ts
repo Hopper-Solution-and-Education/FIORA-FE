@@ -4,12 +4,14 @@ import landingSlices from '@/features/landing/slices';
 import expenseIncomeReducer from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
 import dialogSlices from './slices/dialog.slice';
 import settingSlices from './slices/setting.slice';
+import budgetSlice from '@/features/dashboard/module/budget-control/slices/budgetSlice';
 
 const reducer = {
   settings: settingSlices,
   dialog: dialogSlices,
   landing: landingSlices,
   task: taskSlice,
+  budget: budgetSlice,
   expenseIncome: expenseIncomeReducer,
 };
 

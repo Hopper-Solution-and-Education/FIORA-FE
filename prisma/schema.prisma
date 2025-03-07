@@ -58,8 +58,8 @@ model Account {
 }
 
 model UserAuthentication {
-  id                String  @id @default(uuid()) @db.Uuid
-  userId            String  @unique @db.Uuid
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @unique @db.Uuid
   type              String
   provider          String
   providerAccountId String
@@ -73,6 +73,7 @@ model UserAuthentication {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   user              User     @relation(fields: [userId], references: [id])
+
   @@unique([provider, providerAccountId])
 }
 

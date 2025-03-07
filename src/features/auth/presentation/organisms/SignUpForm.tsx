@@ -4,11 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppleButton from '@/features/auth/presentation/common/AppleButton';
-import GoogleButton from '@/features/auth/presentation/common/GoogleButton';
-import MetaButton from '@/features/auth/presentation/common/MetaButton';
-import TermCondition from '@/features/auth/presentation/common/TermCondition';
-import { VerifyOTPForm } from '@/features/auth/presentation/organisms/VerifyForm';
 import { cn } from '@/lib/utils';
 import {
   validateConfirmPassword,
@@ -18,6 +13,12 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import AppleButton from '../common/AppleButton';
+import GoogleButton from '../common/GoogleButton';
+import MetaButton from '../common/MetaButton';
+import TermCondition from '../common/TermCondition';
+import { VerifyOTPForm } from './VerifyForm';
+// import { Router, useRouter } from 'next/router';
 
 // Validation regex patterns
 
@@ -90,7 +91,7 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>)
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.message || 'An error occurred during sign up');
+        setError(data.message || 'Something went wrong');
       }
 
       const data = await res.json();
@@ -101,7 +102,7 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>)
         router.push('/auth/sign-in');
       }, 1500);
     } catch (err: any) {
-      setError(err.message || 'An error occurred during sign up');
+      setError(err.message || 'Something went wrong');
     }
   };
 
