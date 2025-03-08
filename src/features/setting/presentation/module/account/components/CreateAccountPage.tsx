@@ -98,8 +98,8 @@ export function CreateAccountModal({
       }
 
       const data = await res.json();
-
       const accounts = data.data as Account[];
+
       if (Array.isArray(accounts)) {
         setParentAccounts(accounts);
       } else {
@@ -155,7 +155,7 @@ export function CreateAccountModal({
   // Initial data fetch
   useEffect(() => {
     fetchParents();
-  }, []); // Removed fetchParents from dependencies
+  }, [isTriggered, setTriggered]); // Removed fetchParents from dependencies
 
   // Validate form data
   const validateForm = () => {
