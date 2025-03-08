@@ -31,7 +31,12 @@ import {
   PARENT_ACCOUNTS,
 } from '../mockData';
 
-export function CreateAccountModal({ isOpen, setIsCreateModalOpen }: CreateAccountModalProps) {
+export function CreateAccountModal({
+  isOpen,
+  setIsCreateModalOpen,
+  setTriggered,
+  isTriggered,
+}: CreateAccountModalProps) {
   const [formData, setFormData] = useState({
     icon: '',
     type: ACCOUNT_TYPES.PAYMENT,
@@ -86,16 +91,17 @@ export function CreateAccountModal({ isOpen, setIsCreateModalOpen }: CreateAccou
         headers: { 'Content-Type': 'application/json' },
       });
 
-      if (!res.ok) {
-        console.error('Failed to fetch parent accounts');
+      if (res.status !== 200) {
+        alert('Failed to fetch parent accounts');
         setParentAccounts(FALLBACK_PARENT_ACCOUNTS);
         return;
       }
 
       const data = await res.json();
+      const accounts = data.data as Account[];
 
-      if (Array.isArray(data.accounts)) {
-        setParentAccounts(data.accounts);
+      if (Array.isArray(accounts)) {
+        setParentAccounts(accounts);
       } else {
         console.error('Unexpected API response format');
         setParentAccounts(FALLBACK_PARENT_ACCOUNTS);
@@ -139,6 +145,7 @@ export function CreateAccountModal({ isOpen, setIsCreateModalOpen }: CreateAccou
         setTimeout(() => {
           setIsCreateModalOpen(false);
           setSuccessMessage('');
+          setTriggered(!isTriggered);
         }, 1000);
       }
     } catch (error: any) {
@@ -150,7 +157,7 @@ export function CreateAccountModal({ isOpen, setIsCreateModalOpen }: CreateAccou
   useEffect(() => {
     fetchParents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Removed fetchParents from dependencies
+  }, [isTriggered, setTriggered]); // Removed fetchParents from dependencies
 
   // Validate form data
   const validateForm = () => {
@@ -256,11 +263,11 @@ export function CreateAccountModal({ isOpen, setIsCreateModalOpen }: CreateAccou
 
     // Find the selected parent account
     const selectedParent = parentAccounts.find((p) => p.id === parentId);
-
     if (selectedParent) {
       // Update the parent and type in the form data
       setFormData((prev) => ({
         ...prev,
+        parent: parentId,
         parentId: parentId,
         type: selectedParent.type, // Set the type to match the parent's type
         isParentSelected: true,

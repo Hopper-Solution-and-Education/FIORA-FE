@@ -64,4 +64,6 @@ export interface Account {
 export interface CreateAccountModalProps {
   isOpen: boolean;
   setIsCreateModalOpen: (isOpen: boolean) => void;
+  setTriggered: (isTriggered: boolean) => void;
+  isTriggered: boolean;
 }

@@ -21,14 +21,16 @@ export interface IAccountRepository {
     pagination?: Pagination,
   ): Promise<Account[]>;
   update(id: string, account: Prisma.AccountUpdateInput): Promise<Account>;
-  delete(id: string): Promise<void>;
+  delete(options: Prisma.AccountDeleteArgs): Promise<void>;
   updateParentBalance(parentId: string): Promise<void>;
   findByCondition(where: Prisma.AccountWhereInput): Promise<Account | null>;
   findAllAccountByUserId(userId: string): Promise<Account[] | []>;
   findManyWithCondition(
     where: Prisma.AccountWhereInput,
     select?: Prisma.AccountSelect,
+    options?: Prisma.AccountFindManyArgs,
   ): Promise<Account[] | []>;
+  aggregate(options: Prisma.AccountAggregateArgs): Promise<any>;
 }
 
 export interface AccountCreation {
