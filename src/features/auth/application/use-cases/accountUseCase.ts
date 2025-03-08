@@ -36,7 +36,7 @@ export class AccountUseCase {
       balance = 0,
       limit,
       icon,
-      parentId,
+      parentId = null,
       userId,
     } = params;
 
@@ -76,6 +76,10 @@ export class AccountUseCase {
         limit: type === AccountType.CreditCard ? limit : new Decimal(0),
         parentId: null,
       });
+
+      if (!parentAccount) {
+        throw new Error('Cannot create parent account');
+      }
       return parentAccount;
     }
   }
@@ -177,12 +181,16 @@ export class AccountUseCase {
   }
 
   async getAllParentAccount(userId: string): Promise<Account[] | []> {
+    return this.accountRepository.findManyWithCondition({
+      userId,
+      parentId: null,
+    });
+  }
+
+  async getAllAccountByUserId(userId: string): Promise<Account[] | []> {
     return this.accountRepository.findManyWithCondition(
       {
-        AND: {
-          userId,
-          parentId: null,
-        },
+        userId,
       },
       {
         id: true,
@@ -191,8 +199,54 @@ export class AccountUseCase {
         balance: true,
         limit: true,
         parentId: true,
+        description: true,
+        icon: true,
       },
     );
+  }
+
+  async fetchBalanceByUserId(userId: string): Promise<any> {
+    // Fetch balance of userId by separate into 2 categories : Dept (Credit & Dept) and Balance (Payment, Lending, Saving)
+    const balanceAwaited = this.accountRepository.aggregate({
+      where: {
+        userId,
+        type: {
+          in: [AccountType.Payment, AccountType.Lending, AccountType.Saving],
+        },
+        parentId: null,
+      },
+      _sum: {
+        balance: true,
+      },
+    });
+
+    const deptAwaited = this.accountRepository.aggregate({
+      where: {
+        userId,
+        type: {
+          in: [AccountType.Debt],
+        },
+        parentId: null,
+      },
+      _sum: {
+        balance: true,
+      },
+    });
+
+    const [balanceObj, deptObj] = (await Promise.all([balanceAwaited, deptAwaited])) as any;
+    return { balance: balanceObj['_sum']['balance'], dept: deptObj['_sum']['balance'] };
+  }
+
+  async removeSubAccount(userId: string, parentId: string, subAccountId: string): Promise<void> {
+    await this.accountRepository.delete({
+      where: {
+        id: subAccountId,
+        userId,
+        parentId: parentId,
+      },
+    });
+
+    await this.accountRepository.updateParentBalance(parentId);
   }
 }
 

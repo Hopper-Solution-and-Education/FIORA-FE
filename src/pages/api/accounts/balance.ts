@@ -5,11 +5,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
 import { createResponse } from '@/lib/createResponse';
 
-// Define the expected session structure
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Get the session using NextAuth's getServerSession
-
   try {
     switch (req.method) {
       case 'GET':
@@ -31,25 +27,16 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
     }
 
     const session = await getServerSession(req, res, authOptions);
-    console.log('session', session);
     if (!session || !session.user?.id) {
       return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
     }
 
     const userId = session.user.id;
 
-    const { isParent } = req.query;
-    if (isParent) {
-      const accounts = await AccountUseCaseInstance.getAllParentAccount(userId);
-      return res
-        .status(200)
-        .json(createResponse(RESPONSE_CODE.OK, 'Lấy danh sách tài khoản thành công', accounts));
-    } else {
-      const accounts = await AccountUseCaseInstance.getAllAccountByUserId(userId);
-      return res
-        .status(200)
-        .json(createResponse(RESPONSE_CODE.OK, 'Lấy danh sách tài khoản thành công', accounts));
-    }
+    const { balance, dept } = await AccountUseCaseInstance.fetchBalanceByUserId(userId);
+    res
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, 'Lấy số dư thành công', { balance, dept }));
   } catch (error: any) {
     res.status(error.status).json({ error: error.message });
   }
