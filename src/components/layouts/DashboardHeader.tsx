@@ -22,7 +22,7 @@ export default function Header() {
   // state
   const [FBalance, setFBalance] = useState('0.0');
   const [FDebt, setFDebt] = useState('0.0');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchUserBalance = async () => {
     try {
