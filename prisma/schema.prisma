@@ -4,7 +4,7 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
@@ -16,14 +16,14 @@ model User {
   emailVerified  Boolean?             @default(false)
   image          String?
   authentication UserAuthentication[]
-  sessions       Session[]             
+  sessions       Session[]
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
-  accounts       Account[]           @relation("UserAccounts")
-  categories     Category[]          @relation("UserCategories")
-  transactions   Transaction[]       @relation("UserTransactions")
-  products       Product[]           @relation("UserProducts")
-  partners       Partner[]           @relation("UserPartners")
+  accounts       Account[]            @relation("UserAccounts")
+  categories     Category[]           @relation("UserCategories")
+  transactions   Transaction[]        @relation("UserTransactions")
+  products       Product[]            @relation("UserProducts")
+  partners       Partner[]            @relation("UserPartners")
 }
 
 model Session {
@@ -37,22 +37,24 @@ model Session {
 }
 
 model Account {
-  id             String        @id @default(uuid()) @db.Uuid
-  userId         String        @db.Uuid
-  icon           String?
-  name           String        @db.VarChar(50)
-  description    String?       @db.VarChar(1000)
-  type           AccountType   @default(Payment)
-  currency       Currency      @default(VND)
-  limit          Decimal?      @default(0) @db.Decimal(13, 2)
-  balance        Decimal?      @default(0) @db.Decimal(13, 2)
-  parentId       String?       @db.Uuid
-  parent         Account?      @relation("ChildAccounts", fields: [parentId], references: [id])
-  children       Account[]     @relation("ChildAccounts")
-  user           User          @relation("UserAccounts", fields: [userId], references: [id])
+  id               String        @id @default(uuid()) @db.Uuid
+  userId           String        @db.Uuid
+  icon             String?
+  name             String        @db.VarChar(50)
+  description      String?       @db.VarChar(1000)
+  type             AccountType   @default(Payment)
+  currency         Currency      @default(VND)
+  limit            Decimal?      @default(0) @db.Decimal(13, 2)
+  balance          Decimal?      @default(0) @db.Decimal(13, 2)
+  parentId         String?       @db.Uuid
+  parent           Account?      @relation("ChildAccounts", fields: [parentId], references: [id])
+  children         Account[]     @relation("ChildAccounts")
+  user             User          @relation("UserAccounts", fields: [userId], references: [id])
   fromTransactions Transaction[] @relation("FromAccount")
-  toTransactions Transaction[] @relation("ToAccount")
+  toTransactions   Transaction[] @relation("ToAccount")
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   @@index([userId])
   @@index([parentId])
 }
@@ -78,93 +80,94 @@ model UserAuthentication {
 }
 
 model Product {
-  id          String      @id @default(uuid()) @db.Uuid
-  userId      String      @db.Uuid
-  catId       String      @db.Uuid
-  type        ProductType
-  icon        String
-  name        String      @db.VarChar(50)
-  description String?     @db.VarChar(1000)
-  price       Decimal     @db.Decimal(13, 2)
-  taxRate     Decimal?    @db.Decimal(4, 2)
-  items       Json?
-  transactionId String?    @db.Uuid
-  
-  user        User        @relation("UserProducts", fields: [userId], references: [id])
-  category    Category    @relation("CategoryProducts", fields: [catId], references: [id])
+  id            String      @id @default(uuid()) @db.Uuid
+  userId        String      @db.Uuid
+  catId         String      @db.Uuid
+  type          ProductType
+  icon          String
+  name          String      @db.VarChar(50)
+  description   String?     @db.VarChar(1000)
+  price         Decimal     @db.Decimal(13, 2)
+  taxRate       Decimal?    @db.Decimal(4, 2)
+  items         Json?
+  transactionId String?     @db.Uuid
+
+  user        User         @relation("UserProducts", fields: [userId], references: [id])
+  category    Category     @relation("CategoryProducts", fields: [catId], references: [id])
   transaction Transaction? @relation("TransactionProducts", fields: [transactionId], references: [id])
-  
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Transaction {
-  id            String          @id @default(uuid()) @db.Uuid
-  userId        String?         @db.Uuid
-  date          DateTime        @db.Date
-  type          TransactionType
-  amount        Decimal         @db.Decimal(13, 2)
-  fromAccountId String?         @db.Uuid
-  fromCategoryId String?        @db.Uuid
-  toAccountId   String?         @db.Uuid
-  toCategoryId  String?         @db.Uuid
-  products      Json?
-  partnerId     String?         @db.Uuid
-  remark        String?         @db.VarChar(255)
-  
-  user          User?           @relation("UserTransactions", fields: [userId], references: [id])
-  fromAccount   Account?        @relation("FromAccount", fields: [fromAccountId], references: [id])
-  fromCategory  Category?       @relation("FromCategory", fields: [fromCategoryId], references: [id])
-  toAccount     Account?        @relation("ToAccount", fields: [toAccountId], references: [id])
-  toCategory    Category?       @relation("ToCategory", fields: [toCategoryId], references: [id])
-  partner       Partner?        @relation("PartnerTransactions", fields: [partnerId], references: [id])
-  productsRelation Product[]     @relation("TransactionProducts")
+  id             String          @id @default(uuid()) @db.Uuid
+  userId         String?         @db.Uuid
+  date           DateTime        @db.Date
+  type           TransactionType
+  amount         Decimal         @db.Decimal(13, 2)
+  fromAccountId  String?         @db.Uuid
+  fromCategoryId String?         @db.Uuid
+  toAccountId    String?         @db.Uuid
+  toCategoryId   String?         @db.Uuid
+  products       Json?
+  partnerId      String?         @db.Uuid
+  remark         String?         @db.VarChar(255)
 
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  user             User?     @relation("UserTransactions", fields: [userId], references: [id])
+  fromAccount      Account?  @relation("FromAccount", fields: [fromAccountId], references: [id])
+  fromCategory     Category? @relation("FromCategory", fields: [fromCategoryId], references: [id])
+  toAccount        Account?  @relation("ToAccount", fields: [toAccountId], references: [id])
+  toCategory       Category? @relation("ToCategory", fields: [toCategoryId], references: [id])
+  partner          Partner?  @relation("PartnerTransactions", fields: [partnerId], references: [id])
+  productsRelation Product[] @relation("TransactionProducts")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Partner {
-  id          String      @id @default(uuid()) @db.Uuid
-  userId      String      @db.Uuid
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
   logo        String?
-  name        String      @db.VarChar(255)
-  identify    String?     @db.VarChar(50)
-  dob         DateTime?   @db.Date
-  taxNo       String?     @db.VarChar(20)
-  address     String?     @db.VarChar(255)
-  email       String?     @db.VarChar(50)
-  phone       String?     @db.VarChar(50)
-  description String?     @db.VarChar(1000)
+  name        String    @db.VarChar(255)
+  identify    String?   @db.VarChar(50)
+  dob         DateTime? @db.Date
+  taxNo       String?   @db.VarChar(20)
+  address     String?   @db.VarChar(255)
+  email       String?   @db.VarChar(50)
+  phone       String?   @db.VarChar(50)
+  description String?   @db.VarChar(1000)
   children    Json?
-  
-  user        User        @relation("UserPartners", fields: [userId], references: [id])
+
+  user         User          @relation("UserPartners", fields: [userId], references: [id])
   transactions Transaction[] @relation("PartnerTransactions")
-  
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
+
   @@id([identifier, token])
 }
 
 model Section {
-  section_id    Int       @id @default(autoincrement())
-  section_type  SectionType
-  name          String
-  userId       String   @db.Uuid
-  order         Int
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
-  medias        Media[]
+  section_id   Int         @id @default(autoincrement())
+  section_type SectionType
+  name         String
+  userId       String      @db.Uuid
+  order        Int
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+  medias       Media[]
 }
 
 model Media {
-  id            Int    @id @default(autoincrement())
+  id            Int       @id @default(autoincrement())
   media_type    MediaType
   media_url     String? // Dành cho hình ảnh/video
   embed_code    String? // Dành cho video nhúng (YouTube, Vimeo,...)
@@ -173,25 +176,25 @@ model Media {
   uploaded_date DateTime  @default(now())
   // Liên kết với Section
   section_id    Int?
-  section       Section? @relation(fields: [section_id], references: [section_id])
+  section       Section?  @relation(fields: [section_id], references: [section_id])
 }
 
 model Category {
-  id             String        @id @default(uuid()) @db.Uuid
-  userId         String        @db.Uuid
-  type           CategoryType
-  icon           String
-  name           String        @db.VarChar(50)
-  description    String?       @db.VarChar(1000)
-  parentId       String?       @db.Uuid
-  parent         Category?     @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
-  subCategories  Category[]    @relation("SubCategories")
-  user           User          @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
+  id               String        @id @default(uuid()) @db.Uuid
+  userId           String        @db.Uuid
+  type             CategoryType
+  icon             String
+  name             String        @db.VarChar(50)
+  description      String?       @db.VarChar(1000)
+  parentId         String?       @db.Uuid
+  parent           Category?     @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
+  subCategories    Category[]    @relation("SubCategories")
+  user             User          @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
   fromTransactions Transaction[] @relation("FromCategory")
-  toTransactions Transaction[] @relation("ToCategory")
-  products       Product[]     @relation("CategoryProducts")
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  toTransactions   Transaction[] @relation("ToCategory")
+  products         Product[]     @relation("CategoryProducts")
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 }
 
 // Các enum

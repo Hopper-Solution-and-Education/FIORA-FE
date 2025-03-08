@@ -24,8 +24,8 @@ export class AccountRepository implements IAccountRepository {
     return prisma.account.update({ where: { id }, data: account });
   }
 
-  async delete(id: string): Promise<void> {
-    await prisma.account.delete({ where: { id } });
+  async delete(options: Prisma.AccountDeleteArgs): Promise<void> {
+    await prisma.account.delete(options);
   }
 
   async updateParentBalance(parentId: string): Promise<void> {
@@ -126,6 +126,10 @@ export class AccountRepository implements IAccountRepository {
       where,
       select,
     });
+  }
+
+  async aggregate(options: Prisma.AccountAggregateArgs): Promise<any> {
+    return prisma.account.aggregate(options);
   }
 }
 

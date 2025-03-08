@@ -6,7 +6,7 @@ const ACCOUNT_TYPES = {
   PAYMENT: 'Payment',
   SAVING: 'Saving',
   CREDIT_CARD: 'CreditCard',
-  DEBT: 'Dept',
+  DEBT: 'Debt',
   LENDING: 'Lending',
 };
 
