@@ -18,8 +18,9 @@ const expenseIncomeServices = {
       category,
     );
   },
-  deleteCategory: async (id: string): Promise<void> => {
-    return httpClient.delete<void>(`/api/categories/expense-income/${id}`);
+  deleteCategory: async (id: string): Promise<string> => {
+    await httpClient.delete<void>(`/api/categories/expense-income?id=${id}`);
+    return id;
   },
 };
 

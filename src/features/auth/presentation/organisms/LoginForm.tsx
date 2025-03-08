@@ -24,7 +24,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
         rememberMe,
         redirect: false,
       });
-      console.log(res);
       if (res?.ok) {
         router.push('/dashboard');
       } else {

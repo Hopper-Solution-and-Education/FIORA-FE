@@ -3,34 +3,24 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import LucieIcon from '@/features/setting/presentation/module/expenseIncome/molecules/LucieIcon';
+import UpdateDialog from '@/features/setting/presentation/module/expenseIncome/molecules/UpdateDialog';
 import {
   setDeleteConfirmOpen,
   setDialogOpen,
   setSelectedCategory,
 } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
-import {
-  Category,
-  CategoryTypeEnum,
-} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
+import { Category } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { CategoryType } from '@prisma/client';
 import { useEffect, useState } from 'react';
 import {
-  fetchCategories,
   createCategory,
   deleteCategory,
-  // updateCategory,
+  fetchCategories,
 } from '../../settingSlices/expenseIncomeSlides/actions';
 import DeleteDialog from './molecules/DeleteDialog';
 import InsertCategoryDialog from './molecules/InsertCategoryDialog';
-import CategoryTable from './organisms/CategoryTable';
 
 export default function ExpenseIncomeSettingPage() {
   const [isDetailDialogOpen, setDetailDialogOpen] = useState(false);
@@ -44,27 +34,31 @@ export default function ExpenseIncomeSettingPage() {
     dispatch(fetchCategories());
   }, [dispatch]);
 
+  useEffect(() => {
+    dispatch(setSelectedCategory(categories.data?.[0] || null));
+  }, [categories.data]);
+
   const handleCreateCategory = (category: Partial<Category>) => {
     dispatch(
       createCategory({
         name: category.name || '',
-        type: (category.type as CategoryTypeEnum) || CategoryTypeEnum.EXPENSE,
+        type: (category.type as CategoryType) || CategoryType.Expense,
         subCategories: [],
+        icon: category.icon || '',
       }),
     );
     dispatch(setDialogOpen(false));
     dispatch(setSelectedCategory(null));
   };
 
-  const newCategory = {
-    name: '',
-    type: CategoryTypeEnum.EXPENSE,
-    subCategories: [],
-  };
-
   const handleDisplayDetailCategoryDialog = (category: Category) => {
     dispatch(setSelectedCategory(category));
     setDetailDialogOpen(true);
+  };
+
+  const handleDisplayDeleteConfirmDialog = (category: Category) => {
+    dispatch(setSelectedCategory(category));
+    dispatch(setDeleteConfirmOpen(true));
   };
 
   const handleDeleteCategory = () => {
@@ -85,7 +79,7 @@ export default function ExpenseIncomeSettingPage() {
         <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           {categories.data?.map(
             (category: Category) =>
-              category.type === CategoryTypeEnum.INCOME && (
+              category.type === CategoryType.Income && (
                 <Card
                   key={category.id}
                   className="rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300"
@@ -107,7 +101,7 @@ export default function ExpenseIncomeSettingPage() {
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => dispatch(setDeleteConfirmOpen(true))}
+                      onClick={() => handleDisplayDeleteConfirmDialog(category)}
                     >
                       <Icons.trash />
                     </Button>
@@ -124,7 +118,7 @@ export default function ExpenseIncomeSettingPage() {
         <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           {categories.data?.map(
             (category: Category) =>
-              category.type === CategoryTypeEnum.EXPENSE && (
+              category.type === CategoryType.Expense && (
                 <Card
                   key={category.id}
                   className="rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300"
@@ -146,7 +140,7 @@ export default function ExpenseIncomeSettingPage() {
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => dispatch(setDeleteConfirmOpen(true))}
+                      onClick={() => handleDisplayDeleteConfirmDialog(category)}
                     >
                       <Icons.trash />
                     </Button>
@@ -157,27 +151,10 @@ export default function ExpenseIncomeSettingPage() {
         </div>
       </div>
 
-      {/* ShadCN Dialog for displaying the category table */}
-      <Dialog open={isDetailDialogOpen} onOpenChange={setDetailDialogOpen}>
-        <DialogContent>
-          <DialogTitle>Subcategories of {selectedCategory?.name}</DialogTitle>
-          <DialogDescription>
-            Below is a table of subcategories related to the selected category.
-          </DialogDescription>
-
-          <CategoryTable
-            setSelectedCategory={(cat) => dispatch(setSelectedCategory(cat))}
-            setDeleteConfirmOpen={(open) => dispatch(setDeleteConfirmOpen(open))}
-            setDialogOpen={(open) => dispatch(setDialogOpen(open))}
-          />
-
-          <div className="mt-4 flex justify-end">
-            <DialogClose asChild>
-              <Button variant="outline">Close</Button>
-            </DialogClose>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <UpdateDialog
+        isDetailDialogOpen={isDetailDialogOpen}
+        setDetailDialogOpen={setDetailDialogOpen}
+      />
 
       <Button
         onClick={() => dispatch(setDialogOpen(true))}

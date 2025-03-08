@@ -80,15 +80,7 @@ const expenseIncomeSlice = createSlice({
       })
       .addCase(deleteCategory.fulfilled, (state, action) => {
         state.categories.isLoading = false;
-        if (state.categories.data) {
-          const removeCategoryFromArray = (categories: Category[]): Category[] => {
-            return categories.filter((cat) => {
-              cat.subCategories = removeCategoryFromArray(cat.subCategories);
-              return cat.id !== action.payload;
-            });
-          };
-          state.categories.data = removeCategoryFromArray(state.categories.data);
-        }
+        state.categories.data = state.categories.data?.filter((cat) => cat.id !== action.payload);
       });
   },
 });
