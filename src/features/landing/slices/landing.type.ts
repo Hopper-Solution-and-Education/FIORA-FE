@@ -4,12 +4,14 @@ interface LandingStateType {
   media: Media[];
   loading: boolean;
   error: string | null;
+  isShowDialog?: boolean;
 }
 
 const initialLandingState: LandingStateType = {
   media: [],
   loading: false,
   error: null,
+  isShowDialog: false,
 };
 
 export { initialLandingState };

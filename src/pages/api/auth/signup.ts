@@ -50,6 +50,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
       balance: 0,
       currency: 'VND',
       type: 'Payment',
+      icon: 'circle',
     });
 
     res
