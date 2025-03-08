@@ -1,14 +1,18 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
-import banner from '@public/images/banner.png';
+'use client';
+
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
 import { useRef } from 'react';
-
-const images = [banner, banner, banner, banner];
+import { Card, CardContent } from '@/components/ui/card';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { useMedia } from '../../hooks/useMedia';
 
 export function Banner() {
+  const { media, isError, isLoading } = useMedia('BANNER');
   const autoplayPlugin = useRef(Autoplay({ delay: 3000, stopOnInteraction: false }));
+
+  if (isLoading) return <p>Loading...</p>;
+  if (isError || !media) return <p>Error loading banners.</p>;
 
   return (
     <section className="w-full">
@@ -19,18 +23,20 @@ export function Banner() {
         className="w-full"
       >
         <CarouselContent className="flex">
-          {images.map((src, index) => (
+          {media.map((image, index) => (
             <CarouselItem key={index} className="flex-[0_0_100%]">
               <Card className="p-0 border-none shadow-none">
                 <CardContent className="p-0">
-                  <Image
-                    src={src}
-                    alt={`Banner ${index + 1}`}
-                    width={1920}
-                    height={850}
-                    className="w-full h-[850px] object-cover rounded-lg"
-                    priority
-                  />
+                  <div className="relative w-full h-[850px]">
+                    <Image
+                      src={image.media_url ?? ''}
+                      alt={image.description || `Banner ${index + 1}`}
+                      layout="fill"
+                      objectFit="cover"
+                      className="rounded-lg"
+                      priority
+                    />
+                  </div>
                 </CardContent>
               </Card>
             </CarouselItem>

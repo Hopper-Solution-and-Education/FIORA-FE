@@ -31,6 +31,7 @@ import {
   UserPen,
   UserX2Icon,
   X,
+  Wallet,
   Trello,
   UtensilsCrossed,
   Banknote,
@@ -96,6 +97,7 @@ export const Icons = {
       ></path>
     </svg>
   ),
+  Wallet,
   twitter: Twitter,
   check: Check,
   trello: Trello,

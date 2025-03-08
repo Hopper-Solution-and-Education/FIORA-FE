@@ -64,6 +64,7 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({
     });
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedIcon, setSelectedIcon] = useState(newCategory?.icon || 'trash');
 
   return (
@@ -82,7 +83,10 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({
           />
 
           {/* Icon Selector */}
-          <IconSelect selectedIcon={selectedIcon} onIconChange={setSelectedIcon} />
+          <IconSelect
+            selectedIcon={selectedIcon}
+            onIconChange={(value) => setNewCategory({ ...newCategory, icon: value })}
+          />
 
           {/* Category Type Radio Group */}
           <RadioGroup

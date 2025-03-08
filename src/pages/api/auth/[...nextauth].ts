@@ -54,14 +54,48 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === 'google' && profile?.email) {
+        try {
+          let dbUser = await prisma.user.findUnique({
+            where: { email: profile.email },
+          });
+
+          if (!dbUser) {
+            dbUser = await prisma.user.create({
+              data: {
+                email: profile.email,
+                name: profile.name || 'Google User',
+                image: profile.image || user.image,
+              },
+            });
+          } else {
+            await prisma.user.update({
+              where: { email: profile.email },
+              data: {
+                name: profile.name || dbUser.name,
+                image: profile.image || dbUser.image,
+              },
+            });
+          }
+
+          user.id = dbUser.id;
+          return true;
+        } catch (error) {
+          console.error('Error saving Google user to database:', error);
+          return false;
+        }
+      }
+      return true;
+    },
+
     async jwt({ token, user, trigger }) {
-      // Initial sign in
       if (user) {
         token.id = user.id;
         token.image = user.image;
         token.rememberMe = user.rememberMe;
 
-        const maxAge = user.rememberMe ? 24 * 60 * 60 : 30 * 60; // 24 hours or 30 minutes
+        const maxAge = user.rememberMe ? 24 * 60 * 60 : 30 * 60; // 24 giờ hoặc 30 phút
         const now = Math.floor(Date.now() / 1000);
         token.expiredTime = now + maxAge;
       }
@@ -73,18 +107,18 @@ export const authOptions: NextAuthOptions = {
 
       return token;
     },
+
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id;
-        session.user.image = token.image;
-        session.user.email = token.email;
+        session.user.id = token.id as string;
+        session.user.image = token.image as string | null;
+        session.user.email = token.email as string;
         session.user.name = token.name ?? '';
       }
-      session.expiredTime = token.expiredTime;
+      session.expiredTime = token.expiredTime as number;
       return session;
     },
   },
 };
 
-// Export default handler
 export default NextAuth(authOptions);

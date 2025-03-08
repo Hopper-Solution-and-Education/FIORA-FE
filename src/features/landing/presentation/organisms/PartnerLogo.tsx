@@ -1,12 +1,16 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
-import hopperLogo from '@public/images/logo.jpg';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
 import { useRef } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { useMedia } from '../../hooks/useMedia';
 
 export const PartnerLogo = () => {
+  const { isLoading, media: logos, isError } = useMedia('PARTNER_LOGO');
   const autoplayPlugin = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
+
+  if (isLoading) return <p>Loading...</p>;
+  if (isError || !logos) return <p>Error loading partner logos.</p>;
 
   return (
     <section className="w-full my-10 flex flex-col items-center">
@@ -20,7 +24,7 @@ export const PartnerLogo = () => {
       <div className="w-full px-4">
         <Carousel className="w-full" plugins={[autoplayPlugin.current]}>
           <CarouselContent className="flex gap-4 animate-marquee">
-            {Array.from({ length: 20 }).map((_, index) => (
+            {logos.map((logo, index) => (
               <CarouselItem
                 key={index}
                 className="flex justify-center"
@@ -31,10 +35,10 @@ export const PartnerLogo = () => {
                 <Card className="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 flex items-center justify-center shadow-md rounded-full overflow-hidden border border-gray-300">
                   <CardContent className="relative w-full h-full">
                     <Image
-                      src={hopperLogo}
-                      alt={`Logo ${(index % 10) + 1}`}
+                      src={logo.media_url || ''}
+                      alt={logo.description || `Partner Logo ${index + 1}`}
                       layout="fill"
-                      objectFit="cover"
+                      objectFit="contain"
                       className="rounded-full"
                     />
                   </CardContent>

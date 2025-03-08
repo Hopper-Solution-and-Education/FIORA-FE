@@ -77,33 +77,38 @@ const CategoryTable: React.FC<CategoryTableProps> = ({
           </TableRow>
         </TableHeader>
         <TableBody className="w-full">
-          {selectedCategory.subCategories.map((sub) => (
-            <TableRow key={sub.id}>
-              <TableCell>
-                <SubCategoryRow subCatory={sub} handleChangeSubCategory={handleChangeSubCategory} />
-              </TableCell>
-              <TableCell>
-                <div className="flex w-1/5 gap-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-red-500 flex-1"
-                    onClick={() => handleRemoveSubCategory(sub.id)}
-                  >
-                    <Icons.trash />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-blue-500 flex-1"
-                    onClick={() => handleRemoveSubCategory(sub.id)}
-                  >
-                    <Icons.save />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+          {selectedCategory &&
+            selectedCategory.subCategories &&
+            selectedCategory.subCategories.map((sub) => (
+              <TableRow key={sub.id}>
+                <TableCell>
+                  <SubCategoryRow
+                    subCatory={sub}
+                    handleChangeSubCategory={handleChangeSubCategory}
+                  />
+                </TableCell>
+                <TableCell>
+                  <div className="flex w-1/5 gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-red-500 flex-1"
+                      onClick={() => handleRemoveSubCategory(sub.id)}
+                    >
+                      <Icons.trash />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-blue-500 flex-1"
+                      onClick={() => handleRemoveSubCategory(sub.id)}
+                    >
+                      <Icons.save />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
       <Button

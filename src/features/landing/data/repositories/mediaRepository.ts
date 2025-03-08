@@ -1,4 +1,5 @@
 import { MediaType, SectionType } from '@prisma/client';
+
 import prisma from '@/infrastructure/database/prisma';
 import { IMediaRepository } from '../../domain/interfaces/MediaRepository';
 import { Media } from '../../domain/models/Media';
@@ -19,7 +20,7 @@ export class MediaRepository implements IMediaRepository {
     const result = await prisma.media.findMany({
       where: { section: { section_type: sectionType }, media_type: MediaType.IMAGE },
       select: {
-        media_id: true,
+        id: true,
         media_type: true,
         media_url: true,
         embed_code: true,

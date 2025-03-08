@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 
-export const resetPasswordSchema = (newPassword: string, confirmPassword: string) => {
+export const resetPasswordSchema = () => {
   const schema = Yup.object().shape({
     newPassword: Yup.string().required(),
     confirmPassword: Yup.string()
