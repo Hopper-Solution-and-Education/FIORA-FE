@@ -110,6 +110,7 @@ export function CreateAccountModal({
       console.error('Error fetching parent accounts:', error);
       setParentAccounts(FALLBACK_PARENT_ACCOUNTS);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const handleCreateSubmit = async (dataCreate: any) => {
@@ -155,6 +156,7 @@ export function CreateAccountModal({
   // Initial data fetch
   useEffect(() => {
     fetchParents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTriggered, setTriggered]); // Removed fetchParents from dependencies
 
   // Validate form data

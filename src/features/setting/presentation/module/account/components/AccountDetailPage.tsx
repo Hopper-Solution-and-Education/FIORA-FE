@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { Trash2 } from 'lucide-react';
+import Image from 'next/image';
 
 // Define account types
 const ACCOUNT_TYPES = {
@@ -68,7 +69,11 @@ export function ViewAccountModal({
             </Label>
             <div className="border rounded w-full h-10 flex items-center px-2 bg-muted/50">
               {accountData.icon ? (
-                <img src={accountData.icon || '/placeholder.svg'} alt="Icon" className="h-6 w-6" />
+                <Image
+                  src={accountData.icon || '/placeholder.svg'}
+                  alt="Icon"
+                  className="h-6 w-6"
+                />
               ) : (
                 <div className="h-6 w-6 bg-muted rounded flex items-center justify-center">
                   <svg

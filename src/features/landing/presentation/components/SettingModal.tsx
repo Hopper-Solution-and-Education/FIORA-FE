@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import Image from 'next/image';
 import { useState } from 'react';
 
 type SettingModalProps = {
@@ -27,7 +28,6 @@ export default function SettingModal({ isOpen, onClose }: SettingModalProps) {
   };
 
   const handleSave = () => {
-    console.log('Saved Settings:', settings);
     onClose(); // Đóng modal sau khi lưu
   };
 
@@ -87,7 +87,7 @@ export default function SettingModal({ isOpen, onClose }: SettingModalProps) {
           {/* Right: Image Preview */}
           <div className="flex items-center justify-center border rounded-md p-4">
             {settings.previewImage ? (
-              <img src={settings.previewImage} alt="Preview" className="max-h-48 rounded-md" />
+              <Image src={settings.previewImage} alt="Preview" className="max-h-48 rounded-md" />
             ) : (
               <p className="text-gray-500">No image selected</p>
             )}

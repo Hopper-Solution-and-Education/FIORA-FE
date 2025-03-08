@@ -104,12 +104,11 @@ export default function AccountSettingModal({ isOpen, onClose }: AccountSettingM
         throw new Error('Failed to create account');
       }
 
-      const newAccount = await response.json();
-      console.log('Account created:', newAccount);
       onClose();
       router.refresh();
-    } catch (err) {
+    } catch (err: any) {
       setError('Error creating account. Please try again.');
+      console.error(err);
     }
   };
 

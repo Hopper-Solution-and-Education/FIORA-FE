@@ -65,7 +65,7 @@ const transactions = [
 export default function RecentTransactions() {
   return (
     <div className="space-y-4">
-      {transactions.map((tx, index) => (
+      {transactions.map((tx) => (
         <div key={tx.id} className="border-b pb-3 last:border-b-0">
           <div className="flex items-center">
             {/* Avatar */}

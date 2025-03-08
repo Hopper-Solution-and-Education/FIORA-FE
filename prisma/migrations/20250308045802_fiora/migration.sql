@@ -177,34 +177,6 @@ CREATE TABLE "Media" (
 );
 
 -- CreateTable
-<<<<<<<< HEAD:prisma/migrations/0_init/migration.sql
-CREATE TABLE "Section" (
-    "section_id" SERIAL NOT NULL,
-    "section_type" "SectionType" NOT NULL,
-    "name" TEXT NOT NULL,
-    "order" INTEGER NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Section_pkey" PRIMARY KEY ("section_id")
-);
-
--- CreateTable
-CREATE TABLE "Recommendation" (
-    "id" TEXT NOT NULL,
-    "user_id" UUID,
-    "title" VARCHAR(100) NOT NULL,
-    "description" VARCHAR(1000) NOT NULL,
-    "link" TEXT,
-    "image" TEXT,
-    "attachments" TEXT[],
-
-    CONSTRAINT "Recommendation_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-========
->>>>>>>> c76baaad957d44a042dd6e3012872c7969ab9afa:prisma/migrations/20250306133849_hopper/migration.sql
 CREATE TABLE "Category" (
     "id" UUID NOT NULL,
     "userId" UUID NOT NULL,
@@ -240,9 +212,6 @@ CREATE UNIQUE INDEX "UserAuthentication_provider_providerAccountId_key" ON "User
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- CreateIndex
-CREATE UNIQUE INDEX "Recommendation_user_id_key" ON "Recommendation"("user_id");
-
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
@@ -256,12 +225,6 @@ ALTER TABLE "UserAuthentication" ADD CONSTRAINT "UserAuthentication_userId_fkey"
 ALTER TABLE "Product" ADD CONSTRAINT "Product_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-<<<<<<<< HEAD:prisma/migrations/0_init/migration.sql
-ALTER TABLE "Media" ADD CONSTRAINT "Media_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("section_id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Recommendation" ADD CONSTRAINT "Recommendation_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-========
 ALTER TABLE "Product" ADD CONSTRAINT "Product_catId_fkey" FOREIGN KEY ("catId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -290,11 +253,9 @@ ALTER TABLE "Partner" ADD CONSTRAINT "Partner_userId_fkey" FOREIGN KEY ("userId"
 
 -- AddForeignKey
 ALTER TABLE "Media" ADD CONSTRAINT "Media_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("section_id") ON DELETE SET NULL ON UPDATE CASCADE;
->>>>>>>> c76baaad957d44a042dd6e3012872c7969ab9afa:prisma/migrations/20250306133849_hopper/migration.sql
 
 -- AddForeignKey
 ALTER TABLE "Category" ADD CONSTRAINT "Category_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Category" ADD CONSTRAINT "Category_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-

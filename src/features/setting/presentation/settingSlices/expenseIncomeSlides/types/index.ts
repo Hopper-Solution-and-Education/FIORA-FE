@@ -1,15 +1,24 @@
-export enum CategoryTypeEnum {
-  EXPENSE = 'Expense',
-  INCOME = 'Income',
+import { CategoryType } from '@prisma/client';
+
+export interface RawCategory {
+  id: string;
+  userId: string;
+  type: CategoryType;
+  icon: string;
+  name: string;
+  description: string | null;
+  parentId: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Category {
   id: string;
   name: string;
-  type: CategoryTypeEnum;
+  type: CategoryType;
   subCategories: Category[];
   description?: string;
-  icon?: string;
+  icon: string;
   parentId?: string | null;
   userId?: string;
   createdAt?: string;

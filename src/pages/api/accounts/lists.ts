@@ -31,7 +31,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
     }
 
     const session = await getServerSession(req, res, authOptions);
-    console.log('session', session);
     if (!session || !session.user?.id) {
       return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
     }
