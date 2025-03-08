@@ -30,7 +30,6 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
 
     const { name, type, currency, balance = 0, limit, icon, parentId, isParentSelected } = body;
 
-    console.log(body);
     if (!isParentSelected && !parentId && parentId !== null) {
       const isCreateMasterAccount = await AccountUseCaseInstance.isOnlyMasterAccount(userId, type);
       if (isCreateMasterAccount) {

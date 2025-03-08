@@ -259,10 +259,8 @@ export function CreateAccountModal({
       return;
     }
 
-    console.log('Selected parent:', parentId);
     // Find the selected parent account
     const selectedParent = parentAccounts.find((p) => p.id === parentId);
-    console.log('Selected parent:', selectedParent);
     if (selectedParent) {
       // Update the parent and type in the form data
       setFormData((prev) => ({
