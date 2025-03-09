@@ -24,7 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       take: 10,
       select: {
-        id: true,
         media_url: true,
         description: true,
         uploaded_by: true,
