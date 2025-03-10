@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 
-const BannerPage = dynamic(() => import('@/features/dashboard/module/banner/BannerPage'), {
+const BannerPage = dynamic(() => import('@/features/dashboard/module/banner/Page'), {
   loading: () => <div>Loading...</div>,
 });
 

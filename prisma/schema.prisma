@@ -159,7 +159,6 @@ model Section {
   section_id   Int         @id @default(autoincrement())
   section_type SectionType
   name         String
-  userId       String      @db.Uuid
   order        Int
   created_at   DateTime    @default(now())
   updated_at   DateTime    @updatedAt
@@ -169,8 +168,8 @@ model Section {
 model Media {
   id            Int       @id @default(autoincrement())
   media_type    MediaType
-  media_url     String? // Dành cho hình ảnh/video
-  embed_code    String? // Dành cho video nhúng (YouTube, Vimeo,...)
+  media_url     String? 
+  embed_code    String? 
   description   String?
   uploaded_by   String?
   uploaded_date DateTime  @default(now())
