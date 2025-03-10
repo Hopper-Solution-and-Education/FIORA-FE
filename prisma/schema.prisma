@@ -4,9 +4,8 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["linux-musl-arm64-openssl-3.0.x"]
-
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
 model User {
@@ -23,34 +22,47 @@ model User {
   accounts       Account[]            @relation("UserAccounts")
   Recommendation Recommendation[]
   categories     Category[]           @relation("UserCategories")
-  // BudgetPlan BudgetPlan[]
-  // Transaction Transaction[]
+  transactions   Transaction[]        @relation("UserTransactions")
+  products       Product[]            @relation("UserProducts")
+  partners       Partner[]            @relation("UserPartners")
+}
 
-  // Limit Limit[]
+model Session {
+  id           String   @id @default(uuid()) @db.Uuid
+  sessionToken String   @unique
+  userId       String   @db.Uuid
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Account {
-  id          String      @id @default(uuid()) @db.Uuid
-  userId      String      @db.Uuid
-  icon        String?
-  name        String      @db.VarChar(50)
-  description String?     @db.VarChar(1000)
-  type        AccountType @default(Payment)
-  currency    Currency    @default(VND)
-  limit       Decimal?    @default(0) @db.Decimal(13, 2)
-  balance     Decimal?    @default(0) @db.Decimal(13, 2)
-  parentId    String?     @db.Uuid
-  parent      Account?    @relation("ChildAccounts", fields: [parentId], references: [id])
-  children    Account[]   @relation("ChildAccounts")
-  user        User        @relation("UserAccounts", fields: [userId], references: [id])
-  @@index([userId]) // Index for faster queries on userId
-  @@index([parentId]) // Index for faster queries on parentId
-  // Transaction Transaction[] // 
+  id               String        @id @default(uuid()) @db.Uuid
+  userId           String        @db.Uuid
+  icon             String?
+  name             String        @db.VarChar(50)
+  description      String?       @db.VarChar(1000)
+  type             AccountType   @default(Payment)
+  currency         Currency      @default(VND)
+  limit            Decimal?      @default(0) @db.Decimal(13, 2)
+  balance          Decimal?      @default(0) @db.Decimal(13, 2)
+  parentId         String?       @db.Uuid
+  parent           Account?      @relation("ChildAccounts", fields: [parentId], references: [id])
+  children         Account[]     @relation("ChildAccounts")
+  user             User          @relation("UserAccounts", fields: [userId], references: [id])
+  fromTransactions Transaction[] @relation("FromAccount")
+  toTransactions   Transaction[] @relation("ToAccount")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([userId])
+  @@index([parentId])
 }
 
 model UserAuthentication {
-  id                String  @id @default(uuid()) @db.Uuid
-  userId            String  @unique @db.Uuid
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @unique @db.Uuid
   type              String
   provider          String
   providerAccountId String
@@ -64,28 +76,129 @@ model UserAuthentication {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   user              User     @relation(fields: [userId], references: [id])
+
   @@unique([provider, providerAccountId])
 }
 
-model Session {
-  id           String   @id @default(uuid()) @db.Uuid
-  sessionToken String   @unique
-  userId       String   @db.Uuid
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+model Product {
+  id            String      @id @default(uuid()) @db.Uuid
+  userId        String      @db.Uuid
+  catId         String      @db.Uuid
+  type          ProductType
+  icon          String
+  name          String      @db.VarChar(50)
+  description   String?     @db.VarChar(1000)
+  price         Decimal     @db.Decimal(13, 2)
+  taxRate       Decimal?    @db.Decimal(4, 2)
+  items         Json?
+  transactionId String?     @db.Uuid
+
+  user        User         @relation("UserProducts", fields: [userId], references: [id])
+  category    Category     @relation("CategoryProducts", fields: [catId], references: [id])
+  transaction Transaction? @relation("TransactionProducts", fields: [transactionId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Transaction {
+  id             String          @id @default(uuid()) @db.Uuid
+  userId         String?         @db.Uuid
+  date           DateTime        @db.Date
+  type           TransactionType
+  amount         Decimal         @db.Decimal(13, 2)
+  fromAccountId  String?         @db.Uuid
+  fromCategoryId String?         @db.Uuid
+  toAccountId    String?         @db.Uuid
+  toCategoryId   String?         @db.Uuid
+  products       Json?
+  partnerId      String?         @db.Uuid
+  remark         String?         @db.VarChar(255)
+
+  user             User?     @relation("UserTransactions", fields: [userId], references: [id])
+  fromAccount      Account?  @relation("FromAccount", fields: [fromAccountId], references: [id])
+  fromCategory     Category? @relation("FromCategory", fields: [fromCategoryId], references: [id])
+  toAccount        Account?  @relation("ToAccount", fields: [toAccountId], references: [id])
+  toCategory       Category? @relation("ToCategory", fields: [toCategoryId], references: [id])
+  partner          Partner?  @relation("PartnerTransactions", fields: [partnerId], references: [id])
+  productsRelation Product[] @relation("TransactionProducts")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Partner {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
+  logo        String?
+  name        String    @db.VarChar(255)
+  identify    String?   @db.VarChar(50)
+  dob         DateTime? @db.Date
+  taxNo       String?   @db.VarChar(20)
+  address     String?   @db.VarChar(255)
+  email       String?   @db.VarChar(50)
+  phone       String?   @db.VarChar(50)
+  description String?   @db.VarChar(1000)
+  children    Json?
+
+  user         User          @relation("UserPartners", fields: [userId], references: [id])
+  transactions Transaction[] @relation("PartnerTransactions")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
- 
+
   @@id([identifier, token])
 }
 
-// Kien - Landing page - kiểu dữ liệu cho image
+model Section {
+  section_id   Int         @id @default(autoincrement())
+  section_type SectionType
+  name         String
+  userId       String      @db.Uuid
+  order        Int
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+  medias       Media[]
+}
+
+model Media {
+  id            Int       @id @default(autoincrement())
+  media_type    MediaType
+  media_url     String? // Dành cho hình ảnh/video
+  embed_code    String? // Dành cho video nhúng (YouTube, Vimeo,...)
+  description   String?
+  uploaded_by   String?
+  uploaded_date DateTime  @default(now())
+  // Liên kết với Section
+  section_id    Int?
+  section       Section?  @relation(fields: [section_id], references: [section_id])
+}
+
+model Category {
+  id               String        @id @default(uuid()) @db.Uuid
+  userId           String        @db.Uuid
+  type             CategoryType
+  icon             String
+  name             String        @db.VarChar(50)
+  description      String?       @db.VarChar(1000)
+  parentId         String?       @db.Uuid
+  parent           Category?     @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
+  subCategories    Category[]    @relation("SubCategories")
+  user             User          @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
+  fromTransactions Transaction[] @relation("FromCategory")
+  toTransactions   Transaction[] @relation("ToCategory")
+  products         Product[]     @relation("CategoryProducts")
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+// Các enum
 enum MediaType {
   IMAGE
   VIDEO
@@ -100,68 +213,10 @@ enum SectionType {
   PARTNER_LOGO
 }
 
-// Kien - Media giữ image ở landing page
-model Media {
-  id            Int    @id @default(autoincrement())
-  media_type    MediaType
-  media_url     String? // Dành cho hình ảnh/video
-  embed_code    String? // Dành cho video nhúng (YouTube, Vimeo,...)
-  description   String?
-  uploaded_by   String?
-  uploaded_date DateTime  @default(now())
-  // Liên kết với Section
-  section_id    Int?
-  section       Section? @relation(fields: [section_id], references: [section_id])
-}
-
-model Section {
-  section_id    Int       @id @default(autoincrement())
-  section_type  SectionType
-  name          String
-  order         Int
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
-  medias        Media[]
-}
-
-// Kien - Home - Recomendation
-model Recommendation {
-  id           String   @id @default(uuid()) // System generated UUID
-  userId       String?  @unique @map("user_id") // Optional: if blank, applies to all users
-  title        String   @db.VarChar(100) // Title of recommendation
-  description  String   @db.VarChar(1000) // Recommendation details
-  link         String?  // Deep link redirection
-  image        String?  // Embedded image link
-  attachments  String[] // Array of file links (IMG, PNG, PDF, DOC, Excel, PowerPoint)
-  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
 enum CategoryType {
   Expense
   Income
 }
-
-model Category {
-  id            String        @id @default(uuid()) @db.Uuid
-  userId        String        @db.Uuid
-  type          CategoryType
-  icon          String
-  name          String        @db.VarChar(50)
-  description   String?       @db.VarChar(1000)
-  parentId      String?       @db.Uuid
-  parent        Category?     @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
-  subCategories Category[]    @relation("SubCategories")
-  user          User          @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-
-  // BudgetItem BudgetItem[]
-
-  // Transaction Transaction[]
-
-  // Limit Limit[]
-}
-
 
 enum AccountType {
   Payment
@@ -176,98 +231,13 @@ enum Currency {
   USD
 }
 
+enum TransactionType {
+  Expense
+  Income
+  Transfer
+}
 
-
-
-
-
-
-
-
-
-
-
-// // Model budget planing - Kiên
-// model BudgetPlan {
-//   id         String    @id @default(uuid()) @db.Uuid
-//   userId     String    @db.Uuid
-//   name       String    @db.VarChar(100)  // Tên ngân sách (VD: "Kế hoạch chi tiêu tháng 3")
-//   description String?  @db.VarChar(1000)
-//   startDate  DateTime  // Ngày bắt đầu ngân sách
-//   endDate    DateTime  // Ngày kết thúc ngân sách
-//   totalBudget Decimal  @db.Decimal(13,2) // Tổng ngân sách được cấp phát
-//   status     BudgetStatus @default(Active) // Trạng thái (Active, Completed, Archived)
-//   createdAt  DateTime  @default(now())
-//   updatedAt  DateTime  @updatedAt
-//   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-//   items      BudgetItem[]  // Liên kết đến các mục chi tiêu của ngân sách
-
-//   @@index([userId])
-// }
-
-
-// enum BudgetStatus {
-//   Active       // Ngân sách đang được áp dụng
-//   Completed    // Ngân sách đã hoàn thành
-//   Archived     // Ngân sách đã được lưu trữ (không còn hiệu lực)
-//   OverBudget   // Ngân sách đã vượt quá hạn mức
-// }
-
-
-// model BudgetItem {
-//   id          String    @id @default(uuid()) @db.Uuid
-//   budgetPlanId String   @db.Uuid
-//   categoryId  String    @db.Uuid
-//   allocated   Decimal   @db.Decimal(13,2) // Ngân sách dự kiến
-//   actualSpent Decimal   @default(0) @db.Decimal(13,2) // Số tiền thực chi
-//   createdAt   DateTime  @default(now())
-//   updatedAt   DateTime  @updatedAt
-//   budgetPlan  BudgetPlan @relation(fields: [budgetPlanId], references: [id], onDelete: Cascade)
-//   category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-//   @@index([budgetPlanId])
-//   @@index([categoryId])
-//   Transaction Transaction[]
-// }
-
-// model Transaction {
-//   id          String    @id @default(uuid()) @db.Uuid
-//   userId      String    @db.Uuid
-//   accountId   String    @db.Uuid
-//   categoryId  String    @db.Uuid
-//   amount      Decimal   @db.Decimal(13,2) // Số tiền của giao dịch
-//   type        CategoryType  // Expense hoặc Income
-//   description String?   @db.VarChar(1000) // Ghi chú giao dịch
-//   date        DateTime  @default(now()) // Ngày giao dịch
-//   budgetItemId String?  @db.Uuid // Liên kết với mục ngân sách nếu có
-//   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-//   account     Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
-//   category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-//   budgetItem  BudgetItem? @relation(fields: [budgetItemId], references: [id], onDelete: SetNull)
-
-//   @@index([userId])
-//   @@index([accountId])
-//   @@index([categoryId])
-// }
-
-// model Limit {
-//   id          String   @id @default(uuid()) @db.Uuid
-//   userId      String   @db.Uuid
-//   categoryId  String   @db.Uuid
-//   amount      Decimal  @db.Decimal(13,2) // Giới hạn chi tiêu
-//   period      LimitPeriod  // Hàng tháng, hàng năm,...
-//   createdAt   DateTime @default(now())
-//   updatedAt   DateTime @updatedAt
-//   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-//   category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-//   @@index([userId])
-//   @@index([categoryId])
-// }
-
-// enum LimitPeriod {
-//   DAILY
-//   WEEKLY
-//   MONTHLY
-//   YEARLY
-// }
+enum ProductType {
+  Product
+  Service
+}

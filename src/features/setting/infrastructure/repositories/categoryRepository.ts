@@ -16,8 +16,10 @@ class CategoryRepository implements ICategoryRepository {
 
   async findCategoriesByUserId(userId: string): Promise<Category[]> {
     return prisma.category.findMany({
-      where: { userId },
-      include: { subCategories: true },
+      where: {
+        userId: userId,
+      },
+      orderBy: [{ type: 'asc' }, { parentId: 'asc' }],
     });
   }
 

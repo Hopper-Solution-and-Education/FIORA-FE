@@ -2,7 +2,6 @@ import { AccountsOverview } from './AccountOverview';
 import { AreaGraph } from './components/AreaGraph';
 
 import PageContainer from '@/components/layouts/PageContainer';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import BarGraph from './components/BarGraph';
@@ -17,9 +16,7 @@ export default function HomePage() {
       <div className="flex flex-1 flex-col space-y-4">
         <div className="flex items-center justify-between space-y-2">
           <h2 className="text-2xl font-bold tracking-tight">Home</h2>
-          <div className="hidden items-center space-x-2 md:flex">
-            <Button>Download</Button>
-          </div>
+          <div className="hidden items-center space-x-2 md:flex"></div>
         </div>
         <Tabs defaultValue="overview" className="space-y-4">
           {/* <TabsList>
