@@ -15,15 +15,16 @@ model User {
   password       String?
   emailVerified  Boolean?             @default(false)
   image          String?
+  isDeleted      Boolean              @default(false)
   authentication UserAuthentication[]
   sessions       Session[]
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
   accounts       Account[]            @relation("UserAccounts")
   categories     Category[]           @relation("UserCategories")
   transactions   Transaction[]        @relation("UserTransactions")
   products       Product[]            @relation("UserProducts")
   partners       Partner[]            @relation("UserPartners")
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
 }
 
 model Session {
@@ -43,6 +44,7 @@ model Account {
   name             String        @db.VarChar(50)
   description      String?       @db.VarChar(1000)
   type             AccountType   @default(Payment)
+  isDeleted        Boolean       @default(false)
   currency         Currency      @default(VND)
   limit            Decimal?      @default(0) @db.Decimal(13, 2)
   balance          Decimal?      @default(0) @db.Decimal(13, 2)
@@ -72,9 +74,9 @@ model UserAuthentication {
   scope             String?
   id_token          String?
   session_state     String?
+  user              User     @relation(fields: [userId], references: [id])
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  user              User     @relation(fields: [userId], references: [id])
 
   @@unique([provider, providerAccountId])
 }
@@ -85,6 +87,7 @@ model Product {
   catId        String               @db.Uuid
   type         ProductType
   icon         String
+  isDeleted    Boolean              @default(false)
   name         String               @db.VarChar(50)
   description  String?              @db.VarChar(1000)
   price        Decimal              @db.Decimal(13, 2)
@@ -100,19 +103,19 @@ model Product {
 }
 
 model Transaction {
-  id             String          @id @default(uuid()) @db.Uuid
-  userId         String?         @db.Uuid
-  date           DateTime        @db.Date
-  type           TransactionType
-  amount         Decimal         @db.Decimal(13, 2)
-  fromAccountId  String?         @db.Uuid
-  fromCategoryId String?         @db.Uuid
-  toAccountId    String?         @db.Uuid
-  toCategoryId   String?         @db.Uuid
-  products       Json?
-  partnerId      String?         @db.Uuid
-  remark         String?         @db.VarChar(255)
-
+  id               String               @id @default(uuid()) @db.Uuid
+  userId           String?              @db.Uuid
+  date             DateTime             @db.Date
+  type             TransactionType
+  amount           Decimal              @db.Decimal(13, 2)
+  fromAccountId    String?              @db.Uuid
+  fromCategoryId   String?              @db.Uuid
+  toAccountId      String?              @db.Uuid
+  toCategoryId     String?              @db.Uuid
+  products         Json?
+  partnerId        String?              @db.Uuid
+  remark           String?              @db.VarChar(255)
+  isDeleted        Boolean              @default(false)
   user             User?                @relation("UserTransactions", fields: [userId], references: [id])
   fromAccount      Account?             @relation("FromAccount", fields: [fromAccountId], references: [id])
   fromCategory     Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
@@ -133,6 +136,7 @@ model ProductTransaction {
 
   product     Product     @relation("ProductTransactions", fields: [productId], references: [id])
   transaction Transaction @relation("ProductTransactions", fields: [transactionId], references: [id])
+  isDeleted   Boolean     @default(false)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
@@ -152,6 +156,7 @@ model Partner {
   phone       String?   @db.VarChar(50)
   description String?   @db.VarChar(1000)
   children    Json?
+  isDeleted   Boolean   @default(false)
 
   user         User          @relation("UserPartners", fields: [userId], references: [id])
   transactions Transaction[] @relation("PartnerTransactions")
@@ -171,7 +176,7 @@ model VerificationToken {
 }
 
 model Section {
-  section_id   Int         @id @default(autoincrement())
+  id           String      @id @default(uuid()) @db.Uuid
   section_type SectionType
   name         String
   userId       String      @db.Uuid
@@ -182,7 +187,7 @@ model Section {
 }
 
 model Media {
-  id            Int       @id @default(autoincrement())
+  id            String    @id @default(uuid()) @db.Uuid
   media_type    MediaType
   media_url     String? // Dành cho hình ảnh/video
   embed_code    String? // Dành cho video nhúng (YouTube, Vimeo,...)
@@ -190,8 +195,8 @@ model Media {
   uploaded_by   String?
   uploaded_date DateTime  @default(now())
   // Liên kết với Section
-  section_id    Int?
-  section       Section?  @relation(fields: [section_id], references: [section_id])
+  section_id    String?   @db.Uuid
+  section       Section?  @relation(fields: [section_id], references: [id])
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }

@@ -52,7 +52,9 @@ class TransactionUseCase {
     await this.transactionRepository.deleteTransaction(id, userId);
   }
 
-  async createTransaction_Expense(data: Prisma.TransactionCreateInput & { accountId: UUID }) {
+  async createTransaction_Expense(
+    data: Prisma.TransactionUncheckedCreateInput & { accountId: UUID },
+  ) {
     const account = await this.accountRepository.findById(data.accountId);
     if (!account) {
       throw new Error("Can't find account");
@@ -75,17 +77,26 @@ class TransactionUseCase {
       }
     }
 
-    if (!data.toCategory) {
+    if (!data.toCategoryId) {
       throw new Error('Expense Category is required for Expense transaction.');
     }
 
-    const category = await this.categoryRepository.findCategoryById(data.toCategory as string);
+    const category = await this.categoryRepository.findCategoryById(data.toCategoryId as string);
     if (!category) {
       throw new Error("Can't find category");
     }
     if (category.type !== CategoryType.Expense) {
       throw new Error('To field must be an Expense Category.');
     }
+    const transaction = await this.transactionRepository.createTransaction({
+      userId: data.userId,
+      type: data.type,
+      amount: data.amount,
+      partnerId: data.partnerId,
+      remark: data.remark,
+      date: data.date,
+    });
+    return transaction;
   }
 
   // Tách logic kiểm tra Payment Account

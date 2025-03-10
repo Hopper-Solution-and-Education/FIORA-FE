@@ -9,4 +9,5 @@ export interface ITransactionRepository {
     data: Prisma.TransactionUncheckedUpdateInput,
   ): Promise<Transaction>;
   deleteTransaction(id: string, userId: string): Promise<void>;
+  createTransaction(data: Prisma.TransactionUncheckedCreateInput): Promise<Transaction>;
 }
