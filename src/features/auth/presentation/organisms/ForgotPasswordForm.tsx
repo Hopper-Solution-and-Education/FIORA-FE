@@ -1,14 +1,14 @@
-import { FormEvent, useState } from 'react';
-import { cn, generateOtp } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Formik, Form, Field, FormikHelpers } from 'formik';
-import { useRouter } from 'next/navigation';
-import { sendOtp } from '@/lib/sendGrid';
-import { validateConfirmPassword, validatePassword } from '@/shared/validation/signUpValidation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { sendOtp } from '@/lib/sendGrid';
+import { cn, generateOtp } from '@/lib/utils';
+import { validateConfirmPassword, validatePassword } from '@/shared/validation/signUpValidation';
+import { Field, Form, Formik, FormikHelpers } from 'formik';
+import { useRouter } from 'next/navigation';
+import { FormEvent, useState } from 'react';
 
 const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) => {
   const [email, setEmail] = useState('');

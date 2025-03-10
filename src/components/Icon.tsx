@@ -45,6 +45,8 @@ import {
   TrendingUp,
   PiggyBank,
   DollarSign,
+  Circle,
+  Save,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -111,4 +113,6 @@ export const Icons = {
   piggyBank: PiggyBank,
   trendingUp: TrendingUp,
   dollarSign: DollarSign,
+  circle: Circle,
+  save: Save,
 };

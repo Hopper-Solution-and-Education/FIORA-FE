@@ -37,6 +37,7 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
       balance,
       limit,
       parentId,
+      icon: 'circle',
     });
     // If this is a sub-account, update the parent's balance
     response.status(201).json({ message: 'Account created successfully', account });

@@ -1,3 +1,5 @@
+'use client';
+
 import { Breadcrumbs } from '../Breadcrumbs';
 import SearchInput from '../SearchInput';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';

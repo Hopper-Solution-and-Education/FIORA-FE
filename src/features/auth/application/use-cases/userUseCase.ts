@@ -11,7 +11,7 @@ class UserUseCase {
   async execute(email: string, password: string): Promise<User> {
     const userFound = await this.userRepository.findByEmail(email);
     if (userFound) {
-      throw new ConflictError('Email already exists');
+      throw new ConflictError('Email đã tồn tại');
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     return await this.userRepository.createUser({ email, hashedPassword });
