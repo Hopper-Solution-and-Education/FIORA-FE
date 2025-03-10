@@ -18,14 +18,14 @@ const sidebarNavItems = [
     title: 'Expense & Income',
     href: '/setting/expense-income',
   },
-  {
-    title: 'Product & Services',
-    href: '/setting/product-services',
-  },
-  {
-    title: 'Partners',
-    href: '/setting/partners',
-  },
+  // {
+  //   title: 'Product & Services',
+  //   href: '/setting/product-services',
+  // },
+  // {
+  //   title: 'Partners',
+  //   href: '/setting/partners',
+  // },
 ];
 
 interface SettingsLayoutProps {

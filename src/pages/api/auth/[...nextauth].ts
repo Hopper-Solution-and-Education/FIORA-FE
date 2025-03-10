@@ -100,6 +100,7 @@ export const authOptions: NextAuthOptions = {
         token.expiredTime = now + maxAge;
       }
 
+      // Session update
       if (trigger === 'update' && token.expiredTime) {
         token.expiredTime = token.expiredTime + 30 * 60;
       }

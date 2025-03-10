@@ -1,143 +1,145 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import {
-  ArrowUpRight,
-  ArrowDownLeft,
-  Wallet,
-  SendHorizontal,
-  QrCode,
-  Plus,
-  ArrowRight,
-  CreditCard,
-} from 'lucide-react';
+import { Plus } from 'lucide-react';
+import FinancialAccount from './FInancialAccount';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Account } from '../../types/FinalcialOverview.types';
+import { formatCurrency } from '@/lib/formatCurrency';
+import { CreateAccountModal } from '@/features/setting/presentation/module/account/components/CreateAccountPage';
 
-interface AccountItem {
-  id: string;
-  title: string;
-  description?: string;
-  balance: string;
-  type: 'savings' | 'checking' | 'investment' | 'debt';
-}
-
-interface List01Props {
-  totalBalance?: string;
-  accounts?: AccountItem[];
+interface AccountListProps {
   className?: string;
 }
 
-const ACCOUNTS: AccountItem[] = [
-  {
-    id: '1',
-    title: 'Main Savings',
-    description: 'Personal savings',
-    balance: '$8,459.45',
-    type: 'savings',
-  },
-  {
-    id: '2',
-    title: 'Checking Account',
-    description: 'Daily expenses',
-    balance: '$2,850.00',
-    type: 'checking',
-  },
-  {
-    id: '3',
-    title: 'Investment Portfolio',
-    description: 'Stock & ETFs',
-    balance: '$15,230.80',
-    type: 'investment',
-  },
-  {
-    id: '4',
-    title: 'Credit Card',
-    description: 'Pending charges',
-    balance: '$1,200.00',
-    type: 'debt',
-  },
-  {
-    id: '5',
-    title: 'Savings Account',
-    description: 'Emergency fund',
-    balance: '$3,000.00',
-    type: 'savings',
-  },
-];
+export default function AccountList({ className }: AccountListProps) {
+  // State for accounts data
+  const [parentAccounts, setParentAccounts] = useState<Account[]>([]);
+  const [accountsMap, setAccountsMap] = useState<Map<string, Account[]>>(new Map());
+  const [totalBalance, setTotalBalance] = useState<string>('0');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isTriggered, setIsTriggered] = useState(false);
 
-export default function List01({
-  totalBalance = '$26,540.25',
-  accounts = ACCOUNTS,
-  className,
-}: List01Props) {
+  const fetchAccountsData = useCallback(async () => {
+    try {
+      const response = await fetch('/api/accounts/lists');
+      const data = await response.json();
+
+      if (data.status !== 200) {
+        alert('Error fetching data');
+      }
+
+      const accountsData = data.data as Account[];
+
+      // Filter parent accounts (parentId is null)
+      const parents = accountsData.filter((account) => account.parentId === null);
+
+      // Group sub-accounts by parentId
+      const subAccountsMap = new Map<string, Account[]>();
+      accountsData.forEach((account) => {
+        if (account.parentId) {
+          if (!subAccountsMap.has(account.parentId)) {
+            subAccountsMap.set(account.parentId, []);
+          }
+          subAccountsMap.get(account.parentId)?.push(account);
+        }
+      });
+
+      // Group parent accounts by type
+      const groupedParents = parents.reduce(
+        (acc, account) => {
+          const type = account.type;
+          if (!acc[type]) {
+            acc[type] = [];
+          }
+          acc[type].push(account);
+          return acc;
+        },
+        {} as Record<string, Account[]>,
+      );
+
+      // Calculate total balance
+      const totalBalance = getTotalBalance(parents);
+      // format currency
+      const formattedCurrency = formatCurrency(totalBalance);
+      setTotalBalance(formattedCurrency);
+
+      // Convert grouped parents to array and sort by type
+      const sortedParents = Object.entries(groupedParents)
+        .sort(([typeA], [typeB]) => typeA.localeCompare(typeB))
+        .flatMap(([_, accounts]) => accounts);
+
+      setParentAccounts(sortedParents);
+      setAccountsMap(subAccountsMap);
+    } catch (err) {
+      alert('Error fetching data');
+    }
+  }, [isTriggered, accountsMap, parentAccounts, setIsTriggered, setIsCreateModalOpen]);
+
+  useEffect(() => {
+    // Sample data from the provided JSON
+    fetchAccountsData();
+  }, [isTriggered, setIsTriggered, setIsCreateModalOpen]);
+
+  // only get the total balance of the parent accounts except type as 'CreditCard'
+  const getTotalBalance = useCallback(
+    (accounts: Account[]) => {
+      return accounts.reduce((acc, account) => {
+        if (account.type !== 'CreditCard' && account.parentId === null) {
+          acc += Number(account.balance);
+        }
+        return acc;
+      }, 0);
+    },
+    [isTriggered, accountsMap, parentAccounts, setIsTriggered],
+  );
+
   return (
-    <Card className={cn('w-full mb-4 mx-auto', className)}>
-      {/* Total Balance Section */}
-      <CardHeader className="border-b">
-        <CardTitle className="text-lg font-semibold">Total Balance</CardTitle>
-        <p className="text-3xl font-bold text-green-600">{totalBalance}</p>
-      </CardHeader>
-
-      {/* Accounts List */}
-      <CardContent className="space-y-3">
-        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Your Accounts</h2>
-        <div className="space-y-2">
-          {accounts.map((account) => (
-            <div
-              key={account.id}
-              className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={cn('p-2 rounded-lg', {
-                    'bg-emerald-100 dark:bg-emerald-900/30': account.type === 'savings',
-                    'bg-blue-100 dark:bg-blue-900/30': account.type === 'checking',
-                    'bg-purple-100 dark:bg-purple-900/30': account.type === 'investment',
-                    'bg-red-100 dark:bg-red-900/30': account.type === 'debt',
-                  })}
-                >
-                  {account.type === 'savings' && <Wallet className="w-5 h-5 text-emerald-600" />}
-                  {account.type === 'checking' && <QrCode className="w-5 h-5 text-blue-600" />}
-                  {account.type === 'investment' && (
-                    <ArrowUpRight className="w-5 h-5 text-purple-600" />
-                  )}
-                  {account.type === 'debt' && <CreditCard className="w-5 h-5 text-red-600" />}
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium">{account.title}</h3>
-                  {account.description && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {account.description}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <span className="text-sm font-semibold">{account.balance}</span>
+    <div>
+      <Card className={cn('w-full mb-4 mx-auto', className)}>
+        {/* Total Balance Section */}
+        <CardHeader className="border-b">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg font-semibold">Total Balance</CardTitle>
+              <p className="text-3xl font-bold text-green-600">{totalBalance}</p>
             </div>
-          ))}
-        </div>
-      </CardContent>
-
-      {/* Footer with action buttons */}
-      <div className="p-4 border-t flex gap-2">
-        <Button variant="default" className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Add
-        </Button>
-        <Button variant="outline" className="flex items-center gap-2">
-          <SendHorizontal className="w-4 h-4" />
-          Send
-        </Button>
-        <Button variant="outline" className="flex items-center gap-2">
-          <ArrowDownLeft className="w-4 h-4" />
-          Top-up
-        </Button>
-        <Button variant="ghost" className="flex items-center gap-2">
-          <ArrowRight className="w-4 h-4" />
-          More
-        </Button>
+            <Button
+              variant="default"
+              className="flex items-center gap-2"
+              size={'lg'}
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              <Plus className="w-7 h-7" />
+              Add Account
+            </Button>
+          </div>
+        </CardHeader>
+        {/* Accounts List */}
+        <CardContent className="space-y-1">
+          {useMemo(() => {
+            return (
+              <FinancialAccount
+                accountsMap={accountsMap}
+                parentAccounts={parentAccounts}
+                setAccountsMap={setAccountsMap}
+                setTriggered={setIsTriggered}
+                isTriggered={isTriggered}
+              />
+            );
+          }, [accountsMap, parentAccounts])}
+        </CardContent>
+      </Card>
+      <div>
+        <CreateAccountModal
+          isOpen={isCreateModalOpen}
+          setIsCreateModalOpen={setIsCreateModalOpen}
+          setTriggered={setIsTriggered}
+          isTriggered={isTriggered}
+        />
       </div>
-    </Card>
+    </div>
   );
 }

@@ -58,6 +58,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     return res.status(RESPONSE_CODE.OK).json({
       message: 'Lấy danh sách danh mục thành công',
       data: categories,
+      status: RESPONSE_CODE.OK,
     });
   } catch (error: any) {
     res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
@@ -78,7 +79,8 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     });
     return res.status(RESPONSE_CODE.CREATED).json({
       message: 'Tạo danh mục thành công',
-      category: newCategory,
+      data: newCategory,
+      status: RESPONSE_CODE.CREATED,
     });
   } catch (error: any) {
     res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
@@ -98,7 +100,8 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
     });
     return res.status(RESPONSE_CODE.OK).json({
       message: 'Cập nhật danh mục thành công',
-      category: updatedCategory,
+      data: updatedCategory,
+      status: RESPONSE_CODE.OK,
     });
   } catch (error: any) {
     res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
@@ -110,7 +113,10 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
   try {
     const { id } = req.query;
     await categoryUseCase.deleteCategory(id as string, userId);
-    return res.status(RESPONSE_CODE.OK).json({ message: 'Xóa danh mục thành công' });
+    return res.status(RESPONSE_CODE.OK).json({
+      message: 'Xóa danh mục thành công',
+      status: RESPONSE_CODE.OK,
+    });
   } catch (error: any) {
     res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }

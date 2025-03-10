@@ -1,12 +1,12 @@
-import dynamic from 'next/dynamic';
+// import dynamic from 'next/dynamic';
 import { Separator } from '@/components/ui/separator';
 
-const AccountSettingPageRender = dynamic(
-  () => import('@/features/setting/presentation/module/account/AccountSettingPage'),
-  {
-    loading: () => <div>Loading...</div>,
-  },
-);
+// const AccountSettingPageRender = dynamic(
+//   () => import('@/features/setting/presentation/module/account/AccountSettingPage'),
+//   {
+//     loading: () => <div>Loading...</div>,
+//   },
+// );
 
 export default function SettingsProfilePage() {
   return (
@@ -18,7 +18,7 @@ export default function SettingsProfilePage() {
         </p>
       </div>
       <Separator />
-      <AccountSettingPageRender />
+      {/* <AccountSettingPageRender /> */}
     </div>
   );
 }
