@@ -3,12 +3,9 @@ CREATE TYPE "MediaType" AS ENUM ('IMAGE', 'VIDEO', 'EMBEDDED');
 
 -- CreateEnum
 CREATE TYPE "SectionType" AS ENUM ('BANNER', 'VISION_MISSION', 'KPS', 'PARTNER_LOGO');
-<<<<<<<< HEAD:prisma/migrations/20250304130114_v1/migration.sql
-========
 
 -- CreateEnum
 CREATE TYPE "CategoryType" AS ENUM ('Expense', 'Income');
->>>>>>>> 8368e09959c1375b769191e5f7178fafa6d087f4:prisma/migrations/20250305134434_fiora_v1_0/migration.sql
 
 -- CreateEnum
 CREATE TYPE "AccountType" AS ENUM ('Payment', 'Saving', 'CreditCard', 'Debt', 'Lending');
@@ -30,8 +27,12 @@ CREATE TABLE "User" (
     "password" TEXT,
     "emailVerified" BOOLEAN DEFAULT false,
     "image" TEXT,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -44,6 +45,8 @@ CREATE TABLE "Session" (
     "expires" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
 );
@@ -60,6 +63,10 @@ CREATE TABLE "Account" (
     "limit" DECIMAL(13,2) DEFAULT 0,
     "balance" DECIMAL(13,2) DEFAULT 0,
     "parentId" UUID,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
 );
@@ -80,6 +87,8 @@ CREATE TABLE "UserAuthentication" (
     "session_state" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "UserAuthentication_pkey" PRIMARY KEY ("id")
 );
@@ -95,10 +104,11 @@ CREATE TABLE "Product" (
     "description" VARCHAR(1000),
     "price" DECIMAL(13,2) NOT NULL,
     "taxRate" DECIMAL(4,2),
-    "items" JSONB,
-    "transactionId" UUID,
+    "items" JSON,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
 );
@@ -117,10 +127,25 @@ CREATE TABLE "Transaction" (
     "products" JSONB,
     "partnerId" UUID,
     "remark" VARCHAR(255),
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Transaction_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ProductTransaction" (
+    "productId" UUID NOT NULL,
+    "transactionId" UUID NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
+
+    CONSTRAINT "ProductTransaction_pkey" PRIMARY KEY ("productId","transactionId")
 );
 
 -- CreateTable
@@ -136,9 +161,11 @@ CREATE TABLE "Partner" (
     "email" VARCHAR(50),
     "phone" VARCHAR(50),
     "description" VARCHAR(1000),
-    "children" JSONB,
+    "children" JSON,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Partner_pkey" PRIMARY KEY ("id")
 );
@@ -148,69 +175,67 @@ CREATE TABLE "VerificationToken" (
     "identifier" TEXT NOT NULL,
     "token" TEXT NOT NULL,
     "expires" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "VerificationToken_pkey" PRIMARY KEY ("identifier","token")
 );
 
 -- CreateTable
 CREATE TABLE "Section" (
-    "section_id" SERIAL NOT NULL,
+    "id" UUID NOT NULL,
     "section_type" "SectionType" NOT NULL,
     "name" TEXT NOT NULL,
-    "userId" UUID NOT NULL,
     "order" INTEGER NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
-    CONSTRAINT "Section_pkey" PRIMARY KEY ("section_id")
+    CONSTRAINT "Section_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Media" (
-    "id" SERIAL NOT NULL,
+    "id" UUID NOT NULL,
     "media_type" "MediaType" NOT NULL,
     "media_url" TEXT,
     "embed_code" TEXT,
     "description" TEXT,
     "uploaded_by" TEXT,
     "uploaded_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "section_id" INTEGER,
+    "section_id" UUID,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Media_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-<<<<<<< HEAD:prisma/migrations/20250305134434_fiora_v1_0/migration.sql
-CREATE TABLE "Section" (
-    "section_id" SERIAL NOT NULL,
-    "section_type" "SectionType" NOT NULL,
-    "name" TEXT NOT NULL,
-    "order" INTEGER NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Section_pkey" PRIMARY KEY ("section_id")
-);
-
--- CreateTable
-=======
->>>>>>> 551e23586e1529b655305f47784b3676b0060435:prisma/migrations/20250308045802_fiora/migration.sql
 CREATE TABLE "Category" (
     "id" UUID NOT NULL,
     "userId" UUID NOT NULL,
     "type" "CategoryType" NOT NULL,
     "icon" TEXT NOT NULL,
+    "tax_rate" DECIMAL(13,2) NOT NULL,
     "name" VARCHAR(50) NOT NULL,
     "description" VARCHAR(1000),
     "parentId" UUID,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE INDEX "User_isDeleted_idx" ON "User"("isDeleted");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
@@ -226,6 +251,30 @@ CREATE UNIQUE INDEX "UserAuthentication_userId_key" ON "UserAuthentication"("use
 
 -- CreateIndex
 CREATE UNIQUE INDEX "UserAuthentication_provider_providerAccountId_key" ON "UserAuthentication"("provider", "providerAccountId");
+
+-- CreateIndex
+CREATE INDEX "Product_userId_idx" ON "Product"("userId");
+
+-- CreateIndex
+CREATE INDEX "Product_catId_idx" ON "Product"("catId");
+
+-- CreateIndex
+CREATE INDEX "Transaction_date_idx" ON "Transaction"("date");
+
+-- CreateIndex
+CREATE INDEX "Transaction_type_idx" ON "Transaction"("type");
+
+-- CreateIndex
+CREATE INDEX "Transaction_userId_date_idx" ON "Transaction"("userId", "date");
+
+-- CreateIndex
+CREATE INDEX "Transaction_userId_type_date_idx" ON "Transaction"("userId", "type", "date");
+
+-- CreateIndex
+CREATE INDEX "Category_userId_idx" ON "Category"("userId");
+
+-- CreateIndex
+CREATE INDEX "Category_parentId_idx" ON "Category"("parentId");
 
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -243,16 +292,7 @@ ALTER TABLE "UserAuthentication" ADD CONSTRAINT "UserAuthentication_userId_fkey"
 ALTER TABLE "Product" ADD CONSTRAINT "Product_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-<<<<<<< HEAD:prisma/migrations/20250305134434_fiora_v1_0/migration.sql
-<<<<<<<< HEAD:prisma/migrations/20250304130114_v1/migration.sql
-ALTER TABLE "Media" ADD CONSTRAINT "Media_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("section_id") ON DELETE SET NULL ON UPDATE CASCADE;
-========
-ALTER TABLE "Banner" ADD CONSTRAINT "Banner_media_id_fkey" FOREIGN KEY ("media_id") REFERENCES "Media"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-=======
 ALTER TABLE "Product" ADD CONSTRAINT "Product_catId_fkey" FOREIGN KEY ("catId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "Transaction"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -273,15 +313,19 @@ ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_toCategoryId_fkey" FOREIGN
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_partnerId_fkey" FOREIGN KEY ("partnerId") REFERENCES "Partner"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "ProductTransaction" ADD CONSTRAINT "ProductTransaction_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProductTransaction" ADD CONSTRAINT "ProductTransaction_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "Transaction"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Partner" ADD CONSTRAINT "Partner_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Media" ADD CONSTRAINT "Media_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("section_id") ON DELETE SET NULL ON UPDATE CASCADE;
->>>>>>> 551e23586e1529b655305f47784b3676b0060435:prisma/migrations/20250308045802_fiora/migration.sql
+ALTER TABLE "Media" ADD CONSTRAINT "Media_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Category" ADD CONSTRAINT "Category_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Category" ADD CONSTRAINT "Category_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
->>>>>>>> 8368e09959c1375b769191e5f7178fafa6d087f4:prisma/migrations/20250305134434_fiora_v1_0/migration.sql
