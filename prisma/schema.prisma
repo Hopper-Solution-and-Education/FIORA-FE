@@ -23,8 +23,11 @@ model User {
   transactions   Transaction[]        @relation("UserTransactions")
   products       Product[]            @relation("UserProducts")
   partners       Partner[]            @relation("UserPartners")
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String   @db.Uuid
+  updatedBy String?  @db.Uuid
 }
 
 model Session {
@@ -33,8 +36,11 @@ model Session {
   userId       String   @db.Uuid
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String   @db.Uuid
+  updatedBy String?  @db.Uuid
 }
 
 model Account {
@@ -44,7 +50,6 @@ model Account {
   name             String        @db.VarChar(50)
   description      String?       @db.VarChar(1000)
   type             AccountType   @default(Payment)
-  isDeleted        Boolean       @default(false)
   currency         Currency      @default(VND)
   limit            Decimal?      @default(0) @db.Decimal(13, 2)
   balance          Decimal?      @default(0) @db.Decimal(13, 2)
@@ -54,16 +59,19 @@ model Account {
   user             User          @relation("UserAccounts", fields: [userId], references: [id])
   fromTransactions Transaction[] @relation("FromAccount")
   toTransactions   Transaction[] @relation("ToAccount")
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String   @db.Uuid
+  updatedBy String?  @db.Uuid
 
   @@index([userId])
   @@index([parentId])
 }
 
 model UserAuthentication {
-  id                String   @id @default(uuid()) @db.Uuid
-  userId            String   @unique @db.Uuid
+  id                String  @id @default(uuid()) @db.Uuid
+  userId            String  @unique @db.Uuid
   type              String
   provider          String
   providerAccountId String
@@ -74,9 +82,12 @@ model UserAuthentication {
   scope             String?
   id_token          String?
   session_state     String?
-  user              User     @relation(fields: [userId], references: [id])
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  user              User    @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String   @db.Uuid
+  updatedBy String?  @db.Uuid
 
   @@unique([provider, providerAccountId])
 }
@@ -87,7 +98,6 @@ model Product {
   catId        String               @db.Uuid
   type         ProductType
   icon         String
-  isDeleted    Boolean              @default(false)
   name         String               @db.VarChar(50)
   description  String?              @db.VarChar(1000)
   price        Decimal              @db.Decimal(13, 2)
@@ -100,6 +110,8 @@ model Product {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  createdBy String   @db.Uuid
+  updatedBy String?  @db.Uuid
 }
 
 model Transaction {
@@ -110,12 +122,12 @@ model Transaction {
   amount           Decimal              @db.Decimal(13, 2)
   fromAccountId    String?              @db.Uuid
   fromCategoryId   String?              @db.Uuid
+  isDeleted        Boolean              @default(false)
   toAccountId      String?              @db.Uuid
   toCategoryId     String?              @db.Uuid
   products         Json?
   partnerId        String?              @db.Uuid
   remark           String?              @db.VarChar(255)
-  isDeleted        Boolean              @default(false)
   user             User?                @relation("UserTransactions", fields: [userId], references: [id])
   fromAccount      Account?             @relation("FromAccount", fields: [fromAccountId], references: [id])
   fromCategory     Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
@@ -127,6 +139,8 @@ model Transaction {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  createdBy String   @db.Uuid
+  updatedBy String?  @db.Uuid
 }
 
 // Bảng trung gian cho quan hệ nhiều-nhiều giữa Product và Transaction
@@ -136,9 +150,11 @@ model ProductTransaction {
 
   product     Product     @relation("ProductTransactions", fields: [productId], references: [id])
   transaction Transaction @relation("ProductTransactions", fields: [transactionId], references: [id])
-  isDeleted   Boolean     @default(false)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String   @db.Uuid
+  updatedBy String?  @db.Uuid
 
   @@id([productId, transactionId]) // Khóa chính composite
 }
@@ -156,13 +172,14 @@ model Partner {
   phone       String?   @db.VarChar(50)
   description String?   @db.VarChar(1000)
   children    Json?
-  isDeleted   Boolean   @default(false)
 
   user         User          @relation("UserPartners", fields: [userId], references: [id])
   transactions Transaction[] @relation("PartnerTransactions")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  createdBy String   @db.Uuid
+  updatedBy String?  @db.Uuid
 }
 
 model VerificationToken {
@@ -181,9 +198,12 @@ model Section {
   name         String
   userId       String      @db.Uuid
   order        Int
-  created_at   DateTime    @default(now())
-  updated_at   DateTime    @updatedAt
   medias       Media[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String   @db.Uuid
+  updatedBy String?  @db.Uuid
 }
 
 model Media {
@@ -197,8 +217,11 @@ model Media {
   // Liên kết với Section
   section_id    String?   @db.Uuid
   section       Section?  @relation(fields: [section_id], references: [id])
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String   @db.Uuid
+  updatedBy String?  @db.Uuid
 }
 
 model Category {
@@ -216,8 +239,11 @@ model Category {
   fromTransactions Transaction[] @relation("FromCategory")
   toTransactions   Transaction[] @relation("ToCategory")
   products         Product[]     @relation("CategoryProducts")
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String   @db.Uuid
+  updatedBy String?  @db.Uuid
 }
 
 // Các enum
