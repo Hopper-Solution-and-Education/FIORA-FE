@@ -54,8 +54,6 @@ model Account {
   name             String        @db.VarChar(50)
   description      String?       @db.VarChar(1000)
   type             AccountType   @default(Payment)
-  isDeleted        Boolean       @default(false)
-  deletedAt        DateTime?
   currency         Currency      @default(VND)
   limit            Decimal?      @default(0) @db.Decimal(13, 2)
   balance          Decimal?      @default(0) @db.Decimal(13, 2)
@@ -104,8 +102,6 @@ model Product {
   catId        String               @db.Uuid
   type         ProductType
   icon         String
-  isDeleted    Boolean              @default(false)
-  deletedAt    DateTime?
   name         String               @db.VarChar(50)
   description  String?              @db.VarChar(1000)
   price        Decimal              @db.Decimal(13, 2)
@@ -121,7 +117,7 @@ model Product {
   createdBy String   @db.Uuid
   updatedBy String?  @db.Uuid
 
-  @@index([userId, isDeleted]) // For querying active products for a user
+  @@index([userId]) // For querying active products for a user
   @@index([catId]) // For category-based product queries
 }
 
@@ -168,8 +164,6 @@ model ProductTransaction {
 
   product     Product     @relation("ProductTransactions", fields: [productId], references: [id])
   transaction Transaction @relation("ProductTransactions", fields: [transactionId], references: [id])
-  isDeleted   Boolean     @default(false)
-  deletedAt   DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -192,8 +186,6 @@ model Partner {
   phone       String?   @db.VarChar(50)
   description String?   @db.VarChar(1000)
   children    Json?     @db.Json
-  isDeleted   Boolean   @default(false)
-  deletedAt   DateTime?
 
   user         User          @relation("UserPartners", fields: [userId], references: [id])
   transactions Transaction[] @relation("PartnerTransactions")
@@ -202,8 +194,6 @@ model Partner {
   updatedAt DateTime @updatedAt
   createdBy String   @db.Uuid
   updatedBy String?  @db.Uuid
-
-  @@index([isDeleted]) // For querying active partners for a user
 }
 
 model VerificationToken {
