@@ -4,8 +4,9 @@ datasource db {
 }
 
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "linux-musl-arm64-openssl-3.0.x"]
+  previewFeatures = ["fullTextSearchPostgres"]
 }
 
 model User {
@@ -16,6 +17,7 @@ model User {
   emailVerified  Boolean?             @default(false)
   image          String?
   isDeleted      Boolean              @default(false)
+  deletedAt      DateTime?
   authentication UserAuthentication[]
   sessions       Session[]
   accounts       Account[]            @relation("UserAccounts")
@@ -28,6 +30,8 @@ model User {
   updatedAt DateTime @updatedAt
   createdBy String   @db.Uuid
   updatedBy String?  @db.Uuid
+
+  @@index([isDeleted])
 }
 
 model Session {
@@ -102,7 +106,7 @@ model Product {
   description  String?              @db.VarChar(1000)
   price        Decimal              @db.Decimal(13, 2)
   taxRate      Decimal?             @db.Decimal(4, 2)
-  items        Json?
+  items        Json?                @db.Json
   user         User                 @relation("UserProducts", fields: [userId], references: [id])
   category     Category             @relation("CategoryProducts", fields: [catId], references: [id])
   // Quan hệ nhiều-nhiều với Transaction thông qua bảng trung gian
@@ -112,22 +116,27 @@ model Product {
   updatedAt DateTime @updatedAt
   createdBy String   @db.Uuid
   updatedBy String?  @db.Uuid
+
+  @@index([userId]) // For querying active products for a user
+  @@index([catId]) // For category-based product queries
 }
 
 model Transaction {
-  id               String               @id @default(uuid()) @db.Uuid
-  userId           String?              @db.Uuid
-  date             DateTime             @db.Date
-  type             TransactionType
-  amount           Decimal              @db.Decimal(13, 2)
-  fromAccountId    String?              @db.Uuid
-  fromCategoryId   String?              @db.Uuid
-  isDeleted        Boolean              @default(false)
-  toAccountId      String?              @db.Uuid
-  toCategoryId     String?              @db.Uuid
-  products         Json?
-  partnerId        String?              @db.Uuid
-  remark           String?              @db.VarChar(255)
+  id             String          @id @default(uuid()) @db.Uuid
+  userId         String?         @db.Uuid
+  date           DateTime        @db.Date
+  type           TransactionType
+  amount         Decimal         @db.Decimal(13, 2)
+  fromAccountId  String?         @db.Uuid
+  fromCategoryId String?         @db.Uuid
+  toAccountId    String?         @db.Uuid
+  toCategoryId   String?         @db.Uuid
+  products       Json?
+  partnerId      String?         @db.Uuid
+  remark         String?         @db.VarChar(255)
+  isDeleted      Boolean         @default(false)
+  deletedAt      DateTime?
+
   user             User?                @relation("UserTransactions", fields: [userId], references: [id])
   fromAccount      Account?             @relation("FromAccount", fields: [fromAccountId], references: [id])
   fromCategory     Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
@@ -139,8 +148,13 @@ model Transaction {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  createdBy String   @db.Uuid
-  updatedBy String?  @db.Uuid
+
+  updatedBy String? @db.Uuid
+
+  @@index([date]) // Add index for date queries
+  @@index([type]) // Add index for filtering by transaction type
+  @@index([userId, date]) // Composite index for user's transactions by date
+  @@index([userId, type, date]) // For financial reports by type and date range
 }
 
 // Bảng trung gian cho quan hệ nhiều-nhiều giữa Product và Transaction
@@ -171,7 +185,7 @@ model Partner {
   email       String?   @db.VarChar(50)
   phone       String?   @db.VarChar(50)
   description String?   @db.VarChar(1000)
-  children    Json?
+  children    Json?     @db.Json
 
   user         User          @relation("UserPartners", fields: [userId], references: [id])
   transactions Transaction[] @relation("PartnerTransactions")
@@ -196,7 +210,6 @@ model Section {
   id           String      @id @default(uuid()) @db.Uuid
   section_type SectionType
   name         String
-  userId       String      @db.Uuid
   order        Int
   medias       Media[]
 
@@ -214,7 +227,6 @@ model Media {
   description   String?
   uploaded_by   String?
   uploaded_date DateTime  @default(now())
-  // Liên kết với Section
   section_id    String?   @db.Uuid
   section       Section?  @relation(fields: [section_id], references: [id])
 
@@ -244,6 +256,9 @@ model Category {
   updatedAt DateTime @updatedAt
   createdBy String   @db.Uuid
   updatedBy String?  @db.Uuid
+
+  @@index([userId])
+  @@index([parentId])
 }
 
 // Các enum

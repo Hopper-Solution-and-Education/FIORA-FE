@@ -1,12 +1,16 @@
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
-import { UserUSeCaseInstance } from '@/features/auth/application/use-cases/userUseCase';
-import { validateAccount } from '@/shared/validation/accountValidation';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]';
+import { createResponse } from '@/lib/createResponse';
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse) {
   switch (request.method) {
     case 'POST':
       return POST(request, response);
+    case 'DELETE':
+      return DELETE(request, response);
     default:
       return response.status(405).json({ error: 'Method not allowed' });
   }
@@ -16,32 +20,62 @@ export default async function handler(request: NextApiRequest, response: NextApi
 export async function POST(request: NextApiRequest, response: NextApiResponse) {
   try {
     const body = await request.body;
-    const { userId, name, type, currency, balance = 0, limit, parentId } = body;
 
-    // Validate account type and balance
-    const isValid = validateAccount(type, balance, limit);
-    if (!isValid) {
-      response.status(400).json({ error: 'Invalid account type or balance' });
+    const session = await getServerSession(request, response, authOptions);
+    if (!session || !session.user?.id) {
+      return response.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
     }
-    // Ensure user exists
-    const userFound = await UserUSeCaseInstance.checkExistedUserById(userId);
-    if (!userFound) {
-      response.status(404).json({ error: 'User not found' });
+
+    const userId = session.user.id;
+
+    const { name, type, currency, balance = 0, limit, icon, parentId, isParentSelected } = body;
+
+    if (!isParentSelected && !parentId && parentId !== null) {
+      const isCreateMasterAccount = await AccountUseCaseInstance.isOnlyMasterAccount(userId, type);
+      if (isCreateMasterAccount) {
+        return response.status(400).json({ message: 'Master account already exists' });
+      }
     }
     // Create the account
     const account = await AccountUseCaseInstance.create({
       userId,
       name,
       type,
+      icon,
       currency,
       balance: balance,
       limit: limit,
-      parentId,
+      parentId: parentId,
     });
 
+    if (!account) {
+      return response.status(400).json({ message: 'Cannot create new account' });
+    }
     // If this is a sub-account, update the parent's balance
     response.status(201).json({ message: 'Account created successfully', account });
   } catch (error: any) {
-    response.status(500).json({ error: error.message });
+    response.status(500).json({ message: error.message });
+  }
+}
+
+export async function DELETE(request: NextApiRequest, response: NextApiResponse) {
+  try {
+    const session = await getServerSession(request, response, authOptions);
+    if (!session || !session.user?.id) {
+      return response.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
+    }
+
+    const userId = session.user.id;
+
+    const body = await request.body;
+    const { parentId, subAccountId } = body;
+
+    await AccountUseCaseInstance.removeSubAccount(userId, parentId, subAccountId);
+    // If this is a sub-account, update the parent's balance
+    response
+      .status(201)
+      .json(createResponse(RESPONSE_CODE.CREATED, 'Account removed successfully'));
+  } catch (error: any) {
+    response.status(500).json({ message: error.message });
   }
 }

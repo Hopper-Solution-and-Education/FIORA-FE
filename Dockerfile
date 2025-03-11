@@ -4,10 +4,13 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy node_modules từ local cùng với các file khác
+# Cài libc6-compat để hỗ trợ một số package trên Alpine
+RUN apk add --no-cache libc6-compat
+
+# Copy và cài đặt dependencies
 COPY prisma ./prisma/
 COPY package.json package-lock.json ./
-COPY node_modules ./node_modules/
+RUN npm install --legacy-peer-deps
 
 COPY . .
 RUN npm run build

@@ -1,7 +1,8 @@
 import { MediaType, SectionType } from '@prisma/client';
-import prisma from '@/infrastructure/database/prisma';
+
 import { IMediaRepository } from '../../domain/interfaces/MediaRepository';
 import { Media } from '../../domain/models/Media';
+import prisma from '@/infrastructure/database/prisma';
 
 export class MediaRepository implements IMediaRepository {
   private static instance: MediaRepository;

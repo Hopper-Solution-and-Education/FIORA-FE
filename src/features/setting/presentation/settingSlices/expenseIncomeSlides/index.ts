@@ -24,7 +24,6 @@ const expenseIncomeSlice = createSlice({
     reset: () => initialExpenseIncomeState,
   },
   extraReducers: (builder) => {
-    // Fetch Categories
     builder
       .addCase(fetchCategories.pending, (state) => {
         state.categories.isLoading = true;
@@ -37,16 +36,23 @@ const expenseIncomeSlice = createSlice({
         state.categories.isLoading = false;
         state.categories.error =
           (action.payload as { message: string })?.message || 'Unknown error';
-      });
-    // Create Category
-    builder
+      })
+      // Rest of the extraReducers remain the same
       .addCase(createCategory.pending, (state) => {
         state.categories.isLoading = true;
       })
       .addCase(createCategory.fulfilled, (state, action) => {
         state.categories.isLoading = false;
         if (state.categories.data) {
-          state.categories.data.push(action.payload.data);
+          const newCategory = action.payload.data;
+          if (!newCategory.parentId) {
+            state.categories.data.push(newCategory);
+          } else {
+            const parent = state.categories.data.find((cat) => cat.id === newCategory.parentId);
+            if (parent) {
+              parent.subCategories.push(newCategory);
+            }
+          }
         } else {
           state.categories.data = [action.payload.data];
         }
@@ -55,41 +61,26 @@ const expenseIncomeSlice = createSlice({
         state.categories.isLoading = false;
         state.categories.error =
           (action.payload as { message: string })?.message || 'Unknown error';
-      });
-    // Update Category
-    builder
-      .addCase(updateCategory.pending, (state) => {
-        state.categories.isLoading = true;
       })
+      // Update and delete cases remain largely the same but should consider hierarchy
       .addCase(updateCategory.fulfilled, (state, action) => {
         state.categories.isLoading = false;
         if (state.categories.data) {
-          state.categories.data = state.categories.data.map((cat) =>
-            cat.id === action.payload.data.id ? action.payload.data : cat,
-          );
+          const updateCategoryInArray = (categories: Category[]): void => {
+            for (let i = 0; i < categories.length; i++) {
+              if (categories[i].id === action.payload.data.id) {
+                categories[i] = action.payload.data;
+                return;
+              }
+              updateCategoryInArray(categories[i].subCategories);
+            }
+          };
+          updateCategoryInArray(state.categories.data);
         }
-      })
-      .addCase(updateCategory.rejected, (state, action) => {
-        state.categories.isLoading = false;
-        state.categories.error =
-          (action.payload as { message: string })?.message || 'Unknown error';
-      });
-
-    // Delete Category
-    builder
-      .addCase(deleteCategory.pending, (state) => {
-        state.categories.isLoading = true;
       })
       .addCase(deleteCategory.fulfilled, (state, action) => {
         state.categories.isLoading = false;
-        if (state.categories.data) {
-          state.categories.data = state.categories.data.filter((cat) => cat.id !== action.payload);
-        }
-      })
-      .addCase(deleteCategory.rejected, (state, action) => {
-        state.categories.isLoading = false;
-        state.categories.error =
-          (action.payload as { message: string })?.message || 'Unknown error';
+        state.categories.data = state.categories.data?.filter((cat) => cat.id !== action.payload);
       });
   },
 });

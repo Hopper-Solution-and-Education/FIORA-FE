@@ -27,8 +27,12 @@ CREATE TABLE "User" (
     "password" TEXT,
     "emailVerified" BOOLEAN DEFAULT false,
     "image" TEXT,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -41,6 +45,8 @@ CREATE TABLE "Session" (
     "expires" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
 );
@@ -59,6 +65,8 @@ CREATE TABLE "Account" (
     "parentId" UUID,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
 );
@@ -79,6 +87,8 @@ CREATE TABLE "UserAuthentication" (
     "session_state" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "UserAuthentication_pkey" PRIMARY KEY ("id")
 );
@@ -94,9 +104,11 @@ CREATE TABLE "Product" (
     "description" VARCHAR(1000),
     "price" DECIMAL(13,2) NOT NULL,
     "taxRate" DECIMAL(4,2),
-    "items" JSONB,
+    "items" JSON,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
 );
@@ -115,8 +127,11 @@ CREATE TABLE "Transaction" (
     "products" JSONB,
     "partnerId" UUID,
     "remark" VARCHAR(255),
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Transaction_pkey" PRIMARY KEY ("id")
 );
@@ -127,6 +142,8 @@ CREATE TABLE "ProductTransaction" (
     "transactionId" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "ProductTransaction_pkey" PRIMARY KEY ("productId","transactionId")
 );
@@ -144,9 +161,11 @@ CREATE TABLE "Partner" (
     "email" VARCHAR(50),
     "phone" VARCHAR(50),
     "description" VARCHAR(1000),
-    "children" JSONB,
+    "children" JSON,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Partner_pkey" PRIMARY KEY ("id")
 );
@@ -167,10 +186,11 @@ CREATE TABLE "Section" (
     "id" UUID NOT NULL,
     "section_type" "SectionType" NOT NULL,
     "name" TEXT NOT NULL,
-    "userId" UUID NOT NULL,
     "order" INTEGER NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Section_pkey" PRIMARY KEY ("id")
 );
@@ -187,6 +207,8 @@ CREATE TABLE "Media" (
     "section_id" UUID,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Media_pkey" PRIMARY KEY ("id")
 );
@@ -203,12 +225,17 @@ CREATE TABLE "Category" (
     "parentId" UUID,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE INDEX "User_isDeleted_idx" ON "User"("isDeleted");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
@@ -224,6 +251,30 @@ CREATE UNIQUE INDEX "UserAuthentication_userId_key" ON "UserAuthentication"("use
 
 -- CreateIndex
 CREATE UNIQUE INDEX "UserAuthentication_provider_providerAccountId_key" ON "UserAuthentication"("provider", "providerAccountId");
+
+-- CreateIndex
+CREATE INDEX "Product_userId_idx" ON "Product"("userId");
+
+-- CreateIndex
+CREATE INDEX "Product_catId_idx" ON "Product"("catId");
+
+-- CreateIndex
+CREATE INDEX "Transaction_date_idx" ON "Transaction"("date");
+
+-- CreateIndex
+CREATE INDEX "Transaction_type_idx" ON "Transaction"("type");
+
+-- CreateIndex
+CREATE INDEX "Transaction_userId_date_idx" ON "Transaction"("userId", "date");
+
+-- CreateIndex
+CREATE INDEX "Transaction_userId_type_date_idx" ON "Transaction"("userId", "type", "date");
+
+-- CreateIndex
+CREATE INDEX "Category_userId_idx" ON "Category"("userId");
+
+-- CreateIndex
+CREATE INDEX "Category_parentId_idx" ON "Category"("parentId");
 
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

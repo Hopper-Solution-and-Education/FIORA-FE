@@ -1,14 +1,16 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import expenseIncomeServices from '@/features/setting/services/expenseIncomeServices';
 import { Response } from '@/shared/types/Common.types';
-import { Category } from '../types';
+import { Category, RawCategory } from '../types';
+import { transformCategories } from '../utils';
 
 export const fetchCategories = createAsyncThunk(
   'expenseIncome/fetchCategories',
   async (_, { rejectWithValue }) => {
     try {
-      const response: Response<Category[]> = await expenseIncomeServices.getCategories();
-      return response;
+      const response: Response<RawCategory[]> = await expenseIncomeServices.getCategories();
+      const transformedData = transformCategories(response.data);
+      return { ...response, data: transformedData };
     } catch (error: any) {
       return rejectWithValue({
         message: error.message || 'Failed to fetch categories! Please try again!',
@@ -49,8 +51,7 @@ export const deleteCategory = createAsyncThunk(
   'expenseIncome/deleteCategory',
   async (id: string, { rejectWithValue }) => {
     try {
-      await expenseIncomeServices.deleteCategory(id);
-      return id;
+      return await expenseIncomeServices.deleteCategory(id);
     } catch (error: any) {
       return rejectWithValue({
         message: error.message || 'Failed to delete category! Please try again!',
