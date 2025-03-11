@@ -14,11 +14,7 @@ import { Category } from '@/features/setting/presentation/settingSlices/expenseI
 import { useAppDispatch, useAppSelector } from '@/store';
 import { CategoryType } from '@prisma/client';
 import { useEffect, useState } from 'react';
-import {
-  createCategory,
-  deleteCategory,
-  fetchCategories,
-} from '../../settingSlices/expenseIncomeSlides/actions';
+import { deleteCategory, fetchCategories } from '../../settingSlices/expenseIncomeSlides/actions';
 import DeleteDialog from './molecules/DeleteDialog';
 import InsertCategoryDialog from './molecules/InsertCategoryDialog';
 
@@ -36,17 +32,19 @@ export default function ExpenseIncomeSettingPage() {
 
   useEffect(() => {
     dispatch(setSelectedCategory(categories.data?.[0] || null));
-  }, [categories.data]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(categories.data)]);
 
   const handleCreateCategory = (category: Partial<Category>) => {
-    dispatch(
-      createCategory({
-        name: category.name || '',
-        type: (category.type as CategoryType) || CategoryType.Expense,
-        subCategories: [],
-        icon: category.icon || '',
-      }),
-    );
+    // dispatch(
+    //   // createCategory({
+    //   //   tax_rate: '',
+    //   //   name: category.name || '',
+    //   //   type: (category.type as CategoryType) || CategoryType.Expense,
+    //   //   subCategories: [],
+    //   //   icon: category.icon || '',
+    //   // }),
+    // );
     dispatch(setDialogOpen(false));
     dispatch(setSelectedCategory(null));
   };

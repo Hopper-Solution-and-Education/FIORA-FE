@@ -2,8 +2,14 @@ import dynamic from 'next/dynamic';
 import React from 'react';
 import { Separator } from '@/components/ui/separator';
 
-const ExpenseIncomeSettingPageRender = dynamic(
-  () => import('@/features/setting/presentation/module/expenseIncome/ExpenseIncomeSettingPage'),
+// const ExpenseIncomeSettingPageRender = dynamic(
+//   () => import('@/features/setting/presentation/module/expenseIncome/ExpenseIncomeSettingPage'),
+//   {
+//     loading: () => <div>Loading...</div>,
+//   },
+// );
+const ExpenseIncomeDashboardRender = dynamic(
+  () => import('@/features/setting/presentation/module/expenseIncome/ExpenseIncomeDashboard'),
   {
     loading: () => <div>Loading...</div>,
   },
@@ -19,7 +25,7 @@ const ExpenseIncomePage = () => {
         </p>
       </div>
       <Separator />
-      <ExpenseIncomeSettingPageRender />
+      <ExpenseIncomeDashboardRender />
     </div>
   );
 };
