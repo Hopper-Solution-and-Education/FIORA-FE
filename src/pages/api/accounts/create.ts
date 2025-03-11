@@ -30,12 +30,20 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
 
     const { name, type, currency, balance = 0, limit, icon, parentId, isParentSelected } = body;
 
+    const isValidAccountType = AccountUseCaseInstance.validateAccountType(type, balance, limit);
+    if (!isValidAccountType) {
+      return response.status(400).json({ message: 'Invalid account type' });
+    }
+
     if (!isParentSelected && !parentId && parentId !== null) {
       const isCreateMasterAccount = await AccountUseCaseInstance.isOnlyMasterAccount(userId, type);
       if (isCreateMasterAccount) {
-        return response.status(400).json({ message: 'Master account already exists' });
+        return response
+          .status(400)
+          .json(createResponse(RESPONSE_CODE.BAD_REQUEST, 'Master account already exists'));
       }
     }
+
     // Create the account
     const account = await AccountUseCaseInstance.create({
       userId,
