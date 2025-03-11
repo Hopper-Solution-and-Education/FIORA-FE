@@ -1,10 +1,11 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -12,13 +13,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { MediaType } from '@prisma/client';
-import { ArrowDown, ArrowUp, Image as ImageIcon, Trash2, Video } from 'lucide-react';
-import { useState } from 'react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  ChevronRight,
+  Image as ImageIcon,
+  Trash2,
+  Video,
+} from 'lucide-react';
 import Image from 'next/image';
+import { useState } from 'react';
+import MediaUploader from './MediaUploader';
+
 interface MediaItemProps {
   mediaIndex: number;
   control: any;
@@ -53,8 +62,8 @@ export default function MediaItem({
 
     if (!mediaUrl && !embedCode) {
       return (
-        <div className="flex items-center justify-center h-20 bg-gray-100 rounded-md">
-          {mediaType === MediaType.IMAGE && <ImageIcon className="h-6 w-6 text-gray-400" />}
+        <div className="flex items-center justify-center h-full bg-gray-100 rounded-md">
+          {mediaType === MediaType.IMAGE && <ImageIcon className="h-16 w-16 text-gray-400" />}
           {mediaType === MediaType.VIDEO && <Video className="h-6 w-6 text-gray-400" />}
           {mediaType === MediaType.EMBEDDED && <div className="text-gray-400 text-sm">Embed</div>}
         </div>
@@ -63,13 +72,15 @@ export default function MediaItem({
 
     if (mediaType === MediaType.IMAGE && mediaUrl) {
       return (
-        <div className="relative h-40 bg-gray-100 rounded-md overflow-hidden">
+        <div className="relative h-48 bg-gray-100 rounded-md overflow-hidden">
           <Image
             src={mediaUrl || '/placeholder.svg'}
             alt="Preview"
-            className="object-cover w-full h-full"
+            width={400} // Increased width for a more horizontal look
+            height={200} // Adjusted height to keep it slightly larger but proportional
+            className="object-contain w-full h-full"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = '/placeholder.svg?height=120&width=220';
+              (e.target as HTMLImageElement).src = '/placeholder.svg?height=200&width=400'; // Updated placeholder dimensions
             }}
           />
         </div>
@@ -110,9 +121,6 @@ export default function MediaItem({
             </CollapsibleTrigger>
             <div className="flex items-center space-x-2">
               <Badge variant="outline">{mediaType}</Badge>
-              <span className="text-sm font-medium truncate max-w-[200px]">
-                {control._formValues.medias[mediaIndex].description || 'Untitled Media'}
-              </span>
             </div>
           </div>
 
@@ -147,16 +155,17 @@ export default function MediaItem({
         </div>
 
         <CollapsibleContent>
-          <CardContent className="p-3 grid grid-cols-3 gap-4">
+          <CardContent className="h-60 p-3 grid grid-cols-3 gap-4">
             <div className="col-span-1">{getMediaPreview()}</div>
 
             <div className="col-span-2 space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-3">
                 <div>
                   <Label htmlFor={`${mediaPath}.media_type`} className="text-xs mb-1 block">
                     Media Type
                   </Label>
                   <Select
+                    disabled
                     defaultValue={mediaType}
                     onValueChange={(value) => handleMediaTypeChange(value as MediaType)}
                   >
@@ -190,19 +199,7 @@ export default function MediaItem({
                 </div>
               </div>
 
-              {(mediaType === MediaType.IMAGE || mediaType === MediaType.VIDEO) && (
-                <div>
-                  <Label htmlFor={`${mediaPath}.media_url`} className="text-xs mb-1 block">
-                    Media URL
-                  </Label>
-                  <Input
-                    id={`${mediaPath}.media_url`}
-                    className="h-8"
-                    placeholder="Enter URL or upload file"
-                    {...control.register(`${mediaPath}.media_url`)}
-                  />
-                </div>
-              )}
+              <MediaUploader mediaType={mediaType} mediaPath={mediaPath} />
 
               {mediaType === MediaType.EMBEDDED && (
                 <div>

@@ -176,6 +176,7 @@ model Media {
   // Liên kết với Section
   section_id    Int?
   section       Section?  @relation(fields: [section_id], references: [section_id])
+
 }
 
 model Category {

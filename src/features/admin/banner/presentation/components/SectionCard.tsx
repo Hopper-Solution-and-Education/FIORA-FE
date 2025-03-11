@@ -96,15 +96,37 @@ export default function SectionCard({ control, sectionType }: SectionCardProps) 
               <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium">Media Items</h3>
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" onClick={() => addMedia(MediaType.IMAGE)}>
-                    <PlusCircle className="h-3 w-3 mr-1" /> Image
-                  </Button>
+                  {(sectionType === SectionType.BANNER ||
+                    sectionType === SectionType.KPS ||
+                    sectionType === SectionType.PARTNER_LOGO) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (typeof addMedia === 'function') {
+                          addMedia(MediaType.IMAGE);
+                        } else {
+                          console.error('addMedia is not a function');
+                        }
+                      }}
+                    >
+                      <PlusCircle className="h-3 w-3 mr-1" /> Image
+                    </Button>
+                  )}
+
+                  {sectionType === SectionType.VISION_MISSION && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addMedia(MediaType.EMBEDDED)}
+                    >
+                      <PlusCircle className="h-3 w-3 mr-1" /> Embed
+                    </Button>
+                  )}
+                  {/* 
                   <Button variant="outline" size="sm" onClick={() => addMedia(MediaType.VIDEO)}>
                     <PlusCircle className="h-3 w-3 mr-1" /> Video
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => addMedia(MediaType.EMBEDDED)}>
-                    <PlusCircle className="h-3 w-3 mr-1" /> Embed
-                  </Button>
+                  </Button> */}
                 </div>
               </div>
 
