@@ -1,7 +1,7 @@
 'use client';
 import { Inter } from 'next/font/google';
 import './globals.css';
-
+import 'reflect-metadata';
 import { SessionTimeoutModal } from '@/components/common/SessionTimeoutModal';
 import KBar from '@/components/kbar';
 import { AmplitudeProvider } from '@/components/providers/AmplitudeContextProvider';
@@ -26,7 +26,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <GrowthBookAppProvider>
           <SWRConfig value={swrOptions}>
-            <NextTopLoader showSpinner={true} />
+            <NextTopLoader showSpinner={false} />
             <NuqsAdapter>
               <KBar>
                 <AmplitudeProvider>
