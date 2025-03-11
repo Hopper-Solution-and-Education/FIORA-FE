@@ -5,6 +5,8 @@ import { transactionUseCase } from '@/features/transaction/application/use-cases
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { authOptions } from '../auth/[...nextauth]';
 import { UUID } from 'crypto';
+import { createErrorResponse, createResponse } from '@/lib/utils';
+import { Messages } from '@/lib/message';
 
 // Hàm kiểm tra session
 export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {
@@ -56,26 +58,45 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const transactions = await transactionUseCase.listTransactions(userId);
-    return res.status(RESPONSE_CODE.OK).json({
-      message: 'Lấy danh sách giao dịch thành công',
-      data: transactions,
-    });
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(
+        createResponse(RESPONSE_CODE.OK, 'success', transactions, Messages.GET_TRANSACTION_SUCCESS),
+      );
   } catch (error: any) {
-    res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    res
+      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createErrorResponse(
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
 }
 
-// Tạo giao dịch mới (Expense)
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { accountId, toCategoryId, amount, products, partnerId, remark, date } = req.body;
+    const {
+      fromAccountId,
+      toCategoryId,
+      amount,
+      products,
+      partnerId,
+      remark,
+      date,
+      toAccountId,
+      fromCategoryId,
+    } = req.body;
 
     const transactionData = {
       userId: userId,
       type: TransactionType.Expense,
       amount: parseFloat(amount),
-      accountId: accountId as UUID,
-      toCategoryId: toCategoryId,
+      fromAccountId: fromAccountId as UUID,
+      fromCategoryId: fromCategoryId as UUID,
+      toAccountId: toAccountId as UUID,
+      toCategoryId: toCategoryId as UUID,
       ...(products && { products }),
       ...(partnerId && { partnerId }),
       ...(remark && { remark }),
@@ -84,36 +105,71 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
 
     const newTransaction = await transactionUseCase.createTransaction_Expense(transactionData);
 
-    return res.status(RESPONSE_CODE.CREATED).json({
-      message: 'Tạo giao dịch chi tiêu thành công',
-      transaction: newTransaction,
-    });
+    return res
+      .status(RESPONSE_CODE.CREATED)
+      .json(
+        createResponse(
+          RESPONSE_CODE.CREATED,
+          'success',
+          newTransaction,
+          Messages.CREATE_TRANSACTION__SUCCESS,
+        ),
+      );
   } catch (error: any) {
-    res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    res
+      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createErrorResponse(
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
 }
 
-// Cập nhật giao dịch
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { id, transaction } = req.body;
     const updatedTransaction = await transactionUseCase.editTransaction(id, userId, transaction);
-    return res.status(RESPONSE_CODE.OK).json({
-      message: 'Cập nhật giao dịch thành công',
-      transaction: updatedTransaction,
-    });
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(
+        createResponse(
+          RESPONSE_CODE.OK,
+          'success',
+          updatedTransaction,
+          Messages.UPDATE_TRANSACTION__SUCCESS,
+        ),
+      );
   } catch (error: any) {
-    res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    res
+      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createErrorResponse(
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
 }
 
-// Xóa giao dịch
 export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { id } = req.query;
     await transactionUseCase.removeTransaction(id as string, userId);
-    return res.status(RESPONSE_CODE.OK).json({ message: 'Xóa giao dịch thành công' });
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(
+        createResponse(RESPONSE_CODE.OK, 'success', null, Messages.DELETE_TRANSACTION__SUCCESS),
+      );
   } catch (error: any) {
-    res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    res
+      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createErrorResponse(
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
 }

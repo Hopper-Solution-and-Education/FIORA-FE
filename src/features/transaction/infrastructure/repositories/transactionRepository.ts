@@ -34,8 +34,9 @@ class TransactionRepository implements ITransactionRepository {
   }
 
   async deleteTransaction(id: string, userId: string): Promise<void> {
-    await prisma.transaction.delete({
-      where: { id: id, userId: userId }, // Đảm bảo chỉ xóa giao dịch của user
+    await prisma.transaction.update({
+      where: { id: id, userId: userId },
+      data: { isDeleted: true },
     });
   }
 }

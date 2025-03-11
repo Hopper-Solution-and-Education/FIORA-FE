@@ -9,9 +9,9 @@ import { ITransactionRepository } from '../../domain/repositories/transactionRep
 import { transactionRepository } from '../../infrastructure/repositories/transactionRepository';
 import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
-import { UUID } from 'crypto';
 import { ICategoryRepository } from '@/features/setting/domain/repositories/categoryRepository.interface';
 import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
+import { BooleanUtils } from '@/lib/booleanUtils';
 
 class TransactionUseCase {
   constructor(
@@ -52,10 +52,8 @@ class TransactionUseCase {
     await this.transactionRepository.deleteTransaction(id, userId);
   }
 
-  async createTransaction_Expense(
-    data: Prisma.TransactionUncheckedCreateInput & { accountId: UUID },
-  ) {
-    const account = await this.accountRepository.findById(data.accountId);
+  async createTransaction_Expense(data: Prisma.TransactionUncheckedCreateInput) {
+    const account = await this.accountRepository.findById(data.fromAccountId as string);
     if (!account) {
       throw new Error("Can't find account");
     }
@@ -65,17 +63,17 @@ class TransactionUseCase {
       throw new Error('Mismatched account type. Only Payment or CreditCard accounts are allowed.');
     }
 
-    switch (type) {
-      case AccountType.Payment: {
-        this.validatePaymentAccount(account, data.amount as number);
-        break;
-      }
-
-      case AccountType.CreditCard: {
-        this.validateCreditCardAccount(account, data.amount as number);
-        break;
-      }
-    }
+    BooleanUtils.chooseByMap(
+      type,
+      {
+        [AccountType.Payment]: () => this.validatePaymentAccount(account, data.amount as number),
+        [AccountType.CreditCard]: () =>
+          this.validateCreditCardAccount(account, data.amount as number),
+      },
+      () => {
+        throw new Error(`AccountType ${type} không được hỗ trợ`);
+      },
+    );
 
     if (!data.toCategoryId) {
       throw new Error('Expense Category is required for Expense transaction.');
@@ -90,16 +88,110 @@ class TransactionUseCase {
     }
     const transaction = await this.transactionRepository.createTransaction({
       userId: data.userId,
+      date: data.date,
       type: data.type,
       amount: data.amount,
+      fromAccountId: data.fromAccountId,
+      fromCategoryId: data.fromCategoryId,
+      toAccountId: data.toAccountId,
+      toCategoryId: data.toCategoryId,
       partnerId: data.partnerId,
       remark: data.remark,
-      date: data.date,
+      createdBy: data.userId as string,
+      updatedBy: data.userId,
     });
     return transaction;
   }
 
-  // Tách logic kiểm tra Payment Account
+  async createTransaction_Income(data: Prisma.TransactionUncheckedCreateInput) {
+    const category = await this.categoryRepository.findCategoryById(data.toCategoryId as string);
+    if (!category) {
+      throw new Error("Can't find category");
+    }
+    if (category.type !== CategoryType.Income) {
+      throw new Error('Category type must be Income.');
+    }
+
+    const account = await this.accountRepository.findById(data.fromAccountId as string);
+    if (!account) {
+      throw new Error("Can't find account");
+    }
+    const type = account.type;
+    if (type !== AccountType.Payment) {
+      throw new Error('Mismatched account type. Only Payment or CreditCard accounts are allowed.');
+    }
+
+    const transaction = await this.transactionRepository.createTransaction({
+      userId: data.userId,
+      date: data.date,
+      type: data.type,
+      amount: data.amount,
+      fromAccountId: data.fromAccountId,
+      fromCategoryId: data.fromCategoryId,
+      toAccountId: data.toAccountId,
+      toCategoryId: data.toCategoryId,
+      partnerId: data.partnerId,
+      remark: data.remark,
+      createdBy: data.userId as string,
+      updatedBy: data.userId,
+    });
+
+    return transaction;
+  }
+
+  async createTransaction_Transfer(data: Prisma.TransactionUncheckedCreateInput) {
+    const category = await this.categoryRepository.findCategoryById(data.toCategoryId as string);
+    if (!category) {
+      throw new Error("Can't find category");
+    }
+    if (category.type !== CategoryType.Income) {
+      throw new Error('Category type must be Income.');
+    }
+
+    const fromAccount = await this.accountRepository.findByCondition({
+      id: data.fromAccountId as string,
+      userId: data.userId as string,
+    });
+    const toAccount = await this.accountRepository.findById(data.toAccountId as string);
+    if (!fromAccount || !toAccount) {
+      throw new Error("Can't find account");
+    }
+    const type = fromAccount.type;
+
+    BooleanUtils.chooseByMap(
+      type,
+      {
+        [AccountType.Payment]: () =>
+          this.validatePaymentAccount(fromAccount, data.amount as number),
+        [AccountType.Saving]: () => this.validatePaymentAccount(fromAccount, data.amount as number),
+        [AccountType.Lending]: () =>
+          this.validatePaymentAccount(fromAccount, data.amount as number),
+        [AccountType.CreditCard]: () =>
+          this.validateCreditCardAccount(fromAccount, data.amount as number),
+      },
+      () => {
+        throw new Error(`AccountType ${type} không được hỗ trợ`);
+      },
+    );
+
+    const transaction = await this.transactionRepository.createTransaction({
+      userId: data.userId,
+      date: data.date,
+      type: data.type,
+      amount: data.amount,
+      fromAccountId: data.fromAccountId,
+      fromCategoryId: data.fromCategoryId,
+      toAccountId: data.toAccountId,
+      toCategoryId: data.toCategoryId,
+      partnerId: data.partnerId,
+      remark: data.remark,
+      createdBy: data.userId as string,
+      updatedBy: data.userId,
+    });
+
+    return transaction;
+  }
+
   private validatePaymentAccount(account: Account, amount: number) {
     if (account.balance!.toNumber() < amount) {
       throw new Error(
@@ -108,7 +200,6 @@ class TransactionUseCase {
     }
   }
 
-  // Tách logic kiểm tra Credit Card
   private validateCreditCardAccount(account: Account, amount: number) {
     const limit = account.limit!.toNumber();
     const balance = account.balance!.toNumber();

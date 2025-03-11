@@ -52,6 +52,7 @@ export class AccountUseCase {
         currency,
         limit: type === AccountType.CreditCard ? limit : new Decimal(0),
         parentId: parentId,
+        createdBy: userId,
       });
 
       if (!subAccount) {
@@ -75,6 +76,7 @@ export class AccountUseCase {
         currency,
         limit: type === AccountType.CreditCard ? limit : new Decimal(0),
         parentId: null,
+        createdBy: userId,
       });
 
       if (!parentAccount) {

@@ -143,13 +143,12 @@ model Transaction {
   toAccount        Account?             @relation("ToAccount", fields: [toAccountId], references: [id])
   toCategory       Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
   partner          Partner?             @relation("PartnerTransactions", fields: [partnerId], references: [id])
-  // Quan hệ nhiều-nhiều với Product thông qua bảng trung gian
   productsRelation ProductTransaction[] @relation("ProductTransactions")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  updatedBy String? @db.Uuid
+  createdBy String   @db.Uuid
+  updatedBy String?  @db.Uuid
 
   @@index([date]) // Add index for date queries
   @@index([type]) // Add index for filtering by transaction type
