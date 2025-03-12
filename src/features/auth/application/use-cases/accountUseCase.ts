@@ -2,6 +2,7 @@ import { Account, AccountType, Currency, Prisma } from '@prisma/client';
 import { IAccountRepository } from '../../domain/repositories/accountRepository.interface';
 import { Decimal } from '@prisma/client/runtime/library';
 import { accountRepository } from '../../infrastructure/repositories/accountRepository';
+import { convertUSDToVND } from '@/shared/utils';
 
 const descriptions = {
   ['Payment']:
@@ -40,6 +41,8 @@ export class AccountUseCase {
       userId,
     } = params;
 
+    const currencyValue = currency === 'USD' ? convertUSDToVND(balance) : balance;
+
     if (parentId) {
       await this.validateParentAccount(parentId, type);
       const subAccount = await this.accountRepository.create({
@@ -48,7 +51,7 @@ export class AccountUseCase {
         description: descriptions[type as keyof typeof descriptions],
         icon: icon,
         userId,
-        balance,
+        balance: currencyValue,
         currency,
         limit: type === AccountType.CreditCard ? limit : new Decimal(0),
         parentId: parentId,
@@ -72,7 +75,7 @@ export class AccountUseCase {
         description: descriptions[type as keyof typeof descriptions],
         icon: icon,
         userId,
-        balance,
+        balance: currencyValue,
         currency,
         limit: type === AccountType.CreditCard ? limit : new Decimal(0),
         parentId: null,
@@ -249,6 +252,91 @@ export class AccountUseCase {
     });
 
     await this.accountRepository.updateParentBalance(parentId);
+  }
+
+  async updateAccount(id: string, data: Prisma.AccountUpdateInput): Promise<Account | null> {
+    return this.accountRepository.update(id, {
+      ...data,
+      updatedBy: data.updatedBy,
+    });
+  }
+
+  async deleteAccount(id: string): Promise<Account | null> {
+    const foundAccount = await this.accountRepository.findById(id);
+
+    // checked whether account is master account or not
+    if (!foundAccount) {
+      throw new Error('Account not found');
+    }
+
+    const isMasterAccount = await this.isOnlyMasterAccount(foundAccount.userId, foundAccount.type);
+    if (isMasterAccount && !foundAccount.parentId) {
+      // checked whether any sub account is existed or not
+      const subAccounts = await this.accountRepository.findMany({ parentId: id });
+      if (subAccounts.length > 0) {
+        throw new Error('Cannot delete master account with sub account still existed');
+      } else {
+        const res = await this.accountRepository.delete({
+          where: {
+            id,
+          },
+        });
+        return res;
+      }
+    } else {
+      // Normal delete & update balance of parent account
+      const deletedRes = await this.accountRepository.delete({
+        where: {
+          id,
+        },
+      });
+
+      await this.accountRepository.updateParentBalance(foundAccount.parentId!);
+
+      return deletedRes;
+    }
+  }
+
+  public validateAccountType(type: AccountType, balance: number, limit?: number): boolean {
+    if (!Object.values(AccountType).includes(type)) {
+      throw new Error('Invalid account type');
+    }
+
+    switch (type) {
+      case AccountType.Payment:
+      case AccountType.Saving:
+      case AccountType.Lending:
+        if (balance < 0) {
+          throw new Error('Balance must be >= 0');
+        }
+        break;
+      case AccountType.Debt:
+        if (balance > 0) {
+          throw new Error('Balance must be <= 0');
+        }
+        break;
+      case AccountType.CreditCard:
+        if (!limit) {
+          throw new Error('Limit must be provided');
+        }
+
+        if (balance > 0) {
+          throw new Error('Balance must be <= 0');
+        }
+
+        if (limit <= 0) {
+          throw new Error('Limit must be > 0');
+        }
+
+        if (limit < balance) {
+          throw new Error('Limit must be greater than balance');
+        }
+        break;
+
+      default:
+        throw new Error('Invalid account type');
+    }
+    return true;
   }
 }
 

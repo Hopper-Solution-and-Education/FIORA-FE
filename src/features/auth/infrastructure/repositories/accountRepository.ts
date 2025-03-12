@@ -24,8 +24,8 @@ export class AccountRepository implements IAccountRepository {
     return prisma.account.update({ where: { id }, data: account });
   }
 
-  async delete(options: Prisma.AccountDeleteArgs): Promise<void> {
-    await prisma.account.delete(options);
+  async delete(options: Prisma.AccountDeleteArgs): Promise<Account> {
+    return await prisma.account.delete(options);
   }
 
   async updateParentBalance(parentId: string): Promise<void> {

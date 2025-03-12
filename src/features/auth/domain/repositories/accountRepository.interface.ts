@@ -21,7 +21,7 @@ export interface IAccountRepository {
     pagination?: Pagination,
   ): Promise<Account[]>;
   update(id: string, account: Prisma.AccountUpdateInput): Promise<Account>;
-  delete(options: Prisma.AccountDeleteArgs): Promise<void>;
+  delete(options: Prisma.AccountDeleteArgs): Promise<Account>;
   updateParentBalance(parentId: string): Promise<void>;
   findByCondition(where: Prisma.AccountWhereInput): Promise<Account | null>;
   findAllAccountByUserId(userId: string): Promise<Account[] | []>;
