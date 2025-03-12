@@ -8,9 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MediaType, SectionType } from '@prisma/client';
 import { ChevronDown, ChevronRight, PlusCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFieldArray } from 'react-hook-form';
 import MediaItem from './MediaItem';
+import { useAppDispatch } from '@/store';
+import { fetchMediaBySection } from '../../slices/actions/fetchMediaBySection';
 
 interface SectionCardProps {
   control: any;
@@ -30,6 +32,18 @@ export default function SectionCard({ control, sectionType }: SectionCardProps) 
     name: 'medias',
   });
 
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    handleFetchMedia();
+  }, [sectionType]);
+
+  const handleFetchMedia = () => {
+    console.log('fetch');
+
+    dispatch(fetchMediaBySection(sectionType));
+  };
+
   const addMedia = (type: MediaType) => {
     appendMedia({
       id: Date.now(),
@@ -40,6 +54,25 @@ export default function SectionCard({ control, sectionType }: SectionCardProps) 
       uploaded_by: '',
       uploaded_date: new Date(),
     });
+  };
+
+  const handleAddMedia = () => {
+    switch (sectionType) {
+      case SectionType.BANNER:
+        addMedia(MediaType.IMAGE);
+        break;
+      case SectionType.KPS:
+        addMedia(MediaType.IMAGE);
+        break;
+      case SectionType.PARTNER_LOGO:
+        addMedia(MediaType.IMAGE);
+        break;
+      case SectionType.VISION_MISSION:
+        addMedia(MediaType.EMBEDDED);
+        break;
+      default:
+        break;
+    }
   };
 
   const moveMediaUp = (mediaIndex: number) => {
@@ -123,6 +156,10 @@ export default function SectionCard({ control, sectionType }: SectionCardProps) 
                       <PlusCircle className="h-3 w-3 mr-1" /> Embed
                     </Button>
                   )}
+
+                  <Button onClick={handleFetchMedia}>
+                    <PlusCircle className="h-3 w-3 mr-1" /> Embed
+                  </Button>
                   {/* 
                   <Button variant="outline" size="sm" onClick={() => addMedia(MediaType.VIDEO)}>
                     <PlusCircle className="h-3 w-3 mr-1" /> Video
@@ -133,8 +170,8 @@ export default function SectionCard({ control, sectionType }: SectionCardProps) 
               {mediaFields.length === 0 ? (
                 <div className="text-center py-8 border border-dashed rounded-md">
                   <p className="text-muted-foreground mb-2">No media items yet</p>
-                  <Button variant="outline" size="sm" onClick={() => addMedia(MediaType.IMAGE)}>
-                    <PlusCircle className="h-4 w-4 mr-2" /> Add Media
+                  <Button variant="outline" size="sm" onClick={handleAddMedia}>
+                    <PlusCircle className="h-4 w-4" /> Add Media
                   </Button>
                 </div>
               ) : (
@@ -149,6 +186,7 @@ export default function SectionCard({ control, sectionType }: SectionCardProps) 
                       onMoveDown={() => moveMediaDown(mediaIndex)}
                       isFirst={mediaIndex === 0}
                       isLast={mediaIndex === mediaFields.length - 1}
+                      sectionType={sectionType}
                     />
                   ))}
                 </div>

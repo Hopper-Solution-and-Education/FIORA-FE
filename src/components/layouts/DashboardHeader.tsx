@@ -15,11 +15,38 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useEffect, useState } from 'react';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 export default function Header() {
-  // Giả lập dữ liệu tài chính
-  const FBalance = 10000.0;
-  const FDebt = 2000.0;
+  // state
+  const [FBalance, setFBalance] = useState('0.0');
+  const [FDebt, setFDebt] = useState('0.0');
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchUserBalance = async () => {
+    try {
+      const response = await fetch('/api/accounts/balance');
+      const data = await response.json();
+      if (data.status !== 200) {
+        alert('Error fetching user balance:' + data.message);
+        return;
+      } else {
+        const { balance, dept } = data.data;
+        const formatBalance = formatCurrency(balance);
+        const formatDept = formatCurrency(dept);
+        setFBalance(formatBalance);
+        setFDebt(formatDept);
+        setIsLoading(false);
+      }
+    } catch (error: any) {
+      alert('Error fetching user balance:' + error.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserBalance();
+  }, []);
 
   return (
     <header className="transition-[width,height] ease-linear">
@@ -35,14 +62,16 @@ export default function Header() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-green-600">FBalance:</span>
-            <div className="w-32  text-right px-3 py-1 rounded">
-              {FBalance.toLocaleString()} USD
+            <div className="w-100 text-right px-3 py-1 rounded">
+              {isLoading ? 'Loading...' : FBalance}
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-red-600">FDebt:</span>
-            <div className="w-32 text-right px-3 py-1 rounded">{FDebt.toLocaleString()} USD</div>
+            <div className="w-100 text-right px-3 py-1 rounded">
+              {isLoading ? 'Loading...' : FDebt}
+            </div>
           </div>
         </div>
         {/* Icon Buttons + User */}

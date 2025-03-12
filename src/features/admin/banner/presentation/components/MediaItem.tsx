@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { MediaType } from '@prisma/client';
+import { MediaType, SectionType } from '@prisma/client';
 import {
   ArrowDown,
   ArrowUp,
@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
+import { useFormContext } from 'react-hook-form';
 import MediaUploader from './MediaUploader';
 
 interface MediaItemProps {
@@ -36,6 +37,7 @@ interface MediaItemProps {
   onMoveDown: () => void;
   isFirst: boolean;
   isLast: boolean;
+  sectionType: SectionType;
 }
 
 export default function MediaItem({
@@ -46,11 +48,14 @@ export default function MediaItem({
   onMoveDown,
   isFirst,
   isLast,
+  sectionType,
 }: MediaItemProps) {
   const [isOpen, setIsOpen] = useState(true);
+  const { watch } = useFormContext(); // Use watch from useFormContext
 
   const mediaPath = `medias.${mediaIndex}`;
   const mediaType = control._formValues.medias[mediaIndex].media_type;
+  const embedCode = watch(`${mediaPath}.embed_code`); // Watch the embed_code field
 
   const handleMediaTypeChange = (value: MediaType) => {
     control._formValues.medias[mediaIndex].media_type = value;
@@ -58,7 +63,6 @@ export default function MediaItem({
 
   const getMediaPreview = () => {
     const mediaUrl = control._formValues.medias[mediaIndex].media_url;
-    const embedCode = control._formValues.medias[mediaIndex].embed_code;
 
     if (!mediaUrl && !embedCode) {
       return (
@@ -71,20 +75,67 @@ export default function MediaItem({
     }
 
     if (mediaType === MediaType.IMAGE && mediaUrl) {
-      return (
-        <div className="relative h-48 bg-gray-100 rounded-md overflow-hidden">
-          <Image
-            src={mediaUrl || '/placeholder.svg'}
-            alt="Preview"
-            width={400} // Increased width for a more horizontal look
-            height={200} // Adjusted height to keep it slightly larger but proportional
-            className="object-contain w-full h-full"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/placeholder.svg?height=200&width=400'; // Updated placeholder dimensions
-            }}
-          />
-        </div>
-      );
+      if (sectionType === SectionType.BANNER) {
+        return (
+          <div className="relative h-48 w-full bg-gray-100 rounded-md overflow-hidden">
+            <Image
+              src={mediaUrl || '/placeholder.svg'}
+              alt="Banner Preview"
+              width={800}
+              height={200}
+              className="object-cover w-full h-full"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/placeholder.svg?height=200&width=800';
+              }}
+            />
+          </div>
+        );
+      } else if (sectionType === SectionType.KPS) {
+        return (
+          <div className="relative h-48 w-48 bg-gray-100 rounded-md overflow-hidden mx-auto">
+            <Image
+              src={mediaUrl || '/placeholder.svg'}
+              alt="KPS Preview"
+              width={300}
+              height={300}
+              className="object-cover w-full h-full"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/placeholder.svg?height=300&width=300';
+              }}
+            />
+          </div>
+        );
+      } else if (sectionType === SectionType.PARTNER_LOGO) {
+        return (
+          <div className="relative h-48 w-48 bg-gray-100 rounded-full overflow-hidden mx-auto">
+            <Image
+              src={mediaUrl || '/placeholder.svg'}
+              alt="Partner Logo Preview"
+              width={300}
+              height={300}
+              className="object-cover w-full h-full"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/placeholder.svg?height=300&width=300';
+              }}
+            />
+          </div>
+        );
+      } else {
+        return (
+          <div className="relative h-48 bg-gray-100 rounded-md overflow-hidden">
+            <Image
+              src={mediaUrl || '/placeholder.svg'}
+              alt="Preview"
+              width={400}
+              height={200}
+              className="object-contain w-full h-full"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/placeholder.svg?height=200&width=400';
+              }}
+            />
+          </div>
+        );
+      }
     }
 
     if (mediaType === MediaType.VIDEO && mediaUrl) {
@@ -97,6 +148,13 @@ export default function MediaItem({
     }
 
     if (mediaType === MediaType.EMBEDDED && embedCode) {
+      if (sectionType === SectionType.VISION_MISSION) {
+        return (
+          <div className="relative h-48 bg-gray-100 rounded-md overflow-hidden">
+            <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: embedCode }} />
+          </div>
+        );
+      }
       return (
         <div className="relative h-20 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
           <span className="text-xs text-gray-500">Embedded content</span>

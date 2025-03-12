@@ -2,27 +2,38 @@ import { CategoryType } from '@prisma/client';
 
 export interface RawCategory {
   id: string;
-  userId: string;
+  userId?: string;
   type: CategoryType;
   icon: string;
+  tax_rate: string;
+  balance: number;
   name: string;
-  description: string | null;
-  parentId: string | null;
-  createdAt: string;
-  updatedAt: string;
+  description?: string;
+  parentId?: string | null;
+
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
 }
 
 export interface Category {
   id: string;
-  name: string;
-  type: CategoryType;
-  subCategories: Category[];
-  description?: string;
-  icon: string;
-  parentId?: string | null;
   userId?: string;
+  type: CategoryType;
+  icon: string;
+  tax_rate: string;
+  balance: number;
+  name: string;
+  description?: string;
+  parentId?: string | null;
+
   createdAt?: string;
   updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+
+  subCategories: Category[];
 }
 
 export interface ExpenseIncomeState {

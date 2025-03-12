@@ -1,4 +1,9 @@
-import HomePage from '@/features/dashboard/module/home/HomePage';
+import Loading from '@/components/common/Loading';
+import dynamic from 'next/dynamic';
+
+const HomePage = dynamic(() => import('@/features/dashboard/module/home/HomePage'), {
+  loading: () => <Loading />,
+});
 
 const page = () => {
   return <HomePage />;
