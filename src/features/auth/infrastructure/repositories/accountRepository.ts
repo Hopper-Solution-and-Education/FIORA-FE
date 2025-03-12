@@ -131,6 +131,55 @@ export class AccountRepository implements IAccountRepository {
   async aggregate(options: Prisma.AccountAggregateArgs): Promise<any> {
     return prisma.account.aggregate(options);
   }
+
+  async deductBalance(tx: Prisma.TransactionClient, accountId: string, amount: number) {
+    await tx.account.update({
+      where: { id: accountId },
+      data: {
+        balance: {
+          decrement: amount,
+        },
+      },
+    });
+  }
+
+  async receiveBalance(tx: Prisma.TransactionClient, accountId: string, amount: number) {
+    await tx.account.update({
+      where: { id: accountId },
+      data: {
+        balance: {
+          increment: amount,
+        },
+      },
+    });
+  }
+
+  async transferBalance(
+    tx: Prisma.TransactionClient,
+    fromAccountId: string,
+    toAccountId: string,
+    amount: number,
+  ) {
+    // Trừ tiền từ tài khoản gửi
+    await tx.account.update({
+      where: { id: fromAccountId },
+      data: {
+        balance: {
+          decrement: amount,
+        },
+      },
+    });
+
+    // Cộng tiền vào tài khoản nhận
+    await tx.account.update({
+      where: { id: toAccountId },
+      data: {
+        balance: {
+          increment: amount,
+        },
+      },
+    });
+  }
 }
 
 export const accountRepository = new AccountRepository();

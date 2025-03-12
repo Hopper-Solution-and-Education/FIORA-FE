@@ -1,4 +1,3 @@
-import { TransactionType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { transactionUseCase } from '@/features/transaction/application/use-cases/transactionUseCase';
@@ -85,25 +84,26 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       partnerId,
       remark,
       date,
-      toAccountId,
       fromCategoryId,
+      toAccountId,
+      type,
     } = req.body;
 
     const transactionData = {
       userId: userId,
-      type: TransactionType.Expense,
+      type: type,
       amount: parseFloat(amount),
       fromAccountId: fromAccountId as UUID,
-      fromCategoryId: fromCategoryId as UUID,
       toAccountId: toAccountId as UUID,
       toCategoryId: toCategoryId as UUID,
+      fromCategoryId: fromCategoryId as UUID,
       ...(products && { products }),
       ...(partnerId && { partnerId }),
       ...(remark && { remark }),
       ...(date && { date: new Date(date) }),
     };
 
-    const newTransaction = await transactionUseCase.createTransaction_Expense(transactionData);
+    const newTransaction = await transactionUseCase.createTransaction(transactionData);
 
     return res
       .status(RESPONSE_CODE.CREATED)
@@ -112,7 +112,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
           RESPONSE_CODE.CREATED,
           'success',
           newTransaction,
-          Messages.CREATE_TRANSACTION__SUCCESS,
+          Messages.CREATE_TRANSACTION_SUCCESS,
         ),
       );
   } catch (error: any) {
@@ -138,7 +138,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
           RESPONSE_CODE.OK,
           'success',
           updatedTransaction,
-          Messages.UPDATE_TRANSACTION__SUCCESS,
+          Messages.UPDATE_TRANSACTION_SUCCESS,
         ),
       );
   } catch (error: any) {
@@ -159,9 +159,7 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
     await transactionUseCase.removeTransaction(id as string, userId);
     return res
       .status(RESPONSE_CODE.OK)
-      .json(
-        createResponse(RESPONSE_CODE.OK, 'success', null, Messages.DELETE_TRANSACTION__SUCCESS),
-      );
+      .json(createResponse(RESPONSE_CODE.OK, 'success', null, Messages.DELETE_TRANSACTION_SUCCESS));
   } catch (error: any) {
     res
       .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
