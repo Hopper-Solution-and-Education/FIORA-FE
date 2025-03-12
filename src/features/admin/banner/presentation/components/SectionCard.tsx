@@ -8,9 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MediaType, SectionType } from '@prisma/client';
 import { ChevronDown, ChevronRight, PlusCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFieldArray } from 'react-hook-form';
 import MediaItem from './MediaItem';
+import { useAppDispatch } from '@/store';
+import { fetchMediaBySection } from '../../slices/actions/fetchMediaBySection';
 
 interface SectionCardProps {
   control: any;
@@ -29,6 +31,18 @@ export default function SectionCard({ control, sectionType }: SectionCardProps) 
     control,
     name: 'medias',
   });
+
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    handleFetchMedia();
+  }, [sectionType]);
+
+  const handleFetchMedia = () => {
+    console.log('fetch');
+
+    dispatch(fetchMediaBySection(sectionType));
+  };
 
   const addMedia = (type: MediaType) => {
     appendMedia({
@@ -142,6 +156,10 @@ export default function SectionCard({ control, sectionType }: SectionCardProps) 
                       <PlusCircle className="h-3 w-3 mr-1" /> Embed
                     </Button>
                   )}
+
+                  <Button onClick={handleFetchMedia}>
+                    <PlusCircle className="h-3 w-3 mr-1" /> Embed
+                  </Button>
                   {/* 
                  <Button variant="outline" size="sm" onClick={() => addMedia(MediaType.VIDEO)}>
                    <PlusCircle className="h-3 w-3 mr-1" /> Video
