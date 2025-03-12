@@ -1,6 +1,6 @@
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
 import { UserUSeCaseInstance } from '@/features/auth/application/use-cases/userUseCase';
-import { AppError, InternalServerError } from '@/lib/errors';
+import { AppError, InternalServerError } from '@/config/errors';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { NextApiRequest, NextApiResponse } from 'next';
 

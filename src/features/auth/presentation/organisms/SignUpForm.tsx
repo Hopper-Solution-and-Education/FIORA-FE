@@ -10,7 +10,7 @@ import GoogleButton from '@/features/auth/presentation/common/GoogleButton';
 import MetaButton from '@/features/auth/presentation/common/MetaButton';
 import TermCondition from '@/features/auth/presentation/common/TermCondition';
 import { VerifyOTPForm } from '@/features/auth/presentation/organisms/VerifyForm';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 import {
   validateConfirmPassword,
   validateEmail,

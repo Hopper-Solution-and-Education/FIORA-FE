@@ -242,7 +242,6 @@ model Category {
   type             CategoryType
   icon             String
   tax_rate         Decimal       @db.Decimal(13, 2)
-  balance          Decimal       @default(0) @db.Decimal(13, 2)
   name             String        @db.VarChar(50)
   description      String?       @db.VarChar(1000)
   parentId         String?       @db.Uuid

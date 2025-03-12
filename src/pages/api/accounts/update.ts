@@ -3,7 +3,7 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
-import { createResponse } from '@/lib/createResponse';
+import { createResponse } from '@/config/createResponse';
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse) {
   switch (request.method) {
