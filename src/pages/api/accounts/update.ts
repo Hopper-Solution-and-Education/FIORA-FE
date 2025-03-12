@@ -3,6 +3,7 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
+import { createResponse } from '@/lib/createResponse';
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse) {
   switch (request.method) {
@@ -25,33 +26,47 @@ export async function PUT(request: NextApiRequest, response: NextApiResponse) {
 
     const userId = session.user.id;
 
-    const { name, type, currency, balance = 0, limit, icon, parentId, isParentSelected } = body;
+    const { id } = request.query;
+    const { name, type, currency, balance = 0, limit, icon, parentId } = body;
 
-    console.log(body);
-    if (!isParentSelected && !parentId && parentId !== null) {
-      const isCreateMasterAccount = await AccountUseCaseInstance.isOnlyMasterAccount(userId, type);
-      if (isCreateMasterAccount) {
-        return response.status(400).json({ message: 'Master account already exists' });
-      }
+    if (!id) {
+      return response
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json({ message: 'Missing account id to update' });
     }
-    // Create the account
-    const account = await AccountUseCaseInstance.create({
-      userId,
+
+    const accountFound = await AccountUseCaseInstance.findById(id as string);
+    if (!accountFound) {
+      return response
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json({ message: 'Cannot update sub account' });
+    }
+
+    const isValidType = AccountUseCaseInstance.validateAccountType(type, balance, limit);
+    if (!isValidType) {
+      return response.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Invalid account type' });
+    }
+    // If this is a sub-account, update the parent's balance
+
+    const updateRes = await AccountUseCaseInstance.updateAccount(id as string, {
       name,
       type,
       icon,
       currency,
       balance: balance,
       limit: limit,
-      parentId: parentId,
+      updatedBy: userId,
+      parent: parentId,
     });
 
-    if (!account) {
-      return response.status(400).json({ message: 'Cannot create new account' });
+    if (!updateRes) {
+      return response.status(400).json({ message: 'Cannot update sub account' });
     }
-    // If this is a sub-account, update the parent's balance
-    response.status(201).json({ message: 'Account created successfully', account });
+
+    return response
+      .status(RESPONSE_CODE.CREATED)
+      .json(createResponse(RESPONSE_CODE.CREATED, 'Update account successfully'));
   } catch (error: any) {
-    response.status(500).json({ message: error.message });
+    response.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 }
