@@ -102,7 +102,7 @@ class ProductUseCase {
       } = params;
       // checked whether the category exists
 
-      const category = await categoryRepository.findCategoryById(category_id);
+      const category = await this.categoryRepository.findCategoryById(category_id);
       if (!category) {
         throw new Error('Category not found');
       }
@@ -154,7 +154,7 @@ class ProductUseCase {
     let category = null;
 
     if (category_id) {
-      category = await categoryRepository.findCategoryById(category_id);
+      category = await this.categoryRepository.findCategoryById(category_id);
       if (!category) {
         throw new Error('Category not found');
       }
