@@ -1,10 +1,11 @@
 // src/features/admin/banner/actions/getMediaAction.ts
 import { adminContainer } from '@/features/admin/di/adminDIContainer';
-import { Section, SectionType } from '@prisma/client';
+import { SectionType } from '@prisma/client';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { GetSectionUseCase } from '../../domain/usecases/GetSectionUseCase';
+import { ISection } from '../types';
 
-export const fetchMediaBySection = createAsyncThunk<Section, SectionType, { rejectValue: string }>(
+export const fetchMediaBySection = createAsyncThunk<ISection, SectionType, { rejectValue: string }>(
   'banner/fetchMediaBySection',
   async (sectionType: SectionType, { rejectWithValue }) => {
     try {

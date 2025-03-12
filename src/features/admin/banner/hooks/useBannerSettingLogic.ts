@@ -1,30 +1,12 @@
 import { useAppDispatch, useAppSelector } from '@/store';
-import { SectionType } from '@prisma/client';
 import { toast } from 'sonner';
-import { Section } from '../schema/media.schema';
-import { importSections, saveSection } from '../slices';
+import { importSections } from '../slices';
 
 const useBannerSettingLogic = () => {
   const dispatch = useAppDispatch();
   const { bannerSection, visionSection, kpsSection, partnerSection } = useAppSelector(
     (state) => state.landingSettings,
   );
-  // Handler for saving each section type
-  const handleSaveBanner = (section: Section) => {
-    dispatch(saveSection({ section, sectionType: SectionType.BANNER }));
-  };
-
-  const handleSaveVision = (section: Section) => {
-    dispatch(saveSection({ section, sectionType: SectionType.VISION_MISSION }));
-  };
-
-  const handleSaveKps = (section: Section) => {
-    dispatch(saveSection({ section, sectionType: SectionType.KPS }));
-  };
-
-  const handleSavePartner = (section: Section) => {
-    dispatch(saveSection({ section, sectionType: SectionType.PARTNER_LOGO }));
-  };
 
   // Export all sections as a single configuration
   const exportData = () => {
@@ -73,10 +55,6 @@ const useBannerSettingLogic = () => {
   };
 
   return {
-    handleSaveBanner,
-    handleSaveVision,
-    handleSaveKps,
-    handleSavePartner,
     importData,
     exportData,
   };

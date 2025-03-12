@@ -31,7 +31,7 @@ CREATE TABLE "User" (
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "createdBy" UUID NOT NULL,
+    "createdBy" UUID,
     "updatedBy" UUID,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -131,6 +131,7 @@ CREATE TABLE "Transaction" (
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
     "updatedBy" UUID,
 
     CONSTRAINT "Transaction_pkey" PRIMARY KEY ("id")
@@ -187,10 +188,10 @@ CREATE TABLE "Section" (
     "section_type" "SectionType" NOT NULL,
     "name" TEXT NOT NULL,
     "order" INTEGER NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-    "created_by" UUID NOT NULL,
-    "updated_by" UUID,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Section_pkey" PRIMARY KEY ("id")
 );
@@ -205,10 +206,10 @@ CREATE TABLE "Media" (
     "uploaded_by" TEXT,
     "uploaded_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "section_id" UUID,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-    "created_by" UUID NOT NULL,
-    "updated_by" UUID,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Media_pkey" PRIMARY KEY ("id")
 );
@@ -223,9 +224,10 @@ CREATE TABLE "Category" (
     "name" VARCHAR(50) NOT NULL,
     "description" VARCHAR(1000),
     "parentId" UUID,
-    "balance" DECIMAL(13,2) NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdBy" UUID NOT NULL,
+    "updatedBy" UUID,
 
     CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
 );

@@ -1,14 +1,17 @@
-import { Section, SectionType } from '@prisma/client';
+import { SectionType } from '@prisma/client';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 import { fetchMediaBySection } from './actions/fetchMediaBySection';
-import { initialLandingSettingState, LandingSettingsState } from './types';
+import { initialLandingSettingState, ISection, LandingSettingsState } from './types';
 
 const landingSettings = createSlice({
   name: 'landingSettings',
   initialState: initialLandingSettingState,
   reducers: {
-    saveSection: (state, action: PayloadAction<{ section: Section; sectionType: SectionType }>) => {
+    saveSection: (
+      state,
+      action: PayloadAction<{ section: ISection; sectionType: SectionType }>,
+    ) => {
       const { section, sectionType } = action.payload;
 
       switch (sectionType) {
@@ -40,6 +43,11 @@ const landingSettings = createSlice({
           break;
       }
     },
+    markSectionFetched: (state, action: PayloadAction<string>) => {
+      if (!state.fetchedSections.includes(action.payload)) {
+        state.fetchedSections.push(action.payload);
+      }
+    },
     importSections: (state, action: PayloadAction<LandingSettingsState>) => {
       const importedData = action.payload;
       state.bannerSection = importedData.bannerSection || state.bannerSection;
@@ -57,27 +65,25 @@ const landingSettings = createSlice({
       state.error = null;
     });
 
-    builder.addCase(
-      fetchMediaBySection.fulfilled,
-      (state, action: PayloadAction<Section, string, { arg: SectionType }>) => {
-        switch (action.payload.section_type) {
-          case SectionType.BANNER:
-            state.bannerSection = action.payload;
-            break;
-          case SectionType.VISION_MISSION:
-            state.visionSection = action.payload;
-            break;
-          case SectionType.KPS:
-            state.kpsSection = action.payload;
-            break;
-          case SectionType.PARTNER_LOGO:
-            state.partnerSection = action.payload;
-            break;
-          default:
-            break;
-        }
-      },
-    );
+    builder.addCase(fetchMediaBySection.fulfilled, (state, action: PayloadAction<ISection>) => {
+      switch (action.payload.section_type) {
+        case SectionType.BANNER:
+          state.bannerSection = action.payload;
+          break;
+        case SectionType.VISION_MISSION:
+          state.visionSection = action.payload;
+          break;
+        case SectionType.KPS:
+          state.kpsSection = action.payload;
+          break;
+        case SectionType.PARTNER_LOGO:
+          state.partnerSection = action.payload;
+          break;
+        default:
+          break;
+      }
+      state.isLoading = false;
+    });
 
     builder.addCase(fetchMediaBySection.rejected, (state, action) => {
       state.isLoading = false;
@@ -86,5 +92,5 @@ const landingSettings = createSlice({
   },
 });
 
-export const { saveSection, importSections } = landingSettings.actions;
+export const { saveSection, importSections, markSectionFetched } = landingSettings.actions;
 export default landingSettings.reducer;

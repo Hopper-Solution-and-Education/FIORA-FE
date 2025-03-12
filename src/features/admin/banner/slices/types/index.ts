@@ -9,6 +9,7 @@ interface LandingSettingsState {
   visionSection?: ISection;
   kpsSection?: ISection;
   partnerSection?: ISection;
+  fetchedSections: string[];
   error: string | null;
   isLoading: boolean;
 }
@@ -19,6 +20,7 @@ const initialLandingSettingState: LandingSettingsState = {
   kpsSection: undefined,
   partnerSection: undefined,
   error: '',
+  fetchedSections: [],
   isLoading: false,
 };
 
