@@ -3,7 +3,6 @@
 
 import {
   BASE_BAR_HEIGHT,
-  CHART_MARGINS,
   DEFAULT_CHILD_OPACITY,
   DEFAULT_CURRENCY,
   DEFAULT_LOCALE,
@@ -27,6 +26,7 @@ import CustomTooltip from './atoms/CustomTooltip';
 import BarLabel from './atoms/BarLabel';
 import ChartLegend from './atoms/ChartLegend';
 import CustomYAxisTick from './atoms/CustomYAxisTick';
+import { getChartMargins, useWindowSize } from '@/shared/utils';
 
 export type BarItem = {
   name: string;
@@ -46,8 +46,8 @@ export type NestedBarChartProps = {
   xAxisFormatter?: (value: number) => string;
   tooltipContent?: ContentType<ValueType, NameType>;
   legendItems?: { name: string; color: string }[];
-  childOpacity?: number; // Opacity for child bars (0 to 1)
-  maxBarRatio?: number; // Maximum ratio of chart width for the largest bar
+  childOpacity?: number;
+  maxBarRatio?: number;
 };
 
 const NestedBarChart = ({
@@ -63,6 +63,7 @@ const NestedBarChart = ({
 }: NestedBarChartProps) => {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [chartHeight, setChartHeight] = useState(MIN_CHART_HEIGHT);
+  const { width } = useWindowSize();
 
   const toggleExpand = useCallback((name: string) => {
     setExpandedItems((prev) => ({
@@ -81,7 +82,7 @@ const NestedBarChart = ({
 
       if (expandedItems[item.name] && item.children && item.children.length > 0) {
         item.children.forEach((child) => {
-          const childValue = Math.min(Math.abs(child.value), parentValue); // Cap at parent value
+          const childValue = Math.min(Math.abs(child.value), parentValue);
           items.push({
             ...child,
             parent: item.name,
@@ -113,10 +114,13 @@ const NestedBarChart = ({
 
   // Set X-axis domain to ensure largest bar is 90% of chart width
   const domain = useMemo(() => {
-    if (maxAbsValue === 0) return [0, 1]; // Avoid division by zero
-    const maxX = maxAbsValue / maxBarRatio; // e.g., maxBarRatio = 0.9
-    return [0, maxX]; // Start at 0, scale to right
+    if (maxAbsValue === 0) return [0, 1];
+    const maxX = maxAbsValue / maxBarRatio;
+    return [0, maxX];
   }, [maxAbsValue, maxBarRatio]);
+
+  // Get dynamic margins based on window width
+  const chartMargins = useMemo(() => getChartMargins(width), [width]);
 
   // Custom tooltip with currency and locale
   const customTooltipWithConfig = useCallback(
@@ -133,7 +137,7 @@ const NestedBarChart = ({
           <BarChart
             data={processedData}
             layout="vertical"
-            margin={CHART_MARGINS}
+            margin={chartMargins} // Dynamic margins
             className="transition-all duration-300"
           >
             <CartesianGrid
@@ -172,7 +176,6 @@ const NestedBarChart = ({
               label={(props) => <BarLabel {...props} formatter={xAxisFormatter} />}
             >
               {processedData.map((entry, index) => {
-                // Parent bars use full color, child bars use faded color
                 const color = entry.isChild
                   ? entry.color +
                     Math.round(childOpacity * 255)

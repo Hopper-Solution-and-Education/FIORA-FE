@@ -1,15 +1,17 @@
 'use client';
 
-import NestedBarChart, { BarItem } from '@/components/common/NestedBarChart';
+import { useEffect, useMemo, useState } from 'react';
+import { CategoryType } from '@prisma/client';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchCategories } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
 import { COLORS } from '@/shared/constants/chart';
-import { useAppDispatch, useAppSelector } from '@/store';
-import { CategoryType } from '@prisma/client';
-import { useEffect, useMemo } from 'react';
+import NestedBarChart, { type BarItem } from '@/components/common/NestedBarChart';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const ExpenseIncomeDashboard = () => {
   const dispatch = useAppDispatch();
   const { categories } = useAppSelector((state) => state.expenseIncome);
+  const [activeTab, setActiveTab] = useState<CategoryType>(CategoryType.Expense);
 
   useEffect(() => {
     dispatch(fetchCategories());
@@ -34,17 +36,45 @@ const ExpenseIncomeDashboard = () => {
     });
   }, [categories]);
 
+  const expenseData = useMemo(() => {
+    return chartData.filter((item) => item.type === CategoryType.Expense);
+  }, [chartData]);
+
+  const incomeData = useMemo(() => {
+    return chartData.filter((item) => item.type === CategoryType.Income);
+  }, [chartData]);
+
   if (categories.isLoading)
     return <div className="text-gray-800 dark:text-gray-200">Loading...</div>;
   if (categories.error)
     return <div className="text-red-600 dark:text-red-400">Error: {categories.error}</div>;
 
   return (
-    <NestedBarChart
-      data={chartData}
-      title="Monthly Budget Analysis"
-      xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
-    />
+    <div className="space-y-4">
+      <Tabs
+        defaultValue={CategoryType.Expense}
+        onValueChange={(value) => setActiveTab(value as CategoryType)}
+      >
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value={CategoryType.Expense}>Expense</TabsTrigger>
+          <TabsTrigger value={CategoryType.Income}>Income</TabsTrigger>
+        </TabsList>
+        <TabsContent value={CategoryType.Expense}>
+          <NestedBarChart
+            data={expenseData}
+            title="Monthly Expense Analysis"
+            xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
+          />
+        </TabsContent>
+        <TabsContent value={CategoryType.Income}>
+          <NestedBarChart
+            data={incomeData}
+            title="Monthly Income Analysis"
+            xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
+          />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 
