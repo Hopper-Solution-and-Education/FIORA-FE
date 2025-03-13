@@ -8,6 +8,7 @@ import {
 } from '../banner/data/repositories/sectionRepository';
 import { GetSectionUseCase } from '../banner/domain/usecases/GetSectionUseCase';
 import { TYPES } from './adminDIContainer.type';
+import { UpdateSectionUseCase } from '../banner/domain/usecases/UpdateSectionUseCase';
 
 // Create the admin container
 const adminContainer = new Container();
@@ -18,6 +19,8 @@ adminContainer
   .bind<ISectionRepository>(TYPES.ISectionRepository)
   .to(SectionRepository)
   .inSingletonScope();
+
 adminContainer.bind(GetSectionUseCase).toSelf();
+adminContainer.bind(UpdateSectionUseCase).toSelf();
 
 export { adminContainer };

@@ -126,24 +126,24 @@ async function updateSection(req: NextApiRequest, res: NextApiResponse) {
         include: { medias: true }, // Include medias to compare later
       });
 
-      // Handle media updates if provided
       if (medias && Array.isArray(medias)) {
         // Fetch existing media for the section
         const existingMedias = sectionUpdate.medias;
 
-        // Prepare media operations
-        const mediasToCreate = medias.filter((m: any) => !m.id); // New media items
-        const mediasToUpdate = medias.filter(
-          (m: any) => m.id && existingMedias.some((em) => em.id === m.id),
-        ); // Existing media to update
+        // Get IDs of existing medias
+        const existingMediaIds = new Set(existingMedias.map((em) => em.id));
+
+        // Determine media actions
+        const mediasToCreate = medias.filter((m: any) => !existingMediaIds.has(m.id)); // Chỉ thêm nếu ID chưa tồn tại
+        const mediasToUpdate = medias.filter((m: any) => m.id && existingMediaIds.has(m.id)); // Chỉ update nếu ID đã có
         const mediasToDelete = existingMedias.filter(
           (em) => !medias.some((m: any) => m.id === em.id),
-        ); // Media to delete
+        ); // Xóa media không còn trong danh sách
 
         // Create new media items
         if (mediasToCreate.length > 0) {
           await prisma.media.createMany({
-            data: mediasToCreate.map((media: any) => ({
+            data: mediasToCreate.map((media: Media) => ({
               media_type: media.media_type,
               media_url: media.media_url || null,
               redirect_url: media.redirect_url || null,
@@ -166,6 +166,7 @@ async function updateSection(req: NextApiRequest, res: NextApiResponse) {
             data: {
               media_type: media.media_type,
               media_url: media.media_url || null,
+              redirect_url: media.redirect_url || null,
               embed_code: media.embed_code || null,
               description: media.description || null,
               updatedAt: new Date(),

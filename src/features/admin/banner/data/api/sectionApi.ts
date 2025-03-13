@@ -6,6 +6,7 @@ import { ISection } from '../../slices/types';
 
 interface ISectionAPI {
   fetchSection(sectionType: SectionType): Promise<ISection>;
+  updateSection(section: ISection): Promise<ISection>;
 }
 
 @injectable()
@@ -18,6 +19,14 @@ class SectionAPI implements ISectionAPI {
 
   async fetchSection(sectionType: SectionType): Promise<ISection> {
     return await this.httpClient.get<ISection>(`/api/banner/section?sectionType=${sectionType}`);
+  }
+
+  async updateSection(section: ISection): Promise<ISection> {
+    const reponse = await this.httpClient.put<ISection>(`/api/banner/section`, section);
+    console.log('====================================');
+    console.log(reponse);
+    console.log('====================================');
+    return reponse;
   }
 }
 export { SectionAPI };

@@ -2,6 +2,7 @@ import { SectionType } from '@prisma/client';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 import { fetchMediaBySection } from './actions/fetchMediaBySection';
+import { updateMediaBySection } from './actions/updateMediaBySection';
 import { initialLandingSettingState, ISection, LandingSettingsState } from './types';
 
 const landingSettings = createSlice({
@@ -89,6 +90,35 @@ const landingSettings = createSlice({
       state.isLoading = false;
       state.error = (action.payload as any) ?? 'Unknown error occurred';
     });
+
+    builder
+      .addCase(updateMediaBySection.pending, (state, action) => {
+        state.isLoading = true;
+        state.error = '';
+      })
+      .addCase(updateMediaBySection.fulfilled, (state, action) => {
+        switch (action.payload.section_type) {
+          case SectionType.BANNER:
+            state.bannerSection = action.payload;
+            break;
+          case SectionType.VISION_MISSION:
+            state.visionSection = action.payload;
+            break;
+          case SectionType.KPS:
+            state.kpsSection = action.payload;
+            break;
+          case SectionType.PARTNER_LOGO:
+            state.partnerSection = action.payload;
+            break;
+          default:
+            break;
+        }
+        state.isLoading = false;
+      })
+      .addCase(updateMediaBySection.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || 'Error when updating section';
+      });
   },
 });
 

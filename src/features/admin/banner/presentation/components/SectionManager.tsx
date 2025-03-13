@@ -4,68 +4,50 @@ import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { MediaType, SectionType } from '@prisma/client';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import * as yup from 'yup';
+import { toast } from 'sonner';
+import { storage } from '../../firebase.config';
+import {
+  defaultValues,
+  SectionDefaultValues,
+  sectionFormSchema,
+} from '../../schema/section-form.schema';
 import { markSectionFetched } from '../../slices';
 import { fetchMediaBySection } from '../../slices/actions/fetchMediaBySection';
+import { updateMediaBySection } from '../../slices/actions/updateMediaBySection';
 import { ISection } from '../../slices/types';
 import SectionCard from './SectionCard';
-
-const schema = yup.object({
-  section_id: yup.string().required(),
-  section_type: yup.mixed<SectionType>().oneOf(Object.values(SectionType)).required(),
-  name: yup.string().required('Section name is required'),
-  order: yup.number().required(),
-  created_at: yup.date().required(),
-  updated_at: yup.date().required(),
-  medias: yup
-    .array()
-    .of(
-      yup.object({
-        id: yup.string().required(),
-        media_type: yup.mixed<MediaType>().oneOf(Object.values(MediaType)).required(),
-        media_url: yup
-          .string()
-          .default(null)
-          .when('media_type', {
-            is: (val: MediaType) => val === MediaType.IMAGE || val === MediaType.VIDEO,
-            then: (schema) => schema.required('Media URL is required'),
-            otherwise: (schema) => schema.nullable().notRequired(),
-          }),
-        redirect_url: yup.string().default(null),
-        embed_code: yup
-          .string()
-          .default(null)
-          .when('media_type', {
-            is: (val: MediaType) => val === MediaType.EMBEDDED,
-            then: (schema) => schema.required('Embed code is required'),
-            otherwise: (schema) => schema.nullable().notRequired(),
-          }),
-        description: yup.string().default(null).optional(),
-        uploaded_by: yup.string().default(null).optional(),
-        uploaded_date: yup.date().required(),
-      }),
-    )
-    .default([]),
-});
-
-type SectionDefaultValues = yup.InferType<typeof schema>;
 
 interface SectionManagerProps {
   sectionType: SectionType;
 }
 
+const uploadToFirebase = async (localUrl: string, fileName: string): Promise<string> => {
+  try {
+    // Fetch blob từ local URL
+    const response = await fetch(localUrl);
+    const blob = await response.blob();
+
+    // Tạo reference với tên file duy nhất
+    const storageRef = ref(storage, `images/media/${fileName}_${Date.now()}.jpg`);
+
+    // Upload file lên Firebase Storage
+    const snapshot = await uploadBytes(storageRef, blob);
+
+    // Lấy download URL
+    const downloadURL = await getDownloadURL(snapshot.ref);
+
+    return downloadURL;
+  } catch (error) {
+    console.error('Error uploading to Firebase:', error);
+    throw error;
+  }
+};
+
 export default function SectionManager({ sectionType }: SectionManagerProps) {
-  const defaultValues: SectionDefaultValues = {
-    section_id: `${Date.now()}`,
-    section_type: sectionType,
-    name: `New ${sectionType.replace('_', ' ')}`,
-    order: 0,
-    created_at: new Date(),
-    updated_at: new Date(),
-    medias: [],
-  };
   const sectionData = useAppSelector((state) => {
     switch (sectionType) {
       case SectionType.BANNER:
@@ -125,11 +107,12 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
   // };
 
   const methods = useForm({
-    resolver: yupResolver(schema),
-    defaultValues,
+    resolver: yupResolver(sectionFormSchema),
+    defaultValues: defaultValues(sectionType),
   });
 
   const dispatch = useAppDispatch();
+  const { data: userData } = useSession();
 
   const { handleSubmit, reset } = methods;
 
@@ -149,8 +132,44 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
     }
   }, [sectionData]);
 
-  const onSubmit = (data: SectionDefaultValues) => {
-    console.log(data);
+  const onSubmit = async (data: SectionDefaultValues) => {
+    try {
+      // Tạo bản sao của data để xử lý
+      const processedData: SectionDefaultValues = { ...data };
+
+      // Xử lý từng media item
+      const updatedMedias = await Promise.all(
+        processedData.medias.map(async (media) => {
+          if (media.media_url.startsWith('blob:')) {
+            // Tạo tên file từ ID hoặc timestamp
+            const fileName = media.id || 'banner';
+
+            // Upload và lấy URL mới
+            const firebaseUrl = await uploadToFirebase(media.media_url, fileName);
+
+            return {
+              ...media,
+              media_url: firebaseUrl,
+              uploaded_by: media.uploaded_by || 'system', // Thêm uploaded_by nếu chưa có
+              uploaded_date: media.uploaded_date || new Date().toISOString(), // Thêm ngày nếu chưa có
+            };
+          }
+          return media;
+        }),
+      );
+
+      processedData.medias = updatedMedias;
+
+      dispatch(
+        updateMediaBySection({ section: processedData, createdBy: userData?.user.id ?? '' }),
+      ).unwrap();
+      toast('Success', {
+        description: 'Upload Success',
+      });
+    } catch (error) {
+      console.error('Error in onSubmit:', error);
+      throw error;
+    }
   };
 
   return (

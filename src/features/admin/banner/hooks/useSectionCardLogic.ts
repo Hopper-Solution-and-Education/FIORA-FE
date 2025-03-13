@@ -34,6 +34,7 @@ function useSectionCardLogic({ sectionData, control, sectionType }: UseSectionCa
       id: `${Date.now()}`,
       media_type: type,
       media_url: '',
+      redirect_url: '',
       embed_code: '',
       description: '',
       uploaded_by: '',
