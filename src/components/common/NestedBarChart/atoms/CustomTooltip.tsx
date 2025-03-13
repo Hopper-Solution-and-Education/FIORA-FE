@@ -1,0 +1,33 @@
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/shared/constants/chart';
+import React from 'react';
+
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+  currency = DEFAULT_CURRENCY,
+  locale = DEFAULT_LOCALE,
+}: any) => {
+  if (!active || !payload || !payload.length) return null;
+
+  const item = payload[0].payload;
+
+  return (
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm p-3 rounded-md">
+      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{item.name}</p>
+      <p className="text-xs text-gray-600 dark:text-gray-400">
+        {item.type}:{' '}
+        <span className="font-bold">
+          {new Intl.NumberFormat(locale, { style: 'currency', currency }).format(item.value)}
+        </span>
+      </p>
+      {item.parent && (
+        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+          Parent: <span className="font-medium">{item.parent}</span>
+        </p>
+      )}
+    </div>
+  );
+};
+
+export default CustomTooltip;

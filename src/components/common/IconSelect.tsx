@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 import { iconOptions } from '@/shared/constants/data';
 import { useGetIconLabel } from '@/shared/utils';
 import React from 'react';

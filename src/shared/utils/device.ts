@@ -1,0 +1,27 @@
+'use client';
+import { useEffect, useState } from 'react';
+
+export function useWindowSize() {
+  const [windowSize, setWindowSize] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleResize = () => setWindowSize({ width: window.innerWidth });
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return windowSize;
+}
+
+// Dynamic chart margins based on screen width
+export const getChartMargins = (width: number) => {
+  if (width < 640) return { top: 10, right: 20, left: 60, bottom: 20 };
+  else if (width < 1024) return { top: 10, right: 25, left: 80, bottom: 25 };
+  else return { top: 10, right: 30, left: 100, bottom: 30 };
+};

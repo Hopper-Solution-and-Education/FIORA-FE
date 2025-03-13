@@ -23,7 +23,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Account } from '../../types/FinalcialOverview.types';
-import { formatCurrency } from '@/lib/formatCurrency';
+import { formatCurrency } from '@/shared/utils';
 
 export default function FinancialAccount({
   accountsMap,
