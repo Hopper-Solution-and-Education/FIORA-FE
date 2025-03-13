@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 import { AlertCircle, ChevronDown } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Account, CreateAccountModalProps } from '../../../settingSlices/expenseIncomeSlides/types';

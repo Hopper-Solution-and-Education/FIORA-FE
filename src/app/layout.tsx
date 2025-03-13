@@ -9,11 +9,11 @@ import { GrowthBookAppProvider } from '@/components/providers/GrowthBookProvider
 import { ReduxProvider } from '@/components/providers/ReduxProvider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
-import { swrOptions } from '@/lib/swrConfig';
 import { SessionProvider } from 'next-auth/react';
 import NextTopLoader from 'nextjs-toploader';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { SWRConfig } from 'swr';
+import { swrOptions } from '@/config/swrConfig';
 
 const inter = Inter({ subsets: ['latin'] });
 export default function RootLayout({

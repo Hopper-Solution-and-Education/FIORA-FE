@@ -1,6 +1,6 @@
-import { errorHandler } from '@/lib/errors';
-import redis from '@/lib/redis';
-import { sendEmail } from '@/lib/sendGrid';
+import { errorHandler } from '@/config/errors';
+import redis from '@/config/redis';
+import { sendEmail } from '@/config/sendGrid';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {

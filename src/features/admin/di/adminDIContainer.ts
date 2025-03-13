@@ -1,5 +1,5 @@
 // src/features/admin/di/index.ts
-import { httpClient, IHttpClient } from '@/lib/HttpClient';
+import { httpClient, IHttpClient } from '@/config/HttpClient';
 import { Container } from 'inversify';
 import { ISectionAPI, SectionAPI } from '../banner/data/api/sectionApi';
 import {

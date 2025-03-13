@@ -105,7 +105,7 @@ model Product {
   name         String               @db.VarChar(50)
   description  String?              @db.VarChar(1000)
   price        Decimal              @db.Decimal(13, 2)
-  taxRate      Decimal?             @db.Decimal(4, 2)
+  taxRate      Decimal?             @db.Decimal(13, 2)
   items        Json?                @db.Json
   user         User                 @relation("UserProducts", fields: [userId], references: [id])
   category     Category             @relation("CategoryProducts", fields: [catId], references: [id])
@@ -222,8 +222,7 @@ model Media {
   id            String    @id @default(uuid()) @db.Uuid
   media_type    MediaType
   media_url     String? // Dành cho hình ảnh/video
-  redirect_url  String? // Redirect khi bấm vào hình
-  embed_code    String? // Dành cho video nhúng (YouTube, Vimeo,...) 
+  embed_code    String? // Dành cho video nhúng (YouTube, Vimeo,...)
   description   String?
   uploaded_by   String?
   uploaded_date DateTime  @default(now())
@@ -232,7 +231,7 @@ model Media {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  createdBy String   @db.Uuid
+  createdBy String?  @db.Uuid
   updatedBy String?  @db.Uuid
 }
 
@@ -251,6 +250,7 @@ model Category {
   fromTransactions Transaction[] @relation("FromCategory")
   toTransactions   Transaction[] @relation("ToCategory")
   products         Product[]     @relation("CategoryProducts")
+  balance          Decimal       @default(0) @db.Decimal(13, 2)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

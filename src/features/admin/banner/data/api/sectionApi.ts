@@ -1,8 +1,8 @@
 import { TYPES } from '@/infrastructure/di/type';
-import type { IHttpClient } from '@/lib/HttpClient';
 import { SectionType } from '@prisma/client';
 import { inject, injectable } from 'inversify';
 import { ISection } from '../../slices/types';
+import type { IHttpClient } from '@/config/HttpClient';
 
 interface ISectionAPI {
   fetchSection(sectionType: SectionType): Promise<ISection>;

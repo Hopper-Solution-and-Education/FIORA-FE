@@ -3,7 +3,7 @@ import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/ac
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
-import { createResponse } from '@/lib/createResponse';
+import { createResponse } from '@/config/createResponse';
 
 // Define the expected session structure
 

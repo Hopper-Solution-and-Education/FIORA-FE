@@ -1,149 +1,79 @@
 'use client';
 
-import { fetchCategories } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
-import { Category } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
-import { useAppDispatch, useAppSelector } from '@/store';
+import { useEffect, useMemo, useState } from 'react';
 import { CategoryType } from '@prisma/client';
-import { useEffect, useMemo } from 'react';
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-
-interface CategoryChartData extends Category {
-  color: string;
-  convertedBalanceToRate: number;
-}
-
-const COLORS = {
-  Expense: '#EF4444', // Red for expenses
-  Income: '#10B981', // Green for income
-};
-
-// Format currency function
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-    minimumFractionDigits: 0,
-  }).format(Math.abs(value));
-};
-
-// Custom tooltip component
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    console.log('payload', payload);
-    return (
-      <div className="bg-white p-2 border rounded shadow-sm">
-        <p className="font-medium">{label}</p>
-        <p className="text-sm">
-          Type: <span className="font-bold">{payload[0].payload.type}</span>
-        </p>
-        <p className="text-sm">
-          Balance: <span className="font-bold">{formatCurrency(payload[0].value)}</span>
-        </p>
-        {payload[0].payload.parentId && (
-          <p className="text-sm">
-            Parent: <span className="font-bold">{payload[0].payload.parentName}</span>
-          </p>
-        )}
-      </div>
-    );
-  }
-  return null;
-};
+import { useAppDispatch, useAppSelector } from '@/store';
+import { fetchCategories } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
+import { COLORS } from '@/shared/constants/chart';
+import NestedBarChart, { type BarItem } from '@/components/common/NestedBarChart';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const ExpenseIncomeDashboard = () => {
   const dispatch = useAppDispatch();
-  const { categories, selectedCategory } = useAppSelector((state) => state.expenseIncome);
+  const { categories } = useAppSelector((state) => state.expenseIncome);
+  const [activeTab, setActiveTab] = useState<CategoryType>(CategoryType.Expense);
 
-  // Fetch categories on mount using Redux thunk
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
 
-  // Process data to create a flat structure with parent information and balance
-  const chartData = useMemo<CategoryChartData[]>(() => {
+  const chartData: BarItem[] = useMemo(() => {
     if (!categories.data) return [];
 
-    const totalBalance = categories.data.reduce((acc, category) => acc + category.balance, 0);
-    console.log('totalBalance', totalBalance);
-    return categories.data.map((category: Category) => ({
-      ...category,
-      convertedBalanceToRate: totalBalance
-        ? parseFloat((totalBalance / category.balance).toFixed(2))
-        : 0,
-      color: category.type === CategoryType.Expense ? COLORS.Expense : COLORS.Income,
-    }));
+    return categories.data.map((category) => {
+      return {
+        name: category.name,
+        value: category.balance,
+        color: category.type === CategoryType.Expense ? COLORS.Expense : COLORS.Income,
+        type: category.type === CategoryType.Expense ? CategoryType.Expense : CategoryType.Income,
+        children: category.subCategories?.map((subCategory) => ({
+          name: subCategory.name,
+          value: subCategory.balance,
+          color: category.type === CategoryType.Expense ? COLORS.Expense : COLORS.Income,
+          type: category.type === CategoryType.Expense ? CategoryType.Expense : CategoryType.Income,
+        })),
+      };
+    });
   }, [categories]);
 
-  if (categories.isLoading) return <div>Loading...</div>;
-  if (categories.error) return <div>Error: {categories.error}</div>;
+  const expenseData = useMemo(() => {
+    return chartData.filter((item) => item.type === CategoryType.Expense);
+  }, [chartData]);
 
-  console.log('chartData', chartData);
+  const incomeData = useMemo(() => {
+    return chartData.filter((item) => item.type === CategoryType.Income);
+  }, [chartData]);
+
+  if (categories.isLoading)
+    return <div className="text-gray-800 dark:text-gray-200">Loading...</div>;
+  if (categories.error)
+    return <div className="text-red-600 dark:text-red-400">Error: {categories.error}</div>;
 
   return (
-    <div className="w-full p-4 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4 text-gray-800">Category Distribution</h2>
-
-      <ResponsiveContainer width="100%" height={600}>
-        <BarChart
-          data={chartData}
-          layout="vertical"
-          margin={{ top: 20, bottom: 40, left: 50, right: 20 }} // Increased right margin
-        >
-          <CartesianGrid strokeDasharray="3 3" horizontal vertical={false} />
-          <XAxis
-            type="number"
-            tickFormatter={(value) => formatCurrency(value)}
-            tick={{ fontSize: 12 }} // Font size adjustment for axis ticks
+    <div className="space-y-4">
+      <Tabs
+        defaultValue={CategoryType.Expense}
+        onValueChange={(value) => setActiveTab(value as CategoryType)}
+      >
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value={CategoryType.Expense}>Expense</TabsTrigger>
+          <TabsTrigger value={CategoryType.Income}>Income</TabsTrigger>
+        </TabsList>
+        <TabsContent value={CategoryType.Expense}>
+          <NestedBarChart
+            data={expenseData}
+            title="Expense Analysis"
+            xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
           />
-          <YAxis
-            type="category"
-            dataKey="name"
-            width={100} // Increased width for better label visibility
-            tickLine={false}
-            tickFormatter={(value) => value}
-            tick={{ fontSize: 12 }} // Font size adjustment for Y-axis ticks
+        </TabsContent>
+        <TabsContent value={CategoryType.Income}>
+          <NestedBarChart
+            data={incomeData}
+            title="Income Analysis"
+            xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
           />
-          <Tooltip content={<CustomTooltip />} />
-          <ReferenceLine x={0} stroke="#666" />
-          <Bar
-            dataKey="convertedBalanceToRate"
-            radius={[4, 4, 4, 4]}
-            label={({ x, y, width, height, value, color }) => {
-              const xPos = x + width + 10;
-              return (
-                <text x={xPos} y={y + height / 2} fill={color} fontSize={12} textAnchor="start">
-                  {formatCurrency(value)}
-                </text>
-              );
-            }}
-          >
-            {chartData.map((entry: CategoryChartData) => (
-              <Cell key={entry.id} fill={entry.color} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-
-      <div className="mt-4 flex gap-4">
-        <div className="flex items-center">
-          <div className="w-4 h-4 bg-red-500 rounded mr-2"></div>
-          <span className="text-sm text-gray-600">Expenses</span>
-        </div>
-        <div className="flex items-center">
-          <div className="w-4 h-4 bg-green-500 rounded mr-2"></div>
-          <span className="text-sm text-gray-600">Income</span>
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
