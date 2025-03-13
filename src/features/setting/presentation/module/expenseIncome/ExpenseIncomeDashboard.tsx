@@ -62,14 +62,14 @@ const ExpenseIncomeDashboard = () => {
         <TabsContent value={CategoryType.Expense}>
           <NestedBarChart
             data={expenseData}
-            title="Monthly Expense Analysis"
+            title="Expense Analysis"
             xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
           />
         </TabsContent>
         <TabsContent value={CategoryType.Income}>
           <NestedBarChart
             data={incomeData}
-            title="Monthly Income Analysis"
+            title="Income Analysis"
             xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
           />
         </TabsContent>

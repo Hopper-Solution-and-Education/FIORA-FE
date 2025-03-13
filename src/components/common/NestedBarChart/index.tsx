@@ -26,7 +26,7 @@ import CustomTooltip from './atoms/CustomTooltip';
 import BarLabel from './atoms/BarLabel';
 import ChartLegend from './atoms/ChartLegend';
 import CustomYAxisTick from './atoms/CustomYAxisTick';
-import { getChartMargins, useWindowSize } from '@/shared/utils';
+import { getChartMargins, useWindowSize } from '@/shared/utils/device';
 
 export type BarItem = {
   name: string;
@@ -130,7 +130,9 @@ const NestedBarChart = ({
 
   return (
     <div className="w-full bg-white dark:bg-gray-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 transition-colors duration-200">
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">{title}</h2>
+      <h2 className="text-xl text-center font-semibold text-gray-800 dark:text-gray-200 mb-4">
+        {title}
+      </h2>
 
       <div style={{ height: `${chartHeight}px` }} className="transition-all duration-300">
         <ResponsiveContainer width="100%" height={chartHeight}>

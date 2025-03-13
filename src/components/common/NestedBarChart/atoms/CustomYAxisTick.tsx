@@ -1,4 +1,4 @@
-import { useWindowSize } from '@/shared/utils';
+import { useWindowSize } from '@/shared/utils/device';
 
 const CustomYAxisTick = ({ x, y, payload, processedData, expandedItems, onToggleExpand }: any) => {
   const { width } = useWindowSize();
