@@ -12,7 +12,7 @@ export default function MediaDashboard() {
   const { exportData, importData } = useBannerSettingLogic();
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
       <Card className="mb-6">
         <CardHeader>
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">

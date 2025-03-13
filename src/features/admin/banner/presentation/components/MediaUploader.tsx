@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,7 +35,6 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaType, mediaPath }) =
         const fileUrl = URL.createObjectURL(file);
         setValue(`${mediaPath}.media_url`, fileUrl, { shouldValidate: true });
         setFileName(file.name);
-        // Show success toast
         toast.success('File uploaded successfully', {
           description: `The ${mediaType === MediaType.IMAGE ? 'image' : 'video'} "${
             file.name
@@ -82,11 +83,19 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaType, mediaPath }) =
           </Button>
         </div>
 
-        <div>
-          {/* Display selected file name and remove button */}
-          {fileName && (
+        <div className="flex-1">
+          {/* Display media_url as a clickable link if it exists */}
+          {mediaUrl ? (
             <div className="flex items-center">
-              <p className="text-sm text-gray-600">Selected file: {fileName}</p>
+              <a
+                href={mediaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-blue-600 hover:underline truncate max-w-[200px]"
+                title={mediaUrl} // Show full URL on hover
+              >
+                {mediaUrl}
+              </a>
               <Button
                 variant="ghost"
                 size="sm"
@@ -97,6 +106,23 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaType, mediaPath }) =
                 <X className="h-4 w-4" />
               </Button>
             </div>
+          ) : fileName ? (
+            <div className="flex items-center">
+              <p className="text-sm text-gray-600 truncate max-w-[400px]" title={fileName}>
+                {fileName}
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                type="button"
+                onClick={handleRemoveFile}
+                className="ml-2 text-red-500 hover:text-red-700"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">No file selected</p>
           )}
 
           {/* Display error in red only if there’s an error and no valid media_url */}

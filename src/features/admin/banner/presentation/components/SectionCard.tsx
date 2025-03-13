@@ -4,88 +4,42 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MediaType, SectionType } from '@prisma/client';
-import { ChevronDown, ChevronRight, PlusCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useFieldArray } from 'react-hook-form';
+import { ChevronDown, ChevronRight, PlusCircle, Trash2 } from 'lucide-react';
+import useSectionCardLogic from '../../hooks/useSectionCardLogic';
+import { ISection } from '../../slices/types';
 import MediaItem from './MediaItem';
-import { useAppDispatch } from '@/store';
-import { fetchMediaBySection } from '../../slices/actions/fetchMediaBySection';
 
 interface SectionCardProps {
+  sectionData: ISection | undefined;
   control: any;
   sectionType: SectionType;
 }
 
-export default function SectionCard({ control, sectionType }: SectionCardProps) {
-  const [isOpen, setIsOpen] = useState(true);
-
+export default function SectionCard({ sectionData, control, sectionType }: SectionCardProps) {
   const {
-    fields: mediaFields,
-    append: appendMedia,
-    remove: removeMedia,
-    move: moveMedia,
-  } = useFieldArray({
-    control,
-    name: 'medias',
-  });
-
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    handleFetchMedia();
-  }, [sectionType]);
-
-  const handleFetchMedia = () => {
-    console.log('fetch');
-
-    dispatch(fetchMediaBySection(sectionType));
-  };
-
-  const addMedia = (type: MediaType) => {
-    appendMedia({
-      id: Date.now(),
-      media_type: type,
-      media_url: '',
-      embed_code: '',
-      description: '',
-      uploaded_by: '',
-      uploaded_date: new Date(),
-    });
-  };
-
-  const handleAddMedia = () => {
-    switch (sectionType) {
-      case SectionType.BANNER:
-        addMedia(MediaType.IMAGE);
-        break;
-      case SectionType.KPS:
-        addMedia(MediaType.IMAGE);
-        break;
-      case SectionType.PARTNER_LOGO:
-        addMedia(MediaType.IMAGE);
-        break;
-      case SectionType.VISION_MISSION:
-        addMedia(MediaType.EMBEDDED);
-        break;
-      default:
-        break;
-    }
-  };
-
-  const moveMediaUp = (mediaIndex: number) => {
-    if (mediaIndex > 0) {
-      moveMedia(mediaIndex, mediaIndex - 1);
-    }
-  };
-
-  const moveMediaDown = (mediaIndex: number) => {
-    if (mediaIndex < mediaFields.length - 1) {
-      moveMedia(mediaIndex, mediaIndex + 1);
-    }
-  };
+    isOpen,
+    setIsOpen,
+    isDialogOpen,
+    setIsDialogOpen,
+    mediaFields,
+    handleAddMedia,
+    handleRemoveMedia,
+    confirmRemoveMedia,
+    moveMediaUp,
+    moveMediaDown,
+    addMedia,
+  } = useSectionCardLogic({ sectionData, control, sectionType });
 
   return (
     <Card className="mb-4 border border-gray-200">
@@ -119,9 +73,9 @@ export default function SectionCard({ control, sectionType }: SectionCardProps) 
                 Description
               </Label>
               <Input
-                id="description"
+                id="name"
                 placeholder="Enter section description"
-                {...control.register('description')}
+                {...control.register('name')}
               />
             </div>
 
@@ -132,17 +86,7 @@ export default function SectionCard({ control, sectionType }: SectionCardProps) 
                   {(sectionType === SectionType.BANNER ||
                     sectionType === SectionType.KPS ||
                     sectionType === SectionType.PARTNER_LOGO) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (typeof addMedia === 'function') {
-                          addMedia(MediaType.IMAGE);
-                        } else {
-                          console.error('addMedia is not a function');
-                        }
-                      }}
-                    >
+                    <Button variant="outline" size="sm" onClick={() => addMedia(MediaType.IMAGE)}>
                       <PlusCircle className="h-3 w-3 mr-1" /> Image
                     </Button>
                   )}
@@ -156,14 +100,6 @@ export default function SectionCard({ control, sectionType }: SectionCardProps) 
                       <PlusCircle className="h-3 w-3 mr-1" /> Embed
                     </Button>
                   )}
-
-                  <Button onClick={handleFetchMedia}>
-                    <PlusCircle className="h-3 w-3 mr-1" /> Embed
-                  </Button>
-                  {/* 
-                 <Button variant="outline" size="sm" onClick={() => addMedia(MediaType.VIDEO)}>
-                   <PlusCircle className="h-3 w-3 mr-1" /> Video
-                 </Button> */}
                 </div>
               </div>
 
@@ -181,7 +117,7 @@ export default function SectionCard({ control, sectionType }: SectionCardProps) 
                       key={media.id}
                       mediaIndex={mediaIndex}
                       control={control}
-                      onDelete={() => removeMedia(mediaIndex)}
+                      onDelete={() => handleRemoveMedia(mediaIndex)}
                       onMoveUp={() => moveMediaUp(mediaIndex)}
                       onMoveDown={() => moveMediaDown(mediaIndex)}
                       isFirst={mediaIndex === 0}
@@ -195,6 +131,26 @@ export default function SectionCard({ control, sectionType }: SectionCardProps) 
           </CardContent>
         </CollapsibleContent>
       </Collapsible>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this media item? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmRemoveMedia}>
+              <Trash2 className="h-4 w-4 mr-2" /> Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

@@ -77,7 +77,7 @@ export default function MediaItem({
     if (mediaType === MediaType.IMAGE && mediaUrl) {
       if (sectionType === SectionType.BANNER) {
         return (
-          <div className="relative h-48 w-full bg-gray-100 rounded-md overflow-hidden">
+          <div className="relative max-h-80 w-full bg-gray-100 rounded-md overflow-hidden">
             <Image
               src={mediaUrl || '/placeholder.svg'}
               alt="Banner Preview"
@@ -213,51 +213,62 @@ export default function MediaItem({
         </div>
 
         <CollapsibleContent>
-          <CardContent className="h-60 p-3 grid grid-cols-3 gap-4">
-            <div className="col-span-1">{getMediaPreview()}</div>
+          <CardContent className="p-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Left Side: Media Preview (50%) */}
+            <div className="flex items-center justify-center">{getMediaPreview()}</div>
 
-            <div className="col-span-2 space-y-3">
-              <div className="grid gap-3">
-                <div>
-                  <Label htmlFor={`${mediaPath}.media_type`} className="text-xs mb-1 block">
-                    Media Type
-                  </Label>
-                  <Select
-                    disabled
-                    defaultValue={mediaType}
-                    onValueChange={(value) => handleMediaTypeChange(value as MediaType)}
-                  >
-                    <SelectTrigger className="h-8">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(MediaType).map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <input
-                    type="hidden"
-                    {...control.register(`${mediaPath}.media_type`)}
-                    value={mediaType}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor={`${mediaPath}.description`} className="text-xs mb-1 block">
-                    Description
-                  </Label>
-                  <Input
-                    id={`${mediaPath}.description`}
-                    className="h-8"
-                    {...control.register(`${mediaPath}.description`)}
-                  />
-                </div>
+            {/* Right Side: Fields (50%) */}
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor={`${mediaPath}.media_type`} className="text-xs mb-1 block">
+                  Media Type
+                </Label>
+                <Select
+                  disabled
+                  defaultValue={mediaType}
+                  onValueChange={(value) => handleMediaTypeChange(value as MediaType)}
+                >
+                  <SelectTrigger className="h-8">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(MediaType).map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <input
+                  type="hidden"
+                  {...control.register(`${mediaPath}.media_type`)}
+                  value={mediaType}
+                />
               </div>
 
-              <MediaUploader mediaType={mediaType} mediaPath={mediaPath} />
+              <div>
+                <Label htmlFor={`${mediaPath}.description`} className="text-xs mb-1 block">
+                  Description
+                </Label>
+                <Input
+                  id={`${mediaPath}.description`}
+                  className="h-8"
+                  placeholder="Enter description"
+                  {...control.register(`${mediaPath}.description`)}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor={`${mediaPath}.redirect_url`} className="text-xs mb-1 block">
+                  Redirect URL
+                </Label>
+                <Input
+                  id={`${mediaPath}.redirect_url`}
+                  className="h-8"
+                  placeholder="Enter redirect URL (e.g., https://example.com)"
+                  {...control.register(`${mediaPath}.redirect_url`)}
+                />
+              </div>
 
               {mediaType === MediaType.EMBEDDED && (
                 <div>
@@ -271,6 +282,10 @@ export default function MediaItem({
                     {...control.register(`${mediaPath}.embed_code`)}
                   />
                 </div>
+              )}
+
+              {mediaType !== MediaType.EMBEDDED && (
+                <MediaUploader mediaType={mediaType} mediaPath={mediaPath} />
               )}
             </div>
           </CardContent>

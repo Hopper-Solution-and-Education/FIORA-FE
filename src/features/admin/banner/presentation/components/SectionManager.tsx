@@ -33,6 +33,7 @@ const schema = yup.object({
             then: (schema) => schema.required('Media URL is required'),
             otherwise: (schema) => schema.nullable().notRequired(),
           }),
+        redirect_url: yup.string().default(null),
         embed_code: yup
           .string()
           .default(null)
@@ -95,6 +96,7 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
           media.media_type === MediaType.IMAGE || media.media_type === MediaType.VIDEO
             ? media.media_url || ''
             : '',
+        redirect_url: media.redirect_url || '',
         embed_code: media.media_type === MediaType.EMBEDDED ? media.embed_code || '' : '',
         description: media.description || '',
         uploaded_by: media.uploaded_by || '',
@@ -131,8 +133,6 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
 
   const { handleSubmit, reset } = methods;
 
-  console.log(fetchedSections);
-
   useEffect(() => {
     if (!fetchedSections.includes(sectionType)) {
       dispatch(fetchMediaBySection(sectionType))
@@ -141,7 +141,7 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
           dispatch(markSectionFetched(sectionType));
         });
     }
-  }, [sectionType, fetchedSections]);
+  }, []);
 
   useEffect(() => {
     if (sectionData) {
@@ -152,7 +152,6 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
   const onSubmit = (data: SectionDefaultValues) => {
     console.log(data);
   };
-  const isLoadingGetSection = useAppSelector((state) => state.landingSettings.isLoading);
 
   return (
     <FormProvider {...methods}>
@@ -167,7 +166,11 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
         </div>
 
         <div className="space-y-4">
-          <SectionCard control={methods.control} sectionType={sectionType} />
+          <SectionCard
+            sectionData={sectionData}
+            control={methods.control}
+            sectionType={sectionType}
+          />
         </div>
       </div>
     </FormProvider>

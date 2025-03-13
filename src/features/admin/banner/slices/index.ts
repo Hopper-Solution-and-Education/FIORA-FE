@@ -17,27 +17,27 @@ const landingSettings = createSlice({
       switch (sectionType) {
         case SectionType.BANNER:
           state.bannerSection = section;
-          toast.success('Banner section saved', {
-            description: 'Your banner section has been updated successfully.',
-          });
+          // toast.success('Banner section saved', {
+          //   description: 'Your banner section has been updated successfully.',
+          // });
           break;
         case SectionType.VISION_MISSION:
           state.visionSection = section;
-          toast.success('Vision & Mission section saved', {
-            description: 'Your vision & mission section has been updated successfully.',
-          });
+          // toast.success('Vision & Mission section saved', {
+          //   description: 'Your vision & mission section has been updated successfully.',
+          // });
           break;
         case SectionType.KPS:
           state.kpsSection = section;
-          toast.success('KPS section saved', {
-            description: 'Your KPS section has been updated successfully.',
-          });
+          // toast.success('KPS section saved', {
+          //   description: 'Your KPS section has been updated successfully.',
+          // });
           break;
         case SectionType.PARTNER_LOGO:
           state.partnerSection = section;
-          toast.success('Partner Logo section saved', {
-            description: 'Your partner logo section has been updated successfully.',
-          });
+          // toast.success('Partner Logo section saved', {
+          //   description: 'Your partner logo section has been updated successfully.',
+          // });
           break;
         default:
           break;
@@ -87,7 +87,7 @@ const landingSettings = createSlice({
 
     builder.addCase(fetchMediaBySection.rejected, (state, action) => {
       state.isLoading = false;
-      state.error = action.payload || 'Unknown error occurred';
+      state.error = (action.payload as any) ?? 'Unknown error occurred';
     });
   },
 });

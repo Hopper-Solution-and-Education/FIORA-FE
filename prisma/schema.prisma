@@ -222,7 +222,8 @@ model Media {
   id            String    @id @default(uuid()) @db.Uuid
   media_type    MediaType
   media_url     String? // Dành cho hình ảnh/video
-  embed_code    String? // Dành cho video nhúng (YouTube, Vimeo,...)
+  redirect_url  String? // Redirect khi bấm vào hình
+  embed_code    String? // Dành cho video nhúng (YouTube, Vimeo,...) 
   description   String?
   uploaded_by   String?
   uploaded_date DateTime  @default(now())
