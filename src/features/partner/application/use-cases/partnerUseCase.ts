@@ -1,7 +1,7 @@
-import { type Prisma, type Partner } from '@prisma/client';
+import { type Partner, type Prisma } from '@prisma/client';
 import { IPartnerRepository } from '../../domain/repositories/partnerRepository.interface';
-import { Messages } from '@/lib/message';
 import prisma from '@/infrastructure/database/prisma';
+import { Messages } from '@/shared/constants/message';
 import { partnerRepository } from '../../infrastructure/repositories/partnerRepository';
 
 class PartnerUseCase {
