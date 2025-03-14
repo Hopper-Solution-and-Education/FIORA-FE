@@ -5,7 +5,7 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { authOptions } from '../auth/[...nextauth]';
 import { UUID } from 'crypto';
 import { createErrorResponse, createResponse } from '@/lib/utils';
-import { Messages } from '@/lib/message';
+import { Messages } from '@/config/message';
 
 // Hàm kiểm tra session
 export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {

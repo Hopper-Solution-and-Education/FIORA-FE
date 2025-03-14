@@ -1,27 +1,25 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { CategoryType } from '@prisma/client';
-import { useAppDispatch, useAppSelector } from '@/store';
-import {
-  createCategory,
-  // createCategory,
-  deleteCategory,
-  fetchCategories,
-} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
-import { COLORS } from '@/shared/constants/chart';
 import NestedBarChart, { type BarItem } from '@/components/common/nested-bar-chart';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import DeleteDialog from '@/features/setting/presentation/module/expenseIncome/molecules/DeleteDialog';
+import InsertCategoryDialog from '@/features/setting/presentation/module/expenseIncome/molecules/InsertCategoryDialog';
+import UpdateDialog from '@/features/setting/presentation/module/expenseIncome/molecules/UpdateDialog';
 import {
   setDeleteConfirmOpen,
   setDialogOpen,
   setSelectedCategory,
 } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
-import UpdateDialog from '@/features/setting/presentation/module/expenseIncome/molecules/UpdateDialog';
-import InsertCategoryDialog from '@/features/setting/presentation/module/expenseIncome/molecules/InsertCategoryDialog';
-import DeleteDialog from '@/features/setting/presentation/module/expenseIncome/molecules/DeleteDialog';
-import { Category } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
+import {
+  createCategory,
+  deleteCategory,
+  fetchCategories,
+} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
+import { COLORS } from '@/shared/constants/chart';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { CategoryType } from '@prisma/client';
+import { useEffect, useMemo, useState } from 'react';
 import { NewCategoryDefaultValues } from '../../settingSlices/expenseIncomeSlides/utils/formSchema';
 
 const ExpenseIncomeDashboard = () => {
@@ -71,15 +69,15 @@ const ExpenseIncomeDashboard = () => {
     dispatch(setSelectedCategory(null));
   };
 
-  const handleDisplayDetailCategoryDialog = (category: Category) => {
-    dispatch(setSelectedCategory(category));
-    setDetailDialogOpen(true);
-  };
+  // const handleDisplayDetailCategoryDialog = (category: Category) => {
+  //   dispatch(setSelectedCategory(category));
+  //   setDetailDialogOpen(true);
+  // };
 
-  const handleDisplayDeleteConfirmDialog = (category: Category) => {
-    dispatch(setSelectedCategory(category));
-    dispatch(setDeleteConfirmOpen(true));
-  };
+  // const handleDisplayDeleteConfirmDialog = (category: Category) => {
+  //   dispatch(setSelectedCategory(category));
+  //   dispatch(setDeleteConfirmOpen(true));
+  // };
 
   const handleDeleteCategory = () => {
     if (selectedCategory) {

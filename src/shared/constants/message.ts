@@ -40,4 +40,20 @@ export enum Messages {
 
   // Lỗi hệ thống
   METHOD_NOT_ALLOWED = 'Phương thức không được hỗ trợ',
+
+  PARTNER_NOT_FOUND = 'Không tìm thấy partner.',
+  PARTNER_NAME_TAKEN = 'Partner với tên này đã tồn tại.',
+  CREATE_PARTNER_FAILED = 'Tạo partner thất bại.',
+  UPDATE_PARTNER_FAILED = 'Cập nhật partner thất bại.',
+  DELETE_PARTNER_FAILED = 'Xóa partner thất bại.',
+  PARTNER_ALREADY_EXISTS = 'Partner bạn tạo đã tồn tại.',
+
+  INVALID_USER = 'Người dùng không hợp lệ.',
+  INVALID_PHONE = 'Số điện thoại không hợp lệ.',
+  INVALID_DOB = 'Ngày sinh không hợp lệ.',
+
+  GET_PARTNER_SUCCESS = 'Lấy danh sách đối tác thành công.',
+  CREATE_PARTNER_SUCCESS = 'Tạo đối tác thành công.',
+  UPDATE_PARTNER_SUCCESS = 'Cập nhật đối tác thành công.',
+  DELETE_PARTNER_SUCCESS = 'Xóa đối tác thành công.',
 }
