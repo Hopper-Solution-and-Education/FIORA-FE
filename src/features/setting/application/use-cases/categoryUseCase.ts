@@ -13,19 +13,28 @@ class CategoryUseCase {
     userId: string;
     type: CategoryType;
     icon: string;
-    tax_rate: number;
-    balance: number;
     name: string;
     description?: string | null;
     parentId?: string | null;
   }): Promise<Category> {
-    if (!Object.values(CategoryType).includes(params.type)) {
+    const { userId, type, icon, name, description, parentId } = params;
+    if (!Object.values(CategoryType).includes(type)) {
       throw new Error('Category type is invalid. It must be Expense or Income');
     }
-    if (!params.name || !params.icon) {
+    if (!name || !icon) {
       throw new Error('Name and icon are required');
     }
-    return this.categoryRepository.createCategory(params);
+    return this.categoryRepository.createCategory({
+      userId,
+      type,
+      icon,
+      name,
+      description,
+      parentId,
+      tax_rate: 0,
+      createdBy: userId,
+      updatedBy: userId,
+    });
   }
 
   async getCategories(userId: string): Promise<Category[]> {

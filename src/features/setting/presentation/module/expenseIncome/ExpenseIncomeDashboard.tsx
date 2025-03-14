@@ -26,9 +26,8 @@ import { NewCategoryDefaultValues } from '../../settingSlices/expenseIncomeSlide
 
 const ExpenseIncomeDashboard = () => {
   const dispatch = useAppDispatch();
-  const { categories, selectedCategory, dialogOpen, deleteConfirmOpen } = useAppSelector(
-    (state) => state.expenseIncome,
-  );
+  const { categories, selectedCategory, dialogOpen, deleteConfirmOpen, updateDialogOpen } =
+    useAppSelector((state) => state.expenseIncome);
   const [isDetailDialogOpen, setDetailDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<CategoryType>(CategoryType.Expense);
 
@@ -41,13 +40,15 @@ const ExpenseIncomeDashboard = () => {
 
     return categories.data.map((category) => {
       return {
+        id: category.id,
         name: category.name,
-        value: category.balance,
+        value: category.balance || 0,
         color: category.type === CategoryType.Expense ? COLORS.Expense : COLORS.Income,
         type: category.type === CategoryType.Expense ? CategoryType.Expense : CategoryType.Income,
         children: category.subCategories?.map((subCategory) => ({
+          id: subCategory.id,
           name: subCategory.name,
-          value: subCategory.balance,
+          value: subCategory.balance || 0,
           color: category.type === CategoryType.Expense ? COLORS.Expense : COLORS.Income,
           type: category.type === CategoryType.Expense ? CategoryType.Expense : CategoryType.Income,
         })),
@@ -124,10 +125,7 @@ const ExpenseIncomeDashboard = () => {
       </Tabs>
 
       {/* DIALOG ZONE */}
-      <UpdateDialog
-        isDetailDialogOpen={isDetailDialogOpen}
-        setDetailDialogOpen={setDetailDialogOpen}
-      />
+      <UpdateDialog isDetailDialogOpen={updateDialogOpen} />
 
       <InsertCategoryDialog
         dialogOpen={dialogOpen}

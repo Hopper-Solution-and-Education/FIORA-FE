@@ -29,6 +29,7 @@ import CustomYAxisTick from './atoms/CustomYAxisTick';
 import { getChartMargins, useWindowSize } from '@/shared/utils/device';
 
 export type BarItem = {
+  id?: string;
   name: string;
   value: number;
   color: string;

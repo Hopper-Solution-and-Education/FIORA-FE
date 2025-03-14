@@ -13,6 +13,9 @@ const expenseIncomeSlice = createSlice({
     setDeleteConfirmOpen(state, action: PayloadAction<boolean>) {
       state.deleteConfirmOpen = action.payload;
     },
+    setUpdateDialogOpen(state, action: PayloadAction<boolean>) {
+      state.updateDialogOpen = action.payload;
+    },
     setSelectedCategory(state, action: PayloadAction<Category | null>) {
       state.selectedCategory = action.payload;
     },
@@ -85,6 +88,12 @@ const expenseIncomeSlice = createSlice({
   },
 });
 
-export const { setDialogOpen, setDeleteConfirmOpen, setSelectedCategory, setCategories, reset } =
-  expenseIncomeSlice.actions;
+export const {
+  setDialogOpen,
+  setDeleteConfirmOpen,
+  setUpdateDialogOpen,
+  setSelectedCategory,
+  setCategories,
+  reset,
+} = expenseIncomeSlice.actions;
 export default expenseIncomeSlice.reducer;

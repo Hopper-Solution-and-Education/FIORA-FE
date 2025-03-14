@@ -37,6 +37,7 @@ import {
   NewCategoryDefaultValues,
   validateNewCategorySchema,
 } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/utils/formSchema';
+import { useAppSelector } from '@/store';
 import { CategoryType } from '@prisma/client';
 import React from 'react';
 
@@ -53,6 +54,7 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({
   setDialogOpen,
   handleCreateCategory,
 }) => {
+  const { categories } = useAppSelector((state) => state.expenseIncome);
   const form = useForm<NewCategoryDefaultValues>({
     resolver: yupResolver(validateNewCategorySchema),
     defaultValues: defaultNewCategoryValues,
@@ -70,6 +72,23 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({
     form.reset();
   };
 
+  const handleChangeParentCategory = (value: string | null, field: any) => {
+    if (value && value !== 'null') {
+      const parentCategory = categories.data?.find((category) => category.id === value);
+      if (parentCategory?.type) {
+        form.setValue('type', parentCategory.type);
+        form.setValue('isTypeDisabled', true);
+      }
+    } else {
+      form.setValue('type', CategoryType.Expense);
+      form.setValue('isTypeDisabled', false);
+    }
+    field.onChange(value === 'null' ? null : value);
+  };
+
+  // Add isTypeDisabled to the form default values if not already present
+  const isTypeDisabled = form.watch('isTypeDisabled') || false;
+
   return (
     <Dialog open={dialogOpen} onOpenChange={handleCloseDialog}>
       <DialogContent>
@@ -85,7 +104,9 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category Name</FormLabel>
+                  <FormLabel>
+                    Category Name <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Category Name" {...field} />
                   </FormControl>
@@ -100,7 +121,9 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({
               name="icon"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Icon</FormLabel>
+                  <FormLabel>
+                    Icon <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
                     <IconSelect selectedIcon={field.value} onIconChange={field.onChange} />
                   </FormControl>
@@ -115,8 +138,14 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormLabel>
+                    Category Type <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={isTypeDisabled}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Category Type" />
@@ -141,7 +170,10 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Parent Category (Optional)</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
+                  <Select
+                    onValueChange={(value) => handleChangeParentCategory(value, field)}
+                    value={field.value || 'null'}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Parent Category" />
@@ -149,35 +181,15 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({
                     </FormControl>
                     <SelectContent>
                       <SelectGroup>
-                        <SelectItem value={null as any}>None</SelectItem>
-                        <SelectItem value={CategoryType.Expense}>Expense</SelectItem>
-                        <SelectItem value={CategoryType.Income}>Income</SelectItem>
+                        <SelectItem value="null">None</SelectItem>
+                        {categories.data?.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Tax Rate */}
-            <FormField
-              control={form.control}
-              name="tax_rate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tax Rate (Optional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Tax Rate"
-                      {...field}
-                      value={field.value ?? ''}
-                      onChange={(e) =>
-                        field.onChange(e.target.value ? Number(e.target.value) : null)
-                      }
-                    />
-                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

@@ -62,13 +62,11 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { name, type, icon, tax_rate, balance, description, parentId } = req.body;
+    const { name, type, icon, description, parentId } = req.body;
     const newCategory = await categoryUseCase.createCategory({
       userId,
       type: type as CategoryType,
       icon,
-      tax_rate,
-      balance,
       name,
       description,
       parentId,

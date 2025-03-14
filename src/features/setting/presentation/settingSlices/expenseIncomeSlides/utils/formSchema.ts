@@ -14,20 +14,18 @@ const validateNewCategorySchema = yup.object({
     .oneOf([CategoryType.Expense, CategoryType.Income], 'Invalid category type')
     .required('Category type is required'),
   icon: yup.string().required('Please select an icon'),
-  tax_rate: yup.number().min(0, 'Tax rate cannot be negative'),
-  balance: yup.number().min(0, 'Balance cannot be negative').required('Balance is required'),
   description: yup.string().max(500, 'Description cannot exceed 500 characters').nullable(),
   parentId: yup.string().nullable(),
+  isTypeDisabled: yup.boolean().required(),
 });
 
 const defaultNewCategoryValues: NewCategoryDefaultValues = {
   name: '',
   type: CategoryType.Expense,
   icon: iconOptions[0].options[0].value,
-  tax_rate: 0,
-  balance: 0,
   description: '',
   parentId: null,
+  isTypeDisabled: false,
 };
 
 // * 2. Update Category Schema

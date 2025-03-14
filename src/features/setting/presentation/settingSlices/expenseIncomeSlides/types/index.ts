@@ -45,6 +45,7 @@ export interface ExpenseIncomeState {
   };
   selectedCategory: Category | null;
   dialogOpen: boolean;
+  updateDialogOpen: boolean;
   deleteConfirmOpen: boolean;
 }
 
@@ -56,6 +57,7 @@ export const initialExpenseIncomeState: ExpenseIncomeState = {
   },
   selectedCategory: null,
   dialogOpen: false,
+  updateDialogOpen: false,
   deleteConfirmOpen: false,
 };
 

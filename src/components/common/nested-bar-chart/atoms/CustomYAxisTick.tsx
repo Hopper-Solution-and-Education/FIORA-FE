@@ -1,6 +1,26 @@
+import { Icons } from '@/components/Icon';
+import { Button } from '@/components/ui/button';
 import { useWindowSize } from '@/shared/utils/device';
 
-const CustomYAxisTick = ({ x, y, payload, processedData, expandedItems, onToggleExpand }: any) => {
+interface CustomYAxisTickProps {
+  x: number;
+  y: number;
+  payload: any;
+  processedData: any;
+  expandedItems: any;
+  onToggleExpand: (name: string) => void;
+  callback: () => void;
+}
+
+const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
+  x,
+  y,
+  payload,
+  processedData,
+  expandedItems,
+  onToggleExpand,
+  callback,
+}: any) => {
   const { width } = useWindowSize();
   const item = processedData.find((d: any) => d.name === payload.value);
   const isChild = item?.isChild;
@@ -34,11 +54,28 @@ const CustomYAxisTick = ({ x, y, payload, processedData, expandedItems, onToggle
             >
               {expandedItems[payload.value] ? '−' : '+'}
             </text>
+            <foreignObject x="-8" y="-8" width="100" height="16">
+              <Button className="ml-2" onClick={callback} aria-label="Edit category">
+                <Icons.pencil className="w-4 h-4" />
+              </Button>
+            </foreignObject>
           </g>
         ) : (
-          <text x="-16" y="4" textAnchor="end" className="text-sm fill-gray-600 dark:fill-gray-400">
-            {childLabel}
-          </text>
+          <>
+            <text
+              x="-16"
+              y="4"
+              textAnchor="end"
+              className="text-sm fill-gray-600 dark:fill-gray-400"
+            >
+              {childLabel}
+            </text>
+            <foreignObject x="-8" y="-8" width="100" height="16">
+              <Button className="ml-2" onClick={callback} aria-label="Edit category">
+                <Icons.pencil className="w-4 h-4" />
+              </Button>
+            </foreignObject>
+          </>
         )}
       </g>
     );
@@ -60,6 +97,11 @@ const CustomYAxisTick = ({ x, y, payload, processedData, expandedItems, onToggle
       >
         {isChild ? childLabel : parentLabel}
       </text>
+      <foreignObject x="-8" y="-8" width="100" height="16">
+        <Button className="ml-2" onClick={callback} aria-label="Edit category">
+          <Icons.pencil className="w-4 h-4" />
+        </Button>
+      </foreignObject>
     </g>
   );
 };
