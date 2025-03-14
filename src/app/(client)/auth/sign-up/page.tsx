@@ -1,4 +1,4 @@
-import Loading from '@/components/common/loading';
+import Loading from '@/components/common/Loading';
 import dynamic from 'next/dynamic';
 
 const SignUpPage = dynamic(() => import('@/features/auth/presentation/SignUpPage'), {

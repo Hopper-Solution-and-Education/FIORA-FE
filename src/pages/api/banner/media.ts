@@ -1,6 +1,6 @@
-import { MediaType, SectionType } from '@prisma/client';
-import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/infrastructure/database/prisma';
+import { SectionType } from '@prisma/client';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -14,7 +14,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       section: {
         section_type: sectionType,
       },
-      media_type: MediaType.IMAGE,
     };
 
     const images = await prisma.media.findMany({
@@ -26,6 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       select: {
         id: true,
         media_url: true,
+        embed_code: true,
         description: true,
         uploaded_by: true,
         uploaded_date: true,

@@ -1,7 +1,7 @@
 'use client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-import { navItems } from '@/features/dashboard/constants/data';
+import { navItems } from '@/features/home/constants/data';
 import {
   BadgeCheck,
   Bell,
