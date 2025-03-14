@@ -63,8 +63,6 @@ export class AccountRepository implements IAccountRepository {
       paginate.take = take;
     }
 
-    const { include, select } = options;
-
     return prisma.account.findMany({
       where,
       // skip: paginate.skip,

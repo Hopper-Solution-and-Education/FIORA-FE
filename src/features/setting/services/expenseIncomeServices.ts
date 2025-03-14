@@ -4,12 +4,13 @@ import {
 } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
 import { httpClient } from '@/config/HttpClient';
 import { Response } from '@/shared/types/Common.types';
+import { NewCategoryDefaultValues } from '../presentation/settingSlices/expenseIncomeSlides/utils/formSchema';
 
 const expenseIncomeServices = {
   getCategories: async (): Promise<Response<RawCategory[]>> => {
     return httpClient.get<Response<RawCategory[]>>('/api/categories/expense-income');
   },
-  createCategory: async (category: Omit<Category, 'id'>): Promise<Response<Category>> => {
+  createCategory: async (category: NewCategoryDefaultValues): Promise<Response<Category>> => {
     return httpClient.post<Response<Category>>('/api/categories/expense-income', category);
   },
   updateCategory: async (category: Category): Promise<Response<Category>> => {

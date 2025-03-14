@@ -13,6 +13,7 @@ import CategoryTable from '@/features/setting/presentation/module/expenseIncome/
 import {
   setDeleteConfirmOpen,
   setSelectedCategory,
+  setUpdateDialogOpen,
 } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
 import { Category } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -20,10 +21,9 @@ import { useEffect, useState } from 'react';
 
 interface UpdateDialogProps {
   isDetailDialogOpen: boolean;
-  setDetailDialogOpen: (open: boolean) => void;
 }
 
-const UpdateDialog: React.FC<UpdateDialogProps> = ({ isDetailDialogOpen, setDetailDialogOpen }) => {
+const UpdateDialog: React.FC<UpdateDialogProps> = ({ isDetailDialogOpen }) => {
   const dispatch = useAppDispatch();
   const { selectedCategory } = useAppSelector((state) => state.expenseIncome);
 
@@ -69,7 +69,7 @@ const UpdateDialog: React.FC<UpdateDialogProps> = ({ isDetailDialogOpen, setDeta
         icon: selectedIcon,
       };
       dispatch(setSelectedCategory(updatedCategory));
-      setDetailDialogOpen(false); // Đóng dialog khi thành công
+      dispatch(setUpdateDialogOpen(false));
     } catch (error: any) {
       console.error('Error updating category:', error.message);
       // Xử lý lỗi (ví dụ: hiển thị toast)
@@ -81,7 +81,7 @@ const UpdateDialog: React.FC<UpdateDialogProps> = ({ isDetailDialogOpen, setDeta
   }
 
   return (
-    <Dialog open={isDetailDialogOpen} onOpenChange={setDetailDialogOpen}>
+    <Dialog open={isDetailDialogOpen} onOpenChange={(open) => dispatch(setUpdateDialogOpen(open))}>
       <DialogContent>
         <DialogTitle>Edit Category: {selectedCategory.name}</DialogTitle>
         <DialogDescription>
@@ -112,7 +112,7 @@ const UpdateDialog: React.FC<UpdateDialogProps> = ({ isDetailDialogOpen, setDeta
         />
 
         <DialogFooter>
-          <Button variant="destructive" onClick={() => setDetailDialogOpen(false)}>
+          <Button variant="destructive" onClick={() => dispatch(setUpdateDialogOpen(false))}>
             Close
           </Button>
           <Button onClick={handleUpdate}>Update</Button>

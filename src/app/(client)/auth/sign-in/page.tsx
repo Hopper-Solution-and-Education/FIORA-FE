@@ -1,7 +1,8 @@
+import Loading from '@/components/common/Loading';
 import dynamic from 'next/dynamic';
 
 const SignInPage = dynamic(() => import('@/features/auth/presentation/SignInPage'), {
-  loading: () => <div>Loading...</div>,
+  loading: () => <Loading />,
 });
 
 const SignIn = () => {
