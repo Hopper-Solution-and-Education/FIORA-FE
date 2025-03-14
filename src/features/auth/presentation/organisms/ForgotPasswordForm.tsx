@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { sendOtp } from '@/config/sendGrid';
-import { cn, generateOtp } from '@/lib/utils';
+import { generateOtp } from '@/shared/utils';
 import { validateConfirmPassword, validatePassword } from '@/shared/validation/signUpValidation';
 import { Field, Form, Formik, FormikHelpers } from 'formik';
 import { useRouter } from 'next/navigation';
@@ -93,7 +93,7 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
 
       const data = await response.json();
       setAlert({ message: 'Password reset successfully!', variant: 'default' });
-      router.push('/dashboard');
+      router.push('/home');
     } catch (error: any) {
       setAlert({ message: error.message || 'Failed to reset password', variant: 'destructive' });
     } finally {

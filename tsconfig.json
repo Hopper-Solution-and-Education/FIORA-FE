@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ES5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -8,6 +8,8 @@
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
+    "experimentalDecorators": true, // Enable decorators
+    "emitDecoratorMetadata": true, // Enable metadata for Inversify
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -33,7 +35,5 @@
     "src/features/setting/presentation/module/account/components/AccountDetailPage.tss",
     "next-auth.d.ts"
   ],
-  "exclude": ["node_modules"],
-  "experimentalDecorators": true,
-  "emitDecoratorMetadata": true
+  "exclude": ["node_modules"]
 }

@@ -2,49 +2,36 @@
 
 import AccountSettingModal from '@/features/landing/presentation/components/AccountModal';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronRight, HelpCircle, Menu, Moon, Settings, Sun, X } from 'lucide-react';
-import { signOut, useSession } from 'next-auth/react';
-import { useTheme } from 'next-themes';
+import { Bell, ChevronRight, Gift, HelpCircle, Menu, Settings, X } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import SearchInput from '../SearchInput';
+import ThemeToggle from '../layouts/theme-toggle/ThemeToggle';
 import { UserNav } from '../layouts/UserNav';
-import SettingModal from '@/features/landing/presentation/components/SettingModal';
-
-type HeaderProps = {
-  onHandlePressHelp: () => void;
-  onHandlePressSetting: () => void;
-  onHandleAccountPress: () => void;
-};
-
-const menuItems = ({
-  onHandlePressHelp,
-  onHandlePressSetting,
-  onHandleAccountPress,
-}: HeaderProps) => [
-  { href: '#Help', label: 'Help', icon: <HelpCircle size={18} />, onClick: onHandlePressHelp },
-  {
-    href: '/dashboard',
-    label: 'Setting',
-    icon: <Settings size={18} />,
-    onClick: onHandlePressSetting,
-  },
-  { href: '#pricing', label: 'Pricing' },
-  { href: '#account', label: 'Account', onClick: onHandleAccountPress },
-];
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Button } from '../ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 
 export default function Header() {
+  const router = useRouter();
   const { data: session } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const { theme, setTheme } = useTheme();
 
-  const [isSettingOpen, setIsSettingOpen] = useState(false); // State quản lý modal
-  const [isAccountSettingOpen, setIsAccountSettingOpen] = useState(false); // State quản lý modal
+  const [isAccountSettingOpen, setIsAccountSettingOpen] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen((prevState) => !prevState);
-  const toggleSetting = () => setIsSettingOpen((prevState) => !prevState); // Toggle modal
-  const toggleAccountSetting = () => setIsAccountSettingOpen((prevState) => !prevState); // Toggle modal
+  const toggleAccountSetting = () => setIsAccountSettingOpen((prevState) => !prevState);
+
+  const handlePressSetting = () => {
+    router.push('home/banner');
+  };
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -55,11 +42,16 @@ export default function Header() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
-        isScrolled ? 'bg-background/80 backdrop-blur-md' : 'bg-background/100 backdrop-blur-md'
+        isScrolled ? 'bg-background/80' : 'bg-background/100'
       }`}
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-2">
+      {/* Announcement */}
+      <Alert variant="default" className="rounded-none">
+        <AlertTitle>Announcement</AlertTitle>
+        <AlertDescription>This is an important announcement for all users.</AlertDescription>
+      </Alert>
+      <div className="mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center py-2 w-full">
           {/* Logo */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -72,80 +64,102 @@ export default function Header() {
             </Link>
           </motion.div>
 
-          <div className="relative mx-2 w-full max-w-md sm:max-w-sm md:max-w-md lg:max-w-lg">
-            <SearchInput />
-          </div>
+          {/* Navigation and Action Buttons */}
+          <div className="flex items-center space-x-4">
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex justify-center gap-10 items-center">
+              <div className="flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Bell className="h-6 w-6" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>No new notifications</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-          {/* Navigation */}
-          <nav className="hidden md:flex space-x-1">
-            {menuItems({
-              onHandlePressHelp: () => {},
-              onHandlePressSetting: toggleSetting,
-              onHandleAccountPress: toggleAccountSetting,
-            }).map((item, index) => (
-              <motion.div
-                key={item.href}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Gift className="h-6 w-6" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Check your rewards</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <HelpCircle className="h-6 w-6" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Help Center</DropdownMenuItem>
+                    <DropdownMenuItem>Contact Support</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Settings className="h-6 w-6" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Profile Settings</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handlePressSetting}>
+                      Landing Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>Security Settings</DropdownMenuItem>
+                    <DropdownMenuItem>Logout</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <ThemeToggle />
+
+                {session ? (
+                  <UserNav />
+                ) : (
+                  <>
+                    <Link
+                      href="/auth/sign-in"
+                      className="hidden sm:inline-flex text-sm font-medium text-foreground hover:text-primary transition-colors duration-200"
+                    >
+                      Log in
+                    </Link>
+
+                    <Link
+                      href="/auth/sign-up"
+                      className="hidden sm:inline-flex items-center text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 px-4 py-2 rounded-full transition-colors duration-200"
+                    >
+                      Sign up <ChevronRight size={16} className="ml-1" />
+                    </Link>
+                  </>
+                )}
+              </div>
+            </nav>
+
+            {/* Action Buttons */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex items-center space-x-4"
+            >
+              {/* Mobile Menu Button */}
+              <button
+                onClick={toggleMenu}
+                className="md:hidden p-2 rounded-full bg-accent hover:bg-accent/80 transition-colors duration-200"
+                aria-label="Toggle menu"
               >
-                <button
-                  onClick={item.onClick}
-                  className="relative flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 ease-in-out px-4 py-2 group cursor-pointer"
-                >
-                  {item.icon && <span className="mr-1">{item.icon}</span>}
-                  {item.label}
-                  <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-in-out" />
-                </button>
-              </motion.div>
-            ))}
-          </nav>
-
-          {/* Action Buttons */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center space-x-4"
-          >
-            {/* Theme Toggle */}
-            <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="p-2 rounded-full bg-accent hover:bg-accent/80 transition-colors duration-200"
-            >
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-
-            {/* Auth Links */}
-            {session ? (
-              <UserNav handleSignOut={() => signOut({ callbackUrl: '/auth/sign-in' })} />
-            ) : (
-              <>
-                <Link
-                  href="/auth/sign-in"
-                  className="hidden sm:inline-flex text-sm font-medium text-foreground hover:text-primary transition-colors duration-200"
-                >
-                  Log in
-                </Link>
-
-                <Link
-                  href="/auth/sign-up"
-                  className="hidden sm:inline-flex items-center text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 px-4 py-2 rounded-full transition-colors duration-200"
-                >
-                  Sign up <ChevronRight size={16} className="ml-1" />
-                </Link>
-              </>
-            )}
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={toggleMenu}
-              className="md:hidden p-2 rounded-full bg-accent hover:bg-accent/80 transition-colors duration-200"
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-          </motion.div>
+                {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+            </motion.div>
+          </div>
         </div>
       </div>
 
@@ -159,43 +173,61 @@ export default function Header() {
             transition={{ duration: 0.3 }}
             className="md:hidden bg-background/95 backdrop-blur-md"
           >
-            <div className="container mx-auto px-4 py-4 space-y-4">
-              {menuItems({
-                onHandlePressHelp: () => {},
-                onHandlePressSetting: toggleSetting,
-                onHandleAccountPress: toggleAccountSetting,
-              }).map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="flex items-center text-base font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 ease-in-out px-4 py-2"
-                  onClick={toggleMenu}
-                >
-                  {item.icon && <span className="mr-2">{item.icon}</span>}
-                  {item.label}
-                </Link>
-              ))}
-              <div className="pt-4 space-y-4">
-                <Link
-                  href="/auth/sign-in"
-                  className="block text-base font-medium text-foreground hover:text-primary transition-colors duration-200 px-4 py-2"
-                  onClick={toggleMenu}
-                >
-                  Log in
-                </Link>
-                <Link
-                  href="/auth/sign-up"
-                  className="flex items-center text-base font-medium text-primary bg-primary/10 hover:bg-primary/20 px-4 py-2 rounded-full transition-colors duration-200"
-                  onClick={toggleMenu}
-                >
-                  Sign up <ChevronRight size={16} className="ml-1" />
-                </Link>
-              </div>
+            <div className="flex flex-col items-center gap-2 p-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Bell className="h-6 w-6" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>No new notifications</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Gift className="h-6 w-6" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>Check your rewards</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <HelpCircle className="h-6 w-6" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>Help Center</DropdownMenuItem>
+                  <DropdownMenuItem>Contact Support</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Settings className="h-6 w-6" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>Profile Settings</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handlePressSetting}>Landing Settings</DropdownMenuItem>
+                  <DropdownMenuItem>Security Settings</DropdownMenuItem>
+                  <DropdownMenuItem>Logout</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <ThemeToggle />
+              <UserNav />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-      <SettingModal isOpen={isSettingOpen} onClose={toggleSetting} />
       <AccountSettingModal isOpen={isAccountSettingOpen} onClose={toggleAccountSetting} />
     </header>
   );

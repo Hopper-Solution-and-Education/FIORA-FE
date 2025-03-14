@@ -13,32 +13,43 @@ export const PartnerLogo = () => {
   if (isError || !logos) return <p>Error loading partner logos.</p>;
 
   return (
-    <section className="w-full my-10 flex flex-col items-center">
+    <section className="w-full my-10 flex flex-col items-center px-4">
       <h2
         data-aos="fade-up"
-        className="mb-20 bg-gradient-to-r from-green-400 via-green-400 to-pink-400 bg-clip-text text-2xl font-extrabold tracking-tight text-transparent sm:text-4xl md:text-5xl text-center"
+        className="my-8 bg-gradient-to-r from-green-400 via-green-400 to-pink-400 bg-clip-text text-2xl font-bold tracking-tight text-transparent sm:text-3xl md:text-4xl lg:text-5xl text-center"
       >
-        Hopper SE Partners: Growing Together for a Brighter Future
+        FIORA Partners
       </h2>
 
-      <div className="w-full px-4">
-        <Carousel className="w-full" plugins={[autoplayPlugin.current]}>
-          <CarouselContent className="flex gap-4 animate-marquee">
+      <div className="w-full mx-auto">
+        <Carousel
+          className="w-full"
+          plugins={[autoplayPlugin.current]}
+          opts={{
+            align: 'start',
+            loop: true,
+            slidesToScroll: 1,
+            breakpoints: {
+              '(max-width: 639px)': { slidesToScroll: 1, align: 'center' },
+              '(min-width: 640px) and (max-width: 767px)': { slidesToScroll: 2, align: 'start' },
+              '(min-width: 768px) and (max-width: 1023px)': { slidesToScroll: 3, align: 'start' },
+              '(min-width: 1024px)': { slidesToScroll: 4, align: 'start' },
+            },
+          }}
+        >
+          <CarouselContent className="flex gap-4">
             {logos.map((logo, index) => (
               <CarouselItem
                 key={index}
-                className="flex justify-center"
-                style={{
-                  flex: '0 0 calc(100% / 8)',
-                }}
+                className="basis-auto md:basis-1/6 lg:basis-1/7 flex justify-center py-10"
               >
-                <Card className="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 flex items-center justify-center shadow-md rounded-full overflow-hidden border border-gray-300">
-                  <CardContent className="relative w-full h-full">
+                <Card className=" w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-48 lg:h-48 flex items-center justify-center shadow-md rounded-full overflow-hidden border border-gray-300 transition-transform hover:scale-105">
+                  <CardContent className="relative w-full h-full p-0">
                     <Image
                       src={logo.media_url || ''}
                       alt={logo.description || `Partner Logo ${index + 1}`}
-                      layout="fill"
-                      objectFit="contain"
+                      fill
+                      style={{ objectFit: 'contain', objectPosition: 'center' }}
                       className="rounded-full"
                     />
                   </CardContent>

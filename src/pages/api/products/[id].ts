@@ -1,5 +1,5 @@
 import { productUseCase } from '@/features/setting/application/use-cases/productUseCase';
-import { createResponse } from '@/lib/createResponse';
+import { createResponse } from '@/config/createResponse';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { ProductType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';

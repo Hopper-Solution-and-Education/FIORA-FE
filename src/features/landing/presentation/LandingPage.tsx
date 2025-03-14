@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import OTS from './components/OTS';
+import ContactUS from './components/ContactUS';
 import { ScrollToTop } from './components/ScrollToTop';
 import { Banner } from './organisms/Banner';
 import { FioraSystem } from './organisms/FioraSystem';
@@ -93,7 +93,7 @@ const LandingPage = () => {
         whileInView="visible"
         viewport={{ once: true }}
       >
-        <OTS />
+        <ContactUS />
       </motion.div>
     </>
   );
