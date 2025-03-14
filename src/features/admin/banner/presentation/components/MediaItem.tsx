@@ -51,11 +51,11 @@ export default function MediaItem({
   sectionType,
 }: MediaItemProps) {
   const [isOpen, setIsOpen] = useState(true);
-  const { watch } = useFormContext(); // Use watch from useFormContext
+  const { watch } = useFormContext();
 
   const mediaPath = `medias.${mediaIndex}`;
   const mediaType = control._formValues.medias[mediaIndex].media_type;
-  const embedCode = watch(`${mediaPath}.embed_code`); // Watch the embed_code field
+  const embedCode = watch(`${mediaPath}.embed_code`);
 
   const handleMediaTypeChange = (value: MediaType) => {
     control._formValues.medias[mediaIndex].media_type = value;
@@ -66,10 +66,12 @@ export default function MediaItem({
 
     if (!mediaUrl && !embedCode) {
       return (
-        <div className="flex items-center justify-center h-full bg-gray-100 rounded-md">
+        <div className="flex items-center justify-center h-full w-full bg-gray-100 rounded-md">
           {mediaType === MediaType.IMAGE && <ImageIcon className="h-16 w-16 text-gray-400" />}
           {mediaType === MediaType.VIDEO && <Video className="h-6 w-6 text-gray-400" />}
-          {mediaType === MediaType.EMBEDDED && <div className="text-gray-400 text-sm">Embed</div>}
+          {mediaType === MediaType.EMBEDDED && (
+            <div className="text-gray-400 text-center text-sm">Embed</div>
+          )}
         </div>
       );
     }
@@ -150,13 +152,20 @@ export default function MediaItem({
     if (mediaType === MediaType.EMBEDDED && embedCode) {
       if (sectionType === SectionType.VISION_MISSION) {
         return (
-          <div className="relative h-48 bg-gray-100 rounded-md overflow-hidden">
-            <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: embedCode }} />
+          <div className="w-full bg-gray-100 rounded-lg shadow-md overflow-hidden p-4">
+            <div className="w-full relative" style={{ paddingBottom: '56.25%' /* 16:9 ratio */ }}>
+              <div
+                className="absolute inset-0 w-full h-full rounded-md"
+                dangerouslySetInnerHTML={{
+                  __html: `<style>iframe { width: 100% !important; height: 100% !important; border: none; border-radius: 8px; }</style>${embedCode}`,
+                }}
+              />
+            </div>
           </div>
         );
       }
       return (
-        <div className="relative h-20 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
+        <div className="w-full h-20 bg-gray-100 rounded-lg shadow-md overflow-hidden flex items-center justify-center p-4">
           <span className="text-xs text-gray-500">Embedded content</span>
         </div>
       );

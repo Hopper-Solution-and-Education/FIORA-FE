@@ -93,7 +93,7 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
 
       const data = await response.json();
       setAlert({ message: 'Password reset successfully!', variant: 'default' });
-      router.push('/dashboard');
+      router.push('/home');
     } catch (error: any) {
       setAlert({ message: error.message || 'Failed to reset password', variant: 'destructive' });
     } finally {

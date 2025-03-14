@@ -12,7 +12,6 @@ import SectionManager from './components/SectionManager';
 
 export default function MediaDashboard() {
   const { exportData, importData } = useBannerSettingLogic();
-  const isLoading = useAppSelector((state) => state.landingSettings.isLoading);
   const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
 
   return (
@@ -40,7 +39,7 @@ export default function MediaDashboard() {
       </Card>
 
       <Tabs defaultValue="banner" className="w-full">
-        <TabsList className="flex flex-wrap justify-start gap-2 mb-6 overflow-x-auto md:grid md:grid-cols-4 md:overflow-visible">
+        <TabsList className="flex flex-wrap justify-start gap-2 mb-6 overflow-x-auto scrollbar-hide sm:grid sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 md:overflow-visible">
           <TabsTrigger value="banner" className="flex-1 min-w-[100px] text-center">
             Banner
           </TabsTrigger>

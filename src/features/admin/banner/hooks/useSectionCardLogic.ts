@@ -47,17 +47,17 @@ function useSectionCardLogic({ sectionData, control, sectionType }: UseSectionCa
     };
     appendMedia(newMedia);
 
-    const newSection = {
-      ...sectionData,
-      medias: [...(sectionData?.medias ?? []), newMedia],
-    } as ISection;
+    // const newSection = {
+    //   ...sectionData,
+    //   medias: [...(sectionData?.medias ?? []), newMedia],
+    // } as ISection;
 
-    dispatch(
-      saveSection({
-        section: newSection,
-        sectionType,
-      }),
-    );
+    // dispatch(
+    //   saveSection({
+    //     section: newSection,
+    //     sectionType,
+    //   }),
+    // );
   };
 
   const handleAddMedia = () => {

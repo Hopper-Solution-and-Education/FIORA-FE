@@ -15,7 +15,7 @@ export type Product = {
 export const navItems: NavItem[] = [
   {
     title: 'Dashboard',
-    url: '/dashboard/home',
+    url: '/home',
     icon: 'dashboard',
     isActive: false,
     shortcut: ['d', 'd'],
@@ -29,7 +29,7 @@ export const navItems: NavItem[] = [
     items: [
       {
         title: 'Budget Planning',
-        url: '/dashboard/budget-control',
+        url: '/home/budget-control',
         icon: 'userPen',
         shortcut: ['m', 'm'],
       },
@@ -37,7 +37,7 @@ export const navItems: NavItem[] = [
   },
   {
     title: 'Product',
-    url: '/dashboard/product',
+    url: '/home/product',
     icon: 'product',
     shortcut: ['p', 'p'],
     isActive: false,
@@ -51,7 +51,7 @@ export const navItems: NavItem[] = [
     items: [
       {
         title: 'Profile',
-        url: '/dashboard/profile',
+        url: '/home/profile',
         icon: 'userPen',
         shortcut: ['m', 'm'],
       },
@@ -71,7 +71,7 @@ export const navItems: NavItem[] = [
     items: [
       {
         title: 'Banner',
-        url: '/dashboard/banner',
+        url: '/home/banner',
         icon: 'userPen',
         shortcut: ['m', 'm'],
       },
@@ -79,7 +79,7 @@ export const navItems: NavItem[] = [
   },
   {
     title: 'Kanban',
-    url: '/dashboard/kanban',
+    url: '/home/kanban',
     icon: 'kanban',
     shortcut: ['k', 'k'],
     isActive: false,
