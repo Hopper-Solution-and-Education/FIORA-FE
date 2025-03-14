@@ -1,7 +1,7 @@
 import PageContainer from '@/components/layouts/PageContainer';
 import { buttonVariants } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import { DashboardHeading } from '../../components/DashboardHeading';

@@ -4,7 +4,7 @@ import { partnerUseCase } from '@/features/partner/application/use-cases/partner
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { authOptions } from '../auth/[...nextauth]';
 import { createErrorResponse, createResponse } from '@/lib/utils';
-import { Messages } from '@/lib/message';
+import { Messages } from '@/config/message';
 
 export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);

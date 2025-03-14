@@ -8,15 +8,21 @@ export const transformCategories = (rawCategories: RawCategory[]): Category[] =>
   rawCategories.forEach((raw) => {
     const category: Category = {
       id: raw.id,
-      name: raw.name,
+      userId: raw.userId,
       type: raw.type,
+      icon: raw.icon,
+      tax_rate: raw.tax_rate,
+      balance: raw.balance,
+      name: raw.name,
       subCategories: [],
       description: raw.description ?? undefined,
-      icon: raw.icon,
       parentId: raw.parentId,
-      userId: raw.userId,
+
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt,
+
+      createdBy: raw.createdBy,
+      updatedBy: raw.updatedBy,
     };
     categoryMap.set(raw.id, category);
   });
@@ -24,7 +30,7 @@ export const transformCategories = (rawCategories: RawCategory[]): Category[] =>
   rawCategories.forEach((raw) => {
     const category = categoryMap.get(raw.id)!;
 
-    if (raw.parentId === null) {
+    if (raw.parentId === null || raw.parentId === undefined) {
       // This is a main category
       mainCategories.push(category);
     } else {

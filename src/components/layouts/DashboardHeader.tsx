@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useEffect, useState } from 'react';
-import { formatCurrency } from '@/lib/formatCurrency';
+import { formatCurrency } from '@/shared/utils';
 
 export default function Header() {
   // state

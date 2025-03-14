@@ -2,7 +2,7 @@ import {
   Category,
   RawCategory,
 } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
-import { httpClient } from '@/lib/HttpClient';
+import { httpClient } from '@/config/HttpClient';
 import { Response } from '@/shared/types/Common.types';
 
 const expenseIncomeServices = {

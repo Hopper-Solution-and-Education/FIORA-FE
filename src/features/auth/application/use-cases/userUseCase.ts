@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 
 import { User } from '@prisma/client';
 import { IUserRepository } from '../../domain/repositories/userRepository.interface';
-import { ConflictError } from '@/lib/errors';
+import { ConflictError } from '@/config/errors';
 import { userRepository } from '../../infrastructure/repositories/userRepository';
 
 class UserUseCase {

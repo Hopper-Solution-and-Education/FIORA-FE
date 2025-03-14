@@ -47,6 +47,7 @@ import {
   DollarSign,
   Circle,
   Save,
+  ChevronDown,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -115,4 +116,5 @@ export const Icons = {
   dollarSign: DollarSign,
   circle: Circle,
   save: Save,
+  chevronDown: ChevronDown,
 };
