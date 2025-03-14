@@ -10,9 +10,9 @@ export class ReNewPasswordUseCase {
       newPassword = await bcrypt.hash(newPassword, 10);
       const updatedUser = await this.userRepository.updatePassword(email, newPassword);
       return updatedUser;
-    } catch (error) {
+    } catch (error: any) {
       // Xử lý lỗi từ Prisma hoặc bcrypt
-      throw new Error('Failed to reset password'); // Ném lỗi để caller xử lý
+      throw new Error('Failed to reset password: ', error); // Ném lỗi để caller xử lý
     }
   }
 }

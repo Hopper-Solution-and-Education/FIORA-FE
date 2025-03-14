@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { sendOtp } from '@/config/sendGrid';
-import { generateOtp } from '@/shared/utils';
+import { cn, generateOtp } from '@/shared/utils';
 import { validateConfirmPassword, validatePassword } from '@/shared/validation/signUpValidation';
 import { Field, Form, Formik, FormikHelpers } from 'formik';
 import { useRouter } from 'next/navigation';
