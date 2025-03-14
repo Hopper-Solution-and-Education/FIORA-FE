@@ -4,7 +4,7 @@ import { transactionUseCase } from '@/features/transaction/application/use-cases
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { authOptions } from '../auth/[...nextauth]';
 import { UUID } from 'crypto';
-import { createResponse } from '@/config/createResponse';
+import { createErrorResponse, createResponse } from '@/lib/utils';
 import { Messages } from '@/config/message';
 
 // Hàm kiểm tra session
