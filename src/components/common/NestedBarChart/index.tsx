@@ -40,7 +40,7 @@ export type BarItem = {
 
 export type NestedBarChartProps = {
   data: BarItem[];
-  title: string;
+  title?: string;
   currency?: string;
   locale?: string;
   xAxisFormatter?: (value: number) => string;
@@ -130,10 +130,11 @@ const NestedBarChart = ({
 
   return (
     <div className="w-full bg-white dark:bg-gray-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 transition-colors duration-200">
-      <h2 className="text-xl text-center font-semibold text-gray-800 dark:text-gray-200 mb-4">
-        {title}
-      </h2>
-
+      {title && (
+        <h2 className="text-xl text-center font-semibold text-gray-800 dark:text-gray-200 mb-4">
+          {title}
+        </h2>
+      )}
       <div style={{ height: `${chartHeight}px` }} className="transition-all duration-300">
         <ResponsiveContainer width="100%" height={chartHeight}>
           <BarChart

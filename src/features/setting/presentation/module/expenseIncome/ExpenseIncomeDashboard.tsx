@@ -3,14 +3,31 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CategoryType } from '@prisma/client';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { fetchCategories } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
+import {
+  // createCategory,
+  deleteCategory,
+  fetchCategories,
+} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
 import { COLORS } from '@/shared/constants/chart';
 import NestedBarChart, { type BarItem } from '@/components/common/NestedBarChart';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import {
+  setDeleteConfirmOpen,
+  setDialogOpen,
+  setSelectedCategory,
+} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
+import UpdateDialog from '@/features/setting/presentation/module/expenseIncome/molecules/UpdateDialog';
+import InsertCategoryDialog from '@/features/setting/presentation/module/expenseIncome/molecules/InsertCategoryDialog';
+import DeleteDialog from '@/features/setting/presentation/module/expenseIncome/molecules/DeleteDialog';
+import { Category } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
 
 const ExpenseIncomeDashboard = () => {
   const dispatch = useAppDispatch();
-  const { categories } = useAppSelector((state) => state.expenseIncome);
+  const { categories, selectedCategory, dialogOpen, deleteConfirmOpen } = useAppSelector(
+    (state) => state.expenseIncome,
+  );
+  const [isDetailDialogOpen, setDetailDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<CategoryType>(CategoryType.Expense);
 
   useEffect(() => {
@@ -44,6 +61,37 @@ const ExpenseIncomeDashboard = () => {
     return chartData.filter((item) => item.type === CategoryType.Income);
   }, [chartData]);
 
+  // LOGIC ZONE
+  const handleCreateCategory = (category: Partial<Category>) => {
+    // dispatch(
+    //   createCategory({
+    //     name: category.name || '',
+    //     type: (category.type as CategoryType) || CategoryType.Expense,
+    //     subCategories: [],
+    //     icon: category.icon || '',
+    //   }),
+    // );
+    dispatch(setDialogOpen(false));
+    dispatch(setSelectedCategory(null));
+  };
+
+  const handleDisplayDetailCategoryDialog = (category: Category) => {
+    dispatch(setSelectedCategory(category));
+    setDetailDialogOpen(true);
+  };
+
+  const handleDisplayDeleteConfirmDialog = (category: Category) => {
+    dispatch(setSelectedCategory(category));
+    dispatch(setDeleteConfirmOpen(true));
+  };
+
+  const handleDeleteCategory = () => {
+    if (selectedCategory) {
+      dispatch(deleteCategory(selectedCategory.id));
+    }
+    dispatch(setDeleteConfirmOpen(false));
+  };
+
   if (categories.isLoading)
     return <div className="text-gray-800 dark:text-gray-200">Loading...</div>;
   if (categories.error)
@@ -51,6 +99,13 @@ const ExpenseIncomeDashboard = () => {
 
   return (
     <div className="space-y-4">
+      <Button
+        onClick={() => dispatch(setDialogOpen(true))}
+        className="mt-6 bg-blue-600 text-white hover:bg-blue-700"
+      >
+        Add New Category
+      </Button>
+
       <Tabs
         defaultValue={CategoryType.Expense}
         onValueChange={(value) => setActiveTab(value as CategoryType)}
@@ -62,18 +117,34 @@ const ExpenseIncomeDashboard = () => {
         <TabsContent value={CategoryType.Expense}>
           <NestedBarChart
             data={expenseData}
-            title="Expense Analysis"
             xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
           />
         </TabsContent>
         <TabsContent value={CategoryType.Income}>
           <NestedBarChart
             data={incomeData}
-            title="Income Analysis"
             xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
           />
         </TabsContent>
       </Tabs>
+
+      {/* DIALOG ZONE */}
+      <UpdateDialog
+        isDetailDialogOpen={isDetailDialogOpen}
+        setDetailDialogOpen={setDetailDialogOpen}
+      />
+
+      <InsertCategoryDialog
+        dialogOpen={dialogOpen}
+        setDialogOpen={(open) => dispatch(setDialogOpen(open))}
+        handleCreateCategory={handleCreateCategory}
+      />
+
+      <DeleteDialog
+        deleteConfirmOpen={deleteConfirmOpen}
+        setDeleteConfirmOpen={(open) => dispatch(setDeleteConfirmOpen(open))}
+        handleDeleteCategory={handleDeleteCategory}
+      />
     </div>
   );
 };

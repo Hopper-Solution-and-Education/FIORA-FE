@@ -5,7 +5,7 @@ export interface RawCategory {
   userId?: string;
   type: CategoryType;
   icon: string;
-  tax_rate: string;
+  tax_rate: number;
   balance: number;
   name: string;
   description?: string;
@@ -22,7 +22,7 @@ export interface Category {
   userId?: string;
   type: CategoryType;
   icon: string;
-  tax_rate: string;
+  tax_rate: number;
   balance: number;
   name: string;
   description?: string;
