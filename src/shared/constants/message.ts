@@ -6,6 +6,12 @@ export enum Messages {
   DELETE_TRANSACTION_SUCCESS = 'Xóa giao dịch thành công',
   INVALID_TRANSACTION_TYPE = 'Type của transaction không hợp lệ',
 
+  // Category
+  CREATE_CATEGORY_SUCCESS = 'Tạo mới danh mục thành công',
+  UPDATE_CATEGORY_SUCCESS = 'Cập nhật danh mục thành công',
+  DELETE_CATEGORY_SUCCESS = 'Xóa danh mục thành công',
+  GET_CATEGORY_SUCCESS = 'Lấy danh sách danh mục thành công',
+
   // Lỗi chung
   INTERNAL_ERROR = 'Có lỗi xảy ra, vui lòng thử lại sau',
 
@@ -17,6 +23,7 @@ export enum Messages {
   INVALID_ACCOUNT_TYPE_FOR_INCOME = 'Loại tài khoản không hợp lệ. Chỉ tài khoản Thanh toán (Payment) được phép sử dụng cho thu nhập.',
   UNSUPPORTED_ACCOUNT_TYPE = 'Loại tài khoản {type} không được hỗ trợ',
   INVALID_ACCOUNT_TYPE_FOR_EXPENSE = 'Loại tài khoản không hợp lệ. Chỉ hỗ trợ Payment và CreditCard.',
+  UNAUTHORIZED = 'Chưa đăng nhập',
 
   // Lỗi liên quan đến danh mục
   CATEGORY_NOT_FOUND = 'Không tìm thấy danh mục',
@@ -30,4 +37,7 @@ export enum Messages {
   // Lỗi liên quan tới product
   PRODUCT_NOT_FOUND = 'Không tìm thấy sản phẩm',
   NO_PRODUCTS_PROVIDED = 'Không có sản phẩm nào được cung cấp',
+
+  // Lỗi hệ thống
+  METHOD_NOT_ALLOWED = 'Phương thức không được hỗ trợ',
 }

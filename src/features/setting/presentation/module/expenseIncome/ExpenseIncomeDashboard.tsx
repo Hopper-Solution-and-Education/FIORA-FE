@@ -4,12 +4,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { CategoryType } from '@prisma/client';
 import { useAppDispatch, useAppSelector } from '@/store';
 import {
+  createCategory,
   // createCategory,
   deleteCategory,
   fetchCategories,
 } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
 import { COLORS } from '@/shared/constants/chart';
-import NestedBarChart, { type BarItem } from '@/components/common/NestedBarChart';
+import NestedBarChart, { type BarItem } from '@/components/common/nested-bar-chart';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +22,7 @@ import UpdateDialog from '@/features/setting/presentation/module/expenseIncome/m
 import InsertCategoryDialog from '@/features/setting/presentation/module/expenseIncome/molecules/InsertCategoryDialog';
 import DeleteDialog from '@/features/setting/presentation/module/expenseIncome/molecules/DeleteDialog';
 import { Category } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
+import { NewCategoryDefaultValues } from '../../settingSlices/expenseIncomeSlides/utils/formSchema';
 
 const ExpenseIncomeDashboard = () => {
   const dispatch = useAppDispatch();
@@ -62,15 +64,8 @@ const ExpenseIncomeDashboard = () => {
   }, [chartData]);
 
   // LOGIC ZONE
-  const handleCreateCategory = (category: Partial<Category>) => {
-    // dispatch(
-    //   createCategory({
-    //     name: category.name || '',
-    //     type: (category.type as CategoryType) || CategoryType.Expense,
-    //     subCategories: [],
-    //     icon: category.icon || '',
-    //   }),
-    // );
+  const handleCreateCategory = (category: NewCategoryDefaultValues) => {
+    dispatch(createCategory(category));
     dispatch(setDialogOpen(false));
     dispatch(setSelectedCategory(null));
   };

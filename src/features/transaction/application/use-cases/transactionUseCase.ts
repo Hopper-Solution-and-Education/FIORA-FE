@@ -13,7 +13,7 @@ import { accountRepository } from '@/features/auth/infrastructure/repositories/a
 import { ICategoryRepository } from '@/features/setting/domain/repositories/categoryRepository.interface';
 import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
 import { BooleanUtils } from '@/config/booleanUtils';
-import { Messages } from '@/config/message';
+import { Messages } from '@/shared/constants/message';
 import prisma from '@/infrastructure/database/prisma';
 
 class TransactionUseCase {
