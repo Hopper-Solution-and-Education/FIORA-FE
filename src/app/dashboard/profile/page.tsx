@@ -4,7 +4,7 @@ import Loading from '@/components/common/Loading';
 import dynamic from 'next/dynamic';
 
 const AccountProfilePage = dynamic(
-  () => import('@/features/dashboard/module/account/profile/AccountProfilePage'),
+  () => import('@/features/home/module/account/profile/AccountProfilePage'),
   {
     loading: () => <Loading />,
   },

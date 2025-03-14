@@ -8,7 +8,6 @@ import { Upload, X } from 'lucide-react';
 import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FieldError, FieldErrors, useFormContext } from 'react-hook-form';
-import { toast } from 'sonner';
 
 interface MediaUploaderProps {
   mediaType: MediaType;
@@ -35,11 +34,6 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaType, mediaPath }) =
         const fileUrl = URL.createObjectURL(file);
         setValue(`${mediaPath}.media_url`, fileUrl, { shouldValidate: true });
         setFileName(file.name);
-        toast.success('File uploaded successfully', {
-          description: `The ${mediaType === MediaType.IMAGE ? 'image' : 'video'} "${
-            file.name
-          }" has been uploaded.`,
-        });
       }
     },
   });

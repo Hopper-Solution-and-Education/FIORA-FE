@@ -4,18 +4,17 @@ import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { MediaType, SectionType } from '@prisma/client';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { storage } from '../../firebase.config';
+import { removeFromFirebase, uploadToFirebase } from '../../firebaseUtils';
 import {
   defaultValues,
   SectionDefaultValues,
   sectionFormSchema,
 } from '../../schema/section-form.schema';
-import { markSectionFetched } from '../../slices';
+import { changeIsLoadingSaveChange, markSectionFetched } from '../../slices';
 import { fetchMediaBySection } from '../../slices/actions/fetchMediaBySection';
 import { updateMediaBySection } from '../../slices/actions/updateMediaBySection';
 import { ISection } from '../../slices/types';
@@ -25,27 +24,27 @@ interface SectionManagerProps {
   sectionType: SectionType;
 }
 
-const uploadToFirebase = async (localUrl: string, fileName: string): Promise<string> => {
-  try {
-    // Fetch blob từ local URL
-    const response = await fetch(localUrl);
-    const blob = await response.blob();
+// const uploadToFirebase = async (localUrl: string, fileName: string): Promise<string> => {
+//   try {
+//     // Fetch blob từ local URL
+//     const response = await fetch(localUrl);
+//     const blob = await response.blob();
 
-    // Tạo reference với tên file duy nhất
-    const storageRef = ref(storage, `images/media/${fileName}_${Date.now()}.jpg`);
+//     // Tạo reference với tên file duy nhất
+//     const storageRef = ref(storage, `images/media/${fileName}_${Date.now()}.jpg`);
 
-    // Upload file lên Firebase Storage
-    const snapshot = await uploadBytes(storageRef, blob);
+//     // Upload file lên Firebase Storage
+//     const snapshot = await uploadBytes(storageRef, blob);
 
-    // Lấy download URL
-    const downloadURL = await getDownloadURL(snapshot.ref);
+//     // Lấy download URL
+//     const downloadURL = await getDownloadURL(snapshot.ref);
 
-    return downloadURL;
-  } catch (error) {
-    console.error('Error uploading to Firebase:', error);
-    throw error;
-  }
-};
+//     return downloadURL;
+//   } catch (error) {
+//     console.error('Error uploading to Firebase:', error);
+//     throw error;
+//   }
+// };
 
 export default function SectionManager({ sectionType }: SectionManagerProps) {
   const sectionData = useAppSelector((state) => {
@@ -133,25 +132,39 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
   }, [sectionData]);
 
   const onSubmit = async (data: SectionDefaultValues) => {
+    dispatch(changeIsLoadingSaveChange(true));
     try {
-      // Tạo bản sao của data để xử lý
       const processedData: SectionDefaultValues = { ...data };
+
+      // Lấy danh sách medias cũ từ sectionData để so sánh
+      const oldMedias = sectionData?.medias || [];
 
       // Xử lý từng media item
       const updatedMedias = await Promise.all(
         processedData.medias.map(async (media) => {
-          if (media.media_url.startsWith('blob:')) {
-            // Tạo tên file từ ID hoặc timestamp
-            const fileName = media.id || 'banner';
+          const oldMedia = oldMedias.find((m) => m.id === media.id); // Tìm media cũ tương ứng
 
-            // Upload và lấy URL mới
-            const firebaseUrl = await uploadToFirebase(media.media_url, fileName);
+          if (media.media_url && media.media_url.startsWith('blob:')) {
+            // Nếu có URL cũ và không phải blob, xóa nó trước
+            if (oldMedia?.media_url && !oldMedia.media_url.startsWith('blob:')) {
+              await removeFromFirebase(oldMedia.media_url);
+            }
+
+            // Upload file mới
+            const response = await fetch(media.media_url);
+            const blob = await response.blob();
+            const fileName = media.id || 'media';
+            const firebaseUrl = await uploadToFirebase({
+              file: blob,
+              path: 'images/media',
+              fileName,
+            });
 
             return {
               ...media,
               media_url: firebaseUrl,
-              uploaded_by: media.uploaded_by || 'system', // Thêm uploaded_by nếu chưa có
-              uploaded_date: media.uploaded_date || new Date().toISOString(), // Thêm ngày nếu chưa có
+              uploaded_by: media.uploaded_by || userData?.user.id || 'system',
+              uploaded_date: media.uploaded_date || new Date(),
             };
           }
           return media;
@@ -164,11 +177,13 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
         updateMediaBySection({ section: processedData, createdBy: userData?.user.id ?? '' }),
       ).unwrap();
       toast('Success', {
-        description: 'Upload Success',
+        description: 'Section updated successfully',
       });
     } catch (error) {
       console.error('Error in onSubmit:', error);
-      throw error;
+      toast.error('Failed to update section');
+    } finally {
+      dispatch(changeIsLoadingSaveChange(false));
     }
   };
 

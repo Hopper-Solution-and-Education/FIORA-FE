@@ -1,4 +1,4 @@
-import BudgetControlPage from '@/features/dashboard/module/budget-control/BudgetPlanPage';
+import BudgetControlPage from '@/features/home/module/budget-control/BudgetPlanPage';
 
 const page = () => {
   return <BudgetControlPage />;

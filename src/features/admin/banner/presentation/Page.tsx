@@ -1,8 +1,10 @@
 'use client';
 
+import Loading from '@/components/common/Loading';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAppSelector } from '@/store';
 import { SectionType } from '@prisma/client';
 import { Download, Upload } from 'lucide-react';
 import useBannerSettingLogic from '../hooks/useBannerSettingLogic';
@@ -10,9 +12,12 @@ import SectionManager from './components/SectionManager';
 
 export default function MediaDashboard() {
   const { exportData, importData } = useBannerSettingLogic();
+  const isLoading = useAppSelector((state) => state.landingSettings.isLoading);
+  const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
 
   return (
     <div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
+      {isLoadingSaveChange && <Loading />}
       <Card className="mb-6">
         <CardHeader>
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">

@@ -12,6 +12,7 @@ interface LandingSettingsState {
   fetchedSections: string[];
   error: string | null;
   isLoading: boolean;
+  isLoadingSaveChange: boolean;
 }
 
 const initialLandingSettingState: LandingSettingsState = {
@@ -22,6 +23,7 @@ const initialLandingSettingState: LandingSettingsState = {
   error: '',
   fetchedSections: [],
   isLoading: false,
+  isLoadingSaveChange: false,
 };
 
 export { initialLandingSettingState };

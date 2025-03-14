@@ -44,6 +44,9 @@ const landingSettings = createSlice({
           break;
       }
     },
+    changeIsLoadingSaveChange: (state, action) => {
+      state.isLoadingSaveChange = action.payload;
+    },
     markSectionFetched: (state, action: PayloadAction<string>) => {
       if (!state.fetchedSections.includes(action.payload)) {
         state.fetchedSections.push(action.payload);
@@ -91,36 +94,28 @@ const landingSettings = createSlice({
       state.error = (action.payload as any) ?? 'Unknown error occurred';
     });
 
-    builder
-      .addCase(updateMediaBySection.pending, (state, action) => {
-        state.isLoading = true;
-        state.error = '';
-      })
-      .addCase(updateMediaBySection.fulfilled, (state, action) => {
-        switch (action.payload.section_type) {
-          case SectionType.BANNER:
-            state.bannerSection = action.payload;
-            break;
-          case SectionType.VISION_MISSION:
-            state.visionSection = action.payload;
-            break;
-          case SectionType.KPS:
-            state.kpsSection = action.payload;
-            break;
-          case SectionType.PARTNER_LOGO:
-            state.partnerSection = action.payload;
-            break;
-          default:
-            break;
-        }
-        state.isLoading = false;
-      })
-      .addCase(updateMediaBySection.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload || 'Error when updating section';
-      });
+    builder.addCase(updateMediaBySection.fulfilled, (state, action) => {
+      switch (action.payload.section_type) {
+        case SectionType.BANNER:
+          state.bannerSection = action.payload;
+          break;
+        case SectionType.VISION_MISSION:
+          state.visionSection = action.payload;
+          break;
+        case SectionType.KPS:
+          state.kpsSection = action.payload;
+          break;
+        case SectionType.PARTNER_LOGO:
+          state.partnerSection = action.payload;
+          break;
+        default:
+          break;
+      }
+      state.isLoading = false;
+    });
   },
 });
 
-export const { saveSection, importSections, markSectionFetched } = landingSettings.actions;
+export const { saveSection, importSections, markSectionFetched, changeIsLoadingSaveChange } =
+  landingSettings.actions;
 export default landingSettings.reducer;
