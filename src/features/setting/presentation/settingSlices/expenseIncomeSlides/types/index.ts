@@ -1,19 +1,39 @@
-export enum CategoryTypeEnum {
-  EXPENSE = 'Expense',
-  INCOME = 'Income',
+import { CategoryType } from '@prisma/client';
+
+export interface RawCategory {
+  id: string;
+  userId?: string;
+  type: CategoryType;
+  icon: string;
+  tax_rate: string;
+  balance: number;
+  name: string;
+  description?: string;
+  parentId?: string | null;
+
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
 }
 
 export interface Category {
   id: string;
-  name: string;
-  type: CategoryTypeEnum;
-  subCategories: Category[];
-  description?: string;
-  icon?: string;
-  parentId?: string | null;
   userId?: string;
+  type: CategoryType;
+  icon: string;
+  tax_rate: string;
+  balance: number;
+  name: string;
+  description?: string;
+  parentId?: string | null;
+
   createdAt?: string;
   updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+
+  subCategories: Category[];
 }
 
 export interface ExpenseIncomeState {
@@ -38,3 +58,23 @@ export const initialExpenseIncomeState: ExpenseIncomeState = {
   dialogOpen: false,
   deleteConfirmOpen: false,
 };
+
+export interface Account {
+  id: string;
+  userId: string;
+  icon: string;
+  name: string;
+  description: string;
+  type: string;
+  currency: string;
+  limit: string;
+  balance: string;
+  parentId: string | null;
+}
+
+export interface CreateAccountModalProps {
+  isOpen: boolean;
+  setIsCreateModalOpen: (isOpen: boolean) => void;
+  setTriggered: (isTriggered: boolean) => void;
+  isTriggered: boolean;
+}

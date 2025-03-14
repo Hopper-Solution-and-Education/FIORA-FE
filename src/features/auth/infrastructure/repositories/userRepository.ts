@@ -33,6 +33,13 @@ class UserRepository implements IUserRepository {
       data: { emailVerified: true },
     });
   }
+
+  async updatePassword(email: string, newPassword: string) {
+    return prisma.user.update({
+      where: { email, emailVerified: true },
+      data: { password: newPassword },
+    });
+  }
 }
 
 export const userRepository = new UserRepository();

@@ -14,10 +14,9 @@ import { GrowthBookAppProvider } from '@/components/providers/GrowthBookProvider
 import { ReduxProvider } from '@/components/providers/ReduxProvider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
-import { swrOptions } from '@/lib/swrConfig';
+import { swrOptions } from '@/config/swrConfig';
 
 const inter = Inter({ subsets: ['latin'] });
-
 export default function RootLayout({
   children,
 }: Readonly<{

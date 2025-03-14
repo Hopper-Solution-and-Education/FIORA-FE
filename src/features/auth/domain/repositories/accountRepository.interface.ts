@@ -17,12 +17,28 @@ export interface IAccountRepository {
   findAll(): Promise<Account[] | []>;
   findMany(
     where: Prisma.AccountWhereInput,
-    options: SelectOptions,
+    options?: SelectOptions,
     pagination?: Pagination,
   ): Promise<Account[]>;
-  update(id: string, account: Partial<Account>): Promise<Account>;
-  delete(id: string): Promise<void>;
+  update(id: string, account: Prisma.AccountUpdateInput): Promise<Account>;
+  delete(options: Prisma.AccountDeleteArgs): Promise<Account>;
   updateParentBalance(parentId: string): Promise<void>;
+  findByCondition(where: Prisma.AccountWhereInput): Promise<Account | null>;
+  findAllAccountByUserId(userId: string): Promise<Account[] | []>;
+  findManyWithCondition(
+    where: Prisma.AccountWhereInput,
+    select?: Prisma.AccountSelect,
+    options?: Prisma.AccountFindManyArgs,
+  ): Promise<Account[] | []>;
+  aggregate(options: Prisma.AccountAggregateArgs): Promise<any>;
+  deductBalance(tx: Prisma.TransactionClient, accountId: string, amount: number): Promise<void>;
+  receiveBalance(tx: Prisma.TransactionClient, accountId: string, amount: number): Promise<void>;
+  transferBalance(
+    tx: Prisma.TransactionClient,
+    fromAccountId: string,
+    toAccountId: string,
+    amount: number,
+  ): Promise<any>;
 }
 
 export interface AccountCreation {

@@ -1,8 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect } from 'react';
-import { httpClient } from '@/lib/HttpClient';
 import OTS from './components/OTS';
 import { ScrollToTop } from './components/ScrollToTop';
 import { Banner } from './organisms/Banner';
@@ -24,14 +22,6 @@ const zoomIn = {
 };
 
 const LandingPage = () => {
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await httpClient.get('/api/banner/media');
-    };
-
-    fetchData();
-  }, []);
-
   return (
     <>
       {/* Banner - Slide Up Effect */}

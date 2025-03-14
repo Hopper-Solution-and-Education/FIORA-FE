@@ -1,26 +1,36 @@
 'use client';
 
+import AccountSettingModal from '@/features/landing/presentation/components/AccountModal';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronRight, HelpCircle, Menu, Moon, Settings, Sun, X } from 'lucide-react';
-import Link from 'next/link';
 import { signOut, useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { UserNav } from '../layouts/UserNav';
 import SearchInput from '../SearchInput';
+import { UserNav } from '../layouts/UserNav';
+import SettingModal from '@/features/landing/presentation/components/SettingModal';
 
 type HeaderProps = {
   onHandlePressHelp: () => void;
+  onHandlePressSetting: () => void;
+  onHandleAccountPress: () => void;
 };
 
-const menuItems = ({ onHandlePressHelp }: HeaderProps) => [
+const menuItems = ({
+  onHandlePressHelp,
+  onHandlePressSetting,
+  onHandleAccountPress,
+}: HeaderProps) => [
   { href: '#Help', label: 'Help', icon: <HelpCircle size={18} />, onClick: onHandlePressHelp },
   {
     href: '/dashboard',
     label: 'Setting',
     icon: <Settings size={18} />,
+    onClick: onHandlePressSetting,
   },
   { href: '#pricing', label: 'Pricing' },
+  { href: '#account', label: 'Account', onClick: onHandleAccountPress },
 ];
 
 export default function Header() {
@@ -29,7 +39,12 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const { theme, setTheme } = useTheme();
 
+  const [isSettingOpen, setIsSettingOpen] = useState(false); // State quản lý modal
+  const [isAccountSettingOpen, setIsAccountSettingOpen] = useState(false); // State quản lý modal
+
   const toggleMenu = () => setIsMenuOpen((prevState) => !prevState);
+  const toggleSetting = () => setIsSettingOpen((prevState) => !prevState); // Toggle modal
+  const toggleAccountSetting = () => setIsAccountSettingOpen((prevState) => !prevState); // Toggle modal
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -63,21 +78,25 @@ export default function Header() {
 
           {/* Navigation */}
           <nav className="hidden md:flex space-x-1">
-            {menuItems({ onHandlePressHelp: () => {} }).map((item, index) => (
+            {menuItems({
+              onHandlePressHelp: () => {},
+              onHandlePressSetting: toggleSetting,
+              onHandleAccountPress: toggleAccountSetting,
+            }).map((item, index) => (
               <motion.div
                 key={item.href}
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Link
-                  href={'/dashboard'}
+                <button
+                  onClick={item.onClick}
                   className="relative flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 ease-in-out px-4 py-2 group cursor-pointer"
                 >
                   {item.icon && <span className="mr-1">{item.icon}</span>}
                   {item.label}
                   <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-in-out" />
-                </Link>
+                </button>
               </motion.div>
             ))}
           </nav>
@@ -141,7 +160,11 @@ export default function Header() {
             className="md:hidden bg-background/95 backdrop-blur-md"
           >
             <div className="container mx-auto px-4 py-4 space-y-4">
-              {menuItems({ onHandlePressHelp: () => {} }).map((item) => (
+              {menuItems({
+                onHandlePressHelp: () => {},
+                onHandlePressSetting: toggleSetting,
+                onHandleAccountPress: toggleAccountSetting,
+              }).map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -172,6 +195,8 @@ export default function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+      <SettingModal isOpen={isSettingOpen} onClose={toggleSetting} />
+      <AccountSettingModal isOpen={isAccountSettingOpen} onClose={toggleAccountSetting} />
     </header>
   );
 }

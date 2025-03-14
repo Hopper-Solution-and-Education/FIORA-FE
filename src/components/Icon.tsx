@@ -31,6 +31,7 @@ import {
   UserPen,
   UserX2Icon,
   X,
+  Wallet,
   Trello,
   UtensilsCrossed,
   Banknote,
@@ -44,6 +45,9 @@ import {
   TrendingUp,
   PiggyBank,
   DollarSign,
+  Circle,
+  Save,
+  ChevronDown,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -94,6 +98,7 @@ export const Icons = {
       ></path>
     </svg>
   ),
+  Wallet,
   twitter: Twitter,
   check: Check,
   trello: Trello,
@@ -109,4 +114,7 @@ export const Icons = {
   piggyBank: PiggyBank,
   trendingUp: TrendingUp,
   dollarSign: DollarSign,
+  circle: Circle,
+  save: Save,
+  chevronDown: ChevronDown,
 };
