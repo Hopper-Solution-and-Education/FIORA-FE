@@ -1,12 +1,15 @@
 'use client';
-import ForgotPassword from './organisms/ForgotPasswordForm';
+import ForgotPasswordForm from '@/features/auth/presentation/organisms/ForgotPasswordForm';
+import React from 'react';
 
-export default function ForgotPasswordnPage() {
+const ForgotPasswordPage = () => {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6">
       <div className="flex w-lg max-w-sm flex-col gap-6">
-        <ForgotPassword />
+        <ForgotPasswordForm />
       </div>
     </div>
   );
-}
+};
+
+export default ForgotPasswordPage;

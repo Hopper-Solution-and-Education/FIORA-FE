@@ -1,7 +1,8 @@
 import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import React from 'react';
 
-export default function Loading() {
+const Loading = () => {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -16,4 +17,6 @@ export default function Loading() {
       <p className="text-gray-300 mt-2">Please wait while we prepare your content</p>
     </motion.div>
   );
-}
+};
+
+export default Loading;

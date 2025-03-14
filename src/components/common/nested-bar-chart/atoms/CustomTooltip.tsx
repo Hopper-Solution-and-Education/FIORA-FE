@@ -1,15 +1,25 @@
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/shared/constants/chart';
 import React from 'react';
+import { BarItem } from '../index'; // Ensure BarItem is imported
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: any[];
+  currency?: string;
+  locale?: string;
+  tutorialText?: string; // Add this line
+}
 
 const CustomTooltip = ({
   active,
   payload,
   currency = DEFAULT_CURRENCY,
   locale = DEFAULT_LOCALE,
-}: any) => {
+  tutorialText,
+}: CustomTooltipProps) => {
   if (!active || !payload || !payload.length) return null;
 
-  const item = payload[0].payload;
+  const item: BarItem = payload[0].payload;
 
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm p-3 rounded-md">
@@ -24,6 +34,9 @@ const CustomTooltip = ({
         <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
           Parent: <span className="font-medium">{item.parent}</span>
         </p>
+      )}
+      {tutorialText && (
+        <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 italic">{tutorialText}</p>
       )}
     </div>
   );
