@@ -1,7 +1,8 @@
 'use client';
 import { LoginForm } from '@/features/auth/presentation/organisms/LoginForm';
+import React from 'react';
 
-export default function SignInPage() {
+const SignInPage = () => {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6">
       <div className="flex w-lg max-w-sm flex-col gap-6">
@@ -9,4 +10,6 @@ export default function SignInPage() {
       </div>
     </div>
   );
-}
+};
+
+export default SignInPage;

@@ -10,7 +10,7 @@ import { Field, Form, Formik, FormikHelpers } from 'formik';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 
-const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) => {
+const ForgotPasswordForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [inputOtp, setInputOtp] = useState('');
@@ -259,4 +259,4 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
   );
 };
 
-export default ForgotPassword;
+export default ForgotPasswordForm;

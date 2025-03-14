@@ -86,6 +86,12 @@ const ExpenseIncomeDashboard = () => {
     dispatch(setDeleteConfirmOpen(false));
   };
 
+  const handleDetailClick = (item: BarItem) => {
+    // Logic to open your detail dialog, e.g., using a state or a dialog library
+    console.log('Open dialog for:', item);
+    // Example: setDialogState({ open: true, item });
+  };
+
   if (categories.isLoading)
     return <div className="text-gray-800 dark:text-gray-200">Loading...</div>;
   if (categories.error)
@@ -112,12 +118,16 @@ const ExpenseIncomeDashboard = () => {
           <NestedBarChart
             data={expenseData}
             xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
+            onBarClick={handleDetailClick}
+            tutorialText="Click the bar to see more"
           />
         </TabsContent>
         <TabsContent value={CategoryType.Income}>
           <NestedBarChart
             data={incomeData}
             xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
+            onBarClick={handleDetailClick}
+            tutorialText="Click the bar to see more"
           />
         </TabsContent>
       </Tabs>

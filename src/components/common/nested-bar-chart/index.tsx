@@ -9,6 +9,7 @@ import {
   DEFAULT_MAX_BAR_RATIO,
   MIN_CHART_HEIGHT,
 } from '@/shared/constants/chart';
+import { getChartMargins, useWindowSize } from '@/shared/utils/device';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Bar,
@@ -22,11 +23,10 @@ import {
 } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { ContentType } from 'recharts/types/component/Tooltip';
-import CustomTooltip from './atoms/CustomTooltip';
 import BarLabel from './atoms/BarLabel';
 import ChartLegend from './atoms/ChartLegend';
+import CustomTooltip from './atoms/CustomTooltip';
 import CustomYAxisTick from './atoms/CustomYAxisTick';
-import { getChartMargins, useWindowSize } from '@/shared/utils/device';
 
 export type BarItem = {
   id?: string;
@@ -49,6 +49,8 @@ export type NestedBarChartProps = {
   legendItems?: { name: string; color: string }[];
   childOpacity?: number;
   maxBarRatio?: number;
+  onBarClick?: (item: BarItem) => void;
+  tutorialText?: string;
 };
 
 const NestedBarChart = ({
@@ -61,6 +63,8 @@ const NestedBarChart = ({
   xAxisFormatter = (value) => value.toString(),
   tooltipContent,
   legendItems,
+  onBarClick,
+  tutorialText,
 }: NestedBarChartProps) => {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [chartHeight, setChartHeight] = useState(MIN_CHART_HEIGHT);
@@ -125,7 +129,9 @@ const NestedBarChart = ({
 
   // Custom tooltip with currency and locale
   const customTooltipWithConfig = useCallback(
-    (props: any) => <CustomTooltip {...props} currency={currency} locale={locale} />,
+    (props: any) => (
+      <CustomTooltip {...props} currency={currency} locale={locale} tutorialText={tutorialText} />
+    ),
     [currency, locale],
   );
 
@@ -176,8 +182,13 @@ const NestedBarChart = ({
             <Bar
               dataKey="value"
               radius={[0, 4, 4, 0]}
-              className="transition-all duration-300"
+              className="transition-all duration-300 cursor-pointer" // Added cursor-pointer for UX
               label={(props) => <BarLabel {...props} formatter={xAxisFormatter} />}
+              onClick={(data, index) => {
+                if (onBarClick) {
+                  onBarClick(processedData[index]);
+                }
+              }}
             >
               {processedData.map((entry, index) => {
                 const color = entry.isChild
