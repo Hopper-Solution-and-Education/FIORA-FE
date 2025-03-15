@@ -1,11 +1,11 @@
+import { createError, createResponse } from '@/config/createResponse';
+import { categoryUseCase } from '@/features/setting/application/use-cases/categoryUseCase';
+import { Messages } from '@/shared/constants/message';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { CategoryType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
-import { categoryUseCase } from '@/features/setting/application/use-cases/categoryUseCase';
-import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { authOptions } from '../auth/[...nextauth]';
-import { createError, createResponse } from '@/config/createResponse';
-import { Messages } from '@/shared/constants/message';
 
 export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);

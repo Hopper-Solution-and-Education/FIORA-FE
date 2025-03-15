@@ -1,5 +1,3 @@
-import { Icons } from '@/components/Icon';
-import { Button } from '@/components/ui/button';
 import { useWindowSize } from '@/shared/utils/device';
 
 interface CustomYAxisTickProps {
@@ -19,7 +17,6 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
   processedData,
   expandedItems,
   onToggleExpand,
-  callback,
 }: any) => {
   const { width } = useWindowSize();
   const item = processedData.find((d: any) => d.name === payload.value);
@@ -54,11 +51,6 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
             >
               {expandedItems[payload.value] ? '−' : '+'}
             </text>
-            <foreignObject x="-8" y="-8" width="100" height="16">
-              <Button className="ml-2" onClick={callback} aria-label="Edit category">
-                <Icons.pencil className="w-4 h-4" />
-              </Button>
-            </foreignObject>
           </g>
         ) : (
           <>
@@ -70,11 +62,6 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
             >
               {childLabel}
             </text>
-            <foreignObject x="-8" y="-8" width="100" height="16">
-              <Button className="ml-2" onClick={callback} aria-label="Edit category">
-                <Icons.pencil className="w-4 h-4" />
-              </Button>
-            </foreignObject>
           </>
         )}
       </g>
@@ -97,11 +84,6 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
       >
         {isChild ? childLabel : parentLabel}
       </text>
-      <foreignObject x="-8" y="-8" width="100" height="16">
-        <Button className="ml-2" onClick={callback} aria-label="Edit category">
-          <Icons.pencil className="w-4 h-4" />
-        </Button>
-      </foreignObject>
     </g>
   );
 };

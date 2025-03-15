@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   // Persisting the sidebar state in the cookie.
   const cookieStore = await cookies();
-  const defaultOpen = cookieStore.get('sidebar:state')?.value === 'true';
+  const defaultOpen = cookieStore.get('sidebar:state')?.value === 'true' || true;
 
   return (
     <AuthLayout requiresAuth={true}>

@@ -1,10 +1,10 @@
 // app/components/auth-layout.tsx
 'use client';
 
+import Loading from '@/components/common/Loading';
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { ReactNode, useEffect } from 'react';
-import Loading from '@/components/common/loading';
 
 interface AuthLayoutProps {
   children: ReactNode;

@@ -1,6 +1,6 @@
 import { Loader2 } from 'lucide-react';
 
-export default function Loading() {
+const Loading = () => {
   return (
     <div
       className="fixed inset-0 flex flex-col items-center justify-center w-full h-full bg-gray-900 bg-opacity-50 z-[9999]"
@@ -12,4 +12,6 @@ export default function Loading() {
       <p className="text-gray-300 mt-2">Please wait while we prepare your content</p>
     </div>
   );
-}
+};
+
+export default Loading;
