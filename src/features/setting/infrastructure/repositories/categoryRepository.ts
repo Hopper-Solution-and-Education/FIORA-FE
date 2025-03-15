@@ -34,6 +34,17 @@ class CategoryRepository implements ICategoryRepository {
   async deleteCategory(id: string): Promise<void> {
     await prisma.category.delete({ where: { id } });
   }
+
+  async findCategoriesWithTransactions(userId: string): Promise<CategoryWithTransactions[]> {
+    return prisma.category.findMany({
+      where: { userId },
+      include: {
+        fromTransactions: { select: { amount: true } }, // Lấy số tiền từ fromTransactions
+        toTransactions: { select: { amount: true } }, // Lấy số tiền từ toTransactions
+      },
+      orderBy: [{ type: 'asc' }, { parentId: 'asc' }],
+    });
+  }
 }
 
 // Export a single instance

@@ -1,6 +1,7 @@
 import { Category, CategoryType } from '@prisma/client';
 import { ICategoryRepository } from '@/features/setting/domain/repositories/categoryRepository.interface';
 import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
+import { CategoryWithTransactions } from '@/shared/types/category.types';
 
 class CategoryUseCase {
   private categoryRepository: ICategoryRepository;
@@ -47,6 +48,41 @@ class CategoryUseCase {
       throw new Error('Danh mục không tồn tại hoặc không thuộc về bạn');
     }
     await this.categoryRepository.deleteCategory(id);
+  }
+
+  async getCategoriesAggreate(userId: string): Promise<any[]> {
+    const categories = await this.categoryRepository.findCategoriesWithTransactions(userId);
+
+    // Hàm tính balance cho từng category
+    const calculateBalance = (category: CategoryWithTransactions): number => {
+      if (category.type === CategoryType.Expense.valueOf()) {
+        return (category.toTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+      } else if (category.type === CategoryType.Income.valueOf()) {
+        return (category.fromTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+      }
+      return 0;
+    };
+
+    // Map qua danh sách category để thêm balance
+    const categoryMap = new Map<string, any>();
+    categories.forEach((category) => {
+      categoryMap.set(category.id, {
+        ...category,
+        balance: calculateBalance(category as CategoryWithTransactions),
+      });
+    });
+
+    // Cập nhật balance cho danh mục cha
+    categories.forEach((category) => {
+      if (category.parentId) {
+        const parent = categoryMap.get(category.parentId);
+        if (parent) {
+          parent.balance += categoryMap.get(category.id).balance;
+        }
+      }
+    });
+
+    return Array.from(categoryMap.values());
   }
 }
 

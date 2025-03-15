@@ -13,4 +13,5 @@ export interface ICategoryRepository {
   findCategoryById(id: string): Promise<Category | null>;
   updateCategory(id: string, data: Partial<Category>): Promise<Category>;
   deleteCategory(id: string): Promise<void>;
+  findCategoriesWithTransactions(userId: string): Promise<Category[]>;
 }

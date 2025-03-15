@@ -4,8 +4,8 @@ import { getServerSession } from 'next-auth';
 import { categoryUseCase } from '@/features/setting/application/use-cases/categoryUseCase';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { authOptions } from '../auth/[...nextauth]';
-
-// Define the expected session structure
+import { createErrorResponse, createResponse } from '@/lib/utils';
+import { Messages } from '@/config/message';
 
 export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
@@ -26,7 +26,7 @@ export async function getUserSession(req: NextApiRequest, res: NextApiResponse) 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getUserSession(req, res);
   if (!session || !session.user?.id) {
-    return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
+    return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
   }
 
   const userId = session.user.id;
@@ -44,28 +44,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       default:
         return res
           .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-          .json({ error: 'Phương thức không được hỗ trợ' });
+          .json(createErrorResponse(RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED));
     }
   } catch (error: any) {
-    return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: error.message });
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createErrorResponse(
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
 }
 
-// Get all categories
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const categories = await categoryUseCase.getCategories(userId);
-    return res.status(RESPONSE_CODE.OK).json({
-      message: 'Lấy danh sách danh mục thành công',
-      data: categories,
-      status: RESPONSE_CODE.OK,
-    });
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, 'success', categories, Messages.GET_CATEGORY_SUCCESS));
   } catch (error: any) {
-    res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    res
+      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createErrorResponse(
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
 }
 
-// Create a new category
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { type, icon, name, description, parentId } = req.body;
@@ -77,17 +87,28 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       description,
       parentId,
     });
-    return res.status(RESPONSE_CODE.CREATED).json({
-      message: 'Tạo danh mục thành công',
-      data: newCategory,
-      status: RESPONSE_CODE.CREATED,
-    });
+    return res
+      .status(RESPONSE_CODE.CREATED)
+      .json(
+        createResponse(
+          RESPONSE_CODE.CREATED,
+          'success',
+          newCategory,
+          Messages.CREATE_CATEGORY_SUCCESS,
+        ),
+      );
   } catch (error: any) {
-    res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    res
+      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createErrorResponse(
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
 }
 
-// Update category by id
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { id, type, icon, name, description, parentId } = req.body;
@@ -98,26 +119,43 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       description,
       parentId,
     });
-    return res.status(RESPONSE_CODE.OK).json({
-      message: 'Cập nhật danh mục thành công',
-      data: updatedCategory,
-      status: RESPONSE_CODE.OK,
-    });
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(
+        createResponse(
+          RESPONSE_CODE.OK,
+          'success',
+          updatedCategory,
+          Messages.UPDATE_CATEGORY_SUCCESS,
+        ),
+      );
   } catch (error: any) {
-    res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    res
+      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createErrorResponse(
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
 }
 
-// Delete category by id
 export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { id } = req.query;
     await categoryUseCase.deleteCategory(id as string, userId);
-    return res.status(RESPONSE_CODE.OK).json({
-      message: 'Xóa danh mục thành công',
-      status: RESPONSE_CODE.OK,
-    });
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, 'success', null, Messages.DELETE_CATEGORY_SUCCESS));
   } catch (error: any) {
-    res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    res
+      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createErrorResponse(
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
 }

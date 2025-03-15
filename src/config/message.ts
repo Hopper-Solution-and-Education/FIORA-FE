@@ -46,4 +46,11 @@ export enum Messages {
   CREATE_PARTNER_SUCCESS = 'Tạo đối tác thành công.',
   UPDATE_PARTNER_SUCCESS = 'Cập nhật đối tác thành công.',
   DELETE_PARTNER_SUCCESS = 'Xóa đối tác thành công.',
+
+  UNAUTHORIZED = 'Chưa đăng nhập',
+  METHOD_NOT_ALLOWED = 'Phương thức không được hỗ trợ',
+  GET_CATEGORY_SUCCESS = 'Lấy danh sách danh mục thành công',
+  CREATE_CATEGORY_SUCCESS = 'Tạo danh mục thành công',
+  UPDATE_CATEGORY_SUCCESS = 'Cập nhật danh mục thành công',
+  DELETE_CATEGORY_SUCCESS = 'Xóa danh mục thành công',
 }
