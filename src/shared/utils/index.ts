@@ -45,3 +45,9 @@ export const convertVNDToUSD = (amountVND: number) => {
     currency: 'USD',
   });
 };
+
+export const calculateAvailableLimit = (limit: string, balance: string): string => {
+  const limitValue = Number.parseFloat(limit) || 0;
+  const balanceValue = Number.parseFloat(balance) || 0;
+  return (limitValue + balanceValue).toFixed(2);
+};

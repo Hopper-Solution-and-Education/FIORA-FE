@@ -80,3 +80,11 @@ export interface CreateAccountModalProps {
   setTriggered: (isTriggered: boolean) => void;
   isTriggered: boolean;
 }
+
+export interface EditAccountModalProps {
+  isOpen: boolean;
+  setIsEditModalOpen: (isOpen: boolean) => void;
+  setTriggered: (isTriggered: boolean) => void;
+  isTriggered: boolean;
+  account: Account;
+}
