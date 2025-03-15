@@ -181,10 +181,6 @@ export class AccountUseCase {
     return masterAccount ? true : false;
   }
 
-  async findAllAccountByUserId(userId: string): Promise<Account[] | []> {
-    return this.accountRepository.findAllAccountByUserId(userId);
-  }
-
   async getAllParentAccount(userId: string): Promise<Account[] | []> {
     return this.accountRepository.findManyWithCondition({
       userId,
@@ -198,14 +194,17 @@ export class AccountUseCase {
         userId,
       },
       {
-        id: true,
-        name: true,
-        type: true,
-        balance: true,
-        limit: true,
-        parentId: true,
-        description: true,
-        icon: true,
+        include: {
+          children: true,
+        },
+        orderBy: [
+          {
+            type: 'asc',
+          },
+          {
+            balance: 'asc',
+          },
+        ],
       },
     );
   }
