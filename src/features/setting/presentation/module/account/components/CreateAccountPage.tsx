@@ -350,6 +350,8 @@ export function CreateAccountModal({
               <AlertDescription className="text-green-600">{successMessage}</AlertDescription>
             </Alert>
           )}
+
+          {/* Icon */}
           <div className="grid grid-cols-[120px_1fr] items-center gap-4">
             <Label htmlFor="icon" className="text-right">
               Icon<span className="text-red-500">*</span>
@@ -385,6 +387,7 @@ export function CreateAccountModal({
             </div>
           </div>
 
+          {/* Type */}
           <div className="grid grid-cols-[120px_1fr] items-start gap-4">
             <Label htmlFor="type" className="text-right pt-2">
               Type<span className="text-red-500">*</span>
@@ -408,6 +411,7 @@ export function CreateAccountModal({
             </div>
           </div>
 
+          {/* Name */}
           <div className="grid grid-cols-[120px_1fr] items-center gap-4">
             <Label htmlFor="name" className="text-right">
               Name<span className="text-red-500">*</span>
@@ -423,7 +427,7 @@ export function CreateAccountModal({
               {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
             </div>
           </div>
-
+          {/* Currency */}
           <div className="grid grid-cols-[120px_1fr] items-center gap-4">
             <Label htmlFor="currency" className="text-right">
               Currency<span className="text-red-500">*</span>
@@ -483,6 +487,7 @@ export function CreateAccountModal({
             </>
           )}
 
+          {/* Balance */}
           <div className="grid grid-cols-[120px_1fr] items-center gap-4">
             <Label htmlFor="balance" className="text-right">
               Balance
@@ -502,6 +507,7 @@ export function CreateAccountModal({
             </div>
           </div>
 
+          {/* Parent */}
           <div className="grid grid-cols-[120px_1fr] items-center gap-4">
             <Label htmlFor="parent" className="text-right">
               Parent
