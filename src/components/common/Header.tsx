@@ -46,18 +46,20 @@ export default function Header() {
         isScrolled ? 'bg-background/80' : 'bg-background/100'
       } w-full max-w-screen`}
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-start">
         {/* Logo */}
-        <Link href="/" className="flex items-center">
-          <Image
-            src={HopperLogo}
-            alt="Fiora Logo"
-            width={120} // Default width for larger screens
-            height={120} // Default height for larger screens
-            className="object-contain w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 xl:w-32 xl:h-32" // Responsive sizes
-            priority
-          />
-        </Link>
+        <div className="flex items-center">
+          <Link href="/">
+            <Image
+              src={HopperLogo}
+              alt="Fiora Logo"
+              width={120}
+              height={120}
+              className="object-contain w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 xl:w-30 xl:h-30"
+              priority
+            />
+          </Link>
+        </div>
 
         <div className="flex items-center w-full">
           {/* Announcement and Navigation Container */}
