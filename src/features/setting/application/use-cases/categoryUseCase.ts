@@ -10,7 +10,7 @@ class CategoryUseCase {
     this.categoryRepository = repository;
   }
 
-  async createCategory(data: {
+  async createCategory(params: {
     userId: string;
     type: CategoryType;
     icon: string;
@@ -18,13 +18,24 @@ class CategoryUseCase {
     description?: string | null;
     parentId?: string | null;
   }): Promise<Category> {
-    if (!Object.values(CategoryType).includes(data.type)) {
-      throw new Error('Loại danh mục không hợp lệ. Phải là "Expense" hoặc "Income"');
+    const { userId, type, icon, name, description, parentId } = params;
+    if (!Object.values(CategoryType).includes(type)) {
+      throw new Error('Category type is invalid. It must be Expense or Income');
     }
-    if (!data.name || !data.icon) {
-      throw new Error('Tên và biểu tượng là bắt buộc');
+    if (!name || !icon) {
+      throw new Error('Name and icon are required');
     }
-    return this.categoryRepository.createCategory(data);
+    return this.categoryRepository.createCategory({
+      userId,
+      type,
+      icon,
+      name,
+      description,
+      parentId,
+      tax_rate: 0,
+      createdBy: userId,
+      updatedBy: userId,
+    });
   }
 
   async getCategories(userId: string): Promise<Category[]> {

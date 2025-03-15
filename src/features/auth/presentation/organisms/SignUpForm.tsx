@@ -19,11 +19,8 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-// import { Router, useRouter } from 'next/router';
 
-// Validation regex patterns
-
-export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>) {
+const SignUpForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -108,7 +105,7 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>)
   };
 
   return (
-    <div className={cn('flex flex-col gap-6', className)} {...props}>
+    <div className="flex flex-col gap-6">
       <Card className="overflow-hidden">
         <CardContent className="grid p-0">
           <div className="flex flex-col items-center text-center gap-2">
@@ -218,4 +215,6 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>)
       </Card>
     </div>
   );
-}
+};
+
+export default SignUpForm;

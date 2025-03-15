@@ -1,5 +1,5 @@
 // 'use server';
-// import transporter from '@/lib/nodemailerConfig';
+// import transporter from '@/config/nodemailerConfig';
 
 // export async function generatedOtpForgotPassword(email: string): Promise<string> {
 //   const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();

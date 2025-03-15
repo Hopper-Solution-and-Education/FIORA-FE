@@ -1,11 +1,11 @@
+import { createError, createResponse } from '@/config/createResponse';
+import { categoryUseCase } from '@/features/setting/application/use-cases/categoryUseCase';
+import { Messages } from '@/shared/constants/message';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { CategoryType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
-import { categoryUseCase } from '@/features/setting/application/use-cases/categoryUseCase';
-import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { authOptions } from '../auth/[...nextauth]';
-import { createErrorResponse, createResponse } from '@/lib/utils';
-import { Messages } from '@/config/message';
 
 export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
@@ -26,7 +26,7 @@ export async function getUserSession(req: NextApiRequest, res: NextApiResponse) 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getUserSession(req, res);
   if (!session || !session.user?.id) {
-    return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
+    return createError(res, RESPONSE_CODE.UNAUTHORIZED, Messages.UNAUTHORIZED);
   }
 
   const userId = session.user.id;
@@ -42,19 +42,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       case 'DELETE':
         return DELETE(req, res, userId);
       default:
-        return res
-          .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-          .json(createErrorResponse(RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED));
+        return createError(res, RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED);
     }
   } catch (error: any) {
-    return res
-      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createErrorResponse(
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        ),
-      );
+    return createError(res, error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR, error.message);
   }
 }
 
@@ -63,22 +54,15 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     const categories = await categoryUseCase.getCategories(userId);
     return res
       .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, 'success', categories, Messages.GET_CATEGORY_SUCCESS));
+      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_CATEGORY_SUCCESS, categories));
   } catch (error: any) {
-    res
-      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createErrorResponse(
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        ),
-      );
+    return createError(res, error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR, error.message);
   }
 }
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { type, icon, name, description, parentId } = req.body;
+    const { name, type, icon, description, parentId } = req.body;
     const newCategory = await categoryUseCase.createCategory({
       userId,
       type: type as CategoryType,
@@ -89,23 +73,9 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     });
     return res
       .status(RESPONSE_CODE.CREATED)
-      .json(
-        createResponse(
-          RESPONSE_CODE.CREATED,
-          'success',
-          newCategory,
-          Messages.CREATE_CATEGORY_SUCCESS,
-        ),
-      );
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_CATEGORY_SUCCESS, newCategory));
   } catch (error: any) {
-    res
-      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createErrorResponse(
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        ),
-      );
+    return createError(res, error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR, error.message);
   }
 }
 
@@ -121,23 +91,9 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
     });
     return res
       .status(RESPONSE_CODE.OK)
-      .json(
-        createResponse(
-          RESPONSE_CODE.OK,
-          'success',
-          updatedCategory,
-          Messages.UPDATE_CATEGORY_SUCCESS,
-        ),
-      );
+      .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_CATEGORY_SUCCESS, updatedCategory));
   } catch (error: any) {
-    res
-      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createErrorResponse(
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        ),
-      );
+    return createError(res, error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR, error.message);
   }
 }
 
@@ -147,15 +103,8 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
     await categoryUseCase.deleteCategory(id as string, userId);
     return res
       .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, 'success', null, Messages.DELETE_CATEGORY_SUCCESS));
+      .json(createResponse(RESPONSE_CODE.OK, Messages.DELETE_CATEGORY_SUCCESS));
   } catch (error: any) {
-    res
-      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createErrorResponse(
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        ),
-      );
+    return createError(res, error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR, error.message);
   }
 }

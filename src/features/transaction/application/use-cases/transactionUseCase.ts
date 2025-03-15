@@ -12,8 +12,8 @@ import { IAccountRepository } from '@/features/auth/domain/repositories/accountR
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
 import { ICategoryRepository } from '@/features/setting/domain/repositories/categoryRepository.interface';
 import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
-import { BooleanUtils } from '@/lib/booleanUtils';
-import { Messages } from '@/lib/message';
+import { BooleanUtils } from '@/config/booleanUtils';
+import { Messages } from '@/shared/constants/message';
 import prisma from '@/infrastructure/database/prisma';
 
 class TransactionUseCase {

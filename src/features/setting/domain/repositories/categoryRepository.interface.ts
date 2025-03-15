@@ -3,11 +3,14 @@ import { Category, CategoryType } from '@prisma/client';
 export interface ICategoryRepository {
   createCategory(data: {
     userId: string;
-    type: CategoryType; // Use CategoryType instead of string
+    type: CategoryType;
     icon: string;
     name: string;
-    description?: string | null; // Match Prisma's optional string
+    description?: string | null;
     parentId?: string | null;
+    tax_rate: number;
+    createdBy: string;
+    updatedBy: string;
   }): Promise<Category>;
   findCategoriesByUserId(userId: string): Promise<Category[]>;
   findCategoryById(id: string): Promise<Category | null>;

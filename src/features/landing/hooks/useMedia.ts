@@ -6,7 +6,8 @@ import { GetMediaUseCase } from '../domain/use-cases/GetMediaUseCase';
 export const useMedia = (sectionType: SectionType) => {
   const { data, error } = useSWR(sectionType, async () => {
     const mediaRepository = MediaRepository.getInstance();
-    return await GetMediaUseCase.getInstance(mediaRepository).execute(sectionType);
+    const response = await GetMediaUseCase.getInstance(mediaRepository).execute(sectionType);
+    return response;
   });
 
   return {

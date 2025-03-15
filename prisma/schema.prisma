@@ -222,6 +222,7 @@ model Media {
   id            String    @id @default(uuid()) @db.Uuid
   media_type    MediaType
   media_url     String? // Dành cho hình ảnh/video
+  redirect_url  String?
   embed_code    String? // Dành cho video nhúng (YouTube, Vimeo,...)
   description   String?
   uploaded_by   String?

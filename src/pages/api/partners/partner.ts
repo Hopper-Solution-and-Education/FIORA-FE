@@ -3,8 +3,8 @@ import { getServerSession } from 'next-auth';
 import { partnerUseCase } from '@/features/partner/application/use-cases/partnerUseCase';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { authOptions } from '../auth/[...nextauth]';
-import { createErrorResponse, createResponse } from '@/lib/utils';
-import { Messages } from '@/config/message';
+import { createError, createResponse } from '@/config/createResponse';
+import { Messages } from '@/shared/constants/message';
 
 export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
@@ -44,7 +44,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
       .json(
-        createErrorResponse(
+        createError(
+          res,
           RESPONSE_CODE.INTERNAL_SERVER_ERROR,
           error.message || Messages.INTERNAL_ERROR,
         ),
@@ -57,12 +58,13 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     const partners = await partnerUseCase.listPartners(userId);
     return res
       .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, 'success', partners, Messages.GET_PARTNER_SUCCESS));
+      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_PARTNER_SUCCESS, partners));
   } catch (error: any) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
       .json(
-        createErrorResponse(
+        createError(
+          res,
           RESPONSE_CODE.INTERNAL_SERVER_ERROR,
           error.message || Messages.INTERNAL_ERROR,
         ),
@@ -75,19 +77,13 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     const newPartner = await partnerUseCase.createPartner({ ...req.body, userId });
     return res
       .status(RESPONSE_CODE.CREATED)
-      .json(
-        createResponse(
-          RESPONSE_CODE.CREATED,
-          'success',
-          newPartner,
-          Messages.CREATE_PARTNER_SUCCESS,
-        ),
-      );
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_PARTNER_SUCCESS, newPartner));
   } catch (error: any) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
       .json(
-        createErrorResponse(
+        createError(
+          res,
           RESPONSE_CODE.INTERNAL_SERVER_ERROR,
           error.message || Messages.INTERNAL_ERROR,
         ),
@@ -102,19 +98,13 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
     const updatedPartner = await partnerUseCase.editPartner(id, userId, req.body);
     return res
       .status(RESPONSE_CODE.OK)
-      .json(
-        createResponse(
-          RESPONSE_CODE.OK,
-          'success',
-          updatedPartner,
-          Messages.UPDATE_PARTNER_SUCCESS,
-        ),
-      );
+      .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_PARTNER_SUCCESS, updatedPartner));
   } catch (error: any) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
       .json(
-        createErrorResponse(
+        createError(
+          res,
           RESPONSE_CODE.INTERNAL_SERVER_ERROR,
           error.message || Messages.INTERNAL_ERROR,
         ),

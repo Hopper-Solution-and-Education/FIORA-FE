@@ -1,7 +1,7 @@
 'use client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-import { navItems } from '@/features/dashboard/constants/data';
+import { navItems } from '@/features/home/constants/data';
 import {
   BadgeCheck,
   Bell,
@@ -39,7 +39,6 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarRail,
-  useSidebar,
 } from '../ui/sidebar';
 
 export const company = {
@@ -51,7 +50,6 @@ export const company = {
 export default function AppSidebar() {
   const { data: session } = useSession();
   const pathname = usePathname();
-  const { state, isMobile } = useSidebar();
 
   return (
     <Sidebar collapsible="icon">

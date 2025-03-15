@@ -3,6 +3,7 @@ import expenseIncomeServices from '@/features/setting/services/expenseIncomeServ
 import { Response } from '@/shared/types/Common.types';
 import { Category, RawCategory } from '../types';
 import { transformCategories } from '../utils';
+import { NewCategoryDefaultValues } from '../utils/formSchema';
 
 export const fetchCategories = createAsyncThunk(
   'expenseIncome/fetchCategories',
@@ -21,7 +22,7 @@ export const fetchCategories = createAsyncThunk(
 
 export const createCategory = createAsyncThunk(
   'expenseIncome/createCategory',
-  async (category: Omit<Category, 'id'>, { rejectWithValue }) => {
+  async (category: NewCategoryDefaultValues, { rejectWithValue }) => {
     try {
       const response = await expenseIncomeServices.createCategory(category);
       return response;

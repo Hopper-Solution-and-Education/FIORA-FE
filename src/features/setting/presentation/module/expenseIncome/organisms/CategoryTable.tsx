@@ -16,6 +16,7 @@ import { CategoryType } from '@prisma/client';
 import InsertCategoryDialog from '@/features/setting/presentation/module/expenseIncome/molecules/InsertCategoryDialog';
 import { createCategory } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
 import { setDialogOpen } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
+import { NewCategoryDefaultValues } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/utils/formSchema';
 
 interface CategoryTableProps {
   setSelectedCategory: (cat: Category | null) => void;
@@ -31,14 +32,14 @@ const CategoryTable: React.FC<CategoryTableProps> = ({
 
   const [subCategoryList, setSubCategoryList] = useState(selectedCategory?.subCategories); // Temporary state for subcategories
 
-  const handleCreateCategory = (category: Partial<Category>) => {
+  const handleCreateCategory = (category: NewCategoryDefaultValues) => {
     dispatch(
       createCategory({
         name: category.name || '',
         type: selectedCategory!.type as CategoryType,
-        subCategories: [],
         icon: category.icon || '',
         parentId: selectedCategory?.id,
+        isTypeDisabled: false,
       }),
     );
     dispatch(setDialogOpen(false));
@@ -136,7 +137,6 @@ const CategoryTable: React.FC<CategoryTableProps> = ({
         dialogOpen={dialogOpen}
         setDialogOpen={(open) => dispatch(setDialogOpen(open))}
         handleCreateCategory={handleCreateCategory}
-        parentId={selectedCategory.id}
       />
     </>
   );

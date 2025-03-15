@@ -4,7 +4,6 @@ import React from 'react';
 const CustomTooltip = ({
   active,
   payload,
-  label,
   currency = DEFAULT_CURRENCY,
   locale = DEFAULT_LOCALE,
 }: any) => {
