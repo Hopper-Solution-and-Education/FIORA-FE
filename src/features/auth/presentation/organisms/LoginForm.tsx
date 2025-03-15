@@ -20,7 +20,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
 
   const handleCredentialsSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null); // Reset lỗi trước khi thử đăng nhập
+    setError(null);
 
     try {
       const response = await signIn('credentials', {

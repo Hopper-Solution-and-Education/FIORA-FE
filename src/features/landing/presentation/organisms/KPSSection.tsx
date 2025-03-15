@@ -82,8 +82,8 @@ const KPSSection = () => {
                 src={item.media_url ?? ''}
                 alt={`KPS ${index + 1}`}
                 layout="fill"
-                objectFit="cover" // Sử dụng objectFit="cover"
-                className="rounded-lg" // Thay đổi thành rounded-lg nếu muốn góc vuông
+                objectFit="cover"
+                className="rounded-lg"
               />
             </div>
           ))}
