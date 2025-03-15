@@ -1,5 +1,5 @@
 'use client';
-import { navItems } from '@/features/dashboard/constants/data';
+import { navItems } from '@/features/home/constants/data';
 import { KBarAnimator, KBarPortal, KBarPositioner, KBarProvider, KBarSearch } from 'kbar';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';

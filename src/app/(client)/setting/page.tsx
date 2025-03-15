@@ -1,4 +1,3 @@
-// import dynamic from 'next/dynamic';
 import { Separator } from '@/components/ui/separator';
 import dynamic from 'next/dynamic';
 

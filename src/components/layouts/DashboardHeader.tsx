@@ -1,13 +1,5 @@
 'use client';
 
-import { Breadcrumbs } from '../Breadcrumbs';
-import SearchInput from '../SearchInput';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { Separator } from '../ui/separator';
-import { SidebarTrigger } from '../ui/sidebar';
-import ThemeToggle from './theme-toggle/ThemeToggle';
-import { UserNav } from './UserNav';
-import { Bell, Gift, HelpCircle, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -15,8 +7,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useEffect, useState } from 'react';
 import { formatCurrency } from '@/shared/utils';
+import { Bell, Gift, HelpCircle, Settings } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Breadcrumbs } from '../Breadcrumbs';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Separator } from '../ui/separator';
+import { SidebarTrigger } from '../ui/sidebar';
+import ThemeToggle from './theme-toggle/ThemeToggle';
+import { UserNav } from './UserNav';
 
 export default function Header() {
   // state
@@ -134,10 +133,6 @@ export default function Header() {
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <Breadcrumbs />
-        </div>
-        {/* Search Input */}
-        <div>
-          <SearchInput />
         </div>
       </div>
     </header>

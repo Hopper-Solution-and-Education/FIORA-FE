@@ -20,7 +20,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
 
   const handleCredentialsSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null); // Reset lỗi trước khi thử đăng nhập
+    setError(null);
 
     try {
       const response = await signIn('credentials', {
@@ -30,7 +30,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
         redirect: false, // Không redirect tự động, để tự xử lý
       });
       if (response?.ok) {
-        router.push('/dashboard'); // Đăng nhập thành công, chuyển hướng
+        router.push('/home'); // Đăng nhập thành công, chuyển hướng
       } else {
         if (response?.error) {
           setError('Invalid email or password. Please try again.');
@@ -46,7 +46,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const handleGoogleSignIn = async () => {
     setError(null); // Reset lỗi trước khi thử đăng nhập
     try {
-      const res = await signIn('google', { callbackUrl: '/dashboard' });
+      const res = await signIn('google', { callbackUrl: '/home' });
       if (!res?.ok) {
         setError('Google login failed. Please try again.');
       }

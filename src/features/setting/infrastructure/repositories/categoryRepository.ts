@@ -11,7 +11,13 @@ class CategoryRepository implements ICategoryRepository {
     description?: string | null;
     parentId?: string | null;
   }): Promise<Category> {
-    return prisma.category.create({ data });
+    return prisma.category.create({
+      data: {
+        ...data,
+        tax_rate: 0,
+        createdBy: data.userId,
+      },
+    });
   }
 
   async findCategoriesByUserId(userId: string): Promise<Category[]> {

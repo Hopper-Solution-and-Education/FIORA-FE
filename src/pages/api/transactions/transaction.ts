@@ -4,8 +4,8 @@ import { transactionUseCase } from '@/features/transaction/application/use-cases
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { authOptions } from '../auth/[...nextauth]';
 import { UUID } from 'crypto';
-import { createErrorResponse, createResponse } from '@/lib/utils';
-import { Messages } from '@/lib/message';
+import { createError, createResponse } from '@/config/createResponse';
+import { Messages } from '@/shared/constants/message';
 
 // Hàm kiểm tra session
 export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {
@@ -59,18 +59,13 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     const transactions = await transactionUseCase.listTransactions(userId);
     return res
       .status(RESPONSE_CODE.OK)
-      .json(
-        createResponse(RESPONSE_CODE.OK, 'success', transactions, Messages.GET_TRANSACTION_SUCCESS),
-      );
+      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_TRANSACTION_SUCCESS, transactions));
   } catch (error: any) {
-    res
-      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createErrorResponse(
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        ),
-      );
+    return createError(
+      res,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+      error.message || Messages.INTERNAL_ERROR,
+    );
   }
 }
 
@@ -108,22 +103,14 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     return res
       .status(RESPONSE_CODE.CREATED)
       .json(
-        createResponse(
-          RESPONSE_CODE.CREATED,
-          'success',
-          newTransaction,
-          Messages.CREATE_TRANSACTION_SUCCESS,
-        ),
+        createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_TRANSACTION_SUCCESS, newTransaction),
       );
   } catch (error: any) {
-    res
-      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createErrorResponse(
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        ),
-      );
+    return createError(
+      res,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+      error.message || Messages.INTERNAL_ERROR,
+    );
   }
 }
 
@@ -134,18 +121,14 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
     return res
       .status(RESPONSE_CODE.OK)
       .json(
-        createResponse(
-          RESPONSE_CODE.OK,
-          'success',
-          updatedTransaction,
-          Messages.UPDATE_TRANSACTION_SUCCESS,
-        ),
+        createResponse(RESPONSE_CODE.OK, Messages.UPDATE_TRANSACTION_SUCCESS, updatedTransaction),
       );
   } catch (error: any) {
     res
       .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
       .json(
-        createErrorResponse(
+        createError(
+          res,
           RESPONSE_CODE.INTERNAL_SERVER_ERROR,
           error.message || Messages.INTERNAL_ERROR,
         ),
@@ -159,15 +142,12 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
     await transactionUseCase.removeTransaction(id as string, userId);
     return res
       .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, 'success', null, Messages.DELETE_TRANSACTION_SUCCESS));
+      .json(createResponse(RESPONSE_CODE.OK, Messages.DELETE_TRANSACTION_SUCCESS, null));
   } catch (error: any) {
-    res
-      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createErrorResponse(
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        ),
-      );
+    return createError(
+      res,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+      error.message || Messages.INTERNAL_ERROR,
+    );
   }
 }
