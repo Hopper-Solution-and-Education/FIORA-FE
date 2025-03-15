@@ -118,11 +118,11 @@ export class AccountRepository implements IAccountRepository {
 
   async findManyWithCondition(
     where: Prisma.AccountWhereInput,
-    select?: Prisma.AccountSelect,
+    options?: Prisma.AccountFindManyArgs,
   ): Promise<Account[] | []> {
     return prisma.account.findMany({
       where,
-      select,
+      ...options,
     });
   }
 

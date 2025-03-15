@@ -27,7 +27,6 @@ export interface IAccountRepository {
   findAllAccountByUserId(userId: string): Promise<Account[] | []>;
   findManyWithCondition(
     where: Prisma.AccountWhereInput,
-    select?: Prisma.AccountSelect,
     options?: Prisma.AccountFindManyArgs,
   ): Promise<Account[] | []>;
   aggregate(options: Prisma.AccountAggregateArgs): Promise<any>;
