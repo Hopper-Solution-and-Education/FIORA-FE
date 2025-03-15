@@ -2,15 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import { navItems } from '@/features/home/constants/data';
-import {
-  BadgeCheck,
-  Bell,
-  ChevronRight,
-  ChevronsUpDown,
-  CreditCard,
-  GalleryVerticalEnd,
-  LogOut,
-} from 'lucide-react';
+import { BadgeCheck, Bell, ChevronRight, ChevronsUpDown, CreditCard, LogOut } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -41,9 +33,12 @@ import {
   SidebarRail,
 } from '../ui/sidebar';
 
+import HopperLogo from '@public/images/logo.jpg';
+import Image from 'next/image';
+
 export const company = {
-  name: 'Acme Inc',
-  logo: GalleryVerticalEnd,
+  name: 'FIORA Inc',
+  logo: HopperLogo,
   plan: 'Enterprise',
 };
 
@@ -56,7 +51,14 @@ export default function AppSidebar() {
       <SidebarHeader>
         <div className="flex gap-2 py-2 text-sidebar-accent-foreground">
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-            <company.logo className="size-4" />
+            <Image
+              src={company.logo}
+              alt="Fiora Logo"
+              width={120}
+              height={120}
+              className="object-contain w-16 h-16 sm:w-20 sm:h-20 md:w-28 md:h-28 lg:w-28 lg:h-28 xl:w-32 xl:h-32"
+              priority
+            />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-semibold">{company.name}</span>

@@ -35,6 +35,25 @@ export const globalNavItems: GlobalNavItem[] = [
   },
 ];
 
+export const notSignInNavItems: GlobalNavItem[] = [
+  {
+    title: 'Sign In',
+    url: '/auth/sign-in',
+    icon: 'dashboard',
+    props: { size: 20, strokeWidth: 1 },
+    isActive: false,
+    shortcut: ['d', 'd'],
+  },
+  {
+    title: 'Sign Up',
+    url: '/auth/sign-up',
+    icon: 'banknote',
+    props: { size: 20, strokeWidth: 1 },
+    shortcut: ['p', 'p'],
+    isActive: false,
+  },
+];
+
 export const iconOptions: IconsOptions[] = [
   {
     // Hành động/Điều hướng / Action/Navigation

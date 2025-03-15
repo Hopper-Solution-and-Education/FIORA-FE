@@ -49,8 +49,8 @@ export type NestedBarChartProps = {
   legendItems?: { name: string; color: string }[];
   childOpacity?: number;
   maxBarRatio?: number;
-  onBarClick?: (item: BarItem) => void;
   tutorialText?: string;
+  callback?: (item: any) => void;
 };
 
 const NestedBarChart = ({
@@ -63,8 +63,8 @@ const NestedBarChart = ({
   xAxisFormatter = (value) => value.toString(),
   tooltipContent,
   legendItems,
-  onBarClick,
   tutorialText,
+  callback,
 }: NestedBarChartProps) => {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [chartHeight, setChartHeight] = useState(MIN_CHART_HEIGHT);
@@ -175,20 +175,17 @@ const NestedBarChart = ({
                   processedData={processedData}
                   expandedItems={expandedItems}
                   onToggleExpand={toggleExpand}
+                  props={props}
+                  callback={callback}
                 />
               )}
             />
-            <Tooltip content={tooltipContent || customTooltipWithConfig} />
+            <Tooltip trigger="hover" content={tooltipContent || customTooltipWithConfig} />
             <Bar
               dataKey="value"
               radius={[0, 4, 4, 0]}
-              className="transition-all duration-300 cursor-pointer" // Added cursor-pointer for UX
+              className="transition-all duration-300 cursor-pointer"
               label={(props) => <BarLabel {...props} formatter={xAxisFormatter} />}
-              onClick={(data, index) => {
-                if (onBarClick) {
-                  onBarClick(processedData[index]);
-                }
-              }}
             >
               {processedData.map((entry, index) => {
                 const color = entry.isChild

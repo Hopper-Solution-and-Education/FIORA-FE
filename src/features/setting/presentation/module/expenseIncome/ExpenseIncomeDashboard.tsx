@@ -10,6 +10,7 @@ import {
   setDeleteConfirmOpen,
   setDialogOpen,
   setSelectedCategory,
+  setUpdateDialogOpen,
 } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
 import {
   createCategory,
@@ -21,12 +22,12 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { CategoryType } from '@prisma/client';
 import { useEffect, useMemo, useState } from 'react';
 import { NewCategoryDefaultValues } from '../../settingSlices/expenseIncomeSlides/utils/formSchema';
+import { Category } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
 
 const ExpenseIncomeDashboard = () => {
   const dispatch = useAppDispatch();
   const { categories, selectedCategory, dialogOpen, deleteConfirmOpen, updateDialogOpen } =
     useAppSelector((state) => state.expenseIncome);
-  const [isDetailDialogOpen, setDetailDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<CategoryType>(CategoryType.Expense);
 
   useEffect(() => {
@@ -69,10 +70,30 @@ const ExpenseIncomeDashboard = () => {
     dispatch(setSelectedCategory(null));
   };
 
-  // const handleDisplayDetailCategoryDialog = (category: Category) => {
-  //   dispatch(setSelectedCategory(category));
-  //   setDetailDialogOpen(true);
-  // };
+  const handleDisplayDetailDialog = (item: any) => {
+    // Find category and subcategory
+    const findCategory = findCategoryById(item.id, categories.data);
+    if (findCategory) {
+      dispatch(setSelectedCategory(findCategory));
+      dispatch(setUpdateDialogOpen(true));
+    }
+  };
+
+  const findCategoryById = (id: string, categories?: Category[]): Category | undefined => {
+    if (!categories) return undefined;
+
+    // Check top-level categories first
+    const categoryMatch = categories.find((category) => category.id === id);
+    if (categoryMatch) return categoryMatch;
+
+    // Check subcategories across all categories
+    for (const category of categories) {
+      const subCategoryMatch = category.subCategories?.find((sub) => sub.id === id);
+      if (subCategoryMatch) return subCategoryMatch;
+    }
+
+    return undefined;
+  };
 
   // const handleDisplayDeleteConfirmDialog = (category: Category) => {
   //   dispatch(setSelectedCategory(category));
@@ -84,12 +105,6 @@ const ExpenseIncomeDashboard = () => {
       dispatch(deleteCategory(selectedCategory.id));
     }
     dispatch(setDeleteConfirmOpen(false));
-  };
-
-  const handleDetailClick = (item: BarItem) => {
-    // Logic to open your detail dialog, e.g., using a state or a dialog library
-    console.log('Open dialog for:', item);
-    // Example: setDialogState({ open: true, item });
   };
 
   if (categories.isLoading)
@@ -118,16 +133,16 @@ const ExpenseIncomeDashboard = () => {
           <NestedBarChart
             data={expenseData}
             xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
-            onBarClick={handleDetailClick}
             tutorialText="Click the bar to see more"
+            callback={handleDisplayDetailDialog}
           />
         </TabsContent>
         <TabsContent value={CategoryType.Income}>
           <NestedBarChart
             data={incomeData}
             xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
-            onBarClick={handleDetailClick}
             tutorialText="Click the bar to see more"
+            callback={handleDisplayDetailDialog}
           />
         </TabsContent>
       </Tabs>
