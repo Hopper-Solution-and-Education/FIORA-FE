@@ -1,5 +1,4 @@
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/shared/constants/chart';
-import React from 'react';
 import { BarItem } from '../index'; // Ensure BarItem is imported
 
 interface CustomTooltipProps {
@@ -7,7 +6,7 @@ interface CustomTooltipProps {
   payload?: any[];
   currency?: string;
   locale?: string;
-  tutorialText?: string; // Add this line
+  tutorialText?: string;
 }
 
 const CustomTooltip = ({
