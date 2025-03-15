@@ -49,7 +49,7 @@ export const isPositiveType = (type: AccountType): boolean => {
   return [AccountType.Payment, AccountType.Saving, AccountType.Lending].includes(type);
 };
 
-export const formatCurrency = (amount: number, currency: Currency = Currency.USD): string => {
+export const formatCurrency = (amount: number, currency: Currency = Currency.VND): string => {
   return (
     new Intl.NumberFormat('vi-VN', {
       style: 'decimal',

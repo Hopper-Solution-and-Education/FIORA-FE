@@ -254,6 +254,7 @@ export default function FinancialAccount({
             <AlertDialogDescription>
               This action cannot be undone. This will permanently remove the sub-account.
             </AlertDialogDescription>
+            confirmRemove
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
