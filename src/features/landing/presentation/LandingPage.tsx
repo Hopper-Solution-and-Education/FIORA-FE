@@ -1,7 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import ContactUS from './components/ContactUS';
 import { ScrollToTop } from './components/ScrollToTop';
 import { Banner } from './organisms/Banner';
 import { FioraSystem } from './organisms/FioraSystem';
@@ -85,16 +84,6 @@ const LandingPage = () => {
 
       {/* Scroll To Top - Không cần hiệu ứng */}
       <ScrollToTop />
-
-      {/* OTS - Fade In */}
-      <motion.div
-        variants={fadeIn}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
-        <ContactUS />
-      </motion.div>
     </>
   );
 };

@@ -1,78 +1,41 @@
-import hopperLogo from '@public/images/logo.jpg';
-import { Facebook, Github, Instagram, Twitter } from 'lucide-react';
+import FacebookIcon from '@public/icons/facebook.png';
+import InstagramIcon from '@public/icons/instagram.png';
+import ThreadsIcon from '@public/icons/threads.png';
+import TiktokIcon from '@public/icons/tiktok.jpg';
+import WhatAppsIcon from '@public/icons/whatsapp.png';
+import XIcon from '@public/icons/x.webp';
+import YoutubeIcon from '@public/icons/youtube.png';
 import Image from 'next/image';
 import Link from 'next/link';
 
-const footerLinks = [
-  {
-    title: 'Fiora',
-    links: ['About', 'Features', 'Projects', 'Contact'],
-  },
-  {
-    title: 'About',
-    links: ['Company', 'FAQs', 'News', 'Recent Updates'],
-  },
-  {
-    title: 'Resources',
-    links: ['Courses', 'Development Tutorials', 'Documentation', 'Blog'],
-  },
-  {
-    title: 'Support',
-    links: ['Customer Support', 'Project Updates', 'Terms & Conditions', 'Privacy Policy'],
-  },
-];
-
-const socialIcons = [
-  { icon: Facebook, link: '#' },
-  { icon: Twitter, link: '#' },
-  { icon: Instagram, link: '#' },
-  { icon: Github, link: '#' },
+const IconList = [
+  { icon: FacebookIcon, url: 'https://www.facebook.com', name: 'Facebook' },
+  { icon: InstagramIcon, url: 'https://www.instagram.com', name: 'Instagram' },
+  { icon: YoutubeIcon, url: 'https://www.youtube.com', name: 'YouTube' },
+  { icon: XIcon, url: 'https://www.x.com', name: 'X' },
+  { icon: ThreadsIcon, url: 'https://www.threads.net', name: 'Threads' },
+  { icon: TiktokIcon, url: 'https://www.tiktok.com', name: 'TikTok' },
+  { icon: WhatAppsIcon, url: 'https://www.whatsapp.com', name: 'WhatsApp' },
 ];
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border py-12">
-      <div className="max-w mx-auto px-6 lg:px-32">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-          {/* Logo & Company */}
-          <div>
-            <Image
-              src={hopperLogo}
-              width={1280}
-              height={720}
-              className="w-[10vw] rounded-full"
-              alt={'hopper-logo'}
-            />
-          </div>
-
-          {footerLinks.map((section) => (
-            <div key={section.title}>
-              <h3 className="text-lg font-semibold">{section.title}</h3>
-              <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-                {section.links.map((link) => (
-                  <li key={link}>
-                    <Link href="#" className="hover:underline">
-                      {link}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+    <footer className=" border-border py-12">
+      <div className="mt-10 border-t pt-6 flex flex-col md:flex-row items-center justify-between px-10">
+        <div className="flex space-x-6">
+          {IconList.map((icon, index) => (
+            <Link key={index} href={icon.url} className="hover:scale-110 transition-transform">
+              <Image
+                alt={icon.name}
+                src={icon.icon}
+                width={100}
+                height={100}
+                className="h-10 w-10 rounded-full"
+              />
+            </Link>
           ))}
         </div>
-
-        {/* Social Icons & Copyright */}
-        <div className="mt-10 border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between">
-          <div className="flex space-x-6">
-            {socialIcons.map(({ icon: Icon, link }, index) => (
-              <Link key={index} href={link} className="hover:scale-110 transition-transform">
-                <Icon className="h-5 w-5" />
-              </Link>
-            ))}
-          </div>
-
-          <p className="mt-4 md:mt-0 text-sm">&copy; 2025 Hopper Company. All rights reserved.</p>
-        </div>
+        <p className="mt-4 md:mt-0 text-sm">&copy; 2025 Hopper Company. All rights reserved.</p>
       </div>
     </footer>
   );

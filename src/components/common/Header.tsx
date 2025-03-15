@@ -9,9 +9,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import HelpCenter from '../layouts/theme-toggle/HelpCenter';
+import LanguageToggle from '../layouts/theme-toggle/LanguageToggle';
 import ThemeToggle from '../layouts/theme-toggle/ThemeToggle';
 import { UserNav } from '../layouts/UserNav';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Alert, AlertDescription } from '../ui/alert';
 import { Button } from '../ui/button';
 import {
   DropdownMenu,
@@ -26,6 +28,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAccountSettingOpen, setIsAccountSettingOpen] = useState(false);
+  const [isOpenAnountment, setIsOpenAnountment] = useState(true);
 
   const toggleMenu = () => setIsMenuOpen((prevState) => !prevState);
   const toggleAccountSetting = () => setIsAccountSettingOpen((prevState) => !prevState);
@@ -42,20 +45,18 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
-        isScrolled ? 'bg-background/80' : 'bg-background/100'
-      } w-full max-w-screen`}
+      className={`fixed bg-background/100 top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out w-full max-w-screen`}
     >
-      <div className="flex items-start">
+      <div className="flex items-center justify-center">
         {/* Logo */}
         <div className="flex items-center">
           <Link href="/">
             <Image
               src={HopperLogo}
               alt="Fiora Logo"
-              width={120}
-              height={120}
-              className="object-contain w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 xl:w-30 xl:h-30"
+              width={240}
+              height={240}
+              className={`object-contain w-16 h-16 md:w-20 md:h-20 ${isOpenAnountment ? 'lg:w-24 lg:h-24' : 'lg:w-20 lg:h-20'} `}
               priority
             />
           </Link>
@@ -65,10 +66,23 @@ export default function Header() {
           {/* Announcement and Navigation Container */}
           <div className="flex flex-col items-end w-full">
             {/* Announcement - Hidden on mobile */}
-            <Alert variant="default" className="rounded-none hidden md:block">
-              <AlertTitle>Announcement</AlertTitle>
-              <AlertDescription>This is an important announcement for all users.</AlertDescription>
-            </Alert>
+            {isOpenAnountment && (
+              <div className="relative w-full">
+                <Alert variant="default" className="rounded-none hidden md:block relative">
+                  <AlertDescription>
+                    This is an important announcement for all users.
+                  </AlertDescription>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 p-2 rounded-full hover:bg-gray-100"
+                    onClick={() => setIsOpenAnountment(false)}
+                  >
+                    ✕
+                  </Button>
+                </Alert>
+              </div>
+            )}
 
             {/* Navigation */}
             <nav className="hidden md:flex items-center gap-4 py-2 px-4">
@@ -126,9 +140,10 @@ export default function Header() {
                 </>
               )}
 
-              <UserNav />
-
+              <HelpCenter />
               <ThemeToggle />
+              <LanguageToggle />
+              <UserNav />
             </nav>
           </div>
 

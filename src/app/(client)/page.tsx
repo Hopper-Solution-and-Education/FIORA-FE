@@ -1,14 +1,20 @@
 'use client';
 import Loading from '@/components/common/Loading';
+import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
-import React from 'react';
+import { redirect } from 'next/navigation';
 const LandingPageRender = dynamic(() => import('@/features/landing/presentation/LandingPage'), {
   loading: () => <Loading />,
   ssr: false,
 });
 
-const page = () => {
+const Page = () => {
+  const { data } = useSession();
+  if (data) {
+    redirect('/home');
+  }
+
   return <LandingPageRender />;
 };
 
-export default page;
+export default Page;

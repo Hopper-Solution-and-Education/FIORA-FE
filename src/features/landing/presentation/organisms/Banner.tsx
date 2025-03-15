@@ -43,7 +43,7 @@ export function Banner() {
       plugins={[autoplayPlugin.current]}
       onMouseEnter={autoplayPlugin.current.stop}
       onMouseLeave={autoplayPlugin.current.reset}
-      className="w-full mt-20"
+      className="w-full mt-5"
     >
       <CarouselContent className="flex">
         {media.map((image, index) => (

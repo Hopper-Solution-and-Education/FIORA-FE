@@ -63,12 +63,9 @@ const KPSSection = () => {
   return (
     <section>
       <div className="mx-auto max-w-3xl text-center mt-10 border-t">
-        <h2
-          data-aos="fade-up"
-          className="mt-20 bg-gradient-to-r from-green-400 via-green-400 to-pink-400 bg-clip-text text-2xl font-bold tracking-tight text-transparent sm:text-4xl md:text-5xl text-center"
-        >
+        <h1 data-aos="fade-up" className="my-6 text-5xl font-bold text-pretty lg:text-6xl">
           Why FIORA?
-        </h2>
+        </h1>
       </div>
       <div className="flex flex-col sm:flex-row justify-between items-center min-h-10 gap-5 px-5">
         {media &&

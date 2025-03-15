@@ -13,13 +13,10 @@ export const PartnerLogo = () => {
   if (isError || !logos) return <p>Error loading partner logos.</p>;
 
   return (
-    <section className="w-full my-10 flex flex-col items-center px-4">
-      <h2
-        data-aos="fade-up"
-        className="my-8 bg-gradient-to-r from-green-400 via-green-400 to-pink-400 bg-clip-text text-2xl font-bold tracking-tight text-transparent sm:text-3xl md:text-4xl lg:text-5xl text-center"
-      >
+    <section className="w-full my-10 flex flex-col items-center px-4 pd-10 ">
+      <h1 data-aos="fade-up" className="my-6 text-5xl font-bold text-pretty lg:text-6xl ">
         FIORA Partners
-      </h2>
+      </h1>
 
       <div className="w-full mx-auto">
         <Carousel
