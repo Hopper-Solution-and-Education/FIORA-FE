@@ -1,13 +1,16 @@
 import { SectionType } from '@prisma/client';
 import useSWR from 'swr';
-import { MediaRepository } from '../data/repositories/mediaRepository';
+import { landingDIContainer } from '../di/landingDIContainer';
+import { TYPES } from '../di/landingDIContainer.type';
 import { GetMediaUseCase } from '../domain/use-cases/GetMediaUseCase';
 
 export const useMedia = (sectionType: SectionType) => {
   const { data, error } = useSWR(sectionType, async () => {
-    const mediaRepository = MediaRepository.getInstance();
-    const response = await GetMediaUseCase.getInstance(mediaRepository).execute(sectionType);
-    return response;
+    // Lấy instance của UseCase từ DI Container
+    const getMediaUseCase = landingDIContainer.get<GetMediaUseCase>(TYPES.GetMediaUseCase);
+
+    // Gọi UseCase để lấy dữ liệu
+    return await getMediaUseCase.execute(sectionType);
   });
 
   return {
