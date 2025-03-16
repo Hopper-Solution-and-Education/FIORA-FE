@@ -1,6 +1,6 @@
 'use client';
 
-import Header from '@/components/common/Header';
+import Header from '@/features/landing/presentation/components/Header';
 import { motion } from 'framer-motion';
 import Footer from './components/Footer';
 import { ScrollToTop } from './components/ScrollToTop';
@@ -25,15 +25,7 @@ const zoomIn = {
 const LandingPage = () => {
   return (
     <>
-      {/* Banner - Slide Up Effect */}
-      <motion.div
-        initial={{ opacity: 0, y: 100 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, ease: 'easeOut' }}
-      >
-        <Header />
-      </motion.div>
-
+      <Header />
       {/* Banner - Slide Up Effect */}
       <motion.div
         initial={{ opacity: 0, y: 100 }}

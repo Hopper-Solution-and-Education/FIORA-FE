@@ -9,20 +9,25 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { redirect, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import HelpCenter from '../layouts/theme-toggle/HelpCenter';
-import LanguageToggle from '../layouts/theme-toggle/LanguageToggle';
-import ThemeToggle from '../layouts/theme-toggle/ThemeToggle';
-import { UserNav } from '../layouts/UserNav';
-import { Alert, AlertDescription } from '../ui/alert';
-import { Button } from '../ui/button';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
+} from '../../../../components/ui/dropdown-menu';
+import { useGetSection } from '../../hooks/useGetSection';
+import { SectionType } from '@prisma/client';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import HelpCenter from '@/components/layouts/theme-toggle/HelpCenter';
+import ThemeToggle from '@/components/layouts/theme-toggle/ThemeToggle';
+import LanguageToggle from '@/components/layouts/theme-toggle/LanguageToggle';
+import { UserNav } from '@/components/layouts/UserNav';
 
 export default function Header() {
+  const { section, isLoading, isError } = useGetSection(SectionType.HEADER);
   const router = useRouter();
   const { data: session } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -49,16 +54,31 @@ export default function Header() {
     >
       <div className="flex items-center justify-center">
         {/* Logo */}
-        <div className="flex items-center">
+        <div className="flex items-center mb-3">
           <Link href="/">
-            <Image
-              src={HopperLogo}
-              alt="Fiora Logo"
-              width={240}
-              height={240}
-              className={`object-contain w-16 h-16 md:w-20 md:h-20 ${isOpenAnountment ? 'lg:w-24 lg:h-24' : 'lg:w-20 lg:h-20'} `}
-              priority
-            />
+            {isLoading ? (
+              <Skeleton className={`w-16 h-16 md:w-20 md:h-20 lg:w-20 lg:h-20`} />
+            ) : (
+              <>
+                {section?.medias || !isError ? (
+                  <Image
+                    src={section?.medias[0]?.media_url || HopperLogo}
+                    alt="Fiora Logo"
+                    width={240}
+                    height={240}
+                    className={`object-contain w-16 h-16 md:w-20 md:h-20 ${isOpenAnountment ? 'lg:w-24 lg:h-full' : 'lg:w-20 lg:h-full'} `}
+                    priority
+                  />
+                ) : (
+                  <div
+                    className={`w-16 h-16 md:w-20 md:h-20 lg:w-20 lg:h-20 bg-gray-200 rounded-full flex items-center justify-center`}
+                  >
+                    {/* Optional: Add a placeholder icon or text */}
+                    <span>Logo</span>
+                  </div>
+                )}
+              </>
+            )}
           </Link>
         </div>
 
