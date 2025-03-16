@@ -1,4 +1,20 @@
 'use client';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { CategoryType } from '@prisma/client';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import {
+  setDialogOpen,
+  setSelectedCategory,
+} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
+import { createCategory } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
+import {
+  defaultNewCategoryValues,
+  NewCategoryDefaultValues,
+  validateNewCategorySchema,
+} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/utils/formSchema';
 import IconSelect from '@/components/common/IconSelect';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,6 +24,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -17,59 +41,36 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-import { yupResolver } from '@hookform/resolvers/yup';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
-
-import {
-  defaultNewCategoryValues,
-  NewCategoryDefaultValues,
-  validateNewCategorySchema,
-} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/utils/formSchema';
-import { useAppSelector } from '@/store';
-import { CategoryType } from '@prisma/client';
-import React from 'react';
 
 interface InsertCategoryDialogProps {
   title?: string;
-  dialogOpen: boolean;
-  setDialogOpen: (open: boolean) => void;
-  handleCreateCategory: (category: NewCategoryDefaultValues) => void;
 }
 
-const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({
-  title,
-  dialogOpen,
-  setDialogOpen,
-  handleCreateCategory,
-}) => {
-  const { categories } = useAppSelector((state) => state.expenseIncome);
+const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({ title }) => {
+  const dispatch = useAppDispatch();
+  const { categories, dialogOpen } = useAppSelector((state) => state.expenseIncome);
+
+  // * FORM HANDLING ZONE *
   const form = useForm<NewCategoryDefaultValues>({
     resolver: yupResolver(validateNewCategorySchema),
     defaultValues: defaultNewCategoryValues,
+    mode: 'onChange', // Add this to validate on change
   });
 
-  const onSubmit = (data: NewCategoryDefaultValues) => {
-    handleCreateCategory(data);
-    setDialogOpen(false);
-    toast.success('Category created successfully');
-    form.reset();
-  };
+  const onSubmit = async (data: NewCategoryDefaultValues) => {
+    if (!data) return;
 
-  const handleCloseDialog = (e: boolean) => {
-    setDialogOpen(e);
-    form.reset();
+    try {
+      await dispatch(createCategory(data));
+      dispatch(setDialogOpen(false));
+      dispatch(setSelectedCategory(null));
+      toast.success('Category created successfully');
+      form.reset();
+    } catch (error) {
+      console.error('Error updating category:', error);
+      toast.error('Failed to update category');
+    }
   };
 
   const handleChangeParentCategory = (value: string | null, field: any) => {
@@ -88,6 +89,12 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({
 
   // Add isTypeDisabled to the form default values if not already present
   const isTypeDisabled = form.watch('isTypeDisabled') || false;
+
+  // * COMPONENT BEHAVIOR ZONE *
+  const handleCloseDialog = (e: boolean) => {
+    dispatch(setDialogOpen(e));
+    form.reset();
+  };
 
   return (
     <Dialog open={dialogOpen} onOpenChange={handleCloseDialog}>
@@ -215,7 +222,12 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({
             />
 
             <DialogFooter>
-              <Button type="submit">Create</Button>
+              <Button variant="outline" type="button" onClick={() => handleCloseDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={!form.formState.isValid}>
+                Submit
+              </Button>
             </DialogFooter>
           </form>
         </Form>

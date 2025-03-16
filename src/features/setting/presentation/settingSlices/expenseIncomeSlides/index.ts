@@ -65,21 +65,8 @@ const expenseIncomeSlice = createSlice({
         state.categories.error =
           (action.payload as { message: string })?.message || 'Unknown error';
       })
-      // Update and delete cases remain largely the same but should consider hierarchy
       .addCase(updateCategory.fulfilled, (state, action) => {
         state.categories.isLoading = false;
-        if (state.categories.data) {
-          const updateCategoryInArray = (categories: Category[]): void => {
-            for (let i = 0; i < categories.length; i++) {
-              if (categories[i].id === action.payload.data.id) {
-                categories[i] = action.payload.data;
-                return;
-              }
-              updateCategoryInArray(categories[i].subCategories);
-            }
-          };
-          updateCategoryInArray(state.categories.data);
-        }
       })
       .addCase(deleteCategory.fulfilled, (state, action) => {
         state.categories.isLoading = false;

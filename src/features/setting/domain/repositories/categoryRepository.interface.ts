@@ -14,6 +14,11 @@ export interface ICategoryRepository {
   }): Promise<Category>;
   findCategoriesByUserId(userId: string): Promise<Category[]>;
   findCategoryById(id: string): Promise<Category | null>;
+  /**
+   * Updates a category and its direct child categories if the type changes.
+   * @param id - The ID of the category to update
+   * @param data - The new data for the category
+   */
   updateCategory(id: string, data: Partial<Category>): Promise<Category>;
   deleteCategory(id: string): Promise<void>;
 }

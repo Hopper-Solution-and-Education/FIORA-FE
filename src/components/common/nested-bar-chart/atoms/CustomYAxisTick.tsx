@@ -44,8 +44,8 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
 
   // Function to truncate text longer than 10 characters
   const truncateText = (text: string) => {
-    if (text.length > 10) {
-      return text.substring(0, 10) + '...';
+    if (text.length > 15) {
+      return text.substring(0, 15) + '...';
     }
     return text;
   };
@@ -62,17 +62,15 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
       <TooltipProvider>
         {/* Label text with styling based on hierarchy and truncation */}
         <Tooltip>
-          <TooltipTrigger asChild>
+          <TooltipTrigger asChild onClick={handleEditClick}>
             <text
-              x={hasChildren ? -55 : -25}
+              x={hasChildren ? -30 : -10}
               y={0}
               dy={4}
               textAnchor="end"
               className={cn(
-                'fill-current text-xs transition-all duration-200',
-                isChild ? 'text-muted-foreground' : 'text-foreground',
-                hasChildren && 'font-semibold',
-                isHovered && 'translate-x-1 text-primary',
+                'fill-current text-xs transition-all duration-200 text-foreground cursor-pointer',
+                isHovered && 'translate-x-1 text-primary font-semibold',
               )}
             >
               {displayText}
@@ -128,39 +126,6 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
             </TooltipContent>
           </Tooltip>
         )}
-
-        {/* Edit button */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <foreignObject
-              x={hasChildren ? -45 : -20}
-              y={-8}
-              width={16}
-              height={16}
-              className="overflow-visible cursor-pointer"
-            >
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  'h-4 w-4 p-0 rounded-full transition-all duration-200',
-                  isHovered ? 'bg-primary/20 scale-110 rotate-12' : 'hover:bg-muted/60',
-                )}
-                onClick={handleEditClick}
-              >
-                <Icons.settings
-                  className={cn(
-                    'h-3 w-3 transition-all duration-200',
-                    isHovered ? 'text-primary' : 'text-muted-foreground',
-                  )}
-                />
-              </Button>
-            </foreignObject>
-          </TooltipTrigger>
-          <TooltipContent side="top" align="center" className="text-xs">
-            Edit item
-          </TooltipContent>
-        </Tooltip>
       </TooltipProvider>
     </g>
   );
