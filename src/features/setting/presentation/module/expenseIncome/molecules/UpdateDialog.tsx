@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  setDeleteConfirmOpen,
   setSelectedCategory,
   setUpdateDialogOpen,
 } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
@@ -114,6 +115,23 @@ const UpdateDialog: React.FC = () => {
     } catch (error) {
       console.error('Error updating category:', error);
       toast.error('Failed to update category');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedCategory?.id) return;
+
+    try {
+      // Check if category has subcategories
+      if (isParentDisabled) {
+        toast.error('Please delete all subcategories first before deleting this category.');
+        return;
+      }
+
+      dispatch(setDeleteConfirmOpen(true));
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      toast.error('Failed to delete category');
     }
   };
 
@@ -261,18 +279,31 @@ const UpdateDialog: React.FC = () => {
               )}
             />
 
-            <DialogFooter>
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() => dispatch(setUpdateDialogOpen(false))}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={!form.formState.isValid || categories.isLoading}>
-                {categories.isLoading && <Icons.spinner className="animate-spin" />}
-                Submit
-              </Button>
+            <DialogFooter className="flex-row justify-between md:justify-between">
+              <div>
+                <Button
+                  variant="ghost"
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={categories.isLoading}
+                  className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                >
+                  <Icons.trash className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => dispatch(setUpdateDialogOpen(false))}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={!form.formState.isValid || categories.isLoading}>
+                  {categories.isLoading && <Icons.spinner className="animate-spin mr-2" />}
+                  Submit
+                </Button>
+              </div>
             </DialogFooter>
           </form>
         </Form>

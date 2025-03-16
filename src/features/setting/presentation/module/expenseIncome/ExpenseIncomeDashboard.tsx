@@ -24,9 +24,7 @@ import { useEffect, useMemo } from 'react';
 
 const ExpenseIncomeDashboard = () => {
   const dispatch = useAppDispatch();
-  const { categories, selectedCategory, deleteConfirmOpen } = useAppSelector(
-    (state) => state.expenseIncome,
-  );
+  const { categories, selectedCategory } = useAppSelector((state) => state.expenseIncome);
 
   useEffect(() => {
     dispatch(fetchCategories());
@@ -129,11 +127,7 @@ const ExpenseIncomeDashboard = () => {
 
       <InsertCategoryDialog />
 
-      <DeleteDialog
-        deleteConfirmOpen={deleteConfirmOpen}
-        setDeleteConfirmOpen={(open) => dispatch(setDeleteConfirmOpen(open))}
-        handleDeleteCategory={handleDeleteCategory}
-      />
+      <DeleteDialog />
     </div>
   );
 };
