@@ -7,15 +7,11 @@ import DeleteDialog from '@/features/setting/presentation/module/expenseIncome/m
 import InsertCategoryDialog from '@/features/setting/presentation/module/expenseIncome/molecules/InsertCategoryDialog';
 import UpdateDialog from '@/features/setting/presentation/module/expenseIncome/molecules/UpdateDialog';
 import {
-  setDeleteConfirmOpen,
   setDialogOpen,
   setSelectedCategory,
   setUpdateDialogOpen,
 } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
-import {
-  deleteCategory,
-  fetchCategories,
-} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
+import { fetchCategories } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
 import { Category } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
 import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -24,9 +20,7 @@ import { useEffect, useMemo } from 'react';
 
 const ExpenseIncomeDashboard = () => {
   const dispatch = useAppDispatch();
-  const { categories, selectedCategory, deleteConfirmOpen } = useAppSelector(
-    (state) => state.expenseIncome,
-  );
+  const { categories, selectedCategory } = useAppSelector((state) => state.expenseIncome);
 
   useEffect(() => {
     dispatch(fetchCategories());
@@ -85,13 +79,6 @@ const ExpenseIncomeDashboard = () => {
     return undefined;
   };
 
-  const handleDeleteCategory = () => {
-    if (selectedCategory) {
-      dispatch(deleteCategory(selectedCategory.id));
-    }
-    dispatch(setDeleteConfirmOpen(false));
-  };
-
   if (categories.isLoading) return <Loading />;
   if (categories.error)
     return <div className="text-red-600 dark:text-red-400">Error: {categories.error}</div>;
@@ -129,11 +116,7 @@ const ExpenseIncomeDashboard = () => {
 
       <InsertCategoryDialog />
 
-      <DeleteDialog
-        deleteConfirmOpen={deleteConfirmOpen}
-        setDeleteConfirmOpen={(open) => dispatch(setDeleteConfirmOpen(open))}
-        handleDeleteCategory={handleDeleteCategory}
-      />
+      <DeleteDialog />
     </div>
   );
 };
