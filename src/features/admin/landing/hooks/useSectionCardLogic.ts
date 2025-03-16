@@ -13,6 +13,15 @@ interface UseSectionCardLogicProps {
   sectionType: SectionType;
 }
 
+const mediaTypeMapping: Record<SectionType, MediaType> = {
+  [SectionType.BANNER]: MediaType.IMAGE,
+  [SectionType.KPS]: MediaType.IMAGE,
+  [SectionType.PARTNER_LOGO]: MediaType.IMAGE,
+  [SectionType.VISION_MISSION]: MediaType.EMBEDDED,
+  [SectionType.HEADER]: MediaType.IMAGE,
+  [SectionType.FOOTER]: MediaType.IMAGE,
+};
+
 function useSectionCardLogic({ sectionData, control, sectionType }: UseSectionCardLogicProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -60,22 +69,10 @@ function useSectionCardLogic({ sectionData, control, sectionType }: UseSectionCa
     // );
   };
 
-  const handleAddMedia = () => {
-    switch (sectionType) {
-      case SectionType.BANNER:
-        addMedia(MediaType.IMAGE);
-        break;
-      case SectionType.KPS:
-        addMedia(MediaType.IMAGE);
-        break;
-      case SectionType.PARTNER_LOGO:
-        addMedia(MediaType.IMAGE);
-        break;
-      case SectionType.VISION_MISSION:
-        addMedia(MediaType.EMBEDDED);
-        break;
-      default:
-        break;
+  const handleAddMedia = (sectionType: SectionType) => {
+    const mediaType = mediaTypeMapping[sectionType];
+    if (mediaType) {
+      addMedia(mediaType);
     }
   };
 

@@ -3,29 +3,37 @@
 import AccountSettingModal from '@/features/landing/presentation/components/AccountModal';
 import HopperLogo from '@public/images/logo.jpg';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, Gift, HelpCircle, Menu, Settings, X } from 'lucide-react';
+import { Bell, Gift, HelpCircle, LogInIcon, Menu, Settings, X } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import ThemeToggle from '../layouts/theme-toggle/ThemeToggle';
-import { UserNav } from '../layouts/UserNav';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { Button } from '../ui/button';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
+} from '../../../../components/ui/dropdown-menu';
+import { useGetSection } from '../../hooks/useGetSection';
+import { SectionType } from '@prisma/client';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import HelpCenter from '@/components/layouts/theme-toggle/HelpCenter';
+import ThemeToggle from '@/components/layouts/theme-toggle/ThemeToggle';
+import LanguageToggle from '@/components/layouts/theme-toggle/LanguageToggle';
+import { UserNav } from '@/components/layouts/UserNav';
 
 export default function Header() {
+  const { section, isLoading, isError } = useGetSection(SectionType.HEADER);
   const router = useRouter();
   const { data: session } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAccountSettingOpen, setIsAccountSettingOpen] = useState(false);
+  const [isOpenAnountment, setIsOpenAnountment] = useState(true);
 
   const toggleMenu = () => setIsMenuOpen((prevState) => !prevState);
   const toggleAccountSetting = () => setIsAccountSettingOpen((prevState) => !prevState);
@@ -42,22 +50,35 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
-        isScrolled ? 'bg-background/80' : 'bg-background/100'
-      } w-full max-w-screen`}
+      className={`fixed bg-background/100 top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out w-full max-w-screen`}
     >
-      <div className="flex items-start">
+      <div className="flex items-center justify-center">
         {/* Logo */}
-        <div className="flex items-center">
+        <div className="flex items-center mb-3">
           <Link href="/">
-            <Image
-              src={HopperLogo}
-              alt="Fiora Logo"
-              width={120}
-              height={120}
-              className="object-contain w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 xl:w-30 xl:h-30"
-              priority
-            />
+            {isLoading ? (
+              <Skeleton className={`w-16 h-16 md:w-20 md:h-20 lg:w-20 lg:h-20`} />
+            ) : (
+              <>
+                {section?.medias || !isError ? (
+                  <Image
+                    src={section?.medias[0]?.media_url || HopperLogo}
+                    alt="Fiora Logo"
+                    width={240}
+                    height={240}
+                    className={`object-contain w-16 h-16 md:w-20 md:h-20 ${isOpenAnountment ? 'lg:w-24 lg:h-full' : 'lg:w-20 lg:h-full'} `}
+                    priority
+                  />
+                ) : (
+                  <div
+                    className={`w-16 h-16 md:w-20 md:h-20 lg:w-20 lg:h-20 bg-gray-200 rounded-full flex items-center justify-center`}
+                  >
+                    {/* Optional: Add a placeholder icon or text */}
+                    <span>Logo</span>
+                  </div>
+                )}
+              </>
+            )}
           </Link>
         </div>
 
@@ -65,10 +86,23 @@ export default function Header() {
           {/* Announcement and Navigation Container */}
           <div className="flex flex-col items-end w-full">
             {/* Announcement - Hidden on mobile */}
-            <Alert variant="default" className="rounded-none hidden md:block">
-              <AlertTitle>Announcement</AlertTitle>
-              <AlertDescription>This is an important announcement for all users.</AlertDescription>
-            </Alert>
+            {isOpenAnountment && (
+              <div className="relative w-full">
+                <Alert variant="default" className="rounded-none hidden md:block relative">
+                  <AlertDescription>
+                    This is an important announcement for all users.
+                  </AlertDescription>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 p-2 rounded-full hover:bg-gray-100"
+                    onClick={() => setIsOpenAnountment(false)}
+                  >
+                    ✕
+                  </Button>
+                </Alert>
+              </div>
+            )}
 
             {/* Navigation */}
             <nav className="hidden md:flex items-center gap-4 py-2 px-4">
@@ -126,9 +160,22 @@ export default function Header() {
                 </>
               )}
 
-              <UserNav />
-
+              <HelpCenter />
               <ThemeToggle />
+              <LanguageToggle />
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    onClick={() => redirect('/auth/sign-in')}
+                    variant="outline"
+                    size="icon"
+                    className="relative w-10 h-10"
+                  >
+                    <LogInIcon />
+                  </Button>
+                </DropdownMenuTrigger>
+              </DropdownMenu>
             </nav>
           </div>
 

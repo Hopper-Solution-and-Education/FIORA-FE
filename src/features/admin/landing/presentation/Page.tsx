@@ -14,6 +14,15 @@ export default function MediaDashboard() {
   const { exportData, importData } = useBannerSettingLogic();
   const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
 
+  const sections = [
+    { value: 'banner', label: 'Banner', type: SectionType.BANNER },
+    { value: 'vision', label: 'Vision & Mission', type: SectionType.VISION_MISSION },
+    { value: 'kps', label: 'KPS', type: SectionType.KPS },
+    { value: 'partners', label: 'Partner Logos', type: SectionType.PARTNER_LOGO },
+    { value: 'header', label: 'Header', type: SectionType.HEADER },
+    { value: 'footer', label: 'Footer', type: SectionType.FOOTER },
+  ];
+
   return (
     <div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
       {isLoadingSaveChange && <Loading />}
@@ -39,36 +48,23 @@ export default function MediaDashboard() {
       </Card>
 
       <Tabs defaultValue="banner" className="w-full">
-        <TabsList className="flex flex-wrap justify-start gap-2 mb-6 overflow-x-auto scrollbar-hide sm:grid sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 md:overflow-visible">
-          <TabsTrigger value="banner" className="flex-1 min-w-[100px] text-center">
-            Banner
-          </TabsTrigger>
-          <TabsTrigger value="vision" className="flex-1 min-w-[100px] text-center">
-            Vision & Mission
-          </TabsTrigger>
-          <TabsTrigger value="kps" className="flex-1 min-w-[100px] text-center">
-            KPS
-          </TabsTrigger>
-          <TabsTrigger value="partners" className="flex-1 min-w-[100px] text-center">
-            Partner Logos
-          </TabsTrigger>
+        <TabsList className="flex flex-wrap gap-2 mb-10">
+          {sections.map((section) => (
+            <TabsTrigger
+              key={section.value}
+              value={section.value}
+              className="flex-1 min-w-[100px] text-center rounded-md bg-transparent hover:bg-gray-100 active:text-white transition-colors duration-200"
+            >
+              {section.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
-        <TabsContent value="banner">
-          <SectionManager sectionType={SectionType.BANNER} />
-        </TabsContent>
-
-        <TabsContent value="vision">
-          <SectionManager sectionType={SectionType.VISION_MISSION} />
-        </TabsContent>
-
-        <TabsContent value="kps">
-          <SectionManager sectionType={SectionType.KPS} />
-        </TabsContent>
-
-        <TabsContent value="partners">
-          <SectionManager sectionType={SectionType.PARTNER_LOGO} />
-        </TabsContent>
+        {sections.map((section) => (
+          <TabsContent key={section.value} value={section.value} className="p-4">
+            <SectionManager sectionType={section.type} />
+          </TabsContent>
+        ))}
       </Tabs>
     </div>
   );

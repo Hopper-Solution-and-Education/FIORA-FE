@@ -5,10 +5,10 @@ import Image from 'next/image';
 
 export const FioraSystem = () => {
   return (
-    <section className="mx-auto w-[90%] my-20">
+    <section className="mx-auto w-[90%] my-10">
       {/* Background Shapes */}
       <div
-        className="pointer-events-none absolute left-1/2 top-0 -z-10 -mt-20 -translate-x-1/2"
+        className="pointer-events-none absolute left-1/2 top-0 -z-10 -translate-x-1/2"
         aria-hidden="true"
       >
         <Image
@@ -35,13 +35,10 @@ export const FioraSystem = () => {
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="border-t md:py-20">
           {/* Section Header */}
-          <div className="mx-auto max-w-3xl pb-4 text-center md:pb-12">
-            <h2
-              data-aos="fade-up"
-              className="bg-gradient-to-r from-green-400 via-green-400 to-pink-400 bg-clip-text text-2xl font-bold tracking-tight text-transparent sm:text-4xl md:text-5xl text-center"
-            >
+          <div className="mx-auto max-w-3xl text-center md:pb-12">
+            <h1 data-aos="fade-up" className="my-6 text-5xl font-bold text-pretty lg:text-6xl">
               Built for modern product teams
-            </h2>
+            </h1>
           </div>
 
           {/* Features Image */}

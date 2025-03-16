@@ -1,25 +1,23 @@
+import { Card, CardContent } from '@/components/ui/card';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { SectionType } from '@prisma/client';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
 import { useRef } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
-import { useMedia } from '../../hooks/useMedia';
+import { useGetSection } from '../../hooks/useGetSection';
 
 export const PartnerLogo = () => {
-  const { isLoading, media: logos, isError } = useMedia('PARTNER_LOGO');
+  const { isLoading, section, isError } = useGetSection(SectionType.PARTNER_LOGO);
   const autoplayPlugin = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
 
   if (isLoading) return <p>Loading...</p>;
-  if (isError || !logos) return <p>Error loading partner logos.</p>;
+  if (isError || !section?.medias) return <p>Error loading partner logos.</p>;
 
   return (
-    <section className="w-full my-10 flex flex-col items-center px-4">
-      <h2
-        data-aos="fade-up"
-        className="my-8 bg-gradient-to-r from-green-400 via-green-400 to-pink-400 bg-clip-text text-2xl font-bold tracking-tight text-transparent sm:text-3xl md:text-4xl lg:text-5xl text-center"
-      >
-        FIORA Partners
-      </h2>
+    <section className="w-full my-10 flex flex-col items-center px-4 pd-10 ">
+      <h1 data-aos="fade-up" className="my-6 text-5xl font-bold text-pretty lg:text-6xl ">
+        {section?.name}
+      </h1>
 
       <div className="w-full mx-auto">
         <Carousel
@@ -38,7 +36,7 @@ export const PartnerLogo = () => {
           }}
         >
           <CarouselContent className="flex gap-4">
-            {logos.map((logo, index) => (
+            {section.medias.map((logo, index) => (
               <CarouselItem
                 key={index}
                 className="basis-auto md:basis-1/6 lg:basis-1/7 flex justify-center py-10"
