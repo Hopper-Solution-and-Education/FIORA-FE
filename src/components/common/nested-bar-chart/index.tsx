@@ -186,6 +186,9 @@ const NestedBarChart = ({
               radius={[0, 4, 4, 0]}
               className="transition-all duration-300 cursor-pointer"
               label={(props) => <BarLabel {...props} formatter={xAxisFormatter} />}
+              onClick={(props) => {
+                if (callback) return callback(props);
+              }}
             >
               {processedData.map((entry, index) => {
                 const color = entry.isChild
