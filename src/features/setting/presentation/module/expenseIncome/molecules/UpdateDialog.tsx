@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  setDeleteConfirmOpen,
   setSelectedCategory,
   setUpdateDialogOpen,
 } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
