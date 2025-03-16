@@ -5,11 +5,8 @@ import { TYPES } from '../di/landingDIContainer.type';
 import { GetMediaUseCase } from '../domain/use-cases/GetMediaUseCase';
 
 export const useMedia = (sectionType: SectionType) => {
-  const { data, error } = useSWR(sectionType, async () => {
-    // Lấy instance của UseCase từ DI Container
+  const { data, error } = useSWR(`media-${sectionType}`, async () => {
     const getMediaUseCase = landingDIContainer.get<GetMediaUseCase>(TYPES.GetMediaUseCase);
-
-    // Gọi UseCase để lấy dữ liệu
     return await getMediaUseCase.execute(sectionType);
   });
 

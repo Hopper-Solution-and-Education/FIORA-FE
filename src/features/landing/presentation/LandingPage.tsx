@@ -1,6 +1,8 @@
 'use client';
 
+import Header from '@/components/common/Header';
 import { motion } from 'framer-motion';
+import Footer from './components/Footer';
 import { ScrollToTop } from './components/ScrollToTop';
 import { Banner } from './organisms/Banner';
 import { FioraSystem } from './organisms/FioraSystem';
@@ -23,6 +25,15 @@ const zoomIn = {
 const LandingPage = () => {
   return (
     <>
+      {/* Banner - Slide Up Effect */}
+      <motion.div
+        initial={{ opacity: 0, y: 100 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, ease: 'easeOut' }}
+      >
+        <Header />
+      </motion.div>
+
       {/* Banner - Slide Up Effect */}
       <motion.div
         initial={{ opacity: 0, y: 100 }}
@@ -80,6 +91,15 @@ const LandingPage = () => {
         viewport={{ once: true }}
       >
         <PartnerLogo />
+      </motion.div>
+
+      <motion.div
+        variants={zoomIn}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+      >
+        <Footer />
       </motion.div>
 
       {/* Scroll To Top - Không cần hiệu ứng */}

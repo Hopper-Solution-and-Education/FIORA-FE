@@ -1,14 +1,14 @@
 // src/features/admin/di/index.ts
 import { httpClient, IHttpClient } from '@/config/HttpClient';
 import { Container } from 'inversify';
-import { ISectionAPI, SectionAPI } from '../banner/data/api/sectionApi';
+import { ISectionAPI, SectionAPI } from '../landing/data/api/sectionApi';
 import {
   ISectionRepository,
   SectionRepository,
-} from '../banner/data/repositories/sectionRepository';
-import { GetSectionUseCase } from '../banner/domain/usecases/GetSectionUseCase';
+} from '../landing/data/repositories/sectionRepository';
+import { GetSectionUseCase } from '../landing/domain/usecases/GetSectionUseCase';
+import { UpdateSectionUseCase } from '../landing/domain/usecases/UpdateSectionUseCase';
 import { TYPES } from './adminDIContainer.type';
-import { UpdateSectionUseCase } from '../banner/domain/usecases/UpdateSectionUseCase';
 
 // Create the admin container
 const adminContainer = new Container();

@@ -3,16 +3,17 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Skeleton } from '@/components/ui/skeleton'; // Assuming you have a Skeleton component (e.g., from shadcn/ui)
+import { SectionType } from '@prisma/client';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
 import Link from 'next/link'; // Import Link for navigation
 import { useRef } from 'react';
-import { useMedia } from '../../hooks/useMedia';
+import { useGetSection } from '../../hooks/useGetSection';
 const defaultURL = 'https://www.facebook.com/HopperSolutionAndEducation';
 
 export function Banner() {
-  const { media, isError, isLoading } = useMedia('BANNER');
   const autoplayPlugin = useRef(Autoplay({ delay: 3000, stopOnInteraction: false }));
+  const { section, isError, isLoading } = useGetSection(SectionType.BANNER);
 
   // Skeleton Component
   const BannerSkeleton = () => (
@@ -36,7 +37,7 @@ export function Banner() {
   );
 
   if (isLoading) return <BannerSkeleton />;
-  if (isError || !media) return <p>Error loading banners.</p>;
+  if (isError || !section) return <p>Error loading banners.</p>;
 
   return (
     <Carousel
@@ -46,7 +47,7 @@ export function Banner() {
       className="w-full mt-5"
     >
       <CarouselContent className="flex">
-        {media.map((image, index) => (
+        {section?.medias.map((image, index) => (
           <CarouselItem key={index} className="flex-[0_0_100%]">
             <Card>
               <CardContent className="p-0 relative">

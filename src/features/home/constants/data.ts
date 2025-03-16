@@ -71,7 +71,7 @@ export const navItems: NavItem[] = [
     items: [
       {
         title: 'Banner',
-        url: '/home/banner',
+        url: '/home/landing-settings',
         icon: 'userPen',
         shortcut: ['m', 'm'],
       },

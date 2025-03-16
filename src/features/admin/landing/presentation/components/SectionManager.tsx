@@ -14,7 +14,7 @@ import {
   SectionDefaultValues,
   sectionFormSchema,
 } from '../../schema/section-form.schema';
-import { changeIsLoadingSaveChange, markSectionFetched } from '../../slices';
+import { changeIsLoadingSaveChange, markSectionFetched, sectionMapping } from '../../slices';
 import { fetchMediaBySection } from '../../slices/actions/fetchMediaBySection';
 import { updateMediaBySection } from '../../slices/actions/updateMediaBySection';
 import { ISection } from '../../slices/types';
@@ -48,18 +48,9 @@ interface SectionManagerProps {
 
 export default function SectionManager({ sectionType }: SectionManagerProps) {
   const sectionData = useAppSelector((state) => {
-    switch (sectionType) {
-      case SectionType.BANNER:
-        return state.landingSettings.bannerSection;
-      case SectionType.VISION_MISSION:
-        return state.landingSettings.visionSection;
-      case SectionType.KPS:
-        return state.landingSettings.kpsSection;
-      case SectionType.PARTNER_LOGO:
-        return state.landingSettings.partnerSection;
-      default:
-        return undefined;
-    }
+    const landingState = state.landingSettings;
+    const sectionKey = sectionMapping[sectionType];
+    return sectionKey ? (landingState[sectionKey] as ISection | undefined) : undefined;
   });
 
   const fetchedSections = useAppSelector((state) => state.landingSettings.fetchedSections);

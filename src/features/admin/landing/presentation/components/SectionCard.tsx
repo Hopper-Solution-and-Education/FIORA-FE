@@ -85,7 +85,9 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
                 <div className="flex space-x-2">
                   {(sectionType === SectionType.BANNER ||
                     sectionType === SectionType.KPS ||
-                    sectionType === SectionType.PARTNER_LOGO) && (
+                    sectionType === SectionType.PARTNER_LOGO ||
+                    sectionType === SectionType.HEADER ||
+                    sectionType === SectionType.FOOTER) && (
                     <Button variant="outline" size="sm" onClick={() => addMedia(MediaType.IMAGE)}>
                       <PlusCircle className="h-3 w-3 mr-1" /> Image
                     </Button>
@@ -106,7 +108,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
               {mediaFields.length === 0 ? (
                 <div className="text-center py-8 border border-dashed rounded-md">
                   <p className="text-muted-foreground mb-2">No media items yet</p>
-                  <Button variant="outline" size="sm" onClick={handleAddMedia}>
+                  <Button variant="outline" size="sm" onClick={() => handleAddMedia(sectionType)}>
                     <PlusCircle className="h-4 w-4" /> Add Media
                   </Button>
                 </div>

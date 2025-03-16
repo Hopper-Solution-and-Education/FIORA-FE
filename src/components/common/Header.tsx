@@ -3,11 +3,11 @@
 import AccountSettingModal from '@/features/landing/presentation/components/AccountModal';
 import HopperLogo from '@public/images/logo.jpg';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, Gift, HelpCircle, Menu, Settings, X } from 'lucide-react';
+import { Bell, Gift, HelpCircle, LogInIcon, Menu, Settings, X } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import HelpCenter from '../layouts/theme-toggle/HelpCenter';
 import LanguageToggle from '../layouts/theme-toggle/LanguageToggle';
@@ -143,7 +143,19 @@ export default function Header() {
               <HelpCenter />
               <ThemeToggle />
               <LanguageToggle />
-              <UserNav />
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    onClick={() => redirect('/auth/sign-in')}
+                    variant="outline"
+                    size="icon"
+                    className="relative w-10 h-10"
+                  >
+                    <LogInIcon />
+                  </Button>
+                </DropdownMenuTrigger>
+              </DropdownMenu>
             </nav>
           </div>
 
