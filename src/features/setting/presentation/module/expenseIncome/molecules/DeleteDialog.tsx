@@ -7,28 +7,51 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-
-interface DeleteDialogProps {
-  deleteConfirmOpen: boolean;
-  setDeleteConfirmOpen: (open: boolean) => void;
-  handleDeleteCategory: () => void;
-}
-
-const DeleteDialog: React.FC<DeleteDialogProps> = ({
-  deleteConfirmOpen,
+import { useAppDispatch, useAppSelector } from '@/store';
+import {
   setDeleteConfirmOpen,
-  handleDeleteCategory,
-}) => {
+  setSelectedCategory,
+  setUpdateDialogOpen,
+} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
+import {
+  deleteCategory,
+  fetchCategories,
+} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
+import { toast } from 'sonner';
+
+const DeleteDialog: React.FC = () => {
+  const dispatch = useAppDispatch();
+  const { categories, selectedCategory, deleteConfirmOpen } = useAppSelector(
+    (state) => state.expenseIncome,
+  );
+
+  const handleDeleteCategory = async () => {
+    if (selectedCategory) {
+      const response = await dispatch(deleteCategory(selectedCategory.id)).unwrap();
+      if (response) {
+        toast.success('Category deleted successfully');
+        dispatch(setDeleteConfirmOpen(false));
+        dispatch(setUpdateDialogOpen(false));
+        dispatch(setSelectedCategory(null));
+        dispatch(fetchCategories());
+      }
+    }
+  };
+
   return (
-    <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+    <Dialog open={deleteConfirmOpen} onOpenChange={(open) => dispatch(setDeleteConfirmOpen(open))}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Confirm Delete</DialogTitle>
         </DialogHeader>
-        <p>Are you sure you want to delete this category?</p>
+        <p>Are you sure you want to delete {selectedCategory?.name} category?</p>
         <DialogFooter>
-          <Button onClick={() => setDeleteConfirmOpen(false)}>No</Button>
-          <Button variant="destructive" onClick={handleDeleteCategory}>
+          <Button onClick={() => dispatch(setDeleteConfirmOpen(false))}>No</Button>
+          <Button
+            variant="destructive"
+            onClick={handleDeleteCategory}
+            disabled={!selectedCategory || categories.isLoading}
+          >
             Yes
           </Button>
         </DialogFooter>

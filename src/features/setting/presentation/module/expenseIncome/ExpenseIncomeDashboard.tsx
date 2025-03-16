@@ -1,43 +1,36 @@
 'use client';
 
+import Loading from '@/components/common/Loading';
 import NestedBarChart, { type BarItem } from '@/components/common/nested-bar-chart';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DeleteDialog from '@/features/setting/presentation/module/expenseIncome/molecules/DeleteDialog';
 import InsertCategoryDialog from '@/features/setting/presentation/module/expenseIncome/molecules/InsertCategoryDialog';
 import UpdateDialog from '@/features/setting/presentation/module/expenseIncome/molecules/UpdateDialog';
 import {
-  setDeleteConfirmOpen,
   setDialogOpen,
   setSelectedCategory,
   setUpdateDialogOpen,
 } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
-import {
-  createCategory,
-  deleteCategory,
-  fetchCategories,
-} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
+import { fetchCategories } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
+import { Category } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
 import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { CategoryType } from '@prisma/client';
-import { useEffect, useMemo, useState } from 'react';
-import { NewCategoryDefaultValues } from '../../settingSlices/expenseIncomeSlides/utils/formSchema';
-import { Category } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
+import { useEffect, useMemo } from 'react';
 
 const ExpenseIncomeDashboard = () => {
   const dispatch = useAppDispatch();
-  const { categories, selectedCategory, dialogOpen, deleteConfirmOpen, updateDialogOpen } =
-    useAppSelector((state) => state.expenseIncome);
-  const [activeTab, setActiveTab] = useState<CategoryType>(CategoryType.Expense);
+  const { categories, selectedCategory } = useAppSelector((state) => state.expenseIncome);
 
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
 
+  // * CHART DATA ZONE *
   const chartData: BarItem[] = useMemo(() => {
     if (!categories.data) return [];
 
-    return categories.data.map((category) => {
+    return categories.data.map((category: Category) => {
       return {
         id: category.id,
         name: category.name,
@@ -63,15 +56,8 @@ const ExpenseIncomeDashboard = () => {
     return chartData.filter((item) => item.type === CategoryType.Income);
   }, [chartData]);
 
-  // LOGIC ZONE
-  const handleCreateCategory = (category: NewCategoryDefaultValues) => {
-    dispatch(createCategory(category));
-    dispatch(setDialogOpen(false));
-    dispatch(setSelectedCategory(null));
-  };
-
+  // * LOGIC ZONE *
   const handleDisplayDetailDialog = (item: any) => {
-    // Find category and subcategory
     const findCategory = findCategoryById(item.id, categories.data);
     if (findCategory) {
       dispatch(setSelectedCategory(findCategory));
@@ -82,33 +68,18 @@ const ExpenseIncomeDashboard = () => {
   const findCategoryById = (id: string, categories?: Category[]): Category | undefined => {
     if (!categories) return undefined;
 
-    // Check top-level categories first
-    const categoryMatch = categories.find((category) => category.id === id);
+    const categoryMatch = categories.find((category) => category.id == id);
     if (categoryMatch) return categoryMatch;
 
-    // Check subcategories across all categories
     for (const category of categories) {
-      const subCategoryMatch = category.subCategories?.find((sub) => sub.id === id);
+      const subCategoryMatch = category.subCategories?.find((sub) => sub.id == id);
       if (subCategoryMatch) return subCategoryMatch;
     }
 
     return undefined;
   };
 
-  // const handleDisplayDeleteConfirmDialog = (category: Category) => {
-  //   dispatch(setSelectedCategory(category));
-  //   dispatch(setDeleteConfirmOpen(true));
-  // };
-
-  const handleDeleteCategory = () => {
-    if (selectedCategory) {
-      dispatch(deleteCategory(selectedCategory.id));
-    }
-    dispatch(setDeleteConfirmOpen(false));
-  };
-
-  if (categories.isLoading)
-    return <div className="text-gray-800 dark:text-gray-200">Loading...</div>;
+  if (categories.isLoading) return <Loading />;
   if (categories.error)
     return <div className="text-red-600 dark:text-red-400">Error: {categories.error}</div>;
 
@@ -121,46 +92,31 @@ const ExpenseIncomeDashboard = () => {
         Add New Category
       </Button>
 
-      <Tabs
-        defaultValue={CategoryType.Expense}
-        onValueChange={(value) => setActiveTab(value as CategoryType)}
-      >
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value={CategoryType.Expense}>Expense</TabsTrigger>
-          <TabsTrigger value={CategoryType.Income}>Income</TabsTrigger>
-        </TabsList>
-        <TabsContent value={CategoryType.Expense}>
-          <NestedBarChart
-            data={expenseData}
-            xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
-            tutorialText="Click the bar to see more"
-            callback={handleDisplayDetailDialog}
-          />
-        </TabsContent>
-        <TabsContent value={CategoryType.Income}>
-          <NestedBarChart
-            data={incomeData}
-            xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
-            tutorialText="Click the bar to see more"
-            callback={handleDisplayDetailDialog}
-          />
-        </TabsContent>
-      </Tabs>
+      {/* Two-column layout on desktop, stacked on mobile */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Expense Chart - Left side */}
+        <NestedBarChart
+          title="Expense"
+          data={expenseData}
+          xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
+          callback={handleDisplayDetailDialog}
+        />
+
+        {/* Income Chart - Right side */}
+        <NestedBarChart
+          title="Income"
+          data={incomeData}
+          xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
+          callback={handleDisplayDetailDialog}
+        />
+      </div>
 
       {/* DIALOG ZONE */}
-      <UpdateDialog isDetailDialogOpen={updateDialogOpen} />
+      <UpdateDialog />
 
-      <InsertCategoryDialog
-        dialogOpen={dialogOpen}
-        setDialogOpen={(open) => dispatch(setDialogOpen(open))}
-        handleCreateCategory={handleCreateCategory}
-      />
+      <InsertCategoryDialog />
 
-      <DeleteDialog
-        deleteConfirmOpen={deleteConfirmOpen}
-        setDeleteConfirmOpen={(open) => dispatch(setDeleteConfirmOpen(open))}
-        handleDeleteCategory={handleDeleteCategory}
-      />
+      <DeleteDialog />
     </div>
   );
 };

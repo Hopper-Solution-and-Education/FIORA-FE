@@ -34,7 +34,36 @@ class CategoryRepository implements ICategoryRepository {
   }
 
   async updateCategory(id: string, data: Partial<Category>): Promise<Category> {
-    return prisma.category.update({ where: { id }, data });
+    return prisma.$transaction(async (tx) => {
+      // Fetch the current category to get the original type
+      const currentCategory = await tx.category.findUnique({
+        where: { id },
+        select: { type: true },
+      });
+
+      if (!currentCategory) {
+        throw new Error('Category not found');
+      }
+
+      const originalType = currentCategory.type;
+      const newType = data.type;
+
+      // Update the category with the new data
+      const updatedCategory = await tx.category.update({
+        where: { id },
+        data,
+      });
+
+      // If the type has changed, update all direct child categories
+      if (newType && originalType !== newType) {
+        await tx.category.updateMany({
+          where: { parentId: id },
+          data: { type: newType },
+        });
+      }
+
+      return updatedCategory;
+    });
   }
 
   async deleteCategory(id: string): Promise<void> {

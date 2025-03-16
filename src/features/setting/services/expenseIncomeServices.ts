@@ -14,10 +14,7 @@ const expenseIncomeServices = {
     return httpClient.post<Response<Category>>('/api/categories/expense-income', category);
   },
   updateCategory: async (category: Category): Promise<Response<Category>> => {
-    return httpClient.put<Response<Category>>(
-      `/api/categories/expense-income/${category.id}`,
-      category,
-    );
+    return httpClient.put<Response<Category>>(`/api/categories/expense-income`, category);
   },
   deleteCategory: async (id: string): Promise<string> => {
     await httpClient.delete<void>(`/api/categories/expense-income?id=${id}`);

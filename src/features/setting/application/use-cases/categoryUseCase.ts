@@ -44,18 +44,18 @@ class CategoryUseCase {
   async updateCategory(id: string, userId: string, data: Partial<Category>): Promise<Category> {
     const category = await this.categoryRepository.findCategoryById(id);
     if (!category || category.userId !== userId) {
-      throw new Error('Danh mục không tồn tại hoặc không thuộc về bạn');
+      throw new Error('Category does not exist or does not belong to you');
     }
     if (data.type && !Object.values(CategoryType).includes(data.type)) {
-      throw new Error('Loại danh mục không hợp lệ. Phải là "Expense" hoặc "Income"');
+      throw new Error('Category type is invalid. It must be Expense or Income');
     }
-    return this.categoryRepository.updateCategory(id, data);
+    return this.categoryRepository.updateCategory(id, { ...data, updatedBy: userId });
   }
 
   async deleteCategory(id: string, userId: string): Promise<void> {
     const category = await this.categoryRepository.findCategoryById(id);
     if (!category || category.userId !== userId) {
-      throw new Error('Danh mục không tồn tại hoặc không thuộc về bạn');
+      throw new Error('Category does not exist or does not belong to you');
     }
     await this.categoryRepository.deleteCategory(id);
   }
