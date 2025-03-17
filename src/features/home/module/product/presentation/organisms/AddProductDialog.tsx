@@ -1,8 +1,10 @@
 'use client';
 
+import type React from 'react';
+
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -32,17 +34,23 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { ProductFormValues, productSchema } from '../schema/addProduct.schema';
-
-// Define the product type enum based on your schema
-enum ProductType {
-  Product = 'Product',
-  Service = 'Service',
-}
+import { useAppDispatch, useAppSelector } from '@/store';
+import { ProductType } from '@prisma/client';
+import debounce from 'lodash/debounce';
+import { fetchCategories } from '../../slices';
+import IconUploader from '../atoms/IconUploader';
+import { type ProductFormValues, productSchema } from '../schema/addProduct.schema';
 
 const AddProductDialog = () => {
   const [open, setOpen] = useState(false);
-
+  const dispatch = useAppDispatch();
+  const {
+    data: categories,
+    isLoading,
+    hasMore,
+    page,
+    limit,
+  } = useAppSelector((state) => state.productManagement.categories);
   const form = useForm<ProductFormValues>({
     resolver: yupResolver(productSchema),
     defaultValues: {
@@ -57,6 +65,36 @@ const AddProductDialog = () => {
     },
   });
 
+  const loadMoreCategories = () => {
+    if (hasMore && !isLoading) {
+      dispatch(fetchCategories({ page: page + 1, pageSize: limit }));
+    }
+  };
+
+  useEffect(() => {
+    dispatch(fetchCategories({ page: page, pageSize: limit }));
+  }, []);
+
+  const debouncedLoadMore = useRef(debounce(loadMoreCategories, 200));
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLDivElement;
+    const scrollPosition = target.scrollHeight - target.scrollTop - target.clientHeight;
+
+    console.log('Scroll position:', scrollPosition, 'hasMore:', hasMore, 'isLoading:', isLoading);
+
+    if (scrollPosition < 20 && hasMore && !isLoading) {
+      console.log('Loading more categories, current page:', page);
+      debouncedLoadMore.current();
+    }
+  };
+
+  useEffect(() => {
+    if (!hasMore && categories.length > 0 && !isLoading) {
+      console.log('All categories loaded, total:', categories.length);
+    }
+  }, [hasMore, categories.length, isLoading]);
+
   const onSubmit = async (data: ProductFormValues) => {
     try {
       // Convert price and taxRate to proper decimal format
@@ -65,25 +103,7 @@ const AddProductDialog = () => {
         price: Number(data.price),
         taxRate: data.taxRate ? Number(data.taxRate) : null,
       };
-
-      // Call your API to create the product
-      const response = await fetch('/api/products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formattedData),
-      });
-
-      if (response.ok) {
-        // Close the dialog and reset form on success
-        setOpen(false);
-        form.reset();
-      } else {
-        // Handle error
-        const error = await response.json();
-        console.error('Failed to create product:', error);
-      }
+      console.log(JSON.stringify(formattedData));
     } catch (error) {
       console.error('Error creating product:', error);
     }
@@ -130,21 +150,6 @@ const AddProductDialog = () => {
                   )}
                 />
 
-                {/* Icon */}
-                <FormField
-                  control={form.control}
-                  name="icon"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Icon</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter icon name or URL" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 {/* Name */}
                 <FormField
                   control={form.control}
@@ -174,12 +179,23 @@ const AddProductDialog = () => {
                             <SelectValue placeholder="Select a category" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent
+                          className="max-h-[200px]"
+                          onScroll={handleScroll}
+                          position="popper"
+                          sideOffset={4}
+                        >
                           {categories.map((category) => (
                             <SelectItem key={category.id} value={category.id}>
                               {category.name}
                             </SelectItem>
                           ))}
+                          {isLoading && (
+                            <div className="flex items-center justify-center py-2">
+                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                              <span className="ml-2 text-xs text-muted-foreground">Loading...</span>
+                            </div>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -187,7 +203,6 @@ const AddProductDialog = () => {
                   )}
                 />
 
-                {/* Price */}
                 <FormField
                   control={form.control}
                   name="price"
@@ -200,7 +215,27 @@ const AddProductDialog = () => {
                           step="0.01"
                           placeholder="0.00"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          onKeyDown={(e) => {
+                            if (
+                              isNaN(Number(e.key)) &&
+                              e.key !== 'Backspace' &&
+                              e.key !== 'Delete' &&
+                              e.key !== '.' &&
+                              e.key !== 'ArrowLeft' &&
+                              e.key !== 'ArrowRight'
+                            ) {
+                              e.preventDefault();
+                            }
+                          }}
+                          onChange={(e) => {
+                            // Check if the input is a valid number after change, if not, reset to empty
+                            if (isNaN(Number(e.target.value)) && e.target.value !== '') {
+                              e.target.value = '';
+                              field.onChange(undefined);
+                            } else {
+                              field.onChange(Number(e.target.value));
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -221,9 +256,26 @@ const AddProductDialog = () => {
                           step="0.01"
                           placeholder="0.00"
                           {...field}
+                          onKeyDown={(e) => {
+                            if (
+                              isNaN(Number(e.key)) &&
+                              e.key !== 'Backspace' &&
+                              e.key !== 'Delete' &&
+                              e.key !== '.' &&
+                              e.key !== 'ArrowLeft' &&
+                              e.key !== 'ArrowRight'
+                            ) {
+                              e.preventDefault();
+                            }
+                          }}
                           value={field.value === null ? '' : field.value}
                           onChange={(e) => {
-                            field.onChange(e.target.value === '' ? null : Number(e.target.value));
+                            if (isNaN(Number(e.target.value)) && e.target.value !== '') {
+                              e.target.value = '';
+                              field.onChange(undefined);
+                            } else {
+                              field.onChange(Number(e.target.value));
+                            }
                           }}
                         />
                       </FormControl>
@@ -249,6 +301,18 @@ const AddProductDialog = () => {
                       />
                     </FormControl>
                     <FormDescription>Maximum 1000 characters</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Icon */}
+              <FormField
+                control={form.control}
+                name="icon"
+                render={({ field }) => (
+                  <FormItem className="col-span-2">
+                    <IconUploader fieldPath="icon" label="Product Icon" maxSize={2 * 1024 * 1024} />
                     <FormMessage />
                   </FormItem>
                 )}
