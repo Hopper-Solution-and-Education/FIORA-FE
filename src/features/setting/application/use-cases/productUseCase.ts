@@ -1,7 +1,6 @@
 import { Product, ProductType } from '@prisma/client';
 import {
   IProductRepository,
-  PaginationResponse,
   ProductCreation,
   ProductUpdate,
 } from '@/features/setting/domain/repositories/productRepository.interface';
@@ -9,6 +8,7 @@ import { productRepository } from '@/features/setting/infrastructure/repositorie
 import { JsonArray } from '@prisma/client/runtime/library';
 import { ICategoryRepository } from '../../domain/repositories/categoryRepository.interface';
 import { categoryRepository } from '../../infrastructure/repositories/categoryRepository';
+import { PaginationResponse } from '@/shared/types/Common.types';
 
 class ProductUseCase {
   private productRepository: IProductRepository;

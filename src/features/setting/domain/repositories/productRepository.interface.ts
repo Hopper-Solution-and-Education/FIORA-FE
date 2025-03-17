@@ -49,10 +49,3 @@ export type Items = {
   name: string;
   description: string;
 };
-
-export interface PaginationResponse<T> {
-  data: T[];
-  page: number;
-  pageSize: number;
-  totalPage: number;
-}
