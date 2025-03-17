@@ -178,6 +178,7 @@ export const BalanceChart = () => {
         isOpen={isEditOpen}
         onClose={handleCloseEdit}
         onSubmit={handleSubmit}
+        allAccounts={allAccounts}
       />
     </div>
   );

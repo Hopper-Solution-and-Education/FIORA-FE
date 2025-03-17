@@ -43,6 +43,7 @@ import {
 
 interface EditAccountDialogProps {
   account: Account | null;
+  allAccounts: Account[];
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (account: Account) => void;
@@ -52,6 +53,7 @@ export const EditAccountDialog = ({
   account,
   isOpen,
   onClose,
+  allAccounts,
   onSubmit,
 }: EditAccountDialogProps) => {
   const [formData, setFormData] = useState({
@@ -64,6 +66,7 @@ export const EditAccountDialog = ({
     balance: '',
     parentId: '',
     isParentSelected: false,
+    parent: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -82,6 +85,10 @@ export const EditAccountDialog = ({
     return null;
   };
 
+  const getParentAccount = (id: string) => {
+    return allAccounts.find((account) => account.id === id);
+  };
+
   useEffect(() => {
     if (account) {
       setFormData({
@@ -94,9 +101,21 @@ export const EditAccountDialog = ({
         parentId: account.parentId || '',
         isParentSelected: !!account.parentId,
         available_limit: '',
+        parent: '',
       });
+
+      // check if account has parent
+      if (account.parentId) {
+        const parentAccount = getParentAccount(account.parentId);
+        if (parentAccount) {
+          setFormData((prev) => ({
+            ...prev,
+            parent: parentAccount.name,
+          }));
+        }
+      }
     }
-  }, [account]);
+  }, [account, allAccounts]);
 
   if (!account) return null;
 
@@ -186,7 +205,7 @@ export const EditAccountDialog = ({
       if (data.status !== 201) {
         alert('Error removing sub-account');
       }
-      // setTriggered(!isTriggered);
+
       return true;
     } catch (error) {
       console.error(error);
@@ -238,10 +257,7 @@ export const EditAccountDialog = ({
                       <Button
                         variant="outline"
                         role="combobox"
-                        className={cn(
-                          'w-full justify-between',
-                          // errors.icon && 'border-red-500'
-                        )}
+                        className={cn('w-full justify-between')}
                       >
                         <div className="flex items-center gap-2">
                           {formData.icon ? (
@@ -381,14 +397,14 @@ export const EditAccountDialog = ({
               </div>
 
               {/* Parent */}
-              <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
                 <Label htmlFor="parent" className="text-right">
                   Parent
                 </Label>
                 <div className="space-y-2">
                   <Input
                     id="parent"
-                    value={formData.parentId}
+                    value={formData.parent}
                     readOnly
                     placeholder="Select parent"
                     className={cn(
