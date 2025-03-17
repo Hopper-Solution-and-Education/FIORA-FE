@@ -24,7 +24,6 @@ export interface IAccountRepository {
   delete(options: Prisma.AccountDeleteArgs): Promise<Account>;
   updateParentBalance(parentId: string): Promise<void>;
   findByCondition(where: Prisma.AccountWhereInput): Promise<Account | null>;
-  findAllAccountByUserId(userId: string): Promise<Account[] | []>;
   findManyWithCondition(
     where: Prisma.AccountWhereInput,
     options?: Prisma.AccountFindManyArgs,

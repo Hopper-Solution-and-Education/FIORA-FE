@@ -76,21 +76,6 @@ export class AccountRepository implements IAccountRepository {
     return prisma.account.findFirst({ where });
   }
 
-  async findAllAccountByUserId(userId: string): Promise<any> {
-    return prisma.account.groupBy({
-      by: ['type'],
-      where: {
-        AND: {
-          userId: '99b4ca81-5348-4058-a66a-245f720115fa',
-          parentId: null,
-        },
-      },
-      _sum: {
-        balance: true,
-      },
-    });
-  }
-
   async findManyWithConditions(
     where: Prisma.AccountWhereInput,
     options: SelectOptions,
