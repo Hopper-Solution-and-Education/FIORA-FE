@@ -3,8 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
 import { createErrorResponse, createResponse } from '@/lib/utils';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { Messages } from '@/config/message';
 import { categoryUseCase } from '@/features/setting/application/use-cases/categoryUseCase';
+import { Messages } from '@/shared/constants/message';
 
 export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
