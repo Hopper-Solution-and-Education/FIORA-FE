@@ -1,4 +1,12 @@
 import { Separator } from '@/components/ui/separator';
+import dynamic from 'next/dynamic';
+
+const AccountSettingPageRender = dynamic(
+  () => import('@/features/setting/presentation/module/account/AccountSettingPage'),
+  {
+    loading: () => <div>Loading...</div>,
+  },
+);
 
 export default function SettingsProfilePage() {
   return (
@@ -10,6 +18,7 @@ export default function SettingsProfilePage() {
         </p>
       </div>
       <Separator />
+      <AccountSettingPageRender />
     </div>
   );
 }

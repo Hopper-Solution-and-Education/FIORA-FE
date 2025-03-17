@@ -15,10 +15,6 @@ const sidebarNavItems = [
     title: 'Account',
     href: '/setting',
   },
-  {
-    title: 'Expense & Income',
-    href: '/setting/expense-income',
-  },
 ];
 
 interface SettingsLayoutProps {

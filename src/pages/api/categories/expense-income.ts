@@ -45,7 +45,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return createError(res, RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED);
     }
   } catch (error: any) {
-    return createError(res, error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR, error.message);
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, error || Messages.INTERNAL_ERROR));
   }
 }
 
@@ -56,7 +58,9 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.GET_CATEGORY_SUCCESS, categories));
   } catch (error: any) {
-    return createError(res, error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR, error.message);
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, error || Messages.INTERNAL_ERROR));
   }
 }
 
@@ -75,7 +79,9 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       .status(RESPONSE_CODE.CREATED)
       .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_CATEGORY_SUCCESS, newCategory));
   } catch (error: any) {
-    return createError(res, error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR, error.message);
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, error || Messages.INTERNAL_ERROR));
   }
 }
 
@@ -93,7 +99,9 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_CATEGORY_SUCCESS, updatedCategory));
   } catch (error: any) {
-    return createError(res, error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR, error.message);
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, error || Messages.INTERNAL_ERROR));
   }
 }
 
@@ -105,6 +113,8 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.DELETE_CATEGORY_SUCCESS));
   } catch (error: any) {
-    return createError(res, error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR, error.message);
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, error || Messages.INTERNAL_ERROR));
   }
 }

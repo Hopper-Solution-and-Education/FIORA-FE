@@ -1,6 +1,6 @@
+import { createResponse } from '@/config/createResponse';
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
 import { UserUSeCaseInstance } from '@/features/auth/application/use-cases/userUseCase';
-import { AppError, InternalServerError } from '@/config/errors';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -12,8 +12,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 export async function POST(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { email, password } = req.body;
-
+    const body = await req.body;
+    const { email, password } = body;
     // const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Always 6 digits
     // const BASE_URL = process.env.baseURL || 'http://localhost:3000';
     // const PORT = process.env.PORT || '3000';
@@ -38,9 +38,10 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
     // }
 
     const userCreationRes = await UserUSeCaseInstance.execute(email, password);
-
     if (!userCreationRes) {
-      throw new InternalServerError('Không thể tạo tài khoản');
+      return res
+        .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+        .json({ message: 'Cannot create user' });
     }
 
     // create new Account
@@ -53,14 +54,10 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
       icon: 'circle',
     });
 
-    res
+    return res
       .status(RESPONSE_CODE.CREATED)
-      .json({ message: 'Đăng ký thành công', user: userCreationRes });
+      .json(createResponse(RESPONSE_CODE.CREATED, 'Register successfully'));
   } catch (error) {
-    if (error instanceof AppError) {
-      return res.status(error.statusCode).json({ message: error.message });
-    }
-    console.error('Error creating user:', error);
     return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: 'Đã có lỗi xảy ra' });
   }
 }

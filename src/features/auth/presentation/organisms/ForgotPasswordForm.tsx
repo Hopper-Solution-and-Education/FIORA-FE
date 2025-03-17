@@ -35,6 +35,7 @@ const ForgotPasswordForm = ({ className, ...props }: React.ComponentProps<'div'>
       setIsOtpSent(true);
       setAlert(null);
     } catch (error) {
+      console.error(error);
       setAlert({ message: 'Failed to send OTP', variant: 'destructive' });
     }
   };
@@ -91,6 +92,7 @@ const ForgotPasswordForm = ({ className, ...props }: React.ComponentProps<'div'>
         throw new Error(errorData.message || 'Failed to reset password');
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const data = await response.json();
       setAlert({ message: 'Password reset successfully!', variant: 'default' });
       router.push('/home');

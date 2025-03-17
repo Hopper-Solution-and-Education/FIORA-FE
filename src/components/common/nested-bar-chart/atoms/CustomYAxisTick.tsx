@@ -1,4 +1,8 @@
-import { useWindowSize } from '@/shared/utils/device';
+import React from 'react';
+import { Icons } from '@/components/Icon';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/shared/utils';
 
 interface CustomYAxisTickProps {
   x: number;
@@ -7,7 +11,7 @@ interface CustomYAxisTickProps {
   processedData: any;
   expandedItems: any;
   onToggleExpand: (name: string) => void;
-  callback: () => void;
+  callback?: (item: any) => void;
 }
 
 const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
@@ -17,73 +21,112 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
   processedData,
   expandedItems,
   onToggleExpand,
-}: any) => {
-  const { width } = useWindowSize();
+  callback,
+}) => {
   const item = processedData.find((d: any) => d.name === payload.value);
   const isChild = item?.isChild;
   const hasChildren = !isChild && item?.children && item.children.length > 0;
+  const [isHovered, setIsHovered] = React.useState(false);
 
-  // Truncate label for children (mobile and desktop)
-  const childLabel = isChild
-    ? `↳ ${payload.value.slice(0, 15)}${payload.value.length > 15 ? '...' : ''}`
-    : null;
-  const parentLabel = `${payload.value.slice(0, 17)}${payload.value.length > 17 ? '...' : ''}`;
+  const handleArrowClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (hasChildren) {
+      onToggleExpand(payload.value);
+    }
+  };
 
-  if (width < 640) {
-    // Mobile: Button for parents, text for children
-    return (
-      <g transform={`translate(${x},${y})`}>
-        {hasChildren ? (
-          <g onClick={() => onToggleExpand(payload.value)} className="cursor-pointer">
-            <rect
-              x="-20"
-              y="-8"
-              width="16"
-              height="16"
-              fill="transparent"
-              className="hover:fill-gray-200 dark:hover:fill-gray-700"
-            />
-            <text
-              x="-12"
-              y="4"
-              textAnchor="middle"
-              className="text-sm fill-gray-600 dark:fill-gray-400 transition-all duration-200"
-            >
-              {expandedItems[payload.value] ? '−' : '+'}
-            </text>
-          </g>
-        ) : (
-          <>
-            <text
-              x="-16"
-              y="4"
-              textAnchor="end"
-              className="text-sm fill-gray-600 dark:fill-gray-400"
-            >
-              {childLabel}
-            </text>
-          </>
-        )}
-      </g>
-    );
-  }
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (callback && item) {
+      callback(item);
+    }
+  };
 
-  // Desktop/Tablet: Text for all
+  // Function to truncate text longer than 10 characters
+  const truncateText = (text: string) => {
+    if (text.length > 15) {
+      return text.substring(0, 15) + '...';
+    }
+    return text;
+  };
+
+  const displayText = truncateText(payload.value);
+  const fullText = payload.value;
+
   return (
-    <g transform={`translate(${x},${y})`}>
-      <text
-        x={isChild ? '-16' : '-8'}
-        y="4"
-        textAnchor="end"
-        className={`text-sm fill-gray-600 dark:fill-gray-400 transition-all duration-200 ${
-          hasChildren
-            ? 'cursor-pointer font-semibold hover:fill-blue-500 hover:underline dark:hover:fill-blue-400'
-            : ''
-        }`}
-        onClick={hasChildren ? () => onToggleExpand(payload.value) : undefined}
-      >
-        {isChild ? childLabel : parentLabel}
-      </text>
+    <g
+      transform={`translate(${x},${y})`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <TooltipProvider>
+        {/* Label text with styling based on hierarchy and truncation */}
+        <Tooltip>
+          <TooltipTrigger asChild onClick={handleEditClick}>
+            <text
+              x={hasChildren ? -30 : -10}
+              y={0}
+              dy={4}
+              textAnchor="end"
+              className={cn(
+                'fill-current text-xs transition-all duration-200 text-foreground cursor-pointer',
+                isHovered && 'translate-x-1 text-primary font-semibold',
+              )}
+            >
+              {displayText}
+            </text>
+          </TooltipTrigger>
+          {fullText.length > 10 && (
+            <TooltipContent side="left" align="center" className="text-xs p-1">
+              {fullText}
+            </TooltipContent>
+          )}
+        </Tooltip>
+
+        {/* Arrow button for expanding/collapsing (only for parents with children) */}
+        {hasChildren && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <foreignObject
+                x={-20}
+                y={-8}
+                width={16}
+                height={16}
+                className="cursor-pointer overflow-visible"
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    'h-4 w-4 p-0 rounded-full transition-all duration-200',
+                    isHovered ? 'bg-primary/20 scale-110' : 'hover:bg-muted/60',
+                  )}
+                  onClick={handleArrowClick}
+                >
+                  {expandedItems[payload.value] ? (
+                    <Icons.circleChevronUp
+                      className={cn(
+                        'h-3 w-3 transition-transform duration-200',
+                        isHovered && 'text-primary scale-110',
+                      )}
+                    />
+                  ) : (
+                    <Icons.circleChevronDown
+                      className={cn(
+                        'h-3 w-3 transition-transform duration-200',
+                        isHovered && 'text-primary scale-110',
+                      )}
+                    />
+                  )}
+                </Button>
+              </foreignObject>
+            </TooltipTrigger>
+            <TooltipContent side="top" align="center" className="text-xs">
+              {expandedItems[payload.value] ? 'Collapse' : 'Expand'}
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </TooltipProvider>
     </g>
   );
 };

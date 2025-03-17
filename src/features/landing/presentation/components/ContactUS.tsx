@@ -1,20 +1,23 @@
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import FacebookIcon from '@public/icons/facebook.png';
 import InstagramIcon from '@public/icons/instagram.png';
 import ThreadsIcon from '@public/icons/threads.png';
-import XIcon from '@public/icons/x.webp';
-import YoutubeIcon from '@public/icons/youtube.png';
 import TiktokIcon from '@public/icons/tiktok.jpg';
 import WhatAppsIcon from '@public/icons/whatsapp.png';
+import XIcon from '@public/icons/x.webp';
+import YoutubeIcon from '@public/icons/youtube.png';
 import Image from 'next/image';
+import Link from 'next/link'; // Import Link for navigation
 
+// Define the IconList with corresponding URLs
 const IconList = [
-  FacebookIcon,
-  InstagramIcon,
-  YoutubeIcon,
-  XIcon,
-  ThreadsIcon,
-  TiktokIcon,
-  WhatAppsIcon,
+  { icon: FacebookIcon, url: 'https://www.facebook.com', name: 'Facebook' },
+  { icon: InstagramIcon, url: 'https://www.instagram.com', name: 'Instagram' },
+  { icon: YoutubeIcon, url: 'https://www.youtube.com', name: 'YouTube' },
+  { icon: XIcon, url: 'https://www.x.com', name: 'X' },
+  { icon: ThreadsIcon, url: 'https://www.threads.net', name: 'Threads' },
+  { icon: TiktokIcon, url: 'https://www.tiktok.com', name: 'TikTok' },
+  { icon: WhatAppsIcon, url: 'https://www.whatsapp.com', name: 'WhatsApp' },
 ];
 
 const ContactUS = () => {
@@ -27,23 +30,39 @@ const ContactUS = () => {
         Contact Us
       </h2>
 
-      <div className="w-full mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 sm:gap-6 justify-center max-w-6xl">
-        {IconList.map((logo, index) => (
-          <div
-            key={index}
-            className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex items-center justify-center shadow-md rounded-full overflow-hidden border border-gray-300 transition-transform hover:scale-105"
-          >
-            <div className="relative w-full h-full">
-              <Image
-                src={logo}
-                alt={`Logo ${index + 1}`}
-                fill
-                style={{ objectFit: 'contain', objectPosition: 'center' }}
-                className="rounded-full"
-              />
-            </div>
-          </div>
-        ))}
+      <div className="w-full">
+        <Carousel className="w-full">
+          <CarouselContent className="flex">
+            {IconList.map((item, index) => (
+              <CarouselItem
+                key={index}
+                className="flex-[0_0_50%] sm:flex-[0_0_33.33%] md:flex-[0_0_25%] lg:flex-[0_0_14.28%]"
+              >
+                <div className="flex items-center justify-center py-5">
+                  <Link
+                    href={item.url}
+                    target="_blank" // Open in new tab
+                    rel="noopener noreferrer" // Security best practice
+                    aria-label={`Visit our ${item.name} page`} // Accessibility
+                    className="flex items-center justify-center"
+                  >
+                    <div className="w-28 h-28 flex items-center justify-center shadow-md rounded-full overflow-hidden border border-gray-300 transition-transform hover:scale-105">
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={item.icon}
+                          alt={`${item.name} Logo`}
+                          fill
+                          style={{ objectFit: 'contain', objectPosition: 'center' }}
+                          className="rounded-full"
+                        />
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
       </div>
     </section>
   );

@@ -66,6 +66,7 @@ export default function FinancialAccount({
 
       setIsModalOpen(true);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [setAccountsMap, accountsMap],
   );
 
@@ -254,6 +255,7 @@ export default function FinancialAccount({
             <AlertDialogDescription>
               This action cannot be undone. This will permanently remove the sub-account.
             </AlertDialogDescription>
+            confirmRemove
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>

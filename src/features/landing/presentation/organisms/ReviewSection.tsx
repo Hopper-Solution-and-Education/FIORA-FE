@@ -9,14 +9,11 @@ export const ReviewSection = () => {
 
   return (
     <section>
-      <div className="w-[100%] mx-auto flex border-t px-20">
+      <div className="w-[100%] mx-auto flex px-20 max-w-6xl">
         <div className="mx-auto max-w-3xl text-center my-10">
-          <h2
-            data-aos="fade-up"
-            className="bg-gradient-to-r from-green-400 via-green-400 to-pink-400 bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-4xl md:text-5xl text-center"
-          >
+          <h1 data-aos="fade-up" className="my-6 text-5xl font-bold text-pretty lg:text-6xl ">
             Reviews
-          </h2>
+          </h1>
         </div>
       </div>
       <Carousel

@@ -119,7 +119,7 @@ class ProductUseCase {
         userId,
         icon,
         name,
-        taxRate: tax_rate ?? category.tax_rate, // if tax_rate is not provided, use the category tax_rate
+        taxRate: tax_rate ?? params.tax_rate, // if tax_rate is not provided, use the category tax_rate
         price,
         type,
         catId: category_id,

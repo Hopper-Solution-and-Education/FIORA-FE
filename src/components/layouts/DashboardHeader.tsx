@@ -1,13 +1,5 @@
 'use client';
 
-import { Breadcrumbs } from '../Breadcrumbs';
-import SearchInput from '../SearchInput';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { Separator } from '../ui/separator';
-import { SidebarTrigger } from '../ui/sidebar';
-import ThemeToggle from './theme-toggle/ThemeToggle';
-import { UserNav } from './UserNav';
-import { Bell, Gift, HelpCircle, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -15,14 +7,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useEffect, useState } from 'react';
 import { formatCurrency } from '@/shared/utils';
+import { Bell, Gift, HelpCircle, Settings } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Breadcrumbs } from '../Breadcrumbs';
+import { Alert, AlertDescription } from '../ui/alert';
+import { Separator } from '../ui/separator';
+import { SidebarTrigger } from '../ui/sidebar';
+import ThemeToggle from './theme-toggle/ThemeToggle';
+import { UserNav } from './UserNav';
 
 export default function Header() {
   // state
   const [FBalance, setFBalance] = useState('0.0');
   const [FDebt, setFDebt] = useState('0.0');
   const [isLoading, setIsLoading] = useState(true);
+  const [isOpenAnountment, setIsOpenAnountment] = useState(true);
 
   const fetchUserBalance = async () => {
     try {
@@ -51,10 +51,21 @@ export default function Header() {
   return (
     <header className="transition-[width,height] ease-linear">
       {/* Announcement */}
-      <Alert variant="default" className="rounded-none">
-        <AlertTitle>Announcement</AlertTitle>
-        <AlertDescription>This is an important announcement for all users.</AlertDescription>
-      </Alert>
+      {isOpenAnountment && (
+        <div className="relative w-full">
+          <Alert variant="default" className="rounded-none hidden md:block relative">
+            <AlertDescription>This is an important announcement for all users.</AlertDescription>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 p-2 rounded-full hover:bg-gray-100"
+              onClick={() => setIsOpenAnountment(false)}
+            >
+              ✕
+            </Button>
+          </Alert>
+        </div>
+      )}
 
       {/* FBalance, FDebt & Search */}
       <section className="flex h-14 shrink-0 items-center justify-between gap-4 px-4">
@@ -134,10 +145,6 @@ export default function Header() {
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <Breadcrumbs />
-        </div>
-        {/* Search Input */}
-        <div>
-          <SearchInput />
         </div>
       </div>
     </header>
