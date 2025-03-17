@@ -1,6 +1,7 @@
 'use client';
 import Loading from '@/components/common/Loading';
 import dynamic from 'next/dynamic';
+import AuthUILayout from '../layout';
 
 const SignInPage = dynamic(() => import('@/features/auth/presentation/SignInPage'), {
   loading: () => <Loading />,
@@ -9,9 +10,9 @@ const SignInPage = dynamic(() => import('@/features/auth/presentation/SignInPage
 
 const SignIn = () => {
   return (
-    <section className="bg-muted py-16 px-2">
+    <AuthUILayout>
       <SignInPage />
-    </section>
+    </AuthUILayout>
   );
 };
 
