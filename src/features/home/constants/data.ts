@@ -25,7 +25,7 @@ export const navItems: NavItem[] = [
     title: 'Finance',
     url: '#',
     icon: 'Wallet',
-    isActive: true,
+    isActive: false,
     items: [
       {
         title: 'Budget Planning',
@@ -47,7 +47,7 @@ export const navItems: NavItem[] = [
     title: 'Account',
     url: '#', // Placeholder as there is no direct link for the parent
     icon: 'billing',
-    isActive: true,
+    isActive: false,
     items: [
       {
         title: 'Profile',
@@ -67,11 +67,11 @@ export const navItems: NavItem[] = [
     title: 'Settings',
     url: '#',
     icon: 'settings',
-    isActive: true,
+    isActive: false,
     items: [
       {
         title: 'Banner',
-        url: '/home/banner',
+        url: '/home/landing-settings',
         icon: 'userPen',
         shortcut: ['m', 'm'],
       },

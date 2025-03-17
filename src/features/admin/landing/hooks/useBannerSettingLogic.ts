@@ -4,9 +4,8 @@ import { importSections } from '../slices';
 
 const useBannerSettingLogic = () => {
   const dispatch = useAppDispatch();
-  const { bannerSection, visionSection, kpsSection, partnerSection } = useAppSelector(
-    (state) => state.landingSettings,
-  );
+  const { bannerSection, visionSection, kpsSection, partnerSection, headerSection, footerSection } =
+    useAppSelector((state) => state.landingSettings);
 
   // Export all sections as a single configuration
   const exportData = () => {
@@ -15,6 +14,8 @@ const useBannerSettingLogic = () => {
       visionSection,
       kpsSection,
       partnerSection,
+      headerSection,
+      footerSection,
     };
 
     const dataStr = JSON.stringify(allSections, null, 2);

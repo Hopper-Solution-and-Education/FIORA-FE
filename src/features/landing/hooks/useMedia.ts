@@ -1,13 +1,13 @@
 import { SectionType } from '@prisma/client';
 import useSWR from 'swr';
-import { MediaRepository } from '../data/repositories/mediaRepository';
+import { landingDIContainer } from '../di/landingDIContainer';
+import { TYPES } from '../di/landingDIContainer.type';
 import { GetMediaUseCase } from '../domain/use-cases/GetMediaUseCase';
 
 export const useMedia = (sectionType: SectionType) => {
-  const { data, error } = useSWR(sectionType, async () => {
-    const mediaRepository = MediaRepository.getInstance();
-    const response = await GetMediaUseCase.getInstance(mediaRepository).execute(sectionType);
-    return response;
+  const { data, error } = useSWR(`media-${sectionType}`, async () => {
+    const getMediaUseCase = landingDIContainer.get<GetMediaUseCase>(TYPES.GetMediaUseCase);
+    return await getMediaUseCase.execute(sectionType);
   });
 
   return {

@@ -1,22 +1,23 @@
 import { SectionType } from '@prisma/client';
+import { inject, injectable } from 'inversify';
 
-import { IMediaRepository } from '../../domain/interfaces/MediaRepository';
+import { TYPES } from '../../di/landingDIContainer.type';
 import { Media } from '../../domain/models/Media';
-import { fetchMedia } from '../api';
+import type { ILandingAPI } from '../api/api';
 
+export interface IMediaRepository {
+  getMediaBySection(sectionType: SectionType): Promise<Media[]>;
+}
+
+@injectable()
 export class MediaRepository implements IMediaRepository {
-  private static instance: MediaRepository;
+  private landingAPI: ILandingAPI;
 
-  private constructor() {}
-
-  public static getInstance(): MediaRepository {
-    if (!MediaRepository.instance) {
-      MediaRepository.instance = new MediaRepository();
-    }
-    return MediaRepository.instance;
+  constructor(@inject(TYPES.ILandingAPI) landingAPI: ILandingAPI) {
+    this.landingAPI = landingAPI;
   }
 
-  async getMediaBySection(sectionType: SectionType): Promise<Media[]> {
-    return await fetchMedia(sectionType);
+  getMediaBySection(sectionType: SectionType): Promise<Media[]> {
+    return this.landingAPI.fetchMedia(sectionType);
   }
 }

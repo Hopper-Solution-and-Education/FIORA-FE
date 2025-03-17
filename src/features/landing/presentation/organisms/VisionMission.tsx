@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/button';
+import { SectionType } from '@prisma/client';
 import { ArrowRight } from 'lucide-react';
-import { useMedia } from '../../hooks/useMedia';
+import { useGetSection } from '../../hooks/useGetSection';
 
 const VisionMission = () => {
-  const { media, isError, isLoading } = useMedia('VISION_MISSION');
+  const { section, isError, isLoading } = useGetSection(SectionType.VISION_MISSION);
 
   if (isLoading) {
     return (
@@ -33,7 +34,7 @@ const VisionMission = () => {
     );
   }
 
-  if (isError || !media) {
+  if (isError || !section?.medias) {
     return (
       <section>
         <div className="mx-auto max-w-3xl pb-12 text-center md:pb-20">
@@ -54,14 +55,14 @@ const VisionMission = () => {
     );
   }
 
-  const embedCode = media.length > 0 ? media[0].embed_code : null;
+  const embedCode = section.medias.length > 0 ? section.medias[0].embed_code : null;
 
   return (
     <section>
       <div className="mt-20">
         <div className="bg-muted-2 grid items-center gap-8 lg:grid-cols-2">
           <div className="flex flex-col items-center p-16 text-center lg:items-start lg:text-left">
-            <h1 className="my-6 text-4xl font-bold text-pretty lg:text-6xl">What is FIORA ?</h1>
+            <h1 className="my-6 text-4xl font-bold text-pretty lg:text-6xl"> {section?.name}</h1>
             <p className="mb-8 max-w-xl text-muted-foreground lg:text-xl">
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Elig doloremque mollitia
               fugiat omnis! Porro facilis quo animi consequatur. Explicabo.
