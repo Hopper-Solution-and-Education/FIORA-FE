@@ -1,15 +1,15 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import expenseIncomeServices from '@/features/setting/services/expenseIncomeServices';
 import { Response } from '@/shared/types/Common.types';
 import { Category, RawCategory } from '../types';
 import { transformCategories } from '../utils';
 import { NewCategoryDefaultValues } from '../utils/formSchema';
+import categoryServices from '@/features/home/services/categoryServices';
 
 export const fetchCategories = createAsyncThunk(
-  'expenseIncome/fetchCategories',
+  'category/fetchCategories',
   async (_, { rejectWithValue }) => {
     try {
-      const response: Response<RawCategory[]> = await expenseIncomeServices.getCategories();
+      const response: Response<RawCategory[]> = await categoryServices.getCategories();
       const transformedData = transformCategories(response.data);
       return { ...response, data: transformedData };
     } catch (error: any) {
@@ -21,10 +21,10 @@ export const fetchCategories = createAsyncThunk(
 );
 
 export const createCategory = createAsyncThunk(
-  'expenseIncome/createCategory',
+  'category/createCategory',
   async (category: NewCategoryDefaultValues, { rejectWithValue }) => {
     try {
-      const response = await expenseIncomeServices.createCategory(category);
+      const response = await categoryServices.createCategory(category);
       return response;
     } catch (error: any) {
       return rejectWithValue({
@@ -35,10 +35,10 @@ export const createCategory = createAsyncThunk(
 );
 
 export const updateCategory = createAsyncThunk(
-  'expenseIncome/updateCategory',
+  'category/updateCategory',
   async (category: Category, { rejectWithValue }) => {
     try {
-      const response = await expenseIncomeServices.updateCategory(category);
+      const response = await categoryServices.updateCategory(category);
       return response;
     } catch (error: any) {
       return rejectWithValue({
@@ -49,10 +49,10 @@ export const updateCategory = createAsyncThunk(
 );
 
 export const deleteCategory = createAsyncThunk(
-  'expenseIncome/deleteCategory',
+  'category/deleteCategory',
   async (id: string, { rejectWithValue }) => {
     try {
-      return await expenseIncomeServices.deleteCategory(id);
+      return await categoryServices.deleteCategory(id);
     } catch (error: any) {
       return rejectWithValue({
         message: error.message || 'Failed to delete category! Please try again!',

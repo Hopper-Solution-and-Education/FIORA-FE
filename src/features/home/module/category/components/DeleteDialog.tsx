@@ -8,21 +8,18 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { toast } from 'sonner';
+import { deleteCategory, fetchCategories } from '@/features/home/module/category/slices/actions';
 import {
   setDeleteConfirmOpen,
   setSelectedCategory,
   setUpdateDialogOpen,
-} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
-import {
-  deleteCategory,
-  fetchCategories,
-} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
-import { toast } from 'sonner';
+} from '@/features/home/module/category/slices';
 
 const DeleteDialog: React.FC = () => {
   const dispatch = useAppDispatch();
   const { categories, selectedCategory, deleteConfirmOpen } = useAppSelector(
-    (state) => state.expenseIncome,
+    (state) => state.category,
   );
 
   const handleDeleteCategory = async () => {

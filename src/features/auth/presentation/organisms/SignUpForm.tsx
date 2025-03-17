@@ -22,6 +22,7 @@ const SignUpForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isVerificationStep, setIsVerificationStep] = useState(false); // Toggle between registration and verification
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isOpenTermCondition, setOpenTermCondition] = useState(false);
@@ -79,6 +80,7 @@ const SignUpForm = () => {
         setError('Google login failed. Please try again.');
       }
     } catch (error: any) {
+      console.error('Google login error:', error);
       setError('An unexpected error occurred during Google login.');
     }
   };

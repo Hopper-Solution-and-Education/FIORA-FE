@@ -2,25 +2,26 @@
 
 import Loading from '@/components/common/Loading';
 import NestedBarChart, { type BarItem } from '@/components/common/nested-bar-chart';
-import { Button } from '@/components/ui/button';
-import DeleteDialog from '@/features/setting/presentation/module/expenseIncome/molecules/DeleteDialog';
-import InsertCategoryDialog from '@/features/setting/presentation/module/expenseIncome/molecules/InsertCategoryDialog';
-import UpdateDialog from '@/features/setting/presentation/module/expenseIncome/molecules/UpdateDialog';
+import { Icons } from '@/components/Icon';
+import DeleteDialog from '@/features/home/module/category/components/DeleteDialog';
+import InsertCategoryDialog from '@/features/home/module/category/components/InsertCategoryDialog';
+import UpdateDialog from '@/features/home/module/category/components/UpdateDialog';
 import {
   setDialogOpen,
   setSelectedCategory,
   setUpdateDialogOpen,
-} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
-import { fetchCategories } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
-import { Category } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
+} from '@/features/home/module/category/slices';
+import { fetchCategories } from '@/features/home/module/category/slices/actions';
+import { Category } from '@/features/home/module/category/slices/types';
 import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { CategoryType } from '@prisma/client';
 import { useEffect, useMemo } from 'react';
 
-const ExpenseIncomeDashboard = () => {
+const CategoryDashboard = () => {
   const dispatch = useAppDispatch();
-  const { categories, selectedCategory } = useAppSelector((state) => state.expenseIncome);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { categories, selectedCategory } = useAppSelector((state) => state.category);
 
   useEffect(() => {
     dispatch(fetchCategories());
@@ -84,13 +85,15 @@ const ExpenseIncomeDashboard = () => {
     return <div className="text-red-600 dark:text-red-400">Error: {categories.error}</div>;
 
   return (
-    <div className="space-y-4">
-      <Button
-        onClick={() => dispatch(setDialogOpen(true))}
-        className="mt-6 bg-blue-600 text-white hover:bg-blue-700"
-      >
-        Add New Category
-      </Button>
+    <div className="p-4 md:px-6">
+      <div className="flex justify-end">
+        <button
+          onClick={() => dispatch(setDialogOpen(true))}
+          className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white"
+        >
+          <Icons.add className="h-6 w-6" />
+        </button>
+      </div>
 
       {/* Two-column layout on desktop, stacked on mobile */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -121,4 +124,4 @@ const ExpenseIncomeDashboard = () => {
   );
 };
 
-export default ExpenseIncomeDashboard;
+export default CategoryDashboard;

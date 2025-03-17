@@ -77,6 +77,7 @@ export class AccountRepository implements IAccountRepository {
   }
 
   async findAllAccountByUserId(userId: string): Promise<any> {
+    console.log('userId', userId);
     return prisma.account.groupBy({
       by: ['type'],
       where: {

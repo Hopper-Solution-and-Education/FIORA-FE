@@ -36,7 +36,7 @@ export interface Category {
   subCategories: Category[];
 }
 
-export interface ExpenseIncomeState {
+export interface CategoryState {
   categories: {
     isLoading: boolean;
     data: Category[] | undefined;
@@ -49,7 +49,7 @@ export interface ExpenseIncomeState {
   deleteConfirmOpen: boolean;
 }
 
-export const initialExpenseIncomeState: ExpenseIncomeState = {
+export const initialCategoryState: CategoryState = {
   categories: {
     isLoading: false,
     data: undefined,

@@ -132,7 +132,7 @@ const NestedBarChart = ({
     (props: any) => (
       <CustomTooltip {...props} currency={currency} locale={locale} tutorialText={tutorialText} />
     ),
-    [currency, locale],
+    [currency, locale, tutorialText],
   );
 
   return (

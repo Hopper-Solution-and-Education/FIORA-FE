@@ -1,12 +1,9 @@
-import {
-  Category,
-  RawCategory,
-} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
 import { httpClient } from '@/config/HttpClient';
 import { Response } from '@/shared/types/Common.types';
-import { NewCategoryDefaultValues } from '../presentation/settingSlices/expenseIncomeSlides/utils/formSchema';
+import { NewCategoryDefaultValues } from '@/features/home/module/category/slices/utils/formSchema';
+import { Category, RawCategory } from '@/features/home/module/category/slices/types';
 
-const expenseIncomeServices = {
+const categoryServices = {
   getCategories: async (): Promise<Response<RawCategory[]>> => {
     return httpClient.get<Response<RawCategory[]>>('/api/categories/expense-income');
   },
@@ -22,4 +19,4 @@ const expenseIncomeServices = {
   },
 };
 
-export default expenseIncomeServices;
+export default categoryServices;
