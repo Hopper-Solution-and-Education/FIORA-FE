@@ -11,6 +11,7 @@ import { useBudgetControl } from './hooks/useBudgetControl';
 import { QuarterTable } from './components/QuarterTable';
 
 export default function BudgetControlPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { isMobile, halfYearlyAmount, monthlyAmount, monthlyIncome, quarterlyAmount } =
     useBudgetControl();
   const {

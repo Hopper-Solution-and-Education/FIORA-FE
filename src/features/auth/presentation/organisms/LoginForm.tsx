@@ -51,6 +51,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
         setError('Google login failed. Please try again.');
       }
     } catch (error: any) {
+      console.error('Google login error:', error);
       setError('An unexpected error occurred during Google login.');
     }
   };

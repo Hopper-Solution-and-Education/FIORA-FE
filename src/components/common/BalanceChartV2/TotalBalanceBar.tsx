@@ -17,6 +17,7 @@ export const TotalBalanceBar = ({
   expanded,
   onToggle,
 }: TotalBalanceBarProps) => {
+  console.log(expanded);
   return (
     <div className="relative">
       <div className="flex items-center my-2 cursor-pointer" onClick={onToggle}>

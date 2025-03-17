@@ -114,12 +114,14 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
           dispatch(markSectionFetched(sectionType));
         });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (sectionData) {
       reset(transferDefaultValues(sectionData));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sectionData]);
 
   const onSubmit = async (data: SectionDefaultValues) => {

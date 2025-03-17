@@ -22,9 +22,10 @@ import {
 import { cn } from '@/shared/utils';
 import { AlertCircle, ChevronDown } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { Account, CreateAccountModalProps } from '../../../settingSlices/expenseIncomeSlides/types';
+// import { Account, CreateAccountModalProps } from '../../../settingSlices/expenseIncomeSlides/types';
 
 import { ACCOUNT_ICONS, ACCOUNT_RULES, ACCOUNT_TYPES } from '../mockData';
+import { CreateAccountModalProps, Account } from '@/features/home/module/category/slices/types';
 
 export function CreateAccountModal({
   isOpen,
