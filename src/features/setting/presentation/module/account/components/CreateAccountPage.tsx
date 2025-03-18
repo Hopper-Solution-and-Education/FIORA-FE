@@ -149,11 +149,14 @@ export function CreateAccountModal({
       const balanceValue = Number.parseFloat(formData.balance) || 0;
       const calculatedAvailableLimit = limitValue + balanceValue; // balance is negative
       if (calculatedAvailableLimit < 0) {
-        // set error for available_limit
-        setErrors((prev) => ({
-          ...prev,
-          available_limit: 'Balance cannot be lower than -Credit Limit',
-        }));
+        // checked error already in validateForm
+        if (errors.available_limit) {
+          // set error for available_limit
+          setErrors((prev) => ({
+            ...prev,
+            available_limit: 'Balance cannot be lower than -Credit Limit',
+          }));
+        }
       }
       setFormData((prev) => ({
         ...prev,
@@ -372,7 +375,7 @@ export function CreateAccountModal({
             <Label htmlFor="icon" className="text-right">
               Icon<span className="text-red-500">*</span>
             </Label>
-            <div className="space-y-2">
+            <div className="space-y-2 ">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button

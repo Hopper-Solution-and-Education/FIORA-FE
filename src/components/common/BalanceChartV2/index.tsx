@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { AccountDetailDialog } from './AccountDetailDialog';
 import { BalanceBar } from './BalanceBar';
-import { EditAccountDialog } from './EditAccountDialog';
 import { TotalBalanceBar } from './TotalBalanceBar';
 import {
   Account,
@@ -14,6 +13,8 @@ import {
   isPositiveType,
   parseApiData,
 } from './type';
+import { EditAccountDialog } from '@/features/setting/presentation/module/account/components/EditAccountDialog';
+import { FormAccount } from '@/features/setting/presentation/module/account/types/type';
 
 export const BalanceChart = () => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
@@ -110,8 +111,9 @@ export const BalanceChart = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (account: Account) => {
-    console.log('Submitting account:', account);
+  const handleEditSubmit = async (account: FormAccount) => {
+    // Update the account balance
+
     handleCloseEdit();
   };
 
@@ -177,7 +179,7 @@ export const BalanceChart = () => {
         account={selectedAccount}
         isOpen={isEditOpen}
         onClose={handleCloseEdit}
-        onSubmit={handleSubmit}
+        onSubmit={handleEditSubmit}
         allAccounts={allAccounts}
       />
     </div>
