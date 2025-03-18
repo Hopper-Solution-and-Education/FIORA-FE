@@ -103,6 +103,14 @@ const CategoryDashboard = () => {
           data={expenseData}
           xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
           callback={handleDisplayDetailDialog}
+          levelConfig={{
+            totalName: 'Total Spent',
+            colors: {
+              0: '#e30613',
+              1: '#fa4c58',
+              2: '#fc9ca2',
+            },
+          }}
         />
 
         {/* Income Chart - Right side */}
@@ -111,6 +119,14 @@ const CategoryDashboard = () => {
           data={incomeData}
           xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
           callback={handleDisplayDetailDialog}
+          levelConfig={{
+            totalName: 'Total Income',
+            colors: {
+              0: '#57cc99',
+              1: '#80ed99',
+              2: '#c7f9cc',
+            },
+          }}
         />
       </div>
 
