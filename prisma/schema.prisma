@@ -60,6 +60,7 @@ model Account {
   updatedAt        DateTime      @updatedAt
   createdBy        String        @db.Uuid
   updatedBy        String?       @db.Uuid
+  color            String?
   parent           Account?      @relation("ChildAccounts", fields: [parentId], references: [id])
   children         Account[]     @relation("ChildAccounts")
   user             User          @relation("UserAccounts", fields: [userId], references: [id])
@@ -226,7 +227,6 @@ model Category {
   userId           String        @db.Uuid
   type             CategoryType
   icon             String
-  tax_rate         Decimal       @db.Decimal(13, 2)
   name             String        @db.VarChar(50)
   description      String?       @db.VarChar(1000)
   parentId         String?       @db.Uuid
@@ -235,6 +235,7 @@ model Category {
   createdBy        String        @db.Uuid
   updatedBy        String?       @db.Uuid
   balance          Decimal       @default(0) @db.Decimal(13, 2)
+  tax_rate         Decimal?      @db.Decimal(13, 2)
   parent           Category?     @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
   subCategories    Category[]    @relation("SubCategories")
   user             User          @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)

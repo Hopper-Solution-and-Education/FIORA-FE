@@ -1,11 +1,11 @@
 import { createError, createResponse } from '@/config/createResponse';
+import prisma from '@/infrastructure/database/prisma';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { PaginationResponse } from '@/shared/types/Common.types';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
-import prisma from '@/infrastructure/database/prisma';
-import { PaginationResponse } from '@/features/setting/domain/repositories/productRepository.interface';
 
 export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
@@ -48,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const page = parseInt(req.query.page as string) || 1;
-    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    const pageSize = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * pageSize;
 
     const [categories, total] = await prisma.$transaction([

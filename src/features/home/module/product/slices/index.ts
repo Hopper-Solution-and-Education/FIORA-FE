@@ -1,77 +1,74 @@
 // src/store/slices/categorySlice.ts
 
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { productDIContainer } from '../di/productDIContainer';
-import { TYPES } from '../di/productDIContainer.type';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { toast } from 'sonner';
 import { CategoryProductPage, GetCategoryResponse } from '../domain/entities/Category';
-import { GetCategoryUseCase } from '../domain/usecases/GetCategoryUsecase';
-
-interface CategoryState {
-  categories: {
-    isLoading: boolean;
-    data: CategoryProductPage[];
-    page: number;
-    limit: number;
-    total: number;
-    hasMore: boolean;
-  };
-  error: string | null;
-}
-
-const initialState: CategoryState = {
-  categories: {
-    isLoading: false,
-    data: [],
-    page: 1,
-    limit: 20,
-    total: 0,
-    hasMore: true,
-  },
-  error: null,
-};
-
-export const fetchCategories = createAsyncThunk(
-  'categories/fetchCategories',
-  async ({ page, pageSize }: { page: number; pageSize: number }) => {
-    try {
-      const getCategoryUsecase = productDIContainer.get<GetCategoryUseCase>(
-        TYPES.IGetCategoryUseCase,
-      );
-
-      const response = await getCategoryUsecase.execute(page, pageSize);
-      return response;
-    } catch (error) {
-      const message = (error as Error).message || 'Failed to fetch categories';
-      throw new Error(message);
-    }
-  },
-);
+import { createProduct } from './actions/createProductAsyncThunk';
+import { fetchCategoriesProduct } from './actions/fetchCategoriesProduct';
+import { getProductsAsyncThunk } from './actions/getProductsAsyncThunk';
+import { initialProductState } from './types';
 
 const productManagementSlice = createSlice({
   name: 'productManagement',
-  initialState,
+  initialState: initialProductState,
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchCategories.pending, (state, action) => {
+      .addCase(fetchCategoriesProduct.pending, (state) => {
         state.categories.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchCategories.fulfilled, (state, action: PayloadAction<GetCategoryResponse>) => {
-        const { data, page, pageSize, totalPage } = action.payload;
-
-        state.categories = {
-          isLoading: false,
-          data: page === 1 ? data : [...state.categories.data, ...data],
-          page: page,
-          limit: pageSize,
-          total: totalPage,
-          hasMore: page * pageSize < totalPage, // Cập nhật hasMore
-        };
-      })
-      .addCase(fetchCategories.rejected, (state, action) => {
+      .addCase(
+        fetchCategoriesProduct.fulfilled,
+        (state, action: PayloadAction<GetCategoryResponse>) => {
+          const { data, page, pageSize, totalPage } = action.payload;
+          state.categories = {
+            isLoading: false,
+            data: (page === 1
+              ? data
+              : [...state.categories.data, ...data]) as CategoryProductPage[],
+            page: page + 1,
+            limit: pageSize,
+            total: totalPage,
+            hasMore: page < totalPage,
+          };
+        },
+      )
+      .addCase(fetchCategoriesProduct.rejected, (state, action) => {
         state.categories.isLoading = false;
         state.error = action.error.message || 'Failed to fetch categories';
+      });
+
+    builder
+      .addCase(createProduct.pending, (state) => {
+        state.isCreatingProduct = true;
+      })
+      .addCase(createProduct.fulfilled, (state) => {
+        state.isCreatingProduct = false;
+        toast.success('Success', {
+          description: 'Create product successfully!!',
+        });
+      })
+      .addCase(createProduct.rejected, (state, action) => {
+        state.isCreatingProduct = false;
+        toast.error('Failed to create product', {
+          description: (state.error = action.error.message || 'Failed to create product'),
+        });
+      });
+
+    builder
+      .addCase(getProductsAsyncThunk.pending, (state) => {
+        state.products.isLoading = true;
+      })
+      .addCase(getProductsAsyncThunk.fulfilled, (state, action) => {
+        state.products.isLoading = false;
+        state.products.items = action.payload.data;
+        state.products.total = action.payload.totalPage;
+        state.products.page = action.payload.page;
+      })
+      .addCase(getProductsAsyncThunk.rejected, (state, action) => {
+        state.products.isLoading = false;
+        state.error = action.error.message || 'Failed to get products';
       });
   },
 });

@@ -1,4 +1,4 @@
-import { PaginationResponse } from '../../model';
+import { PaginationResponse } from '@/shared/types/Common.types';
 
 export class CategoryProductPage {
   id: string;
@@ -6,7 +6,6 @@ export class CategoryProductPage {
   icon: string;
   name: string;
   description: string | null;
-  price: number;
   taxRate: number | null;
 
   constructor(
@@ -15,7 +14,6 @@ export class CategoryProductPage {
     icon: string,
     name: string,
     description: string | null,
-    price: number,
     taxRate: number | null,
   ) {
     this.id = id;
@@ -23,9 +21,8 @@ export class CategoryProductPage {
     this.icon = icon;
     this.name = name;
     this.description = description;
-    this.price = price;
     this.taxRate = taxRate;
   }
 }
 
-export type GetCategoryResponse = PaginationResponse<CategoryProductPage[]>;
+export type GetCategoryResponse = PaginationResponse<CategoryProductPage>;

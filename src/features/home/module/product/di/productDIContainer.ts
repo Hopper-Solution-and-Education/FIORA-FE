@@ -4,6 +4,13 @@ import { CategoryAPI, ICategoryAPI } from '../data/api/categoryApi';
 import { CategoryRepository, ICategoryRepository } from '../data/repositories/CategoryRepository';
 import { GetCategoryUseCase, IGetCategoryUseCase } from '../domain/usecases/GetCategoryUsecase';
 import { TYPES } from './productDIContainer.type';
+import { IProductAPI, ProductAPI } from '../data/api/productApi';
+import { IProductRepository, ProductRepository } from '../data/repositories/ProductRepository';
+import {
+  CreateProductUseCase,
+  ICreateProductUseCase,
+} from '../domain/usecases/CreateProductUsecase';
+import { GetProductUseCase, IGetProductUseCase } from '../domain/usecases/GetProductUsecase';
 
 const productDIContainer = new Container();
 
@@ -11,7 +18,11 @@ productDIContainer.bind<IHttpClient>(TYPES.IHttpClient).toConstantValue(httpClie
 productDIContainer.bind<ICategoryAPI>(TYPES.ICategoryAPI).to(CategoryAPI);
 productDIContainer.bind<ICategoryRepository>(TYPES.ICategoryRepository).to(CategoryRepository);
 productDIContainer.bind<IGetCategoryUseCase>(TYPES.IGetCategoryUseCase).to(GetCategoryUseCase);
-
-console.log(productDIContainer.get<IGetCategoryUseCase>(TYPES.IGetCategoryUseCase));
+productDIContainer.bind<IProductAPI>(TYPES.IProductAPI).to(ProductAPI);
+productDIContainer.bind<IProductRepository>(TYPES.IProductRepository).to(ProductRepository);
+productDIContainer
+  .bind<ICreateProductUseCase>(TYPES.ICreateProductUseCase)
+  .to(CreateProductUseCase);
+productDIContainer.bind<IGetProductUseCase>(TYPES.IGetProductUseCase).to(GetProductUseCase);
 
 export { productDIContainer };

@@ -1,14 +1,15 @@
 'use client';
 
-import type React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/shared/utils';
 import { Upload, X } from 'lucide-react';
+import Image from 'next/image';
+import type React from 'react';
 import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { type FieldError, type FieldErrors, useFormContext } from 'react-hook-form';
-import Image from 'next/image';
 
 interface IconUploaderProps {
   fieldPath: string;
@@ -75,18 +76,20 @@ const IconUploader: React.FC<IconUploaderProps> = ({
 
   return (
     <div className="space-y-2">
-      <Label htmlFor={fieldPath} className="text-sm font-medium">
-        {label}
-      </Label>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Upload Area */}
-        <div className="space-y-2">
+        <div className="flex flex-col h-[220px]">
+          <Label htmlFor={fieldPath} className="text-sm font-medium mb-2">
+            {label}
+          </Label>
           <div
             {...getRootProps()}
-            className={`border border-dashed rounded-md p-4 text-center cursor-pointer transition-colors h-[140px] flex flex-col items-center justify-center ${
-              isDragActive ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
-            }`}
+            className={cn(
+              'border border-dashed rounded-md p-4 text-center cursor-pointer transition-colors flex-1 flex flex-col items-center justify-center',
+              isDragActive
+                ? 'border-primary bg-primary/5'
+                : 'border-gray-200 hover:border-gray-300',
+            )}
           >
             <input {...getInputProps()} />
             <Upload className="h-6 w-6 mx-auto mb-2 text-gray-400" />
@@ -96,30 +99,31 @@ const IconUploader: React.FC<IconUploaderProps> = ({
             </p>
           </div>
 
-          <div className="text-center text-xs text-gray-500">or</div>
+          <div className="text-center text-xs text-gray-500 my-2">or</div>
 
           <Input
             type="text"
             placeholder="Enter icon URL"
             value={iconUrl || ''}
             onChange={handleManualUrlInput}
-            className="text-sm"
+            className={cn('text-sm', { 'border-red-500': iconError })}
           />
 
           <Input type="hidden" {...register(fieldPath)} />
         </div>
 
         {/* Preview Area */}
-        <div>
-          <div className="text-sm font-medium mb-2">Icon Preview</div>
-
+        <div className="flex flex-col h-[220px]">
+          <Label htmlFor={fieldPath} className="text-sm font-medium mb-2">
+            Icon Preview
+          </Label>
           {iconUrl ? (
-            <div className="relative border rounded-md bg-gray-50 h-[140px] flex items-center justify-center">
+            <div className="relative border rounded-md bg-gray-50 flex-1 flex items-center justify-center">
               <div className="relative">
                 <Image
                   src={iconUrl || '/placeholder.svg'}
                   alt="Icon preview"
-                  className="max-h-[120px] max-w-[200px] object-contain"
+                  className="max-h-[150px] max-w-[150px] object-contain"
                   width={120}
                   height={120}
                   onError={(e) => {
@@ -141,18 +145,16 @@ const IconUploader: React.FC<IconUploaderProps> = ({
               </div>
             </div>
           ) : (
-            <div className="border rounded-md bg-gray-50 h-[140px] flex items-center justify-center text-gray-400">
+            <div className="border rounded-md bg-gray-50 flex-1 flex items-center justify-center text-gray-400">
               <p className="text-sm">No icon selected</p>
             </div>
           )}
 
           {fileName && (
-            <p className="text-xs text-gray-500 mt-1 truncate" title={fileName}>
+            <p className="text-xs text-gray-500 mt-2 truncate" title={fileName}>
               {fileName}
             </p>
           )}
-
-          {iconError && <p className="text-red-500 text-xs mt-1">{iconError.message}</p>}
         </div>
       </div>
     </div>
