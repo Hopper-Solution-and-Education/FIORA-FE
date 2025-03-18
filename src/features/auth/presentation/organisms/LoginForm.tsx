@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {
   const [email, setEmail] = useState('');
@@ -71,8 +72,10 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
             <h1 className="text-2xl font-bold text-black dark:text-white">SIGN IN</h1>
 
             {error && (
-              <Alert variant="destructive" className="mb-6 w-full">
-                <AlertDescription>{error}</AlertDescription>
+              <Alert variant="destructive" className="mb-4 w-full text-sm">
+                <AlertDescription className="text-red-700 dark:text-red-400">
+                  {error}
+                </AlertDescription>
               </Alert>
             )}
 
@@ -80,7 +83,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
               <div className="flex flex-col sm:flex-row w-full gap-2 sm:gap-4 sm:items-center">
                 <Label
                   htmlFor="email"
-                  className="text-sm text-gray-700 dark:text-gray-300 sm:w-1/4"
+                  className="text-sm text-foreground w-full sm:w-1/4 text-left sm:text-right"
                 >
                   Email
                 </Label>
@@ -90,7 +93,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="user@flora.live"
-                  className="flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-none"
+                  className="w-full sm:flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-none"
                   required
                 />
               </div>
@@ -98,7 +101,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
               <div className="flex flex-col sm:flex-row w-full gap-2 sm:gap-4 sm:items-center">
                 <Label
                   htmlFor="password"
-                  className="text-sm text-gray-700 dark:text-gray-300 sm:w-1/4"
+                  className="text-sm text-foreground w-full sm:w-1/4 text-left sm:text-right"
                 >
                   Password
                 </Label>
@@ -108,47 +111,34 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                   placeholder="********"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-none"
+                  className="w-full sm:flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-none"
                   required
                 />
               </div>
 
-              <div className="flex items-center">
-                <div className="relative flex items-center">
-                  <input
+              <div className="flex flex-col sm:flex-row w-full gap-2 sm:gap-4 sm:items-center">
+                <div className="w-full sm:w-1/4"></div>
+                <div className="w-full sm:flex-1 flex items-center gap-2">
+                  <Checkbox
                     id="remember-me"
-                    type="checkbox"
                     checked={rememberMe}
-                    onChange={toggleRememberMe}
-                    className="h-4 w-4 cursor-pointer appearance-none rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 checked:bg-blue-500 dark:checked:bg-blue-600 checked:border-blue-500 dark:checked:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    onCheckedChange={toggleRememberMe}
+                    className="h-4 w-4 cursor-pointer rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 data-[state=checked]:bg-blue-500 dark:data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-500 dark:data-[state=checked]:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                   />
-                  <div
-                    className={`absolute left-0 top-0 h-4 w-4 pointer-events-none flex items-center justify-center transition-opacity ${rememberMe ? 'opacity-100' : 'opacity-0'}`}
+                  <Label
+                    htmlFor="remember-me"
+                    className="text-sm text-foreground/80 cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleRememberMe();
+                    }}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-3 w-3 text-white"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
+                    Remember me
+                  </Label>
                 </div>
-                <Label
-                  htmlFor="remember-me"
-                  className="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
-                  onClick={toggleRememberMe}
-                >
-                  Remember me
-                </Label>
               </div>
 
-              <div className="flex justify-center w-full mt-6">
+              <div className="flex justify-center w-full mt-7">
                 <Button
                   type="submit"
                   className="text-lg font-semibold w-48 py-4 bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
@@ -163,26 +153,26 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                 Cannot sign in?{' '}
                 <Link
                   href="/auth/sign-in/forgot-password"
-                  className="text-blue-500 hover:underline sm:mr-3"
+                  className="text-blue-500 hover:underline sm:mr-3 font-medium"
                 >
                   Forgot password
                 </Link>
               </div>{' '}
               <div className="sm:inline">
                 Do not have an account?{' '}
-                <Link href="/auth/sign-up" className="text-blue-500 hover:underline">
+                <Link href="/auth/sign-up" className="text-blue-500 hover:underline font-medium">
                   Sign up
                 </Link>
               </div>
             </div>
 
-            <Separator orientation="horizontal" />
+            <Separator orientation="horizontal" className="border-foreground border-1" />
 
             <div className="relative flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <span className="relative z-10 px-2">Or Sign in with</span>
+              <span className="relative z-10 px-1">Or Sign in with</span>
               <button
                 onClick={handleGoogleSignIn}
-                className="flex items-center justify-center w-8 h-8"
+                className="flex items-center justify-center w-8 h-8 cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
