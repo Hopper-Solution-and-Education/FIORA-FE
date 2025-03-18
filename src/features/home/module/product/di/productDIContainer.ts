@@ -1,20 +1,18 @@
-import { httpClient, IHttpClient } from '@/config/HttpClient';
 import { Container } from 'inversify';
 import { CategoryAPI, ICategoryAPI } from '../data/api/categoryApi';
-import { CategoryRepository, ICategoryRepository } from '../data/repositories/CategoryRepository';
-import { GetCategoryUseCase, IGetCategoryUseCase } from '../domain/usecases/GetCategoryUsecase';
-import { TYPES } from './productDIContainer.type';
 import { IProductAPI, ProductAPI } from '../data/api/productApi';
+import { CategoryRepository, ICategoryRepository } from '../data/repositories/CategoryRepository';
 import { IProductRepository, ProductRepository } from '../data/repositories/ProductRepository';
 import {
   CreateProductUseCase,
   ICreateProductUseCase,
 } from '../domain/usecases/CreateProductUsecase';
+import { GetCategoryUseCase, IGetCategoryUseCase } from '../domain/usecases/GetCategoryUsecase';
 import { GetProductUseCase, IGetProductUseCase } from '../domain/usecases/GetProductUsecase';
+import { TYPES } from './productDIContainer.type';
 
 const productDIContainer = new Container();
 
-productDIContainer.bind<IHttpClient>(TYPES.IHttpClient).toConstantValue(httpClient);
 productDIContainer.bind<ICategoryAPI>(TYPES.ICategoryAPI).to(CategoryAPI);
 productDIContainer.bind<ICategoryRepository>(TYPES.ICategoryRepository).to(CategoryRepository);
 productDIContainer.bind<IGetCategoryUseCase>(TYPES.IGetCategoryUseCase).to(GetCategoryUseCase);
