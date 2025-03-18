@@ -1,10 +1,11 @@
 import { productUseCase } from '@/features/setting/application/use-cases/productUseCase';
-import { createResponse } from '@/config/createResponse';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { ProductType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
+import { createResponse } from '@/config/createResponse';
+import { Messages } from '@/shared/constants/message';
 
 // Define the expected session structure
 
@@ -27,7 +28,7 @@ export async function getUserSession(req: NextApiRequest, res: NextApiResponse) 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getUserSession(req, res);
   if (!session || !session.user?.id) {
-    return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
+    return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
   }
 
   const userId = session.user.id;
