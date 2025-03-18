@@ -1,5 +1,5 @@
-import { Category } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
 import { httpClient } from '@/config/HttpClient';
+import { Category } from '@/features/home/module/category/slices/types';
 import { Response } from '@/shared/types/Common.types';
 
 const expenseIncomeServices = {

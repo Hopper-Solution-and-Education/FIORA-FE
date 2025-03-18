@@ -5,16 +5,6 @@ import { CategoryType } from '@prisma/client';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import {
-  setDialogOpen,
-  setSelectedCategory,
-} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
-import { createCategory } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
-import {
-  defaultNewCategoryValues,
-  NewCategoryDefaultValues,
-  validateNewCategorySchema,
-} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/utils/formSchema';
 import IconSelect from '@/components/common/IconSelect';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,6 +32,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  defaultNewCategoryValues,
+  NewCategoryDefaultValues,
+  validateNewCategorySchema,
+} from '@/features/home/module/category/slices/utils/formSchema';
+import { createCategory } from '@/features/home/module/category/slices/actions';
+import { setDialogOpen, setSelectedCategory } from '@/features/home/module/category/slices';
+import { Category } from '@/features/home/module/category/slices/types';
 
 interface InsertCategoryDialogProps {
   title?: string;
@@ -49,7 +47,7 @@ interface InsertCategoryDialogProps {
 
 const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({ title }) => {
   const dispatch = useAppDispatch();
-  const { categories, dialogOpen } = useAppSelector((state) => state.expenseIncome);
+  const { categories, dialogOpen } = useAppSelector((state) => state.category);
 
   // * FORM HANDLING ZONE *
   const form = useForm<NewCategoryDefaultValues>({
@@ -75,7 +73,7 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({ title }) =>
 
   const handleChangeParentCategory = (value: string | null, field: any) => {
     if (value && value !== 'null') {
-      const parentCategory = categories.data?.find((category) => category.id === value);
+      const parentCategory = categories.data?.find((category: Category) => category.id === value);
       if (parentCategory?.type) {
         form.setValue('type', parentCategory.type);
         form.setValue('isTypeDisabled', true);
@@ -189,7 +187,7 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({ title }) =>
                     <SelectContent>
                       <SelectGroup>
                         <SelectItem value="null">None</SelectItem>
-                        {categories.data?.map((category) => (
+                        {categories.data?.map((category: Category) => (
                           <SelectItem key={category.id} value={category.id}>
                             {category.name}
                           </SelectItem>

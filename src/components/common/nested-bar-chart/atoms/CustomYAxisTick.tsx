@@ -24,8 +24,8 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
   callback,
 }) => {
   const item = processedData.find((d: any) => d.name === payload.value);
-  const isChild = item?.isChild;
-  const hasChildren = !isChild && item?.children && item.children.length > 0;
+  const depth = item?.depth || 0;
+  const hasChildren = item?.children && item.children.length > 0;
   const [isHovered, setIsHovered] = React.useState(false);
 
   const handleArrowClick = (e: React.MouseEvent) => {
@@ -42,7 +42,7 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
     }
   };
 
-  // Function to truncate text longer than 10 characters
+  // Truncate text longer than 15 characters
   const truncateText = (text: string) => {
     if (text.length > 15) {
       return text.substring(0, 15) + '...';
@@ -53,6 +53,10 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
   const displayText = truncateText(payload.value);
   const fullText = payload.value;
 
+  // Calculate text and button positions based on depth
+  const textX = hasChildren ? -50 + 10 : -30 + 10;
+  const buttonX = hasChildren ? -40 + 10 : undefined;
+
   return (
     <g
       transform={`translate(${x},${y})`}
@@ -60,11 +64,11 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       <TooltipProvider>
-        {/* Label text with styling based on hierarchy and truncation */}
+        {/* Label text with dynamic positioning */}
         <Tooltip>
           <TooltipTrigger asChild onClick={handleEditClick}>
             <text
-              x={hasChildren ? -30 : -10}
+              x={textX}
               y={0}
               dy={4}
               textAnchor="end"
@@ -76,19 +80,19 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
               {displayText}
             </text>
           </TooltipTrigger>
-          {fullText.length > 10 && (
+          {fullText.length > 15 && (
             <TooltipContent side="left" align="center" className="text-xs p-1">
               {fullText}
             </TooltipContent>
           )}
         </Tooltip>
 
-        {/* Arrow button for expanding/collapsing (only for parents with children) */}
+        {/* Expand/collapse button for items with children */}
         {hasChildren && (
           <Tooltip>
             <TooltipTrigger asChild>
               <foreignObject
-                x={-20}
+                x={buttonX}
                 y={-8}
                 width={16}
                 height={16}

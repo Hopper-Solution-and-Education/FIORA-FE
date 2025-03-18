@@ -31,17 +31,14 @@ import {
   setDeleteConfirmOpen,
   setSelectedCategory,
   setUpdateDialogOpen,
-} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides';
-import {
-  fetchCategories,
-  updateCategory,
-} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/actions';
-import { Category } from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/types';
+} from '@/features/home/module/category/slices';
+import { fetchCategories, updateCategory } from '@/features/home/module/category/slices/actions';
+import { Category } from '@/features/home/module/category/slices/types';
 import {
   defaultUpdateCategoryValues,
   UpdateCategoryDefaultValues,
   validateUpdateCategorySchema,
-} from '@/features/setting/presentation/settingSlices/expenseIncomeSlides/utils/formSchema';
+} from '@/features/home/module/category/slices/utils/formSchema';
 import { iconOptions } from '@/shared/constants/data';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -53,7 +50,7 @@ import { toast } from 'sonner';
 const UpdateDialog: React.FC = () => {
   const dispatch = useAppDispatch();
   const { categories, selectedCategory, updateDialogOpen } = useAppSelector(
-    (state) => state.expenseIncome,
+    (state) => state.category,
   );
 
   // * FORM HANDLING ZONE *
@@ -78,7 +75,7 @@ const UpdateDialog: React.FC = () => {
 
   const handleChangeParentCategory = (value: string | null, field: any) => {
     if (value && value !== 'null') {
-      const parentCategory = categories.data?.find((category) => category.id === value);
+      const parentCategory = categories.data?.find((category: Category) => category.id === value);
       if (parentCategory?.type) {
         form.setValue('type', parentCategory.type);
         form.setValue('isTypeDisabled', true);
@@ -147,7 +144,7 @@ const UpdateDialog: React.FC = () => {
   // * 3. Filter out the current category from parent options to prevent circular references
   const parentOptions =
     categories.data?.filter(
-      (category) => category.id !== selectedCategory?.id && !category.parentId,
+      (category: Category) => category.id !== selectedCategory?.id && !category.parentId,
     ) || [];
 
   return (
@@ -247,7 +244,7 @@ const UpdateDialog: React.FC = () => {
                         ) : (
                           <SelectItem value="null">None</SelectItem>
                         )}
-                        {parentOptions.map((category) => (
+                        {parentOptions.map((category: Category) => (
                           <SelectItem key={category.id} value={category.id}>
                             {category.name}
                           </SelectItem>

@@ -1,9 +1,7 @@
-// Location: src\components\common\NestedBarChart\index.tsx
 'use client';
 
 import {
   BASE_BAR_HEIGHT,
-  DEFAULT_CHILD_OPACITY,
   DEFAULT_CURRENCY,
   DEFAULT_LOCALE,
   DEFAULT_MAX_BAR_RATIO,
@@ -37,6 +35,14 @@ export type BarItem = {
   parent?: string;
   children?: BarItem[];
   isChild?: boolean;
+  depth?: number;
+};
+
+export type LevelConfig = {
+  totalName?: string;
+  colors: {
+    [depth: number]: string;
+  };
 };
 
 export type NestedBarChartProps = {
@@ -47,10 +53,10 @@ export type NestedBarChartProps = {
   xAxisFormatter?: (value: number) => string;
   tooltipContent?: ContentType<ValueType, NameType>;
   legendItems?: { name: string; color: string }[];
-  childOpacity?: number;
   maxBarRatio?: number;
   tutorialText?: string;
   callback?: (item: any) => void;
+  levelConfig?: LevelConfig;
 };
 
 const NestedBarChart = ({
@@ -58,13 +64,13 @@ const NestedBarChart = ({
   title,
   currency = DEFAULT_CURRENCY,
   locale = DEFAULT_LOCALE,
-  childOpacity = DEFAULT_CHILD_OPACITY,
   maxBarRatio = DEFAULT_MAX_BAR_RATIO,
   xAxisFormatter = (value) => value.toString(),
   tooltipContent,
   legendItems,
   tutorialText,
   callback,
+  levelConfig,
 }: NestedBarChartProps) => {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [chartHeight, setChartHeight] = useState(MIN_CHART_HEIGHT);
@@ -77,38 +83,60 @@ const NestedBarChart = ({
     }));
   }, []);
 
-  // Process data without scaling, using absolute values
-  const processedData = useMemo(() => {
-    const items: BarItem[] = [];
+  // * INITIAL DATA PROCESSING *
+  const totalAmount = data.reduce((sum, item) => sum + Math.abs(item.value), 0);
+  const totalName = levelConfig?.totalName || 'Total Amount';
+  const totalColor = levelConfig?.colors[0] || '#888888';
+  const totalItem: BarItem = {
+    name: totalName,
+    value: totalAmount,
+    color: totalColor,
+    type: data[0]?.type || 'unknown',
+    children: data,
+    depth: 0,
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const chartData = [totalItem];
 
-    data.forEach((item) => {
-      const parentValue = Math.abs(item.value);
-      items.push({ ...item, value: parentValue });
+  // Recursive function to process data with multiple levels
+  const buildProcessedData = useCallback(
+    (items: BarItem[], parentName?: string, parentValue?: number, depth: number = 0): BarItem[] => {
+      const result: BarItem[] = [];
+      items.forEach((item) => {
+        const itemValue = Math.abs(item.value);
+        const color = levelConfig?.colors[depth] || item.color || '#888888';
+        const currentItem = {
+          ...item,
+          value: parentValue ? Math.min(itemValue, parentValue) : itemValue,
+          color,
+          parent: parentName,
+          isChild: !!parentName,
+          depth,
+        };
+        result.push(currentItem);
+        if (expandedItems[item.name] && item.children && item.children.length > 0) {
+          const children = buildProcessedData(item.children, item.name, itemValue, depth + 1);
+          result.push(...children);
+        }
+      });
+      return result;
+    },
+    [expandedItems, levelConfig],
+  );
 
-      if (expandedItems[item.name] && item.children && item.children.length > 0) {
-        item.children.forEach((child) => {
-          const childValue = Math.min(Math.abs(child.value), parentValue);
-          items.push({
-            ...child,
-            parent: item.name,
-            isChild: true,
-            value: childValue,
-          });
-        });
-      }
-    });
+  const processedData = useMemo(
+    () => buildProcessedData(chartData),
+    [buildProcessedData, chartData],
+  );
 
-    return items;
-  }, [data, expandedItems]);
-
-  // Update chart height when processedData changes
+  // Update chart height based on number of visible bars
   useEffect(() => {
     const numBars = processedData.length;
     const newHeight = Math.max(numBars * BASE_BAR_HEIGHT, MIN_CHART_HEIGHT);
     setChartHeight(newHeight);
   }, [processedData]);
 
-  // Calculate maximum absolute value among all items (parents and children)
+  // Calculate maximum absolute value for X-axis domain
   const maxAbsValue = useMemo(() => {
     const allValues = data.flatMap((item) => [
       Math.abs(item.value),
@@ -117,14 +145,13 @@ const NestedBarChart = ({
     return Math.max(...allValues);
   }, [data]);
 
-  // Set X-axis domain to ensure largest bar is 90% of chart width
   const domain = useMemo(() => {
     if (maxAbsValue === 0) return [0, 1];
     const maxX = maxAbsValue / maxBarRatio;
     return [0, maxX];
   }, [maxAbsValue, maxBarRatio]);
 
-  // Get dynamic margins based on window width
+  // Dynamic margins based on window width
   const chartMargins = useMemo(() => getChartMargins(width), [width]);
 
   // Custom tooltip with currency and locale
@@ -132,7 +159,7 @@ const NestedBarChart = ({
     (props: any) => (
       <CustomTooltip {...props} currency={currency} locale={locale} tutorialText={tutorialText} />
     ),
-    [currency, locale],
+    [currency, locale, tutorialText],
   );
 
   return (
@@ -147,7 +174,7 @@ const NestedBarChart = ({
           <BarChart
             data={processedData}
             layout="vertical"
-            margin={chartMargins} // Dynamic margins
+            margin={chartMargins}
             className="transition-all duration-300"
           >
             <CartesianGrid
@@ -175,7 +202,6 @@ const NestedBarChart = ({
                   processedData={processedData}
                   expandedItems={expandedItems}
                   onToggleExpand={toggleExpand}
-                  props={props}
                   callback={callback}
                 />
               )}
@@ -192,10 +218,7 @@ const NestedBarChart = ({
             >
               {processedData.map((entry, index) => {
                 const color = entry.isChild
-                  ? entry.color +
-                    Math.round(childOpacity * 255)
-                      .toString(16)
-                      .padStart(2, '0')
+                  ? entry.color + Math.round(255).toString(16).padStart(2, '0')
                   : entry.color;
                 return <Cell key={`cell-${index}`} fill={color} />;
               })}
@@ -203,7 +226,6 @@ const NestedBarChart = ({
           </BarChart>
         </ResponsiveContainer>
       </div>
-
       <ChartLegend items={legendItems || []} />
     </div>
   );
