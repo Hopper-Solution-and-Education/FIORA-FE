@@ -108,7 +108,7 @@ export default function Header() {
             <nav className="hidden md:flex items-center gap-4 py-2 px-4">
               {session && (
                 <>
-                  <DropdownMenu>
+                  <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
                         <Bell className="h-6 w-6" />
@@ -119,7 +119,7 @@ export default function Header() {
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  <DropdownMenu>
+                  <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
                         <Gift className="h-6 w-6" />
@@ -130,7 +130,7 @@ export default function Header() {
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  <DropdownMenu>
+                  <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
                         <HelpCircle className="h-6 w-6" />
@@ -142,7 +142,7 @@ export default function Header() {
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  <DropdownMenu>
+                  <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
                         <Settings className="h-6 w-6" />
@@ -164,7 +164,7 @@ export default function Header() {
               <ThemeToggle />
               <LanguageToggle />
 
-              <DropdownMenu>
+              <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button
                     onClick={() => redirect('/auth/sign-in')}
@@ -210,7 +210,7 @@ export default function Header() {
               <X className="h-6 w-6" />
             </Button>
 
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <Bell className="h-6 w-6" />
@@ -221,7 +221,7 @@ export default function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <Gift className="h-6 w-6" />
@@ -232,7 +232,7 @@ export default function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <HelpCircle className="h-6 w-6" />
@@ -244,7 +244,7 @@ export default function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <Settings className="h-6 w-6" />
