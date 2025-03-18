@@ -8,10 +8,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/shared/utils';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -20,11 +19,24 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isGoogleSignInTriggered, setIsGoogleSignInTriggered] = useState(false); // state for check whether GG or credentials login
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user && isGoogleSignInTriggered) {
+      setSuccess('Google login successful!');
+      setError(null);
+      setIsGoogleSignInTriggered(false);
+    }
+  }, [status, session, isGoogleSignInTriggered]);
+
+  console.log('User: {}', session?.user);
 
   const handleCredentialsSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
 
     try {
       const response = await signIn('credentials', {
@@ -34,7 +46,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
         redirect: false,
       });
       if (response?.ok) {
-        router.push('/home');
+        setSuccess('Login successful!');
       } else {
         if (response?.error) {
           setError('Invalid email or password. Please try again.');
@@ -49,14 +61,14 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
 
   const handleGoogleSignIn = async () => {
     setError(null);
+    setSuccess(null);
+    setIsGoogleSignInTriggered(true); // flag for GG login
     try {
-      const res = await signIn('google', { callbackUrl: '/home' });
-      if (!res?.ok) {
-        setError('Google login failed. Please try again.');
-      }
+      await signIn('google', { redirect: false });
     } catch (error: any) {
       console.error('Google login error:', error);
       setError('An unexpected error occurred during Google login.');
+      setIsGoogleSignInTriggered(false);
     }
   };
 
@@ -75,6 +87,14 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
               <Alert variant="destructive" className="mb-4 w-full text-sm">
                 <AlertDescription className="text-red-700 dark:text-red-400">
                   {error}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {success && (
+              <Alert variant="default" className="mb-4 w-full text-sm border-green-500">
+                <AlertDescription className="text-green-700 dark:text-green-400">
+                  {success}
                 </AlertDescription>
               </Alert>
             )}
