@@ -1,10 +1,11 @@
 import { productUseCase } from '@/features/setting/application/use-cases/productUseCase';
-import { createResponse } from '@/config/createResponse';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { ProductType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
+import { createResponse } from '@/config/createResponse';
+import { Messages } from '@/shared/constants/message';
 
 // Define the expected session structure
 
@@ -27,7 +28,7 @@ export async function getUserSession(req: NextApiRequest, res: NextApiResponse) 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getUserSession(req, res);
   if (!session || !session.user?.id) {
-    return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
+    return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
   }
 
   const userId = session.user.id;
@@ -70,7 +71,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
   }
 }
 
-// Create a new product
+// Create a new product & service
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { icon, name, description, tax_rate, price, type, category_id, items = [] } = req.body;
@@ -79,7 +80,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Invalid product type' });
     }
 
-    const newCategory = await productUseCase.createProduct({
+    const newProduct = await productUseCase.createProduct({
       userId,
       type: type as ProductType,
       icon,
@@ -92,7 +93,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     });
     return res
       .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, 'Create product successfully', newCategory));
+      .json(createResponse(RESPONSE_CODE.CREATED, 'Create product successfully', newProduct));
   } catch (error: any) {
     res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
