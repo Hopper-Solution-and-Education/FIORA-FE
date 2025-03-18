@@ -36,13 +36,19 @@ const CategoryDashboard = () => {
         id: category.id,
         name: category.name,
         value: category.balance || 0,
-        color: category.type === CategoryType.Expense ? COLORS.Expense : COLORS.Income,
+        color:
+          category.type === CategoryType.Expense
+            ? COLORS.DEPS_DANGER.LEVEL_1
+            : COLORS.DEPS_SUCCESS.LEVEL_1,
         type: category.type === CategoryType.Expense ? CategoryType.Expense : CategoryType.Income,
         children: category.subCategories?.map((subCategory) => ({
           id: subCategory.id,
           name: subCategory.name,
           value: subCategory.balance || 0,
-          color: category.type === CategoryType.Expense ? COLORS.Expense : COLORS.Income,
+          color:
+            category.type === CategoryType.Expense
+              ? COLORS.DEPS_DANGER.LEVEL_1
+              : COLORS.DEPS_SUCCESS.LEVEL_1,
           type: category.type === CategoryType.Expense ? CategoryType.Expense : CategoryType.Income,
         })),
       };
@@ -95,9 +101,7 @@ const CategoryDashboard = () => {
         </button>
       </div>
 
-      {/* Two-column layout on desktop, stacked on mobile */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Expense Chart - Left side */}
         <NestedBarChart
           title="Expense"
           data={expenseData}
@@ -113,7 +117,6 @@ const CategoryDashboard = () => {
           }}
         />
 
-        {/* Income Chart - Right side */}
         <NestedBarChart
           title="Income"
           data={incomeData}

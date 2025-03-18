@@ -27,10 +27,10 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
         email,
         password,
         rememberMe,
-        redirect: false, // Không redirect tự động, để tự xử lý
+        redirect: false,
       });
       if (response?.ok) {
-        router.push('/home'); // Đăng nhập thành công, chuyển hướng
+        router.push('/home');
       } else {
         if (response?.error) {
           setError('Invalid email or password. Please try again.');
