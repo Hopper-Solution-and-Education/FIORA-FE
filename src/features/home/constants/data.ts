@@ -33,6 +33,12 @@ export const navItems: NavItem[] = [
         icon: 'userPen',
         shortcut: ['m', 'm'],
       },
+      {
+        title: 'Category',
+        url: '/home/category',
+        icon: 'userPen',
+        shortcut: ['m', 'm'],
+      },
     ],
   },
   {

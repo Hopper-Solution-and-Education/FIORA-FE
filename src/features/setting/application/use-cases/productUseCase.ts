@@ -1,7 +1,6 @@
 import { Product, ProductType } from '@prisma/client';
 import {
   IProductRepository,
-  PaginationResponse,
   ProductCreation,
   ProductUpdate,
 } from '@/features/setting/domain/repositories/productRepository.interface';
@@ -9,6 +8,7 @@ import { productRepository } from '@/features/setting/infrastructure/repositorie
 import { JsonArray } from '@prisma/client/runtime/library';
 import { ICategoryRepository } from '../../domain/repositories/categoryRepository.interface';
 import { categoryRepository } from '../../infrastructure/repositories/categoryRepository';
+import { PaginationResponse } from '@/shared/types/Common.types';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
@@ -40,14 +40,15 @@ class ProductUseCase {
       const [products = [], count] = await Promise.all([productsAwaited, countAwaited]);
 
       const totalPage = Math.ceil(count / pageSize);
+
       return {
         data: products,
         page,
         pageSize,
         totalPage,
       };
-    } catch (error) {
-      throw new Error('Failed to get all products');
+    } catch (error: any) {
+      throw new Error('Failed to get all products ', error.message);
     }
   }
 
@@ -64,8 +65,8 @@ class ProductUseCase {
       });
 
       return products;
-    } catch (error) {
-      throw new Error('Failed to get products by type');
+    } catch (error: any) {
+      throw new Error('Failed to get products by type', error.message);
     }
   }
 
@@ -82,7 +83,7 @@ class ProductUseCase {
       }
 
       return product;
-    } catch (error) {
+    } catch (error: any) {
       throw new Error('Failed to get product by ID');
     }
   }
@@ -133,7 +134,7 @@ class ProductUseCase {
       }
 
       return product;
-    } catch (error) {
+    } catch (error: any) {
       throw new Error('Failed to create product');
     }
   }

@@ -1,11 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Response } from '@/shared/types/Common.types';
 import { fetchCategories, createCategory, deleteCategory, updateCategory } from './actions';
-import { Category, initialExpenseIncomeState } from './types';
+import { Category, initialCategoryState } from './types';
 
-const expenseIncomeSlice = createSlice({
-  name: 'expenseIncome',
-  initialState: initialExpenseIncomeState,
+const categorySlice = createSlice({
+  name: 'category',
+  initialState: initialCategoryState,
   reducers: {
     setDialogOpen(state, action: PayloadAction<boolean>) {
       state.dialogOpen = action.payload;
@@ -24,7 +24,7 @@ const expenseIncomeSlice = createSlice({
       state.categories.isLoading = false;
       state.categories.error = null;
     },
-    reset: () => initialExpenseIncomeState,
+    reset: () => initialCategoryState,
   },
   extraReducers: (builder) => {
     builder
@@ -65,6 +65,7 @@ const expenseIncomeSlice = createSlice({
         state.categories.error =
           (action.payload as { message: string })?.message || 'Unknown error';
       })
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       .addCase(updateCategory.fulfilled, (state, action) => {
         state.categories.isLoading = false;
       })
@@ -82,5 +83,5 @@ export const {
   setSelectedCategory,
   setCategories,
   reset,
-} = expenseIncomeSlice.actions;
-export default expenseIncomeSlice.reducer;
+} = categorySlice.actions;
+export default categorySlice.reducer;

@@ -46,6 +46,7 @@ export default function KBar({ children }: { children: React.ReactNode }) {
         // Return only valid actions (ignoring null base actions for containers)
         return baseAction ? [baseAction, ...childActions] : childActions;
       }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 

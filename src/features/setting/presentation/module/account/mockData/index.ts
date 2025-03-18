@@ -1,5 +1,5 @@
+import { Account } from '@/features/home/module/category/slices/types';
 import { Banknote, CreditCard, PiggyBank, TrendingDown, Wallet } from 'lucide-react';
-import { Account } from '../../../settingSlices/expenseIncomeSlides/types';
 
 // Define account types and their rules
 const ACCOUNT_TYPES = {
