@@ -149,11 +149,14 @@ export function CreateAccountModal({
       const balanceValue = Number.parseFloat(formData.balance) || 0;
       const calculatedAvailableLimit = limitValue + balanceValue; // balance is negative
       if (calculatedAvailableLimit < 0) {
-        // set error for available_limit
-        setErrors((prev) => ({
-          ...prev,
-          available_limit: 'Balance cannot be lower than -Credit Limit',
-        }));
+        // checked error already in validateForm
+        if (errors.available_limit) {
+          // set error for available_limit
+          setErrors((prev) => ({
+            ...prev,
+            available_limit: 'Balance cannot be lower than -Credit Limit',
+          }));
+        }
       }
       setFormData((prev) => ({
         ...prev,
@@ -244,6 +247,12 @@ export function CreateAccountModal({
       return;
     }
 
+    // Automatically convert balance to negative if type is Dept and Credit Card
+    if (field === 'balance') {
+      handleBalanceChange(value);
+      return;
+    }
+
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Clear error when field is changed
@@ -253,6 +262,15 @@ export function CreateAccountModal({
         delete newErrors[field];
         return newErrors;
       });
+    }
+  };
+
+  const handleBalanceChange = (value: string) => {
+    // Automatically convert balance to negative if type is Dept and Credit Card
+    if ([ACCOUNT_TYPES.DEBT, ACCOUNT_TYPES.CREDIT_CARD].includes(formData.type)) {
+      setFormData((prev) => ({ ...prev, balance: value.startsWith('-') ? value : `-${value}` }));
+    } else {
+      setFormData((prev) => ({ ...prev, balance: value }));
     }
   };
 
@@ -357,7 +375,7 @@ export function CreateAccountModal({
             <Label htmlFor="icon" className="text-right">
               Icon<span className="text-red-500">*</span>
             </Label>
-            <div className="space-y-2">
+            <div className="space-y-2 ">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -428,6 +446,7 @@ export function CreateAccountModal({
               {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
             </div>
           </div>
+
           {/* Currency */}
           <div className="grid grid-cols-[120px_1fr] items-center gap-4">
             <Label htmlFor="currency" className="text-right">
@@ -496,6 +515,7 @@ export function CreateAccountModal({
             <div className="space-y-2">
               <Input
                 id="balance"
+                type="number"
                 value={formData.balance}
                 onChange={(e) => handleChange('balance', e.target.value)}
                 placeholder="0.00"
@@ -535,10 +555,6 @@ export function CreateAccountModal({
                   )}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                Parent account must be of the same type. Sub-account balance will be included in
-                parent balance.
-              </p>
             </div>
           </div>
           {Object.keys(errors).length > 0 && (
