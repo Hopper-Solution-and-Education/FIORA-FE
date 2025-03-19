@@ -1,638 +1,555 @@
-// 'use client';
+'use client';
 
-// import { Alert, AlertDescription } from '@/components/ui/alert';
-// import { Button } from '@/components/ui/button';
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogFooter,
-//   DialogHeader,
-//   DialogTitle,
-// } from '@/components/ui/dialog';
-// import { Input } from '@/components/ui/input';
-// import { Label } from '@/components/ui/label';
-// import { Popover, PopoverTrigger } from '@/components/ui/popover';
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from '@/components/ui/select';
-// import { cn } from '@/shared/utils';
-// import { AlertCircle, ChevronDown } from 'lucide-react';
-// import { useCallback, useEffect, useState } from 'react';
-// import { Account, EditAccountModalProps } from '../../../settingSlices/expenseIncomeSlides/types';
+import type React from 'react';
 
-// import { ACCOUNT_ICONS, ACCOUNT_RULES, ACCOUNT_TYPES } from '../mockData';
-// import {
-//   AlertDialog,
-//   AlertDialogAction,
-//   AlertDialogCancel,
-//   AlertDialogContent,
-//   AlertDialogDescription,
-//   AlertDialogTitle,
-// } from '@radix-ui/react-alert-dialog';
-// import { AlertDialogFooter, AlertDialogHeader } from '@/components/ui/alert-dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  ACCOUNT_ICONS,
+  ACCOUNT_RULES,
+} from '@/features/setting/presentation/module/account/mockData';
+import { cn } from '@/shared/utils';
+import { Popover, PopoverTrigger } from '@radix-ui/react-popover';
+import { AlertCircle, ChevronDown } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Account, AccountType, Currency, FormAccount } from '../types/type';
 
-// export function EditAccountModal({
-//   isOpen,
-//   setIsEditModalOpen,
-//   setTriggered,
-//   isTriggered,
-//   account,
-// }: EditAccountModalProps) {
-//   const [formData, setFormData] = useState({
-//     icon: '',
-//     type: ACCOUNT_TYPES.PAYMENT,
-//     name: '',
-//     currency: 'VND',
-//     limit: '',
-//     available_limit: '',
-//     balance: '',
-//     parent: '',
-//     isParentSelected: false,
-//   });
+interface EditAccountDialogProps {
+  account: Account | null;
+  allAccounts: Account[];
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (account: FormAccount) => void;
+  errorMessage?: string;
+}
 
-//   const [errors, setErrors] = useState<Record<string, string>>({});
-//   const [availableIcons, setAvailableIcons] = useState(ACCOUNT_ICONS);
-//   const [parentAccounts, setParentAccounts] = useState<Account[]>([]);
-//   const [errRes, setErrRes] = useState('');
-//   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-//   // State for the confirmation dialog
-//   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+export const EditAccountDialog = ({
+  account,
+  isOpen,
+  onClose,
+  allAccounts,
+  onSubmit,
+}: EditAccountDialogProps) => {
+  const [formData, setFormData] = useState<FormAccount>({
+    id: '',
+    icon: '',
+    type: AccountType.Payment,
+    name: '',
+    userId: '',
+    currency: Currency.VND,
+    limit: 0,
+    available_limit: 0,
+    balance: 0,
+    parentId: '',
+    parent: '',
+  });
 
-//   const currentTypeRules = ACCOUNT_RULES[formData.type];
+  const currentTypeRules = ACCOUNT_RULES[formData.type];
 
-//   useEffect(() => {
-//     const filteredIcons = ACCOUNT_ICONS.filter((icon) => icon.types.includes(formData.type));
-//     setAvailableIcons(filteredIcons);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [subAccountToRemove, setSubAccountToRemove] = useState<{
+    parentId: string;
+    accountId: string;
+  } | null>(null);
 
-//     if (formData.icon) {
-//       const iconStillValid = filteredIcons.some((icon) => icon.id === formData.icon);
-//       if (!iconStillValid) {
-//         setFormData((prev) => ({
-//           ...prev,
-//           icon: filteredIcons.length > 0 ? filteredIcons[0].id : '',
-//         }));
-//       }
-//     } else if (filteredIcons.length > 0) {
-//       setFormData((prev) => ({ ...prev, icon: filteredIcons[0].id }));
-//     }
-//   }, [formData.type, formData.icon]);
+  // Get the selected icon component
+  const getSelectedIcon = () => {
+    const selectedIcon = ACCOUNT_ICONS.find((icon) => icon.id === formData.icon);
+    if (selectedIcon) {
+      const IconComponent = selectedIcon.icon;
+      return <IconComponent className="h-6 w-6" />;
+    }
+    return null;
+  };
 
-//   const fetchParents = useCallback(async () => {
-//     try {
-//       const res = await fetch('/api/accounts/lists?isParent=true', {
-//         method: 'GET',
-//         headers: { 'Content-Type': 'application/json' },
-//       });
+  const getParentAccount = (id: string) => {
+    return allAccounts.find((account) => account.id === id);
+  };
 
-//       if (res.status !== 200) {
-//         setParentAccounts([]);
-//         return;
-//       }
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
 
-//       const data = await res.json();
-//       const accounts = data.data as Account[];
+    // Required fields
+    if (!formData.name.trim()) {
+      newErrors.name = 'Account name is required';
+    }
 
-//       if (Array.isArray(accounts)) {
-//         setParentAccounts(accounts);
-//       } else {
-//         console.error('Unexpected API response format');
-//         setParentAccounts([]);
-//       }
-//     } catch (error) {
-//       console.error('Error fetching parent accounts:', error);
-//       setParentAccounts([]);
-//     }
-//   }, [isOpen]);
+    if (!formData.icon) {
+      newErrors.icon = 'Please select an icon';
+    }
 
-//   useEffect(() => {
-//     if (account) {
-//       setFormData({
-//         icon: account.icon,
-//         type: account.type,
-//         name: account.name,
-//         currency: account.currency,
-//         limit: account.limit,
-//         balance: account.balance,
-//         parent: account.parentId || '',
-//         isParentSelected: !!account.parentId,
-//         available_limit: '',
-//       });
-//     }
-//   }, [account]);
+    // Balance validation based on account type
+    if (formData.balance) {
+      if (isNaN(formData.balance)) {
+        newErrors.balance = 'Balance must be a valid number';
+      } else {
+        // Check min balance constraint
+        if (
+          currentTypeRules.minBalance !== null &&
+          formData.balance < currentTypeRules.minBalance
+        ) {
+          newErrors.balance = `Balance must be greater than or equal to ${currentTypeRules.minBalance}`;
+        }
 
-//   const handleCreateSubmit = async (dataCreate: any) => {
-//     try {
-//       const createdRes = await fetch('/api/accounts/create', {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify(dataCreate),
-//       });
+        // Check max balance constraint
+        if (
+          currentTypeRules.maxBalance !== null &&
+          formData.balance > currentTypeRules.maxBalance
+        ) {
+          newErrors.balance = `Balance must be less than or equal to ${currentTypeRules.maxBalance}`;
+        }
+      }
+    }
 
-//       const data = await createdRes.json();
+    // Credit limit validation for Credit Card
+    if (formData.type === AccountType.CreditCard) {
+      if (formData.limit) {
+        const limitValue = formData.limit;
 
-//       if (!createdRes.ok) {
-//         setErrRes(data.message || 'Something went wrong');
-//         // handle success
-//       } else {
-//         setSuccessMessage('Account created successfully');
-//         setErrRes('');
-//         handleResetForm();
+        if (isNaN(limitValue)) {
+          newErrors.limit = 'Credit limit must be a valid number';
+        } else if (limitValue <= 0) {
+          newErrors.limit = 'Credit limit must be greater than 0';
+        }
 
-//         setTimeout(() => {
-//           setIsEditModalOpen(false);
-//           setSuccessMessage('');
-//           setTriggered(!isTriggered);
-//         }, 1000);
-//       }
-//     } catch (error: any) {
-//       setErrRes(error.message || 'Failed to create account');
-//     }
-//   };
+        // Check if balance exceeds credit limit
+        if (formData.balance && !newErrors.balance) {
+          const balanceValue = formData.balance;
+          if (balanceValue < -limitValue) {
+            newErrors.balance = `Balance cannot be lower than -${formData.limit} (credit limit)`;
+          }
+        }
+      }
+    }
 
-//   const handleResetForm = () => {
-//     setFormData({
-//       icon: '',
-//       type: ACCOUNT_TYPES.PAYMENT,
-//       name: '',
-//       currency: 'VND',
-//       limit: '',
-//       balance: '',
-//       parent: '',
-//       isParentSelected: false,
-//       available_limit: '',
-//     });
-//   };
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-//   const confirmRemove = async () => {
-//     if (subAccountToRemove) {
-//       const { parentId, subAccountId } = subAccountToRemove;
+  useEffect(() => {
+    if (account) {
+      setFormData({
+        id: account.id,
+        icon: account?.icon || '',
+        type: account.type,
+        name: account.name,
+        currency: account.currency,
+        limit: typeof account.limit === 'string' ? Number(account.limit) : (account.limit ?? 0),
+        balance:
+          typeof account.balance === 'string' ? Number(account.balance) : (account.balance ?? 0),
+        parentId: account.parentId || '',
+        available_limit: 0,
+        userId: account.userId,
+        parent: '',
+      });
 
-//       const removedRes = await handleRemoveAPI(parentId, subAccountId);
-//       if (!removedRes) {
-//         alert('Error removing sub-account');
-//         return;
-//       }
-//       // Update the accounts map by removing the sub-account
-//       const updatedSubAccounts =
-//         accountsMap.get(parentId)?.filter((account) => account.id !== subAccountId) || [];
+      // check if account has parent
+      if (account.parentId) {
+        const parentAccount = getParentAccount(account.parentId);
+        if (parentAccount) {
+          setFormData((prev) => ({
+            ...prev,
+            parent: parentAccount.name,
+          }));
+        }
+      }
 
-//       const updatedMap = new Map(accountsMap);
-//       updatedMap.set(parentId, updatedSubAccounts);
-//       setAccountsMap(updatedMap);
+      // Set available limit for credit card
+      if (account.type === AccountType.CreditCard) {
+        const availableLimit = account.limit! - account.balance;
+        setFormData((prev) => ({
+          ...prev,
+          available_limit: availableLimit,
+        }));
+      }
+    }
+  }, [account, allAccounts]);
 
-//       // Update the selected account if it's currently displayed
-//       if (selectedAccount && selectedAccount.id === parentId) {
-//         setSelectedAccount({
-//           ...selectedAccount,
-//           subAccounts: selectedAccount.subAccounts?.filter(
-//             (account) => account.id !== subAccountId,
-//           ),
-//         });
-//       }
+  // Calculate available_limit for Credit Card in real-time
+  useEffect(() => {
+    if (formData.type === AccountType.CreditCard) {
+      const limitValue = formData.limit || 0;
+      const balanceValue = formData.balance || 0;
+      const calculatedAvailableLimit = limitValue + balanceValue; // balance is negative
 
-//       setIsConfirmOpen(false);
-//       setSubAccountToRemove(null);
-//     }
-//   };
+      if (calculatedAvailableLimit < 0) {
+        setErrors((prev) => ({
+          ...prev,
+          available_limit: 'Available limit cannot be negative',
+        }));
+      } else {
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors['available_limit'];
+          return newErrors;
+        });
+      }
+      setFormData((prev) => ({
+        ...prev,
+        available_limit: calculatedAvailableLimit,
+      }));
+    }
+  }, [formData.limit, formData.balance]);
 
-//   // Calculate available_limit for Credit Card in real-time
-//   useEffect(() => {
-//     if (formData.type === ACCOUNT_TYPES.CREDIT_CARD) {
-//       const limitValue = Number.parseFloat(formData.limit) || 0;
-//       const balanceValue = Number.parseFloat(formData.balance) || 0;
-//       const calculatedAvailableLimit = limitValue + balanceValue; // balance is negative
-//       if (calculatedAvailableLimit < 0) {
-//         // set error for available_limit
-//         setErrors((prev) => ({
-//           ...prev,
-//           available_limit: 'Balance cannot be lower than -Credit Limit',
-//         }));
-//       }
-//       setFormData((prev) => ({
-//         ...prev,
-//         available_limit: calculatedAvailableLimit.toFixed(2),
-//       }));
+  if (!account) return null;
 
-//       // Clear any available_limit-related errors
-//       if (errors.available_limit) {
-//         setErrors((prev) => {
-//           const newErrors = { ...prev };
-//           delete newErrors.available_limit;
-//           return newErrors;
-//         });
-//       }
-//     }
-//   }, [formData.limit, formData.balance, formData.type]);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateForm()) {
+      // Handle form submission
+      onSubmit(formData);
+    }
+  };
 
-//   useEffect(() => {
-//     fetchParents();
-//   }, [isTriggered, setTriggered]);
+  const handleBalanceChange = (value: number) => {
+    // Automatically convert balance to negative if type is Dept and Credit Card
+    if ([AccountType.Debt, AccountType.CreditCard].includes(formData.type)) {
+      setFormData((prev) => ({
+        ...prev,
+        balance: -Math.abs(value),
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, balance: value }));
+    }
+  };
 
-//   const validateForm = () => {
-//     const newErrors: Record<string, string> = {};
+  const handleChange = (field: string, value: string) => {
+    console.log('field:', field, 'value:', value);
+    // Automatically convert balance to negative if type is Dept and Credit Card
+    if (field === 'balance') {
+      handleBalanceChange(Number(value));
+      return;
+    }
+    setFormData((prev) => ({ ...prev, [field]: field === 'limit' ? Number(value) : value }));
 
-//     // Required fields
-//     if (!formData.name.trim()) {
-//       newErrors.name = 'Account name is required';
-//     }
+    // Clear error when field is changed
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
 
-//     if (!formData.icon) {
-//       newErrors.icon = 'Please select an icon';
-//     }
+  const handleRemoveAPI = async (parentId: string, subAccountId: string) => {
+    try {
+      const response = await fetch(`/api/accounts/${subAccountId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ parentId, subAccountId }),
+      });
 
-//     // Balance validation based on account type
-//     if (formData.balance) {
-//       const balanceValue = Number.parseFloat(formData.balance);
+      const data = await response.json();
 
-//       if (isNaN(balanceValue)) {
-//         newErrors.balance = 'Balance must be a valid number';
-//       } else {
-//         // Check min balance constraint
-//         if (currentTypeRules.minBalance !== null && balanceValue < currentTypeRules.minBalance) {
-//           newErrors.balance = `Balance must be greater than or equal to ${currentTypeRules.minBalance}`;
-//         }
+      if (data.status !== 201) {
+        alert('Error removing sub-account');
+      }
 
-//         // Check max balance constraint
-//         if (currentTypeRules.maxBalance !== null && balanceValue > currentTypeRules.maxBalance) {
-//           newErrors.balance = `Balance must be less than or equal to ${currentTypeRules.maxBalance}`;
-//         }
-//       }
-//     }
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  };
 
-//     // Credit limit validation for Credit Card
-//     if (formData.type === ACCOUNT_TYPES.CREDIT_CARD) {
-//       if (formData.limit) {
-//         const limitValue = Number.parseFloat(formData.limit);
+  const handleRemoveClick = (accountId: string, parentId: string) => {
+    setSubAccountToRemove({ accountId, parentId });
+    setIsConfirmOpen(true);
+  };
 
-//         if (isNaN(limitValue)) {
-//           newErrors.limit = 'Credit limit must be a valid number';
-//         } else if (limitValue <= 0) {
-//           newErrors.limit = 'Credit limit must be greater than 0';
-//         }
+  // Function to confirm removal
+  const confirmRemove = async () => {
+    if (subAccountToRemove) {
+      const { parentId, accountId } = subAccountToRemove;
 
-//         // Check if balance exceeds credit limit
-//         if (formData.balance && !newErrors.balance) {
-//           const balanceValue = Number.parseFloat(formData.balance);
-//           if (balanceValue < -limitValue) {
-//             newErrors.balance = `Balance cannot be lower than -${formData.limit} (credit limit)`;
-//           }
-//         }
-//       }
-//     }
+      const removedRes = await handleRemoveAPI(parentId, accountId);
+      if (!removedRes) {
+        alert('Error removing sub-account');
+        return;
+      }
 
-//     setErrors(newErrors);
-//     return Object.keys(newErrors).length === 0;
-//   };
+      setIsConfirmOpen(false);
+      setSubAccountToRemove(null);
+    }
+  };
 
-//   const handleChange = (field: string, value: string) => {
-//     // For parent field, use the special handler
-//     if (field === 'parent') {
-//       handleParentChange(value);
-//       return;
-//     }
+  return (
+    <div>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Edit Account</DialogTitle>
+            <DialogDescription>
+              Make changes to the account here. Click submit when you are done.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-4 py-4">
+              {/* Icon */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="icon" className="text-right">
+                  Icon*
+                </Label>
+                <div className="space-y-2 col-span-3">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className={cn('w-full justify-between')}
+                      >
+                        <div className="flex items-center gap-2">
+                          {formData.icon ? (
+                            <>
+                              <div className="flex items-center justify-center h-6 w-6 rounded bg-muted">
+                                {getSelectedIcon()}
+                              </div>
+                              <span>
+                                {ACCOUNT_ICONS.find((icon) => icon.id === formData.icon)?.name ||
+                                  'Select icon'}
+                              </span>
+                            </>
+                          ) : (
+                            <span>Select icon</span>
+                          )}
+                        </div>
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                  </Popover>
+                  {/* {errors.icon && <p className="text-xs text-red-500">{errors.icon}</p>} */}
+                </div>
+              </div>
 
-//     // For type field, use the special handler
-//     if (field === 'type') {
-//       handleTypeChange(value);
-//       return;
-//     }
+              {/* Type */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="type" className="text-right">
+                  Type*
+                </Label>
+                <Select defaultValue={formData.type} disabled>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(AccountType).map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-//     setFormData((prev) => ({ ...prev, [field]: value }));
+              {/* Name */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Name*
+                </Label>
+                <Input
+                  id="name"
+                  defaultValue={formData.name}
+                  className={cn('col-span-3', errors.name && 'border-red-500')}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                />
+              </div>
 
-//     // Clear error when field is changed
-//     if (errors[field]) {
-//       setErrors((prev) => {
-//         const newErrors = { ...prev };
-//         delete newErrors[field];
-//         return newErrors;
-//       });
-//     }
-//   };
+              {/* Currency */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="currency" className="text-right">
+                  Currency*
+                </Label>
+                <Select
+                  defaultValue={formData.currency}
+                  onValueChange={(value) => handleChange('currency', value)}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(Currency).map((currency) => (
+                      <SelectItem key={currency} value={currency}>
+                        {currency === Currency.USD ? '($) USD' : '(₫) VND'}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-//   const handleSubmit = () => {
-//     if (validateForm()) {
-//       // If balance is empty, set it to 0
-//       const finalData = {
-//         ...formData,
-//         balance: formData.balance || 0,
-//         limit: formData.limit || 0,
-//         parentId: formData.parent || null,
-//       };
-//       handleCreateSubmit(finalData);
-//     }
-//   };
+              {formData.type === AccountType.CreditCard && (
+                <>
+                  <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+                    <Label htmlFor="available_limit" className="text-right">
+                      Available Limit
+                    </Label>
+                    <div className="space-y-2">
+                      <Input
+                        id="available_limit"
+                        value={formData.available_limit}
+                        readOnly={!formData.parentId ? true : false}
+                        className={cn(
+                          'bg-gray-100 cursor-not-allowed',
+                          errors.available_limit && 'border-red-500',
+                          formData.available_limit < 0 && 'text-red-500',
+                        )}
+                      />
+                      {errors.available_limit && (
+                        <p className="text-xs text-red-500">{errors.available_limit}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+                    <Label htmlFor="limit" className="text-right">
+                      Credit Limit
+                    </Label>
+                    <div className="space-y-2">
+                      <Input
+                        id="limit"
+                        type="number"
+                        readOnly={!formData.parentId ? true : false}
+                        value={formData.limit}
+                        onChange={(e) => handleChange('limit', e.target.value)}
+                        className={errors.limit ? 'border-red-500' : ''}
+                      />
+                      {errors.limit && <p className="text-xs text-red-500">{errors.limit}</p>}
+                    </div>
+                  </div>
+                </>
+              )}
 
-//   const handleParentChange = (parentId: string) => {
-//     if (!parentId) {
-//       setFormData((prev) => ({ ...prev, parent: '', isParentSelected: false }));
-//       return;
-//     }
+              {/* Balance */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="balance" className="text-right">
+                  Balance
+                </Label>
+                <Input
+                  id="balance"
+                  type="number"
+                  readOnly={!formData.parentId ? true : false}
+                  defaultValue={formData.balance}
+                  onChange={(e) => handleChange('balance', e.target.value)}
+                  className={cn('col-span-3', errors.balance && 'border-red-500')}
+                />
+                {errors.balance && <p className="text-xs text-red-500">{errors.balance}</p>}
+              </div>
 
-//     // Find the selected parent account
-//     const selectedParent = parentAccounts.find((p) => p.id === parentId);
-//     if (selectedParent) {
-//       // Update the parent and type in the form data
-//       setFormData((prev) => ({
-//         ...prev,
-//         parent: parentId,
-//         parentId: parentId,
-//         type: selectedParent.type, // Set the type to match the parent's type
-//         isParentSelected: true,
-//       }));
-//     } else {
-//       // Just update the parent if no matching parent found
-//       setFormData((prev) => ({
-//         ...prev,
-//         parent: parentId,
-//         isParentSelected: true,
-//       }));
-//     }
+              {/* Parent */}
+              <div className="grid grid-cols-[100px_1fr] items-center gap-4">
+                <Label htmlFor="parent" className="text-right">
+                  Parent
+                </Label>
+                <div className="space-y-2">
+                  <Input
+                    id="parent"
+                    value={formData.parent || ''}
+                    readOnly
+                    className={cn(
+                      'bg-gray-100 cursor-not-allowed',
+                      errors.parent && 'border-red-500',
+                      formData.parentId && 'text-green-500',
+                    )}
+                  ></Input>
+                </div>
+              </div>
 
-//     // Clear any parent-related errors
-//     if (errors.parent) {
-//       setErrors((prev) => {
-//         const newErrors = { ...prev };
-//         delete newErrors.parent;
-//         return newErrors;
-//       });
-//     }
-//   };
+              {/* Error alert */}
+              {Object.keys(errors).length > 0 && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Please fix the errors before submitting the form.
+                  </AlertDescription>
+                </Alert>
+              )}
 
-//   // Handle type change
-//   const handleTypeChange = (type: string) => {
-//     setFormData((prev) => ({
-//       ...prev,
-//       type,
-//       parent: '', // Reset parent when type changes
-//     }));
-
-//     // Clear any type-related errors
-//     if (errors.type) {
-//       setErrors((prev) => {
-//         const newErrors = { ...prev };
-//         delete newErrors.type;
-//         return newErrors;
-//       });
-//     }
-//   };
-
-//   // Get the selected icon component
-//   const getSelectedIcon = () => {
-//     const selectedIcon = ACCOUNT_ICONS.find((icon) => icon.id === formData.icon);
-//     if (selectedIcon) {
-//       const IconComponent = selectedIcon.icon;
-//       return <IconComponent className="h-6 w-6" />;
-//     }
-//     return null;
-//   };
-
-//   return (
-//     <div>
-//       <Dialog open={isOpen} onOpenChange={(open) => !open && setIsEditModalOpen(false)}>
-//         <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
-//           <DialogHeader className="px-6 pt-6 pb-2">
-//             <DialogTitle>Edit Account</DialogTitle>
-//           </DialogHeader>
-
-//           <div className="px-6 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
-//             {errRes && (
-//               <Alert variant="destructive" className="mb-4">
-//                 <AlertDescription>{errRes}</AlertDescription>
-//               </Alert>
-//             )}
-//             {successMessage && (
-//               <Alert variant="default" className="mb-4 border-green-500">
-//                 <AlertDescription className="text-green-600">{successMessage}</AlertDescription>
-//               </Alert>
-//             )}
-//             <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-//               <Label htmlFor="icon" className="text-right">
-//                 Icon<span className="text-red-500">*</span>
-//               </Label>
-//               <div className="space-y-2">
-//                 <Popover>
-//                   <PopoverTrigger asChild>
-//                     <Button
-//                       variant="outline"
-//                       role="combobox"
-//                       className={cn('w-full justify-between', errors.icon && 'border-red-500')}
-//                     >
-//                       <div className="flex items-center gap-2">
-//                         {formData.icon ? (
-//                           <>
-//                             <div className="flex items-center justify-center h-6 w-6 rounded bg-muted">
-//                               {getSelectedIcon()}
-//                             </div>
-//                             <span>
-//                               {ACCOUNT_ICONS.find((icon) => icon.id === formData.icon)?.name ||
-//                                 'Select icon'}
-//                             </span>
-//                           </>
-//                         ) : (
-//                           <span>Select icon</span>
-//                         )}
-//                       </div>
-//                       <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-//                     </Button>
-//                   </PopoverTrigger>
-//                 </Popover>
-//                 {errors.icon && <p className="text-xs text-red-500">{errors.icon}</p>}
-//               </div>
-//             </div>
-
-//             <div className="grid grid-cols-[120px_1fr] items-start gap-4">
-//               <Label htmlFor="type" className="text-right pt-2">
-//                 Type<span className="text-red-500">*</span>
-//               </Label>
-//               <div className="space-y-2">
-//                 <Select
-//                   value={formData.type}
-//                   onValueChange={(value) => handleChange('type', value)}
-//                 >
-//                   <SelectTrigger>
-//                     <SelectValue placeholder="Select type" />
-//                   </SelectTrigger>
-//                   <SelectContent>
-//                     <SelectItem value={ACCOUNT_TYPES.PAYMENT}>{ACCOUNT_TYPES.PAYMENT}</SelectItem>
-//                     <SelectItem value={ACCOUNT_TYPES.SAVING}>{ACCOUNT_TYPES.SAVING}</SelectItem>
-//                     <SelectItem value={ACCOUNT_TYPES.CREDIT_CARD}>
-//                       {ACCOUNT_TYPES.CREDIT_CARD}
-//                     </SelectItem>
-//                     <SelectItem value={ACCOUNT_TYPES.DEBT}>{ACCOUNT_TYPES.DEBT}</SelectItem>
-//                     <SelectItem value={ACCOUNT_TYPES.LENDING}>{ACCOUNT_TYPES.LENDING}</SelectItem>
-//                   </SelectContent>
-//                 </Select>
-//                 <p className="text-xs text-muted-foreground">{currentTypeRules.description}</p>
-//               </div>
-//             </div>
-
-//             <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-//               <Label htmlFor="name" className="text-right">
-//                 Name<span className="text-red-500">*</span>
-//               </Label>
-//               <div className="space-y-2">
-//                 <Input
-//                   id="name"
-//                   value={formData.name}
-//                   onChange={(e) => handleChange('name', e.target.value)}
-//                   placeholder="Enter account name"
-//                   className={errors.name ? 'border-red-500' : ''}
-//                 />
-//                 {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
-//               </div>
-//             </div>
-
-//             <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-//               <Label htmlFor="currency" className="text-right">
-//                 Currency<span className="text-red-500">*</span>
-//               </Label>
-//               <Select
-//                 value={formData.currency}
-//                 onValueChange={(value) => handleChange('currency', value)}
-//               >
-//                 <SelectTrigger>
-//                   <SelectValue placeholder="Select currency" />
-//                 </SelectTrigger>
-//                 <SelectContent>
-//                   <SelectItem value="VND">(đ) VND</SelectItem>
-//                   <SelectItem value="USD">($) USD</SelectItem>
-//                 </SelectContent>
-//               </Select>
-//             </div>
-
-//             {formData.type === ACCOUNT_TYPES.CREDIT_CARD && (
-//               <>
-//                 <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-//                   <Label htmlFor="available_limit" className="text-right">
-//                     Available Limit
-//                   </Label>
-//                   <div className="space-y-2">
-//                     <Input
-//                       id="available_limit"
-//                       value={formData.available_limit}
-//                       readOnly
-//                       placeholder="0.00"
-//                       className={cn(
-//                         'bg-gray-100 cursor-not-allowed',
-//                         errors.available_limit && 'border-red-500',
-//                         Number.parseFloat(formData.available_limit) < 0 && 'text-red-500',
-//                       )}
-//                     />
-//                     {errors.available_limit && (
-//                       <p className="text-xs text-red-500">{errors.available_limit}</p>
-//                     )}
-//                   </div>
-//                 </div>
-//                 <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-//                   <Label htmlFor="limit" className="text-right">
-//                     Credit Limit
-//                   </Label>
-//                   <div className="space-y-2">
-//                     <Input
-//                       id="limit"
-//                       value={formData.limit}
-//                       onChange={(e) => handleChange('limit', e.target.value)}
-//                       placeholder="0.00"
-//                       className={errors.limit ? 'border-red-500' : ''}
-//                     />
-//                     {errors.limit && <p className="text-xs text-red-500">{errors.limit}</p>}
-//                   </div>
-//                 </div>
-//               </>
-//             )}
-
-//             <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-//               <Label htmlFor="balance" className="text-right">
-//                 Balance
-//               </Label>
-//               <div className="space-y-2">
-//                 <Input
-//                   id="balance"
-//                   value={formData.balance}
-//                   onChange={(e) => handleChange('balance', e.target.value)}
-//                   placeholder="0.00"
-//                   className={cn(
-//                     errors.balance && 'border-red-500',
-//                     formData.balance?.startsWith('-') && 'text-red-500',
-//                   )}
-//                 />
-//                 {errors.balance && <p className="text-xs text-red-500">{errors.balance}</p>}
-//               </div>
-//             </div>
-
-//             <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-//               <Label htmlFor="parent" className="text-right">
-//                 Parent
-//               </Label>
-//               <div className="space-y-2">
-//                 <Select
-//                   value={formData.parent}
-//                   onValueChange={(value) => handleChange('parent', value)}
-//                 >
-//                   <SelectTrigger>
-//                     <SelectValue placeholder="Select parent account" />
-//                   </SelectTrigger>
-//                   <SelectContent>
-//                     {parentAccounts.length > 0 ? (
-//                       parentAccounts?.map((account) => (
-//                         <SelectItem key={account?.id} value={account?.id}>
-//                           {account?.name} ({account?.type})
-//                         </SelectItem>
-//                       ))
-//                     ) : (
-//                       <SelectItem key="no-accounts" value="no-accounts" disabled>
-//                         No parent accounts available
-//                       </SelectItem>
-//                     )}
-//                   </SelectContent>
-//                 </Select>
-//                 <p className="text-xs text-muted-foreground">
-//                   Parent account must be of the same type. Sub-account balance will be included in
-//                   parent balance.
-//                 </p>
-//               </div>
-//             </div>
-//             {Object.keys(errors).length > 0 && (
-//               <Alert variant="destructive" className="mt-4">
-//                 <AlertCircle className="h-4 w-4" />
-//                 <AlertDescription>
-//                   Please fix the errors before submitting the form.
-//                 </AlertDescription>
-//               </Alert>
-//             )}
-//           </div>
-
-//           <DialogFooter className="bg-muted/50 px-6 py-4">
-//             <div className="flex justify-between w-full">
-//               <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-//                 Cancel
-//               </Button>
-//               <Button onClick={handleSubmit}>Submit</Button>
-//             </div>
-//           </DialogFooter>
-//         </DialogContent>
-//       </Dialog>
-
-//       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-//         <AlertDialogContent>
-//           <AlertDialogHeader>
-//             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-//             <AlertDialogDescription>
-//               This action cannot be undone. This will permanently remove the sub-account.
-//             </AlertDialogDescription>
-//           </AlertDialogHeader>
-//           <AlertDialogFooter>
-//             <AlertDialogCancel>Cancel</AlertDialogCancel>
-//             <AlertDialogAction onClick={confirmRemove}>Remove</AlertDialogAction>
-//           </AlertDialogFooter>
-//         </AlertDialogContent>
-//       </AlertDialog>
-//     </div>
-//   );
-// }
+              {/* Create and options */}
+              {/* <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Create and</Label>
+              <RadioGroup defaultValue="do-nothing" className="col-span-3 flex gap-4">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="do-nothing" id="do-nothing" />
+                  <Label htmlFor="do-nothing">Do nothing</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="copy" id="copy" />
+                  <Label htmlFor="copy">Copy</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="new" id="new" />
+                  <Label htmlFor="new">New</Label>
+                </div>
+              </RadioGroup>
+            </div> */}
+            </div>
+            <DialogFooter className="mt-5 flex w-full">
+              <div className="flex gap-3 items-center justify-between w-full">
+                <div>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleRemoveClick(account.id, account.parentId || '');
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </div>
+                <div className="flex gap-3">
+                  <Button type="button" variant="outline" onClick={onClose}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">Submit</Button>
+                </div>
+              </div>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently remove the sub-account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRemove}>Remove</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};

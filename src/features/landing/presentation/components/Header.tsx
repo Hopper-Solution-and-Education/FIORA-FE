@@ -119,7 +119,7 @@ export default function Header() {
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  <DropdownMenu>
+                  <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
                         <Gift className="h-6 w-6" />
@@ -130,7 +130,7 @@ export default function Header() {
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  <DropdownMenu>
+                  <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
                         <HelpCircle className="h-6 w-6" />
@@ -142,7 +142,7 @@ export default function Header() {
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  <DropdownMenu>
+                  <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
                         <Settings className="h-6 w-6" />

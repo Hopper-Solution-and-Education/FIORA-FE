@@ -56,6 +56,7 @@ model Account {
   limit            Decimal?      @default(0) @db.Decimal(13, 2)
   balance          Decimal?      @default(0) @db.Decimal(13, 2)
   parentId         String?       @db.Uuid
+  color            String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   createdBy        String        @db.Uuid
@@ -229,6 +230,7 @@ model Category {
   name             String        @db.VarChar(50)
   description      String?       @db.VarChar(1000)
   parentId         String?       @db.Uuid
+  tax_rate         Decimal?      @db.Decimal(13, 2)
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   createdBy        String        @db.Uuid
