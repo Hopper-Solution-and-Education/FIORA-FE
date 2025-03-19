@@ -1,7 +1,6 @@
 'use client';
 
 import type React from 'react';
-
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,18 +19,19 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [isGoogleSignInTriggered, setIsGoogleSignInTriggered] = useState(false); // state for check whether GG or credentials login
   const { data: session, status } = useSession();
 
-  useEffect(() => {
-    if (status === 'authenticated' && session?.user && isGoogleSignInTriggered) {
-      setSuccess('Google login successful!');
-      setError(null);
-      setIsGoogleSignInTriggered(false);
-    }
-  }, [status, session, isGoogleSignInTriggered]);
-
   console.log('User: {}', session?.user);
+
+  // Xử lý hiển thị success alert sau khi đăng nhập bằng Google
+  useEffect(() => {
+    if (status === 'authenticated' && !success) {
+      setSuccess('Google Login successful!');
+      // Tùy chọn: Xóa thông báo sau vài giây
+      const timer = setTimeout(() => setSuccess(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [status, success]);
 
   const handleCredentialsSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -62,13 +62,11 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const handleGoogleSignIn = async () => {
     setError(null);
     setSuccess(null);
-    setIsGoogleSignInTriggered(true); // flag for GG login
     try {
       await signIn('google', { redirect: false });
     } catch (error: any) {
       console.error('Google login error:', error);
       setError('An unexpected error occurred during Google login.');
-      setIsGoogleSignInTriggered(false);
     }
   };
 
