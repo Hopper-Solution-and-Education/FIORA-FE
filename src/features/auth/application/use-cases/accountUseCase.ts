@@ -298,7 +298,7 @@ export class AccountUseCase {
 
   public validateAccountType(type: AccountType, balance: number, limit?: number): boolean {
     if (!Object.values(AccountType).includes(type)) {
-      throw new Error('Invalid account type');
+      return false;
     }
 
     switch (type) {
@@ -331,9 +331,6 @@ export class AccountUseCase {
           throw new Error('Limit must be greater than balance');
         }
         break;
-
-      default:
-        throw new Error('Invalid account type');
     }
     return true;
   }
