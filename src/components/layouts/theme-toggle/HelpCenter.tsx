@@ -10,7 +10,7 @@ import { HelpCircle } from 'lucide-react';
 
 export default function HelpCenter() {
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="relative w-10 h-10">
           <HelpCircle size={64} />
