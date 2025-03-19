@@ -47,6 +47,7 @@ interface EditAccountDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (account: FormAccount) => void;
+  errorMessage?: string;
 }
 
 export const EditAccountDialog = ({
@@ -57,6 +58,7 @@ export const EditAccountDialog = ({
   onSubmit,
 }: EditAccountDialogProps) => {
   const [formData, setFormData] = useState<FormAccount>({
+    id: '',
     icon: '',
     type: AccountType.Payment,
     name: '',
@@ -155,6 +157,7 @@ export const EditAccountDialog = ({
   useEffect(() => {
     if (account) {
       setFormData({
+        id: account.id,
         icon: account?.icon || '',
         type: account.type,
         name: account.name,
@@ -259,7 +262,7 @@ export const EditAccountDialog = ({
 
   const handleRemoveAPI = async (parentId: string, subAccountId: string) => {
     try {
-      const response = await fetch('/api/accounts/create', {
+      const response = await fetch(`/api/accounts/${subAccountId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -413,7 +416,7 @@ export const EditAccountDialog = ({
                       <Input
                         id="available_limit"
                         value={formData.available_limit}
-                        readOnly
+                        readOnly={!formData.parentId ? true : false}
                         className={cn(
                           'bg-gray-100 cursor-not-allowed',
                           errors.available_limit && 'border-red-500',
@@ -433,6 +436,7 @@ export const EditAccountDialog = ({
                       <Input
                         id="limit"
                         type="number"
+                        readOnly={!formData.parentId ? true : false}
                         value={formData.limit}
                         onChange={(e) => handleChange('limit', e.target.value)}
                         className={errors.limit ? 'border-red-500' : ''}
@@ -451,6 +455,7 @@ export const EditAccountDialog = ({
                 <Input
                   id="balance"
                   type="number"
+                  readOnly={!formData.parentId ? true : false}
                   defaultValue={formData.balance}
                   onChange={(e) => handleChange('balance', e.target.value)}
                   className={cn('col-span-3', errors.balance && 'border-red-500')}
@@ -468,7 +473,6 @@ export const EditAccountDialog = ({
                     id="parent"
                     value={formData.parent || ''}
                     readOnly
-                    placeholder="Select parent"
                     className={cn(
                       'bg-gray-100 cursor-not-allowed',
                       errors.parent && 'border-red-500',

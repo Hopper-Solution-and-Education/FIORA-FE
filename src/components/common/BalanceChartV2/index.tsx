@@ -113,7 +113,18 @@ export const BalanceChart = () => {
   // Handle form submission
   const handleEditSubmit = async (account: FormAccount) => {
     // Update the account balance
-
+    const updatedRes = await fetch(`/api/accounts/${account.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(account),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log('updatedRes', updatedRes);
+    if (!updatedRes.ok) {
+      console.error('Error updating account:', updatedRes.statusText);
+      return;
+    }
     handleCloseEdit();
   };
 

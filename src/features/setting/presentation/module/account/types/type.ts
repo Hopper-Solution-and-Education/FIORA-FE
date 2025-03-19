@@ -45,7 +45,7 @@ export interface Account {
   updatedAt: Date;
 }
 
-export type FormAccount = Omit<Account, 'id' | 'createdAt' | 'updatedAt'> & {
+export type FormAccount = Omit<Account, 'createdAt' | 'updatedAt'> & {
   available_limit: number;
   parent: string | null;
 };
