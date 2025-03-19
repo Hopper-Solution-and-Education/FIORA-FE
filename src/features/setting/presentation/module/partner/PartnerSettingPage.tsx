@@ -1,4 +1,3 @@
-// File: /features/setting/presentation/module/partner/PartnerSettingPage.tsx
 'use client';
 
 import React from 'react';
