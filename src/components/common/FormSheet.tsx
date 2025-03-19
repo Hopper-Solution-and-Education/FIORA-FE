@@ -1,8 +1,11 @@
+// components/common/FormSheet.tsx
 'use client';
 
 import type React from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import {
   Form,
   FormControl,
@@ -18,40 +21,39 @@ import {
   SheetHeader,
   SheetTitle,
   SheetClose,
-  SheetDescription,
   SheetFooter,
 } from '@/components/ui/sheet';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { useState, useEffect } from 'react';
 
 interface FormFieldProps {
   name: string;
   label: string;
   placeholder?: string;
   type?: string;
-  description?: string;
   required?: boolean;
   section?: string;
-  render?: (field: any) => React.ReactNode;
+  description?: string;
+  render?: (field: any, context?: any) => React.ReactNode;
 }
 
-interface FormSheetProps {
+interface FormSheetProps<T> {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   title: string;
   description?: string;
   fields: FormFieldProps[];
-  form: any; // Form from react-hook-form
-  onSubmit: (data: any) => void;
+  form: any;
+  onSubmit: (data: T) => void;
   submitText?: string;
   cancelText?: string;
-  className?: string;
+  context?: any;
   loading?: boolean;
+  className?: string;
 }
 
-export const FormSheet = ({
+export const FormSheet = <T,>({
   isOpen,
   setIsOpen,
   title,
@@ -61,10 +63,13 @@ export const FormSheet = ({
   onSubmit,
   submitText = 'Submit',
   cancelText = 'Cancel',
-  className,
+  context,
   loading = false,
-}: FormSheetProps) => {
-  // Group fields by section if provided
+  className,
+}: FormSheetProps<T>) => {
+  const [mounted, setMounted] = useState(false);
+
+  // Group fields by section
   const sections = fields.reduce(
     (acc, field) => {
       const section = field.section || 'default';
@@ -79,12 +84,19 @@ export const FormSheet = ({
 
   const sectionKeys = Object.keys(sections);
 
+  useEffect(() => {
+    setMounted(isOpen);
+    if (!isOpen) {
+      form.clearErrors();
+    }
+  }, [isOpen, form]);
+
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetContent
         side="right"
         className={cn(
-          'w-full sm:max-w-md md:max-w-lg lg:max-w-xl max-h-screen overflow-y-auto bg-card text-card-foreground p-0',
+          'w-full sm:max-w-md md:max-w-lg lg:max-w-xl p-0 bg-card text-card-foreground border-l border-border shadow-lg',
           className,
         )}
       >
@@ -94,9 +106,7 @@ export const FormSheet = ({
               <div>
                 <SheetTitle className="text-xl font-semibold text-foreground">{title}</SheetTitle>
                 {description && (
-                  <SheetDescription className="text-sm text-muted-foreground mt-1">
-                    {description}
-                  </SheetDescription>
+                  <p className="text-sm text-muted-foreground mt-1.5 max-w-md">{description}</p>
                 )}
               </div>
               <SheetClose asChild>
@@ -105,7 +115,7 @@ export const FormSheet = ({
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsOpen(false)}
-                  className="h-8 w-8 rounded-full"
+                  className="h-8 w-8 rounded-full hover:bg-muted transition-colors"
                 >
                   <X className="h-4 w-4" />
                   <span className="sr-only">Close</span>
@@ -114,26 +124,36 @@ export const FormSheet = ({
             </div>
           </SheetHeader>
 
-          <div className="flex-1 overflow-y-auto px-6 py-6">
+          <div
+            className={cn(
+              'flex-1 overflow-y-auto px-6 py-6 transition-opacity duration-300',
+              mounted ? 'opacity-100' : 'opacity-0',
+            )}
+          >
             <Form {...form}>
               <form id="form-sheet" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 {sectionKeys.map((sectionKey, index) => (
-                  <div key={sectionKey} className="space-y-6">
+                  <div key={sectionKey} className="space-y-5">
                     {sectionKey !== 'default' && (
                       <>
-                        <h3 className="text-lg font-medium text-foreground">{sectionKey}</h3>
+                        <h3 className="text-base font-medium text-foreground">{sectionKey}</h3>
                         <Separator className="my-2" />
                       </>
                     )}
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                       {sections[sectionKey].map((field) => (
                         <FormField
                           key={field.name}
                           control={form.control}
                           name={field.name}
                           render={({ field: formField }) => (
-                            <FormItem className="space-y-3">
-                              <div className="flex items-baseline justify-between">
+                            <FormItem
+                              className={cn(
+                                'flex flex-col space-y-2',
+                                'group rounded-lg p-3 hover:bg-muted/40 transition-colors',
+                              )}
+                            >
+                              <div className="flex items-center justify-between">
                                 <FormLabel className="text-sm font-medium text-foreground">
                                   {field.label}
                                   {field.required && (
@@ -141,49 +161,51 @@ export const FormSheet = ({
                                   )}
                                 </FormLabel>
                                 {field.description && (
-                                  <FormDescription className="text-xs text-muted-foreground">
+                                  <FormDescription className="text-xs text-muted-foreground hidden group-hover:block">
                                     {field.description}
                                   </FormDescription>
                                 )}
                               </div>
-                              <FormControl>
-                                {field.render ? (
-                                  field.render(formField)
-                                ) : field.type === 'textarea' ? (
-                                  <Textarea
-                                    {...formField}
-                                    placeholder={field.placeholder}
-                                    className="w-full bg-background text-foreground border-input resize-none min-h-[120px]"
-                                  />
-                                ) : (
-                                  <Input
-                                    {...formField}
-                                    type={field.type || 'text'}
-                                    placeholder={field.placeholder}
-                                    className="w-full bg-background text-foreground border-input h-10"
-                                  />
-                                )}
-                              </FormControl>
-                              <FormMessage className="text-xs text-destructive" />
+                              <div className="w-full">
+                                <FormControl>
+                                  {field.render ? (
+                                    field.render(formField, context)
+                                  ) : field.type === 'textarea' ? (
+                                    <Textarea
+                                      {...formField}
+                                      placeholder={field.placeholder}
+                                      className="w-full bg-background text-foreground border-input resize-none min-h-[100px] focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                                    />
+                                  ) : (
+                                    <Input
+                                      {...formField}
+                                      type={field.type || 'text'}
+                                      placeholder={field.placeholder}
+                                      className="w-full bg-background text-foreground border-input focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                                    />
+                                  )}
+                                </FormControl>
+                              </div>
+                              <FormMessage className="text-xs text-destructive dark:text-red-500 font-medium opacity-90 transition-opacity duration-200" />
                             </FormItem>
                           )}
                         />
                       ))}
                     </div>
-                    {index < sectionKeys.length - 1 && <Separator className="my-4" />}
+                    {index < sectionKeys.length - 1 && <Separator className="my-6" />}
                   </div>
                 ))}
               </form>
             </Form>
           </div>
 
-          <SheetFooter className="px-6 py-4 border-t border-border sticky bottom-0 bg-card z-10">
+          <SheetFooter className="px-6 py-4 border-t border-border sticky bottom-0 bg-card z-10 flex-shrink-0">
             <div className="flex justify-end gap-3 w-full">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setIsOpen(false)}
-                className="bg-background text-foreground border-input hover:bg-accent hover:text-accent-foreground"
+                className="bg-background text-foreground border-input hover:bg-accent hover:text-accent-foreground transition-colors"
               >
                 {cancelText}
               </Button>
@@ -191,7 +213,7 @@ export const FormSheet = ({
                 type="submit"
                 form="form-sheet"
                 disabled={loading}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               >
                 {loading ? (
                   <>
