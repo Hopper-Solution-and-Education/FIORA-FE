@@ -1,7 +1,6 @@
 'use client';
 
 import { Plus } from 'lucide-react';
-import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -13,14 +12,22 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { removeFromFirebase, uploadToFirebase } from '@/features/admin/landing/firebaseUtils';
-import { useAppDispatch } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { UseFormReturn } from 'react-hook-form';
+import { setDialogState, toggleDialogAddEdit } from '../../slices';
 import { createProduct } from '../../slices/actions/createProductAsyncThunk';
-import { getProductsAsyncThunk } from '../../slices/actions/getProductsAsyncThunk';
+import { updateProductAsyncThunk } from '../../slices/actions/updateProductAsyncThunk';
+import { DialogStateType } from '../../slices/types';
 import ProductForm from '../molecules/ProductFieldForm';
-import type { ProductFormValues } from '../schema/addProduct.schema';
+import { defaultProductFormValue, type ProductFormValues } from '../schema/addProduct.schema';
 
-const AddProductDialog = () => {
-  const [open, setOpen] = useState(false);
+type AddProductDialogProps = {
+  method: UseFormReturn<ProductFormValues>;
+};
+
+const AddProductDialog = ({ method }: AddProductDialogProps) => {
+  const isOpenDialog = useAppSelector((state) => state.productManagement.isOpenDialogAddEdit);
+  const dialogState = useAppSelector((state) => state.productManagement.dialogState);
   const dispatch = useAppDispatch();
 
   const handleSubmit = async (data: ProductFormValues) => {
@@ -50,22 +57,38 @@ const AddProductDialog = () => {
         };
       }
 
-      await dispatch(createProduct(formattedData))
-        .unwrap()
-        .then(() => {
-          setOpen(false);
-          dispatch(getProductsAsyncThunk({ page: 1, pageSize: 10 }));
-        });
+      if (dialogState === 'add') {
+        await dispatch(createProduct(formattedData))
+          .unwrap()
+          .then(() => {
+            handleToggleDialog(false, 'add');
+          });
+      } else if (dialogState === 'edit') {
+        await dispatch(updateProductAsyncThunk(formattedData))
+          .unwrap()
+          .then(() => {
+            handleToggleDialog(false, 'add');
+          });
+      }
     } catch (error) {
       console.error('Error creating product:', error);
     }
   };
+
+  const handleToggleDialog = (value: boolean, type: DialogStateType) => {
+    dispatch(toggleDialogAddEdit(value));
+    if (value === false) {
+      method.reset(defaultProductFormValue);
+    }
+    dispatch(setDialogState(type));
+  };
+
   return (
     <>
-      <Button onClick={() => setOpen(true)}>
+      <Button onClick={() => handleToggleDialog(true, 'add')}>
         <Plus size={64} width={64} height={64} />
       </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={isOpenDialog} onOpenChange={(value) => handleToggleDialog(value, 'add')}>
         <DialogContent className="sm:max-w-[70%] h-[90%]">
           <DialogHeader>
             <DialogTitle>Create New Product</DialogTitle>
@@ -76,7 +99,11 @@ const AddProductDialog = () => {
 
           <ScrollArea className="max-w-[100%]">
             <div className="m-2">
-              <ProductForm onSubmit={handleSubmit} onCancel={() => setOpen(false)} />
+              <ProductForm
+                method={method}
+                onSubmit={handleSubmit}
+                onCancel={() => handleToggleDialog(false, 'add')}
+              />
             </div>
           </ScrollArea>
         </DialogContent>

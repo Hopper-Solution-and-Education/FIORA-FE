@@ -1,6 +1,8 @@
 import { CategoryProductPage } from '../../domain/entities/Category';
 import { Product } from '../../domain/entities/Product';
 
+export type DialogStateType = 'add' | 'edit';
+
 interface CategoryState {
   categories: {
     isLoading: boolean;
@@ -11,6 +13,8 @@ interface CategoryState {
     hasMore: boolean;
   };
   isCreatingProduct: boolean;
+  isUpdatingProduct: boolean;
+  isOpenDialogAddEdit: boolean;
   products: {
     isLoading: boolean;
     items: Product[];
@@ -20,6 +24,7 @@ interface CategoryState {
     hasMore: boolean;
   };
   error: string | null;
+  dialogState: DialogStateType;
 }
 
 export const initialProductState: CategoryState = {
@@ -41,4 +46,7 @@ export const initialProductState: CategoryState = {
   },
   error: null,
   isCreatingProduct: false,
+  isUpdatingProduct: false,
+  isOpenDialogAddEdit: false,
+  dialogState: 'add',
 };

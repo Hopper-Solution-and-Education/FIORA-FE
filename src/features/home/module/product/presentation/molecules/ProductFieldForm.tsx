@@ -1,11 +1,11 @@
 'use client';
 
+import Loading from '@/components/common/Loading';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
 import { useAppSelector } from '@/store';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { useForm } from 'react-hook-form';
+import { UseFormReturn } from 'react-hook-form';
 import PriceField from '../atoms/PriceField';
 import ProductCategoryField from '../atoms/ProductCategoryField';
 import ProductDescriptionField from '../atoms/ProductDescriptionField';
@@ -14,36 +14,24 @@ import ProductItemsField from '../atoms/ProductItemsField';
 import ProductNameField from '../atoms/ProductNameField';
 import ProductTypeField from '../atoms/ProductTypeField';
 import TaxRateField from '../atoms/TaxRateField';
-import { type ProductFormValues, productSchema } from '../schema/addProduct.schema';
-import Loading from '@/components/common/Loading';
+import { type ProductFormValues } from '../schema/addProduct.schema';
 
 interface ProductFormProps {
+  method: UseFormReturn<ProductFormValues>;
   onSubmit: (data: ProductFormValues) => Promise<void>;
   onCancel: () => void;
 }
 
-const ProductForm = ({ onSubmit, onCancel }: ProductFormProps) => {
+const ProductForm = ({ method, onSubmit, onCancel }: ProductFormProps) => {
   const isCreatingProduct = useAppSelector((state) => state.productManagement.isCreatingProduct);
-
-  const method = useForm<ProductFormValues>({
-    resolver: yupResolver(productSchema),
-    defaultValues: {
-      icon: '',
-      name: '',
-      description: '',
-      price: undefined,
-      taxRate: undefined,
-      type: undefined,
-      category_id: '',
-      items: [],
-    },
-  });
+  const dialogState = useAppSelector((state) => state.productManagement.dialogState);
 
   return (
     <Form {...method}>
       <>{isCreatingProduct && <Loading />}</>
       <form onSubmit={method.handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <ProductIconField control={method.control} />
           <ProductTypeField control={method.control} errors={method.formState.errors} />
           <ProductNameField control={method.control} errors={method.formState.errors} />
           <ProductCategoryField control={method.control} errors={method.formState.errors} />
@@ -52,7 +40,6 @@ const ProductForm = ({ onSubmit, onCancel }: ProductFormProps) => {
         </div>
 
         <ProductDescriptionField control={method.control} errors={method.formState.errors} />
-        <ProductIconField control={method.control} />
         <ProductItemsField control={method.control} errors={method.formState.errors} />
 
         <DialogFooter>
@@ -60,7 +47,11 @@ const ProductForm = ({ onSubmit, onCancel }: ProductFormProps) => {
             Cancel
           </Button>
           <Button disabled={isCreatingProduct} type="submit">
-            {isCreatingProduct ? 'Creating...' : 'Create Product'}
+            {dialogState === 'add' ? (
+              <>{isCreatingProduct ? 'Creating...' : 'Create Product'}</>
+            ) : (
+              <>{isCreatingProduct ? 'Updating...' : 'Update Product'}</>
+            )}
           </Button>
         </DialogFooter>
       </form>

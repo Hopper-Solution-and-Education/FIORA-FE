@@ -8,6 +8,7 @@ const itemSchema = yup.object().shape({
 
 // Define the form schema
 const productSchema = yup.object({
+  id: yup.string(),
   icon: yup.string().required('Icon is required'),
   name: yup.string().required('Name is required').max(50, 'Name must be less than 50 characters'),
   description: yup.string().max(1000, 'Description must be less than 1000 characters'),
@@ -15,15 +16,26 @@ const productSchema = yup.object({
   taxRate: yup
     .number()
     .nullable()
-    .positive('Tax rate must be positive')
+    .min(0, 'Tax rate must be greater than 0')
     .max(100, 'Tax rate must be less than 100'),
   type: yup
     .mixed<ProductType>()
     .oneOf(Object.values(ProductType))
     .required('Product type is required'),
-  category_id: yup.string().required('Category is required'),
+  categoryId: yup.string().required('Category is required'),
   items: yup.array().of(itemSchema),
 });
+
+export const defaultProductFormValue: any = {
+  icon: '',
+  name: '',
+  description: '',
+  price: 0,
+  taxRate: 0,
+  type: '',
+  categoryId: '',
+  items: [],
+};
 
 // Define the form values type
 type ProductFormValues = yup.InferType<typeof productSchema>;

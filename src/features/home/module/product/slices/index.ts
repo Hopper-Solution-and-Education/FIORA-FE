@@ -6,12 +6,24 @@ import { CategoryProductPage, GetCategoryResponse } from '../domain/entities/Cat
 import { createProduct } from './actions/createProductAsyncThunk';
 import { fetchCategoriesProduct } from './actions/fetchCategoriesProduct';
 import { getProductsAsyncThunk } from './actions/getProductsAsyncThunk';
-import { initialProductState } from './types';
+import { updateProductAsyncThunk } from './actions/updateProductAsyncThunk';
+import { DialogStateType, initialProductState } from './types';
 
 const productManagementSlice = createSlice({
   name: 'productManagement',
   initialState: initialProductState,
-  reducers: {},
+  reducers: {
+    toggleDialogAddEdit: (state, action) => {
+      state.isOpenDialogAddEdit = action.payload;
+    },
+    setDialogState: (state, action: PayloadAction<DialogStateType>) => {
+      state.dialogState = action.payload;
+    },
+    updateProductListItems: (state, action) => {
+      state.products.items = action.payload;
+    },
+    resetProductManagementState: () => initialProductState,
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchCategoriesProduct.pending, (state) => {
@@ -45,6 +57,7 @@ const productManagementSlice = createSlice({
       })
       .addCase(createProduct.fulfilled, (state) => {
         state.isCreatingProduct = false;
+
         toast.success('Success', {
           description: 'Create product successfully!!',
         });
@@ -70,7 +83,36 @@ const productManagementSlice = createSlice({
         state.products.isLoading = false;
         state.error = action.error.message || 'Failed to get products';
       });
+
+    builder
+      .addCase(updateProductAsyncThunk.pending, (state) => {
+        state.isUpdatingProduct = true;
+      })
+      .addCase(updateProductAsyncThunk.fulfilled, (state, action) => {
+        state.isUpdatingProduct = false;
+
+        const updatedProduct = action.payload;
+        const index = state.products.items.findIndex((item) => item.id === updatedProduct.id);
+
+        if (index !== -1) {
+          state.products.items[index] = updatedProduct;
+        }
+
+        toast.success('Success', {
+          description: 'Update product successfully!!',
+        });
+      })
+      .addCase(updateProductAsyncThunk.rejected, (state, action) => {
+        state.isUpdatingProduct = false;
+        state.error = action.error.message || 'Failed to update product';
+      });
   },
 });
 
+export const {
+  toggleDialogAddEdit,
+  resetProductManagementState,
+  setDialogState,
+  updateProductListItems,
+} = productManagementSlice.actions;
 export default productManagementSlice.reducer;

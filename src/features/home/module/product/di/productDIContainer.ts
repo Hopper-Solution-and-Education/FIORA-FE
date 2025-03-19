@@ -9,6 +9,10 @@ import {
 } from '../domain/usecases/CreateProductUsecase';
 import { GetCategoryUseCase, IGetCategoryUseCase } from '../domain/usecases/GetCategoryUsecase';
 import { GetProductUseCase, IGetProductUseCase } from '../domain/usecases/GetProductUsecase';
+import {
+  IUpdateProductUseCase,
+  UpdateProductUseCase,
+} from '../domain/usecases/UpdateProductUsecase';
 import { TYPES } from './productDIContainer.type';
 
 const productDIContainer = new Container();
@@ -22,5 +26,8 @@ productDIContainer
   .bind<ICreateProductUseCase>(TYPES.ICreateProductUseCase)
   .to(CreateProductUseCase);
 productDIContainer.bind<IGetProductUseCase>(TYPES.IGetProductUseCase).to(GetProductUseCase);
+productDIContainer
+  .bind<IUpdateProductUseCase>(TYPES.IUpdateProductUseCase)
+  .to(UpdateProductUseCase);
 
 export { productDIContainer };

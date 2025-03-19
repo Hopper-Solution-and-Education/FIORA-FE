@@ -23,23 +23,25 @@ const ProductTypeField = ({ control, errors }: ProductTypeFieldProps) => {
     <FormField
       control={control}
       name="type"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Product Type</FormLabel>
-          <Select onValueChange={field.onChange} defaultValue={field.value}>
-            <FormControl>
-              <SelectTrigger className={cn({ 'border-red-500': errors.type })}>
-                <SelectValue placeholder="Select product type" />
-              </SelectTrigger>
-            </FormControl>
-            <SelectContent>
-              <SelectItem value={ProductType.Product}>Product</SelectItem>
-              <SelectItem value={ProductType.Service}>Service</SelectItem>
-            </SelectContent>
-          </Select>
-          <FormMessage />
-        </FormItem>
-      )}
+      render={({ field }) => {
+        return (
+          <FormItem>
+            <FormLabel>Product Type</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger className={cn({ 'border-red-500': errors.type })}>
+                  <SelectValue placeholder="Select product type" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value={ProductType.Product}>Product</SelectItem>
+                <SelectItem value={ProductType.Service}>Service</SelectItem>
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        );
+      }}
     />
   );
 };
