@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export function useLogin() {
   const [email, setEmail] = useState('');
@@ -12,18 +12,9 @@ export function useLogin() {
   const [success, setSuccess] = useState<string | null>(null);
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   console.log('Session:', session);
-
-  // check whether gg or credential login
-  useEffect(() => {
-    const loginType = searchParams?.get('type');
-    if (loginType === 'google') {
-      setSuccess('Google Login successful!');
-      const timer = setTimeout(() => setSuccess(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [searchParams]);
 
   const handleCredentialsSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,8 +33,9 @@ export function useLogin() {
         setSuccess('Login successful!');
         setEmail(''); // Reset email
         setPassword(''); // Reset password
+        router.push('/home');
       } else {
-        setError(response?.error || 'Login failed. Please try again.');
+        setError('Login failed. Please try again.');
       }
     } catch (error) {
       setError('An unexpected error occurred. Please try again.');
@@ -54,7 +46,7 @@ export function useLogin() {
     setError(null);
     setSuccess(null);
     try {
-      await signIn('google', { redirect: true, callbackUrl: '/auth/sign-in?type=google' });
+      await signIn('google', { redirect: true, callbackUrl: '/home' });
     } catch (error) {
       console.error('Google login error:', error);
       setError('An unexpected error occurred during Google login.');
