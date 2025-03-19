@@ -1,13 +1,10 @@
-import { productUseCase } from '@/features/setting/application/use-cases/productUseCase';
+import { createResponse } from '@/config/createResponse';
+import { categoryProductsUseCase } from '@/features/setting/application/use-cases/categoryProductUsecase';
+import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { ProductType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
-import { createResponse } from '@/config/createResponse';
-import { Messages } from '@/shared/constants/message';
-
-// Define the expected session structure
 
 export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
@@ -49,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-// Get all products
+// Get all category products
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   if (req.method !== 'GET') {
     return res.status(RESPONSE_CODE.METHOD_NOT_ALLOWED).json({ error: 'Method not allowed' });
@@ -57,7 +54,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
   try {
     const { page, pageSize } = req.query;
 
-    const categories = await productUseCase.getAllProducts({
+    const categoryProducts = await categoryProductsUseCase.getAllCategoryProducts({
       userId,
       page: Number(page) || 1,
       pageSize: Number(pageSize) || 20,
@@ -65,35 +62,39 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 
     return res
       .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, 'Get all products successfully', categories));
+      .json(
+        createResponse(
+          RESPONSE_CODE.OK,
+          'Get all category products successfully',
+          categoryProducts,
+        ),
+      );
   } catch (error: any) {
     res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
 }
 
-// Create a new product & service
+// Create a new category product
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { icon, name, description, tax_rate, price, type, category_id, items = [] } = req.body;
+    const { icon, name, description, tax_rate } = req.body;
 
-    if (![ProductType.Product, ProductType.Service].includes(type)) {
-      return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Invalid product type' });
-    }
-
-    const newProduct = await productUseCase.createProduct({
+    const newCategoryProduct = await categoryProductsUseCase.createCategoryProduct({
       userId,
-      type: type as ProductType,
       icon,
       name,
       description,
       tax_rate,
-      price,
-      category_id,
-      items,
     });
     return res
       .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, 'Create product successfully', newProduct));
+      .json(
+        createResponse(
+          RESPONSE_CODE.CREATED,
+          'Create category product successfully',
+          newCategoryProduct,
+        ),
+      );
   } catch (error: any) {
     res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
