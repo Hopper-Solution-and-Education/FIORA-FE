@@ -10,4 +10,8 @@ export interface ITransactionRepository {
   ): Promise<Transaction>;
   deleteTransaction(id: string, userId: string): Promise<void>;
   createTransaction(data: Prisma.TransactionUncheckedCreateInput): Promise<Transaction>;
+  findManyTransactions(
+    where: Prisma.TransactionWhereInput,
+    options?: Prisma.TransactionFindManyArgs,
+  ): Promise<Transaction[]>;
 }

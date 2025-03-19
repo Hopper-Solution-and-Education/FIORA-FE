@@ -51,3 +51,69 @@ export const calculateAvailableLimit = (limit: string, balance: string): string 
   const balanceValue = Number.parseFloat(balance) || 0;
   return (limitValue + balanceValue).toFixed(2);
 };
+
+// Helper function to build Prisma where clause
+export function buildWhereTransactionClause(restFilters: Record<string, any>): Record<string, any> {
+  const whereClause: Record<string, any> = {
+    isDeleted: false,
+  };
+
+  if (restFilters.date) {
+    if (restFilters.date instanceof Date) {
+      whereClause.date = {
+        equals: new Date(restFilters.date),
+      };
+    } else if (typeof restFilters.date === 'object') {
+      whereClause.date = {};
+      if (restFilters.date.from) {
+        whereClause.date.gte = new Date(restFilters.date.from);
+      }
+      if (restFilters.date.to) {
+        whereClause.date.lte = new Date(restFilters.date.to);
+      }
+    }
+  }
+
+  // Type filter (supports single or multiple types)
+  if (restFilters.type) {
+    if (Array.isArray(restFilters.type)) {
+      whereClause.type = {
+        in: restFilters.type,
+      };
+    } else {
+      whereClause.type = restFilters.type;
+    }
+  }
+
+  // From Account filter
+  if (restFilters.fromAccount) {
+    whereClause.fromAccount = {
+      name: {
+        equals: restFilters.fromAccount,
+        mode: 'insensitive',
+      },
+    };
+  }
+
+  // To Account filter
+  if (restFilters.toAccount) {
+    whereClause.toAccount = {
+      name: {
+        equals: restFilters.toAccount,
+        mode: 'insensitive',
+      },
+    };
+  }
+
+  // Partner filter
+  if (restFilters.partner) {
+    whereClause.partner = {
+      name: {
+        equals: restFilters.partner,
+        mode: 'insensitive',
+      },
+    };
+  }
+
+  return whereClause;
+}

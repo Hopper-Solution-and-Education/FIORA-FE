@@ -39,6 +39,13 @@ class TransactionRepository implements ITransactionRepository {
       data: { isDeleted: true },
     });
   }
+
+  async findManyTransactions(
+    where: Prisma.TransactionWhereInput,
+    options?: Prisma.TransactionFindManyArgs,
+  ): Promise<Transaction[]> {
+    return await prisma.transaction.findMany({ where, ...options });
+  }
 }
 
 export const transactionRepository = new TransactionRepository();

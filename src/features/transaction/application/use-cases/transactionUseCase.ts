@@ -15,6 +15,8 @@ import { categoryRepository } from '@/features/setting/infrastructure/repositori
 import { BooleanUtils } from '@/config/booleanUtils';
 import { Messages } from '@/shared/constants/message';
 import prisma from '@/infrastructure/database/prisma';
+import { buildWhereTransactionClause } from '@/shared/utils';
+import { TransactionGetPagination } from '@/shared/types/transaction.types';
 
 class TransactionUseCase {
   constructor(
@@ -306,6 +308,13 @@ class TransactionUseCase {
         updatedBy: userId,
       })),
     });
+  }
+
+  async getTransactions(params: TransactionGetPagination): Promise<Transaction[]> {
+    const { page = 1, pageSize = 20, filter, searchParams, sort = {} } = params;
+    const where = buildWhereTransactionClause(params.filter || {});
+
+    return this.transactionRepository.findManyTransactions(where, {});
   }
 
   private validateCreditCardAccount(account: Account, amount: number) {
