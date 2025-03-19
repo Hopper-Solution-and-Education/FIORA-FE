@@ -1,29 +1,25 @@
-// File: /setting/[tab]/page.tsx
 import { notFound } from 'next/navigation';
 import TabContent from '@/features/setting/presentation/components/TabContent';
 
-// Define the list of valid tabs
-const validTabs = ['account', 'partner'];
+// Define valid tabs
+const validTabs = ['account', 'partner'] as const;
 
-// Use generateStaticParams to pre-generate static routes for each tab
-export async function generateStaticParams() {
-  return validTabs.map((tab) => ({
-    tab,
-  }));
+export function generateStaticParams() {
+  return validTabs.map((tab) => ({ tab }));
 }
 
 interface SettingsTabPageProps {
-  params: {
-    tab: string;
-  };
+  params: Promise<{ tab: string }>;
 }
 
-export default function SettingsTabPage({ params }: SettingsTabPageProps) {
-  const { tab } = params;
+// The page component must be async because params is a Promise
+export default async function SettingsTabPage({ params }: SettingsTabPageProps) {
+  const { tab } = await params;
 
-  if (!validTabs.includes(tab)) {
+  if (!validTabs.includes(tab as any)) {
     notFound();
   }
 
+  // Render the TabContent component with the resolved tab value
   return <TabContent tab={tab} />;
 }
