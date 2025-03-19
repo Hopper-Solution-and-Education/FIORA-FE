@@ -94,37 +94,38 @@ model UserAuthentication {
 }
 
 model Product {
-  id           String               @id @default(uuid()) @db.Uuid
-  userId       String               @db.Uuid
-  catId        String               @db.Uuid
-  type         ProductType
-  icon         String
-  name         String               @db.VarChar(50)
-  description  String?              @db.VarChar(1000)
-  price        Decimal              @db.Decimal(13, 2)
-  taxRate      Decimal?             @db.Decimal(13, 2)
-  items        Json?                @db.Json
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-  createdBy    String               @db.Uuid
-  updatedBy    String?              @db.Uuid
-  category     Category             @relation("CategoryProducts", fields: [catId], references: [id])
-  user         User                 @relation("UserProducts", fields: [userId], references: [id])
-  transactions ProductTransaction[] @relation("ProductTransactions")
+  id               String               @id @default(uuid()) @db.Uuid
+  userId           String               @db.Uuid
+  catId            String               @db.Uuid
+  type             ProductType
+  icon             String
+  name             String               @db.VarChar(50)
+  description      String?              @db.VarChar(1000)
+  price            Decimal              @db.Decimal(13, 2)
+  taxRate          Decimal?             @db.Decimal(13, 2)
+  items            Json?                @db.Json
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  createdBy        String               @db.Uuid
+  updatedBy        String?              @db.Uuid
+  user             User                 @relation("UserProducts", fields: [userId], references: [id])
+  transactions     ProductTransaction[] @relation("ProductTransactions")
+  CategoryProducts CategoryProducts     @relation(fields: [catId], references: [id])
 
   @@index([userId])
   @@index([catId])
 }
 
 model CategoryProducts {
-  id          String   @id @default(uuid()) @db.Uuid
-  userId      String   @db.Uuid
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
   icon        String
-  name        String   @db.VarChar(50)
-  description String?  @db.VarChar(1000)
-  tax_rate    Decimal? @db.Decimal(13, 2)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  name        String    @db.VarChar(50)
+  description String?   @db.VarChar(1000)
+  tax_rate    Decimal?  @db.Decimal(13, 2)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  Product     Product[]
 }
 
 model Transaction {
@@ -250,7 +251,6 @@ model Category {
   parent           Category?     @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
   subCategories    Category[]    @relation("SubCategories")
   user             User          @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
-  products         Product[]     @relation("CategoryProducts")
   fromTransactions Transaction[] @relation("FromCategory")
   toTransactions   Transaction[] @relation("ToCategory")
 
