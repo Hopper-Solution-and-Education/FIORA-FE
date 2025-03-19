@@ -53,10 +53,10 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
   };
 
   useEffect(() => {
-    if (!fieldErrors.email) {
+    if (fieldErrors.email.length === 0 && email.length > 0) {
       validateExistedEmail();
     }
-  }, [email]);
+  }, [email, fieldErrors.email.length]);
 
   const validateForm = () => {
     const emailError = validateEmail(email);

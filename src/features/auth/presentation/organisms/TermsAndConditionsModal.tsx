@@ -55,7 +55,7 @@ const TermsAndConditionsModal = ({
     if (containerRef.current) {
       setPageWidth(containerRef.current.offsetWidth); // Set the width of the page based on parent container's width
     }
-  }, [containerRef.current]); // Recalculate when the component is mounted or the ref is updated
+  }, []); // Recalculate when the component is mounted or the ref is updated
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose} defaultOpen={false}>
@@ -64,7 +64,7 @@ const TermsAndConditionsModal = ({
           <DialogTitle>Terms and Conditions</DialogTitle>
           <DialogDescription>Please read the terms and conditions carefully.</DialogDescription>
         </AlertDialogHeader>
-        <div ref={containerRef} className="h-[70vh] overflow-y-scroll overflow-x-hidden">
+        <div ref={containerRef} className="h-[70vh] overflow-y-scroll overflow-x-scroll">
           {typeof window !== 'undefined' ? (
             <Document
               file={file}
