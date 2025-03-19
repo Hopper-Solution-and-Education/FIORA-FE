@@ -1,68 +1,30 @@
 'use client';
 
 import type React from 'react';
-
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/shared/utils';
-import { signIn } from 'next-auth/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useLogin } from '../../hooks/useLogin';
 
 export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-
-  const handleCredentialsSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-
-    try {
-      const response = await signIn('credentials', {
-        email,
-        password,
-        rememberMe,
-        redirect: false,
-      });
-      if (response?.ok) {
-        router.push('/home');
-      } else {
-        if (response?.error) {
-          setError('Invalid email or password. Please try again.');
-        } else {
-          setError('Login failed. Please try again.');
-        }
-      }
-    } catch (error: any) {
-      setError('An unexpected error occurred. Please try again.');
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setError(null);
-    try {
-      const res = await signIn('google', { callbackUrl: '/home' });
-      if (!res?.ok) {
-        setError('Google login failed. Please try again.');
-      }
-    } catch (error: any) {
-      console.error('Google login error:', error);
-      setError('An unexpected error occurred during Google login.');
-    }
-  };
-
-  const toggleRememberMe = () => {
-    setRememberMe(!rememberMe);
-  };
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    rememberMe,
+    toggleRememberMe,
+    error,
+    success,
+    handleCredentialsSignIn,
+    handleGoogleSignIn,
+  } = useLogin();
 
   return (
     <div className={cn('flex flex-col items-center gap-6', className)} {...props}>
@@ -75,6 +37,14 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
               <Alert variant="destructive" className="mb-4 w-full text-sm">
                 <AlertDescription className="text-red-700 dark:text-red-400">
                   {error}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {success && (
+              <Alert variant="default" className="mb-4 w-full text-sm border-green-500">
+                <AlertDescription className="text-green-700 dark:text-green-400">
+                  {success}
                 </AlertDescription>
               </Alert>
             )}
@@ -123,7 +93,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                     id="remember-me"
                     checked={rememberMe}
                     onCheckedChange={toggleRememberMe}
-                    className="h-4 w-4 cursor-pointer rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 data-[state=checked]:bg-blue-500 dark:data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-500 dark:data-[state=checked]:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    className="h-4 w-4 cursor-pointer rounded border border-gray-300 dark:border-gray-600"
                   />
                   <Label
                     htmlFor="remember-me"
@@ -141,7 +111,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
               <div className="flex justify-center w-full mt-7">
                 <Button
                   type="submit"
-                  className="text-lg font-semibold w-48 py-4 bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                  className="text-lg font-semibold w-48 py-4 bg-blue-500 text-white hover:bg-blue-600"
                 >
                   Go
                 </Button>
@@ -174,6 +144,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                 onClick={handleGoogleSignIn}
                 className="flex items-center justify-center w-8 h-8 cursor-pointer"
               >
+                {/* Google Icon SVG */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   x="0px"

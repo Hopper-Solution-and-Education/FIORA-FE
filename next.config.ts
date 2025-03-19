@@ -21,6 +21,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  //----Configurations for the PDF viewer
+  swcMinify: false,
+  webpack: (config) => {
+    config.resolve.alias.canvas = false;
+    return config;
+  },
+  //----End Configurations for the PDF viewer
 };
 
 export default withSentryConfig(withSentryConfig(nextConfig, sentryConfig), {
