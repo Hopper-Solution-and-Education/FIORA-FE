@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { TabActionHeader } from '../../components/TabActionHeader';
-import { AddPartnerModal } from './AddPartnerModal';
+import { AddPartnerModal } from './components/AddPartnerModal';
 import { TabComponentProps } from '../../types';
 
 const PartnerSettingPage = ({ title, description }: TabComponentProps) => {
@@ -11,7 +11,7 @@ const PartnerSettingPage = ({ title, description }: TabComponentProps) => {
       <TabActionHeader
         title={title}
         description={description}
-        buttonLabel="Add Partner"
+        buttonLabel=""
         modalComponent={AddPartnerModal}
       />
     </div>
