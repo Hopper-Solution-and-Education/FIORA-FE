@@ -16,3 +16,31 @@ export const fetchAccounts = createAsyncThunk(
     }
   },
 );
+
+export const fetchParents = createAsyncThunk(
+  'account/fetchParents',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response: Response<Account[]> = await accountServices.fetchParents();
+      return response;
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.message || 'Failed to fetch parent accounts! Please try again!',
+      });
+    }
+  },
+);
+
+export const createAccount = createAsyncThunk(
+  'account/createAccount',
+  async (data: Account, { rejectWithValue }) => {
+    try {
+      const response: Response<Account> = await accountServices.createAccount(data);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.message || 'Failed to create account! Please try again!',
+      });
+    }
+  },
+);

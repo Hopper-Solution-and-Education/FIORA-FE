@@ -2,6 +2,9 @@
 import PositiveAndNegativeBarChart, {
   BarItem,
 } from '@/components/common/positive-negative-bar-chart';
+import { Icons } from '@/components/Icon';
+// import { CreateAccountModal } from '@/features/home/module/account/components/CreateAccountPage';
+import { setAccountDialogOpen } from '@/features/home/module/account/slices';
 import { fetchAccounts } from '@/features/home/module/account/slices/actions';
 import { Account } from '@/features/home/module/account/slices/types';
 import { getAccountColorByType } from '@/features/home/module/account/slices/utils';
@@ -40,9 +43,17 @@ const AccountDashboard = () => {
   }, [accounts]);
 
   return (
-    <>
+    <div className="p-4 md:px-6">
+      <div className="flex justify-end">
+        <button
+          onClick={() => dispatch(setAccountDialogOpen(true))}
+          className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white"
+        >
+          <Icons.add className="h-6 w-6" />
+        </button>
+      </div>
       <PositiveAndNegativeBarChart
-        title="Account Balances"
+        title="Accounts"
         data={chartData}
         xAxisFormatter={(value) =>
           new Intl.NumberFormat(DEFAULT_LOCALE, { style: 'currency', currency: 'VND' }).format(
@@ -56,7 +67,23 @@ const AccountDashboard = () => {
           },
         }}
       />
-    </>
+
+      {/* <CreateAccountModal /> */}
+      {/* 
+      <AccountDetailDialog
+        account={selectedAccount}
+        isOpen={isDetailOpen}
+        onClose={handleCloseDetail}
+      />
+
+      <EditAccountDialog
+        account={selectedAccount}
+        isOpen={isEditOpen}
+        onClose={handleCloseEdit}
+        onSubmit={handleEditSubmit}
+        allAccounts={allAccounts}
+      /> */}
+    </div>
   );
 };
 

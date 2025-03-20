@@ -1,19 +1,17 @@
 export interface Account {
   id: string;
   userId: string;
-  icon: string;
+  icon?: string;
   name: string;
-  description: string;
-  type: string;
-  currency: string;
-  limit: string;
-  balance: string;
-  parentId: string | null;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  updatedBy: string | null;
-  children: Account[];
+  description?: string;
+  type: AccountType;
+  currency: Currency;
+  limit?: number;
+  balance: number;
+  parentId?: string | null;
+  children?: Account[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface AccountState {
@@ -23,10 +21,17 @@ export interface AccountState {
     error: string | null;
     message?: string;
   };
+  // parentAccounts: {
+  //   isLoading: boolean;
+  //   data: Account[] | undefined;
+  //   error: string | null;
+  //   message?: string;
+  // };
+
   selectedAccount: Account | null;
-  createDialogOpen: boolean;
-  editDialogOpen: boolean;
-  deleteConfirmOpen: boolean;
+  accountCreateDialog: boolean;
+  accountUpdateDialog: boolean;
+  accountDeleteDialog: boolean;
 }
 
 export const initialAccountState: AccountState = {
@@ -36,7 +41,35 @@ export const initialAccountState: AccountState = {
     error: null,
   },
   selectedAccount: null,
-  createDialogOpen: false,
-  editDialogOpen: false,
-  deleteConfirmOpen: false,
+  accountCreateDialog: false,
+  accountUpdateDialog: false,
+  accountDeleteDialog: false,
 };
+
+export enum AccountType {
+  Payment = 'Payment',
+  Saving = 'Saving',
+  Lending = 'Lending',
+  Debt = 'Debt',
+  CreditCard = 'CreditCard',
+}
+
+export enum Currency {
+  USD = 'USD',
+  VND = 'VND',
+}
+
+export interface CreateAccountModalProps {
+  isOpen: boolean;
+  setIsCreateModalOpen: (isOpen: boolean) => void;
+  setTriggered: (isTriggered: boolean) => void;
+  isTriggered: boolean;
+}
+
+export interface EditAccountModalProps {
+  isOpen: boolean;
+  setIsEditModalOpen: (isOpen: boolean) => void;
+  setTriggered: (isTriggered: boolean) => void;
+  isTriggered: boolean;
+  account: Account;
+}
