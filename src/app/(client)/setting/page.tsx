@@ -9,7 +9,7 @@ export default function SettingsPage() {
 
   // Redirect to /setting/account when the page loads
   useEffect(() => {
-    router.replace('/setting/account');
+    router.replace('/setting/partner');
   }, [router]);
 
   return <div>Redirecting to Account Settings...</div>;
