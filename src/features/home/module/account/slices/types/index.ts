@@ -21,13 +21,12 @@ export interface AccountState {
     error: string | null;
     message?: string;
   };
-  // parentAccounts: {
-  //   isLoading: boolean;
-  //   data: Account[] | undefined;
-  //   error: string | null;
-  //   message?: string;
-  // };
-
+  parentAccounts: {
+    isLoading: boolean;
+    data: Account[] | undefined;
+    error: string | null;
+    message?: string;
+  };
   selectedAccount: Account | null;
   accountCreateDialog: boolean;
   accountUpdateDialog: boolean;
@@ -36,6 +35,11 @@ export interface AccountState {
 
 export const initialAccountState: AccountState = {
   accounts: {
+    isLoading: false,
+    data: undefined,
+    error: null,
+  },
+  parentAccounts: {
     isLoading: false,
     data: undefined,
     error: null,

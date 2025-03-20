@@ -1,532 +1,305 @@
-// 'use client';
+'use client';
 
-// import { Alert, AlertDescription } from '@/components/ui/alert';
-// import { Button } from '@/components/ui/button';
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogFooter,
-//   DialogHeader,
-//   DialogTitle,
-// } from '@/components/ui/dialog';
-// import { Input } from '@/components/ui/input';
-// import { Label } from '@/components/ui/label';
-// import { Popover, PopoverTrigger } from '@/components/ui/popover';
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from '@/components/ui/select';
-// import { cn } from '@/shared/utils';
-// import { AlertCircle, ChevronDown } from 'lucide-react';
-// import { useEffect, useState } from 'react';
-// // import { Account, CreateAccountModalProps } from '../../../settingSlices/expenseIncomeSlides/types';
+import IconSelect from '@/components/common/IconSelect'; // Assuming this exists
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { setAccountDialogOpen } from '@/features/home/module/account/slices';
+import { createAccount } from '@/features/home/module/account/slices/actions';
+import {
+  defaultNewAccountValues,
+  NewAccountDefaultValues,
+  validateNewAccountSchema,
+} from '@/features/home/module/account/slices/types/formSchema';
+import { ACCOUNT_ICONS, ACCOUNT_TYPES } from '@/shared/constants/account';
+import { cn } from '@/shared/utils';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
-// import { setAccountDialogOpen, setSelectedAccount } from '@/features/home/module/account/slices';
-// import { createAccount } from '@/features/home/module/account/slices/actions';
-// import { ACCOUNT_ICONS, ACCOUNT_RULES, ACCOUNT_TYPES } from '@/shared/constants/account';
-// import { useAppDispatch, useAppSelector } from '@/store';
-// import { toast } from 'sonner';
+export function CreateAccountModal({ title }: { title?: string }) {
+  const dispatch = useAppDispatch();
+  const { accountCreateDialog, parentAccounts } = useAppSelector((state) => state.account);
 
-// interface CreateAccountModalProps {
-//   title?: string;
-// }
+  // Initialize the form with react-hook-form
+  const form = useForm<NewAccountDefaultValues>({
+    resolver: yupResolver(validateNewAccountSchema),
+    defaultValues: defaultNewAccountValues,
+  });
 
-// export function CreateAccountModal({ title }: CreateAccountModalProps) {
-//   const dispatch = useAppDispatch();
-//   const { accountCreateDialog } = useAppSelector((state) => state.account);
-//   const [formData, setFormData] = useState({
-//     icon: '',
-//     type: ACCOUNT_TYPES.PAYMENT,
-//     name: '',
-//     currency: 'VND',
-//     limit: '',
-//     available_limit: '',
-//     balance: '',
-//     parent: '',
-//     isParentSelected: false,
-//   });
+  // Watch the type field to filter icons dynamically
+  const type = form.watch('type');
+  const availableIcons = ACCOUNT_ICONS.filter((icon) => icon.types.includes(type));
 
-//   const [errors, setErrors] = useState<Record<string, string>>({});
-//   const [availableIcons, setAvailableIcons] = useState(ACCOUNT_ICONS);
-//   const [parentAccounts, setParentAccounts] = useState<Account[]>([]);
-//   const [errRes, setErrRes] = useState('');
-//   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  // Reset icon if it’s invalid for the new type
+  useEffect(() => {
+    const currentIcon = form.getValues('icon');
+    if (currentIcon && !availableIcons.some((icon) => icon.id === currentIcon)) {
+      form.setValue('icon', availableIcons[0]?.id || '');
+    }
+  }, [type, availableIcons, form]);
 
-//   const currentTypeRules = ACCOUNT_RULES[formData.type];
+  // Form submission handler
+  const onSubmit = (data: NewAccountDefaultValues) => {
+    const finalData: NewAccountDefaultValues = {
+      ...data,
+      balance: data.balance ? data.balance : 0,
+      limit: data.limit ? data.limit : undefined,
+      parentId: data.parentId || undefined,
+    };
+    dispatch(createAccount(finalData));
+    dispatch(setAccountDialogOpen(false));
+    toast.success('Account created successfully');
+  };
 
-//   useEffect(() => {
-//     const filteredIcons = ACCOUNT_ICONS.filter((icon) => icon.types.includes(formData.type));
-//     setAvailableIcons(filteredIcons);
+  // Calculate available limit for credit cards
+  const limit = form.watch('limit');
+  const balance = form.watch('balance');
+  let availableLimit = '';
+  if (type === ACCOUNT_TYPES.CREDIT_CARD && limit && balance) {
+    const limitNum = limit || 0;
+    const balanceNum = balance || 0;
+    availableLimit = (limitNum + balanceNum).toFixed(2); // Balance may be negative
+  }
 
-//     if (formData.icon) {
-//       const iconStillValid = filteredIcons.some((icon) => icon.id === formData.icon);
-//       if (!iconStillValid) {
-//         setFormData((prev) => ({
-//           ...prev,
-//           icon: filteredIcons.length > 0 ? filteredIcons[0].id : '',
-//         }));
-//       }
-//     } else if (filteredIcons.length > 0) {
-//       setFormData((prev) => ({ ...prev, icon: filteredIcons[0].id }));
-//     }
-//   }, [formData.type, formData.icon]);
+  return (
+    <Dialog
+      open={accountCreateDialog}
+      onOpenChange={(open) => dispatch(setAccountDialogOpen(open))}
+    >
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
+        <DialogHeader className="px-6 pt-6 pb-2">
+          <DialogTitle>{title || 'Create New Account'}</DialogTitle>
+        </DialogHeader>
 
-//   const handleCreateSubmit = async (dataCreate: any) => {
-//     if (!dataCreate) return;
-//     try {
-//       await dispatch(createAccount(dataCreate));
-//       dispatch(setAccountDialogOpen(false));
-//       dispatch(setSelectedAccount(null));
-//       toast.success('Account created successfully');
-//       form.reset();
-//     } catch (error: any) {
-//       console.error('Error updating account:', error);
-//       toast.error('Failed to update account');
-//     }
-//   };
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="px-6 py-4 space-y-4 max-h-[70vh] overflow-y-auto"
+          >
+            {/* Icon */}
+            <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+              <Label htmlFor="icon" className="text-right">
+                Icon<span className="text-red-500">*</span>
+              </Label>
+              <FormField
+                control={form.control}
+                name="icon"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <IconSelect selectedIcon={field.value} onIconChange={field.onChange} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-//   // Calculate available_limit for Credit Card in real-time
-//   useEffect(() => {
-//     if (formData.type === ACCOUNT_TYPES.CREDIT_CARD) {
-//       const limitValue = Number.parseFloat(formData.limit) || 0;
-//       const balanceValue = Number.parseFloat(formData.balance) || 0;
-//       const calculatedAvailableLimit = limitValue + balanceValue; // balance is negative
-//       if (calculatedAvailableLimit < 0) {
-//         // checked error already in validateForm
-//         if (errors.available_limit) {
-//           // set error for available_limit
-//           setErrors((prev) => ({
-//             ...prev,
-//             available_limit: 'Balance cannot be lower than -Credit Limit',
-//           }));
-//         }
-//       }
-//       setFormData((prev) => ({
-//         ...prev,
-//         available_limit: calculatedAvailableLimit.toFixed(2),
-//       }));
+            {/* Type */}
+            <div className="grid grid-cols-[120px_1fr] items-start gap-4">
+              <Label htmlFor="type" className="text-right pt-2">
+                Type<span className="text-red-500">*</span>
+              </Label>
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger id="type">
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.values(ACCOUNT_TYPES).map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-//       // Clear any available_limit-related errors
-//       if (errors.available_limit) {
-//         setErrors((prev) => {
-//           const newErrors = { ...prev };
-//           delete newErrors.available_limit;
-//           return newErrors;
-//         });
-//       }
-//     }
-//   }, [formData.limit, formData.balance, formData.type]);
+            {/* Name */}
+            <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name<span className="text-red-500">*</span>
+              </Label>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input id="name" placeholder="Enter account name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-//   useEffect(() => {
-//     fetchParents();
-//   }, [isTriggered, setTriggered]);
+            {/* Currency */}
+            <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+              <Label htmlFor="currency" className="text-right">
+                Currency<span className="text-red-500">*</span>
+              </Label>
+              <FormField
+                control={form.control}
+                name="currency"
+                render={({ field }) => (
+                  <FormItem>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger id="currency">
+                          <SelectValue placeholder="Select currency" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="VND">(đ) VND</SelectItem>
+                        <SelectItem value="USD">($) USD</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-//   const validateForm = () => {
-//     const newErrors: Record<string, string> = {};
+            {/* Credit Card Fields */}
+            {type === ACCOUNT_TYPES.CREDIT_CARD && (
+              <>
+                <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+                  <Label htmlFor="limit" className="text-right">
+                    Credit Limit<span className="text-red-500">*</span>
+                  </Label>
+                  <FormField
+                    control={form.control}
+                    name="limit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            id="limit"
+                            type="number"
+                            placeholder="0.00"
+                            {...field}
+                            value={field.value ?? ''}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+                  <Label className="text-right">Available Limit</Label>
+                  <Input
+                    value={availableLimit}
+                    readOnly
+                    className={cn(
+                      'bg-gray-100 cursor-not-allowed',
+                      Number.parseFloat(availableLimit) < 0 && 'text-red-500',
+                    )}
+                  />
+                </div>
+              </>
+            )}
 
-//     // Required fields
-//     if (!formData.name.trim()) {
-//       newErrors.name = 'Account name is required';
-//     }
+            {/* Balance */}
+            <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+              <Label htmlFor="balance" className="text-right">
+                Balance
+              </Label>
+              <FormField
+                control={form.control}
+                name="balance"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input id="balance" type="number" placeholder="0.00" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-//     if (!formData.icon) {
-//       newErrors.icon = 'Please select an icon';
-//     }
+            {/* Parent */}
+            <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+              <Label htmlFor="parentId" className="text-right">
+                Parent
+              </Label>
+              <FormField
+                control={form.control}
+                name="parentId"
+                render={({ field }) => (
+                  <FormItem>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        if (value) {
+                          const selectedParent = parentAccounts.data?.find((p) => p.id === value);
+                          if (selectedParent) {
+                            form.setValue('type', selectedParent.type);
+                          }
+                        }
+                      }}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger id="parentId">
+                          <SelectValue placeholder="Select parent account" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {parentAccounts.data?.map((account) => (
+                          <SelectItem key={account.id} value={account.id}>
+                            {account.name} ({account.type})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </form>
+        </Form>
 
-//     // Balance validation based on account type
-//     if (formData.balance) {
-//       const balanceValue = Number.parseFloat(formData.balance);
-
-//       if (isNaN(balanceValue)) {
-//         newErrors.balance = 'Balance must be a valid number';
-//       } else {
-//         // Check min balance constraint
-//         if (currentTypeRules.minBalance !== null && balanceValue < currentTypeRules.minBalance) {
-//           newErrors.balance = `Balance must be greater than or equal to ${currentTypeRules.minBalance}`;
-//         }
-
-//         // Check max balance constraint
-//         if (currentTypeRules.maxBalance !== null && balanceValue > currentTypeRules.maxBalance) {
-//           newErrors.balance = `Balance must be less than or equal to ${currentTypeRules.maxBalance}`;
-//         }
-//       }
-//     }
-
-//     // Credit limit validation for Credit Card
-//     if (formData.type === ACCOUNT_TYPES.CREDIT_CARD) {
-//       if (formData.limit) {
-//         const limitValue = Number.parseFloat(formData.limit);
-
-//         if (isNaN(limitValue)) {
-//           newErrors.limit = 'Credit limit must be a valid number';
-//         } else if (limitValue <= 0) {
-//           newErrors.limit = 'Credit limit must be greater than 0';
-//         }
-
-//         // Check if balance exceeds credit limit
-//         if (formData.balance && !newErrors.balance) {
-//           const balanceValue = Number.parseFloat(formData.balance);
-//           if (balanceValue < -limitValue) {
-//             newErrors.balance = `Balance cannot be lower than -${formData.limit} (credit limit)`;
-//           }
-//         }
-//       }
-//     }
-
-//     setErrors(newErrors);
-//     return Object.keys(newErrors).length === 0;
-//   };
-
-//   const handleChange = (field: string, value: string) => {
-//     // For parent field, use the special handler
-//     if (field === 'parent') {
-//       handleParentChange(value);
-//       return;
-//     }
-
-//     // For type field, use the special handler
-//     if (field === 'type') {
-//       handleTypeChange(value);
-//       return;
-//     }
-
-//     // Automatically convert balance to negative if type is Dept and Credit Card
-//     if (field === 'balance') {
-//       handleBalanceChange(value);
-//       return;
-//     }
-
-//     setFormData((prev) => ({ ...prev, [field]: value }));
-
-//     // Clear error when field is changed
-//     if (errors[field]) {
-//       setErrors((prev) => {
-//         const newErrors = { ...prev };
-//         delete newErrors[field];
-//         return newErrors;
-//       });
-//     }
-//   };
-
-//   const handleBalanceChange = (value: string) => {
-//     // Automatically convert balance to negative if type is Dept and Credit Card
-//     if ([ACCOUNT_TYPES.DEBT, ACCOUNT_TYPES.CREDIT_CARD].includes(formData.type)) {
-//       setFormData((prev) => ({ ...prev, balance: value.startsWith('-') ? value : `-${value}` }));
-//     } else {
-//       setFormData((prev) => ({ ...prev, balance: value }));
-//     }
-//   };
-
-//   const handleSubmit = () => {
-//     if (validateForm()) {
-//       // If balance is empty, set it to 0
-//       const finalData = {
-//         ...formData,
-//         balance: formData.balance || 0,
-//         limit: formData.limit || 0,
-//         parentId: formData.parent || null,
-//       };
-//       handleCreateSubmit(finalData);
-//     }
-//   };
-
-//   const handleParentChange = (parentId: string) => {
-//     if (!parentId) {
-//       setFormData((prev) => ({ ...prev, parent: '', isParentSelected: false }));
-//       return;
-//     }
-
-//     // Find the selected parent account
-//     const selectedParent = parentAccounts.find((p) => p.id === parentId);
-//     if (selectedParent) {
-//       // Update the parent and type in the form data
-//       setFormData((prev) => ({
-//         ...prev,
-//         parent: parentId,
-//         parentId: parentId,
-//         type: selectedParent.type, // Set the type to match the parent's type
-//         isParentSelected: true,
-//       }));
-//     } else {
-//       // Just update the parent if no matching parent found
-//       setFormData((prev) => ({
-//         ...prev,
-//         parent: parentId,
-//         isParentSelected: true,
-//       }));
-//     }
-
-//     // Clear any parent-related errors
-//     if (errors.parent) {
-//       setErrors((prev) => {
-//         const newErrors = { ...prev };
-//         delete newErrors.parent;
-//         return newErrors;
-//       });
-//     }
-//   };
-
-//   // Handle type change
-//   const handleTypeChange = (type: string) => {
-//     setFormData((prev) => ({
-//       ...prev,
-//       type,
-//       parent: '', // Reset parent when type changes
-//     }));
-
-//     // Clear any type-related errors
-//     if (errors.type) {
-//       setErrors((prev) => {
-//         const newErrors = { ...prev };
-//         delete newErrors.type;
-//         return newErrors;
-//       });
-//     }
-//   };
-
-//   // Get the selected icon component
-//   const getSelectedIcon = () => {
-//     const selectedIcon = ACCOUNT_ICONS.find((icon) => icon.id === formData.icon);
-//     if (selectedIcon) {
-//       const IconComponent = selectedIcon.icon;
-//       return <IconComponent className="h-6 w-6" />;
-//     }
-//     return null;
-//   };
-
-//   // * COMPONENT BEHAVIOR ZONE *
-//   const handleCloseDialog = (e: boolean) => {
-//     dispatch(setAccountDialogOpen(e));
-//     // form.reset();
-//   };
-
-//   return (
-//     <Dialog open={accountCreateDialog} onOpenChange={handleCloseDialog}>
-//       <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
-//         <DialogHeader className="px-6 pt-6 pb-2">
-//           <DialogTitle>New Account</DialogTitle>
-//           <DialogTitle>{title ? title : 'Create New Account'}</DialogTitle>
-//         </DialogHeader>
-
-//         <div className="px-6 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
-//           {errRes && (
-//             <Alert variant="destructive" className="mb-4">
-//               <AlertDescription>{errRes}</AlertDescription>
-//             </Alert>
-//           )}
-//           {successMessage && (
-//             <Alert variant="default" className="mb-4 border-green-500">
-//               <AlertDescription className="text-green-600">{successMessage}</AlertDescription>
-//             </Alert>
-//           )}
-
-//           {/* Icon */}
-//           <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-//             <Label htmlFor="icon" className="text-right">
-//               Icon<span className="text-red-500">*</span>
-//             </Label>
-//             <div className="space-y-2 ">
-//               <Popover>
-//                 <PopoverTrigger asChild>
-//                   <Button
-//                     variant="outline"
-//                     role="combobox"
-//                     className={cn('w-full justify-between', errors.icon && 'border-red-500')}
-//                   >
-//                     <div className="flex items-center gap-2">
-//                       {formData.icon ? (
-//                         <>
-//                           <div className="flex items-center justify-center h-6 w-6 rounded bg-muted">
-//                             {getSelectedIcon()}
-//                           </div>
-//                           <span>
-//                             {ACCOUNT_ICONS.find((icon) => icon.id === formData.icon)?.name ||
-//                               'Select icon'}
-//                           </span>
-//                         </>
-//                       ) : (
-//                         <span>Select icon</span>
-//                       )}
-//                     </div>
-//                     <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-//                   </Button>
-//                 </PopoverTrigger>
-//               </Popover>
-//               {errors.icon && <p className="text-xs text-red-500">{errors.icon}</p>}
-//             </div>
-//           </div>
-
-//           {/* Type */}
-//           <div className="grid grid-cols-[120px_1fr] items-start gap-4">
-//             <Label htmlFor="type" className="text-right pt-2">
-//               Type<span className="text-red-500">*</span>
-//             </Label>
-//             <div className="space-y-2">
-//               <Select value={formData.type} onValueChange={(value) => handleChange('type', value)}>
-//                 <SelectTrigger>
-//                   <SelectValue placeholder="Select type" />
-//                 </SelectTrigger>
-//                 <SelectContent>
-//                   <SelectItem value={ACCOUNT_TYPES.PAYMENT}>{ACCOUNT_TYPES.PAYMENT}</SelectItem>
-//                   <SelectItem value={ACCOUNT_TYPES.SAVING}>{ACCOUNT_TYPES.SAVING}</SelectItem>
-//                   <SelectItem value={ACCOUNT_TYPES.CREDIT_CARD}>
-//                     {ACCOUNT_TYPES.CREDIT_CARD}
-//                   </SelectItem>
-//                   <SelectItem value={ACCOUNT_TYPES.DEBT}>{ACCOUNT_TYPES.DEBT}</SelectItem>
-//                   <SelectItem value={ACCOUNT_TYPES.LENDING}>{ACCOUNT_TYPES.LENDING}</SelectItem>
-//                 </SelectContent>
-//               </Select>
-//               <p className="text-xs text-muted-foreground">{currentTypeRules.description}</p>
-//             </div>
-//           </div>
-
-//           {/* Name */}
-//           <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-//             <Label htmlFor="name" className="text-right">
-//               Name<span className="text-red-500">*</span>
-//             </Label>
-//             <div className="space-y-2">
-//               <Input
-//                 id="name"
-//                 value={formData.name}
-//                 onChange={(e) => handleChange('name', e.target.value)}
-//                 placeholder="Enter account name"
-//                 className={errors.name ? 'border-red-500' : ''}
-//               />
-//               {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
-//             </div>
-//           </div>
-
-//           {/* Currency */}
-//           <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-//             <Label htmlFor="currency" className="text-right">
-//               Currency<span className="text-red-500">*</span>
-//             </Label>
-//             <Select
-//               value={formData.currency}
-//               onValueChange={(value) => handleChange('currency', value)}
-//             >
-//               <SelectTrigger>
-//                 <SelectValue placeholder="Select currency" />
-//               </SelectTrigger>
-//               <SelectContent>
-//                 <SelectItem value="VND">(đ) VND</SelectItem>
-//                 <SelectItem value="USD">($) USD</SelectItem>
-//               </SelectContent>
-//             </Select>
-//           </div>
-
-//           {formData.type === ACCOUNT_TYPES.CREDIT_CARD && (
-//             <>
-//               <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-//                 <Label htmlFor="available_limit" className="text-right">
-//                   Available Limit
-//                 </Label>
-//                 <div className="space-y-2">
-//                   <Input
-//                     id="available_limit"
-//                     value={formData.available_limit}
-//                     readOnly
-//                     placeholder="0.00"
-//                     className={cn(
-//                       'bg-gray-100 cursor-not-allowed',
-//                       errors.available_limit && 'border-red-500',
-//                       Number.parseFloat(formData.available_limit) < 0 && 'text-red-500',
-//                     )}
-//                   />
-//                   {errors.available_limit && (
-//                     <p className="text-xs text-red-500">{errors.available_limit}</p>
-//                   )}
-//                 </div>
-//               </div>
-//               <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-//                 <Label htmlFor="limit" className="text-right">
-//                   Credit Limit
-//                 </Label>
-//                 <div className="space-y-2">
-//                   <Input
-//                     id="limit"
-//                     value={formData.limit}
-//                     onChange={(e) => handleChange('limit', e.target.value)}
-//                     placeholder="0.00"
-//                     className={errors.limit ? 'border-red-500' : ''}
-//                   />
-//                   {errors.limit && <p className="text-xs text-red-500">{errors.limit}</p>}
-//                 </div>
-//               </div>
-//             </>
-//           )}
-
-//           {/* Balance */}
-//           <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-//             <Label htmlFor="balance" className="text-right">
-//               Balance
-//             </Label>
-//             <div className="space-y-2">
-//               <Input
-//                 id="balance"
-//                 type="number"
-//                 value={formData.balance}
-//                 onChange={(e) => handleChange('balance', e.target.value)}
-//                 placeholder="0.00"
-//                 className={cn(
-//                   errors.balance && 'border-red-500',
-//                   formData.balance?.startsWith('-') && 'text-red-500',
-//                 )}
-//               />
-//               {errors.balance && <p className="text-xs text-red-500">{errors.balance}</p>}
-//             </div>
-//           </div>
-
-//           {/* Parent */}
-//           <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-//             <Label htmlFor="parent" className="text-right">
-//               Parent
-//             </Label>
-//             <div className="space-y-2">
-//               <Select
-//                 value={formData.parent}
-//                 onValueChange={(value) => handleChange('parent', value)}
-//               >
-//                 <SelectTrigger>
-//                   <SelectValue placeholder="Select parent account" />
-//                 </SelectTrigger>
-//                 <SelectContent>
-//                   {parentAccounts.length > 0 ? (
-//                     parentAccounts?.map((account) => (
-//                       <SelectItem key={account?.id} value={account?.id}>
-//                         {account?.name} ({account?.type})
-//                       </SelectItem>
-//                     ))
-//                   ) : (
-//                     <SelectItem key="no-accounts" value="no-accounts" disabled>
-//                       No parent accounts available
-//                     </SelectItem>
-//                   )}
-//                 </SelectContent>
-//               </Select>
-//             </div>
-//           </div>
-//           {Object.keys(errors).length > 0 && (
-//             <Alert variant="destructive" className="mt-4">
-//               <AlertCircle className="h-4 w-4" />
-//               <AlertDescription>Please fix the errors before submitting the form.</AlertDescription>
-//             </Alert>
-//           )}
-//         </div>
-
-//         <DialogFooter className="bg-muted/50 px-6 py-4">
-//           <div className="flex justify-between w-full">
-//             <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
-//               Cancel
-//             </Button>
-//             <Button onClick={handleSubmit}>Submit</Button>
-//           </div>
-//         </DialogFooter>
-//       </DialogContent>
-//     </Dialog>
-//   );
-// }
+        <DialogFooter className="bg-muted/50 px-6 py-4">
+          <div className="flex justify-between w-full">
+            <Button variant="outline" onClick={() => dispatch(setAccountDialogOpen(false))}>
+              Cancel
+            </Button>
+            <Button onClick={form.handleSubmit(onSubmit)}>Submit</Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

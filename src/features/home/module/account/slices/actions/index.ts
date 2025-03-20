@@ -2,6 +2,7 @@ import accountServices from '@/features/home/services/accountServices';
 import { Response } from '@/shared/types/Common.types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { Account } from '../types';
+import { NewAccountDefaultValues } from '@/features/home/module/account/slices/types/formSchema';
 
 export const fetchAccounts = createAsyncThunk(
   'account/fetchAccounts',
@@ -33,7 +34,7 @@ export const fetchParents = createAsyncThunk(
 
 export const createAccount = createAsyncThunk(
   'account/createAccount',
-  async (data: Account, { rejectWithValue }) => {
+  async (data: NewAccountDefaultValues, { rejectWithValue }) => {
     try {
       const response: Response<Account> = await accountServices.createAccount(data);
       return response;

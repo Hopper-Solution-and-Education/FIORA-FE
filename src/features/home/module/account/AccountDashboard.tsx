@@ -3,7 +3,7 @@ import PositiveAndNegativeBarChart, {
   BarItem,
 } from '@/components/common/positive-negative-bar-chart';
 import { Icons } from '@/components/Icon';
-// import { CreateAccountModal } from '@/features/home/module/account/components/CreateAccountPage';
+import { CreateAccountModal } from '@/features/home/module/account/components/CreateAccountPage';
 import { setAccountDialogOpen } from '@/features/home/module/account/slices';
 import { fetchAccounts } from '@/features/home/module/account/slices/actions';
 import { Account } from '@/features/home/module/account/slices/types';
@@ -68,7 +68,7 @@ const AccountDashboard = () => {
         }}
       />
 
-      {/* <CreateAccountModal /> */}
+      <CreateAccountModal />
       {/* 
       <AccountDetailDialog
         account={selectedAccount}
