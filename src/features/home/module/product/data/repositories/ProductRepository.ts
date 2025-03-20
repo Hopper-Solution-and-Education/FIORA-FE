@@ -2,6 +2,8 @@ import { inject, injectable } from 'inversify';
 import { TYPES } from '../../di/productDIContainer.type';
 import {
   CreateProductResponse,
+  DeleteProductRequest,
+  DeleteProductResponse,
   GetProductResponse,
   UpdateProductRequest,
   UpdateProductResponse,
@@ -15,6 +17,7 @@ export interface IProductRepository {
   createProduct: (request: ProductFormValues) => Promise<CreateProductResponse>;
   getProducts: (request: GetProductAPIRequestDTO) => Promise<GetProductResponse>;
   updateProduct: (request: UpdateProductRequest) => Promise<UpdateProductResponse>;
+  deleteProduct: (request: DeleteProductRequest) => Promise<DeleteProductResponse>;
 }
 
 @injectable()
@@ -23,6 +26,12 @@ export class ProductRepository implements IProductRepository {
 
   constructor(@inject(TYPES.IProductAPI) productApi: IProductAPI) {
     this.productApi = productApi;
+  }
+
+  async deleteProduct(request: DeleteProductRequest) {
+    const requestAPI = ProductMapper.toDeleteProductAPIRequest(request);
+    const response = await this.productApi.deleteProduct(requestAPI);
+    return ProductMapper.toDeleteProductResponse(response);
   }
 
   async createProduct(request: ProductFormValues) {

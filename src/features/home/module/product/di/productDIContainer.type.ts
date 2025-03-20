@@ -8,4 +8,5 @@ export const TYPES = {
   IGetCategoryUseCase: Symbol.for('IGetCategoryUseCase'),
   IGetProductUseCase: Symbol.for('IGetProductUseCase'),
   IUpdateProductUseCase: Symbol.for('IUpdateProductUseCase'),
+  IDeleteProductUseCase: Symbol.for('IDeleteProductUseCase'),
 };

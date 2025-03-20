@@ -7,11 +7,14 @@ import { UpdateProductAPIRequestDTO } from '../dto/request/UpdateProductAPIReque
 import { CreateProductAPIResponseDTO } from '../dto/response/CreateProductAPIResponseDTO';
 import { GetProductAPIResponseDTO } from '../dto/response/GetProductAPIResponseDTO';
 import { UpdateProductAPIResponseDTO } from '../dto/response/UpdateProductAPIResponseDTO';
+import { DeleteProductAPIRequestDTO } from '../dto/request/DeleteProductAPIRequestDTO';
+import { DeleteProductAPIResponseDTO } from '../dto/response/DeleteProductAPIResponseDTO';
 
 interface IProductAPI {
   createProduct(data: CreateProductAPIRequestDTO): Promise<CreateProductAPIResponseDTO>;
   updateProduct(data: UpdateProductAPIRequestDTO): Promise<UpdateProductAPIResponseDTO>;
   getProducts(data: GetProductAPIRequestDTO): Promise<GetProductAPIResponseDTO>;
+  deleteProduct(data: DeleteProductAPIRequestDTO): Promise<DeleteProductAPIResponseDTO>;
 }
 
 @injectable()
@@ -29,6 +32,10 @@ class ProductAPI implements IProductAPI {
 
   async updateProduct(data: UpdateProductAPIRequestDTO): Promise<UpdateProductAPIResponseDTO> {
     return await httpClient.put<UpdateProductAPIResponseDTO>(`/api/products/${data.id}`, data);
+  }
+
+  async deleteProduct(data: DeleteProductAPIRequestDTO): Promise<DeleteProductAPIResponseDTO> {
+    return await httpClient.delete<DeleteProductAPIResponseDTO>(`/api/products/${data.id}`);
   }
 }
 export { ProductAPI };

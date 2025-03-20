@@ -4,6 +4,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 import { CategoryProductPage, GetCategoryResponse } from '../domain/entities/Category';
 import { createProduct } from './actions/createProductAsyncThunk';
+import { deleteProductAsyncThunk } from './actions/deleteProductAsyncThunk';
 import { fetchCategoriesProduct } from './actions/fetchCategoriesProduct';
 import { getProductsAsyncThunk } from './actions/getProductsAsyncThunk';
 import { updateProductAsyncThunk } from './actions/updateProductAsyncThunk';
@@ -105,6 +106,23 @@ const productManagementSlice = createSlice({
       .addCase(updateProductAsyncThunk.rejected, (state, action) => {
         state.isUpdatingProduct = false;
         state.error = action.error.message || 'Failed to update product';
+      });
+
+    builder
+      .addCase(deleteProductAsyncThunk.pending, (state, action) => {
+        state.isDeletingProduct = true;
+      })
+      .addCase(deleteProductAsyncThunk.fulfilled, (state, action) => {
+        state.isDeletingProduct = false;
+        const deletedProductId = action.payload.id;
+        state.products.items = state.products.items.filter((item) => item.id !== deletedProductId);
+        toast.success('Success', {
+          description: 'Delete product successfully!!',
+        });
+      })
+      .addCase(deleteProductAsyncThunk.rejected, (state, action) => {
+        state.isDeletingProduct = false;
+        state.error = action.error.message || 'Failed to delete product';
       });
   },
 });
