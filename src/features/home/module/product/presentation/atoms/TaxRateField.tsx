@@ -21,30 +21,18 @@ interface TaxRateFieldProps {
 
 const TaxRateField = ({ control, errors }: TaxRateFieldProps) => {
   const formatTaxRate = useCallback((value: number | null | undefined): string => {
-    if (value === null || value === undefined) {
-      return '';
-    }
-    return parseFloat(value.toFixed(2)).toString();
+    return value == null ? '' : `${parseFloat(value.toFixed(2))}`;
   }, []);
 
   const removeLeadingZeros = useCallback((value: string): string => {
-    if (!value) {
-      return '';
-    }
-    return value.replace(/^0+(?=[1-9]|\.)/, '');
+    return value.replace(/^0+(?=[1-9]|\.)/, '') || '0';
   }, []);
 
   const handleInputChange = useCallback(
-    (
-      e: React.ChangeEvent<HTMLInputElement>,
-      field: { onChange: (value: any) => void; value: any },
-    ) => {
-      let newValue = e.target.value;
-      if (newValue.length > 3) {
-        newValue = newValue.slice(0, 3); // Truncate to 3 characters
-      }
+    (e: React.ChangeEvent<HTMLInputElement>, field: { onChange: (value: any) => void }) => {
+      let newValue = e.target.value.replace(/[^0-9.]/g, '').slice(0, 3);
       newValue = removeLeadingZeros(newValue);
-      field.onChange(newValue === '' ? undefined : parseFloat(newValue));
+      field.onChange(newValue ? parseFloat(newValue) : undefined);
     },
     [removeLeadingZeros],
   );
@@ -59,26 +47,23 @@ const TaxRateField = ({ control, errors }: TaxRateFieldProps) => {
           <FormControl>
             <Input
               className={cn({ 'border-red-500': errors.taxRate })}
-              type="number"
-              step="0.01"
-              placeholder="0.00"
+              type="text"
+              inputMode="decimal"
+              placeholder="0.00%"
               {...field}
+              value={field.value != null ? formatTaxRate(field.value) : undefined}
+              onChange={(e) => handleInputChange(e, field)}
+              onBlur={() => {
+                const parsedValue = parseFloat((field.value || 0).toFixed(2));
+                field.onChange(parsedValue);
+              }}
               onKeyDown={(e) => {
                 if (
                   isNaN(Number(e.key)) &&
-                  e.key !== 'Backspace' &&
-                  e.key !== 'Delete' &&
-                  e.key !== '.' &&
-                  e.key !== 'ArrowLeft' &&
-                  e.key !== 'ArrowRight'
+                  !['Backspace', 'Delete', '.', 'ArrowLeft', 'ArrowRight'].includes(e.key)
                 ) {
                   e.preventDefault();
                 }
-              }}
-              value={field.value === null ? '' : field.value}
-              onChange={(e) => handleInputChange(e, field)}
-              onBlur={() => {
-                field.onChange(parseFloat((field.value || 0).toFixed(2)));
               }}
             />
           </FormControl>

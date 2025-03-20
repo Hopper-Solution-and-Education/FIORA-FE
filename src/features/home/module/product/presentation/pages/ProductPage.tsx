@@ -4,14 +4,22 @@ import PageContainer from '@/components/layouts/PageContainer';
 import { Separator } from '@/components/ui/separator';
 import { DashboardHeading } from '@/features/home/components/DashboardHeading';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Product } from '../../domain/entities/Product';
+import { setDialogState, toggleDialogAddEdit } from '../../slices';
 import { fetchCategoriesProduct } from '../../slices/actions/fetchCategoriesProduct';
 import { getProductsAsyncThunk } from '../../slices/actions/getProductsAsyncThunk';
 import AddProductDialog from '../organisms/AddProductDialog';
 import DeleteProductDialog from '../organisms/DeleteProductDialog';
 import ProductTable from '../organisms/ProductTable';
+import {
+  defaultProductFormValue,
+  ProductFormValues,
+  productSchema,
+} from '../schema/addProduct.schema';
 
 const ProductPage = () => {
   const { page, limit } = useAppSelector((state) => state.productManagement.categories);
@@ -20,6 +28,15 @@ const ProductPage = () => {
     isLoading,
     total,
   } = useAppSelector((state) => state.productManagement.products);
+
+  const method = useForm<ProductFormValues>({
+    resolver: yupResolver(productSchema),
+    defaultValues: defaultProductFormValue,
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+  });
+
+  const { reset } = method;
   const dispatch = useAppDispatch();
 
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
@@ -31,11 +48,19 @@ const ProductPage = () => {
   }, []);
 
   const handleEditProduct = (product: Product) => {
-    // Implement edit functionality
-    toast('Edit Product', {
-      description: `Editing product: ${product.name}`,
+    dispatch(setDialogState('edit'));
+    reset({
+      id: product.id,
+      icon: product.icon || '',
+      name: product.name || '',
+      description: product.description || '',
+      price: product.price ?? 0,
+      taxRate: product.taxRate ?? 0,
+      type: product.type ?? '',
+      categoryId: product.categoryId || '',
+      items: product.items || [],
     });
-    // You would typically open a dialog or navigate to an edit page
+    dispatch(toggleDialogAddEdit(true));
   };
 
   const handleDeleteProduct = (product: Product) => {
@@ -55,9 +80,6 @@ const ProductPage = () => {
 
     setProductToDelete(null);
     setDeleteDialogOpen(false);
-
-    // Refresh the product list
-    dispatch(getProductsAsyncThunk({ page: 1, pageSize: 10 }));
   };
 
   return (
@@ -65,7 +87,7 @@ const ProductPage = () => {
       <div className="flex flex-1 flex-col space-y-4">
         <div className="flex items-start justify-between">
           <DashboardHeading title="Products" description="Manage products" />
-          <AddProductDialog />
+          <AddProductDialog method={method} />
         </div>
 
         <Separator />

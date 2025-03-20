@@ -1,3 +1,3 @@
 import { Pagination } from '@/shared/types/Common.types';
 
-export type GetCategoryAPIRequest = Pagination;
+export type GetCategoryAPIRequestDTO = Pagination;

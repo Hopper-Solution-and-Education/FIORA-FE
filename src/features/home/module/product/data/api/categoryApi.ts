@@ -1,10 +1,10 @@
 import { httpClient } from '@/config/HttpClient';
 import { injectable } from 'inversify';
-import { GetCategoryAPIRequest } from '../dto/request/GetCategoryAPIRequest';
-import { GetCategoriesAPIResponse } from '../dto/response/GetCategoryAPIResponse';
+import { GetCategoryAPIRequestDTO } from '../dto/request/GetCategoryAPIRequestDTO';
+import { GetCategoryAPIResponseDTO } from '../dto/response/GetCategoryAPIResponseDTO';
 
 interface ICategoryAPI {
-  fetchCategories(pagination: GetCategoryAPIRequest): Promise<GetCategoriesAPIResponse>;
+  fetchCategories(pagination: GetCategoryAPIRequestDTO): Promise<GetCategoryAPIResponseDTO>;
 }
 
 @injectable()
@@ -12,7 +12,7 @@ class CategoryAPI implements ICategoryAPI {
   async fetchCategories({
     page,
     pageSize,
-  }: GetCategoryAPIRequest): Promise<GetCategoriesAPIResponse> {
+  }: GetCategoryAPIRequestDTO): Promise<GetCategoryAPIResponseDTO> {
     return await httpClient.get(`/api/products/category?page=${page}&limit=${pageSize}`);
   }
 }

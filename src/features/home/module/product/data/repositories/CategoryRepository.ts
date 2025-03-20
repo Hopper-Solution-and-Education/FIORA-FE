@@ -2,10 +2,10 @@ import { inject, injectable } from 'inversify';
 import { TYPES } from '../../di/productDIContainer.type';
 import { GetCategoryResponse } from '../../domain/entities/Category';
 import type { ICategoryAPI } from '../api/categoryApi';
-import { GetCategoryAPIRequest } from '../dto/request/GetCategoryAPIRequest';
+import { GetCategoryAPIRequestDTO } from '../dto/request/GetCategoryAPIRequestDTO';
 
 export interface ICategoryRepository {
-  getListCategory: (sectionType: GetCategoryAPIRequest) => Promise<GetCategoryResponse>;
+  getListCategory: (sectionType: GetCategoryAPIRequestDTO) => Promise<GetCategoryResponse>;
 }
 
 @injectable()
@@ -16,7 +16,7 @@ export class CategoryRepository implements ICategoryRepository {
     this.categoryAPI = sectionApi;
   }
 
-  async getListCategory(request: GetCategoryAPIRequest): Promise<GetCategoryResponse> {
+  async getListCategory(request: GetCategoryAPIRequestDTO): Promise<GetCategoryResponse> {
     const response = await this.categoryAPI.fetchCategories(request);
     return {
       page: response.data.page,
