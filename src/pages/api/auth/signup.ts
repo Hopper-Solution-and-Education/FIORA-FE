@@ -8,6 +8,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'POST') {
     return POST(req, res);
   }
+  if (req.method === 'PATCH') {
+    return PATCH(req, res);
+  }
 }
 
 export async function POST(req: NextApiRequest, res: NextApiResponse) {
@@ -56,8 +59,32 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
 
     return res
       .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, 'Register successfully'));
+      .json(
+        createResponse(RESPONSE_CODE.CREATED, 'You have registered for an account successfully!'),
+      );
   } catch (error) {
     return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: 'Đã có lỗi xảy ra' });
+  }
+}
+
+export async function PATCH(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    const { email } = req.body;
+
+    if (!email || typeof email !== 'string') {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json({ message: 'Email is required and must be a string' });
+    }
+
+    const userFound = await UserUSeCaseInstance.verifyEmail(email);
+
+    if (userFound) {
+      return res.status(RESPONSE_CODE.NOT_ACCEPTABLE).json({ message: 'Email already exists' });
+    }
+
+    return res.status(RESPONSE_CODE.OK).json({ message: 'Email is available' });
+  } catch (error) {
+    return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred' });
   }
 }
