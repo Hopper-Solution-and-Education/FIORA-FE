@@ -1,4 +1,14 @@
 import { iconOptions } from '@/shared/constants/data';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+export function generateOtp() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
 export const useGetIconLabel = (icon: string): string => {
   return (
@@ -7,6 +17,12 @@ export const useGetIconLabel = (icon: string): string => {
       ?.options.find((o) => o.value === icon)?.label || ''
   );
 };
+
+export const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+  }).format(value);
 
 export const convertUSDToVND = (amountUSD: number) => {
   const exchangeRate = 24800; // Fixed exchange rate
@@ -28,4 +44,10 @@ export const convertVNDToUSD = (amountVND: number) => {
     style: 'currency',
     currency: 'USD',
   });
+};
+
+export const calculateAvailableLimit = (limit: string, balance: string): string => {
+  const limitValue = Number.parseFloat(limit) || 0;
+  const balanceValue = Number.parseFloat(balance) || 0;
+  return (limitValue + balanceValue).toFixed(2);
 };

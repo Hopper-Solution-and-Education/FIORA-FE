@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -19,17 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 import { AlertCircle, ChevronDown } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { Account, CreateAccountModalProps } from '../../../settingSlices/expenseIncomeSlides/types';
-import {
-  ACCOUNT_ICONS,
-  ACCOUNT_RULES,
-  ACCOUNT_TYPES,
-  FALLBACK_PARENT_ACCOUNTS,
-  PARENT_ACCOUNTS,
-} from '../mockData';
+// import { Account, CreateAccountModalProps } from '../../../settingSlices/expenseIncomeSlides/types';
+
+import { ACCOUNT_ICONS, ACCOUNT_RULES, ACCOUNT_TYPES } from '../mockData';
+import { CreateAccountModalProps, Account } from '@/features/home/module/category/slices/types';
 
 export function CreateAccountModal({
   isOpen,
@@ -43,32 +39,24 @@ export function CreateAccountModal({
     name: '',
     currency: 'VND',
     limit: '',
+    available_limit: '',
     balance: '',
     parent: '',
     isParentSelected: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [availableParents, setAvailableParents] = useState(PARENT_ACCOUNTS);
   const [availableIcons, setAvailableIcons] = useState(ACCOUNT_ICONS);
   const [parentAccounts, setParentAccounts] = useState<Account[]>([]);
   const [errRes, setErrRes] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Get the current account type rules
   const currentTypeRules = ACCOUNT_RULES[formData.type];
 
-  // Update available parents and icons when account type changes
   useEffect(() => {
-    // Filter available parents based on selected type
-    const filteredParents = PARENT_ACCOUNTS.filter((p) => p.type === formData.type);
-    setAvailableParents(filteredParents);
-
-    // Filter available icons based on selected type
     const filteredIcons = ACCOUNT_ICONS.filter((icon) => icon.types.includes(formData.type));
     setAvailableIcons(filteredIcons);
 
-    // If current icon is not valid for the new type, reset it
     if (formData.icon) {
       const iconStillValid = filteredIcons.some((icon) => icon.id === formData.icon);
       if (!iconStillValid) {
@@ -78,12 +66,10 @@ export function CreateAccountModal({
         }));
       }
     } else if (filteredIcons.length > 0) {
-      // Set default icon for the type if none is selected
       setFormData((prev) => ({ ...prev, icon: filteredIcons[0].id }));
     }
-  }, [formData.type, formData.icon]); // Added formData.icon to dependencies
+  }, [formData.type, formData.icon]);
 
-  // Fetch parent accounts from API
   const fetchParents = useCallback(async () => {
     try {
       const res = await fetch('/api/accounts/lists?isParent=true', {
@@ -92,8 +78,7 @@ export function CreateAccountModal({
       });
 
       if (res.status !== 200) {
-        alert('Failed to fetch parent accounts');
-        setParentAccounts(FALLBACK_PARENT_ACCOUNTS);
+        setParentAccounts([]);
         return;
       }
 
@@ -104,13 +89,12 @@ export function CreateAccountModal({
         setParentAccounts(accounts);
       } else {
         console.error('Unexpected API response format');
-        setParentAccounts(FALLBACK_PARENT_ACCOUNTS);
+        setParentAccounts([]);
       }
     } catch (error) {
       console.error('Error fetching parent accounts:', error);
-      setParentAccounts(FALLBACK_PARENT_ACCOUNTS);
+      setParentAccounts([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const handleCreateSubmit = async (dataCreate: any) => {
@@ -131,17 +115,8 @@ export function CreateAccountModal({
       } else {
         setSuccessMessage('Account created successfully');
         setErrRes('');
-        // clear form data
-        setFormData({
-          icon: '',
-          type: ACCOUNT_TYPES.PAYMENT,
-          name: '',
-          currency: 'VND',
-          limit: '',
-          balance: '',
-          parent: '',
-          isParentSelected: false,
-        });
+        handleResetForm();
+
         setTimeout(() => {
           setIsCreateModalOpen(false);
           setSuccessMessage('');
@@ -153,13 +128,56 @@ export function CreateAccountModal({
     }
   };
 
-  // Initial data fetch
+  const handleResetForm = () => {
+    setFormData({
+      icon: '',
+      type: ACCOUNT_TYPES.PAYMENT,
+      name: '',
+      currency: 'VND',
+      limit: '',
+      balance: '',
+      parent: '',
+      isParentSelected: false,
+      available_limit: '',
+    });
+  };
+
+  // Calculate available_limit for Credit Card in real-time
+  useEffect(() => {
+    if (formData.type === ACCOUNT_TYPES.CREDIT_CARD) {
+      const limitValue = Number.parseFloat(formData.limit) || 0;
+      const balanceValue = Number.parseFloat(formData.balance) || 0;
+      const calculatedAvailableLimit = limitValue + balanceValue; // balance is negative
+      if (calculatedAvailableLimit < 0) {
+        // checked error already in validateForm
+        if (errors.available_limit) {
+          // set error for available_limit
+          setErrors((prev) => ({
+            ...prev,
+            available_limit: 'Balance cannot be lower than -Credit Limit',
+          }));
+        }
+      }
+      setFormData((prev) => ({
+        ...prev,
+        available_limit: calculatedAvailableLimit.toFixed(2),
+      }));
+
+      // Clear any available_limit-related errors
+      if (errors.available_limit) {
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.available_limit;
+          return newErrors;
+        });
+      }
+    }
+  }, [formData.limit, formData.balance, formData.type]);
+
   useEffect(() => {
     fetchParents();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTriggered, setTriggered]); // Removed fetchParents from dependencies
+  }, [isTriggered, setTriggered]);
 
-  // Validate form data
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -229,6 +247,12 @@ export function CreateAccountModal({
       return;
     }
 
+    // Automatically convert balance to negative if type is Dept and Credit Card
+    if (field === 'balance') {
+      handleBalanceChange(value);
+      return;
+    }
+
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Clear error when field is changed
@@ -238,6 +262,15 @@ export function CreateAccountModal({
         delete newErrors[field];
         return newErrors;
       });
+    }
+  };
+
+  const handleBalanceChange = (value: string) => {
+    // Automatically convert balance to negative if type is Dept and Credit Card
+    if ([ACCOUNT_TYPES.DEBT, ACCOUNT_TYPES.CREDIT_CARD].includes(formData.type)) {
+      setFormData((prev) => ({ ...prev, balance: value.startsWith('-') ? value : `-${value}` }));
+    } else {
+      setFormData((prev) => ({ ...prev, balance: value }));
     }
   };
 
@@ -254,10 +287,9 @@ export function CreateAccountModal({
     }
   };
 
-  // Handle parent account selection
   const handleParentChange = (parentId: string) => {
     if (!parentId) {
-      setFormData((prev) => ({ ...prev, parent: '' }));
+      setFormData((prev) => ({ ...prev, parent: '', isParentSelected: false }));
       return;
     }
 
@@ -337,11 +369,13 @@ export function CreateAccountModal({
               <AlertDescription className="text-green-600">{successMessage}</AlertDescription>
             </Alert>
           )}
+
+          {/* Icon */}
           <div className="grid grid-cols-[120px_1fr] items-center gap-4">
             <Label htmlFor="icon" className="text-right">
               Icon<span className="text-red-500">*</span>
             </Label>
-            <div className="space-y-2">
+            <div className="space-y-2 ">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -367,36 +401,12 @@ export function CreateAccountModal({
                     <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <div className="max-h-[300px] overflow-auto p-1">
-                    {availableIcons.length > 0 ? (
-                      availableIcons.map((icon) => (
-                        <Button
-                          key={icon.id}
-                          variant="ghost"
-                          className="w-full justify-start"
-                          onClick={() => handleChange('icon', icon.id)}
-                        >
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center justify-center h-6 w-6 rounded bg-muted">
-                              <icon.icon className="h-4 w-4" />
-                            </div>
-                            <span>{icon.name}</span>
-                          </div>
-                        </Button>
-                      ))
-                    ) : (
-                      <div className="p-4 text-center text-sm text-muted-foreground">
-                        No icons available for this account type
-                      </div>
-                    )}
-                  </div>
-                </PopoverContent>
               </Popover>
               {errors.icon && <p className="text-xs text-red-500">{errors.icon}</p>}
             </div>
           </div>
 
+          {/* Type */}
           <div className="grid grid-cols-[120px_1fr] items-start gap-4">
             <Label htmlFor="type" className="text-right pt-2">
               Type<span className="text-red-500">*</span>
@@ -420,6 +430,7 @@ export function CreateAccountModal({
             </div>
           </div>
 
+          {/* Name */}
           <div className="grid grid-cols-[120px_1fr] items-center gap-4">
             <Label htmlFor="name" className="text-right">
               Name<span className="text-red-500">*</span>
@@ -436,6 +447,7 @@ export function CreateAccountModal({
             </div>
           </div>
 
+          {/* Currency */}
           <div className="grid grid-cols-[120px_1fr] items-center gap-4">
             <Label htmlFor="currency" className="text-right">
               Currency<span className="text-red-500">*</span>
@@ -455,23 +467,47 @@ export function CreateAccountModal({
           </div>
 
           {formData.type === ACCOUNT_TYPES.CREDIT_CARD && (
-            <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-              <Label htmlFor="limit" className="text-right">
-                Credit Limit
-              </Label>
-              <div className="space-y-2">
-                <Input
-                  id="limit"
-                  value={formData.limit}
-                  onChange={(e) => handleChange('limit', e.target.value)}
-                  placeholder="0.00"
-                  className={errors.limit ? 'border-red-500' : ''}
-                />
-                {errors.limit && <p className="text-xs text-red-500">{errors.limit}</p>}
+            <>
+              <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+                <Label htmlFor="available_limit" className="text-right">
+                  Available Limit
+                </Label>
+                <div className="space-y-2">
+                  <Input
+                    id="available_limit"
+                    value={formData.available_limit}
+                    readOnly
+                    placeholder="0.00"
+                    className={cn(
+                      'bg-gray-100 cursor-not-allowed',
+                      errors.available_limit && 'border-red-500',
+                      Number.parseFloat(formData.available_limit) < 0 && 'text-red-500',
+                    )}
+                  />
+                  {errors.available_limit && (
+                    <p className="text-xs text-red-500">{errors.available_limit}</p>
+                  )}
+                </div>
               </div>
-            </div>
+              <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+                <Label htmlFor="limit" className="text-right">
+                  Credit Limit
+                </Label>
+                <div className="space-y-2">
+                  <Input
+                    id="limit"
+                    value={formData.limit}
+                    onChange={(e) => handleChange('limit', e.target.value)}
+                    placeholder="0.00"
+                    className={errors.limit ? 'border-red-500' : ''}
+                  />
+                  {errors.limit && <p className="text-xs text-red-500">{errors.limit}</p>}
+                </div>
+              </div>
+            </>
           )}
 
+          {/* Balance */}
           <div className="grid grid-cols-[120px_1fr] items-center gap-4">
             <Label htmlFor="balance" className="text-right">
               Balance
@@ -479,6 +515,7 @@ export function CreateAccountModal({
             <div className="space-y-2">
               <Input
                 id="balance"
+                type="number"
                 value={formData.balance}
                 onChange={(e) => handleChange('balance', e.target.value)}
                 placeholder="0.00"
@@ -491,6 +528,7 @@ export function CreateAccountModal({
             </div>
           </div>
 
+          {/* Parent */}
           <div className="grid grid-cols-[120px_1fr] items-center gap-4">
             <Label htmlFor="parent" className="text-right">
               Parent
@@ -505,25 +543,20 @@ export function CreateAccountModal({
                 </SelectTrigger>
                 <SelectContent>
                   {parentAccounts.length > 0 ? (
-                    parentAccounts.map((account) => (
+                    parentAccounts?.map((account) => (
                       <SelectItem key={account?.id} value={account?.id}>
                         {account?.name} ({account?.type})
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="" disabled>
+                    <SelectItem key="no-accounts" value="no-accounts" disabled>
                       No parent accounts available
                     </SelectItem>
                   )}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                Parent account must be of the same type. Sub-account balance will be included in
-                parent balance.
-              </p>
             </div>
           </div>
-
           {Object.keys(errors).length > 0 && (
             <Alert variant="destructive" className="mt-4">
               <AlertCircle className="h-4 w-4" />

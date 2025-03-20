@@ -1,10 +1,14 @@
+'use client';
+import Loading from '@/components/common/Loading';
 import dynamic from 'next/dynamic';
+import React from 'react';
 
 const SignUpPage = dynamic(() => import('@/features/auth/presentation/SignUpPage'), {
-  loading: () => <div>Loading...</div>,
+  loading: () => <Loading />,
+  ssr: false,
 });
 
-const SignIn = () => {
+const SignUp = () => {
   return (
     <section className="bg-muted py-16 px-2">
       <SignUpPage />
@@ -12,4 +16,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default SignUp;

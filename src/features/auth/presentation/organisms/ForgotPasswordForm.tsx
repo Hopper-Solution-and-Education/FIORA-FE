@@ -3,14 +3,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { sendOtp } from '@/lib/sendGrid';
-import { cn, generateOtp } from '@/lib/utils';
+import { sendOtp } from '@/config/sendGrid';
+import { cn, generateOtp } from '@/shared/utils';
 import { validateConfirmPassword, validatePassword } from '@/shared/validation/signUpValidation';
 import { Field, Form, Formik, FormikHelpers } from 'formik';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 
-const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) => {
+const ForgotPasswordForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [inputOtp, setInputOtp] = useState('');
@@ -35,6 +35,7 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
       setIsOtpSent(true);
       setAlert(null);
     } catch (error) {
+      console.error(error);
       setAlert({ message: 'Failed to send OTP', variant: 'destructive' });
     }
   };
@@ -91,9 +92,10 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
         throw new Error(errorData.message || 'Failed to reset password');
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const data = await response.json();
       setAlert({ message: 'Password reset successfully!', variant: 'default' });
-      router.push('/dashboard');
+      router.push('/home');
     } catch (error: any) {
       setAlert({ message: error.message || 'Failed to reset password', variant: 'destructive' });
     } finally {
@@ -259,4 +261,4 @@ const ForgotPassword = ({ className, ...props }: React.ComponentProps<'div'>) =>
   );
 };
 
-export default ForgotPassword;
+export default ForgotPasswordForm;

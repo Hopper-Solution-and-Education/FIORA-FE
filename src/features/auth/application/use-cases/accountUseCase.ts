@@ -181,10 +181,6 @@ export class AccountUseCase {
     return masterAccount ? true : false;
   }
 
-  async findAllAccountByUserId(userId: string): Promise<Account[] | []> {
-    return this.accountRepository.findAllAccountByUserId(userId);
-  }
-
   async getAllParentAccount(userId: string): Promise<Account[] | []> {
     return this.accountRepository.findManyWithCondition({
       userId,
@@ -198,14 +194,17 @@ export class AccountUseCase {
         userId,
       },
       {
-        id: true,
-        name: true,
-        type: true,
-        balance: true,
-        limit: true,
-        parentId: true,
-        description: true,
-        icon: true,
+        include: {
+          children: true,
+        },
+        orderBy: [
+          {
+            type: 'asc',
+          },
+          {
+            balance: 'asc',
+          },
+        ],
       },
     );
   }
@@ -299,7 +298,7 @@ export class AccountUseCase {
 
   public validateAccountType(type: AccountType, balance: number, limit?: number): boolean {
     if (!Object.values(AccountType).includes(type)) {
-      throw new Error('Invalid account type');
+      return false;
     }
 
     switch (type) {
@@ -332,9 +331,6 @@ export class AccountUseCase {
           throw new Error('Limit must be greater than balance');
         }
         break;
-
-      default:
-        throw new Error('Invalid account type');
     }
     return true;
   }

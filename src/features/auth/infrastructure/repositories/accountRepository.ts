@@ -63,8 +63,6 @@ export class AccountRepository implements IAccountRepository {
       paginate.take = take;
     }
 
-    const { include, select } = options;
-
     return prisma.account.findMany({
       where,
       // skip: paginate.skip,
@@ -76,21 +74,6 @@ export class AccountRepository implements IAccountRepository {
 
   async findByCondition(where: Prisma.AccountWhereInput): Promise<Account | null> {
     return prisma.account.findFirst({ where });
-  }
-
-  async findAllAccountByUserId(userId: string): Promise<any> {
-    return prisma.account.groupBy({
-      by: ['type'],
-      where: {
-        AND: {
-          userId: '99b4ca81-5348-4058-a66a-245f720115fa',
-          parentId: null,
-        },
-      },
-      _sum: {
-        balance: true,
-      },
-    });
   }
 
   async findManyWithConditions(
@@ -120,11 +103,11 @@ export class AccountRepository implements IAccountRepository {
 
   async findManyWithCondition(
     where: Prisma.AccountWhereInput,
-    select?: Prisma.AccountSelect,
+    options?: Prisma.AccountFindManyArgs,
   ): Promise<Account[] | []> {
     return prisma.account.findMany({
       where,
-      select,
+      ...options,
     });
   }
 

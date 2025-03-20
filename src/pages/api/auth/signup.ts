@@ -1,6 +1,6 @@
+import { createResponse } from '@/config/createResponse';
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
 import { UserUSeCaseInstance } from '@/features/auth/application/use-cases/userUseCase';
-import { AppError, InternalServerError } from '@/lib/errors';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -8,12 +8,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'POST') {
     return POST(req, res);
   }
+  if (req.method === 'PATCH') {
+    return PATCH(req, res);
+  }
 }
 
 export async function POST(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { email, password } = req.body;
-
+    const body = await req.body;
+    const { email, password } = body;
     // const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Always 6 digits
     // const BASE_URL = process.env.baseURL || 'http://localhost:3000';
     // const PORT = process.env.PORT || '3000';
@@ -38,9 +41,10 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
     // }
 
     const userCreationRes = await UserUSeCaseInstance.execute(email, password);
-
     if (!userCreationRes) {
-      throw new InternalServerError('Không thể tạo tài khoản');
+      return res
+        .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+        .json({ message: 'Cannot create user' });
     }
 
     // create new Account
@@ -53,14 +57,34 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
       icon: 'circle',
     });
 
-    res
+    return res
       .status(RESPONSE_CODE.CREATED)
-      .json({ message: 'Đăng ký thành công', user: userCreationRes });
+      .json(
+        createResponse(RESPONSE_CODE.CREATED, 'You have registered for an account successfully!'),
+      );
   } catch (error) {
-    if (error instanceof AppError) {
-      return res.status(error.statusCode).json({ message: error.message });
-    }
-    console.error('Error creating user:', error);
     return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: 'Đã có lỗi xảy ra' });
+  }
+}
+
+export async function PATCH(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    const { email } = req.body;
+
+    if (!email || typeof email !== 'string') {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json({ message: 'Email is required and must be a string' });
+    }
+
+    const userFound = await UserUSeCaseInstance.verifyEmail(email);
+
+    if (userFound) {
+      return res.status(RESPONSE_CODE.NOT_ACCEPTABLE).json({ message: 'Email already exists' });
+    }
+
+    return res.status(RESPONSE_CODE.OK).json({ message: 'Email is available' });
+  } catch (error) {
+    return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred' });
   }
 }
