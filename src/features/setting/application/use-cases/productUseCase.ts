@@ -1,22 +1,25 @@
-import { Product, ProductType } from '@prisma/client';
 import {
   IProductRepository,
   ProductCreation,
   ProductUpdate,
 } from '@/features/setting/domain/repositories/productRepository.interface';
 import { productRepository } from '@/features/setting/infrastructure/repositories/productRepository';
-import { JsonArray } from '@prisma/client/runtime/library';
-import { ICategoryRepository } from '../../domain/repositories/categoryRepository.interface';
-import { categoryRepository } from '../../infrastructure/repositories/categoryRepository';
 import { PaginationResponse } from '@/shared/types/Common.types';
+import { Product, ProductType } from '@prisma/client';
+import { JsonArray } from '@prisma/client/runtime/library';
+import { ICategoryProductRepository } from '../../domain/repositories/categoryProductRepository.interface';
+import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
-  private categoryRepository: ICategoryRepository;
+  private categoryProductRepository: ICategoryProductRepository;
 
-  constructor(productRepository: IProductRepository, categoryRepository: ICategoryRepository) {
+  constructor(
+    productRepository: IProductRepository,
+    categoryProductRepository: ICategoryProductRepository,
+  ) {
     this.productRepository = productRepository;
-    this.categoryRepository = categoryRepository;
+    this.categoryProductRepository = categoryProductRepository;
   }
 
   async getAllProducts(params: {
@@ -103,7 +106,11 @@ class ProductUseCase {
       } = params;
       // checked whether the category exists
 
-      const category = await this.categoryRepository.findCategoryById(category_id);
+      const category = await this.categoryProductRepository.findUniqueCategoryProduct({
+        id: category_id,
+        userId,
+      });
+
       if (!category) {
         throw new Error('Category not found');
       }
@@ -157,7 +164,10 @@ class ProductUseCase {
     let category = null;
 
     if (category_id) {
-      category = await this.categoryRepository.findCategoryById(category_id);
+      category = await this.categoryProductRepository.findUniqueCategoryProduct({
+        id: category_id,
+        userId,
+      });
       if (!category) {
         throw new Error('Category not found');
       }
@@ -225,4 +235,4 @@ class ProductUseCase {
 }
 
 // Export a single instance using the exported productRepository
-export const productUseCase = new ProductUseCase(productRepository, categoryRepository);
+export const productUseCase = new ProductUseCase(productRepository, categoryProductRepository);

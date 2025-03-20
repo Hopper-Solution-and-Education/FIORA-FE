@@ -51,7 +51,7 @@ export class ProductMapper {
       items: Array.isArray(response.data.items)
         ? ProductMapper.parseServerItemToList(response.data.items as JsonArray)
         : [],
-      categoryId: response.data.catId,
+      categoryId: response.data.catId ?? '',
       type: response.data.type,
     };
   }
@@ -75,7 +75,7 @@ export class ProductMapper {
           Number(item.price),
           Number(item.taxRate),
           items,
-          item.catId,
+          item.catId ?? '',
           item.type,
         );
       }),

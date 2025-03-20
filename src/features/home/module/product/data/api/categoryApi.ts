@@ -13,7 +13,7 @@ class CategoryAPI implements ICategoryAPI {
     page,
     pageSize,
   }: GetCategoryAPIRequestDTO): Promise<GetCategoryAPIResponseDTO> {
-    return await httpClient.get(`/api/products/category?page=${page}&limit=${pageSize}`);
+    return await httpClient.get(`/api/category-product?page=${page}&pageSize=${pageSize}`);
   }
 }
 export { CategoryAPI };

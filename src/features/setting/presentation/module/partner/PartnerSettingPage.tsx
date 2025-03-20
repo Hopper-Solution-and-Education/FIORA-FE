@@ -1,20 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import React from 'react';
+import { TabActionHeader } from '../../components/TabActionHeader';
+import { AddPartnerModal } from './AddPartnerModal';
+import { TabComponentProps } from '../../types';
 
-const PartnerSettingPage = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
+const PartnerSettingPage = ({ title, description }: TabComponentProps) => {
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-bold">Partner Settings</h2>
-
-      {/* Nút mở modal */}
-      <Button onClick={() => setIsModalOpen(true)}>Add Partner</Button>
-
-      {/* Tạm thời hiển thị text thay vì modal */}
-      {isModalOpen && <p className="text-sm text-blue-500">[Modal Content Placeholder]</p>}
+    <div className="space-y-6">
+      <TabActionHeader
+        title={title}
+        description={description}
+        buttonLabel="Add Partner"
+        modalComponent={AddPartnerModal}
+      />
     </div>
   );
 };
