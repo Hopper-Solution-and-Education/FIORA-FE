@@ -1,0 +1,47 @@
+// shared/utils/formUtils.ts
+import * as Yup from 'yup';
+
+export interface FormFieldProps {
+  name: string;
+  label: string;
+  placeholder?: string;
+  type?: string;
+  required?: boolean;
+  section?: string;
+  render?: (field: any, context?: any) => React.ReactNode;
+}
+
+export const generateFieldsFromSchema = (
+  schema: Yup.AnyObjectSchema,
+  overrides: Partial<Record<string, Partial<FormFieldProps>>> = {},
+): FormFieldProps[] => {
+  const schemaDescription = schema.describe();
+
+  const toTitleCase = (str: string) =>
+    str.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase());
+
+  return Object.keys(schemaDescription.fields).map((key) => {
+    const field = schemaDescription.fields[key] as Yup.SchemaDescription;
+    const override = overrides[key] || {};
+
+    const baseField: FormFieldProps = {
+      name: key,
+      label: override.label || toTitleCase(key),
+      placeholder: override.placeholder || `Enter ${key.toLowerCase()}`,
+      required: !field.optional,
+      type:
+        override.type ||
+        (field.type === 'string' && key === 'email'
+          ? 'email'
+          : field.type === 'string'
+            ? 'text'
+            : undefined),
+      section: override.section || 'Basic Information',
+    };
+
+    return {
+      ...baseField,
+      ...override,
+    };
+  });
+};
