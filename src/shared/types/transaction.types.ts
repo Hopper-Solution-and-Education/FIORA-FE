@@ -12,7 +12,7 @@ export interface TransactionFilters {
 export interface TransactionGetPagination {
   page: number;
   pageSize: number;
-  filter?: TransactionFilters;
-  sort?: Record<string, any>;
+  filters?: any;
+  sortBy?: Record<string, any>;
   searchParams?: string;
 }

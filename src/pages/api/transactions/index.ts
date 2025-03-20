@@ -4,6 +4,7 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { authOptions } from '../auth/[...nextauth]';
 import { createError, createResponse } from '@/config/createResponse';
 import { Messages } from '@/shared/constants/message';
+import { transactionUseCase } from '@/features/transaction/application/use-cases/transactionUseCase';
 
 export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
@@ -22,17 +23,17 @@ export async function getUserSession(req: NextApiRequest, res: NextApiResponse) 
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getUserSession(req, res);
-  if (!session || !session.user?.id) {
-    return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
-  }
+  // const session = await getUserSession(req, res);
+  // if (!session || !session.user?.id) {
+  //   return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
+  // }
 
-  const userId = session.user.id;
+  // const userId = session.user.id;
 
   try {
     switch (req.method) {
       case 'POST':
-        return POST(req, res, userId);
+        return POST(req, res);
       default:
         return res
           .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -44,20 +45,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 // Using for filter transactions
-export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function POST(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { filters, page, pageSize, sort } = req.body;
+    const { filters, page, pageSize, sortBy } = req.body;
 
-    // const transactions = await transactionUseCase.();
+    const transactions = await transactionUseCase.getTransactions({
+      page,
+      pageSize,
+      filters,
+      sortBy,
+    });
 
     return res
       .status(RESPONSE_CODE.CREATED)
       .json(
-        createResponse(
-          RESPONSE_CODE.CREATED,
-          Messages.CREATE_TRANSACTION_SUCCESS,
-          'newTransaction',
-        ),
+        createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_TRANSACTION_SUCCESS, transactions),
       );
   } catch (error: any) {
     return createError(

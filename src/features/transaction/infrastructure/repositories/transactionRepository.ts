@@ -46,6 +46,10 @@ class TransactionRepository implements ITransactionRepository {
   ): Promise<Transaction[]> {
     return await prisma.transaction.findMany({ where, ...options });
   }
+
+  async count(where: Prisma.TransactionWhereInput): Promise<number> {
+    return await prisma.transaction.count({ where });
+  }
 }
 
 export const transactionRepository = new TransactionRepository();

@@ -59,7 +59,7 @@ export function buildWhereTransactionClause(restFilters: Record<string, any>): R
   };
 
   if (restFilters.date) {
-    if (restFilters.date instanceof Date) {
+    if (restFilters.date) {
       whereClause.date = {
         equals: new Date(restFilters.date),
       };
@@ -81,7 +81,9 @@ export function buildWhereTransactionClause(restFilters: Record<string, any>): R
         in: restFilters.type,
       };
     } else {
-      whereClause.type = restFilters.type;
+      whereClause.type = {
+        in: [restFilters.type],
+      };
     }
   }
 
@@ -90,7 +92,6 @@ export function buildWhereTransactionClause(restFilters: Record<string, any>): R
     whereClause.fromAccount = {
       name: {
         equals: restFilters.fromAccount,
-        mode: 'insensitive',
       },
     };
   }
@@ -100,20 +101,65 @@ export function buildWhereTransactionClause(restFilters: Record<string, any>): R
     whereClause.toAccount = {
       name: {
         equals: restFilters.toAccount,
-        mode: 'insensitive',
       },
     };
   }
-
   // Partner filter
   if (restFilters.partner) {
     whereClause.partner = {
       name: {
         equals: restFilters.partner,
-        mode: 'insensitive',
       },
     };
   }
 
   return whereClause;
 }
+
+export function buildOrderByTransaction(orderBy: Record<string, any>): Record<string, any> {
+  const orderByClause: Record<string, any> = [];
+
+  if (orderBy['date']) {
+    // add object to array
+    orderByClause.push({ date: orderBy.date });
+  }
+  // Type filter (supports single or multiple types)
+  if (orderBy['type']) {
+    orderByClause.push({ type: orderBy.type });
+  }
+
+  // From Account filter
+  if (orderBy['fromAccount']) {
+    orderByClause.push({ fromAccount: { name: orderBy.fromAccount } });
+  }
+
+  // To Account filter
+  if (orderBy['toAccount']) {
+    orderByClause.push({ toAccount: { name: orderBy.toAccount } });
+  }
+  // Partner filter
+  if (orderBy['partner']) {
+    orderByClause.partner = orderBy.partner;
+  }
+
+  return orderByClause;
+}
+
+export const buildWhereClause = (filters: any) => {
+  const whereClause: any = {};
+
+  if (!filters) {
+    return whereClause;
+  }
+  for (const [key, value] of Object.entries(filters)) {
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      whereClause[key] = {
+        some: buildWhereClause(value), // Nested relations like 'projects'
+      };
+    } else {
+      whereClause[key] = value; // Direct field filters like 'name' or 'role'
+    }
+  }
+
+  return whereClause;
+};

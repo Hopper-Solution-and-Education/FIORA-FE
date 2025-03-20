@@ -1,3 +1,13 @@
+import { BooleanUtils } from '@/config/booleanUtils';
+import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
+import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
+import { ICategoryRepository } from '@/features/setting/domain/repositories/categoryRepository.interface';
+import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
+import prisma from '@/infrastructure/database/prisma';
+import { Messages } from '@/shared/constants/message';
+import { PaginationResponse } from '@/shared/types/Common.types';
+import { TransactionGetPagination } from '@/shared/types/transaction.types';
+import { buildOrderByTransaction, buildWhereTransactionClause } from '@/shared/utils';
 import {
   AccountType,
   CategoryType,
@@ -8,15 +18,6 @@ import {
 } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '../../infrastructure/repositories/transactionRepository';
-import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
-import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
-import { ICategoryRepository } from '@/features/setting/domain/repositories/categoryRepository.interface';
-import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
-import { BooleanUtils } from '@/config/booleanUtils';
-import { Messages } from '@/shared/constants/message';
-import prisma from '@/infrastructure/database/prisma';
-import { buildWhereTransactionClause } from '@/shared/utils';
-import { TransactionGetPagination } from '@/shared/types/transaction.types';
 
 class TransactionUseCase {
   constructor(
@@ -310,11 +311,40 @@ class TransactionUseCase {
     });
   }
 
-  async getTransactions(params: TransactionGetPagination): Promise<Transaction[]> {
-    const { page = 1, pageSize = 20, filter, searchParams, sort = {} } = params;
-    const where = buildWhereTransactionClause(params.filter || {});
+  async getTransactions(
+    params: TransactionGetPagination,
+  ): Promise<PaginationResponse<Transaction>> {
+    const { page = 1, pageSize = 20, filters, searchParams, sortBy = {} } = params;
+    const take = pageSize;
+    const skip = (page - 1) * pageSize;
 
-    return this.transactionRepository.findManyTransactions(where, {});
+    const where = buildWhereTransactionClause(filters);
+    const orderBy = buildOrderByTransaction(sortBy);
+    console.log('orderBy', orderBy);
+    const transactionAwaited = this.transactionRepository.findManyTransactions(where, {
+      skip,
+      take,
+      orderBy,
+      include: {
+        fromAccount: true,
+        fromCategory: true,
+        toAccount: true,
+        toCategory: true,
+        partner: true,
+      },
+    });
+    const totalTransactionAwaited = this.transactionRepository.count({});
+
+    const [transactions, total] = await Promise.all([transactionAwaited, totalTransactionAwaited]);
+
+    const totalPage = Math.ceil(total / pageSize);
+
+    return {
+      data: transactions,
+      totalPage,
+      page,
+      pageSize,
+    };
   }
 
   private validateCreditCardAccount(account: Account, amount: number) {

@@ -14,4 +14,5 @@ export interface ITransactionRepository {
     where: Prisma.TransactionWhereInput,
     options?: Prisma.TransactionFindManyArgs,
   ): Promise<Transaction[]>;
+  count(where: Prisma.TransactionWhereInput): Promise<number>;
 }
