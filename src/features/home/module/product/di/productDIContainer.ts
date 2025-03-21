@@ -7,6 +7,10 @@ import {
   CreateProductUseCase,
   ICreateProductUseCase,
 } from '../domain/usecases/CreateProductUsecase';
+import {
+  DeleteProductUseCase,
+  IDeleteProductUseCase,
+} from '../domain/usecases/DeleteProductUsecase';
 import { GetCategoryUseCase, IGetCategoryUseCase } from '../domain/usecases/GetCategoryUsecase';
 import { GetProductUseCase, IGetProductUseCase } from '../domain/usecases/GetProductUsecase';
 import {
@@ -19,9 +23,10 @@ const productDIContainer = new Container();
 
 productDIContainer.bind<ICategoryAPI>(TYPES.ICategoryAPI).to(CategoryAPI);
 productDIContainer.bind<ICategoryRepository>(TYPES.ICategoryRepository).to(CategoryRepository);
-productDIContainer.bind<IGetCategoryUseCase>(TYPES.IGetCategoryUseCase).to(GetCategoryUseCase);
 productDIContainer.bind<IProductAPI>(TYPES.IProductAPI).to(ProductAPI);
 productDIContainer.bind<IProductRepository>(TYPES.IProductRepository).to(ProductRepository);
+
+productDIContainer.bind<IGetCategoryUseCase>(TYPES.IGetCategoryUseCase).to(GetCategoryUseCase);
 productDIContainer
   .bind<ICreateProductUseCase>(TYPES.ICreateProductUseCase)
   .to(CreateProductUseCase);
@@ -29,5 +34,8 @@ productDIContainer.bind<IGetProductUseCase>(TYPES.IGetProductUseCase).to(GetProd
 productDIContainer
   .bind<IUpdateProductUseCase>(TYPES.IUpdateProductUseCase)
   .to(UpdateProductUseCase);
+productDIContainer
+  .bind<IDeleteProductUseCase>(TYPES.IDeleteProductUseCase)
+  .to(DeleteProductUseCase);
 
 export { productDIContainer };

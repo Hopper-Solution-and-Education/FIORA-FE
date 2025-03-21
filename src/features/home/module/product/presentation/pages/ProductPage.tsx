@@ -1,5 +1,6 @@
 'use client';
 
+import Loading from '@/components/common/Loading';
 import PageContainer from '@/components/layouts/PageContainer';
 import { Separator } from '@/components/ui/separator';
 import { DashboardHeading } from '@/features/home/components/DashboardHeading';
@@ -7,9 +8,9 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 import { Product } from '../../domain/entities/Product';
 import { setDialogState, toggleDialogAddEdit } from '../../slices';
+import { deleteProductAsyncThunk } from '../../slices/actions/deleteProductAsyncThunk';
 import { fetchCategoriesProduct } from '../../slices/actions/fetchCategoriesProduct';
 import { getProductsAsyncThunk } from '../../slices/actions/getProductsAsyncThunk';
 import AddProductDialog from '../organisms/AddProductDialog';
@@ -23,6 +24,7 @@ import {
 
 const ProductPage = () => {
   const { page, limit } = useAppSelector((state) => state.productManagement.categories);
+  const isDeletingProduct = useAppSelector((state) => state.productManagement.isDeletingProduct);
   const {
     items: products,
     isLoading,
@@ -69,14 +71,9 @@ const ProductPage = () => {
   };
 
   const confirmDelete = () => {
-    if (!productToDelete) return;
+    if (!productToDelete?.id) return;
 
-    // Here you would dispatch an action to delete the product
-    // dispatch(deleteProductAsyncThunk(productToDelete.id));
-
-    toast('Product Deleted', {
-      description: `${productToDelete.name} has been deleted.`,
-    });
+    dispatch(deleteProductAsyncThunk({ id: productToDelete.id }));
 
     setProductToDelete(null);
     setDeleteDialogOpen(false);
@@ -84,6 +81,7 @@ const ProductPage = () => {
 
   return (
     <PageContainer>
+      <>{isDeletingProduct && <Loading />}</>
       <div className="flex flex-1 flex-col space-y-4">
         <div className="flex items-start justify-between">
           <DashboardHeading title="Products" description="Manage products" />

@@ -42,3 +42,11 @@ export type GetProductResponse = PaginationResponse<Product>;
 
 export type UpdateProductResponse = Product;
 export type UpdateProductRequest = ProductFormValues;
+
+export type DeleteProductRequest = {
+  id: string;
+};
+
+export type DeleteProductResponse = {
+  id: string;
+};

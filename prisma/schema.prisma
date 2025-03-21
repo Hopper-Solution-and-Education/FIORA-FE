@@ -56,7 +56,6 @@ model Account {
   limit            Decimal?      @default(0) @db.Decimal(13, 2)
   balance          Decimal?      @default(0) @db.Decimal(13, 2)
   parentId         String?       @db.Uuid
-  color            String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   createdBy        String        @db.Uuid
@@ -96,7 +95,7 @@ model UserAuthentication {
 model Product {
   id           String               @id @default(uuid()) @db.Uuid
   userId       String               @db.Uuid
-  catId        String               @db.Uuid
+  catId        String?              @db.Uuid
   type         ProductType
   icon         String
   name         String               @db.VarChar(50)
@@ -108,12 +107,22 @@ model Product {
   updatedAt    DateTime             @updatedAt
   createdBy    String               @db.Uuid
   updatedBy    String?              @db.Uuid
-  category     Category             @relation("CategoryProducts", fields: [catId], references: [id])
   user         User                 @relation("UserProducts", fields: [userId], references: [id])
   transactions ProductTransaction[] @relation("ProductTransactions")
 
   @@index([userId])
   @@index([catId])
+}
+
+model CategoryProducts {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  icon        String
+  name        String   @db.VarChar(50)
+  description String?  @db.VarChar(1000)
+  tax_rate    Decimal? @db.Decimal(13, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Transaction {
@@ -230,7 +239,6 @@ model Category {
   name             String        @db.VarChar(50)
   description      String?       @db.VarChar(1000)
   parentId         String?       @db.Uuid
-  tax_rate         Decimal?      @db.Decimal(13, 2)
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   createdBy        String        @db.Uuid
@@ -239,7 +247,6 @@ model Category {
   parent           Category?     @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
   subCategories    Category[]    @relation("SubCategories")
   user             User          @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
-  products         Product[]     @relation("CategoryProducts")
   fromTransactions Transaction[] @relation("FromCategory")
   toTransactions   Transaction[] @relation("ToCategory")
 

@@ -7,7 +7,7 @@ import { Bell, Gift, HelpCircle, LogInIcon, Menu, Settings, X } from 'lucide-rea
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import HelpCenter from '@/components/layouts/theme-toggle/HelpCenter';
@@ -18,7 +18,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SectionType } from '@prisma/client';
-import { useRouter } from 'next/router';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,7 +39,7 @@ export default function Header() {
   const toggleAccountSetting = () => setIsAccountSettingOpen((prevState) => !prevState);
 
   const handlePressSetting = () => {
-    router.replace('home/landing-settings');
+    router.replace('/home/landing-settings');
   };
 
   useEffect(() => {

@@ -2,17 +2,33 @@ import { JsonArray } from '@prisma/client/runtime/library';
 import { ProductFormValues, ProductItem } from '../../presentation/schema/addProduct.schema';
 
 import {
+  DeleteProductRequest,
+  DeleteProductResponse,
   GetProductResponse,
   Product,
   UpdateProductRequest,
   UpdateProductResponse,
 } from '../../domain/entities/Product';
 import { CreateProductAPIRequestDTO } from '../dto/request/CreateProductAPIRequestDTO';
+import { DeleteProductAPIRequestDTO } from '../dto/request/DeleteProductAPIRequestDTO';
 import { UpdateProductAPIRequestDTO } from '../dto/request/UpdateProductAPIRequestDTO';
+import { DeleteProductAPIResponseDTO } from '../dto/response/DeleteProductAPIResponseDTO';
 import { GetProductAPIResponseDTO } from '../dto/response/GetProductAPIResponseDTO';
 import { UpdateProductAPIResponseDTO } from '../dto/response/UpdateProductAPIResponseDTO';
 
 export class ProductMapper {
+  static toDeleteProductAPIRequest(request: DeleteProductRequest): DeleteProductAPIRequestDTO {
+    return {
+      id: request.id,
+    };
+  }
+
+  static toDeleteProductResponse(response: DeleteProductAPIResponseDTO): DeleteProductResponse {
+    return {
+      id: response.data.id,
+    };
+  }
+
   static toCreateProductAPIRequest(request: ProductFormValues): CreateProductAPIRequestDTO {
     return {
       icon: request.icon,
@@ -51,7 +67,7 @@ export class ProductMapper {
       items: Array.isArray(response.data.items)
         ? ProductMapper.parseServerItemToList(response.data.items as JsonArray)
         : [],
-      categoryId: response.data.catId,
+      categoryId: response.data.catId ?? '',
       type: response.data.type,
     };
   }
@@ -75,7 +91,7 @@ export class ProductMapper {
           Number(item.price),
           Number(item.taxRate),
           items,
-          item.catId,
+          item.catId ?? '',
           item.type,
         );
       }),
