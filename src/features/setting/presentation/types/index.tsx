@@ -1,3 +1,5 @@
+import { ComponentType } from 'react';
+
 export interface CategoryType {
   id: string;
   name: string;
@@ -12,4 +14,21 @@ export interface AccountCreate {
   balance: number;
   parentId?: string;
   limit?: number;
+}
+
+export interface TabComponentProps {
+  title: string;
+  description: string;
+}
+
+interface ModalComponentProps {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+}
+
+export interface TabActionHeaderProps {
+  title: string;
+  description: string;
+  buttonLabel: string;
+  modalComponent: ComponentType<ModalComponentProps>;
 }
