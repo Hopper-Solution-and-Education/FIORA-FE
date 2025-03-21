@@ -7,10 +7,10 @@ import { useEffect } from 'react';
 export default function SettingsPage() {
   const router = useRouter();
 
-  // Redirect to /setting/account when the page loads
+  // Redirect to /setting/partner when the page loads
   useEffect(() => {
     router.replace('/setting/partner');
   }, [router]);
 
-  return <div>Redirecting to Account Settings...</div>;
+  return <div>Redirecting to Partner Settings...</div>;
 }

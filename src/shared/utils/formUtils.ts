@@ -1,15 +1,5 @@
-// shared/utils/formUtils.ts
 import * as Yup from 'yup';
-
-export interface FormFieldProps {
-  name: string;
-  label: string;
-  placeholder?: string;
-  type?: string;
-  required?: boolean;
-  section?: string;
-  render?: (field: any, context?: any) => React.ReactNode;
-}
+import { FormFieldProps } from '../types/formsheet.type';
 
 export const generateFieldsFromSchema = (
   schema: Yup.AnyObjectSchema,

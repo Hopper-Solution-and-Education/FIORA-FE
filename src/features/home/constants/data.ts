@@ -28,20 +28,20 @@ export const navItems: NavItem[] = [
     isActive: false,
     items: [
       {
-        title: 'Budget Planning',
-        url: '/home/budget-control',
+        title: 'Accounts',
+        url: '/home/account',
         icon: 'userPen',
         shortcut: ['m', 'm'],
       },
       {
-        title: 'Category',
+        title: 'Categories',
         url: '/home/category',
         icon: 'userPen',
         shortcut: ['m', 'm'],
       },
       {
-        title: 'Transaction',
-        url: '/home/transaction',
+        title: 'Budget Planning',
+        url: '/home/budget-control',
         icon: 'userPen',
         shortcut: ['m', 'm'],
       },

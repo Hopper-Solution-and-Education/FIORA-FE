@@ -24,7 +24,7 @@ export const TabActionHeader = ({
         <Button
           variant="default"
           className="flex items-center gap-2"
-          size="lg"
+          size="default"
           onClick={() => setIsOpen(true)}
         >
           <Plus className="w-7 h-7" />
