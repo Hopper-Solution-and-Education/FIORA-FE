@@ -9,7 +9,6 @@ import PieGraph from './components/PieGraph';
 import RecentTransactions from './components/RecentTransactions';
 import Recommendations from './components/Recommendations';
 import FinancialOverview from './FinancialOverview';
-import AccountDashboard from '@/features/home/module/account/AccountDashboard';
 
 export default function HomePage() {
   return (
@@ -24,7 +23,6 @@ export default function HomePage() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7">
               {/* Left Section: Financial & Account Overview */}
               <div className="col-span-1 md:col-span-2 lg:col-span-4 space-y-4">
-                <AccountDashboard />
                 <FinancialOverview />
                 <AccountsOverview />
               </div>
