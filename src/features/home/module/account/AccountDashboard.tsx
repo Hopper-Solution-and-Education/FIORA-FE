@@ -5,7 +5,7 @@ import PositiveAndNegativeBarChart, {
 import { Icons } from '@/components/Icon';
 import { CreateAccountModal } from '@/features/home/module/account/components/CreateAccountPage';
 import { setAccountDialogOpen } from '@/features/home/module/account/slices';
-import { fetchAccounts } from '@/features/home/module/account/slices/actions';
+import { fetchAccounts, fetchParents } from '@/features/home/module/account/slices/actions';
 import { Account } from '@/features/home/module/account/slices/types';
 import { getAccountColorByType } from '@/features/home/module/account/slices/utils';
 import { COLORS, DEFAULT_LOCALE } from '@/shared/constants/chart';
@@ -18,6 +18,7 @@ const AccountDashboard = () => {
 
   useEffect(() => {
     dispatch(fetchAccounts());
+    dispatch(fetchParents());
   }, [dispatch]);
 
   // * CHART DATA ZONE *

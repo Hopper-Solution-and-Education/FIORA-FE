@@ -1,4 +1,5 @@
 import { ACCOUNT_TYPES } from '@/shared/constants/account';
+import { iconOptions } from '@/shared/constants/data';
 import * as yup from 'yup';
 
 // Yup validation schema
@@ -16,7 +17,7 @@ const validateNewAccountSchema = yup.object({
 });
 
 const defaultNewAccountValues: NewAccountDefaultValues = {
-  icon: '',
+  icon: iconOptions[0].options[0].value,
   type: ACCOUNT_TYPES.PAYMENT,
   name: '',
   currency: 'VND',

@@ -1,6 +1,6 @@
 import { Response } from '@/shared/types/Common.types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createAccount, fetchAccounts } from './actions';
+import { createAccount, fetchAccounts, fetchParents } from './actions';
 import { Account, initialAccountState } from './types';
 
 const accountSlice = createSlice({
@@ -39,6 +39,20 @@ const accountSlice = createSlice({
       .addCase(fetchAccounts.rejected, (state, action) => {
         state.accounts.isLoading = false;
         state.accounts.error = (action.payload as { message: string })?.message || 'Unknown error';
+      })
+
+      // Fetch parents accounts
+      .addCase(fetchParents.pending, (state) => {
+        state.parentAccounts.isLoading = true;
+      })
+      .addCase(fetchParents.fulfilled, (state, action) => {
+        state.parentAccounts.isLoading = false;
+        state.parentAccounts.data = action.payload.data;
+      })
+      .addCase(fetchParents.rejected, (state, action) => {
+        state.parentAccounts.isLoading = false;
+        state.parentAccounts.error =
+          (action.payload as { message: string })?.message || 'Unknown error';
       })
 
       // Create new account
