@@ -15,4 +15,5 @@ export const createPartnerSchema = Yup.object().shape({
     .required('Phone number is required'),
   name: Yup.string().required('Name is required'),
   address: Yup.string().required('Address is required'),
+  parentId: Yup.string().uuid().optional(),
 });

@@ -12,6 +12,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'; // Thêm Select
 import { Separator } from '@/components/ui/separator';
 import {
   Sheet,
@@ -58,7 +65,6 @@ export const FormSheet = <T,>({
 }: FormSheetProps<T>) => {
   const [mounted, setMounted] = useState(false);
 
-  // Group fields by section
   const sections = fields.reduce(
     (acc, field) => {
       const section = field.section || 'default';
@@ -165,6 +171,24 @@ export const FormSheet = <T,>({
                                       placeholder={field.placeholder}
                                       className="w-full bg-background text-foreground border-input resize-none min-h-[100px] focus:ring-2 focus:ring-ring focus:ring-offset-1"
                                     />
+                                  ) : field.type === 'select' ? (
+                                    <Select
+                                      value={formField.value}
+                                      onValueChange={formField.onChange}
+                                    >
+                                      <SelectTrigger className="w-full bg-background text-foreground border-input">
+                                        <SelectValue
+                                          placeholder={field.placeholder || 'Select an option'}
+                                        />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {field.options?.map((option) => (
+                                          <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
                                   ) : (
                                     <Input
                                       {...formField}
@@ -219,3 +243,5 @@ export const FormSheet = <T,>({
     </Sheet>
   );
 };
+
+export default FormSheet;

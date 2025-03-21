@@ -14,6 +14,13 @@ interface AddPartnerModalProps {
   setIsOpen: (open: boolean) => void;
 }
 
+const mockParentPartners = [
+  { id: '1', name: 'Partner A', description: 'This is Partner A' },
+  { id: '2', name: 'Partner B', description: 'This is Partner B' },
+  { id: '3', name: 'Partner C', description: 'This is Partner C' },
+  { id: '4', name: 'Partner D', description: 'This is Partner D' },
+];
+
 export function AddPartnerModal({ isOpen, setIsOpen }: AddPartnerModalProps) {
   const { form, onSubmit, logoPreview, setLogoPreview, handleLogoChange } =
     useCreatePartner(setIsOpen);
@@ -79,6 +86,15 @@ export function AddPartnerModal({ isOpen, setIsOpen }: AddPartnerModalProps) {
     taxNo: { section: 'Contact Information' },
     phone: { section: 'Contact Information' },
     address: { section: 'Contact Information' },
+    parentId: {
+      type: 'select',
+      label: 'Parent Partner',
+      placeholder: 'Select a parent partner',
+      options: mockParentPartners.map((partner) => ({
+        value: partner.id,
+        label: partner.name,
+      })),
+    },
   };
 
   const fields = generateFieldsFromSchema(createPartnerSchema, fieldOverrides);
