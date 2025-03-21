@@ -1,6 +1,6 @@
 'use client';
 
-import IconSelect from '@/components/common/IconSelect'; // Assuming this exists
+import IconSelect from '@/components/common/IconSelect';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -26,58 +26,58 @@ import {
   NewAccountDefaultValues,
   validateNewAccountSchema,
 } from '@/features/home/module/account/slices/types/formSchema';
-import { ACCOUNT_ICONS, ACCOUNT_TYPES } from '@/shared/constants/account';
+import { ACCOUNT_TYPES } from '@/shared/constants/account';
 import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 export function CreateAccountModal({ title }: { title?: string }) {
   const dispatch = useAppDispatch();
   const { accountCreateDialog, parentAccounts } = useAppSelector((state) => state.account);
+  const [availableLimit, setAvailableLimit] = useState<number>(0);
 
-  // Initialize the form with react-hook-form
   const form = useForm<NewAccountDefaultValues>({
     resolver: yupResolver(validateNewAccountSchema),
     defaultValues: defaultNewAccountValues,
   });
 
-  // Watch the type field to filter icons dynamically
-  const type = form.watch('type');
-  const availableIcons = ACCOUNT_ICONS.filter((icon) => icon.types.includes(type));
+  // Function to calculate available limit
+  const calculateAvailableLimit = (limit: number | undefined, balance: number | undefined) => {
+    const limitNum = limit || 0;
+    const balanceNum = balance || 0;
+    return limitNum - balanceNum;
+  };
 
-  // Reset icon if it’s invalid for the new type
+  // Update available limit when values change
   useEffect(() => {
-    const currentIcon = form.getValues('icon');
-    if (currentIcon && !availableIcons.some((icon) => icon.id === currentIcon)) {
-      form.setValue('icon', availableIcons[0]?.id || '');
+    if (form.getValues('type') === ACCOUNT_TYPES.CREDIT_CARD) {
+      const newAvailableLimit = calculateAvailableLimit(
+        form.getValues('limit') || 0,
+        form.getValues('balance'),
+      );
+      setAvailableLimit(newAvailableLimit);
     }
-  }, [type, availableIcons, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.watch('limit'), form.watch('balance'), form.watch('type')]);
 
-  // Form submission handler
   const onSubmit = (data: NewAccountDefaultValues) => {
     const finalData: NewAccountDefaultValues = {
       ...data,
-      balance: data.balance ? data.balance : 0,
-      limit: data.limit ? data.limit : undefined,
+      // For Credit Card: balance should be negative and affect available limit
+      balance:
+        data.type === ACCOUNT_TYPES.CREDIT_CARD && data.balance
+          ? -Math.abs(Number(data.balance))
+          : data.balance || 0,
+      limit: data.limit ? Number(data.limit) : undefined,
       parentId: data.parentId || undefined,
     };
     dispatch(createAccount(finalData));
     dispatch(setAccountDialogOpen(false));
     toast.success('Account created successfully');
   };
-
-  // Calculate available limit for credit cards
-  const limit = form.watch('limit');
-  const balance = form.watch('balance');
-  let availableLimit = '';
-  if (type === ACCOUNT_TYPES.CREDIT_CARD && limit && balance) {
-    const limitNum = limit || 0;
-    const balanceNum = balance || 0;
-    availableLimit = (limitNum + balanceNum).toFixed(2); // Balance may be negative
-  }
 
   return (
     <Dialog
@@ -190,7 +190,7 @@ export function CreateAccountModal({ title }: { title?: string }) {
             </div>
 
             {/* Credit Card Fields */}
-            {type === ACCOUNT_TYPES.CREDIT_CARD && (
+            {form.getValues('type') === ACCOUNT_TYPES.CREDIT_CARD && (
               <>
                 <div className="grid grid-cols-[120px_1fr] items-center gap-4">
                   <Label htmlFor="limit" className="text-right">
@@ -208,6 +208,7 @@ export function CreateAccountModal({ title }: { title?: string }) {
                             placeholder="0.00"
                             {...field}
                             value={field.value ?? ''}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
                           />
                         </FormControl>
                         <FormMessage />
@@ -218,12 +219,9 @@ export function CreateAccountModal({ title }: { title?: string }) {
                 <div className="grid grid-cols-[120px_1fr] items-center gap-4">
                   <Label className="text-right">Available Limit</Label>
                   <Input
-                    value={availableLimit}
+                    value={availableLimit.toFixed(2)}
                     readOnly
-                    className={cn(
-                      'bg-gray-100 cursor-not-allowed',
-                      Number.parseFloat(availableLimit) < 0 && 'text-red-500',
-                    )}
+                    className={cn('cursor-not-allowed', availableLimit < 0 && 'text-red-500')}
                   />
                 </div>
               </>
@@ -232,7 +230,9 @@ export function CreateAccountModal({ title }: { title?: string }) {
             {/* Balance */}
             <div className="grid grid-cols-[120px_1fr] items-center gap-4">
               <Label htmlFor="balance" className="text-right">
-                Balance
+                {form.getValues('type') === ACCOUNT_TYPES.CREDIT_CARD
+                  ? 'Current Balance'
+                  : 'Balance'}
               </Label>
               <FormField
                 control={form.control}
@@ -240,7 +240,14 @@ export function CreateAccountModal({ title }: { title?: string }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input id="balance" type="number" placeholder="0.00" {...field} />
+                      <Input
+                        id="balance"
+                        type="number"
+                        placeholder="0.00"
+                        {...field}
+                        value={field.value ?? ''}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
