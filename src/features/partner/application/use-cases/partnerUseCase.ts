@@ -1,7 +1,7 @@
 import { type Prisma, type Partner } from '@prisma/client';
 import { IPartnerRepository } from '../../domain/repositories/partnerRepository.interface';
-import { Messages } from '@/lib/message';
 import prisma from '@/infrastructure/database/prisma';
+import { Messages } from '@/shared/constants/message';
 import { partnerRepository } from '../../infrastructure/repositories/partnerRepository';
 
 class PartnerUseCase {
@@ -25,34 +25,55 @@ class PartnerUseCase {
     data: Prisma.PartnerUncheckedUpdateInput,
   ): Promise<Partner> {
     return prisma.$transaction(async (tx) => {
-      const partner = await this.partnerRepository.getPartnerById(id, userId);
+      const partner = await tx.partner.findUnique({
+        where: { id, userId },
+      });
       if (!partner) {
         throw new Error(Messages.PARTNER_NOT_FOUND);
       }
 
       if (data.name && data.name !== partner.name) {
-        const existingPartner = await this.partnerRepository.findByName(
-          data.name as string,
-          userId,
-        );
+        const existingPartner = await tx.partner.findFirst({
+          where: { name: data.name as string, userId },
+        });
         if (existingPartner) {
           throw new Error(Messages.PARTNER_NAME_TAKEN);
         }
       }
 
-      const updatedPartner = await this.partnerRepository.updatePartner(id, userId, {
-        userId: data.userId,
-        email: data.email,
-        identify: data.identify,
-        description: data.description,
-        dob: new Date(data.dob as string),
-        logo: data.logo,
-        taxNo: data.taxNo,
-        phone: data.phone,
-        name: data.name,
-        address: data.address,
-        createdBy: data.userId,
-        updatedBy: data.userId,
+      if (data.parentId) {
+        const parentPartner = await tx.partner.findUnique({
+          where: { id: data.parentId as string },
+          include: { children: true },
+        });
+        if (!parentPartner) {
+          throw new Error(Messages.PARENT_PARTNER_NOT_FOUND);
+        }
+        if (parentPartner.id === partner.id) {
+          throw new Error(Messages.INVALID_PARENT_PARTNER_SELF);
+        }
+        if (parentPartner.children && parentPartner.children.length > 0) {
+          throw new Error(Messages.INVALID_PARENT_HIERARCHY);
+        }
+      }
+
+      const updatedPartner = await tx.partner.update({
+        where: { id, userId },
+        data: {
+          userId: data.userId,
+          email: data.email,
+          identify: data.identify,
+          description: data.description,
+          dob: data.dob ? new Date(data.dob as string) : undefined,
+          logo: data.logo,
+          taxNo: data.taxNo,
+          phone: data.phone,
+          name: data.name,
+          address: data.address,
+          parentId: data.parentId,
+          createdBy: data.userId,
+          updatedBy: data.userId,
+        },
       });
       if (!updatedPartner) {
         throw new Error(Messages.UPDATE_PARTNER_FAILED);
@@ -68,7 +89,12 @@ class PartnerUseCase {
         throw new Error(Messages.INVALID_USER);
       }
 
-      const existingPartner = await this.partnerRepository.findByName(data.name, data.userId);
+      const existingPartner = await tx.partner.findFirst({
+        where: {
+          name: data.name,
+          userId: data.userId,
+        },
+      });
       if (existingPartner) {
         throw new Error(Messages.PARTNER_ALREADY_EXISTS);
       }
@@ -81,19 +107,32 @@ class PartnerUseCase {
         throw new Error(Messages.INVALID_DOB);
       }
 
-      const partner = await this.partnerRepository.createPartner({
-        userId: data.userId,
-        email: data.email,
-        identify: data.identify,
-        description: data.description,
-        dob: new Date(data.dob),
-        logo: data.logo,
-        taxNo: data.taxNo,
-        phone: data.phone,
-        name: data.name,
-        address: data.address,
-        createdBy: data.userId,
-        updatedBy: data.userId,
+      if (data.parentId) {
+        const parentPartner = await tx.partner.findUnique({
+          where: { id: data.parentId },
+          select: { parentId: true },
+        });
+        if (parentPartner?.parentId) {
+          throw new Error(Messages.INVALID_PARENT_HIERARCHY);
+        }
+      }
+
+      const partner = await tx.partner.create({
+        data: {
+          userId: data.userId,
+          email: data.email,
+          identify: data.identify,
+          description: data.description,
+          dob: new Date(data.dob),
+          logo: data.logo,
+          taxNo: data.taxNo,
+          phone: data.phone,
+          name: data.name,
+          address: data.address,
+          createdBy: data.userId,
+          updatedBy: data.userId,
+          parentId: data.parentId || null,
+        },
       });
 
       if (!partner) {

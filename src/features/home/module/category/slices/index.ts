@@ -1,0 +1,87 @@
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { Response } from '@/shared/types/Common.types';
+import { fetchCategories, createCategory, deleteCategory, updateCategory } from './actions';
+import { Category, initialCategoryState } from './types';
+
+const categorySlice = createSlice({
+  name: 'category',
+  initialState: initialCategoryState,
+  reducers: {
+    setDialogOpen(state, action: PayloadAction<boolean>) {
+      state.dialogOpen = action.payload;
+    },
+    setDeleteConfirmOpen(state, action: PayloadAction<boolean>) {
+      state.deleteConfirmOpen = action.payload;
+    },
+    setUpdateDialogOpen(state, action: PayloadAction<boolean>) {
+      state.updateDialogOpen = action.payload;
+    },
+    setSelectedCategory(state, action: PayloadAction<Category | null>) {
+      state.selectedCategory = action.payload;
+    },
+    setCategories(state, action: PayloadAction<Response<Category[]>>) {
+      state.categories.data = action.payload.data;
+      state.categories.isLoading = false;
+      state.categories.error = null;
+    },
+    reset: () => initialCategoryState,
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchCategories.pending, (state) => {
+        state.categories.isLoading = true;
+      })
+      .addCase(fetchCategories.fulfilled, (state, action) => {
+        state.categories.isLoading = false;
+        state.categories.data = action.payload.data;
+      })
+      .addCase(fetchCategories.rejected, (state, action) => {
+        state.categories.isLoading = false;
+        state.categories.error =
+          (action.payload as { message: string })?.message || 'Unknown error';
+      })
+      // Rest of the extraReducers remain the same
+      .addCase(createCategory.pending, (state) => {
+        state.categories.isLoading = true;
+      })
+      .addCase(createCategory.fulfilled, (state, action) => {
+        state.categories.isLoading = false;
+        if (state.categories.data) {
+          const newCategory = action.payload.data;
+          if (!newCategory.parentId) {
+            state.categories.data.push(newCategory);
+          } else {
+            const parent = state.categories.data.find((cat) => cat.id === newCategory.parentId);
+            if (parent) {
+              parent.subCategories.push(newCategory);
+            }
+          }
+        } else {
+          state.categories.data = [action.payload.data];
+        }
+      })
+      .addCase(createCategory.rejected, (state, action) => {
+        state.categories.isLoading = false;
+        state.categories.error =
+          (action.payload as { message: string })?.message || 'Unknown error';
+      })
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      .addCase(updateCategory.fulfilled, (state, action) => {
+        state.categories.isLoading = false;
+      })
+      .addCase(deleteCategory.fulfilled, (state, action) => {
+        state.categories.isLoading = false;
+        state.categories.data = state.categories.data?.filter((cat) => cat.id !== action.payload);
+      });
+  },
+});
+
+export const {
+  setDialogOpen,
+  setDeleteConfirmOpen,
+  setUpdateDialogOpen,
+  setSelectedCategory,
+  setCategories,
+  reset,
+} = categorySlice.actions;
+export default categorySlice.reducer;

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
@@ -7,7 +8,14 @@ export const ReviewSection = () => {
   const autoplayPlugin = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
 
   return (
-    <section className="w-[100%] mx-auto flex my-20">
+    <section>
+      <div className="w-[100%] mx-auto flex px-20 max-w-6xl">
+        <div className="mx-auto max-w-3xl text-center my-10">
+          <h1 data-aos="fade-up" className="my-6 text-5xl font-bold text-pretty lg:text-6xl ">
+            Reviews
+          </h1>
+        </div>
+      </div>
       <Carousel
         className="w-full"
         plugins={[autoplayPlugin.current]}
@@ -22,16 +30,24 @@ export const ReviewSection = () => {
             >
               <div>
                 <Card className="w-full h-48 shadow-md">
-                  <CardContent className="flex items-center justify-center h-full">
-                    <span className="text-lg font-semibold">Review {index + 1}</span>
+                  <CardContent className="flex items-start p-4">
+                    {' '}
+                    <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
+                      <img
+                        src="https://images.unsplash.com/photo-1575936123452-b67c3203c357?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D"
+                        alt="Avatar"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm">Review {index + 1}</p> {/* Nội dung review */}
+                    </div>
                   </CardContent>
                 </Card>
               </div>
             </CarouselItem>
           ))}
         </CarouselContent>
-        {/* <CarouselPrevious />
-    <CarouselNext /> */}
       </Carousel>
     </section>
   );

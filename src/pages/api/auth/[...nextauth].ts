@@ -69,6 +69,19 @@ export const authOptions: NextAuthOptions = {
                 image: profile.image || user.image,
               },
             });
+
+            // create new account
+            await prisma.account.create({
+              data: {
+                name: 'Ví tiền payment',
+                userId: dbUser.id,
+                balance: 0,
+                currency: 'VND',
+                type: 'Payment',
+                icon: 'wallet',
+                createdBy: dbUser.id,
+              },
+            });
           } else {
             await prisma.user.update({
               where: { email: profile.email },

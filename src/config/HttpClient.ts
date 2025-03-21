@@ -4,7 +4,72 @@
  * - Handles global headers and authentication.
  * - Provides standard HTTP methods (GET, POST, PUT, DELETE).
  */
-class HttpClient {
+export interface IHttpClient {
+  /**
+   * Sets a request interceptor.
+   * @param interceptor Function that modifies the request config.
+   */
+  setRequestInterceptor: (
+    interceptor: (config: RequestInit) => RequestInit | Promise<RequestInit>,
+  ) => void;
+
+  /**
+   * Sets a response interceptor.
+   * @param interceptor Function that modifies the response.
+   */
+  setResponseInterceptor: (
+    interceptor: (response: Response) => Response | Promise<Response>,
+  ) => void;
+
+  /**
+   * Sends a GET request.
+   * @param url API endpoint.
+   * @param headers Optional headers.
+   * @returns Promise resolving to the response data of type T.
+   */
+  get<T>(url: string, headers?: HeadersInit): Promise<T>;
+
+  /**
+   * Sends a POST request.
+   * @param url API endpoint.
+   * @param body Request body.
+   * @param headers Optional headers.
+   * @returns Promise resolving to the response data of type T.
+   */
+  post<T>(url: string, body: any, headers?: HeadersInit): Promise<T>;
+
+  /**
+   * Sends a PUT request.
+   * @param url API endpoint.
+   * @param body Request body.
+   * @param headers Optional headers.
+   * @returns Promise resolving to the response data of type T.
+   */
+  put<T>(url: string, body: any, headers?: HeadersInit): Promise<T>;
+
+  /**
+   * Sends a DELETE request.
+   * @param url API endpoint.
+   * @param headers Optional headers.
+   * @returns Promise resolving to the response data of type T.
+   */
+  delete<T>(url: string, headers?: HeadersInit): Promise<T>;
+
+  /**
+   * Sets a global header.
+   * @param key Header key.
+   * @param value Header value.
+   */
+  setHeader(key: string, value: string): void;
+
+  /**
+   * Removes a global header.
+   * @param key Header key.
+   */
+  removeHeader(key: string): void;
+}
+
+class HttpClient implements IHttpClient {
   private static instance: HttpClient;
   private baseURL: string;
   private defaultHeaders: Record<string, string>;

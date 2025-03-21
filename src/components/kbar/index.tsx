@@ -1,5 +1,5 @@
 'use client';
-import { navItems } from '@/features/dashboard/constants/data';
+import { navItems } from '@/features/home/constants/data';
 import { KBarAnimator, KBarPortal, KBarPositioner, KBarProvider, KBarSearch } from 'kbar';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
@@ -46,6 +46,7 @@ export default function KBar({ children }: { children: React.ReactNode }) {
         // Return only valid actions (ignoring null base actions for containers)
         return baseAction ? [baseAction, ...childActions] : childActions;
       }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 

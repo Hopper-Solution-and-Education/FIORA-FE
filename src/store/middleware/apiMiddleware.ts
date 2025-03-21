@@ -1,10 +1,16 @@
 import { Middleware, isRejectedWithValue } from '@reduxjs/toolkit';
+import { toast } from 'sonner';
 
 const apiMiddleware: Middleware = () => (next) => (action) => {
   if (isRejectedWithValue(action)) {
-    const errorMessage =
-      (action.payload as { message?: string })?.message || 'Something went wrong';
-    console.log('Error', errorMessage);
+    console.log(action.payload);
+    const errorMessage = (action.payload as { message?: string })?.message;
+    toast.error('Error', {
+      description: errorMessage || 'Something went wrong !',
+      style: {
+        color: 'red',
+      },
+    });
   }
   return next(action);
 };

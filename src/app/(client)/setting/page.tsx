@@ -1,24 +1,16 @@
-// import dynamic from 'next/dynamic';
-import { Separator } from '@/components/ui/separator';
+// File: /setting/page.tsx
+'use client';
 
-// const AccountSettingPageRender = dynamic(
-//   () => import('@/features/setting/presentation/module/account/AccountSettingPage'),
-//   {
-//     loading: () => <div>Loading...</div>,
-//   },
-// );
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
-export default function SettingsProfilePage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium">Account</h3>
-        <p className="text-sm text-muted-foreground">
-          Update your account settings. Set your preferred language and timezone.
-        </p>
-      </div>
-      <Separator />
-      {/* <AccountSettingPageRender /> */}
-    </div>
-  );
+export default function SettingsPage() {
+  const router = useRouter();
+
+  // Redirect to /setting/partner when the page loads
+  useEffect(() => {
+    router.replace('/setting/partner');
+  }, [router]);
+
+  return <div>Redirecting to Partner Settings...</div>;
 }

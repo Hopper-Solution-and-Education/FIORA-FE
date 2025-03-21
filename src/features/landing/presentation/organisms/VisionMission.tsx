@@ -1,89 +1,95 @@
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
-import Image from 'next/image';
-import { MediaEmbedded } from '../components/MediaEmbedded';
-
-const sections = [
-  {
-    title: 'Our Story',
-    description:
-      'We started with a mission to revolutionize the industry by bringing innovation and passion into our work.',
-    image: 'https://supereval.com/wp-content/uploads/2022/12/AdobeStock_121069878-scaled.jpeg',
-  },
-  {
-    title: 'Our Vision',
-    description:
-      'Our vision is to create a world where technology empowers businesses and individuals to reach new heights.',
-    image: 'https://supereval.com/wp-content/uploads/2022/12/AdobeStock_121069878-scaled.jpeg',
-  },
-  {
-    title: 'Our Mission',
-    description:
-      'We are committed to delivering high-quality solutions that drive success and foster innovation.',
-    image: 'https://supereval.com/wp-content/uploads/2022/12/AdobeStock_121069878-scaled.jpeg',
-  },
-];
+import { SectionType } from '@prisma/client';
+import { ArrowRight } from 'lucide-react';
+import { useGetSection } from '../../hooks/useGetSection';
 
 const VisionMission = () => {
-  return (
-    <section className="w-full px-20 py-10">
-      <div className="mx-auto max-w-3xl pb-12 text-center md:pb-20">
-        <div className="inline-flex items-center gap-3 pb-3 before:h-px before:w-8 before:bg-linear-to-r before:from-transparent before:to-indigo-200/50 after:h-px after:w-8 after:bg-linear-to-l after:from-transparent after:to-indigo-200/50">
-          <span className="inline-flex bg-gradient-to-r from-green-500 via-green-300 to-pink-500 bg-clip-text text-2xl text-transparent">
-            Our Vision and Mission
-          </span>
+  const { section, isError, isLoading } = useGetSection(SectionType.VISION_MISSION);
+
+  if (isLoading) {
+    return (
+      <section>
+        <div className="mx-auto max-w-3xl pb-12 text-center md:pb-20">
+          <div className="mb-10 md:mb-20">
+            <div className="animate-pulse bg-gray-300 h-10 w-64 mx-auto mb-2 rounded-md"></div>
+          </div>
         </div>
-        <h2 className="bg-gradient-to-r from-green-500 via-gray-300 to-pink-500 bg-clip-text text-transparent pb-4 text-3xl font-semibold md:text-4xl">
-          Map your product journey
-        </h2>
-        <p className="text-lg text-gray-500 dark:text-white-200/65">
-          Simple and elegant interface to start collaborating with your team in minutes. It
-          seamlessly integrates with your code and your favorite programming languages.
-        </p>
-      </div>
-      <div className="w-full mx-auto flex flex-col gap-12">
-        {sections.map((section, index) => (
-          <motion.div
-            key={index}
-            className={`flex flex-col-reverse lg:flex-row items-center gap-8 ${
-              index % 2 === 0 ? 'lg:flex-row-reverse' : ''
-            }`}
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            viewport={{ once: true }}
-          >
-            {/* Text Section */}
-            <div className="w-full lg:w-1/2 text-center lg:text-left">
-              <h3 className="text-lg md:text-xl lg:text-2xl font-semibold">{section.title}</h3>
-              <p className="text-gray-600 text-sm md:text-base lg:text-lg mt-2">
-                {section.description}
-              </p>
-              <div data-aos="fade-up" data-aos-delay={400}>
-                <Button className="mb-4 w-full sm:mb-0 sm:w-auto bg-gradient-to-t from-green-500 to-green-900 text-white shadow-lg hover:bg-indigo-700">
-                  <span className="relative inline-flex items-center">
-                    Start Learning Now
-                    <span className="ml-1 tracking-normal text-white/50 transition-transform group-hover:translate-x-0.5">
-                      →
-                    </span>
-                  </span>
-                </Button>
+        <div>
+          <div className="bg-muted-2 grid items-center gap-8 lg:grid-cols-2">
+            <div className="flex flex-col items-center p-16 text-center lg:items-start lg:text-left">
+              <div className="animate-pulse bg-gray-300 h-6 w-24 mb-4 rounded-md"></div>
+              <div className="animate-pulse bg-gray-300 h-12 w-80 mb-6 rounded-md"></div>
+              <div className="animate-pulse bg-gray-300 h-8 w-96 mb-8 rounded-md"></div>
+              <div className="flex w-full flex-col justify-center gap-2 sm:flex-row lg:justify-start">
+                <div className="animate-pulse bg-gray-300 h-10 w-32 rounded-md mr-2"></div>
+                <div className="animate-pulse bg-gray-300 h-10 w-32 rounded-md"></div>
               </div>
             </div>
-
-            {/* Image Section */}
-            <div className="w-full lg:w-1/2 relative h-64 md:h-72 lg:h-96">
-              <Image
-                src={section.image}
-                alt={section.title}
-                layout="fill"
-                objectFit="cover"
-                className="rounded-lg shadow-lg"
-              />
+            <div className="relative lg:h-[500px] h-[300px] overflow-hidden justify-center mx-4">
+              <div className="animate-pulse bg-gray-300 absolute inset-0 rounded-md"></div>
             </div>
-          </motion.div>
-        ))}
-        <MediaEmbedded />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (isError || !section?.medias) {
+    return (
+      <section>
+        <div className="mx-auto max-w-3xl pb-12 text-center md:pb-20">
+          <div className="mb-10 md:mb-20">
+            <h2 className="mb-2 text-center text-3xl font-semibold lg:text-5xl">
+              Vision and Mission
+            </h2>
+          </div>
+        </div>
+        <div>
+          <div className="bg-muted-2 grid items-center gap-8 lg:grid-cols-2">
+            <div className="flex flex-col items-center p-16 text-center lg:items-start lg:text-left">
+              <p>Error loading data.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const embedCode = section.medias.length > 0 ? section.medias[0].embed_code : null;
+
+  return (
+    <section>
+      <div className="mt-20">
+        <div className="bg-muted-2 grid items-center gap-8 lg:grid-cols-2">
+          <div className="flex flex-col items-center p-16 text-center lg:items-start lg:text-left">
+            <h1 className="my-6 text-4xl font-bold text-pretty lg:text-6xl"> {section?.name}</h1>
+            <p className="mb-8 max-w-xl text-muted-foreground lg:text-xl">
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Elig doloremque mollitia
+              fugiat omnis! Porro facilis quo animi consequatur. Explicabo.
+            </p>
+            <div className="flex w-full flex-col justify-center gap-2 sm:flex-row lg:justify-start">
+              <Button>
+                Primary
+                <ArrowRight className="size-4" />
+              </Button>
+              <Button variant="outline">Secondary</Button>
+            </div>
+          </div>
+          <div className="relative lg:h-[500px] h-[300px] overflow-hidden justify-center mx-4">
+            {embedCode ? (
+              <div
+                className="absolute inset-0"
+                dangerouslySetInnerHTML={{
+                  __html: `<style>iframe { width: 100% !important; height: 100% !important; border: none; border-radius: 8px; object-fit: cover;}</style>${embedCode}`,
+                }}
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-200 rounded-md">
+                <p className="text-gray-500">No embedded content available</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );

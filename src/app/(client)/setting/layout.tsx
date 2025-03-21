@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import Hero from '@/components/common/Hero';
 import { Separator } from '@/components/ui/separator';
 import { SidebarNav } from '@/features/setting/presentation/components/sidebar-nav';
+import AuthLayout from '@/components/layouts/auth-layout';
 
 export const metadata: Metadata = {
   title: 'Hopper Solution and Education',
@@ -11,12 +12,8 @@ export const metadata: Metadata = {
 
 const sidebarNavItems = [
   {
-    title: 'Account',
-    href: '/setting',
-  },
-  {
-    title: 'Expense & Income',
-    href: '/setting/expense-income',
+    title: 'Partner',
+    href: '/setting/partner',
   },
 ];
 
@@ -26,7 +23,7 @@ interface SettingsLayoutProps {
 
 export default function SettingsLayout({ children }: SettingsLayoutProps) {
   return (
-    <>
+    <AuthLayout requiresAuth={true}>
       <Hero />
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-6 pt-8 pb-16 sm:pt-12">
@@ -51,6 +48,6 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
           </div>
         </div>
       </section>
-    </>
+    </AuthLayout>
   );
 }

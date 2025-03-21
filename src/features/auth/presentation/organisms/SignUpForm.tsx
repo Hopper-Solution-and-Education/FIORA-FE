@@ -5,9 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppleButton from '@/features/auth/presentation/common/AppleButton';
-import GoogleButton from '@/features/auth/presentation/common/GoogleButton';
-import MetaButton from '@/features/auth/presentation/common/MetaButton';
+import { Separator } from '@/components/ui/separator';
 import TermCondition from '@/features/auth/presentation/common/TermCondition';
 import { VerifyOTPForm } from '@/features/auth/presentation/organisms/VerifyForm';
 import { cn } from '@/shared/utils';
@@ -16,20 +14,20 @@ import {
   validateEmail,
   validatePassword,
 } from '@/shared/validation/signUpValidation';
+import { Loader2 } from 'lucide-react';
+import { signIn } from 'next-auth/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-// import { Router, useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
-// Validation regex patterns
-
-export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>) {
+const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isVerificationStep, setIsVerificationStep] = useState(false); // Toggle between registration and verification
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const router = useRouter();
+  const [isTermAccepted, setIsTermAccepted] = useState<boolean>(false);
+  const [isRegistering, setIsRegistering] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null); // State for error messages
   // State for field-specific errors
   const [fieldErrors, setFieldErrors] = useState({
@@ -38,6 +36,27 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>)
     confirmPassword: '',
     otp: '',
   });
+  const [validateEmailMsg, setValidateEmailMsg] = useState<string | null>(null);
+
+  const validateExistedEmail = async () => {
+    const res = await fetch('/api/auth/signup', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setValidateEmailMsg(data.message);
+    } else {
+      setValidateEmailMsg(null);
+    }
+  };
+
+  useEffect(() => {
+    if (!fieldErrors.email) {
+      validateExistedEmail();
+    }
+  }, [email]);
 
   const validateForm = () => {
     const emailError = validateEmail(email);
@@ -75,6 +94,19 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>)
     setError(null);
   };
 
+  const handleGoogleSignIn = async () => {
+    setError(null); // Reset lỗi trước khi thử đăng nhập
+    try {
+      const res = await signIn('google', { callbackUrl: '/dashboard' });
+      if (!res?.ok) {
+        setError('Google login failed. Please try again.');
+      }
+    } catch (error: any) {
+      console.error('Google login error:', error);
+      setError('An unexpected error occurred during Google login.');
+    }
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null); // Clear any global errors
@@ -84,133 +116,213 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>)
     }
 
     try {
+      setIsRegistering(true);
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.message || 'Something went wrong');
-      }
-
       const data = await res.json();
+      if (data.status !== 201) {
+        setError(data.message);
+        return;
+      }
 
       setSuccessMessage(data.message); // e.g., "Check your email for OTP"
       // setIsVerificationStep(true); // Switch to OTP verification step
-      setTimeout(() => {
-        router.push('/auth/sign-in');
-      }, 1500);
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
+    } finally {
+      setIsRegistering(false);
     }
   };
 
   return (
-    <div className={cn('flex flex-col gap-6', className)} {...props}>
-      <Card className="overflow-hidden">
+    <div className={cn('flex flex-col items-center gap-6', className)} {...props}>
+      <Card className="w-full max-w-xl overflow-hidden border-0 shadow-none">
         <CardContent className="grid p-0">
           <div className="flex flex-col items-center text-center gap-2">
-            <h1 className="text-2xl font-bold py-2 mt-3">
-              {isVerificationStep ? 'Verify Your Email' : 'Create an Account'}
+            <h1 className="text-2xl font-bold mt-3">
+              {isVerificationStep ? 'Verify Your Email' : 'SIGN UP'}
             </h1>
-            <p className="text-balance text-muted-foreground">
-              {isVerificationStep
-                ? 'Enter the OTP sent to your email'
-                : 'Sign up for your Hopper account'}
-            </p>
           </div>
           <div className="p-6 md:p-8">
             {error && (
               <Alert variant="destructive" className="mb-4">
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription className="text-center">{error}</AlertDescription>
               </Alert>
             )}
-            {successMessage && (
-              <Alert variant="default" className="mb-4 border-green-500">
-                <AlertDescription className="text-green-600">{successMessage}</AlertDescription>
-              </Alert>
-            )}
-
-            {!isVerificationStep ? (
-              <form onSubmit={handleRegister} className="flex flex-col gap-3">
-                <div className="grid gap-2 mt-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => handleFieldChange('email', e.target.value)}
-                    placeholder="example@gmail.com"
-                    required
-                    className={cn('border-gray-300', fieldErrors.email && 'border-red-500')}
-                  />
-                  {fieldErrors.email && (
-                    <p className="text-red-500 text-sm mt-1 break-words">{fieldErrors.email}</p>
-                  )}
-                </div>
-                <div className="grid gap-2 mt-4">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => handleFieldChange('password', e.target.value)}
-                    required
-                    className={cn('border-gray-300', fieldErrors.password && 'border-red-500')}
-                  />
-                  {fieldErrors.password && (
-                    <p className="text-red-500 text-sm mt-1 break-all">{fieldErrors.password}</p>
-                  )}
-                </div>
-                <div className="grid gap-2 mt-4">
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => handleFieldChange('confirmPassword', e.target.value)}
-                    required
-                    className={cn(
-                      'border-gray-300',
-                      fieldErrors.confirmPassword && 'border-red-500',
-                    )}
-                  />
-                  {fieldErrors.confirmPassword && (
-                    <p className="text-red-500 text-sm mt-1">{fieldErrors.confirmPassword}</p>
-                  )}
-                </div>
-                <TermCondition />
-                <Button type="submit" className="w-full mt-4">
-                  Sign Up
-                </Button>
-              </form>
+            {successMessage ? (
+              <div className="w-full h-fit my-[10vh] flex flex-row justify-center items-center gap-3">
+                <h2>{successMessage}</h2>
+                <Link
+                  href="/auth/sign-in"
+                  className="underline underline-offset-4 text-blue-500 hover:text-blue-600"
+                >
+                  Login
+                </Link>
+              </div>
             ) : (
-              <VerifyOTPForm
-                email={email}
-                setError={setError}
-                setSuccessMessage={setSuccessMessage}
-              />
-            )}
-            {!isVerificationStep && (
               <>
-                <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border mt-3">
-                  <span className="relative z-10 bg-background px-2 text-muted-foreground">
-                    Or continue with
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <AppleButton />
-                  <GoogleButton />
-                  <MetaButton />
-                </div>
-                <div className="text-center text-sm mt-4">
-                  Already have an account?{' '}
-                  <Link href="/auth/sign-in" className="underline underline-offset-4">
-                    Login
-                  </Link>
-                </div>
+                {!isVerificationStep ? (
+                  <form onSubmit={handleRegister} className="flex flex-col gap-3">
+                    <div className="flex flex-col sm:flex-row justify-start items-start sm:items-center gap-2 ">
+                      <Label
+                        htmlFor="email"
+                        className="text-sm text-gray-700 dark:text-gray-300 sm:w-1/4"
+                      >
+                        Email
+                      </Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        disabled={isRegistering} // Disable during register period
+                        value={email}
+                        onChange={(e) => handleFieldChange('email', e.target.value)}
+                        // onBlur={validateExistedEmail} // Validate khi người dùng rời khỏi trường input
+                        placeholder="example@gmail.com"
+                        required
+                        className={cn(
+                          'flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100',
+                          fieldErrors.email || validateEmailMsg ? 'border-red-500' : 'border-none',
+                        )}
+                      />
+                    </div>
+                    {(fieldErrors.email || validateEmailMsg) && (
+                      <p className="w-full pl-[30%] text-red-500 text-sm break-words">
+                        {fieldErrors.email || validateEmailMsg}
+                      </p>
+                    )}
+                    <div className="flex flex-col sm:flex-row justify-start items-start sm:items-center gap-2 mt-2">
+                      <Label
+                        htmlFor="password"
+                        className="text-sm text-gray-700 dark:text-gray-300 sm:w-1/4"
+                      >
+                        Password
+                      </Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        disabled={isRegistering} // Disable during register period
+                        value={password}
+                        onChange={(e) => handleFieldChange('password', e.target.value)}
+                        required
+                        className={cn(
+                          'flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100',
+                          fieldErrors.password ? 'border-red-500' : 'border-none',
+                        )}
+                      />
+                    </div>
+                    {fieldErrors.password && (
+                      <p className="w-full pl-[30%] text-red-500 text-sm mt-1">
+                        {fieldErrors.password}
+                      </p>
+                    )}
+                    <div className="flex flex-col sm:flex-row justify-start items-start sm:items-center gap-2 mt-2">
+                      <Label
+                        htmlFor="confirm-password"
+                        className="text-sm text-gray-700 dark:text-gray-300 sm:w-1/4"
+                      >
+                        Confirm Password
+                      </Label>
+                      <Input
+                        id="confirm-password"
+                        type="password"
+                        disabled={isRegistering} // Disable during register period
+                        value={confirmPassword}
+                        onChange={(e) => handleFieldChange('confirmPassword', e.target.value)}
+                        required
+                        className={cn(
+                          'flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100',
+                          fieldErrors.confirmPassword ? 'border-red-500' : 'border-none',
+                        )}
+                      />
+                    </div>
+                    {fieldErrors.confirmPassword && (
+                      <p className="w-full pl-[30%] text-red-500 text-sm mt-1 break-all">
+                        {fieldErrors.confirmPassword}
+                      </p>
+                    )}
+                    <TermCondition
+                      isTermAccepted={isTermAccepted}
+                      setIsTermAccepted={setIsTermAccepted}
+                      isEditAlowed={!isRegistering}
+                    />
+                    <div className="w-full h-fit my-4 flex justify-center">
+                      <Button
+                        type="submit"
+                        className={cn(
+                          'text-lg font-semibold w-48 py-4 bg-gray-500 text-white',
+                          isTermAccepted &&
+                            'bg-blue-500  hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700',
+                          isRegistering && 'cursor-not-allowed bg-gray-500',
+                        )}
+                        disabled={!isTermAccepted || isRegistering}
+                      >
+                        {!isRegistering ? (
+                          'Sign Up'
+                        ) : (
+                          <Loader2 className="h-full w-full text-primary animate-spin" />
+                        )}
+                      </Button>
+                    </div>
+                    <div className="text-center text-sm mt-4">
+                      Already have an account?{' '}
+                      <Link
+                        href="/auth/sign-in"
+                        className="underline underline-offset-4 text-blue-500 hover:text-blue-600"
+                      >
+                        Login
+                      </Link>
+                    </div>
+                  </form>
+                ) : (
+                  <VerifyOTPForm
+                    email={email}
+                    setError={setError}
+                    setSuccessMessage={setSuccessMessage}
+                  />
+                )}
+                {!isVerificationStep && (
+                  <div className="w-full h-fit flex flex-col pt-6 gap-6">
+                    <Separator orientation="horizontal" />
+
+                    <div className="relative flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      <span className="relative z-10 px-2">Or Sign in with</span>
+                      <button
+                        onClick={handleGoogleSignIn}
+                        className="flex items-center justify-center w-8 h-8"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          x="0px"
+                          y="0px"
+                          width="48"
+                          height="48"
+                          viewBox="0 0 48 48"
+                        >
+                          <path
+                            fill="#FFC107"
+                            d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"
+                          ></path>
+                          <path
+                            fill="#FF3D00"
+                            d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"
+                          ></path>
+                          <path
+                            fill="#4CAF50"
+                            d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"
+                          ></path>
+                          <path
+                            fill="#1976D2"
+                            d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"
+                          ></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -218,4 +330,6 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>)
       </Card>
     </div>
   );
-}
+};
+
+export default SignUpForm;

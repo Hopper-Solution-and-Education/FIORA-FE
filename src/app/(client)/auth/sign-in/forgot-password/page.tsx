@@ -1,13 +1,16 @@
+'use client';
+import Loading from '@/components/common/Loading';
 import dynamic from 'next/dynamic';
 
 const ForgotPasswordPage = dynamic(
   () => import('@/features/auth/presentation/ForgotPasswordPage'),
   {
-    loading: () => <div>Loading...</div>,
+    loading: () => <Loading />,
+    ssr: false,
   },
 );
 
-const SignIn = () => {
+const ForgotPassword = () => {
   return (
     <section className="bg-muted py-16 px-2">
       <ForgotPasswordPage />
@@ -15,4 +18,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default ForgotPassword;

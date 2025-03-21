@@ -1,35 +1,48 @@
-// 'use client';
+'use client';
 
-// import { Button } from '@/components/ui/button';
-// import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-// import { CreateAccountModal } from './components/CreateAccountPage';
-// import { useState } from 'react';
+import BalanceChart from '@/components/common/BalanceChartV2';
+import { CreateAccountModal } from './components/CreateAccountPage';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { TabComponentProps } from '../../types';
 
-// export default function Home() {
-//   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+const AccountSettingDashboard = ({ title, description }: TabComponentProps) => {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isTriggered, setIsTriggered] = useState(false);
 
-//   return (
-//     <main>
-//       <Card className="w-full max-w-md">
-//         <CardHeader>
-//           <CardTitle>Account Management</CardTitle>
-//           <CardDescription>Create or view account details</CardDescription>
-//         </CardHeader>
-//         <CardContent className="flex flex-col gap-4">
-//           <Button
-//             onClick={() =>
-//               setIsCreateModalOpen(() => {
-//                 return true;
-//               })
-//             }
-//             className="w-full"
-//           >
-//             Create New Account
-//           </Button>
-//         </CardContent>
-//       </Card>
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-medium">{title}</h3>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
+      <Separator />
 
-//       <CreateAccountModal isOpen={isCreateModalOpen} setIsCreateModalOpen={setIsCreateModalOpen} />
-//     </main>
-//   );
-// }
+      <div className="space-y-4">
+        <div className="flex items-center justify-end">
+          <Button
+            variant="default"
+            className="flex items-center gap-2"
+            size={'lg'}
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            <Plus className="w-7 h-7" />
+            Add Account
+          </Button>
+        </div>
+        <BalanceChart />
+
+        <CreateAccountModal
+          isOpen={isCreateModalOpen}
+          setIsCreateModalOpen={setIsCreateModalOpen}
+          setTriggered={setIsTriggered}
+          isTriggered={isTriggered}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default AccountSettingDashboard;
