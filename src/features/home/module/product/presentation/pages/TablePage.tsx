@@ -50,11 +50,7 @@ const TablePage = ({ reset, setDeleteDialogOpen, setProductToDelete }: TablePage
         </div>
       ) : (
         <div className="space-y-4">
-          <ProductTable
-            products={products || []}
-            onEdit={handleEditProduct}
-            onDelete={handleDeleteProduct}
-          />
+          <ProductTable onEdit={handleEditProduct} onDelete={handleDeleteProduct} />
 
           {/* Pagination */}
           {total > 0 && (

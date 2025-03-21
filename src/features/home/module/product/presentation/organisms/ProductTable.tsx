@@ -1,5 +1,12 @@
 'use client';
-import { Edit, Trash2, MoreHorizontal } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Table,
   TableBody,
@@ -8,45 +15,62 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { ChevronLeft, ChevronRight, Edit, MoreHorizontal, Trash2 } from 'lucide-react';
 import { Product } from '../../domain/entities/Product';
+import { getProductsAsyncThunk } from '../../slices/actions/getProductsAsyncThunk';
 
 interface ProductTableProps {
-  products: Product[];
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
 }
 
-const ProductTable = ({ products, onEdit, onDelete }: ProductTableProps) => {
+const ProductTable = ({ onEdit, onDelete }: ProductTableProps) => {
+  const dispatch = useAppDispatch();
+  const {
+    items: products,
+    page,
+    isLoading,
+    pageSize,
+    hasMore,
+  } = useAppSelector((state) => state.productManagement.products);
+
+  const handleNextPage = () => {
+    if (!isLoading && hasMore) {
+      dispatch(getProductsAsyncThunk({ page: page + 1, pageSize }));
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (page > 1) {
+      dispatch(getProductsAsyncThunk({ page: page - 1, pageSize }));
+    }
+  };
+
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border overflow-auto">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="w-[80px]">Icon</TableHead>
             <TableHead>Name</TableHead>
-            <TableHead className="hidden md:table-cell">Description</TableHead>
-            <TableHead className="hidden sm:table-cell">Tax Rate</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead>Price</TableHead>
+            <TableHead>Tax Rate</TableHead>
+            <TableHead>Type</TableHead>
             <TableHead className="w-[100px] text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {products.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center">
+              <TableCell colSpan={7} className="h-24 text-center">
                 No products found.
               </TableCell>
             </TableRow>
           ) : (
             products.map((product) => (
-              <TableRow key={product.name}>
+              <TableRow key={product.id}>
                 <TableCell>
                   <Avatar className="h-9 w-9">
                     {product.icon ? (
@@ -57,14 +81,14 @@ const ProductTable = ({ products, onEdit, onDelete }: ProductTableProps) => {
                   </Avatar>
                 </TableCell>
                 <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell className="hidden md:table-cell">
+                <TableCell>
                   {product.description.length > 100
                     ? `${product.description.substring(0, 100)}...`
                     : product.description}
                 </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  {product.taxRate ? `${product.taxRate}%` : 'N/A'}
-                </TableCell>
+                <TableCell>{product.price.toLocaleString()} USD</TableCell>
+                <TableCell>{product.taxRate ? `${product.taxRate}%` : 'N/A'}</TableCell>
+                <TableCell>{product.type}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -93,6 +117,18 @@ const ProductTable = ({ products, onEdit, onDelete }: ProductTableProps) => {
           )}
         </TableBody>
       </Table>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-end items-center p-4">
+        <Button variant="outline" onClick={handlePreviousPage} disabled={!hasMore || isLoading}>
+          Previous
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+        <Button variant="outline" onClick={handleNextPage} disabled={!hasMore || isLoading}>
+          Next
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
     </div>
   );
 };

@@ -2,7 +2,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
-import { CategoryProductPage, GetCategoryResponse } from '../domain/entities/Category';
+import { GetCategoryResponse } from '../domain/entities/Category';
 import { createProduct } from './actions/createProductAsyncThunk';
 import { deleteProductAsyncThunk } from './actions/deleteProductAsyncThunk';
 import { fetchCategoriesProduct } from './actions/fetchCategoriesProduct';
@@ -38,10 +38,8 @@ const productManagementSlice = createSlice({
           const { data, page, pageSize, totalPage } = action.payload;
           state.categories = {
             isLoading: false,
-            data: (page === 1
-              ? data
-              : [...state.categories.data, ...data]) as CategoryProductPage[],
-            page: page + 1,
+            data: data,
+            page: page,
             limit: pageSize,
             total: totalPage,
             hasMore: page < totalPage,

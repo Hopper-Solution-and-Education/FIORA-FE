@@ -47,7 +47,23 @@ export class ProductMapper {
     response: getProductTransactionAPIResponseDTO,
   ): GetProductTransactionResponse {
     return {
-      data: response.data.data,
+      data: response.data.data.map((item) => ({
+        transaction: {
+          id: item.transaction.id,
+          type: item.transaction.type,
+        },
+        product: {
+          id: item.product.id,
+          price: Number(item.product.price),
+          name: item.product.name,
+          type: item.product.type,
+          description: item.product.description ?? '',
+          items: ProductMapper.parseServerItemToList(item.product.items),
+          taxRate: Number(item.product.taxRate),
+          catId: item.product.catId ?? '',
+          icon: item.product.icon,
+        },
+      })),
       page: response.data.page,
       pageSize: response.data.pageSize,
       totalPage: response.data.totalPage,

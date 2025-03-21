@@ -8,6 +8,8 @@ import { ProductTransactionResponse } from '../../domain/entities/Product';
 import { setDialogState, toggleDialogAddEdit } from '../../slices';
 import TwoSideBarChart, { BarItem } from '../atoms/charts';
 import { ProductFormValues } from '../schema/addProduct.schema';
+import { LoadingIndicator } from '@/components/common/LoadingIndicator';
+
 const mapTransactionsToBarItems = (data: ProductTransactionResponse[]): BarItem[] => {
   const groupedData: Record<string, BarItem> = {};
 
@@ -68,6 +70,8 @@ const ChartPage = ({ method }: ChartPageProps) => {
   const dispatch = useAppDispatch();
 
   const handleEditProduct = (product: ProductFormValues) => {
+    console.log(product);
+
     dispatch(setDialogState('edit'));
     reset({
       categoryId: product.categoryId,
@@ -77,25 +81,33 @@ const ChartPage = ({ method }: ChartPageProps) => {
       description: product.description,
       id: product.id,
       type: product.type,
-      items: product.items ?? [],
+      items: product.items?.map((item) => ({
+        description: item.description,
+        name: item.name,
+      })),
       taxRate: Number(product.taxRate),
     });
     dispatch(toggleDialogAddEdit(true));
   };
+
   const data = useAppSelector((state) => state.productManagement.productTransaction.data);
   const isLoading = useAppSelector(
     (state) => state.productManagement.productTransaction.isLoadingGet,
   );
-  const trycallback = (item: any) => {
-    // console.log(item.payload.product);
 
+  const tryCallback = (item: any) => {
     handleEditProduct(item.payload.product);
+  };
+
+  const tryCallBackYaxis = (item: any) => {
+    handleEditProduct(item.product);
   };
 
   const chartData = useMemo(() => mapTransactionsToBarItems(data), [data]);
 
   return (
-    <div className="">
+    <div className="p-4">
+      {isLoading && <LoadingIndicator />}
       <TwoSideBarChart
         data={chartData}
         title="Product Overview"
@@ -103,7 +115,8 @@ const ChartPage = ({ method }: ChartPageProps) => {
           { name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_1 },
           { name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
         ]}
-        callback={trycallback}
+        callback={tryCallback}
+        callbackYAxis={tryCallBackYaxis}
       />
     </div>
   );

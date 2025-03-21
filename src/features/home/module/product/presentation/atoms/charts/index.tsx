@@ -60,6 +60,7 @@ export type PositiveAndNegativeBarChartProps = {
   maxBarRatio?: number;
   tutorialText?: string;
   callback?: (item: any) => void;
+  callbackYAxis?: (item: any) => void;
   levelConfig?: LevelConfig;
 };
 
@@ -75,6 +76,7 @@ const TwoSideBarChart = ({
   legendItems,
   tutorialText,
   callback,
+  callbackYAxis,
   levelConfig,
 }: PositiveAndNegativeBarChartProps) => {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
@@ -273,7 +275,7 @@ const TwoSideBarChart = ({
                   processedData={visibleData}
                   expandedItems={expandedItems}
                   onToggleExpand={toggleExpand}
-                  callback={callback}
+                  callback={callbackYAxis}
                 />
               )}
             />

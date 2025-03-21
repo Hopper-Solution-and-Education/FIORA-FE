@@ -30,6 +30,9 @@ const ProductPage = () => {
   const { page: pageTransaction, pageSize } = useAppSelector(
     (state) => state.productManagement.productTransaction,
   );
+  const { page: productPage, pageSize: productPageSize } = useAppSelector(
+    (state) => state.productManagement.products,
+  );
   const isDeletingProduct = useAppSelector((state) => state.productManagement.isDeletingProduct);
 
   const method = useForm<ProductFormValues>({
@@ -48,7 +51,7 @@ const ProductPage = () => {
 
   useEffect(() => {
     dispatch(fetchCategoriesProduct({ page, pageSize: limit }));
-    dispatch(getProductsAsyncThunk({ page: 1, pageSize: 10 }));
+    dispatch(getProductsAsyncThunk({ page: productPage, pageSize: productPageSize }));
     if (data?.user) {
       dispatch(
         getProductTransactionAsyncThunk({ page: pageTransaction, pageSize, userId: data?.user.id }),
