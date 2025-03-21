@@ -18,7 +18,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'; // Thêm Select
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import {
   Sheet,
@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 import { FormFieldProps } from '@/shared/types/formsheet.type';
 import { LoaderCircle, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { DateTimePicker } from './DateTimePicker';
 
 interface FormSheetProps<T> {
   isOpen: boolean;
@@ -47,6 +48,7 @@ interface FormSheetProps<T> {
   context?: any;
   loading?: boolean;
   className?: string;
+  side?: 'left' | 'right' | 'bottom' | 'top' | 'center';
 }
 
 export const FormSheet = <T,>({
@@ -62,8 +64,10 @@ export const FormSheet = <T,>({
   context,
   loading = false,
   className,
+  side = 'right',
 }: FormSheetProps<T>) => {
   const [mounted, setMounted] = useState(false);
+  const [previews, setPreviews] = useState<Record<string, string | null>>({});
 
   const sections = fields.reduce(
     (acc, field) => {
@@ -83,15 +87,30 @@ export const FormSheet = <T,>({
     setMounted(isOpen);
     if (!isOpen) {
       form.clearErrors();
+      setPreviews({}); // Reset preview khi đóng
     }
   }, [isOpen, form]);
 
+  const handleImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    fieldName: string,
+    onChange: (value: any) => void,
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onChange(file); // Cập nhật file vào form
+      const previewUrl = URL.createObjectURL(file);
+      setPreviews((prev) => ({ ...prev, [fieldName]: previewUrl }));
+    }
+  };
+
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+    <Sheet open={isOpen} onOpenChange={setIsOpen} modal>
       <SheetContent
-        side="right"
+        side={side == 'center' ? 'bottom' : side}
         className={cn(
-          'w-full sm:max-w-md md:max-w-lg lg:max-w-xl p-0 bg-card text-card-foreground border-l border-border shadow-lg',
+          'w-full sm:max-w-md md:max-w-lg lg:max-w-xl p-0 bg-card text-card-foreground shadow-lg',
+          side === 'center' ? 'inset-0 m-auto rounded-lg max-h-[90vh]' : 'border-l border-border',
           className,
         )}
       >
@@ -121,7 +140,7 @@ export const FormSheet = <T,>({
 
           <div
             className={cn(
-              'flex-1 overflow-y-auto px-6 py-6 transition-opacity duration-300',
+              'flex-1 overflow-y-auto px-6 py-6 transition-opacity duration-300 scrollbar-thin scrollbar-track-muted scrollbar-thumb-muted scroll-m-1',
               mounted ? 'opacity-100' : 'opacity-0',
             )}
           >
@@ -189,6 +208,51 @@ export const FormSheet = <T,>({
                                         ))}
                                       </SelectContent>
                                     </Select>
+                                  ) : field.type === 'image' ? (
+                                    <div className="w-full">
+                                      <label
+                                        htmlFor={`${field.name}-upload`}
+                                        className={cn(
+                                          'relative flex items-center justify-center w-full h-40 border-2 border-dashed border-input rounded-lg cursor-pointer transition-all group',
+                                          previews[field.name] && 'border-none bg-muted/30',
+                                        )}
+                                      >
+                                        <Input
+                                          id={`${field.name}-upload`}
+                                          type="file"
+                                          accept={field.accept || 'image/*'}
+                                          onChange={(e) =>
+                                            handleImageChange(e, field.name, formField.onChange)
+                                          }
+                                          className="hidden"
+                                        />
+                                        {previews[field.name] && (
+                                          <img
+                                            src={previews[field.name]!}
+                                            alt="Preview"
+                                            className="w-28 h-28 object-cover rounded-md border border-input shadow-sm group-hover:opacity-70"
+                                          />
+                                        )}
+                                        <span
+                                          className={cn(
+                                            'absolute text-sm text-foreground transition-all',
+                                            previews[field.name]
+                                              ? 'opacity-0 group-hover:opacity-100 bg-background/50 px-1.5 py-1 rounded-md'
+                                              : 'opacity-100',
+                                          )}
+                                        >
+                                          {field.placeholder || 'Choose Image'}
+                                        </span>
+                                      </label>
+                                    </div>
+                                  ) : field.type === 'date' ? (
+                                    <DateTimePicker
+                                      modal={false}
+                                      value={formField.value}
+                                      onChange={formField.onChange}
+                                      clearable
+                                      hideTime // Chỉ hiển thị ngày
+                                    />
                                   ) : (
                                     <Input
                                       {...formField}

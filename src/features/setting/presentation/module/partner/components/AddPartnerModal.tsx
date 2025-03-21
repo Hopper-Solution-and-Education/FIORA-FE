@@ -1,13 +1,15 @@
+// AddPartnerModal.tsx
 'use client';
 
 import { FormSheet } from '@/components/common/FormSheet';
-import { Input } from '@/components/ui/input';
-import { createPartnerSchema } from '@/features/partner/schema/createPartner.schema';
+import {
+  CreatePartnerFormData,
+  createPartnerSchema,
+} from '@/features/partner/schema/createPartner.schema';
 import { useCreatePartner } from '@/features/setting/hooks/useCreatePartner';
-import { cn } from '@/lib/utils';
 import { FieldOverrides } from '@/shared/types/formsheet.type';
 import { generateFieldsFromSchema } from '@/shared/utils/formUtils';
-import { DateTimePicker } from '../../../../../../components/common/DateTimePicker';
+import { toast } from 'sonner';
 
 interface AddPartnerModalProps {
   isOpen: boolean;
@@ -22,66 +24,26 @@ const mockParentPartners = [
 ];
 
 export function AddPartnerModal({ isOpen, setIsOpen }: AddPartnerModalProps) {
-  const { form, onSubmit, logoPreview, setLogoPreview, handleLogoChange } =
-    useCreatePartner(setIsOpen);
+  const { form, onSubmit, setLogoPreview } = useCreatePartner(setIsOpen);
 
-  const fieldOverrides: FieldOverrides<any> = {
+  const fieldOverrides: FieldOverrides<CreatePartnerFormData> = {
     description: {
       type: 'textarea',
       section: 'Details',
       placeholder: 'Enter description',
     },
     dob: {
+      type: 'date',
+      label: 'Date of Birth',
       section: 'Details',
-      render: (field) => (
-        <DateTimePicker
-          modal={false}
-          value={field.value}
-          onChange={field.onChange}
-          clearable
-          hideTime
-        />
-      ),
+      placeholder: 'Select date of birth',
     },
     logo: {
-      type: 'file',
+      type: 'image',
+      label: 'Logo',
       section: 'Media',
-      render: () => (
-        <div className="w-full">
-          <label
-            htmlFor="logo-upload"
-            className={cn(
-              'relative flex items-center justify-center w-full h-40 border-2 border-dashed border-input rounded-lg cursor-pointer transition-all group',
-              logoPreview && 'border-none bg-muted/30',
-            )}
-          >
-            <Input
-              id="logo-upload"
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleLogoChange(e, form.setValue, form.clearErrors)}
-              className="hidden"
-            />
-            {logoPreview && (
-              <img
-                src={logoPreview}
-                alt="Logo preview"
-                className="w-28 h-28 object-cover rounded-md border border-input shadow-sm group-hover:opacity-70"
-              />
-            )}
-            <span
-              className={cn(
-                'absolute text-sm text-foreground transition-all',
-                logoPreview
-                  ? 'opacity-0 group-hover:opacity-100 bg-black/50 px-1.5 py-1 rounded-md'
-                  : 'opacity-100',
-              )}
-            >
-              Choose Image
-            </span>
-          </label>
-        </div>
-      ),
+      accept: 'image/*',
+      placeholder: 'Choose Image',
     },
     taxNo: { section: 'Contact Information' },
     phone: { section: 'Contact Information' },
@@ -99,6 +61,8 @@ export function AddPartnerModal({ isOpen, setIsOpen }: AddPartnerModalProps) {
 
   const fields = generateFieldsFromSchema(createPartnerSchema, fieldOverrides);
 
+  toast.success('a');
+
   return (
     <FormSheet
       isOpen={isOpen}
@@ -111,6 +75,7 @@ export function AddPartnerModal({ isOpen, setIsOpen }: AddPartnerModalProps) {
       submitText="Add Partner"
       context={{ setLogoPreview }}
       loading={form.formState.isSubmitting}
+      side="right"
     />
   );
 }
