@@ -55,11 +55,18 @@ export const navItems: NavItem[] = [
   },
   {
     title: 'Product',
-    url: '/home/product',
+    url: '*',
     icon: 'product',
     shortcut: ['p', 'p'],
     isActive: false,
-    items: [], // No child items
+    items: [
+      {
+        title: 'Product Management',
+        url: '/home/product',
+        icon: 'userPen',
+        shortcut: ['m', 'm'],
+      },
+    ],
   },
   {
     title: 'Account',
