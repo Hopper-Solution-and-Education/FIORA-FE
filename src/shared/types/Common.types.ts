@@ -2,6 +2,7 @@ import { Icon } from '@/components/Icon';
 export interface Response<T> {
   message: string;
   data: T;
+  status: number;
 }
 
 export interface IconsOptions {
