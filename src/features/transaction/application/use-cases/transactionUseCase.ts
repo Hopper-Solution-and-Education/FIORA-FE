@@ -47,25 +47,7 @@ class TransactionUseCase {
       }
 
       await this.revertOldTransaction(tx, transaction);
-
-      if (
-        (transaction.type === TransactionType.Expense && data.type === TransactionType.Income) ||
-        (transaction.type === TransactionType.Income && data.type === TransactionType.Expense)
-      ) {
-        await tx.productTransaction.deleteMany({ where: { transactionId: transaction.id } });
-      }
-
-      await this.applyNewTransaction(tx, data);
-
-      if (data.products) {
-        await this.createProductTransaction(
-          tx,
-          transaction,
-          data.products as { id: string }[],
-          userId,
-          data.type as TransactionType,
-        );
-      }
+      await this.applyNewTransaction(tx, data, userId);
 
       return tx.transaction.update({ where: { id }, data });
     });
@@ -99,11 +81,15 @@ class TransactionUseCase {
         transaction.amount.toNumber(),
       );
     }
+
+    await this.revertProductPrices(tx, transaction);
+    await tx.productTransaction.deleteMany({ where: { transactionId: transaction.id } });
   }
 
   private async applyNewTransaction(
     tx: Prisma.TransactionClient,
     data: Prisma.TransactionUncheckedUpdateInput,
+    userId: string,
   ) {
     const fromAccount = data.fromAccountId
       ? await tx.account.findUnique({ where: { id: data.fromAccountId as string } })
@@ -126,6 +112,32 @@ class TransactionUseCase {
         data.amount as number,
       );
     }
+
+    if (data.products) {
+      await this.createProductTransaction(
+        tx,
+        data as Transaction,
+        data.products as { id: string }[],
+        userId,
+        data.type as TransactionType,
+      );
+    }
+  }
+
+  private async revertProductPrices(tx: Prisma.TransactionClient, transaction: Transaction) {
+    const productTransactions = await tx.productTransaction.findMany({
+      where: { transactionId: transaction.id },
+      select: { productId: true },
+    });
+
+    const productIds = productTransactions.map((pt) => pt.productId);
+    if (productIds.length === 0) return;
+
+    const splitAmount = transaction.amount.toNumber() / productIds.length;
+    await tx.product.updateMany({
+      where: { id: { in: productIds } },
+      data: { price: { decrement: splitAmount } },
+    });
   }
 
   async removeTransaction(id: string, userId: string): Promise<void> {
