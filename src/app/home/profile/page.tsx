@@ -1,17 +1,15 @@
 'use client';
 
-import Loading from '@/components/common/Loading';
-import dynamic from 'next/dynamic';
-
-const AccountProfilePage = dynamic(
-  () => import('@/features/home/module/account/profile/AccountProfilePage'),
-  {
-    loading: () => <Loading />,
-  },
-);
+// const AccountProfilePage = dynamic(
+//   () => import('@/features/home/module/account/profile/AccountProfilePage'),
+//   {
+//     loading: () => <Loading />,
+//   },
+// );
 
 const page = () => {
-  return <AccountProfilePage />;
+  // return <AccountProfilePage />;
+  return 'account profile page';
 };
 
 export default page;
