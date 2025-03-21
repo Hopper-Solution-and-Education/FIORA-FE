@@ -26,7 +26,7 @@ export const generateFieldsFromSchema = (
           : field.type === 'string'
             ? 'text'
             : undefined),
-      section: override.section || 'Basic Information',
+      section: override.section || 'General Information',
     };
 
     return {

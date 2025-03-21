@@ -4,19 +4,10 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 import { uploadToFirebase } from '@/features/admin/landing/firebaseUtils';
-import { createPartnerSchema } from '@/features/partner/schema/createPartner.schema';
-
-interface CreatePartnerFormData {
-  email: string;
-  identify: string;
-  description: string;
-  dob: Date;
-  logo: string;
-  taxNo: string;
-  phone: string;
-  name: string;
-  address: string;
-}
+import {
+  CreatePartnerFormData,
+  createPartnerSchema,
+} from '@/features/partner/schema/createPartner.schema';
 
 export function useCreatePartner(setIsOpen: (open: boolean) => void) {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -24,6 +15,7 @@ export function useCreatePartner(setIsOpen: (open: boolean) => void) {
 
   const form = useForm<CreatePartnerFormData>({
     resolver: yupResolver(createPartnerSchema),
+    mode: 'onChange',
     defaultValues: {
       name: '',
       email: '',
@@ -34,6 +26,7 @@ export function useCreatePartner(setIsOpen: (open: boolean) => void) {
       taxNo: '',
       phone: '',
       address: '',
+      parentId: '',
     },
   });
 

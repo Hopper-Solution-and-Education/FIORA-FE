@@ -38,7 +38,22 @@ export default function RootLayout({
                       disableTransitionOnChange
                     >
                       <SessionProvider>
-                        <Toaster />
+                        <Toaster
+                          theme="light"
+                          position="top-right"
+                          richColors
+                          duration={3000}
+                          gap={10}
+                          visibleToasts={3}
+                          toastOptions={{
+                            classNames: {
+                              success: 'bg-green-600/90 text-white',
+                              error: 'bg-red-600/90 text-white',
+                              warning: 'bg-yellow-600/90 text-white',
+                              info: 'bg-blue-600/90 text-white',
+                            },
+                          }}
+                        />
                         <main>{children}</main>
                         <SessionTimeoutModal />
                       </SessionProvider>

@@ -1,5 +1,6 @@
 import type { Config } from 'tailwindcss';
 import animatePlugin from 'tailwindcss-animate';
+import { PluginAPI } from 'tailwindcss/types/config';
 
 export default {
   darkMode: ['class'],
@@ -9,6 +10,11 @@ export default {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
     './src/features/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  variants: {
+    extend: {
+      scrollbar: ['responsive'],
+    },
+  },
   theme: {
     extend: {
       colors: {
@@ -113,5 +119,75 @@ export default {
       },
     },
   },
-  plugins: [animatePlugin],
+  plugins: [
+    animatePlugin,
+    function ({ addUtilities }: PluginAPI) {
+      const newUtilities = {
+        '.scrollbar-thin': {
+          '&::-webkit-scrollbar': {
+            width: '8px',
+            height: '8px',
+          },
+        },
+        '.scrollbar-none': {
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+          '-ms-overflow-style': 'none',
+          'scrollbar-width': 'none',
+        },
+        '.scrollbar-track-transparent': {
+          '&::-webkit-scrollbar-track': {
+            background: 'transparent',
+          },
+        },
+        '.scrollbar-track-muted': {
+          '&::-webkit-scrollbar-track': {
+            background: 'hsl(var(--muted))',
+            borderRadius: '4px',
+          },
+        },
+        '.scrollbar-thumb-muted': {
+          '&::-webkit-scrollbar-thumb': {
+            background: 'hsl(var(--muted-foreground)/0.3)',
+            borderRadius: '4px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            background: 'hsl(var(--muted-foreground)/0.5)',
+          },
+        },
+        '.scrollbar-thumb-primary': {
+          '&::-webkit-scrollbar-thumb': {
+            background: 'hsl(var(--primary)/0.5)',
+            borderRadius: '4px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            background: 'hsl(var(--primary)/0.7)',
+          },
+        },
+        '.scrollbar-thumb-accent': {
+          '&::-webkit-scrollbar-thumb': {
+            background: 'hsl(var(--accent)/0.7)',
+            borderRadius: '4px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            background: 'hsl(var(--accent)/0.9)',
+          },
+        },
+        '.scrollbar-rounded': {
+          '&::-webkit-scrollbar-track': {
+            borderRadius: '4px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            borderRadius: '4px',
+          },
+        },
+      };
+
+      addUtilities(newUtilities, {
+        respectImportant: true,
+        respectPrefix: true,
+      });
+    },
+  ],
 } satisfies Config;
