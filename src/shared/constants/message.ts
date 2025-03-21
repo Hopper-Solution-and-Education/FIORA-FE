@@ -12,6 +12,13 @@ export enum Messages {
   DELETE_CATEGORY_SUCCESS = 'Delete category successfully',
   GET_CATEGORY_SUCCESS = 'Get category successfully',
 
+  // Account
+  CREATE_ACCOUNT_FAILED = 'Failed to create account',
+  CREATE_ACCOUNT_SUCCESS = 'Account created successfully',
+  UPDATE_ACCOUNT_SUCCESS = 'Account updated successfully',
+  DELETE_ACCOUNT_SUCCESS = 'Account deleted successfully',
+  GET_ACCOUNT_SUCCESS = 'Get account list successfully',
+
   // General errors
   INTERNAL_ERROR = 'An error occurred, please try again later',
 

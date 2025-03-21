@@ -1,6 +1,9 @@
 import { httpClient } from '@/config/HttpClient';
 import { Account } from '@/features/home/module/account/slices/types';
-import { NewAccountDefaultValues } from '@/features/home/module/account/slices/types/formSchema';
+import {
+  NewAccountDefaultValues,
+  UpdateAccountDefaultValues,
+} from '@/features/home/module/account/slices/types/formSchema';
 import { Response } from '@/shared/types/Common.types';
 
 const accountServices = {
@@ -12,6 +15,12 @@ const accountServices = {
   },
   fetchParents: async (): Promise<Response<Account[]>> => {
     return httpClient.get<Response<Account[]>>('/api/accounts/lists?isParent=true');
+  },
+  updateAccount(id: string, data: Partial<UpdateAccountDefaultValues>): Promise<Response<Account>> {
+    return httpClient.put<Response<Account>>(`/api/accounts/${id}`, data);
+  },
+  deleteAccount(id: string): Promise<Response<Account>> {
+    return httpClient.delete<Response<Account>>(`/api/accounts/${id}`);
   },
 };
 

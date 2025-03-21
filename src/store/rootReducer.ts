@@ -7,6 +7,7 @@ import landingSlices from '@/features/landing/slices';
 import { combineReducers } from '@reduxjs/toolkit';
 import dialogSlices from './slices/dialog.slice';
 import settingSlices from './slices/setting.slice';
+import accountSlice from '@/features/home/module/account/slices';
 
 const reducer = {
   settings: settingSlices,
@@ -17,6 +18,7 @@ const reducer = {
   budget: budgetSlice,
   productManagement: productManagementSlice,
   category: categorySlice,
+  account: accountSlice,
 };
 
 const rootReducer = combineReducers(reducer);
