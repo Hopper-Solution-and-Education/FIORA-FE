@@ -12,14 +12,6 @@ export const globalNavItems: GlobalNavItem[] = [
     shortcut: ['d', 'd'],
   },
   {
-    title: 'Expense/Income',
-    url: '/setting/expense-income',
-    icon: 'banknote',
-    props: { size: 20, strokeWidth: 1 },
-    shortcut: ['p', 'p'],
-    isActive: false,
-  },
-  {
     title: 'Billing',
     url: '#billing',
     icon: 'billing',
