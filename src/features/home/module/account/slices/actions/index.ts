@@ -45,3 +45,34 @@ export const createAccount = createAsyncThunk(
     }
   },
 );
+
+export const updateAccount = createAsyncThunk(
+  'account/updateAccount',
+  async (
+    { id, data }: { id: string; data: Partial<NewAccountDefaultValues> },
+    { rejectWithValue },
+  ) => {
+    try {
+      const response: Response<Account> = await accountServices.updateAccount(id, data);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.message || 'Failed to update account! Please try again!',
+      });
+    }
+  },
+);
+
+export const deleteAccount = createAsyncThunk(
+  'account/deleteAccount',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response: Response<Account> = await accountServices.deleteAccount(id);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.message || 'Failed to delete account! Please try again!',
+      });
+    }
+  },
+);

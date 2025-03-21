@@ -1,6 +1,6 @@
 import { Response } from '@/shared/types/Common.types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createAccount, fetchAccounts, fetchParents } from './actions';
+import { createAccount, fetchAccounts, fetchParents, updateAccount } from './actions';
 import { Account, initialAccountState } from './types';
 
 const accountSlice = createSlice({
@@ -23,6 +23,9 @@ const accountSlice = createSlice({
       state.accounts.data = action.payload.data;
       state.accounts.isLoading = false;
       state.accounts.error = null;
+    },
+    setRefresh(state, action: PayloadAction<boolean>) {
+      state.refresh = action.payload;
     },
     reset: () => initialAccountState,
   },
@@ -70,6 +73,18 @@ const accountSlice = createSlice({
       .addCase(createAccount.rejected, (state, action) => {
         state.accounts.isLoading = false;
         state.accounts.error = (action.payload as { message: string })?.message || 'Unknown error';
+      })
+
+      // Update account
+      .addCase(updateAccount.pending, (state) => {
+        state.accounts.isLoading = true;
+      })
+      .addCase(updateAccount.fulfilled, (state, action) => {
+        state.accounts.isLoading = false;
+      })
+      .addCase(updateAccount.rejected, (state, action) => {
+        state.accounts.isLoading = false;
+        state.accounts.error = (action.payload as { message: string })?.message || 'Unknown error';
       });
   },
 });
@@ -80,6 +95,7 @@ export const {
   setAccountUpdateDialog,
   setSelectedAccount,
   setAccounts,
+  setRefresh,
   reset,
 } = accountSlice.actions;
 export default accountSlice.reducer;

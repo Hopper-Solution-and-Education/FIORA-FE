@@ -4,7 +4,13 @@ import PositiveAndNegativeBarChart, {
 } from '@/components/common/positive-negative-bar-chart';
 import { Icons } from '@/components/Icon';
 import { CreateAccountModal } from '@/features/home/module/account/components/CreateAccountPage';
-import { setAccountDialogOpen } from '@/features/home/module/account/slices';
+import DeleteAccountDialog from '@/features/home/module/account/components/DeleteAccountDialog';
+import { UpdateAccountModal } from '@/features/home/module/account/components/UpdateAccountPage';
+import {
+  setAccountDialogOpen,
+  setAccountUpdateDialog,
+  setSelectedAccount,
+} from '@/features/home/module/account/slices';
 import { fetchAccounts, fetchParents } from '@/features/home/module/account/slices/actions';
 import { Account } from '@/features/home/module/account/slices/types';
 import { getAccountColorByType } from '@/features/home/module/account/slices/utils';
@@ -14,34 +20,52 @@ import { useEffect, useMemo } from 'react';
 
 const AccountDashboard = () => {
   const dispatch = useAppDispatch();
-  const { accounts } = useAppSelector((state) => state.account);
+  const { accounts, refresh } = useAppSelector((state) => state.account);
 
   useEffect(() => {
     dispatch(fetchAccounts());
     dispatch(fetchParents());
-  }, [dispatch]);
+  }, [dispatch, refresh]);
 
   // * CHART DATA ZONE *
   const chartData: BarItem[] = useMemo(() => {
     if (!accounts.data) return [];
 
-    return accounts.data.map((account: Account) => {
-      return {
-        id: account.id,
-        name: account.name,
-        value: Number(account.balance) || 0,
-        type: account.type,
-        color: getAccountColorByType(account.type),
-        children: account.children?.map((child) => ({
-          id: child.id,
-          name: child.name,
-          value: Number(child.balance) || 0,
-          type: child.type,
-          color: getAccountColorByType(child.type),
-        })),
-      };
-    });
+    return accounts.data
+      .filter((account: Account) => {
+        return !account?.parentId;
+      })
+      .map((account: Account) => {
+        return {
+          id: account.id,
+          name: account.name,
+          value: Number(account.balance) || 0,
+          type: account.type,
+          color: getAccountColorByType(account.type),
+          children: account.children?.map((child) => ({
+            id: child.id,
+            name: child.name,
+            value: Number(child.balance) || 0,
+            type: child.type,
+            color: getAccountColorByType(child.type),
+          })),
+        };
+      });
   }, [accounts]);
+
+  // * LOGIC ZONE *
+  const handleDisplayDetailDialog = (item: any) => {
+    const findAccount = findAccountById(item.id, accounts.data);
+    if (findAccount) {
+      dispatch(setSelectedAccount(findAccount));
+      dispatch(setAccountUpdateDialog(true));
+    }
+  };
+
+  const findAccountById = (id: string, accounts: Account[] | undefined): Account | undefined => {
+    if (!accounts) return undefined;
+    return accounts.find((account) => account.id === id);
+  };
 
   return (
     <div className="p-4 md:px-6">
@@ -67,23 +91,14 @@ const AccountDashboard = () => {
             0: COLORS.DEPS_SUCCESS.LEVEL_1,
           },
         }}
+        callback={handleDisplayDetailDialog}
       />
 
       <CreateAccountModal />
-      {/* 
-      <AccountDetailDialog
-        account={selectedAccount}
-        isOpen={isDetailOpen}
-        onClose={handleCloseDetail}
-      />
 
-      <EditAccountDialog
-        account={selectedAccount}
-        isOpen={isEditOpen}
-        onClose={handleCloseEdit}
-        onSubmit={handleEditSubmit}
-        allAccounts={allAccounts}
-      /> */}
+      <UpdateAccountModal />
+
+      <DeleteAccountDialog />
     </div>
   );
 };

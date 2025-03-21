@@ -27,6 +27,7 @@ export interface AccountState {
     error: string | null;
     message?: string;
   };
+  refresh: boolean;
   selectedAccount: Account | null;
   accountCreateDialog: boolean;
   accountUpdateDialog: boolean;
@@ -44,6 +45,7 @@ export const initialAccountState: AccountState = {
     data: undefined,
     error: null,
   },
+  refresh: false,
   selectedAccount: null,
   accountCreateDialog: false,
   accountUpdateDialog: false,

@@ -13,7 +13,22 @@ const validateNewAccountSchema = yup.object({
   currency: yup.string().required('Please select a currency'),
   limit: yup.number().min(0, 'Limit must be greater than or equal to 0').notRequired(),
   balance: yup.number().min(0, 'Balance must be greater than or equal to 0').required(),
-  parentId: yup.string().optional(),
+  parentId: yup.string().nullable(),
+  isTypeDisabled: yup.boolean().required(),
+});
+
+const validateUpdateCategorySchema = yup.object({
+  icon: yup.string().required('Please select an icon'),
+  type: yup.string().required('Please select a type'),
+  name: yup
+    .string()
+    .required('Account name is required')
+    .min(2, 'Name must be at least 2 characters'),
+  currency: yup.string().required('Please select a currency'),
+  limit: yup.number().min(0, 'Limit must be greater than or equal to 0').notRequired(),
+  balance: yup.number().min(0, 'Balance must be greater than or equal to 0').required(),
+  parentId: yup.string().nullable(),
+  isTypeDisabled: yup.boolean().required(),
 });
 
 const defaultNewAccountValues: NewAccountDefaultValues = {
@@ -23,8 +38,10 @@ const defaultNewAccountValues: NewAccountDefaultValues = {
   currency: 'VND',
   limit: 0,
   balance: 0,
-  parentId: '',
+  parentId: null,
+  isTypeDisabled: false,
 };
 
-export { validateNewAccountSchema, defaultNewAccountValues };
+export { validateNewAccountSchema, validateUpdateCategorySchema, defaultNewAccountValues };
 export type NewAccountDefaultValues = yup.InferType<typeof validateNewAccountSchema>;
+export type UpdateAccountDefaultValues = yup.InferType<typeof validateUpdateCategorySchema>;

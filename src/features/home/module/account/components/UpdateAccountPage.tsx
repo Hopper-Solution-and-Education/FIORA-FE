@@ -1,6 +1,7 @@
 'use client';
 
 import IconSelect from '@/components/common/IconSelect';
+import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -19,12 +20,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { setAccountDialogOpen, setRefresh } from '@/features/home/module/account/slices';
-import { createAccount } from '@/features/home/module/account/slices/actions';
+import {
+  setAccountDeleteDialog,
+  setAccountUpdateDialog,
+  setRefresh,
+  setSelectedAccount,
+} from '@/features/home/module/account/slices';
+import { updateAccount } from '@/features/home/module/account/slices/actions';
 import { Account } from '@/features/home/module/account/slices/types';
 import {
   defaultNewAccountValues,
-  NewAccountDefaultValues,
+  UpdateAccountDefaultValues,
   validateNewAccountSchema,
 } from '@/features/home/module/account/slices/types/formSchema';
 import { ACCOUNT_TYPES } from '@/shared/constants/account';
@@ -35,15 +41,36 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-export function CreateAccountModal({ title }: { title?: string }) {
+export function UpdateAccountModal() {
   const dispatch = useAppDispatch();
-  const { accountCreateDialog, parentAccounts, refresh } = useAppSelector((state) => state.account);
+  const { accounts, accountUpdateDialog, parentAccounts, selectedAccount, refresh } =
+    useAppSelector((state) => state.account);
   const [availableLimit, setAvailableLimit] = useState<number>(0);
 
-  const form = useForm<NewAccountDefaultValues>({
+  const form = useForm<UpdateAccountDefaultValues>({
     resolver: yupResolver(validateNewAccountSchema),
     defaultValues: defaultNewAccountValues,
   });
+
+  // Pre-fill form with account data when account prop changes
+  useEffect(() => {
+    if (selectedAccount) {
+      const balanceToDisplay =
+        selectedAccount.type === ACCOUNT_TYPES.CREDIT_CARD
+          ? -selectedAccount.balance
+          : selectedAccount.balance;
+      form.reset({
+        icon: selectedAccount.icon || defaultNewAccountValues.icon,
+        type: selectedAccount.type || defaultNewAccountValues.type,
+        name: selectedAccount.name || defaultNewAccountValues.name,
+        currency: selectedAccount.currency || defaultNewAccountValues.currency,
+        limit: selectedAccount.limit || defaultNewAccountValues.limit,
+        balance: balanceToDisplay || defaultNewAccountValues.balance,
+        parentId: selectedAccount.parentId || null || defaultNewAccountValues.parentId,
+        isTypeDisabled: !!selectedAccount.parentId || defaultNewAccountValues.isTypeDisabled,
+      });
+    }
+  }, [selectedAccount, form]);
 
   // * FORM HANDLING ZONE *
   const calculateAvailableLimit = (limit: number | undefined, balance: number | undefined) => {
@@ -64,9 +91,12 @@ export function CreateAccountModal({ title }: { title?: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.watch('limit'), form.watch('balance'), form.watch('type')]);
 
-  const onSubmit = async (data: NewAccountDefaultValues) => {
+  const onSubmit = async (data: UpdateAccountDefaultValues) => {
+    if (!selectedAccount?.id) return;
+
     try {
-      const finalData: NewAccountDefaultValues = {
+      // * Prepare data for update
+      const finalData: Partial<UpdateAccountDefaultValues> = {
         ...data,
         balance:
           data.type === ACCOUNT_TYPES.CREDIT_CARD && data.balance
@@ -75,15 +105,27 @@ export function CreateAccountModal({ title }: { title?: string }) {
         limit: data.limit ? Number(data.limit) : undefined,
         parentId: data.parentId || undefined,
       };
-      await dispatch(createAccount(finalData));
-      dispatch(setRefresh(!refresh));
-      dispatch(setAccountDialogOpen(false));
-      toast.success('Account created successfully');
-      form.reset();
+
+      // * Dispatch update action
+      const response = await dispatch(
+        updateAccount({ id: selectedAccount.id, data: finalData }),
+      ).unwrap();
+      if (response) {
+        dispatch(setRefresh(!refresh));
+        dispatch(setSelectedAccount(null));
+        dispatch(setAccountUpdateDialog(false));
+      }
+
+      toast.success('Account updated successfully!');
     } catch (error) {
-      console.error('Error create account:', error);
-      toast.error('Failed to create account');
+      console.error('Error updating account:', error);
+      toast.error('Failed to update account');
     }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedAccount?.id) return;
+    dispatch(setAccountDeleteDialog(true));
   };
 
   const handleChangeParentAccount = (value: string | null, field: any) => {
@@ -100,20 +142,21 @@ export function CreateAccountModal({ title }: { title?: string }) {
     field.onChange(value === 'null' ? null : value);
   };
 
-  // Add isTypeDisabled to the form default values if not already present
   const isTypeDisabled = form.watch('isTypeDisabled') || false;
 
   // * COMPONENT BEHAVIOR ZONE *
-  const handleCloseDialog = (e: boolean) => {
-    dispatch(setAccountDialogOpen(e));
-    form.reset();
+  const handleCloseDialog = (open: boolean) => {
+    dispatch(setAccountUpdateDialog(open));
+    if (!open) {
+      form.reset();
+    }
   };
 
   return (
-    <Dialog open={accountCreateDialog} onOpenChange={handleCloseDialog}>
-      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
+    <Dialog open={accountUpdateDialog} onOpenChange={handleCloseDialog}>
+      <DialogContent>
         <DialogHeader className="px-6 pt-6 pb-2">
-          <DialogTitle>{title || 'Create New Account'}</DialogTitle>
+          <DialogTitle>Update Account</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -286,7 +329,7 @@ export function CreateAccountModal({ title }: { title?: string }) {
               />
             </div>
 
-            {/* Parent Account*/}
+            {/* Parent Account */}
             <div className="grid grid-cols-[120px_1fr] items-center gap-4">
               <Label htmlFor="parentId" className="text-right">
                 Parent
@@ -308,11 +351,14 @@ export function CreateAccountModal({ title }: { title?: string }) {
                       <SelectContent>
                         <SelectItem value="null">None</SelectItem>
                         {parentAccounts.data &&
-                          parentAccounts.data.map((account: Account) => (
-                            <SelectItem key={account.id} value={account.id}>
-                              {account.name} ({account.type})
-                            </SelectItem>
-                          ))}
+                          selectedAccount &&
+                          parentAccounts.data
+                            .filter((acc) => acc.id !== selectedAccount.id)
+                            .map((acc: Account) => (
+                              <SelectItem key={acc.id} value={acc.id}>
+                                {acc.name} ({acc.type})
+                              </SelectItem>
+                            ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -323,12 +369,26 @@ export function CreateAccountModal({ title }: { title?: string }) {
           </form>
         </Form>
 
-        <DialogFooter className="bg-muted/50 px-6 py-4">
-          <div className="flex justify-between w-full">
-            <Button variant="outline" onClick={() => dispatch(setAccountDialogOpen(false))}>
+        <DialogFooter className="flex-row justify-between md:justify-between">
+          <div>
+            <Button
+              variant="ghost"
+              type="button"
+              onClick={handleDelete}
+              disabled={accounts.isLoading}
+              className="text-red-500 hover:text-red-700 hover:bg-red-100"
+            >
+              <Icons.trash className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" type="button" onClick={() => handleCloseDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={form.handleSubmit(onSubmit)}>Submit</Button>
+            <Button type="submit" disabled={!form.formState.isValid || accounts.isLoading}>
+              {accounts.isLoading && <Icons.spinner className="animate-spin mr-2" />}
+              Update
+            </Button>
           </div>
         </DialogFooter>
       </DialogContent>
