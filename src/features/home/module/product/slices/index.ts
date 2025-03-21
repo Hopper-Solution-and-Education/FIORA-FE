@@ -7,6 +7,7 @@ import { createProduct } from './actions/createProductAsyncThunk';
 import { deleteProductAsyncThunk } from './actions/deleteProductAsyncThunk';
 import { fetchCategoriesProduct } from './actions/fetchCategoriesProduct';
 import { getProductsAsyncThunk } from './actions/getProductsAsyncThunk';
+import { getProductTransactionAsyncThunk } from './actions/getProductTransactionAsyncThunk';
 import { updateProductAsyncThunk } from './actions/updateProductAsyncThunk';
 import { DialogStateType, initialProductState } from './types';
 
@@ -109,7 +110,7 @@ const productManagementSlice = createSlice({
       });
 
     builder
-      .addCase(deleteProductAsyncThunk.pending, (state, action) => {
+      .addCase(deleteProductAsyncThunk.pending, (state) => {
         state.isDeletingProduct = true;
       })
       .addCase(deleteProductAsyncThunk.fulfilled, (state, action) => {
@@ -124,6 +125,30 @@ const productManagementSlice = createSlice({
         state.isDeletingProduct = false;
         state.error = action.error.message || 'Failed to delete product';
       });
+
+    builder.addCase(getProductTransactionAsyncThunk.pending, (state) => {
+      state.productTransaction.isLoadingGet = true;
+    });
+
+    builder.addCase(getProductTransactionAsyncThunk.fulfilled, (state, action) => {
+      console.log(action.payload);
+
+      state.productTransaction.isLoadingGet = false;
+
+      if (action.payload.page === 1) {
+        state.productTransaction.data = action.payload.data;
+      } else {
+        state.productTransaction.data = [...state.productTransaction.data, ...action.payload.data];
+      }
+
+      state.productTransaction.total = action.payload.totalPage;
+      state.productTransaction.page = action.payload.page;
+      state.productTransaction.hasMore = action.payload.page < action.payload.totalPage;
+    });
+
+    builder.addCase(getProductTransactionAsyncThunk.rejected, (state) => {
+      state.productTransaction.isLoadingGet = false;
+    });
   },
 });
 

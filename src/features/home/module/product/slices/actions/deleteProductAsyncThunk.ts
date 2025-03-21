@@ -8,7 +8,7 @@ export const deleteProductAsyncThunk = createAsyncThunk<
   DeleteProductResponse,
   DeleteProductRequest,
   { rejectValue: string } // Config type
->('product/deleteProduct', async (data: DeleteProductRequest, { rejectWithValue }) => {
+>('product/deleteProduct', async (data, { rejectWithValue }) => {
   try {
     const deleteProductUseCase = productDIContainer.get<IDeleteProductUseCase>(
       TYPES.IDeleteProductUseCase,

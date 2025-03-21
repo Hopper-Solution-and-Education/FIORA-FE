@@ -5,6 +5,8 @@ import {
   DeleteProductRequest,
   DeleteProductResponse,
   GetProductResponse,
+  GetProductTransactionRequest,
+  GetProductTransactionResponse,
   UpdateProductRequest,
   UpdateProductResponse,
 } from '../../domain/entities/Product';
@@ -18,6 +20,9 @@ export interface IProductRepository {
   getProducts: (request: GetProductAPIRequestDTO) => Promise<GetProductResponse>;
   updateProduct: (request: UpdateProductRequest) => Promise<UpdateProductResponse>;
   deleteProduct: (request: DeleteProductRequest) => Promise<DeleteProductResponse>;
+  getProductTransaction: (
+    request: GetProductTransactionRequest,
+  ) => Promise<GetProductTransactionResponse>;
 }
 
 @injectable()
@@ -48,5 +53,11 @@ export class ProductRepository implements IProductRepository {
   async getProducts(request: GetProductAPIRequestDTO) {
     const response = await this.productApi.getProducts(request);
     return ProductMapper.toGetProductResponse(response);
+  }
+
+  async getProductTransaction(request: GetProductTransactionRequest) {
+    const requestAPI = ProductMapper.toGetProductTransactionAPIRequest(request);
+    const response = await this.productApi.getProductTransaction(requestAPI);
+    return ProductMapper.toGetProductTransactionResponse(response);
   }
 }

@@ -1,5 +1,5 @@
 import { PaginationResponse } from '@/shared/types/Common.types';
-import { ProductType } from '@prisma/client';
+import { CategoryType, ProductType } from '@prisma/client';
 import { ProductFormValues, ProductItem } from '../../presentation/schema/addProduct.schema';
 
 export class Product {
@@ -49,4 +49,30 @@ export type DeleteProductRequest = {
 
 export type DeleteProductResponse = {
   id: string;
+};
+
+export type GetProductTransactionRequest = {
+  userId: string;
+  page: number;
+  pageSize: number;
+};
+
+export type GetProductTransactionResponse = PaginationResponse<ProductTransactionResponse>;
+
+export type ProductTransactionResponse = {
+  transaction: {
+    id: string;
+    type: CategoryType;
+  };
+  product: {
+    id: string;
+    price: number;
+    name: string;
+    type: ProductType;
+    description: string;
+    items: ProductItem[];
+    taxRate: number;
+    catId: string;
+    icon: string;
+  };
 };

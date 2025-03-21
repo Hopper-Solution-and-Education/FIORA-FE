@@ -8,18 +8,13 @@ export const getProductsAsyncThunk = createAsyncThunk<
   GetProductResponse, // Return type
   { page: number; pageSize: number },
   { rejectValue: string }
->(
-  'product/getProduct',
-  async ({ page, pageSize }: { page: number; pageSize: number }, { rejectWithValue }) => {
-    try {
-      const getProductUseCase = productDIContainer.get<IGetProductUseCase>(
-        TYPES.IGetProductUseCase,
-      );
+>('product/getProduct', async ({ page, pageSize }, { rejectWithValue }) => {
+  try {
+    const getProductUseCase = productDIContainer.get<IGetProductUseCase>(TYPES.IGetProductUseCase);
 
-      const response = await getProductUseCase.execute(page, pageSize);
-      return response;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to get product');
-    }
-  },
-);
+    const response = await getProductUseCase.execute(page, pageSize);
+    return response;
+  } catch (error: any) {
+    return rejectWithValue(error.message || 'Failed to get product');
+  }
+});

@@ -12,6 +12,10 @@ import {
   IDeleteProductUseCase,
 } from '../domain/usecases/DeleteProductUsecase';
 import { GetCategoryUseCase, IGetCategoryUseCase } from '../domain/usecases/GetCategoryUsecase';
+import {
+  GetProductTransactionUseCase,
+  IGetProductTransactionUseCase,
+} from '../domain/usecases/GetProductTransactionUseCase';
 import { GetProductUseCase, IGetProductUseCase } from '../domain/usecases/GetProductUsecase';
 import {
   IUpdateProductUseCase,
@@ -37,5 +41,8 @@ productDIContainer
 productDIContainer
   .bind<IDeleteProductUseCase>(TYPES.IDeleteProductUseCase)
   .to(DeleteProductUseCase);
+productDIContainer
+  .bind<IGetProductTransactionUseCase>(TYPES.IGetProductTransactionUseCase)
+  .to(GetProductTransactionUseCase);
 
 export { productDIContainer };

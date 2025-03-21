@@ -9,7 +9,7 @@ export const createProduct = createAsyncThunk<
   CreateProductResponse, // Return type
   ProductFormValues,
   { rejectValue: string } // Config type
->('product/createProduct', async (data: ProductFormValues, { rejectWithValue }) => {
+>('product/createProduct', async (data, { rejectWithValue }) => {
   try {
     const createProductUseCase = productDIContainer.get<ICreateProductUseCase>(
       TYPES.ICreateProductUseCase,

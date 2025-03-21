@@ -1,16 +1,20 @@
 import { JsonArray } from '@prisma/client/runtime/library';
 import { ProductFormValues, ProductItem } from '../../presentation/schema/addProduct.schema';
+import { getProductTransactionAPIResponseDTO } from './../dto/response/GetProductTransactionAPIResponseDTO';
 
 import {
   DeleteProductRequest,
   DeleteProductResponse,
   GetProductResponse,
+  GetProductTransactionRequest,
+  GetProductTransactionResponse,
   Product,
   UpdateProductRequest,
   UpdateProductResponse,
 } from '../../domain/entities/Product';
 import { CreateProductAPIRequestDTO } from '../dto/request/CreateProductAPIRequestDTO';
 import { DeleteProductAPIRequestDTO } from '../dto/request/DeleteProductAPIRequestDTO';
+import { GetProductTransactionAPIRequestDTO } from '../dto/request/GetProductTransactionAPIRequestDTO';
 import { UpdateProductAPIRequestDTO } from '../dto/request/UpdateProductAPIRequestDTO';
 import { DeleteProductAPIResponseDTO } from '../dto/response/DeleteProductAPIResponseDTO';
 import { GetProductAPIResponseDTO } from '../dto/response/GetProductAPIResponseDTO';
@@ -26,6 +30,27 @@ export class ProductMapper {
   static toDeleteProductResponse(response: DeleteProductAPIResponseDTO): DeleteProductResponse {
     return {
       id: response.data.id,
+    };
+  }
+
+  static toGetProductTransactionAPIRequest(
+    request: GetProductTransactionRequest,
+  ): GetProductTransactionAPIRequestDTO {
+    return {
+      userId: request.userId,
+      page: request.page,
+      pageSize: request.pageSize,
+    };
+  }
+
+  static toGetProductTransactionResponse(
+    response: getProductTransactionAPIResponseDTO,
+  ): GetProductTransactionResponse {
+    return {
+      data: response.data.data,
+      page: response.data.page,
+      pageSize: response.data.pageSize,
+      totalPage: response.data.totalPage,
     };
   }
 
