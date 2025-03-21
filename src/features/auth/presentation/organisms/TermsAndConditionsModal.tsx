@@ -1,19 +1,19 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { Document, Page, pdfjs } from 'react-pdf';
 import Loading from '@/components/common/Loading';
-import { AlertDialogHeader } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogHeader,
   DialogFooter,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { DialogClose } from '@radix-ui/react-dialog';
+import { useEffect, useRef, useState } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
 
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 
@@ -55,15 +55,15 @@ const TermsAndConditionsModal = ({
     if (containerRef.current) {
       setPageWidth(containerRef.current.offsetWidth); // Set the width of the page based on parent container's width
     }
-  }, []); // Recalculate when the component is mounted or the ref is updated
+  }, [containerRef.current]); // Recalculate when the component is mounted or the ref is updated
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose} defaultOpen={false}>
       <DialogContent className="w-[80%] max-w-[70vw]">
-        <AlertDialogHeader>
+        <DialogHeader>
           <DialogTitle>Terms and Conditions</DialogTitle>
           <DialogDescription>Please read the terms and conditions carefully.</DialogDescription>
-        </AlertDialogHeader>
+        </DialogHeader>
         <div ref={containerRef} className="h-[70vh] overflow-y-scroll overflow-x-scroll">
           {typeof window !== 'undefined' ? (
             <Document
