@@ -3,6 +3,7 @@
 import Loading from '@/components/common/Loading';
 import PageContainer from '@/components/layouts/PageContainer';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { DashboardHeading } from '@/features/home/components/DashboardHeading';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -45,7 +46,7 @@ const ProductPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchCategoriesProduct({ page: page, pageSize: limit }));
+    dispatch(fetchCategoriesProduct({ page, pageSize: limit }));
     dispatch(getProductsAsyncThunk({ page: 1, pageSize: 10 }));
   }, []);
 
@@ -82,6 +83,7 @@ const ProductPage = () => {
   return (
     <PageContainer>
       <>{isDeletingProduct && <Loading />}</>
+
       <div className="flex flex-1 flex-col space-y-4">
         <div className="flex items-start justify-between">
           <DashboardHeading title="Products" description="Manage products" />
@@ -90,27 +92,42 @@ const ProductPage = () => {
 
         <Separator />
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-            <span className="ml-2">Loading products...</span>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <ProductTable
-              products={products || []}
-              onEdit={handleEditProduct}
-              onDelete={handleDeleteProduct}
-            />
+        <Tabs defaultValue="table">
+          <TabsList className="mb-4">
+            <TabsTrigger value="table">Product Table</TabsTrigger>
+            <TabsTrigger value="empty">Empty Page</TabsTrigger>
+          </TabsList>
 
-            {/* Pagination could be added here */}
-            {total > 0 && (
-              <div className="flex justify-end text-sm text-muted-foreground">
-                Showing {products?.length || 0} of {total} products
+          <TabsContent value="table">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                <span className="ml-2">Loading products...</span>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <ProductTable
+                  products={products || []}
+                  onEdit={handleEditProduct}
+                  onDelete={handleDeleteProduct}
+                />
+
+                {/* Pagination */}
+                {total > 0 && (
+                  <div className="flex justify-end text-sm text-muted-foreground">
+                    Showing {products?.length || 0} of {total} products
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
+          </TabsContent>
+
+          <TabsContent value="empty">
+            <div className="p-6 text-center text-muted-foreground">
+              🚀 This page is currently empty. Add your content here.
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <DeleteProductDialog
