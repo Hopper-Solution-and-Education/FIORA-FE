@@ -6,7 +6,6 @@ import { Plus } from 'lucide-react';
 import FinancialAccount from './FInancialAccount';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Account } from '../../types/FinalcialOverview.types';
-import { CreateAccountModal } from '@/features/setting/presentation/module/account/components/CreateAccountPage';
 import { cn, formatCurrency } from '@/shared/utils';
 
 interface AccountListProps {
@@ -131,14 +130,6 @@ export default function AccountList({ className }: AccountListProps) {
           }, [accountsMap, parentAccounts])}
         </CardContent>
       </Card>
-      <div>
-        <CreateAccountModal
-          isOpen={isCreateModalOpen}
-          setIsCreateModalOpen={setIsCreateModalOpen}
-          setTriggered={setIsTriggered}
-          isTriggered={isTriggered}
-        />
-      </div>
     </div>
   );
 }

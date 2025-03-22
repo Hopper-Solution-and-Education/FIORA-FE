@@ -10,6 +10,14 @@ import Link from 'next/link';
 import { redirect, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import HelpCenter from '@/components/layouts/theme-toggle/HelpCenter';
+import LanguageToggle from '@/components/layouts/theme-toggle/LanguageToggle';
+import ThemeToggle from '@/components/layouts/theme-toggle/ThemeToggle';
+import { UserNav } from '@/components/layouts/UserNav';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { SectionType } from '@prisma/client';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,19 +25,11 @@ import {
   DropdownMenuTrigger,
 } from '../../../../components/ui/dropdown-menu';
 import { useGetSection } from '../../hooks/useGetSection';
-import { SectionType } from '@prisma/client';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import HelpCenter from '@/components/layouts/theme-toggle/HelpCenter';
-import ThemeToggle from '@/components/layouts/theme-toggle/ThemeToggle';
-import LanguageToggle from '@/components/layouts/theme-toggle/LanguageToggle';
-import { UserNav } from '@/components/layouts/UserNav';
 
 export default function Header() {
   const { section, isLoading, isError } = useGetSection(SectionType.HEADER);
-  const router = useRouter();
   const { data: session } = useSession();
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAccountSettingOpen, setIsAccountSettingOpen] = useState(false);
@@ -39,7 +39,7 @@ export default function Header() {
   const toggleAccountSetting = () => setIsAccountSettingOpen((prevState) => !prevState);
 
   const handlePressSetting = () => {
-    router.push('home/banner');
+    router.replace('/home/landing-settings');
   };
 
   useEffect(() => {
@@ -106,7 +106,10 @@ export default function Header() {
 
             {/* Navigation */}
             <nav className="hidden md:flex items-center gap-4 py-2 px-4">
-              {session && (
+              <HelpCenter />
+              <ThemeToggle />
+              <LanguageToggle />
+              {session ? (
                 <>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -158,24 +161,16 @@ export default function Header() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </>
+              ) : (
+                <Button
+                  onClick={() => redirect('/auth/sign-in')}
+                  variant="outline"
+                  size="icon"
+                  className="relative w-10 h-10"
+                >
+                  <LogInIcon />
+                </Button>
               )}
-
-              <HelpCenter />
-              <ThemeToggle />
-              <LanguageToggle />
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    onClick={() => redirect('/auth/sign-in')}
-                    variant="outline"
-                    size="icon"
-                    className="relative w-10 h-10"
-                  >
-                    <LogInIcon />
-                  </Button>
-                </DropdownMenuTrigger>
-              </DropdownMenu>
             </nav>
           </div>
 
