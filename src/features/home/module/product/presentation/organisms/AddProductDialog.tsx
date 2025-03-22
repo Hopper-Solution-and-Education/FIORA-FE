@@ -1,19 +1,19 @@
 'use client';
 
 import { Plus } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { removeFromFirebase, uploadToFirebase } from '@/features/admin/landing/firebaseUtils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback } from 'react';
-import { Form, UseFormReturn } from 'react-hook-form';
+import { FormProvider, UseFormReturn } from 'react-hook-form';
 import { setDialogState, toggleDialogAddEdit } from '../../slices';
 import { createProduct } from '../../slices/actions/createProductAsyncThunk';
 import { updateProductAsyncThunk } from '../../slices/actions/updateProductAsyncThunk';
@@ -27,7 +27,8 @@ type AddProductDialogProps = {
 
 const AddProductDialog = ({ method }: AddProductDialogProps) => {
   const isOpenDialog = useAppSelector((state) => state.productManagement.isOpenDialogAddEdit);
-
+  const isUpdatingProduct = useAppSelector((state) => state.productManagement.isUpdatingProduct);
+  const isCreatingProduct = useAppSelector((state) => state.productManagement.isCreatingProduct);
   const dialogState = useAppSelector((state) => state.productManagement.dialogState);
   const dispatch = useAppDispatch();
 
@@ -49,7 +50,7 @@ const AddProductDialog = ({ method }: AddProductDialogProps) => {
         const fileName = formattedData.name.replace(/\s+/g, '_').toLowerCase() + '_' + Date.now();
         const firebaseUrl = await uploadToFirebase({
           file: blob,
-          path: 'images/product_icons', // Choose an appropriate path
+          path: 'images/product_icons',
           fileName,
         });
         formattedData = {
@@ -72,40 +73,66 @@ const AddProductDialog = ({ method }: AddProductDialogProps) => {
           });
       }
     } catch (error) {
-      console.error('Error creating product:', error);
+      console.error('Error creating/updating product:', error);
     }
   };
 
-  const handleToggleDialog = useCallback((value: boolean, type: DialogStateType) => {
-    dispatch(toggleDialogAddEdit(value));
-    if (value === false) {
-      method.reset(defaultProductFormValue);
-    }
-    dispatch(setDialogState(type));
-  }, []);
+  const handleToggleDialog = useCallback(
+    (value: boolean, type: DialogStateType) => {
+      dispatch(toggleDialogAddEdit(value));
+      if (value === false) {
+        method.reset(defaultProductFormValue);
+      }
+      dispatch(setDialogState(type));
+    },
+    [dispatch, method],
+  );
 
   return (
-    <Form {...method}>
+    <FormProvider {...method}>
       <Button onClick={() => handleToggleDialog(true, 'add')}>
         <Plus size={64} width={64} height={64} />
       </Button>
       <Dialog open={isOpenDialog} onOpenChange={(value) => handleToggleDialog(value, 'add')}>
         <DialogContent className="sm:max-w-[70%] h-[90%]">
-          <DialogHeader>
-            <DialogTitle>Create New Product</DialogTitle>
-            <DialogDescription>
-              Fill in the details to create a new product or service.
-            </DialogDescription>
-          </DialogHeader>
+          <form onSubmit={method.handleSubmit(handleSubmit)} id="hook-form">
+            <DialogHeader>
+              <DialogTitle>
+                {dialogState === 'add' ? 'Create New Product' : 'Edit Product'}
+              </DialogTitle>
+              <DialogDescription>
+                {dialogState === 'add'
+                  ? 'Fill in the details to create a new product or service.'
+                  : 'Update the details of the product.'}
+              </DialogDescription>
+            </DialogHeader>
 
-          <ProductForm
-            method={method}
-            onSubmit={handleSubmit}
-            onCancel={() => handleToggleDialog(false, 'add')}
-          />
+            <ProductForm method={method} />
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleToggleDialog(false, 'add')}
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={isCreatingProduct || isUpdatingProduct}
+                type="submit"
+                form="hook-form"
+              >
+                {dialogState === 'add' ? (
+                  <>{isCreatingProduct ? 'Creating...' : 'Create Product'}</>
+                ) : (
+                  <>{isUpdatingProduct ? 'Updating...' : 'Update Product'}</>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
-    </Form>
+    </FormProvider>
   );
 };
 
