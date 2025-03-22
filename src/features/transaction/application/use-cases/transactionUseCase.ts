@@ -390,43 +390,37 @@ class TransactionUseCase {
     userId: string,
     type: TransactionType,
   ) {
-    if (!products || products.length === 0) {
-      return;
-    }
-
-    const amount = transaction.amount.toNumber();
-    const productIds = products.map((p) => p.id);
-    const splitAmount = amount / productIds.length;
-
-    const existingProducts = await tx.product.findMany({
-      where: { id: { in: productIds } },
-      select: { id: true, price: true, category: { select: { type: true } } },
-    });
-
-    if (existingProducts.length !== productIds.length) {
-      throw new Error(Messages.PRODUCT_NOT_FOUND);
-    }
-    const isValidCategory = existingProducts.every((product) => product.category.type === type);
-
-    if (!isValidCategory) {
-      throw new Error(Messages.PRODUCT_INVALID_CATEGORY_TYPE);
-    }
-
-    await tx.productTransaction.createMany({
-      data: productIds.map((productId) => ({
-        productId,
-        transactionId: transaction.id,
-        createdBy: userId,
-        updatedBy: userId,
-      })),
-    });
-
-    for (const product of existingProducts) {
-      await tx.product.update({
-        where: { id: product.id },
-        data: { price: product.price.toNumber() + splitAmount },
-      });
-    }
+    // if (!products || products.length === 0) {
+    //   return;
+    // }
+    // const amount = transaction.amount.toNumber();
+    // const productIds = products.map((p) => p.id);
+    // const splitAmount = amount / productIds.length;
+    // const existingProducts = await tx.product.findMany({
+    //   where: { id: { in: productIds } },
+    //   select: { id: true, price: true, catId: { select: { type: true } } },
+    // });
+    // if (existingProducts.length !== productIds.length) {
+    //   throw new Error(Messages.PRODUCT_NOT_FOUND);
+    // }
+    // const isValidCategory = existingProducts.every((product) => product.catId.type === type);
+    // if (!isValidCategory) {
+    //   throw new Error(Messages.PRODUCT_INVALID_CATEGORY_TYPE);
+    // }
+    // await tx.productTransaction.createMany({
+    //   data: productIds.map((productId) => ({
+    //     productId,
+    //     transactionId: transaction.id,
+    //     createdBy: userId,
+    //     updatedBy: userId,
+    //   })),
+    // });
+    // for (const product of existingProducts) {
+    //   await tx.product.update({
+    //     where: { id: product.id },
+    //     data: { price: product.price.toNumber() + splitAmount },
+    //   });
+    // }
   }
 
   private validateCreditCardAccount(account: Account, amount: number) {
