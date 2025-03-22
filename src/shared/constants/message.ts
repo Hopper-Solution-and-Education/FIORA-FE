@@ -24,6 +24,8 @@ export enum Messages {
 
   // Transaction-related errors
   CREATE_TRANSACTION_FAILED = 'Failed to create transaction',
+  TRANSACTION_NOT_FOUND = 'Transaction not found',
+  UPDATE_TRANSACTION_FAILED = 'Failed to update transaction',
 
   // Account-related errors
   ACCOUNT_NOT_FOUND = 'Account not found',
@@ -36,6 +38,7 @@ export enum Messages {
   CATEGORY_NOT_FOUND = 'Category not found',
   INVALID_CATEGORY_TYPE_INCOME = 'Invalid category type. Category must be Income.',
   INVALID_CATEGORY_TYPE_EXPENSE = 'Category must be Expense.',
+  PRODUCT_INVALID_CATEGORY_TYPE = 'Invalid product category type.',
 
   // Account balance-related errors
   INSUFFICIENT_BALANCE = 'Account balance must be greater than or equal to the transaction amount.',
