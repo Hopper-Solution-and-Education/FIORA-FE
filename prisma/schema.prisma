@@ -184,16 +184,13 @@ model Partner {
   email        String?       @db.VarChar(50)
   phone        String?       @db.VarChar(50)
   description  String?       @db.VarChar(1000)
+  children     Json?         @db.Json
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   createdBy    String        @db.Uuid
   updatedBy    String?       @db.Uuid
   user         User          @relation("UserPartners", fields: [userId], references: [id])
   transactions Transaction[] @relation("PartnerTransactions")
-
-  parentId String?   @db.Uuid
-  parent   Partner?  @relation("ParentChildPartners", fields: [parentId], references: [id])
-  children Partner[] @relation("ParentChildPartners")
 }
 
 model VerificationToken {
