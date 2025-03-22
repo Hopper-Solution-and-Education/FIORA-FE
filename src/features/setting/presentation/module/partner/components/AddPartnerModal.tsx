@@ -61,7 +61,7 @@ export function AddPartnerModal({ isOpen, setIsOpen }: AddPartnerModalProps) {
 
   const fields = generateFieldsFromSchema(createPartnerSchema, fieldOverrides);
 
-  toast.success('a');
+  toast.error('a');
 
   return (
     <FormSheet
