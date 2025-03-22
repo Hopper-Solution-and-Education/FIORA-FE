@@ -400,16 +400,11 @@ class TransactionUseCase {
 
     const existingProducts = await tx.product.findMany({
       where: { id: { in: productIds } },
-      select: { id: true, price: true, category: { select: { type: true } } },
+      select: { id: true, price: true },
     });
 
     if (existingProducts.length !== productIds.length) {
       throw new Error(Messages.PRODUCT_NOT_FOUND);
-    }
-    const isValidCategory = existingProducts.every((product) => product.category.type === type);
-
-    if (!isValidCategory) {
-      throw new Error(Messages.PRODUCT_INVALID_CATEGORY_TYPE);
     }
 
     await tx.productTransaction.createMany({
