@@ -1,11 +1,12 @@
 'use client';
 
-import type { Control, FieldErrors } from 'react-hook-form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { FormControl, FormItem, FormLabel, FormMessage, FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/shared/utils';
+import { useEffect, useState } from 'react';
+import type { Control, FieldErrors } from 'react-hook-form';
+import { useWatch } from 'react-hook-form';
 import { ProductFormValues } from '../schema/addProduct.schema';
-import { useState } from 'react';
 
 interface PriceFieldProps {
   control: Control<ProductFormValues>;
@@ -14,6 +15,27 @@ interface PriceFieldProps {
 
 const PriceField = ({ control, errors }: PriceFieldProps) => {
   const [displayValue, setDisplayValue] = useState('');
+  const priceValue = useWatch({
+    control,
+    name: 'price',
+    defaultValue: 0,
+  });
+
+  // Hàm format giá trị thành VND
+  const formatToVND = (value: number | undefined) => {
+    if (value === undefined || value === null) return '';
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+    }).format(value);
+  };
+
+  useEffect(() => {
+    const currentNumericValue = displayValue ? Number(displayValue.replace(/\D/g, '')) : 0;
+    if (currentNumericValue !== priceValue) {
+      setDisplayValue(formatToVND(priceValue));
+    }
+  }, [priceValue]);
 
   return (
     <FormField
@@ -30,17 +52,15 @@ const PriceField = ({ control, errors }: PriceFieldProps) => {
               value={displayValue}
               onChange={(e) => {
                 const rawValue = e.target.value.replace(/\D/g, ''); // Chỉ giữ lại số
-                setDisplayValue(rawValue); // Cập nhật giá trị hiển thị
-                field.onChange(Number(rawValue)); // Cập nhật giá trị form
+                setDisplayValue(rawValue);
+                field.onChange(rawValue === '' ? undefined : Number(rawValue));
               }}
               onBlur={() => {
-                // Format thành VND khi mất focus
-                if (field.value) {
-                  const formattedValue = new Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND',
-                  }).format(field.value);
-                  setDisplayValue(formattedValue);
+                // Format lại khi mất focus
+                if (field.value !== undefined) {
+                  setDisplayValue(formatToVND(field.value));
+                } else {
+                  setDisplayValue('');
                 }
               }}
               onFocus={() => {

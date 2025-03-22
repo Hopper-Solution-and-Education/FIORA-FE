@@ -4,13 +4,15 @@ import Loading from '@/components/common/Loading';
 import PageContainer from '@/components/layouts/PageContainer';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { removeFromFirebase } from '@/features/admin/landing/firebaseUtils';
 import { DashboardHeading } from '@/features/home/components/DashboardHeading';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useSession } from 'next-auth/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Product } from '../../domain/entities/Product';
+import { toggleDialogAddEdit } from '../../slices';
 import { deleteProductAsyncThunk } from '../../slices/actions/deleteProductAsyncThunk';
 import { fetchCategoriesProduct } from '../../slices/actions/fetchCategoriesProduct';
 import { getProductsAsyncThunk } from '../../slices/actions/getProductsAsyncThunk';
@@ -24,7 +26,6 @@ import {
 } from '../schema/addProduct.schema';
 import ChartPage from './CharPage';
 import TablePage from './TablePage';
-import { removeFromFirebase } from '@/features/admin/landing/firebaseUtils';
 
 const ProductPage = () => {
   const { page, limit } = useAppSelector((state) => state.productManagement.categories);
@@ -58,7 +59,8 @@ const ProductPage = () => {
     }
   }, []);
 
-  const confirmDelete = useCallback(async () => {
+  const confirmDelete = async () => {
+    dispatch(toggleDialogAddEdit(false));
     if (!productToDelete?.id) return;
 
     const isFirebaseImage =
@@ -67,13 +69,19 @@ const ProductPage = () => {
         productToDelete.icon.startsWith('gs://'));
 
     if (isFirebaseImage) {
+      console.log(productToDelete.icon);
       await removeFromFirebase(productToDelete.icon);
     }
 
     dispatch(deleteProductAsyncThunk({ id: productToDelete.id }));
     setProductToDelete(null);
     setDeleteDialogOpen(false);
-  }, [productToDelete]);
+  };
+
+  const handlePressDeleteOnDialog = (product: Product) => {
+    setProductToDelete(product);
+    setDeleteDialogOpen(true);
+  };
 
   return (
     <PageContainer>
@@ -82,7 +90,7 @@ const ProductPage = () => {
       <div className="flex flex-1 flex-col space-y-4">
         <div className="flex items-start justify-between">
           <DashboardHeading title="Products" description="Manage products" />
-          <AddProductDialog method={method} />
+          <AddProductDialog onDelete={handlePressDeleteOnDialog} method={method} />
         </div>
 
         <Separator />
