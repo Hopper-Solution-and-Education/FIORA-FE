@@ -2,6 +2,7 @@ import { JsonArray } from '@prisma/client/runtime/library';
 import { ProductFormValues, ProductItem } from '../../presentation/schema/addProduct.schema';
 import { getProductTransactionAPIResponseDTO } from './../dto/response/GetProductTransactionAPIResponseDTO';
 
+import { format } from 'date-fns';
 import {
   DeleteProductRequest,
   DeleteProductResponse,
@@ -110,6 +111,8 @@ export class ProductMapper {
         : [],
       categoryId: response.data.catId ?? '',
       type: response.data.type,
+      createdAt: new Date(response.data.createdAt).toISOString(),
+      updatedAt: new Date(response.data.updatedAt).toISOString(),
     };
   }
 
@@ -134,6 +137,8 @@ export class ProductMapper {
           items,
           item.catId ?? '',
           item.type,
+          item.createdAt ? format(new Date(item.createdAt), 'dd/MM/yyyy HH:mm:ss') : '',
+          item.updatedAt ? format(new Date(item.updatedAt), 'dd/MM/yyyy HH:mm:ss') : '',
         );
       }),
     };

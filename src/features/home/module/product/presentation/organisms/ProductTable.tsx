@@ -86,7 +86,12 @@ const ProductTable = ({ onEdit, onDelete }: ProductTableProps) => {
                     ? `${product.description.substring(0, 100)}...`
                     : product.description}
                 </TableCell>
-                <TableCell>{product.price.toLocaleString()} USD</TableCell>
+                <TableCell>
+                  {new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                  }).format(product.price)}
+                </TableCell>
                 <TableCell>{product.taxRate ? `${product.taxRate}%` : 'N/A'}</TableCell>
                 <TableCell>{product.type}</TableCell>
                 <TableCell className="text-right">

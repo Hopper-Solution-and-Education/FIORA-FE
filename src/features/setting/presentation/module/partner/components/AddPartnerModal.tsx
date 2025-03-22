@@ -9,7 +9,6 @@ import {
 import { useCreatePartner } from '@/features/setting/hooks/useCreatePartner';
 import { FieldOverrides } from '@/shared/types/formsheet.type';
 import { generateFieldsFromSchema } from '@/shared/utils/formUtils';
-import { toast } from 'sonner';
 
 interface AddPartnerModalProps {
   isOpen: boolean;
@@ -61,7 +60,7 @@ export function AddPartnerModal({ isOpen, setIsOpen }: AddPartnerModalProps) {
 
   const fields = generateFieldsFromSchema(createPartnerSchema, fieldOverrides);
 
-  toast.success('a');
+  // toast.error('a');
 
   return (
     <FormSheet
