@@ -5,6 +5,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { cn } from '@/shared/utils';
 import { ProductFormValues } from '../schema/addProduct.schema';
+import { useState } from 'react';
 
 interface PriceFieldProps {
   control: Control<ProductFormValues>;
@@ -12,6 +13,8 @@ interface PriceFieldProps {
 }
 
 const PriceField = ({ control, errors }: PriceFieldProps) => {
+  const [displayValue, setDisplayValue] = useState('');
+
   return (
     <FormField
       control={control}
@@ -22,29 +25,26 @@ const PriceField = ({ control, errors }: PriceFieldProps) => {
           <FormControl>
             <Input
               className={cn({ 'border-red-500': errors.price })}
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              {...field}
-              onKeyDown={(e) => {
-                if (
-                  isNaN(Number(e.key)) &&
-                  e.key !== 'Backspace' &&
-                  e.key !== 'Delete' &&
-                  e.key !== '.' &&
-                  e.key !== 'ArrowLeft' &&
-                  e.key !== 'ArrowRight'
-                ) {
-                  e.preventDefault();
+              type="text"
+              placeholder="0 VND"
+              value={displayValue}
+              onChange={(e) => {
+                const rawValue = e.target.value.replace(/\D/g, ''); // Chỉ giữ lại số
+                setDisplayValue(rawValue); // Cập nhật giá trị hiển thị
+                field.onChange(Number(rawValue)); // Cập nhật giá trị form
+              }}
+              onBlur={() => {
+                // Format thành VND khi mất focus
+                if (field.value) {
+                  const formattedValue = new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                  }).format(field.value);
+                  setDisplayValue(formattedValue);
                 }
               }}
-              onChange={(e) => {
-                if (isNaN(Number(e.target.value)) && e.target.value !== '') {
-                  e.target.value = '';
-                  field.onChange(undefined);
-                } else {
-                  field.onChange(Number(e.target.value));
-                }
+              onFocus={() => {
+                setDisplayValue(field.value?.toString() || '');
               }}
             />
           </FormControl>

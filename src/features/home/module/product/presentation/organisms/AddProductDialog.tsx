@@ -10,10 +10,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { removeFromFirebase, uploadToFirebase } from '@/features/admin/landing/firebaseUtils';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { UseFormReturn } from 'react-hook-form';
+import { useCallback } from 'react';
+import { Form, UseFormReturn } from 'react-hook-form';
 import { setDialogState, toggleDialogAddEdit } from '../../slices';
 import { createProduct } from '../../slices/actions/createProductAsyncThunk';
 import { updateProductAsyncThunk } from '../../slices/actions/updateProductAsyncThunk';
@@ -27,6 +27,7 @@ type AddProductDialogProps = {
 
 const AddProductDialog = ({ method }: AddProductDialogProps) => {
   const isOpenDialog = useAppSelector((state) => state.productManagement.isOpenDialogAddEdit);
+
   const dialogState = useAppSelector((state) => state.productManagement.dialogState);
   const dispatch = useAppDispatch();
 
@@ -75,16 +76,16 @@ const AddProductDialog = ({ method }: AddProductDialogProps) => {
     }
   };
 
-  const handleToggleDialog = (value: boolean, type: DialogStateType) => {
+  const handleToggleDialog = useCallback((value: boolean, type: DialogStateType) => {
     dispatch(toggleDialogAddEdit(value));
     if (value === false) {
       method.reset(defaultProductFormValue);
     }
     dispatch(setDialogState(type));
-  };
+  }, []);
 
   return (
-    <>
+    <Form {...method}>
       <Button onClick={() => handleToggleDialog(true, 'add')}>
         <Plus size={64} width={64} height={64} />
       </Button>
@@ -97,18 +98,14 @@ const AddProductDialog = ({ method }: AddProductDialogProps) => {
             </DialogDescription>
           </DialogHeader>
 
-          <ScrollArea className="max-w-[100%]">
-            <div className="m-2">
-              <ProductForm
-                method={method}
-                onSubmit={handleSubmit}
-                onCancel={() => handleToggleDialog(false, 'add')}
-              />
-            </div>
-          </ScrollArea>
+          <ProductForm
+            method={method}
+            onSubmit={handleSubmit}
+            onCancel={() => handleToggleDialog(false, 'add')}
+          />
         </DialogContent>
       </Dialog>
-    </>
+    </Form>
   );
 };
 

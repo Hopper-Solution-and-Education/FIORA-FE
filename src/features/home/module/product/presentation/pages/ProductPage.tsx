@@ -8,7 +8,7 @@ import { DashboardHeading } from '@/features/home/components/DashboardHeading';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Product } from '../../domain/entities/Product';
 import { deleteProductAsyncThunk } from '../../slices/actions/deleteProductAsyncThunk';
@@ -24,6 +24,7 @@ import {
 } from '../schema/addProduct.schema';
 import ChartPage from './CharPage';
 import TablePage from './TablePage';
+import { removeFromFirebase } from '@/features/admin/landing/firebaseUtils';
 
 const ProductPage = () => {
   const { page, limit } = useAppSelector((state) => state.productManagement.categories);
@@ -38,8 +39,6 @@ const ProductPage = () => {
   const method = useForm<ProductFormValues>({
     resolver: yupResolver(productSchema),
     defaultValues: defaultProductFormValue,
-    mode: 'onChange',
-    reValidateMode: 'onChange',
   });
 
   const { reset } = method;
@@ -59,12 +58,22 @@ const ProductPage = () => {
     }
   }, []);
 
-  const confirmDelete = () => {
+  const confirmDelete = useCallback(async () => {
     if (!productToDelete?.id) return;
+
+    const isFirebaseImage =
+      productToDelete.icon &&
+      (productToDelete.icon.startsWith('https://firebasestorage.googleapis.com') ||
+        productToDelete.icon.startsWith('gs://'));
+
+    if (isFirebaseImage) {
+      await removeFromFirebase(productToDelete.icon);
+    }
+
     dispatch(deleteProductAsyncThunk({ id: productToDelete.id }));
     setProductToDelete(null);
     setDeleteDialogOpen(false);
-  };
+  }, [productToDelete]);
 
   return (
     <PageContainer>
