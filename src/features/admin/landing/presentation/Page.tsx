@@ -9,10 +9,18 @@ import { SectionType } from '@prisma/client';
 import { Download, Upload } from 'lucide-react';
 import useBannerSettingLogic from '../hooks/useBannerSettingLogic';
 import SectionManager from './components/SectionManager';
+import { useEffect } from 'react';
+import { landingDIContainer } from '@/features/landing/di/landingDIContainer';
 
 export default function MediaDashboard() {
   const { exportData, importData } = useBannerSettingLogic();
   const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
+
+  useEffect(() => {
+    return () => {
+      landingDIContainer.unbindAll();
+    };
+  });
 
   const sections = [
     { value: 'banner', label: 'Banner', type: SectionType.BANNER },

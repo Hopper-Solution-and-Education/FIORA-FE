@@ -104,7 +104,6 @@ class ProductUseCase {
         category_id,
         items,
       } = params;
-      // checked whether the category exists
 
       const category = await this.categoryProductRepository.findUniqueCategoryProduct({
         id: category_id,
@@ -115,11 +114,9 @@ class ProductUseCase {
         throw new Error('Category not found');
       }
 
-      // validate items input
       let itemsJSON = [] as JsonArray;
 
       if (Array.isArray(items)) {
-        // convert into JSON Array
         itemsJSON = items.map((item) => JSON.stringify(item));
       }
 
@@ -127,13 +124,13 @@ class ProductUseCase {
         userId,
         icon,
         name,
-        taxRate: tax_rate ?? params.tax_rate, // if tax_rate is not provided, use the category tax_rate
+        taxRate: tax_rate ?? params.tax_rate,
         price,
         type,
         catId: category_id,
         createdBy: userId,
         ...(description && { description }),
-        ...(itemsJSON.length > 0 && { items: itemsJSON }), // if itemsJSON is not empty, add items
+        ...(itemsJSON.length > 0 && { items: itemsJSON }),
       });
 
       if (!product) {
@@ -142,6 +139,8 @@ class ProductUseCase {
 
       return product;
     } catch (error: any) {
+      console.log(error);
+
       throw new Error('Failed to create product');
     }
   }
@@ -180,13 +179,10 @@ class ProductUseCase {
       throw new Error('Product not found');
     }
 
-    // validate items input
     let itemsJSON = [] as JsonArray;
     if (Array.isArray(items)) {
-      // convert into JSON Array
       itemsJSON = items.map((item) => JSON.stringify(item));
     }
-    // ... rest of the code remains the same ...
     const updatedProduct = await this.productRepository.updateProduct(
       {
         id,
