@@ -116,8 +116,39 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
 
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { id, transaction } = req.body;
-    const updatedTransaction = await transactionUseCase.editTransaction(id, userId, transaction);
+    const {
+      id,
+      fromAccountId,
+      toCategoryId,
+      amount,
+      products,
+      partnerId,
+      remark,
+      date,
+      fromCategoryId,
+      toAccountId,
+      type,
+    } = req.body;
+
+    const transactionData = {
+      id: id,
+      userId: userId,
+      type: type,
+      amount: parseFloat(amount),
+      fromAccountId: fromAccountId as UUID,
+      toAccountId: toAccountId as UUID,
+      toCategoryId: toCategoryId as UUID,
+      fromCategoryId: fromCategoryId as UUID,
+      ...(products && { products }),
+      ...(partnerId && { partnerId }),
+      ...(remark && { remark }),
+      ...(date && { date: new Date(date) }),
+    };
+    const updatedTransaction = await transactionUseCase.editTransaction(
+      id,
+      userId,
+      transactionData,
+    );
     return res
       .status(RESPONSE_CODE.OK)
       .json(
