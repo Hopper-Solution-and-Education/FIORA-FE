@@ -1,3 +1,4 @@
+'use client';
 import Loading from '@/components/common/Loading';
 import dynamic from 'next/dynamic';
 
