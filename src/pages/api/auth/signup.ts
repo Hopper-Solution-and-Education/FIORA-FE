@@ -84,7 +84,9 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse) {
     }
 
     return res.status(RESPONSE_CODE.OK).json({ message: 'Email is available' });
-  } catch (error) {
-    return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred' });
+  } catch (error: any) {
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json({ message: error?.message ?? 'An error has occured' });
   }
 }
