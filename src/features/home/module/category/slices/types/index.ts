@@ -60,31 +60,3 @@ export const initialCategoryState: CategoryState = {
   updateDialogOpen: false,
   deleteConfirmOpen: false,
 };
-
-export interface Account {
-  id: string;
-  userId: string;
-  icon: string;
-  name: string;
-  description: string;
-  type: string;
-  currency: string;
-  limit: string;
-  balance: string;
-  parentId: string | null;
-}
-
-export interface CreateAccountModalProps {
-  isOpen: boolean;
-  setIsCreateModalOpen: (isOpen: boolean) => void;
-  setTriggered: (isTriggered: boolean) => void;
-  isTriggered: boolean;
-}
-
-export interface EditAccountModalProps {
-  isOpen: boolean;
-  setIsEditModalOpen: (isOpen: boolean) => void;
-  setTriggered: (isTriggered: boolean) => void;
-  isTriggered: boolean;
-  account: Account;
-}

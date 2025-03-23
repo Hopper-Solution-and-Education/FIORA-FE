@@ -71,16 +71,16 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
   }
 }
 
-// Create a new product
+// Create a new product & service
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { icon, name, description, tax_rate, price, type, category_id, items = [] } = req.body;
+    const { icon, name, description, tax_rate, price, type, category_id, items = '' } = req.body;
 
-    if ([ProductType.Product, ProductType.Service].includes(type)) {
+    if (![ProductType.Product, ProductType.Service].includes(type)) {
       return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Invalid product type' });
     }
 
-    const newCategory = await productUseCase.createProduct({
+    const newProduct = await productUseCase.createProduct({
       userId,
       type: type as ProductType,
       icon,
@@ -93,7 +93,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     });
     return res
       .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, 'Create product successfully', newCategory));
+      .json(createResponse(RESPONSE_CODE.CREATED, 'Create product successfully', newProduct));
   } catch (error: any) {
     res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }

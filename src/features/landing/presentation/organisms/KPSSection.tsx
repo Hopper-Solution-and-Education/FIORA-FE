@@ -73,7 +73,7 @@ const KPSSection = () => {
           section.medias.map((item, index) => (
             <div
               key={index}
-              className={`w-full h-60 m-5 rounded-lg shadow-md border relative 
+              className={`w-full h-60 md:h-52 m-2 rounded-lg shadow-md border relative 
           ${index % 2 === 0 ? 'mt-32' : 'mt-0'}`}
             >
               <Image

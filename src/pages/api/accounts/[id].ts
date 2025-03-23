@@ -59,8 +59,6 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'PUT') {
       return res.status(405).json({ error: 'Method not allowed' });
     }
-    const body = await req.body;
-
     const session = await getServerSession(req, res, authOptions);
     if (!session || !session.user?.id) {
       return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
@@ -69,8 +67,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse) {
     const userId = session.user.id;
 
     const { id } = req.query;
-    const { name, type, currency, balance = 0, limit, icon, parentId } = body;
-
+    const { name, type, currency, balance = 0, limit, icon, parentId } = req.body;
     if (!id) {
       return res
         .status(RESPONSE_CODE.BAD_REQUEST)
@@ -81,7 +78,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse) {
     if (!accountFound) {
       return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Cannot update sub account' });
     }
-
+    console.log('accountFound', type);
     const isValidType = AccountUseCaseInstance.validateAccountType(type, balance, limit);
     if (!isValidType) {
       return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Invalid account type' });
@@ -96,7 +93,6 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse) {
       balance: balance,
       limit: limit,
       updatedBy: userId,
-      parent: parentId,
     });
 
     if (!updateRes) {
@@ -104,9 +100,10 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse) {
     }
 
     return res
-      .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, 'Update account successfully'));
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, 'Update account successfully'));
   } catch (error: any) {
+    console.log('error', error);
     res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 }
