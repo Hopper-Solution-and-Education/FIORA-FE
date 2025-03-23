@@ -314,25 +314,31 @@ class TransactionUseCase {
   async getTransactions(
     params: TransactionGetPagination,
   ): Promise<PaginationResponse<Transaction>> {
-    const { page = 1, pageSize = 20, filters, searchParams, sortBy = {} } = params;
+    const { page = 1, pageSize = 20, filters, searchParams, sortBy = {}, userId } = params;
     const take = pageSize;
     const skip = (page - 1) * pageSize;
 
     const where = buildWhereTransactionClause(filters);
     const orderBy = buildOrderByTransaction(sortBy);
-    console.log('orderBy', orderBy);
-    const transactionAwaited = this.transactionRepository.findManyTransactions(where, {
-      skip,
-      take,
-      orderBy,
-      include: {
-        fromAccount: true,
-        fromCategory: true,
-        toAccount: true,
-        toCategory: true,
-        partner: true,
+
+    const transactionAwaited = this.transactionRepository.findManyTransactions(
+      {
+        ...where,
+        userId,
       },
-    });
+      {
+        skip,
+        take,
+        orderBy,
+        include: {
+          fromAccount: true,
+          fromCategory: true,
+          toAccount: true,
+          toCategory: true,
+          partner: true,
+        },
+      },
+    );
     const totalTransactionAwaited = this.transactionRepository.count({});
 
     const [transactions, total] = await Promise.all([transactionAwaited, totalTransactionAwaited]);

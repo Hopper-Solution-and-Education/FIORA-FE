@@ -15,4 +15,5 @@ export interface TransactionGetPagination {
   filters?: any;
   sortBy?: Record<string, any>;
   searchParams?: string;
+  userId: string;
 }

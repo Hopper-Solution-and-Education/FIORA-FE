@@ -23,17 +23,16 @@ export async function getUserSession(req: NextApiRequest, res: NextApiResponse) 
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // const session = await getUserSession(req, res);
-  // if (!session || !session.user?.id) {
-  //   return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
-  // }
+  const session = await getUserSession(req, res);
+  if (!session || !session.user?.id) {
+    return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
+  }
 
-  // const userId = session.user.id;
-
+  const userId = session.user.id;
   try {
     switch (req.method) {
       case 'POST':
-        return POST(req, res);
+        return POST(req, res, userId);
       default:
         return res
           .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -45,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 // Using for filter transactions
-export async function POST(req: NextApiRequest, res: NextApiResponse) {
+export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { filters, page, pageSize, sortBy } = req.body;
 
@@ -54,6 +53,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
       pageSize,
       filters,
       sortBy,
+      userId,
     });
 
     return res
