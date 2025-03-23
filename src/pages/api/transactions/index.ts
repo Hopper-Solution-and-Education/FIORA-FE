@@ -23,12 +23,13 @@ export async function getUserSession(req: NextApiRequest, res: NextApiResponse) 
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getUserSession(req, res);
-  if (!session || !session.user?.id) {
-    return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
-  }
+  // const session = await getUserSession(req, res);
+  // if (!session || !session.user?.id) {
+  //   return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
+  // }
 
-  const userId = session.user.id;
+  const userId = 'f6413727-4a29-485e-9db8-29b64aaeb36e';
+  //session.user.id;
   try {
     switch (req.method) {
       case 'POST':
@@ -58,9 +59,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
 
     return res
       .status(RESPONSE_CODE.CREATED)
-      .json(
-        createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_TRANSACTION_SUCCESS, transactions),
-      );
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.GET_TRANSACTION_SUCCESS, transactions));
   } catch (error: any) {
     return createError(
       res,

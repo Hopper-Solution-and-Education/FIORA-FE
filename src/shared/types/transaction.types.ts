@@ -17,3 +17,7 @@ export interface TransactionGetPagination {
   searchParams?: string;
   userId: string;
 }
+
+export interface Filter {
+  [key: string]: any;
+}

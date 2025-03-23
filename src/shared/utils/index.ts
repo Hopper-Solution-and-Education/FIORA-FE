@@ -1,4 +1,5 @@
 import { iconOptions } from '@/shared/constants/data';
+import { Filter } from '@growthbook/growthbook';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -145,19 +146,22 @@ export function buildOrderByTransaction(orderBy: Record<string, any>): Record<st
   return orderByClause;
 }
 
-export const buildWhereClause = (filters: any) => {
+export const buildWhereClause = (filters: Filter) => {
   const whereClause: any = {};
 
   if (!filters) {
     return whereClause;
   }
+
   for (const [key, value] of Object.entries(filters)) {
-    if (typeof value === 'object' && !Array.isArray(value)) {
-      whereClause[key] = {
-        some: buildWhereClause(value), // Nested relations like 'projects'
-      };
+    if (key === 'AND' || key === 'OR' || key === 'NOT') {
+      whereClause[key] = value.map((subFilter: Filter) => buildWhereClause(subFilter));
+    } else if (typeof key === 'object' && !Array.isArray(key)) {
+      // incorporate conditional operators like contains, startsWith
+      const [operator, operand] = Object.entries(key)[0];
+      whereClause[key] = { [operator]: operand };
     } else {
-      whereClause[key] = value; // Direct field filters like 'name' or 'role'
+      whereClause[key] = value;
     }
   }
 
