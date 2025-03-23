@@ -5,7 +5,6 @@ import 'reflect-metadata';
 import { SessionTimeoutModal } from '@/components/common/SessionTimeoutModal';
 import KBar from '@/components/kbar';
 import { AmplitudeProvider } from '@/components/providers/AmplitudeContextProvider';
-import { GrowthBookAppProvider } from '@/components/providers/GrowthBookProvider';
 import { ReduxProvider } from '@/components/providers/ReduxProvider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
@@ -24,31 +23,29 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <GrowthBookAppProvider>
-          <SWRConfig value={swrOptions}>
-            <NextTopLoader showSpinner={false} />
-            <NuqsAdapter>
-              <KBar>
-                <AmplitudeProvider>
-                  <ReduxProvider>
-                    <ThemeProvider
-                      attribute="class"
-                      defaultTheme="system"
-                      enableSystem
-                      disableTransitionOnChange
-                    >
-                      <SessionProvider>
-                        <Toaster />
-                        <main>{children}</main>
-                        <SessionTimeoutModal />
-                      </SessionProvider>
-                    </ThemeProvider>
-                  </ReduxProvider>
-                </AmplitudeProvider>
-              </KBar>
-            </NuqsAdapter>
-          </SWRConfig>
-        </GrowthBookAppProvider>
+        <SWRConfig value={swrOptions}>
+          <NextTopLoader showSpinner={false} />
+          <NuqsAdapter>
+            <KBar>
+              <AmplitudeProvider>
+                <ReduxProvider>
+                  <ThemeProvider
+                    attribute="class"
+                    defaultTheme="system"
+                    enableSystem
+                    disableTransitionOnChange
+                  >
+                    <SessionProvider>
+                      <Toaster />
+                      <main>{children}</main>
+                      <SessionTimeoutModal />
+                    </SessionProvider>
+                  </ThemeProvider>
+                </ReduxProvider>
+              </AmplitudeProvider>
+            </KBar>
+          </NuqsAdapter>
+        </SWRConfig>
       </body>
     </html>
   );

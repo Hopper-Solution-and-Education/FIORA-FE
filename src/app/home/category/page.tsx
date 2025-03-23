@@ -1,4 +1,7 @@
 import Loading from '@/components/common/Loading';
+import growthbook from '@/config/growthbook';
+import { configureServerSideGrowthBook } from '@/config/growthbookServer';
+import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import dynamic from 'next/dynamic';
 
 const CategoryDashboardRender = dynamic(
@@ -7,9 +10,12 @@ const CategoryDashboardRender = dynamic(
     loading: () => <Loading />,
   },
 );
+configureServerSideGrowthBook();
+const gb = growthbook;
+const categoryFeature = gb.isOn(FeatureFlags.CATEGORY_FEATURE);
 
 const CategoryPage = () => {
-  return <CategoryDashboardRender />;
+  return categoryFeature && <CategoryDashboardRender />;
 };
 
 export default CategoryPage;
