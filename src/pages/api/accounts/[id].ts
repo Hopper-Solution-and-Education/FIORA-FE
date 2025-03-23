@@ -100,8 +100,8 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse) {
     }
 
     return res
-      .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, 'Update account successfully'));
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, 'Update account successfully'));
   } catch (error: any) {
     console.log('error', error);
     res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: error.message });

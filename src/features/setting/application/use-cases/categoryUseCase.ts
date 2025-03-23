@@ -38,10 +38,6 @@ class CategoryUseCase {
     });
   }
 
-  async getCategories(userId: string): Promise<Category[]> {
-    return this.categoryRepository.findCategoriesByUserId(userId);
-  }
-
   async updateCategory(id: string, userId: string, data: Partial<Category>): Promise<Category> {
     const category = await this.categoryRepository.findCategoryById(id);
     if (!category || category.userId !== userId) {
@@ -61,7 +57,7 @@ class CategoryUseCase {
     await this.categoryRepository.deleteCategory(id);
   }
 
-  async getCategoriesAggreate(userId: string): Promise<any[]> {
+  async getCategories(userId: string): Promise<any[]> {
     const categories = await this.categoryRepository.findCategoriesWithTransactions(userId);
 
     // Hàm tính balance cho từng category

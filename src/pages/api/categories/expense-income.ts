@@ -58,9 +58,15 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.GET_CATEGORY_SUCCESS, categories));
   } catch (error: any) {
-    return res
+    res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, error || Messages.INTERNAL_ERROR));
+      .json(
+        createError(
+          res,
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
 }
 

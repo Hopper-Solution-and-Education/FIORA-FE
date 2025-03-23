@@ -28,14 +28,26 @@ export const navItems: NavItem[] = [
     isActive: false,
     items: [
       {
-        title: 'Budget Planning',
-        url: '/home/budget-control',
+        title: 'Accounts',
+        url: '/home/account',
         icon: 'userPen',
         shortcut: ['m', 'm'],
       },
       {
-        title: 'Category',
+        title: 'Categories',
         url: '/home/category',
+        icon: 'userPen',
+        shortcut: ['m', 'm'],
+      },
+      {
+        title: 'Transaction History',
+        url: '/home/transaction',
+        icon: 'userPen',
+        shortcut: ['m', 'm'],
+      },
+      {
+        title: 'Budget Planning',
+        url: '/home/budget-control',
         icon: 'userPen',
         shortcut: ['m', 'm'],
       },
@@ -43,11 +55,18 @@ export const navItems: NavItem[] = [
   },
   {
     title: 'Product',
-    url: '/home/product',
+    url: '*',
     icon: 'product',
     shortcut: ['p', 'p'],
     isActive: false,
-    items: [], // No child items
+    items: [
+      {
+        title: 'Product Management',
+        url: '/home/product',
+        icon: 'userPen',
+        shortcut: ['m', 'm'],
+      },
+    ],
   },
   {
     title: 'Account',
