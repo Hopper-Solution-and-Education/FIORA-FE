@@ -2,9 +2,7 @@
 import { useEffect, useState } from 'react';
 
 export function useWindowSize() {
-  const [windowSize, setWindowSize] = useState({
-    width: typeof window !== 'undefined' ? window.innerWidth : 0,
-  });
+  const [windowSize, setWindowSize] = useState({ width: 0 });
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -19,7 +17,6 @@ export function useWindowSize() {
   return windowSize;
 }
 
-// Dynamic chart margins based on screen width
 export const getChartMargins = (width: number) => {
   if (width < 640)
     return { top: 10, right: 20, left: 60, bottom: 20 }; // Mobile

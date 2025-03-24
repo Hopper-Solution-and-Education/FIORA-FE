@@ -40,6 +40,12 @@ export const navItems: NavItem[] = [
         shortcut: ['m', 'm'],
       },
       {
+        title: 'Transaction History',
+        url: '/home/transaction',
+        icon: 'userPen',
+        shortcut: ['m', 'm'],
+      },
+      {
         title: 'Budget Planning',
         url: '/home/budget-control',
         icon: 'userPen',
