@@ -9,6 +9,7 @@
     "lint": "next lint",
     "migrate": "dotenv -e .env.development.local -- npx prisma migrate dev",
     "generate": "dotenv -e .env.development.local -- npx prisma generate",
+    "push": "dotenv -e .env.development.local -- npx prisma db push",
     "lint-staged": "lint-staged",
     "format": "prettier --write \"**/*.{ts, tsx,js,jsx,md,mdx,css,yaml,yml}\"",
     "check": "prettier --check \"**/*.{ts, tsx,js,jsx,md,mdx,css,yaml,yml}\"",

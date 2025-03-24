@@ -5,9 +5,6 @@ import { ICategoryRepository } from '@/features/setting/domain/repositories/cate
 import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
 import prisma from '@/infrastructure/database/prisma';
 import { Messages } from '@/shared/constants/message';
-import { PaginationResponse } from '@/shared/types/Common.types';
-import { TransactionGetPagination } from '@/shared/types/transaction.types';
-import { buildOrderByTransaction, buildWhereClause } from '@/shared/utils';
 import {
   AccountType,
   CategoryType,
@@ -393,81 +390,38 @@ class TransactionUseCase {
     userId: string,
     type: TransactionType,
   ) {
-    // if (!products || products.length === 0) {
-    //   return;
-    // }
-    // const amount = transaction.amount.toNumber();
-    // const productIds = products.map((p) => p.id);
-    // const splitAmount = amount / productIds.length;
-    // const existingProducts = await tx.product.findMany({
-    //   where: { id: { in: productIds } },
-    //   select: { id: true, price: true, catId: { select: { type: true } } },
-    // });
-    // if (existingProducts.length !== productIds.length) {
-    //   throw new Error(Messages.PRODUCT_NOT_FOUND);
-    // }
-    // const isValidCategory = existingProducts.every((product) => product.catId.type === type);
-    // if (!isValidCategory) {
-    //   throw new Error(Messages.PRODUCT_INVALID_CATEGORY_TYPE);
-    // }
-    // await tx.productTransaction.createMany({
-    //   data: productIds.map((productId) => ({
-    //     productId,
-    //     transactionId: transaction.id,
-    //     createdBy: userId,
-    //     updatedBy: userId,
-    //   })),
-    // });
-    // for (const product of existingProducts) {
-    //   await tx.product.update({
-    //     where: { id: product.id },
-    //     data: { price: product.price.toNumber() + splitAmount },
-    //   });
-    // }
-  }
+    if (!products || products.length === 0) {
+      return;
+    }
 
-  async getTransactions(
-    params: TransactionGetPagination,
-  ): Promise<PaginationResponse<Transaction>> {
-    const { page = 1, pageSize = 20, filters, sortBy = {}, userId } = params;
-    const take = pageSize;
-    const skip = (page - 1) * pageSize;
+    const amount = transaction.amount.toNumber();
+    const productIds = products.map((p) => p.id);
+    const splitAmount = amount / productIds.length;
 
-    const where = buildWhereClause(filters);
-    // const where = { fromCategory: { name: { contains: 'Invest' } } };
+    const existingProducts = await tx.product.findMany({
+      where: { id: { in: productIds } },
+      select: { id: true, price: true },
+    });
 
-    const orderBy = buildOrderByTransaction(sortBy);
+    if (existingProducts.length !== productIds.length) {
+      throw new Error(Messages.PRODUCT_NOT_FOUND);
+    }
 
-    const transactionAwaited = this.transactionRepository.findManyTransactions(
-      {
-        ...where,
-        userId,
-      },
-      {
-        skip,
-        take,
-        orderBy,
-        include: {
-          fromAccount: true,
-          fromCategory: true,
-          toAccount: true,
-          toCategory: true,
-          partner: true,
-        },
-      },
-    );
-    const totalTransactionAwaited = this.transactionRepository.count({});
+    await tx.productTransaction.createMany({
+      data: productIds.map((productId) => ({
+        productId,
+        transactionId: transaction.id,
+        createdBy: userId,
+        updatedBy: userId,
+      })),
+    });
 
-    const [transactions, total] = await Promise.all([transactionAwaited, totalTransactionAwaited]);
-
-    const totalPage = Math.ceil(total / pageSize);
-
-    return {
-      data: transactions,
-      totalPage,
-      page,
-      pageSize,
-    };
+    for (const product of existingProducts) {
+      await tx.product.update({
+        where: { id: product.id },
+        data: { price: product.price.toNumber() + splitAmount },
+      });
+    }
   }
 
   private validateCreditCardAccount(account: Account, amount: number) {

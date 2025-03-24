@@ -63,6 +63,7 @@ CREATE TABLE "Account" (
     "limit" DECIMAL(13,2) DEFAULT 0,
     "balance" DECIMAL(13,2) DEFAULT 0,
     "parentId" UUID,
+    "color" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdBy" UUID NOT NULL,
@@ -114,6 +115,20 @@ CREATE TABLE "Product" (
 );
 
 -- CreateTable
+CREATE TABLE "CategoryProducts" (
+    "id" UUID NOT NULL,
+    "userId" UUID NOT NULL,
+    "icon" TEXT NOT NULL,
+    "name" VARCHAR(50) NOT NULL,
+    "description" VARCHAR(1000),
+    "tax_rate" DECIMAL(13,2),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "CategoryProducts_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Transaction" (
     "id" UUID NOT NULL,
     "userId" UUID,
@@ -162,11 +177,11 @@ CREATE TABLE "Partner" (
     "email" VARCHAR(50),
     "phone" VARCHAR(50),
     "description" VARCHAR(1000),
-    "children" JSON,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdBy" UUID NOT NULL,
     "updatedBy" UUID,
+    "parentId" UUID,
 
     CONSTRAINT "Partner_pkey" PRIMARY KEY ("id")
 );
@@ -224,6 +239,7 @@ CREATE TABLE "Category" (
     "name" VARCHAR(50) NOT NULL,
     "description" VARCHAR(1000),
     "parentId" UUID,
+    "tax_rate" DECIMAL(13,2),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdBy" UUID NOT NULL,
@@ -291,10 +307,10 @@ ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "UserAuthentication" ADD CONSTRAINT "UserAuthentication_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_catId_fkey" FOREIGN KEY ("catId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Product" ADD CONSTRAINT "Product_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Product" ADD CONSTRAINT "Product_catId_fkey" FOREIGN KEY ("catId") REFERENCES "CategoryProducts"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_fromAccountId_fkey" FOREIGN KEY ("fromAccountId") REFERENCES "Account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -322,6 +338,9 @@ ALTER TABLE "ProductTransaction" ADD CONSTRAINT "ProductTransaction_transactionI
 
 -- AddForeignKey
 ALTER TABLE "Partner" ADD CONSTRAINT "Partner_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Partner" ADD CONSTRAINT "Partner_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Partner"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Media" ADD CONSTRAINT "Media_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("id") ON DELETE SET NULL ON UPDATE CASCADE;
