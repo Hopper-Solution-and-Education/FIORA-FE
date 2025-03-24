@@ -114,7 +114,7 @@ export const FormSheet = <T,>({
           className,
         )}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full border border-foreground/50 overflow-hidden rounded-lg">
           <SheetHeader className="px-6 py-4 border-b border-border sticky top-0 bg-card z-10">
             <div className="flex justify-between items-center">
               <div>
