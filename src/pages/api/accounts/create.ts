@@ -4,6 +4,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
 import { createResponse } from '@/config/createResponse';
+import { Messages } from '@/shared/constants/message';
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse) {
   switch (request.method) {
@@ -23,7 +24,9 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
 
     const session = await getServerSession(request, response, authOptions);
     if (!session || !session.user?.id) {
-      return response.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
+      return response
+        .status(RESPONSE_CODE.UNAUTHORIZED)
+        .json(createResponse(RESPONSE_CODE.UNAUTHORIZED, Messages.UNAUTHORIZED));
     }
 
     const userId = session.user.id;
@@ -32,7 +35,9 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
 
     const isValidAccountType = AccountUseCaseInstance.validateAccountType(type, balance, limit);
     if (!isValidAccountType) {
-      return response.status(400).json({ message: 'Invalid account type' });
+      return response
+        .status(400)
+        .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.UNSUPPORTED_ACCOUNT_TYPE));
     }
 
     if (!isParentSelected && !parentId && parentId !== null) {
@@ -40,7 +45,7 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
       if (isCreateMasterAccount) {
         return response
           .status(400)
-          .json(createResponse(RESPONSE_CODE.BAD_REQUEST, 'Master account already exists'));
+          .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.UNSUPPORTED_ACCOUNT_TYPE));
       }
     }
 
@@ -57,12 +62,18 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
     });
 
     if (!account) {
-      return response.status(400).json({ message: 'Cannot create new account' });
+      return response
+        .status(400)
+        .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.CREATE_ACCOUNT_FAILED));
     }
     // If this is a sub-account, update the parent's balance
-    response.status(201).json({ message: 'Account created successfully', account });
+    return response
+      .status(201)
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_ACCOUNT_SUCCESS, account));
   } catch (error: any) {
-    response.status(500).json({ message: error.message });
+    return response
+      .status(500)
+      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, error.message));
   }
 }
 

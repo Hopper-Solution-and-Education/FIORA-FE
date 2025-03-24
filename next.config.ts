@@ -22,7 +22,6 @@ const nextConfig: NextConfig = {
     ],
   },
   //----Configurations for the PDF viewer
-  swcMinify: false,
   webpack: (config) => {
     config.resolve.alias.canvas = false;
     return config;

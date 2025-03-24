@@ -66,7 +66,7 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({ title }) =>
       toast.success('Category created successfully');
       form.reset();
     } catch (error) {
-      console.error('Error updating category:', error);
+      console.error('Error create category:', error);
       toast.error('Failed to update category');
     }
   };

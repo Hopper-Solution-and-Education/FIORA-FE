@@ -107,7 +107,7 @@ export const FormSheet = <T,>({
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen} modal>
       <SheetContent
-        side={side == 'center' ? 'bottom' : side}
+        side={side == 'center' ? 'top' : side}
         className={cn(
           'w-full sm:max-w-md md:max-w-lg lg:max-w-xl p-0 bg-card text-card-foreground shadow-lg',
           side === 'center' ? 'inset-0 m-auto rounded-lg max-h-[90vh]' : 'border-l border-border',

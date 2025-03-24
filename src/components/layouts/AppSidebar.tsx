@@ -35,6 +35,8 @@ import {
 
 import HopperLogo from '@public/images/logo.jpg';
 import Image from 'next/image';
+import { useGetSection } from '@/features/landing/hooks/useGetSection';
+import { SectionType } from '@prisma/client';
 
 export const company = {
   name: 'FIORA Inc',
@@ -45,6 +47,7 @@ export const company = {
 export default function AppSidebar() {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const { section } = useGetSection(SectionType.HEADER);
 
   return (
     <Sidebar collapsible="icon">
@@ -52,7 +55,7 @@ export default function AppSidebar() {
         <div className="flex gap-2 py-2 text-sidebar-accent-foreground">
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
             <Image
-              src={company.logo}
+              src={section?.medias[0].media_url || company.logo}
               alt="Fiora Logo"
               width={120}
               height={120}
@@ -61,7 +64,7 @@ export default function AppSidebar() {
             />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold">{company.name}</span>
+            <span className="truncate font-semibold">{section?.medias[0].description}</span>
             <span className="truncate text-xs">{company.plan}</span>
           </div>
         </div>

@@ -1,3 +1,13 @@
+import { BooleanUtils } from '@/config/booleanUtils';
+import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
+import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
+import { ICategoryRepository } from '@/features/setting/domain/repositories/categoryRepository.interface';
+import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
+import prisma from '@/infrastructure/database/prisma';
+import { Messages } from '@/shared/constants/message';
+import { PaginationResponse } from '@/shared/types/Common.types';
+import { TransactionGetPagination } from '@/shared/types/transaction.types';
+import { buildOrderByTransaction, buildWhereClause } from '@/shared/utils';
 import {
   AccountType,
   CategoryType,
@@ -8,13 +18,6 @@ import {
 } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '../../infrastructure/repositories/transactionRepository';
-import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
-import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
-import { ICategoryRepository } from '@/features/setting/domain/repositories/categoryRepository.interface';
-import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
-import { BooleanUtils } from '@/config/booleanUtils';
-import { Messages } from '@/shared/constants/message';
-import prisma from '@/infrastructure/database/prisma';
 
 class TransactionUseCase {
   constructor(
@@ -40,11 +43,104 @@ class TransactionUseCase {
     userId: string,
     data: Prisma.TransactionUncheckedUpdateInput,
   ): Promise<Transaction> {
-    const transaction = await this.transactionRepository.getTransactionById(id, userId);
-    if (!transaction) {
-      throw new Error(Messages.INTERNAL_ERROR);
+    return prisma.$transaction(async (tx) => {
+      const transaction = await tx.transaction.findUnique({ where: { id } });
+      if (!transaction) {
+        throw new Error(Messages.TRANSACTION_NOT_FOUND);
+      }
+
+      await this.revertOldTransaction(tx, transaction);
+      await this.applyNewTransaction(tx, data, userId);
+
+      return tx.transaction.update({ where: { id }, data });
+    });
+  }
+
+  private async revertOldTransaction(tx: Prisma.TransactionClient, transaction: Transaction) {
+    const fromAccount = transaction.fromAccountId
+      ? await tx.account.findUnique({ where: { id: transaction.fromAccountId } })
+      : null;
+    const toAccount = transaction.toAccountId
+      ? await tx.account.findUnique({ where: { id: transaction.toAccountId } })
+      : null;
+
+    if (!fromAccount && !toAccount) {
+      throw new Error(Messages.ACCOUNT_NOT_FOUND);
     }
-    return this.transactionRepository.updateTransaction(id, userId, data);
+
+    if (transaction.type === TransactionType.Expense && fromAccount) {
+      await this.accountRepository.receiveBalance(
+        tx,
+        fromAccount.id,
+        transaction.amount.toNumber(),
+      );
+    } else if (transaction.type === TransactionType.Income && toAccount) {
+      await this.accountRepository.deductBalance(tx, toAccount.id, transaction.amount.toNumber());
+    } else if (transaction.type === TransactionType.Transfer && fromAccount && toAccount) {
+      await this.accountRepository.transferBalance(
+        tx,
+        toAccount.id,
+        fromAccount.id,
+        transaction.amount.toNumber(),
+      );
+    }
+
+    await this.revertProductPrices(tx, transaction);
+    await tx.productTransaction.deleteMany({ where: { transactionId: transaction.id } });
+  }
+
+  private async applyNewTransaction(
+    tx: Prisma.TransactionClient,
+    data: Prisma.TransactionUncheckedUpdateInput,
+    userId: string,
+  ) {
+    const fromAccount = data.fromAccountId
+      ? await tx.account.findUnique({ where: { id: data.fromAccountId as string } })
+      : null;
+    const toAccount = data.toAccountId
+      ? await tx.account.findUnique({ where: { id: data.toAccountId as string } })
+      : null;
+
+    if (data.type === TransactionType.Expense && fromAccount) {
+      this.validatePaymentAccount(fromAccount, data.amount as number);
+      await this.accountRepository.deductBalance(tx, fromAccount.id, data.amount as number);
+    } else if (data.type === TransactionType.Income && toAccount) {
+      await this.accountRepository.receiveBalance(tx, toAccount.id, data.amount as number);
+    } else if (data.type === TransactionType.Transfer && fromAccount && toAccount) {
+      this.validatePaymentAccount(fromAccount, data.amount as number);
+      await this.accountRepository.transferBalance(
+        tx,
+        fromAccount.id,
+        toAccount.id,
+        data.amount as number,
+      );
+    }
+
+    if (data.products) {
+      await this.createProductTransaction(
+        tx,
+        data as Transaction,
+        data.products as { id: string }[],
+        userId,
+        data.type as TransactionType,
+      );
+    }
+  }
+
+  private async revertProductPrices(tx: Prisma.TransactionClient, transaction: Transaction) {
+    const productTransactions = await tx.productTransaction.findMany({
+      where: { transactionId: transaction.id },
+      select: { productId: true },
+    });
+
+    const productIds = productTransactions.map((pt) => pt.productId);
+    if (productIds.length === 0) return;
+
+    const splitAmount = transaction.amount.toNumber() / productIds.length;
+    await tx.product.updateMany({
+      where: { id: { in: productIds } },
+      data: { price: { decrement: splitAmount } },
+    });
   }
 
   async removeTransaction(id: string, userId: string): Promise<void> {
@@ -56,7 +152,6 @@ class TransactionUseCase {
   }
 
   async createTransaction(data: Prisma.TransactionUncheckedCreateInput) {
-    // Map các loại transaction với hàm xử lý tương ứng
     const transactionHandlers: Record<
       TransactionType,
       (data: Prisma.TransactionUncheckedCreateInput) => Promise<any>
@@ -66,7 +161,6 @@ class TransactionUseCase {
       [TransactionType.Transfer]: this.createTransaction_Transfer.bind(this),
     };
 
-    // Lấy hàm xử lý theo type
     const handler = transactionHandlers[data.type as TransactionType];
 
     if (!handler) {
@@ -78,7 +172,11 @@ class TransactionUseCase {
 
   async createTransaction_Expense(data: Prisma.TransactionUncheckedCreateInput) {
     return prisma.$transaction(async (tx) => {
-      const account = await this.accountRepository.findById(data.fromAccountId as string);
+      const account = await tx.account.findUnique({
+        where: {
+          id: data.fromAccountId as string,
+        },
+      });
       if (!account) {
         throw new Error(Messages.ACCOUNT_NOT_FOUND);
       }
@@ -103,25 +201,28 @@ class TransactionUseCase {
       if (!data.toCategoryId) {
         throw new Error(Messages.CATEGORY_NOT_FOUND);
       }
-
-      const category = await this.categoryRepository.findCategoryById(data.toCategoryId as string);
+      const category = await tx.category.findUnique({
+        where: { id: data.toCategoryId as string },
+      });
       if (!category || category.type !== CategoryType.Expense) {
         throw new Error(Messages.INVALID_CATEGORY_TYPE_EXPENSE);
       }
 
-      const transaction = await this.transactionRepository.createTransaction({
-        userId: data.userId,
-        date: data.date,
-        type: data.type,
-        amount: data.amount,
-        fromAccountId: data.fromAccountId,
-        fromCategoryId: data.fromCategoryId,
-        toAccountId: data.toAccountId,
-        toCategoryId: data.toCategoryId,
-        partnerId: data.partnerId,
-        remark: data.remark,
-        createdBy: data.userId as string,
-        updatedBy: data.userId,
+      const transaction = await tx.transaction.create({
+        data: {
+          userId: data.userId,
+          date: data.date,
+          type: data.type,
+          amount: data.amount,
+          fromAccountId: data.fromAccountId,
+          fromCategoryId: data.fromCategoryId,
+          toAccountId: data.toAccountId,
+          toCategoryId: data.toCategoryId,
+          partnerId: data.partnerId,
+          remark: data.remark,
+          createdBy: data.userId as string,
+          updatedBy: data.userId,
+        },
       });
 
       if (!transaction) {
@@ -134,11 +235,16 @@ class TransactionUseCase {
         data.amount as number,
       );
 
-      // Gọi hàm tạo quan hệ ProductTransaction
       if (Array.isArray(data.products) && data.products.length > 0) {
         const products = data.products as { id: string }[];
 
-        await this.createProductTransaction(tx, transaction.id, products, data.userId as string);
+        await this.createProductTransaction(
+          tx,
+          transaction,
+          products,
+          data.userId as string,
+          data.type,
+        );
       }
 
       return transaction;
@@ -193,11 +299,16 @@ class TransactionUseCase {
         data.amount as number,
       );
 
-      // Xử lý ProductTransaction nếu có sản phẩm
       if (Array.isArray(data.products) && data.products.length > 0) {
         const products = data.products as { id: string }[];
 
-        await this.createProductTransaction(tx, transaction.id, products, data.userId as string);
+        await this.createProductTransaction(
+          tx,
+          transaction,
+          products,
+          data.userId as string,
+          data.type,
+        );
       }
 
       return transaction;
@@ -277,35 +388,86 @@ class TransactionUseCase {
 
   async createProductTransaction(
     tx: Prisma.TransactionClient,
-    transactionId: string,
+    transaction: Transaction,
     products: { id: string }[],
     userId: string,
+    type: TransactionType,
   ) {
-    if (!products || products.length === 0) {
-      throw new Error(Messages.NO_PRODUCTS_PROVIDED);
-    }
+    // if (!products || products.length === 0) {
+    //   return;
+    // }
+    // const amount = transaction.amount.toNumber();
+    // const productIds = products.map((p) => p.id);
+    // const splitAmount = amount / productIds.length;
+    // const existingProducts = await tx.product.findMany({
+    //   where: { id: { in: productIds } },
+    //   select: { id: true, price: true, catId: { select: { type: true } } },
+    // });
+    // if (existingProducts.length !== productIds.length) {
+    //   throw new Error(Messages.PRODUCT_NOT_FOUND);
+    // }
+    // const isValidCategory = existingProducts.every((product) => product.catId.type === type);
+    // if (!isValidCategory) {
+    //   throw new Error(Messages.PRODUCT_INVALID_CATEGORY_TYPE);
+    // }
+    // await tx.productTransaction.createMany({
+    //   data: productIds.map((productId) => ({
+    //     productId,
+    //     transactionId: transaction.id,
+    //     createdBy: userId,
+    //     updatedBy: userId,
+    //   })),
+    // });
+    // for (const product of existingProducts) {
+    //   await tx.product.update({
+    //     where: { id: product.id },
+    //     data: { price: product.price.toNumber() + splitAmount },
+    //   });
+    // }
+  }
 
-    const productIds = products.map((p) => p.id);
+  async getTransactions(
+    params: TransactionGetPagination,
+  ): Promise<PaginationResponse<Transaction>> {
+    const { page = 1, pageSize = 20, filters, sortBy = {}, userId } = params;
+    const take = pageSize;
+    const skip = (page - 1) * pageSize;
 
-    // Kiểm tra xem tất cả sản phẩm có tồn tại không
-    const existingProducts = await tx.product.findMany({
-      where: { id: { in: productIds } },
-      select: { id: true },
-    });
+    const where = buildWhereClause(filters);
+    // const where = { fromCategory: { name: { contains: 'Invest' } } };
 
-    if (existingProducts.length !== productIds.length) {
-      throw new Error(Messages.PRODUCT_NOT_FOUND);
-    }
+    const orderBy = buildOrderByTransaction(sortBy);
 
-    // Tạo các bản ghi trong bảng ProductTransaction
-    await tx.productTransaction.createMany({
-      data: productIds.map((productId) => ({
-        productId,
-        transactionId,
-        createdBy: userId,
-        updatedBy: userId,
-      })),
-    });
+    const transactionAwaited = this.transactionRepository.findManyTransactions(
+      {
+        ...where,
+        userId,
+      },
+      {
+        skip,
+        take,
+        orderBy,
+        include: {
+          fromAccount: true,
+          fromCategory: true,
+          toAccount: true,
+          toCategory: true,
+          partner: true,
+        },
+      },
+    );
+    const totalTransactionAwaited = this.transactionRepository.count({});
+
+    const [transactions, total] = await Promise.all([transactionAwaited, totalTransactionAwaited]);
+
+    const totalPage = Math.ceil(total / pageSize);
+
+    return {
+      data: transactions,
+      totalPage,
+      page,
+      pageSize,
+    };
   }
 
   private validateCreditCardAccount(account: Account, amount: number) {

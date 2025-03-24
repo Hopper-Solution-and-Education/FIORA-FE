@@ -130,7 +130,6 @@ export default function Header() {
             <DropdownMenuContent align="end">
               <DropdownMenuItem>Profile Settings</DropdownMenuItem>
               <DropdownMenuItem>Security Settings</DropdownMenuItem>
-              <DropdownMenuItem>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 

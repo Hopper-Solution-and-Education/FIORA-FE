@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, UseFormClearErrors, UseFormSetValue } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { v4 as uuidv4 } from 'uuid';
@@ -12,6 +12,7 @@ import {
 export function useCreatePartner(setIsOpen: (open: boolean) => void) {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [partners, setPartners] = useState<any[]>([]);
 
   const form = useForm<CreatePartnerFormData>({
     resolver: yupResolver(createPartnerSchema),
@@ -29,6 +30,31 @@ export function useCreatePartner(setIsOpen: (open: boolean) => void) {
       parentId: '',
     },
   });
+
+  async function fetchPartners() {
+    try {
+      const response = await fetch('/api/partners/partner', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch partners.');
+      }
+
+      const data = await response.json();
+      console.log(data);
+      const topLevelPartners = data.data.filter((partner: any) => partner.parentId !== null);
+      setPartners(topLevelPartners);
+    } catch (error: unknown) {
+      console.error('Error fetching partners:', error);
+    }
+  }
+
+  useEffect(() => {
+    fetchPartners();
+  }, []);
 
   async function onSubmit(values: CreatePartnerFormData) {
     try {
@@ -65,6 +91,9 @@ export function useCreatePartner(setIsOpen: (open: boolean) => void) {
       form.reset();
       setLogoPreview(null);
       setLogoFile(null);
+
+      // Sau khi thêm mới, cập nhật lại danh sách Partners
+      await fetchPartners();
     } catch (error: unknown) {
       console.error('Error submitting data:', error);
 
@@ -94,5 +123,5 @@ export function useCreatePartner(setIsOpen: (open: boolean) => void) {
     }
   }
 
-  return { form, onSubmit, logoPreview, setLogoPreview, handleLogoChange };
+  return { form, onSubmit, logoPreview, setLogoPreview, handleLogoChange, partners, fetchPartners };
 }
