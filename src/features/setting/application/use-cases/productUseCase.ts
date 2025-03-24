@@ -139,6 +139,8 @@ class ProductUseCase {
 
       return product;
     } catch (error: any) {
+      console.log(error);
+
       throw new Error('Failed to create product');
     }
   }

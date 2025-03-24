@@ -54,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const categories = await categoryUseCase.getCategoriesAggreate(userId);
+    const categories = await categoryUseCase.getCategories(userId);
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.GET_CATEGORY_SUCCESS, categories));

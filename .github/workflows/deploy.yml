@@ -1,0 +1,47 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - develop
+      - staging
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check for Prisma schema changes
+        id: check-prisma
+        run: |
+          if git diff --name-only HEAD^ HEAD | grep -q 'prisma/schema.prisma'; then
+            echo "Prisma schema changed"
+            echo "PRISMA_CHANGED=true" >> $GITHUB_ENV
+          else
+            echo "No changes in Prisma schema"
+            echo "PRISMA_CHANGED=false" >> $GITHUB_ENV
+          fi
+
+      - name: Run Prisma pull and generate if schema changed
+        if: env.PRISMA_CHANGED == 'true'
+        run: |
+          npx prisma pull
+          npx prisma generate
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run build
+        run: npm run build
