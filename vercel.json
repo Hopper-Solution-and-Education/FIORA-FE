@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm ci",
+  "framework": "nextjs",
+  "outputDirectory": ".next",
+  "git": {
+    "deploymentEnabled": {
+      "main": false,
+      "develop": false,
+      "staging": false
+    }
+  },
+  "env": {
+    "NODE_ENV": "production"
+  }
+}

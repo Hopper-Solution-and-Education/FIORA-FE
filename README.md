@@ -106,3 +106,39 @@ You should now be able to access the application at http://localhost:3000.
 > After cloning or forking the repository, be cautious when pulling or syncing with the latest changes, as this may result in breaking conflicts.
 
 Cheers! 🥂
+
+## Deployment with Vercel and GitHub Actions
+
+This project is configured to automatically deploy to Vercel using GitHub Actions. When you push to the `main`, `staging`, or `develop` branches, GitHub Actions will build and deploy your application to Vercel.
+
+### Setup Instructions
+
+1. **Create a Vercel Account and Project**:
+
+   - Sign up or log in to [Vercel](https://vercel.com)
+   - Create a new project and import your GitHub repository
+   - Complete the initial setup process
+
+2. **Obtain Vercel Deployment Tokens**:
+
+   - Go to your Vercel account settings
+   - Navigate to "Tokens" and create a new token with "Full Account" scope
+   - Copy the token value (you'll need it for GitHub secrets)
+   - In your Vercel project settings, note your "Project ID" and "Organization ID"
+
+3. **Configure GitHub Repository Secrets**:
+
+   - Go to your GitHub repository
+   - Navigate to "Settings" > "Secrets and variables" > "Actions"
+   - Add the following secrets:
+     - `VERCEL_TOKEN`: Your Vercel token
+     - `VERCEL_ORG_ID`: Your Vercel Organization ID
+     - `VERCEL_PROJECT_ID`: Your Vercel Project ID
+
+4. **Push to Deployment Branches**:
+   - The workflow will automatically deploy when you push to:
+     - `main`: Production environment
+     - `staging`: Staging environment
+     - `develop`: Development environment
+
+The GitHub Actions workflow will handle the build and deployment process, including checking for Prisma schema changes and running linting before deploying to Vercel.
