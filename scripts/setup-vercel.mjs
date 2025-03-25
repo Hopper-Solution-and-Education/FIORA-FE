@@ -7,6 +7,7 @@
  * Usage:
  * 1. Make sure you have the Vercel CLI installed: npm i -g vercel
  * 2. Run this script: npm run setup-vercel
+ * 3. For CI/CD: npm run setup-vercel -- --ci
  *
  * The script will:
  * - Link your local project to a Vercel project
@@ -24,10 +25,14 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+// Create readline interface if not in CI mode
+const isCIMode = process.argv.includes('--ci');
+const rl = !isCIMode
+  ? readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    })
+  : null;
 
 // Colors for console output
 const colors = {
@@ -125,38 +130,56 @@ async function main() {
     `${colors.green}Found ${Object.keys(envVars).length} environment variables.${colors.reset}`,
   );
 
-  // Ask user if they want to push these variables to Vercel
-  rl.question(
-    `\n${colors.yellow}Do you want to push these environment variables to Vercel? (y/n) ${colors.reset}`,
-    async (answer) => {
-      if (answer.toLowerCase() === 'y') {
-        console.log(`\n${colors.blue}Pushing environment variables to Vercel...${colors.reset}`);
+  // Handle environment variables based on mode
+  if (isCIMode) {
+    // In CI mode, automatically push all environment variables
+    console.log(
+      `\n${colors.blue}CI Mode: Automatically pushing environment variables to Vercel...${colors.reset}`,
+    );
 
-        for (const [key, value] of Object.entries(envVars)) {
-          console.log(`Setting ${key}...`);
-          runCommand(`vercel env add ${key} production`);
+    for (const [key, value] of Object.entries(envVars)) {
+      console.log(`Setting ${key}...`);
+      runCommand(`vercel env add ${key} production --yes`);
+    }
+
+    console.log(
+      `\n${colors.green}Environment variables have been pushed to Vercel.${colors.reset}`,
+    );
+    console.log(`\n${colors.blue}Setup complete!${colors.reset}`);
+  } else {
+    // In interactive mode, ask user if they want to push variables
+    rl.question(
+      `\n${colors.yellow}Do you want to push these environment variables to Vercel? (y/n) ${colors.reset}`,
+      async (answer) => {
+        if (answer.toLowerCase() === 'y') {
+          console.log(`\n${colors.blue}Pushing environment variables to Vercel...${colors.reset}`);
+
+          for (const [key, value] of Object.entries(envVars)) {
+            console.log(`Setting ${key}...`);
+            runCommand(`vercel env add ${key} production`);
+          }
+
+          console.log(
+            `\n${colors.green}Environment variables have been pushed to Vercel.${colors.reset}`,
+          );
+          console.log(
+            `\n${colors.yellow}Note: You may need to redeploy your project for the changes to take effect.${colors.reset}`,
+          );
+        } else {
+          console.log(`\n${colors.yellow}Skipping environment variable push.${colors.reset}`);
         }
 
-        console.log(
-          `\n${colors.green}Environment variables have been pushed to Vercel.${colors.reset}`,
-        );
-        console.log(
-          `\n${colors.yellow}Note: You may need to redeploy your project for the changes to take effect.${colors.reset}`,
-        );
-      } else {
-        console.log(`\n${colors.yellow}Skipping environment variable push.${colors.reset}`);
-      }
+        console.log(`\n${colors.blue}Setup complete!${colors.reset}`);
+        console.log(`You can now deploy your project to Vercel using GitHub Actions.`);
+        console.log(`Make sure to add the following secrets to your GitHub repository:`);
+        console.log(`  - VERCEL_TOKEN: Your Vercel token`);
+        console.log(`  - VERCEL_ORG_ID: Your Vercel Organization ID`);
+        console.log(`  - VERCEL_PROJECT_ID: Your Vercel Project ID`);
 
-      console.log(`\n${colors.blue}Setup complete!${colors.reset}`);
-      console.log(`You can now deploy your project to Vercel using GitHub Actions.`);
-      console.log(`Make sure to add the following secrets to your GitHub repository:`);
-      console.log(`  - VERCEL_TOKEN: Your Vercel token`);
-      console.log(`  - VERCEL_ORG_ID: Your Vercel Organization ID`);
-      console.log(`  - VERCEL_PROJECT_ID: Your Vercel Project ID`);
-
-      rl.close();
-    },
-  );
+        rl.close();
+      },
+    );
+  }
 }
 
 main().catch((error) => {
