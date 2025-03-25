@@ -1,3 +1,10 @@
+import { BooleanUtils } from '@/config/booleanUtils';
+import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
+import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
+import { ICategoryRepository } from '@/features/setting/domain/repositories/categoryRepository.interface';
+import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
+import prisma from '@/infrastructure/database/prisma';
+import { Messages } from '@/shared/constants/message';
 import {
   AccountType,
   CategoryType,
@@ -8,13 +15,6 @@ import {
 } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '../../infrastructure/repositories/transactionRepository';
-import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
-import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
-import { ICategoryRepository } from '@/features/setting/domain/repositories/categoryRepository.interface';
-import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
-import { BooleanUtils } from '@/config/booleanUtils';
-import { Messages } from '@/shared/constants/message';
-import prisma from '@/infrastructure/database/prisma';
 
 class TransactionUseCase {
   constructor(
@@ -390,37 +390,38 @@ class TransactionUseCase {
     userId: string,
     type: TransactionType,
   ) {
-    // if (!products || products.length === 0) {
-    //   return;
-    // }
-    // const amount = transaction.amount.toNumber();
-    // const productIds = products.map((p) => p.id);
-    // const splitAmount = amount / productIds.length;
-    // const existingProducts = await tx.product.findMany({
-    //   where: { id: { in: productIds } },
-    //   select: { id: true, price: true, catId: { select: { type: true } } },
-    // });
-    // if (existingProducts.length !== productIds.length) {
-    //   throw new Error(Messages.PRODUCT_NOT_FOUND);
-    // }
-    // const isValidCategory = existingProducts.every((product) => product.catId.type === type);
-    // if (!isValidCategory) {
-    //   throw new Error(Messages.PRODUCT_INVALID_CATEGORY_TYPE);
-    // }
-    // await tx.productTransaction.createMany({
-    //   data: productIds.map((productId) => ({
-    //     productId,
-    //     transactionId: transaction.id,
-    //     createdBy: userId,
-    //     updatedBy: userId,
-    //   })),
-    // });
-    // for (const product of existingProducts) {
-    //   await tx.product.update({
-    //     where: { id: product.id },
-    //     data: { price: product.price.toNumber() + splitAmount },
-    //   });
-    // }
+    if (!products || products.length === 0) {
+      return;
+    }
+
+    const amount = transaction.amount.toNumber();
+    const productIds = products.map((p) => p.id);
+    const splitAmount = amount / productIds.length;
+
+    const existingProducts = await tx.product.findMany({
+      where: { id: { in: productIds } },
+      select: { id: true, price: true },
+    });
+
+    if (existingProducts.length !== productIds.length) {
+      throw new Error(Messages.PRODUCT_NOT_FOUND);
+    }
+
+    await tx.productTransaction.createMany({
+      data: productIds.map((productId) => ({
+        productId,
+        transactionId: transaction.id,
+        createdBy: userId,
+        updatedBy: userId,
+      })),
+    });
+
+    for (const product of existingProducts) {
+      await tx.product.update({
+        where: { id: product.id },
+        data: { price: product.price.toNumber() + splitAmount },
+      });
+    }
   }
 
   private validateCreditCardAccount(account: Account, amount: number) {

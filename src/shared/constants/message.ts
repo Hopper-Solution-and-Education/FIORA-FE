@@ -53,6 +53,9 @@ export enum Messages {
 
   PARTNER_NOT_FOUND = 'Partner not found.',
   PARTNER_NAME_TAKEN = 'Partner with this name already exists.',
+  INVALID_PARENT_HIERARCHY = 'Invalid parent hierarchy.',
+  PARENT_PARTNER_NOT_FOUND = 'Parent partner not found.',
+  INVALID_PARENT_PARTNER_SELF = 'Invalid parent partner.',
   CREATE_PARTNER_FAILED = 'Failed to create partner.',
   UPDATE_PARTNER_FAILED = 'Failed to update partner.',
   DELETE_PARTNER_FAILED = 'Failed to delete partner.',

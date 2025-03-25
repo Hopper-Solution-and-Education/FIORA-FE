@@ -8,17 +8,13 @@ class UserUseCase {
   constructor(private userRepository: IUserRepository) {}
 
   async execute(email: string, password: string): Promise<User | null> {
-    try {
-      const userFound = await this.userRepository.findByEmail(email);
-      if (userFound) {
-        throw new Error('Email already existed');
-      }
-      const hashedPassword = await bcrypt.hash(password, 10);
-      return await this.userRepository.createUser({ email, hashedPassword });
-    } catch (error) {
-      console.error('Error creating user:', error);
-      return null;
+    const userFound = await this.userRepository.findByEmail(email);
+    if (userFound) {
+      throw new Error('Email already existed');
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    return await this.userRepository.createUser({ email, hashedPassword });
   }
 
   async verifyEmail(email: string): Promise<User | null> {

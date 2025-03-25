@@ -36,12 +36,6 @@ export function ModeToggle() {
         >
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => setTheme('system')}
-          className="px-3 py-2 rounded-md hover:bg-gray-200 transition"
-        >
-          System
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
