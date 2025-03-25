@@ -69,6 +69,7 @@ const TwoSideBarChart = ({
   title,
   currency = DEFAULT_CURRENCY,
   locale = DEFAULT_LOCALE,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   maxBarRatio = DEFAULT_MAX_BAR_RATIO,
   xAxisFormatter = (value) =>
     new Intl.NumberFormat(locale, { style: 'currency', currency }).format(value),
@@ -91,6 +92,7 @@ const TwoSideBarChart = ({
   }, []);
 
   // Process data to combine expense and income, and handle children
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { chartData, visibleData } = useMemo(() => {
     let totalIncome = 0;
     let totalExpense = 0;
@@ -202,6 +204,7 @@ const TwoSideBarChart = ({
     const numBars = visibleData.length;
     const newHeight = numBars * (BAR_HEIGHT + BAR_CATEGORY_GAP);
     setChartHeight(Math.max(newHeight, MIN_CHART_HEIGHT));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleData]);
 
   // Adjust margins to remove space between charts

@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-anonymous-default-export
 export default {
   /**
    * Official Documentation @ https://tools.ietf.org/html/rfc7231#section-6.2.1

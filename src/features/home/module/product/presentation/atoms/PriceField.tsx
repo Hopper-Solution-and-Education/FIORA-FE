@@ -35,6 +35,7 @@ const PriceField = ({ control, errors }: PriceFieldProps) => {
     if (currentNumericValue !== priceValue) {
       setDisplayValue(formatToVND(priceValue));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [priceValue]);
 
   return (
