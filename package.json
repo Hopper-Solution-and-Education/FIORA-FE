@@ -2,6 +2,19 @@
   "name": "hopperse",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.json": [
+      "prettier --write"
+    ],
+    "*.md": [
+      "prettier --write"
+    ]
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -15,7 +28,8 @@
     "check": "prettier --check \"**/*.{ts, tsx,js,jsx,md,mdx,css,yaml,yml}\"",
     "prepare": "husky",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "setup-vercel": "node scripts/setup-vercel.mjs"
   },
   "dependencies": {
     "@amplitude/analytics-browser": "^2.11.13",

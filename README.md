@@ -106,3 +106,71 @@ You should now be able to access the application at http://localhost:3000.
 > After cloning or forking the repository, be cautious when pulling or syncing with the latest changes, as this may result in breaking conflicts.
 
 Cheers! 🥂
+
+## Automated Deployment with Vercel and GitHub Actions
+
+This project is configured with an enhanced automated deployment pipeline using GitHub Actions and Vercel. The setup provides a seamless workflow for deploying your application to different environments.
+
+### Key Features
+
+- **Fully Automated Deployment**: Push to designated branches to trigger automatic deployments
+- **Environment-Based Deployments**: Different branches deploy to different environments
+- **Environment Variable Synchronization**: Automatically syncs environment variables between your repository and Vercel
+- **Manual Deployment Option**: Trigger deployments manually with environment selection
+- **Prisma Schema Change Detection**: Automatically handles database schema changes
+- **Deployment Status Comments**: Automatically adds comments to PRs and commits with deployment status and preview URLs
+
+### Setup Instructions
+
+1. **Create a Vercel Account and Project**:
+
+   - Sign up or log in to [Vercel](https://vercel.com)
+   - Create a new project and import your GitHub repository
+   - Complete the initial setup process
+
+2. **Obtain Vercel Deployment Tokens**:
+
+   - Go to your Vercel account settings
+   - Navigate to "Tokens" and create a new token with "Full Account" scope
+   - Copy the token value (you'll need it for GitHub secrets)
+   - In your Vercel project settings, note your "Project ID" and "Organization ID"
+
+3. **Configure GitHub Repository Secrets**:
+
+   - Go to your GitHub repository
+   - Navigate to "Settings" > "Secrets and variables" > "Actions"
+   - Add the following secrets:
+     - `VERCEL_TOKEN`: Your Vercel token
+     - `VERCEL_ORG_ID`: Your Vercel Organization ID
+     - `VERCEL_PROJECT_ID`: Your Vercel Project ID
+
+4. **Set Up Environment Variables**:
+
+   - Create a `.env.production.local` file with your environment variables
+   - Run `npm run setup-vercel` to sync these variables to Vercel
+   - For CI/CD, the GitHub Actions workflow will automatically sync environment variables
+
+5. **Deploy Your Application**:
+
+   - **Automatic Deployment**: Push to one of the deployment branches:
+     - `main`: Deploys to production environment
+     - `staging`: Deploys to staging environment
+     - `develop`: Deploys to development environment
+   - **Manual Deployment**: Go to the "Actions" tab in your GitHub repository, select the "Deploy to Vercel" workflow, click "Run workflow", and select the environment you want to deploy to.
+
+### How It Works
+
+The deployment process follows these steps:
+
+1. Code is pushed to a deployment branch or manual deployment is triggered
+2. GitHub Actions workflow is initiated
+3. The workflow determines the target environment based on the branch or manual selection
+4. Node.js environment is set up and dependencies are installed
+5. Prisma schema changes are detected and handled if necessary
+6. Code is linted and built
+7. The Vercel CLI is installed and the project is linked to your Vercel project
+8. Environment variables are synchronized between your repository and Vercel
+9. The application is deployed to the appropriate Vercel environment
+10. A comment is automatically added to the PR or commit with the deployment status and preview URL
+
+This automated pipeline ensures consistent, reliable deployments across all environments with immediate feedback on deployment status directly in GitHub.

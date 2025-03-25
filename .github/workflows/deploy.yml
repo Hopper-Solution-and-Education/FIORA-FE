@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy to Vercel
 
 on:
   push:
@@ -6,22 +6,55 @@ on:
       - develop
       - staging
       - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
     steps:
+      - name: Determine environment
+        id: determine-env
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "DEPLOY_ENV=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
+            echo "Using manually selected environment: ${{ github.event.inputs.environment }}"
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "DEPLOY_ENV=production" >> $GITHUB_ENV
+            echo "Using production environment for main branch"
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
+            echo "Using staging environment for staging branch"
+          else
+            echo "DEPLOY_ENV=development" >> $GITHUB_ENV
+            echo "Using development environment for develop branch"
+          fi
+
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Check for Prisma schema changes
         id: check-prisma
@@ -45,3 +78,69 @@ jobs:
 
       - name: Run build
         run: npm run build
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Link to Vercel Project
+        run: |
+          echo "Linking to Vercel project..."
+          vercel link --token=${{ secrets.VERCEL_TOKEN }} --yes --project=${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Pull Vercel Environment Variables
+        run: |
+          echo "Pulling Vercel environment variables..."
+          vercel env pull .env.production.local --token=${{ secrets.VERCEL_TOKEN }} --environment=${{ env.DEPLOY_ENV }} --yes
+
+      - name: Sync Environment Variables to Vercel
+        if: hashFiles('.env.production.local') != ''
+        run: |
+          echo "Syncing environment variables to Vercel..."
+          node scripts/setup-vercel.mjs --ci
+
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          echo "Deploying to Vercel (${{ env.DEPLOY_ENV }} environment)..."
+          if [[ "${{ env.DEPLOY_ENV }}" == "production" ]]; then
+            DEPLOYMENT_URL=$(vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --yes)
+          else
+            DEPLOYMENT_URL=$(vercel deploy --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_ORG_ID }} --env NODE_ENV=${{ env.DEPLOY_ENV }} --yes)
+          fi
+          echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "Deployed to: $DEPLOYMENT_URL"
+
+      - name: Comment on commit/PR with deployment status
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const deploymentUrl = '${{ steps.deploy.outputs.deployment_url }}';
+            const environment = '${{ env.DEPLOY_ENV }}';
+
+            // Determine if this is a PR or a direct commit
+            const isPR = !!context.payload.pull_request;
+
+            let commentBody = `## 🚀 Vercel Deployment\n\n`;
+            commentBody += `**Environment:** ${environment}\n`;
+            commentBody += `**Status:** ✅ Deployed successfully\n`;
+            commentBody += `**Preview URL:** [${deploymentUrl}](${deploymentUrl})\n\n`;
+            commentBody += `You can view the deployment by clicking the preview URL above.`;
+
+            if (isPR) {
+              // Comment on PR
+              github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: commentBody
+              });
+            } else {
+              // Comment on commit
+              github.rest.repos.createCommitComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: context.sha,
+                body: commentBody
+              });
+            }
