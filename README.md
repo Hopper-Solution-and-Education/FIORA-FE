@@ -160,17 +160,36 @@ This project is configured with an enhanced automated deployment pipeline using 
 
 ### How It Works
 
-The deployment process follows these steps:
+The deployment process is organized into modular stages for better maintainability and visibility:
 
-1. Code is pushed to a deployment branch or manual deployment is triggered
-2. GitHub Actions workflow is initiated
-3. The workflow determines the target environment based on the branch or manual selection
-4. Node.js environment is set up and dependencies are installed
-5. Prisma schema changes are detected and handled if necessary
-6. Code is linted and built
-7. The Vercel CLI is installed and the project is linked to your Vercel project
-8. Environment variables are synchronized between your repository and Vercel
-9. The application is deployed to the appropriate Vercel environment
-10. A comment is automatically added to the PR or commit with the deployment status and preview URL
+#### Stage 1: Setup and Environment Configuration
 
-This automated pipeline ensures consistent, reliable deployments across all environments with immediate feedback on deployment status directly in GitHub.
+- Determines the target environment based on the branch or manual selection
+- Sets environment variables for subsequent stages
+
+#### Stage 2: Build and Test
+
+- Checks out the code and sets up Node.js
+- Installs dependencies
+- Detects and handles Prisma schema changes
+- Runs linting and builds the application
+- Uploads build artifacts for later stages
+
+#### Stage 3: Vercel Configuration
+
+- Links the repository to the Vercel project
+- Pulls environment variables from Vercel
+- Synchronizes local environment variables to Vercel
+
+#### Stage 4: Deploy to Vercel
+
+- Downloads the build artifacts
+- Deploys the application to the appropriate Vercel environment
+- Captures the deployment URL for notifications
+
+#### Stage 5: Post-Deployment Notifications
+
+- Adds a comment to the PR or commit with the deployment status
+- Includes the preview URL for easy access to the deployed application
+
+This modular pipeline ensures consistent, reliable deployments across all environments with immediate feedback on deployment status directly in GitHub. Each stage has a clear responsibility, making the workflow easier to maintain and troubleshoot.

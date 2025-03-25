@@ -19,31 +19,36 @@ on:
           - production
 
 jobs:
-  deploy:
+  # Stage 1: Setup and Environment Configuration
+  setup:
+    name: Setup and Environment
     runs-on: ubuntu-latest
-    env:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
+    outputs:
+      deploy_env: ${{ steps.set-env.outputs.deploy_env }}
     steps:
       - name: Determine environment
-        id: determine-env
+        id: set-env
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "DEPLOY_ENV=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
+            echo "deploy_env=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
             echo "Using manually selected environment: ${{ github.event.inputs.environment }}"
           elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "DEPLOY_ENV=production" >> $GITHUB_ENV
+            echo "deploy_env=production" >> $GITHUB_OUTPUT
             echo "Using production environment for main branch"
           elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
-            echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
+            echo "deploy_env=staging" >> $GITHUB_OUTPUT
             echo "Using staging environment for staging branch"
           else
-            echo "DEPLOY_ENV=development" >> $GITHUB_ENV
+            echo "deploy_env=development" >> $GITHUB_OUTPUT
             echo "Using development environment for develop branch"
           fi
 
+  # Stage 2: Build and Test
+  build:
+    name: Build and Test
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -60,11 +65,11 @@ jobs:
         id: check-prisma
         run: |
           if git diff --name-only HEAD^ HEAD | grep -q 'prisma/schema.prisma'; then
-            echo "Prisma schema changed"
             echo "PRISMA_CHANGED=true" >> $GITHUB_ENV
+            echo "Prisma schema changed"
           else
-            echo "No changes in Prisma schema"
             echo "PRISMA_CHANGED=false" >> $GITHUB_ENV
+            echo "No changes in Prisma schema"
           fi
 
       - name: Run Prisma pull and generate if schema changed
@@ -78,6 +83,38 @@ jobs:
 
       - name: Run build
         run: npm run build
+
+      # Upload build artifacts for the deployment job
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-output
+          path: |
+            .next
+            node_modules
+            package.json
+            package-lock.json
+            next.config.ts
+            public
+
+  # Stage 3: Vercel Configuration
+  configure-vercel:
+    name: Configure Vercel
+    needs: [setup, build]
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      DEPLOY_ENV: ${{ needs.setup.outputs.deploy_env }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
@@ -98,6 +135,28 @@ jobs:
           echo "Syncing environment variables to Vercel..."
           node scripts/setup-vercel.mjs --ci
 
+  # Stage 4: Deploy to Vercel
+  deploy:
+    name: Deploy to Vercel
+    needs: [setup, build, configure-vercel]
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      DEPLOY_ENV: ${{ needs.setup.outputs.deploy_env }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-output
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
       - name: Deploy to Vercel
         id: deploy
         run: |
@@ -110,13 +169,23 @@ jobs:
           echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
           echo "Deployed to: $DEPLOYMENT_URL"
 
+  # Stage 5: Post-Deployment Notifications
+  notify:
+    name: Post-Deployment Notifications
+    needs: [setup, deploy]
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Comment on commit/PR with deployment status
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const deploymentUrl = '${{ steps.deploy.outputs.deployment_url }}';
-            const environment = '${{ env.DEPLOY_ENV }}';
+            const deploymentUrl = '${{ needs.deploy.outputs.deployment_url }}';
+            const environment = '${{ needs.setup.outputs.deploy_env }}';
 
             // Determine if this is a PR or a direct commit
             const isPR = !!context.payload.pull_request;
