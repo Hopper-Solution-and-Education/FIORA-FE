@@ -163,8 +163,12 @@ export class AccountUseCase {
     return this.accountRepository.findById(id);
   }
 
-  async findByCondition(where: Prisma.AccountWhereInput) {
+  async findManyByCondition(where: Prisma.AccountWhereInput) {
     return this.accountRepository.findMany(where, { select: { balance: true } });
+  }
+
+  async findByCondition(where: Prisma.AccountWhereInput): Promise<Account | null> {
+    return this.accountRepository.findByCondition(where);
   }
 
   async findAll(): Promise<Account[] | []> {
@@ -254,10 +258,7 @@ export class AccountUseCase {
   }
 
   async updateAccount(id: string, data: Prisma.AccountUpdateInput): Promise<Account | null> {
-    return this.accountRepository.update(id, {
-      ...data,
-      updatedBy: data.updatedBy,
-    });
+    //
   }
 
   async deleteAccount(id: string): Promise<Account | null> {
