@@ -17,6 +17,7 @@ type DeleteTransactionModalProps = {
 };
 
 const DeleteTransactionModal = (props: DeleteTransactionModalProps) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { isOpen, onClose, transactionId } = props;
 
   const handleDeleteTransaction = async () => {

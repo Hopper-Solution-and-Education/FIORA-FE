@@ -24,6 +24,7 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
   callback,
 }) => {
   const item = processedData.find((d: any) => d.name === payload.value);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const depth = item?.depth || 0;
   const hasChildren = item?.children && item.children.length > 0;
   const [isHovered, setIsHovered] = React.useState(false);

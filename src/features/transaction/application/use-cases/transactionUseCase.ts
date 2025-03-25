@@ -433,6 +433,7 @@ class TransactionUseCase {
     transaction: Transaction,
     products: { id: string }[],
     userId: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     type: TransactionType,
   ) {
     if (!products || products.length === 0) {

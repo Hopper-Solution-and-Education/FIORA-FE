@@ -17,6 +17,7 @@ type UpdateTransactionModalProps = {
 };
 
 const UpdateTransactionModal = (props: UpdateTransactionModalProps) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { isOpen, onClose, transaction } = props;
 
   const handleUpdateTransaction = async () => {

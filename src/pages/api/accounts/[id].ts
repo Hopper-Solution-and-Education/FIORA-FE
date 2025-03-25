@@ -67,6 +67,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse) {
     const userId = session.user.id;
 
     const { id } = req.query;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { name, type, currency, balance = 0, limit, icon, parentId } = req.body;
     if (!id) {
       return res

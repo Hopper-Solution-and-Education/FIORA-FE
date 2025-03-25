@@ -175,6 +175,7 @@ export function DateTimePicker({
       }
       setDate(d);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [setDate, setMonth],
   );
   const onSubmit = useCallback(() => {
@@ -211,6 +212,7 @@ export function DateTimePicker({
   const displayValue = useMemo(() => {
     if (!open && !value) return value;
     return open ? date : initDate;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date, value, open]);
 
   const dislayFormat = useMemo(() => {
@@ -411,6 +413,7 @@ function MonthYearPicker({
       years.push({ value: i, label: i.toString(), disabled });
     }
     return years;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
   const months = useMemo(() => {
     const months: TimeOption[] = [];
@@ -423,6 +426,7 @@ function MonthYearPicker({
       months.push({ value: i, label: format(new Date(0, i), 'MMM'), disabled });
     }
     return months;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   const onYearChange = useCallback(
@@ -518,6 +522,7 @@ function TimePicker({
 
   useEffect(() => {
     onChange(buildTime({ use12HourFormat, value, formatStr, hour, minute, second, ampm }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hour, minute, second, ampm, formatStr, use12HourFormat]);
 
   const _hourIn24h = useMemo(() => {
@@ -525,6 +530,7 @@ function TimePicker({
     //   return (hour % 12) + ampm * 12;
     // }
     return use12HourFormat ? (hour % 12) + ampm * 12 : hour;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, use12HourFormat, ampm]);
 
   const hours: TimeOption[] = useMemo(
@@ -644,6 +650,7 @@ function TimePicker({
       }
       setHour(v.value);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [setHour, use12HourFormat, value, formatStr, minute, second, ampm],
   );
 
@@ -679,6 +686,7 @@ function TimePicker({
       }
       setMinute(v.value);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [setMinute, use12HourFormat, value, formatStr, hour, second, ampm],
   );
 
