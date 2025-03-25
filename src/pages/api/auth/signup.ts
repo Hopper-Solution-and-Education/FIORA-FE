@@ -48,7 +48,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
     }
 
     // create new Account
-    await AccountUseCaseInstance.create({
+    const accountCreate = await AccountUseCaseInstance.create({
       name: 'Ví tiền payment',
       userId: userCreationRes.id,
       balance: 0,
@@ -57,13 +57,21 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
       icon: 'circle',
     });
 
+    if (!accountCreate) {
+      return res
+        .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+        .json({ message: 'Cannot create account' });
+    }
+
     return res
       .status(RESPONSE_CODE.CREATED)
       .json(
         createResponse(RESPONSE_CODE.CREATED, 'You have registered for an account successfully!'),
       );
   } catch (error) {
-    return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: 'Đã có lỗi xảy ra' });
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json({ message: (error as Error).message || 'An error has occured' });
   }
 }
 
