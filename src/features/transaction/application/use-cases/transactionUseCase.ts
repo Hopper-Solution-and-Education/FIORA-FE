@@ -15,6 +15,9 @@ import {
 } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '../../infrastructure/repositories/transactionRepository';
+import { TransactionGetPagination } from '@/shared/types/transaction.types';
+import { PaginationResponse } from '@/shared/types/Common.types';
+import { buildOrderByTransaction, buildWhereClause } from '@/shared/utils';
 
 class TransactionUseCase {
   constructor(
@@ -25,6 +28,48 @@ class TransactionUseCase {
 
   async listTransactions(userId: string): Promise<Transaction[]> {
     return this.transactionRepository.getTransactionsByUserId(userId);
+  }
+
+  async getTransactions(
+    params: TransactionGetPagination,
+  ): Promise<PaginationResponse<Transaction>> {
+    const { page = 1, pageSize = 20, filters, sortBy = {}, userId } = params;
+    const take = pageSize;
+    const skip = (page - 1) * pageSize;
+
+    const where = buildWhereClause(filters);
+    const orderBy = buildOrderByTransaction(sortBy);
+
+    const transactionAwaited = this.transactionRepository.findManyTransactions(
+      {
+        ...where,
+        userId,
+      },
+      {
+        skip,
+        take,
+        orderBy,
+        include: {
+          fromAccount: true,
+          fromCategory: true,
+          toAccount: true,
+          toCategory: true,
+          partner: true,
+        },
+      },
+    );
+    const totalTransactionAwaited = this.transactionRepository.count({});
+
+    const [transactions, total] = await Promise.all([transactionAwaited, totalTransactionAwaited]);
+
+    const totalPage = Math.ceil(total / pageSize);
+
+    return {
+      data: transactions,
+      totalPage,
+      page,
+      pageSize,
+    };
   }
 
   async viewTransaction(id: string, userId: string): Promise<Transaction> {
