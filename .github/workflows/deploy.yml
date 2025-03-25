@@ -43,9 +43,9 @@ jobs:
             echo "Using development environment for develop branch"
           fi
 
-  # Stage 2: Build and Test
-  build:
-    name: Build and Test
+  # Stage 2: Lint and Check
+  lint:
+    name: Lint and Check
     needs: setup
     runs-on: ubuntu-latest
     steps:
@@ -81,26 +81,10 @@ jobs:
       - name: Run linting
         run: npm run lint
 
-      - name: Run build
-        run: npm run build
-
-      # Upload build artifacts for the deployment job
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-output
-          path: |
-            .next
-            node_modules
-            package.json
-            package-lock.json
-            next.config.ts
-            public
-
   # Stage 3: Vercel Configuration
   configure-vercel:
     name: Configure Vercel
-    needs: [setup, build]
+    needs: [setup, lint]
     runs-on: ubuntu-latest
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -138,7 +122,7 @@ jobs:
   # Stage 4: Deploy to Vercel
   deploy:
     name: Deploy to Vercel
-    needs: [setup, build, configure-vercel]
+    needs: [setup, configure-vercel]
     runs-on: ubuntu-latest
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -148,11 +132,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-output
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest

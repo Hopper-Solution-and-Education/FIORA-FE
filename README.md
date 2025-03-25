@@ -167,13 +167,12 @@ The deployment process is organized into modular stages for better maintainabili
 - Determines the target environment based on the branch or manual selection
 - Sets environment variables for subsequent stages
 
-#### Stage 2: Build and Test
+#### Stage 2: Lint and Check
 
 - Checks out the code and sets up Node.js
 - Installs dependencies
 - Detects and handles Prisma schema changes
-- Runs linting and builds the application
-- Uploads build artifacts for later stages
+- Runs linting to ensure code quality
 
 #### Stage 3: Vercel Configuration
 
@@ -183,8 +182,8 @@ The deployment process is organized into modular stages for better maintainabili
 
 #### Stage 4: Deploy to Vercel
 
-- Downloads the build artifacts
 - Deploys the application to the appropriate Vercel environment
+- Lets Vercel handle the build process with the correct environment variables
 - Captures the deployment URL for notifications
 
 #### Stage 5: Post-Deployment Notifications
