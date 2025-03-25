@@ -33,7 +33,7 @@ export const FioraSystem = () => {
       </div>
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="border-t md:py-20">
+        <div className="border-t md:py-10">
           {/* Section Header */}
           <div className="mx-auto max-w-3xl text-center md:pb-12">
             <h1 data-aos="fade-up" className="my-6 text-5xl font-bold text-pretty lg:text-6xl">

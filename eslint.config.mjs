@@ -61,7 +61,7 @@ const config = [
       'import/no-unresolved': 'off',
       'unused-imports/no-unused-imports': 'error',
       'prettier/prettier': 'warn',
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },

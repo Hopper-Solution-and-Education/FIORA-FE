@@ -36,8 +36,8 @@ export default function Footer() {
   }
 
   return (
-    <footer className="border-border py-12">
-      <div className="mt-10 border-t pt-6 flex flex-col md:flex-row items-center justify-between px-10">
+    <footer className="border-border border-t pb-4">
+      <div className="mt-6 flex flex-col md:flex-row items-center justify-between px-10">
         <div className="flex space-x-6">
           {section.medias.map((icon, index) => (
             <Link

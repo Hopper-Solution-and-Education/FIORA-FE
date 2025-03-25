@@ -60,7 +60,21 @@ const VisionMission = () => {
   return (
     <section>
       <div className="mt-20">
-        <div className="bg-muted-2 grid items-center gap-8 lg:grid-cols-2">
+        <div className="bg-muted-2 grid items-center gap-8 lg:grid-cols-3">
+          <div className="relative col-span-2 lg:h-[700px] h-[500px] overflow-hidden justify-center mx-4">
+            {embedCode ? (
+              <div
+                className="absolute inset-0"
+                dangerouslySetInnerHTML={{
+                  __html: `<style>iframe { width: 100% !important; height: 100% !important; border: none; border-radius: 8px; object-fit: cover;}</style>${embedCode}`,
+                }}
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-200 rounded-md">
+                <p className="text-gray-500">No embedded content available</p>
+              </div>
+            )}
+          </div>
           <div className="flex flex-col items-center p-16 text-center lg:items-start lg:text-left">
             <h1 className="my-6 text-4xl font-bold text-pretty lg:text-6xl"> {section?.name}</h1>
             <p className="mb-8 max-w-xl text-muted-foreground lg:text-xl">
@@ -74,20 +88,6 @@ const VisionMission = () => {
               </Button>
               <Button variant="outline">Secondary</Button>
             </div>
-          </div>
-          <div className="relative lg:h-[500px] h-[300px] overflow-hidden justify-center mx-4">
-            {embedCode ? (
-              <div
-                className="absolute inset-0"
-                dangerouslySetInnerHTML={{
-                  __html: `<style>iframe { width: 100% !important; height: 100% !important; border: none; border-radius: 8px; object-fit: cover;}</style>${embedCode}`,
-                }}
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-200 rounded-md">
-                <p className="text-gray-500">No embedded content available</p>
-              </div>
-            )}
           </div>
         </div>
       </div>

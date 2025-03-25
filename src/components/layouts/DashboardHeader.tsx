@@ -14,7 +14,7 @@ import { Breadcrumbs } from '../Breadcrumbs';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Separator } from '../ui/separator';
 import { SidebarTrigger } from '../ui/sidebar';
-import ThemeToggle from './theme-toggle/ThemeToggle';
+import ThemeToggle from './theme-toggle/SettingCenter';
 import { UserNav } from './UserNav';
 
 export default function Header() {

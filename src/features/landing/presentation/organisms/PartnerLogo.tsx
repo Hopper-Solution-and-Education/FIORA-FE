@@ -3,45 +3,37 @@ import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carouse
 import { SectionType } from '@prisma/client';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
-import { useRef } from 'react';
 import { useGetSection } from '../../hooks/useGetSection';
 
 export const PartnerLogo = () => {
   const { isLoading, section, isError } = useGetSection(SectionType.PARTNER_LOGO);
-  const autoplayPlugin = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
 
   if (isLoading) return <p>Loading...</p>;
   if (isError || !section?.medias) return <p>Error loading partner logos.</p>;
 
   return (
-    <section className="w-full my-10 flex flex-col items-center px-4 pd-10 ">
-      <h1 data-aos="fade-up" className="my-6 text-5xl font-bold text-pretty lg:text-6xl ">
+    <section className="w-full my-10 flex flex-col items-center px-4 pt-10">
+      <h1 data-aos="fade-up" className="my-6 text-5xl font-bold text-pretty lg:text-6xl">
         {section?.name}
       </h1>
 
       <div className="w-full mx-auto">
         <Carousel
           className="w-full"
-          plugins={[autoplayPlugin.current]}
+          plugins={[Autoplay({ delay: 3000, stopOnInteraction: false, playOnInit: true })]}
           opts={{
-            align: 'start',
             loop: true,
             slidesToScroll: 1,
-            breakpoints: {
-              '(max-width: 639px)': { slidesToScroll: 1, align: 'center' },
-              '(min-width: 640px) and (max-width: 767px)': { slidesToScroll: 2, align: 'start' },
-              '(min-width: 768px) and (max-width: 1023px)': { slidesToScroll: 3, align: 'start' },
-              '(min-width: 1024px)': { slidesToScroll: 4, align: 'start' },
-            },
+            direction: 'ltr',
           }}
         >
-          <CarouselContent className="flex gap-4">
-            {section.medias.map((logo, index) => (
+          <CarouselContent className="flex">
+            {section.medias.concat(section.medias).map((logo, index) => (
               <CarouselItem
                 key={index}
-                className="basis-auto md:basis-1/6 lg:basis-1/7 flex justify-center py-10"
+                className="basis-auto md:basis-1/3 lg:basis-1/5 flex justify-center p-2"
               >
-                <Card className=" w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-48 lg:h-48 flex items-center justify-center shadow-md rounded-full overflow-hidden border border-gray-300 transition-transform hover:scale-105">
+                <Card className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 flex items-center justify-center shadow-md rounded-full overflow-hidden border border-gray-300 transition-transform hover:scale-105">
                   <CardContent className="relative w-full h-full p-0">
                     <Image
                       src={logo.media_url || ''}
