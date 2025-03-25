@@ -60,7 +60,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
     if (!accountCreate) {
       return res
         .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-        .json({ message: 'Cannot create account' });
+        .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, 'Cannot create account'));
     }
 
     return res
@@ -71,7 +71,12 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
   } catch (error) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json({ message: (error as Error).message || 'An error has occured' });
+      .json(
+        createResponse(
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          (error as Error).message || 'An error has occured',
+        ),
+      );
   }
 }
 
@@ -82,7 +87,7 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse) {
     if (!email || typeof email !== 'string') {
       return res
         .status(RESPONSE_CODE.BAD_REQUEST)
-        .json({ message: 'Email is required and must be a string' });
+        .json(createResponse(RESPONSE_CODE.BAD_REQUEST, 'Email is required and must be a string'));
     }
 
     const userFound = await UserUSeCaseInstance.verifyEmail(email);
@@ -95,6 +100,11 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse) {
   } catch (error: any) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json({ message: error?.message ?? 'An error has occured' });
+      .json(
+        createResponse(
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || 'An error has occured',
+        ),
+      );
   }
 }
