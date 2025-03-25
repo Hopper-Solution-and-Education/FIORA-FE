@@ -55,6 +55,7 @@ const TermsAndConditionsModal = ({
     if (containerRef.current) {
       setPageWidth(containerRef.current.offsetWidth); // Set the width of the page based on parent container's width
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerRef.current]); // Recalculate when the component is mounted or the ref is updated
 
   return (
