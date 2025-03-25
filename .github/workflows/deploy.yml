@@ -81,74 +81,29 @@ jobs:
       - name: Run linting
         run: npm run lint
 
-  # Stage 3: Vercel Configuration
-  configure-vercel:
-    name: Configure Vercel
+  # Stage 3: Deploy to Vercel
+  deploy:
+    name: Deploy to Vercel
     needs: [setup, lint]
     runs-on: ubuntu-latest
     env:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       DEPLOY_ENV: ${{ needs.setup.outputs.deploy_env }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-
-      - name: Link to Vercel Project
-        run: |
-          echo "Linking to Vercel project..."
-          vercel link --token="${{ secrets.VERCEL_TOKEN }}" --yes --project="${{ secrets.VERCEL_PROJECT_ID }}"
-
-      - name: Pull Vercel Environment Variables
-        run: |
-          echo "Pulling Vercel environment variables..."
-          vercel env pull .env.production.local --token="${{ secrets.VERCEL_TOKEN }}" --environment="${{ env.DEPLOY_ENV }}" --yes
-
-      - name: Sync Environment Variables to Vercel
-        if: hashFiles('.env.production.local') != ''
-        run: |
-          echo "Syncing environment variables to Vercel..."
-          node scripts/setup-vercel.mjs --ci
-
-  # Stage 4: Deploy to Vercel
-  deploy:
-    name: Deploy to Vercel
-    needs: [setup, configure-vercel]
-    runs-on: ubuntu-latest
-    env:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      DEPLOY_ENV: ${{ needs.setup.outputs.deploy_env }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
 
       - name: Deploy to Vercel
         id: deploy
-        run: |
-          echo "Deploying to Vercel (${{ env.DEPLOY_ENV }} environment)..."
-          if [[ "${{ env.DEPLOY_ENV }}" == "production" ]]; then
-            DEPLOYMENT_URL=$(vercel deploy --prod --token="${{ secrets.VERCEL_TOKEN }}" --yes)
-          else
-            DEPLOYMENT_URL=$(vercel deploy --token="${{ secrets.VERCEL_TOKEN }}" --scope="${{ secrets.VERCEL_ORG_ID }}" --env NODE_ENV="${{ env.DEPLOY_ENV }}" --yes)
-          fi
-          echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
-          echo "Deployed to: $DEPLOYMENT_URL"
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-comment: true
+          vercel-args: ${{ env.DEPLOY_ENV == 'production' && '--prod' || '' }}
 
-  # Stage 5: Post-Deployment Notifications
+  # Stage 4: Post-Deployment Notifications
   notify:
     name: Post-Deployment Notifications
     needs: [setup, deploy]

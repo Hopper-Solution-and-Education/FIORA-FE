@@ -174,19 +174,14 @@ The deployment process is organized into modular stages for better maintainabili
 - Detects and handles Prisma schema changes
 - Runs linting to ensure code quality
 
-#### Stage 3: Vercel Configuration
+#### Stage 3: Deploy to Vercel
 
-- Links the repository to the Vercel project
-- Pulls environment variables from Vercel
-- Synchronizes local environment variables to Vercel
-
-#### Stage 4: Deploy to Vercel
-
-- Deploys the application to the appropriate Vercel environment
+- Uses the official Vercel GitHub Action for reliable deployments
+- Automatically handles authentication and project linking
+- Deploys to the appropriate environment based on branch or manual selection
 - Lets Vercel handle the build process with the correct environment variables
-- Captures the deployment URL for notifications
 
-#### Stage 5: Post-Deployment Notifications
+#### Stage 4: Post-Deployment Notifications
 
 - Adds a comment to the PR or commit with the deployment status
 - Includes the preview URL for easy access to the deployed application
