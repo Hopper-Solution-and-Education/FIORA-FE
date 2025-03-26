@@ -1,33 +1,25 @@
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { SectionType } from '@prisma/client';
+import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
 import { useGetSection } from '../../hooks/useGetSection';
+
+const containerWidth = 1400;
+const numberOfItems = 3;
+const gap = 15;
+const totalGapWidth = gap * (numberOfItems - 1);
+const itemWidth = `${(containerWidth - totalGapWidth) / numberOfItems}px`;
+const itemHeight = '520px';
 
 const KPSSection = () => {
   const { isError, isLoading, section } = useGetSection(SectionType.KPS);
 
   if (isLoading) {
     return (
-      <section>
+      <section className="py-8">
         <div className="mx-auto max-w-3xl text-center mt-10">
-          <div className="inline-flex items-center gap-3 pb-3">
-            <span className="inline-flex bg-gradient-to-r from-green-500 via-green-300 to-pink-500 bg-clip-text text-2xl text-transparent">
-              Why FIORA?
-            </span>
-          </div>
-          <h2 className="bg-gradient-to-r from-green-500 via-gray-300 to-pink-500 bg-clip-text text-transparent pb-4 text-3xl font-semibold md:text-4xl">
-            Loading...
-          </h2>
-        </div>
-        <div className="flex flex-col sm:flex-row justify-between items-center min-h-10 gap-5 px-5">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div
-              key={index}
-              className={`w-full h-0 pb-[100%] m-2.5 rounded-lg shadow-md border flex items-center justify-center relative 
-                ${index % 2 === 0 ? 'mt-32' : 'mt-0'}`}
-            >
-              <div className="animate-pulse bg-gray-300 w-20 h-20 rounded-full"></div>
-            </div>
-          ))}
+          <h1 className="my-6 text-3xl md:text-5xl font-bold text-pretty">Why FIORA?</h1>
+          <p>Loading...</p>
         </div>
       </section>
     );
@@ -35,57 +27,84 @@ const KPSSection = () => {
 
   if (isError) {
     return (
-      <section>
+      <section className="py-8">
         <div className="mx-auto max-w-3xl text-center mt-10">
-          <div className="inline-flex items-center gap-3 pb-3">
-            <span className="inline-flex bg-gradient-to-r from-green-500 via-green-300 to-pink-500 bg-clip-text text-2xl text-transparent">
-              {section?.name}
-            </span>
-          </div>
-          <h2 className="bg-gradient-to-r from-green-500 via-gray-300 to-pink-500 bg-clip-text text-transparent pb-4 text-3xl font-semibold md:text-4xl">
-            Error loading data.
-          </h2>
-        </div>
-        <div className="flex flex-col sm:flex-row justify-between items-center min-h-10 gap-5 px-5">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div
-              key={index}
-              className={`w-full h-0 pb-[100%] m-2.5 rounded-lg shadow-md border flex items-center justify-center relative 
-                ${index % 2 === 0 ? 'mt-32' : 'mt-0'}`}
-            >
-              <p className="text-red-500">Error</p>
-            </div>
-          ))}
+          <h1 className="my-6 text-3xl md:text-5xl font-bold text-pretty">Why FIORA?</h1>
+          <p className="text-red-500">Error loading data</p>
         </div>
       </section>
     );
   }
 
   return (
-    <section>
-      <div className="mx-auto max-w-3xl text-center mt-10 border-t">
-        <h1 data-aos="fade-up" className="my-6 text-5xl font-bold text-pretty lg:text-6xl">
-          Why FIORA?
+    <section className="py-5">
+      <div className="mx-auto max-w-3xl text-center md:py-20 border-t">
+        <h1
+          data-aos="fade-up"
+          className="my-6 text-3xl md:text-5xl lg:text-6xl font-bold text-pretty"
+        >
+          {section?.name}
         </h1>
       </div>
-      <div className="flex flex-col sm:flex-row justify-between items-center min-h-10 gap-5 px-5">
-        {section?.medias &&
-          section.medias.map((item, index) => (
-            <div
+
+      <Carousel
+        className="mx-auto max-w-[1400px]"
+        opts={{
+          loop: true,
+          direction: 'ltr',
+        }}
+        plugins={[
+          Autoplay({
+            delay: 3000, // Loại bỏ delay để tạo scroll liên tục
+            stopOnInteraction: false, // Không dừng khi tương tác
+            playOnInit: true, // Chạy ngay khi khởi tạo
+            jump: false, // Không nhảy từng bước mà scroll mượt
+          }),
+        ]}
+      >
+        <CarouselContent className="flex" style={{ gap: `${gap}px` }}>
+          {section?.medias?.map((item, index) => (
+            <CarouselItem
               key={index}
-              className={`w-full h-60 md:h-52 m-2 rounded-lg shadow-md border relative 
-          ${index % 2 === 0 ? 'mt-32' : 'mt-0'}`}
+              className="basis-full sm:basis-1/2 md:basis-1/3"
+              style={{
+                maxWidth: itemWidth,
+                height: itemHeight,
+              }}
             >
-              <Image
-                src={item.media_url ?? ''}
-                alt={`KPS ${index + 1}`}
-                layout="fill"
-                objectFit="cover"
-                className="rounded-lg"
-              />
-            </div>
+              <div
+                className={`w-full h-[90%] rounded-lg shadow-md border relative ${
+                  index % 2 === 0 ? 'mt-20' : ''
+                } overflow-hidden`}
+              >
+                <Image
+                  src={item.media_url ?? ''}
+                  alt={`KPS ${index + 1}`}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-lg"
+                />
+              </div>
+            </CarouselItem>
           ))}
-      </div>
+        </CarouselContent>
+      </Carousel>
+
+      {/* Thêm CSS tùy chỉnh để tăng tính mượt mà */}
+      <style jsx>{`
+        .embla__container {
+          animation: scroll 20s linear infinite; /* Tùy chỉnh thời gian scroll */
+        }
+
+        @keyframes scroll {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-100%);
+          }
+        }
+      `}</style>
     </section>
   );
 };
