@@ -5,7 +5,14 @@ import prisma from '@/infrastructure/database/prisma';
 class PartnerRepository implements IPartnerRepository {
   async getPartnersByUserId(userId: string): Promise<Partner[]> {
     return await prisma.partner.findMany({
-      where: { userId },
+      where: {
+        userId: userId,
+      },
+      include: {
+        transactions: true,
+        children: true,
+        parent: true,
+      },
       orderBy: { createdAt: 'desc' },
     });
   }

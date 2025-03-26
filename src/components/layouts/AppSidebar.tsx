@@ -59,12 +59,6 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   const isMobile = useIsMobile();
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
 
-  const isItemActive = (item: NavItem) => {
-    if (item.url === pathname) return true;
-    if (item.items?.some((subItem) => subItem.url === pathname)) return true;
-    return false;
-  };
-
   useEffect(() => {
     const newOpenItems = navItems.reduce(
       (acc, item) => {
@@ -101,6 +95,23 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
 
     handleCheckNavItem();
   }, [navItems]);
+
+  const isItemActive = (item: NavItem) => {
+    if (item.url === pathname) return true;
+    if (item.items?.some((subItem) => subItem.url === pathname)) return true;
+    return false;
+  };
+
+  useEffect(() => {
+    const newOpenItems = navItems.reduce(
+      (acc, item) => {
+        acc[item.title] = isItemActive(item);
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+    setOpenItems(newOpenItems);
+  }, [pathname, navItems]);
 
   const handleOpenChange = (title: string, isOpen: boolean) => {
     setOpenItems((prev) => ({
