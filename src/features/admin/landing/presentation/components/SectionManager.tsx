@@ -24,28 +24,6 @@ interface SectionManagerProps {
   sectionType: SectionType;
 }
 
-// const uploadToFirebase = async (localUrl: string, fileName: string): Promise<string> => {
-//   try {
-//     // Fetch blob từ local URL
-//     const response = await fetch(localUrl);
-//     const blob = await response.blob();
-
-//     // Tạo reference với tên file duy nhất
-//     const storageRef = ref(storage, `images/media/${fileName}_${Date.now()}.jpg`);
-
-//     // Upload file lên Firebase Storage
-//     const snapshot = await uploadBytes(storageRef, blob);
-
-//     // Lấy download URL
-//     const downloadURL = await getDownloadURL(snapshot.ref);
-
-//     return downloadURL;
-//   } catch (error) {
-//     console.error('Error uploading to Firebase:', error);
-//     throw error;
-//   }
-// };
-
 export default function SectionManager({ sectionType }: SectionManagerProps) {
   const sectionData = useAppSelector((state) => {
     const landingState = state.landingSettings;
@@ -78,23 +56,6 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
       updated_at: new Date(data.updatedAt), // Chuyển thành `Date`
     };
   };
-
-  // // Handler for saving each section type
-  // const handleSaveBanner = (section: Section) => {
-  //   dispatch(saveSection({ section, sectionType: SectionType.BANNER }));
-  // };
-
-  // const handleSaveVision = (section: Section) => {
-  //   dispatch(saveSection({ section, sectionType: SectionType.VISION_MISSION }));
-  // };
-
-  // const handleSaveKps = (section: Section) => {
-  //   dispatch(saveSection({ section, sectionType: SectionType.KPS }));
-  // };
-
-  // const handleSavePartner = (section: Section) => {
-  //   dispatch(saveSection({ section, sectionType: SectionType.PARTNER_LOGO }));
-  // };
 
   const methods = useForm({
     resolver: yupResolver(sectionFormSchema),

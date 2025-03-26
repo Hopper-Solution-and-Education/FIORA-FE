@@ -20,7 +20,7 @@ const mediaTypeMapping: Record<SectionType, MediaType> = {
   [SectionType.VISION_MISSION]: MediaType.EMBEDDED,
   [SectionType.HEADER]: MediaType.IMAGE,
   [SectionType.FOOTER]: MediaType.IMAGE,
-  [SectionType.REVIEW]: MediaType.VIDEO,
+  [SectionType.REVIEW]: MediaType.IMAGE,
   [SectionType.SYSTEM]: MediaType.IMAGE,
 };
 

@@ -20,12 +20,18 @@ export const PartnerLogo = () => {
       <div className="w-full mx-auto">
         <Carousel
           className="w-full"
-          plugins={[Autoplay({ delay: 3000, stopOnInteraction: false, playOnInit: true })]}
           opts={{
             loop: true,
-            slidesToScroll: 1,
             direction: 'ltr',
           }}
+          plugins={[
+            Autoplay({
+              delay: 3000,
+              stopOnInteraction: false,
+              playOnInit: true,
+              jump: false,
+            }),
+          ]}
         >
           <CarouselContent className="flex">
             {section.medias.concat(section.medias).map((logo, index) => (
