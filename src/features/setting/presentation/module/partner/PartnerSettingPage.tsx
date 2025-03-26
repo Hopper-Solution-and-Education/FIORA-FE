@@ -191,11 +191,12 @@ const transformMockDataToBarItems = (mockData: any[]): BarItem[] => {
 const barData: BarItem[] = transformMockDataToBarItems(mockData);
 
 const PartnerSettingPage = ({ title, description }: TabComponentProps) => {
+  console.log(title, description);
   return (
     <div className="space-y-6">
       <TabActionHeader
-        title={title}
-        description={description}
+        // title={title}
+        // description={description}
         buttonLabel=""
         modalComponent={AddPartnerModal}
       />
