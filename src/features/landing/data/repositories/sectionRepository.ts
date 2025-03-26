@@ -1,7 +1,5 @@
 import { SectionType } from '@prisma/client';
-import { inject, injectable } from 'inversify';
-
-import { TYPES } from '../../di/landingDIContainer.type';
+import { decorate, injectable } from 'inversify';
 import { ISection } from '../../domain/interfaces/Section';
 import type { ILandingAPI } from '../api/api';
 
@@ -9,11 +7,10 @@ export interface ISectionRepository {
   getSection(sectionType: SectionType): Promise<ISection>;
 }
 
-@injectable()
 export class SectionRepository implements ISectionRepository {
   private landingAPI: ILandingAPI;
 
-  constructor(@inject(TYPES.ILandingAPI) landingAPI: ILandingAPI) {
+  constructor(landingAPI: ILandingAPI) {
     this.landingAPI = landingAPI;
   }
 
@@ -22,3 +19,11 @@ export class SectionRepository implements ISectionRepository {
     return response;
   }
 }
+
+// Apply decorators programmatically
+decorate(injectable(), SectionRepository);
+
+// Create a factory function
+export const createSectionRepository = (landingAPI: ILandingAPI): ISectionRepository => {
+  return new SectionRepository(landingAPI);
+};

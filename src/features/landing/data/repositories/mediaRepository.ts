@@ -1,7 +1,5 @@
 import { SectionType } from '@prisma/client';
-import { inject, injectable } from 'inversify';
-
-import { TYPES } from '../../di/landingDIContainer.type';
+import { decorate, injectable } from 'inversify';
 import { Media } from '../../domain/models/Media';
 import type { ILandingAPI } from '../api/api';
 
@@ -9,11 +7,10 @@ export interface IMediaRepository {
   getMediaBySection(sectionType: SectionType): Promise<Media[]>;
 }
 
-@injectable()
 export class MediaRepository implements IMediaRepository {
   private landingAPI: ILandingAPI;
 
-  constructor(@inject(TYPES.ILandingAPI) landingAPI: ILandingAPI) {
+  constructor(landingAPI: ILandingAPI) {
     this.landingAPI = landingAPI;
   }
 
@@ -21,3 +18,11 @@ export class MediaRepository implements IMediaRepository {
     return this.landingAPI.fetchMedia(sectionType);
   }
 }
+
+// Apply decorators programmatically
+decorate(injectable(), MediaRepository);
+
+// Create a factory function
+export const createMediaRepository = (landingAPI: ILandingAPI): IMediaRepository => {
+  return new MediaRepository(landingAPI);
+};

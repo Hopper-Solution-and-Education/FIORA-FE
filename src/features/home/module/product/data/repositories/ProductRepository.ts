@@ -1,5 +1,4 @@
-import { inject, injectable } from 'inversify';
-import { TYPES } from '../../di/productDIContainer.type';
+import { decorate, injectable } from 'inversify';
 import {
   CreateProductResponse,
   DeleteProductRequest,
@@ -25,11 +24,10 @@ export interface IProductRepository {
   ) => Promise<GetProductTransactionResponse>;
 }
 
-@injectable()
 export class ProductRepository implements IProductRepository {
   private productApi: IProductAPI;
 
-  constructor(@inject(TYPES.IProductAPI) productApi: IProductAPI) {
+  constructor(productApi: IProductAPI) {
     this.productApi = productApi;
   }
 
@@ -61,3 +59,11 @@ export class ProductRepository implements IProductRepository {
     return ProductMapper.toGetProductTransactionResponse(response);
   }
 }
+
+// Apply decorators programmatically
+decorate(injectable(), ProductRepository);
+
+// Create a factory function
+export const createProductRepository = (productApi: IProductAPI): IProductRepository => {
+  return new ProductRepository(productApi);
+};
