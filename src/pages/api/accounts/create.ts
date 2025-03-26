@@ -31,7 +31,7 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
 
     const userId = session.user.id;
 
-    const { name, type, currency, balance = 0, limit, icon, parentId, isParentSelected } = body;
+    const { name, type, currency, balance = 0, limit, icon, parentId } = body;
 
     const isValidAccountType = AccountUseCaseInstance.validateAccountType(type, balance, limit);
     if (!isValidAccountType) {
@@ -40,12 +40,12 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
         .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.UNSUPPORTED_ACCOUNT_TYPE));
     }
 
-    if (!isParentSelected && !parentId && parentId !== null) {
+    if (!parentId && parentId !== null) {
       const isCreateMasterAccount = await AccountUseCaseInstance.isOnlyMasterAccount(userId, type);
       if (isCreateMasterAccount) {
         return response
           .status(400)
-          .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.UNSUPPORTED_ACCOUNT_TYPE));
+          .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.MASTER_ACCOUNT_ALREADY_EXISTS));
       }
     }
 
@@ -93,7 +93,7 @@ export async function DELETE(request: NextApiRequest, response: NextApiResponse)
     // If this is a sub-account, update the parent's balance
     response
       .status(201)
-      .json(createResponse(RESPONSE_CODE.CREATED, 'Account removed successfully'));
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.DELETE_ACCOUNT_SUCCESS));
   } catch (error: any) {
     response.status(500).json({ message: error.message });
   }

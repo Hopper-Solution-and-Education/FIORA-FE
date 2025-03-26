@@ -1,18 +1,23 @@
-import { inject, injectable } from 'inversify';
 import { SectionType } from '@prisma/client';
-
-import { TYPES } from '../../di/landingDIContainer.type';
+import { decorate, injectable } from 'inversify';
 import type { IMediaRepository } from '../../data/repositories/mediaRepository';
 
-@injectable()
 export class GetMediaUseCase {
   private mediaRepository: IMediaRepository;
 
-  constructor(@inject(TYPES.IMediaRepository) mediaRepository: IMediaRepository) {
+  constructor(mediaRepository: IMediaRepository) {
     this.mediaRepository = mediaRepository;
   }
 
-  execute(sectionType: SectionType) {
-    return this.mediaRepository.getMediaBySection(sectionType);
+  async execute(sectionType: SectionType) {
+    return await this.mediaRepository.getMediaBySection(sectionType);
   }
 }
+
+// Apply decorators programmatically
+decorate(injectable(), GetMediaUseCase);
+
+// Create a factory function
+export const createGetMediaUseCase = (mediaRepository: IMediaRepository): GetMediaUseCase => {
+  return new GetMediaUseCase(mediaRepository);
+};

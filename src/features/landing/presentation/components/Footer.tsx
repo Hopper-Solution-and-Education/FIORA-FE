@@ -36,8 +36,8 @@ export default function Footer() {
   }
 
   return (
-    <footer className="border-border py-12">
-      <div className="mt-10 border-t pt-6 flex flex-col md:flex-row items-center justify-between px-10">
+    <footer className="border-border border-t pb-4">
+      <div className="mt-6 flex flex-col md:flex-row items-center justify-between px-10">
         <div className="flex space-x-6">
           {section.medias.map((icon, index) => (
             <Link
@@ -51,7 +51,7 @@ export default function Footer() {
                 src={icon.media_url ?? ''}
                 width={120}
                 height={120}
-                className="h-8 w-8 rounded-full"
+                className="h-6 w-6 rounded-full"
               />
             </Link>
           ))}

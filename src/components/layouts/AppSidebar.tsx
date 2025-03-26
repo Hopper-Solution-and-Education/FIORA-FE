@@ -1,11 +1,15 @@
 'use client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
-import { navItems } from '@/features/home/constants/data';
+import { NavItem } from '@/features/home/types/Nav.types';
+import { useGetSection } from '@/features/landing/hooks/useGetSection';
+import { SectionType } from '@prisma/client';
+import HopperLogo from '@public/images/logo.jpg';
 import { BadgeCheck, Bell, ChevronRight, ChevronsUpDown, CreditCard, LogOut } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { Icons } from '../Icon';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
 import {
@@ -33,21 +37,47 @@ import {
   SidebarRail,
 } from '../ui/sidebar';
 
-import HopperLogo from '@public/images/logo.jpg';
-import Image from 'next/image';
-import { useGetSection } from '@/features/landing/hooks/useGetSection';
-import { SectionType } from '@prisma/client';
-
 export const company = {
   name: 'FIORA Inc',
   logo: HopperLogo,
   plan: 'Enterprise',
 };
 
-export default function AppSidebar() {
+type AppSideBarProps = {
+  appLabel: string;
+  navItems: NavItem[];
+};
+
+export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const { section } = useGetSection(SectionType.HEADER);
+
+  const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
+
+  const isItemActive = (item: NavItem) => {
+    if (item.url === pathname) return true;
+    if (item.items?.some((subItem) => subItem.url === pathname)) return true;
+    return false;
+  };
+
+  useEffect(() => {
+    const newOpenItems = navItems.reduce(
+      (acc, item) => {
+        acc[item.title] = isItemActive(item);
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+    setOpenItems(newOpenItems);
+  }, [pathname, navItems]);
+
+  const handleOpenChange = (title: string, isOpen: boolean) => {
+    setOpenItems((prev) => ({
+      ...prev,
+      [title]: isOpen,
+    }));
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -71,20 +101,23 @@ export default function AppSidebar() {
       </SidebarHeader>
       <SidebarContent className="overflow-x-hidden">
         <SidebarGroup>
-          <SidebarGroupLabel>Overview</SidebarGroupLabel>
+          <SidebarGroupLabel>{appLabel}</SidebarGroupLabel>
           <SidebarMenu>
             {navItems.map((item) => {
               const Icon = item.icon ? Icons[item.icon] : Icons.logo;
+              const isActive = isItemActive(item);
+
               return item?.items && item?.items?.length > 0 ? (
                 <Collapsible
                   key={item.title}
                   asChild
-                  defaultOpen={item.isActive}
+                  open={openItems[item.title]} // Controlled state
+                  onOpenChange={(isOpen) => handleOpenChange(item.title, isOpen)} // Xử lý thay đổi
                   className="group/collapsible"
                 >
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
-                      <SidebarMenuButton tooltip={item.title} isActive={pathname === item.url}>
+                      <SidebarMenuButton tooltip={item.title} isActive={isActive}>
                         {item.icon && <Icon />}
                         <span>{item.title}</span>
                         <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
@@ -165,7 +198,6 @@ export default function AppSidebar() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-
                 <DropdownMenuGroup>
                   <DropdownMenuItem>
                     <BadgeCheck />

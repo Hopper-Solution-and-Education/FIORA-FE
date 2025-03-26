@@ -1,18 +1,15 @@
-import { inject, injectable } from 'inversify';
-
+import { decorate, injectable } from 'inversify';
 import type { IProductRepository } from '../../data/repositories/ProductRepository';
-import { TYPES } from '../../di/productDIContainer.type';
 import { GetProductResponse, Product } from '../entities/Product';
 
 export interface IGetProductUseCase {
   execute(page: number, pageSize: number): Promise<GetProductResponse>;
 }
 
-@injectable()
 export class GetProductUseCase implements IGetProductUseCase {
   private productRepository: IProductRepository;
 
-  constructor(@inject(TYPES.IProductRepository) productRepository: IProductRepository) {
+  constructor(productRepository: IProductRepository) {
     this.productRepository = productRepository;
   }
 
@@ -48,3 +45,13 @@ export class GetProductUseCase implements IGetProductUseCase {
     };
   }
 }
+
+// Apply decorators programmatically
+decorate(injectable(), GetProductUseCase);
+
+// Create a factory function
+export const createGetProductUseCase = (
+  productRepository: IProductRepository,
+): IGetProductUseCase => {
+  return new GetProductUseCase(productRepository);
+};

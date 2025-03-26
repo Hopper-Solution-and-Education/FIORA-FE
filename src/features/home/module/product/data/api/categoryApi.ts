@@ -1,5 +1,5 @@
 import { httpClient } from '@/config/HttpClient';
-import { injectable } from 'inversify';
+import { decorate, injectable } from 'inversify';
 import { GetCategoryAPIRequestDTO } from '../dto/request/GetCategoryAPIRequestDTO';
 import { GetCategoryAPIResponseDTO } from '../dto/response/GetCategoryAPIResponseDTO';
 
@@ -7,7 +7,6 @@ interface ICategoryAPI {
   fetchCategories(pagination: GetCategoryAPIRequestDTO): Promise<GetCategoryAPIResponseDTO>;
 }
 
-@injectable()
 class CategoryAPI implements ICategoryAPI {
   async fetchCategories({
     page,
@@ -16,5 +15,14 @@ class CategoryAPI implements ICategoryAPI {
     return await httpClient.get(`/api/category-product?page=${page}&pageSize=${pageSize}`);
   }
 }
+
+// Apply decorators programmatically
+decorate(injectable(), CategoryAPI);
+
+// Create a factory function
+export const createCategoryAPI = (): ICategoryAPI => {
+  return new CategoryAPI();
+};
+
 export { CategoryAPI };
 export type { ICategoryAPI };

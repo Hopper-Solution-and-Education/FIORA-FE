@@ -25,7 +25,9 @@ const compat = new FlatCompat({
 /** @type {import("eslint").Linter.FlatConfig[]} */
 const config = [
   js.configs.recommended,
-
+  {
+    ignores: ['./scripts/*'],
+  },
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
@@ -61,7 +63,7 @@ const config = [
       'import/no-unresolved': 'off',
       'unused-imports/no-unused-imports': 'error',
       'prettier/prettier': 'warn',
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },

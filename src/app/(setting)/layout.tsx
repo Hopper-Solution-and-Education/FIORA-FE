@@ -1,12 +1,13 @@
-import type { Metadata } from 'next';
-import { cookies } from 'next/headers';
 import AppSidebar from '@/components/layouts/AppSidebar';
+import AuthLayout from '@/components/layouts/auth-layout';
 import Header from '@/components/layouts/DashboardHeader';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import AuthLayout from '@/components/layouts/auth-layout';
+import { SettingNavItems } from '@/features/setting/constants/data';
+import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 
 export const metadata: Metadata = {
-  title: 'Fiora Dashboard',
+  title: 'Fiora Settings',
   description: 'Basic Fiora dashboard with Next.js and Shadcn',
 };
 
@@ -18,7 +19,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <AuthLayout requiresAuth={true}>
       <SidebarProvider defaultOpen={defaultOpen}>
-        <AppSidebar />
+        <AppSidebar appLabel="Settings" navItems={SettingNavItems} />
         <SidebarInset>
           <Header />
           {/* page main content */}

@@ -12,6 +12,8 @@ export const sectionMapping: Record<SectionType, keyof LandingSettingsState> = {
   [SectionType.PARTNER_LOGO]: 'partnerSection',
   [SectionType.HEADER]: 'headerSection',
   [SectionType.FOOTER]: 'footerSection',
+  [SectionType.SYSTEM]: 'footerSection',
+  [SectionType.REVIEW]: 'footerSection',
 };
 
 const landingSettings = createSlice({
