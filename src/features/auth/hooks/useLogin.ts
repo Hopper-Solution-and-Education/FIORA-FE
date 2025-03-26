@@ -10,7 +10,9 @@ export function useLogin() {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: session, status } = useSession();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -37,6 +39,7 @@ export function useLogin() {
       } else {
         setError('Login failed. Please try again.');
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setError('An unexpected error occurred. Please try again.');
     }

@@ -107,14 +107,14 @@ export const FormSheet = <T,>({
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen} modal>
       <SheetContent
-        side={side == 'center' ? 'bottom' : side}
+        side={side == 'center' ? 'top' : side}
         className={cn(
           'w-full sm:max-w-md md:max-w-lg lg:max-w-xl p-0 bg-card text-card-foreground shadow-lg',
           side === 'center' ? 'inset-0 m-auto rounded-lg max-h-[90vh]' : 'border-l border-border',
           className,
         )}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full border border-foreground/50 overflow-hidden rounded-lg">
           <SheetHeader className="px-6 py-4 border-b border-border sticky top-0 bg-card z-10">
             <div className="flex justify-between items-center">
               <div>
@@ -227,6 +227,7 @@ export const FormSheet = <T,>({
                                           className="hidden"
                                         />
                                         {previews[field.name] && (
+                                          // eslint-disable-next-line @next/next/no-img-element
                                           <img
                                             src={previews[field.name]!}
                                             alt="Preview"

@@ -1,5 +1,4 @@
-import { inject, injectable } from 'inversify';
-import { TYPES } from '../../di/productDIContainer.type';
+import { decorate, injectable } from 'inversify';
 import { GetCategoryResponse } from '../../domain/entities/Category';
 import type { ICategoryAPI } from '../api/categoryApi';
 import { GetCategoryAPIRequestDTO } from '../dto/request/GetCategoryAPIRequestDTO';
@@ -8,12 +7,11 @@ export interface ICategoryRepository {
   getListCategory: (sectionType: GetCategoryAPIRequestDTO) => Promise<GetCategoryResponse>;
 }
 
-@injectable()
 export class CategoryRepository implements ICategoryRepository {
   private categoryAPI: ICategoryAPI;
 
-  constructor(@inject(TYPES.ICategoryAPI) sectionApi: ICategoryAPI) {
-    this.categoryAPI = sectionApi;
+  constructor(categoryAPI: ICategoryAPI) {
+    this.categoryAPI = categoryAPI;
   }
 
   async getListCategory(request: GetCategoryAPIRequestDTO): Promise<GetCategoryResponse> {
@@ -35,3 +33,11 @@ export class CategoryRepository implements ICategoryRepository {
     };
   }
 }
+
+// Apply decorators programmatically
+decorate(injectable(), CategoryRepository);
+
+// Create a factory function
+export const createCategoryRepository = (categoryAPI: ICategoryAPI): ICategoryRepository => {
+  return new CategoryRepository(categoryAPI);
+};

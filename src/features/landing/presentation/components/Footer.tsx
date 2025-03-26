@@ -51,7 +51,7 @@ export default function Footer() {
                 src={icon.media_url ?? ''}
                 width={120}
                 height={120}
-                className="h-8 w-8 rounded-full"
+                className="h-6 w-6 rounded-full"
               />
             </Link>
           ))}

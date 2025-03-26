@@ -2,6 +2,18 @@
   "name": "hopperse",
   "version": "0.1.0",
   "private": true,
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.json": [
+      "prettier --write"
+    ],
+    "*.md": [
+      "prettier --write"
+    ]
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,12 +21,21 @@
     "lint": "next lint",
     "migrate": "dotenv -e .env.development.local -- npx prisma migrate dev",
     "generate": "dotenv -e .env.development.local -- npx prisma generate",
+    "push": "dotenv -e .env.development.local -- npx prisma db push",
     "lint-staged": "lint-staged",
     "format": "prettier --write \"**/*.{ts, tsx,js,jsx,md,mdx,css,yaml,yml}\"",
     "check": "prettier --check \"**/*.{ts, tsx,js,jsx,md,mdx,css,yaml,yml}\"",
-    "prepare": "husky",
+    "prepare": "[ -n \"$CI\" ] && echo 'Skipping husky in CI environment' || npx husky",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "setup-vercel": "node scripts/setup-vercel.mjs",
+    "deploy:dev": "vercel --env NODE_ENV=development",
+    "deploy:staging": "vercel --env NODE_ENV=staging",
+    "deploy:prod": "vercel --prod",
+    "vercel-build": "vercel build",
+    "vercel-build:debug": "NEXT_DEBUG_BUILD=true vercel build",
+    "check-paths": "node scripts/check-path-aliases.mjs",
+    "fix-paths": "node scripts/fix-path-aliases.mjs"
   },
   "dependencies": {
     "@amplitude/analytics-browser": "^2.11.13",
@@ -61,7 +82,7 @@
     "firebase": "^11.4.0",
     "formik": "^2.4.6",
     "framer-motion": "^12.4.7",
-    "inversify": "^7.0.0-alpha.5",
+    "inversify": "^7.2.0",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
     "kbar": "^0.1.0-beta.45",
@@ -92,6 +113,7 @@
     "swr": "^2.3.2",
     "tailwind-merge": "^3.0.2",
     "tailwind-variants": "^1.0.0",
+    "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
     "yup": "^1.6.1",
@@ -115,8 +137,9 @@
     "@types/yup": "^0.29.14",
     "@typescript-eslint/eslint-plugin": "^8.25.0",
     "@typescript-eslint/parser": "^8.25.0",
+    "autoprefixer": "^10.4.21",
     "conventional-changelog-atom": "^5.0.0",
-    "eslint": "^9.21.0",
+    "eslint": "^9.23.0",
     "eslint-config-next": "^15.1.7",
     "eslint-config-prettier": "^10.0.2",
     "eslint-plugin-import": "^2.31.0",
@@ -126,13 +149,12 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "lint-staged": "^15.4.3",
-    "postcss": "^8",
+    "postcss": "^8.5.3",
     "prettier": "^3.5.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "prisma": "^6.4.1",
-    "tailwindcss": "^3.4.17",
     "ts-jest": "^29.2.6",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "typescript": "^5.8.2"
   }
 }

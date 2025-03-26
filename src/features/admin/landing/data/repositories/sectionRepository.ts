@@ -1,6 +1,5 @@
-import { TYPES } from '@/features/admin/di/adminDIContainer.type';
 import { SectionType } from '@prisma/client';
-import { inject, injectable } from 'inversify';
+import { decorate, injectable } from 'inversify';
 import { SectionDefaultValues } from '../../schema/section-form.schema';
 import { ISection } from '../../slices/types';
 import type { ISectionAPI } from '../api/sectionApi';
@@ -9,7 +8,7 @@ export interface ISectionRepository {
   getSection: (sectionType: SectionType) => Promise<ISection>;
   updateSection: (section: SectionDefaultValues, createdBy: string) => Promise<ISection>;
 }
-// FIX
+
 export const mapSectionDefaultValuesToISection = (
   section: SectionDefaultValues,
   createdBy: string,
@@ -41,11 +40,11 @@ export const mapSectionDefaultValuesToISection = (
   };
 };
 
-@injectable()
+// Define the class without decorators
 export class SectionRepository implements ISectionRepository {
   private sectionApi: ISectionAPI;
 
-  constructor(@inject(TYPES.ISectionAPI) sectionApi: ISectionAPI) {
+  constructor(sectionApi: ISectionAPI) {
     this.sectionApi = sectionApi;
   }
 
@@ -55,9 +54,14 @@ export class SectionRepository implements ISectionRepository {
 
   async updateSection(section: SectionDefaultValues, createdBy: string): Promise<ISection> {
     const mappedSection = mapSectionDefaultValuesToISection(section, createdBy);
-    console.log('====================================');
-    console.log(mappedSection);
-    console.log('====================================');
     return await this.sectionApi.updateSection(mappedSection);
   }
 }
+
+// Apply decorators programmatically
+decorate(injectable(), SectionRepository);
+
+// Create a factory function that handles the injection
+export const createSectionRepository = (sectionApi: ISectionAPI): ISectionRepository => {
+  return new SectionRepository(sectionApi);
+};

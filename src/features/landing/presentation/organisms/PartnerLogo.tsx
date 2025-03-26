@@ -33,7 +33,7 @@ export const PartnerLogo = () => {
                 key={index}
                 className="basis-auto md:basis-1/3 lg:basis-1/5 flex justify-center p-2"
               >
-                <Card className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 flex items-center justify-center shadow-md rounded-full overflow-hidden border border-gray-300 transition-transform hover:scale-105">
+                <Card className="w-22 h-22 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 flex items-center justify-center shadow-md rounded-full overflow-hidden border border-gray-300 transition-transform hover:scale-105">
                   <CardContent className="relative w-full h-full p-0">
                     <Image
                       src={logo.media_url || ''}

@@ -1,6 +1,4 @@
-import { Button } from '@/components/ui/button';
 import { SectionType } from '@prisma/client';
-import { ArrowRight } from 'lucide-react';
 import { useGetSection } from '../../hooks/useGetSection';
 
 const VisionMission = () => {
@@ -81,13 +79,6 @@ const VisionMission = () => {
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Elig doloremque mollitia
               fugiat omnis! Porro facilis quo animi consequatur. Explicabo.
             </p>
-            <div className="flex w-full flex-col justify-center gap-2 sm:flex-row lg:justify-start">
-              <Button>
-                Primary
-                <ArrowRight className="size-4" />
-              </Button>
-              <Button variant="outline">Secondary</Button>
-            </div>
           </div>
         </div>
       </div>

@@ -1,19 +1,34 @@
 import { Container } from 'inversify';
 import { httpClient, IHttpClient } from '../../../config/HttpClient';
-import { ILandingAPI, LandingAPI } from '../data/api/api';
-import { IMediaRepository, MediaRepository } from '../data/repositories/mediaRepository';
-import { ISectionRepository, SectionRepository } from '../data/repositories/sectionRepository';
-import { GetMediaUseCase } from '../domain/use-cases/GetMediaUseCase';
-import { GetSectionUseCase } from '../domain/use-cases/GetSectionUseCase';
+import { ILandingAPI, createLandingAPI } from '../data/api/api';
+import { IMediaRepository, createMediaRepository } from '../data/repositories/mediaRepository';
+import {
+  ISectionRepository,
+  createSectionRepository,
+} from '../data/repositories/sectionRepository';
+import { GetMediaUseCase, createGetMediaUseCase } from '../domain/use-cases/GetMediaUseCase';
+import { GetSectionUseCase, createGetSectionUseCase } from '../domain/use-cases/GetSectionUseCase';
 import { TYPES } from './landingDIContainer.type';
 
 const landingDIContainer = new Container();
 
+// Create instances using factory functions
+const landingAPI = createLandingAPI(httpClient);
+const mediaRepository = createMediaRepository(landingAPI);
+const sectionRepository = createSectionRepository(landingAPI);
+const getMediaUseCase = createGetMediaUseCase(mediaRepository);
+const getSectionUseCase = createGetSectionUseCase(sectionRepository);
+
+// Bind all dependencies
 landingDIContainer.bind<IHttpClient>(TYPES.IHttpClient).toConstantValue(httpClient);
-landingDIContainer.bind<ILandingAPI>(TYPES.ILandingAPI).to(LandingAPI);
-landingDIContainer.bind<IMediaRepository>(TYPES.IMediaRepository).to(MediaRepository);
-landingDIContainer.bind<ISectionRepository>(TYPES.ISectionRepository).to(SectionRepository);
-landingDIContainer.bind<GetMediaUseCase>(TYPES.GetMediaUseCase).to(GetMediaUseCase);
-landingDIContainer.bind<GetSectionUseCase>(TYPES.GetSectionUseCase).to(GetSectionUseCase);
+landingDIContainer.bind<ILandingAPI>(TYPES.ILandingAPI).toConstantValue(landingAPI);
+landingDIContainer.bind<IMediaRepository>(TYPES.IMediaRepository).toConstantValue(mediaRepository);
+landingDIContainer
+  .bind<ISectionRepository>(TYPES.ISectionRepository)
+  .toConstantValue(sectionRepository);
+landingDIContainer.bind<GetMediaUseCase>(TYPES.GetMediaUseCase).toConstantValue(getMediaUseCase);
+landingDIContainer
+  .bind<GetSectionUseCase>(TYPES.GetSectionUseCase)
+  .toConstantValue(getSectionUseCase);
 
 export { landingDIContainer };

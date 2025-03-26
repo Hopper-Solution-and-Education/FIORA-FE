@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy to Vercel
 
 on:
   push:
@@ -6,42 +6,175 @@ on:
       - develop
       - staging
       - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
 
 jobs:
-  build:
+  # Stage 1: Setup and Environment Configuration
+  setup:
+    name: Setup and Environment
     runs-on: ubuntu-latest
+    outputs:
+      deploy_env: ${{ steps.set-env.outputs.deploy_env }}
+    steps:
+      - name: Determine environment
+        id: set-env
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "deploy_env=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+            echo "Using manually selected environment: ${{ github.event.inputs.environment }}"
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "deploy_env=production" >> $GITHUB_OUTPUT
+            echo "Using production environment for main branch"
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "deploy_env=staging" >> $GITHUB_OUTPUT
+            echo "Using staging environment for staging branch"
+          else
+            echo "deploy_env=development" >> $GITHUB_OUTPUT
+            echo "Using development environment for develop branch"
+          fi
 
+  # Stage 2: Lint and Check
+  lint:
+    name: Lint and Check
+    needs: setup
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          # Set CI environment variable to skip husky installation
+          export CI=true
+          npm ci --ignore-scripts
+          # Run prepare script manually without husky
+          echo "Skipping husky in CI environment"
 
       - name: Check for Prisma schema changes
         id: check-prisma
         run: |
           if git diff --name-only HEAD^ HEAD | grep -q 'prisma/schema.prisma'; then
-            echo "Prisma schema changed"
             echo "PRISMA_CHANGED=true" >> $GITHUB_ENV
+            echo "Prisma schema changed"
           else
-            echo "No changes in Prisma schema"
             echo "PRISMA_CHANGED=false" >> $GITHUB_ENV
+            echo "No changes in Prisma schema"
           fi
 
-      - name: Run Prisma pull and generate if schema changed
-        if: env.PRISMA_CHANGED == 'true'
-        run: |
-          npx prisma pull
-          npx prisma generate
+      - name: Run Prisma generate
+        run: npx prisma generate
 
       - name: Run linting
         run: npm run lint
 
-      - name: Run build
-        run: npm run build
+  # Stage 3: Deploy to Vercel
+  deploy:
+    name: Deploy to Vercel
+    needs: [setup, lint]
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      DEPLOY_ENV: ${{ needs.setup.outputs.deploy_env }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Vercel CLI
+        run: |
+          export CI=true
+          npm install --global vercel@latest --ignore-scripts
+
+      - name: Disable Vercel CLI telemetry
+        run: vercel telemetry disable
+
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          echo "Deploying to Vercel (${{ env.DEPLOY_ENV }} environment)..."
+
+          # Remove any existing .vercel directory
+          rm -rf .vercel
+
+          # Set up Vercel CLI with token
+          echo "VERCEL_ORG_ID=${{ secrets.VERCEL_ORG_ID }}" >> $GITHUB_ENV
+          echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID }}" >> $GITHUB_ENV
+
+          # Deploy using the token directly
+          if [[ "${{ env.DEPLOY_ENV }}" == "production" ]]; then
+            DEPLOYMENT_URL=$(vercel --token="${{ secrets.VERCEL_TOKEN }}" --prod)
+          else
+            DEPLOYMENT_URL=$(vercel --token="${{ secrets.VERCEL_TOKEN }}" --env NODE_ENV=${{ env.DEPLOY_ENV }})
+          fi
+          echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "Deployed to: $DEPLOYMENT_URL"
+
+  # Stage 4: Post-Deployment Notifications
+  notify:
+    name: Post-Deployment Notifications
+    needs: [setup, deploy]
+    runs-on: ubuntu-latest
+    if: success()
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Comment on commit/PR with deployment status
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const deploymentUrl = '${{ needs.deploy.outputs.deployment_url }}';
+            const environment = '${{ needs.setup.outputs.deploy_env }}';
+
+            // Determine if this is a PR or a direct commit
+            const isPR = !!context.payload.pull_request;
+
+            let commentBody = `## 🚀 Vercel Deployment\n\n`;
+            commentBody += `**Environment:** ${environment}\n`;
+            commentBody += `**Status:** ✅ Deployed successfully\n`;
+            commentBody += `**Preview URL:** [${deploymentUrl}](${deploymentUrl})\n\n`;
+            commentBody += `You can view the deployment by clicking the preview URL above.`;
+
+            if (isPR) {
+              // Comment on PR
+              github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: commentBody
+              });
+            } else {
+              // Comment on commit
+              github.rest.repos.createCommitComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: context.sha,
+                body: commentBody
+              });
+            }

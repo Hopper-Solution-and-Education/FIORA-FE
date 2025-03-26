@@ -25,7 +25,9 @@ const compat = new FlatCompat({
 /** @type {import("eslint").Linter.FlatConfig[]} */
 const config = [
   js.configs.recommended,
-
+  {
+    ignores: ['./scripts/*'],
+  },
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
