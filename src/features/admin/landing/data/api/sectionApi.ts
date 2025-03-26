@@ -1,6 +1,5 @@
-import { TYPES } from '@/infrastructure/di/type';
 import { SectionType } from '@prisma/client';
-import { inject, injectable } from 'inversify';
+import { injectable, decorate } from 'inversify';
 import { ISection } from '../../slices/types';
 import type { IHttpClient } from '@/config/HttpClient';
 
@@ -9,11 +8,11 @@ interface ISectionAPI {
   updateSection(section: ISection): Promise<ISection>;
 }
 
-@injectable()
+// Define the class without decorators
 class SectionAPI implements ISectionAPI {
   private httpClient: IHttpClient;
 
-  constructor(@inject(TYPES.IHttpClient) httpClient: IHttpClient) {
+  constructor(httpClient: IHttpClient) {
     this.httpClient = httpClient;
   }
 
@@ -26,5 +25,14 @@ class SectionAPI implements ISectionAPI {
     return reponse;
   }
 }
-export { SectionAPI };
+
+// Apply decorators programmatically
+decorate(injectable(), SectionAPI);
+
+// Create a factory function that handles the injection
+const createSectionAPI = (httpClient: IHttpClient): ISectionAPI => {
+  return new SectionAPI(httpClient);
+};
+
+export { SectionAPI, createSectionAPI };
 export type { ISectionAPI };

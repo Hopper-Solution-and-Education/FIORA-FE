@@ -105,6 +105,9 @@ You should now be able to access the application at http://localhost:3000.
 > [!WARNING]
 > After cloning or forking the repository, be cautious when pulling or syncing with the latest changes, as this may result in breaking conflicts.
 
+> [!NOTE]
+> This project uses Husky for git hooks, but it's configured to skip installation in CI environments to prevent deployment issues. The `prepare` script in package.json checks for the `CI` environment variable before running Husky with `npx`.
+
 Cheers! 🥂
 
 ## Automated Deployment with Vercel and GitHub Actions
@@ -115,10 +118,10 @@ This project is configured with an enhanced automated deployment pipeline using 
 
 - **Fully Automated Deployment**: Push to designated branches to trigger automatic deployments
 - **Environment-Based Deployments**: Different branches deploy to different environments
-- **Environment Variable Synchronization**: Automatically syncs environment variables between your repository and Vercel
 - **Manual Deployment Option**: Trigger deployments manually with environment selection
 - **Prisma Schema Change Detection**: Automatically handles database schema changes
 - **Deployment Status Comments**: Automatically adds comments to PRs and commits with deployment status and preview URLs
+- **Linting and Quality Checks**: Runs linting before deployment to ensure code quality
 
 ### Setup Instructions
 
@@ -150,13 +153,25 @@ This project is configured with an enhanced automated deployment pipeline using 
    - Run `npm run setup-vercel` to sync these variables to Vercel
    - For CI/CD, the GitHub Actions workflow will automatically sync environment variables
 
-5. **Deploy Your Application**:
+5. **Test and Deploy Your Application**:
 
+   - **Local Build Testing**: Before deploying, you can test your build locally:
+     - Run `npm run vercel-build` to simulate the Vercel build process locally
+     - For more detailed build logs, run `npm run vercel-build:debug`
+     - This helps identify build issues before deploying to Vercel
+     - If you encounter path alias issues (e.g., with `@/` imports):
+       - Run `npm run check-paths` to scan for path alias issues in your codebase
+       - Run `npm run fix-paths` to automatically fix path alias issues
+       - Ensure your tsconfig.json paths are correctly configured
    - **Automatic Deployment**: Push to one of the deployment branches:
      - `main`: Deploys to production environment
      - `staging`: Deploys to staging environment
      - `develop`: Deploys to development environment
    - **Manual Deployment**: Go to the "Actions" tab in your GitHub repository, select the "Deploy to Vercel" workflow, click "Run workflow", and select the environment you want to deploy to.
+   - **Manual Deployment via CLI**: You can also deploy directly using the provided scripts:
+     - `npm run deploy:dev` - Deploy to development environment
+     - `npm run deploy:staging` - Deploy to staging environment
+     - `npm run deploy:prod` - Deploy to production environment
 
 ### How It Works
 
@@ -166,24 +181,29 @@ The deployment process is organized into modular stages for better maintainabili
 
 - Determines the target environment based on the branch or manual selection
 - Sets environment variables for subsequent stages
+- Branch mapping:
+  - `main` → production
+  - `staging` → staging
+  - `develop` → development
 
 #### Stage 2: Lint and Check
 
 - Checks out the code and sets up Node.js
-- Installs dependencies
+- Installs dependencies with `--ignore-scripts` flag and CI environment variable to skip husky installation
 - Detects and handles Prisma schema changes
 - Runs linting to ensure code quality
 
 #### Stage 3: Deploy to Vercel
 
-- Uses the official Vercel GitHub Action for reliable deployments
-- Automatically handles authentication and project linking
+- Uses Vercel CLI for deployments
+- Automatically handles authentication with Vercel token
 - Deploys to the appropriate environment based on branch or manual selection
-- Lets Vercel handle the build process with the correct environment variables
+- Production deployments use the `--prod` flag for Vercel
 
 #### Stage 4: Post-Deployment Notifications
 
 - Adds a comment to the PR or commit with the deployment status
 - Includes the preview URL for easy access to the deployed application
+- Provides environment information and deployment status
 
 This modular pipeline ensures consistent, reliable deployments across all environments with immediate feedback on deployment status directly in GitHub. Each stage has a clear responsibility, making the workflow easier to maintain and troubleshoot.

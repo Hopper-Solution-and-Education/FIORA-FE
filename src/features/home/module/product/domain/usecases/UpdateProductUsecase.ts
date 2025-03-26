@@ -1,18 +1,15 @@
-import { inject, injectable } from 'inversify';
-
+import { decorate, injectable } from 'inversify';
 import type { IProductRepository } from '../../data/repositories/ProductRepository';
-import { TYPES } from '../../di/productDIContainer.type';
 import { UpdateProductRequest, UpdateProductResponse } from '../entities/Product';
 
 export interface IUpdateProductUseCase {
   execute(params: UpdateProductRequest): Promise<UpdateProductResponse>;
 }
 
-@injectable()
 export class UpdateProductUseCase implements IUpdateProductUseCase {
   private productRepository: IProductRepository;
 
-  constructor(@inject(TYPES.IProductRepository) productRepository: IProductRepository) {
+  constructor(productRepository: IProductRepository) {
     this.productRepository = productRepository;
   }
 
@@ -20,3 +17,13 @@ export class UpdateProductUseCase implements IUpdateProductUseCase {
     return this.productRepository.updateProduct(params);
   }
 }
+
+// Apply decorators programmatically
+decorate(injectable(), UpdateProductUseCase);
+
+// Create a factory function
+export const createUpdateProductUseCase = (
+  productRepository: IProductRepository,
+): IUpdateProductUseCase => {
+  return new UpdateProductUseCase(productRepository);
+};

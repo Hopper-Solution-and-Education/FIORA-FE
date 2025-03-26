@@ -1,18 +1,15 @@
-import { inject, injectable } from 'inversify';
-
+import { decorate, injectable } from 'inversify';
 import type { IProductRepository } from '../../data/repositories/ProductRepository';
-import { TYPES } from '../../di/productDIContainer.type';
 import { DeleteProductRequest, DeleteProductResponse } from '../entities/Product';
 
 export interface IDeleteProductUseCase {
   execute(params: DeleteProductRequest): Promise<DeleteProductResponse>;
 }
 
-@injectable()
 export class DeleteProductUseCase implements IDeleteProductUseCase {
   private productRepository: IProductRepository;
 
-  constructor(@inject(TYPES.IProductRepository) productRepository: IProductRepository) {
+  constructor(productRepository: IProductRepository) {
     this.productRepository = productRepository;
   }
 
@@ -20,3 +17,13 @@ export class DeleteProductUseCase implements IDeleteProductUseCase {
     return this.productRepository.deleteProduct(params);
   }
 }
+
+// Apply decorators programmatically
+decorate(injectable(), DeleteProductUseCase);
+
+// Create a factory function
+export const createDeleteProductUseCase = (
+  productRepository: IProductRepository,
+): IDeleteProductUseCase => {
+  return new DeleteProductUseCase(productRepository);
+};

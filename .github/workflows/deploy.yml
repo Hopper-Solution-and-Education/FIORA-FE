@@ -59,7 +59,12 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          # Set CI environment variable to skip husky installation
+          export CI=true
+          npm ci --ignore-scripts
+          # Run prepare script manually without husky
+          echo "Skipping husky in CI environment"
 
       - name: Check for Prisma schema changes
         id: check-prisma
@@ -72,11 +77,8 @@ jobs:
             echo "No changes in Prisma schema"
           fi
 
-      - name: Run Prisma pull and generate if schema changed
-        if: env.PRISMA_CHANGED == 'true'
-        run: |
-          npx prisma pull
-          npx prisma generate
+      - name: Run Prisma generate
+        run: npx prisma generate
 
       - name: Run linting
         run: npm run lint
@@ -87,21 +89,47 @@ jobs:
     needs: [setup, lint]
     runs-on: ubuntu-latest
     env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       DEPLOY_ENV: ${{ needs.setup.outputs.deploy_env }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Vercel CLI
+        run: |
+          export CI=true
+          npm install --global vercel@latest --ignore-scripts
+
+      - name: Disable Vercel CLI telemetry
+        run: vercel telemetry disable
+
       - name: Deploy to Vercel
         id: deploy
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          github-comment: true
-          vercel-args: ${{ env.DEPLOY_ENV == 'production' && '--prod' || '' }}
+        run: |
+          echo "Deploying to Vercel (${{ env.DEPLOY_ENV }} environment)..."
+
+          # Remove any existing .vercel directory
+          rm -rf .vercel
+
+          # Set up Vercel CLI with token
+          echo "VERCEL_ORG_ID=${{ secrets.VERCEL_ORG_ID }}" >> $GITHUB_ENV
+          echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID }}" >> $GITHUB_ENV
+
+          # Deploy using the token directly
+          if [[ "${{ env.DEPLOY_ENV }}" == "production" ]]; then
+            DEPLOYMENT_URL=$(vercel --token="${{ secrets.VERCEL_TOKEN }}" --prod)
+          else
+            DEPLOYMENT_URL=$(vercel --token="${{ secrets.VERCEL_TOKEN }}" --env NODE_ENV=${{ env.DEPLOY_ENV }})
+          fi
+          echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "Deployed to: $DEPLOYMENT_URL"
 
   # Stage 4: Post-Deployment Notifications
   notify:

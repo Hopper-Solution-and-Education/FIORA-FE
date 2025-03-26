@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json.schemastore.org/swcrc",
+  "jsc": {
+    "parser": {
+      "syntax": "typescript",
+      "tsx": true,
+      "decorators": true,
+      "dynamicImport": true,
+      "decoratorsBeforeExport": false
+    },
+    "transform": {
+      "legacyDecorator": true,
+      "decoratorMetadata": true,
+      "useDefineForClassFields": false,
+      "react": {
+        "runtime": "automatic",
+        "development": true,
+        "refresh": true
+      }
+    },
+    "target": "es2017",
+    "keepClassNames": true,
+    "externalHelpers": true,
+    "loose": true
+  },
+  "module": {
+    "type": "es6",
+    "noInterop": false
+  },
+  "minify": false,
+  "isModule": true
+}
