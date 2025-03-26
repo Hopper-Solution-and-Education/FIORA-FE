@@ -57,6 +57,7 @@ const ProductPage = () => {
         getProductTransactionAsyncThunk({ page: pageTransaction, pageSize, userId: data?.user.id }),
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const confirmDelete = async () => {

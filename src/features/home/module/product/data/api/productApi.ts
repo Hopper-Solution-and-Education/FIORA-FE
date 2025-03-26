@@ -1,6 +1,6 @@
 // src/api/product.ts (hoặc nơi bạn định nghĩa ProductAPI)
 import { httpClient } from '@/config/HttpClient';
-import { injectable } from 'inversify';
+import { decorate, injectable } from 'inversify';
 import { CreateProductAPIRequestDTO } from '../dto/request/CreateProductAPIRequestDTO';
 import { DeleteProductAPIRequestDTO } from '../dto/request/DeleteProductAPIRequestDTO';
 import { GetProductAPIRequestDTO } from '../dto/request/GetProductAPIRequestDTO';
@@ -22,7 +22,6 @@ interface IProductAPI {
   ): Promise<getProductTransactionAPIResponseDTO>;
 }
 
-@injectable()
 class ProductAPI implements IProductAPI {
   async createProduct(data: CreateProductAPIRequestDTO) {
     const response = await httpClient.post<CreateProductAPIResponseDTO>('/api/products', data);
@@ -49,5 +48,14 @@ class ProductAPI implements IProductAPI {
     );
   }
 }
+
+// Apply decorators programmatically
+decorate(injectable(), ProductAPI);
+
+// Create a factory function
+export const createProductAPI = (): IProductAPI => {
+  return new ProductAPI();
+};
+
 export { ProductAPI };
 export type { IProductAPI };

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import ChartLegend from '@/components/common/nested-bar-chart/atoms/ChartLegend';
@@ -64,6 +65,7 @@ const PositiveAndNegativeBarChart = ({
   title,
   currency = DEFAULT_CURRENCY,
   locale = DEFAULT_LOCALE,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   maxBarRatio = DEFAULT_MAX_BAR_RATIO,
   xAxisFormatter = (value) =>
     new Intl.NumberFormat(locale, { style: 'currency', currency }).format(value),

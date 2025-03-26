@@ -15,6 +15,7 @@ interface AddPartnerModalProps {
   setIsOpen: (open: boolean) => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const mockParentPartners = [
   { id: '1', name: 'Partner A', description: 'This is Partner A' },
   { id: '2', name: 'Partner B', description: 'This is Partner B' },

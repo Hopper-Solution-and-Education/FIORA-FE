@@ -79,6 +79,7 @@ const accountSlice = createSlice({
       .addCase(updateAccount.pending, (state) => {
         state.accounts.isLoading = true;
       })
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       .addCase(updateAccount.fulfilled, (state, action) => {
         state.accounts.isLoading = false;
       })

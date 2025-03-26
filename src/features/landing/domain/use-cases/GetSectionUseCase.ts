@@ -1,14 +1,11 @@
 import { SectionType } from '@prisma/client';
-import { inject, injectable } from 'inversify';
-
+import { decorate, injectable } from 'inversify';
 import type { ISectionRepository } from '../../data/repositories/sectionRepository';
-import { TYPES } from '../../di/landingDIContainer.type';
 
-@injectable()
 export class GetSectionUseCase {
   private sectionRepository: ISectionRepository;
 
-  constructor(@inject(TYPES.ISectionRepository) sectionRepository: ISectionRepository) {
+  constructor(sectionRepository: ISectionRepository) {
     this.sectionRepository = sectionRepository;
   }
 
@@ -16,3 +13,13 @@ export class GetSectionUseCase {
     return this.sectionRepository.getSection(sectionType);
   }
 }
+
+// Apply decorators programmatically
+decorate(injectable(), GetSectionUseCase);
+
+// Create a factory function
+export const createGetSectionUseCase = (
+  sectionRepository: ISectionRepository,
+): GetSectionUseCase => {
+  return new GetSectionUseCase(sectionRepository);
+};

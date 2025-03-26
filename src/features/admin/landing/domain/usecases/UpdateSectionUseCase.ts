@@ -1,13 +1,11 @@
-import { TYPES } from '@/features/admin/di/adminDIContainer.type';
-import { inject, injectable } from 'inversify';
+import { decorate, injectable } from 'inversify';
 import type { ISectionRepository } from '../../data/repositories/sectionRepository';
 import { SectionDefaultValues } from '../../schema/section-form.schema';
 
-@injectable()
 export class UpdateSectionUseCase {
   private sectionRepository: ISectionRepository;
 
-  constructor(@inject(TYPES.ISectionRepository) sectionRepository: ISectionRepository) {
+  constructor(sectionRepository: ISectionRepository) {
     this.sectionRepository = sectionRepository;
   }
 
@@ -15,3 +13,13 @@ export class UpdateSectionUseCase {
     return await this.sectionRepository.updateSection(section, createdBy);
   }
 }
+
+// Apply decorators programmatically
+decorate(injectable(), UpdateSectionUseCase);
+
+// Create a factory function
+export const createUpdateSectionUseCase = (
+  sectionRepository: ISectionRepository,
+): UpdateSectionUseCase => {
+  return new UpdateSectionUseCase(sectionRepository);
+};

@@ -6,7 +6,8 @@ class TransactionRepository implements ITransactionRepository {
   async getTransactionsByUserId(userId: string): Promise<Transaction[]> {
     return await prisma.transaction.findMany({
       where: { userId },
-      orderBy: { createdAt: 'desc' }, // Sắp xếp theo thời gian tạo, mới nhất trước
+      include: { partner: true },
+      orderBy: { createdAt: 'desc' },
     });
   }
 

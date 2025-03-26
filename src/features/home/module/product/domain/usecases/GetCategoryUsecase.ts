@@ -1,18 +1,15 @@
-import { inject, injectable } from 'inversify';
-
+import { decorate, injectable } from 'inversify';
 import type { ICategoryRepository } from '../../data/repositories/CategoryRepository';
 import { GetCategoryResponse } from '../entities/Category';
-import { TYPES } from '../../di/productDIContainer.type';
 
 export interface IGetCategoryUseCase {
   execute(page: number, pageSize: number): Promise<GetCategoryResponse>;
 }
 
-@injectable()
 export class GetCategoryUseCase implements IGetCategoryUseCase {
   private categoryRepository: ICategoryRepository;
 
-  constructor(@inject(TYPES.ICategoryRepository) categoryRepository: ICategoryRepository) {
+  constructor(categoryRepository: ICategoryRepository) {
     this.categoryRepository = categoryRepository;
   }
 
@@ -20,3 +17,13 @@ export class GetCategoryUseCase implements IGetCategoryUseCase {
     return this.categoryRepository.getListCategory({ page, pageSize });
   }
 }
+
+// Apply decorators programmatically
+decorate(injectable(), GetCategoryUseCase);
+
+// Create a factory function
+export const createGetCategoryUseCase = (
+  categoryRepository: ICategoryRepository,
+): IGetCategoryUseCase => {
+  return new GetCategoryUseCase(categoryRepository);
+};

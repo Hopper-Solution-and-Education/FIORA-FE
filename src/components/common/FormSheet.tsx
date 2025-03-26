@@ -227,6 +227,7 @@ export const FormSheet = <T,>({
                                           className="hidden"
                                         />
                                         {previews[field.name] && (
+                                          // eslint-disable-next-line @next/next/no-img-element
                                           <img
                                             src={previews[field.name]!}
                                             alt="Preview"
