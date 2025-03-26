@@ -4,6 +4,7 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
 import { createResponse } from '@/config/createResponse';
+import { Messages } from '@/shared/constants/message';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -61,25 +62,29 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse) {
     }
     const session = await getServerSession(req, res, authOptions);
     if (!session || !session.user?.id) {
-      return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
+      return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'User not logged in yet' });
     }
 
     const userId = session.user.id;
 
     const { id } = req.query;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { name, type, currency, balance = 0, limit, icon, parentId } = req.body;
+    const { name, type, currency, balance = 0, limit, icon } = req.body;
     if (!id) {
       return res
         .status(RESPONSE_CODE.BAD_REQUEST)
-        .json({ message: 'Missing account id to update' });
+        .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_PARAMS_INPUT));
+    }
+    const accountFound = await AccountUseCaseInstance.findByCondition({
+      id: id.toString(),
+      userId,
+    });
+
+    if (!accountFound) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.ACCOUNT_NOT_FOUND));
     }
 
-    const accountFound = await AccountUseCaseInstance.findById(id as string);
-    if (!accountFound) {
-      return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Cannot update sub account' });
-    }
-    console.log('accountFound', type);
     const isValidType = AccountUseCaseInstance.validateAccountType(type, balance, limit);
     if (!isValidType) {
       return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Invalid account type' });

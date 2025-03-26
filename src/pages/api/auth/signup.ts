@@ -49,12 +49,12 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
 
     // create new Account
     const accountCreate = await AccountUseCaseInstance.create({
-      name: 'Ví tiền payment',
+      name: 'Payment',
       userId: userCreationRes.id,
       balance: 0,
       currency: 'VND',
       type: 'Payment',
-      icon: 'circle',
+      icon: '',
     });
 
     if (!accountCreate) {
