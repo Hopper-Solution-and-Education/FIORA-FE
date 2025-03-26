@@ -77,66 +77,67 @@ export default function MediaItem({
     }
 
     if (mediaType === MediaType.IMAGE && mediaUrl) {
-      if (sectionType === SectionType.BANNER) {
-        return (
-          <div className="relative max-h-80 w-full bg-gray-100 rounded-md overflow-hidden">
-            <Image
-              src={mediaUrl || '/placeholder.svg'}
-              alt="Banner Preview"
-              width={800}
-              height={200}
-              className="object-cover w-full h-full"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/placeholder.svg?height=200&width=800';
-              }}
-            />
-          </div>
-        );
-      } else if (sectionType === SectionType.KPS) {
-        return (
-          <div className="relative h-48 w-48 bg-gray-100 rounded-md overflow-hidden mx-auto">
-            <Image
-              src={mediaUrl || '/placeholder.svg'}
-              alt="KPS Preview"
-              width={300}
-              height={300}
-              className="object-cover w-full h-full"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/placeholder.svg?height=300&width=300';
-              }}
-            />
-          </div>
-        );
-      } else if (sectionType === SectionType.PARTNER_LOGO) {
-        return (
-          <div className="relative h-48 w-48 bg-gray-100 rounded-full overflow-hidden mx-auto">
-            <Image
-              src={mediaUrl || '/placeholder.svg'}
-              alt="Partner Logo Preview"
-              width={300}
-              height={300}
-              className="object-cover w-full h-full"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/placeholder.svg?height=300&width=300';
-              }}
-            />
-          </div>
-        );
-      } else {
-        return (
-          <div className="relative h-48 bg-gray-100 rounded-md overflow-hidden">
-            <Image
-              src={mediaUrl || '/placeholder.svg'}
-              alt="Preview"
-              width={400}
-              height={200}
-              className="object-contain w-full h-full"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/placeholder.svg?height=200&width=400';
-              }}
-            />
-          </div>
-        );
+      switch (sectionType) {
+        case SectionType.BANNER:
+          return (
+            <div className="relative max-h-80 w-full bg-gray-100 rounded-md overflow-hidden">
+              <Image
+                src={mediaUrl || '/placeholder.svg'}
+                alt="Banner Preview"
+                width={800}
+                height={200}
+                className="object-cover w-full h-full"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/placeholder.svg?height=200&width=800';
+                }}
+              />
+            </div>
+          );
+        case SectionType.KPS:
+          return (
+            <div className="relative h-48 w-48 bg-gray-100 rounded-md overflow-hidden mx-auto">
+              <Image
+                src={mediaUrl || '/placeholder.svg'}
+                alt="KPS Preview"
+                width={300}
+                height={300}
+                className="object-cover w-full h-full"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/placeholder.svg?height=300&width=300';
+                }}
+              />
+            </div>
+          );
+        case SectionType.PARTNER_LOGO:
+          return (
+            <div className="relative h-48 w-48 bg-gray-100 rounded-full overflow-hidden mx-auto">
+              <Image
+                src={mediaUrl || '/placeholder.svg'}
+                alt="Partner Logo Preview"
+                width={300}
+                height={300}
+                className="object-cover w-full h-full"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/placeholder.svg?height=300&width=300';
+                }}
+              />
+            </div>
+          );
+        default:
+          return (
+            <div className="relative h-48 bg-gray-100 rounded-md overflow-hidden">
+              <Image
+                src={mediaUrl || '/placeholder.svg'}
+                alt="Preview"
+                width={400}
+                height={200}
+                className="object-contain w-full h-full"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/placeholder.svg?height=200&width=400';
+                }}
+              />
+            </div>
+          );
       }
     }
 
@@ -150,25 +151,41 @@ export default function MediaItem({
     }
 
     if (mediaType === MediaType.EMBEDDED && embedCode) {
-      if (sectionType === SectionType.VISION_MISSION) {
-        return (
-          <div className="w-full bg-gray-100 rounded-lg shadow-md overflow-hidden p-4">
-            <div className="w-full relative" style={{ paddingBottom: '56.25%' /* 16:9 ratio */ }}>
-              <div
-                className="absolute inset-0 w-full h-full rounded-md"
-                dangerouslySetInnerHTML={{
-                  __html: `<style>iframe { width: 100% !important; height: 100% !important; border: none; border-radius: 8px; }</style>${embedCode}`,
-                }}
-              />
+      switch (sectionType) {
+        case SectionType.VISION_MISSION:
+          return (
+            <div className="w-full bg-gray-100 rounded-lg shadow-md overflow-hidden p-4">
+              <div className="w-full relative" style={{ paddingBottom: '56.25%' /* 16:9 ratio */ }}>
+                <div
+                  className="absolute inset-0 w-full h-full rounded-md"
+                  dangerouslySetInnerHTML={{
+                    __html: `<style>iframe { width: 100% !important; height: 100% !important; border: none; border-radius: 8px; }</style>${embedCode}`,
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        );
+          );
+        case SectionType.REVIEW:
+          return (
+            <div className="w-full bg-gray-100 rounded-lg shadow-md overflow-hidden p-4">
+              <div className="w-full relative" style={{ paddingBottom: '56.25%' /* 16:9 ratio */ }}>
+                <div
+                  className="absolute inset-0 w-full h-full rounded-md"
+                  dangerouslySetInnerHTML={{
+                    __html: `<style>iframe { width: 100% !important; height: 100% !important; border: none; border-radius: 8px; }</style>${embedCode}`,
+                  }}
+                />
+              </div>
+            </div>
+          );
+
+        default:
+          return (
+            <div className="w-full h-20 bg-gray-100 rounded-lg shadow-md overflow-hidden flex items-center justify-center p-4">
+              <span className="text-xs text-gray-500">Embedded content</span>
+            </div>
+          );
       }
-      return (
-        <div className="w-full h-20 bg-gray-100 rounded-lg shadow-md overflow-hidden flex items-center justify-center p-4">
-          <span className="text-xs text-gray-500">Embedded content</span>
-        </div>
-      );
     }
   };
 

@@ -12,8 +12,8 @@ export const sectionMapping: Record<SectionType, keyof LandingSettingsState> = {
   [SectionType.PARTNER_LOGO]: 'partnerSection',
   [SectionType.HEADER]: 'headerSection',
   [SectionType.FOOTER]: 'footerSection',
-  [SectionType.SYSTEM]: 'footerSection',
-  [SectionType.REVIEW]: 'footerSection',
+  [SectionType.SYSTEM]: 'fioraSystemSection',
+  [SectionType.REVIEW]: 'reviewSection',
 };
 
 const landingSettings = createSlice({

@@ -10,6 +10,7 @@ export interface NavItem {
   label?: string;
   description?: string;
   isActive?: boolean;
+  featureFlags?: string;
   items?: NavItem[];
 }
 

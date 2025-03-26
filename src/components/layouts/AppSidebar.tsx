@@ -1,10 +1,13 @@
 'use client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import growthbook from '@/config/growthbook';
 import { NavItem } from '@/features/home/types/Nav.types';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { SectionType } from '@prisma/client';
 import HopperLogo from '@public/images/logo.jpg';
-import { BadgeCheck, Bell, ChevronRight, ChevronsUpDown, CreditCard, LogOut } from 'lucide-react';
+import { ChevronRight, ChevronsUpDown, LogOut } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -15,7 +18,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/colla
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -49,11 +51,50 @@ type AppSideBarProps = {
 };
 
 export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
+  const gb = growthbook;
+  const [newNavItem, setNewNavItem] = useState<NavItem[]>([]);
   const { data: session } = useSession();
   const pathname = usePathname();
   const { section } = useGetSection(SectionType.HEADER);
-
+  const isMobile = useIsMobile();
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const newOpenItems = navItems.reduce(
+      (acc, item) => {
+        acc[item.title] = isItemActive(item);
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+    setOpenItems(newOpenItems);
+  }, [pathname, navItems]);
+
+  console.log(gb.isOn(FeatureFlags.CATEGORY_FEATURE));
+
+  useEffect(() => {
+    const filterNavItems = (items: NavItem[]): NavItem[] => {
+      return items.flatMap((item) => {
+        if (!item.featureFlags || gb.isOn(item.featureFlags)) {
+          return [
+            {
+              ...item,
+              items: item.items ? filterNavItems(item.items) : undefined,
+            },
+          ];
+        }
+        return [];
+      });
+    };
+
+    const handleCheckNavItem = () => {
+      if (navItems) {
+        setNewNavItem(filterNavItems(navItems));
+      }
+    };
+
+    handleCheckNavItem();
+  }, [navItems]);
 
   const isItemActive = (item: NavItem) => {
     if (item.url === pathname) return true;
@@ -103,7 +144,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
         <SidebarGroup>
           <SidebarGroupLabel>{appLabel}</SidebarGroupLabel>
           <SidebarMenu>
-            {navItems.map((item) => {
+            {newNavItem.map((item) => {
               const Icon = item.icon ? Icons[item.icon] : Icons.logo;
               const isActive = isItemActive(item);
 
@@ -152,36 +193,16 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                >
-                  <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || ''} />
-                    <AvatarFallback className="rounded-lg">
-                      {session?.user?.name?.slice(0, 2)?.toUpperCase() || 'CN'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">{session?.user?.name || ''}</span>
-                    <span className="truncate text-xs">{session?.user?.email || ''}</span>
-                  </div>
-                  <ChevronsUpDown className="ml-auto size-4" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                side="bottom"
-                align="end"
-                sideOffset={4}
-              >
-                <DropdownMenuLabel className="p-0 font-normal">
-                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+      {isMobile && (
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton
+                    size="lg"
+                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  >
                     <Avatar className="h-8 w-8 rounded-lg">
                       <AvatarImage
                         src={session?.user?.image || ''}
@@ -193,35 +214,45 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold">{session?.user?.name || ''}</span>
-                      <span className="truncate text-xs"> {session?.user?.email || ''}</span>
+                      <span className="truncate text-xs">{session?.user?.email || ''}</span>
                     </div>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem>
-                    <BadgeCheck />
-                    Account
+                    <ChevronsUpDown className="ml-auto size-4" />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                  side="bottom"
+                  align="end"
+                  sideOffset={4}
+                >
+                  <DropdownMenuLabel className="p-0 font-normal">
+                    <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                      <Avatar className="h-8 w-8 rounded-lg">
+                        <AvatarImage
+                          src={session?.user?.image || ''}
+                          alt={session?.user?.name || ''}
+                        />
+                        <AvatarFallback className="rounded-lg">
+                          {session?.user?.name?.slice(0, 2)?.toUpperCase() || 'CN'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="grid flex-1 text-left text-sm leading-tight">
+                        <span className="truncate font-semibold">{session?.user?.name || ''}</span>
+                        <span className="truncate text-xs"> {session?.user?.email || ''}</span>
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    <LogOut />
+                    Log out
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <CreditCard />
-                    Billing
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Bell />
-                    Notifications
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => signOut()}>
-                  <LogOut />
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      )}
       <SidebarRail />
     </Sidebar>
   );
