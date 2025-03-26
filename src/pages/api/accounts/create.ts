@@ -31,7 +31,7 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
 
     const userId = session.user.id;
 
-    const { name, type, currency, balance = 0, limit, icon, parentId, isParentSelected } = body;
+    const { name, type, currency, balance = 0, limit, icon, parentId } = body;
 
     const isValidAccountType = AccountUseCaseInstance.validateAccountType(type, balance, limit);
     if (!isValidAccountType) {
@@ -40,7 +40,7 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
         .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.UNSUPPORTED_ACCOUNT_TYPE));
     }
 
-    if (!isParentSelected && !parentId && parentId !== null) {
+    if (!parentId && parentId !== null) {
       const isCreateMasterAccount = await AccountUseCaseInstance.isOnlyMasterAccount(userId, type);
       if (isCreateMasterAccount) {
         return response
