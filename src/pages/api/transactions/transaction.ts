@@ -1,59 +1,28 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth';
 import { transactionUseCase } from '@/features/transaction/application/use-cases/transactionUseCase';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { authOptions } from '../auth/[...nextauth]';
 import { UUID } from 'crypto';
 import { createError, createResponse } from '@/config/createResponse';
 import { Messages } from '@/shared/constants/message';
+import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 
-// Hàm kiểm tra session
-export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
-
-  if (!session) {
-    return null;
+export default sessionWrapper(async (req, res, userId) => {
+  switch (req.method) {
+    case 'POST':
+      return POST(req, res, userId);
+    case 'GET':
+      return GET(req, res, userId);
+    case 'PUT':
+      return PUT(req, res, userId);
+    case 'DELETE':
+      return DELETE(req, res, userId);
+    default:
+      return res
+        .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+        .json({ error: 'Phương thức không được hỗ trợ' });
   }
+});
 
-  const currentTime = Math.floor(Date.now() / 1000);
-  const timeLeft = session.expiredTime - currentTime;
-  if (timeLeft <= 0) {
-    return null;
-  }
-
-  return session;
-}
-
-// Handler chính
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getUserSession(req, res);
-  if (!session || !session.user?.id) {
-    return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
-  }
-
-  const userId = session.user.id;
-
-  try {
-    switch (req.method) {
-      case 'POST':
-        return POST(req, res, userId);
-      case 'GET':
-        return GET(req, res, userId);
-      case 'PUT':
-        return PUT(req, res, userId);
-      case 'DELETE':
-        return DELETE(req, res, userId);
-      default:
-        return res
-          .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-          .json({ error: 'Phương thức không được hỗ trợ' });
-    }
-  } catch (error: any) {
-    return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: error.message });
-  }
-}
-
-// Lấy danh sách giao dịch
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const transactions = await transactionUseCase.listTransactions(userId);
