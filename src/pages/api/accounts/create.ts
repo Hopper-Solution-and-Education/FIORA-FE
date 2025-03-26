@@ -1,35 +1,27 @@
-import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
-import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]';
 import { createResponse } from '@/config/createResponse';
+import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
 import { Messages } from '@/shared/constants/message';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { NextApiRequest, NextApiResponse } from 'next';
 
-export default async function handler(request: NextApiRequest, response: NextApiResponse) {
-  switch (request.method) {
-    case 'POST':
-      return POST(request, response);
-    case 'DELETE':
-      return DELETE(request, response);
-    default:
-      return response.status(405).json({ error: 'Method not allowed' });
-  }
-}
+export default sessionWrapper(
+  async (request: NextApiRequest, response: NextApiResponse, userId: string) => {
+    switch (request.method) {
+      case 'POST':
+        return POST(request, response, userId);
+      case 'DELETE':
+        return DELETE(request, response, userId);
+      default:
+        return response.status(405).json({ error: 'Method not allowed' });
+    }
+  },
+);
 
 // Create a new account
-export async function POST(request: NextApiRequest, response: NextApiResponse) {
+export async function POST(request: NextApiRequest, response: NextApiResponse, userId: string) {
   try {
     const body = await request.body;
-
-    const session = await getServerSession(request, response, authOptions);
-    if (!session || !session.user?.id) {
-      return response
-        .status(RESPONSE_CODE.UNAUTHORIZED)
-        .json(createResponse(RESPONSE_CODE.UNAUTHORIZED, Messages.UNAUTHORIZED));
-    }
-
-    const userId = session.user.id;
 
     const { name, type, currency, balance = 0, limit, icon, parentId } = body;
 
@@ -77,15 +69,8 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
   }
 }
 
-export async function DELETE(request: NextApiRequest, response: NextApiResponse) {
+export async function DELETE(request: NextApiRequest, response: NextApiResponse, userId: string) {
   try {
-    const session = await getServerSession(request, response, authOptions);
-    if (!session || !session.user?.id) {
-      return response.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
-    }
-
-    const userId = session.user.id;
-
     const body = await request.body;
     const { parentId, subAccountId } = body;
 
