@@ -1,5 +1,5 @@
 import { screen } from '@testing-library/react';
-import Page from '@/app/(dashboard)/home/product/page';
+import Page from '@/app/(setting)/setting/product/page';
 import AccountPage from '@/app/(dashboard)/home/profile/page';
 import { renderWithProviders } from '@/config/test-utils';
 import '@testing-library/jest-dom';

@@ -37,7 +37,7 @@ const KPSSection = () => {
   }
 
   return (
-    <section className="py-8">
+    <section className="py-5">
       <div className="mx-auto max-w-3xl text-center md:py-20 border-t">
         <h1
           data-aos="fade-up"
@@ -74,7 +74,7 @@ const KPSSection = () => {
             >
               <div
                 className={`w-full h-[90%] rounded-lg shadow-md border relative ${
-                  index % 2 === 0 ? 'mt-10' : ''
+                  index % 2 === 0 ? 'mt-20' : ''
                 } overflow-hidden`}
               >
                 <Image

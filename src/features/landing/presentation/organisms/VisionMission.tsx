@@ -75,10 +75,6 @@ const VisionMission = () => {
           </div>
           <div className="flex flex-col items-center p-16 text-center lg:items-start lg:text-left">
             <h1 className="my-6 text-4xl font-bold text-pretty lg:text-6xl"> {section?.name}</h1>
-            <p className="mb-8 max-w-xl text-muted-foreground lg:text-xl">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Elig doloremque mollitia
-              fugiat omnis! Porro facilis quo animi consequatur. Explicabo.
-            </p>
           </div>
         </div>
       </div>

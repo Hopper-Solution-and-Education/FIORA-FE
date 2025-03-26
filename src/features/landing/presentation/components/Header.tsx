@@ -18,6 +18,7 @@ import { UserNav } from '@/components/layouts/UserNav';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SectionType } from '@prisma/client';
+import { useSession } from 'next-auth/react';
 import { useGetSection } from '../../hooks/useGetSection';
 
 export default function Header() {
@@ -25,6 +26,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAccountSettingOpen, setIsAccountSettingOpen] = useState(false);
   const [isOpenAnountment, setIsOpenAnountment] = useState(true);
+  const { data } = useSession();
 
   const toggleMenu = () => setIsMenuOpen((prevState) => !prevState);
   const toggleAccountSetting = () => setIsAccountSettingOpen((prevState) => !prevState);
@@ -61,44 +63,42 @@ export default function Header() {
           </Link>
         </div>
 
-        <div className="w-full items-center">
-          <div className="w-full items-center px-2 justify-center">
+        <div className="w-full h-full">
+          <div className="w-full">
             {isOpenAnountment && (
-              <div className="flex justify-between">
+              <div className="flex justify-between items-start pb-2 mx-4">
                 <div>This is an important announcement for all users.</div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-full hover:bg-gray-100"
+
+                <X
+                  size={18}
+                  className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer "
                   onClick={() => setIsOpenAnountment(false)}
-                >
-                  ✕
-                </Button>
+                />
               </div>
             )}
             <div className="flex w-full justify-end">
               {/* Navigation */}
-              <nav className="hidden md:flex items-center gap-4 px-4">
+              <nav className="hidden md:flex items-center gap-8 px-8">
                 <HelpCenter />
                 <SettingCenter />
 
-                <Button
-                  onClick={() => redirect('/auth/sign-up')}
-                  variant="outline"
-                  size="icon"
-                  className="relative w-10 h-10"
-                >
-                  <UserPlus />
-                </Button>
+                {data?.user ? (
+                  <UserNav />
+                ) : (
+                  <>
+                    <UserPlus
+                      onClick={() => redirect('/auth/sign-up')}
+                      size={18}
+                      className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+                    />
 
-                <Button
-                  onClick={() => redirect('/auth/sign-in')}
-                  variant="outline"
-                  size="icon"
-                  className="relative w-10 h-10"
-                >
-                  <LogInIcon />
-                </Button>
+                    <LogInIcon
+                      onClick={() => redirect('/auth/sign-in')}
+                      size={18}
+                      className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+                    />
+                  </>
+                )}
               </nav>
             </div>
           </div>

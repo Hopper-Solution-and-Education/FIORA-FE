@@ -3,13 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { NavItem } from '@/features/home/types/Nav.types';
 import { cn } from '@/shared/utils';
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
-  items: {
-    href: string;
-    title: string;
-  }[];
+  items: NavItem[];
 }
 
 export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
@@ -22,11 +20,11 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
     >
       {items.map((item) => (
         <Link
-          key={item.href}
-          href={item.href}
+          key={item.url}
+          href={item.url}
           className={cn(
             'flex items-center px-4 py-2 text-sm font-medium transition-colors rounded-lg',
-            pathname === item.href
+            pathname === item.url
               ? 'bg-primary text-primary-foreground hover:bg-primary/90'
               : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
           )}

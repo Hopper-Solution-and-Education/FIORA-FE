@@ -1,26 +1,44 @@
 'use client';
 
-import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { GearIcon } from '@radix-ui/react-icons';
-import { useState, useEffect } from 'react';
+import {
+  Database,
+  LayoutDashboard,
+  MoonIcon,
+  Package,
+  Settings,
+  SunIcon,
+  Tag,
+  User,
+  Users,
+} from 'lucide-react';
+import { useTheme } from 'next-themes';
 import Image from 'next/image';
-import { MoonIcon, SunIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import EnglishIcon from '@public/icons/united-kingdom.png';
 import VietnameseIcon from '@public/icons/vietnam.png';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+
+const menuSettingItems = [
+  { label: 'Accounts', icon: User, url: '/home/account' },
+  { label: 'Categories', icon: Tag, url: '/home/category' },
+  { label: 'Products & Services', icon: Package, url: '/setting/product' },
+  { label: 'Partners', icon: Database, url: '/setting/partner' },
+  { label: 'Users', icon: Users, url: '/users' },
+  { label: 'Landing Page', icon: LayoutDashboard, url: '/setting/landing' },
+];
 
 export default function SettingCenter() {
   const { theme, setTheme } = useTheme();
   const [language, setLanguage] = useState('en');
+  const { data } = useSession();
 
   useEffect(() => {
     document.documentElement.lang = language;
@@ -37,23 +55,38 @@ export default function SettingCenter() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="relative w-10 h-10">
-          <GearIcon className="h-[1.2rem] w-[1.2rem]" />
-          <span className="sr-only">Settings</span>
-        </Button>
+        <Settings
+          size={18}
+          className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+        />
       </DropdownMenuTrigger>
-
-      <DropdownMenuContent align="end" className="w-auto min-w-[120px] px-3 py-2">
-        <DropdownMenuLabel className="text-center">Settings</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-
+      <DropdownMenuContent
+        align="end"
+        className="w-[300px] p-4 grid grid-cols-4 gap-4 border shadow-md"
+      >
+        <>
+          {data?.user && (
+            <>
+              {menuSettingItems.map((item, index) => (
+                <Link key={index} href={item.url} passHref>
+                  <DropdownMenuItem
+                    key={index}
+                    className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition"
+                  >
+                    <item.icon className="h-6 w-6" />
+                  </DropdownMenuItem>
+                </Link>
+              ))}
+            </>
+          )}
+        </>
         <DropdownMenuItem
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
             toggleTheme();
           }}
-          className="flex justify-center items-center w-full py-2"
+          className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition"
         >
           {theme === 'dark' ? <MoonIcon size={24} /> : <SunIcon size={24} />}
         </DropdownMenuItem>
@@ -64,7 +97,7 @@ export default function SettingCenter() {
             e.preventDefault();
             toggleLanguage();
           }}
-          className="flex justify-center items-center w-full py-2"
+          className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition"
         >
           {language === 'en' ? (
             <Image src={VietnameseIcon} alt="Vietnamese" width={20} height={20} />

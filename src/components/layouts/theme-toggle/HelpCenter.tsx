@@ -1,5 +1,4 @@
 'use client';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,9 +11,12 @@ export default function HelpCenter() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="relative w-10 h-10">
-          <HelpCircleIcon size={64} />
-        </Button>
+        {/* <Button variant="ghost" size="icon" className="relative w-10 h-10"> */}
+        <HelpCircleIcon
+          size={18}
+          className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+        />
+        {/* </Button> */}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="z-50">
         <DropdownMenuItem>

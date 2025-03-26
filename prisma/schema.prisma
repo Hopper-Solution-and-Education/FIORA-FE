@@ -272,6 +272,8 @@ enum SectionType {
   PARTNER_LOGO
   FOOTER
   HEADER
+  REVIEW
+  SYSTEM
 }
 
 enum CategoryType {
