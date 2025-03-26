@@ -257,8 +257,26 @@ export class AccountUseCase {
     await this.accountRepository.updateParentBalance(parentId);
   }
 
-  async updateAccount(id: string, data: Prisma.AccountUpdateInput): Promise<Account | null> {
-    //
+  async updateAccount(id: string, params: Prisma.AccountUpdateInput): Promise<Account | null> {
+    // If this is a sub-account, update the parent's balance, otherwise, update the account directly
+    const account = await this.accountRepository.findById(id);
+    if (!account) {
+      throw new Error('Account not found');
+    }
+
+    if (account.parentId) {
+      const data = await this.accountRepository.update(id, {
+        ...params,
+      });
+      if (!data) {
+        throw new Error('Cannot update sub account');
+      }
+      await this.accountRepository.updateParentBalance(account.parentId);
+
+      return data;
+    } else {
+      return await this.accountRepository.update(id, { ...params });
+    }
   }
 
   async deleteAccount(id: string): Promise<Account | null> {

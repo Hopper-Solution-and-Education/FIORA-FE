@@ -85,15 +85,6 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse) {
         .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.ACCOUNT_NOT_FOUND));
     }
 
-    // prevent update parent balance account
-    if (accountFound.parentId === null && balance) {
-      return res
-        .status(RESPONSE_CODE.BAD_REQUEST)
-        .json(
-          createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.UPDATE_PARENT_ACCOUNT_NOT_ALLOWED),
-        );
-    }
-
     const isValidType = AccountUseCaseInstance.validateAccountType(type, balance, limit);
     if (!isValidType) {
       return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Invalid account type' });
