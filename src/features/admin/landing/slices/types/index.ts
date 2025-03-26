@@ -11,6 +11,8 @@ interface LandingSettingsState {
   partnerSection?: ISection;
   footerSection?: ISection;
   headerSection?: ISection;
+  reviewSection?: ISection;
+  fioraSystemSection?: ISection;
   fetchedSections: string[];
   error: string | null;
   isLoading: boolean;
@@ -24,6 +26,8 @@ const initialLandingSettingState: LandingSettingsState = {
   partnerSection: undefined,
   headerSection: undefined,
   footerSection: undefined,
+  fioraSystemSection: undefined,
+  reviewSection: undefined,
   error: '',
   fetchedSections: [],
   isLoading: false,

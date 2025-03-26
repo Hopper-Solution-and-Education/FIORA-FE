@@ -23,9 +23,6 @@ export function UserNav({ handleSignOut }: UserNavProps) {
   const router = useRouter();
   const { data: session } = useSession();
 
-  const getAvatarInitial = (name?: string) => name?.[0] || '';
-  const getAvatarSrc = (image?: string) => image || 'https://placehold.co/400';
-
   const renderNavItem = (item: (typeof globalNavItems)[0]) => {
     const Icon = item.icon ? Icons[item.icon] : Icons.logo;
     return (
@@ -47,11 +44,10 @@ export function UserNav({ handleSignOut }: UserNavProps) {
       <DropdownMenuTrigger asChild>
         <div className="group flex items-center space-x-2 rounded-md transition-all duration-200">
           <Avatar className="h-9 w-9 transition-transform group-hover:scale-110">
-            <AvatarImage
-              src={getAvatarSrc(session?.user?.image ?? 'https://placehold.co/400')}
-              alt={session?.user?.name || 'User avatar'}
-            />
-            <AvatarFallback>{getAvatarInitial(session?.user?.name ?? '')}</AvatarFallback>
+            <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || ''} />
+            <AvatarFallback className="rounded-lg">
+              {session?.user?.name?.slice(0, 2)?.toUpperCase() || 'CN'}
+            </AvatarFallback>
           </Avatar>
           {session && (
             <div className="flex flex-col items-start space-y-0.5">

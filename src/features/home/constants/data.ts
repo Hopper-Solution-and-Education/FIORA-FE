@@ -1,3 +1,4 @@
+import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { NavItem } from '../types/Nav.types';
 
 //Info: The following data is used for the sidebar navigation and Cmd K bar.
@@ -8,7 +9,7 @@ export const navItems: NavItem[] = [
     icon: 'dashboard',
     isActive: false,
     shortcut: ['d', 'd'],
-    items: [], // Empty array as there are no child items for Dashboard
+    items: [],
   },
   {
     title: 'Finance',
@@ -27,6 +28,7 @@ export const navItems: NavItem[] = [
         url: '/home/category',
         icon: 'userPen',
         shortcut: ['m', 'm'],
+        featureFlags: FeatureFlags.CATEGORY_FEATURE,
       },
       {
         title: 'Transaction History',

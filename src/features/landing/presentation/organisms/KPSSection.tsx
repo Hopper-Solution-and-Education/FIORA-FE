@@ -9,7 +9,7 @@ const numberOfItems = 3;
 const gap = 15;
 const totalGapWidth = gap * (numberOfItems - 1);
 const itemWidth = `${(containerWidth - totalGapWidth) / numberOfItems}px`;
-const itemHeight = '520px';
+const itemHeight = '600px';
 
 const KPSSection = () => {
   const { isError, isLoading, section } = useGetSection(SectionType.KPS);
@@ -37,16 +37,12 @@ const KPSSection = () => {
   }
 
   return (
-    <section className="py-5">
+    <section className="py-10 mb-20">
       <div className="mx-auto max-w-3xl text-center md:py-20 border-t">
-        <h1
-          data-aos="fade-up"
-          className="my-6 text-3xl md:text-5xl lg:text-6xl font-bold text-pretty"
-        >
+        <h1 data-aos="fade-up" className="my-4 text-3xl md:text-5xl lg:text-6xl font-bold h-full">
           {section?.name}
         </h1>
       </div>
-
       <Carousel
         className="mx-auto max-w-[1400px]"
         opts={{
@@ -55,18 +51,18 @@ const KPSSection = () => {
         }}
         plugins={[
           Autoplay({
-            delay: 3000, // Loại bỏ delay để tạo scroll liên tục
-            stopOnInteraction: false, // Không dừng khi tương tác
-            playOnInit: true, // Chạy ngay khi khởi tạo
-            jump: false, // Không nhảy từng bước mà scroll mượt
+            delay: 3000,
+            stopOnInteraction: false,
+            playOnInit: true,
+            jump: false,
           }),
         ]}
       >
-        <CarouselContent className="flex" style={{ gap: `${gap}px` }}>
+        <CarouselContent className="flex" style={{ gap: `${gap}px`, height: itemHeight }}>
           {section?.medias?.map((item, index) => (
             <CarouselItem
               key={index}
-              className="basis-full sm:basis-1/2 md:basis-1/3"
+              className="basis-full sm:basis-1/2 md:basis-1/3 pb-10"
               style={{
                 maxWidth: itemWidth,
                 height: itemHeight,
@@ -89,22 +85,6 @@ const KPSSection = () => {
           ))}
         </CarouselContent>
       </Carousel>
-
-      {/* Thêm CSS tùy chỉnh để tăng tính mượt mà */}
-      <style jsx>{`
-        .embla__container {
-          animation: scroll 20s linear infinite; /* Tùy chỉnh thời gian scroll */
-        }
-
-        @keyframes scroll {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-100%);
-          }
-        }
-      `}</style>
     </section>
   );
 };

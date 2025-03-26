@@ -1,19 +1,18 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { createResponse } from '@/config/createResponse';
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]';
-import { createResponse } from '@/config/createResponse';
+import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 // Define the expected session structure
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   // Get the session using NextAuth's getServerSession
 
   try {
     switch (req.method) {
       case 'GET':
-        return GET(req, res);
+        return GET(req, res, userId);
       default:
         return res
           .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -22,20 +21,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (error: any) {
     return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
-}
+});
 
-export async function GET(req: NextApiRequest, res: NextApiResponse) {
+export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     if (req.method !== 'GET') {
       return res.status(405).json({ error: 'Method not allowed' });
     }
-
-    const session = await getServerSession(req, res, authOptions);
-    if (!session || !session.user?.id) {
-      return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
-    }
-
-    const userId = session.user.id;
 
     const { isParent } = req.query;
     if (isParent) {

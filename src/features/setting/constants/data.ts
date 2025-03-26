@@ -19,7 +19,7 @@ export const SettingNavItems: NavItem[] = [
     items: [
       {
         title: 'Product Management',
-        url: '/home/product',
+        url: '/setting/product',
         icon: 'userPen',
         shortcut: ['m', 'm'],
       },
