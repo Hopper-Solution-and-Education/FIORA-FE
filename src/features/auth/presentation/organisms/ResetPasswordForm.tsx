@@ -80,8 +80,9 @@ const ResetPasswordForm = ({
                         )
                       )}
                     </button>
-                    <FormMessage className="mt-1" />
                   </div>
+                  <div className="xs:hidden md:block"></div>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -121,8 +122,9 @@ const ResetPasswordForm = ({
                         )
                       )}
                     </button>
-                    <FormMessage className="mt-1" />
                   </div>
+                  <div className="xs:hidden md:block"></div>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -140,7 +142,8 @@ const ResetPasswordForm = ({
           </Link>
           <Button
             type="submit"
-            className="group text-base sm:text-lg font-semibold w-32 sm:w-44 py-5 sm:py-6 bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center transition-all duration-200"
+            disabled={!resetPasswordForm.formState.isValid}
+            className={`group text-base sm:text-lg font-semibold w-32 sm:w-44 py-5 sm:py-6 bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center transition-all duration-200 ${!resetPasswordForm.formState.isValid && 'cursor-not-allowed'}`}
           >
             <Check className="block text-green-300 stroke-[4] transform transition-transform duration-200 drop-shadow-sm hover:text-green-100 h-6 w-6 sm:!h-[28px] sm:!w-[28px]" />
           </Button>
