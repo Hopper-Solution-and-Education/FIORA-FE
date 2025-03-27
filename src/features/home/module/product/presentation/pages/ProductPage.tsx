@@ -1,6 +1,6 @@
 'use client';
 
-import Loading from '@/components/common/Loading';
+import Loading from '@/components/common/atoms/Loading';
 import PageContainer from '@/components/layouts/PageContainer';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

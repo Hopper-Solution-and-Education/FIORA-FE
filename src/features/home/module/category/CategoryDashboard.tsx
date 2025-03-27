@@ -1,5 +1,5 @@
 'use client';
-import Loading from '@/components/common/Loading';
+import Loading from '@/components/common/atoms/Loading';
 import NestedBarChart, { type BarItem } from '@/components/common/nested-bar-chart';
 import { Icons } from '@/components/Icon';
 import { formatCurrency } from '@/config/formatCurrency';

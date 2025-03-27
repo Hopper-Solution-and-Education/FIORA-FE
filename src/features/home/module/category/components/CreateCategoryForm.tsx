@@ -5,7 +5,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { CategoryType } from '@prisma/client';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import IconSelect from '@/components/common/IconSelect';
+import IconSelect from '@/components/common/atoms/IconSelect';
 import { Button } from '@/components/ui/button';
 import {
   Form,

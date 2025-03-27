@@ -1,5 +1,5 @@
 'use client';
-import FormPage from '@/components/common/FormPage';
+import FormPage from '@/components/common/organisms/FormPage';
 import CreateCategoryForm from '@/features/home/module/category/components/CreateCategoryForm';
 
 export default function CreateCategory() {

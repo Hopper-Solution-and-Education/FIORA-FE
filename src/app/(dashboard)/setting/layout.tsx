@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-import Hero from '@/components/common/Hero';
+import Hero from '@/components/common/molecules/Hero';
 import { Separator } from '@/components/ui/separator';
 import { SidebarNav } from '@/features/setting/presentation/components/sidebar-nav';
 import AuthLayout from '@/components/layouts/auth-layout';

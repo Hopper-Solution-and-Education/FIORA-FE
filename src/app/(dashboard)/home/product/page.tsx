@@ -1,5 +1,5 @@
 'use client';
-import Loading from '@/components/common/Loading';
+import Loading from '@/components/common/atoms/Loading';
 import dynamic from 'next/dynamic';
 
 const ProductPage = dynamic(() => import('@/features/home/module/product'), {

@@ -8,7 +8,7 @@ import { ProductTransactionResponse } from '../../domain/entities/Product';
 import { setDialogState, toggleDialogAddEdit } from '../../slices';
 import TwoSideBarChart, { BarItem } from '../atoms/charts';
 import { ProductFormValues } from '../schema/addProduct.schema';
-import { LoadingIndicator } from '@/components/common/LoadingIndicator';
+import { LoadingIndicator } from '@/components/common/atoms/LoadingIndicator';
 
 const mapTransactionsToBarItems = (data: ProductTransactionResponse[]): BarItem[] => {
   const groupedData: Record<string, BarItem> = {};

@@ -28,7 +28,6 @@ const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Create', link: '/home/category/create' },
   ],
   '/home/category/update': [
-    // Simplified key without [id]
     { title: 'Dashboard', link: '/home' },
     { title: 'Category', link: '/home/category' },
     { title: 'Update', link: '/home/category/update' },

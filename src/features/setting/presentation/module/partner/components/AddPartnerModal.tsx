@@ -1,7 +1,7 @@
 // AddPartnerModal.tsx
 'use client';
 
-import { FormSheet } from '@/components/common/FormSheet';
+import { FormSheet } from '@/components/common/organisms/FormSheet';
 import {
   CreatePartnerFormData,
   createPartnerSchema,

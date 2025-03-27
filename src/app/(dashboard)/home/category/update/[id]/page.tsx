@@ -1,10 +1,10 @@
 'use client';
-import FormPage from '@/components/common/FormPage';
+import FormPage from '@/components/common/organisms/FormPage';
 import UpdateCategoryForm from '@/features/home/module/category/components/UpdateCategoryForm';
 import { useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import Loading from '@/components/common/Loading';
+import Loading from '@/components/common/atoms/Loading';
 
 export default function UpdateCategory({ params }: { params: { id: string } }) {
   const router = useRouter();

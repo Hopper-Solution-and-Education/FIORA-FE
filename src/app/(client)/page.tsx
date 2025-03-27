@@ -1,5 +1,5 @@
 'use client';
-import Loading from '@/components/common/Loading';
+import Loading from '@/components/common/atoms/Loading';
 import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { redirect } from 'next/navigation';
