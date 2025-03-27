@@ -1,38 +1,11 @@
+import { createResponse } from '@/config/createResponse';
 import { productUseCase } from '@/features/setting/application/use-cases/productUseCase';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { ProductType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]';
-import { createResponse } from '@/config/createResponse';
-import { Messages } from '@/shared/constants/message';
 
-// Define the expected session structure
-
-export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
-
-  if (!session) {
-    return null;
-  }
-
-  const currentTime = Math.floor(Date.now() / 1000);
-  const timeLeft = session.expiredTime - currentTime;
-  if (timeLeft <= 0) {
-    return null;
-  }
-
-  return session;
-}
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getUserSession(req, res);
-  if (!session || !session.user?.id) {
-    return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
-  }
-
-  const userId = session.user.id;
-
+export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {
     switch (req.method) {
       case 'POST':
@@ -47,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (error: any) {
     return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
-}
+});
 
 // Get all products
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
@@ -91,6 +64,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       category_id,
       items,
     });
+
     return res
       .status(RESPONSE_CODE.CREATED)
       .json(createResponse(RESPONSE_CODE.CREATED, 'Create product successfully', newProduct));
