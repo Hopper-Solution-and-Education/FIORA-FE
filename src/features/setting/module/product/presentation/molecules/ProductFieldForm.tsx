@@ -1,6 +1,6 @@
 'use client';
 
-import Loading from '@/components/common/Loading';
+import Loading from '@/components/common/atoms/Loading';
 import { useAppSelector } from '@/store';
 import { UseFormReturn } from 'react-hook-form';
 import PriceField from '../atoms/PriceField';

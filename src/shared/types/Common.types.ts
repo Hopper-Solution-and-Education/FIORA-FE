@@ -1,3 +1,5 @@
+import { ComponentType } from 'react';
+import { AnySchema } from 'yup';
 import { Icon } from '@/components/Icon';
 export interface Response<T> {
   message: string;
@@ -27,3 +29,11 @@ export interface Pagination {
   page?: number;
   pageSize?: number;
 }
+
+export type FieldConfig = {
+  name: string;
+  type: string;
+  component?: ComponentType<any>;
+  validation?: AnySchema;
+  props?: Record<string, any>;
+};

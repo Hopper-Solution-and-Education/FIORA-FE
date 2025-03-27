@@ -33,7 +33,7 @@ import { cn } from '@/lib/utils';
 import { FormFieldProps } from '@/shared/types/formsheet.type';
 import { LoaderCircle, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { DateTimePicker } from './DateTimePicker';
+import { DateTimePicker } from '../atoms/DateTimePicker';
 
 interface FormSheetProps<T> {
   isOpen: boolean;

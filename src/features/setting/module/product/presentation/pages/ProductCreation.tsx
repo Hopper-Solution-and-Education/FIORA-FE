@@ -1,5 +1,4 @@
 'use client';
-import Loading from '@/components/common/Loading';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -22,6 +21,7 @@ import {
   ProductFormValues,
   productSchema,
 } from '../schema/addProduct.schema';
+import Loading from '@/components/common/atoms/Loading';
 
 type ProductCreationType = {
   productId?: string;

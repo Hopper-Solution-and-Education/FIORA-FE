@@ -1,6 +1,9 @@
 import { httpClient } from '@/config/HttpClient';
 import { Response } from '@/shared/types/Common.types';
-import { NewCategoryDefaultValues } from '@/features/home/module/category/slices/utils/formSchema';
+import {
+  NewCategoryDefaultValues,
+  UpdateCategoryDefaultValues,
+} from '@/features/home/module/category/slices/utils/formSchema';
 import { Category, RawCategory } from '@/features/home/module/category/slices/types';
 
 const categoryServices = {
@@ -10,7 +13,7 @@ const categoryServices = {
   createCategory: async (category: NewCategoryDefaultValues): Promise<Response<Category>> => {
     return httpClient.post<Response<Category>>('/api/categories/expense-income', category);
   },
-  updateCategory: async (category: Category): Promise<Response<Category>> => {
+  updateCategory: async (category: UpdateCategoryDefaultValues): Promise<Response<Category>> => {
     return httpClient.put<Response<Category>>(`/api/categories/expense-income`, category);
   },
   deleteCategory: async (id: string): Promise<string> => {

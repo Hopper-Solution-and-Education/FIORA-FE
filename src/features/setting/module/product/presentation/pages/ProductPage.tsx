@@ -1,6 +1,5 @@
 'use client';
 
-import Loading from '@/components/common/Loading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -26,6 +25,7 @@ import {
 } from '../schema/addProduct.schema';
 import ChartPage from './CharPage';
 import TablePage from './TablePage';
+import Loading from '@/components/common/atoms/Loading';
 
 const ProductPage = () => {
   const { page, limit } = useAppSelector((state) => state.productManagement.categories);

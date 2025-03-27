@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,28 +10,28 @@ import {
 } from '@/components/ui/dialog';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { toast } from 'sonner';
-import { deleteCategory, fetchCategories } from '@/features/home/module/category/slices/actions';
-import {
-  setDeleteConfirmOpen,
-  setSelectedCategory,
-  setUpdateDialogOpen,
-} from '@/features/home/module/category/slices';
+import { deleteCategory } from '@/features/home/module/category/slices/actions';
+import { setDeleteConfirmOpen, setSelectedCategory } from '@/features/home/module/category/slices';
+import { useRouter } from 'next/navigation';
 
 const DeleteDialog: React.FC = () => {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const { categories, selectedCategory, deleteConfirmOpen } = useAppSelector(
     (state) => state.category,
   );
 
   const handleDeleteCategory = async () => {
     if (selectedCategory) {
-      const response = await dispatch(deleteCategory(selectedCategory.id)).unwrap();
-      if (response) {
+      try {
+        await dispatch(deleteCategory(selectedCategory.id)).unwrap();
         toast.success('Category deleted successfully');
         dispatch(setDeleteConfirmOpen(false));
-        dispatch(setUpdateDialogOpen(false));
         dispatch(setSelectedCategory(null));
-        dispatch(fetchCategories());
+        router.push('/home/category');
+      } catch (error) {
+        console.error('Error deleting category:', error);
+        toast.error('Failed to delete category');
       }
     }
   };

@@ -1,6 +1,5 @@
 'use client';
 
-import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useMemo } from 'react';
@@ -9,6 +8,7 @@ import { ProductTransactionResponse } from '../../domain/entities/Product';
 import { setDialogState } from '../../slices';
 import TwoSideBarChart, { BarItem } from '../atoms/charts';
 import { ProductFormValues } from '../schema/addProduct.schema';
+import { LoadingIndicator } from '@/components/common/atoms/LoadingIndicator';
 
 const mapTransactionsToBarItems = (data: ProductTransactionResponse[]): BarItem[] => {
   const groupedData: Record<string, BarItem> = {};
