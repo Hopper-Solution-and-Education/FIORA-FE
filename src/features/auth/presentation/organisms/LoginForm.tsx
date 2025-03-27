@@ -1,136 +1,161 @@
 'use client';
 
-import type React from 'react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { cn } from '@/shared/utils';
-import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
-import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/shared/utils';
+import { Check, Eye, EyeIcon as EyeClosed } from 'lucide-react';
+import Link from 'next/link';
+import type React from 'react';
+import { useState } from 'react';
 import { useLogin } from '../../hooks/useLogin';
 
 export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {
-  const {
-    email,
-    setEmail,
-    password,
-    setPassword,
-    rememberMe,
-    toggleRememberMe,
-    error,
-    success,
-    handleCredentialsSignIn,
-    handleGoogleSignIn,
-  } = useLogin();
+  const { rememberMe, toggleRememberMe, handleCredentialsSignIn, handleGoogleSignIn, form } =
+    useLogin();
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  const { isValid } = form.formState;
 
   return (
     <div className={cn('flex flex-col items-center gap-6', className)} {...props}>
-      <Card className="w-full max-w-xl overflow-hidden border-0 shadow-none">
+      <Card className="w-full max-w-2xl overflow-hidden border-0 shadow-none">
         <CardContent className="p-6 md:p-8">
           <div className="flex flex-col items-center gap-6">
-            <h1 className="text-2xl font-bold text-black dark:text-white">SIGN IN</h1>
+            <h1 className="text-4xl font-bold text-black dark:text-white">SIGN IN</h1>
 
-            {error && (
-              <Alert variant="destructive" className="mb-4 w-full text-sm">
-                <AlertDescription className="text-red-700 dark:text-red-400">
-                  {error}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {success && (
-              <Alert variant="default" className="mb-4 w-full text-sm border-green-500">
-                <AlertDescription className="text-green-700 dark:text-green-400">
-                  {success}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <form onSubmit={handleCredentialsSignIn} className="w-full space-y-4">
-              <div className="flex flex-col sm:flex-row w-full gap-2 sm:gap-4 sm:items-center">
-                <Label
-                  htmlFor="email"
-                  className="text-sm text-foreground w-full sm:w-1/4 text-left sm:text-right"
-                >
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="user@flora.live"
-                  className="w-full sm:flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-none"
-                  required
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(handleCredentialsSignIn)}
+                className="w-full space-y-4 flex flex-col items-center"
+              >
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col w-full max-w-md">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 w-full">
+                        <FormLabel className="text-sm text-foreground w-full sm:w-1/4 text-left sm:text-right">
+                          Email
+                        </FormLabel>
+                        <div className="flex-1">
+                          <FormControl>
+                            <Input
+                              id="email"
+                              type="email"
+                              placeholder="user@flora.live"
+                              className="w-full bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-none"
+                              {...field}
+                            />
+                          </FormControl>
+                        </div>
+                      </div>
+                      <FormMessage className="w-full text-left sm:pl-[calc(25%+1rem)]" />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div className="flex flex-col sm:flex-row w-full gap-2 sm:gap-4 sm:items-center">
-                <Label
-                  htmlFor="password"
-                  className="text-sm text-foreground w-full sm:w-1/4 text-left sm:text-right"
-                >
-                  Password
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="********"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full sm:flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-none"
-                  required
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col w-full max-w-md">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 w-full">
+                        <FormLabel className="text-sm text-foreground w-full sm:w-1/4 text-left sm:text-right">
+                          Password
+                        </FormLabel>
+                        <div className="relative flex-1">
+                          <FormControl>
+                            <Input
+                              id="password"
+                              type={showPassword ? 'text' : 'password'}
+                              placeholder="********"
+                              className="w-full bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-none pr-10"
+                              {...field}
+                            />
+                          </FormControl>
+                          <button
+                            type="button"
+                            className="absolute inset-y-0 right-0 flex items-center pr-3"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword
+                              ? field.value && (
+                                  <EyeClosed className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                                )
+                              : field.value && (
+                                  <Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                                )}
+                          </button>
+                        </div>
+                      </div>
+                      <FormMessage className="w-full text-left sm:pl-[calc(25%+1rem)]" />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div className="flex flex-col sm:flex-row w-full gap-2 sm:gap-4 sm:items-center">
-                <div className="w-full sm:w-1/4"></div>
-                <div className="w-full sm:flex-1 flex items-center gap-2">
-                  <Checkbox
-                    id="remember-me"
-                    checked={rememberMe}
-                    onCheckedChange={toggleRememberMe}
-                    className="h-4 w-4 cursor-pointer rounded border border-gray-300 dark:border-gray-600"
-                  />
-                  <Label
-                    htmlFor="remember-me"
-                    className="text-sm text-foreground/80 cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toggleRememberMe();
-                    }}
-                  >
-                    Remember me
-                  </Label>
+                <div className="flex flex-col sm:flex-row w-full max-w-md gap-2 sm:gap-4 sm:items-center">
+                  <div className="w-full sm:w-1/4"></div>
+                  <div className="w-full sm:flex-1 flex items-center gap-2">
+                    <Checkbox
+                      id="remember-me"
+                      checked={rememberMe}
+                      onCheckedChange={toggleRememberMe}
+                      className="h-4 w-4 cursor-pointer rounded border border-gray-300 dark:border-gray-600 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                    />
+                    <Label
+                      htmlFor="remember-me"
+                      className="text-sm text-foreground/80 cursor-pointer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleRememberMe();
+                      }}
+                    >
+                      Remember me
+                    </Label>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex justify-center w-full mt-7">
-                <Button
-                  type="submit"
-                  className="text-lg font-semibold w-48 py-4 bg-blue-500 text-white hover:bg-blue-600"
-                >
-                  Go
-                </Button>
-              </div>
-            </form>
+                <div className="flex justify-center w-full mt-7">
+                  <Button
+                    type="submit"
+                    disabled={!isValid} // Disable button if form is not valid
+                    className="group text-lg font-semibold w-44 py-6 bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed"
+                  >
+                    <Check className="block text-green-300 stroke-[4] transform transition-transform duration-200 drop-shadow-sm hover:text-green-100 !h-[28px] !w-[28px]" />
+                  </Button>
+                </div>
+              </form>
+            </Form>
 
             <div className="text-center text-sm text-gray-600 dark:text-gray-400">
               <div className="mb-2 sm:mb-0 sm:inline">
                 Cannot sign in?{' '}
                 <Link
                   href="/auth/sign-in/forgot-password"
-                  className="text-blue-500 hover:underline sm:mr-3 font-medium"
+                  className="text-blue-500 hover:underline sm:mr-3 font-medium underline underline-offset-4"
                 >
                   Forgot password
                 </Link>
               </div>{' '}
               <div className="sm:inline">
                 Do not have an account?{' '}
-                <Link href="/auth/sign-up" className="text-blue-500 hover:underline font-medium">
+                <Link
+                  href="/auth/sign-up"
+                  className="text-blue-500 hover:underline font-medium underline underline-offset-4"
+                >
                   Sign up
                 </Link>
               </div>
