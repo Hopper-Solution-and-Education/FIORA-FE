@@ -27,8 +27,8 @@ interface ModalComponentProps {
 }
 
 export interface TabActionHeaderProps {
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
   buttonLabel: string;
   modalComponent: ComponentType<ModalComponentProps>;
 }

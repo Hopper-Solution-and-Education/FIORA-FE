@@ -45,16 +45,6 @@ const LandingPage = () => {
         <VisionMission />
       </motion.div>
 
-      {/* KPS Section - Fade In */}
-      <motion.div
-        variants={fadeIn}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
-        <KPSSection />
-      </motion.div>
-
       {/* Fiora System - Fade In */}
       <motion.div
         variants={fadeIn}
@@ -63,6 +53,16 @@ const LandingPage = () => {
         viewport={{ once: true }}
       >
         <FioraSystem />
+      </motion.div>
+
+      {/* KPS Section - Fade In */}
+      <motion.div
+        variants={fadeIn}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+      >
+        <KPSSection />
       </motion.div>
 
       {/* Review Section - Fade In */}

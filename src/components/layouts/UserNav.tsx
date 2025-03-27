@@ -5,85 +5,78 @@ import { globalNavItems, notSignInNavItems } from '@/shared/constants/data';
 import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Button } from '../ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 
-type UserNavProps = {
+interface UserNavProps {
   handleSignOut?: () => void;
-};
+}
 
 export function UserNav({ handleSignOut }: UserNavProps) {
   const router = useRouter();
   const { data: session } = useSession();
 
-  // If session exists, show the dropdown with user info and navigation
+  const renderNavItem = (item: (typeof globalNavItems)[0]) => {
+    const Icon = item.icon ? Icons[item.icon] : Icons.logo;
+    return (
+      <DropdownMenuItem
+        key={item.title}
+        onClick={() => router.push(item.url)}
+        className="cursor-pointer"
+      >
+        <span>{item.title}</span>
+        <DropdownMenuShortcut>
+          <Icon {...item.props} className="h-4 w-4" />
+        </DropdownMenuShortcut>
+      </DropdownMenuItem>
+    );
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
-            <AvatarImage
-              src={session?.user?.image ?? 'https://placehold.co/400'}
-              alt={session?.user?.name ?? ''}
-            />
-            <AvatarFallback>{session?.user?.name?.[0]}</AvatarFallback>
+        <div className="group flex items-center space-x-2 rounded-md transition-all duration-200">
+          <Avatar className="h-9 w-9 transition-transform group-hover:scale-110">
+            <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || ''} />
+            <AvatarFallback className="rounded-lg">
+              {session?.user?.name?.slice(0, 2)?.toUpperCase() || 'CN'}
+            </AvatarFallback>
           </Avatar>
-        </Button>
+          {session && (
+            <div className="flex flex-col items-start space-y-0.5">
+              <p className="text-sm max-w-32 leading-none truncate group-hover:text-primary">
+                {session.user?.name}
+              </p>
+              <p className="text-xs text-muted-foreground max-w-32 truncate">
+                {session.user?.email}
+              </p>
+            </div>
+          )}
+        </div>
       </DropdownMenuTrigger>
+
       <DropdownMenuContent className="w-56" align="end" forceMount>
         {session ? (
           <>
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{session?.user?.name}</p>
-                <p className="text-xs leading-none text-muted-foreground">{session?.user?.email}</p>
-              </div>
-            </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              {globalNavItems.map((item) => {
-                const Icon = item.icon ? Icons[item.icon] : Icons.logo;
-                return (
-                  <DropdownMenuItem key={item.title} onClick={() => router.push(item.url)}>
-                    <span>{item.title}</span>
-                    <DropdownMenuShortcut>
-                      <Icon {...item.props} />
-                    </DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuGroup>
+            <DropdownMenuGroup>{globalNavItems.map(renderNavItem)}</DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => (handleSignOut ? handleSignOut() : signOut())}>
+            <DropdownMenuItem
+              onClick={() => (handleSignOut ? handleSignOut() : signOut())}
+              className="cursor-pointer"
+            >
               Log out
-              <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
             </DropdownMenuItem>
           </>
         ) : (
-          <>
-            <DropdownMenuGroup>
-              {notSignInNavItems.map((item) => {
-                const Icon = item.icon ? Icons[item.icon] : Icons.logo;
-                return (
-                  <DropdownMenuItem key={item.title} onClick={() => router.push(item.url)}>
-                    <span>{item.title}</span>
-                    <DropdownMenuShortcut>
-                      <Icon {...item.props} />
-                    </DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuGroup>
-          </>
+          <DropdownMenuGroup>{notSignInNavItems.map(renderNavItem)}</DropdownMenuGroup>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

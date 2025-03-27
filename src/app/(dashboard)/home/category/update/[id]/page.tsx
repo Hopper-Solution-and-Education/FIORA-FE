@@ -2,20 +2,22 @@
 import FormPage from '@/components/common/organisms/FormPage';
 import UpdateCategoryForm from '@/features/home/module/category/components/UpdateCategoryForm';
 import { useAppSelector } from '@/store';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useEffect } from 'react';
 import Loading from '@/components/common/atoms/Loading';
 
-export default function UpdateCategory({ params }: { params: { id: string } }) {
+export default function UpdateCategory() {
   const router = useRouter();
+  const params = useParams();
+
   const categories = useAppSelector((state) => state.category.categories.data);
-  const category = categories?.find((cat) => cat.id === params.id);
+  const category = categories?.find((cat) => cat.id === params?.id);
 
   useEffect(() => {
     if (!category) {
       router.push('/home/category');
     }
-  }, [category, router, params.id]);
+  }, [category, router, params?.id]);
 
   if (!category) return <Loading />;
 

@@ -29,10 +29,12 @@ export default function MediaDashboard() {
     { value: 'partners', label: 'Partner Logos', type: SectionType.PARTNER_LOGO },
     { value: 'header', label: 'Header', type: SectionType.HEADER },
     { value: 'footer', label: 'Footer', type: SectionType.FOOTER },
+    { value: 'system', label: 'FIORA System', type: SectionType.SYSTEM },
+    { value: 'review', label: 'Review', type: SectionType.REVIEW },
   ];
 
   return (
-    <div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
+    <div className="w-full">
       {isLoadingSaveChange && <Loading />}
       <Card className="mb-6">
         <CardHeader>
@@ -69,7 +71,7 @@ export default function MediaDashboard() {
         </TabsList>
 
         {sections.map((section) => (
-          <TabsContent key={section.value} value={section.value} className="p-4">
+          <TabsContent key={section.value} value={section.value}>
             <SectionManager sectionType={section.type} />
           </TabsContent>
         ))}

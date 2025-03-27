@@ -9,7 +9,7 @@ type BreadcrumbItem = {
 };
 
 const routeMapping: Record<string, BreadcrumbItem[]> = {
-  '/home': [{ title: 'Dashboard', link: '/home' }],
+  '/home': [{ title: 'Home', link: '/home' }],
   '/home/employee': [
     { title: 'Dashboard', link: '/home' },
     { title: 'Employee', link: '/home/employee' },
@@ -80,6 +80,7 @@ export function useBreadcrumbs() {
     });
 
     return items;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   return breadcrumbs;

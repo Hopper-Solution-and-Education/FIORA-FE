@@ -11,11 +11,7 @@ const ForgotPasswordPage = dynamic(
 );
 
 const ForgotPassword = () => {
-  return (
-    <section className="bg-muted py-16 px-2">
-      <ForgotPasswordPage />
-    </section>
-  );
+  return <ForgotPasswordPage />;
 };
 
 export default ForgotPassword;
