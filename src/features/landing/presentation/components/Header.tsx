@@ -1,6 +1,5 @@
 'use client';
 
-import AccountSettingModal from '@/features/landing/presentation/components/AccountModal';
 import HopperLogo from '@public/images/logo.jpg';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LogInIcon, Menu, UserPlus, X } from 'lucide-react';
@@ -17,6 +16,7 @@ import {
 import { UserNav } from '@/components/layouts/UserNav';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { SectionType } from '@prisma/client';
 import { useSession } from 'next-auth/react';
 import { useGetSection } from '../../hooks/useGetSection';
@@ -24,12 +24,13 @@ import { useGetSection } from '../../hooks/useGetSection';
 export default function Header() {
   const { section, isLoading, isError } = useGetSection(SectionType.HEADER);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAccountSettingOpen, setIsAccountSettingOpen] = useState(false);
+  const isMobile = useIsMobile();
+  // const [isAccountSettingOpen, setIsAccountSettingOpen] = useState(false);
   const [isOpenAnountment, setIsOpenAnountment] = useState(true);
   const { data } = useSession();
 
   const toggleMenu = () => setIsMenuOpen((prevState) => !prevState);
-  const toggleAccountSetting = () => setIsAccountSettingOpen((prevState) => !prevState);
+  // const toggleAccountSetting = () => setIsAccountSettingOpen((prevState) => !prevState);
 
   return (
     <header
@@ -37,25 +38,24 @@ export default function Header() {
     >
       <div className="flex items-center">
         {/* Logo */}
-        {/* Logo */}
         <div className="flex items-center">
           <Link href="/">
             {isLoading ? (
-              <Skeleton className="w-[60px] h-[60px] md:w-[80px] md:h-[80px] lg:w-[100px] lg:h-[100px]" />
+              <Skeleton className="w-[40px] h-[40px] sm:w-[50px] sm:h-[50px] md:w-[60px] md:h-[60px] lg:w-[80px] lg:h-[80px] xl:w-[100px] xl:h-[100px]" />
             ) : (
               <>
-                {section?.medias || !isError ? (
+                {section?.medias && !isError ? (
                   <Image
                     src={section?.medias[0]?.media_url || HopperLogo}
                     alt="Fiora Logo"
                     width={240}
                     height={240}
-                    className="object-contain w-auto max-w-[180px] md:max-w-[200px] lg:max-w-[240px] h-auto max-h-[80px]"
+                    className="object-contain w-auto max-w-[120px] sm:max-w-[140px] md:max-w-[180px] lg:max-w-[200px] xl:max-w-[240px] h-auto max-h-[70px] sm:max-h-[70px] md:max-h-[70px] lg:max-h-[80px]"
                     priority
                   />
                 ) : (
-                  <div className="w-[60px] h-[60px] md:w-[80px] md:h-[80px] lg:w-[100px] lg:h-[100px] bg-gray-200 rounded-full flex items-center justify-center">
-                    <span>Logo</span>
+                  <div className="w-[40px] h-[40px] sm:w-[50px] sm:h-[50px] md:w-[60px] md:h-[60px] lg:w-[80px] lg:h-[80px] xl:w-[100px] xl:h-[100px] bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-xs sm:text-sm md:text-base">Logo</span>
                   </div>
                 )}
               </>
@@ -66,7 +66,9 @@ export default function Header() {
         <div className="w-full h-full">
           <div className="w-full">
             {isOpenAnountment && (
-              <div className="flex justify-between items-start pb-2 mx-4">
+              <div
+                className={`flex justify-between items-start ${isMobile ? 'text-xs' : 'text-base'} px-4 shadow-sm`}
+              >
                 <div>This is an important announcement for all users.</div>
 
                 <X
@@ -78,7 +80,7 @@ export default function Header() {
             )}
             <div className="flex w-full justify-end">
               {/* Navigation */}
-              <nav className="hidden md:flex items-center gap-8 px-8">
+              <nav className="hidden md:flex items-center gap-8 px-8 mt-4">
                 <HelpCenter />
                 <SettingCenter />
 
@@ -107,18 +109,19 @@ export default function Header() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
+            className="flex items-center justify-end mx-4 mt-1"
           >
-            <button
+            <div
               onClick={toggleMenu}
-              className="md:hidden p-2 rounded-full bg-accent hover:bg-accent/80 transition-colors duration-200"
+              className="md:hidden transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
+            </div>
           </motion.div>
         </div>
       </div>
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-end">
         {/* Mobile Menu */}
         <AnimatePresence>
           {isMenuOpen && (
@@ -134,12 +137,29 @@ export default function Header() {
               </Button>
 
               <ThemeToggle />
-              <UserNav />
+
+              {data?.user ? (
+                <UserNav />
+              ) : (
+                <>
+                  <UserPlus
+                    onClick={() => redirect('/auth/sign-up')}
+                    size={18}
+                    className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+                  />
+
+                  <LogInIcon
+                    onClick={() => redirect('/auth/sign-in')}
+                    size={18}
+                    className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+                  />
+                </>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
 
-        <AccountSettingModal isOpen={isAccountSettingOpen} onClose={toggleAccountSetting} />
+        {/* <AccountSettingModal isOpen={isAccountSettingOpen} onClose={toggleAccountSetting} /> */}
       </div>
     </header>
   );

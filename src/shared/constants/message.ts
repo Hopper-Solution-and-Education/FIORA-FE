@@ -79,6 +79,8 @@ export enum Messages {
   PARTNER_ALREADY_EXISTS = 'Partner you are creating already exists.',
 
   INVALID_USER = 'Invalid user.',
+  USER_EMAIL_EXISTED = 'Email already existed',
+  NOT_FOUND_EMAIL = 'User email not found',
   INVALID_PHONE = 'Invalid phone number.',
   INVALID_DOB = 'Invalid date of birth.',
 

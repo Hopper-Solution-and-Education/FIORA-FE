@@ -1,4 +1,4 @@
-import Loading from '@/components/common/Loading';
+import Loading from '@/components/common/atoms/Loading';
 import growthbook from '@/config/growthbook';
 import { configureServerSideGrowthBook } from '@/config/growthbookServer';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
