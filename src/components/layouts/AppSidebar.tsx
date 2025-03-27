@@ -4,7 +4,6 @@ import growthbook from '@/config/growthbook';
 import { NavItem } from '@/features/home/types/Nav.types';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { SectionType } from '@prisma/client';
 import HopperLogo from '@public/images/logo.jpg';
 import { ChevronRight, ChevronsUpDown, LogOut } from 'lucide-react';
@@ -37,6 +36,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarRail,
+  useSidebar,
 } from '../ui/sidebar';
 
 export const company = {
@@ -57,6 +57,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   const pathname = usePathname();
   const { section } = useGetSection(SectionType.HEADER);
   const isMobile = useIsMobile();
+  const { open } = useSidebar();
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -70,8 +71,6 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
     setOpenItems(newOpenItems);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, navItems]);
-
-  console.log(gb.isOn(FeatureFlags.CATEGORY_FEATURE));
 
   useEffect(() => {
     const filterNavItems = (items: NavItem[]): NavItem[] => {
@@ -126,23 +125,41 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex gap-2 py-2 text-sidebar-accent-foreground">
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+        <div className="flex gap-3 py-3 text-sidebar-accent-foreground items-center">
+          {/* Logo */}
+          <div
+            className={`flex aspect-square items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground transition-all duration-300 ${
+              isMobile
+                ? open
+                  ? 'size-10 sm:size-12'
+                  : 'size-6 sm:size-7'
+                : open
+                  ? 'size-10 sm:size-12 md:size-14 lg:size-16 xl:size-16'
+                  : 'size-6 sm:size-7 md:size-8'
+            }`}
+          >
             <Image
               src={section?.medias[0].media_url || company.logo}
               alt="Fiora Logo"
-              width={120}
-              height={120}
-              className="object-contain w-16 h-16 sm:w-20 sm:h-20 md:w-28 md:h-28 lg:w-28 lg:h-28 xl:w-32 xl:h-32"
+              width={160}
+              height={160}
+              className="object-contain w-full h-full rounded-md"
               priority
             />
           </div>
-          <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold">{section?.medias[0].description}</span>
-            <span className="truncate text-xs">{company.plan}</span>
+
+          {/* Text Info */}
+          <div className="grid flex-1 text-left">
+            <span className="truncate font-semibold text-base sm:text-md md:text-lg">
+              {section?.medias[0].description}
+            </span>
+            <span className="truncate text-sm sm:text-sm md:text-md text-gray-400">
+              {company.plan}
+            </span>
           </div>
         </div>
       </SidebarHeader>
+
       <SidebarContent className="overflow-x-hidden">
         <SidebarGroup>
           <SidebarGroupLabel>{appLabel}</SidebarGroupLabel>
