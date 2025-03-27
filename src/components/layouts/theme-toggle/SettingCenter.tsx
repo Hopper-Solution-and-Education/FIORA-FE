@@ -62,7 +62,9 @@ export default function SettingCenter() {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-[300px] p-4 grid grid-cols-4 gap-4 border shadow-md"
+        className={`${
+          data?.user ? 'w-[300px] grid-cols-4' : 'w-[100px] grid-cols-2'
+        } p-4 grid gap-4 border shadow-md`}
       >
         <>
           {data?.user && (
