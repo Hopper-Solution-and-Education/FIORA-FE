@@ -1,13 +1,19 @@
+'use client';
 import ProductCreation from '@/features/setting/module/product/presentation/pages/ProductCreation';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
-export const metadata = {
-  title: 'Dashboard : Product View',
-};
+export default function Page() {
+  const params = useParams();
+  const router = useRouter();
 
-type PageProps = { params: { id: string } };
+  const productId = params?.id as string;
 
-export default async function Page({ params }: PageProps) {
-  const { id } = params;
+  useEffect(() => {
+    if (!productId) {
+      router.push('/setting/product');
+    }
+  }, [productId]);
 
-  return <ProductCreation productId={id} />;
+  return <ProductCreation productId={productId} />;
 }
