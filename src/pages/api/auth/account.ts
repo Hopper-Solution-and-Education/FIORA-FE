@@ -25,12 +25,12 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
     if (!isValid) {
       response.status(400).json({ error: 'Invalid account type or balance' });
     }
-    // Ensure user exists
+
     const userFound = await UserUSeCaseInstance.checkExistedUserById(userId);
     if (!userFound) {
       response.status(404).json({ error: 'User not found' });
     }
-    // Create the account
+
     const account = await AccountUseCaseInstance.create({
       userId,
       name,
@@ -41,7 +41,7 @@ export async function POST(request: NextApiRequest, response: NextApiResponse) {
       parentId,
       icon: 'circle',
     });
-    // If this is a sub-account, update the parent's balance
+
     response.status(201).json({ message: 'Account created successfully', account });
   } catch (error: any) {
     response.status(error.status).json({ error: error.message });

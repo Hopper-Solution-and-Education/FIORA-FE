@@ -2,7 +2,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
 import FinancialAccount from './FInancialAccount';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -61,7 +60,7 @@ export default function AccountList({ className }: AccountListProps) {
 
       // Calculate total balance
       const totalBalance = getTotalBalance(parents);
-      // format currency
+      // Format currency
       const formattedCurrency = formatCurrency(totalBalance);
       setTotalBalance(formattedCurrency);
 
@@ -79,7 +78,6 @@ export default function AccountList({ className }: AccountListProps) {
   }, [isTriggered, accountsMap, parentAccounts, setIsTriggered, setIsCreateModalOpen]);
 
   useEffect(() => {
-    // Sample data from the provided JSON
     fetchAccountsData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTriggered, setIsTriggered, setIsCreateModalOpen]);
@@ -100,27 +98,27 @@ export default function AccountList({ className }: AccountListProps) {
 
   return (
     <div>
-      <Card className={cn('w-full mb-4 mx-auto', className)}>
-        {/* Total Balance Section */}
-        <CardHeader className="border-b">
+      <div className={cn('w-full mb-4 mx-auto border-r rounded p-4', className)}>
+        <div className="border-b pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg font-semibold">Total Balance</CardTitle>
+              <h3 className="text-lg font-semibold">Total Balance</h3>
               <p className="text-3xl font-bold text-green-600">{totalBalance}</p>
             </div>
             <Button
               variant="default"
               className="flex items-center gap-2"
-              size={'lg'}
+              size="lg"
               onClick={() => setIsCreateModalOpen(true)}
             >
               <Plus className="w-7 h-7" />
               Add Account
             </Button>
           </div>
-        </CardHeader>
+        </div>
+
         {/* Accounts List */}
-        <CardContent className="space-y-1">
+        <div className="pt-4 space-y-1">
           {useMemo(() => {
             return (
               <FinancialAccount
@@ -133,8 +131,8 @@ export default function AccountList({ className }: AccountListProps) {
             );
             // eslint-disable-next-line react-hooks/exhaustive-deps
           }, [accountsMap, parentAccounts])}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

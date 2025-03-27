@@ -1,6 +1,6 @@
 'use client';
 
-import IconSelect from '@/components/common/IconSelect';
+import IconSelect from '@/components/common/atoms/IconSelect';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import {

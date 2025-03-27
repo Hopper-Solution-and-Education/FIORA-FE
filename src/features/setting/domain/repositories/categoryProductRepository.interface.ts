@@ -14,11 +14,11 @@ export interface ICategoryProductRepository {
     where: Prisma.CategoryProductsWhereInput,
     options: Prisma.CategoryProductsFindManyArgs,
   ): Promise<CategoryProducts[]>;
-  // updateCategoryProduct(
-  //   where: Prisma.CategoryProductsWhereUniqueInput,
-  //   data: Prisma.CategoryProductsUpdateInput,
-  // ): Promise<CategoryProducts>;
-  // deleteCategoryProduct(where: Prisma.CategoryProductsWhereUniqueInput): Promise<CategoryProducts>;
+  updateCategoryProduct(
+    where: Prisma.CategoryProductsWhereUniqueInput,
+    data: Prisma.CategoryProductsUpdateInput,
+  ): Promise<CategoryProducts>;
+  deleteCategoryProduct(where: Prisma.CategoryProductsWhereUniqueInput): Promise<CategoryProducts>;
   aggregate(options: Prisma.CategoryProductsAggregateArgs): Promise<any>;
   // groupBy(options: Prisma.CategoryProductsGroupByArgs): Promise<any>;
   count(options: Prisma.CategoryProductsCountArgs): Promise<number>;

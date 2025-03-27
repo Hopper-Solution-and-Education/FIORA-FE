@@ -5,6 +5,7 @@ import {
 } from '../../domain/repositories/categoryProductRepository.interface';
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
 import { CategoryProducts, Prisma } from '@prisma/client';
+import { Messages } from '@/shared/constants/message';
 
 class CategoryProductsUseCase {
   private categoryProductRepository: ICategoryProductRepository;
@@ -46,18 +47,85 @@ class CategoryProductsUseCase {
         totalPage,
       };
     } catch (error: any) {
-      throw new Error('Failed to get all category products ', error.message);
+      throw new Error('Failed to get all category products ' + error.message);
+    }
+  }
+
+  async getCategoryProductById(params: { userId: string; id: string }): Promise<CategoryProducts> {
+    try {
+      const { userId, id } = params;
+
+      const categoryProduct = await this.categoryProductRepository.findUniqueCategoryProduct({
+        id,
+        userId,
+      });
+
+      if (!categoryProduct) {
+        throw new Error(Messages.CATEGORY_NOT_FOUND);
+      }
+
+      return categoryProduct;
+    } catch (error: any) {
+      console.log(error);
+      throw new Error('Failed to get category product by id ' + error.message);
     }
   }
 
   async createCategoryProduct(data: CategoryProductCreation): Promise<CategoryProducts> {
     try {
-      return this.categoryProductRepository.createCategoryProduct({
+      return await this.categoryProductRepository.createCategoryProduct({
         ...data,
         ...(data.tax_rate ? { tax_rate: new Prisma.Decimal(data.tax_rate) } : { tax_rate: 0 }), // Default tax rate to 0 if not provided
       });
     } catch (error: any) {
-      throw new Error('Failed to create category product ', error.message);
+      throw new Error('Failed to create category product ' + error.message);
+    }
+  }
+
+  async updateCategoryProduct(
+    id: string,
+    data: CategoryProductCreation,
+  ): Promise<CategoryProducts> {
+    try {
+      const { userId, ...restData } = data;
+
+      const foundCategoryProduct = await this.categoryProductRepository.findUniqueCategoryProduct({
+        id,
+        userId,
+      });
+
+      if (!foundCategoryProduct) {
+        throw new Error(Messages.CATEGORY_PRODUCT_NOT_FOUND);
+      }
+
+      return await this.categoryProductRepository.updateCategoryProduct(
+        { id, userId },
+        {
+          ...restData,
+          ...(restData.tax_rate ? { tax_rate: new Prisma.Decimal(restData.tax_rate) } : {}),
+        },
+      );
+    } catch (error: any) {
+      throw new Error('Failed to update category product ' + error.message);
+    }
+  }
+
+  async deleteCategoryProduct(params: { userId: string; id: string }): Promise<CategoryProducts> {
+    try {
+      const { userId, id } = params;
+
+      const foundCategoryProduct = await this.categoryProductRepository.findUniqueCategoryProduct({
+        id,
+        userId,
+      });
+
+      if (!foundCategoryProduct) {
+        throw new Error(Messages.CATEGORY_PRODUCT_NOT_FOUND);
+      }
+
+      return await this.categoryProductRepository.deleteCategoryProduct({ id, userId });
+    } catch (error: any) {
+      throw new Error('Failed to delete category product ' + error.message);
     }
   }
 }

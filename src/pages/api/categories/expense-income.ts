@@ -1,10 +1,10 @@
 import { createError, createResponse } from '@/config/createResponse';
-import { categoryUseCase } from '@/features/setting/application/use-cases/categoryUseCase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { CategoryType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { categoryUseCase } from '@/features/setting/application/use-cases/categoryUseCase';
 
 export default sessionWrapper(async (req, res, userId) => {
   switch (req.method) {
