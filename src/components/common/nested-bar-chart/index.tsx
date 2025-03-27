@@ -26,6 +26,7 @@ import ChartLegend from './atoms/ChartLegend';
 import CustomTooltip from './atoms/CustomTooltip';
 import CustomYAxisTick from './atoms/CustomYAxisTick';
 
+// Define the structure of a bar item
 export type BarItem = {
   id?: string;
   name: string;
@@ -38,6 +39,7 @@ export type BarItem = {
   depth?: number;
 };
 
+// Configuration for levels in the chart
 export type LevelConfig = {
   totalName?: string;
   colors: {
@@ -45,6 +47,7 @@ export type LevelConfig = {
   };
 };
 
+// Props for the NestedBarChart component
 export type NestedBarChartProps = {
   data: BarItem[];
   title?: string;
@@ -57,6 +60,7 @@ export type NestedBarChartProps = {
   tutorialText?: string;
   callback?: (item: any) => void;
   levelConfig?: LevelConfig;
+  expanded?: boolean; // Controls initial expansion of the total bar
 };
 
 const NestedBarChart = ({
@@ -71,11 +75,16 @@ const NestedBarChart = ({
   tutorialText,
   callback,
   levelConfig,
+  expanded = true, // Default to true
 }: NestedBarChartProps) => {
+  // State to track which bars are expanded
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+  // State to dynamically adjust chart height
   const [chartHeight, setChartHeight] = useState(MIN_CHART_HEIGHT);
+  // Get window width for responsive design
   const { width } = useWindowSize();
 
+  // Function to toggle the expansion of a bar
   const toggleExpand = useCallback((name: string) => {
     setExpandedItems((prev) => ({
       ...prev,
@@ -83,10 +92,12 @@ const NestedBarChart = ({
     }));
   }, []);
 
-  // * INITIAL DATA PROCESSING *
+  // **Initial Data Processing**
+  // Calculate total amount from the data
   const totalAmount = data.reduce((sum, item) => sum + Math.abs(item.value), 0);
   const totalName = levelConfig?.totalName || 'Total Amount';
   const totalColor = levelConfig?.colors[0] || '#888888';
+  // Create the total bar item
   const totalItem: BarItem = {
     name: totalName,
     value: totalAmount,
@@ -95,10 +106,21 @@ const NestedBarChart = ({
     children: data,
     depth: 0,
   };
+
+  // Sync the expanded state of the total bar with the `expanded` prop
+  useEffect(() => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [totalName]: expanded,
+    }));
+  }, [expanded, totalName]);
+
+  // Base chart data starts with the total item
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const chartData = [totalItem];
 
-  // Recursive function to process data with multiple levels
+  // **Recursive Data Processing**
+  // Builds the processed data array based on expanded items
   const buildProcessedData = useCallback(
     (items: BarItem[], parentName?: string, parentValue?: number, depth: number = 0): BarItem[] => {
       const result: BarItem[] = [];
@@ -114,6 +136,7 @@ const NestedBarChart = ({
           depth,
         };
         result.push(currentItem);
+        // If the item is expanded and has children, process them recursively
         if (expandedItems[item.name] && item.children && item.children.length > 0) {
           const children = buildProcessedData(item.children, item.name, itemValue, depth + 1);
           result.push(...children);
@@ -124,19 +147,22 @@ const NestedBarChart = ({
     [expandedItems, levelConfig],
   );
 
+  // Memoize processed data to optimize performance
   const processedData = useMemo(
     () => buildProcessedData(chartData),
     [buildProcessedData, chartData],
   );
 
-  // Update chart height based on number of visible bars
+  // **Dynamic Chart Height**
+  // Adjust chart height based on the number of visible bars
   useEffect(() => {
     const numBars = processedData.length;
     const newHeight = Math.max(numBars * BASE_BAR_HEIGHT, MIN_CHART_HEIGHT);
     setChartHeight(newHeight);
   }, [processedData]);
 
-  // Calculate maximum absolute value for X-axis domain
+  // **X-Axis Domain Calculation**
+  // Calculate the maximum absolute value for the X-axis
   const maxAbsValue = useMemo(() => {
     const allValues = data.flatMap((item) => [
       Math.abs(item.value),
@@ -145,16 +171,19 @@ const NestedBarChart = ({
     return Math.max(...allValues);
   }, [data]);
 
+  // Define the X-axis domain
   const domain = useMemo(() => {
     if (maxAbsValue === 0) return [0, 1];
     const maxX = maxAbsValue / maxBarRatio;
     return [0, maxX];
   }, [maxAbsValue, maxBarRatio]);
 
-  // Dynamic margins based on window width
+  // **Responsive Margins**
+  // Calculate chart margins based on window width
   const chartMargins = useMemo(() => getChartMargins(width), [width]);
 
-  // Custom tooltip with currency and locale
+  // **Custom Tooltip**
+  // Define a custom tooltip with currency and locale formatting
   const customTooltipWithConfig = useCallback(
     (props: any) => (
       <CustomTooltip {...props} currency={currency} locale={locale} tutorialText={tutorialText} />
@@ -162,13 +191,16 @@ const NestedBarChart = ({
     [currency, locale, tutorialText],
   );
 
+  // **Render the Chart**
   return (
     <div className="w-full bg-white dark:bg-gray-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 transition-colors duration-200">
+      {/* Optional Title */}
       {title && (
         <h2 className="text-xl text-center font-semibold text-gray-800 dark:text-gray-200 mb-4">
           {title}
         </h2>
       )}
+      {/* Chart Container with Dynamic Height */}
       <div style={{ height: `${chartHeight}px` }} className="transition-all duration-300">
         <ResponsiveContainer width="100%" height={chartHeight}>
           <BarChart
@@ -177,6 +209,7 @@ const NestedBarChart = ({
             margin={chartMargins}
             className="transition-all duration-300"
           >
+            {/* Grid */}
             <CartesianGrid
               strokeDasharray="3 3"
               stroke="#E5E7EB"
@@ -184,12 +217,14 @@ const NestedBarChart = ({
               horizontal={true}
               vertical={false}
             />
+            {/* X-Axis */}
             <XAxis
               type="number"
               domain={domain}
               tickFormatter={xAxisFormatter}
               className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
             />
+            {/* Y-Axis */}
             <YAxis
               type="category"
               dataKey="name"
@@ -206,7 +241,9 @@ const NestedBarChart = ({
                 />
               )}
             />
+            {/* Tooltip */}
             <Tooltip trigger="hover" content={tooltipContent || customTooltipWithConfig} />
+            {/* Bar */}
             <Bar
               dataKey="value"
               radius={[0, 4, 4, 0]}
@@ -226,6 +263,7 @@ const NestedBarChart = ({
           </BarChart>
         </ResponsiveContainer>
       </div>
+      {/* Legend */}
       <ChartLegend items={legendItems || []} />
     </div>
   );

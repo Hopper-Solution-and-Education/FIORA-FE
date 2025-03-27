@@ -1,6 +1,6 @@
 'use client';
 
-import Loading from '@/components/common/Loading';
+import Loading from '@/components/common/atoms/Loading';
 import dynamic from 'next/dynamic';
 
 const BannerPage = dynamic(() => import('@/features/admin/landing/presentation/Page'), {

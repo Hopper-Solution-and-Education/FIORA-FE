@@ -68,6 +68,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
       {} as Record<string, boolean>,
     );
     setOpenItems(newOpenItems);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, navItems]);
 
   console.log(gb.isOn(FeatureFlags.CATEGORY_FEATURE));
@@ -94,6 +95,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
     };
 
     handleCheckNavItem();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navItems]);
 
   const isItemActive = (item: NavItem) => {
@@ -111,6 +113,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
       {} as Record<string, boolean>,
     );
     setOpenItems(newOpenItems);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, navItems]);
 
   const handleOpenChange = (title: string, isOpen: boolean) => {
