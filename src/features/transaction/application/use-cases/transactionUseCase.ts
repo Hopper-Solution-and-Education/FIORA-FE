@@ -1,3 +1,10 @@
+import { BooleanUtils } from '@/config/booleanUtils';
+import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
+import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
+import { ICategoryRepository } from '@/features/setting/domain/repositories/categoryRepository.interface';
+import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
+import prisma from '@/infrastructure/database/prisma';
+import { Messages } from '@/shared/constants/message';
 import {
   AccountType,
   CategoryType,
@@ -8,13 +15,9 @@ import {
 } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '../../infrastructure/repositories/transactionRepository';
-import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
-import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
-import { ICategoryRepository } from '@/features/setting/domain/repositories/categoryRepository.interface';
-import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
-import { BooleanUtils } from '@/config/booleanUtils';
-import { Messages } from '@/shared/constants/message';
-import prisma from '@/infrastructure/database/prisma';
+import { TransactionGetPagination } from '@/shared/types/transaction.types';
+import { PaginationResponse } from '@/shared/types/Common.types';
+import { buildOrderByTransaction, buildWhereClause } from '@/shared/utils';
 
 class TransactionUseCase {
   constructor(
@@ -27,30 +30,54 @@ class TransactionUseCase {
     return this.transactionRepository.getTransactionsByUserId(userId);
   }
 
+  async getTransactions(
+    params: TransactionGetPagination,
+  ): Promise<PaginationResponse<Transaction>> {
+    const { page = 1, pageSize = 20, filters, sortBy = {}, userId } = params;
+    const take = pageSize;
+    const skip = (page - 1) * pageSize;
+
+    const where = buildWhereClause(filters);
+    const orderBy = buildOrderByTransaction(sortBy);
+
+    const transactionAwaited = this.transactionRepository.findManyTransactions(
+      {
+        ...where,
+        userId,
+      },
+      {
+        skip,
+        take,
+        orderBy,
+        include: {
+          fromAccount: true,
+          fromCategory: true,
+          toAccount: true,
+          toCategory: true,
+          partner: true,
+        },
+      },
+    );
+    const totalTransactionAwaited = this.transactionRepository.count({});
+
+    const [transactions, total] = await Promise.all([transactionAwaited, totalTransactionAwaited]);
+
+    const totalPage = Math.ceil(total / pageSize);
+
+    return {
+      data: transactions,
+      totalPage,
+      page,
+      pageSize,
+    };
+  }
+
   async viewTransaction(id: string, userId: string): Promise<Transaction> {
     const transaction = await this.transactionRepository.getTransactionById(id, userId);
     if (!transaction) {
       throw new Error(Messages.INTERNAL_ERROR);
     }
     return transaction;
-  }
-
-  async editTransaction(
-    id: string,
-    userId: string,
-    data: Prisma.TransactionUncheckedUpdateInput,
-  ): Promise<Transaction> {
-    return prisma.$transaction(async (tx) => {
-      const transaction = await tx.transaction.findUnique({ where: { id } });
-      if (!transaction) {
-        throw new Error(Messages.TRANSACTION_NOT_FOUND);
-      }
-
-      await this.revertOldTransaction(tx, transaction);
-      await this.applyNewTransaction(tx, data, userId);
-
-      return tx.transaction.update({ where: { id }, data });
-    });
   }
 
   private async revertOldTransaction(tx: Prisma.TransactionClient, transaction: Transaction) {
@@ -65,62 +92,45 @@ class TransactionUseCase {
       throw new Error(Messages.ACCOUNT_NOT_FOUND);
     }
 
-    if (transaction.type === TransactionType.Expense && fromAccount) {
-      await this.accountRepository.receiveBalance(
-        tx,
-        fromAccount.id,
-        transaction.amount.toNumber(),
-      );
-    } else if (transaction.type === TransactionType.Income && toAccount) {
-      await this.accountRepository.deductBalance(tx, toAccount.id, transaction.amount.toNumber());
-    } else if (transaction.type === TransactionType.Transfer && fromAccount && toAccount) {
-      await this.accountRepository.transferBalance(
-        tx,
-        toAccount.id,
-        fromAccount.id,
-        transaction.amount.toNumber(),
-      );
+    const amount = transaction.amount.toNumber();
+
+    switch (transaction.type) {
+      case TransactionType.Expense:
+        if (fromAccount) {
+          await this.accountRepository.receiveBalance(tx, fromAccount.id, amount);
+        }
+        break;
+
+      case TransactionType.Income:
+        if (toAccount) {
+          this.validateSufficientBalance(
+            toAccount.balance!.toNumber(),
+            amount,
+            `Tài khoản ${toAccount.name} không đủ số dư để hoàn tác giao dịch thu nhập.`,
+          );
+          await this.accountRepository.deductBalance(tx, toAccount.id, amount);
+        }
+        break;
+
+      case TransactionType.Transfer:
+        if (fromAccount && toAccount) {
+          this.validateSufficientBalance(
+            toAccount.balance!.toNumber(),
+            amount,
+            `Tài khoản ${toAccount.name} không đủ số dư để hoàn trả giao dịch chuyển khoản.`,
+          );
+          await this.accountRepository.transferBalance(tx, toAccount.id, fromAccount.id, amount);
+        }
+        break;
     }
 
     await this.revertProductPrices(tx, transaction);
     await tx.productTransaction.deleteMany({ where: { transactionId: transaction.id } });
   }
 
-  private async applyNewTransaction(
-    tx: Prisma.TransactionClient,
-    data: Prisma.TransactionUncheckedUpdateInput,
-    userId: string,
-  ) {
-    const fromAccount = data.fromAccountId
-      ? await tx.account.findUnique({ where: { id: data.fromAccountId as string } })
-      : null;
-    const toAccount = data.toAccountId
-      ? await tx.account.findUnique({ where: { id: data.toAccountId as string } })
-      : null;
-
-    if (data.type === TransactionType.Expense && fromAccount) {
-      this.validatePaymentAccount(fromAccount, data.amount as number);
-      await this.accountRepository.deductBalance(tx, fromAccount.id, data.amount as number);
-    } else if (data.type === TransactionType.Income && toAccount) {
-      await this.accountRepository.receiveBalance(tx, toAccount.id, data.amount as number);
-    } else if (data.type === TransactionType.Transfer && fromAccount && toAccount) {
-      this.validatePaymentAccount(fromAccount, data.amount as number);
-      await this.accountRepository.transferBalance(
-        tx,
-        fromAccount.id,
-        toAccount.id,
-        data.amount as number,
-      );
-    }
-
-    if (data.products) {
-      await this.createProductTransaction(
-        tx,
-        data as Transaction,
-        data.products as { id: string }[],
-        userId,
-        data.type as TransactionType,
-      );
+  private validateSufficientBalance(balance: number, amount: number, errorMessage: string) {
+    if (balance < amount) {
+      throw new Error(errorMessage);
     }
   }
 
@@ -141,11 +151,16 @@ class TransactionUseCase {
   }
 
   async removeTransaction(id: string, userId: string): Promise<void> {
-    const transaction = await this.transactionRepository.getTransactionById(id, userId);
-    if (!transaction) {
-      throw new Error(Messages.INTERNAL_ERROR);
-    }
-    await this.transactionRepository.deleteTransaction(id, userId);
+    return prisma.$transaction(async (tx) => {
+      const transaction = await tx.transaction.findUnique({ where: { id } });
+      if (!transaction) {
+        throw new Error(Messages.TRANSACTION_NOT_FOUND);
+      }
+
+      await this.revertOldTransaction(tx, transaction);
+
+      return await this.transactionRepository.deleteTransaction(id, userId);
+    });
   }
 
   async createTransaction(data: Prisma.TransactionUncheckedCreateInput) {
@@ -388,6 +403,7 @@ class TransactionUseCase {
     transaction: Transaction,
     products: { id: string }[],
     userId: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     type: TransactionType,
   ) {
     if (!products || products.length === 0) {

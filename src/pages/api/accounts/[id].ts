@@ -1,17 +1,17 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
-import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]';
 import { createResponse } from '@/config/createResponse';
+import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
+import { Messages } from '@/shared/constants/message';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { NextApiRequest, NextApiResponse } from 'next';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {
     switch (req.method) {
       case 'GET':
         return GET(req, res);
       case 'PUT':
-        return PUT(req, res);
+        return PUT(req, res, userId);
       case 'DELETE':
         return DELETE(req, res);
       default:
@@ -20,17 +20,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (error: any) {
     return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
-}
+});
 
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method !== 'GET') {
       return res.status(405).json({ error: 'Method not allowed' });
-    }
-
-    const session = await getServerSession(req, res, authOptions);
-    if (!session || !session.user?.id) {
-      return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
     }
 
     const { id } = req.query;
@@ -54,31 +49,30 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-export async function PUT(req: NextApiRequest, res: NextApiResponse) {
+export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     if (req.method !== 'PUT') {
       return res.status(405).json({ error: 'Method not allowed' });
     }
-    const session = await getServerSession(req, res, authOptions);
-    if (!session || !session.user?.id) {
-      return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
-    }
-
-    const userId = session.user.id;
 
     const { id } = req.query;
-    const { name, type, currency, balance = 0, limit, icon, parentId } = req.body;
+    const { name, type, currency, balance = 0, limit, icon } = req.body;
     if (!id) {
       return res
         .status(RESPONSE_CODE.BAD_REQUEST)
-        .json({ message: 'Missing account id to update' });
+        .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_PARAMS_INPUT));
+    }
+    const accountFound = await AccountUseCaseInstance.findByCondition({
+      id: id.toString(),
+      userId,
+    });
+
+    if (!accountFound) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.ACCOUNT_NOT_FOUND));
     }
 
-    const accountFound = await AccountUseCaseInstance.findById(id as string);
-    if (!accountFound) {
-      return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Cannot update sub account' });
-    }
-    console.log('accountFound', type);
     const isValidType = AccountUseCaseInstance.validateAccountType(type, balance, limit);
     if (!isValidType) {
       return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Invalid account type' });
@@ -112,11 +106,6 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method !== 'DELETE') {
       return res.status(405).json({ error: 'Method not allowed' });
-    }
-
-    const session = await getServerSession(req, res, authOptions);
-    if (!session || !session.user?.id) {
-      return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: 'Chưa đăng nhập' });
     }
 
     const { id } = req.query;

@@ -1,7 +1,6 @@
 import type { IHttpClient } from '@/config/HttpClient';
 import { SectionType } from '@prisma/client';
-import { inject, injectable } from 'inversify';
-import { TYPES } from '../../di/landingDIContainer.type';
+import { decorate, injectable } from 'inversify';
 import { ISection } from '../../domain/interfaces/Section';
 import { Media } from '../../domain/models/Media';
 
@@ -10,11 +9,10 @@ interface ILandingAPI {
   fetchSection(sectionType: SectionType): Promise<ISection>;
 }
 
-@injectable()
 class LandingAPI implements ILandingAPI {
   private httpClient: IHttpClient;
 
-  constructor(@inject(TYPES.IHttpClient) httpClient: IHttpClient) {
+  constructor(httpClient: IHttpClient) {
     this.httpClient = httpClient;
   }
 
@@ -26,6 +24,14 @@ class LandingAPI implements ILandingAPI {
     return this.httpClient.get<ISection>(`/api/banner/section?sectionType=${sectionType}`);
   }
 }
+
+// Apply decorators programmatically
+decorate(injectable(), LandingAPI);
+
+// Create a factory function
+export const createLandingAPI = (httpClient: IHttpClient): ILandingAPI => {
+  return new LandingAPI(httpClient);
+};
 
 export { LandingAPI };
 export type { ILandingAPI };

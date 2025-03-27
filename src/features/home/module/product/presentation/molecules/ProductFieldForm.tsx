@@ -1,9 +1,6 @@
 'use client';
 
 import Loading from '@/components/common/Loading';
-import { Button } from '@/components/ui/button';
-import { DialogFooter } from '@/components/ui/dialog';
-import { Form } from '@/components/ui/form';
 import { useAppSelector } from '@/store';
 import { UseFormReturn } from 'react-hook-form';
 import PriceField from '../atoms/PriceField';
@@ -18,18 +15,17 @@ import { type ProductFormValues } from '../schema/addProduct.schema';
 
 interface ProductFormProps {
   method: UseFormReturn<ProductFormValues>;
-  onSubmit: (data: ProductFormValues) => Promise<void>;
-  onCancel: () => void;
 }
 
-const ProductForm = ({ method, onSubmit, onCancel }: ProductFormProps) => {
+const ProductForm = ({ method }: ProductFormProps) => {
   const isCreatingProduct = useAppSelector((state) => state.productManagement.isCreatingProduct);
-  const dialogState = useAppSelector((state) => state.productManagement.dialogState);
+  const isUpdatingProduct = useAppSelector((state) => state.productManagement.isUpdatingProduct);
 
   return (
-    <Form {...method}>
-      <>{isCreatingProduct && <Loading />}</>
-      <form onSubmit={method.handleSubmit(onSubmit)} className="space-y-6">
+    <>
+      <>{(isCreatingProduct || isUpdatingProduct) && <Loading />}</>
+      {/* <form onSubmit={method.handleSubmit(onSubmit)} className="space-y-6"> */}
+      <div className="m-2">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <ProductIconField control={method.control} />
           <ProductTypeField control={method.control} errors={method.formState.errors} />
@@ -41,21 +37,8 @@ const ProductForm = ({ method, onSubmit, onCancel }: ProductFormProps) => {
 
         <ProductDescriptionField control={method.control} errors={method.formState.errors} />
         <ProductItemsField control={method.control} errors={method.formState.errors} />
-
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button disabled={isCreatingProduct} type="submit">
-            {dialogState === 'add' ? (
-              <>{isCreatingProduct ? 'Creating...' : 'Create Product'}</>
-            ) : (
-              <>{isCreatingProduct ? 'Updating...' : 'Update Product'}</>
-            )}
-          </Button>
-        </DialogFooter>
-      </form>
-    </Form>
+      </div>
+    </>
   );
 };
 

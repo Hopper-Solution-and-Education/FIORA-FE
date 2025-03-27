@@ -3,40 +3,58 @@
 import { useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import * as Yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+
+const loginSchema = Yup.object().shape({
+  email: Yup.string().email('Enter a valid email').required('Email is required'),
+  password: Yup.string()
+    .matches(
+      /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
+      'Must be 8+ chars, 1 number, 1 lowercase, 1 uppercase',
+    )
+    .required('Password is required'),
+});
 
 export function useLogin() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: session, status } = useSession();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  console.log('Session:', session);
+  const form = useForm({
+    resolver: yupResolver(loginSchema),
+    mode: 'onChange',
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
-  const handleCredentialsSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleCredentialsSignIn = async (data: { email: string; password: string }) => {
     setError(null);
     setSuccess(null);
 
     try {
       const response = await signIn('credentials', {
-        email,
-        password,
+        ...data,
         rememberMe,
         redirect: false,
       });
 
       if (response?.ok) {
         setSuccess('Login successful!');
-        setEmail(''); // Reset email
-        setPassword(''); // Reset password
+        form.reset(); // Reset form fields
         router.push('/home');
       } else {
-        setError('Login failed. Please try again.');
+        setError('LoginID or Password is incorrect!');
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setError('An unexpected error occurred. Please try again.');
     }
@@ -55,11 +73,17 @@ export function useLogin() {
 
   const toggleRememberMe = () => setRememberMe((prev) => !prev);
 
+  // useEffect(() => {
+  //   if (error) {
+  //     toast.error(error);
+  //   }
+  //   if (success) {
+  //     toast.success(success);
+  //   }
+  // }, [error, success]);
+
   return {
-    email,
-    setEmail,
-    password,
-    setPassword,
+    form,
     rememberMe,
     toggleRememberMe,
     error,

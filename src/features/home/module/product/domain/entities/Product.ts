@@ -12,6 +12,8 @@ export class Product {
   items: ProductItem[];
   categoryId: string;
   type: ProductType;
+  createdAt: string;
+  updatedAt: string;
 
   constructor(
     id: string,
@@ -23,6 +25,8 @@ export class Product {
     items: ProductItem[] = [],
     categoryId: string,
     type: ProductType,
+    createdAt: string,
+    updatedAt: string,
   ) {
     this.id = id;
     this.name = name;
@@ -33,6 +37,8 @@ export class Product {
     this.items = items;
     this.categoryId = categoryId;
     this.type = type;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
   }
 }
 

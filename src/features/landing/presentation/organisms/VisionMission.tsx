@@ -1,6 +1,4 @@
-import { Button } from '@/components/ui/button';
 import { SectionType } from '@prisma/client';
-import { ArrowRight } from 'lucide-react';
 import { useGetSection } from '../../hooks/useGetSection';
 
 const VisionMission = () => {
@@ -60,22 +58,8 @@ const VisionMission = () => {
   return (
     <section>
       <div className="mt-20">
-        <div className="bg-muted-2 grid items-center gap-8 lg:grid-cols-2">
-          <div className="flex flex-col items-center p-16 text-center lg:items-start lg:text-left">
-            <h1 className="my-6 text-4xl font-bold text-pretty lg:text-6xl"> {section?.name}</h1>
-            <p className="mb-8 max-w-xl text-muted-foreground lg:text-xl">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Elig doloremque mollitia
-              fugiat omnis! Porro facilis quo animi consequatur. Explicabo.
-            </p>
-            <div className="flex w-full flex-col justify-center gap-2 sm:flex-row lg:justify-start">
-              <Button>
-                Primary
-                <ArrowRight className="size-4" />
-              </Button>
-              <Button variant="outline">Secondary</Button>
-            </div>
-          </div>
-          <div className="relative lg:h-[500px] h-[300px] overflow-hidden justify-center mx-4">
+        <div className="bg-muted-2 grid items-center gap-8 lg:grid-cols-3">
+          <div className="relative col-span-2 lg:h-[700px] h-[500px] overflow-hidden justify-center mx-4">
             {embedCode ? (
               <div
                 className="absolute inset-0"
@@ -88,6 +72,9 @@ const VisionMission = () => {
                 <p className="text-gray-500">No embedded content available</p>
               </div>
             )}
+          </div>
+          <div className="flex flex-col items-center p-16 text-center lg:items-start lg:text-left">
+            <h1 className="my-6 text-4xl font-bold text-pretty lg:text-6xl"> {section?.name}</h1>
           </div>
         </div>
       </div>

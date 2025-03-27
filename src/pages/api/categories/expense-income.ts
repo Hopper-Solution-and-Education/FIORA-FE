@@ -4,52 +4,24 @@ import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { CategoryType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]';
+import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 
-export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
-
-  if (!session) {
-    return null;
+export default sessionWrapper(async (req, res, userId) => {
+  switch (req.method) {
+    case 'POST':
+      return POST(req, res, userId);
+    case 'GET':
+      return GET(req, res, userId);
+    case 'PUT':
+      return PUT(req, res, userId);
+    case 'DELETE':
+      return DELETE(req, res, userId);
+    default:
+      return res
+        .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+        .json({ error: 'Phương thức không được hỗ trợ' });
   }
-
-  const currentTime = Math.floor(Date.now() / 1000);
-  const timeLeft = session.expiredTime - currentTime;
-  if (timeLeft <= 0) {
-    return null;
-  }
-
-  return session;
-}
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getUserSession(req, res);
-  if (!session || !session.user?.id) {
-    return createError(res, RESPONSE_CODE.UNAUTHORIZED, Messages.UNAUTHORIZED);
-  }
-
-  const userId = session.user.id;
-
-  try {
-    switch (req.method) {
-      case 'POST':
-        return POST(req, res, userId);
-      case 'GET':
-        return GET(req, res, userId);
-      case 'PUT':
-        return PUT(req, res, userId);
-      case 'DELETE':
-        return DELETE(req, res, userId);
-      default:
-        return createError(res, RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED);
-    }
-  } catch (error: any) {
-    return res
-      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, error || Messages.INTERNAL_ERROR));
-  }
-}
+});
 
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {

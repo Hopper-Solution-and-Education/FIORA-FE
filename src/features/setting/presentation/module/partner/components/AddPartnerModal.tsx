@@ -9,13 +9,13 @@ import {
 import { useCreatePartner } from '@/features/setting/hooks/useCreatePartner';
 import { FieldOverrides } from '@/shared/types/formsheet.type';
 import { generateFieldsFromSchema } from '@/shared/utils/formUtils';
-import { toast } from 'sonner';
 
 interface AddPartnerModalProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const mockParentPartners = [
   { id: '1', name: 'Partner A', description: 'This is Partner A' },
   { id: '2', name: 'Partner B', description: 'This is Partner B' },
@@ -24,7 +24,7 @@ const mockParentPartners = [
 ];
 
 export function AddPartnerModal({ isOpen, setIsOpen }: AddPartnerModalProps) {
-  const { form, onSubmit, setLogoPreview } = useCreatePartner(setIsOpen);
+  const { form, onSubmit, setLogoPreview, partners } = useCreatePartner(setIsOpen);
 
   const fieldOverrides: FieldOverrides<CreatePartnerFormData> = {
     description: {
@@ -52,16 +52,19 @@ export function AddPartnerModal({ isOpen, setIsOpen }: AddPartnerModalProps) {
       type: 'select',
       label: 'Parent Partner',
       placeholder: 'Select a parent partner',
-      options: mockParentPartners.map((partner) => ({
+      options: partners.map((partner) => ({
         value: partner.id,
         label: partner.name,
       })),
+    },
+    email: {
+      section: 'Contact Information',
     },
   };
 
   const fields = generateFieldsFromSchema(createPartnerSchema, fieldOverrides);
 
-  toast.success('a');
+  // toast.error('a');
 
   return (
     <FormSheet
@@ -75,7 +78,7 @@ export function AddPartnerModal({ isOpen, setIsOpen }: AddPartnerModalProps) {
       submitText="Add Partner"
       context={{ setLogoPreview }}
       loading={form.formState.isSubmitting}
-      side="right"
+      side="center"
     />
   );
 }

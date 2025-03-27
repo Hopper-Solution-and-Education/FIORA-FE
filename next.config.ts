@@ -1,5 +1,6 @@
 import { SentryBuildOptions, withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
+import path from 'path';
 
 const sentryConfig: SentryBuildOptions = {
   org: 'hopper-ga',
@@ -11,6 +12,16 @@ const sentryConfig: SentryBuildOptions = {
 };
 
 const nextConfig: NextConfig = {
+  swcMinify: false, // Disable SWC minification to avoid issues with decorators
+  compiler: {
+    // SWC options
+    styledComponents: true,
+    removeConsole: false,
+  },
+  experimental: {
+    swcPlugins: [],
+    serverComponentsExternalPackages: ['reflect-metadata', 'inversify'],
+  },
   /* config options here */
   images: {
     dangerouslyAllowSVG: true,
@@ -22,9 +33,11 @@ const nextConfig: NextConfig = {
     ],
   },
   //----Configurations for the PDF viewer
-  swcMinify: false,
   webpack: (config) => {
     config.resolve.alias.canvas = false;
+    // Explicitly add alias for ~
+    config.resolve.alias['@'] = path.join(__dirname, 'src');
+    config.resolve.alias['@public'] = path.join(__dirname, 'public');
     return config;
   },
   //----End Configurations for the PDF viewer

@@ -4,6 +4,7 @@ import Loading from '@/components/common/Loading';
 import PageContainer from '@/components/layouts/PageContainer';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { removeFromFirebase } from '@/features/admin/landing/firebaseUtils';
 import { DashboardHeading } from '@/features/home/components/DashboardHeading';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -11,6 +12,7 @@ import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Product } from '../../domain/entities/Product';
+import { toggleDialogAddEdit } from '../../slices';
 import { deleteProductAsyncThunk } from '../../slices/actions/deleteProductAsyncThunk';
 import { fetchCategoriesProduct } from '../../slices/actions/fetchCategoriesProduct';
 import { getProductsAsyncThunk } from '../../slices/actions/getProductsAsyncThunk';
@@ -38,8 +40,6 @@ const ProductPage = () => {
   const method = useForm<ProductFormValues>({
     resolver: yupResolver(productSchema),
     defaultValues: defaultProductFormValue,
-    mode: 'onChange',
-    reValidateMode: 'onChange',
   });
 
   const { reset } = method;
@@ -57,13 +57,31 @@ const ProductPage = () => {
         getProductTransactionAsyncThunk({ page: pageTransaction, pageSize, userId: data?.user.id }),
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
+    dispatch(toggleDialogAddEdit(false));
     if (!productToDelete?.id) return;
+
+    const isFirebaseImage =
+      productToDelete.icon &&
+      (productToDelete.icon.startsWith('https://firebasestorage.googleapis.com') ||
+        productToDelete.icon.startsWith('gs://'));
+
+    if (isFirebaseImage) {
+      console.log(productToDelete.icon);
+      await removeFromFirebase(productToDelete.icon);
+    }
+
     dispatch(deleteProductAsyncThunk({ id: productToDelete.id }));
     setProductToDelete(null);
     setDeleteDialogOpen(false);
+  };
+
+  const handlePressDeleteOnDialog = (product: Product) => {
+    setProductToDelete(product);
+    setDeleteDialogOpen(true);
   };
 
   return (
@@ -73,7 +91,7 @@ const ProductPage = () => {
       <div className="flex flex-1 flex-col space-y-4">
         <div className="flex items-start justify-between">
           <DashboardHeading title="Products" description="Manage products" />
-          <AddProductDialog method={method} />
+          <AddProductDialog onDelete={handlePressDeleteOnDialog} method={method} />
         </div>
 
         <Separator />

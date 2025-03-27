@@ -15,11 +15,11 @@ export const TabActionHeader = ({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-medium">{title}</h3>
-          <p className="text-sm text-muted-foreground">{description}</p>
+          {title && <h3 className="text-lg font-medium">{title}</h3>}
+          {description && <p className="text-sm text-muted-foreground">{description}</p>}
         </div>
         <Button
           variant="default"

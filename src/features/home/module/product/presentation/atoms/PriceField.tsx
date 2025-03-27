@@ -1,9 +1,11 @@
 'use client';
 
-import type { Control, FieldErrors } from 'react-hook-form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { FormControl, FormItem, FormLabel, FormMessage, FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/shared/utils';
+import { useEffect, useState } from 'react';
+import type { Control, FieldErrors } from 'react-hook-form';
+import { useWatch } from 'react-hook-form';
 import { ProductFormValues } from '../schema/addProduct.schema';
 
 interface PriceFieldProps {
@@ -12,6 +14,30 @@ interface PriceFieldProps {
 }
 
 const PriceField = ({ control, errors }: PriceFieldProps) => {
+  const [displayValue, setDisplayValue] = useState('');
+  const priceValue = useWatch({
+    control,
+    name: 'price',
+    defaultValue: 0,
+  });
+
+  // Hàm format giá trị thành VND
+  const formatToVND = (value: number | undefined) => {
+    if (value === undefined || value === null) return '';
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+    }).format(value);
+  };
+
+  useEffect(() => {
+    const currentNumericValue = displayValue ? Number(displayValue.replace(/\D/g, '')) : 0;
+    if (currentNumericValue !== priceValue) {
+      setDisplayValue(formatToVND(priceValue));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [priceValue]);
+
   return (
     <FormField
       control={control}
@@ -22,29 +48,24 @@ const PriceField = ({ control, errors }: PriceFieldProps) => {
           <FormControl>
             <Input
               className={cn({ 'border-red-500': errors.price })}
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              {...field}
-              onKeyDown={(e) => {
-                if (
-                  isNaN(Number(e.key)) &&
-                  e.key !== 'Backspace' &&
-                  e.key !== 'Delete' &&
-                  e.key !== '.' &&
-                  e.key !== 'ArrowLeft' &&
-                  e.key !== 'ArrowRight'
-                ) {
-                  e.preventDefault();
+              type="text"
+              placeholder="0 VND"
+              value={displayValue}
+              onChange={(e) => {
+                const rawValue = e.target.value.replace(/\D/g, ''); // Chỉ giữ lại số
+                setDisplayValue(rawValue);
+                field.onChange(rawValue === '' ? undefined : Number(rawValue));
+              }}
+              onBlur={() => {
+                // Format lại khi mất focus
+                if (field.value !== undefined) {
+                  setDisplayValue(formatToVND(field.value));
+                } else {
+                  setDisplayValue('');
                 }
               }}
-              onChange={(e) => {
-                if (isNaN(Number(e.target.value)) && e.target.value !== '') {
-                  e.target.value = '';
-                  field.onChange(undefined);
-                } else {
-                  field.onChange(Number(e.target.value));
-                }
+              onFocus={() => {
+                setDisplayValue(field.value?.toString() || '');
               }}
             />
           </FormControl>

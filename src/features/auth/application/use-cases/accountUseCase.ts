@@ -61,11 +61,6 @@ export class AccountUseCase {
       if (!subAccount) {
         throw new Error('Cannot create sub account');
       }
-      const updatedParentBalance = await this.updateParentBalance(parentId, type);
-
-      if (!updatedParentBalance) {
-        throw new Error('Cannot update parent balance');
-      }
 
       return subAccount;
     } else {
@@ -101,70 +96,16 @@ export class AccountUseCase {
     }
   }
 
-  async updateParentBalance(parentId: string, type: AccountType): Promise<boolean> {
-    const subAccounts = await this.accountRepository.findMany(
-      { parentId },
-      { select: { balance: true, limit: true } },
-    );
-
-    if (subAccounts.length === 0) {
-      return true;
-    }
-
-    // update limit & balance for CreditCard. Since balance is negative, we need to sum it up
-    // and increase the limit
-    if (type === AccountType.CreditCard) {
-      const totalBalance = subAccounts.reduce(
-        (sum, acc) => sum.plus(acc.balance || new Decimal(0)),
-        new Decimal(0),
-      );
-
-      const totalLimit = subAccounts.reduce(
-        (sum, acc) => sum.plus(acc.limit || new Decimal(0)),
-        new Decimal(0),
-      );
-
-      // if total Limit is less than total balance
-
-      const updateRes = await this.accountRepository.update(parentId, {
-        balance: {
-          increment: totalBalance,
-        },
-        limit: {
-          increment: totalLimit,
-        },
-      });
-
-      if (!updateRes) {
-        throw new Error('Cannot update parent account');
-      }
-
-      return true;
-    } else if (type === AccountType.Debt) {
-      const totalBalance = subAccounts.reduce(
-        (sum, acc) => sum.plus(acc.balance || new Decimal(0)),
-        new Decimal(0),
-      );
-
-      const updateRes = await this.accountRepository.update(parentId, { balance: totalBalance });
-      return !!updateRes;
-    } else {
-      const totalBalance = subAccounts.reduce(
-        (sum, acc) => sum.plus(acc.balance || new Decimal(0)),
-        new Decimal(0),
-      );
-
-      const updateRes = await this.accountRepository.update(parentId, { balance: totalBalance });
-      return !!updateRes;
-    }
-  }
-
   async findById(id: string): Promise<Account | null> {
     return this.accountRepository.findById(id);
   }
 
-  async findByCondition(where: Prisma.AccountWhereInput) {
+  async findManyByCondition(where: Prisma.AccountWhereInput) {
     return this.accountRepository.findMany(where, { select: { balance: true } });
+  }
+
+  async findByCondition(where: Prisma.AccountWhereInput): Promise<Account | null> {
+    return this.accountRepository.findByCondition(where);
   }
 
   async findAll(): Promise<Account[] | []> {
@@ -253,11 +194,14 @@ export class AccountUseCase {
     await this.accountRepository.updateParentBalance(parentId);
   }
 
-  async updateAccount(id: string, data: Prisma.AccountUpdateInput): Promise<Account | null> {
-    return this.accountRepository.update(id, {
-      ...data,
-      updatedBy: data.updatedBy,
-    });
+  async updateAccount(id: string, params: Prisma.AccountUpdateInput): Promise<Account | null> {
+    // If this is a sub-account, update the parent's balance, otherwise, update the account directly
+    const account = await this.accountRepository.findById(id);
+    if (!account) {
+      throw new Error('Account not found');
+    }
+
+    return await this.accountRepository.update(id, { ...params });
   }
 
   async deleteAccount(id: string): Promise<Account | null> {

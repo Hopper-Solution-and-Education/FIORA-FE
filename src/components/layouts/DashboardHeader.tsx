@@ -8,14 +8,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatCurrency } from '@/shared/utils';
-import { Bell, Gift, HelpCircle, Settings } from 'lucide-react';
+import { Bell, Gift, HelpCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Breadcrumbs } from '../Breadcrumbs';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Separator } from '../ui/separator';
 import { SidebarTrigger } from '../ui/sidebar';
-import ThemeToggle from './theme-toggle/ThemeToggle';
 import { UserNav } from './UserNav';
+import SettingCenter from './theme-toggle/SettingCenter';
 
 export default function Header() {
   // state
@@ -86,12 +86,13 @@ export default function Header() {
           </div>
         </div>
         {/* Icon Buttons + User */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-6">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Bell className="h-6 w-6" />
-              </Button>
+              <Bell
+                size={18}
+                className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+              />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>No new notifications</DropdownMenuItem>
@@ -100,9 +101,10 @@ export default function Header() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Gift className="h-6 w-6" />
-              </Button>
+              <Gift
+                size={18}
+                className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+              />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>Check your rewards</DropdownMenuItem>
@@ -111,9 +113,10 @@ export default function Header() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <HelpCircle className="h-6 w-6" />
-              </Button>
+              <HelpCircle
+                size={18}
+                className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+              />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>Help Center</DropdownMenuItem>
@@ -121,20 +124,8 @@ export default function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Settings className="h-6 w-6" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Profile Settings</DropdownMenuItem>
-              <DropdownMenuItem>Security Settings</DropdownMenuItem>
-              <DropdownMenuItem>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <SettingCenter />
 
-          <ThemeToggle />
           <UserNav />
         </div>
       </section>

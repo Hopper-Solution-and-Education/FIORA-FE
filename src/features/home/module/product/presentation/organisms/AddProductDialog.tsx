@@ -1,10 +1,9 @@
 'use client';
 
-import { Plus } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -13,7 +12,10 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { removeFromFirebase, uploadToFirebase } from '@/features/admin/landing/firebaseUtils';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { UseFormReturn } from 'react-hook-form';
+import { Plus, Trash2 } from 'lucide-react';
+import { useCallback } from 'react';
+import { FormProvider, UseFormReturn } from 'react-hook-form';
+import { Product } from '../../domain/entities/Product';
 import { setDialogState, toggleDialogAddEdit } from '../../slices';
 import { createProduct } from '../../slices/actions/createProductAsyncThunk';
 import { updateProductAsyncThunk } from '../../slices/actions/updateProductAsyncThunk';
@@ -23,10 +25,13 @@ import { defaultProductFormValue, type ProductFormValues } from '../schema/addPr
 
 type AddProductDialogProps = {
   method: UseFormReturn<ProductFormValues>;
+  onDelete: (product: Product) => void;
 };
 
-const AddProductDialog = ({ method }: AddProductDialogProps) => {
+const AddProductDialog = ({ method, onDelete }: AddProductDialogProps) => {
   const isOpenDialog = useAppSelector((state) => state.productManagement.isOpenDialogAddEdit);
+  const isUpdatingProduct = useAppSelector((state) => state.productManagement.isUpdatingProduct);
+  const isCreatingProduct = useAppSelector((state) => state.productManagement.isCreatingProduct);
   const dialogState = useAppSelector((state) => state.productManagement.dialogState);
   const dispatch = useAppDispatch();
 
@@ -48,7 +53,7 @@ const AddProductDialog = ({ method }: AddProductDialogProps) => {
         const fileName = formattedData.name.replace(/\s+/g, '_').toLowerCase() + '_' + Date.now();
         const firebaseUrl = await uploadToFirebase({
           file: blob,
-          path: 'images/product_icons', // Choose an appropriate path
+          path: 'images/product_icons',
           fileName,
         });
         formattedData = {
@@ -71,44 +76,106 @@ const AddProductDialog = ({ method }: AddProductDialogProps) => {
           });
       }
     } catch (error) {
-      console.error('Error creating product:', error);
+      console.error('Error creating/updating product:', error);
     }
   };
 
-  const handleToggleDialog = (value: boolean, type: DialogStateType) => {
-    dispatch(toggleDialogAddEdit(value));
-    if (value === false) {
-      method.reset(defaultProductFormValue);
-    }
-    dispatch(setDialogState(type));
-  };
+  const handleToggleDialog = useCallback(
+    (value: boolean, type: DialogStateType) => {
+      dispatch(toggleDialogAddEdit(value));
+      if (value === false) {
+        method.reset(defaultProductFormValue);
+      }
+      dispatch(setDialogState(type));
+    },
+    [dispatch, method],
+  );
 
   return (
-    <>
+    <FormProvider {...method}>
       <Button onClick={() => handleToggleDialog(true, 'add')}>
         <Plus size={64} width={64} height={64} />
       </Button>
       <Dialog open={isOpenDialog} onOpenChange={(value) => handleToggleDialog(value, 'add')}>
-        <DialogContent className="sm:max-w-[70%] h-[90%]">
-          <DialogHeader>
-            <DialogTitle>Create New Product</DialogTitle>
-            <DialogDescription>
-              Fill in the details to create a new product or service.
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-[80%] h-[90%]">
+          <form onSubmit={method.handleSubmit(handleSubmit)} id="hook-form">
+            <DialogHeader>
+              <DialogTitle>
+                {dialogState === 'add' ? 'Create New Product' : 'Edit Product'}
+              </DialogTitle>
+              <DialogDescription>
+                {dialogState === 'add'
+                  ? 'Fill in the details to create a new product or service.'
+                  : 'Update the details of the product.'}
+              </DialogDescription>
+            </DialogHeader>
 
-          <ScrollArea className="max-w-[100%]">
-            <div className="m-2">
-              <ProductForm
-                method={method}
-                onSubmit={handleSubmit}
-                onCancel={() => handleToggleDialog(false, 'add')}
-              />
+            <ScrollArea className="max-w-[100%] h-[75vh]">
+              <div className="p-4">
+                <ProductForm method={method} />
+              </div>
+            </ScrollArea>
+
+            <div className="mt-5 flex justify-between items-center w-full">
+              {dialogState === 'edit' ? (
+                <DialogClose asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      const product: Product = {
+                        id: method.getValues('id') ?? '',
+                        name: method.getValues('name'),
+                        description: method.getValues('description') ?? '',
+                        icon: method.getValues('icon'),
+                        type: method.getValues('type'),
+                        price: method.getValues('price'),
+                        taxRate: parseFloat(String(method.getValues('taxRate') ?? '0')),
+                        categoryId: method.getValues('categoryId'),
+                        items:
+                          method.getValues('items')?.map((item) => ({
+                            name: item.name ?? '',
+                            description: item.description ?? undefined,
+                          })) ?? [],
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                      };
+
+                      onDelete(product);
+                    }}
+                  >
+                    <Trash2 color="red" className="h-4 w-4" />
+                  </Button>
+                </DialogClose>
+              ) : (
+                <div></div> // Placeholder để giữ layout
+              )}
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleToggleDialog(false, 'add')}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  disabled={isCreatingProduct || isUpdatingProduct}
+                  type="submit"
+                  form="hook-form"
+                >
+                  {dialogState === 'add' ? (
+                    <>{isCreatingProduct ? 'Creating...' : 'Create Product'}</>
+                  ) : (
+                    <>{isUpdatingProduct ? 'Updating...' : 'Update Product'}</>
+                  )}
+                </Button>
+              </div>
             </div>
-          </ScrollArea>
+          </form>
         </DialogContent>
       </Dialog>
-    </>
+    </FormProvider>
   );
 };
 

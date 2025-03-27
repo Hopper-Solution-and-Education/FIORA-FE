@@ -87,13 +87,16 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
                     sectionType === SectionType.KPS ||
                     sectionType === SectionType.PARTNER_LOGO ||
                     sectionType === SectionType.HEADER ||
-                    sectionType === SectionType.FOOTER) && (
+                    sectionType === SectionType.FOOTER ||
+                    sectionType === SectionType.REVIEW ||
+                    sectionType === SectionType.SYSTEM) && (
                     <Button variant="outline" size="sm" onClick={() => addMedia(MediaType.IMAGE)}>
                       <PlusCircle className="h-3 w-3 mr-1" /> Image
                     </Button>
                   )}
 
-                  {sectionType === SectionType.VISION_MISSION && (
+                  {(sectionType === SectionType.VISION_MISSION ||
+                    sectionType === SectionType.REVIEW) && (
                     <Button
                       variant="outline"
                       size="sm"

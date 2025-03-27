@@ -53,10 +53,11 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
   };
 
   useEffect(() => {
-    if (!fieldErrors.email) {
+    if (fieldErrors.email.length === 0 && email.length > 0) {
       validateExistedEmail();
     }
-  }, [email]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [email, fieldErrors.email.length]);
 
   const validateForm = () => {
     const emailError = validateEmail(email);

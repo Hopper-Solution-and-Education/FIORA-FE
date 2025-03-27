@@ -103,23 +103,6 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({ title }) =>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Category Name */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Category Name <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="Category Name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             {/* Icon Selector */}
             <FormField
               control={form.control}
@@ -137,32 +120,18 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({ title }) =>
               )}
             />
 
-            {/* Category Type */}
+            {/* Category Name */}
             <FormField
               control={form.control}
-              name="type"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Category Type <span className="text-red-500">*</span>
+                    Category Name <span className="text-red-500">*</span>
                   </FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={isTypeDisabled}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Category Type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value={CategoryType.Expense}>Expense</SelectItem>
-                        <SelectItem value={CategoryType.Income}>Income</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Input placeholder="Category Name" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -192,6 +161,37 @@ const InsertCategoryDialog: React.FC<InsertCategoryDialogProps> = ({ title }) =>
                             {category.name}
                           </SelectItem>
                         ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Category Type */}
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Category Type <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={isTypeDisabled}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Category Type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value={CategoryType.Expense}>Expense</SelectItem>
+                        <SelectItem value={CategoryType.Income}>Income</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>

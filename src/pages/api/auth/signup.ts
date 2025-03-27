@@ -48,14 +48,20 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
     }
 
     // create new Account
-    await AccountUseCaseInstance.create({
-      name: 'Ví tiền payment',
+    const accountCreate = await AccountUseCaseInstance.create({
+      name: 'Payment',
       userId: userCreationRes.id,
       balance: 0,
       currency: 'VND',
       type: 'Payment',
-      icon: 'circle',
+      icon: '',
     });
+
+    if (!accountCreate) {
+      return res
+        .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+        .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, 'Cannot create account'));
+    }
 
     return res
       .status(RESPONSE_CODE.CREATED)
@@ -63,7 +69,14 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
         createResponse(RESPONSE_CODE.CREATED, 'You have registered for an account successfully!'),
       );
   } catch (error) {
-    return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: 'Đã có lỗi xảy ra' });
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createResponse(
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          (error as Error).message || 'An error has occured',
+        ),
+      );
   }
 }
 
@@ -74,7 +87,7 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse) {
     if (!email || typeof email !== 'string') {
       return res
         .status(RESPONSE_CODE.BAD_REQUEST)
-        .json({ message: 'Email is required and must be a string' });
+        .json(createResponse(RESPONSE_CODE.BAD_REQUEST, 'Email is required and must be a string'));
     }
 
     const userFound = await UserUSeCaseInstance.verifyEmail(email);
@@ -84,7 +97,14 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse) {
     }
 
     return res.status(RESPONSE_CODE.OK).json({ message: 'Email is available' });
-  } catch (error) {
-    return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred' });
+  } catch (error: any) {
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createResponse(
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || 'An error has occured',
+        ),
+      );
   }
 }

@@ -30,9 +30,11 @@ export enum Messages {
   // Account-related errors
   ACCOUNT_NOT_FOUND = 'Account not found',
   INVALID_ACCOUNT_TYPE_FOR_INCOME = 'Invalid account type. Only Payment accounts are allowed for income.',
-  UNSUPPORTED_ACCOUNT_TYPE = 'Unsupported account type {type}',
+  UNSUPPORTED_ACCOUNT_TYPE = 'Unsupported account type',
   INVALID_ACCOUNT_TYPE_FOR_EXPENSE = 'Invalid account type. Only Payment and CreditCard are supported.',
+  MASTER_ACCOUNT_ALREADY_EXISTS = 'Master account already exists! You can only have one master account.',
   UNAUTHORIZED = 'Not logged in',
+  UPDATE_PARENT_ACCOUNT_NOT_ALLOWED = 'Parent account balance cannot be updated',
 
   // Category-related errors
   CATEGORY_NOT_FOUND = 'Category not found',
@@ -49,16 +51,22 @@ export enum Messages {
   NO_PRODUCTS_PROVIDED = 'No products provided',
 
   // System errors
+  MISSING_PARAMS_INPUT = 'Missing required parameters',
   METHOD_NOT_ALLOWED = 'Method not allowed',
 
   PARTNER_NOT_FOUND = 'Partner not found.',
   PARTNER_NAME_TAKEN = 'Partner with this name already exists.',
+  INVALID_PARENT_HIERARCHY = 'Invalid parent hierarchy.',
+  PARENT_PARTNER_NOT_FOUND = 'Parent partner not found.',
+  INVALID_PARENT_PARTNER_SELF = 'Invalid parent partner.',
   CREATE_PARTNER_FAILED = 'Failed to create partner.',
   UPDATE_PARTNER_FAILED = 'Failed to update partner.',
   DELETE_PARTNER_FAILED = 'Failed to delete partner.',
   PARTNER_ALREADY_EXISTS = 'Partner you are creating already exists.',
 
   INVALID_USER = 'Invalid user.',
+  USER_EMAIL_EXISTED = 'Email already existed',
+  NOT_FOUND_EMAIL = 'User email not found',
   INVALID_PHONE = 'Invalid phone number.',
   INVALID_DOB = 'Invalid date of birth.',
 
