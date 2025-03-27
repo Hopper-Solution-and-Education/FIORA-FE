@@ -10,7 +10,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { removeFromFirebase, uploadToFirebase } from '@/features/admin/landing/firebaseUtils';
+import {
+  removeFromFirebase,
+  uploadToFirebase,
+} from '@/features/setting/module/landing/landing/firebaseUtils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { Plus, Trash2 } from 'lucide-react';
 import { useCallback } from 'react';

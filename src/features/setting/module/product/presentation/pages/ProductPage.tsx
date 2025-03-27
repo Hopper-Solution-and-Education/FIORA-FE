@@ -4,7 +4,7 @@ import Loading from '@/components/common/Loading';
 import PageContainer from '@/components/layouts/PageContainer';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { removeFromFirebase } from '@/features/admin/landing/firebaseUtils';
+import { removeFromFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
 import { DashboardHeading } from '@/features/home/components/DashboardHeading';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';

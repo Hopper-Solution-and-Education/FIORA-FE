@@ -1,5 +1,5 @@
 // src/features/admin/banner/actions/getMediaAction.ts
-import { adminContainer } from '@/features/admin/di/adminDIContainer';
+import { adminContainer } from '@/features/setting/module/landing/di/adminDIContainer';
 import { SectionType } from '@prisma/client';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { GetSectionUseCase } from '../../domain/usecases/GetSectionUseCase';

@@ -1,5 +1,5 @@
 // src/features/admin/banner/actions/getMediaAction.ts
-import { adminContainer } from '@/features/admin/di/adminDIContainer';
+import { adminContainer } from '@/features/setting/module/landing/di/adminDIContainer';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { UpdateSectionUseCase } from '../../domain/usecases/UpdateSectionUseCase';
 import { SectionDefaultValues } from '../../schema/section-form.schema';
