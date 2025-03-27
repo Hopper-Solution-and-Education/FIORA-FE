@@ -1,9 +1,9 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { Response } from '@/shared/types/Common.types';
-import { Category, RawCategory } from '../types';
-import { transformCategories } from '../utils';
-import { NewCategoryDefaultValues } from '../utils/formSchema';
 import categoryServices from '@/features/home/services/categoryServices';
+import { Response } from '@/shared/types/Common.types';
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import { RawCategory } from '../types';
+import { transformCategories } from '../utils';
+import { NewCategoryDefaultValues, UpdateCategoryDefaultValues } from '../utils/formSchema';
 
 export const fetchCategories = createAsyncThunk(
   'category/fetchCategories',
@@ -36,7 +36,7 @@ export const createCategory = createAsyncThunk(
 
 export const updateCategory = createAsyncThunk(
   'category/updateCategory',
-  async (category: Category, { rejectWithValue }) => {
+  async (category: UpdateCategoryDefaultValues, { rejectWithValue }) => {
     try {
       const response = await categoryServices.updateCategory(category);
       return response;

@@ -1,4 +1,5 @@
 'use client';
+import React from 'react';
 import { SessionTimeoutModal } from '@/components/common/SessionTimeoutModal';
 import KBar from '@/components/kbar';
 import { AmplitudeProvider } from '@/components/providers/AmplitudeContextProvider';
@@ -31,44 +32,46 @@ export default function RootLayout({
         <link rel="icon" href={section?.medias[0].media_url ?? defaultIconHeader} />
       </head>
       <body className={inter.className}>
-        <SWRConfig value={swrOptions}>
-          <NextTopLoader showSpinner={false} />
-          <NuqsAdapter>
-            <KBar>
-              <AmplitudeProvider>
-                <ReduxProvider>
-                  <ThemeProvider
-                    attribute="class"
-                    defaultTheme="system"
-                    enableSystem
-                    disableTransitionOnChange
-                  >
-                    <SessionProvider>
-                      <Toaster
-                        theme="light"
-                        position="top-right"
-                        richColors
-                        duration={3000}
-                        gap={10}
-                        visibleToasts={3}
-                        toastOptions={{
-                          classNames: {
-                            success: 'bg-green-600/90 text-white',
-                            error: 'bg-red-600/90 text-white',
-                            warning: 'bg-yellow-600/90 text-white',
-                            info: 'bg-blue-600/90 text-white',
-                          },
-                        }}
-                      />
-                      <main>{children}</main>
-                      <SessionTimeoutModal />
-                    </SessionProvider>
-                  </ThemeProvider>
-                </ReduxProvider>
-              </AmplitudeProvider>
-            </KBar>
-          </NuqsAdapter>
-        </SWRConfig>
+        <React.StrictMode>
+          <SWRConfig value={swrOptions}>
+            <NextTopLoader showSpinner={false} />
+            <NuqsAdapter>
+              <KBar>
+                <AmplitudeProvider>
+                  <ReduxProvider>
+                    <ThemeProvider
+                      attribute="class"
+                      defaultTheme="system"
+                      enableSystem
+                      disableTransitionOnChange
+                    >
+                      <SessionProvider>
+                        <Toaster
+                          theme="light"
+                          position="top-right"
+                          richColors
+                          duration={3000}
+                          gap={10}
+                          visibleToasts={3}
+                          toastOptions={{
+                            classNames: {
+                              success: 'bg-green-600/90 text-white',
+                              error: 'bg-red-600/90 text-white',
+                              warning: 'bg-yellow-600/90 text-white',
+                              info: 'bg-blue-600/90 text-white',
+                            },
+                          }}
+                        />
+                        <main>{children}</main>
+                        <SessionTimeoutModal />
+                      </SessionProvider>
+                    </ThemeProvider>
+                  </ReduxProvider>
+                </AmplitudeProvider>
+              </KBar>
+            </NuqsAdapter>
+          </SWRConfig>
+        </React.StrictMode>
       </body>
     </html>
   );

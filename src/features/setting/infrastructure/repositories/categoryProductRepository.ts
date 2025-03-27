@@ -38,6 +38,24 @@ class CategoryProductRepository implements ICategoryProductRepository {
   async count(options: Prisma.CategoryProductsCountArgs): Promise<number> {
     return prisma.categoryProducts.count(options);
   }
+
+  async updateCategoryProduct(
+    where: Prisma.CategoryProductsWhereUniqueInput,
+    data: Prisma.CategoryProductsUpdateInput,
+  ): Promise<CategoryProducts> {
+    return prisma.categoryProducts.update({
+      where,
+      data,
+    });
+  }
+
+  async deleteCategoryProduct(
+    where: Prisma.CategoryProductsWhereUniqueInput,
+  ): Promise<CategoryProducts> {
+    return prisma.categoryProducts.delete({
+      where,
+    });
+  }
 }
 
 // Export a single instance

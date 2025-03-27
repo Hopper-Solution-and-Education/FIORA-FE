@@ -1,58 +1,46 @@
 'use client';
-
-import Loading from '@/components/common/Loading';
+import Loading from '@/components/common/atoms/Loading';
 import NestedBarChart, { type BarItem } from '@/components/common/nested-bar-chart';
 import { Icons } from '@/components/Icon';
+import { formatCurrency } from '@/config/formatCurrency';
 import DeleteDialog from '@/features/home/module/category/components/DeleteDialog';
-import InsertCategoryDialog from '@/features/home/module/category/components/InsertCategoryDialog';
-import UpdateDialog from '@/features/home/module/category/components/UpdateDialog';
-import {
-  setDialogOpen,
-  setSelectedCategory,
-  setUpdateDialogOpen,
-} from '@/features/home/module/category/slices';
 import { fetchCategories } from '@/features/home/module/category/slices/actions';
 import { Category } from '@/features/home/module/category/slices/types';
 import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { CategoryType } from '@prisma/client';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo } from 'react';
 
 const CategoryDashboard = () => {
   const dispatch = useAppDispatch();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { categories, selectedCategory } = useAppSelector((state) => state.category);
+  const router = useRouter();
+  const { categories } = useAppSelector((state) => state.category);
 
-  useEffect(() => {
-    dispatch(fetchCategories());
-  }, [dispatch]);
-
-  // * CHART DATA ZONE *
+  // * INITIALIZATION CHART DATA ZONE
   const chartData: BarItem[] = useMemo(() => {
     if (!categories.data) return [];
-
-    return categories.data.map((category: Category) => {
-      return {
-        id: category.id,
-        name: category.name,
-        value: category.balance || 0,
+    return categories.data.map((category: Category) => ({
+      id: category.id,
+      name: category.name,
+      value: category.balance || 0,
+      color:
+        category.type === CategoryType.Expense
+          ? COLORS.DEPS_DANGER.LEVEL_1
+          : COLORS.DEPS_SUCCESS.LEVEL_1,
+      type: category.type === CategoryType.Expense ? CategoryType.Expense : CategoryType.Income,
+      children: category.subCategories?.map((subCategory) => ({
+        id: subCategory.id,
+        name: subCategory.name,
+        value: subCategory.balance || 0,
         color:
           category.type === CategoryType.Expense
             ? COLORS.DEPS_DANGER.LEVEL_1
             : COLORS.DEPS_SUCCESS.LEVEL_1,
         type: category.type === CategoryType.Expense ? CategoryType.Expense : CategoryType.Income,
-        children: category.subCategories?.map((subCategory) => ({
-          id: subCategory.id,
-          name: subCategory.name,
-          value: subCategory.balance || 0,
-          color:
-            category.type === CategoryType.Expense
-              ? COLORS.DEPS_DANGER.LEVEL_1
-              : COLORS.DEPS_SUCCESS.LEVEL_1,
-          type: category.type === CategoryType.Expense ? CategoryType.Expense : CategoryType.Income,
-        })),
-      };
-    });
+      })),
+    }));
   }, [categories]);
 
   const expenseData = useMemo(() => {
@@ -63,28 +51,15 @@ const CategoryDashboard = () => {
     return chartData.filter((item) => item.type === CategoryType.Income);
   }, [chartData]);
 
-  // * LOGIC ZONE *
-  const handleDisplayDetailDialog = (item: any) => {
-    const findCategory = findCategoryById(item.id, categories.data);
-    if (findCategory) {
-      dispatch(setSelectedCategory(findCategory));
-      dispatch(setUpdateDialogOpen(true));
-    }
+  // * HANDLERS FUNCTIONS ZONE
+  const handleDisplayDetail = (item: any) => {
+    router.push(`/home/category/update/${item.id}`);
   };
 
-  const findCategoryById = (id: string, categories?: Category[]): Category | undefined => {
-    if (!categories) return undefined;
-
-    const categoryMatch = categories.find((category) => category.id == id);
-    if (categoryMatch) return categoryMatch;
-
-    for (const category of categories) {
-      const subCategoryMatch = category.subCategories?.find((sub) => sub.id == id);
-      if (subCategoryMatch) return subCategoryMatch;
-    }
-
-    return undefined;
-  };
+  // * USE EFFECT ZONE
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   if (categories.isLoading) return <Loading />;
   if (categories.error)
@@ -93,51 +68,42 @@ const CategoryDashboard = () => {
   return (
     <div className="p-4 md:px-6">
       <div className="flex justify-end">
-        <button
-          onClick={() => dispatch(setDialogOpen(true))}
-          className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white"
-        >
-          <Icons.add className="h-6 w-6" />
-        </button>
+        <Link href="/home/category/create">
+          <button className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white">
+            <Icons.add className="h-6 w-6" />
+          </button>
+        </Link>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <NestedBarChart
           title="Expense"
           data={expenseData}
-          xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
-          callback={handleDisplayDetailDialog}
+          xAxisFormatter={(value) => formatCurrency(value)}
+          callback={handleDisplayDetail}
           levelConfig={{
             totalName: 'Total Spent',
             colors: {
-              0: '#e30613',
-              1: '#fa4c58',
-              2: '#fc9ca2',
+              0: COLORS.DEPS_DANGER.LEVEL_1,
+              1: COLORS.DEPS_DANGER.LEVEL_3,
+              2: COLORS.DEPS_DANGER.LEVEL_5,
             },
           }}
         />
-
         <NestedBarChart
           title="Income"
           data={incomeData}
-          xAxisFormatter={(value) => `${(value / 1000000).toFixed(1)}M ₫`}
-          callback={handleDisplayDetailDialog}
+          xAxisFormatter={(value) => formatCurrency(value)}
+          callback={handleDisplayDetail}
           levelConfig={{
             totalName: 'Total Income',
             colors: {
-              0: '#57cc99',
-              1: '#80ed99',
-              2: '#c7f9cc',
+              0: COLORS.DEPS_SUCCESS.LEVEL_1,
+              1: COLORS.DEPS_SUCCESS.LEVEL_2,
+              2: COLORS.DEPS_SUCCESS.LEVEL_3,
             },
           }}
         />
       </div>
-
-      {/* DIALOG ZONE */}
-      <UpdateDialog />
-
-      <InsertCategoryDialog />
-
       <DeleteDialog />
     </div>
   );

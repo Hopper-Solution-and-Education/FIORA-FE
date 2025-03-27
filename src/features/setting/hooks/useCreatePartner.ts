@@ -3,7 +3,7 @@ import { useForm, UseFormClearErrors, UseFormSetValue } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
-import { uploadToFirebase } from '@/features/admin/landing/firebaseUtils';
+import { uploadToFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
 import {
   CreatePartnerFormData,
   createPartnerSchema,

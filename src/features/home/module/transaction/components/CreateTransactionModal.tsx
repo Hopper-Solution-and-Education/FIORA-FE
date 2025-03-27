@@ -28,7 +28,7 @@ import {
   TransactionRecurringType,
 } from '../types/constants';
 import { DropdownOption, Transaction as TransactionHistory } from '../types/types';
-import { DateTimePicker } from '@/components/common/DateTimePicker';
+import { DateTimePicker } from '@/components/common/atoms/DateTimePicker';
 
 type CreateTransactionModalProps = {
   isOpen: boolean;

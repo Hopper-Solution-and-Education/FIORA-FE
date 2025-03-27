@@ -1,0 +1,51 @@
+'use client';
+
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { cn } from '@/shared/utils';
+import { ProductType } from '@prisma/client';
+import { Control, FieldErrors } from 'react-hook-form';
+import { ProductFormValues } from '../schema/addProduct.schema';
+
+interface ProductTypeFieldProps {
+  control: Control<ProductFormValues>;
+  errors: FieldErrors<ProductFormValues>;
+}
+
+const ProductTypeField = ({ control, errors }: ProductTypeFieldProps) => {
+  return (
+    <FormField
+      control={control}
+      name="type"
+      render={({ field }) => {
+        return (
+          <FormItem>
+            <FormLabel>
+              Product Type <span className="text-red-500">*</span>
+            </FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger className={cn({ 'border-red-500': errors.type })}>
+                  <SelectValue placeholder="Select product type" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value={ProductType.Product}>Product</SelectItem>
+                <SelectItem value={ProductType.Service}>Service</SelectItem>
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        );
+      }}
+    />
+  );
+};
+
+export default ProductTypeField;
