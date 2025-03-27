@@ -1,14 +1,14 @@
 'use client';
 
+import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useMemo } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { ProductTransactionResponse } from '../../domain/entities/Product';
-import { setDialogState, toggleDialogAddEdit } from '../../slices';
+import { setDialogState } from '../../slices';
 import TwoSideBarChart, { BarItem } from '../atoms/charts';
 import { ProductFormValues } from '../schema/addProduct.schema';
-import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 
 const mapTransactionsToBarItems = (data: ProductTransactionResponse[]): BarItem[] => {
   const groupedData: Record<string, BarItem> = {};
@@ -87,7 +87,6 @@ const ChartPage = ({ method }: ChartPageProps) => {
       })),
       taxRate: Number(product.taxRate),
     });
-    dispatch(toggleDialogAddEdit(true));
   };
 
   const data = useAppSelector((state) => state.productManagement.productTransaction.data);

@@ -1,23 +1,23 @@
 'use client';
 
 import Loading from '@/components/common/Loading';
-import PageContainer from '@/components/layouts/PageContainer';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { removeFromFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
 import { DashboardHeading } from '@/features/home/components/DashboardHeading';
+import { removeFromFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { Plus } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Product } from '../../domain/entities/Product';
-import { toggleDialogAddEdit } from '../../slices';
 import { deleteProductAsyncThunk } from '../../slices/actions/deleteProductAsyncThunk';
 import { fetchCategoriesProduct } from '../../slices/actions/fetchCategoriesProduct';
 import { getProductsAsyncThunk } from '../../slices/actions/getProductsAsyncThunk';
 import { getProductTransactionAsyncThunk } from '../../slices/actions/getProductTransactionAsyncThunk';
-import AddProductDialog from '../organisms/AddProductDialog';
 import DeleteProductDialog from '../organisms/DeleteProductDialog';
 import {
   defaultProductFormValue,
@@ -60,8 +60,11 @@ const ProductPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleNavigateToCreate = () => {
+    redirect('/setting/product/create');
+  };
+
   const confirmDelete = async () => {
-    dispatch(toggleDialogAddEdit(false));
     if (!productToDelete?.id) return;
 
     const isFirebaseImage =
@@ -79,25 +82,22 @@ const ProductPage = () => {
     setDeleteDialogOpen(false);
   };
 
-  const handlePressDeleteOnDialog = (product: Product) => {
-    setProductToDelete(product);
-    setDeleteDialogOpen(true);
-  };
-
   return (
-    <PageContainer>
+    <div>
       <>{isDeletingProduct && <Loading />}</>
 
-      <div className="flex flex-1 flex-col space-y-4">
+      <div className="flex flex-1 flex-col">
         <div className="flex items-start justify-between">
           <DashboardHeading title="Products" description="Manage products" />
-          <AddProductDialog onDelete={handlePressDeleteOnDialog} method={method} />
+          <Button onClick={handleNavigateToCreate}>
+            <Plus />
+          </Button>
         </div>
 
         <Separator />
 
         <Tabs defaultValue="chart">
-          <TabsList className="mb-4">
+          <TabsList className="my-2">
             <TabsTrigger value="chart">Product Chart</TabsTrigger>
             <TabsTrigger value="table">Product Table</TabsTrigger>
           </TabsList>
@@ -107,11 +107,7 @@ const ProductPage = () => {
           </TabsContent>
 
           <TabsContent value="table">
-            <TablePage
-              reset={reset}
-              setDeleteDialogOpen={setDeleteDialogOpen}
-              setProductToDelete={setProductToDelete}
-            />
+            <TablePage reset={reset} setProductToDelete={setProductToDelete} />
           </TabsContent>
         </Tabs>
       </div>
@@ -122,7 +118,7 @@ const ProductPage = () => {
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
       />
-    </PageContainer>
+    </div>
   );
 };
 

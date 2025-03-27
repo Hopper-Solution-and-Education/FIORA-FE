@@ -1,44 +1,23 @@
-import { useAppDispatch, useAppSelector } from '@/store';
+import { useAppSelector } from '@/store';
 import React, { Dispatch, SetStateAction } from 'react';
 import { UseFormReset } from 'react-hook-form';
 import { Product } from '../../domain/entities/Product';
-import { setDialogState, toggleDialogAddEdit } from '../../slices';
 import ProductTable from '../organisms/ProductTable';
 
 type TablePageProps = {
   reset: UseFormReset<any>;
   setProductToDelete: Dispatch<SetStateAction<Product | null>>;
-  setDeleteDialogOpen: Dispatch<React.SetStateAction<boolean>>;
 };
 
-const TablePage = ({ reset, setDeleteDialogOpen, setProductToDelete }: TablePageProps) => {
+const TablePage = ({ setProductToDelete }: TablePageProps) => {
   const {
     items: products,
     isLoading,
     total,
   } = useAppSelector((state) => state.productManagement.products);
 
-  const dispatch = useAppDispatch();
-
-  const handleEditProduct = (product: Product) => {
-    dispatch(setDialogState('edit'));
-    reset({
-      id: product.id,
-      icon: product.icon || '',
-      name: product.name || '',
-      description: product.description || '',
-      price: product.price ?? 0,
-      taxRate: product.taxRate ?? 0,
-      type: product.type ?? '',
-      categoryId: product.categoryId || '',
-      items: product.items || [],
-    });
-    dispatch(toggleDialogAddEdit(true));
-  };
-
   const handleDeleteProduct = (product: Product) => {
     setProductToDelete(product);
-    setDeleteDialogOpen(true);
   };
 
   return (
@@ -50,7 +29,7 @@ const TablePage = ({ reset, setDeleteDialogOpen, setProductToDelete }: TablePage
         </div>
       ) : (
         <div className="space-y-4">
-          <ProductTable onEdit={handleEditProduct} onDelete={handleDeleteProduct} />
+          <ProductTable onDelete={handleDeleteProduct} />
 
           {/* Pagination */}
           {total > 0 && (

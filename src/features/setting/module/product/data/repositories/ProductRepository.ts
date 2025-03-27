@@ -6,6 +6,7 @@ import {
   GetProductResponse,
   GetProductTransactionRequest,
   GetProductTransactionResponse,
+  GetSingleProductResponse,
   UpdateProductRequest,
   UpdateProductResponse,
 } from '../../domain/entities/Product';
@@ -17,6 +18,7 @@ import { ProductMapper } from '../mapper/ProductMapper';
 export interface IProductRepository {
   createProduct: (request: ProductFormValues) => Promise<CreateProductResponse>;
   getProducts: (request: GetProductAPIRequestDTO) => Promise<GetProductResponse>;
+  getSingleProduct: (id: string) => Promise<GetSingleProductResponse>;
   updateProduct: (request: UpdateProductRequest) => Promise<UpdateProductResponse>;
   deleteProduct: (request: DeleteProductRequest) => Promise<DeleteProductResponse>;
   getProductTransaction: (
@@ -29,6 +31,12 @@ export class ProductRepository implements IProductRepository {
 
   constructor(productApi: IProductAPI) {
     this.productApi = productApi;
+  }
+
+  async getSingleProduct(id: string) {
+    const requestAPI = ProductMapper.toGetSingleProductAPIRequest(id);
+    const response = await this.productApi.getProduct(requestAPI);
+    return ProductMapper.toGetSingleProductResponse(response);
   }
 
   async deleteProduct(request: DeleteProductRequest) {

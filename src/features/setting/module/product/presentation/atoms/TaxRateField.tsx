@@ -43,7 +43,9 @@ const TaxRateField = ({ control, errors }: TaxRateFieldProps) => {
       name="taxRate"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Tax Rate (%)</FormLabel>
+          <FormLabel>
+            Tax Rate (%) <span className="text-red-500">*</span>
+          </FormLabel>
           <FormControl>
             <Input
               className={cn({ 'border-red-500': errors.taxRate })}

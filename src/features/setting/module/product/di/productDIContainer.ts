@@ -27,6 +27,10 @@ import {
 } from '../domain/usecases/GetProductTransactionUseCase';
 import { IGetProductUseCase, createGetProductUseCase } from '../domain/usecases/GetProductUsecase';
 import {
+  createGetSingleProductUseCase,
+  IGetSingleProductUseCase,
+} from '../domain/usecases/GetSingleProductUsecase';
+import {
   IUpdateProductUseCase,
   createUpdateProductUseCase,
 } from '../domain/usecases/UpdateProductUsecase';
@@ -49,6 +53,7 @@ const getProductUseCase = createGetProductUseCase(productRepository);
 const updateProductUseCase = createUpdateProductUseCase(productRepository);
 const deleteProductUseCase = createDeleteProductUseCase(productRepository);
 const getProductTransactionUseCase = createGetProductTransactionUseCase(productRepository);
+const getSingleProductUseCase = createGetSingleProductUseCase(productRepository);
 
 // Bind all instances
 productDIContainer.bind<ICategoryAPI>(TYPES.ICategoryAPI).toConstantValue(categoryAPI);
@@ -78,5 +83,8 @@ productDIContainer
 productDIContainer
   .bind<IGetProductTransactionUseCase>(TYPES.IGetProductTransactionUseCase)
   .toConstantValue(getProductTransactionUseCase);
+productDIContainer
+  .bind<IGetSingleProductUseCase>(TYPES.IGetSingleProductUseCase)
+  .toConstantValue(getSingleProductUseCase);
 
 export { productDIContainer };

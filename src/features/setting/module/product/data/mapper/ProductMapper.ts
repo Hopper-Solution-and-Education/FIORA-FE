@@ -1,4 +1,4 @@
-import { JsonArray } from '@prisma/client/runtime/library';
+import { JsonArray, JsonValue } from '@prisma/client/runtime/library';
 import { ProductFormValues, ProductItem } from '../../presentation/schema/addProduct.schema';
 import { getProductTransactionAPIResponseDTO } from './../dto/response/GetProductTransactionAPIResponseDTO';
 
@@ -9,6 +9,7 @@ import {
   GetProductResponse,
   GetProductTransactionRequest,
   GetProductTransactionResponse,
+  GetSingleProductResponse,
   Product,
   UpdateProductRequest,
   UpdateProductResponse,
@@ -16,12 +17,39 @@ import {
 import { CreateProductAPIRequestDTO } from '../dto/request/CreateProductAPIRequestDTO';
 import { DeleteProductAPIRequestDTO } from '../dto/request/DeleteProductAPIRequestDTO';
 import { GetProductTransactionAPIRequestDTO } from '../dto/request/GetProductTransactionAPIRequestDTO';
+import { GetSingleProductRequestDTO } from '../dto/request/GetSingleProductRequestDTO';
 import { UpdateProductAPIRequestDTO } from '../dto/request/UpdateProductAPIRequestDTO';
 import { DeleteProductAPIResponseDTO } from '../dto/response/DeleteProductAPIResponseDTO';
 import { GetProductAPIResponseDTO } from '../dto/response/GetProductAPIResponseDTO';
+import { GetSingleProductResponseDTO } from '../dto/response/GetSingleProductResponseDTO';
 import { UpdateProductAPIResponseDTO } from '../dto/response/UpdateProductAPIResponseDTO';
 
 export class ProductMapper {
+  static toGetSingleProductAPIRequest(id: string): GetSingleProductRequestDTO {
+    return {
+      productId: id,
+    };
+  }
+
+  static toGetSingleProductResponse(
+    response: GetSingleProductResponseDTO,
+  ): GetSingleProductResponse {
+    const item = response.data;
+    return {
+      id: item.id,
+      price: Number(item.price),
+      name: item.name,
+      type: item.type,
+      description: item.description ?? '',
+      items: ProductMapper.parseServerItemToList(item.items),
+      taxRate: Number(item.taxRate),
+      categoryId: item.catId ?? '',
+      icon: item.icon,
+      createdAt: String(item.createdAt),
+      updatedAt: String(item.updatedAt),
+    };
+  }
+
   static toDeleteProductAPIRequest(request: DeleteProductRequest): DeleteProductAPIRequestDTO {
     return {
       id: request.id,
@@ -144,7 +172,12 @@ export class ProductMapper {
     };
   }
 
-  static parseServerItemToList(items: JsonArray): ProductItem[] {
+  static parseServerItemToList(items: JsonValue): ProductItem[] {
+    if (!Array.isArray(items)) {
+      console.error(`Expected an array but received:`, items);
+      return [];
+    }
+
     const result: ProductItem[] = [];
 
     items.forEach((item) => {

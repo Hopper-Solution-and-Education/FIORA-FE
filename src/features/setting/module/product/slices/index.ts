@@ -15,9 +15,6 @@ const productManagementSlice = createSlice({
   name: 'productManagement',
   initialState: initialProductState,
   reducers: {
-    toggleDialogAddEdit: (state, action) => {
-      state.isOpenDialogAddEdit = action.payload;
-    },
     setDialogState: (state, action: PayloadAction<DialogStateType>) => {
       state.dialogState = action.payload;
     },
@@ -150,10 +147,6 @@ const productManagementSlice = createSlice({
   },
 });
 
-export const {
-  toggleDialogAddEdit,
-  resetProductManagementState,
-  setDialogState,
-  updateProductListItems,
-} = productManagementSlice.actions;
+export const { resetProductManagementState, setDialogState, updateProductListItems } =
+  productManagementSlice.actions;
 export default productManagementSlice.reducer;

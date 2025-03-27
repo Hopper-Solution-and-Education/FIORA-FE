@@ -10,4 +10,5 @@ export const TYPES = {
   IUpdateProductUseCase: Symbol.for('IUpdateProductUseCase'),
   IDeleteProductUseCase: Symbol.for('IDeleteProductUseCase'),
   IGetProductTransactionUseCase: Symbol.for('IGetProductTransactionUseCase'),
+  IGetSingleProductUseCase: Symbol.for('IGetSingleProductUseCase'),
 };

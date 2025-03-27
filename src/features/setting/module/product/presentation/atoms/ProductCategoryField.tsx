@@ -55,7 +55,9 @@ const ProductCategoryField = ({ control, errors }: ProductCategoryFieldProps) =>
       name="categoryId"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Category</FormLabel>
+          <FormLabel>
+            Category <span className="text-red-500">*</span>
+          </FormLabel>
           <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
               <SelectTrigger

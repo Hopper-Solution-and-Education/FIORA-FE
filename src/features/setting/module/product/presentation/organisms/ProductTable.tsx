@@ -17,15 +17,15 @@ import {
 } from '@/components/ui/table';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { ChevronLeft, ChevronRight, Edit, MoreHorizontal, Trash2 } from 'lucide-react';
+import { redirect } from 'next/navigation';
 import { Product } from '../../domain/entities/Product';
 import { getProductsAsyncThunk } from '../../slices/actions/getProductsAsyncThunk';
 
 interface ProductTableProps {
-  onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
 }
 
-const ProductTable = ({ onEdit, onDelete }: ProductTableProps) => {
+const ProductTable = ({ onDelete }: ProductTableProps) => {
   const dispatch = useAppDispatch();
   const {
     items: products,
@@ -45,6 +45,10 @@ const ProductTable = ({ onEdit, onDelete }: ProductTableProps) => {
     if (page > 1) {
       dispatch(getProductsAsyncThunk({ page: page - 1, pageSize }));
     }
+  };
+
+  const handleEdit = (product: Product) => {
+    redirect(`/setting/product/update/${product.id}`);
   };
 
   return (
@@ -103,7 +107,7 @@ const ProductTable = ({ onEdit, onDelete }: ProductTableProps) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onEdit(product)}>
+                      <DropdownMenuItem onClick={() => handleEdit(product)}>
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>

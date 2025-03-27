@@ -44,7 +44,9 @@ const PriceField = ({ control, errors }: PriceFieldProps) => {
       name="price"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Price</FormLabel>
+          <FormLabel>
+            Price <span className="text-red-500">*</span>
+          </FormLabel>
           <FormControl>
             <Input
               className={cn({ 'border-red-500': errors.price })}

@@ -6,10 +6,9 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/shared/utils';
 import { Upload, X } from 'lucide-react';
 import Image from 'next/image';
-import type React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { type FieldError, type FieldErrors, useFormContext } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 
 interface IconUploaderProps {
   fieldPath: string;
@@ -22,12 +21,7 @@ const IconUploader: React.FC<IconUploaderProps> = ({
   label = 'Product Icon',
   maxSize = 2 * 1024 * 1024,
 }) => {
-  const {
-    register,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useFormContext();
+  const { register, setValue, watch } = useFormContext();
   const [fileName, setFileName] = useState<string | null>(null);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -52,25 +46,9 @@ const IconUploader: React.FC<IconUploaderProps> = ({
   });
 
   const iconUrl = watch(fieldPath);
-  const getNestedError = (errors: FieldErrors, path: string): FieldError | undefined => {
-    const keys = path.split('.');
-    let current: any = errors;
-    for (const key of keys) {
-      if (current && current[key]) {
-        current = current[key];
-      } else return undefined;
-    }
-    return current as FieldError | undefined;
-  };
-  const iconError = getNestedError(errors, fieldPath);
 
   const handleRemoveFile = () => {
     setValue(fieldPath, '', { shouldValidate: true });
-    setFileName(null);
-  };
-
-  const handleManualUrlInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(fieldPath, e.target.value, { shouldValidate: true });
     setFileName(null);
   };
 
@@ -80,7 +58,7 @@ const IconUploader: React.FC<IconUploaderProps> = ({
         {/* Upload Area */}
         <div className="flex flex-col h-[220px]">
           <Label htmlFor={fieldPath} className="text-sm font-medium mb-2">
-            {label}
+            {label} <span className="text-red-500">*</span>
           </Label>
           <div
             {...getRootProps()}
@@ -98,16 +76,6 @@ const IconUploader: React.FC<IconUploaderProps> = ({
               PNG, JPG, SVG, GIF up to {maxSize / 1024 / 1024}MB
             </p>
           </div>
-
-          <div className="text-center text-xs text-gray-500 my-2">or</div>
-
-          <Input
-            type="text"
-            placeholder="Enter icon URL"
-            value={iconUrl || ''}
-            onChange={handleManualUrlInput}
-            className={cn('text-sm', { 'border-red-500': iconError })}
-          />
 
           <Input type="hidden" {...register(fieldPath)} />
         </div>

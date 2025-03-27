@@ -5,17 +5,20 @@ import { CreateProductAPIRequestDTO } from '../dto/request/CreateProductAPIReque
 import { DeleteProductAPIRequestDTO } from '../dto/request/DeleteProductAPIRequestDTO';
 import { GetProductAPIRequestDTO } from '../dto/request/GetProductAPIRequestDTO';
 import { GetProductTransactionAPIRequestDTO } from '../dto/request/GetProductTransactionAPIRequestDTO';
+import { GetSingleProductRequestDTO } from '../dto/request/GetSingleProductRequestDTO';
 import { UpdateProductAPIRequestDTO } from '../dto/request/UpdateProductAPIRequestDTO';
 import { CreateProductAPIResponseDTO } from '../dto/response/CreateProductAPIResponseDTO';
 import { DeleteProductAPIResponseDTO } from '../dto/response/DeleteProductAPIResponseDTO';
 import { GetProductAPIResponseDTO } from '../dto/response/GetProductAPIResponseDTO';
 import { getProductTransactionAPIResponseDTO } from '../dto/response/GetProductTransactionAPIResponseDTO';
+import { GetSingleProductResponseDTO } from '../dto/response/GetSingleProductResponseDTO';
 import { UpdateProductAPIResponseDTO } from '../dto/response/UpdateProductAPIResponseDTO';
 
 interface IProductAPI {
   createProduct(data: CreateProductAPIRequestDTO): Promise<CreateProductAPIResponseDTO>;
   updateProduct(data: UpdateProductAPIRequestDTO): Promise<UpdateProductAPIResponseDTO>;
   getProducts(data: GetProductAPIRequestDTO): Promise<GetProductAPIResponseDTO>;
+  getProduct(data: GetSingleProductRequestDTO): Promise<GetSingleProductResponseDTO>;
   deleteProduct(data: DeleteProductAPIRequestDTO): Promise<DeleteProductAPIResponseDTO>;
   getProductTransaction(
     data: GetProductTransactionAPIRequestDTO,
@@ -46,6 +49,10 @@ class ProductAPI implements IProductAPI {
     return await httpClient.get<getProductTransactionAPIResponseDTO>(
       `/api/transactions/product?userId=${data.userId}&page=${data.page}&pageSize=${data.pageSize}`,
     );
+  }
+
+  async getProduct(data: GetSingleProductRequestDTO) {
+    return await httpClient.get<GetSingleProductResponseDTO>(`/api/products/${data.productId}`);
   }
 }
 

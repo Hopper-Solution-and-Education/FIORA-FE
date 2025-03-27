@@ -46,6 +46,8 @@ export class CreateProductResponse {}
 
 export type GetProductResponse = PaginationResponse<Product>;
 
+export type GetSingleProductResponse = Product;
+
 export type UpdateProductResponse = Product;
 export type UpdateProductRequest = ProductFormValues;
 

@@ -23,20 +23,23 @@ const ProductForm = ({ method }: ProductFormProps) => {
 
   return (
     <>
-      <>{(isCreatingProduct || isUpdatingProduct) && <Loading />}</>
-      {/* <form onSubmit={method.handleSubmit(onSubmit)} className="space-y-6"> */}
-      <div className="m-2">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {(isCreatingProduct || isUpdatingProduct) && <Loading />}
+      <div className="m-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Left column: các field hiện tại */}
+        <div className="space-y-4">
           <ProductIconField control={method.control} />
           <ProductTypeField control={method.control} errors={method.formState.errors} />
           <ProductNameField control={method.control} errors={method.formState.errors} />
           <ProductCategoryField control={method.control} errors={method.formState.errors} />
           <PriceField control={method.control} errors={method.formState.errors} />
           <TaxRateField control={method.control} errors={method.formState.errors} />
+          <ProductDescriptionField control={method.control} errors={method.formState.errors} />
         </div>
 
-        <ProductDescriptionField control={method.control} errors={method.formState.errors} />
-        <ProductItemsField control={method.control} errors={method.formState.errors} />
+        {/* Right column: ProductItemsField */}
+        <div>
+          <ProductItemsField control={method.control} errors={method.formState.errors} />
+        </div>
       </div>
     </>
   );

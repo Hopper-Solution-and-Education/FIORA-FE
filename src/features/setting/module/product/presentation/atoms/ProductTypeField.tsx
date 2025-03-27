@@ -26,7 +26,9 @@ const ProductTypeField = ({ control, errors }: ProductTypeFieldProps) => {
       render={({ field }) => {
         return (
           <FormItem>
-            <FormLabel>Product Type</FormLabel>
+            <FormLabel>
+              Product Type <span className="text-red-500">*</span>
+            </FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
                 <SelectTrigger className={cn({ 'border-red-500': errors.type })}>
