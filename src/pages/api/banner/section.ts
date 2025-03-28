@@ -1,29 +1,32 @@
 import prisma from '@/infrastructure/database/prisma';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { Media, SectionType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    switch (req.method) {
-      case 'GET':
-        return await getSection(req, res);
-      case 'POST':
-        return await createSection(req, res);
-      case 'PUT':
-        return await updateSection(req, res);
-      case 'DELETE':
-        return await deleteSection(req, res);
-      default:
-        return res.status(405).json({ error: 'Method Not Allowed' });
-    }
-  } catch (error) {
-    console.error('API Error:', error);
-    return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: 'Internal Server Error' });
+export default withAuthorization({
+  GET: ['User', 'Admin', 'CS'],
+  POST: ['Admin'],
+  PUT: ['Admin'],
+  DELETE: ['Admin'],
+})(async (req: NextApiRequest, res: NextApiResponse) => {
+  switch (req.method) {
+    case 'POST':
+      return POST(req, res);
+    case 'GET':
+      return GET(req, res);
+    case 'PUT':
+      return PUT(req, res);
+    case 'DELETE':
+      return DELETE(req, res);
+    default:
+      return res
+        .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+        .json({ error: 'Phương thức không được hỗ trợ' });
   }
-}
+});
 
-async function getSection(req: NextApiRequest, res: NextApiResponse) {
+async function GET(req: NextApiRequest, res: NextApiResponse) {
   const { sectionType } = req.query;
 
   if (!sectionType || !Object.values(SectionType).includes(sectionType as SectionType)) {
@@ -44,8 +47,7 @@ async function getSection(req: NextApiRequest, res: NextApiResponse) {
   return res.status(RESPONSE_CODE.ACCEPTED).json(section);
 }
 
-// Tao Section -> Section ở đây có thể là image cho footer
-async function createSection(req: NextApiRequest, res: NextApiResponse) {
+async function POST(req: NextApiRequest, res: NextApiResponse) {
   const { section_type, name, order, medias, createdBy } = req.body;
 
   if (!section_type || !Object.values(SectionType).includes(section_type)) {
@@ -104,7 +106,7 @@ async function createSection(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-async function updateSection(req: NextApiRequest, res: NextApiResponse) {
+async function PUT(req: NextApiRequest, res: NextApiResponse) {
   const { id, name, order, medias, updatedBy } = req.body;
 
   if (!id) {
@@ -203,7 +205,7 @@ async function updateSection(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-async function deleteSection(req: NextApiRequest, res: NextApiResponse) {
+async function DELETE(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.body;
 
   if (!id) {
