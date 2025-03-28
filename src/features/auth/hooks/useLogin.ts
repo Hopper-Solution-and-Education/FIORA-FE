@@ -46,7 +46,6 @@ export function useLogin() {
       });
 
       if (response?.ok) {
-        setSuccess('Login successful!');
         form.reset(); // Reset form fields
         router.push('/home');
       } else {
