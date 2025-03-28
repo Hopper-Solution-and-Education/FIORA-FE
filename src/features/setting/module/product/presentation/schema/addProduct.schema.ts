@@ -32,7 +32,7 @@ export const defaultProductFormValue: any = {
   description: '',
   price: 0,
   taxRate: 0,
-  type: '',
+  type: 'Product',
   categoryId: '',
   items: [],
 };

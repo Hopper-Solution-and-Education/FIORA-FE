@@ -1,41 +1,50 @@
 'use client';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BookIcon, HelpCircleIcon, InfoIcon, MailIcon, PlayCircleIcon } from 'lucide-react';
+
+const helpItems = [
+  { label: 'FAQs', icon: BookIcon },
+  { label: 'User Tutorials', icon: PlayCircleIcon },
+  { label: 'About Us', icon: InfoIcon },
+  { label: 'Contact Us', icon: MailIcon },
+];
 
 export default function HelpCenter() {
   return (
-    <DropdownMenu modal={false}>
-      <DropdownMenuTrigger asChild>
-        {/* <Button variant="ghost" size="icon" className="relative w-10 h-10"> */}
-        <HelpCircleIcon
-          size={18}
-          className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
-        />
-        {/* </Button> */}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" sideOffset={8} className="z-50">
-        <DropdownMenuItem>
-          <BookIcon className="mr-2 h-4 w-4" />
-          <span>FAQs</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <PlayCircleIcon className="mr-2 h-4 w-4" />
-          <span>User Tutorials</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <InfoIcon className="mr-2 h-4 w-4" />
-          <span>About Us</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <MailIcon className="mr-2 h-4 w-4" />
-          <span>Contact Us</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <TooltipProvider>
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <HelpCircleIcon
+            size={18}
+            className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+          />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          sideOffset={8}
+          className="p-4 grid grid-cols-4 gap-4 border shadow-md w-[250px]"
+        >
+          {helpItems.map((item, index) => (
+            <Tooltip key={index}>
+              <TooltipTrigger asChild>
+                <DropdownMenuItem className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
+                  <item.icon className="h-6 w-6" />
+                </DropdownMenuItem>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <span>{item.label}</span>
+              </TooltipContent>
+            </Tooltip>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </TooltipProvider>
   );
 }

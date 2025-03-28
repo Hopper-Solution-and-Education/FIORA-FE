@@ -65,22 +65,36 @@ export type GetProductTransactionRequest = {
   pageSize: number;
 };
 
-export type GetProductTransactionResponse = PaginationResponse<ProductTransactionResponse>;
+export type GetProductTransactionResponse = PaginationResponse<ProductTransactionCategoryResponse>;
 
-export type ProductTransactionResponse = {
-  transaction: {
+export type ProductTransactionCategoryResponse = {
+  category: {
     id: string;
-    type: CategoryType;
+    name: string;
+    description: string | null;
+    icon: string;
+    taxRate: number | null;
+    createdAt: string;
+    updatedAt: string;
   };
+  products: ProductTransactionResponse[]; // Thêm products vào đây để khớp response
+};
+
+// Type cho sản phẩm và giao dịch (Product và Transaction qua ProductTransaction)
+export type ProductTransactionResponse = {
   product: {
     id: string;
     price: number;
     name: string;
     type: ProductType;
-    description: string;
-    items: ProductItem[];
-    taxRate: number;
-    catId: string;
+    description: string | null;
+    items: ProductItem[] | null;
+    taxRate: number | null;
+    catId: string | null;
     icon: string;
   };
+  transaction: {
+    id: string;
+    type: CategoryType;
+  } | null;
 };

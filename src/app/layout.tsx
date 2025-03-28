@@ -10,11 +10,13 @@ import { swrOptions } from '@/config/swrConfig';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import { SectionType } from '@prisma/client';
 import { SessionProvider } from 'next-auth/react';
+import { GrowthBookProvider } from '@growthbook/growthbook-react';
 import { Inter } from 'next/font/google';
 import NextTopLoader from 'nextjs-toploader';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import 'reflect-metadata';
 import { SWRConfig } from 'swr';
+import growthbook from '@/config/growthbook';
 import './globals.css';
 const defaultIconHeader = 'https://static.thenounproject.com/png/2864213-200.png';
 
@@ -39,33 +41,35 @@ export default function RootLayout({
               <KBar>
                 <AmplitudeProvider>
                   <ReduxProvider>
-                    <ThemeProvider
-                      attribute="class"
-                      defaultTheme="system"
-                      enableSystem
-                      disableTransitionOnChange
-                    >
-                      <SessionProvider>
-                        <Toaster
-                          theme="light"
-                          position="top-right"
-                          richColors
-                          duration={3000}
-                          gap={10}
-                          visibleToasts={3}
-                          toastOptions={{
-                            classNames: {
-                              success: 'bg-green-600/90 text-white',
-                              error: 'bg-red-600/90 text-white',
-                              warning: 'bg-yellow-600/90 text-white',
-                              info: 'bg-blue-600/90 text-white',
-                            },
-                          }}
-                        />
-                        <main>{children}</main>
-                        <SessionTimeoutModal />
-                      </SessionProvider>
-                    </ThemeProvider>
+                    <GrowthBookProvider growthbook={growthbook}>
+                      <ThemeProvider
+                        attribute="class"
+                        defaultTheme="system"
+                        enableSystem
+                        disableTransitionOnChange
+                      >
+                        <SessionProvider>
+                          <Toaster
+                            theme="light"
+                            position="top-right"
+                            richColors
+                            duration={3000}
+                            gap={10}
+                            visibleToasts={3}
+                            toastOptions={{
+                              classNames: {
+                                success: 'bg-green-600/90 text-white',
+                                error: 'bg-red-600/90 text-white',
+                                warning: 'bg-yellow-600/90 text-white',
+                                info: 'bg-blue-600/90 text-white',
+                              },
+                            }}
+                          />
+                          <main>{children}</main>
+                          <SessionTimeoutModal />
+                        </SessionProvider>
+                      </ThemeProvider>
+                    </GrowthBookProvider>
                   </ReduxProvider>
                 </AmplitudeProvider>
               </KBar>

@@ -1,12 +1,9 @@
 import { useAppSelector } from '@/store';
-import React, { Dispatch, SetStateAction } from 'react';
-import { UseFormReset } from 'react-hook-form';
 import { Product } from '../../domain/entities/Product';
 import ProductTable from '../organisms/ProductTable';
 
 type TablePageProps = {
-  reset: UseFormReset<any>;
-  setProductToDelete: Dispatch<SetStateAction<Product | null>>;
+  setProductToDelete: (product: Product) => void;
 };
 
 const TablePage = ({ setProductToDelete }: TablePageProps) => {
@@ -15,10 +12,6 @@ const TablePage = ({ setProductToDelete }: TablePageProps) => {
     isLoading,
     total,
   } = useAppSelector((state) => state.productManagement.products);
-
-  const handleDeleteProduct = (product: Product) => {
-    setProductToDelete(product);
-  };
 
   return (
     <div>
@@ -29,7 +22,7 @@ const TablePage = ({ setProductToDelete }: TablePageProps) => {
         </div>
       ) : (
         <div className="space-y-4">
-          <ProductTable onDelete={handleDeleteProduct} />
+          <ProductTable onDelete={setProductToDelete} />
 
           {/* Pagination */}
           {total > 0 && (

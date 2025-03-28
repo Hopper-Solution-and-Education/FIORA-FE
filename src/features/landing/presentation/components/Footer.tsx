@@ -56,7 +56,7 @@ export default function Footer() {
             </Link>
           ))}
         </div>
-        <p className="mt-4 md:mt-0 text-sm">&copy; 2025 Hopper Company. All rights reserved.</p>
+        <p className="mt-4 md:mt-0 text-sm">Copyright &copy; FIORA.live</p>
       </div>
     </footer>
   );
