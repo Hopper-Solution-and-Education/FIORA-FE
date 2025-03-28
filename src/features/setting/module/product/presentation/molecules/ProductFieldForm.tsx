@@ -24,7 +24,7 @@ const ProductForm = ({ method }: ProductFormProps) => {
   return (
     <>
       {(isCreatingProduct || isUpdatingProduct) && <Loading />}
-      <div className="m-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="mx-auto">
         {/* Left column: các field hiện tại */}
         <div className="space-y-4">
           <ProductIconField control={method.control} />
@@ -34,10 +34,6 @@ const ProductForm = ({ method }: ProductFormProps) => {
           <PriceField control={method.control} errors={method.formState.errors} />
           <TaxRateField control={method.control} errors={method.formState.errors} />
           <ProductDescriptionField control={method.control} errors={method.formState.errors} />
-        </div>
-
-        {/* Right column: ProductItemsField */}
-        <div>
           <ProductItemsField control={method.control} errors={method.formState.errors} />
         </div>
       </div>

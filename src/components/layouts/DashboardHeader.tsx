@@ -8,13 +8,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatCurrency } from '@/shared/utils';
-import { Bell, Gift, HelpCircle } from 'lucide-react';
+import { Bell, Gift } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Breadcrumbs } from '../Breadcrumbs';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Separator } from '../ui/separator';
 import { SidebarTrigger } from '../ui/sidebar';
 import { UserNav } from './UserNav';
+import HelpCenter from './theme-toggle/HelpCenter';
 import SettingCenter from './theme-toggle/SettingCenter';
 
 export default function Header() {
@@ -111,19 +112,7 @@ export default function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <HelpCircle
-                size={18}
-                className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
-              />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Help Center</DropdownMenuItem>
-              <DropdownMenuItem>Contact Support</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
+          <HelpCenter />
           <SettingCenter />
 
           <UserNav />

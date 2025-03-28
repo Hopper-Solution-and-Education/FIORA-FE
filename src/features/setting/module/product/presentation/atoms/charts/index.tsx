@@ -6,7 +6,6 @@ import {
   BASE_BAR_HEIGHT,
   DEFAULT_CURRENCY,
   DEFAULT_LOCALE,
-  DEFAULT_MAX_BAR_RATIO,
   MIN_CHART_HEIGHT,
 } from '@/shared/constants/chart';
 import { getChartMargins, useWindowSize } from '@/shared/utils/device';
@@ -26,6 +25,7 @@ import { ContentType } from 'recharts/types/component/Tooltip';
 import { ProductFormValues } from '../../schema/addProduct.schema';
 import BarLabel from '../BarLabel';
 import CustomTooltip from '../CustomTooltip';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 export type BarItem = {
   id?: string;
@@ -69,8 +69,6 @@ const TwoSideBarChart = ({
   title,
   currency = DEFAULT_CURRENCY,
   locale = DEFAULT_LOCALE,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  maxBarRatio = DEFAULT_MAX_BAR_RATIO,
   xAxisFormatter = (value) =>
     new Intl.NumberFormat(locale, { style: 'currency', currency }).format(value),
   tooltipContent,
@@ -80,6 +78,7 @@ const TwoSideBarChart = ({
   callbackYAxis,
   levelConfig,
 }: PositiveAndNegativeBarChartProps) => {
+  const isMobile = useIsMobile();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [chartHeight, setChartHeight] = useState(MIN_CHART_HEIGHT);
   const { width } = useWindowSize();
@@ -219,7 +218,7 @@ const TwoSideBarChart = ({
   const incomeChartMargins = useMemo(
     () => ({
       ...getChartMargins(width),
-      left: 0, // Remove left margin for income chart
+      left: isMobile ? 50 : 0,
     }),
     [width],
   );
@@ -231,22 +230,25 @@ const TwoSideBarChart = ({
         currency={currency}
         locale={locale}
         tutorialText={tutorialText}
-        formatter={xAxisFormatter} // Pass the formatter to the tooltip
+        formatter={xAxisFormatter}
       />
     ),
     [currency, locale, tutorialText, xAxisFormatter],
   );
 
   return (
-    <div className="w-full bg-white dark:bg-gray-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 transition-colors duration-200">
+    <div className="w-full dark:bg-gray-900 transition-colors rounded-lg py-4 duration-200">
       {title && (
         <h2 className="text-xl text-center font-semibold text-gray-800 dark:text-gray-200 mb-4">
           {title}
         </h2>
       )}
-      <div style={{ height: `${chartHeight}px` }} className="transition-all duration-300 flex">
+      <div
+        style={{ height: `${chartHeight}px` }}
+        className="transition-all duration-300 flex flex-col md:flex-row"
+      >
         {/* Expense Chart (bars extend from 0 to the left) */}
-        <ResponsiveContainer width="50%" height={chartHeight}>
+        <ResponsiveContainer width="100%" height={chartHeight} className="md:w-1/2">
           <BarChart
             data={visibleData}
             layout="vertical"
@@ -298,7 +300,11 @@ const TwoSideBarChart = ({
         </ResponsiveContainer>
 
         {/* Income Chart (bars extend from 0 to the right) */}
-        <ResponsiveContainer width="50%" height={chartHeight}>
+        <ResponsiveContainer
+          width="100%"
+          height={chartHeight}
+          className={`"md:w-1/2" ${isMobile && 'mt-10'}`}
+        >
           <BarChart
             data={visibleData}
             layout="vertical"
@@ -323,8 +329,16 @@ const TwoSideBarChart = ({
               dataKey="name"
               tickLine={false}
               axisLine={false}
-              width={0}
-              tick={false}
+              width={isMobile ? 70 : 0}
+              tick={(props) => (
+                <CustomYAxisTick
+                  {...props}
+                  processedData={visibleData}
+                  expandedItems={expandedItems}
+                  onToggleExpand={toggleExpand}
+                  callback={callbackYAxis}
+                />
+              )}
               className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
             />
             <Tooltip trigger="hover" content={tooltipContent || customTooltipWithConfig} />
@@ -341,8 +355,9 @@ const TwoSideBarChart = ({
             </Bar>
           </BarChart>
         </ResponsiveContainer>
+        {isMobile && <ChartLegend items={legendItems} />}
       </div>
-      <ChartLegend items={legendItems} />
+      {!isMobile && <ChartLegend items={legendItems} />}
     </div>
   );
 };

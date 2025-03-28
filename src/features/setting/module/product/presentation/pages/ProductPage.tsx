@@ -1,34 +1,25 @@
 'use client';
 
+import Loading from '@/components/common/atoms/Loading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardHeading } from '@/features/home/components/DashboardHeading';
 import { removeFromFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { yupResolver } from '@hookform/resolvers/yup';
 import { Plus } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { Product } from '../../domain/entities/Product';
 import { deleteProductAsyncThunk } from '../../slices/actions/deleteProductAsyncThunk';
-import { fetchCategoriesProduct } from '../../slices/actions/fetchCategoriesProduct';
 import { getProductsAsyncThunk } from '../../slices/actions/getProductsAsyncThunk';
 import { getProductTransactionAsyncThunk } from '../../slices/actions/getProductTransactionAsyncThunk';
 import DeleteProductDialog from '../organisms/DeleteProductDialog';
-import {
-  defaultProductFormValue,
-  ProductFormValues,
-  productSchema,
-} from '../schema/addProduct.schema';
 import ChartPage from './CharPage';
 import TablePage from './TablePage';
-import Loading from '@/components/common/atoms/Loading';
 
 const ProductPage = () => {
-  const { page, limit } = useAppSelector((state) => state.productManagement.categories);
   const { page: pageTransaction, pageSize } = useAppSelector(
     (state) => state.productManagement.productTransaction,
   );
@@ -37,12 +28,6 @@ const ProductPage = () => {
   );
   const isDeletingProduct = useAppSelector((state) => state.productManagement.isDeletingProduct);
 
-  const method = useForm<ProductFormValues>({
-    resolver: yupResolver(productSchema),
-    defaultValues: defaultProductFormValue,
-  });
-
-  const { reset } = method;
   const dispatch = useAppDispatch();
 
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
@@ -50,7 +35,6 @@ const ProductPage = () => {
   const { data } = useSession();
 
   useEffect(() => {
-    dispatch(fetchCategoriesProduct({ page, pageSize: limit }));
     dispatch(getProductsAsyncThunk({ page: productPage, pageSize: productPageSize }));
     if (data?.user) {
       dispatch(
@@ -62,6 +46,11 @@ const ProductPage = () => {
 
   const handleNavigateToCreate = () => {
     redirect('/setting/product/create');
+  };
+
+  const handleDeleteProduct = (product: Product) => {
+    setProductToDelete(product);
+    setDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
@@ -83,7 +72,7 @@ const ProductPage = () => {
   };
 
   return (
-    <div>
+    <div className="p-2">
       <>{isDeletingProduct && <Loading />}</>
 
       <div className="flex flex-1 flex-col">
@@ -103,11 +92,11 @@ const ProductPage = () => {
           </TabsList>
 
           <TabsContent value="chart">
-            <ChartPage method={method} />
+            <ChartPage />
           </TabsContent>
 
           <TabsContent value="table">
-            <TablePage reset={reset} setProductToDelete={setProductToDelete} />
+            <TablePage setProductToDelete={handleDeleteProduct} />
           </TabsContent>
         </Tabs>
       </div>

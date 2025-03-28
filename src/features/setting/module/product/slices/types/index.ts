@@ -1,7 +1,5 @@
 import { CategoryProductPage } from '../../domain/entities/Category';
-import { Product, ProductTransactionResponse } from '../../domain/entities/Product';
-
-export type DialogStateType = 'add' | 'edit';
+import { Product, ProductTransactionCategoryResponse } from '../../domain/entities/Product';
 
 interface CategoryState {
   categories: {
@@ -25,14 +23,13 @@ interface CategoryState {
   };
   productTransaction: {
     isLoadingGet: boolean;
-    data: ProductTransactionResponse[];
+    data: ProductTransactionCategoryResponse[];
     page: number;
     pageSize: number;
     total: number;
     hasMore: boolean;
   };
   error: string | null;
-  dialogState: DialogStateType;
 }
 
 export const initialProductState: CategoryState = {
@@ -40,7 +37,7 @@ export const initialProductState: CategoryState = {
     isLoading: false,
     data: [],
     page: 1,
-    limit: 10,
+    limit: 20,
     total: 0,
     hasMore: true,
   },
@@ -64,5 +61,4 @@ export const initialProductState: CategoryState = {
   isCreatingProduct: false,
   isUpdatingProduct: false,
   isDeletingProduct: false,
-  dialogState: 'add',
 };

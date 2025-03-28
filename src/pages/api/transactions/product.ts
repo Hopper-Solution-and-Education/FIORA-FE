@@ -1,8 +1,9 @@
 import { createResponse } from '@/config/createResponse';
+import { Messages } from '@/config/message';
 import prisma from '@/infrastructure/database/prisma';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { NextApiRequest, NextApiResponse } from 'next';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req, res, userId) => {
   switch (req.method) {
@@ -21,23 +22,61 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
     const skip = (Number(page) - 1) * Number(pageSize);
     const take = Number(pageSize);
 
-    const transactionsAwaited = prisma.productTransaction.findMany({
+    // Bước 1: Lấy danh sách CategoryProducts phân trang
+    const categoriesAwaited = prisma.categoryProducts.findMany({
+      where: { userId },
       skip,
       take,
       select: {
-        product: {
-          select: {
-            id: true,
-            price: true,
-            name: true,
-            type: true,
-            description: true,
-            items: true,
-            taxRate: true,
-            catId: true,
-            icon: true,
-          },
-        },
+        id: true,
+        name: true,
+        description: true,
+        icon: true,
+        tax_rate: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { name: 'asc' }, // Sắp xếp theo tên danh mục, có thể thay đổi
+    });
+
+    // Bước 2: Đếm tổng số CategoryProducts
+    const countAwaited = prisma.categoryProducts.count({
+      where: { userId },
+    });
+
+    const [categories, count] = await Promise.all([categoriesAwaited, countAwaited]);
+
+    // Bước 3: Lấy tất cả catId từ danh mục
+    const catIds = categories.map((cat) => cat.id);
+
+    // Bước 4: Lấy tất cả sản phẩm thuộc các danh mục này
+    const products = await prisma.product.findMany({
+      where: {
+        catId: { in: catIds },
+        userId, // Đảm bảo sản phẩm thuộc về user
+      },
+      select: {
+        id: true,
+        price: true,
+        name: true,
+        type: true,
+        description: true,
+        items: true,
+        taxRate: true,
+        catId: true,
+        icon: true,
+      },
+    });
+
+    // Bước 5: Lấy tất cả ProductTransaction liên quan đến các sản phẩm
+    const productIds = products.map((product) => product.id);
+    const productTransactions = await prisma.productTransaction.findMany({
+      where: {
+        productId: { in: productIds },
+        transaction: { userId }, // Lọc theo userId của Transaction
+      },
+      select: {
+        productId: true,
         transaction: {
           select: {
             id: true,
@@ -46,39 +85,85 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
           },
         },
       },
-      where: {
-        transaction: {
-          userId,
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
     });
 
-    const countAwaited = prisma.productTransaction.count({
-      where: {
-        transaction: {
-          userId,
-        },
+    // Bước 6: Gộp dữ liệu
+    // Tạo map cho ProductTransaction theo productId
+    const productTransactionMap = productTransactions.reduce(
+      (acc, pt) => {
+        if (!acc[pt.productId]) {
+          acc[pt.productId] = [];
+        }
+        acc[pt.productId].push(pt.transaction);
+        return acc;
       },
-    });
+      {} as Record<string, Array<{ id: string; userId: string | null; type: string }>>, // Sửa ở đây
+    );
 
-    const [transactions, count] = await Promise.all([transactionsAwaited, countAwaited]);
+    // Gộp sản phẩm theo danh mục
+    const productsByCategory = products.reduce(
+      (acc, product) => {
+        const catId = product.catId;
+        if (catId) {
+          // Chỉ xử lý nếu catId không null
+          if (!acc[catId]) {
+            acc[catId] = [];
+          }
+          const transactions = productTransactionMap[product.id] || [];
+          acc[catId].push({
+            product: {
+              id: product.id,
+              price: product.price,
+              name: product.name,
+              type: product.type,
+              description: product.description,
+              items: product.items,
+              taxRate: product.taxRate,
+              catId: product.catId,
+              icon: product.icon,
+            },
+            transaction: transactions.length > 0 ? transactions[0] : null, // Lấy giao dịch đầu tiên
+          });
+        }
+        return acc;
+      },
+      {} as Record<string, Array<{ product: any; transaction: any | null }>>,
+    );
 
+    // Bước 7: Tạo dữ liệu trả về
+    const transformedData = categories.map((category) => ({
+      category: {
+        id: category.id,
+        name: category.name,
+        description: category.description,
+        icon: category.icon,
+        tax_rate: category.tax_rate,
+        createdAt: category.createdAt,
+        updatedAt: category.updatedAt,
+      },
+      products: productsByCategory[category.id] || [],
+    }));
+
+    // Bước 8: Tính tổng số trang
     const totalPage = Math.ceil(count / take);
 
+    // Trả về phản hồi
     return res.status(RESPONSE_CODE.OK).json(
-      createResponse(RESPONSE_CODE.OK, 'Fetched product transactions successfully', {
-        data: transactions,
+      createResponse(RESPONSE_CODE.OK, 'Fetched product categories successfully', {
+        data: transformedData,
         page: Number(page),
         pageSize: Number(pageSize),
         totalPage,
       }),
     );
   } catch (error: any) {
-    return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({
-      error: error.message,
-    });
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createResponse(
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
 }
