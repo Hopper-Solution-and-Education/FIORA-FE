@@ -8,10 +8,9 @@ export interface PartnerState {
   error: string | null;
 }
 
-export const initialPartnerState: PartnerState = {
-  partners: [],
+export const initialPartnerState = {
+  partners: [] as Partner[],
   isLoading: false,
-  isCreatingPartner: false,
+  error: null as string | null,
   isUpdatingPartner: false,
-  error: null,
 };

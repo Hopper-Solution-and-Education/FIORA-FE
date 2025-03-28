@@ -1,17 +1,39 @@
-// src/features/setting/module/partner/slices/index.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 import { Partner } from '../domain/entities/Partner';
-// import { createPartner } from './actions/createPartnerAsyncThunk'; // Giả định đã có
 import { fetchPartners } from './actions/fetchPartnersAsyncThunk';
 import { updatePartner } from './actions/updatePartnerAsyncThunk';
 import { initialPartnerState } from './types';
 
 const partnerManagementSlice = createSlice({
   name: 'partnerManagement',
-  initialState: initialPartnerState,
+  initialState: {
+    ...initialPartnerState,
+    selectedPartner: null as Partner | null,
+    isAddPartnerDialogOpen: false,
+    isUpdatePartnerDialogOpen: false,
+    refresh: false,
+  },
   reducers: {
-    resetPartnerManagementState: () => initialPartnerState,
+    resetPartnerManagementState: () => ({
+      ...initialPartnerState,
+      selectedPartner: null,
+      isAddPartnerDialogOpen: false,
+      isUpdatePartnerDialogOpen: false,
+      refresh: false,
+    }),
+    setSelectedPartner(state, action: PayloadAction<Partner | null>) {
+      state.selectedPartner = action.payload;
+    },
+    setAddPartnerDialogOpen(state, action: PayloadAction<boolean>) {
+      state.isAddPartnerDialogOpen = action.payload;
+    },
+    setUpdatePartnerDialogOpen(state, action: PayloadAction<boolean>) {
+      state.isUpdatePartnerDialogOpen = action.payload;
+    },
+    triggerRefresh(state) {
+      state.refresh = !state.refresh;
+    },
   },
   extraReducers: (builder) => {
     // Fetch Partners
@@ -29,23 +51,6 @@ const partnerManagementSlice = createSlice({
         state.error = action.payload || 'Failed to fetch partners';
       });
 
-    // Create Partner (giả định đã có createPartner)
-    // builder
-    //   .addCase(createPartner.pending, (state) => {
-    //     state.isCreatingPartner = true;
-    //   })
-    //   .addCase(createPartner.fulfilled, (state, action: PayloadAction<Partner>) => {
-    //     state.isCreatingPartner = false;
-    //     state.partners.push(action.payload);
-    //     toast.success('Success', { description: 'Create partner successfully!!' });
-    //   })
-    //   .addCase(createPartner.rejected, (state, action) => {
-    //     state.isCreatingPartner = false;
-    //     toast.error('Failed to create partner', {
-    //       description: action.payload || 'Failed to create partner',
-    //     });
-    //   });
-
     // Update Partner
     builder
       .addCase(updatePartner.pending, (state) => {
@@ -59,6 +64,7 @@ const partnerManagementSlice = createSlice({
           state.partners[index] = updatedPartner;
         }
         toast.success('Success', { description: 'Update partner successfully!!' });
+        state.refresh = !state.refresh; // Trigger refresh after update
       })
       .addCase(updatePartner.rejected, (state, action) => {
         state.isUpdatingPartner = false;
@@ -67,5 +73,12 @@ const partnerManagementSlice = createSlice({
   },
 });
 
-export const { resetPartnerManagementState } = partnerManagementSlice.actions;
+export const {
+  resetPartnerManagementState,
+  setSelectedPartner,
+  setAddPartnerDialogOpen,
+  setUpdatePartnerDialogOpen,
+  triggerRefresh,
+} = partnerManagementSlice.actions;
+
 export default partnerManagementSlice.reducer;

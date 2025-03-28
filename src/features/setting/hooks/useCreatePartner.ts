@@ -86,8 +86,9 @@ export function useCreatePartner(setIsOpen: (open: boolean) => void) {
 
       const partnerData = {
         ...values,
-        logo: logoUrl, // Có thể là undefined nếu không có logoFile
+        logo: logoUrl,
         userId: session.user.id,
+        parentId: values.parentId?.toLowerCase() === 'none' ? null : values.parentId, // Không phân biệt hoa thường
       };
 
       const formattedPartnerData = convertNullToUndefined(partnerData);
@@ -102,7 +103,6 @@ export function useCreatePartner(setIsOpen: (open: boolean) => void) {
 
       await fetchPartners(session.user.id);
     } catch (error: any) {
-      // console.error('Error submitting data: {}', error);
       toast.error(error.message);
     }
   }
