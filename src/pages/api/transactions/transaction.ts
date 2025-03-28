@@ -12,8 +12,6 @@ export default sessionWrapper(async (req, res, userId) => {
       return POST(req, res, userId);
     case 'GET':
       return GET(req, res, userId);
-    case 'PUT':
-      return PUT(req, res, userId);
     case 'DELETE':
       return DELETE(req, res, userId);
     default:
@@ -80,59 +78,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       RESPONSE_CODE.INTERNAL_SERVER_ERROR,
       error.message || Messages.INTERNAL_ERROR,
     );
-  }
-}
-
-export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  try {
-    const {
-      id,
-      fromAccountId,
-      toCategoryId,
-      amount,
-      products,
-      partnerId,
-      remark,
-      date,
-      fromCategoryId,
-      toAccountId,
-      type,
-    } = req.body;
-
-    const transactionData = {
-      id: id,
-      userId: userId,
-      type: type,
-      amount: parseFloat(amount),
-      fromAccountId: fromAccountId as UUID,
-      toAccountId: toAccountId as UUID,
-      toCategoryId: toCategoryId as UUID,
-      fromCategoryId: fromCategoryId as UUID,
-      ...(products && { products }),
-      ...(partnerId && { partnerId }),
-      ...(remark && { remark }),
-      ...(date && { date: new Date(date) }),
-    };
-    const updatedTransaction = await transactionUseCase.editTransaction(
-      id,
-      userId,
-      transactionData,
-    );
-    return res
-      .status(RESPONSE_CODE.OK)
-      .json(
-        createResponse(RESPONSE_CODE.OK, Messages.UPDATE_TRANSACTION_SUCCESS, updatedTransaction),
-      );
-  } catch (error: any) {
-    res
-      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createError(
-          res,
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        ),
-      );
   }
 }
 

@@ -30,7 +30,8 @@ const recommendations = [
 
 export default function Recommendations() {
   return (
-    <div className="space-y-3">
+    <div className="h-[200px] sm:h-[320px] md:h-[440px] lg:h-[600px] overflow-y-auto">
+      <div className="font-bold text-lg">Recommendations</div>
       {recommendations.length === 0 ? (
         <div className="p-4 text-center border rounded-lg">
           <p className="text-gray-500 dark:text-gray-400">

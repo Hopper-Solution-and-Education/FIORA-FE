@@ -26,7 +26,6 @@ const LandingPage = () => {
   return (
     <>
       <Header />
-      {/* Banner - Slide Up Effect */}
       <motion.div
         initial={{ opacity: 0, y: 100 }}
         animate={{ opacity: 1, y: 0 }}
@@ -35,7 +34,6 @@ const LandingPage = () => {
         <Banner />
       </motion.div>
 
-      {/* Vision & Mission - Fade In */}
       <motion.div
         variants={fadeIn}
         initial="hidden"
@@ -45,7 +43,6 @@ const LandingPage = () => {
         <VisionMission />
       </motion.div>
 
-      {/* Fiora System - Fade In */}
       <motion.div
         variants={fadeIn}
         initial="hidden"
@@ -55,7 +52,6 @@ const LandingPage = () => {
         <FioraSystem />
       </motion.div>
 
-      {/* KPS Section - Fade In */}
       <motion.div
         variants={fadeIn}
         initial="hidden"
@@ -65,7 +61,6 @@ const LandingPage = () => {
         <KPSSection />
       </motion.div>
 
-      {/* Review Section - Fade In */}
       <motion.div
         variants={fadeIn}
         initial="hidden"
@@ -75,7 +70,6 @@ const LandingPage = () => {
         <ReviewSection />
       </motion.div>
 
-      {/* Partner Logo - Zoom In Effect */}
       <motion.div
         variants={zoomIn}
         initial="hidden"

@@ -7,7 +7,6 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/shared/utils';
 import { useLogin } from '../../hooks/useLogin';
 import { useForgotPassword } from '../../hooks/useForgotPassword';
-import { Toaster } from 'sonner';
 import EmailOtpForm from './GetOTPForm';
 import ResetPasswordForm from './ResetPasswordForm';
 
@@ -30,7 +29,6 @@ const ForgotPasswordForm = ({ className, ...props }: React.ComponentProps<'div'>
 
   return (
     <div className={cn('flex flex-col items-center gap-6 px-4 sm:px-0', className)} {...props}>
-      <Toaster richColors position="top-right" />
       <Card className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-3xl overflow-hidden border-0 shadow-none">
         <CardContent className="p-4 sm:p-6 md:p-8">
           <div className="flex flex-col items-center gap-6">

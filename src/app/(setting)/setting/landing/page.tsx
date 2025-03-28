@@ -3,9 +3,12 @@
 import Loading from '@/components/common/atoms/Loading';
 import dynamic from 'next/dynamic';
 
-const BannerPage = dynamic(() => import('@/features/admin/landing/presentation/Page'), {
-  loading: () => <Loading />,
-});
+const BannerPage = dynamic(
+  () => import('@/features/setting/module/landing/landing/presentation/Page'),
+  {
+    loading: () => <Loading />,
+  },
+);
 
 const page = () => {
   return <BannerPage />;

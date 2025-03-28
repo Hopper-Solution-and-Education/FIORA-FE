@@ -80,24 +80,6 @@ class TransactionUseCase {
     return transaction;
   }
 
-  async editTransaction(
-    id: string,
-    userId: string,
-    data: Prisma.TransactionUncheckedUpdateInput,
-  ): Promise<Transaction> {
-    return prisma.$transaction(async (tx) => {
-      const transaction = await tx.transaction.findUnique({ where: { id } });
-      if (!transaction) {
-        throw new Error(Messages.TRANSACTION_NOT_FOUND);
-      }
-
-      await this.revertOldTransaction(tx, transaction);
-      await this.applyNewTransaction(tx, data, userId);
-
-      return tx.transaction.update({ where: { id }, data });
-    });
-  }
-
   private async revertOldTransaction(tx: Prisma.TransactionClient, transaction: Transaction) {
     const fromAccount = transaction.fromAccountId
       ? await tx.account.findUnique({ where: { id: transaction.fromAccountId } })
@@ -110,62 +92,45 @@ class TransactionUseCase {
       throw new Error(Messages.ACCOUNT_NOT_FOUND);
     }
 
-    if (transaction.type === TransactionType.Expense && fromAccount) {
-      await this.accountRepository.receiveBalance(
-        tx,
-        fromAccount.id,
-        transaction.amount.toNumber(),
-      );
-    } else if (transaction.type === TransactionType.Income && toAccount) {
-      await this.accountRepository.deductBalance(tx, toAccount.id, transaction.amount.toNumber());
-    } else if (transaction.type === TransactionType.Transfer && fromAccount && toAccount) {
-      await this.accountRepository.transferBalance(
-        tx,
-        toAccount.id,
-        fromAccount.id,
-        transaction.amount.toNumber(),
-      );
+    const amount = transaction.amount.toNumber();
+
+    switch (transaction.type) {
+      case TransactionType.Expense:
+        if (fromAccount) {
+          await this.accountRepository.receiveBalance(tx, fromAccount.id, amount);
+        }
+        break;
+
+      case TransactionType.Income:
+        if (toAccount) {
+          this.validateSufficientBalance(
+            toAccount.balance!.toNumber(),
+            amount,
+            `Tài khoản ${toAccount.name} không đủ số dư để hoàn tác giao dịch thu nhập.`,
+          );
+          await this.accountRepository.deductBalance(tx, toAccount.id, amount);
+        }
+        break;
+
+      case TransactionType.Transfer:
+        if (fromAccount && toAccount) {
+          this.validateSufficientBalance(
+            toAccount.balance!.toNumber(),
+            amount,
+            `Tài khoản ${toAccount.name} không đủ số dư để hoàn trả giao dịch chuyển khoản.`,
+          );
+          await this.accountRepository.transferBalance(tx, toAccount.id, fromAccount.id, amount);
+        }
+        break;
     }
 
     await this.revertProductPrices(tx, transaction);
     await tx.productTransaction.deleteMany({ where: { transactionId: transaction.id } });
   }
 
-  private async applyNewTransaction(
-    tx: Prisma.TransactionClient,
-    data: Prisma.TransactionUncheckedUpdateInput,
-    userId: string,
-  ) {
-    const fromAccount = data.fromAccountId
-      ? await tx.account.findUnique({ where: { id: data.fromAccountId as string } })
-      : null;
-    const toAccount = data.toAccountId
-      ? await tx.account.findUnique({ where: { id: data.toAccountId as string } })
-      : null;
-
-    if (data.type === TransactionType.Expense && fromAccount) {
-      this.validatePaymentAccount(fromAccount, data.amount as number);
-      await this.accountRepository.deductBalance(tx, fromAccount.id, data.amount as number);
-    } else if (data.type === TransactionType.Income && toAccount) {
-      await this.accountRepository.receiveBalance(tx, toAccount.id, data.amount as number);
-    } else if (data.type === TransactionType.Transfer && fromAccount && toAccount) {
-      this.validatePaymentAccount(fromAccount, data.amount as number);
-      await this.accountRepository.transferBalance(
-        tx,
-        fromAccount.id,
-        toAccount.id,
-        data.amount as number,
-      );
-    }
-
-    if (data.products) {
-      await this.createProductTransaction(
-        tx,
-        data as Transaction,
-        data.products as { id: string }[],
-        userId,
-        data.type as TransactionType,
-      );
+  private validateSufficientBalance(balance: number, amount: number, errorMessage: string) {
+    if (balance < amount) {
+      throw new Error(errorMessage);
     }
   }
 
@@ -186,11 +151,16 @@ class TransactionUseCase {
   }
 
   async removeTransaction(id: string, userId: string): Promise<void> {
-    const transaction = await this.transactionRepository.getTransactionById(id, userId);
-    if (!transaction) {
-      throw new Error(Messages.INTERNAL_ERROR);
-    }
-    await this.transactionRepository.deleteTransaction(id, userId);
+    return prisma.$transaction(async (tx) => {
+      const transaction = await tx.transaction.findUnique({ where: { id } });
+      if (!transaction) {
+        throw new Error(Messages.TRANSACTION_NOT_FOUND);
+      }
+
+      await this.revertOldTransaction(tx, transaction);
+
+      return await this.transactionRepository.deleteTransaction(id, userId);
+    });
   }
 
   async createTransaction(data: Prisma.TransactionUncheckedCreateInput) {
