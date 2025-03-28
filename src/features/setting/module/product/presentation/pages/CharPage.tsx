@@ -1,122 +1,176 @@
 'use client';
 
+import { LoadingIndicator } from '@/components/common/atoms/LoadingIndicator';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { COLORS } from '@/shared/constants/chart';
-import { useAppDispatch, useAppSelector } from '@/store';
-import { useMemo } from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { ProductTransactionResponse } from '../../domain/entities/Product';
-import { setDialogState } from '../../slices';
+import { useAppSelector } from '@/store';
+import { useMemo, useState } from 'react';
+import {
+  ProductTransactionCategoryResponse,
+  ProductTransactionResponse,
+} from '../../domain/entities/Product';
 import TwoSideBarChart, { BarItem } from '../atoms/charts';
 import { ProductFormValues } from '../schema/addProduct.schema';
-import { LoadingIndicator } from '@/components/common/atoms/LoadingIndicator';
+import { useRouter } from 'next/navigation';
 
-const mapTransactionsToBarItems = (data: ProductTransactionResponse[]): BarItem[] => {
-  const groupedData: Record<string, BarItem> = {};
+// Hàm mapping dữ liệu thành BarItem
+const mapTransactionsToBarItems = (data: ProductTransactionCategoryResponse[]): BarItem[] => {
+  const groupedByCategory: Record<
+    string,
+    {
+      name: string;
+      income: number;
+      expense: number;
+      products: ProductTransactionResponse[];
+    }
+  > = {};
 
-  data.forEach((item) => {
-    const { transaction, product } = item;
-    const { name, price } = product;
-    const type = transaction.type.toLowerCase();
-    const parsedPrice = parseFloat(String(price));
+  // Nhóm theo danh mục
+  data.forEach((categoryItem) => {
+    const catId = categoryItem.category.id;
+    const categoryName = categoryItem.category.name;
 
-    if (!groupedData[name]) {
-      groupedData[name] = {
-        id: product.id,
-        name: product.name,
-        value: 0, // Giá trị này chỉ placeholder, thực tế dùng income & expense
-        type: 'product',
-        product: {
-          categoryId: product.catId,
-          icon: product.icon,
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          type: product.type,
-          description: product.description,
-          items: product.items,
-          taxRate: product.taxRate,
-        },
+    if (!groupedByCategory[catId]) {
+      groupedByCategory[catId] = {
+        name: categoryName,
         income: 0,
         expense: 0,
+        products: [],
       };
     }
 
-    if (type === 'income') {
-      groupedData[name].income! += parsedPrice;
-    } else if (type === 'expense') {
-      groupedData[name].expense! += parsedPrice;
-    }
-  });
+    categoryItem.products.forEach((item) => {
+      const { transaction, product } = item;
+      const parsedPrice = parseFloat(String(product.price));
+      const type = transaction?.type.toLowerCase();
 
-  return Object.values(groupedData).flatMap(({ id, name, income, expense, product }) => {
-    const items: BarItem[] = [];
-    if (income! > 0) {
-      items.push({ id, name, value: income!, type: 'income', product });
-    }
-    if (expense! > 0) {
-      items.push({ id, name, value: expense!, type: 'expense', product });
-    }
-    return items;
-  });
-};
+      groupedByCategory[catId].products.push(item);
 
-type ChartPageProps = {
-  method: UseFormReturn<ProductFormValues>;
-};
-
-const ChartPage = ({ method }: ChartPageProps) => {
-  const { reset } = method;
-
-  const dispatch = useAppDispatch();
-
-  const handleEditProduct = (product: ProductFormValues) => {
-    console.log(product);
-
-    dispatch(setDialogState('edit'));
-    reset({
-      categoryId: product.categoryId,
-      icon: product.icon,
-      name: product.name,
-      price: product.price,
-      description: product.description,
-      id: product.id,
-      type: product.type,
-      items: product.items?.map((item) => ({
-        description: item.description,
-        name: item.name,
-      })),
-      taxRate: Number(product.taxRate),
+      if (type === 'income') {
+        groupedByCategory[catId].income += parsedPrice;
+      } else if (type === 'expense') {
+        groupedByCategory[catId].expense += parsedPrice;
+      }
     });
-  };
+  });
 
+  // Chuyển đổi thành BarItem với children, hiển thị tất cả danh mục
+  return Object.entries(groupedByCategory).flatMap(
+    ([catId, { name, income, expense, products }]) => {
+      const categoryItem: BarItem = {
+        id: catId,
+        name,
+        value: 0, // Placeholder, sẽ dùng income/expense
+        type: 'category',
+        income,
+        expense,
+        children: products.map((item) => ({
+          id: item.product.id,
+          name: item.product.name,
+          value: parseFloat(String(item.product.price)),
+          type: item.transaction?.type.toLowerCase() || 'unknown',
+          product: {
+            id: item.product.id,
+            price: item.product.price,
+            name: item.product.name,
+            type: item.product.type,
+            description: item.product.description || '',
+            items: item.product.items || [],
+            taxRate: item.product.taxRate || 0,
+            categoryId: item.product.catId || '',
+            icon: item.product.icon,
+          },
+          isChild: true,
+          parent: catId,
+        })),
+      };
+
+      // Tạo BarItem cho income và expense, ngay cả khi giá trị là 0
+      const items: BarItem[] = [
+        { ...categoryItem, value: income, type: 'income' },
+        { ...categoryItem, value: expense, type: 'expense' },
+      ];
+
+      return items;
+    },
+  );
+};
+
+const ChartPage = () => {
   const data = useAppSelector((state) => state.productManagement.productTransaction.data);
+  const router = useRouter();
+
   const isLoading = useAppSelector(
     (state) => state.productManagement.productTransaction.isLoadingGet,
   );
 
-  const tryCallback = (item: any) => {
-    handleEditProduct(item.payload.product);
+  const [selectedProduct, setSelectedProduct] = useState<ProductFormValues | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+
+  const handleEditProduct = (product: ProductFormValues) => {
+    setSelectedProduct(product);
+    setOpenDialog(true);
   };
 
-  const tryCallBackYaxis = (item: any) => {
-    handleEditProduct(item.product);
+  const handleDialogConfirm = () => {
+    if (selectedProduct) {
+      router.push(`/setting/product/update/${selectedProduct.id}`);
+    }
+    setOpenDialog(false);
+  };
+
+  const tryCallback = (item: BarItem) => {
+    if (item.product) {
+      handleEditProduct(item.product);
+      setOpenDialog(true);
+    }
+  };
+
+  const tryCallBackYaxis = (item: BarItem) => {
+    if (item.product) {
+      handleEditProduct(item.product);
+      setOpenDialog(true);
+    }
   };
 
   const chartData = useMemo(() => mapTransactionsToBarItems(data), [data]);
 
   return (
-    <div className="p-4">
+    <div>
       {isLoading && <LoadingIndicator />}
       <TwoSideBarChart
         data={chartData}
         title="Product Overview"
         legendItems={[
-          { name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_1 },
-          { name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
+          { name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_2 },
+          { name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_2 },
         ]}
         callback={tryCallback}
         callbackYAxis={tryCallBackYaxis}
       />
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Edit</DialogTitle>
+          </DialogHeader>
+          <p>Are you sure you want to Edit this product?</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpenDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDialogConfirm}>
+              Yes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

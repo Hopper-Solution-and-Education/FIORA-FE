@@ -6,7 +6,17 @@ import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { SectionType } from '@prisma/client';
 import HopperLogo from '@public/images/logo.jpg';
-import { ChevronRight, ChevronsUpDown, LogOut } from 'lucide-react';
+import {
+  ChevronRight,
+  ChevronsUpDown,
+  Database,
+  LayoutDashboard,
+  LogOut,
+  Package,
+  Tag,
+  User,
+  Users,
+} from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -44,6 +54,15 @@ export const company = {
   logo: HopperLogo,
   plan: 'Enterprise',
 };
+
+const menuSettingItems = [
+  { label: 'Accounts', icon: User, url: '/home/account' },
+  { label: 'Categories', icon: Tag, url: '/home/category' },
+  { label: 'Products & Services', icon: Package, url: '/setting/product' },
+  { label: 'Partners', icon: Database, url: '/setting/partner' },
+  { label: 'Users', icon: Users, url: '/users' },
+  { label: 'Landing Page', icon: LayoutDashboard, url: '/setting/landing' },
+];
 
 type AppSideBarProps = {
   appLabel: string;
@@ -263,7 +282,16 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut()}>
+                  {menuSettingItems.map((item) => (
+                    <DropdownMenuItem key={item.label} asChild>
+                      <Link href={item.url} className="flex items-center gap-2">
+                        <item.icon />
+                        {item.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()} className="flex items-center gap-2">
                     <LogOut />
                     Log out
                   </DropdownMenuItem>

@@ -12,7 +12,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/shared/utils';
 import type { ProductFormValues } from '../schema/addProduct.schema';
 
@@ -37,76 +36,61 @@ const ProductItemsField = ({ control, errors }: ProductItemsFieldProps) => {
       name="items"
       render={() => (
         <FormItem className="col-span-2">
-          <FormLabel>Product Items</FormLabel>
-          <FormDescription>
+          <FormLabel className="text-lg font-semibold">Product Items</FormLabel>
+          <FormDescription className="text-gray-600 mb-4">
             Add items to your product. Each item should have a name and description.
           </FormDescription>
 
           <div className="space-y-4">
             {fields.map((field, index) => (
-              <Card key={field.id} className="border border-border">
-                <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between">
-                  <CardTitle className="text-base">Item {index + 1}</CardTitle>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => remove(index)}
-                    className="h-8 w-8 text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </CardHeader>
-                <CardContent className="p-4 pt-2 space-y-3">
-                  <FormField
-                    control={control}
-                    name={`items.${index}.name`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm">Name</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Item name"
-                            {...field}
-                            className={cn({
-                              'border-red-500': errors.items?.[index]?.name,
-                            })}
-                          />
-                        </FormControl>
-                        {errors.items?.[index]?.name && (
-                          <p className="text-sm font-medium text-destructive">
-                            {errors.items[index]?.name?.message}
-                          </p>
-                        )}
-                      </FormItem>
-                    )}
-                  />
+              <div
+                key={field.id}
+                className="p-4 border border-gray-300 rounded-lg shadow-sm relative"
+              >
+                <button
+                  type="button"
+                  onClick={() => remove(index)}
+                  className="absolute top-2 right-2 text-destructive hover:bg-gray-100 rounded-full p-1"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
 
-                  <FormField
-                    control={control}
-                    name={`items.${index}.description`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm">Description</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Item description"
-                            {...field}
-                            className={cn('resize-none', {
-                              'border-red-500': errors.items?.[index]?.description,
-                            })}
-                          />
-                        </FormControl>
-                        {errors.items?.[index]?.description && (
-                          <p className="text-sm font-medium text-destructive">
-                            {errors.items[index]?.description?.message}
-                          </p>
-                        )}
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
+                <div className="mb-3">
+                  <FormLabel className="text-sm font-medium">Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Item name"
+                      {...control.register(`items.${index}.name`)}
+                      className={cn('mt-1', {
+                        'border-red-500': errors.items?.[index]?.name,
+                      })}
+                    />
+                  </FormControl>
+                  {errors.items?.[index]?.name && (
+                    <p className="text-sm font-medium text-destructive">
+                      {errors.items[index]?.name?.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <FormLabel className="text-sm font-medium">Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Item description"
+                      {...control.register(`items.${index}.description`)}
+                      className={cn('resize-none mt-1', {
+                        'border-red-500': errors.items?.[index]?.description,
+                      })}
+                    />
+                  </FormControl>
+                  {errors.items?.[index]?.description && (
+                    <p className="text-sm font-medium text-destructive">
+                      {errors.items[index]?.description?.message}
+                    </p>
+                  )}
+                </div>
+              </div>
             ))}
 
             <Button type="button" variant="outline" onClick={addNewItem} className="w-full">

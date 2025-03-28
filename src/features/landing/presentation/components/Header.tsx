@@ -41,7 +41,7 @@ export default function Header() {
         <div className="flex items-center">
           <Link href="/">
             {isLoading ? (
-              <Skeleton className="w-[40px] h-[40px] sm:w-[50px] sm:h-[50px] md:w-[60px] md:h-[60px] lg:w-[80px] lg:h-[80px] xl:w-[100px] xl:h-[100px]" />
+              <Skeleton className="max-w-[120px] sm:max-w-[140px] md:max-w-[180px] lg:max-w-[200px] xl:max-w-[240px] h-auto max-h-[70px] sm:max-h-[70px] md:max-h-[70px] lg:max-h-[80px]" />
             ) : (
               <>
                 {section?.medias && !isError ? (
@@ -80,7 +80,7 @@ export default function Header() {
             )}
             <div className="flex w-full justify-end">
               {/* Navigation */}
-              <nav className="hidden md:flex items-center gap-8 px-8 mt-4">
+              <nav className="hidden md:flex items-center gap-8 px-8 mt-3">
                 <HelpCenter />
                 <SettingCenter />
 
