@@ -12,12 +12,15 @@ import { Category } from '@/features/home/module/category/slices/types';
 import { setDeleteConfirmOpen, setSelectedCategory } from '@/features/home/module/category/slices';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icon';
+import { useFeatureFlagGuard } from '@/hooks/useFeatureFlagGuard';
+import { FeatureFlags } from '@/shared/constants/featuresFlags';
 
 export default function UpdateCategory() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const params = useParams();
   const [category, setCategory] = useState<Category | null>(null);
+  const { isLoaded, isFeatureOn } = useFeatureFlagGuard(FeatureFlags.CATEGORY_FEATURE);
 
   const { categories } = useAppSelector((state) => state.category);
   const categoryId = params?.id as string;
@@ -77,7 +80,7 @@ export default function UpdateCategory() {
     fetchData();
   }, [categoryId, categories?.data, dispatch, router]);
 
-  if (categories.isLoading) {
+  if (categories.isLoading || !isLoaded) {
     return <Loading />;
   }
 
@@ -85,7 +88,7 @@ export default function UpdateCategory() {
     return <div className="text-red-600 dark:text-red-400">Error: {categories.error}</div>;
   }
 
-  if (!category) {
+  if (!category || !isFeatureOn) {
     return null;
   }
 
