@@ -53,6 +53,7 @@ import {
   CircleChevronUp,
   MoveLeft,
   AlertCircle,
+  CircleArrowLeft,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -127,4 +128,5 @@ export const Icons = {
   circleChevronUp: CircleChevronUp,
   moveLeft: MoveLeft,
   alertCircle: AlertCircle,
+  circleArrowLeft: CircleArrowLeft,
 };

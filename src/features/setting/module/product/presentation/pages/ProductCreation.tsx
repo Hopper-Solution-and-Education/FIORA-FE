@@ -78,6 +78,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
     };
 
     handleGetProduct();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId]);
 
   const confirmDelete = async () => {

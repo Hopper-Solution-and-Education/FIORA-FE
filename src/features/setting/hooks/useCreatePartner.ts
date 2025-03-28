@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { useForm, UseFormClearErrors, UseFormSetValue } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -5,104 +7,103 @@ import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 import { uploadToFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
 import {
-  CreatePartnerFormData,
-  createPartnerSchema,
-} from '@/features/partner/schema/createPartner.schema';
+  partnerSchema,
+  defaultPartnerFormValue,
+  PartnerFormValues,
+} from '../module/partner/presentation/schema/addPartner.schema';
+import { partnerDIContainer } from '@/features/setting/module/partner/di/partnerDIContainer';
+import { TYPES } from '@/features/setting/module/partner/di/partnerDIContainer.type';
+import { ICreatePartnerUseCase } from '@/features/setting/module/partner/domain/usecases/CreatePartnerUsecase';
+import { IGetPartnerUseCase } from '@/features/setting/module/partner/domain/usecases/GetPartnerUsecase';
+import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
+import { CreatePartnerFormData } from '@/features/partner/schema/createPartner.schema';
+import { CreatePartnerAPIRequestDTO } from '../module/partner/data/dto/request/CreatePartnerAPIRequestDTO';
+import { useSession } from 'next-auth/react';
+
+function convertNullToUndefined<T>(obj: T): T {
+  const result = { ...obj };
+  for (const key in result) {
+    if (result[key] === null) {
+      result[key] = undefined as any;
+    }
+  }
+  return result;
+}
 
 export function useCreatePartner(setIsOpen: (open: boolean) => void) {
+  const { data: session, status } = useSession();
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [partners, setPartners] = useState<any[]>([]);
+  const [partners, setPartners] = useState<Partner[]>([]);
 
-  const form = useForm<CreatePartnerFormData>({
-    resolver: yupResolver(createPartnerSchema),
+  const form = useForm<PartnerFormValues>({
+    resolver: yupResolver(partnerSchema),
     mode: 'onChange',
     defaultValues: {
-      name: '',
-      email: '',
-      identify: '',
-      description: '',
-      dob: undefined,
-      logo: '',
-      taxNo: '',
-      phone: '',
-      address: '',
-      parentId: '',
+      ...defaultPartnerFormValue,
+      parentId: partners.length > 0 ? partners[0].id : 'None',
     },
   });
 
-  async function fetchPartners() {
+  const getPartnerUseCase = partnerDIContainer.get<IGetPartnerUseCase>(TYPES.IGetPartnerUseCase);
+  const createPartnerUseCase = partnerDIContainer.get<ICreatePartnerUseCase>(
+    TYPES.ICreatePartnerUseCase,
+  );
+
+  async function fetchPartners(userId: string) {
     try {
-      const response = await fetch('/api/partners/partner', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch partners.');
-      }
-
-      const data = await response.json();
-      console.log(data);
-      const topLevelPartners = data.data.filter((partner: any) => partner.parentId !== null);
-      setPartners(topLevelPartners);
+      const response = await getPartnerUseCase.execute({ userId, page: 1, pageSize: 100 });
+      setPartners(response.filter((partner) => partner.parentId === null));
     } catch (error: unknown) {
       console.error('Error fetching partners:', error);
     }
   }
 
   useEffect(() => {
-    fetchPartners();
-  }, []);
+    if (status === 'authenticated' && session?.user?.id) {
+      fetchPartners(session.user.id);
+    }
+  }, [status, session]);
 
   async function onSubmit(values: CreatePartnerFormData) {
+    if (status !== 'authenticated' || !session?.user?.id) {
+      toast.error('User not authenticated. Please log in.');
+      return;
+    }
+
     try {
-      if (!logoFile) {
-        toast.error('Please upload a logo before submitting.');
-        return;
+      let logoUrl: string | undefined;
+
+      if (logoFile) {
+        const fileExtension = logoFile.name.split('.').pop();
+        const fileName = `partner_logo_${uuidv4()}.${fileExtension}`;
+        logoUrl = await uploadToFirebase({
+          file: logoFile,
+          path: 'partners/logos',
+          fileName: fileName,
+        });
       }
 
-      const fileExtension = logoFile.name.split('.').pop();
-      const fileName = `partner_logo_${uuidv4()}.${fileExtension}`;
-      const logoUrl = await uploadToFirebase({
-        file: logoFile,
-        path: 'partners/logos',
-        fileName: fileName,
-      });
-      values.logo = logoUrl;
+      const partnerData = {
+        ...values,
+        logo: logoUrl, // Có thể là undefined nếu không có logoFile
+        userId: session.user.id,
+      };
 
-      const response = await fetch('/api/partners/partner', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-      });
+      const formattedPartnerData = convertNullToUndefined(partnerData);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to add partner.');
-      }
+      await createPartnerUseCase.execute(formattedPartnerData as CreatePartnerAPIRequestDTO);
 
-      toast.success('Partner added successfully!', {
-        position: 'top-right',
-        style: { backgroundColor: '#22c55e', color: 'white' },
-      });
+      toast.success('Partner added successfully!');
       setIsOpen(false);
       form.reset();
       setLogoPreview(null);
       setLogoFile(null);
 
-      // Sau khi thêm mới, cập nhật lại danh sách Partners
-      await fetchPartners();
-    } catch (error: unknown) {
-      console.error('Error submitting data:', error);
-
-      const errorMessage = error instanceof Error ? error.message : 'Something went wrong!';
-
-      toast.error(errorMessage, {
-        position: 'top-right',
-        style: { backgroundColor: '#ef4444', color: 'white' },
-      });
+      await fetchPartners(session.user.id);
+    } catch (error: any) {
+      // console.error('Error submitting data: {}', error);
+      toast.error(error.message);
     }
   }
 
