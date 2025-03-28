@@ -1,46 +1,75 @@
+'use client';
+
 import React from 'react';
 import { FieldError } from 'react-hook-form';
 import {
   Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
   SelectTrigger,
   SelectValue,
-  SelectContent,
-  SelectItem,
 } from '@/components/ui/select';
+import GlobalLabel from '@/components/common/atoms/GlobalLabel';
 
 interface SelectFieldProps {
-  value: string;
-  onChange: (value: string) => void;
-  onBlur?: () => void;
-  error?: FieldError;
-  label?: string;
-  placeholder?: string;
-  options: { value: string; label: string; image?: string }[];
+  name: string; // Required for form handling
+  value?: string; // Selected value
+  onChange?: (value: string) => void; // Callback for value changes
+  onBlur?: () => void; // Optional blur handler
+  options: { value: string; label: string }[]; // Select options
+  placeholder?: string; // Placeholder text
+  error?: FieldError; // Form error from react-hook-form
+  label?: React.ReactNode | string; // Label content (string or custom node)
+  required?: boolean; // Whether the field is required
+  disabled?: boolean; // Disable the select
+  id?: string; // HTML id for accessibility
+  [key: string]: any; // Rest props for additional attributes
 }
+
 const SelectField: React.FC<SelectFieldProps> = ({
-  value,
-  onChange,
+  name,
+  value = '',
+  onChange = () => {},
   onBlur,
+  options,
+  placeholder,
   error,
   label,
-  placeholder,
-  options,
+  required = false,
+  disabled = false,
+  id = name,
+  ...props
 }) => (
-  <div className="mb-4">
-    {label && <label className="block text-sm font-medium text-gray-700">{label}</label>}
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className={error ? 'border-red-500' : ''} onBlur={onBlur}>
+  <div className="space-y-2">
+    {label &&
+      (typeof label === 'string' ? (
+        <GlobalLabel text={label} required={required} htmlFor={id} />
+      ) : (
+        label
+      ))}
+    <Select
+      value={value}
+      onValueChange={onChange}
+      onOpenChange={(open) => !open && onBlur?.()}
+      disabled={disabled}
+      name={name}
+      {...props}
+    >
+      <SelectTrigger id={id} className={error ? 'border-red-500' : ''}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
+        <SelectGroup>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectGroup>
       </SelectContent>
     </Select>
-    {error && <p className="mt-1 text-sm text-red-500">{error.message}</p>}
+    {error && <p className="text-sm text-red-500">{error.message}</p>}
   </div>
 );
 

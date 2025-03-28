@@ -51,6 +51,7 @@ import {
   Minus,
   CircleChevronDown,
   CircleChevronUp,
+  CircleArrowLeft,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -123,4 +124,5 @@ export const Icons = {
   minus: Minus,
   circleChevronDown: CircleChevronDown,
   circleChevronUp: CircleChevronUp,
+  circleArrowLeft: CircleArrowLeft,
 };
