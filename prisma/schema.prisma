@@ -16,6 +16,7 @@ model User {
   password       String?
   emailVerified  Boolean?            @default(false)
   image          String?
+  role           UserRole            @default(User)
   isDeleted      Boolean             @default(false)
   deletedAt      DateTime?
   createdAt      DateTime            @default(now())
@@ -302,4 +303,10 @@ enum TransactionType {
 enum ProductType {
   Product
   Service
+}
+
+enum UserRole {
+  Admin
+  User
+  CS
 }
