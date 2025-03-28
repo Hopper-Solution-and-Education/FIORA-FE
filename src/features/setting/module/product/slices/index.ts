@@ -9,15 +9,12 @@ import { fetchCategoriesProduct } from './actions/fetchCategoriesProduct';
 import { getProductsAsyncThunk } from './actions/getProductsAsyncThunk';
 import { getProductTransactionAsyncThunk } from './actions/getProductTransactionAsyncThunk';
 import { updateProductAsyncThunk } from './actions/updateProductAsyncThunk';
-import { DialogStateType, initialProductState } from './types';
+import { initialProductState } from './types';
 
 const productManagementSlice = createSlice({
   name: 'productManagement',
   initialState: initialProductState,
   reducers: {
-    setDialogState: (state, action: PayloadAction<DialogStateType>) => {
-      state.dialogState = action.payload;
-    },
     updateProductListItems: (state, action) => {
       state.products.items = action.payload;
     },
@@ -147,6 +144,6 @@ const productManagementSlice = createSlice({
   },
 });
 
-export const { resetProductManagementState, setDialogState, updateProductListItems } =
+export const { resetProductManagementState, updateProductListItems } =
   productManagementSlice.actions;
 export default productManagementSlice.reducer;

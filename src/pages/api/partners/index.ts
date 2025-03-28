@@ -3,9 +3,14 @@ import { partnerUseCase } from '@/features/partner/application/use-cases/partner
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/config/createResponse';
 import { Messages } from '@/shared/constants/message';
-import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 
-export default sessionWrapper(async (req, res, userId) => {
+export default withAuthorization({
+  GET: ['User', 'Admin', 'CS'],
+  POST: ['User', 'Admin', 'CS'],
+  PUT: ['User', 'Admin', 'CS'],
+  DELETE: ['Admin'],
+})(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   switch (req.method) {
     case 'POST':
       return POST(req, res, userId);

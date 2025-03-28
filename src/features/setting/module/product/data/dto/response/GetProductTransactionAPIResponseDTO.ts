@@ -4,23 +4,36 @@ import { HttpResponse } from '../../../model';
 import { ProductItem } from '../../../presentation/schema/addProduct.schema';
 
 export type getProductTransactionAPIResponseDTO = HttpResponse<
-  PaginationResponse<ProductTransactionResponse>
+  PaginationResponse<ProductTransactionCategoryResponse>
 >;
 
-type ProductTransactionResponse = {
-  transaction: {
+type ProductTransactionCategoryResponse = {
+  category: {
     id: string;
-    type: CategoryType;
+    name: string;
+    description: string | null;
+    icon: string;
+    tax_rate: number | null;
+    created_at: string;
+    updated_at: string;
   };
+  products: ProductTransactionResponse[];
+};
+
+export type ProductTransactionResponse = {
   product: {
     id: string;
     price: number;
     name: string;
     type: ProductType;
-    description: string;
-    items: ProductItem[];
-    taxRate: number;
-    catId: string;
+    description: string | null;
+    items: ProductItem[] | null;
+    taxRate: number | null;
+    catId: string | null;
     icon: string;
   };
+  transaction: {
+    id: string;
+    type: CategoryType;
+  } | null;
 };

@@ -77,21 +77,34 @@ export class ProductMapper {
   ): GetProductTransactionResponse {
     return {
       data: response.data.data.map((item) => ({
-        transaction: {
-          id: item.transaction.id,
-          type: item.transaction.type,
+        category: {
+          id: item.category.id,
+          name: item.category.name,
+          icon: item.category.icon,
+          description: item.category.description ?? '', // Xử lý null
+          createdAt: item.category.created_at,
+          updatedAt: item.category.updated_at,
+          taxRate: item.category.tax_rate ?? 0, // Xử lý null
         },
-        product: {
-          id: item.product.id,
-          price: Number(item.product.price),
-          name: item.product.name,
-          type: item.product.type,
-          description: item.product.description ?? '',
-          items: ProductMapper.parseServerItemToList(item.product.items),
-          taxRate: Number(item.product.taxRate),
-          catId: item.product.catId ?? '',
-          icon: item.product.icon,
-        },
+        products: item.products.map((productItem) => ({
+          product: {
+            id: productItem.product.id,
+            price: Number(productItem.product.price),
+            name: productItem.product.name,
+            type: productItem.product.type,
+            description: productItem.product.description ?? '',
+            items: ProductMapper.parseServerItemToList(productItem.product.items),
+            taxRate: productItem.product.taxRate ? Number(productItem.product.taxRate) : 0,
+            catId: productItem.product.catId ?? '',
+            icon: productItem.product.icon,
+          },
+          transaction: productItem.transaction
+            ? {
+                id: productItem.transaction.id,
+                type: productItem.transaction.type,
+              }
+            : null,
+        })),
       })),
       page: response.data.page,
       pageSize: response.data.pageSize,
@@ -173,6 +186,10 @@ export class ProductMapper {
   }
 
   static parseServerItemToList(items: JsonValue): ProductItem[] {
+    if (items === null) {
+      return [];
+    }
+
     if (!Array.isArray(items)) {
       console.error(`Expected an array but received:`, items);
       return [];

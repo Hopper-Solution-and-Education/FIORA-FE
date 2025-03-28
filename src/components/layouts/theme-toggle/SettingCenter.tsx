@@ -21,6 +21,7 @@ import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import EnglishIcon from '@public/icons/united-kingdom.png';
 import VietnameseIcon from '@public/icons/vietnam.png';
 import { useSession } from 'next-auth/react';
@@ -53,61 +54,77 @@ export default function SettingCenter() {
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Settings
-          size={18}
-          className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
-        />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="end"
-        className={`${
-          data?.user ? 'w-[300px] grid-cols-4' : 'w-[100px] grid-cols-2'
-        } p-4 grid gap-4 border shadow-md`}
-      >
-        <>
-          {data?.user && (
-            <>
-              {menuSettingItems.map((item, index) => (
-                <Link key={index} href={item.url} passHref>
-                  <DropdownMenuItem
-                    key={index}
-                    className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition"
-                  >
-                    <item.icon className="h-6 w-6" />
-                  </DropdownMenuItem>
-                </Link>
-              ))}
-            </>
-          )}
-        </>
-        <DropdownMenuItem
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            toggleTheme();
-          }}
-          className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition"
+    <TooltipProvider>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Settings
+            size={18}
+            className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+          />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          className={`${
+            data?.user ? 'w-[300px] grid-cols-4' : 'w-[100px] grid-cols-2'
+          } p-4 grid gap-4 border shadow-md`}
         >
-          {theme === 'dark' ? <MoonIcon size={24} /> : <SunIcon size={24} />}
-        </DropdownMenuItem>
+          {data?.user &&
+            menuSettingItems.map((item, index) => (
+              <Tooltip key={index}>
+                <TooltipTrigger asChild>
+                  <Link href={item.url} passHref>
+                    <DropdownMenuItem className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
+                      <item.icon className="h-6 w-6" />
+                    </DropdownMenuItem>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <span>{item.label}</span>
+                </TooltipContent>
+              </Tooltip>
+            ))}
 
-        <DropdownMenuItem
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            toggleLanguage();
-          }}
-          className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition"
-        >
-          {language === 'en' ? (
-            <Image src={VietnameseIcon} alt="Vietnamese" width={20} height={20} />
-          ) : (
-            <Image src={EnglishIcon} alt="English" width={20} height={20} />
-          )}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  toggleTheme();
+                }}
+                className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
+              >
+                {theme === 'dark' ? <MoonIcon size={24} /> : <SunIcon size={24} />}
+              </DropdownMenuItem>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <span>Toggle Theme</span>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  toggleLanguage();
+                }}
+                className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
+              >
+                {language === 'en' ? (
+                  <Image src={VietnameseIcon} alt="Vietnamese" width={20} height={20} />
+                ) : (
+                  <Image src={EnglishIcon} alt="English" width={20} height={20} />
+                )}
+              </DropdownMenuItem>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <span>Change Language</span>
+            </TooltipContent>
+          </Tooltip>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </TooltipProvider>
   );
 }
