@@ -2,11 +2,9 @@
 'use client';
 
 import { FormSheet } from '@/components/common/organisms/FormSheet';
-import {
-  CreatePartnerFormData,
-  createPartnerSchema,
-} from '@/features/partner/schema/createPartner.schema';
+import { createPartnerSchema } from '@/features/partner/schema/createPartner.schema';
 import { useCreatePartner } from '@/features/setting/hooks/useCreatePartner';
+import { PartnerFormValues } from '@/features/setting/module/partner/presentation/schema/addPartner.schema';
 import { FieldOverrides } from '@/shared/types/formsheet.type';
 import { generateFieldsFromSchema } from '@/shared/utils/formUtils';
 
@@ -15,18 +13,10 @@ interface AddPartnerModalProps {
   setIsOpen: (open: boolean) => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const mockParentPartners = [
-  { id: '1', name: 'Partner A', description: 'This is Partner A' },
-  { id: '2', name: 'Partner B', description: 'This is Partner B' },
-  { id: '3', name: 'Partner C', description: 'This is Partner C' },
-  { id: '4', name: 'Partner D', description: 'This is Partner D' },
-];
-
 export function AddPartnerModal({ isOpen, setIsOpen }: AddPartnerModalProps) {
   const { form, onSubmit, setLogoPreview, partners } = useCreatePartner(setIsOpen);
 
-  const fieldOverrides: FieldOverrides<CreatePartnerFormData> = {
+  const fieldOverrides: FieldOverrides<PartnerFormValues> = {
     description: {
       type: 'textarea',
       section: 'Details',
@@ -50,12 +40,15 @@ export function AddPartnerModal({ isOpen, setIsOpen }: AddPartnerModalProps) {
     address: { section: 'Contact Information' },
     parentId: {
       type: 'select',
-      label: 'Parent Partner',
+      label: 'Parent',
       placeholder: 'Select a parent partner',
-      options: partners.map((partner) => ({
-        value: partner.id,
-        label: partner.name,
-      })),
+      options: [
+        { value: 'none', label: 'None' },
+        ...partners.map((partner) => ({
+          value: partner.id,
+          label: partner.name,
+        })),
+      ],
     },
     email: {
       section: 'Contact Information',
@@ -63,8 +56,6 @@ export function AddPartnerModal({ isOpen, setIsOpen }: AddPartnerModalProps) {
   };
 
   const fields = generateFieldsFromSchema(createPartnerSchema, fieldOverrides);
-
-  // toast.error('a');
 
   return (
     <FormSheet
