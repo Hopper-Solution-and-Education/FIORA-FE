@@ -3,7 +3,6 @@
 import Loading from '@/components/common/atoms/Loading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardHeading } from '@/features/home/components/DashboardHeading';
 import { removeFromFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -17,7 +16,6 @@ import { getProductsAsyncThunk } from '../../slices/actions/getProductsAsyncThun
 import { getProductTransactionAsyncThunk } from '../../slices/actions/getProductTransactionAsyncThunk';
 import DeleteProductDialog from '../organisms/DeleteProductDialog';
 import ChartPage from './CharPage';
-import TablePage from './TablePage';
 
 const ProductPage = () => {
   const { page: pageTransaction, pageSize } = useAppSelector(
@@ -46,11 +44,6 @@ const ProductPage = () => {
 
   const handleNavigateToCreate = () => {
     redirect('/setting/product/create');
-  };
-
-  const handleDeleteProduct = (product: Product) => {
-    setProductToDelete(product);
-    setDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
@@ -84,8 +77,9 @@ const ProductPage = () => {
         </div>
 
         <Separator />
+        <ChartPage />
 
-        <Tabs defaultValue="chart">
+        {/* <Tabs defaultValue="chart">
           <TabsList className="my-2">
             <TabsTrigger value="chart">Product Chart</TabsTrigger>
             <TabsTrigger value="table">Product Table</TabsTrigger>
@@ -98,7 +92,7 @@ const ProductPage = () => {
           <TabsContent value="table">
             <TablePage setProductToDelete={handleDeleteProduct} />
           </TabsContent>
-        </Tabs>
+        </Tabs> */}
       </div>
 
       <DeleteProductDialog
