@@ -1,14 +1,13 @@
-// components/UploadField.tsx
 import React from 'react';
 import { FieldError } from 'react-hook-form';
 
 interface UploadFieldProps {
-  onChange: (file: File | null) => void;
+  onChange?: (file: File | null) => void;
   error?: FieldError;
   label?: string;
 }
 
-const UploadField: React.FC<UploadFieldProps> = ({ onChange, error, label }) => {
+const UploadField: React.FC<UploadFieldProps> = ({ onChange = () => {}, error, label }) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
     onChange(file);

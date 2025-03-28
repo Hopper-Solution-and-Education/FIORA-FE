@@ -4,7 +4,6 @@ import growthbook from '@/config/growthbook';
 import { NavItem } from '@/features/home/types/Nav.types';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { SectionType } from '@prisma/client';
 import HopperLogo from '@public/images/logo.jpg';
 import { ChevronRight, ChevronsUpDown, LogOut } from 'lucide-react';
@@ -70,8 +69,6 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
     setOpenItems(newOpenItems);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, navItems]);
-
-  console.log(gb.isOn(FeatureFlags.CATEGORY_FEATURE));
 
   useEffect(() => {
     const filterNavItems = (items: NavItem[]): NavItem[] => {
