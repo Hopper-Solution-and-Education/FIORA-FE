@@ -12,6 +12,20 @@ export enum Messages {
   DELETE_CATEGORY_SUCCESS = 'Delete category successfully',
   GET_CATEGORY_SUCCESS = 'Get category successfully',
 
+  // Category-Product Success
+  CREATE_CATEGORY_PRODUCT_SUCCESS = 'Create category product successfully',
+  UPDATE_CATEGORY_PRODUCT_SUCCESS = 'Update category product successfully',
+  DELETE_CATEGORY_PRODUCT_SUCCESS = 'Delete category product successfully',
+  GET_CATEGORY_PRODUCT_SUCCESS = 'Get list category product successfully',
+  GET_DETAIL_CATEGORY_PRODUCT_SUCCESS = 'Get detail category product successfully',
+
+  // Category-Product Failed
+  CATEGORY_PRODUCT_NOT_FOUND = 'Category product not found',
+  CREATE_CATEGORY_PRODUCT_FAILED = 'Failed to create category product',
+  UPDATE_CATEGORY_PRODUCT_FAILED = 'Failed to update category product',
+  DELETE_CATEGORY_PRODUCT_FAILED = 'Failed to delete category product',
+  GET_CATEGORY_PRODUCT_FAILED = 'Failed to get category product',
+
   // Account
   CREATE_ACCOUNT_FAILED = 'Failed to create account',
   CREATE_ACCOUNT_SUCCESS = 'Account created successfully',
@@ -65,6 +79,8 @@ export enum Messages {
   PARTNER_ALREADY_EXISTS = 'Partner you are creating already exists.',
 
   INVALID_USER = 'Invalid user.',
+  USER_EMAIL_EXISTED = 'Email already existed',
+  NOT_FOUND_EMAIL = 'User email not found',
   INVALID_PHONE = 'Invalid phone number.',
   INVALID_DOB = 'Invalid date of birth.',
 

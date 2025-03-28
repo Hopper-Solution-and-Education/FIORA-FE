@@ -8,9 +8,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'next/navigation';
 import { sendOtp } from '@/config/sendGrid';
 import { generateOtp } from '@/shared/utils';
-import { toast } from 'sonner'; // Import toast từ sonner
+import { toast } from 'sonner';
 
-// Định nghĩa schema Yup cho form
 const forgotPasswordSchema = Yup.object().shape({
   email: Yup.string().email('Enter a valid email').required('Email is required'),
   otp: Yup.string().required('OTP is required').length(6, 'OTP must be 6 digits'),
@@ -37,7 +36,6 @@ export const useForgotPassword = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
 
-  // Form cho bước nhập email và OTP
   const emailOtpForm = useForm({
     resolver: yupResolver(forgotPasswordSchema),
     mode: 'onChange',
@@ -47,7 +45,6 @@ export const useForgotPassword = () => {
     },
   });
 
-  // Form cho bước nhập mật khẩu mới
   const resetPasswordForm = useForm({
     resolver: yupResolver(resetPasswordSchema),
     mode: 'onChange',
@@ -57,18 +54,26 @@ export const useForgotPassword = () => {
     },
   });
 
-  // Đếm ngược 60 giây
   useEffect(() => {
-    if (countdown === null || countdown <= 0) return;
+    if (countdown === null || countdown < 0) return;
 
     const timer = setInterval(() => {
-      setCountdown((prev) => (prev !== null ? prev - 1 : null));
+      setCountdown((prev) => {
+        if (prev !== null) {
+          const newCount = prev - 1;
+          if (newCount <= 0) {
+            setIsOtpSent(false);
+            setOtp('');
+          }
+          return newCount;
+        }
+        return null;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
   }, [countdown]);
 
-  // Hàm gửi OTP qua email
   const onSubmitForgotPassword = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     const email = emailOtpForm.getValues('email');
@@ -79,32 +84,30 @@ export const useForgotPassword = () => {
         setOtp(generatedOtp);
         setIsOtpSent(true);
         setCountdown(60);
-        toast.success('OTP sent to your email'); // Sử dụng toast thay vì setAlert
-      } catch (error) {
+        toast.success('OTP sent to your email');
+      } catch (error: any) {
         console.error(error);
-        toast.error('Failed to send OTP'); // Sử dụng toast thay vì setAlert
+        toast.error(error?.message ?? 'Failed to send OTP');
       }
     } else {
-      toast.error('Please enter a valid email'); // Sử dụng toast thay vì setAlert
+      toast.error('Please enter a valid email');
     }
   };
 
-  // Hàm xử lý xác nhận OTP
   const handleOtpSubmit = async (data: { email: string; otp: string }) => {
     if (!isOtpSent) {
-      toast.error('Please request an OTP first'); // Sử dụng toast thay vì setAlert
+      toast.error('Please request an OTP first');
       return;
     }
     if (otp === data.otp) {
       setIsOtpVerified(true);
-      toast.success('OTP verified successfully'); // Sử dụng toast thay vì setAlert
+      toast.success('OTP verified successfully');
     } else {
-      toast.error('Invalid OTP. Please try again'); // Sử dụng toast thay vì setAlert
+      toast.error('Sorry! OTP is not valid');
       emailOtpForm.setValue('otp', '');
     }
   };
 
-  // Hàm xử lý submit reset password
   const handleResetPasswordSubmit = async (data: {
     newPassword: string;
     confirmPassword: string;
@@ -126,10 +129,10 @@ export const useForgotPassword = () => {
         throw new Error(errorData.message || 'Failed to reset password');
       }
 
-      toast.success('Password reset successfully!'); // Sử dụng toast thay vì setAlert
-      router.push('/home');
+      localStorage.setItem('resetPasswordSuccess', 'true');
+      router.push('/auth/sign-in?reset=success');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to reset password'); // Sử dụng toast thay vì setAlert
+      toast.error(error.message || 'Failed to reset password');
     }
   };
 

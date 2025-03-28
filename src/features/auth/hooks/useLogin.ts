@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { signIn, useSession } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { signIn, useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import * as Yup from 'yup';
 
 const loginSchema = Yup.object().shape({
   email: Yup.string().email('Enter a valid email').required('Email is required'),
@@ -21,10 +22,7 @@ export function useLogin() {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: session, status } = useSession();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const searchParams = useSearchParams();
+  const { data: session } = useSession();
   const router = useRouter();
 
   const form = useForm({
@@ -54,9 +52,9 @@ export function useLogin() {
       } else {
         setError('LoginID or Password is incorrect!');
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setError('An unexpected error occurred. Please try again.');
+      console.log(error);
     }
   };
 
@@ -73,14 +71,14 @@ export function useLogin() {
 
   const toggleRememberMe = () => setRememberMe((prev) => !prev);
 
-  // useEffect(() => {
-  //   if (error) {
-  //     toast.error(error);
-  //   }
-  //   if (success) {
-  //     toast.success(success);
-  //   }
-  // }, [error, success]);
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+    if (success) {
+      toast.success(success);
+    }
+  }, [error, success]);
 
   return {
     form,

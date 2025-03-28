@@ -44,11 +44,11 @@ const EmailOtpForm = ({
           name="email"
           render={({ field }) => (
             <FormItem className="flex flex-col w-full">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full">
-                <FormLabel className="text-sm text-foreground w-1/6 sm:w-[25%] md:w-[15%] text-left sm:text-right">
+              <div className="flex flex-col md:flex-row md:items-center gap-4 w-full">
+                <FormLabel className="text-sm text-foreground w-full md:w-[15%] text-left md:text-right">
                   Email
                 </FormLabel>
-                <div className="w-full sm:w-[75%] md:w-4/6">
+                <div className="w-full md:w-4/6">
                   <FormControl>
                     <Input
                       id="email"
@@ -60,41 +60,41 @@ const EmailOtpForm = ({
                       value={field.value ?? ''}
                     />
                   </FormControl>
-                  <div className="w-full flex justify-end sm:hidden mt-2">
+                  <div className="w-full flex justify-end md:hidden mt-2">
                     {countdown === null || countdown <= 0 ? (
                       !isOtpSent && (
                         <span
                           onClick={onSubmitForgotPassword}
-                          className="text-sm font-semibold text-blue-500 transition-all duration-200 underline underline-offset-4 cursor-pointer"
+                          className="text-sm font-semibold text-blue-500 transition-all duration-200 underline underline-offset-4 cursor-pointer whitespace-nowrap"
                         >
                           Get OTP
                         </span>
                       )
                     ) : (
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                      <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                         Resend in {countdown}s
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="w-1/6 hidden sm:flex sm:justify-start md:w-1/6 md:justify-end">
+                <div className="w-1/6 hidden md:flex md:items-center">
                   {countdown === null || countdown <= 0 ? (
                     !isOtpSent && (
                       <span
                         onClick={(e) => onSubmitForgotPassword(e)}
-                        className="text-sm font-semibold text-blue-500 transition-all duration-200 underline underline-offset-4 cursor-pointer"
+                        className="text-sm font-semibold text-blue-500 transition-all duration-200 underline underline-offset-4 cursor-pointer whitespace-nowrap"
                       >
                         Get OTP
                       </span>
                     )
                   ) : (
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                       Resend in {countdown}s
                     </span>
                   )}
                 </div>
               </div>
-              <FormMessage className="w-full text-left sm:pl-[25%] md:pl-[calc(15%+1rem)]" />
+              <FormMessage className="w-full text-left md:pl-[calc(15%+1rem)]" />
             </FormItem>
           )}
         />
@@ -104,11 +104,11 @@ const EmailOtpForm = ({
           name="otp"
           render={({ field }) => (
             <FormItem className="flex flex-col w-full">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full">
-                <FormLabel className="text-sm text-foreground w-1/6 sm:w-[25%] md:w-[15%] text-left sm:text-right">
+              <div className="flex flex-col md:flex-row md:items-center gap-4 w-full">
+                <FormLabel className="text-sm text-foreground w-full md:w-[15%] text-left md:text-right">
                   OTP
                 </FormLabel>
-                <div className="w-full sm:w-[75%] md:w-4/6">
+                <div className="w-full md:w-4/6">
                   <FormControl>
                     <Input
                       id="otp"
@@ -121,9 +121,9 @@ const EmailOtpForm = ({
                     />
                   </FormControl>
                 </div>
-                <div className="w-1/6 sm:w-[20%] md:w-1/6 flex justify-end sm:mt-0 mt-2"></div>
+                <div className="w-1/6 hidden md:block" /> {/* Empty column to match email row */}
               </div>
-              <FormMessage className="w-full text-left sm:pl-[25%] md:pl-[calc(15%+1rem)]" />
+              <FormMessage className="w-full text-left md:pl-[calc(15%+1rem)]" />
             </FormItem>
           )}
         />
@@ -139,7 +139,8 @@ const EmailOtpForm = ({
           </Link>
           <Button
             type="submit"
-            className="group text-base sm:text-lg font-semibold w-32 sm:w-44 py-5 sm:py-6 bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center transition-all duration-200"
+            disabled={!emailOtpForm.formState.isValid}
+            className={`group text-base sm:text-lg font-semibold w-32 sm:w-44 py-5 sm:py-6 bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center transition-all duration-200 ${!emailOtpForm.formState.isValid && 'cursor-not-allowed'}`}
           >
             <Check className="block text-green-300 stroke-[4] transform transition-transform duration-200 drop-shadow-sm hover:text-green-100 h-6 w-6 sm:!h-[28px] sm:!w-[28px]" />
           </Button>
