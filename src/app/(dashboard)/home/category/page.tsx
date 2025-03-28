@@ -1,6 +1,6 @@
+'use client';
 import Loading from '@/components/common/atoms/Loading';
-import growthbook from '@/config/growthbook';
-import { configureServerSideGrowthBook } from '@/config/growthbookServer';
+import { useFeatureFlagGuard } from '@/hooks/useFeatureFlagGuard';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import dynamic from 'next/dynamic';
 
@@ -10,12 +10,19 @@ const CategoryDashboardRender = dynamic(
     loading: () => <Loading />,
   },
 );
-configureServerSideGrowthBook();
-const gb = growthbook;
-const categoryFeature = gb.isOn(FeatureFlags.CATEGORY_FEATURE);
 
 const CategoryPage = () => {
-  return categoryFeature && <CategoryDashboardRender />;
+  const { isLoaded, isFeatureOn } = useFeatureFlagGuard(FeatureFlags.CATEGORY_FEATURE);
+
+  if (!isLoaded) {
+    return <Loading />;
+  }
+
+  if (!isFeatureOn) {
+    return null;
+  }
+
+  return <CategoryDashboardRender />;
 };
 
 export default CategoryPage;
