@@ -14,8 +14,8 @@ interface TypeSelectProps {
 
 const TypeSelect: React.FC<TypeSelectProps> = ({
   name,
-  value = '', // Default to empty string
-  onChange = () => {}, // Default to no-op function
+  value = '',
+  onChange = () => {},
   error,
   ...props
 }) => {

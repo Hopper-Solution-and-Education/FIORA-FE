@@ -11,6 +11,7 @@ export enum Messages {
   UPDATE_CATEGORY_SUCCESS = 'Update category successfully',
   DELETE_CATEGORY_SUCCESS = 'Delete category successfully',
   GET_CATEGORY_SUCCESS = 'Get category successfully',
+  // Category type is invalid. It must be Expense or Income
 
   // Product
   GET_ALL_PRODUCT_SUCCESS = 'Get all product successfully',
@@ -69,6 +70,8 @@ export enum Messages {
   INVALID_CATEGORY_TYPE_INCOME = 'Invalid category type. Category must be Income.',
   INVALID_CATEGORY_TYPE_EXPENSE = 'Category must be Expense.',
   PRODUCT_INVALID_CATEGORY_TYPE = 'Invalid product category type.',
+  INVALID_CATEGORY_TYPE = 'Invalid category type. It must be Expense or Income.',
+  INVALID_CATEGORY_REQUIRED = 'Name and icon are required',
 
   // Account balance-related errors
   INSUFFICIENT_BALANCE = 'Account balance must be greater than or equal to the transaction amount.',

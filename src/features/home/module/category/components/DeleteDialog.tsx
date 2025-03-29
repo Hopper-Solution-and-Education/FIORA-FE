@@ -1,19 +1,11 @@
 'use client';
-import React from 'react';
+import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { cn } from '@/shared/utils';
+import CategorySelect from '@/features/home/module/category/components/CategorySelect';
 import { useDeleteCategory } from '@/features/home/module/category/hooks/useDeleteCategory';
-import { Category } from '@/features/home/module/category/slices/types';
-import LucieIcon from '@/features/home/module/category/components/LucieIcon';
-import { Icons } from '@/components/Icon';
+import { cn } from '@/shared/utils';
+import React from 'react';
 
 const DeleteDialog: React.FC = () => {
   const {
@@ -117,38 +109,12 @@ const DeleteDialog: React.FC = () => {
               >
                 Finance Category
               </label>
-              <Select value={newCategoryId} onValueChange={setNewCategoryId}>
-                <SelectTrigger
-                  className={cn(
-                    'w-full',
-                    'border dark:border-gray-700',
-                    'focus:ring-2 focus:ring-primary/20 dark:focus:ring-primary/30',
-                    'bg-white dark:bg-gray-800',
-                  )}
-                >
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                  {availableCategories.length > 0 ? (
-                    availableCategories.map((category: Category) => (
-                      <SelectItem
-                        key={category.id}
-                        value={category.id}
-                        className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700"
-                      >
-                        <div className="flex items-center gap-2">
-                          <LucieIcon icon={category.icon} className="w-4 h-4" />
-                          {category.name}
-                        </div>
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <div className="py-2 px-2 text-sm text-gray-500 dark:text-gray-400">
-                      No other categories available
-                    </div>
-                  )}
-                </SelectContent>
-              </Select>
+              <CategorySelect
+                name="newCategoryId"
+                value={newCategoryId}
+                onChange={setNewCategoryId}
+                categories={availableCategories}
+              />
             </div>
           ) : null}
 

@@ -45,8 +45,7 @@ export function useDeleteCategory() {
       setIsDeleting(true);
 
       // Assuming deleteCategory accepts an optional newCategoryId for transfer
-      // await dispatch(deleteCategory({ id: selectedCategory.id, newCategoryId })).unwrap();
-      await dispatch(deleteCategory(selectedCategory.id)).unwrap();
+      await dispatch(deleteCategory({ id: selectedCategory.id, newCategoryId })).unwrap();
 
       toast.success('Category deleted successfully');
       dispatch(setDeleteConfirmOpen(false));
