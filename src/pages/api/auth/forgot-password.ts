@@ -5,20 +5,16 @@ import { ReNewPasswordUseCase } from '@/features/auth/application/use-cases/reNe
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Kiểm tra method
     if (req.method !== 'POST') {
       return res.status(RESPONSE_CODE.METHOD_NOT_ALLOWED).json({ error: 'Method not allowed' });
     }
     const { email, newPassword } = req.body;
 
-    // Khởi tạo repository và use case
     const user = userRepository;
     const reNewPasswordUseCase = new ReNewPasswordUseCase(user);
 
-    // Gọi use case để reset password
     const updatedUser = await reNewPasswordUseCase.resetPassword(email, newPassword);
 
-    // Trả về phản hồi thành công
     res.status(RESPONSE_CODE.CREATED).json({
       message: 'Password reset successfully',
       user: updatedUser,

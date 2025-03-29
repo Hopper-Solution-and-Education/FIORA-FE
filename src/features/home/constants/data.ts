@@ -31,38 +31,17 @@ export const navItems: NavItem[] = [
         featureFlags: FeatureFlags.CATEGORY_FEATURE,
       },
       {
-        title: 'Transaction History',
+        title: 'Transaction',
         url: '/home/transaction',
         icon: 'userPen',
         shortcut: ['m', 'm'],
       },
-      {
-        title: 'Budget Planning',
-        url: '/home/budget-control',
-        icon: 'userPen',
-        shortcut: ['m', 'm'],
-      },
+      // {
+      //   title: 'Budget Planning',
+      //   url: '/home/budget-control',
+      //   icon: 'userPen',
+      //   shortcut: ['m', 'm'],
+      // },
     ],
-  },
-  {
-    title: 'Account',
-    url: '#',
-    icon: 'billing',
-    isActive: false,
-    items: [
-      {
-        title: 'Profile',
-        url: '/home/profile',
-        icon: 'userPen',
-        shortcut: ['m', 'm'],
-      },
-    ],
-  },
-  {
-    title: 'Settings',
-    url: '#',
-    icon: 'settings',
-    isActive: false,
-    items: [],
   },
 ];

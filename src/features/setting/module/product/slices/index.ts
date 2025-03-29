@@ -123,8 +123,6 @@ const productManagementSlice = createSlice({
     });
 
     builder.addCase(getProductTransactionAsyncThunk.fulfilled, (state, action) => {
-      console.log(action.payload);
-
       state.productTransaction.isLoadingGet = false;
 
       if (action.payload.page === 1) {

@@ -27,7 +27,7 @@ import VietnameseIcon from '@public/icons/vietnam.png';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
-const menuSettingItems = [
+export const menuSettingItems = [
   { label: 'Accounts', icon: User, url: '/home/account' },
   { label: 'Categories', icon: Tag, url: '/home/category' },
   { label: 'Products & Services', icon: Package, url: '/setting/product' },

@@ -4,27 +4,22 @@ import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { Media, SectionType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default withAuthorization({
-  GET: ['User', 'Admin', 'CS'],
-  POST: ['Admin'],
-  PUT: ['Admin'],
-  DELETE: ['Admin'],
-})(async (req: NextApiRequest, res: NextApiResponse) => {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
     case 'POST':
-      return POST(req, res);
+      return withAuthorization({ POST: ['Admin'] })(POST)(req, res);
+    case 'PUT':
+      return withAuthorization({ PUT: ['Admin'] })(PUT)(req, res);
+    case 'DELETE':
+      return withAuthorization({ DELETE: ['Admin'] })(DELETE)(req, res);
     case 'GET':
       return GET(req, res);
-    case 'PUT':
-      return PUT(req, res);
-    case 'DELETE':
-      return DELETE(req, res);
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
         .json({ error: 'Phương thức không được hỗ trợ' });
   }
-});
+}
 
 async function GET(req: NextApiRequest, res: NextApiResponse) {
   const { sectionType } = req.query;
