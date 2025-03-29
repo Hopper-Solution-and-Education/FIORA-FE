@@ -30,16 +30,8 @@ export const SettingNavItems: NavItem[] = [
   },
   {
     title: 'Settings',
-    url: '#',
-    icon: 'settings',
+    url: '/setting/landing',
+    icon: 'layoutBanner',
     isActive: false,
-    items: [
-      {
-        title: 'Landing',
-        url: '/setting/landing',
-        icon: 'userPen',
-        shortcut: ['m', 'm'],
-      },
-    ],
   },
 ];

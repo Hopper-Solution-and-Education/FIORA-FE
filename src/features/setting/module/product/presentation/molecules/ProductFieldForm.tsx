@@ -27,13 +27,13 @@ const ProductForm = ({ method }: ProductFormProps) => {
       <div className="mx-auto">
         {/* Left column: các field hiện tại */}
         <div className="space-y-4">
+          <ProductIconField control={method.control} />
+          <ProductNameField control={method.control} errors={method.formState.errors} />
           <ProductTypeField control={method.control} errors={method.formState.errors} />
           <ProductCategoryField control={method.control} errors={method.formState.errors} />
-          <ProductNameField control={method.control} errors={method.formState.errors} />
           <PriceField control={method.control} errors={method.formState.errors} />
           <TaxRateField control={method.control} errors={method.formState.errors} />
           <ProductDescriptionField control={method.control} errors={method.formState.errors} />
-          <ProductIconField control={method.control} />
           <ProductItemsField control={method.control} errors={method.formState.errors} />
         </div>
       </div>
