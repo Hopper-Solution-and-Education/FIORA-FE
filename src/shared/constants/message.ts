@@ -78,6 +78,9 @@ export enum Messages {
   PRODUCT_NOT_FOUND = 'Product not found',
   NO_PRODUCTS_PROVIDED = 'No products provided',
 
+  // Transaction Constraint when delete
+  TRANSACTION_DELETE_FAILED_CONSTRAINT = 'Transaction cannot be deleted because it is linked to transactions.',
+
   // System errors
   MISSING_PARAMS_INPUT = 'Missing required parameters',
   METHOD_NOT_ALLOWED = 'Method not allowed',

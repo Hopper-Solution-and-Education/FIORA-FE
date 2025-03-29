@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   IProductRepository,
   ProductCreation,
@@ -10,6 +9,7 @@ import { Product, ProductType } from '@prisma/client';
 import { JsonArray } from '@prisma/client/runtime/library';
 import { ICategoryProductRepository } from '../../domain/repositories/categoryProductRepository.interface';
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
+import { Messages } from '@/shared/constants/message';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
@@ -77,18 +77,25 @@ class ProductUseCase {
   async getProductById(params: { userId: string; id: string }) {
     const { userId, id } = params;
     try {
-      const product = await this.productRepository.findUniqueProduct({
-        id,
-        userId,
-      });
+      const product = await this.productRepository.findUniqueProduct(
+        {
+          id,
+          userId,
+        },
+        {
+          include: {
+            transactions: true,
+          },
+        },
+      );
 
       if (!product) {
-        throw new Error('Product not found');
+        throw new Error(Messages.PRODUCT_NOT_FOUND);
       }
 
       return product;
     } catch (error: any) {
-      throw new Error('Failed to get product by ID');
+      throw new Error(error.message || Messages.GET_PRODUCT_FAILED);
     }
   }
 
@@ -112,7 +119,7 @@ class ProductUseCase {
       });
 
       if (!category) {
-        throw new Error('Category not found');
+        throw new Error(Messages.CATEGORY_PRODUCT_NOT_FOUND);
       }
 
       let itemsJSON = [] as JsonArray;
@@ -135,14 +142,12 @@ class ProductUseCase {
       });
 
       if (!product) {
-        throw new Error('Failed to create new product & service');
+        throw new Error(Messages.CREATE_CATEGORY_PRODUCT_FAILED);
       }
 
       return product;
     } catch (error: any) {
-      console.log(error);
-
-      throw new Error('Failed to create product');
+      throw new Error(error.message || Messages.CREATE_PRODUCT_FAILED);
     }
   }
 
@@ -167,17 +172,17 @@ class ProductUseCase {
         userId,
       });
       if (!category) {
-        throw new Error('Category not found');
+        throw new Error(Messages.CATEGORY_PRODUCT_NOT_FOUND);
       }
     }
 
     if (!id) {
-      throw new Error('Product ID is required');
+      throw new Error(Messages.MISSING_PARAMS_INPUT + ' id');
     }
 
     const foundProduct = await this.productRepository.findUniqueProduct({ id });
     if (!foundProduct) {
-      throw new Error('Product not found');
+      throw new Error(Messages.PRODUCT_NOT_FOUND);
     }
 
     let itemsJSON = [] as JsonArray;
@@ -203,7 +208,7 @@ class ProductUseCase {
     );
 
     if (!updatedProduct) {
-      throw new Error('Failed to update product');
+      throw new Error(Messages.UPDATE_PRODUCT_FAILED);
     }
     return updatedProduct;
   }
@@ -212,17 +217,21 @@ class ProductUseCase {
     const { userId, id } = params;
 
     if (!id) {
-      throw new Error('Product ID is required');
+      throw new Error(Messages.MISSING_PARAMS_INPUT + ' id');
     }
 
     const foundProduct = await this.productRepository.findUniqueProduct({ id, userId });
     if (!foundProduct) {
-      throw new Error('Product not found');
+      throw new Error(Messages.PRODUCT_NOT_FOUND);
+    }
+
+    if (foundProduct.transactions.length > 0) {
+      throw new Error(Messages.TRANSACTION_DELETE_FAILED_CONSTRAINT);
     }
 
     const deletedProduct = await this.productRepository.deleteProduct({ id });
     if (!deletedProduct) {
-      throw new Error('Failed to delete product');
+      throw new Error(Messages.DELETE_PRODUCT_FAILED);
     }
 
     return deletedProduct;
