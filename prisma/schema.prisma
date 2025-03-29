@@ -16,13 +16,13 @@ model User {
   password       String?
   emailVerified  Boolean?            @default(false)
   image          String?
-  role           UserRole            @default(User)
   isDeleted      Boolean             @default(false)
   deletedAt      DateTime?
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
   createdBy      String?             @db.Uuid
   updatedBy      String?             @db.Uuid
+  role           UserRole            @default(User)
   accounts       Account[]           @relation("UserAccounts")
   categories     Category[]          @relation("UserCategories")
   partners       Partner[]           @relation("UserPartners")
@@ -138,7 +138,6 @@ model Transaction {
   toAccountId      String?              @db.Uuid
   toCategoryId     String?              @db.Uuid
   products         Json?
-  currency         Currency             @default(VND)
   partnerId        String?              @db.Uuid
   remark           String?              @db.VarChar(255)
   isDeleted        Boolean              @default(false)

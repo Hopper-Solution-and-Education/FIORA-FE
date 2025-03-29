@@ -53,7 +53,9 @@ const CategoryDashboard = () => {
 
   // * HANDLERS FUNCTIONS ZONE
   const handleDisplayDetail = (item: any) => {
-    router.push(`/home/category/update/${item.id}`);
+    if (item.id) {
+      router.push(`/home/category/update/${item.id}`);
+    }
   };
 
   // * USE EFFECT ZONE
