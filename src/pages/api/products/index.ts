@@ -1,5 +1,6 @@
-import { createResponse } from '@/config/createResponse';
+import { createError, createResponse } from '@/config/createResponse';
 import { productUseCase } from '@/features/setting/application/use-cases/productUseCase';
+import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { ProductType } from '@prisma/client';
@@ -38,7 +39,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 
     return res
       .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, 'Get all products successfully', categories));
+      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_ACCOUNT_SUCCESS, categories));
   } catch (error: any) {
     res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
@@ -50,7 +51,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     const { icon, name, description, tax_rate, price, type, category_id, items = '' } = req.body;
 
     if (![ProductType.Product, ProductType.Service].includes(type)) {
-      return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Invalid product type' });
+      return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_PRODUCT_TYPE);
     }
 
     const newProduct = await productUseCase.createProduct({
@@ -67,8 +68,12 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
 
     return res
       .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, 'Create product successfully', newProduct));
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_PRODUCT_SUCCESS, newProduct));
   } catch (error: any) {
-    res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    return createError(
+      res,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+      error.message || Messages.INTERNAL_ERROR,
+    );
   }
 }
