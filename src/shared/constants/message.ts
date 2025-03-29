@@ -12,6 +12,20 @@ export enum Messages {
   DELETE_CATEGORY_SUCCESS = 'Delete category successfully',
   GET_CATEGORY_SUCCESS = 'Get category successfully',
 
+  // Product
+  GET_ALL_PRODUCT_SUCCESS = 'Get all product successfully',
+  CREATE_PRODUCT_SUCCESS = 'Create product successfully',
+  UPDATE_PRODUCT_SUCCESS = 'Update product successfully',
+  DELETE_PRODUCT_SUCCESS = 'Delete product successfully',
+  GET_PRODUCT_BY_ID_SUCCESS = 'Get product by id successfully',
+
+  // Product Failed
+  CREATE_PRODUCT_FAILED = 'Failed to create product',
+  UPDATE_PRODUCT_FAILED = 'Failed to update product',
+  DELETE_PRODUCT_FAILED = 'Failed to delete product',
+  GET_PRODUCT_FAILED = 'Failed to get product',
+  INVALID_PRODUCT_TYPE = 'Invalid product type. Must be either Product or Service',
+
   // Category-Product Success
   CREATE_CATEGORY_PRODUCT_SUCCESS = 'Create category product successfully',
   UPDATE_CATEGORY_PRODUCT_SUCCESS = 'Update category product successfully',
