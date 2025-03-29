@@ -140,7 +140,7 @@ class HttpClient implements IHttpClient {
       }
 
       if (!response.ok) {
-        const error = new Error((response.message as string) || `HTTP Error: ${response.status}`);
+        const error = new Error(`HTTP Error: ${response.status}`);
         (error as any).status = response.status;
         (error as any).payload = response;
         throw error;
