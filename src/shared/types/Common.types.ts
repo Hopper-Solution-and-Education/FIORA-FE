@@ -23,6 +23,7 @@ export interface PaginationResponse<T> {
   page: number;
   pageSize: number;
   totalPage: number;
+  total?: number;
 }
 
 export interface Pagination {

@@ -3,6 +3,7 @@ import { categoryProductsUseCase } from '@/features/setting/application/use-case
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { Messages } from '@/shared/constants/message';
 
 export default sessionWrapper(async (req, res, userId) => {
   switch (req.method) {
@@ -34,11 +35,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     return res
       .status(RESPONSE_CODE.OK)
       .json(
-        createResponse(
-          RESPONSE_CODE.OK,
-          'Get all category products successfully',
-          categoryProducts,
-        ),
+        createResponse(RESPONSE_CODE.OK, Messages.GET_CATEGORY_PRODUCT_SUCCESS, categoryProducts),
       );
   } catch (error: any) {
     res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
@@ -62,7 +59,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       .json(
         createResponse(
           RESPONSE_CODE.CREATED,
-          'Create category product successfully',
+          Messages.CREATE_CATEGORY_PRODUCT_SUCCESS,
           newCategoryProduct,
         ),
       );
