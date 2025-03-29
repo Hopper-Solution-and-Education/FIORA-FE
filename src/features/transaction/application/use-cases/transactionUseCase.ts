@@ -224,6 +224,7 @@ class TransactionUseCase {
         data: {
           userId: data.userId,
           date: data.date,
+          currency: data.currency,
           type: data.type,
           amount: data.amount,
           fromAccountId: data.fromAccountId,
@@ -290,6 +291,7 @@ class TransactionUseCase {
           date: data.date,
           type: data.type,
           amount: data.amount,
+          currency: data.currency,
           fromAccountId: data.fromAccountId,
           fromCategoryId: data.fromCategoryId,
           toAccountId: data.toAccountId,
@@ -366,6 +368,7 @@ class TransactionUseCase {
           amount: data.amount,
           fromAccountId: data.fromAccountId,
           fromCategoryId: data.fromCategoryId,
+          currency: data.currency,
           toAccountId: data.toAccountId,
           toCategoryId: data.toCategoryId,
           partnerId: data.partnerId,
