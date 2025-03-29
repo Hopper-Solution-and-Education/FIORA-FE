@@ -1,8 +1,6 @@
 'use server';
 import sgMail from '@sendgrid/mail';
 import { InternalServerError } from './errors';
-import { userRepository } from '@/features/auth/infrastructure/repositories/userRepository';
-import { Messages } from '@/shared/constants/message';
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
 
 export const sendEmail = async (to: string, otp: string, verificationLink: string) => {
@@ -29,11 +27,6 @@ export const sendOtp = async (to: string, otp: string) => {
       subject: 'Verify Your Email - Hopper',
       html: `<p>Your OTP to reset your password is: <strong>${otp}</strong></p>`,
     };
-
-    const userFound = await userRepository.findByEmail(to);
-    if (userFound) {
-      throw new Error(Messages.NOT_FOUND_EMAIL);
-    }
 
     await sgMail.send(msg);
     return otp;
