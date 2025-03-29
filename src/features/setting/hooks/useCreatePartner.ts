@@ -63,6 +63,7 @@ export function useCreatePartner(setIsOpen: (open: boolean) => void) {
     if (status === 'authenticated' && session?.user?.id) {
       fetchPartners(session.user.id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, session]);
 
   async function onSubmit(values: CreatePartnerFormData) {

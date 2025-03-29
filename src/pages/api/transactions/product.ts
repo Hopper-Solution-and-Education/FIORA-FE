@@ -1,6 +1,6 @@
 import { createResponse } from '@/config/createResponse';
-import { Messages } from '@/config/message';
 import prisma from '@/infrastructure/database/prisma';
+import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
