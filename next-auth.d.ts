@@ -7,7 +7,6 @@ declare module 'next-auth' {
       id: string;
       rememberMe?: boolean;
     } & DefaultSession['user'];
-    expiredTime: number;
   }
 
   interface User extends DefaultUser {
@@ -20,7 +19,6 @@ declare module 'next-auth/jwt' {
   interface JWT extends DefaultJWT {
     id: string;
     image?: string | null;
-    expiredTime: number;
     rememberMe?: boolean;
   }
 }
