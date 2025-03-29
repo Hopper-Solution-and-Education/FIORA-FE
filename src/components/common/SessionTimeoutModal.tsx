@@ -28,6 +28,7 @@ export function SessionTimeoutModal() {
       };
       refreshSession();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isIdle]);
 
   // Monitor session expiration and show modal only if user is idle
