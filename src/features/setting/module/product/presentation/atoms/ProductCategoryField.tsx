@@ -105,9 +105,9 @@ const ProductCategoryField = ({ control, errors }: ProductCategoryFieldProps) =>
 
                       return (
                         <SelectItem key={category.id} value={category.id}>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm">{category.name}</span>
+                          <div className="flex justify-between items-center gap-4">
                             <CategoryIcon size={18} />
+                            <span className="text-sm">{category.name}</span>
                           </div>
                         </SelectItem>
                       );
