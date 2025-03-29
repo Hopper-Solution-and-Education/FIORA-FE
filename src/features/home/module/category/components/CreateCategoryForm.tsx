@@ -1,11 +1,9 @@
-// src/features/home/module/category/components/CreateCategoryForm.tsx
 'use client';
 
 import GlobalIconSelect from '@/components/common/atoms/GlobalIconSelect';
 import InputField from '@/components/common/atoms/InputField';
 import TextareaField from '@/components/common/atoms/TextareaField';
 import GlobalForm from '@/components/common/organisms/GlobalForm';
-import { Button } from '@/components/ui/button';
 import ParentCategorySelectUpdate from '@/features/home/module/category/components/ParentCategorySelectUpdate';
 import TypeSelect from '@/features/home/module/category/components/TypeSelect';
 import { createCategory } from '@/features/home/module/category/slices/actions';
@@ -64,11 +62,6 @@ export default function CreateCategoryForm({ initialData }: CreateCategoryFormPr
       onSubmit={onSubmit}
       defaultValues={initialData || defaultNewCategoryValues}
       schema={validateNewCategorySchema}
-      renderSubmitButton={(formState) => (
-        <Button type="submit" disabled={formState.isSubmitting}>
-          {formState.isSubmitting ? 'Submitting...' : 'Create Category'}
-        </Button>
-      )}
     />
   );
 }

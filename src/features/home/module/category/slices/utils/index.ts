@@ -44,3 +44,22 @@ export const transformCategories = (rawCategories: RawCategory[]): Category[] =>
 
   return mainCategories;
 };
+
+export const findCategoryById = (
+  categories: Category[] | undefined,
+  id: string,
+): Category | null => {
+  if (!categories) return null;
+  if (categories.length === 0) return null;
+
+  for (const category of categories) {
+    if (category.id === id) {
+      return category;
+    }
+    const subCategory = findCategoryById(category.subCategories, id);
+    if (subCategory) {
+      return subCategory;
+    }
+  }
+  return null;
+};
