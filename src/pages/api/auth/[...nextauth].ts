@@ -70,7 +70,6 @@ export const authOptions: NextAuthOptions = {
               },
             });
 
-            // create new account
             await prisma.account.create({
               data: {
                 name: 'Ví tiền payment',
@@ -102,22 +101,16 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
 
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.image = user.image;
         token.rememberMe = user.rememberMe;
 
-        const maxAge = user.rememberMe ? 24 * 60 * 60 : 30 * 60; // 24 giờ hoặc 30 phút
+        const maxAge = user.rememberMe ? 60 * 60 * 24 : 30 * 60; // 24 giờ hoặc 30 phút
         const now = Math.floor(Date.now() / 1000);
-        token.expiredTime = now + maxAge;
+        token.exp = now + maxAge;
       }
-
-      // Session update
-      if (trigger === 'update' && token.expiredTime) {
-        token.expiredTime = token.expiredTime + 30 * 60;
-      }
-
       return token;
     },
 
@@ -128,7 +121,6 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email as string;
         session.user.name = token.name ?? '';
       }
-      session.expiredTime = token.expiredTime as number;
       return session;
     },
   },

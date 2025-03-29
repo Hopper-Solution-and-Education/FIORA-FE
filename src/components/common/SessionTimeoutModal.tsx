@@ -1,7 +1,7 @@
 'use client';
 
 import { signOut, useSession } from 'next-auth/react';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import {
   Dialog,
@@ -11,62 +11,68 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog';
+import { useIdle } from '@/hooks/useIdle';
 
 export function SessionTimeoutModal() {
   const { data: session, status, update } = useSession();
   const [isVisible, setIsVisible] = useState(false);
-  const [countdown, setCountdown] = useState(30);
+  const [remainingTime, setRemainingTime] = useState(0);
   const [logoutTriggered, setLogoutTriggered] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const isIdle = useIdle(30); // Detects inactivity after 30 seconds (adjustable)
 
-  // Show modal when session is about
+  // Automatically refresh session when user is active
   useEffect(() => {
+    if (status === 'authenticated' && !isIdle && session) {
+      const refreshSession = async () => {
+        await update(); // Refreshes the session
+      };
+      refreshSession();
+    }
+  }, [isIdle]);
+
+  // Monitor session expiration and show modal only if user is idle
+  useEffect(() => {
+    console.log('Triggering session expiration check...');
     if (status === 'loading' || !session) return;
 
-    const expiresAt = session.expiredTime;
+    const expiresAt = Math.floor(new Date(session.expires).getTime() / 1000);
     const now = Math.floor(Date.now() / 1000);
     const timeLeft = expiresAt - now;
 
-    if (timeLeft <= 40 && timeLeft > 0) {
+    if (timeLeft <= 30 && timeLeft > 0 && isIdle) {
       setIsVisible(true);
-    } else if (timeLeft > 40) {
-      const timeLeftMillisecond = (timeLeft - 40) * 1000; // Convert from second to millisecond
-      const timeout = setTimeout(() => {
-        setIsVisible(true);
-      }, timeLeftMillisecond);
-      return () => clearTimeout(timeout);
+      setRemainingTime(timeLeft);
     } else {
-      // Logout when session is expired
+      setIsVisible(false);
+    }
+
+    // Immediate logout if session is already expired
+    if (timeLeft <= 0) {
       setLogoutTriggered(true);
     }
-  }, [session, status]);
+  }, [session, status, isIdle]);
 
-  // Handle countdown timer, logout when time's up
+  // Update countdown in real-time when modal is visible
   useEffect(() => {
-    if (isVisible) {
-      timerRef.current = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current as NodeJS.Timeout);
-            setLogoutTriggered(true);
-            return 0;
-          }
-          return prev - 1;
-        });
+    if (isVisible && session) {
+      const expiresAt = Math.floor(new Date(session.expires).getTime() / 1000);
+      const interval = setInterval(() => {
+        const now = Math.floor(Date.now() / 1000);
+        const remaining = Math.max(0, expiresAt - now);
+        setRemainingTime(remaining);
+        if (remaining <= 0) {
+          setLogoutTriggered(true);
+          clearInterval(interval);
+        }
       }, 1000);
+      return () => clearInterval(interval);
     }
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [isVisible]);
+  }, [isVisible, session]);
 
   const handleLogout = async () => {
     await signOut();
   };
 
-  // Handle logout when user click on logout button
   useEffect(() => {
     if (logoutTriggered) {
       handleLogout();
@@ -74,14 +80,10 @@ export function SessionTimeoutModal() {
     }
   }, [logoutTriggered]);
 
-  // Handle refresh session when user click on refresh button
   const handleRefresh = async () => {
     await update();
     setIsVisible(false);
-    setCountdown(30);
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
+    setRemainingTime(0);
   };
 
   if (!isVisible) return null;
@@ -102,7 +104,7 @@ export function SessionTimeoutModal() {
         <DialogHeader>
           <DialogTitle>Session Timeout Warning</DialogTitle>
           <DialogDescription>
-            Your session will expire in {countdown} seconds. Do you want to extend it?
+            Your session will expire in {remainingTime} seconds. Do you want to extend it?
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
