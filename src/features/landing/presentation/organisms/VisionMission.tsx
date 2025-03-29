@@ -59,16 +59,20 @@ const VisionMission = () => {
 
   return (
     <section>
-      <div className="sm:mt-8 md:mt-20">
-        <div className="bg-muted-2 grid items-center gap-6 sm:gap-4 lg:grid-cols-3 lg:gap-8">
+      <div className="md:mt-20">
+        <div className="bg-muted-2 grid items-center gap-6 lg:grid-cols-3 lg:gap-8">
           {/* Text Section (Hiển thị trước trên mobile) */}
-          <div className="flex flex-col items-center p-8 sm:p-8 lg:p-10 text-center lg:items-start lg:text-left order-1 lg:order-2">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-pretty">
+          <div className="flex flex-col justify-center items-center sm:p-8 lg:p-10 lg:items-start lg:text-left order-1 lg:order-2">
+            <h1
+              data-aos="fade-up"
+              className="text-center my-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-pretty"
+            >
               {section?.name}
             </h1>
           </div>
+
           {/* Video Section (Hiển thị sau trên mobile) */}
-          <div className="relative col-span-2 h-[300px] sm:h-[400px] md:h-[500px] lg:h-[700px] overflow-hidden justify-center mx-2 order-2 lg:order-1">
+          <div className="relative col-span-2 h-[300px] md:h-[500px] lg:h-[700px] overflow-hidden justify-center mx-2 order-2 lg:order-1">
             {embedCode ? (
               <div
                 className="absolute inset-0"

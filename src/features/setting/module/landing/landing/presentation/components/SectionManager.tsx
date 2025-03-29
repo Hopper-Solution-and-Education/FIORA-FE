@@ -127,12 +127,13 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
 
       processedData.medias = updatedMedias;
 
-      dispatch(
-        updateMediaBySection({ section: processedData, createdBy: userData?.user.id ?? '' }),
-      ).unwrap();
-      toast('Success', {
-        description: 'Section updated successfully',
-      });
+      dispatch(updateMediaBySection({ section: processedData, createdBy: userData?.user.id ?? '' }))
+        .unwrap()
+        .then(() => {
+          toast.success('Success', {
+            description: 'Section updated successfully',
+          });
+        });
     } catch (error) {
       console.error('Error in onSubmit:', error);
       toast.error('Failed to update section');
