@@ -102,4 +102,6 @@ export enum Messages {
   CREATE_PARTNER_SUCCESS = 'Create partner successfully.',
   UPDATE_PARTNER_SUCCESS = 'Update partner successfully.',
   DELETE_PARTNER_SUCCESS = 'Delete partner successfully.',
+
+  INVALID_CURRENCY = 'Invalid currency. Must be either VND or USD.',
 }

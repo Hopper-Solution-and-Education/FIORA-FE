@@ -138,6 +138,7 @@ model Transaction {
   toAccountId      String?              @db.Uuid
   toCategoryId     String?              @db.Uuid
   products         Json?
+  currency         Currency             @default(VND)
   partnerId        String?              @db.Uuid
   remark           String?              @db.VarChar(255)
   isDeleted        Boolean              @default(false)
