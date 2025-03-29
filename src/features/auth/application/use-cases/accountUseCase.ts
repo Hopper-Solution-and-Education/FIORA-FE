@@ -3,6 +3,8 @@ import { IAccountRepository } from '../../domain/repositories/accountRepository.
 import { Decimal } from '@prisma/client/runtime/library';
 import { accountRepository } from '../../infrastructure/repositories/accountRepository';
 import { convertUSDToVND } from '@/shared/utils';
+import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
+import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 
 const descriptions = {
   ['Payment']:
@@ -18,7 +20,10 @@ const descriptions = {
 };
 
 export class AccountUseCase {
-  constructor(private accountRepository: IAccountRepository) {}
+  constructor(
+    private accountRepository: IAccountRepository,
+    private transactionRepository: ITransactionRepository,
+  ) {}
 
   async create(params: {
     userId: string;
@@ -201,40 +206,66 @@ export class AccountUseCase {
       throw new Error('Account not found');
     }
 
+    if (account.name === params.name) {
+      throw new Error('Account name is not changed');
+    }
+
     return await this.accountRepository.update(id, { ...params });
   }
 
-  async deleteAccount(id: string): Promise<Account | null> {
-    const foundAccount = await this.accountRepository.findById(id);
+  async deleteAccount(id: string, userId: string): Promise<Account | null> {
+    const foundAccount = await this.accountRepository.findByCondition({
+      id,
+      userId,
+    });
 
     // checked whether account is master account or not
     if (!foundAccount) {
       throw new Error('Account not found');
     }
 
-    const isMasterAccount = await this.isOnlyMasterAccount(foundAccount.userId, foundAccount.type);
-    if (isMasterAccount && !foundAccount.parentId) {
+    const isMasterAccount = foundAccount.parentId === null;
+
+    if (isMasterAccount) {
       // checked whether any sub account is existed or not
       const subAccounts = await this.accountRepository.findMany({ parentId: id });
       if (subAccounts.length > 0) {
         throw new Error('Cannot delete master account with sub account still existed');
       } else {
+        const transaction = await this.transactionRepository.findManyTransactions({
+          id,
+          OR: [{ fromAccountId: id }, { toAccountId: id }],
+        });
+
+        if (transaction.length > 0) {
+          throw new Error('Cannot delete account with transaction still existed');
+        }
+
+        // delete master account
         const res = await this.accountRepository.delete({
           where: {
             id,
+            parentId: null,
           },
         });
+
         return res;
       }
     } else {
-      // Normal delete & update balance of parent account
+      // checked whether any transaction linked into account
+      const transaction = await this.transactionRepository.findManyTransactions({
+        id,
+        OR: [{ fromAccountId: id }, { toAccountId: id }],
+      });
+
+      if (transaction.length > 0) {
+        throw new Error('Cannot delete account with transaction still existed');
+      }
       const deletedRes = await this.accountRepository.delete({
         where: {
           id,
         },
       });
-
-      await this.accountRepository.updateParentBalance(foundAccount.parentId!);
 
       return deletedRes;
     }
@@ -280,4 +311,4 @@ export class AccountUseCase {
   }
 }
 
-export const AccountUseCaseInstance = new AccountUseCase(accountRepository);
+export const AccountUseCaseInstance = new AccountUseCase(accountRepository, transactionRepository);
