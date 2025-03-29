@@ -212,7 +212,7 @@ const TwoSideBarChart = ({
       ...getChartMargins(width),
       right: 0, // Remove right margin for expense chart
     }),
-    [width],
+    [width, isMobile],
   );
 
   const incomeChartMargins = useMemo(
@@ -220,7 +220,7 @@ const TwoSideBarChart = ({
       ...getChartMargins(width),
       left: isMobile ? 50 : 0,
     }),
-    [width],
+    [width, isMobile],
   );
 
   const customTooltipWithConfig = useCallback(
