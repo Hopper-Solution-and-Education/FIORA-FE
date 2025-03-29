@@ -1,9 +1,9 @@
 import { createResponse } from '@/config/createResponse';
 import { categoryProductsUseCase } from '@/features/setting/application/use-cases/categoryProductUsecase';
-import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { NextApiRequest, NextApiResponse } from 'next';
-import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { Messages } from '@/shared/constants/message';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req, res, userId) => {
   switch (req.method) {

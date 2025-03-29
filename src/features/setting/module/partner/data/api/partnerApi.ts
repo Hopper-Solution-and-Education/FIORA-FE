@@ -31,10 +31,7 @@ class PartnerAPI implements IPartnerAPI {
   }
 
   async updatePartner(data: UpdatePartnerAPIRequestDTO) {
-    return await httpClient.put<UpdatePartnerAPIResponseDTO>(
-      `/api/partners/partner/${data.id}`,
-      data,
-    );
+    return await httpClient.put<UpdatePartnerAPIResponseDTO>(`/api/partners/partner`, data);
   }
 }
 
