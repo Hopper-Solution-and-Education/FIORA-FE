@@ -1,6 +1,6 @@
 'use client';
 
-import { LoadingIndicator } from '@/components/common/atoms/LoadingIndicator';
+import Loading from '@/components/common/atoms/Loading';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { COLORS } from '@/shared/constants/chart';
 import { useAppSelector } from '@/store';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import {
   ProductTransactionCategoryResponse,
@@ -18,7 +19,6 @@ import {
 } from '../../domain/entities/Product';
 import TwoSideBarChart, { BarItem } from '../atoms/charts';
 import { ProductFormValues } from '../schema/addProduct.schema';
-import { useRouter } from 'next/navigation';
 
 // Hàm mapping dữ liệu thành BarItem
 const mapTransactionsToBarItems = (data: ProductTransactionCategoryResponse[]): BarItem[] => {
@@ -144,7 +144,7 @@ const ChartPage = () => {
 
   return (
     <div>
-      {isLoading && <LoadingIndicator />}
+      {isLoading && <Loading />}
       <TwoSideBarChart
         data={chartData}
         title="Product Overview"
@@ -152,6 +152,12 @@ const ChartPage = () => {
           { name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_2 },
           { name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_2 },
         ]}
+        levelConfig={{
+          totalName: 'Total Transaction',
+          colors: {
+            0: COLORS.DEPS_SUCCESS.LEVEL_3,
+          },
+        }}
         callback={tryCallback}
         callbackYAxis={tryCallBackYaxis}
       />

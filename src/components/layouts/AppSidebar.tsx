@@ -6,21 +6,11 @@ import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { SectionType } from '@prisma/client';
 import HopperLogo from '@public/images/logo.jpg';
-import {
-  ChevronRight,
-  ChevronsUpDown,
-  Database,
-  LayoutDashboard,
-  LogOut,
-  Package,
-  Tag,
-  User,
-  Users,
-} from 'lucide-react';
+import { ChevronRight, ChevronsUpDown, LogOut } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Icons } from '../Icon';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
@@ -48,21 +38,14 @@ import {
   SidebarRail,
   useSidebar,
 } from '../ui/sidebar';
+import { helpItems } from './theme-toggle/HelpCenter';
+import { menuSettingItems } from './theme-toggle/SettingCenter';
 
 export const company = {
   name: 'FIORA Inc',
   logo: HopperLogo,
   plan: 'Enterprise',
 };
-
-const menuSettingItems = [
-  { label: 'Accounts', icon: User, url: '/home/account' },
-  { label: 'Categories', icon: Tag, url: '/home/category' },
-  { label: 'Products & Services', icon: Package, url: '/setting/product' },
-  { label: 'Partners', icon: Database, url: '/setting/partner' },
-  { label: 'Users', icon: Users, url: '/users' },
-  { label: 'Landing Page', icon: LayoutDashboard, url: '/setting/landing' },
-];
 
 type AppSideBarProps = {
   appLabel: string;
@@ -78,6 +61,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   const isMobile = useIsMobile();
   const { open } = useSidebar();
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
+  const router = useRouter();
 
   useEffect(() => {
     const newOpenItems = navItems.reduce(
@@ -141,10 +125,17 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
     }));
   };
 
+  const handlePressLogo = () => {
+    router.push('/home');
+  };
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex gap-3 py-3 text-sidebar-accent-foreground items-center">
+        <div
+          onClick={handlePressLogo}
+          className="flex gap-3 py-3 text-sidebar-accent-foreground items-center cursor-pointer"
+        >
           {/* Logo */}
           <div
             className={`flex aspect-square items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground transition-all duration-300 ${
@@ -282,6 +273,17 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Help Center</DropdownMenuLabel>
+                  {helpItems.map((item) => (
+                    <DropdownMenuItem key={item.label} asChild>
+                      <Link href={item.url} className="flex items-center gap-2">
+                        <item.icon />
+                        {item.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Settings</DropdownMenuLabel>
                   {menuSettingItems.map((item) => (
                     <DropdownMenuItem key={item.label} asChild>
                       <Link href={item.url} className="flex items-center gap-2">
