@@ -32,15 +32,6 @@ class PartnerUseCase {
         throw new Error(Messages.PARTNER_NOT_FOUND);
       }
 
-      if (data.name && data.name !== partner.name) {
-        const existingPartner = await tx.partner.findFirst({
-          where: { name: data.name as string, userId },
-        });
-        if (existingPartner) {
-          throw new Error(Messages.PARTNER_NAME_TAKEN);
-        }
-      }
-
       if (data.parentId) {
         const parentPartner = await tx.partner.findUnique({
           where: { id: data.parentId as string },
@@ -87,16 +78,6 @@ class PartnerUseCase {
     return prisma.$transaction(async (tx) => {
       if (!data.userId) {
         throw new Error(Messages.INVALID_USER);
-      }
-
-      const existingPartner = await tx.partner.findFirst({
-        where: {
-          name: data.name,
-          userId: data.userId,
-        },
-      });
-      if (existingPartner) {
-        throw new Error(Messages.PARTNER_ALREADY_EXISTS);
       }
 
       if (!data.phone || data.phone.length < 10) {
