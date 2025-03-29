@@ -140,7 +140,10 @@ class HttpClient implements IHttpClient {
       }
 
       if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status}`);
+        const error = new Error((response.message as string) || `HTTP Error: ${response.status}`);
+        (error as any).status = response.status;
+        (error as any).payload = response;
+        throw error;
       }
 
       return response.json() as Promise<T>;

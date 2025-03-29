@@ -1,9 +1,21 @@
+'use client';
+import growthbook from '@/config/growthbook';
 import ProductCreation from '@/features/setting/module/product/presentation/pages/ProductCreation';
+import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { redirect } from 'next/navigation';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
-export const metadata = {
-  title: 'Dashboard : Product Creation',
-};
+export default function Page() {
+  const isProductFeatureEnabled = growthbook.isOn(FeatureFlags.PRODUCT_FEATURE);
 
-export default async function Page() {
+  useEffect(() => {
+    if (!isProductFeatureEnabled) {
+      toast.error('Product feature is not enabled', {
+        description: '',
+      });
+      redirect('/home');
+    }
+  }, [isProductFeatureEnabled]);
   return <ProductCreation />;
 }

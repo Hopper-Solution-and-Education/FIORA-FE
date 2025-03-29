@@ -18,7 +18,7 @@ export const SettingNavItems: NavItem[] = [
     isActive: false,
     items: [
       {
-        title: 'Product Management',
+        title: 'Overview',
         url: '/setting/product',
         icon: 'userPen',
         shortcut: ['m', 'm'],

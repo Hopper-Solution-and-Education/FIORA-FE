@@ -2,6 +2,15 @@
 
 import type React from 'react';
 
+import { Icons } from '@/components/Icon';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import {
   Select,
@@ -12,6 +21,8 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { Plus } from 'lucide-react';
+import { useState } from 'react';
 import type { Control, FieldErrors } from 'react-hook-form';
 import { fetchCategoriesProduct } from '../../slices/actions/fetchCategoriesProduct';
 import { ProductFormValues } from '../schema/addProduct.schema';
@@ -23,6 +34,7 @@ interface ProductCategoryFieldProps {
 
 const ProductCategoryField = ({ control, errors }: ProductCategoryFieldProps) => {
   const dispatch = useAppDispatch();
+  const [isOpenDialog, setIsOpenDialog] = useState(false);
   const {
     data: categories,
     isLoading,
@@ -49,48 +61,87 @@ const ProductCategoryField = ({ control, errors }: ProductCategoryFieldProps) =>
     }
   };
 
+  const handleOpenDialog = () => {
+    setIsOpenDialog(true);
+  };
+
   return (
-    <FormField
-      control={control}
-      name="categoryId"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>
-            Category <span className="text-red-500">*</span>
-          </FormLabel>
-          <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-            <FormControl>
-              <SelectTrigger
-                className={cn({
-                  'border-red-500': errors.categoryId,
-                })}
+    <>
+      <FormField
+        control={control}
+        name="categoryId"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>
+              Category <span className="text-red-500">*</span>
+            </FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+              <FormControl>
+                <SelectTrigger
+                  className={cn({
+                    'border-red-500': errors.categoryId,
+                  })}
+                >
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent
+                className="max-h-[200px]"
+                onScrollCapture={handleScroll}
+                position="popper"
+                sideOffset={4}
               >
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-            </FormControl>
-            <SelectContent
-              className="max-h-[200px]"
-              onScrollCapture={handleScroll}
-              position="popper"
-              sideOffset={4}
-            >
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
-              ))}
-              {isLoading && (
-                <div className="flex items-center justify-center py-2">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                  <span className="ml-2 text-xs text-muted-foreground">Loading...</span>
-                </div>
-              )}
-            </SelectContent>
-          </Select>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+                <>
+                  {categories.length === 0 ? (
+                    <div>
+                      <Button onClick={handleOpenDialog} title="Add Category">
+                        <Plus />
+                      </Button>
+                    </div>
+                  ) : (
+                    categories.map((category) => {
+                      const CategoryIcon =
+                        Icons[category.icon as keyof typeof Icons] || Icons['product'];
+
+                      return (
+                        <SelectItem key={category.id} value={category.id}>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">{category.name}</span>
+                            <CategoryIcon size={18} />
+                          </div>
+                        </SelectItem>
+                      );
+                    })
+                  )}
+                </>
+
+                {isLoading && (
+                  <div className="flex items-center justify-center py-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                    <span className="ml-2 text-xs text-muted-foreground">Loading...</span>
+                  </div>
+                )}
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <Dialog open={isOpenDialog} onOpenChange={setIsOpenDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Product Category Creation</DialogTitle>
+          </DialogHeader>
+          <p>Product Category Creation.</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsOpenDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive">Create</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

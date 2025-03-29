@@ -9,11 +9,11 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BookIcon, HelpCircleIcon, InfoIcon, MailIcon, PlayCircleIcon } from 'lucide-react';
 
-const helpItems = [
-  { label: 'FAQs', icon: BookIcon },
-  { label: 'User Tutorials', icon: PlayCircleIcon },
-  { label: 'About Us', icon: InfoIcon },
-  { label: 'Contact Us', icon: MailIcon },
+export const helpItems = [
+  { label: 'FAQs', icon: BookIcon, url: '/' },
+  { label: 'User Tutorials', icon: PlayCircleIcon, url: '/' },
+  { label: 'About Us', icon: InfoIcon, url: '/' },
+  { label: 'Contact Us', icon: MailIcon, url: '/' },
 ];
 
 export default function HelpCenter() {
