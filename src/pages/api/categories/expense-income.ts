@@ -19,7 +19,7 @@ export default sessionWrapper(async (req, res, userId) => {
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-        .json({ error: 'Phương thức không được hỗ trợ' });
+        .json({ error: Messages.METHOD_NOT_ALLOWED });
   }
 });
 

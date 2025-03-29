@@ -69,6 +69,7 @@ class TransactionUseCase {
       totalPage,
       page,
       pageSize,
+      total,
     };
   }
 
