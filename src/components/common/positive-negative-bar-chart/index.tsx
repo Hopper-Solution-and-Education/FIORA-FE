@@ -58,6 +58,8 @@ export type PositiveAndNegativeBarChartProps = {
   tutorialText?: string;
   callback?: (item: any) => void;
   levelConfig?: LevelConfig;
+  height?: number;
+  baseBarHeight?: number;
 };
 
 const PositiveAndNegativeBarChart = ({
@@ -74,9 +76,11 @@ const PositiveAndNegativeBarChart = ({
   tutorialText,
   callback,
   levelConfig,
+  height = MIN_CHART_HEIGHT,
+  baseBarHeight = BASE_BAR_HEIGHT,
 }: PositiveAndNegativeBarChartProps) => {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
-  const [chartHeight, setChartHeight] = useState(MIN_CHART_HEIGHT);
+  const [chartHeight, setChartHeight] = useState(height);
   const { width } = useWindowSize();
 
   const toggleExpand = useCallback((name: string) => {
@@ -138,7 +142,7 @@ const PositiveAndNegativeBarChart = ({
   // Update chart height based on number of visible bars
   useEffect(() => {
     const numBars = processedData.length;
-    const newHeight = Math.max(numBars * BASE_BAR_HEIGHT, MIN_CHART_HEIGHT);
+    const newHeight = Math.max(numBars * baseBarHeight, height);
     setChartHeight(newHeight);
   }, [processedData]);
 

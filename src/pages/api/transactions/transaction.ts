@@ -5,6 +5,7 @@ import { UUID } from 'crypto';
 import { createError, createResponse } from '@/config/createResponse';
 import { Messages } from '@/shared/constants/message';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { Currency } from '@prisma/client';
 
 export default sessionWrapper(async (req, res, userId) => {
   switch (req.method) {
@@ -49,7 +50,12 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       fromCategoryId,
       toAccountId,
       type,
+      currency,
     } = req.body;
+
+    if (![Currency.VND, Currency.USD].includes(currency)) {
+      return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_CURRENCY);
+    }
 
     const transactionData = {
       userId: userId,
@@ -59,6 +65,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       toAccountId: toAccountId as UUID,
       toCategoryId: toCategoryId as UUID,
       fromCategoryId: fromCategoryId as UUID,
+      currency: currency,
       ...(products && { products }),
       ...(partnerId && { partnerId }),
       ...(remark && { remark }),

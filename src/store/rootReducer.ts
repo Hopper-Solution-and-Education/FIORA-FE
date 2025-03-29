@@ -8,6 +8,7 @@ import { combineReducers } from '@reduxjs/toolkit';
 import dialogSlices from './slices/dialog.slice';
 import settingSlices from './slices/setting.slice';
 import accountSlice from '@/features/home/module/account/slices';
+import partnerManagementSlice from '@/features/setting/module/partner/slices';
 
 const reducer = {
   settings: settingSlices,
@@ -19,6 +20,7 @@ const reducer = {
   productManagement: productManagementSlice,
   category: categorySlice,
   account: accountSlice,
+  partner: partnerManagementSlice,
 };
 
 const rootReducer = combineReducers(reducer);

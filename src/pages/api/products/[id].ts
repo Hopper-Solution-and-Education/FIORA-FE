@@ -1,5 +1,6 @@
-import { createResponse } from '@/config/createResponse';
+import { createError, createResponse } from '@/config/createResponse';
 import { productUseCase } from '@/features/setting/application/use-cases/productUseCase';
+import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { ProductType } from '@prisma/client';
@@ -15,9 +16,7 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
       case 'DELETE':
         return DELETE(req, res, userId);
       default:
-        return res
-          .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-          .json({ error: 'Method is not allowed' });
+        return createError(res, RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED);
     }
   } catch (error: any) {
     return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: error.message });
@@ -27,7 +26,7 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
 // Get all products
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   if (req.method !== 'GET') {
-    return res.status(RESPONSE_CODE.METHOD_NOT_ALLOWED).json({ error: 'Method not allowed' });
+    return createError(res, RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED);
   }
   try {
     const { id } = req.query;
