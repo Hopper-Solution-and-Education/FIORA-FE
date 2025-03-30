@@ -33,7 +33,6 @@ export function SessionTimeoutModal() {
 
   // Monitor session expiration and show modal only if user is idle
   useEffect(() => {
-    console.log('Triggering session expiration check...');
     if (status === 'loading' || !session) return;
 
     const expiresAt = Math.floor(new Date(session.expires).getTime() / 1000);
