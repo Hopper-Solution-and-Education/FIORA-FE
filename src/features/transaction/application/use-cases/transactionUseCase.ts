@@ -5,6 +5,9 @@ import { ICategoryRepository } from '@/features/setting/domain/repositories/cate
 import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
 import prisma from '@/infrastructure/database/prisma';
 import { Messages } from '@/shared/constants/message';
+import { PaginationResponse } from '@/shared/types/Common.types';
+import { TransactionGetPagination } from '@/shared/types/transaction.types';
+import { buildOrderByTransactionV2, buildWhereClause } from '@/shared/utils';
 import {
   AccountType,
   CategoryType,
@@ -15,9 +18,6 @@ import {
 } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '../../infrastructure/repositories/transactionRepository';
-import { TransactionGetPagination } from '@/shared/types/transaction.types';
-import { PaginationResponse } from '@/shared/types/Common.types';
-import { buildOrderByTransaction, buildWhereClause } from '@/shared/utils';
 
 class TransactionUseCase {
   constructor(
@@ -32,13 +32,13 @@ class TransactionUseCase {
 
   async getTransactions(
     params: TransactionGetPagination,
-  ): Promise<PaginationResponse<Transaction>> {
+  ): Promise<PaginationResponse<Transaction> & { accountMin?: number; accountMax?: number }> {
     const { page = 1, pageSize = 20, filters, sortBy = {}, userId } = params;
     const take = pageSize;
     const skip = (page - 1) * pageSize;
 
     const where = buildWhereClause(filters);
-    const orderBy = buildOrderByTransaction(sortBy);
+    const orderBy = buildOrderByTransactionV2(sortBy);
 
     const transactionAwaited = this.transactionRepository.findManyTransactions(
       {
@@ -59,8 +59,22 @@ class TransactionUseCase {
       },
     );
     const totalTransactionAwaited = this.transactionRepository.count({});
+    // getting accountMax from transactions
+    const accountMaxAwaited = this.accountRepository.aggregate({
+      where: { userId },
+      _max: { balance: true },
+    });
+    const accountMinAwaited = this.accountRepository.aggregate({
+      where: { userId },
+      _min: { balance: true },
+    });
 
-    const [transactions, total] = await Promise.all([transactionAwaited, totalTransactionAwaited]);
+    const [transactions, total, accountMax, accountMin] = await Promise.all([
+      transactionAwaited,
+      totalTransactionAwaited,
+      accountMaxAwaited,
+      accountMinAwaited,
+    ]);
 
     const totalPage = Math.ceil(total / pageSize);
 
@@ -69,6 +83,8 @@ class TransactionUseCase {
       totalPage,
       page,
       pageSize,
+      accountMax: Number(accountMax['_max']?.balance) || 0,
+      accountMin: Number(accountMin['_min']?.balance) || 0,
       total,
     };
   }
