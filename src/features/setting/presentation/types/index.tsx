@@ -30,5 +30,10 @@ export interface TabActionHeaderProps {
   title?: string;
   description?: string;
   buttonLabel: string;
-  modalComponent: ComponentType<ModalComponentProps>;
+  redirectPath: string;
+  modalComponent?: ComponentType<ModalComponentProps>;
+}
+
+export interface SettingSubTabComponentProps {
+  titile?: string;
 }
