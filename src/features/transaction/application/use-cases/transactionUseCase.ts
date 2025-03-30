@@ -33,11 +33,49 @@ class TransactionUseCase {
   async getTransactions(
     params: TransactionGetPagination,
   ): Promise<PaginationResponse<Transaction> & { accountMin?: number; accountMax?: number }> {
-    const { page = 1, pageSize = 20, filters, sortBy = {}, userId } = params;
+    const { page = 1, pageSize = 20, searchParams = '', filters, sortBy = {}, userId } = params;
     const take = pageSize;
     const skip = (page - 1) * pageSize;
 
-    const where = buildWhereClause(filters);
+    let where = buildWhereClause(filters);
+    if (searchParams) {
+      let typeSearchParams = searchParams.toLowerCase();
+      // test with Regex-Type Transaction
+      const regex = new RegExp('^' + typeSearchParams, 'i'); // ^: start with, i: ignore case
+      const typeTransaction = Object.values(TransactionType).find((type) => regex.test(type));
+      if (typeTransaction) {
+        typeSearchParams = typeTransaction;
+      }
+
+      // test with Regex-Date format YYYY-MM-DD
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD format
+      const date = new Date(typeSearchParams);
+      const isSearchDate = dateRegex.test(typeSearchParams) && !isNaN(date.getTime());
+
+      where = {
+        AND: [
+          where,
+          {
+            OR: [
+              { fromAccount: { name: { contains: searchParams } } },
+              { toAccount: { name: { contains: searchParams } } },
+              { partner: { name: { contains: searchParams } } },
+              ...(typeTransaction ? [{ type: { contains: typeTransaction } }] : []),
+              ...(isSearchDate
+                ? [
+                    {
+                      date: {
+                        gte: new Date(typeSearchParams),
+                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
+                      },
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ],
+      };
+    }
     const orderBy = buildOrderByTransactionV2(sortBy);
 
     const transactionAwaited = this.transactionRepository.findManyTransactions(
