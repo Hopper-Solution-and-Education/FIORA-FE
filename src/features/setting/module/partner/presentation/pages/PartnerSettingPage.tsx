@@ -1,30 +1,25 @@
+// src/features/setting/module/partner/presentation/pages/PartnerSettingPage.tsx
 'use client';
 
 import PositiveAndNegativeBarChart, {
   BarItem,
 } from '@/components/common/positive-negative-bar-chart';
-import { COLORS } from '@/shared/constants/chart';
 import { createPartnerAPI } from '@/features/setting/module/partner/data/api/partnerApi';
 import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
+import { COLORS } from '@/shared/constants/chart';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { TabActionHeader } from '../../components/TabActionHeader';
-import { AddPartnerModal } from './components/AddPartnerModal';
-import { UpdatePartnerModal } from './components/UpdatePartnerModal';
-import { useAppDispatch, useAppSelector } from '@/store';
-import {
-  setSelectedPartner,
-  setUpdatePartnerDialogOpen,
-} from '@/features/setting/module/partner/slices';
+import { TabActionHeader } from '../components/TabActionHeader';
 
 const PartnerSettingPage = () => {
   const [barData, setBarData] = useState<BarItem[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
+  console.log(partners);
 
   const { data: session, status } = useSession();
-  const dispatch = useAppDispatch();
-  const { selectedPartner, isUpdatePartnerDialogOpen } = useAppSelector((state) => state.partner);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -110,12 +105,8 @@ const PartnerSettingPage = () => {
     fetchData();
   }, [status, session]);
 
-  const handleOpenUpdateModal = (item: BarItem) => {
-    const partner = partners.find((p) => p.id === item.id);
-    if (partner) {
-      dispatch(setSelectedPartner(partner));
-      dispatch(setUpdatePartnerDialogOpen(true));
-    }
+  const handleNavigateToUpdate = (item: BarItem) => {
+    router.push(`/setting/partner/update/${item.id}`);
   };
 
   type Depth = 0 | 1 | 2 | 3 | 4;
@@ -136,7 +127,8 @@ const PartnerSettingPage = () => {
 
   return (
     <div className="space-y-6">
-      <TabActionHeader buttonLabel="" modalComponent={AddPartnerModal} />
+      <TabActionHeader buttonLabel="" redirectPath="/setting/partner/create" />
+
       <PositiveAndNegativeBarChart
         data={barData}
         title="Partner Transactions"
@@ -147,10 +139,9 @@ const PartnerSettingPage = () => {
           { name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
         ]}
         levelConfig={levelConfig}
-        callback={handleOpenUpdateModal}
+        callback={handleNavigateToUpdate} // Thay đổi callback để điều hướng
         baseBarHeight={50}
       />
-      {isUpdatePartnerDialogOpen && selectedPartner && <UpdatePartnerModal partners={partners} />}
     </div>
   );
 };

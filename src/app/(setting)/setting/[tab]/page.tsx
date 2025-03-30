@@ -1,14 +1,13 @@
 import { notFound } from 'next/navigation';
-import TabContent from '@/features/setting/presentation/components/TabContent';
+import TabContent from '@/features/setting/module/partner/presentation/components/TabContent';
 import { configureServerSideGrowthBook } from '@/config/growthbookServer';
 import growthbook from '@/config/growthbook';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { validTabs } from '@/features/setting/module/partner/data/constant';
 
 configureServerSideGrowthBook();
 const gb = growthbook;
 const partnerFeature = gb.isOn(FeatureFlags.PARTNER_FEATURE);
-
-const validTabs = ['partner'] as const;
 
 export function generateStaticParams() {
   return validTabs.map((tab) => ({ tab }));

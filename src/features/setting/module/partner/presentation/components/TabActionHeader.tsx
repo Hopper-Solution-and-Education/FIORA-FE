@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { TabActionHeaderProps } from '../types';
+import { TabActionHeaderProps } from '../../../../presentation/types';
 
 export const TabActionHeader = ({
   title,
@@ -30,6 +30,7 @@ export const TabActionHeader = ({
           {buttonLabel}
         </Button>
       </div>
+
       <Separator />
     </div>
   );

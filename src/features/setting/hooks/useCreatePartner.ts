@@ -19,6 +19,7 @@ import { Partner } from '@/features/setting/module/partner/domain/entities/Partn
 import { CreatePartnerFormData } from '@/features/partner/schema/createPartner.schema';
 import { CreatePartnerAPIRequestDTO } from '../module/partner/data/dto/request/CreatePartnerAPIRequestDTO';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 function convertNullToUndefined<T>(obj: T): T {
   const result = { ...obj };
@@ -30,11 +31,16 @@ function convertNullToUndefined<T>(obj: T): T {
   return result;
 }
 
-export function useCreatePartner(setIsOpen: (open: boolean) => void) {
+interface Props {
+  redirectPath: string;
+}
+
+export function useCreatePartner({ redirectPath }: Props) {
   const { data: session, status } = useSession();
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [partners, setPartners] = useState<Partner[]>([]);
+  const router = useRouter();
 
   const form = useForm<PartnerFormValues>({
     resolver: yupResolver(partnerSchema),
@@ -66,7 +72,7 @@ export function useCreatePartner(setIsOpen: (open: boolean) => void) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, session]);
 
-  async function onSubmit(values: CreatePartnerFormData) {
+  async function onSubmit(values: any) {
     if (status !== 'authenticated' || !session?.user?.id) {
       toast.error('User not authenticated. Please log in.');
       return;
@@ -97,12 +103,13 @@ export function useCreatePartner(setIsOpen: (open: boolean) => void) {
       await createPartnerUseCase.execute(formattedPartnerData as CreatePartnerAPIRequestDTO);
 
       toast.success('Partner added successfully!');
-      setIsOpen(false);
       form.reset();
       setLogoPreview(null);
       setLogoFile(null);
 
       await fetchPartners(session.user.id);
+
+      router.push(redirectPath);
     } catch (error: any) {
       toast.error(error.message);
     }

@@ -82,7 +82,7 @@ const GlobalForm = <T extends yup.AnyObject>({
         {/* Map through fields to render each one with Controller */}
         {fields.map((fieldElement) => (
           <Controller
-            key={fieldElement.props.name.toString()}
+            key={fieldElement.props.name?.toString()}
             name={fieldElement.props.name}
             control={control}
             render={({ field: controllerField, fieldState: { error } }) =>
