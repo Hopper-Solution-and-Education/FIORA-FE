@@ -48,7 +48,7 @@ export default function AuthLayout({ children, requiresAuth = false }: AuthLayou
   }
 
   // For protected routes, only render children if authenticated and session is valid
-  if (requiresAuth && status === 'authenticated') {
+  if (requiresAuth && status === 'unauthenticated') {
     return null;
   }
 
