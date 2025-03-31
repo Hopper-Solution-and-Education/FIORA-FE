@@ -14,23 +14,25 @@ import GlobalLabel from '@/components/common/atoms/GlobalLabel';
 import LucieIcon from '@/features/home/module/category/components/LucieIcon';
 
 interface SelectFieldProps {
-  name: string; // Required for form handling
-  value?: string; // Selected value
-  onChange?: (value: string) => void; // Callback for value changes
-  onBlur?: () => void; // Optional blur handler
-  options: { value: string; label: string; icon?: string }[]; // Select options
-  placeholder?: string; // Placeholder text
-  error?: FieldError; // Form error from react-hook-form
-  label?: React.ReactNode | string; // Label content (string or custom node)
-  required?: boolean; // Whether the field is required
-  disabled?: boolean; // Disable the select
-  id?: string; // HTML id for accessibility
-  [key: string]: any; // Rest props for additional attributes
+  name: string;
+  value?: string;
+  defaultValue?: string; // Add this line
+  onChange?: (value: string) => void;
+  onBlur?: () => void;
+  options: { value: string; label: string; icon?: string }[];
+  placeholder?: string;
+  error?: FieldError;
+  label?: React.ReactNode | string;
+  required?: boolean;
+  disabled?: boolean;
+  id?: string;
+  [key: string]: any;
 }
 
 const SelectField: React.FC<SelectFieldProps> = ({
   name,
   value = '',
+  defaultValue,
   onChange = () => {},
   onBlur,
   options,
@@ -51,6 +53,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
       ))}
     <Select
       value={value}
+      defaultValue={defaultValue} // Add this line
       onValueChange={onChange}
       onOpenChange={(open) => !open && onBlur?.()}
       disabled={disabled}

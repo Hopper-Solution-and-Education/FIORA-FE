@@ -12,6 +12,7 @@ import {
   partnerSchema,
 } from '@/features/setting/module/partner/presentation/schema/addPartner.schema';
 import { toast } from 'sonner';
+import CustomDateTimePicker from '@/components/common/atoms/CustomDateTimePicker';
 
 // interface PartnerCreateFormProps {
 //   initialData?: PartnerFormValues;
@@ -37,6 +38,7 @@ export default function PartnerCreateForm() {
       label="Parent"
       options={parentOptions}
       placeholder="Select a parent partner"
+      defaultValue="none"
     />,
     <InputField key="name" name="name" label="Name" placeholder="Partner Name" required />,
     <TextareaField
@@ -45,12 +47,15 @@ export default function PartnerCreateForm() {
       label="Description"
       placeholder="Enter description"
     />,
-    <InputField
+    <CustomDateTimePicker
       key="dob"
       name="dob"
       label="Date of Birth"
-      type="date"
       placeholder="Select date of birth"
+      showYearDropdown
+      showMonthDropdown
+      dropdownMode="select"
+      dateFormat="dd/MM/yyyy"
     />,
     <UploadField key="logo" label="Logo" name="logo" />,
     <InputField key="taxNo" name="taxNo" label="Tax Number" placeholder="Tax Number" />,
@@ -72,6 +77,9 @@ export default function PartnerCreateForm() {
     <GlobalForm
       fields={fields}
       schema={partnerSchema}
+      defaultValues={{
+        parentId: 'none',
+      }}
       onSubmit={handleSubmit}
       renderSubmitButton={(formState) => (
         <Button type="submit" disabled={formState.isSubmitting}>

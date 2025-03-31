@@ -6,6 +6,7 @@ import type { FieldError } from 'react-hook-form';
 import GlobalLabel from '@/components/common/atoms/GlobalLabel';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
+import { Circle, Square, X } from 'lucide-react';
 
 interface UploadFieldProps {
   name: string;
@@ -133,12 +134,12 @@ const UploadField: React.FC<UploadFieldProps> = ({
   return (
     <div className="space-y-3">
       {label && <GlobalLabel text={label} required={required} htmlFor={id} />}
-      <div className="relative w-full h-48 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl shadow-sm overflow-hidden">
+      <div className="relative w-full h-48 rounded-xl overflow-hidden  border-2 border-dashed rounded-lg">
         <label
           ref={dropAreaRef}
           htmlFor={id}
           className={cn(
-            'flex items-center justify-center w-full h-full border-2 border-dashed rounded-lg cursor-pointer transition-all duration-300 group',
+            'flex items-center justify-center w-full h-full cursor-pointer transition-all duration-300 group',
             isDragging
               ? 'border-primary border-solid bg-primary/5'
               : 'border-primary/20 hover:border-primary/40',
@@ -181,7 +182,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center space-y-2 p-6 bg-white/50 dark:bg-slate-800/50 rounded-lg shadow-sm backdrop-blur-sm">
+            <div className="flex flex-col items-center justify-center space-y-2 p-6 rounded-lg">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                 {isDragging ? (
                   <svg
@@ -230,62 +231,23 @@ const UploadField: React.FC<UploadFieldProps> = ({
             <button
               type="button"
               onClick={toggleShape}
-              className="w-8 h-8 bg-white dark:bg-slate-800 text-primary rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-primary/10"
+              className="w-8 h-8 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80 text-primary rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 hover:scale-105 border border-primary/10 hover:border-primary/20"
               aria-label="Toggle shape"
             >
               {currentShape === 'square' ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M12 21a9 9 0 100-18 9 9 0 000 18z"
-                  />
-                </svg>
+                <Circle className="h-4 w-4" />
               ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"
-                  />
-                </svg>
+                <Square className="h-4 w-4" />
               )}
             </button>
 
             <button
               type="button"
               onClick={handleClearImage}
-              className="w-8 h-8 bg-white dark:bg-slate-800 text-red-500 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-red-200 dark:border-red-900/30"
+              className="w-8 h-8 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80 text-red-500 rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 hover:scale-105 border border-red-200/20 hover:border-red-200/40 dark:border-red-900/30"
               aria-label="Remove image"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <X className="h-4 w-4" />
             </button>
           </div>
         )}
