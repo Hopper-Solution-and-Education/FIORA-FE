@@ -33,6 +33,8 @@ interface IconSelectProps {
   onIconChange: (value: string) => void;
   className?: string;
   props?: React.HTMLAttributes<HTMLDivElement>;
+  required?: boolean; // Thêm prop required
+  label?: string; // Thêm prop label để hiển thị nhãn nếu cần
 }
 
 const IconSelect: React.FC<IconSelectProps> = ({
@@ -40,11 +42,25 @@ const IconSelect: React.FC<IconSelectProps> = ({
   onIconChange,
   className,
   props,
+  required = false, // Giá trị mặc định là false
+  label,
 }) => {
   return (
-    <div className={cn(className)} {...props}>
+    <div className={cn('mb-4', className)} {...props}>
+      {label && (
+        <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-300">
+          <span className="flex items-center gap-1">
+            {label}
+            {required && (
+              <span className="text-red-500 dark:text-red-400" aria-hidden="true">
+                *
+              </span>
+            )}
+          </span>
+        </label>
+      )}
       <Select value={selectedIcon} onValueChange={(value) => onIconChange(value)}>
-        <SelectTrigger className="w-full">
+        <SelectTrigger className={cn('w-full', required && !selectedIcon ? 'border-red-500' : '')}>
           <SelectValue>
             <div className="flex items-center gap-2">
               <ListIcon icon={selectedIcon} />
