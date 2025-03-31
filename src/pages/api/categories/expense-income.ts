@@ -19,7 +19,7 @@ export default sessionWrapper(async (req, res, userId) => {
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-        .json({ error: 'Phương thức không được hỗ trợ' });
+        .json({ error: Messages.METHOD_NOT_ALLOWED });
   }
 });
 
@@ -86,13 +86,19 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
 export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { id } = req.query;
-    await categoryUseCase.deleteCategory(id as string, userId);
+    const { newid } = req.headers;
+    await categoryUseCase.deleteCategory(id as string, userId, newid as string | undefined);
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.DELETE_CATEGORY_SUCCESS));
   } catch (error: any) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, error || Messages.INTERNAL_ERROR));
+      .json(
+        createResponse(
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
 }

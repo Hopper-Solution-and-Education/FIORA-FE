@@ -1,4 +1,4 @@
-import { TransactionType } from '@prisma/client';
+import { Prisma, TransactionType } from '@prisma/client';
 
 export interface TransactionFilters {
   date?: Date | { from?: Date; to?: Date }; // Support exact date or range
@@ -21,3 +21,13 @@ export interface TransactionGetPagination {
 export interface Filter {
   [key: string]: any;
 }
+
+export type TransactionGetPaginate = Prisma.TransactionGetPayload<{
+  include: {
+    fromAccount: true;
+    fromCategory: true;
+    toAccount: true;
+    toCategory: true;
+    partner: true;
+  };
+}>;

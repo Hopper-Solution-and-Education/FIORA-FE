@@ -2,12 +2,17 @@ import { Category, CategoryType } from '@prisma/client';
 import { ICategoryRepository } from '@/features/setting/domain/repositories/categoryRepository.interface';
 import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
 import { CategoryWithTransactions } from '@/shared/types/category.types';
+import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
+import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { Messages } from '@/shared/constants/message';
 
 class CategoryUseCase {
   private categoryRepository: ICategoryRepository;
+  private transactionRepository: ITransactionRepository;
 
-  constructor(repository: ICategoryRepository) {
+  constructor(repository: ICategoryRepository, transactionRepository: ITransactionRepository) {
     this.categoryRepository = repository;
+    this.transactionRepository = transactionRepository;
   }
 
   async createCategory(params: {
@@ -20,10 +25,10 @@ class CategoryUseCase {
   }): Promise<Category> {
     const { userId, type, icon, name, description, parentId } = params;
     if (!Object.values(CategoryType).includes(type)) {
-      throw new Error('Category type is invalid. It must be Expense or Income');
+      throw new Error(Messages.INVALID_CATEGORY_TYPE);
     }
     if (!name || !icon) {
-      throw new Error('Name and icon are required');
+      throw new Error(Messages.INVALID_CATEGORY_REQUIRED);
     }
     return this.categoryRepository.createCategory({
       userId,
@@ -41,19 +46,28 @@ class CategoryUseCase {
   async updateCategory(id: string, userId: string, data: Partial<Category>): Promise<Category> {
     const category = await this.categoryRepository.findCategoryById(id);
     if (!category || category.userId !== userId) {
-      throw new Error('Category does not exist or does not belong to you');
+      throw new Error(Messages.CATEGORY_NOT_FOUND);
     }
     if (data.type && !Object.values(CategoryType).includes(data.type)) {
-      throw new Error('Category type is invalid. It must be Expense or Income');
+      throw new Error(Messages.INVALID_CATEGORY_TYPE);
     }
     return this.categoryRepository.updateCategory(id, { ...data, updatedBy: userId });
   }
 
-  async deleteCategory(id: string, userId: string): Promise<void> {
+  async deleteCategory(id: string, userId: string, newId?: string): Promise<void> {
     const category = await this.categoryRepository.findCategoryById(id);
     if (!category || category.userId !== userId) {
-      throw new Error('Category does not exist or does not belong to you');
+      throw new Error(Messages.CATEGORY_NOT_FOUND);
     }
+
+    if (newId) {
+      const newCategory = await this.categoryRepository.findCategoryById(newId);
+      if (!newCategory || newCategory.userId !== userId) {
+        throw new Error(Messages.CATEGORY_NOT_FOUND);
+      }
+      await this.transactionRepository.updateTransactionsCategory(id, newId);
+    }
+
     await this.categoryRepository.deleteCategory(id);
   }
 
@@ -94,4 +108,4 @@ class CategoryUseCase {
 }
 
 // Export a single instance using the exported categoryRepository
-export const categoryUseCase = new CategoryUseCase(categoryRepository);
+export const categoryUseCase = new CategoryUseCase(categoryRepository, transactionRepository);

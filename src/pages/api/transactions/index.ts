@@ -18,7 +18,7 @@ export default sessionWrapper(async (req, res, userId) => {
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { filters, page, pageSize, sortBy } = req.body;
+    const { filters, page, pageSize, sortBy, search } = req.body;
 
     const transactions = await transactionUseCase.getTransactions({
       page,
@@ -26,6 +26,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       filters,
       sortBy,
       userId,
+      searchParams: search,
     });
 
     return res

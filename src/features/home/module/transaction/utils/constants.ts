@@ -1,8 +1,8 @@
-import { DropdownOption } from './types';
+import { DropdownOption, TransactionFilterCriteria, TransactionTableColumnKey } from '../types';
 
 export const TRANSACTION_TYPE: { [key: string]: string } = {
   EXPENSE: 'red-500',
-  TRANSFER: 'black',
+  TRANSFER: 'blue-600',
   INCOME: 'green-600',
 };
 
@@ -48,16 +48,21 @@ export const MOCK_PRODUCTS: DropdownOption[] = [
   { label: 'Product K', value: '11' },
 ];
 
-export const TRANSACTION_TABLE_COLUMNS: { [key: string]: boolean } = {
+export const DEFAULT_TRANSACTION_TABLE_COLUMNS: TransactionTableColumnKey = {
   //True = sortable, False = not sortable
-  'No.': false,
-  Date: true,
-  Type: true,
-  Amount: true,
-  From: true,
-  To: true,
-  Partner: true,
-  Actions: false,
+  'No.': { sortable: false, index: 1, sortedBy: 'none' },
+  Date: { sortable: true, index: 2, sortedBy: 'none' },
+  Type: { sortable: true, index: 3, sortedBy: 'none' },
+  Amount: { sortable: true, index: 4, sortedBy: 'none' },
+  From: { sortable: true, index: 5, sortedBy: 'none' },
+  To: { sortable: true, index: 6, sortedBy: 'none' },
+  Partner: { sortable: true, index: 7, sortedBy: 'none' },
+  Actions: { sortable: false, index: 8, sortedBy: 'none' },
+};
+
+export const DEFAULT_TRANSACTION_FILTER_CRITERIA: TransactionFilterCriteria = {
+  userId: '',
+  filters: {},
 };
 
 export enum TransactionCurrency {
@@ -71,4 +76,15 @@ export enum TransactionRecurringType {
   WEEKLY = 'Weekly',
   MONTHLY = 'Monthly',
   ANNUALLY = 'Annually',
+}
+
+export enum TransactionTableToEntity {
+  'No.' = 'no',
+  Date = 'date',
+  Type = 'type',
+  Amount = 'amount',
+  From = 'fromAccount',
+  To = 'toAccount',
+  Partner = 'partnerId',
+  Actions = 'actions',
 }

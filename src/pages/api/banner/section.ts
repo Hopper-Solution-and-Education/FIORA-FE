@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     case 'DELETE':
       return withAuthorization({ DELETE: ['Admin'] })(DELETE)(req, res);
     case 'GET':
-      return GET(req, res); // Không dùng withAuthorization cho GET
+      return GET(req, res);
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)

@@ -12,7 +12,7 @@ interface AuthLayoutProps {
 }
 
 export default function AuthLayout({ children, requiresAuth = false }: AuthLayoutProps) {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -20,14 +20,9 @@ export default function AuthLayout({ children, requiresAuth = false }: AuthLayou
     // Handle loading state
     if (status === 'loading') return;
 
-    // Check session expiration
-    const isSessionExpired = session?.expiredTime
-      ? Math.floor(Date.now() / 1000) > session.expiredTime
-      : false;
-
     if (requiresAuth) {
       // For protected routes
-      if (!session || isSessionExpired) {
+      if (status === 'unauthenticated') {
         // Redirect to sign-in page with callback URL
         if (pathname) {
           router.push(`/auth/sign-in?callbackUrl=${encodeURIComponent(pathname)}`);
@@ -37,11 +32,11 @@ export default function AuthLayout({ children, requiresAuth = false }: AuthLayou
       }
     } else {
       // For public routes that shouldn't be accessed when authenticated
-      if (session && !isSessionExpired && pathname === '/auth/sign-in') {
+      if (status === 'unauthenticated' && pathname === '/auth/sign-in') {
         router.push('/');
       }
     }
-  }, [session, status, pathname, requiresAuth, router]);
+  }, [status, pathname, requiresAuth, router]);
 
   // Show loading state while checking authentication
   if (status === 'loading') {
@@ -53,10 +48,7 @@ export default function AuthLayout({ children, requiresAuth = false }: AuthLayou
   }
 
   // For protected routes, only render children if authenticated and session is valid
-  if (
-    requiresAuth &&
-    (!session || (session.expiredTime && Math.floor(Date.now() / 1000) > session.expiredTime))
-  ) {
+  if (requiresAuth && status === 'unauthenticated') {
     return null;
   }
 

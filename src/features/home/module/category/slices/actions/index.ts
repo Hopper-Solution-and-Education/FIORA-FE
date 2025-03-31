@@ -50,9 +50,18 @@ export const updateCategory = createAsyncThunk(
 
 export const deleteCategory = createAsyncThunk(
   'category/deleteCategory',
-  async (id: string, { rejectWithValue }) => {
+  async (
+    {
+      id,
+      newCategoryId,
+    }: {
+      id: string;
+      newCategoryId?: string;
+    },
+    { rejectWithValue },
+  ) => {
     try {
-      return await categoryServices.deleteCategory(id);
+      return await categoryServices.deleteCategory(id, newCategoryId);
     } catch (error: any) {
       return rejectWithValue({
         message: error.message || 'Failed to delete category! Please try again!',
