@@ -88,6 +88,7 @@ const PartnerSettingPage = () => {
           return {
             id: partner.id,
             name: partner.name,
+            icon: partner.icon,
             value: totalNetAmount,
             type: isIncome ? 'Income' : 'Expense',
             color,
