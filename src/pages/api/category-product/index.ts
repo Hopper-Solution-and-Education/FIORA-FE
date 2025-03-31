@@ -18,7 +18,6 @@ export default sessionWrapper(async (req, res, userId) => {
   }
 });
 
-// Get all category products
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   if (req.method !== 'GET') {
     return res.status(RESPONSE_CODE.METHOD_NOT_ALLOWED).json({ error: 'Method not allowed' });
@@ -42,7 +41,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
   }
 }
 
-// Create a new category product
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { icon, name, description, tax_rate } = req.body;
