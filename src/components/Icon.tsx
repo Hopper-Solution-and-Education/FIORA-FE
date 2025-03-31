@@ -54,6 +54,7 @@ import {
   MoveLeft,
   AlertCircle,
   CircleArrowLeft,
+  LayoutTemplate,
   BanknoteArrowDown,
 } from 'lucide-react';
 
@@ -130,5 +131,6 @@ export const Icons = {
   moveLeft: MoveLeft,
   alertCircle: AlertCircle,
   circleArrowLeft: CircleArrowLeft,
+  layoutBanner: LayoutTemplate,
   banknoteArrowDown: BanknoteArrowDown,
 };

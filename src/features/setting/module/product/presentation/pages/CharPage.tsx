@@ -28,6 +28,7 @@ const mapTransactionsToBarItems = (data: ProductTransactionCategoryResponse[]): 
       name: string;
       income: number;
       expense: number;
+      icon: string;
       products: ProductTransactionResponse[];
     }
   > = {};
@@ -42,6 +43,7 @@ const mapTransactionsToBarItems = (data: ProductTransactionCategoryResponse[]): 
         name: categoryName,
         income: 0,
         expense: 0,
+        icon: categoryItem.category.icon,
         products: [],
       };
     }
@@ -63,13 +65,14 @@ const mapTransactionsToBarItems = (data: ProductTransactionCategoryResponse[]): 
 
   // Chuyển đổi thành BarItem với children, hiển thị tất cả danh mục
   return Object.entries(groupedByCategory).flatMap(
-    ([catId, { name, income, expense, products }]) => {
+    ([catId, { name, income, expense, products, icon }]) => {
       const categoryItem: BarItem = {
         id: catId,
         name,
         value: 0, // Placeholder, sẽ dùng income/expense
         type: 'category',
         income,
+        icon,
         expense,
         children: products.map((item) => ({
           id: item.product.id,

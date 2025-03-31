@@ -38,8 +38,9 @@ import {
   SidebarRail,
   useSidebar,
 } from '../ui/sidebar';
-import { helpItems } from './theme-toggle/HelpCenter';
-import { menuSettingItems } from './theme-toggle/SettingCenter';
+import { helpItems } from './header-toggle/HelpCenter';
+import { menuSettingItems } from './header-toggle/SettingCenter';
+import { ICON_SIZE } from '@/shared/constants/size';
 
 export const company = {
   name: 'FIORA Inc',
@@ -57,7 +58,9 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   const [newNavItem, setNewNavItem] = useState<NavItem[]>([]);
   const { data: session } = useSession();
   const pathname = usePathname();
-  const { section } = useGetSection(SectionType.HEADER);
+  const { section } = useGetSection(SectionType.HEADER, {
+    revalidateOnFocus: false,
+  });
   const isMobile = useIsMobile();
   const { open } = useSidebar();
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
@@ -189,7 +192,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton tooltip={item.title} isActive={isActive}>
-                        {item.icon && <Icon />}
+                        {item.icon && <Icon size={ICON_SIZE.MD} />}
                         <span>{item.title}</span>
                         <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                       </SidebarMenuButton>

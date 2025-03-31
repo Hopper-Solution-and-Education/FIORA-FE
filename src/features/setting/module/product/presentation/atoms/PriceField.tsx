@@ -1,19 +1,24 @@
 'use client';
 
-import { FormControl, FormItem, FormLabel, FormMessage, FormField } from '@/components/ui/form';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/shared/utils';
 import { useEffect, useState } from 'react';
-import type { Control, FieldErrors } from 'react-hook-form';
-import { useWatch } from 'react-hook-form';
+import type { Control } from 'react-hook-form';
+import { useFormContext, useWatch } from 'react-hook-form';
 import { ProductFormValues } from '../schema/addProduct.schema';
 
 interface PriceFieldProps {
   control: Control<ProductFormValues>;
-  errors: FieldErrors<ProductFormValues>;
 }
 
-const PriceField = ({ control, errors }: PriceFieldProps) => {
+const PriceField = ({ control }: PriceFieldProps) => {
+  const method = useFormContext<ProductFormValues>();
+
+  const {
+    formState: { errors },
+  } = method;
+
   const [displayValue, setDisplayValue] = useState('');
   const priceValue = useWatch({
     control,

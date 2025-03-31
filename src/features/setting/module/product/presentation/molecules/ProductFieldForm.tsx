@@ -25,16 +25,15 @@ const ProductForm = ({ method }: ProductFormProps) => {
     <>
       {(isCreatingProduct || isUpdatingProduct) && <Loading />}
       <div className="mx-auto">
-        {/* Left column: các field hiện tại */}
         <div className="space-y-4">
-          <ProductTypeField control={method.control} errors={method.formState.errors} />
-          <ProductCategoryField control={method.control} errors={method.formState.errors} />
-          <ProductNameField control={method.control} errors={method.formState.errors} />
-          <PriceField control={method.control} errors={method.formState.errors} />
-          <TaxRateField control={method.control} errors={method.formState.errors} />
-          <ProductDescriptionField control={method.control} errors={method.formState.errors} />
           <ProductIconField control={method.control} />
-          <ProductItemsField control={method.control} errors={method.formState.errors} />
+          <ProductNameField control={method.control} />
+          <ProductTypeField control={method.control} />
+          <ProductCategoryField control={method.control} />
+          <PriceField control={method.control} />
+          <TaxRateField control={method.control} />
+          <ProductDescriptionField control={method.control} />
+          <ProductItemsField control={method.control} />
         </div>
       </div>
     </>

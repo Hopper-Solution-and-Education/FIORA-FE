@@ -2,7 +2,8 @@
 import Loading from '@/components/common/atoms/Loading';
 import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
+import { useEffect } from 'react';
 
 const LandingPageRender = dynamic(() => import('@/features/landing/presentation/LandingPage'), {
   loading: () => <Loading />,
@@ -10,17 +11,14 @@ const LandingPageRender = dynamic(() => import('@/features/landing/presentation/
 });
 
 const Page = () => {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const { data } = useSession();
+  const isLoggedIn = data?.user;
 
-  if (status === 'loading') {
-    return <Loading />;
-  }
-
-  if (session?.user) {
-    router.push('/home');
-    return null;
-  }
+  useEffect(() => {
+    if (isLoggedIn) {
+      redirect('/home');
+    }
+  }, [isLoggedIn]);
 
   return <LandingPageRender />;
 };
