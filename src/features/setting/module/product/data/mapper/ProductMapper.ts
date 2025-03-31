@@ -97,6 +97,8 @@ export class ProductMapper {
             taxRate: productItem.product.taxRate ? Number(productItem.product.taxRate) : 0,
             catId: productItem.product.catId ?? '',
             icon: productItem.product.icon,
+            createdAt: productItem.product.created_at,
+            updatedAt: productItem.product.updated_at,
           },
           transaction: productItem.transaction
             ? {

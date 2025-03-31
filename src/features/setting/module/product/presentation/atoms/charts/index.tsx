@@ -91,6 +91,17 @@ const TwoSideBarChart = ({
     }));
   }, []);
 
+  const getIcon = (item: BarItem) => {
+    if (item.icon) {
+      return item.icon;
+    }
+
+    if (!item.icon && item.product && item.product.icon) {
+      return item.product.icon;
+    }
+    return null;
+  };
+
   // Process data to combine expense and income, and handle children
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { chartData, visibleData } = useMemo(() => {
@@ -145,6 +156,7 @@ const TwoSideBarChart = ({
         color: levelConfig?.colors[1] || '#888888',
         depth: 0,
         product: values.product,
+        icon: values.icon,
       })),
     ];
 
@@ -162,6 +174,8 @@ const TwoSideBarChart = ({
           expense: item.expense ?? 0, // Default to 0 if undefined
           income: item.income ?? 0, // Default to 0 if undefined,
           product: item.product,
+          type: item.type || 'product',
+          icon: getIcon(item),
         };
 
         // If the item is a child and has a `value` and `type`, convert to `expense` and `income`
@@ -219,7 +233,7 @@ const TwoSideBarChart = ({
   const incomeChartMargins = useMemo(
     () => ({
       ...getChartMargins(width),
-      left: isMobile ? 50 : 0,
+      left: isMobile ? 10 : 0,
     }),
     [width, isMobile],
   );
@@ -238,7 +252,7 @@ const TwoSideBarChart = ({
   );
 
   return (
-    <div className="w-full dark:bg-gray-900 transition-colors rounded-lg py-4 duration-200">
+    <div className="w-full transition-colors rounded-lg py-4 duration-200">
       {title && (
         <h2 className="text-xl text-center font-semibold text-gray-800 dark:text-gray-200 mb-4">
           {title}
