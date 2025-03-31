@@ -11,6 +11,7 @@ interface InputFieldProps {
   label?: React.ReactNode | string;
   placeholder?: string;
   id?: string;
+  required?: boolean;
   [key: string]: any;
 }
 
@@ -22,10 +23,16 @@ const InputField: React.FC<InputFieldProps> = ({
   label,
   placeholder,
   id,
+  required,
   ...props
 }) => (
   <div className="mb-4">
-    {label && (typeof label === 'string' ? <GlobalLabel text={label} htmlFor={id} /> : label)}
+    {label &&
+      (typeof label === 'string' ? (
+        <GlobalLabel text={label} htmlFor={id} required={required} />
+      ) : (
+        label
+      ))}
     <Input
       value={value}
       onChange={(e) => onChange(e.target.value)}

@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { ComponentType } from 'react';
-import { TabComponentProps } from '../types';
+import { TabComponentProps } from '../../../../presentation/types';
 
 const PartnerSettingPageRender = dynamic(
   () => import('@/features/setting/module/partner/presentation/pages/PartnerSettingPage'),

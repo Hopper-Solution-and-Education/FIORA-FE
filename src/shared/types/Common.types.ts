@@ -1,6 +1,7 @@
 import { ComponentType } from 'react';
 import { AnySchema } from 'yup';
 import { Icon } from '@/components/Icon';
+import { Prisma } from '@prisma/client';
 export interface Response<T> {
   message: string;
   data: T;
@@ -38,3 +39,17 @@ export type FieldConfig = {
   validation?: AnySchema;
   props?: Record<string, any>;
 };
+
+export type fromAccountKey = Prisma.AccountScalarFieldEnum;
+export type toAccountKey = Prisma.AccountScalarFieldEnum;
+
+export type OrderByFields = {
+  date?: Prisma.SortOrder;
+  type?: Prisma.SortOrder;
+  fromAccount?: Prisma.SortOrder;
+  toAccount?: Prisma.SortOrder;
+  partner?: Prisma.SortOrder;
+  amount?: Prisma.SortOrder;
+};
+
+export type RequestType = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
