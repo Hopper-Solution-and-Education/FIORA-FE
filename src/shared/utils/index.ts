@@ -2,6 +2,8 @@ import { iconOptions } from '@/shared/constants/data';
 import { Filter } from '@growthbook/growthbook';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { OrderByFields } from '../types/Common.types';
+import { Prisma } from '@prisma/client';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -143,9 +145,28 @@ export function buildOrderByTransaction(orderBy: Record<string, any>): Record<st
     orderByClause.partner = orderBy.partner;
   }
 
+  if (orderBy['amount']) {
+    orderByClause.push({ amount: orderBy.amount });
+  }
+
   return orderByClause;
 }
 
+export function buildOrderByTransactionV2(
+  orderBy: OrderByFields,
+): Prisma.TransactionOrderByWithRelationInput {
+  return Object.entries(orderBy).reduce((acc, [key, value]) => {
+    if (!value) return acc;
+
+    if (key === 'fromAccount' || key === 'toAccount') {
+      acc[key] = { name: value };
+    } else {
+      acc[key as keyof typeof Prisma.TransactionOrderByRelevanceFieldEnum] = value;
+    }
+
+    return acc;
+  }, {} as Prisma.TransactionOrderByWithRelationInput);
+}
 export const buildWhereClause = (filters: Filter) => {
   const whereClause: any = {};
 

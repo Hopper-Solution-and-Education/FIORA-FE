@@ -16,8 +16,14 @@ const categoryServices = {
   updateCategory: async (category: UpdateCategoryDefaultValues): Promise<Response<Category>> => {
     return httpClient.put<Response<Category>>(`/api/categories/expense-income`, category);
   },
-  deleteCategory: async (id: string): Promise<string> => {
-    await httpClient.delete<void>(`/api/categories/expense-income?id=${id}`);
+  deleteCategory: async (id: string, newCategoryId: string | undefined): Promise<string> => {
+    if (newCategoryId) {
+      await httpClient.delete<void>(`/api/categories/expense-income?id=${id}`, {
+        newid: newCategoryId,
+      });
+    } else {
+      await httpClient.delete<void>(`/api/categories/expense-income?id=${id}`);
+    }
     return id;
   },
 };

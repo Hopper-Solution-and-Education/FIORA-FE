@@ -8,7 +8,10 @@ type HandlerWithUser = (req: NextApiRequest, res: NextApiResponse, userId: strin
 
 export function sessionWrapper(handler: HandlerWithUser): NextApiHandler {
   return async (req: NextApiRequest, res: NextApiResponse) => {
-    const session = await getUserSession(req, res);
+    // Get the session directly from getServerSession
+    const session = await getServerSession(req, res, authOptions);
+
+    // Check if session exists and has a valid user ID
     if (!session || !session.user?.id) {
       return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
     }
@@ -16,25 +19,14 @@ export function sessionWrapper(handler: HandlerWithUser): NextApiHandler {
     const userId = session.user.id;
 
     try {
+      // Call the handler with the request, response, and userId
       return await handler(req, res, userId);
     } catch (error: any) {
-      return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: error.message });
+      // Improved error handling: return a generic 500 error with the error message
+      console.error('Error in sessionWrapper:', error);
+      return res
+        .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+        .json({ message: Messages.INTERNAL_ERROR });
     }
   };
-}
-
-export async function getUserSession(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
-
-  if (!session) {
-    return null;
-  }
-
-  const currentTime = Math.floor(Date.now() / 1000);
-  const timeLeft = session.expiredTime - currentTime;
-  if (timeLeft <= 0) {
-    return null;
-  }
-
-  return session;
 }

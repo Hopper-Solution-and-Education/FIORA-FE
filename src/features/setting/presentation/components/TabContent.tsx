@@ -5,7 +5,7 @@ import { ComponentType } from 'react';
 import { TabComponentProps } from '../types';
 
 const PartnerSettingPageRender = dynamic(
-  () => import('@/features/setting/presentation/module/partner/PartnerSettingPage'),
+  () => import('@/features/setting/module/partner/presentation/pages/PartnerSettingPage'),
   { loading: () => <div>Loading...</div> },
 );
 

@@ -1,19 +1,18 @@
 'use client';
 
-import { Separator } from '@/components/ui/separator';
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { TabActionHeaderProps } from '../types';
 
 export const TabActionHeader = ({
   title,
   description,
   buttonLabel,
-  modalComponent: ModalComponent,
+  redirectPath,
 }: TabActionHeaderProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-
+  const router = useRouter();
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -25,13 +24,12 @@ export const TabActionHeader = ({
           variant="default"
           className="flex items-center gap-2"
           size="default"
-          onClick={() => setIsOpen(true)}
+          onClick={() => router.push(redirectPath)}
         >
           <Plus className="w-7 h-7" />
           {buttonLabel}
         </Button>
       </div>
-      <ModalComponent isOpen={isOpen} setIsOpen={setIsOpen} />
       <Separator />
     </div>
   );

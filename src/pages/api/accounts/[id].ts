@@ -13,7 +13,7 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
       case 'PUT':
         return PUT(req, res, userId);
       case 'DELETE':
-        return DELETE(req, res);
+        return DELETE(req, res, userId);
       default:
         return res.status(RESPONSE_CODE.METHOD_NOT_ALLOWED).json({ error: 'Method not allowed' });
     }
@@ -102,14 +102,15 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   }
 }
 
-export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
+export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     if (req.method !== 'DELETE') {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
     const { id } = req.query;
-    const deletedRes = await AccountUseCaseInstance.deleteAccount(id as string);
+
+    const deletedRes = await AccountUseCaseInstance.deleteAccount(id as string, userId);
 
     res
       .status(RESPONSE_CODE.OK)

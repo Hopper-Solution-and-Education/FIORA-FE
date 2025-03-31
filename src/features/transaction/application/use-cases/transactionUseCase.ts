@@ -5,6 +5,9 @@ import { ICategoryRepository } from '@/features/setting/domain/repositories/cate
 import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
 import prisma from '@/infrastructure/database/prisma';
 import { Messages } from '@/shared/constants/message';
+import { PaginationResponse } from '@/shared/types/Common.types';
+import { TransactionGetPagination } from '@/shared/types/transaction.types';
+import { buildOrderByTransactionV2, buildWhereClause } from '@/shared/utils';
 import {
   AccountType,
   CategoryType,
@@ -15,9 +18,6 @@ import {
 } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '../../infrastructure/repositories/transactionRepository';
-import { TransactionGetPagination } from '@/shared/types/transaction.types';
-import { PaginationResponse } from '@/shared/types/Common.types';
-import { buildOrderByTransaction, buildWhereClause } from '@/shared/utils';
 
 class TransactionUseCase {
   constructor(
@@ -32,13 +32,51 @@ class TransactionUseCase {
 
   async getTransactions(
     params: TransactionGetPagination,
-  ): Promise<PaginationResponse<Transaction>> {
-    const { page = 1, pageSize = 20, filters, sortBy = {}, userId } = params;
+  ): Promise<PaginationResponse<Transaction> & { accountMin?: number; accountMax?: number }> {
+    const { page = 1, pageSize = 20, searchParams = '', filters, sortBy = {}, userId } = params;
     const take = pageSize;
     const skip = (page - 1) * pageSize;
 
-    const where = buildWhereClause(filters);
-    const orderBy = buildOrderByTransaction(sortBy);
+    let where = buildWhereClause(filters);
+    if (searchParams) {
+      let typeSearchParams = searchParams.toLowerCase();
+      // test with Regex-Type Transaction
+      const regex = new RegExp('^' + typeSearchParams, 'i'); // ^: start with, i: ignore case
+      const typeTransaction = Object.values(TransactionType).find((type) => regex.test(type));
+      if (typeTransaction) {
+        typeSearchParams = typeTransaction;
+      }
+
+      // test with Regex-Date format YYYY-MM-DD
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD format
+      const date = new Date(typeSearchParams);
+      const isSearchDate = dateRegex.test(typeSearchParams) && !isNaN(date.getTime());
+
+      where = {
+        AND: [
+          where,
+          {
+            OR: [
+              { fromAccount: { name: { contains: searchParams } } },
+              { toAccount: { name: { contains: searchParams } } },
+              { partner: { name: { contains: searchParams } } },
+              ...(typeTransaction ? [{ type: { contains: typeTransaction } }] : []),
+              ...(isSearchDate
+                ? [
+                    {
+                      date: {
+                        gte: new Date(typeSearchParams),
+                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
+                      },
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ],
+      };
+    }
+    const orderBy = buildOrderByTransactionV2(sortBy);
 
     const transactionAwaited = this.transactionRepository.findManyTransactions(
       {
@@ -59,8 +97,22 @@ class TransactionUseCase {
       },
     );
     const totalTransactionAwaited = this.transactionRepository.count({});
+    // getting accountMax from transactions
+    const accountMaxAwaited = this.accountRepository.aggregate({
+      where: { userId },
+      _max: { balance: true },
+    });
+    const accountMinAwaited = this.accountRepository.aggregate({
+      where: { userId },
+      _min: { balance: true },
+    });
 
-    const [transactions, total] = await Promise.all([transactionAwaited, totalTransactionAwaited]);
+    const [transactions, total, accountMax, accountMin] = await Promise.all([
+      transactionAwaited,
+      totalTransactionAwaited,
+      accountMaxAwaited,
+      accountMinAwaited,
+    ]);
 
     const totalPage = Math.ceil(total / pageSize);
 
@@ -69,6 +121,9 @@ class TransactionUseCase {
       totalPage,
       page,
       pageSize,
+      accountMax: Number(accountMax['_max']?.balance) || 0,
+      accountMin: Number(accountMin['_min']?.balance) || 0,
+      total,
     };
   }
 
@@ -224,6 +279,7 @@ class TransactionUseCase {
         data: {
           userId: data.userId,
           date: data.date,
+          currency: data.currency,
           type: data.type,
           amount: data.amount,
           fromAccountId: data.fromAccountId,
@@ -290,6 +346,7 @@ class TransactionUseCase {
           date: data.date,
           type: data.type,
           amount: data.amount,
+          currency: data.currency,
           fromAccountId: data.fromAccountId,
           fromCategoryId: data.fromCategoryId,
           toAccountId: data.toAccountId,
@@ -366,6 +423,7 @@ class TransactionUseCase {
           amount: data.amount,
           fromAccountId: data.fromAccountId,
           fromCategoryId: data.fromCategoryId,
+          currency: data.currency,
           toAccountId: data.toAccountId,
           toCategoryId: data.toCategoryId,
           partnerId: data.partnerId,

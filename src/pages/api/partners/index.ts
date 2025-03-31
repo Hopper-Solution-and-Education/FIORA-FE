@@ -16,8 +16,6 @@ export default withAuthorization({
       return POST(req, res, userId);
     case 'GET':
       return GET(req, res, userId);
-    case 'PUT':
-      return PUT(req, res, userId);
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -50,27 +48,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     return res
       .status(RESPONSE_CODE.CREATED)
       .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_PARTNER_SUCCESS, newPartner));
-  } catch (error: any) {
-    return res
-      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createError(
-          res,
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        ),
-      );
-  }
-}
-
-export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  try {
-    const { id } = req.body;
-
-    const updatedPartner = await partnerUseCase.editPartner(id, userId, req.body);
-    return res
-      .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_PARTNER_SUCCESS, updatedPartner));
   } catch (error: any) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)

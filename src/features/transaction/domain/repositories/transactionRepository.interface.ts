@@ -15,4 +15,7 @@ export interface ITransactionRepository {
     options?: Prisma.TransactionFindManyArgs,
   ): Promise<Transaction[]>;
   count(where: Prisma.TransactionWhereInput): Promise<number>;
+
+  // *CATEGORY ZONE
+  updateTransactionsCategory(oldCategoryId: string, newCategoryId: string): Promise<void>;
 }

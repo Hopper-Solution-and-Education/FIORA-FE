@@ -51,6 +51,18 @@ class TransactionRepository implements ITransactionRepository {
   async count(where: Prisma.TransactionWhereInput): Promise<number> {
     return await prisma.transaction.count({ where });
   }
+
+  // *CATEGORY ZONE
+  async updateTransactionsCategory(oldCategoryId: string, newCategoryId: string): Promise<void> {
+    await prisma.transaction.updateMany({
+      where: { fromCategoryId: oldCategoryId },
+      data: { fromCategoryId: newCategoryId },
+    });
+    await prisma.transaction.updateMany({
+      where: { toCategoryId: oldCategoryId },
+      data: { toCategoryId: newCategoryId },
+    });
+  }
 }
 
 export const transactionRepository = new TransactionRepository();
