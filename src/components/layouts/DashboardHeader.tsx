@@ -15,8 +15,8 @@ import { Alert, AlertDescription } from '../ui/alert';
 import { Separator } from '../ui/separator';
 import { SidebarTrigger } from '../ui/sidebar';
 import { UserNav } from './UserNav';
-import HelpCenter from './theme-toggle/HelpCenter';
-import SettingCenter from './theme-toggle/SettingCenter';
+import HelpCenter from './header-toggle/HelpCenter';
+import SettingCenter from './header-toggle/SettingCenter';
 import { ICON_SIZE } from '@/shared/constants/size';
 
 export default function Header() {

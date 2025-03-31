@@ -10,15 +10,20 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/shared/utils';
 import { ProductType } from '@prisma/client';
-import { Control, FieldErrors } from 'react-hook-form';
+import { Control, useFormContext } from 'react-hook-form';
 import { ProductFormValues } from '../schema/addProduct.schema';
 
 interface ProductTypeFieldProps {
   control: Control<ProductFormValues>;
-  errors: FieldErrors<ProductFormValues>;
 }
 
-const ProductTypeField = ({ control, errors }: ProductTypeFieldProps) => {
+const ProductTypeField = ({ control }: ProductTypeFieldProps) => {
+  const method = useFormContext<ProductFormValues>();
+
+  const {
+    formState: { errors },
+  } = method;
+
   return (
     <FormField
       control={control}

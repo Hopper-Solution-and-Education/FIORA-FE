@@ -8,11 +8,11 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { useState } from 'react';
 
-import HelpCenter from '@/components/layouts/theme-toggle/HelpCenter';
+import HelpCenter from '@/components/layouts/header-toggle/HelpCenter';
 import {
   default as SettingCenter,
   default as ThemeToggle,
-} from '@/components/layouts/theme-toggle/SettingCenter';
+} from '@/components/layouts/header-toggle/SettingCenter';
 import { UserNav } from '@/components/layouts/UserNav';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';

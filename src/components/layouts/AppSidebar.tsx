@@ -38,8 +38,8 @@ import {
   SidebarRail,
   useSidebar,
 } from '../ui/sidebar';
-import { helpItems } from './theme-toggle/HelpCenter';
-import { menuSettingItems } from './theme-toggle/SettingCenter';
+import { helpItems } from './header-toggle/HelpCenter';
+import { menuSettingItems } from './header-toggle/SettingCenter';
 import { ICON_SIZE } from '@/shared/constants/size';
 
 export const company = {

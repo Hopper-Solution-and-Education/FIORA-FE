@@ -1,26 +1,31 @@
 'use client';
-import { type Control, type FieldErrors, useFieldArray } from 'react-hook-form';
-import { Plus, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
+  FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
-  FormDescription,
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/shared/utils';
+import { Plus, Trash2 } from 'lucide-react';
+import { type Control, useFieldArray, useFormContext } from 'react-hook-form';
 import type { ProductFormValues } from '../schema/addProduct.schema';
 
 interface ProductItemsFieldProps {
   control: Control<ProductFormValues>;
-  errors: FieldErrors<ProductFormValues>;
 }
 
-const ProductItemsField = ({ control, errors }: ProductItemsFieldProps) => {
+const ProductItemsField = ({ control }: ProductItemsFieldProps) => {
+  const method = useFormContext<ProductFormValues>();
+
+  const {
+    formState: { errors },
+  } = method;
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'items',

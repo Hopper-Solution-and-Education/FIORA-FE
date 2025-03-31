@@ -1,24 +1,29 @@
 'use client';
 
-import type { Control, FieldErrors } from 'react-hook-form';
 import {
+  FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
-  FormDescription,
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { ProductFormValues } from '../schema/addProduct.schema';
 import { cn } from '@/shared/utils';
+import { useFormContext, type Control } from 'react-hook-form';
+import { ProductFormValues } from '../schema/addProduct.schema';
 
 interface ProductNameFieldProps {
   control: Control<ProductFormValues>;
-  errors: FieldErrors<ProductFormValues>;
 }
 
-const ProductNameField = ({ control, errors }: ProductNameFieldProps) => {
+const ProductNameField = ({ control }: ProductNameFieldProps) => {
+  const method = useFormContext<ProductFormValues>();
+
+  const {
+    formState: { errors },
+  } = method;
+
   return (
     <FormField
       control={control}

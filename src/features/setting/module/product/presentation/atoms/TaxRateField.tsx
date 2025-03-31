@@ -11,15 +11,19 @@ import {
 import { Input } from '@/components/ui/input';
 import { cn } from '@/shared/utils';
 import { useCallback } from 'react';
-import type { Control, FieldErrors } from 'react-hook-form';
+import { useFormContext, type Control } from 'react-hook-form';
 import { ProductFormValues } from '../schema/addProduct.schema';
 
 interface TaxRateFieldProps {
   control: Control<ProductFormValues>;
-  errors: FieldErrors<ProductFormValues>;
 }
 
-const TaxRateField = ({ control, errors }: TaxRateFieldProps) => {
+const TaxRateField = ({ control }: TaxRateFieldProps) => {
+  const method = useFormContext<ProductFormValues>();
+
+  const {
+    formState: { errors },
+  } = method;
   const formatTaxRate = useCallback((value: number | null | undefined): string => {
     return value == null ? '' : `${parseFloat(value.toFixed(2))}`;
   }, []);

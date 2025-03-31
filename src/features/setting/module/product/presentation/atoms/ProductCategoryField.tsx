@@ -19,20 +19,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ICON_SIZE } from '@/shared/constants/size';
 import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
-import type { Control, FieldErrors } from 'react-hook-form';
+import { useFormContext, type Control } from 'react-hook-form';
 import { fetchCategoriesProduct } from '../../slices/actions/fetchCategoriesProduct';
 import { ProductFormValues } from '../schema/addProduct.schema';
 
 interface ProductCategoryFieldProps {
   control: Control<ProductFormValues>;
-  errors: FieldErrors<ProductFormValues>;
 }
 
-const ProductCategoryField = ({ control, errors }: ProductCategoryFieldProps) => {
+const ProductCategoryField = ({ control }: ProductCategoryFieldProps) => {
+  const method = useFormContext<ProductFormValues>();
+
+  const {
+    formState: { errors },
+  } = method;
+
   const dispatch = useAppDispatch();
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   const {
@@ -106,7 +112,7 @@ const ProductCategoryField = ({ control, errors }: ProductCategoryFieldProps) =>
                       return (
                         <SelectItem key={category.id} value={category.id}>
                           <div className="flex justify-between items-center gap-4">
-                            <CategoryIcon size={18} />
+                            <CategoryIcon size={ICON_SIZE.MD} />
                             <span className="text-sm">{category.name}</span>
                           </div>
                         </SelectItem>

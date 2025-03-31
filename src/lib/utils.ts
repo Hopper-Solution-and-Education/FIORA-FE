@@ -32,3 +32,9 @@ export function createErrorResponse(statusCode: number, message: string): Respon
     message,
   };
 }
+
+export const isUrl = (value: string) => /^(https?|blob):\/\//.test(value);
+export const isImageFile = (value: string) => {
+  if (value.startsWith('blob:')) return true; // Nhận diện blob URL
+  return /\.(png|jpe?g|svg|gif|webp)$/i.test(value);
+};

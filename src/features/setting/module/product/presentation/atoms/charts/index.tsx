@@ -2,6 +2,7 @@
 
 import ChartLegend from '@/components/common/nested-bar-chart/atoms/ChartLegend';
 import CustomYAxisTick from '@/components/common/nested-bar-chart/atoms/CustomYAxisTick';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
   BASE_BAR_HEIGHT,
   DEFAULT_CURRENCY,
@@ -25,11 +26,11 @@ import { ContentType } from 'recharts/types/component/Tooltip';
 import { ProductFormValues } from '../../schema/addProduct.schema';
 import BarLabel from '../BarLabel';
 import CustomTooltip from '../CustomTooltip';
-import { useIsMobile } from '@/hooks/useIsMobile';
 
 export type BarItem = {
   id?: string;
   name: string;
+  icon?: string;
   value: number;
   color?: string;
   type: string;
