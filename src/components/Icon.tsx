@@ -54,6 +54,7 @@ import {
   MoveLeft,
   AlertCircle,
   CircleArrowLeft,
+  BanknoteArrowDown,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -104,7 +105,7 @@ export const Icons = {
       ></path>
     </svg>
   ),
-  Wallet,
+  wallet: Wallet,
   twitter: Twitter,
   check: Check,
   trello: Trello,
@@ -129,4 +130,5 @@ export const Icons = {
   moveLeft: MoveLeft,
   alertCircle: AlertCircle,
   circleArrowLeft: CircleArrowLeft,
+  banknoteArrowDown: BanknoteArrowDown,
 };

@@ -1,7 +1,7 @@
 'use client';
 
+import { Icons } from '@/components/Icon';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wallet } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
 import {
@@ -56,7 +56,7 @@ export function AccountsOverview() {
       {/* Tiêu đề */}
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg font-semibold">Account Balance</CardTitle>
-        <Wallet className="h-5 w-5 text-muted-foreground" />
+        <Icons.wallet className="h-5 w-5 text-muted-foreground" />
       </CardHeader>
 
       <CardContent>
