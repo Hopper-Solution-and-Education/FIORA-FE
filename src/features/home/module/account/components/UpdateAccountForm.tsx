@@ -10,11 +10,11 @@ import ParentAccountSelect from '@/features/home/module/account/components/Paren
 import { Account } from '@/features/home/module/account/slices/types';
 import {
   defaultNewAccountValues,
-  validateNewAccountSchema,
+  validateUpdateAccountSchema,
 } from '@/features/home/module/account/slices/types/formSchema';
 import { ACCOUNT_TYPES } from '@/shared/constants/account';
 import { useAppSelector } from '@/store';
-import DeleteAccountDialog from './DeleteAccountDialog';
+import AccountBalanceField from '@/features/home/module/account/components/AccountBalance';
 
 interface UpdateAccountFormProps {
   initialData?: Account;
@@ -24,13 +24,16 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
   const { parentAccounts } = useAppSelector((state) => state.account);
 
   const parentOptions =
-    parentAccounts.data
-      ?.filter((acc) => acc.id !== initialData?.id && !acc.parentId)
-      .map((account) => ({
+    (parentAccounts.data &&
+      parentAccounts.data.length > 0 &&
+      parentAccounts.data.map((account) => ({
         value: account.id,
         label: account.name,
         type: account.type,
-      })) || [];
+        icon: account.icon,
+        disabled: Object.values(ACCOUNT_TYPES).includes(account.type),
+      }))) ||
+    [];
 
   const isParentDisabled = initialData && initialData.parentId ? true : false;
 
@@ -54,22 +57,19 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
   };
 
   const fields = [
-    <InputField key="name" name="name" placeholder="Account Name" />,
-    <GlobalIconSelect key="icon" name="icon" />,
+    <GlobalIconSelect key="icon" name="icon" label="Icon" required />,
+    <InputField key="name" name="name" placeholder="Account Name" label="Name" required />,
     <ParentAccountSelect
       key="parentId"
       name="parentId"
       options={parentOptions}
       disabled={isParentDisabled}
+      label="Parent"
     />,
-    <AccountTypeSelect key="type" name="type" />,
-    <CurrencySelect key="currency" name="currency" />,
-    <LimitField key="limit" name="limit" />,
-    <InputField
-      key="balance"
-      name="balance"
-      placeholder={initialData?.type === ACCOUNT_TYPES.CREDIT_CARD ? 'Current Balance' : 'Balance'}
-    />,
+    <AccountTypeSelect key="type" name="type" label="Type" required />,
+    <CurrencySelect key="currency" name="currency" label="Currency" required />,
+    <LimitField key="limit" name="limit" label="Limit" />,
+    <AccountBalanceField key="balance" name="balance" label="Currency" required />,
   ];
 
   const defaultValues = {
@@ -106,9 +106,8 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
         fields={fields}
         onSubmit={onSubmit}
         defaultValues={defaultValues}
-        schema={validateNewAccountSchema}
+        schema={validateUpdateAccountSchema}
       />
-      <DeleteAccountDialog />
     </>
   );
 }

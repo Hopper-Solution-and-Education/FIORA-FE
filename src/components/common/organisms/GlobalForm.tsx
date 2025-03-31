@@ -32,6 +32,7 @@ const GlobalForm = <T extends yup.AnyObject>({
   const methods = useForm<any>({
     resolver: yupResolver(schema), // Connects Yup schema to react-hook-form for validation
     defaultValues, // Sets initial values for the form fields
+    mode: 'onChange',
   });
 
   const { control, handleSubmit, formState } = methods;

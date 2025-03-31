@@ -6,11 +6,13 @@ import PositiveAndNegativeBarChart, {
 import { Icons } from '@/components/Icon';
 import { fetchAccounts, fetchParents } from '@/features/home/module/account/slices/actions';
 import { getAccountColorByType } from '@/features/home/module/account/slices/utils';
-import { COLORS, DEFAULT_LOCALE } from '@/shared/constants/chart';
+import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Account } from '@/features/home/module/account/slices/types';
+import { formatCurrency } from '@/shared/utils';
 
 const AccountDashboard = () => {
   const dispatch = useAppDispatch();
@@ -49,7 +51,9 @@ const AccountDashboard = () => {
   }, [accounts]);
 
   const handleDisplayDetail = (item: any) => {
-    router.push(`/home/account/update/${item.id}`);
+    if (item.id) {
+      router.push(`/home/account/update/${item.id}`);
+    }
   };
 
   if (accounts.isLoading) return <div>Loading...</div>;
@@ -67,11 +71,7 @@ const AccountDashboard = () => {
       <PositiveAndNegativeBarChart
         title="Accounts"
         data={chartData}
-        xAxisFormatter={(value) =>
-          new Intl.NumberFormat(DEFAULT_LOCALE, { style: 'currency', currency: 'VND' }).format(
-            value,
-          )
-        }
+        xAxisFormatter={(value) => formatCurrency(value)}
         levelConfig={{
           totalName: 'Net Balance',
           colors: { 0: COLORS.DEPS_SUCCESS.LEVEL_1 },

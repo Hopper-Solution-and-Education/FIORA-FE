@@ -2,7 +2,6 @@ import React from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
 import { ACCOUNT_TYPES } from '@/shared/constants/account';
 import InputField from '@/components/common/atoms/InputField';
-import AvailableLimitDisplay from '@/features/home/module/account/components/AvailableLimitDisplay';
 
 interface LimitFieldProps {
   name: string;
@@ -24,17 +23,14 @@ const LimitField: React.FC<LimitFieldProps> = ({
   if (type !== ACCOUNT_TYPES.CREDIT_CARD) return null;
 
   return (
-    <>
-      <InputField
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder="0.00"
-        error={error}
-        {...props}
-      />
-      <AvailableLimitDisplay />
-    </>
+    <InputField
+      name={name}
+      value={value}
+      onChange={onChange}
+      placeholder="0.00"
+      error={error}
+      {...props}
+    />
   );
 };
 

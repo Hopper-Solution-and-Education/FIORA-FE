@@ -2,43 +2,50 @@
 
 import Loading from '@/components/common/atoms/Loading';
 import FormPage from '@/components/common/organisms/FormPage';
-import { useAppSelector, useAppDispatch } from '@/store';
-import { findAccountById } from '@/features/home/module/account/slices/utils';
-import { setAccountDeleteDialog, setSelectedAccount } from '@/features/home/module/account/slices';
-import { useParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icon';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import UpdateAccountForm from '@/features/home/module/account/components/UpdateAccountForm';
+import { useUpdateAccount } from '@/features/home/module/account/hooks/useUpdateAccount';
+import { useFeatureFlagGuard } from '@/hooks/useFeatureFlagGuard';
+import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { useParams } from 'next/navigation';
 
 export default function UpdateAccount() {
-  const dispatch = useAppDispatch();
   const params = useParams();
   const accountId = params?.id as string;
-  const { accounts } = useAppSelector((state) => state.account);
-  const account = findAccountById(accounts.data, accountId);
 
-  if (accounts.isLoading) {
+  const { account, isLoading, handleDelete } = useUpdateAccount(accountId);
+
+  const { isLoaded } = useFeatureFlagGuard(FeatureFlags.ACCOUNT_FEATURE);
+
+  const renderDeleteButton = (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            type="button"
+            onClick={handleDelete}
+            className="text-red-500 hover:text-red-700 hover:bg-red-100"
+          >
+            <Icons.trash className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Delete</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+
+  if (isLoading || !isLoaded) {
     return <Loading />;
   }
 
   if (!account) {
     return null;
   }
-
-  const handleDelete = () => {
-    dispatch(setSelectedAccount(account));
-    dispatch(setAccountDeleteDialog(true));
-  };
-
-  const renderDeleteButton = (
-    <Button
-      variant="ghost"
-      onClick={handleDelete}
-      className="text-red-500 hover:text-red-700 hover:bg-red-100"
-    >
-      <Icons.trash className="h-4 w-4" />
-    </Button>
-  );
 
   return (
     <FormPage

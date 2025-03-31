@@ -6,7 +6,7 @@ import { AccountType } from '@prisma/client';
 
 interface ParentAccountSelectProps {
   name: string;
-  options: { value: string; label: string; type: AccountType }[];
+  options: { value: string; label: string; icon?: string; disabled?: boolean; type: AccountType }[];
   disabled?: boolean;
   value?: string | null;
   onChange?: (value: string | null) => void;
@@ -43,7 +43,12 @@ const ParentAccountSelect: React.FC<ParentAccountSelectProps> = ({
     ? [{ value: 'null', label: 'Sub Accounts exist. Parent locked' }]
     : [
         { value: 'null', label: 'None' },
-        ...options.map((option) => ({ value: option.value, label: option.label })),
+        ...options.map((option) => ({
+          value: option.value,
+          label: option.label,
+          icon: option?.icon,
+          disabled: option?.disabled,
+        })),
       ];
 
   return (
