@@ -179,12 +179,12 @@ model Partner {
   userId       String        @db.Uuid
   logo         String?
   name         String        @db.VarChar(255)
-  identify     String?       @unique @db.VarChar(50)
+  identify     String?       @db.VarChar(50)
   dob          DateTime?     @db.Date
-  taxNo        String?       @unique @db.VarChar(20)
+  taxNo        String?       @db.VarChar(20)
   address      String?       @db.VarChar(255)
-  email        String?       @unique @db.VarChar(50)
-  phone        String?       @unique @db.VarChar(50)
+  email        String?       @db.VarChar(50)
+  phone        String?       @db.VarChar(50)
   description  String?       @db.VarChar(1000)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt

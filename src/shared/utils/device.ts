@@ -19,8 +19,8 @@ export function useWindowSize() {
 
 export const getChartMargins = (width: number) => {
   if (width < 640)
-    return { top: 10, right: 20, left: 60, bottom: 20 }; // Mobile
+    return { top: 10, right: 20, left: 20, bottom: 20 }; // Mobile
   else if (width < 1024)
-    return { top: 10, right: 25, left: 80, bottom: 25 }; // Tablet
-  else return { top: 10, right: 30, left: 80, bottom: 30 }; // Desktop
+    return { top: 10, right: 25, left: 25, bottom: 25 }; // Tablet
+  else return { top: 10, right: 30, left: 30, bottom: 30 }; // Desktop
 };
