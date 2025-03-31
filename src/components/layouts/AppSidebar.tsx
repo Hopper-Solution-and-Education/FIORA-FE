@@ -40,6 +40,7 @@ import {
 } from '../ui/sidebar';
 import { helpItems } from './theme-toggle/HelpCenter';
 import { menuSettingItems } from './theme-toggle/SettingCenter';
+import { ICON_SIZE } from '@/shared/constants/size';
 
 export const company = {
   name: 'FIORA Inc',
@@ -189,7 +190,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton tooltip={item.title} isActive={isActive}>
-                        {item.icon && <Icon />}
+                        {item.icon && <Icon size={ICON_SIZE.MD} />}
                         <span>{item.title}</span>
                         <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                       </SidebarMenuButton>

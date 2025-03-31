@@ -3,37 +3,34 @@
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ICON_SIZE } from '@/shared/constants/size';
+import EnglishIcon from '@public/icons/united-kingdom.png';
+import VietnameseIcon from '@public/icons/vietnam.png';
 import {
   Database,
-  LayoutDashboard,
+  LayoutTemplate,
   MoonIcon,
   Package,
   Settings,
   SunIcon,
-  Tag,
-  User,
   Users,
 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import EnglishIcon from '@public/icons/united-kingdom.png';
-import VietnameseIcon from '@public/icons/vietnam.png';
-import { useSession } from 'next-auth/react';
-import Link from 'next/link';
-
 export const menuSettingItems = [
-  { label: 'Accounts', icon: User, url: '/home/account' },
-  { label: 'Categories', icon: Tag, url: '/home/category' },
+  // { label: 'Accounts', icon: User, url: '/home/account' },
+  // { label: 'Categories', icon: Tag, url: '/home/category' },
   { label: 'Products & Services', icon: Package, url: '/setting/product' },
   { label: 'Partners', icon: Database, url: '/setting/partner' },
   { label: 'Users', icon: Users, url: '/users' },
-  { label: 'Landing Page', icon: LayoutDashboard, url: '/setting/landing' },
+  { label: 'Landing Page', icon: LayoutTemplate, url: '/setting/landing' },
 ];
 
 export default function SettingCenter() {
@@ -45,21 +42,23 @@ export default function SettingCenter() {
     document.documentElement.lang = language;
   }, [language]);
 
-  const toggleTheme = () => {
+  const toggleTheme = (e: any) => {
+    e.stopPropagation(); // Ngăn sự kiện lan truyền
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
-  const toggleLanguage = () => {
+  const toggleLanguage = (e: any) => {
+    e.stopPropagation(); // Ngăn sự kiện lan truyền
     setLanguage(language === 'en' ? 'vi' : 'en');
   };
 
   return (
     <TooltipProvider>
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Settings
-            size={18}
-            className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+            size={ICON_SIZE.MD}
+            className="transition-all duration-200 hover:scale-110 cursor-pointer"
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent
@@ -67,15 +66,16 @@ export default function SettingCenter() {
           className={`${
             data?.user ? 'w-[300px] grid-cols-4' : 'w-[100px] grid-cols-2'
           } p-4 grid gap-4 border shadow-md`}
+          onClick={(e) => e.stopPropagation()} // Ngăn scroll khi click vào menu
         >
           {data?.user &&
             menuSettingItems.map((item, index) => (
               <Tooltip key={index}>
                 <TooltipTrigger asChild>
                   <Link href={item.url} passHref>
-                    <DropdownMenuItem className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
-                      <item.icon className="h-6 w-6" />
-                    </DropdownMenuItem>
+                    <div className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
+                      <item.icon size={ICON_SIZE.MD} />
+                    </div>
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent side="top">
@@ -86,16 +86,16 @@ export default function SettingCenter() {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  toggleTheme();
-                }}
+              <div
+                onClick={toggleTheme} // Sử dụng hàm với stopPropagation
                 className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
               >
-                {theme === 'dark' ? <MoonIcon size={24} /> : <SunIcon size={24} />}
-              </DropdownMenuItem>
+                {theme === 'dark' ? (
+                  <MoonIcon size={ICON_SIZE.MD} />
+                ) : (
+                  <SunIcon size={ICON_SIZE.MD} />
+                )}
+              </div>
             </TooltipTrigger>
             <TooltipContent side="top">
               <span>Toggle Theme</span>
@@ -104,12 +104,8 @@ export default function SettingCenter() {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  toggleLanguage();
-                }}
+              <div
+                onClick={toggleLanguage} // Sử dụng hàm với stopPropagation
                 className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
               >
                 {language === 'en' ? (
@@ -117,7 +113,7 @@ export default function SettingCenter() {
                 ) : (
                   <Image src={EnglishIcon} alt="English" width={20} height={20} />
                 )}
-              </DropdownMenuItem>
+              </div>
             </TooltipTrigger>
             <TooltipContent side="top">
               <span>Change Language</span>
