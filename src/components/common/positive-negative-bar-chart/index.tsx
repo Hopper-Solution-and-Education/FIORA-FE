@@ -29,6 +29,7 @@ import BarLabel from './atoms/BarLabel';
 
 export type BarItem = {
   id?: string;
+  icon?: string;
   name: string;
   value: number;
   color?: string;

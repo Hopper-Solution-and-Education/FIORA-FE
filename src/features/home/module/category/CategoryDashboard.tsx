@@ -25,6 +25,7 @@ const CategoryDashboard = () => {
       id: category.id,
       name: category.name,
       value: category.balance || 0,
+      icon: category.icon,
       color:
         category.type === CategoryType.Expense
           ? COLORS.DEPS_DANGER.LEVEL_1
@@ -34,6 +35,7 @@ const CategoryDashboard = () => {
         id: subCategory.id,
         name: subCategory.name,
         value: subCategory.balance || 0,
+        icon: subCategory.icon,
         color:
           category.type === CategoryType.Expense
             ? COLORS.DEPS_DANGER.LEVEL_1

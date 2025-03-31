@@ -25,21 +25,27 @@ const AccountDashboard = () => {
   const chartData: BarItem[] = useMemo(() => {
     if (!accounts.data) return [];
     return accounts.data
-      .filter((account) => !account?.parentId)
-      .map((account) => ({
-        id: account.id,
-        name: account.name,
-        value: Number(account.balance) || 0,
-        type: account.type,
-        color: getAccountColorByType(account.type),
-        children: account.children?.map((child) => ({
-          id: child.id,
-          name: child.name,
-          value: Number(child.balance) || 0,
-          type: child.type,
-          color: getAccountColorByType(child.type),
-        })),
-      }));
+      .filter((account: Account) => {
+        return !account?.parentId;
+      })
+      .map((account: Account) => {
+        return {
+          id: account.id,
+          name: account.name,
+          icon: account.icon,
+          value: Number(account.balance) || 0,
+          type: account.type,
+          color: getAccountColorByType(account.type),
+          children: account.children?.map((child) => ({
+            id: child.id,
+            name: child.name,
+            icon: child.icon,
+            value: Number(child.balance) || 0,
+            type: child.type,
+            color: getAccountColorByType(child.type),
+          })),
+        };
+      });
   }, [accounts]);
 
   const handleDisplayDetail = (item: any) => {

@@ -1,8 +1,12 @@
-import React from 'react';
+'use client';
+
+import type React from 'react';
+import { useState } from 'react';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/shared/utils';
+import LucieIcon from '@/features/home/module/category/components/LucieIcon';
 
 interface CustomYAxisTickProps {
   x: number;
@@ -24,10 +28,9 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
   callback,
 }) => {
   const item = processedData.find((d: any) => d.name === payload.value);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const depth = item?.depth || 0;
   const hasChildren = item?.children && item.children.length > 0;
-  const [isHovered, setIsHovered] = React.useState(false);
+  const [isIconHovered, setIsIconHovered] = useState(false);
+  const [isButtonHovered, setIsButtonHovered] = useState(false);
 
   const handleArrowClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -43,91 +46,102 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
     }
   };
 
-  // Truncate text longer than 15 characters
-  const truncateText = (text: string) => {
-    if (text.length > 15) {
-      return text.substring(0, 15) + '...';
-    }
-    return text;
-  };
-
-  const displayText = truncateText(payload.value);
-  const fullText = payload.value;
-
-  // Calculate text and button positions based on depth
-  const textX = hasChildren ? -50 + 10 : -30 + 10;
-  const buttonX = hasChildren ? -40 + 10 : undefined;
-
   return (
-    <g
-      transform={`translate(${x},${y})`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <g transform={`translate(${x},${y})`}>
       <TooltipProvider>
-        {/* Label text with dynamic positioning */}
-        <Tooltip>
-          <TooltipTrigger asChild onClick={handleEditClick}>
-            <text
-              x={textX}
-              y={0}
-              dy={4}
-              textAnchor="end"
-              className={cn(
-                'fill-current text-xs transition-all duration-200 text-foreground cursor-pointer',
-                isHovered && 'translate-x-1 text-primary font-semibold',
-              )}
+        {/* Icon with tooltip that shows on hover */}
+        <Tooltip open={isIconHovered}>
+          <TooltipTrigger asChild>
+            <foreignObject
+              x={-70}
+              y={-16}
+              width={32}
+              height={32}
+              onMouseEnter={() => setIsIconHovered(true)}
+              onMouseLeave={() => setIsIconHovered(false)}
             >
-              {displayText}
-            </text>
+              {/* Circular icon */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  'h-8 w-8 p-0 rounded-full border transition-all duration-300',
+                  isIconHovered ? 'bg-primary/20 shadow-sm' : 'hover:bg-muted/60',
+                  expandedItems[payload.value] && 'bg-primary/10',
+                )}
+                onClick={handleEditClick}
+              >
+                <LucieIcon
+                  icon={item?.icon || 'activity'}
+                  className={cn(
+                    'h-4 w-4 transition-all duration-200',
+                    isIconHovered ? 'text-primary' : 'text-muted-foreground',
+                  )}
+                />
+              </Button>
+            </foreignObject>
           </TooltipTrigger>
-          {fullText.length > 15 && (
-            <TooltipContent side="left" align="center" className="text-xs p-1">
-              {fullText}
-            </TooltipContent>
-          )}
+          <TooltipContent
+            side="top"
+            align="center"
+            className="text-xs p-1.5 bg-popover/95 backdrop-blur-sm border-border/50 shadow-md"
+          >
+            <div className="flex flex-col gap-1">
+              <span className="font-medium text-gray-900 dark:text-gray-300">{payload.value}</span>
+            </div>
+          </TooltipContent>
         </Tooltip>
 
-        {/* Expand/collapse button for items with children */}
+        {/* Expand/collapse button with tooltip */}
         {hasChildren && (
-          <Tooltip>
+          <Tooltip open={isButtonHovered}>
             <TooltipTrigger asChild>
               <foreignObject
-                x={buttonX}
+                x={-20}
                 y={-8}
                 width={16}
                 height={16}
                 className="cursor-pointer overflow-visible"
+                onMouseEnter={() => setIsButtonHovered(true)}
+                onMouseLeave={() => setIsButtonHovered(false)}
               >
                 <Button
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    'h-4 w-4 p-0 rounded-full transition-all duration-200',
-                    isHovered ? 'bg-primary/20 scale-110' : 'hover:bg-muted/60',
+                    'h-4 w-4 p-0 rounded-full transition-all duration-300',
+                    isButtonHovered ? 'bg-primary/20 scale-110' : 'hover:bg-muted/60',
+                    expandedItems[payload.value] && 'bg-primary/10',
                   )}
                   onClick={handleArrowClick}
                 >
                   {expandedItems[payload.value] ? (
                     <Icons.circleChevronUp
                       className={cn(
-                        'h-3 w-3 transition-transform duration-200',
-                        isHovered && 'text-primary scale-110',
+                        'h-3 w-3 transition-all duration-200',
+                        isButtonHovered && 'text-primary scale-110',
+                        expandedItems[payload.value] ? 'text-primary/80' : 'text-muted-foreground',
                       )}
                     />
                   ) : (
                     <Icons.circleChevronDown
                       className={cn(
-                        'h-3 w-3 transition-transform duration-200',
-                        isHovered && 'text-primary scale-110',
+                        'h-3 w-3 transition-all duration-200',
+                        isButtonHovered && 'text-primary scale-110',
                       )}
                     />
                   )}
                 </Button>
               </foreignObject>
             </TooltipTrigger>
-            <TooltipContent side="top" align="center" className="text-xs">
-              {expandedItems[payload.value] ? 'Collapse' : 'Expand'}
+            <TooltipContent
+              side="top"
+              align="center"
+              className="text-xs p-1.5 bg-popover/95 backdrop-blur-sm border-border/50 shadow-md"
+            >
+              <span className="font-medium text-gray-900 dark:text-gray-300">
+                {expandedItems[payload.value] ? 'Collapse' : 'Expand'}
+              </span>
             </TooltipContent>
           </Tooltip>
         )}

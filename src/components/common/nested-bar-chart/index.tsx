@@ -29,6 +29,7 @@ import CustomYAxisTick from './atoms/CustomYAxisTick';
 // Define the structure of a bar item
 export type BarItem = {
   id?: string;
+  icon?: string;
   name: string;
   value: number;
   color: string;
