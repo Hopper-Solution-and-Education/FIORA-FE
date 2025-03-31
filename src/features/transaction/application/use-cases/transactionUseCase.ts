@@ -32,7 +32,7 @@ class TransactionUseCase {
 
   async getTransactions(
     params: TransactionGetPagination,
-  ): Promise<PaginationResponse<Transaction> & { accountMin?: number; accountMax?: number }> {
+  ): Promise<PaginationResponse<Transaction> & { amountMin?: number; amountMax?: number }> {
     const { page = 1, pageSize = 20, searchParams = '', filters, sortBy = {}, userId } = params;
     const take = pageSize;
     const skip = (page - 1) * pageSize;
@@ -97,21 +97,21 @@ class TransactionUseCase {
       },
     );
     const totalTransactionAwaited = this.transactionRepository.count({});
-    // getting accountMax from transactions
-    const accountMaxAwaited = this.accountRepository.aggregate({
+    // getting amountMax from transactions
+    const amountMaxAwaited = this.transactionRepository.aggregate({
       where: { userId },
-      _max: { balance: true },
+      _max: { amount: true },
     });
-    const accountMinAwaited = this.accountRepository.aggregate({
+    const amountMinAwaited = this.transactionRepository.aggregate({
       where: { userId },
-      _min: { balance: true },
+      _min: { amount: true },
     });
 
-    const [transactions, total, accountMax, accountMin] = await Promise.all([
+    const [transactions, total, amountMax, amountMin] = await Promise.all([
       transactionAwaited,
       totalTransactionAwaited,
-      accountMaxAwaited,
-      accountMinAwaited,
+      amountMaxAwaited,
+      amountMinAwaited,
     ]);
 
     const totalPage = Math.ceil(total / pageSize);
@@ -121,8 +121,8 @@ class TransactionUseCase {
       totalPage,
       page,
       pageSize,
-      accountMax: Number(accountMax['_max']?.balance) || 0,
-      accountMin: Number(accountMin['_min']?.balance) || 0,
+      amountMax: Number(amountMax['_max']?.amount) || 0,
+      amountMin: Number(amountMin['_min']?.amount) || 0,
       total,
     };
   }
@@ -317,6 +317,26 @@ class TransactionUseCase {
 
       return transaction;
     });
+  }
+
+  async fetchMinMaxTransactionAmount(userId: string): Promise<{ min: number; max: number }> {
+    // Fetch the maximum and minimum transaction amounts for a user
+    const maxAmountAwaited = this.transactionRepository.aggregate({
+      where: { userId },
+      _max: { amount: true },
+    });
+
+    const minAmountAwaited = this.transactionRepository.aggregate({
+      where: { userId },
+      _min: { amount: true },
+    });
+
+    const [maxAmount, minAmount] = await Promise.all([maxAmountAwaited, minAmountAwaited]);
+
+    return {
+      max: Number(maxAmount['_max']?.amount) || 0,
+      min: Number(minAmount['_min']?.amount) || 0,
+    };
   }
 
   async createTransaction_Income(data: Prisma.TransactionUncheckedCreateInput) {
