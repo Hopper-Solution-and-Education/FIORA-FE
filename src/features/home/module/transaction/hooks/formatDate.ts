@@ -5,5 +5,5 @@ export const formatDate = (date: Date): string => {
     day: '2-digit',
   };
 
-  return new Intl.DateTimeFormat('en-US', options).format(date);
+  return new Intl.DateTimeFormat('en-GB', options).format(date);
 };

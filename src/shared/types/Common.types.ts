@@ -51,3 +51,5 @@ export type OrderByFields = {
   partner?: Prisma.SortOrder;
   amount?: Prisma.SortOrder;
 };
+
+export type RequestType = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';

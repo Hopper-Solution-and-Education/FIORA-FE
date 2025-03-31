@@ -1,6 +1,7 @@
 import { Dispatch, SetStateAction, useState } from 'react';
 import TermsAndConditionsModal from '../organisms/TermsAndConditionsModal';
 import { cn } from '@/shared/utils';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type TermConditionProps = {
   isTermAccepted: boolean;
@@ -35,15 +36,12 @@ export default function TermCondition(props: TermConditionProps) {
 
   return (
     <>
-      <div className="w-full flex items-center justify-center mt-3">
-        <input
-          type="checkbox"
-          id="terms"
-          disabled={!isEditAlowed} // Disable checkbox if edit is not allowed
-          required
+      <div className="w-full flex items-center justify-center mt-3 gap-2">
+        <Checkbox
+          id="remember-me"
           checked={isTermAccepted}
-          className="mt-1 mr-2"
-          onChange={() => setIsTermAccepted((prev) => !prev)}
+          onCheckedChange={() => setIsTermAccepted((prev) => !prev)}
+          className="h-4 w-4 cursor-pointer rounded border border-gray-300 dark:border-gray-600 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
         />
         <label htmlFor="terms" className="text-pretty text-xs text-muted-foreground">
           By clicking continue, you agree to our{' '}
