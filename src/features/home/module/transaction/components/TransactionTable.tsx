@@ -3,13 +3,35 @@
 import { Button } from '@/components/ui/button';
 
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import useDataFetcher from '@/hooks/useDataFetcher';
 import { cn } from '@/shared/utils';
-import { useState } from 'react';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { FileText, Loader2, Search, Trash } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSWRConfig } from 'swr';
 import { formatDate } from '../hooks/formatDate';
-import { TRANSACTION_TYPE } from '../types/constants';
-import { OrderType, Transaction } from '../types/types';
+import { formatNumber } from '../hooks/formatNumber';
+import { handleApplyFilter } from '../hooks/handleApplyFilter';
+import { updateFilterCriteria } from '../slices';
+import {
+  IRelationalTransaction,
+  ITransactionPaginatedResponse,
+  OrderType,
+  TransactionColumn,
+  TransactionFilterCriteria,
+  TransactionTableColumnKey,
+} from '../types';
+import {
+  DEFAULT_TRANSACTION_TABLE_COLUMNS,
+  TRANSACTION_TYPE,
+  TransactionTableToEntity,
+} from '../utils/constants';
 import FilterMenu from './FilterMenu';
+import SettingsMenu from './SettingMenu';
 
 const SortArrowBtn = ({
   sortOrder,
@@ -34,124 +56,83 @@ const SortArrowBtn = ({
   </div>
 );
 
-const mockTransactions: Transaction[] = [
-  {
-    id: '1',
-    userId: 'user1',
-    date: new Date('2025-03-01'),
-    type: 'Expense',
-    amount: '100.00 USD',
-    fromAccount: 'Bank Account A',
-    products: [{ name: 'Laptop', quantity: 1 }],
-    partner: 'ABC Electronics',
-  },
-  {
-    id: '2',
-    userId: 'user2',
-    date: new Date('2025-03-02'),
-    type: 'Income',
-    amount: '1,200.00 USD',
-    toAccount: 'Bank Account B',
-    products: [{ name: 'Consulting Service', quantity: 5 }],
-  },
-  {
-    id: '3',
-    userId: 'user3',
-    date: new Date('2025-03-03'),
-    type: 'Transfer',
-    amount: '500.00 USD',
-    fromAccount: 'Bank Account C',
-    toAccount: 'Bank Account D',
-    products: [],
-  },
-  {
-    id: '4',
-    userId: 'user4',
-    date: new Date('2025-03-04'),
-    type: 'Expense',
-    amount: '50.00 USD',
-    fromCategory: 'Food',
-    products: [{ name: 'Pizza', quantity: 2 }],
-    partner: 'Restaurant X',
-  },
-  {
-    id: '5',
-    userId: 'user5',
-    date: new Date('2025-03-05'),
-    type: 'Income',
-    amount: '2,000.00 USD',
-    toCategory: 'Salary',
-    products: [],
-    partner: 'Company Y',
-  },
-  {
-    id: '6',
-    userId: 'user6',
-    date: new Date('2025-03-06'),
-    type: 'Expense',
-    amount: '300.00 USD',
-    fromAccount: 'Bank Account A',
-    products: [{ name: 'Phone', quantity: 1 }],
-  },
-  {
-    id: '7',
-    userId: 'user7',
-    date: new Date('2025-03-07'),
-    type: 'Income',
-    amount: '3,000.00 USD',
-    toAccount: 'Bank Account E',
-    products: [{ name: 'Web Design', quantity: 1 }],
-    partner: 'Design Agency W',
-  },
-  {
-    id: '8',
-    userId: 'user8',
-    date: new Date('2025-03-08'),
-    type: 'Transfer',
-    amount: '1,000.00 USD',
-    fromAccount: 'Bank Account F',
-    toAccount: 'Bank Account G',
-    products: [],
-  },
-  {
-    id: '9',
-    userId: 'user9',
-    date: new Date('2025-03-09'),
-    type: 'Expense',
-    amount: '150.00 USD',
-    fromCategory: 'Entertainment',
-    products: [{ name: 'Movie Tickets', quantity: 3 }],
-    partner: 'Cinema P',
-  },
-  {
-    id: '10',
-    userId: 'user10',
-    date: new Date('2025-03-10'),
-    type: 'Income',
-    amount: '500.00 USD',
-    toAccount: 'Bank Account H',
-    products: [{ name: 'Freelance Work', quantity: 2 }],
-    partner: 'Freelance Client Q',
-  },
-];
+const TransactionTable = () => {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { mutate } = useSWRConfig();
+  const toggleRef = useRef(null);
+  const { visibleColumns, filterCriteria } = useAppSelector((state) => state.transaction);
 
-const _sortableHeader: string[] = ['Date', 'Type', 'Amount', 'From', 'To', 'Partner'];
-
-type TransactionTableProps = {
-  openCreateModal: () => void;
-  openUpdateModal: (transaction: Transaction) => void;
-  openDeleteModal: (transaction: Transaction) => void;
-};
-
-const TransactionTable = (props: TransactionTableProps) => {
-  const { openCreateModal, openDeleteModal, openUpdateModal } = props;
-
-  const [sortOrder, setSortOrder] = useState<OrderType>('none');
-  const [sortTarget, setSortTarget] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<OrderType>('desc');
+  const [sortTarget, setSortTarget] = useState<string>('date');
   const [hoveringIdx, setHoveringIdx] = useState<number>(-1);
+  const [displayData, setDisplayData] = useState<IRelationalTransaction[]>([]);
 
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize] = useState<number>(20);
+  const [totalPage, setTotalPage] = useState<number>(0);
+  const [totalItems, setTotalItems] = useState<number>(0);
+
+  const {
+    data: fetchData,
+    isLoading,
+    isValidating,
+  } = useDataFetcher<ITransactionPaginatedResponse>({
+    endpoint: '/api/transactions',
+    method: 'POST',
+    body: { ...filterCriteria, page: currentPage, pageSize, sortBy: { [sortTarget]: sortOrder } },
+  });
+
+  // Implement intersection observer for infinite scrolling
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoading && currentPage < totalPage) {
+          if (currentPage < totalPage && !isLoading && !isValidating) {
+            setCurrentPage(currentPage + 1);
+          }
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    const currentToggleRef = toggleRef.current;
+    if (currentToggleRef) {
+      observer.observe(currentToggleRef);
+    }
+
+    return () => {
+      if (currentToggleRef) {
+        observer.unobserve(currentToggleRef);
+      }
+    };
+  }, [isLoading, currentPage, totalPage]);
+
+  // Handle data fetched from API
+  useEffect(() => {
+    if (fetchData?.status === 201 && fetchData?.data.data) {
+      setTotalPage(fetchData?.data.totalPage);
+      setTotalItems(fetchData?.data.total);
+
+      if (currentPage === 1) {
+        setDisplayData(fetchData?.data.data);
+      } else {
+        setDisplayData((prev) => [...prev, ...(fetchData?.data.data || [])]);
+      }
+    }
+  }, [fetchData]);
+
+  // Mutate data when filter criteria and pageNumber changes for lazy loading and filter feature
+  useEffect(() => {
+    mutate('/api/transactions', displayData, {
+      revalidate: true,
+    });
+  }, [currentPage, filterCriteria]);
+
+  // Handle sort logics for column header
   const handleSort = (header: string) => {
     if (sortTarget === header) {
+      // Nếu đẫ có sort tồn tại
       if (sortOrder === 'desc') {
         setSortOrder('asc');
       } else {
@@ -162,7 +143,44 @@ const TransactionTable = (props: TransactionTableProps) => {
       setSortTarget(header);
       setSortOrder('desc');
     }
+    handleFilterChange({ ...filterCriteria, sortBy: { [sortTarget]: sortOrder } });
   };
+
+  // Navigate to create native page
+  const handleCreateTransaction = () => {
+    router.push('/home/transaction/create');
+  };
+
+  // Navigate to delete page
+  const handleDeleteTransaction = () => {
+    router.push('/home/transaction/delete');
+  };
+
+  // Callback function to apply after updating filter criteria
+  const handleFilterChange = (newFilter: TransactionFilterCriteria) => {
+    setCurrentPage(1); // Reset current page to 1 when applying a new filter
+    dispatch(updateFilterCriteria(newFilter));
+  };
+
+  // Memoize the visible columns to avoid re-rendering
+  const tableVisibleColumns: TransactionTableColumnKey = useMemo((): TransactionTableColumnKey => {
+    const columns =
+      Object.keys(visibleColumns).length > 0
+        ? Object.keys(visibleColumns)?.reduce((acc, key) => {
+            if (visibleColumns[key as TransactionColumn].index > 0) {
+              acc[key as TransactionColumn] = visibleColumns[key as TransactionColumn];
+            }
+            return acc;
+          }, {} as TransactionTableColumnKey)
+        : DEFAULT_TRANSACTION_TABLE_COLUMNS;
+
+    // Sort columns by index
+    return Object.fromEntries(
+      Object.entries(columns)
+        .sort((a, b) => a[1].index - b[1].index)
+        .map(([key, value]) => [key, value]),
+    ) as TransactionTableColumnKey;
+  }, [visibleColumns]);
 
   return (
     <Table className="border-[1px] border-gray-300">
@@ -171,177 +189,296 @@ const TransactionTable = (props: TransactionTableProps) => {
           <TableCell colSpan={8}>
             <div className="w-full flex justify-between py-2 px-5">
               {/* Search Box container*/}
-              <div className="flex gap-2">
-                <Input title="Search" placeholder="Search" className="w-[30vw]" />
-                <Button className="px-3 py-2">
-                  <svg
-                    width="15"
-                    height="15"
-                    viewBox="0 0 15 15"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M10 6.5C10 8.433 8.433 10 6.5 10C4.567 10 3 8.433 3 6.5C3 4.567 4.567 3 6.5 3C8.433 3 10 4.567 10 6.5ZM9.30884 10.0159C8.53901 10.6318 7.56251 11 6.5 11C4.01472 11 2 8.98528 2 6.5C2 4.01472 4.01472 2 6.5 2C8.98528 2 11 4.01472 11 6.5C11 7.56251 10.6318 8.53901 10.0159 9.30884L12.8536 12.1464C13.0488 12.3417 13.0488 12.6583 12.8536 12.8536C12.6583 13.0488 12.3417 13.0488 12.1464 12.8536L9.30884 10.0159Z"
-                      fill="currentColor"
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
-                    ></path>
-                  </svg>
-                </Button>
+              <div className="flex flex-col justify-start items-start gap-4">
+                <div className="flex gap-2">
+                  <div className="relative w-[30vw]">
+                    <Input
+                      title="Search"
+                      placeholder="Search"
+                      className="w-full"
+                      // onChange={(e) =>
+                      //   handleApplyFilter({
+                      //     currentFilter: filterCriteria,
+                      //     callBack: handleFilterChange,
+                      //     target: 'amount',
+                      //     value: e.target.value,
+                      //     isSearch: true,
+                      //   })
+                      // }
+                    />
+                    <Search
+                      size={15}
+                      className="absolute top-[50%] right-[2%] -translate-y-[50%] opacity-50"
+                    />
+                  </div>
+                  <FilterMenu callBack={handleFilterChange} />
+                </div>
+                <Label className="text-gray-600">
+                  Displaying{' '}
+                  <strong>
+                    {displayData.length}/{totalItems}
+                  </strong>{' '}
+                  transaction records
+                </Label>
               </div>
-
               {/* function button group*/}
               <div className="flex gap-2">
                 {/* Create button */}
-                <Button
-                  onClick={openCreateModal}
-                  className="px-3 py-2 bg-green-200 hover:bg-green-500 border-green-600"
-                >
-                  <svg
-                    width="15"
-                    height="15"
-                    viewBox="0 0 15 15"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M8 2.75C8 2.47386 7.77614 2.25 7.5 2.25C7.22386 2.25 7 2.47386 7 2.75V7H2.75C2.47386 7 2.25 7.22386 2.25 7.5C2.25 7.77614 2.47386 8 2.75 8H7V12.25C7 12.5261 7.22386 12.75 7.5 12.75C7.77614 12.75 8 12.5261 8 12.25V8H12.25C12.5261 8 12.75 7.77614 12.75 7.5C12.75 7.22386 12.5261 7 12.25 7H8V2.75Z"
-                      fill="#000000"
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
-                    ></path>
-                  </svg>
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={handleCreateTransaction}
+                        className="px-3 py-2 bg-green-200 hover:bg-green-500 border-green-600"
+                      >
+                        <svg
+                          width="15"
+                          height="15"
+                          viewBox="0 0 15 15"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M8 2.75C8 2.47386 7.77614 2.25 7.5 2.25C7.22386 2.25 7 2.47386 7 2.75V7H2.75C2.47386 7 2.25 7.22386 2.25 7.5C2.25 7.77614 2.47386 8 2.75 8H7V12.25C7 12.5261 7.22386 12.75 7.5 12.75C7.77614 12.75 8 12.5261 8 12.25V8H12.25C12.5261 8 12.75 7.77614 12.75 7.5C12.75 7.22386 12.5261 7 12.25 7H8V2.75Z"
+                            fill="#000000"
+                            fill-rule="evenodd"
+                            clip-rule="evenodd"
+                          ></path>
+                        </svg>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Create Transaction</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
                 {/* Setting button */}
-                <FilterMenu />
+                <SettingsMenu />
               </div>
             </div>
           </TableCell>
         </TableRow>
         <TableRow className="font-bold text-center">
-          <TableCell>No. </TableCell>
-          {_sortableHeader.map((header, idx) => (
-            <TableCell
-              className={`cursor-pointer`}
-              key={header + idx}
-              onMouseEnter={() => setHoveringIdx(idx)}
-              onMouseLeave={() => setHoveringIdx(-1)}
-              onClick={() => handleSort(header)}
-            >
-              <div
-                className={cn(
-                  'w-full h-full flex justify-center items-center gap-2',
-                  sortTarget === header && 'text-blue-500',
-                )}
+          {Object.entries(tableVisibleColumns).map(([key, value], idx) => {
+            const entityKey =
+              TransactionTableToEntity[key as keyof typeof TransactionTableToEntity];
+            return (
+              <TableCell
+                className={`cursor-${value.sortable && !isLoading && !isValidating ? 'pointer' : 'default'}`}
+                key={idx}
+                onMouseEnter={() => setHoveringIdx(idx)}
+                onMouseLeave={() => setHoveringIdx(-1)}
+                onClick={() => {
+                  if (!isLoading && !isValidating) handleSort(entityKey);
+                }}
               >
-                {header}{' '}
-                {(hoveringIdx === idx || sortTarget === header) && (
-                  <SortArrowBtn sortOrder={sortOrder} isActivated={sortTarget === header} />
-                )}
-              </div>
-            </TableCell>
-          ))}
-          <TableCell className="flex justify-center">Actions</TableCell>
+                <div
+                  className={cn(
+                    'w-full h-full flex justify-center items-center gap-2',
+                    sortTarget === entityKey && 'text-blue-500',
+                  )}
+                >
+                  {key}{' '}
+                  {value.sortable && (hoveringIdx === idx || sortTarget === entityKey) && (
+                    <>
+                      {!isLoading && !isValidating ? (
+                        <SortArrowBtn
+                          sortOrder={sortOrder}
+                          isActivated={sortTarget === entityKey}
+                        />
+                      ) : (
+                        <Loader2 color={'blue'} className="h-4 w-4 text-primary animate-spin" />
+                      )}
+                    </>
+                  )}
+                </div>
+              </TableCell>
+            );
+          })}
         </TableRow>
       </TableHeader>
       <TableBody>
         {/* Table data loop */}
-        {[...mockTransactions, ...mockTransactions].map(
-          (transRecord: Transaction, index: number) => (
-            <TableRow
-              key={index}
-              className={`text-center text-${TRANSACTION_TYPE[transRecord.type.toUpperCase()]}`}
+        {displayData.map((transRecord: IRelationalTransaction, index: number) => (
+          <TableRow
+            key={index}
+            className={`text-center text-${TRANSACTION_TYPE[transRecord.type.toUpperCase()]}`}
+          >
+            {Object.entries(tableVisibleColumns)
+              .sort(([, a], [, b]) => a.index - b.index)
+              .filter(([, col]) => col.index > 0)
+              .map(([columnKey]) => {
+                switch (columnKey) {
+                  case 'No.':
+                    return <TableCell key={columnKey}>{index + 1}</TableCell>;
+                  case 'Date':
+                    return (
+                      <TableCell
+                        key={columnKey}
+                        className="underline cursor-pointer"
+                        onClick={() =>
+                          handleApplyFilter({
+                            currentFilter: filterCriteria,
+                            callBack: handleFilterChange,
+                            target: 'date',
+                            value: transRecord.date.toString(),
+                          })
+                        }
+                      >
+                        {formatDate(new Date(transRecord.date.toString()))}
+                      </TableCell>
+                    );
+                  case 'Type':
+                    return (
+                      <TableCell
+                        key={columnKey}
+                        className={`underline cursor-pointer font-bold`}
+                        onClick={() =>
+                          handleApplyFilter({
+                            currentFilter: filterCriteria,
+                            callBack: handleFilterChange,
+                            target: 'type',
+                            value: transRecord.type,
+                          })
+                        }
+                      >
+                        {transRecord.type}
+                      </TableCell>
+                    );
+                  case 'Amount':
+                    return (
+                      <TableCell key={columnKey} className={`font-bold`}>
+                        {formatNumber(Number(transRecord.amount))}
+                      </TableCell>
+                    );
+                  case 'From':
+                    return (
+                      <TableCell
+                        key={columnKey}
+                        className={cn(
+                          'cursor-default',
+                          transRecord.fromAccountId || transRecord.fromCategoryId
+                            ? 'underline cursor-pointer'
+                            : 'text-gray-500',
+                        )}
+                        onClick={() =>
+                          handleApplyFilter({
+                            currentFilter: filterCriteria,
+                            callBack: handleFilterChange,
+                            target:
+                              transRecord.type === 'Income' ? 'fromCategoryId' : 'fromAccountId',
+                            value:
+                              transRecord.type === 'Income'
+                                ? (transRecord.fromCategoryId ?? '')
+                                : (transRecord.fromAccountId ?? ''),
+                          })
+                        }
+                      >
+                        {transRecord.fromAccount?.name ??
+                          transRecord.fromCategory?.name ??
+                          'Unknown'}
+                      </TableCell>
+                    );
+                  case 'To':
+                    return (
+                      <TableCell
+                        key={columnKey}
+                        className={cn(
+                          'cursor-default',
+                          transRecord.toAccountId || transRecord.toCategoryId
+                            ? 'underline cursor-pointer'
+                            : 'text-gray-500',
+                        )}
+                        onClick={() =>
+                          handleApplyFilter({
+                            currentFilter: filterCriteria,
+                            callBack: handleFilterChange,
+                            target: transRecord.type === 'Expense' ? 'toCategoryId' : 'toAccountId',
+                            value:
+                              transRecord.type === 'Income'
+                                ? (transRecord.toCategoryId ?? '')
+                                : (transRecord.toAccountId ?? ''),
+                          })
+                        }
+                      >
+                        {transRecord.toAccount?.name ?? transRecord.toCategory?.name ?? 'Unknown'}
+                      </TableCell>
+                    );
+                  case 'Partner':
+                    return (
+                      <TableCell
+                        key={columnKey}
+                        className={cn(
+                          'cursor-default',
+                          transRecord.partnerId ? 'underline cursor-pointer' : 'text-gray-500',
+                        )}
+                        onClick={() =>
+                          handleApplyFilter({
+                            currentFilter: filterCriteria,
+                            callBack: handleFilterChange,
+                            target: 'partner',
+                            value: transRecord.partner?.id ?? '',
+                            comparator: 'equals',
+                            subTarget: 'id',
+                          })
+                        }
+                      >
+                        {transRecord.partner?.name ?? 'Unknown'}
+                      </TableCell>
+                    );
+                  case 'Actions':
+                    return (
+                      <TableCell key={columnKey} className="flex justify-center gap-2">
+                        {/* Detail button */}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" className="px-3 py-2 hover:bg-gray-200 ">
+                                <FileText size={18} color="#595959" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Details</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+
+                        {/* Delete button */}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                className="px-3 py-2 hover:bg-red-200"
+                                onClick={handleDeleteTransaction}
+                              >
+                                <Trash size={18} color="red" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Delete Transaction</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </TableCell>
+                    );
+                  default:
+                    return <TableCell key={columnKey}>-</TableCell>;
+                }
+              })}
+          </TableRow>
+        ))}
+        <TableRow>
+          <TableCell colSpan={Object.entries(tableVisibleColumns).length}>
+            <div
+              className="target-div w-full h-full min-h-5 flex justify-center items-center"
+              ref={toggleRef}
             >
-              <TableCell>{index + 1}</TableCell>
-              <TableCell className="underline cursor-pointer">
-                {formatDate(transRecord.date)}
-              </TableCell>
-              <TableCell className={`underline cursor-pointer font-bold`}>
-                {transRecord.type}
-              </TableCell>
-              <TableCell className={`font-bold`}>{transRecord.amount}</TableCell>
-              <TableCell className="underline cursor-pointer">
-                {transRecord.fromAccount ?? transRecord.fromCategory ?? 'Unknown'}
-              </TableCell>
-              <TableCell className="underline cursor-pointer">
-                {transRecord.toAccount ?? transRecord.toCategory ?? 'Unknown'}
-              </TableCell>
-              <TableCell
-                className={cn(
-                  'cursor-default',
-                  transRecord.partner ? 'underline cursor-pointer' : 'text-gray-500',
-                )}
-              >
-                {transRecord.partner ?? 'Unknown'}
-              </TableCell>
-              <TableCell className="flex justify-center gap-2">
-                {/* Detail button */}
-                <Button variant="ghost" className="px-3 py-2 hover:bg-gray-200 ">
-                  <svg
-                    width="15"
-                    height="15"
-                    viewBox="0 0 15 15"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M0 1.5C0 1.22386 0.223858 1 0.5 1H2.5C2.77614 1 3 1.22386 3 1.5C3 1.77614 2.77614 2 2.5 2H0.5C0.223858 2 0 1.77614 0 1.5ZM4 1.5C4 1.22386 4.22386 1 4.5 1H14.5C14.7761 1 15 1.22386 15 1.5C15 1.77614 14.7761 2 14.5 2H4.5C4.22386 2 4 1.77614 4 1.5ZM4 4.5C4 4.22386 4.22386 4 4.5 4H11.5C11.7761 4 12 4.22386 12 4.5C12 4.77614 11.7761 5 11.5 5H4.5C4.22386 5 4 4.77614 4 4.5ZM0 7.5C0 7.22386 0.223858 7 0.5 7H2.5C2.77614 7 3 7.22386 3 7.5C3 7.77614 2.77614 8 2.5 8H0.5C0.223858 8 0 7.77614 0 7.5ZM4 7.5C4 7.22386 4.22386 7 4.5 7H14.5C14.7761 7 15 7.22386 15 7.5C15 7.77614 14.7761 8 14.5 8H4.5C4.22386 8 4 7.77614 4 7.5ZM4 10.5C4 10.2239 4.22386 10 4.5 10H11.5C11.7761 10 12 10.2239 12 10.5C12 10.7761 11.7761 11 11.5 11H4.5C4.22386 11 4 10.7761 4 10.5ZM0 13.5C0 13.2239 0.223858 13 0.5 13H2.5C2.77614 13 3 13.2239 3 13.5C3 13.7761 2.77614 14 2.5 14H0.5C0.223858 14 0 13.7761 0 13.5ZM4 13.5C4 13.2239 4.22386 13 4.5 13H14.5C14.7761 13 15 13.2239 15 13.5C15 13.7761 14.7761 14 14.5 14H4.5C4.22386 14 4 13.7761 4 13.5Z"
-                      fill="#595959"
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
-                    ></path>
-                  </svg>
-                </Button>
-
-                {/* Update button */}
-                <Button
-                  variant="ghost"
-                  className="px-3 py-2 hover:bg-blue-200"
-                  onClick={() => openUpdateModal(transRecord)}
-                >
-                  <svg
-                    width="15"
-                    height="15"
-                    viewBox="0 0 15 15"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M12.1464 1.14645C12.3417 0.951184 12.6583 0.951184 12.8535 1.14645L14.8535 3.14645C15.0488 3.34171 15.0488 3.65829 14.8535 3.85355L10.9109 7.79618C10.8349 7.87218 10.7471 7.93543 10.651 7.9835L6.72359 9.94721C6.53109 10.0435 6.29861 10.0057 6.14643 9.85355C5.99425 9.70137 5.95652 9.46889 6.05277 9.27639L8.01648 5.34897C8.06455 5.25283 8.1278 5.16507 8.2038 5.08907L12.1464 1.14645ZM12.5 2.20711L8.91091 5.79618L7.87266 7.87267L8.12731 8.12732L10.2038 7.08907L13.7929 3.5L12.5 2.20711ZM9.99998 2L8.99998 3H4.9C4.47171 3 4.18056 3.00039 3.95552 3.01877C3.73631 3.03668 3.62421 3.06915 3.54601 3.10899C3.35785 3.20487 3.20487 3.35785 3.10899 3.54601C3.06915 3.62421 3.03669 3.73631 3.01878 3.95552C3.00039 4.18056 3 4.47171 3 4.9V11.1C3 11.5283 3.00039 11.8194 3.01878 12.0445C3.03669 12.2637 3.06915 12.3758 3.10899 12.454C3.20487 12.6422 3.35785 12.7951 3.54601 12.891C3.62421 12.9309 3.73631 12.9633 3.95552 12.9812C4.18056 12.9996 4.47171 13 4.9 13H11.1C11.5283 13 11.8194 12.9996 12.0445 12.9812C12.2637 12.9633 12.3758 12.9309 12.454 12.891C12.6422 12.7951 12.7951 12.6422 12.891 12.454C12.9309 12.3758 12.9633 12.2637 12.9812 12.0445C12.9996 11.8194 13 11.5283 13 11.1V6.99998L14 5.99998V11.1V11.1207C14 11.5231 14 11.8553 13.9779 12.1259C13.9549 12.407 13.9057 12.6653 13.782 12.908C13.5903 13.2843 13.2843 13.5903 12.908 13.782C12.6653 13.9057 12.407 13.9549 12.1259 13.9779C11.8553 14 11.5231 14 11.1207 14H11.1H4.9H4.87934C4.47686 14 4.14468 14 3.87409 13.9779C3.59304 13.9549 3.33469 13.9057 3.09202 13.782C2.7157 13.5903 2.40973 13.2843 2.21799 12.908C2.09434 12.6653 2.04506 12.407 2.0221 12.1259C1.99999 11.8553 1.99999 11.5231 2 11.1207V11.1206V11.1V4.9V4.87935V4.87932V4.87931C1.99999 4.47685 1.99999 4.14468 2.0221 3.87409C2.04506 3.59304 2.09434 3.33469 2.21799 3.09202C2.40973 2.71569 2.7157 2.40973 3.09202 2.21799C3.33469 2.09434 3.59304 2.04506 3.87409 2.0221C4.14468 1.99999 4.47685 1.99999 4.87932 2H4.87935H4.9H9.99998Z"
-                      fill="blue"
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
-                    ></path>
-                  </svg>
-                </Button>
-
-                {/* Delete button */}
-                <Button
-                  variant="ghost"
-                  className="px-3 py-2 hover:bg-red-200"
-                  onClick={() => openDeleteModal(transRecord)}
-                >
-                  <svg
-                    width="15"
-                    height="15"
-                    viewBox="0 0 15 15"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M5.5 1C5.22386 1 5 1.22386 5 1.5C5 1.77614 5.22386 2 5.5 2H9.5C9.77614 2 10 1.77614 10 1.5C10 1.22386 9.77614 1 9.5 1H5.5ZM3 3.5C3 3.22386 3.22386 3 3.5 3H5H10H11.5C11.7761 3 12 3.22386 12 3.5C12 3.77614 11.7761 4 11.5 4H11V12C11 12.5523 10.5523 13 10 13H5C4.44772 13 4 12.5523 4 12V4L3.5 4C3.22386 4 3 3.77614 3 3.5ZM5 4H10V12H5V4Z"
-                      fill="red"
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
-                    ></path>
-                  </svg>
-                </Button>
-              </TableCell>
-            </TableRow>
-          ),
-        )}
+              {(isLoading || isValidating) && <Label>Loading more data...</Label>}
+            </div>
+          </TableCell>
+        </TableRow>
       </TableBody>
     </Table>
   );
