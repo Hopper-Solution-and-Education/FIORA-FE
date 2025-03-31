@@ -28,6 +28,10 @@ class TransactionRepository implements ITransactionRepository {
     });
   }
 
+  async aggregate(options: Prisma.TransactionAggregateArgs): Promise<any> {
+    return prisma.transaction.aggregate(options);
+  }
+
   async createTransaction(data: Prisma.TransactionUncheckedCreateInput): Promise<Transaction> {
     return await prisma.transaction.create({
       data,

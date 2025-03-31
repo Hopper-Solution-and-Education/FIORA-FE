@@ -38,6 +38,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, 'Lấy số dư thành công', { balance, dept }));
   } catch (error: any) {
-    res.status(error.status).json({ error: error.message });
+    res.status(error?.status).json({ error: error?.message });
   }
 }
