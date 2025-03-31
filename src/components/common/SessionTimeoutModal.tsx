@@ -23,10 +23,19 @@ export function SessionTimeoutModal() {
   // Automatically refresh session when user is active
   useEffect(() => {
     if (status === 'authenticated' && !isIdle && session) {
+      // Calculate time left until session expiration
+      const expiresAt = Math.floor(new Date(session.expires).getTime() / 1000);
+      const now = Math.floor(Date.now() / 1000);
+      const timeLeft = expiresAt - now;
+
       const refreshSession = async () => {
-        await update(); // Refreshes the session
+        await update();
       };
-      refreshSession();
+
+      // *5 minutes before expiration, refresh the session
+      if (timeLeft <= 300 && timeLeft > 0) {
+        refreshSession();
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isIdle]);

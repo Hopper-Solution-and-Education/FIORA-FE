@@ -38,7 +38,7 @@ export default function UpdateCategoryForm({ initialData }: UpdateCategoryFormPr
         type: category.type,
       })) || [];
 
-  const isParentDisabled = initialData?.parentId ? true : false;
+  const isParentDisabled = initialData && initialData.subCategories.length > 0 ? true : false;
 
   const fields = [
     <InputField
@@ -52,17 +52,17 @@ export default function UpdateCategoryForm({ initialData }: UpdateCategoryFormPr
       name="icon"
       label={<GlobalLabel text="Icon" htmlFor="icon" required />}
     />,
-    <TypeSelect
-      key="type"
-      name="type"
-      label={<GlobalLabel text="Type" required htmlFor="type" />}
-    />,
     <ParentCategorySelectUpdate
       key="parentId"
       name="parentId"
       options={parentOptions}
       disabled={isParentDisabled}
       label="Parent"
+    />,
+    <TypeSelect
+      key="type"
+      name="type"
+      label={<GlobalLabel text="Type" required htmlFor="type" />}
     />,
     <TextareaField
       key="description"
