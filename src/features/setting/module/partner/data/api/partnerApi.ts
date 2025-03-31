@@ -16,25 +16,19 @@ interface IPartnerAPI {
 
 class PartnerAPI implements IPartnerAPI {
   async createPartner(data: CreatePartnerAPIRequestDTO) {
-    const response = await httpClient.post<CreatePartnerAPIResponseDTO>(
-      '/api/partners/partner',
-      data,
-    );
+    const response = await httpClient.post<CreatePartnerAPIResponseDTO>('/api/partners', data);
     console.log(response);
     return response;
   }
 
   async getPartners(data: GetPartnerAPIRequestDTO) {
     return await httpClient.get<GetPartnerAPIResponseDTO>(
-      `/api/partners/partner?page=${data.page}&pageSize=${data.pageSize}`,
+      `/api/partners?page=${data.page}&pageSize=${data.pageSize}`,
     );
   }
 
   async updatePartner(data: UpdatePartnerAPIRequestDTO) {
-    return await httpClient.put<UpdatePartnerAPIResponseDTO>(
-      `/api/partners/partner/${data.id}`,
-      data,
-    );
+    return await httpClient.put<UpdatePartnerAPIResponseDTO>(`/api/partners/${data.id}`, data);
   }
 }
 
