@@ -4,13 +4,6 @@ import type React from 'react';
 
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import {
   Select,
@@ -23,8 +16,8 @@ import { ICON_SIZE } from '@/shared/constants/size';
 import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { Plus } from 'lucide-react';
-import { useState } from 'react';
 import { useFormContext, type Control } from 'react-hook-form';
+import { setIsOpenDialogAddCategory } from '../../slices';
 import { fetchCategoriesProduct } from '../../slices/actions/fetchCategoriesProduct';
 import { ProductFormValues } from '../schema/addProduct.schema';
 
@@ -40,7 +33,6 @@ const ProductCategoryField = ({ control }: ProductCategoryFieldProps) => {
   } = method;
 
   const dispatch = useAppDispatch();
-  const [isOpenDialog, setIsOpenDialog] = useState(false);
   const {
     data: categories,
     isLoading,
@@ -68,7 +60,7 @@ const ProductCategoryField = ({ control }: ProductCategoryFieldProps) => {
   };
 
   const handleOpenDialog = () => {
-    setIsOpenDialog(true);
+    dispatch(setIsOpenDialogAddCategory(true));
   };
 
   return (
@@ -100,8 +92,13 @@ const ProductCategoryField = ({ control }: ProductCategoryFieldProps) => {
                 <>
                   {categories.length === 0 ? (
                     <div>
-                      <Button onClick={handleOpenDialog} title="Add Category">
-                        <Plus />
+                      <Button
+                        onClick={handleOpenDialog}
+                        title="Add Category"
+                        className="flex items-center gap-2 px-4 py-2 rounded-md shadow-sm transition-colors duration-200"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Add Category</span>
                       </Button>
                     </div>
                   ) : (
@@ -133,20 +130,6 @@ const ProductCategoryField = ({ control }: ProductCategoryFieldProps) => {
           </FormItem>
         )}
       />
-      <Dialog open={isOpenDialog} onOpenChange={setIsOpenDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Product Category Creation</DialogTitle>
-          </DialogHeader>
-          <p>Product Category Creation.</p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsOpenDialog(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive">Create</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 };

@@ -58,7 +58,9 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   const [newNavItem, setNewNavItem] = useState<NavItem[]>([]);
   const { data: session } = useSession();
   const pathname = usePathname();
-  const { section } = useGetSection(SectionType.HEADER);
+  const { section } = useGetSection(SectionType.HEADER, {
+    revalidateOnFocus: false,
+  });
   const isMobile = useIsMobile();
   const { open } = useSidebar();
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});

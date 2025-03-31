@@ -11,6 +11,7 @@ import {
 import { FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { isImageFile, isUrl } from '@/lib/utils';
+import { isEmpty } from 'lodash';
 import { useEffect, useState } from 'react';
 import { useFormContext, type Control } from 'react-hook-form';
 import { ProductFormValues } from '../schema/addProduct.schema';
@@ -36,17 +37,16 @@ const ProductIconField = ({ control }: ProductIconFieldProps) => {
 
   useEffect(() => {
     if (fieldValue) {
-      console.log(fieldValue);
-      console.log(isUrl(fieldValue) || isImageFile(fieldValue));
-
       setSelectedTab(isUrl(fieldValue) || isImageFile(fieldValue) ? 'uploader' : 'dropdown');
     }
   }, [fieldValue]);
 
   const handleOnTabChange = (newTab: string) => {
-    if (newTab !== selectedTab) {
+    if (!isEmpty(fieldValue) && newTab !== selectedTab) {
       setNextTab(newTab as ProductIconFormType);
       setIsAlertOpen(true);
+    } else {
+      setSelectedTab(newTab as ProductIconFormType);
     }
   };
 
@@ -71,7 +71,7 @@ const ProductIconField = ({ control }: ProductIconFieldProps) => {
       render={({ field }) => (
         <FormItem className="col-span-2">
           <label className="block text-sm font-medium mb-2">
-            Product Icon <span className="text-red-500">*</span>
+            Icon <span className="text-red-500">*</span>
           </label>
           <Tabs value={selectedTab} onValueChange={handleOnTabChange}>
             <TabsList>

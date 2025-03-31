@@ -32,7 +32,7 @@ const ProductTypeField = ({ control }: ProductTypeFieldProps) => {
         return (
           <FormItem>
             <FormLabel>
-              Product Type <span className="text-red-500">*</span>
+              Type <span className="text-red-500">*</span>
             </FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>

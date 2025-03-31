@@ -41,7 +41,7 @@ const ProductItemsField = ({ control }: ProductItemsFieldProps) => {
       name="items"
       render={() => (
         <FormItem className="col-span-2">
-          <FormLabel className="text-lg font-semibold">Product Items</FormLabel>
+          <FormLabel className="text-lg font-semibold">Items</FormLabel>
           <FormDescription className="text-gray-600 mb-4">
             Add items to your product. Each item should have a name and description.
           </FormDescription>
