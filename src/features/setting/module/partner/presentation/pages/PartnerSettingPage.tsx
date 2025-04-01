@@ -29,7 +29,6 @@ const PartnerSettingPage = () => {
     }
   }, [dispatch, status, session]);
 
-  // Tính toán barData khi partners thay đổi
   useEffect(() => {
     if (partners.length > 0) {
       const partnersWithNetAmount = partners.map((partner: Partner) => {
