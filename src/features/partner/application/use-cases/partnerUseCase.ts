@@ -3,9 +3,14 @@ import { IPartnerRepository } from '../../domain/repositories/partnerRepository.
 import prisma from '@/infrastructure/database/prisma';
 import { Messages } from '@/shared/constants/message';
 import { partnerRepository } from '../../infrastructure/repositories/partnerRepository';
+import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
+import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 
 class PartnerUseCase {
-  constructor(private partnerRepository: IPartnerRepository) {}
+  constructor(
+    private partnerRepository: IPartnerRepository,
+    private transactionRepository: ITransactionRepository,
+  ) {}
 
   async listPartners(userId: string): Promise<Partner[]> {
     return this.partnerRepository.getPartnersByUserId(userId);
@@ -17,6 +22,23 @@ class PartnerUseCase {
       throw new Error(Messages.PARTNER_NOT_FOUND);
     }
     return partner;
+  }
+
+  async deletePartner(id: string, userId: string, newId?: string): Promise<void> {
+    const partner = await this.partnerRepository.getPartnerById(id, userId);
+    if (!partner) {
+      throw new Error(Messages.PARTNER_NOT_FOUND);
+    }
+
+    if (newId) {
+      const newPartner = await this.partnerRepository.getPartnerById(newId, userId);
+      if (!newPartner) {
+        throw new Error(Messages.PARTNER_NOT_FOUND);
+      }
+      await this.transactionRepository.updateTransactionsPartner(id, newId);
+    }
+
+    await this.partnerRepository.deletePartner(id);
   }
 
   async editPartner(
@@ -48,23 +70,24 @@ class PartnerUseCase {
         // }
       }
 
+      // Avoid updating userId to maintain transaction integrity, unless explicitly intended
+      const updateData = {
+        email: data.email,
+        identify: data.identify,
+        description: data.description,
+        dob: data.dob ? new Date(data.dob as string) : undefined,
+        logo: data.logo,
+        taxNo: data.taxNo,
+        phone: data.phone,
+        name: data.name,
+        address: data.address,
+        parentId: data.parentId,
+        updatedBy: data.userId || userId, // Use provided userId or fallback to current user
+      };
+
       const updatedPartner = await tx.partner.update({
         where: { id, userId },
-        data: {
-          userId: data.userId,
-          email: data.email,
-          identify: data.identify,
-          description: data.description,
-          dob: data.dob ? new Date(data.dob as string) : undefined,
-          logo: data.logo,
-          taxNo: data.taxNo,
-          phone: data.phone,
-          name: data.name,
-          address: data.address,
-          parentId: data.parentId,
-          createdBy: data.userId,
-          updatedBy: data.userId,
-        },
+        data: updateData,
       });
       if (!updatedPartner) {
         throw new Error(Messages.UPDATE_PARTNER_FAILED);
@@ -177,22 +200,22 @@ class PartnerUseCase {
     }
   }
 
-  async deletePartner(id: string, userId: string): Promise<Partner> {
-    try {
-      // First check if the partner exists
-      const partner = await this.partnerRepository.getPartnerById(id, userId);
+  // async deletePartner(id: string, userId: string): Promise<Partner> {
+  //   try {
+  //     // First check if the partner exists
+  //     const partner = await this.partnerRepository.getPartnerById(id, userId);
 
-      if (!partner) {
-        throw new Error(Messages.PARTNER_NOT_FOUND);
-      }
+  //     if (!partner) {
+  //       throw new Error(Messages.PARTNER_NOT_FOUND);
+  //     }
 
-      // Use the repository to handle the deletion
-      return await this.partnerRepository.deletePartner(id, userId);
-    } catch (error) {
-      console.error('Error deleting partner:', error);
-      throw error;
-    }
-  }
+  //     // Use the repository to handle the deletion
+  //     return await this.partnerRepository.deletePartner(id, userId);
+  //   } catch (error) {
+  //     console.error('Error deleting partner:', error);
+  //     throw error;
+  //   }
+  // }
 }
 
-export const partnerUseCase = new PartnerUseCase(partnerRepository);
+export const partnerUseCase = new PartnerUseCase(partnerRepository, transactionRepository);
