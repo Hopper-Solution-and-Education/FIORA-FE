@@ -1,18 +1,18 @@
 'use client';
 
 import HopperLogo from '@public/images/logo.jpg';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { LogInIcon, Menu, UserPlus, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { useState } from 'react';
 
-import HelpCenter from '@/components/layouts/theme-toggle/HelpCenter';
+import HelpCenter from '@/components/layouts/header-toggle/HelpCenter';
 import {
   default as SettingCenter,
   default as ThemeToggle,
-} from '@/components/layouts/theme-toggle/SettingCenter';
+} from '@/components/layouts/header-toggle/SettingCenter';
 import { UserNav } from '@/components/layouts/UserNav';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,12 +25,10 @@ export default function Header() {
   const { section, isLoading, isError } = useGetSection(SectionType.HEADER);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
-  // const [isAccountSettingOpen, setIsAccountSettingOpen] = useState(false);
   const [isOpenAnountment, setIsOpenAnountment] = useState(true);
   const { data } = useSession();
 
   const toggleMenu = () => setIsMenuOpen((prevState) => !prevState);
-  // const toggleAccountSetting = () => setIsAccountSettingOpen((prevState) => !prevState);
 
   return (
     <header
@@ -105,12 +103,7 @@ export default function Header() {
             </div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center justify-end mx-4 mt-1"
-          >
+          <div className="flex items-center justify-end mx-4 mt-1">
             <div
               onClick={toggleMenu}
               className="md:hidden transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
@@ -118,20 +111,14 @@ export default function Header() {
             >
               {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
       <div className="flex items-center justify-end">
         {/* Mobile Menu */}
         <AnimatePresence>
           {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-50 flex flex-col items-center gap-4 bg-background/95 backdrop-blur-md p-6 md:hidden"
-            >
+            <div className="fixed inset-0 z-50 flex flex-col items-center gap-4 bg-background/95 backdrop-blur-md p-6 md:hidden">
               <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)}>
                 <X className="h-6 w-6" />
               </Button>
@@ -155,11 +142,9 @@ export default function Header() {
                   />
                 </>
               )}
-            </motion.div>
+            </div>
           )}
         </AnimatePresence>
-
-        {/* <AccountSettingModal isOpen={isAccountSettingOpen} onClose={toggleAccountSetting} /> */}
       </div>
     </header>
   );

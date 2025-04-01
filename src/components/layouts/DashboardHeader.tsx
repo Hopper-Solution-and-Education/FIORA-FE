@@ -15,8 +15,9 @@ import { Alert, AlertDescription } from '../ui/alert';
 import { Separator } from '../ui/separator';
 import { SidebarTrigger } from '../ui/sidebar';
 import { UserNav } from './UserNav';
-import HelpCenter from './theme-toggle/HelpCenter';
-import SettingCenter from './theme-toggle/SettingCenter';
+import HelpCenter from './header-toggle/HelpCenter';
+import SettingCenter from './header-toggle/SettingCenter';
+import { ICON_SIZE } from '@/shared/constants/size';
 
 export default function Header() {
   // state
@@ -91,7 +92,7 @@ export default function Header() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Bell
-                size={18}
+                size={ICON_SIZE.MD}
                 className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
               />
             </DropdownMenuTrigger>
@@ -103,7 +104,7 @@ export default function Header() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Gift
-                size={18}
+                size={ICON_SIZE.MD}
                 className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
               />
             </DropdownMenuTrigger>

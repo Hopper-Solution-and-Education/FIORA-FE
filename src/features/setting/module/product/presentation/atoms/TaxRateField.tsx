@@ -10,16 +10,20 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/shared/utils';
-import { useCallback } from 'react';
-import type { Control, FieldErrors } from 'react-hook-form';
+import { KeyboardEvent, useCallback } from 'react';
+import { useFormContext, type Control } from 'react-hook-form';
 import { ProductFormValues } from '../schema/addProduct.schema';
 
 interface TaxRateFieldProps {
   control: Control<ProductFormValues>;
-  errors: FieldErrors<ProductFormValues>;
 }
 
-const TaxRateField = ({ control, errors }: TaxRateFieldProps) => {
+const TaxRateField = ({ control }: TaxRateFieldProps) => {
+  const method = useFormContext<ProductFormValues>();
+
+  const {
+    formState: { errors },
+  } = method;
   const formatTaxRate = useCallback((value: number | null | undefined): string => {
     return value == null ? '' : `${parseFloat(value.toFixed(2))}`;
   }, []);
@@ -36,6 +40,20 @@ const TaxRateField = ({ control, errors }: TaxRateFieldProps) => {
     },
     [removeLeadingZeros],
   );
+
+  const onKeyDownHandler = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
+    if (
+      isNaN(Number(e.key)) &&
+      !['Backspace', 'Delete', '.', 'ArrowLeft', 'ArrowRight'].includes(e.key)
+    ) {
+      e.preventDefault();
+    }
+  }, []);
+
+  const handleOnblur = useCallback((field: any) => {
+    const parsedValue = parseFloat((field.value || 0).toFixed(2));
+    field.onChange(parsedValue);
+  }, []);
 
   return (
     <FormField
@@ -55,18 +73,8 @@ const TaxRateField = ({ control, errors }: TaxRateFieldProps) => {
               {...field}
               value={field.value != null ? formatTaxRate(field.value) : undefined}
               onChange={(e) => handleInputChange(e, field)}
-              onBlur={() => {
-                const parsedValue = parseFloat((field.value || 0).toFixed(2));
-                field.onChange(parsedValue);
-              }}
-              onKeyDown={(e) => {
-                if (
-                  isNaN(Number(e.key)) &&
-                  !['Backspace', 'Delete', '.', 'ArrowLeft', 'ArrowRight'].includes(e.key)
-                ) {
-                  e.preventDefault();
-                }
-              }}
+              onBlur={() => handleOnblur(field)}
+              onKeyDown={onKeyDownHandler}
             />
           </FormControl>
           <FormDescription>Optional tax rate percentage</FormDescription>

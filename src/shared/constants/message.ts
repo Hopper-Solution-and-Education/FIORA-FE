@@ -89,6 +89,7 @@ export enum Messages {
   MISSING_PARAMS_INPUT = 'Missing required parameters',
   METHOD_NOT_ALLOWED = 'Method not allowed',
 
+  // Partner validation errors
   PARTNER_NOT_FOUND = 'Partner not found.',
   PARTNER_NAME_TAKEN = 'Partner with this name already exists.',
   INVALID_PARENT_HIERARCHY = 'Invalid parent hierarchy.',
@@ -98,6 +99,10 @@ export enum Messages {
   UPDATE_PARTNER_FAILED = 'Failed to update partner.',
   DELETE_PARTNER_FAILED = 'Failed to delete partner.',
   PARTNER_ALREADY_EXISTS = 'Partner you are creating already exists.',
+  PARTNER_EMAIL_EXISTS = 'Email already exists for another partner',
+  PARTNER_PHONE_EXISTS = 'Phone number already exists for another partner',
+  PARTNER_TAX_EXISTS = 'Tax number already exists for another partner',
+  PARTNER_IDENTIFY_EXISTS = 'Identification number already exists for another partner',
 
   INVALID_USER = 'Invalid user.',
   USER_EMAIL_EXISTED = 'Email already existed',

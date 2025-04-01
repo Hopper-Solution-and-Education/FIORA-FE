@@ -1,10 +1,11 @@
-import React from 'react';
-import { Input } from '@/components/ui/input';
-import { FieldError } from 'react-hook-form';
 import GlobalLabel from '@/components/common/atoms/GlobalLabel';
+import { Input } from '@/components/ui/input';
+import React from 'react';
+import { FieldError } from 'react-hook-form';
 
 interface InputFieldProps {
   value?: string;
+  name?: string;
   onChange?: (value: string) => void;
   onBlur?: () => void;
   error?: FieldError;
@@ -13,6 +14,7 @@ interface InputFieldProps {
   id?: string;
   required?: boolean;
   [key: string]: any;
+  maxLength?: number;
 }
 
 const InputField: React.FC<InputFieldProps> = ({

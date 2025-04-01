@@ -13,6 +13,7 @@ interface CategoryState {
   isCreatingProduct: boolean;
   isUpdatingProduct: boolean;
   isDeletingProduct: boolean;
+  isOpenDialogAddCategory: boolean;
   products: {
     isLoading: boolean;
     items: Product[];
@@ -61,4 +62,5 @@ export const initialProductState: CategoryState = {
   isCreatingProduct: false,
   isUpdatingProduct: false,
   isDeletingProduct: false,
+  isOpenDialogAddCategory: false,
 };

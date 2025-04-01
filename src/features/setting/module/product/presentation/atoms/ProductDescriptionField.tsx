@@ -10,15 +10,20 @@ import {
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/shared/utils';
-import type { Control, FieldErrors } from 'react-hook-form';
+import { useFormContext, type Control } from 'react-hook-form';
 import { ProductFormValues } from '../schema/addProduct.schema';
 
 interface ProductDescriptionFieldProps {
   control: Control<ProductFormValues>;
-  errors: FieldErrors<ProductFormValues>;
 }
 
-const ProductDescriptionField = ({ control, errors }: ProductDescriptionFieldProps) => {
+const ProductDescriptionField = ({ control }: ProductDescriptionFieldProps) => {
+  const method = useFormContext<ProductFormValues>();
+
+  const {
+    formState: { errors },
+  } = method;
+
   return (
     <FormField
       control={control}

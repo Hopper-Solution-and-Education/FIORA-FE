@@ -6,6 +6,5 @@ interface SettingUpdatePageProps {
 
 export default async function SettingUpdatePage({ params }: SettingUpdatePageProps) {
   const { tab } = await params;
-
   return <SettingSubTabContent tab={tab} subTab="update" />;
 }

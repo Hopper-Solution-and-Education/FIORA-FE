@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { Partner } from '../domain/entities/Partner';
 import { fetchPartners } from './actions/fetchPartnersAsyncThunk';
 import { updatePartner } from './actions/updatePartnerAsyncThunk';
+import { deletePartner } from './actions/deletePartnerAsyncThunk'; // Import the delete thunk
 import { initialPartnerState } from './types';
 
 const partnerManagementSlice = createSlice({
@@ -12,6 +13,7 @@ const partnerManagementSlice = createSlice({
     selectedPartner: null as Partner | null,
     isAddPartnerDialogOpen: false,
     isUpdatePartnerDialogOpen: false,
+    isDeleteConfirmOpen: false, // Add this line
     refresh: false,
   },
   reducers: {
@@ -20,6 +22,7 @@ const partnerManagementSlice = createSlice({
       selectedPartner: null,
       isAddPartnerDialogOpen: false,
       isUpdatePartnerDialogOpen: false,
+      isDeleteConfirmOpen: false, // Add this line
       refresh: false,
     }),
     setSelectedPartner(state, action: PayloadAction<Partner | null>) {
@@ -30,6 +33,10 @@ const partnerManagementSlice = createSlice({
     },
     setUpdatePartnerDialogOpen(state, action: PayloadAction<boolean>) {
       state.isUpdatePartnerDialogOpen = action.payload;
+    },
+    setDeleteConfirmOpen(state, action: PayloadAction<boolean>) {
+      // Add this reducer
+      state.isDeleteConfirmOpen = action.payload;
     },
     triggerRefresh(state) {
       state.refresh = !state.refresh;
@@ -63,12 +70,31 @@ const partnerManagementSlice = createSlice({
         if (index !== -1) {
           state.partners[index] = updatedPartner;
         }
-        toast.success('Success', { description: 'Update partner successfully!!' });
+        toast.success('Update partner successfully!!');
         state.refresh = !state.refresh; // Trigger refresh after update
       })
       .addCase(updatePartner.rejected, (state, action) => {
         state.isUpdatingPartner = false;
         state.error = action.payload || 'Failed to update partner';
+      });
+
+    // Delete Partner
+    builder
+      .addCase(deletePartner.pending, (state) => {
+        state.isDeletingPartner = true;
+        state.error = null;
+      })
+      .addCase(deletePartner.fulfilled, (state, action: PayloadAction<Partner>) => {
+        state.isDeletingPartner = false;
+        // Remove the deleted partner from the state
+        state.partners = state.partners.filter((partner) => partner.id !== action.payload.id);
+        toast.success('Partner deleted successfully!');
+        state.refresh = !state.refresh; // Trigger refresh after delete
+      })
+      .addCase(deletePartner.rejected, (state, action) => {
+        state.isDeletingPartner = false;
+        state.error = action.payload || 'Failed to delete partner';
+        toast.error(action.payload || 'Failed to delete partner');
       });
   },
 });
@@ -78,6 +104,7 @@ export const {
   setSelectedPartner,
   setAddPartnerDialogOpen,
   setUpdatePartnerDialogOpen,
+  setDeleteConfirmOpen, // Export the new action
   triggerRefresh,
 } = partnerManagementSlice.actions;
 

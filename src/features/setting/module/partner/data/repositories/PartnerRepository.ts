@@ -7,14 +7,21 @@ import { UpdatePartnerAPIRequestDTO } from '../dto/request/UpdatePartnerAPIReque
 
 export interface IPartnerRepository {
   getPartners(data: GetPartnerAPIRequestDTO): Promise<Partner[]>;
+  getPartnerById(id: string): Promise<Partner>;
   createPartner(data: CreatePartnerAPIRequestDTO): Promise<Partner>;
   updatePartner(data: UpdatePartnerAPIRequestDTO): Promise<Partner>;
+  deletePartner(id: string): Promise<Partner>; // Add this method
 }
 
 export const createPartnerRepository = (api: IPartnerAPI): IPartnerRepository => ({
   async getPartners(data: GetPartnerAPIRequestDTO): Promise<Partner[]> {
     const response = await api.getPartners(data);
     return PartnerMapper.toEntityListFromGet(response);
+  },
+
+  async getPartnerById(id: string): Promise<Partner> {
+    const response = await api.getPartnerById(id);
+    return PartnerMapper.toEntityFromGetById(response);
   },
 
   async createPartner(data: CreatePartnerAPIRequestDTO): Promise<Partner> {
@@ -27,5 +34,10 @@ export const createPartnerRepository = (api: IPartnerAPI): IPartnerRepository =>
   async updatePartner(data: UpdatePartnerAPIRequestDTO): Promise<Partner> {
     const response = await api.updatePartner(data);
     return PartnerMapper.toEntityFromCreate(response); // Giả định response tương tự create
+  },
+
+  async deletePartner(id: string): Promise<Partner> {
+    const response = await api.deletePartner(id);
+    return response.data;
   },
 });

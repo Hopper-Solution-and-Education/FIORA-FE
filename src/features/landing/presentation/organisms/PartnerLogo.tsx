@@ -1,13 +1,7 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselPrevious,
-  CarouselNext,
-} from '@/components/ui/carousel';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { SectionType } from '@prisma/client';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
@@ -74,9 +68,6 @@ export const PartnerLogo = () => {
               </CarouselItem>
             ))}
           </CarouselContent>
-          {/* Thêm nút điều hướng */}
-          <CarouselPrevious className="absolute left-0 sm:left-2 top-1/2 transform -translate-y-1/2 bg-white/50 p-2 rounded-full shadow-md hover:bg-white/75" />
-          <CarouselNext className="absolute right-0 sm:right-2 top-1/2 transform -translate-y-1/2 bg-white/50 p-2 rounded-full shadow-md hover:bg-white/75" />
         </Carousel>
       </div>
     </section>

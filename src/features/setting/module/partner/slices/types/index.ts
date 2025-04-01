@@ -5,12 +5,15 @@ export interface PartnerState {
   isLoading: boolean;
   isCreatingPartner: boolean;
   isUpdatingPartner: boolean;
+  isDeletingPartner: boolean; // Add this line
   error: string | null;
 }
 
 export const initialPartnerState = {
   partners: [] as Partner[],
   isLoading: false,
-  error: null as string | null,
+  isCreatingPartner: false,
   isUpdatingPartner: false,
+  isDeletingPartner: false, // Add this line
+  error: null as string | null,
 };

@@ -1,4 +1,4 @@
-import { Prisma, Partner } from '@prisma/client';
+import { Partner, Prisma } from '@prisma/client';
 
 export interface IPartnerRepository {
   getPartnersByUserId(userId: string): Promise<Partner[]>;
@@ -9,5 +9,6 @@ export interface IPartnerRepository {
     userId: string,
     data: Prisma.PartnerUncheckedUpdateInput,
   ): Promise<Partner>;
+  deletePartner(id: string, userId: string): Promise<Partner>;
   findByName(name: string, userId: string): Promise<Partner | null>;
 }
