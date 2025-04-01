@@ -1,4 +1,3 @@
-// src/features/setting/module/partner/data/api/partnerApi.ts
 import { httpClient } from '@/config/HttpClient';
 import { decorate, injectable } from 'inversify';
 import { CreatePartnerAPIRequestDTO } from '../dto/request/CreatePartnerAPIRequestDTO';
@@ -6,11 +5,13 @@ import { GetPartnerAPIRequestDTO } from '../dto/request/GetPartnerAPIRequestDTO'
 import { UpdatePartnerAPIRequestDTO } from '../dto/request/UpdatePartnerAPIRequestDTO';
 import { CreatePartnerAPIResponseDTO } from '../dto/response/CreatePartnerAPIResponseDTO';
 import { GetPartnerAPIResponseDTO } from '../dto/response/GetPartnerAPIResponseDTO';
+import { GetPartnerByIdAPIResponseDTO } from '../dto/response/GetPartnerByIdAPIResponseDTO';
 import { UpdatePartnerAPIResponseDTO } from '../dto/response/UpdatePartnerAPIResponseDTO';
 
 interface IPartnerAPI {
   createPartner(data: CreatePartnerAPIRequestDTO): Promise<CreatePartnerAPIResponseDTO>;
   getPartners(data: GetPartnerAPIRequestDTO): Promise<GetPartnerAPIResponseDTO>;
+  getPartnerById(id: string): Promise<GetPartnerByIdAPIResponseDTO>; // Thêm phương thức mới
   updatePartner(data: UpdatePartnerAPIRequestDTO): Promise<UpdatePartnerAPIResponseDTO>;
 }
 
@@ -25,6 +26,10 @@ class PartnerAPI implements IPartnerAPI {
     return await httpClient.get<GetPartnerAPIResponseDTO>(
       `/api/partners?page=${data.page}&pageSize=${data.pageSize}`,
     );
+  }
+
+  async getPartnerById(id: string) {
+    return await httpClient.get<GetPartnerByIdAPIResponseDTO>(`/api/partners/${id}`);
   }
 
   async updatePartner(data: UpdatePartnerAPIRequestDTO) {

@@ -1,11 +1,11 @@
-import React, { JSX } from 'react';
-import { useForm, Controller, FormProvider, FormState, Path } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icon';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'next/navigation';
+import React, { JSX } from 'react';
+import { Controller, FormProvider, FormState, Path, useForm } from 'react-hook-form';
+import * as yup from 'yup';
 
 // Defines the props for each field component in the form
 export interface FieldProps<T extends yup.AnyObject> {
@@ -17,6 +17,7 @@ interface GlobalFormProps<T extends yup.AnyObject> {
   schema: yup.ObjectSchema<T>; // Yup schema defining validation rules for the form data T
   onSubmit: (data: T) => void | Promise<void>; // Handler for form submission, sync or async
   defaultValues?: Partial<T>; // Optional default values for form fields
+  onBack?: () => void;
   renderSubmitButton?: (formState: FormState<T>) => React.ReactNode; // Optional custom submit button renderer
 }
 
@@ -26,6 +27,7 @@ const GlobalForm = <T extends yup.AnyObject>({
   schema,
   onSubmit,
   defaultValues,
+  onBack,
   renderSubmitButton,
 }: GlobalFormProps<T>): JSX.Element => {
   const router = useRouter();
@@ -45,7 +47,7 @@ const GlobalForm = <T extends yup.AnyObject>({
             <Button
               variant="outline"
               type="button"
-              onClick={() => router.back()}
+              onClick={() => (onBack ? onBack() : router.back())}
               className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
             >
               <Icons.circleArrowLeft className="h-5 w-5" />

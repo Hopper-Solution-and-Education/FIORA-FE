@@ -1,25 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useForm, UseFormClearErrors, UseFormSetValue } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { v4 as uuidv4 } from 'uuid';
-import { toast } from 'sonner';
 import { uploadToFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
-import {
-  partnerSchema,
-  defaultPartnerFormValue,
-  PartnerFormValues,
-} from '../module/partner/presentation/schema/addPartner.schema';
 import { partnerDIContainer } from '@/features/setting/module/partner/di/partnerDIContainer';
 import { TYPES } from '@/features/setting/module/partner/di/partnerDIContainer.type';
+import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
 import { ICreatePartnerUseCase } from '@/features/setting/module/partner/domain/usecases/CreatePartnerUsecase';
 import { IGetPartnerUseCase } from '@/features/setting/module/partner/domain/usecases/GetPartnerUsecase';
-import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
-import { CreatePartnerFormData } from '@/features/partner/schema/createPartner.schema';
-import { CreatePartnerAPIRequestDTO } from '../module/partner/data/dto/request/CreatePartnerAPIRequestDTO';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { CreatePartnerAPIRequestDTO } from '../module/partner/data/dto/request/CreatePartnerAPIRequestDTO';
+import {
+  defaultPartnerFormValue,
+  PartnerFormValues,
+  partnerSchema,
+} from '../module/partner/presentation/schema/addPartner.schema';
 
 function convertNullToUndefined<T>(obj: T): T {
   const result = { ...obj };
@@ -37,8 +35,6 @@ interface Props {
 
 export function useCreatePartner({ redirectPath }: Props) {
   const { data: session, status } = useSession();
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
   const [partners, setPartners] = useState<Partner[]>([]);
   const router = useRouter();
 
@@ -56,47 +52,55 @@ export function useCreatePartner({ redirectPath }: Props) {
     TYPES.ICreatePartnerUseCase,
   );
 
-  async function fetchPartners(userId: string) {
-    try {
-      const response = await getPartnerUseCase.execute({ userId, page: 1, pageSize: 100 });
-      setPartners(response.filter((partner) => partner.parentId === null));
-    } catch (error: unknown) {
-      console.error('Error fetching partners:', error);
-    }
-  }
+  const fetchPartners = useCallback(
+    async (userId: string) => {
+      try {
+        const response = await getPartnerUseCase.execute({ userId, page: 1, pageSize: 100 });
+        setPartners(response.filter((partner) => partner.parentId === null));
+      } catch (error: unknown) {
+        console.error('Error fetching partners:', error);
+      }
+    },
+    [getPartnerUseCase],
+  );
 
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.id) {
       fetchPartners(session.user.id);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, session]);
+  }, [status, session, fetchPartners]); // Thêm fetchPartners vào mảng phụ thuộc
 
-  async function onSubmit(values: any) {
+  async function onSubmit(values: PartnerFormValues) {
     if (status !== 'authenticated' || !session?.user?.id) {
       toast.error('User not authenticated. Please log in.');
       return;
     }
 
     try {
+      console.log('Received form values:', values);
+
+      const submissionData = { ...values };
       let logoUrl: string | undefined;
 
-      if (logoFile) {
-        const fileExtension = logoFile.name.split('.').pop();
-        const fileName = `partner_logo_${uuidv4()}.${fileExtension}`;
+      // Xử lý logo đơn giản hơn
+      if (values.logo instanceof File) {
         logoUrl = await uploadToFirebase({
-          file: logoFile,
+          file: values.logo,
           path: 'partners/logos',
-          fileName: fileName,
+          fileName: `partner_logo_${Date.now()}`,
         });
+        console.log('Uploaded logo URL:', logoUrl);
       }
 
       const partnerData = {
-        ...values,
-        logo: logoUrl,
+        ...submissionData,
         userId: session.user.id,
-        parentId: values.parentId?.toLowerCase() === 'none' ? null : values.parentId, // Không phân biệt hoa thường
+        logo: logoUrl,
+        parentId:
+          submissionData.parentId?.toLowerCase() === 'none' ? null : submissionData.parentId,
       };
+
+      console.log('Partner data before API call:', partnerData);
 
       const formattedPartnerData = convertNullToUndefined(partnerData);
 
@@ -104,33 +108,13 @@ export function useCreatePartner({ redirectPath }: Props) {
 
       toast.success('Partner added successfully!');
       form.reset();
-      setLogoPreview(null);
-      setLogoFile(null);
-
       await fetchPartners(session.user.id);
-
       router.push(redirectPath);
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message || 'Failed to create partner');
+      console.error('Create partner error:', error);
     }
   }
 
-  function handleLogoChange(
-    e: React.ChangeEvent<HTMLInputElement>,
-    setValue: UseFormSetValue<CreatePartnerFormData>,
-    clearErrors: UseFormClearErrors<CreatePartnerFormData>,
-  ) {
-    const file = e.target.files?.[0];
-    if (file) {
-      setLogoFile(file);
-      setValue('logo', file.name);
-      clearErrors('logo');
-
-      const reader = new FileReader();
-      reader.onloadend = () => setLogoPreview(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  }
-
-  return { form, onSubmit, logoPreview, setLogoPreview, handleLogoChange, partners, fetchPartners };
+  return { form, onSubmit, partners, fetchPartners };
 }

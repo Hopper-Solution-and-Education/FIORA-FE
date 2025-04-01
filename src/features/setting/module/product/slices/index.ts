@@ -18,6 +18,9 @@ const productManagementSlice = createSlice({
     updateProductListItems: (state, action) => {
       state.products.items = action.payload;
     },
+    setIsOpenDialogAddCategory: (state, action) => {
+      state.isOpenDialogAddCategory = action.payload;
+    },
     resetProductManagementState: () => initialProductState,
   },
   extraReducers: (builder) => {
@@ -142,6 +145,6 @@ const productManagementSlice = createSlice({
   },
 });
 
-export const { resetProductManagementState, updateProductListItems } =
+export const { resetProductManagementState, updateProductListItems, setIsOpenDialogAddCategory } =
   productManagementSlice.actions;
 export default productManagementSlice.reducer;

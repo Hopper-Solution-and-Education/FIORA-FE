@@ -32,6 +32,8 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
   const [isIconHovered, setIsIconHovered] = useState(false);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
 
+  // console.log(item);
+
   const handleArrowClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (hasChildren) {

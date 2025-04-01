@@ -4,17 +4,18 @@ import Loading from '@/components/common/atoms/Loading';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { landingDIContainer } from '@/features/landing/di/landingDIContainer';
 import { useAppSelector } from '@/store';
 import { SectionType } from '@prisma/client';
 import { Download, Upload } from 'lucide-react';
+import { useEffect } from 'react';
 import useBannerSettingLogic from '../hooks/useBannerSettingLogic';
 import SectionManager from './components/SectionManager';
-import { useEffect } from 'react';
-import { landingDIContainer } from '@/features/landing/di/landingDIContainer';
 
 export default function MediaDashboard() {
   const { exportData, importData } = useBannerSettingLogic();
   const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
+  const isLoading = useAppSelector((state) => state.landingSettings.isLoading);
 
   useEffect(() => {
     return () => {
@@ -35,7 +36,7 @@ export default function MediaDashboard() {
 
   return (
     <div className="w-full">
-      {isLoadingSaveChange && <Loading />}
+      {(isLoadingSaveChange || isLoading) && <Loading />}
       <Card className="mb-6">
         <CardHeader>
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">

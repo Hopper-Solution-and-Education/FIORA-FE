@@ -31,6 +31,8 @@ export type ProductTransactionResponse = {
     taxRate: number | null;
     catId: string | null;
     icon: string;
+    created_at: string;
+    updated_at: string;
   };
   transaction: {
     id: string;

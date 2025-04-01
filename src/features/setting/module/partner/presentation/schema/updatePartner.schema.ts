@@ -3,7 +3,7 @@ import * as yup from 'yup';
 
 export const updatePartnerSchema = yup.object({
   name: yup.string().max(50, 'Maximum 50 characters').notRequired(),
-  logo: yup.string().nullable().notRequired(),
+  logo: yup.mixed().nullable().notRequired(),
   identify: yup.string().nullable().notRequired(),
   dob: yup.string().nullable().notRequired(),
   taxNo: yup.string().nullable().notRequired(),

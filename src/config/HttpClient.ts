@@ -1,70 +1,74 @@
-/**
- * Singleton HTTP Client using Fetch API.
- * - Supports interceptors for request and response.
- * - Handles global headers and authentication.
- * - Provides standard HTTP methods (GET, POST, PUT, DELETE).
- */
+export class HttpError extends Error {
+  status: number;
+  data: any;
+
+  constructor(status: number, message: string, data: any = null) {
+    super(message);
+    this.name = 'HttpError';
+    this.status = status;
+    this.data = data;
+  }
+}
+
 export interface IHttpClient {
   /**
-   * Sets a request interceptor.
-   * @param interceptor Function that modifies the request config.
+   * Thiết lập interceptor cho request.
+   * @param interceptor Hàm thay đổi cấu hình request.
    */
   setRequestInterceptor: (
     interceptor: (config: RequestInit) => RequestInit | Promise<RequestInit>,
   ) => void;
 
   /**
-   * Sets a response interceptor.
-   * @param interceptor Function that modifies the response.
+   * Thiết lập interceptor cho response.
+   * @param interceptor Hàm xử lý dữ liệu response.
    */
-  setResponseInterceptor: (
-    interceptor: (response: Response) => Response | Promise<Response>,
-  ) => void;
+  setResponseInterceptor: (interceptor: (data: any) => any | Promise<any>) => void;
 
   /**
-   * Sends a GET request.
-   * @param url API endpoint.
-   * @param headers Optional headers.
-   * @returns Promise resolving to the response data of type T.
+   * Gửi yêu cầu GET.
+   * @param url Endpoint API.
+   * @param headers Header tùy chọn.
+   * @returns Promise chứa dữ liệu kiểu T.
    */
   get<T>(url: string, headers?: HeadersInit): Promise<T>;
 
   /**
-   * Sends a POST request.
-   * @param url API endpoint.
-   * @param body Request body.
-   * @param headers Optional headers.
-   * @returns Promise resolving to the response data of type T.
+   * Gửi yêu cầu POST.
+   * @param url Endpoint API.
+   * @param body Dữ liệu gửi đi.
+   * @param headers Header tùy chọn.
+   * @returns Promise chứa dữ liệu kiểu T.
    */
   post<T>(url: string, body: any, headers?: HeadersInit): Promise<T>;
 
   /**
-   * Sends a PUT request.
-   * @param url API endpoint.
-   * @param body Request body.
-   * @param headers Optional headers.
-   * @returns Promise resolving to the response data of type T.
+   * Gửi yêu cầu PUT.
+   * @param url Endpoint API.
+   * @param body Dữ liệu gửi đi.
+   * @param headers Header tùy chọn.
+   * @returns Promise chứa dữ liệu kiểu T.
    */
   put<T>(url: string, body: any, headers?: HeadersInit): Promise<T>;
 
   /**
-   * Sends a DELETE request.
-   * @param url API endpoint.
-   * @param headers Optional headers.
-   * @returns Promise resolving to the response data of type T.
+   * Gửi yêu cầu DELETE.
+   * @param url Endpoint API.
+   * @param headers Header tùy chọn.
+   * @returns Promise chứa dữ liệu kiểu T.
    */
   delete<T>(url: string, headers?: HeadersInit): Promise<T>;
 
   /**
-   * Sets a global header.
-   * @param key Header key.
-   * @param value Header value.
+   * Thiết lập header toàn cục.
+   * @param key Khóa của header.
+   * @param value Giá trị của header.
    */
   setHeader(key: string, value: string): void;
 
   /**
-   * Removes a global header.
-   * @param key Header key.
+   * Xóa header toàn cục.
+   * @param key Khóa của header.
    */
   removeHeader(key: string): void;
 }
@@ -75,7 +79,7 @@ class HttpClient implements IHttpClient {
   private defaultHeaders: Record<string, string>;
   private interceptors: {
     request?: (config: RequestInit) => RequestInit | Promise<RequestInit>;
-    response?: (response: Response) => Response | Promise<Response>;
+    response?: (data: any) => any | Promise<any>;
   };
 
   private constructor() {
@@ -87,37 +91,29 @@ class HttpClient implements IHttpClient {
   }
 
   /**
-   * Returns the singleton instance of HttpClient.
+   * Trả về instance duy nhất của HttpClient.
    */
-  public static getInstance(): HttpClient {
+  static getInstance(): HttpClient {
     if (!HttpClient.instance) {
       HttpClient.instance = new HttpClient();
     }
     return HttpClient.instance;
   }
 
-  /**
-   * Sets a request interceptor.
-   * @param interceptor Function that modifies the request config.
-   */
   public setRequestInterceptor(
     interceptor: (config: RequestInit) => RequestInit | Promise<RequestInit>,
   ) {
     this.interceptors.request = interceptor;
   }
 
-  /**
-   * Sets a response interceptor.
-   * @param interceptor Function that modifies the response.
-   */
-  public setResponseInterceptor(interceptor: (response: Response) => Response | Promise<Response>) {
+  setResponseInterceptor(interceptor: (data: any) => any | Promise<any>) {
     this.interceptors.response = interceptor;
   }
 
   /**
-   * Sends an HTTP request.
-   * @param url API endpoint.
-   * @param options Fetch request options.
+   * Gửi HTTP request với cấu hình đã cho.
+   * @param url Endpoint API.
+   * @param options Tùy chọn fetch.
    */
   private async request<T>(url: string, options: RequestInit): Promise<T> {
     const fullUrl = `${this.baseURL}${url}`;
@@ -126,7 +122,7 @@ class HttpClient implements IHttpClient {
       headers: { ...this.defaultHeaders, ...options.headers },
     };
 
-    // Apply Request Interceptor
+    // Áp dụng Request Interceptor nếu có
     if (this.interceptors.request) {
       config = await this.interceptors.request(config);
     }
@@ -134,76 +130,59 @@ class HttpClient implements IHttpClient {
     try {
       const response = await fetch(fullUrl, config);
 
-      // Apply Response Interceptor
-      if (this.interceptors.response) {
-        return this.interceptors.response(response) as Promise<T>;
-      }
-
       if (!response.ok) {
-        const error = new Error(`HTTP Error: ${response.status}`);
-        (error as any).status = response.status;
-        (error as any).payload = response;
-        throw error;
+        // get response error from server
+        const errorText = await response.text();
+        const error = {
+          message: errorText,
+          data: null,
+          status: response.status,
+        };
+        throw new HttpError(error.status, error.message);
       }
 
-      return response.json() as Promise<T>;
+      // Parse JSON dữ liệu
+      let data = (await response.json()) as T;
+
+      // Áp dụng Response Interceptor nếu có
+      if (this.interceptors.response) {
+        data = await this.interceptors.response(data);
+      }
+      return data;
     } catch (error) {
       console.error('HTTP Request Failed:', error);
       throw error;
     }
   }
 
-  /**
-   * Sends a GET request.
-   * @param url API endpoint.
-   * @param headers Optional headers.
-   */
   public get<T>(url: string, headers: HeadersInit = {}): Promise<T> {
     return this.request<T>(url, { method: 'GET', headers });
   }
 
-  /**
-   * Sends a POST request.
-   * @param url API endpoint.
-   * @param body Request body.
-   * @param headers Optional headers.
-   */
   public post<T>(url: string, body: any, headers: HeadersInit = {}): Promise<T> {
-    return this.request<T>(url, { method: 'POST', body: JSON.stringify(body), headers });
+    return this.request<T>(url, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers,
+    });
   }
 
-  /**
-   * Sends a PUT request.
-   * @param url API endpoint.
-   * @param body Request body.
-   * @param headers Optional headers.
-   */
   public put<T>(url: string, body: any, headers: HeadersInit = {}): Promise<T> {
-    return this.request<T>(url, { method: 'PUT', body: JSON.stringify(body), headers });
+    return this.request<T>(url, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+      headers,
+    });
   }
 
-  /**
-   * Sends a DELETE request.
-   * @param url API endpoint.
-   * @param headers Optional headers.
-   */
   public delete<T>(url: string, headers: HeadersInit = {}): Promise<T> {
     return this.request<T>(url, { method: 'DELETE', headers });
   }
 
-  /**
-   * Sets a global header.
-   * @param key Header key.
-   * @param value Header value.
-   */
   public setHeader(key: string, value: string) {
     this.defaultHeaders[key] = value;
   }
 
-  /**
-   * Removes a global header.
-   * @param key Header key.
-   */
   public removeHeader(key: string) {
     delete this.defaultHeaders[key];
   }

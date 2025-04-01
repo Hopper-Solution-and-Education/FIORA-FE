@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { MediaType } from '@prisma/client';
 import { Upload, X } from 'lucide-react';
 import { useState } from 'react';
@@ -22,7 +23,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaType, mediaPath }) =
     formState: { errors },
   } = useFormContext();
   const [fileName, setFileName] = useState<string | null>(null);
-
+  const isMobile = useIsMobile();
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
       'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
@@ -85,24 +86,18 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaType, mediaPath }) =
                 href={mediaUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:underline truncate max-w-[200px]"
-                title={mediaUrl} // Show full URL on hover
+                className={`text-sm text-blue-600 hover:underline truncate ${isMobile ? 'max-w-[100px]' : 'max-w-[300px]'}`}
+                title={mediaUrl}
               >
                 {mediaUrl}
               </a>
-              <Button
-                variant="ghost"
-                size="sm"
-                type="button"
-                onClick={handleRemoveFile}
-                className="ml-2 text-red-500 hover:text-red-700"
-              >
-                <X className="h-4 w-4" />
-              </Button>
             </div>
           ) : fileName ? (
             <div className="flex items-center">
-              <p className="text-sm text-gray-600 truncate max-w-[400px]" title={fileName}>
+              <p
+                className={`text-sm text-gray-600 truncate ${isMobile ? 'max-w-[100px]' : 'max-w-[300px]'} `}
+                title={fileName}
+              >
                 {fileName}
               </p>
               <Button
