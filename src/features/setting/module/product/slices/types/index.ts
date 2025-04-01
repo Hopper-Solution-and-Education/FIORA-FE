@@ -1,10 +1,10 @@
-import { CategoryProductPage } from '../../domain/entities/Category';
+import { CategoryProduct } from '../../domain/entities/Category';
 import { Product, ProductTransactionCategoryResponse } from '../../domain/entities/Product';
 
 interface CategoryState {
   categories: {
     isLoading: boolean;
-    data: CategoryProductPage[];
+    data: CategoryProduct[];
     page: number;
     limit: number;
     total: number;
@@ -14,6 +14,10 @@ interface CategoryState {
   isUpdatingProduct: boolean;
   isDeletingProduct: boolean;
   isOpenDialogAddCategory: boolean;
+  isCreatingProductCategory: boolean;
+  isUpdatingProductCategory: boolean;
+  isDeletingProductCategory: boolean;
+  ProductCategoryFormState: 'add' | 'edit';
   products: {
     isLoading: boolean;
     items: Product[];
@@ -63,4 +67,8 @@ export const initialProductState: CategoryState = {
   isUpdatingProduct: false,
   isDeletingProduct: false,
   isOpenDialogAddCategory: false,
+  isCreatingProductCategory: false,
+  isDeletingProductCategory: false,
+  isUpdatingProductCategory: false,
+  ProductCategoryFormState: 'add',
 };

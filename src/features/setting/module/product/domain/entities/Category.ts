@@ -1,6 +1,6 @@
 import { PaginationResponse } from '@/shared/types/Common.types';
 
-export class CategoryProductPage {
+export class CategoryProduct {
   id: string;
   userId: string;
   icon: string;
@@ -25,4 +25,10 @@ export class CategoryProductPage {
   }
 }
 
-export type GetCategoryResponse = PaginationResponse<CategoryProductPage>;
+export type CategoryProductGetResponse = PaginationResponse<CategoryProduct>;
+export type CategoryProductCreateRequest = Omit<CategoryProduct, 'id'>;
+export type CategoryProductUpdateRequest = CategoryProduct;
+export type CategoryProductDeleteRequest = { productCategoryId: string };
+export type CategoryProductCreateResponse = Omit<CategoryProduct, 'userId'>;
+export type CategoryProductUpdateResponse = CategoryProduct;
+export type CategoryProductDeleteResponse = { message: string; categoryProductId: string };

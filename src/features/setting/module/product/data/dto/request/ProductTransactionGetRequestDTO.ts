@@ -1,5 +1,5 @@
 import { Pagination } from '@/shared/types/Common.types';
 
-export type GetProductTransactionAPIRequestDTO = Pagination & {
+export type ProductGetTransactionRequestDTO = Pagination & {
   userId: string;
 };

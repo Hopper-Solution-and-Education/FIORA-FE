@@ -1,7 +1,7 @@
 import { ProductType } from '@prisma/client';
 import { ProductItem } from '../../../presentation/schema/addProduct.schema';
 
-export type CreateProductAPIRequestDTO = {
+export type ProductCreateRequestDTO = {
   icon: string;
   name: string;
   description?: string;

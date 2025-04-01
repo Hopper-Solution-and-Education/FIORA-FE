@@ -1,39 +1,39 @@
 import { JsonArray, JsonValue } from '@prisma/client/runtime/library';
 import { ProductFormValues, ProductItem } from '../../presentation/schema/addProduct.schema';
-import { getProductTransactionAPIResponseDTO } from './../dto/response/GetProductTransactionAPIResponseDTO';
 
 import { format } from 'date-fns';
 import {
-  DeleteProductRequest,
-  DeleteProductResponse,
-  GetProductResponse,
-  GetProductTransactionRequest,
-  GetProductTransactionResponse,
-  GetSingleProductResponse,
   Product,
-  UpdateProductRequest,
-  UpdateProductResponse,
+  ProductDeleteRequest,
+  ProductDeleteResponse,
+  ProductGetSingleResponse,
+  ProductGetTransactionRequest,
+  ProductGetTransactionResponse,
+  ProductsGetResponse,
+  ProductUpdateRequest,
+  ProductUpdateResponse,
 } from '../../domain/entities/Product';
-import { CreateProductAPIRequestDTO } from '../dto/request/CreateProductAPIRequestDTO';
-import { DeleteProductAPIRequestDTO } from '../dto/request/DeleteProductAPIRequestDTO';
-import { GetProductTransactionAPIRequestDTO } from '../dto/request/GetProductTransactionAPIRequestDTO';
-import { GetSingleProductRequestDTO } from '../dto/request/GetSingleProductRequestDTO';
-import { UpdateProductAPIRequestDTO } from '../dto/request/UpdateProductAPIRequestDTO';
-import { DeleteProductAPIResponseDTO } from '../dto/response/DeleteProductAPIResponseDTO';
-import { GetProductAPIResponseDTO } from '../dto/response/GetProductAPIResponseDTO';
-import { GetSingleProductResponseDTO } from '../dto/response/GetSingleProductResponseDTO';
-import { UpdateProductAPIResponseDTO } from '../dto/response/UpdateProductAPIResponseDTO';
+import { ProductCreateRequestDTO } from '../dto/request/ProductCreateRequestDTO';
+import { ProductDeleteRequestDTO } from '../dto/request/ProductDeleteRequestDTO';
+import { ProductGetSingleRequestDTO } from '../dto/request/ProductGetSingleRequestDTO';
+import { ProductGetTransactionRequestDTO } from '../dto/request/ProductTransactionGetRequestDTO';
+import { ProductUpdateRequestDTO } from '../dto/request/ProductUpdateRequestDTO';
+import { ProductDeleteResponseDTO } from '../dto/response/ProductDeleteResponseDTO';
+import { ProductGetSingleResponseDTO } from '../dto/response/ProductGetSingleResponseDTO';
+import { ProductGetTransactionResponseDTO } from '../dto/response/ProductGetTransactionResponseDTO';
+import { ProductUpdateResponseDTO } from '../dto/response/ProductUpdateResponseDTO';
+import { ProductsGetResponseDTO } from '../dto/response/ProductsGetResponseDTO';
 
 export class ProductMapper {
-  static toGetSingleProductAPIRequest(id: string): GetSingleProductRequestDTO {
+  static toGetSingleProductAPIRequest(id: string): ProductGetSingleRequestDTO {
     return {
       productId: id,
     };
   }
 
   static toGetSingleProductResponse(
-    response: GetSingleProductResponseDTO,
-  ): GetSingleProductResponse {
+    response: ProductGetSingleResponseDTO,
+  ): ProductGetSingleResponse {
     const item = response.data;
     return {
       id: item.id,
@@ -50,21 +50,21 @@ export class ProductMapper {
     };
   }
 
-  static toDeleteProductAPIRequest(request: DeleteProductRequest): DeleteProductAPIRequestDTO {
+  static toDeleteProductAPIRequest(request: ProductDeleteRequest): ProductDeleteRequestDTO {
     return {
       id: request.id,
     };
   }
 
-  static toDeleteProductResponse(response: DeleteProductAPIResponseDTO): DeleteProductResponse {
+  static toDeleteProductResponse(response: ProductDeleteResponseDTO): ProductDeleteResponse {
     return {
       id: response.data.id,
     };
   }
 
   static toGetProductTransactionAPIRequest(
-    request: GetProductTransactionRequest,
-  ): GetProductTransactionAPIRequestDTO {
+    request: ProductGetTransactionRequest,
+  ): ProductGetTransactionRequestDTO {
     return {
       userId: request.userId,
       page: request.page,
@@ -73,8 +73,8 @@ export class ProductMapper {
   }
 
   static toGetProductTransactionResponse(
-    response: getProductTransactionAPIResponseDTO,
-  ): GetProductTransactionResponse {
+    response: ProductGetTransactionResponseDTO,
+  ): ProductGetTransactionResponse {
     return {
       data: response.data.data.map((item) => ({
         category: {
@@ -114,7 +114,7 @@ export class ProductMapper {
     };
   }
 
-  static toCreateProductAPIRequest(request: ProductFormValues): CreateProductAPIRequestDTO {
+  static toCreateProductAPIRequest(request: ProductFormValues): ProductCreateRequestDTO {
     return {
       icon: request.icon,
       name: request.name,
@@ -127,7 +127,7 @@ export class ProductMapper {
     };
   }
 
-  static toUpdateProductAPIRequest(request: UpdateProductRequest): UpdateProductAPIRequestDTO {
+  static toUpdateProductAPIRequest(request: ProductUpdateRequest): ProductUpdateRequestDTO {
     return {
       id: request.id ?? '',
       icon: request.icon,
@@ -141,7 +141,7 @@ export class ProductMapper {
     };
   }
 
-  static toUpdateProductResponse(response: UpdateProductAPIResponseDTO): UpdateProductResponse {
+  static toUpdateProductResponse(response: ProductUpdateResponseDTO): ProductUpdateResponse {
     return {
       id: response.data.id,
       name: response.data.name,
@@ -159,7 +159,7 @@ export class ProductMapper {
     };
   }
 
-  static toGetProductResponse(response: GetProductAPIResponseDTO): GetProductResponse {
+  static toGetProductResponse(response: ProductsGetResponseDTO): ProductsGetResponse {
     const { data, page, pageSize, totalPage } = response.data;
 
     return {

@@ -90,32 +90,22 @@ const ProductCategoryField = ({ control }: ProductCategoryFieldProps) => {
                 sideOffset={4}
               >
                 <>
-                  {categories.length === 0 ? (
-                    <div>
-                      <Button
-                        onClick={handleOpenDialog}
-                        title="Add Category"
-                        className="flex items-center gap-2 px-4 py-2 rounded-md shadow-sm transition-colors duration-200"
-                      >
-                        <Plus className="w-4 h-4" />
-                        <span>Add Category</span>
-                      </Button>
-                    </div>
-                  ) : (
-                    categories.map((category) => {
-                      const CategoryIcon =
-                        Icons[category.icon as keyof typeof Icons] || Icons['product'];
+                  {categories.map((category) => {
+                    const CategoryIcon =
+                      Icons[category.icon as keyof typeof Icons] || Icons['product'];
 
-                      return (
-                        <SelectItem key={category.id} value={category.id}>
-                          <div className="flex justify-between items-center gap-4">
-                            <CategoryIcon size={ICON_SIZE.MD} />
-                            <span className="text-sm">{category.name}</span>
-                          </div>
-                        </SelectItem>
-                      );
-                    })
-                  )}
+                    return (
+                      <SelectItem key={category.id} value={category.id}>
+                        <div className="flex justify-between items-center gap-4">
+                          <CategoryIcon size={ICON_SIZE.MD} />
+                          <span className="text-sm">{category.name}</span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                  <Button onClick={handleOpenDialog} className="w-full mx-auto">
+                    <Plus className="w-4 h-4" />
+                  </Button>
                 </>
 
                 {isLoading && (

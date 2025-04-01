@@ -3,7 +3,7 @@ import { CategoryType, ProductType } from '@prisma/client';
 import { HttpResponse } from '../../../model';
 import { ProductItem } from '../../../presentation/schema/addProduct.schema';
 
-export type getProductTransactionAPIResponseDTO = HttpResponse<
+export type ProductGetTransactionResponseDTO = HttpResponse<
   PaginationResponse<ProductTransactionCategoryResponse>
 >;
 

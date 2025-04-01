@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { FIREBASE_GS_URL, FIREBASE_STORAGE_URL } from '@/shared/constants';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Trash2 } from 'lucide-react';
@@ -104,8 +105,8 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
 
     const isFirebaseImage =
       productToDelete.icon &&
-      (productToDelete.icon.startsWith('https://firebasestorage.googleapis.com') ||
-        productToDelete.icon.startsWith('gs://'));
+      (productToDelete.icon.startsWith(FIREBASE_STORAGE_URL) ||
+        productToDelete.icon.startsWith(FIREBASE_GS_URL));
 
     if (isFirebaseImage) {
       await removeFromFirebase(productToDelete.icon);

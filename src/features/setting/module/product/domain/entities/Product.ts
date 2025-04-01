@@ -42,30 +42,30 @@ export class Product {
   }
 }
 
-export class CreateProductResponse {}
+export class ProductCreateResponse {}
 
-export type GetProductResponse = PaginationResponse<Product>;
+export type ProductsGetResponse = PaginationResponse<Product>;
 
-export type GetSingleProductResponse = Product;
+export type ProductGetSingleResponse = Product;
 
-export type UpdateProductResponse = Product;
-export type UpdateProductRequest = ProductFormValues;
+export type ProductUpdateRequest = ProductFormValues;
+export type ProductUpdateResponse = Product;
 
-export type DeleteProductRequest = {
+export type ProductDeleteRequest = {
   id: string;
 };
 
-export type DeleteProductResponse = {
+export type ProductDeleteResponse = {
   id: string;
 };
 
-export type GetProductTransactionRequest = {
+export type ProductGetTransactionRequest = {
   userId: string;
   page: number;
   pageSize: number;
 };
 
-export type GetProductTransactionResponse = PaginationResponse<ProductTransactionCategoryResponse>;
+export type ProductGetTransactionResponse = PaginationResponse<ProductTransactionCategoryResponse>;
 
 export type ProductTransactionCategoryResponse = {
   category: {

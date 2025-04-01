@@ -1,7 +1,7 @@
 import { ProductType } from '@prisma/client';
 import { ProductItem } from '../../../presentation/schema/addProduct.schema';
 
-export type UpdateProductAPIRequestDTO = {
+export type ProductUpdateRequestDTO = {
   id: string;
   icon: string;
   name: string;
