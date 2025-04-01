@@ -80,11 +80,11 @@ class PartnerUseCase {
         throw new Error(Messages.INVALID_USER);
       }
 
-      if (!data.phone || data.phone.length < 10) {
+      if (data.phone && data.phone.length < 10) {
         throw new Error(Messages.INVALID_PHONE);
       }
 
-      if (!data.dob || new Date(data.dob) > new Date()) {
+      if (data.dob && new Date(data.dob) > new Date()) {
         throw new Error(Messages.INVALID_DOB);
       }
 
@@ -104,7 +104,7 @@ class PartnerUseCase {
           email: data.email,
           identify: data.identify,
           description: data.description,
-          dob: new Date(data.dob),
+          dob: data.dob,
           logo: data.logo,
           taxNo: data.taxNo,
           phone: data.phone,
