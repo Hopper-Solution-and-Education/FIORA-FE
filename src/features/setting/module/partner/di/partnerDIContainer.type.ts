@@ -5,4 +5,5 @@ export const TYPES = {
   ICreatePartnerUseCase: Symbol.for('ICreatePartnerUseCase'),
   IGetPartnerUseCase: Symbol.for('IGetPartnerUseCase'),
   IUpdatePartnerUseCase: Symbol.for('IUpdatePartnerUseCase'),
+  IGetPartnerByIdUseCase: Symbol.for('IGetPartnerByIdUseCase'),
 };

@@ -1,6 +1,7 @@
 import { Partner } from '../../domain/entities/Partner';
 import { CreatePartnerAPIResponseDTO } from '../dto/response/CreatePartnerAPIResponseDTO';
 import { GetPartnerAPIResponseDTO } from '../dto/response/GetPartnerAPIResponseDTO';
+import { GetPartnerByIdAPIResponseDTO } from '../dto/response/GetPartnerByIdAPIResponseDTO';
 
 export class PartnerMapper {
   static toEntityFromCreate(dto: CreatePartnerAPIResponseDTO): Partner {
@@ -58,5 +59,9 @@ export class PartnerMapper {
           item.parent,
         ),
     );
+  }
+
+  static toEntityFromGetById(dto: GetPartnerByIdAPIResponseDTO): Partner {
+    return dto.data;
   }
 }

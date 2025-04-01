@@ -2,7 +2,8 @@ import * as yup from 'yup';
 
 const partnerSchema = yup.object({
   name: yup.string().required('Name is required').max(50, 'Maximum 50 characters'),
-  logo: yup.string().nullable().notRequired(),
+  // Change this line to accept mixed types (File or string)
+  logo: yup.mixed().nullable().notRequired(),
   identify: yup.string().nullable().notRequired(),
   dob: yup.string().nullable().notRequired(),
   taxNo: yup.string().nullable().notRequired(),

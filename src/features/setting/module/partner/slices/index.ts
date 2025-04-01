@@ -63,7 +63,7 @@ const partnerManagementSlice = createSlice({
         if (index !== -1) {
           state.partners[index] = updatedPartner;
         }
-        toast.success('Success', { description: 'Update partner successfully!!' });
+        toast.success('Update partner successfully!!');
         state.refresh = !state.refresh; // Trigger refresh after update
       })
       .addCase(updatePartner.rejected, (state, action) => {

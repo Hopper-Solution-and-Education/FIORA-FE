@@ -14,6 +14,10 @@ import {
   IUpdatePartnerUseCase,
   createUpdatePartnerUseCase,
 } from '../domain/usecases/UpdatePartnerUsecase';
+import {
+  IGetPartnerByIdUseCase,
+  createGetPartnerByIdUseCase,
+} from '../domain/usecases/GetPartnerByIdUsecase';
 import { TYPES } from './partnerDIContainer.type';
 
 const partnerDIContainer = new Container();
@@ -28,6 +32,7 @@ const partnerRepository = createPartnerRepository(partnerAPI);
 const createPartnerUseCase = createCreatePartnerUseCase(partnerRepository);
 const getPartnerUseCase = createGetPartnerUseCase(partnerRepository);
 const updatePartnerUseCase = createUpdatePartnerUseCase(partnerRepository);
+const getPartnerByIdUseCase = createGetPartnerByIdUseCase(partnerRepository);
 
 // Bind all instances
 partnerDIContainer.bind<IPartnerAPI>(TYPES.IPartnerAPI).toConstantValue(partnerAPI);
@@ -43,5 +48,8 @@ partnerDIContainer
 partnerDIContainer
   .bind<IUpdatePartnerUseCase>(TYPES.IUpdatePartnerUseCase)
   .toConstantValue(updatePartnerUseCase);
+partnerDIContainer
+  .bind<IGetPartnerByIdUseCase>(TYPES.IGetPartnerByIdUseCase)
+  .toConstantValue(getPartnerByIdUseCase);
 
 export { partnerDIContainer };

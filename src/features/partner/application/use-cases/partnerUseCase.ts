@@ -43,9 +43,9 @@ class PartnerUseCase {
         if (parentPartner.id === partner.id) {
           throw new Error(Messages.INVALID_PARENT_PARTNER_SELF);
         }
-        if (parentPartner.children && parentPartner.children.length > 0) {
-          throw new Error(Messages.INVALID_PARENT_HIERARCHY);
-        }
+        // if (parentPartner.children && parentPartner.children.length > 0) {
+        //   throw new Error(Messages.INVALID_PARENT_HIERARCHY);
+        // }
       }
 
       const updatedPartner = await tx.partner.update({
@@ -80,12 +80,51 @@ class PartnerUseCase {
         throw new Error(Messages.INVALID_USER);
       }
 
-      if (!data.phone || data.phone.length < 10) {
+      // Make phone optional but validate if provided
+      if (data.phone && data.phone.length < 10) {
         throw new Error(Messages.INVALID_PHONE);
       }
 
-      if (!data.dob || new Date(data.dob) > new Date()) {
+      // Make dob optional but validate if provided
+      if (data.dob && new Date(data.dob) > new Date()) {
         throw new Error(Messages.INVALID_DOB);
+      }
+
+      // Check for uniqueness of email, phone, taxNo, identify if provided
+      if (data.email) {
+        const existingEmail = await tx.partner.findFirst({
+          where: { email: data.email as string, userId: data.userId as string },
+        });
+        if (existingEmail) {
+          throw new Error(Messages.PARTNER_EMAIL_EXISTS);
+        }
+      }
+
+      if (data.phone) {
+        const existingPhone = await tx.partner.findFirst({
+          where: { phone: data.phone as string, userId: data.userId as string },
+        });
+        if (existingPhone) {
+          throw new Error(Messages.PARTNER_PHONE_EXISTS);
+        }
+      }
+
+      if (data.taxNo) {
+        const existingTaxNo = await tx.partner.findFirst({
+          where: { taxNo: data.taxNo as string, userId: data.userId as string },
+        });
+        if (existingTaxNo) {
+          throw new Error(Messages.PARTNER_TAX_EXISTS);
+        }
+      }
+
+      if (data.identify) {
+        const existingIdentify = await tx.partner.findFirst({
+          where: { identify: data.identify as string, userId: data.userId as string },
+        });
+        if (existingIdentify) {
+          throw new Error(Messages.PARTNER_IDENTIFY_EXISTS);
+        }
       }
 
       if (data.parentId) {
@@ -104,7 +143,7 @@ class PartnerUseCase {
           email: data.email,
           identify: data.identify,
           description: data.description,
-          dob: new Date(data.dob),
+          dob: data.dob ? new Date(data.dob) : undefined,
           logo: data.logo,
           taxNo: data.taxNo,
           phone: data.phone,
@@ -122,6 +161,22 @@ class PartnerUseCase {
 
       return partner;
     });
+  }
+
+  async getPartnerById(id: string, userId: string) {
+    try {
+      // Sử dụng phương thức getPartnerById đã có sẵn trong repository
+      const partner = await this.partnerRepository.getPartnerById(id, userId);
+
+      if (!partner) {
+        throw new Error(Messages.PARTNER_NOT_FOUND);
+      }
+
+      return partner;
+    } catch (error) {
+      console.error('Error getting partner by ID:', error);
+      throw error;
+    }
   }
 }
 
