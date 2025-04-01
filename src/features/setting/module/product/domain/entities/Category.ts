@@ -7,6 +7,8 @@ export class CategoryProduct {
   name: string;
   description: string | null;
   taxRate: number | null;
+  createdAt: string;
+  updatedAt: string;
 
   constructor(
     id: string,
@@ -15,6 +17,8 @@ export class CategoryProduct {
     name: string,
     description: string | null,
     taxRate: number | null,
+    createdAt: string,
+    updatedAt: string,
   ) {
     this.id = id;
     this.userId = userId;
@@ -22,6 +26,8 @@ export class CategoryProduct {
     this.name = name;
     this.description = description;
     this.taxRate = taxRate;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
   }
 }
 

@@ -24,6 +24,12 @@ const productManagementSlice = createSlice({
     setIsOpenDialogAddCategory: (state, action) => {
       state.isOpenDialogAddCategory = action.payload;
     },
+    setProductCategoryFormState: (state, action) => {
+      state.ProductCategoryFormState = action.payload;
+    },
+    setProductCategoryToEdit: (state, action) => {
+      state.ProductCategoryToEdit = action.payload;
+    },
     resetProductManagementState: () => initialProductState,
   },
   extraReducers: (builder) => {
@@ -163,6 +169,8 @@ const productManagementSlice = createSlice({
           name: action.payload.name,
           description: action.payload.description,
           taxRate: action.payload.taxRate,
+          createdAt: action.payload.createdAt,
+          updatedAt: action.payload.updatedAt,
         },
       ];
       toast.success('Success', {
@@ -217,6 +225,11 @@ const productManagementSlice = createSlice({
   },
 });
 
-export const { resetProductManagementState, updateProductListItems, setIsOpenDialogAddCategory } =
-  productManagementSlice.actions;
+export const {
+  resetProductManagementState,
+  updateProductListItems,
+  setIsOpenDialogAddCategory,
+  setProductCategoryFormState,
+  setProductCategoryToEdit,
+} = productManagementSlice.actions;
 export default productManagementSlice.reducer;

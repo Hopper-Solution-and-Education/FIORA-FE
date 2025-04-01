@@ -38,6 +38,8 @@ class CategoryProductMapper {
         name: item.name,
         description: item.description,
         taxRate: Number(item.tax_rate),
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
       })),
     };
   }
@@ -64,6 +66,8 @@ class CategoryProductMapper {
       name: apiResponse.data.name,
       description: apiResponse.data.description,
       taxRate: Number(apiResponse.data.tax_rate),
+      createdAt: apiResponse.data.createdAt,
+      updatedAt: apiResponse.data.updatedAt,
     };
   }
 
@@ -91,6 +95,8 @@ class CategoryProductMapper {
       name: apiResponse.data.name,
       description: apiResponse.data.description,
       taxRate: Number(apiResponse.data.tax_rate),
+      createdAt: apiResponse.data.createdAt,
+      updatedAt: apiResponse.data.updatedAt,
     };
   }
 

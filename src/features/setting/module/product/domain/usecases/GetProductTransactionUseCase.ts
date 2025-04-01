@@ -30,7 +30,7 @@ export class GetProductTransactionUseCase implements IGetProductTransactionUseCa
           ...category,
           products: category.products.sort((a, b) => {
             return (
-              new Date(b.product.createdAt).getTime() - new Date(a.product.createdAt).getTime()
+              new Date(a.product.createdAt).getTime() - new Date(b.product.createdAt).getTime()
             );
           }),
         };

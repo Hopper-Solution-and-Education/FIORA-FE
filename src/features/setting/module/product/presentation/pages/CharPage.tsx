@@ -10,13 +10,20 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { COLORS } from '@/shared/constants/chart';
-import { useAppSelector } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
+import { CategoryProduct } from '../../domain/entities/Category';
 import {
   ProductTransactionCategoryResponse,
   ProductTransactionResponse,
 } from '../../domain/entities/Product';
+import {
+  setIsOpenDialogAddCategory,
+  setProductCategoryFormState,
+  setProductCategoryToEdit,
+} from '../../slices';
 import TwoSideBarChart, { BarItem } from '../atoms/charts';
 import { ProductFormValues } from '../schema/addProduct.schema';
 
@@ -25,11 +32,16 @@ const mapTransactionsToBarItems = (data: ProductTransactionCategoryResponse[]): 
   const groupedByCategory: Record<
     string,
     {
+      id: string;
       name: string;
+      description: string;
+      taxRate: number;
       income: number;
       expense: number;
       icon: string;
       products: ProductTransactionResponse[];
+      createdAt: string;
+      updatedAt: string;
     }
   > = {};
 
@@ -41,10 +53,15 @@ const mapTransactionsToBarItems = (data: ProductTransactionCategoryResponse[]): 
     if (!groupedByCategory[catId]) {
       groupedByCategory[catId] = {
         name: categoryName,
+        id: catId,
+        description: categoryItem.category.description || '',
+        taxRate: categoryItem.category.taxRate || 0,
         income: 0,
         expense: 0,
         icon: categoryItem.category.icon,
         products: [],
+        createdAt: categoryItem.category.createdAt,
+        updatedAt: categoryItem.category.updatedAt,
       };
     }
 
@@ -65,19 +82,36 @@ const mapTransactionsToBarItems = (data: ProductTransactionCategoryResponse[]): 
 
   // Chuyển đổi thành BarItem với children, hiển thị tất cả danh mục
   return Object.entries(groupedByCategory).flatMap(
-    ([catId, { name, income, expense, products, icon }]) => {
+    ([
+      catId,
+      { name, income, expense, products, icon, description, taxRate, createdAt, updatedAt },
+    ]) => {
       const categoryItem: BarItem = {
         id: catId,
         name,
-        value: 0, // Placeholder, sẽ dùng income/expense
+        value: 0,
         type: 'category',
+        description,
+        taxRate,
         income,
         icon,
         expense,
+        createdAt,
+        updatedAt,
         children: products.map((item) => ({
           id: item.product.id,
           name: item.product.name,
+          description: item.product.description ?? '',
+          taxRate: parseFloat(String(item.product.taxRate)),
           value: parseFloat(String(item.product.price)),
+          icon: item.product.icon,
+          createdAt: item.product.createdAt,
+          updatedAt: item.product.updatedAt,
+          expense: 0,
+          income: 0,
+          color: COLORS.DEPS_SUCCESS.LEVEL_2,
+          children: [],
+          depth: 0,
           type: item.transaction?.type.toLowerCase() || 'unknown',
           product: {
             id: item.product.id,
@@ -113,6 +147,8 @@ const ChartPage = () => {
   const isLoading = useAppSelector(
     (state) => state.productManagement.productTransaction.isLoadingGet,
   );
+  const dispatch = useAppDispatch();
+  const { data: userData } = useSession();
 
   const [selectedProduct, setSelectedProduct] = useState<ProductFormValues | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
@@ -120,6 +156,12 @@ const ChartPage = () => {
   const handleEditProduct = (product: ProductFormValues) => {
     setSelectedProduct(product);
     setOpenDialog(true);
+  };
+
+  const handleEditCategoryProduct = (categoryProduct: CategoryProduct) => {
+    dispatch(setProductCategoryFormState('edit'));
+    dispatch(setProductCategoryToEdit(categoryProduct));
+    dispatch(setIsOpenDialogAddCategory(true));
   };
 
   const handleDialogConfirm = () => {
@@ -140,6 +182,18 @@ const ChartPage = () => {
     if (item.product) {
       handleEditProduct(item.product);
       setOpenDialog(true);
+    } else {
+      const categoryProduct: CategoryProduct = {
+        id: item.id ?? '',
+        userId: userData?.user.id ?? '',
+        icon: item.icon ?? '',
+        name: item.name,
+        description: item.description,
+        taxRate: item.taxRate,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+      };
+      handleEditCategoryProduct(categoryProduct);
     }
   };
 
@@ -162,7 +216,7 @@ const ChartPage = () => {
           },
         }}
         callback={tryCallback}
-        callbackYAxis={tryCallBackYaxis}
+        callbackYAxis={(e) => tryCallBackYaxis(e)}
       />
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogContent>

@@ -13,8 +13,20 @@ export class GetCategoryProductUseCase implements IGetCategoryProductUseCase {
     this.categoryRepository = categoryRepository;
   }
 
-  execute(page: number, pageSize: number) {
-    return this.categoryRepository.getListCategoryProduct({ page, pageSize });
+  async execute(page: number, pageSize: number) {
+    const response = await this.categoryRepository.getListCategoryProduct({ page, pageSize });
+    return this.processResponse(response);
+  }
+
+  private processResponse(response: CategoryProductGetResponse): CategoryProductGetResponse {
+    const sortedData = response.data.sort((a, b) => {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
+
+    return {
+      ...response,
+      data: sortedData,
+    };
   }
 }
 

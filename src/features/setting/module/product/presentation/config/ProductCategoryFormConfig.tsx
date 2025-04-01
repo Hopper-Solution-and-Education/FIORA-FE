@@ -3,9 +3,41 @@
 import GlobalIconSelect from '@/components/common/atoms/GlobalIconSelect';
 import InputField from '@/components/common/atoms/InputField';
 import TextareaField from '@/components/common/atoms/TextareaField';
-import { KeyboardEvent, useCallback } from 'react';
+import { useAppSelector } from '@/store';
+import { KeyboardEvent, useCallback, useEffect } from 'react';
+import { useFormContext } from 'react-hook-form';
+import {
+  CategoryProductFormValues,
+  defaultCategoryProductValue,
+} from '../schema/productCategory.schema';
 
 const useProductCategoryFormConfig = () => {
+  const { reset } = useFormContext<CategoryProductFormValues>();
+  const productCategoryToEdit = useAppSelector(
+    (state) => state.productManagement.ProductCategoryToEdit,
+  );
+  const ProductCategoryFormState = useAppSelector(
+    (state) => state.productManagement.ProductCategoryFormState,
+  );
+
+  useEffect(() => {
+    if (ProductCategoryFormState === 'edit' && productCategoryToEdit) {
+      console.log(productCategoryToEdit);
+
+      reset({
+        id: productCategoryToEdit.id,
+        name: productCategoryToEdit.name,
+        icon: productCategoryToEdit.icon,
+        description: productCategoryToEdit.description,
+        tax_rate: productCategoryToEdit.taxRate ?? 0,
+        createdAt: new Date(productCategoryToEdit.createdAt),
+        updatedAt: new Date(productCategoryToEdit.updatedAt),
+      });
+    } else {
+      reset(defaultCategoryProductValue);
+    }
+  }, []);
+
   const removeLeadingZeros = useCallback((value: string): string => {
     return value.replace(/^0+(?=[1-9]|\.)/, '') || '0';
   }, []);

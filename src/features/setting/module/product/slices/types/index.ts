@@ -18,6 +18,7 @@ interface CategoryState {
   isUpdatingProductCategory: boolean;
   isDeletingProductCategory: boolean;
   ProductCategoryFormState: 'add' | 'edit';
+  ProductCategoryToEdit: CategoryProduct | null;
   products: {
     isLoading: boolean;
     items: Product[];
@@ -71,4 +72,5 @@ export const initialProductState: CategoryState = {
   isDeletingProductCategory: false,
   isUpdatingProductCategory: false,
   ProductCategoryFormState: 'add',
+  ProductCategoryToEdit: null,
 };

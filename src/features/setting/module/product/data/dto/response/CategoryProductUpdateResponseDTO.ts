@@ -6,7 +6,7 @@ export type CategoryProductUpdateResponseDTO = HttpResponse<{
   icon: string;
   name: string;
   description: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   tax_rate: number | null;
 }>;

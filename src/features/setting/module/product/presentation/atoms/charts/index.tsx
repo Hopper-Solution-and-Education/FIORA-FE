@@ -30,7 +30,11 @@ import CustomTooltip from '../CustomTooltip';
 export type BarItem = {
   id?: string;
   name: string;
+  description: string;
+  taxRate: number;
   icon?: string;
+  createdAt: string;
+  updatedAt: string;
   value: number;
   color?: string;
   type: string;
@@ -148,6 +152,9 @@ const TwoSideBarChart = ({
         depth: 0,
       },
       ...Object.entries(groupedData).map(([name, values]) => ({
+        id: values.id,
+        description: values.description,
+        taxRate: values.taxRate,
         name,
         expense: values.expense,
         income: values.income,
@@ -157,6 +164,9 @@ const TwoSideBarChart = ({
         depth: 0,
         product: values.product,
         icon: values.icon,
+        createdAt: values.createdAt,
+        updatedAt: values.updatedAt,
+        isChild: false,
       })),
     ];
 

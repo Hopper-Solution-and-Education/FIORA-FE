@@ -17,7 +17,7 @@ import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { Plus } from 'lucide-react';
 import { useFormContext, type Control } from 'react-hook-form';
-import { setIsOpenDialogAddCategory } from '../../slices';
+import { setIsOpenDialogAddCategory, setProductCategoryFormState } from '../../slices';
 import { fetchCategoriesProduct } from '../../slices/actions/fetchCategoriesProduct';
 import { ProductFormValues } from '../schema/addProduct.schema';
 
@@ -61,6 +61,7 @@ const ProductCategoryField = ({ control }: ProductCategoryFieldProps) => {
 
   const handleOpenDialog = () => {
     dispatch(setIsOpenDialogAddCategory(true));
+    dispatch(setProductCategoryFormState('add'));
   };
 
   return (

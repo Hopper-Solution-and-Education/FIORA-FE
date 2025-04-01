@@ -1,8 +1,9 @@
 'use client';
 
-import GlobalForm from '@/components/common/organisms/GlobalForm';
+import GlobalFormV2 from '@/components/common/organisms/GlobalFormV2';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
+import { useFormContext } from 'react-hook-form';
 import { toast } from 'sonner';
 import {
   CategoryProductCreateRequest,
@@ -10,24 +11,19 @@ import {
 } from '../../domain/entities/Category';
 import { setIsOpenDialogAddCategory } from '../../slices';
 import { createCategoryProductAsyncThunk } from '../../slices/actions/createCategoryProductAsyncThunk';
-import useProductCategoryFormConfig from '../config/ProductCategoryFormConfig';
-import {
-  CategoryProductFormValues,
-  categoryProductsSchema,
-  defaultCategoryProductValue,
-} from '../schema/productCategory.schema';
 import { updateCategoryProductAsyncThunk } from '../../slices/actions/updateCategoryProductAsyncThunk';
+import useProductCategoryFormConfig from '../config/ProductCategoryFormConfig';
+import { CategoryProductFormValues } from '../schema/productCategory.schema';
 
-interface CreateCategoryFormProps {
-  initialData?: CategoryProductFormValues;
-}
-
-export default function ProductCategoryForm({ initialData }: CreateCategoryFormProps) {
+export default function ProductCategoryForm() {
   const dispatch = useAppDispatch();
   const fields = useProductCategoryFormConfig();
   const ProductCategoryFormState = useAppSelector(
     (state) => state.productManagement.ProductCategoryFormState,
   );
+  const methods = useFormContext<CategoryProductFormValues>();
+  const { handleSubmit } = methods;
+
   const { data: userData } = useSession();
 
   const onSubmit = async (data: CategoryProductFormValues) => {
@@ -39,6 +35,8 @@ export default function ProductCategoryForm({ initialData }: CreateCategoryFormP
           name: data.name,
           description: data.description ?? null,
           taxRate: data.tax_rate,
+          createdAt: new Date().toString(),
+          updatedAt: new Date().toString(),
         };
 
         dispatch(createCategoryProductAsyncThunk(requestParams))
@@ -54,6 +52,8 @@ export default function ProductCategoryForm({ initialData }: CreateCategoryFormP
           name: data.name,
           description: data.description ?? null,
           taxRate: data.tax_rate,
+          createdAt: new Date().toString(),
+          updatedAt: new Date().toString(),
         };
         dispatch(updateCategoryProductAsyncThunk(requestParams))
           .unwrap()
@@ -64,17 +64,17 @@ export default function ProductCategoryForm({ initialData }: CreateCategoryFormP
       console.log(data);
     } catch (error) {
       console.error('Error :', error);
-      toast.error('Failed ');
+      toast.error('Failed');
     }
   };
 
   return (
-    <GlobalForm
-      fields={fields}
-      onSubmit={onSubmit}
-      defaultValues={initialData || defaultCategoryProductValue}
-      schema={categoryProductsSchema}
-      onBack={() => dispatch(setIsOpenDialogAddCategory(false))}
-    />
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <GlobalFormV2
+        methods={methods}
+        fields={fields}
+        onBack={() => dispatch(setIsOpenDialogAddCategory(false))}
+      />
+    </form>
   );
 }
