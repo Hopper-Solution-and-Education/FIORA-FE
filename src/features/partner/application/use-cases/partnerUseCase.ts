@@ -178,6 +178,23 @@ class PartnerUseCase {
       throw error;
     }
   }
+
+  async deletePartner(id: string, userId: string): Promise<Partner> {
+    try {
+      // First check if the partner exists
+      const partner = await this.partnerRepository.getPartnerById(id, userId);
+
+      if (!partner) {
+        throw new Error(Messages.PARTNER_NOT_FOUND);
+      }
+
+      // Use the repository to handle the deletion
+      return await this.partnerRepository.deletePartner(id, userId);
+    } catch (error) {
+      console.error('Error deleting partner:', error);
+      throw error;
+    }
+  }
 }
 
 export const partnerUseCase = new PartnerUseCase(partnerRepository);
