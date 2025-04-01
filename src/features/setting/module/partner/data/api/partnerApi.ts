@@ -7,12 +7,14 @@ import { CreatePartnerAPIResponseDTO } from '../dto/response/CreatePartnerAPIRes
 import { GetPartnerAPIResponseDTO } from '../dto/response/GetPartnerAPIResponseDTO';
 import { GetPartnerByIdAPIResponseDTO } from '../dto/response/GetPartnerByIdAPIResponseDTO';
 import { UpdatePartnerAPIResponseDTO } from '../dto/response/UpdatePartnerAPIResponseDTO';
+import { DeletePartnerAPIResponseDTO } from '../dto/response/DeletePartnerAPIResponseDTO';
 
 interface IPartnerAPI {
   createPartner(data: CreatePartnerAPIRequestDTO): Promise<CreatePartnerAPIResponseDTO>;
   getPartners(data: GetPartnerAPIRequestDTO): Promise<GetPartnerAPIResponseDTO>;
-  getPartnerById(id: string): Promise<GetPartnerByIdAPIResponseDTO>; // Thêm phương thức mới
+  getPartnerById(id: string): Promise<GetPartnerByIdAPIResponseDTO>;
   updatePartner(data: UpdatePartnerAPIRequestDTO): Promise<UpdatePartnerAPIResponseDTO>;
+  deletePartner(id: string): Promise<DeletePartnerAPIResponseDTO>; // Add this method
 }
 
 class PartnerAPI implements IPartnerAPI {
@@ -34,6 +36,10 @@ class PartnerAPI implements IPartnerAPI {
 
   async updatePartner(data: UpdatePartnerAPIRequestDTO) {
     return await httpClient.put<UpdatePartnerAPIResponseDTO>(`/api/partners/${data.id}`, data);
+  }
+
+  async deletePartner(id: string) {
+    return await httpClient.delete<DeletePartnerAPIResponseDTO>(`/api/partners/${id}`);
   }
 }
 
