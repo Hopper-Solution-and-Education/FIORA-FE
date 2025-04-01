@@ -31,9 +31,17 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
         label: account.name,
         type: account.type,
         icon: account.icon,
-        disabled: Object.values(ACCOUNT_TYPES).includes(account.type),
       }))) ||
     [];
+
+  // disabled: Object.values(ACCOUNT_TYPES).includes(account.type),
+  const accountTypeOptions = [
+    { value: ACCOUNT_TYPES.PAYMENT, label: ACCOUNT_TYPES.PAYMENT },
+    { value: ACCOUNT_TYPES.SAVING, label: ACCOUNT_TYPES.SAVING },
+    { value: ACCOUNT_TYPES.CREDIT_CARD, label: ACCOUNT_TYPES.CREDIT_CARD },
+    { value: ACCOUNT_TYPES.DEBT, label: ACCOUNT_TYPES.DEBT },
+    { value: ACCOUNT_TYPES.LENDING, label: ACCOUNT_TYPES.LENDING },
+  ];
 
   const isParentDisabled = initialData && initialData.parentId ? true : false;
 
@@ -66,7 +74,7 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
       disabled={isParentDisabled}
       label="Parent"
     />,
-    <AccountTypeSelect key="type" name="type" label="Type" required />,
+    <AccountTypeSelect key="type" name="type" label="Type" options={accountTypeOptions} required />,
     <CurrencySelect key="currency" name="currency" label="Currency" required />,
     <LimitField key="limit" name="limit" label="Limit" />,
     <AccountBalanceField key="balance" name="balance" label="Currency" required />,

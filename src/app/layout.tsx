@@ -31,7 +31,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href={section?.medias[0].media_url ?? defaultIconHeader} />
+        <link
+          rel="icon"
+          href={section?.medias[0].media_url ?? defaultIconHeader}
+          className="rounded-full"
+        />
       </head>
       <body className={inter.className}>
         <React.StrictMode>

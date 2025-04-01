@@ -14,13 +14,19 @@ import GlobalLabel from '@/components/common/atoms/GlobalLabel';
 import LucieIcon from '@/features/home/module/category/components/LucieIcon';
 import { cn } from '@/shared/utils';
 
+export interface Option {
+  value: string;
+  label: string;
+  icon?: string;
+  disabled?: boolean;
+}
 interface SelectFieldProps {
   name: string;
   value?: string;
   defaultValue?: string;
   onChange?: (value: string) => void;
   onBlur?: () => void;
-  options: { value: string; label: string; icon?: string; disabled?: boolean }[];
+  options: Array<Option>;
   placeholder?: string;
   error?: FieldError;
   label?: React.ReactNode | string;
