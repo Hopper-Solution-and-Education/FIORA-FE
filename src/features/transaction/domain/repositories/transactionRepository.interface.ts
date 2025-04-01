@@ -16,7 +16,10 @@ export interface ITransactionRepository {
     options?: Prisma.TransactionFindManyArgs,
   ): Promise<Transaction[]>;
   count(where: Prisma.TransactionWhereInput): Promise<number>;
-
+  getFilterOptions(userId: string): Promise<any>;
   // *CATEGORY ZONE
   updateTransactionsCategory(oldCategoryId: string, newCategoryId: string): Promise<void>;
+
+  // *PARTNER ZONE
+  updateTransactionsPartner(oldPartnerId: string, newPartnerId: string): Promise<void>;
 }

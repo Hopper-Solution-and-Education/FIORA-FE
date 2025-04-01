@@ -7,6 +7,7 @@ import { fetchPartnerById } from '@/features/setting/module/partner/slices/actio
 import { useAppDispatch } from '@/store';
 import { notFound, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import DeletePartnerButton from './DeletePartnerButton';
 
 export default function PartnerUpdatePage() {
   const params = useParams();
@@ -44,6 +45,11 @@ export default function PartnerUpdatePage() {
   }
 
   return (
-    <FormPage title="Update Partner" FormComponent={PartnerUpdateForm} initialData={partner} />
+    <FormPage
+      title="Update Partner"
+      FormComponent={PartnerUpdateForm}
+      initialData={partner}
+      headerActions={<DeletePartnerButton partnerId={id} />}
+    />
   );
 }

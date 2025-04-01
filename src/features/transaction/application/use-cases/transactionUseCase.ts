@@ -183,6 +183,17 @@ class TransactionUseCase {
     await tx.productTransaction.deleteMany({ where: { transactionId: transaction.id } });
   }
 
+  async getTransactionFilterOptions(userId: string) {
+    const filterOptions = await this.transactionRepository.getFilterOptions(userId);
+    return {
+      fromAccounts: filterOptions.fromAccounts ?? [],
+      toAccounts: filterOptions.toAccounts ?? [],
+      fromCategories: filterOptions.fromCategories ?? [],
+      toCategories: filterOptions.toCategories ?? [],
+      partners: filterOptions.partners ?? [],
+    };
+  }
+
   private validateSufficientBalance(balance: number, amount: number, errorMessage: string) {
     if (balance < amount) {
       throw new Error(errorMessage);

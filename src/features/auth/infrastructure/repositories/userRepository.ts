@@ -44,7 +44,7 @@ class UserRepository implements IUserRepository {
 
   async updatePassword(email: string, newPassword: string) {
     return prisma.user.update({
-      where: { email, emailVerified: true },
+      where: { email },
       data: { password: newPassword },
     });
   }
