@@ -28,6 +28,9 @@ export enum Messages {
   GET_PRODUCT_FAILED = 'Failed to get product',
   INVALID_PRODUCT_TYPE = 'Invalid product type. Must be either Product or Service',
 
+  // Product & Service
+  TRANSFER_TRANSACTION_SUCCESS = 'Transfer transaction successfully',
+
   // Category-Product Success
   CREATE_CATEGORY_PRODUCT_SUCCESS = 'Create category product successfully',
   UPDATE_CATEGORY_PRODUCT_SUCCESS = 'Update category product successfully',
@@ -81,7 +84,10 @@ export enum Messages {
   // Product-related errors
   PRODUCT_NOT_FOUND = 'Product not found',
   NO_PRODUCTS_PROVIDED = 'No products provided',
-
+  TARGET_PRODUCT_NOT_FOUND = 'Target product not found',
+  SOURCE_PRODUCT_NOT_FOUND = 'Source product not found',
+  SOURCE_PRODUCT_TRANSFER_SELF_FAILED = 'Source product cannot be the same as target product',
+  TRANSFER_TRANSACTION_FAILED = 'Failed to transfer transaction',
   // Transaction Constraint when delete
   TRANSACTION_DELETE_FAILED_CONSTRAINT = 'Transaction cannot be deleted because it is linked to transactions.',
 
