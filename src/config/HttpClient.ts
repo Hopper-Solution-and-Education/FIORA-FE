@@ -1,3 +1,15 @@
+export class HttpError extends Error {
+  status: number;
+  data: any;
+
+  constructor(status: number, message: string, data: any = null) {
+    super(message);
+    this.name = 'HttpError';
+    this.status = status;
+    this.data = data;
+  }
+}
+
 export interface IHttpClient {
   /**
    * Thiết lập interceptor cho request.
@@ -94,7 +106,7 @@ class HttpClient implements IHttpClient {
     this.interceptors.request = interceptor;
   }
 
-  public setResponseInterceptor(interceptor: (data: any) => any | Promise<any>) {
+  setResponseInterceptor(interceptor: (data: any) => any | Promise<any>) {
     this.interceptors.response = interceptor;
   }
 
@@ -118,9 +130,15 @@ class HttpClient implements IHttpClient {
     try {
       const response = await fetch(fullUrl, config);
 
-      // Kiểm tra trạng thái response
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // get response error from server
+        const errorText = await response.text();
+        const error = {
+          message: errorText,
+          data: null,
+          status: response.status,
+        };
+        throw new HttpError(error.status, error.message);
       }
 
       // Parse JSON dữ liệu
