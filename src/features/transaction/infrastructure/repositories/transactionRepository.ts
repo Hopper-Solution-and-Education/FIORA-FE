@@ -56,6 +56,74 @@ class TransactionRepository implements ITransactionRepository {
     return await prisma.transaction.count({ where });
   }
 
+  async getFilterOptions(userId: string) {
+    const [fromAccounts, toAccounts, fromCategories, toCategories, partners] = await Promise.all([
+      prisma.transaction.findMany({
+        where: { userId, fromAccountId: { not: null } },
+        select: {
+          fromAccount: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        distinct: ['fromAccountId'],
+      }),
+      prisma.transaction.findMany({
+        where: { userId, toAccountId: { not: null } },
+        select: {
+          toAccount: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        distinct: ['toAccountId'],
+      }),
+      prisma.transaction.findMany({
+        where: { userId, fromCategoryId: { not: null } },
+        select: {
+          fromCategory: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        distinct: ['fromCategoryId'],
+      }),
+      prisma.transaction.findMany({
+        where: { userId, toCategoryId: { not: null } },
+        select: {
+          toCategory: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        distinct: ['toCategoryId'],
+      }),
+      prisma.transaction.findMany({
+        where: { userId, partnerId: { not: null } },
+        select: {
+          partner: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        distinct: ['partnerId'],
+      }),
+    ]);
+
+    return {
+      fromAccounts: fromAccounts.map((t) => t.fromAccount?.name),
+      toAccounts: toAccounts.map((t) => t.toAccount?.name),
+      fromCategories: fromCategories.map((t) => t.fromCategory?.name),
+      toCategories: toCategories.map((t) => t.toCategory?.name),
+      partners: partners.map((t) => t.partner?.name),
+    };
+  }
+
   // *CATEGORY ZONE
   async updateTransactionsCategory(oldCategoryId: string, newCategoryId: string): Promise<void> {
     await prisma.transaction.updateMany({

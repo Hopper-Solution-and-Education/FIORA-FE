@@ -80,12 +80,10 @@ class PartnerUseCase {
         throw new Error(Messages.INVALID_USER);
       }
 
-      // Make phone optional but validate if provided
       if (data.phone && data.phone.length < 10) {
         throw new Error(Messages.INVALID_PHONE);
       }
 
-      // Make dob optional but validate if provided
       if (data.dob && new Date(data.dob) > new Date()) {
         throw new Error(Messages.INVALID_DOB);
       }
@@ -143,7 +141,7 @@ class PartnerUseCase {
           email: data.email,
           identify: data.identify,
           description: data.description,
-          dob: data.dob ? new Date(data.dob) : undefined,
+          dob: data.dob,
           logo: data.logo,
           taxNo: data.taxNo,
           phone: data.phone,
