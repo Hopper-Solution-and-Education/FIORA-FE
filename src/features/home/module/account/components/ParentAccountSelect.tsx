@@ -40,7 +40,7 @@ const ParentAccountSelect: React.FC<ParentAccountSelectProps> = ({
   };
 
   const selectOptions = disabled
-    ? [{ value: 'null', label: 'Sub Accounts exist. Parent locked' }]
+    ? [{ value: 'null', label: 'Parent locked' }]
     : [
         { value: 'null', label: 'None' },
         ...options.map((option) => ({
