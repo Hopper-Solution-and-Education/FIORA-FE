@@ -135,6 +135,14 @@ class TransactionRepository implements ITransactionRepository {
       data: { toCategoryId: newCategoryId },
     });
   }
+
+  // *PARTNER ZONE
+  async updateTransactionsPartner(oldPartnerId: string, newPartnerId: string): Promise<void> {
+    await prisma.transaction.updateMany({
+      where: { partnerId: oldPartnerId },
+      data: { partnerId: newPartnerId },
+    });
+  }
 }
 
 export const transactionRepository = new TransactionRepository();

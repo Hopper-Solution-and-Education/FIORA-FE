@@ -9,6 +9,7 @@ export interface IPartnerRepository {
     userId: string,
     data: Prisma.PartnerUncheckedUpdateInput,
   ): Promise<Partner>;
-  deletePartner(id: string, userId: string): Promise<Partner>;
+  // deletePartner(id: string, userId: string): Promise<Partner>;
   findByName(name: string, userId: string): Promise<Partner | null>;
+  deletePartner(id: string): Promise<void>;
 }
