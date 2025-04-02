@@ -101,7 +101,7 @@ class CategoryProductMapper {
   }
 
   // Delete Category Product ------------------------------
-  static toDeletCategoryProductAPIRequest(
+  static toDeleteCategoryProductAPIRequest(
     request: CategoryProductDeleteRequest,
   ): CategoryProductDeleteRequestDTO {
     return {

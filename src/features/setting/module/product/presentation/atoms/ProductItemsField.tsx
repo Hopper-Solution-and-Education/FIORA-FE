@@ -57,7 +57,7 @@ const ProductItemsField = ({ control }: ProductItemsFieldProps) => {
   });
 
   const addNewItem = () => {
-    append({ name: '', description: '', itemIcon: '' });
+    append({ name: '', description: '', icon: '' });
   };
 
   return (
@@ -133,7 +133,7 @@ const ProductItemsField = ({ control }: ProductItemsFieldProps) => {
 
                 <FormField
                   control={control}
-                  name={`items.${index}.itemIcon`}
+                  name={`items.${index}.icon`}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium">
@@ -174,9 +174,9 @@ const ProductItemsField = ({ control }: ProductItemsFieldProps) => {
                           ))}
                         </SelectContent>
                       </Select>
-                      {errors.items?.[index]?.itemIcon && (
+                      {errors.items?.[index]?.icon && (
                         <p className="text-sm font-medium text-destructive">
-                          {errors.items[index]?.itemIcon?.message}
+                          {errors.items[index]?.icon?.message}
                         </p>
                       )}
                     </FormItem>

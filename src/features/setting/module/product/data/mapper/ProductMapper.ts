@@ -212,6 +212,7 @@ export class ProductMapper {
             result.push({
               name: String(parsedObject.name),
               description: String(parsedObject.description),
+              icon: String(parsedObject.icon),
             });
           }
         } catch (error) {

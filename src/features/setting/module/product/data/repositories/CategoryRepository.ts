@@ -64,7 +64,7 @@ export class CategoryRepository implements ICategoryRepository {
   async deleteCategoryProduct(
     request: CategoryProductDeleteRequest,
   ): Promise<CategoryProductDeleteResponse> {
-    const requestAPI = CategoryProductMapper.toDeletCategoryProductAPIRequest(request);
+    const requestAPI = CategoryProductMapper.toDeleteCategoryProductAPIRequest(request);
     const response = await this.categoryAPI.deleteCategory(requestAPI);
     return CategoryProductMapper.toDeleteCategoryProductDomainResponse(response);
   }

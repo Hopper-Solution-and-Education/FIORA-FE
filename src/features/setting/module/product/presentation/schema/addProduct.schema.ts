@@ -3,7 +3,7 @@ import * as yup from 'yup';
 
 const itemSchema = yup.object().shape({
   name: yup.string().required('Item name is required').max(50, 'Maximum 50 characters'),
-  itemIcon: yup.string().required('Item icon is required'),
+  icon: yup.string().required('Item icon is required'),
   description: yup.string().max(500, 'Maximum 500 characters'),
 });
 
