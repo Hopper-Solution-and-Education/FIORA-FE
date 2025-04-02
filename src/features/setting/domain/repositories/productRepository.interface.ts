@@ -49,6 +49,7 @@ export interface ProductUpdate {
 }
 
 export type Items = {
+  icon: string;
   name: string;
   description: string;
 };
