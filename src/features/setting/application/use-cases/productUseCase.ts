@@ -277,11 +277,6 @@ class ProductUseCase {
       throw new Error(Messages.SOURCE_PRODUCT_TRANSFER_SELF_FAILED);
     }
 
-    // Checking if source and target products are in the same category
-    if (sourceProduct.catId !== targetProduct.catId) {
-      throw new Error(Messages.PRODUCT_INVALID_CATEGORY_TYPE);
-    }
-
     // Start a transaction
     const result = await prisma.$transaction(async (tx) => {
       // 1. Get all ProductTransaction entries for the source product
