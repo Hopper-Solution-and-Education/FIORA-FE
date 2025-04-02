@@ -7,14 +7,20 @@ import { CreatePartnerAPIResponseDTO } from '../dto/response/CreatePartnerAPIRes
 import { GetPartnerAPIResponseDTO } from '../dto/response/GetPartnerAPIResponseDTO';
 import { GetPartnerByIdAPIResponseDTO } from '../dto/response/GetPartnerByIdAPIResponseDTO';
 import { UpdatePartnerAPIResponseDTO } from '../dto/response/UpdatePartnerAPIResponseDTO';
-import { DeletePartnerAPIResponseDTO } from '../dto/response/DeletePartnerAPIResponseDTO';
+// Remove the conflicting import since we have a local interface declaration
 
 interface IPartnerAPI {
   createPartner(data: CreatePartnerAPIRequestDTO): Promise<CreatePartnerAPIResponseDTO>;
   getPartners(data: GetPartnerAPIRequestDTO): Promise<GetPartnerAPIResponseDTO>;
   getPartnerById(id: string): Promise<GetPartnerByIdAPIResponseDTO>;
   updatePartner(data: UpdatePartnerAPIRequestDTO): Promise<UpdatePartnerAPIResponseDTO>;
-  deletePartner(id: string): Promise<DeletePartnerAPIResponseDTO>; // Add this method
+  deletePartner(id: string, replacementId?: string | null): Promise<DeletePartnerAPIResponseDTO>;
+}
+
+// Define the response type for delete operation
+export interface DeletePartnerAPIResponseDTO {
+  status: number;
+  message: string;
 }
 
 class PartnerAPI implements IPartnerAPI {
@@ -38,8 +44,18 @@ class PartnerAPI implements IPartnerAPI {
     return await httpClient.put<UpdatePartnerAPIResponseDTO>(`/api/partners/${data.id}`, data);
   }
 
-  async deletePartner(id: string) {
-    return await httpClient.delete<DeletePartnerAPIResponseDTO>(`/api/partners/${id}`);
+  async deletePartner(id: string, replacementId?: string | null) {
+    try {
+      const headers: Record<string, string> = {};
+      if (replacementId) {
+        headers['newid'] = replacementId;
+      }
+
+      return await httpClient.delete<DeletePartnerAPIResponseDTO>(`/api/partners/${id}`, headers);
+    } catch (error) {
+      console.error('Error in PartnerAPI.deletePartner:', error);
+      throw error;
+    }
   }
 }
 

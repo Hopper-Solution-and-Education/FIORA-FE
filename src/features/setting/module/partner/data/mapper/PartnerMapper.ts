@@ -62,6 +62,27 @@ export class PartnerMapper {
   }
 
   static toEntityFromGetById(dto: GetPartnerByIdAPIResponseDTO): Partner {
-    return dto.data;
+    return new Partner(
+      dto.data.id,
+      dto.data.userId,
+      dto.data.name,
+      dto.data.createdAt,
+      dto.data.updatedAt,
+      dto.data.createdBy,
+      dto.data.user,
+      dto.data.transactions,
+      dto.data.children,
+      dto.data.logo,
+      dto.data.identify,
+      dto.data.dob,
+      dto.data.taxNo,
+      dto.data.address,
+      dto.data.email,
+      dto.data.phone,
+      dto.data.description,
+      dto.data.updatedBy,
+      dto.data.parentId === 'none' ? null : dto.data.parentId,
+      dto.data.parent,
+    );
   }
 }

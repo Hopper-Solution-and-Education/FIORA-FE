@@ -50,7 +50,7 @@ export default function PartnerUpdatePage() {
       title="Update Partner"
       FormComponent={PartnerUpdateForm}
       initialData={partner}
-      headerActions={<DeletePartnerButton partnerId={id} />}
+      headerActions={<DeletePartnerButton partnerId={id} partner={partner} partnerName="" />}
     />
   );
 }
