@@ -25,13 +25,13 @@ model User {
   role             UserRole            @default(User)
   accounts         Account[]           @relation("UserAccounts")
   categories       Category[]          @relation("UserCategories")
-  CategoryProducts CategoryProducts[]
   partners         Partner[]           @relation("UserPartners")
-  products         Product[]           @relation("UserProducts")
-  ProductItems     ProductItems[]
   sessions         Session[]
   transactions     Transaction[]       @relation("UserTransactions")
   authentication   UserAuthentication?
+  products         Product[]           @relation("UserProducts")
+  productItems     ProductItems[]
+  categoryProducts CategoryProducts[]
 
   @@index([isDeleted])
 }
@@ -97,28 +97,47 @@ model UserAuthentication {
 }
 
 model Product {
-  id               String               @id @default(uuid()) @db.Uuid
-  userId           String               @db.Uuid
-  catId            String?              @db.Uuid
-  type             ProductType
-  icon             String
-  name             String               @db.VarChar(50)
-  description      String?              @db.VarChar(1000)
-  price            Decimal              @db.Decimal(13, 2)
-  taxRate          Decimal?             @db.Decimal(13, 2)
-  items            Json?                @db.Json
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
-  createdBy        String               @db.Uuid
-  updatedBy        String?              @db.Uuid
-  currency         Currency             @default(VND)
-  CategoryProducts CategoryProducts?    @relation(fields: [catId], references: [id])
-  user             User                 @relation("UserProducts", fields: [userId], references: [id])
-  ProductItems     ProductItems[]
-  transactions     ProductTransaction[] @relation("ProductTransactions")
+  id           String               @id @default(uuid()) @db.Uuid
+  userId       String               @db.Uuid
+  catId        String?              @db.Uuid
+  type         ProductType
+  icon         String
+  currency     Currency             @default(VND)
+  name         String               @db.VarChar(50)
+  description  String?              @db.VarChar(1000)
+  price        Decimal              @db.Decimal(13, 2)
+  taxRate      Decimal?             @db.Decimal(13, 2)
+  items        Json?                @db.Json
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  createdBy    String               @db.Uuid
+  updatedBy    String?              @db.Uuid
+  user         User                 @relation("UserProducts", fields: [userId], references: [id])
+  transactions ProductTransaction[] @relation("ProductTransactions")
+  category     CategoryProducts?    @relation(fields: [catId], references: [id])
+  productItems ProductItems[]
 
   @@index([userId])
   @@index([catId])
+  @@index([userId, catId])
+}
+
+model ProductItems {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(50)
+  description String?  @db.VarChar(1000)
+  icon        String
+  userId      String   @db.Uuid
+  productId   String   @db.Uuid
+  createdBy   String?  @db.Uuid
+  updatedBy   String?  @db.Uuid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@index([userId, productId])
 }
 
 model CategoryProducts {
@@ -128,12 +147,12 @@ model CategoryProducts {
   name        String    @db.VarChar(50)
   description String?   @db.VarChar(1000)
   tax_rate    Decimal?  @db.Decimal(13, 2)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
   createdBy   String?   @db.Uuid
   updatedBy   String?   @db.Uuid
-  User        User      @relation(fields: [userId], references: [id])
-  Product     Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
+  product     Product[]
 }
 
 model Transaction {
@@ -269,20 +288,6 @@ model Category {
   @@index([parentId])
 }
 
-model ProductItems {
-  id          String   @id @db.Uuid
-  name        String   @db.VarChar(50)
-  description String?  @db.VarChar(1000)
-  userId      String   @db.Uuid
-  productId   String   @db.Uuid
-  createdBy   String?  @db.Uuid
-  updatedBy   String?  @db.Uuid
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime
-  Product     Product  @relation(fields: [productId], references: [id])
-  User        User     @relation(fields: [userId], references: [id])
-}
-
 enum MediaType {
   IMAGE
   VIDEO
@@ -327,6 +332,7 @@ enum TransactionType {
 enum ProductType {
   Product
   Service
+  Edu
 }
 
 enum UserRole {
