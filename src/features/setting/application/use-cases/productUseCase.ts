@@ -10,6 +10,7 @@ import { JsonArray } from '@prisma/client/runtime/library';
 import { ICategoryProductRepository } from '../../domain/repositories/categoryProductRepository.interface';
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
 import { Messages } from '@/shared/constants/message';
+import prisma from '@/infrastructure/database/prisma';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
@@ -235,6 +236,83 @@ class ProductUseCase {
     }
 
     return deletedProduct;
+  }
+
+  async transferProductTransaction(params: { sourceId: string; targetId: string; userId: string }) {
+    const { sourceId, targetId, userId } = params;
+    if (!sourceId || !targetId) {
+      throw new Error(Messages.MISSING_PARAMS_INPUT + ' sourceId or targetId');
+    }
+
+    // Checking existance of source and target products
+    const sourceProduct = await this.productRepository.findUniqueProduct({ id: sourceId });
+    if (!sourceProduct) {
+      throw new Error(Messages.SOURCE_PRODUCT_NOT_FOUND);
+    }
+
+    const targetProduct = await this.productRepository.findUniqueProduct({ id: targetId });
+    if (!targetProduct) {
+      throw new Error(Messages.TARGET_PRODUCT_NOT_FOUND);
+    }
+
+    if (sourceProduct === targetProduct) {
+      throw new Error(Messages.SOURCE_PRODUCT_TRANSFER_SELF_FAILED);
+    }
+
+    // Checking if source and target products are in the same category
+    if (sourceProduct.catId !== targetProduct.catId) {
+      throw new Error(Messages.PRODUCT_INVALID_CATEGORY_TYPE);
+    }
+
+    // Start a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Get all ProductTransaction entries for the source product
+      const productTransactions = await tx.productTransaction.findMany({
+        where: { productId: sourceProduct.id },
+      });
+
+      if (productTransactions.length === 0) {
+        // delete the source product if no transactions are found
+        await tx.product.delete({
+          where: { id: sourceProduct.id },
+        });
+        return {
+          transferred: 0,
+          deleted: true,
+        };
+      }
+
+      // 2. Transfer transactions to target product
+      await tx.productTransaction.updateMany({
+        where: { productId: sourceProduct.id },
+        data: {
+          productId: targetProduct.id,
+          updatedAt: new Date(),
+          updatedBy: userId, // Assuming you have user in req
+        },
+      });
+
+      // 3. Verify no transactions remain with source product
+      const remainingTransactions = await tx.productTransaction.count({
+        where: { productId: sourceProduct.id },
+      });
+
+      if (remainingTransactions > 0) {
+        throw new Error(Messages.TRANSFER_TRANSACTION_FAILED);
+      }
+
+      // 4. Delete the source product
+      await tx.product.delete({
+        where: { id: sourceProduct.id },
+      });
+
+      return {
+        transferred: productTransactions.length,
+        deleted: true,
+      };
+    });
+
+    return result;
   }
 }
 
