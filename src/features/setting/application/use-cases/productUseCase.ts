@@ -87,6 +87,7 @@ class ProductUseCase {
         {
           include: {
             transactions: true,
+            productItems: true,
           },
         },
       );
