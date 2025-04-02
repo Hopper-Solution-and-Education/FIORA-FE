@@ -32,7 +32,7 @@ export async function POST(request: NextApiRequest, response: NextApiResponse, u
         .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.UNSUPPORTED_ACCOUNT_TYPE));
     }
 
-    if (!parentId && parentId !== null) {
+    if (!parentId && parentId === null) {
       const isCreateMasterAccount = await AccountUseCaseInstance.isOnlyMasterAccount(userId, type);
       if (isCreateMasterAccount) {
         return response
