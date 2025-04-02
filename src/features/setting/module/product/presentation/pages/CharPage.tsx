@@ -39,6 +39,7 @@ const mapTransactionsToBarItems = (data: ProductTransactionCategoryResponse[]): 
       income: number;
       expense: number;
       icon: string;
+      color: string;
       products: ProductTransactionResponse[];
       createdAt: string;
       updatedAt: string;
@@ -59,6 +60,7 @@ const mapTransactionsToBarItems = (data: ProductTransactionCategoryResponse[]): 
         income: 0,
         expense: 0,
         icon: categoryItem.category.icon,
+        color: COLORS.DEPS_SUCCESS.LEVEL_2,
         products: [],
         createdAt: categoryItem.category.createdAt,
         updatedAt: categoryItem.category.updatedAt,
@@ -74,17 +76,18 @@ const mapTransactionsToBarItems = (data: ProductTransactionCategoryResponse[]): 
 
       if (type === 'income') {
         groupedByCategory[catId].income += parsedPrice;
+        groupedByCategory[catId].color = COLORS.DEPS_SUCCESS.LEVEL_4;
       } else if (type === 'expense') {
         groupedByCategory[catId].expense += parsedPrice;
+        groupedByCategory[catId].color = COLORS.DEPS_DANGER.LEVEL_4;
       }
     });
   });
 
-  // Chuyển đổi thành BarItem với children, hiển thị tất cả danh mục
   return Object.entries(groupedByCategory).flatMap(
     ([
       catId,
-      { name, income, expense, products, icon, description, taxRate, createdAt, updatedAt },
+      { name, income, expense, products, icon, description, taxRate, createdAt, updatedAt, color },
     ]) => {
       const categoryItem: BarItem = {
         id: catId,
@@ -95,6 +98,7 @@ const mapTransactionsToBarItems = (data: ProductTransactionCategoryResponse[]): 
         taxRate,
         income,
         icon,
+        color,
         expense,
         createdAt,
         updatedAt,
@@ -147,6 +151,7 @@ const ChartPage = () => {
   const isLoading = useAppSelector(
     (state) => state.productManagement.productTransaction.isLoadingGet,
   );
+
   const dispatch = useAppDispatch();
   const { data: userData } = useSession();
 
@@ -173,8 +178,8 @@ const ChartPage = () => {
 
   const tryCallback = (item: BarItem) => {
     if (item.product) {
-      handleEditProduct(item.product);
       setOpenDialog(true);
+      handleEditProduct(item.product);
     }
   };
 
@@ -199,6 +204,8 @@ const ChartPage = () => {
 
   const chartData = useMemo(() => mapTransactionsToBarItems(data), [data]);
 
+  console.log(chartData);
+
   return (
     <div>
       {isLoading && <Loading />}
@@ -208,6 +215,8 @@ const ChartPage = () => {
         legendItems={[
           { name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_2 },
           { name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_2 },
+          { name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_3 },
+          { name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_3 },
         ]}
         levelConfig={{
           totalName: 'Total Transaction',

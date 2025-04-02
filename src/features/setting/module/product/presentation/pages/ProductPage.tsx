@@ -12,7 +12,6 @@ import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Product } from '../../domain/entities/Product';
-import { setIsOpenDialogAddCategory } from '../../slices';
 import { deleteProductAsyncThunk } from '../../slices/actions/deleteProductAsyncThunk';
 import { getProductTransactionAsyncThunk } from '../../slices/actions/getProductTransactionAsyncThunk';
 import DeleteProductDialog from '../organisms/DeleteProductDialog';
@@ -32,9 +31,6 @@ const ProductPage = () => {
   );
   const isCreatingCategoryProduct = useAppSelector(
     (state) => state.productManagement.isCreatingProductCategory,
-  );
-  const isOpenDialogProductCategoryCreation = useAppSelector(
-    (state) => state.productManagement.isOpenDialogAddCategory,
   );
 
   const dispatch = useAppDispatch();
@@ -118,10 +114,7 @@ const ProductPage = () => {
         onConfirm={confirmDelete}
       />
 
-      <ProductCatCreationDialog
-        open={isOpenDialogProductCategoryCreation}
-        onOpenChange={(open) => dispatch(setIsOpenDialogAddCategory(open))}
-      />
+      <ProductCatCreationDialog />
     </div>
   );
 };

@@ -160,7 +160,7 @@ const TwoSideBarChart = ({
         income: values.income,
         type: 'product',
         children: values.children || [],
-        color: levelConfig?.colors[1] || '#888888',
+        color: values || '#888888',
         depth: 0,
         product: values.product,
         icon: values.icon,
@@ -317,9 +317,10 @@ const TwoSideBarChart = ({
               onClick={(props) => callback && callback(props)}
               className="transition-all duration-300 cursor-pointer"
             >
-              {visibleData.map((entry, index) => (
-                <Cell key={`expense-cell-${index}`} fill={legendItems[0].color} />
-              ))}
+              {visibleData.map((entry, index) => {
+                const color = entry.isChild ? legendItems[2].color : legendItems[0].color;
+                return <Cell key={`expense-cell-${index}`} fill={color} />;
+              })}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
@@ -374,9 +375,10 @@ const TwoSideBarChart = ({
               onClick={(props) => callback && callback(props)}
               className="transition-all duration-300 cursor-pointer"
             >
-              {visibleData.map((entry, index) => (
-                <Cell key={`income-cell-${index}`} fill={legendItems[1].color} />
-              ))}
+              {visibleData.map((entry, index) => {
+                const color = entry.isChild ? legendItems[3].color : legendItems[1].color;
+                return <Cell key={`income-cell-${index}`} fill={color} className="mr-20" />;
+              })}
             </Bar>
           </BarChart>
         </ResponsiveContainer>

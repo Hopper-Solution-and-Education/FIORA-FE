@@ -1,12 +1,16 @@
 'use client';
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { memo, useLayoutEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { setIsOpenDialogAddCategory } from '../../slices';
 import ProductCategoryForm from '../molecules/ProductCategoryForm';
 import {
   CategoryProductFormValues,
@@ -14,31 +18,78 @@ import {
   defaultCategoryProductValue,
 } from '../schema/productCategory.schema';
 
-interface DeleteProductDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
+const ProductCatCreationDialog = () => {
+  const dispatch = useAppDispatch();
 
-const ProductCatCreationDialog = ({ open, onOpenChange }: DeleteProductDialogProps) => {
+  const productCategoryToEdit = useAppSelector(
+    (state) => state.productManagement.ProductCategoryToEdit,
+  );
+  const ProductCategoryFormState = useAppSelector(
+    (state) => state.productManagement.ProductCategoryFormState,
+  );
+
   const methods = useForm<CategoryProductFormValues>({
     resolver: yupResolver(categoryProductsSchema),
-    defaultValues: defaultCategoryProductValue,
+    defaultValues:
+      ProductCategoryFormState === 'add'
+        ? defaultCategoryProductValue
+        : ({
+            id: productCategoryToEdit?.id,
+            icon: productCategoryToEdit?.icon ?? 'dashboard',
+            name: productCategoryToEdit?.name ?? '',
+            description: productCategoryToEdit?.description ?? '',
+            tax_rate: parseFloat(String(productCategoryToEdit?.taxRate)),
+            createdAt: productCategoryToEdit?.createdAt,
+            updatedAt: productCategoryToEdit?.updatedAt,
+          } as CategoryProductFormValues),
   });
+
+  const { reset } = methods;
+
+  useLayoutEffect(() => {
+    if (ProductCategoryFormState === 'edit' && productCategoryToEdit) {
+      reset({
+        id: productCategoryToEdit.id,
+        name: productCategoryToEdit.name,
+        icon: productCategoryToEdit.icon,
+        description: productCategoryToEdit.description,
+        tax_rate: productCategoryToEdit.taxRate ?? 0,
+        createdAt: new Date(productCategoryToEdit.createdAt),
+        updatedAt: new Date(productCategoryToEdit.updatedAt),
+      });
+    } else {
+      reset(defaultCategoryProductValue);
+    }
+  }, [productCategoryToEdit]);
+
+  const isOpenProductCateDialog = useAppSelector(
+    (state) => state.productManagement.isOpenDialogAddCategory,
+  );
+  const handleChangeOpenDialog = (value: boolean) => {
+    dispatch(setIsOpenDialogAddCategory(value));
+  };
 
   return (
     <FormProvider {...methods}>
-      <AlertDialog open={open} onOpenChange={onOpenChange}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Add Product Category</AlertDialogTitle>
-          </AlertDialogHeader>
+      <Dialog open={isOpenProductCateDialog} onOpenChange={handleChangeOpenDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {ProductCategoryFormState === 'add'
+                ? 'Add Product Category'
+                : 'Update Product Category'}
+            </DialogTitle>
+          </DialogHeader>
+          <DialogDescription>
+            Please provide the name and any other relevant details for the new product category.
+          </DialogDescription>
           <div>
             <ProductCategoryForm />
           </div>
-        </AlertDialogContent>
-      </AlertDialog>
+        </DialogContent>
+      </Dialog>
     </FormProvider>
   );
 };
 
-export default ProductCatCreationDialog;
+export default memo(ProductCatCreationDialog);

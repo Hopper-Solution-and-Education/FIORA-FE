@@ -62,7 +62,6 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (callback && item) {
-      console.log(item);
       throttledCallback(callback, item);
     }
   };

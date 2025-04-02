@@ -10,26 +10,28 @@ datasource db {
 }
 
 model User {
-  id             String              @id @default(uuid()) @db.Uuid
-  name           String?
-  email          String              @unique
-  password       String?
-  emailVerified  Boolean?            @default(false)
-  image          String?
-  isDeleted      Boolean             @default(false)
-  deletedAt      DateTime?
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
-  createdBy      String?             @db.Uuid
-  updatedBy      String?             @db.Uuid
-  role           UserRole            @default(User)
-  accounts       Account[]           @relation("UserAccounts")
-  categories     Category[]          @relation("UserCategories")
-  partners       Partner[]           @relation("UserPartners")
-  products       Product[]           @relation("UserProducts")
-  sessions       Session[]
-  transactions   Transaction[]       @relation("UserTransactions")
-  authentication UserAuthentication?
+  id               String              @id @default(uuid()) @db.Uuid
+  name             String?
+  email            String              @unique
+  password         String?
+  emailVerified    Boolean?            @default(false)
+  image            String?
+  isDeleted        Boolean             @default(false)
+  deletedAt        DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  createdBy        String?             @db.Uuid
+  updatedBy        String?             @db.Uuid
+  role             UserRole            @default(User)
+  accounts         Account[]           @relation("UserAccounts")
+  categories       Category[]          @relation("UserCategories")
+  CategoryProducts CategoryProducts[]
+  partners         Partner[]           @relation("UserPartners")
+  products         Product[]           @relation("UserProducts")
+  ProductItems     ProductItems[]
+  sessions         Session[]
+  transactions     Transaction[]       @relation("UserTransactions")
+  authentication   UserAuthentication?
 
   @@index([isDeleted])
 }
@@ -95,36 +97,43 @@ model UserAuthentication {
 }
 
 model Product {
-  id           String               @id @default(uuid()) @db.Uuid
-  userId       String               @db.Uuid
-  catId        String?              @db.Uuid
-  type         ProductType
-  icon         String
-  name         String               @db.VarChar(50)
-  description  String?              @db.VarChar(1000)
-  price        Decimal              @db.Decimal(13, 2)
-  taxRate      Decimal?             @db.Decimal(13, 2)
-  items        Json?                @db.Json
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-  createdBy    String               @db.Uuid
-  updatedBy    String?              @db.Uuid
-  user         User                 @relation("UserProducts", fields: [userId], references: [id])
-  transactions ProductTransaction[] @relation("ProductTransactions")
+  id               String               @id @default(uuid()) @db.Uuid
+  userId           String               @db.Uuid
+  catId            String?              @db.Uuid
+  type             ProductType
+  icon             String
+  name             String               @db.VarChar(50)
+  description      String?              @db.VarChar(1000)
+  price            Decimal              @db.Decimal(13, 2)
+  taxRate          Decimal?             @db.Decimal(13, 2)
+  items            Json?                @db.Json
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  createdBy        String               @db.Uuid
+  updatedBy        String?              @db.Uuid
+  currency         Currency             @default(VND)
+  CategoryProducts CategoryProducts?    @relation(fields: [catId], references: [id])
+  user             User                 @relation("UserProducts", fields: [userId], references: [id])
+  ProductItems     ProductItems[]
+  transactions     ProductTransaction[] @relation("ProductTransactions")
 
   @@index([userId])
   @@index([catId])
 }
 
 model CategoryProducts {
-  id          String   @id @default(uuid()) @db.Uuid
-  userId      String   @db.Uuid
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
   icon        String
-  name        String   @db.VarChar(50)
-  description String?  @db.VarChar(1000)
-  tax_rate    Decimal? @db.Decimal(13, 2)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  name        String    @db.VarChar(50)
+  description String?   @db.VarChar(1000)
+  tax_rate    Decimal?  @db.Decimal(13, 2)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?   @db.Uuid
+  updatedBy   String?   @db.Uuid
+  User        User      @relation(fields: [userId], references: [id])
+  Product     Product[]
 }
 
 model Transaction {
@@ -258,6 +267,20 @@ model Category {
 
   @@index([userId])
   @@index([parentId])
+}
+
+model ProductItems {
+  id          String   @id @db.Uuid
+  name        String   @db.VarChar(50)
+  description String?  @db.VarChar(1000)
+  userId      String   @db.Uuid
+  productId   String   @db.Uuid
+  createdBy   String?  @db.Uuid
+  updatedBy   String?  @db.Uuid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  Product     Product  @relation(fields: [productId], references: [id])
+  User        User     @relation(fields: [userId], references: [id])
 }
 
 enum MediaType {

@@ -21,7 +21,6 @@ import { productDIContainer } from '../../di/productDIContainer';
 import { TYPES } from '../../di/productDIContainer.type';
 import { Product } from '../../domain/entities/Product';
 import { GetSingleProductUseCase } from '../../domain/usecases/GetSingleProductUsecase';
-import { setIsOpenDialogAddCategory } from '../../slices';
 import { createProduct } from '../../slices/actions/createProductAsyncThunk';
 import { deleteProductAsyncThunk } from '../../slices/actions/deleteProductAsyncThunk';
 import { fetchCategoriesProduct } from '../../slices/actions/fetchCategoriesProduct';
@@ -42,9 +41,6 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
   const { page, limit } = useAppSelector((state) => state.productManagement.categories);
   const isUpdatingProduct = useAppSelector((state) => state.productManagement.isUpdatingProduct);
   const isCreatingProduct = useAppSelector((state) => state.productManagement.isCreatingProduct);
-  const isOpenDialogProductCategoryCreation = useAppSelector(
-    (state) => state.productManagement.isOpenDialogAddCategory,
-  );
   const [isLoadingGetProduct, setIsLoadingGetProduct] = useState(false);
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -238,10 +234,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
             </DialogContent>
           </Dialog>
 
-          <ProductCatCreationDialog
-            open={isOpenDialogProductCategoryCreation}
-            onOpenChange={(open) => dispatch(setIsOpenDialogAddCategory(open))}
-          />
+          <ProductCatCreationDialog />
         </div>
       </FormProvider>
     </section>
