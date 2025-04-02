@@ -142,8 +142,6 @@ export default function ProductCategoryForm() {
       />
       <Dialog open={isOpenDialogDelete} onOpenChange={setIsOpenDialogDelete}>
         <DialogContent className="sm:max-w-md flex flex-col">
-          {' '}
-          {/* Added flex flex-col */}
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">Confirm Delete</DialogTitle>
             <DialogDescription>

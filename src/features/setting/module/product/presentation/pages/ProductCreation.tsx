@@ -1,17 +1,12 @@
 'use client';
 import Loading from '@/components/common/atoms/Loading';
+import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FIREBASE_GS_URL, FIREBASE_STORAGE_URL } from '@/shared/constants';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Trash2 } from 'lucide-react';
+import { CircleX, Loader2, Pencil, Save, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -194,24 +189,35 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
             </div>
 
             <div className="flex justify-between items-center">
-              {productId && (
-                <Button type="button" variant="ghost" onClick={openDeleteDialog}>
-                  <Trash2 color="red" className="h-4 w-4" />
-                </Button>
-              )}
+              <Button
+                disabled={!productId}
+                type="button"
+                variant="outline"
+                onClick={openDeleteDialog}
+              >
+                <Trash2 color="red" className="h-4 w-4" />
+              </Button>
+
               <div className="flex gap-3">
                 <Button
                   disabled={!isValid || isCreatingProduct || isUpdatingProduct}
                   type="submit"
                   form="hook-form"
+                  className="flex items-center gap-2 bg-green-500"
                 >
-                  {productId
-                    ? isUpdatingProduct
-                      ? 'Updating...'
-                      : 'Update Product'
-                    : isCreatingProduct
-                      ? 'Creating...'
-                      : 'Create Product'}
+                  {isCreatingProduct || isUpdatingProduct ? (
+                    <Loader2 className="animate-spin h-5 w-5" />
+                  ) : productId ? (
+                    <>
+                      <Pencil className="h-5 w-5" />
+                      <span>Update</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-5 w-5" />
+                      <span>Create</span>
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
@@ -223,14 +229,15 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
                 <DialogTitle>Confirm Delete</DialogTitle>
               </DialogHeader>
               <p>Are you sure you want to delete this product? This action cannot be undone.</p>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
+              <div className="w-full flex justify-between mt-auto">
+                {/* Added flex and mt-auto */}
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  <CircleX />
                 </Button>
-                <Button variant="destructive" onClick={confirmDelete}>
-                  Delete
+                <Button onClick={confirmDelete} type="button" variant="destructive">
+                  <Icons.check />
                 </Button>
-              </DialogFooter>
+              </div>
             </DialogContent>
           </Dialog>
 

@@ -1,14 +1,16 @@
 'use client';
+import { Icons } from '@/components/Icon';
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Check } from 'lucide-react';
 import { Product } from '../../domain/entities/Product';
 
 interface DeleteProductDialogProps {
@@ -35,13 +37,40 @@ const DeleteProductDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            Delete
-          </AlertDialogAction>
+          <TooltipProvider>
+            <div className="flex justify-between gap-4 mt-6">
+              {/* Cancel Button */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => onOpenChange(false)}
+                    variant="outline"
+                    type="button"
+                    className="flex items-center justify-center gap-2 px-10 py-2 border rounded-lg transition hover:bg-gray-100"
+                  >
+                    <Icons.trash className=" text-red-600" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Delete</p>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Submit Button */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="submit"
+                    onClick={onConfirm}
+                    className="flex items-center justify-center gap-2 px-10 py-2 rounded-lg transition bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400"
+                  >
+                    <Check className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Submit</TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
