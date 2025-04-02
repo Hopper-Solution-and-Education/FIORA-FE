@@ -1,19 +1,11 @@
 'use client';
 
 import Loading from '@/components/common/atoms/Loading';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { CategoryProduct } from '../../domain/entities/Category';
 import {
   ProductTransactionCategoryResponse,
@@ -24,8 +16,8 @@ import {
   setProductCategoryFormState,
   setProductCategoryToEdit,
 } from '../../slices';
+import { getProductTransactionAsyncThunk } from '../../slices/actions/getProductTransactionAsyncThunk';
 import TwoSideBarChart, { BarItem } from '../atoms/charts';
-import { ProductFormValues } from '../schema/addProduct.schema';
 
 // Hàm mapping dữ liệu thành BarItem
 const mapTransactionsToBarItems = (data: ProductTransactionCategoryResponse[]): BarItem[] => {
@@ -151,17 +143,12 @@ const ChartPage = () => {
   const isLoading = useAppSelector(
     (state) => state.productManagement.productTransaction.isLoadingGet,
   );
+  const { page, pageSize, hasMore } = useAppSelector(
+    (state) => state.productManagement.productTransaction,
+  );
 
   const dispatch = useAppDispatch();
   const { data: userData } = useSession();
-
-  const [selectedProduct, setSelectedProduct] = useState<ProductFormValues | null>(null);
-  const [openDialog, setOpenDialog] = useState(false);
-
-  const handleEditProduct = (product: ProductFormValues) => {
-    setSelectedProduct(product);
-    setOpenDialog(true);
-  };
 
   const handleEditCategoryProduct = (categoryProduct: CategoryProduct) => {
     dispatch(setProductCategoryFormState('edit'));
@@ -169,24 +156,9 @@ const ChartPage = () => {
     dispatch(setIsOpenDialogAddCategory(true));
   };
 
-  const handleDialogConfirm = () => {
-    if (selectedProduct) {
-      router.push(`/setting/product/update/${selectedProduct.id}`);
-    }
-    setOpenDialog(false);
-  };
-
-  const tryCallback = (item: BarItem) => {
-    if (item.product) {
-      setOpenDialog(true);
-      handleEditProduct(item.product);
-    }
-  };
-
   const tryCallBackYaxis = (item: BarItem) => {
     if (item.product) {
-      handleEditProduct(item.product);
-      setOpenDialog(true);
+      router.push(`/setting/product/update/${item.product.id}`);
     } else {
       const categoryProduct: CategoryProduct = {
         id: item.id ?? '',
@@ -204,19 +176,30 @@ const ChartPage = () => {
 
   const chartData = useMemo(() => mapTransactionsToBarItems(data), [data]);
 
-  console.log(chartData);
+  const loadMoreTransactionProduct = () => {
+    if (hasMore) {
+      dispatch(
+        getProductTransactionAsyncThunk({
+          page: page + 1,
+          pageSize,
+          userId: userData?.user.id ?? '',
+        }),
+      );
+    }
+  };
 
   return (
     <div>
       {isLoading && <Loading />}
       <TwoSideBarChart
         data={chartData}
+        onPressArrowDown={loadMoreTransactionProduct}
         title="Product Overview"
         legendItems={[
-          { name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_2 },
-          { name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_2 },
-          { name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_3 },
-          { name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_3 },
+          { name: 'Expense (Category)', color: COLORS.DEPS_DANGER.LEVEL_2 },
+          { name: 'Income (Category)', color: COLORS.DEPS_SUCCESS.LEVEL_2 },
+          { name: 'Expense (Product)', color: COLORS.DEPS_DANGER.LEVEL_3 },
+          { name: 'Income (Product)', color: COLORS.DEPS_SUCCESS.LEVEL_3 },
         ]}
         levelConfig={{
           totalName: 'Total Transaction',
@@ -224,25 +207,8 @@ const ChartPage = () => {
             0: COLORS.DEPS_SUCCESS.LEVEL_3,
           },
         }}
-        callback={tryCallback}
         callbackYAxis={(e) => tryCallBackYaxis(e)}
       />
-      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Edit</DialogTitle>
-          </DialogHeader>
-          <p>Are you sure you want to Edit this product?</p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpenDialog(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDialogConfirm}>
-              Yes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

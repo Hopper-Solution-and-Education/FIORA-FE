@@ -3,18 +3,22 @@
 import GlobalFormV2 from '@/components/common/organisms/GlobalFormV2';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { Check, Loader2 } from 'lucide-react';
+import { DialogTitle } from '@radix-ui/react-dialog';
+import { Check, CircleX, Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { toast } from 'sonner';
 import {
   CategoryProductCreateRequest,
   CategoryProductUpdateRequest,
 } from '../../domain/entities/Category';
-import { setIsOpenDialogAddCategory } from '../../slices';
+import { setIsOpenDialogAddCategory, setProductCategoryFormState } from '../../slices';
 import { createCategoryProductAsyncThunk } from '../../slices/actions/createCategoryProductAsyncThunk';
+import { deleteCategoryProductAsyncThunk } from '../../slices/actions/deleteCategoryProductAsyncThunk';
 import { updateCategoryProductAsyncThunk } from '../../slices/actions/updateCategoryProductAsyncThunk';
 import useProductCategoryFormConfig from '../config/ProductCategoryFormConfig';
 import { CategoryProductFormValues } from '../schema/productCategory.schema';
@@ -26,7 +30,19 @@ export default function ProductCategoryForm() {
     (state) => state.productManagement.ProductCategoryFormState,
   );
   const methods = useFormContext<CategoryProductFormValues>();
-  const { handleSubmit, formState } = methods;
+  const { handleSubmit, formState, getValues } = methods;
+
+  const [isOpenDialogDelete, setIsOpenDialogDelete] = useState(false);
+
+  const handlePressDeleteCategory = () => {
+    dispatch(deleteCategoryProductAsyncThunk({ productCategoryId: getValues('id') ?? '' }))
+      .unwrap()
+      .then(() => {
+        dispatch(setIsOpenDialogAddCategory(false));
+        dispatch(setProductCategoryFormState('add'));
+      });
+    setIsOpenDialogDelete(false);
+  };
 
   const { data: userData } = useSession();
 
@@ -79,10 +95,11 @@ export default function ProductCategoryForm() {
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              onClick={() => dispatch(setIsOpenDialogAddCategory(false))}
+              disabled={ProductCategoryFormState === 'add'}
+              onClick={() => setIsOpenDialogDelete(true)}
               variant="outline"
               type="button"
-              className="flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition hover:bg-gray-100"
+              className="flex items-center justify-center gap-2 px-10 py-2 border rounded-lg transition hover:bg-gray-100"
             >
               <Icons.trash className=" text-red-600" />
             </Button>
@@ -98,14 +115,13 @@ export default function ProductCategoryForm() {
             <Button
               type="submit"
               disabled={!formState.isValid || formState.isSubmitting || formState.isValidating}
-              className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400"
+              className="flex items-center justify-center gap-2 px-10 py-2 rounded-lg transition bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400"
             >
               {formState.isSubmitting ? (
                 <Loader2 className="animate-spin h-5 w-5" />
               ) : (
                 <Check className="h-5 w-5" />
               )}
-              <span>{formState.isSubmitting ? 'Submitting...' : 'Submit'}</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -124,6 +140,27 @@ export default function ProductCategoryForm() {
         onBack={() => dispatch(setIsOpenDialogAddCategory(false))}
         renderSubmitButton={footerButtonGroup}
       />
+      <Dialog open={isOpenDialogDelete} onOpenChange={setIsOpenDialogDelete}>
+        <DialogContent className="sm:max-w-md flex flex-col">
+          {' '}
+          {/* Added flex flex-col */}
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Confirm Delete</DialogTitle>
+            <DialogDescription>
+              Are you sure to delete this category? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="w-full flex justify-between mt-auto">
+            {/* Added flex and mt-auto */}
+            <Button type="button" variant="outline" onClick={() => setIsOpenDialogDelete(false)}>
+              <CircleX />
+            </Button>
+            <Button onClick={handlePressDeleteCategory} type="button" variant="destructive">
+              <Icons.check />
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 }

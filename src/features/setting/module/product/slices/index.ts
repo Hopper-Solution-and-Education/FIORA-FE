@@ -214,6 +214,11 @@ const productManagementSlice = createSlice({
         state.categories.data = state.categories.data.filter(
           (item) => item.id !== deletedCategoryId,
         );
+
+        state.productTransaction.data = state.productTransaction.data.filter(
+          (item) => item.category.id !== deletedCategoryId,
+        );
+
         toast.success('Success', {
           description: 'Delete category successfully!!',
         });

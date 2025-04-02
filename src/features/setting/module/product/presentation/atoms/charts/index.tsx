@@ -2,6 +2,7 @@
 
 import ChartLegend from '@/components/common/nested-bar-chart/atoms/ChartLegend';
 import CustomYAxisTick from '@/components/common/nested-bar-chart/atoms/CustomYAxisTick';
+import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import {
   BASE_BAR_HEIGHT,
@@ -10,6 +11,7 @@ import {
   MIN_CHART_HEIGHT,
 } from '@/shared/constants/chart';
 import { getChartMargins, useWindowSize } from '@/shared/utils/device';
+import { ArrowDown } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Bar,
@@ -67,6 +69,7 @@ export type PositiveAndNegativeBarChartProps = {
   callback?: (item: any) => void;
   callbackYAxis?: (item: any) => void;
   levelConfig?: LevelConfig;
+  onPressArrowDown?: () => void;
 };
 
 const TwoSideBarChart = ({
@@ -82,6 +85,7 @@ const TwoSideBarChart = ({
   callback,
   callbackYAxis,
   levelConfig,
+  onPressArrowDown,
 }: PositiveAndNegativeBarChartProps) => {
   const isMobile = useIsMobile();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
@@ -382,9 +386,15 @@ const TwoSideBarChart = ({
             </Bar>
           </BarChart>
         </ResponsiveContainer>
+
         {isMobile && <ChartLegend items={legendItems} />}
       </div>
       {!isMobile && <ChartLegend items={legendItems} />}
+      <div className="w-full flex items-center justify-center py-4 duration-200">
+        <Button onClick={onPressArrowDown}>
+          <ArrowDown />
+        </Button>
+      </div>
     </div>
   );
 };

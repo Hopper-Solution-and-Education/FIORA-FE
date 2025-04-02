@@ -1,4 +1,5 @@
 'use client';
+import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import {
   FormControl,
@@ -11,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/shared/utils';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { type Control, useFieldArray, useFormContext } from 'react-hook-form';
 import type { ProductFormValues } from '../schema/addProduct.schema';
 
@@ -41,7 +42,7 @@ const ProductItemsField = ({ control }: ProductItemsFieldProps) => {
       name="items"
       render={() => (
         <FormItem className="col-span-2">
-          <FormLabel className="text-lg font-semibold">Items</FormLabel>
+          <FormLabel className="font-semibold">Product Items</FormLabel>
           <FormDescription className="text-gray-600 mb-4">
             Add items to your product. Each item should have a name and description.
           </FormDescription>
@@ -57,7 +58,7 @@ const ProductItemsField = ({ control }: ProductItemsFieldProps) => {
                   onClick={() => remove(index)}
                   className="absolute top-2 right-2 text-destructive hover:bg-gray-100 rounded-full p-1"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Icons.trash className="h-4 w-4" />
                 </button>
 
                 <div className="mb-3">
