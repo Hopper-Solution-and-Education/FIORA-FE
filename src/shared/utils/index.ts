@@ -167,7 +167,7 @@ export function buildOrderByTransactionV2(
     return acc;
   }, {} as Prisma.TransactionOrderByWithRelationInput);
 }
-export const buildWhereClause = (filters: Filter) => {
+export function buildWhereClause(filters: Filter) {
   const whereClause: any = {};
 
   if (!filters) {
@@ -187,4 +187,4 @@ export const buildWhereClause = (filters: Filter) => {
   }
 
   return whereClause;
-};
+}

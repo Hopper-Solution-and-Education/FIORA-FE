@@ -63,9 +63,9 @@ class TransactionUseCase {
           },
           {
             OR: [
-              { fromAccount: { name: { contains: searchParams } } },
-              { toAccount: { name: { contains: searchParams } } },
-              { partner: { name: { contains: searchParams } } },
+              { fromAccount: { name: { contains: typeSearchParams } } },
+              { toAccount: { name: { contains: typeSearchParams } } },
+              { partner: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
               // adding typeTransactionWhere to where clause if exists
               ...(typeTransactionWhere ? [{ type: typeTransactionWhere }] : []),
               ...(isSearchDate
