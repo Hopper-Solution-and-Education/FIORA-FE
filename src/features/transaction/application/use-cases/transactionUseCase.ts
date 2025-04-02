@@ -11,9 +11,9 @@ import { buildOrderByTransactionV2, buildWhereClause } from '@/shared/utils';
 import {
   AccountType,
   CategoryType,
+  Prisma,
   TransactionType,
   type Account,
-  type Prisma,
   type Transaction,
 } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
@@ -37,7 +37,7 @@ class TransactionUseCase {
     const take = pageSize;
     const skip = (page - 1) * pageSize;
 
-    let where = buildWhereClause(filters);
+    let where = buildWhereClause(filters) as Prisma.TransactionWhereInput;
     if (searchParams) {
       const typeSearchParams = searchParams.toLowerCase();
       // test with Regex-Type Transaction
@@ -58,16 +58,19 @@ class TransactionUseCase {
       where = {
         AND: [
           where,
-          {
-            userId,
-          },
+          { userId },
           {
             OR: [
               { fromAccount: { name: { contains: typeSearchParams } } },
               { toAccount: { name: { contains: typeSearchParams } } },
               { partner: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+              {
+                amount: { gte: Number(typeSearchParams) || 0, lte: Number(typeSearchParams) || 0 },
+              },
               // adding typeTransactionWhere to where clause if exists
-              ...(typeTransactionWhere ? [{ type: typeTransactionWhere }] : []),
+              ...(typeTransactionWhere
+                ? [{ type: typeTransactionWhere as unknown as TransactionType }]
+                : []),
               ...(isSearchDate
                 ? [
                     {
