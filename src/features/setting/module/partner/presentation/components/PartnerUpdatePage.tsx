@@ -1,22 +1,55 @@
-// src/features/setting/module/partner/presentation/components/PartnerUpdatePage.tsx
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useAppSelector } from '@/store';
 import FormPage from '@/components/common/organisms/FormPage';
+import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
 import PartnerUpdateForm from '@/features/setting/module/partner/presentation/components/PartnerUpdateForm';
-import { notFound } from 'next/navigation';
+import { fetchPartnerById } from '@/features/setting/module/partner/slices/actions/fetchPartnerByIdAsyncThunk';
+import { useAppDispatch } from '@/store';
+import { notFound, useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import DeletePartnerButton from './DeletePartnerButton';
 
 export default function PartnerUpdatePage() {
   const params = useParams();
   const id = params?.id as string;
-  const partner = useAppSelector((state) => state.partner.partners.find((p) => p.id === id));
+  const dispatch = useAppDispatch();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [partner, setPartner] = useState<Partner | null>(null);
 
-  if (!partner) {
+  useEffect(() => {
+    const getPartner = async () => {
+      try {
+        setLoading(true);
+        const result = await dispatch(fetchPartnerById(id)).unwrap();
+        setPartner(result);
+      } catch (err) {
+        console.error('Failed to fetch partner:', err);
+        setError(err as string);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      getPartner();
+    }
+  }, [id, dispatch]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error || !partner) {
     notFound();
   }
 
   return (
-    <FormPage title="Update Partner" FormComponent={PartnerUpdateForm} initialData={partner} />
+    <FormPage
+      title="Update Partner"
+      FormComponent={PartnerUpdateForm}
+      initialData={partner}
+      headerActions={<DeletePartnerButton partnerId={id} />}
+    />
   );
 }

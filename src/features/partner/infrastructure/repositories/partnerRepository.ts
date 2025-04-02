@@ -43,6 +43,38 @@ class PartnerRepository implements IPartnerRepository {
     });
   }
 
+  // async deletePartner(id: string, userId: string): Promise<Partner> {
+  //   // First find the partner to ensure it exists and belongs to the user
+  //   const partner = await prisma.partner.findFirst({
+  //     where: { id, userId },
+  //   });
+
+  //   if (!partner) {
+  //     throw new Error('Partner not found');
+  //   }
+
+  //   // Update all child partners to have null parentId
+  //   await prisma.partner.updateMany({
+  //     where: { parentId: id },
+  //     data: { parentId: null },
+  //   });
+
+  //   // Update all transactions to have null partnerId
+  //   await prisma.transaction.updateMany({
+  //     where: { partnerId: id },
+  //     data: { partnerId: null },
+  //   });
+
+  //   // Delete the partner
+  //   return await prisma.partner.delete({
+  //     where: { id },
+  //   });
+  // }
+
+  async deletePartner(id: string): Promise<void> {
+    await prisma.partner.delete({ where: { id } });
+  }
+
   async findByName(name: string, userId: string): Promise<Partner | null> {
     return prisma.partner.findFirst({
       where: {

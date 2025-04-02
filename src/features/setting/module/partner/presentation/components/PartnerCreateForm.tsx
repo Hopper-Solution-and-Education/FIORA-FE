@@ -1,5 +1,6 @@
 'use client';
 
+import CustomDateTimePicker from '@/components/common/atoms/CustomDateTimePicker';
 import InputField from '@/components/common/atoms/InputField';
 import SelectField from '@/components/common/atoms/SelectField';
 import TextareaField from '@/components/common/atoms/TextareaField';
@@ -11,24 +12,24 @@ import {
   PartnerFormValues,
   partnerSchema,
 } from '@/features/setting/module/partner/presentation/schema/addPartner.schema';
+import { useAppSelector } from '@/store';
 import { toast } from 'sonner';
-import CustomDateTimePicker from '@/components/common/atoms/CustomDateTimePicker';
-
-// interface PartnerCreateFormProps {
-//   initialData?: PartnerFormValues;
-// }
 
 export default function PartnerCreateForm() {
-  const { partners, onSubmit: submitPartner } = useCreatePartner({
+  const { onSubmit: submitPartner } = useCreatePartner({
     redirectPath: '/setting/partner',
   });
 
+  const partners = useAppSelector((state) => state.partner.partners);
+
   const parentOptions = [
     { value: 'none', label: 'None' },
-    ...partners.map((partner) => ({
-      value: partner.id,
-      label: partner.name,
-    })),
+    ...partners
+      .filter((partner) => partner.parentId === null)
+      .map((partner) => ({
+        value: partner.id,
+        label: partner.name,
+      })),
   ];
 
   const fields = [
@@ -40,7 +41,8 @@ export default function PartnerCreateForm() {
       placeholder="Select a parent partner"
       defaultValue="none"
     />,
-    <InputField key="name" name="name" label="Name" placeholder="Partner Name" required />,
+    <InputField key="name" name="name" label="Name" placeholder="Name" required />,
+    <UploadField key="logo" label="Logo" name="logo" />,
     <TextareaField
       key="description"
       name="description"
@@ -57,7 +59,12 @@ export default function PartnerCreateForm() {
       dropdownMode="select"
       dateFormat="dd/MM/yyyy"
     />,
-    <UploadField key="logo" label="Logo" name="logo" />,
+    <InputField
+      key="identify"
+      name="identify"
+      label="Identification"
+      placeholder="Identification Number"
+    />,
     <InputField key="taxNo" name="taxNo" label="Tax Number" placeholder="Tax Number" />,
     <InputField key="phone" name="phone" label="Phone" placeholder="Phone Number" />,
     <InputField key="address" name="address" label="Address" placeholder="Address" />,
@@ -66,10 +73,12 @@ export default function PartnerCreateForm() {
 
   const handleSubmit = async (data: PartnerFormValues) => {
     try {
+      // Simply pass the data to the submitPartner function
+      // The logo upload will be handled in useCreatePartner
       await submitPartner(data);
     } catch (error) {
       toast.error('Failed to create partner');
-      console.log(error);
+      console.error('Create partner error:', error);
     }
   };
 

@@ -39,12 +39,15 @@ class TransactionUseCase {
 
     let where = buildWhereClause(filters);
     if (searchParams) {
-      let typeSearchParams = searchParams.toLowerCase();
+      const typeSearchParams = searchParams.toLowerCase();
       // test with Regex-Type Transaction
       const regex = new RegExp('^' + typeSearchParams, 'i'); // ^: start with, i: ignore case
       const typeTransaction = Object.values(TransactionType).find((type) => regex.test(type));
+
+      let typeTransactionWhere = '';
+
       if (typeTransaction) {
-        typeSearchParams = typeTransaction;
+        typeTransactionWhere = typeTransaction;
       }
 
       // test with Regex-Date format YYYY-MM-DD
@@ -60,7 +63,8 @@ class TransactionUseCase {
               { fromAccount: { name: { contains: searchParams } } },
               { toAccount: { name: { contains: searchParams } } },
               { partner: { name: { contains: searchParams } } },
-              ...(typeTransaction ? [{ type: { contains: typeTransaction } }] : []),
+              // adding typeTransactionWhere to where clause if exists
+              ...(typeTransactionWhere ? [{ type: typeTransactionWhere }] : []),
               ...(isSearchDate
                 ? [
                     {
@@ -181,6 +185,17 @@ class TransactionUseCase {
 
     await this.revertProductPrices(tx, transaction);
     await tx.productTransaction.deleteMany({ where: { transactionId: transaction.id } });
+  }
+
+  async getTransactionFilterOptions(userId: string) {
+    const filterOptions = await this.transactionRepository.getFilterOptions(userId);
+    return {
+      fromAccounts: filterOptions.fromAccounts ?? [],
+      toAccounts: filterOptions.toAccounts ?? [],
+      fromCategories: filterOptions.fromCategories ?? [],
+      toCategories: filterOptions.toCategories ?? [],
+      partners: filterOptions.partners ?? [],
+    };
   }
 
   private validateSufficientBalance(balance: number, amount: number, errorMessage: string) {

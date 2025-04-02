@@ -1,6 +1,7 @@
 export enum Messages {
   // Transaction
   GET_TRANSACTION_SUCCESS = 'Get transaction list successfully',
+  GET_FILTER_OPTIONS_SUCCESS = 'Get transaction filter options successfully',
   CREATE_TRANSACTION_SUCCESS = 'Create transaction successfully',
   UPDATE_TRANSACTION_SUCCESS = 'Update transaction successfully',
   DELETE_TRANSACTION_SUCCESS = 'Delete transaction successfully',
@@ -26,6 +27,9 @@ export enum Messages {
   DELETE_PRODUCT_FAILED = 'Failed to delete product',
   GET_PRODUCT_FAILED = 'Failed to get product',
   INVALID_PRODUCT_TYPE = 'Invalid product type. Must be either Product or Service',
+
+  // Product & Service
+  TRANSFER_TRANSACTION_SUCCESS = 'Transfer transaction successfully',
 
   // Category-Product Success
   CREATE_CATEGORY_PRODUCT_SUCCESS = 'Create category product successfully',
@@ -80,7 +84,10 @@ export enum Messages {
   // Product-related errors
   PRODUCT_NOT_FOUND = 'Product not found',
   NO_PRODUCTS_PROVIDED = 'No products provided',
-
+  TARGET_PRODUCT_NOT_FOUND = 'Target product not found',
+  SOURCE_PRODUCT_NOT_FOUND = 'Source product not found',
+  SOURCE_PRODUCT_TRANSFER_SELF_FAILED = 'Source product cannot be the same as target product',
+  TRANSFER_TRANSACTION_FAILED = 'Failed to transfer transaction',
   // Transaction Constraint when delete
   TRANSACTION_DELETE_FAILED_CONSTRAINT = 'Transaction cannot be deleted because it is linked to transactions.',
 
@@ -88,6 +95,7 @@ export enum Messages {
   MISSING_PARAMS_INPUT = 'Missing required parameters',
   METHOD_NOT_ALLOWED = 'Method not allowed',
 
+  // Partner validation errors
   PARTNER_NOT_FOUND = 'Partner not found.',
   PARTNER_NAME_TAKEN = 'Partner with this name already exists.',
   INVALID_PARENT_HIERARCHY = 'Invalid parent hierarchy.',
@@ -97,6 +105,10 @@ export enum Messages {
   UPDATE_PARTNER_FAILED = 'Failed to update partner.',
   DELETE_PARTNER_FAILED = 'Failed to delete partner.',
   PARTNER_ALREADY_EXISTS = 'Partner you are creating already exists.',
+  PARTNER_EMAIL_EXISTS = 'Email already exists for another partner',
+  PARTNER_PHONE_EXISTS = 'Phone number already exists for another partner',
+  PARTNER_TAX_EXISTS = 'Tax number already exists for another partner',
+  PARTNER_IDENTIFY_EXISTS = 'Identification number already exists for another partner',
 
   INVALID_USER = 'Invalid user.',
   USER_EMAIL_EXISTED = 'Email already existed',

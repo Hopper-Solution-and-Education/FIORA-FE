@@ -1,12 +1,13 @@
-// src/features/setting/module/partner/presentation/components/PartnerUpdateForm.tsx
 'use client';
 
+import CustomDateTimePicker from '@/components/common/atoms/CustomDateTimePicker';
 import InputField from '@/components/common/atoms/InputField';
 import SelectField from '@/components/common/atoms/SelectField';
 import TextareaField from '@/components/common/atoms/TextareaField';
 import UploadField from '@/components/common/atoms/UploadField';
 import GlobalForm from '@/components/common/organisms/GlobalForm';
 import { Button } from '@/components/ui/button';
+import { uploadToFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
 import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
 import {
   UpdatePartnerFormValues,
@@ -29,14 +30,13 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
   const parentOptions = [
     { value: 'none', label: 'None' },
     ...partners
-      .filter((p) => p.id !== initialData?.id)
+      .filter((p) => p.id !== initialData?.id && p.parentId === null)
       .map((partner) => ({
         value: partner.id,
         label: partner.name,
       })),
   ];
 
-  // Đặt giá trị mặc định cho form dựa trên initialData
   const defaultValues: Partial<UpdatePartnerFormValues> = {
     name: initialData?.name || '',
     logo: initialData?.logo || null,
@@ -57,47 +57,67 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
       label="Parent"
       options={parentOptions}
       placeholder="Select a parent partner"
+      defaultValue={initialData?.parentId || 'none'}
     />,
-    <InputField key="name" name="name" label="Name" placeholder="Partner Name" required />,
+    <InputField key="name" name="name" label="Name" placeholder="Name" />,
+    <UploadField key="logo" label="Logo" name="logo" initialImageUrl={initialData?.logo || null} />,
     <TextareaField
       key="description"
       name="description"
       label="Description"
       placeholder="Enter description"
     />,
-    <InputField
+    <CustomDateTimePicker
       key="dob"
       name="dob"
       label="Date of Birth"
-      type="date"
       placeholder="Select date of birth"
+      showYearDropdown
+      showMonthDropdown
+      dropdownMode="select"
+      dateFormat="dd/MM/yyyy"
     />,
-    <UploadField key="logo" label="Logo" name="logo" />,
+    <InputField
+      key="identify"
+      name="identify"
+      label="Identification"
+      placeholder="Identification Number"
+    />,
     <InputField key="taxNo" name="taxNo" label="Tax Number" placeholder="Tax Number" />,
     <InputField key="phone" name="phone" label="Phone" placeholder="Phone Number" />,
     <InputField key="address" name="address" label="Address" placeholder="Address" />,
     <InputField key="email" name="email" label="Email" placeholder="Email" type="email" />,
   ];
 
-  // Xử lý submit form
   const onSubmit = async (data: UpdatePartnerFormValues) => {
-    const updateData = {
-      id: initialData?.id,
-      name: data.name || undefined,
-      logo: data.logo || '',
-      identify: data.identify || undefined,
-      dob: data.dob || undefined,
-      taxNo: data.taxNo || undefined,
-      address: data.address || undefined,
-      email: data.email || undefined,
-      phone: data.phone || undefined,
-      description: data.description || undefined,
-      parentId: data.parentId === 'none' ? undefined : data.parentId,
-    };
-
     try {
+      let finalLogoUrl = data.logo;
+
+      if (data.logo && typeof data.logo === 'object' && 'type' in data.logo) {
+        console.log('Uploading new logo file');
+        finalLogoUrl = await uploadToFirebase({
+          file: data.logo as File,
+          path: 'partners/logos',
+          fileName: `partner_logo_${initialData?.id}_${Date.now()}`,
+        });
+        console.log('Uploaded logo URL:', finalLogoUrl);
+      }
+
+      const updateData = {
+        id: initialData?.id,
+        name: data.name || undefined,
+        logo: finalLogoUrl,
+        identify: data.identify || undefined,
+        dob: data.dob || undefined,
+        taxNo: data.taxNo || undefined,
+        address: data.address || undefined,
+        email: data.email || undefined,
+        phone: data.phone || undefined,
+        description: data.description || undefined,
+        parentId: data.parentId === 'none' ? null : data.parentId,
+      };
+
       await dispatch(updatePartner(updateData)).unwrap();
-      toast.success('Partner updated successfully');
       router.push('/setting/partner');
     } catch (error) {
       toast.error('Failed to update partner');
@@ -106,16 +126,18 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
   };
 
   return (
-    <GlobalForm
-      fields={fields}
-      schema={updatePartnerSchema}
-      onSubmit={onSubmit}
-      defaultValues={defaultValues}
-      renderSubmitButton={(formState) => (
-        <Button type="submit" disabled={formState.isSubmitting}>
-          {formState.isSubmitting ? 'Updating...' : 'Update Partner'}
-        </Button>
-      )}
-    />
+    <>
+      <GlobalForm
+        fields={fields}
+        schema={updatePartnerSchema}
+        onSubmit={onSubmit}
+        defaultValues={defaultValues}
+        renderSubmitButton={(formState) => (
+          <Button type="submit" disabled={formState.isSubmitting}>
+            {formState.isSubmitting ? 'Updating...' : 'Update Partner'}
+          </Button>
+        )}
+      />
+    </>
   );
 }
