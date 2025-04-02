@@ -59,6 +59,9 @@ class TransactionUseCase {
         AND: [
           where,
           {
+            userId,
+          },
+          {
             OR: [
               { fromAccount: { name: { contains: searchParams } } },
               { toAccount: { name: { contains: searchParams } } },
@@ -85,7 +88,6 @@ class TransactionUseCase {
     const transactionAwaited = this.transactionRepository.findManyTransactions(
       {
         ...where,
-        userId,
       },
       {
         skip,
@@ -100,7 +102,9 @@ class TransactionUseCase {
         },
       },
     );
-    const totalTransactionAwaited = this.transactionRepository.count({});
+    const totalTransactionAwaited = this.transactionRepository.count({
+      ...where,
+    });
     // getting amountMax from transactions
     const amountMaxAwaited = this.transactionRepository.aggregate({
       where: { userId },
