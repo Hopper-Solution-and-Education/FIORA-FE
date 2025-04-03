@@ -22,7 +22,6 @@ export function useDeleteAccount() {
 
   // Reset local state when dialog opens/closes
   useEffect(() => {
-    console.log('ACCOUNT DELETE DIALOG: ', accountDeleteDialog);
     if (accountDeleteDialog) {
       setIsDeleting(false);
     }

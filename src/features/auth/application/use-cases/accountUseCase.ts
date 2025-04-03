@@ -211,7 +211,6 @@ export class AccountUseCase {
 
   async deleteAccount(id: string, userId: string): Promise<Account | null> {
     const foundAccount = await this.accountRepository.findByCondition({
-      id,
       userId,
     });
 
@@ -250,7 +249,6 @@ export class AccountUseCase {
     } else {
       // checked whether any transaction linked into account
       const transaction = await this.transactionRepository.findManyTransactions({
-        id,
         OR: [{ fromAccountId: id }, { toAccountId: id }],
       });
 
