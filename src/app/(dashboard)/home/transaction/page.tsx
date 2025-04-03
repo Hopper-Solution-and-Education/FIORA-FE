@@ -44,10 +44,14 @@ const Transaction = () => {
       dispatch(updateVisibleColumns(DEFAULT_TRANSACTION_TABLE_COLUMNS));
     } else {
       // Nếu có data thì lưu vào redux state
-      dispatch(updateVisibleColumns(visibleColumnsFromLocalStorage), updateAmountRange(true));
+      dispatch(
+        updateVisibleColumns(visibleColumnsFromLocalStorage),
+        updateAmountRange({ min: 0, max: 10000 }),
+      );
     }
 
     dispatch(updateFilterCriteria(DEFAULT_TRANSACTION_FILTER_CRITERIA));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!isLoaded) {

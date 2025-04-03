@@ -227,6 +227,7 @@ const TwoSideBarChart = ({
       ...getChartMargins(width),
       right: 0, // Remove right margin for expense chart
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [width, isMobile],
   );
 

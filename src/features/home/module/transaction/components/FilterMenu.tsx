@@ -70,6 +70,7 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
 
       //  Add existing filters to the state
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterCriteria, isOpen]);
 
   const handleUpdateAmount = (target: 'gte' | 'lte', value: number) => {
