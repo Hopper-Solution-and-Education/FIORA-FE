@@ -3,7 +3,7 @@
 import Loading from '@/components/common/atoms/Loading';
 import {
   updateFilterCriteria,
-  updateFilteringStatus,
+  updateAmountRange,
   updateVisibleColumns,
 } from '@/features/home/module/transaction/slices';
 import { TransactionTableColumnKey } from '@/features/home/module/transaction/types';
@@ -44,7 +44,7 @@ const Transaction = () => {
       dispatch(updateVisibleColumns(DEFAULT_TRANSACTION_TABLE_COLUMNS));
     } else {
       // Nếu có data thì lưu vào redux state
-      dispatch(updateVisibleColumns(visibleColumnsFromLocalStorage), updateFilteringStatus(true));
+      dispatch(updateVisibleColumns(visibleColumnsFromLocalStorage), updateAmountRange(true));
     }
 
     dispatch(updateFilterCriteria(DEFAULT_TRANSACTION_FILTER_CRITERIA));

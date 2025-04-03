@@ -5,7 +5,7 @@ import { TransactionCurrency } from './constants';
 const validateNewTransactionSchema = yup.object({
   type: yup.mixed<TransactionType>().oneOf(Object.values(TransactionType)).required(),
   date: yup.date().required(),
-  amount: yup.number().required(),
+  amount: yup.number().min(0, 'Amount of money must be a positive number!').required(),
   currency: yup.mixed<TransactionCurrency>().oneOf(Object.values(TransactionCurrency)).required(),
   products: yup.array().of(yup.string()),
   fromAccountId: yup.string().nullable(),

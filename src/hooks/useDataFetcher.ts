@@ -3,20 +3,18 @@ import useSWR from 'swr';
 import { RequestType, Response } from '@/shared/types/Common.types';
 
 type DataFetcherProps = {
-  endpoint: string;
+  endpoint: string | null;
   method: RequestType;
-  body: any;
+  body?: any;
 };
 const useDataFetcher = <T = any>(props: DataFetcherProps) => {
   const { endpoint, method, body } = props;
 
   async function fetchData(url: string) {
     const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       method: method, // Use the method from props
-      body: JSON.stringify(body),
+      body: body ? JSON.stringify(body) : undefined,
     });
 
     const data = await response.json();
