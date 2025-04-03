@@ -45,7 +45,7 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
     ref,
   ) => {
     const { register, setValue, watch } = useFormContext();
-    const selectedDate = watch(name);
+    const selectedDate = watch(name); // Giá trị từ form, mong đợi là ISO string
     const [date, setDate] = useState<Date | undefined>(
       selectedDate ? new Date(selectedDate) : undefined,
     );
@@ -64,7 +64,12 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
 
     const handleSelect = (date: Date | undefined) => {
       setDate(date);
-      setValue(name, date, { shouldValidate: true, shouldDirty: true });
+      if (date) {
+        const isoDate = date.toISOString();
+        setValue(name, isoDate, { shouldValidate: true, shouldDirty: true });
+      } else {
+        setValue(name, null, { shouldValidate: true, shouldDirty: true });
+      }
     };
 
     return (
@@ -94,11 +99,12 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
                 month_caption: 'mx-0',
                 day: 'h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-primary/10 hover:text-primary rounded-md transition-colors',
                 day_selected:
-                  'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
-                day_today: 'bg-accent text-accent-foreground',
+                  '!bg-primary text-primary-foreground font-bold ring-2 ring-primary ring-offset-1 focus:outline-none focus:ring-2 focus:ring-primary',
+                day_today: 'bg-accent text-accent-foreground ring-1 ring-accent',
               }}
               captionLayout="dropdown"
               defaultMonth={date || new Date()}
+              initialFocus
               startMonth={new Date(1980, 6)}
               hideNavigation
               components={{
