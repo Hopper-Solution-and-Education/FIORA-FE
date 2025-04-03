@@ -42,15 +42,14 @@ export default function DeletePartnerButton({
   const [replacementPartnerId, setReplacementPartnerId] = useState<string>('');
 
   const partners = useAppSelector((state) => state.partner.partners);
-  const availablePartners = partners.filter((p) => p.id !== partnerId);
+  // Lọc ra các partner khác với partner hiện tại và không có transaction
+  const availablePartners = partners.filter(
+    (p) => p.id !== partnerId && (!p.transactions || p.transactions.length === 0),
+  );
 
   // Check if partner has transactions or sub-partners
   const hasTransactions = partner.transactions && partner.transactions.length > 0;
   const hasSubPartners = partner?.children && partner.children.length > 0;
-
-  console.log('Transactions data:', partner.transactions);
-  console.log('Has transactions:', hasTransactions);
-  console.log('Available partners:', partners);
 
   useEffect(() => {
     if (!isConfirmOpen) {
@@ -60,7 +59,7 @@ export default function DeletePartnerButton({
 
   const onDelete = async () => {
     try {
-      // If partner has sub-partners, prevent deletion
+      // First check: If partner has sub-partners, prevent deletion immediately
       if (hasSubPartners) {
         toast.error(
           'Cannot delete partner with sub-partners. Please delete all sub-partners first.',
@@ -69,7 +68,7 @@ export default function DeletePartnerButton({
         return;
       }
 
-      // If partner has transactions, require replacement partner
+      // Second check: Only if no sub-partners, check for transactions
       if (hasTransactions && !replacementPartnerId) {
         toast.error('Please select a replacement partner for transactions.');
         return;
@@ -100,18 +99,20 @@ export default function DeletePartnerButton({
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               {hasSubPartners ? (
+                // If partner has sub-partners, show warning and don't show any other options
                 <div className="text-red-500 font-medium mb-2">
                   Warning: {partnerName} has sub-partners. You must delete all sub-partners first.
                 </div>
               ) : (
+                // Only if partner doesn't have sub-partners, proceed with normal deletion flow
                 <>
                   This action cannot be undone. This will permanently delete {partnerName}.
-                  {/* Always show replacement partner selection if there are transactions */}
+                  {/* Only show replacement partner selection if there are transactions */}
                   {hasTransactions && (
                     <div className="mt-4">
                       <div className="text-amber-500 font-medium mb-2">
                         This partner has associated transactions. You must select a replacement
-                        partner:
+                        partner that has no transactions:
                       </div>
                       <div className="mt-2">
                         <Label htmlFor="replacement-partner">Replacement Partner</Label>
@@ -131,7 +132,8 @@ export default function DeletePartnerButton({
                               ))
                             ) : (
                               <div className="p-2 text-center text-muted-foreground">
-                                No other partners available. Please create another partner first.
+                                No eligible partners available. Please create another partner
+                                without transactions.
                               </div>
                             )}
                           </SelectContent>

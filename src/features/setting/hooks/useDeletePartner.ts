@@ -32,11 +32,36 @@ export const useDeletePartner = (options: UseDeletePartnerOptions = {}) => {
           router.push(redirectPath);
         }
       } else if (deletePartner.rejected.match(resultAction)) {
-        toast.error(resultAction.payload || 'Failed to delete partner');
+        let errorMessage = resultAction.payload || 'Failed to delete partner';
+
+        if (typeof errorMessage === 'string') {
+          const parsedError = JSON.parse(errorMessage);
+          if (parsedError.message) {
+            errorMessage = parsedError.message;
+          }
+        }
+
+        toast.error(errorMessage);
       }
     } catch (error: any) {
       console.error('Delete partner error:', error);
-      toast.error(error.message || 'Failed to delete partner');
+
+      let errorMessage = 'Failed to delete partner';
+
+      if (error.message) {
+        try {
+          // Try to parse the error message if it's a JSON string
+          const parsedError = JSON.parse(error.message);
+          if (parsedError.message) {
+            errorMessage = parsedError.message;
+          }
+        } catch {
+          // If parsing fails, use the error message directly
+          errorMessage = error.message;
+        }
+      }
+
+      toast.error(errorMessage);
     } finally {
       setIsDeleting(false);
     }
