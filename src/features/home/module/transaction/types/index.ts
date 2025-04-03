@@ -118,6 +118,7 @@ export type PrimitiveType = string | number | boolean | Date | null;
 export type TransactionFilterObject = {
   [key: string | TransactionFilterComparator | TransactionFilterOperator]:
     | PrimitiveType
+    | TransactionFilterComparator
     | TransactionFilterObject;
 };
 
@@ -130,13 +131,23 @@ export type TransactionFilterCriteria = {
   search?: string;
 };
 
-export interface ITransactionPaginatedResponse {
+export type ITransactionPaginatedResponse = {
   data: Transaction[];
+  amountMin: number;
+  amountMax: number;
   page: number;
   pageSize: number;
   totalPage: number;
   total: number;
-}
+};
+
+export type TransactionFilterOptionResponse = {
+  fromAccounts: string[];
+  toAccounts: string[];
+  fromCategories: string[];
+  toCategories: string[];
+  partners: string[];
+};
 
 export type PaginationProps = {
   page: number;

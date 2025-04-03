@@ -175,7 +175,7 @@ export function buildOrderByTransactionV2(
     return acc;
   }, {} as Prisma.TransactionOrderByWithRelationInput);
 }
-export const buildWhereClause = (filters: Filter) => {
+export function buildWhereClause(filters: Filter) {
   const whereClause: any = {};
 
   if (!filters) {
@@ -195,32 +195,4 @@ export const buildWhereClause = (filters: Filter) => {
   }
 
   return whereClause;
-};
-
-export const formatNumberInput = (value: string, currency: string = 'VND'): string => {
-  // Remove any non-numeric characters except decimal point and minus sign
-  const cleanValue = value.replace(/[^\d.-]/g, '');
-
-  // Handle empty input
-  if (!cleanValue) return '';
-
-  // Parse the number
-  const numValue = parseFloat(cleanValue);
-
-  // Check if it's a valid number
-  if (isNaN(numValue)) return '';
-
-  // Format based on currency
-  if (currency === 'USD') {
-    return numValue.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  }
-
-  // Default to VND formatting
-  return numValue.toLocaleString('vi-VN', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
-};
+}

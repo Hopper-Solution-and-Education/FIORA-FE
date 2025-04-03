@@ -30,6 +30,7 @@ interface SelectFieldProps {
   placeholder?: string;
   error?: FieldError;
   label?: React.ReactNode | string;
+  className?: string;
   required?: boolean;
   disabled?: boolean;
   id?: string;
@@ -46,6 +47,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
   placeholder,
   error,
   label,
+  className,
   required = false,
   disabled = false,
   id = name,
@@ -67,7 +69,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
       name={name}
       {...props}
     >
-      <SelectTrigger id={id} className={error ? 'border-red-500' : ''}>
+      <SelectTrigger id={id} className={cn(error ? 'border-red-500' : '', className)}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

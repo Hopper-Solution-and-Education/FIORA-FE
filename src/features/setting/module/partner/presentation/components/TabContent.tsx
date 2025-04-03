@@ -3,10 +3,11 @@
 import dynamic from 'next/dynamic';
 import { ComponentType } from 'react';
 import { TabComponentProps } from '../../../../presentation/types';
+import Loading from '@/components/common/atoms/Loading';
 
 const PartnerSettingPageRender = dynamic(
   () => import('@/features/setting/module/partner/presentation/pages/PartnerSettingPage'),
-  { loading: () => <div>Loading...</div> },
+  { loading: () => <Loading /> },
 );
 
 // Define tab configurations in an object

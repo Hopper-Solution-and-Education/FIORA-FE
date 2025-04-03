@@ -29,7 +29,6 @@ const PartnerSettingPage = () => {
     }
   }, [dispatch, status, session]);
 
-  // Tính toán barData khi partners thay đổi
   useEffect(() => {
     if (partners.length > 0) {
       const partnersWithNetAmount = partners.map((partner: Partner) => {
@@ -58,23 +57,13 @@ const PartnerSettingPage = () => {
         (partner) => !partner.parentId,
       );
 
-      const calculateTotalNetAmount = (partner: any): number => {
-        return (
-          partner.netAmount +
-          partner.children.reduce(
-            (sum: number, child: any) => sum + calculateTotalNetAmount(child),
-            0,
-          )
-        );
-      };
-
       const createBarItem = (partner: any, depth = 0): BarItem => {
-        const totalNetAmount = calculateTotalNetAmount(partner);
+        const netAmount = partner.netAmount;
         const childrenBarItems = partner.children.map((child: any) =>
           createBarItem(child, depth + 1),
         );
 
-        const isIncome = totalNetAmount >= 0;
+        const isIncome = netAmount >= 0;
         const colorLevel = Math.min(depth, 4);
         const color = isIncome
           ? COLORS.DEPS_SUCCESS[`LEVEL_${colorLevel + 1}` as keyof typeof COLORS.DEPS_SUCCESS]
@@ -83,7 +72,7 @@ const PartnerSettingPage = () => {
         return {
           id: partner.id,
           name: partner.name,
-          value: totalNetAmount,
+          value: netAmount,
           type: isIncome ? 'Income' : 'Expense',
           color,
           children: childrenBarItems,
@@ -96,6 +85,9 @@ const PartnerSettingPage = () => {
   }, [partners]);
 
   const handleNavigateToUpdate = (item: BarItem) => {
+    if (item.name === levelConfig.totalName || !item.id) {
+      return;
+    }
     router.push(`/setting/partner/update/${item.id}`);
   };
 

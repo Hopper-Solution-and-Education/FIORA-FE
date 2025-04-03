@@ -4,15 +4,16 @@ import { notFound } from 'next/navigation'; // Thêm để ném 404
 import { SettingSubTabComponentProps } from '@/features/setting/presentation/types';
 import dynamic from 'next/dynamic';
 import { ComponentType } from 'react';
+import Loading from '@/components/common/atoms/Loading';
 
 const PartnerCreatePage = dynamic(
   () => import('@/features/setting/module/partner/presentation/components/PartnerCreatePage'),
-  { loading: () => <div>Loading...</div> },
+  { loading: () => <Loading /> },
 );
 
 const PartnerUpdatePage = dynamic(
   () => import('@/features/setting/module/partner/presentation/components/PartnerUpdatePage'),
-  { loading: () => <div>Loading...</div> },
+  { loading: () => <Loading /> },
 );
 
 const subTabConfig = {
