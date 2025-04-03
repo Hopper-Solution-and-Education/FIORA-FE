@@ -124,7 +124,7 @@ export class AccountUseCase {
       parentId: null,
     });
 
-    return masterAccount ? true : false;
+    return !!masterAccount;
   }
 
   async getAllParentAccount(userId: string): Promise<Account[] | []> {
@@ -161,7 +161,7 @@ export class AccountUseCase {
       where: {
         userId,
         type: {
-          in: [AccountType.Payment, AccountType.Lending, AccountType.Saving],
+          in: [AccountType.Payment, AccountType.Lending, AccountType.Saving, AccountType.Invest],
         },
         parentId: null,
       },
@@ -280,6 +280,7 @@ export class AccountUseCase {
       case AccountType.Payment:
       case AccountType.Saving:
       case AccountType.Lending:
+      case AccountType.Invest:
         if (balance < 0) {
           throw new Error('Balance must be >= 0');
         }
