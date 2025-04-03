@@ -14,7 +14,7 @@ export const updatePartner = createAsyncThunk<Partner, any, { rejectValue: strin
       const response = await updatePartnerUseCase.execute(data);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to update partner');
+      return rejectWithValue(error || 'Failed to update partner');
     }
   },
 );

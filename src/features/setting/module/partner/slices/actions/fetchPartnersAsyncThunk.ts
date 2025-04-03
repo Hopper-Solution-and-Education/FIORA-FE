@@ -15,6 +15,6 @@ export const fetchPartners = createAsyncThunk<
     const response = await getPartnerUseCase.execute(data);
     return response;
   } catch (error: any) {
-    return rejectWithValue(error.message || 'Failed to fetch partners');
+    return rejectWithValue(error || 'Failed to fetch partners');
   }
 });

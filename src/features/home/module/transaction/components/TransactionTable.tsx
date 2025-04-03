@@ -108,6 +108,7 @@ const TransactionTable = () => {
         observer.unobserve(currentToggleRef);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, currentPage, totalPage, fetchData]);
 
   const debouncedFilterHandler = useMemo(
@@ -115,6 +116,7 @@ const TransactionTable = () => {
       debounce((value: string) => {
         handleFilterChange({ ...filterCriteria, search: value as string });
       }, 1000),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [filterCriteria],
   );
 
@@ -133,6 +135,7 @@ const TransactionTable = () => {
         setDisplayData((prev) => [...prev, ...(fetchData?.data.data || [])]);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchData]);
 
   // Mutate data when filter criteria and pageNumber changes for lazy loading and filter feature
@@ -142,6 +145,7 @@ const TransactionTable = () => {
         revalidate: true,
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, filterCriteria]);
 
   // Handle sort logics for column header

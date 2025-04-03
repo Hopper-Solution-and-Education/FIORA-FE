@@ -14,13 +14,19 @@ import GlobalLabel from '@/components/common/atoms/GlobalLabel';
 import LucieIcon from '@/features/home/module/category/components/LucieIcon';
 import { cn } from '@/shared/utils';
 
+export interface Option {
+  value: string;
+  label: string;
+  icon?: string;
+  disabled?: boolean;
+}
 interface SelectFieldProps {
   name: string;
   value?: string;
-  defaultValue?: string; // Add this line
+  defaultValue?: string;
   onChange?: (value: string) => void;
   onBlur?: () => void;
-  options: { value: string; label: string; icon?: string }[];
+  options: Array<Option>;
   placeholder?: string;
   error?: FieldError;
   label?: React.ReactNode | string;
@@ -33,7 +39,7 @@ interface SelectFieldProps {
 
 const SelectField: React.FC<SelectFieldProps> = ({
   name,
-  value = '',
+  value,
   defaultValue,
   onChange = () => {},
   onBlur,
@@ -56,7 +62,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
       ))}
     <Select
       value={value}
-      defaultValue={defaultValue} // Add this line
+      defaultValue={defaultValue}
       onValueChange={onChange}
       onOpenChange={(open) => !open && onBlur?.()}
       disabled={disabled}
@@ -69,8 +75,13 @@ const SelectField: React.FC<SelectFieldProps> = ({
       <SelectContent>
         <SelectGroup>
           {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              <div className="flex items-center gap-2">
+            <SelectItem key={option.value} value={option.value} disabled={option.disabled}>
+              <div
+                className={cn(
+                  'flex items-center gap-2',
+                  option.disabled && 'text-muted-foreground',
+                )}
+              >
                 {option.icon && <LucieIcon icon={option.icon} className="w-4 h-4" />}
                 {option.label}
               </div>
