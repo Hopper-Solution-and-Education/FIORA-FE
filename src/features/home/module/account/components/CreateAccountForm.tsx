@@ -1,75 +1,113 @@
-// 'use client';
+'use client';
 
-// import GlobalForm from '@/components/common/organisms/GlobalForm';
-// import { useAppDispatch, useAppSelector } from '@/store';
-// import { createAccount } from '@/features/home/module/account/slices/actions';
-// import {
-//   defaultNewAccountValues,
-//   validateNewAccountSchema,
-// } from '@/features/home/module/account/slices/types/formSchema';
-// import { toast } from 'sonner';
-// import { useRouter } from 'next/navigation';
-// import GlobalIconSelect from '@/components/common/atoms/GlobalIconSelect';
-// import InputField from '@/components/common/atoms/InputField';
-// import { ACCOUNT_TYPES } from '@/shared/constants/account';
-// import {
-//   TypeSelect,
-//   CurrencySelect,
-//   LimitField,
-//   AvailableLimitDisplay,
-//   BalanceField,
-//   ParentAccountSelect,
-// } from './AccountFormFields';
+import GlobalIconSelect from '@/components/common/atoms/GlobalIconSelect';
+import InputField from '@/components/common/atoms/InputField';
+import GlobalForm from '@/components/common/organisms/GlobalForm';
+import AccountTypeSelect from '@/features/home/module/account/components/AccountTypeSelect';
+import CurrencySelect from '@/features/home/module/account/components/CurrencySelect';
+import LimitField from '@/features/home/module/account/components/LimitField';
+import ParentAccountSelect from '@/features/home/module/account/components/ParentAccountSelect';
+import {
+  defaultNewAccountValues,
+  validateNewAccountSchema,
+} from '@/features/home/module/account/slices/types/formSchema';
+import { ACCOUNT_TYPES } from '@/shared/constants/account';
+import { useAppDispatch, useAppSelector } from '@/store';
+import AccountBalanceField from '@/features/home/module/account/components/AccountBalance';
+import { createAccount } from '@/features/home/module/account/slices/actions';
+import { Response } from '@/shared/types/Common.types';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { Account } from '@/features/home/module/account/slices/types';
+import { Option } from '@/components/common/atoms/SelectField';
 
-// export default function CreateAccountForm() {
-//   const dispatch = useAppDispatch();
-//   const router = useRouter();
-//   const { parentAccounts } = useAppSelector((state) => state.account);
+export default function CreateAccountForm() {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { parentAccounts } = useAppSelector((state) => state.account);
 
-//   const parentOptions =
-//     parentAccounts.data?.map((account) => ({
-//       value: account.id,
-//       label: account.name,
-//       type: account.type,
-//     })) || [];
+  const parentOptions =
+    (parentAccounts.data &&
+      parentAccounts.data.length > 0 &&
+      parentAccounts.data.map((account) => ({
+        value: account.id,
+        label: account.name,
+        type: account.type,
+        icon: account.icon,
+      }))) ||
+    [];
 
-//   const fields = [
-//     <GlobalIconSelect key="icon" name="icon" />,
-//     <TypeSelect key="type" name="type" />,
-//     <InputField key="name" name="name" placeholder="Account Name" />,
-//     <CurrencySelect key="currency" name="currency" />,
-//     <LimitField key="limit" name="limit" />,
-//     <AvailableLimitDisplay key="availableLimit" />,
-//     <BalanceField key="balance" name="balance" />,
-//     <ParentAccountSelect key="parentId" name="parentId" options={parentOptions} />,
-//   ];
+  const accountTypeOptions: Array<Option> = [
+    { value: ACCOUNT_TYPES.PAYMENT, label: ACCOUNT_TYPES.PAYMENT },
+    { value: ACCOUNT_TYPES.SAVING, label: ACCOUNT_TYPES.SAVING },
+    { value: ACCOUNT_TYPES.CREDIT_CARD, label: ACCOUNT_TYPES.CREDIT_CARD },
+    { value: ACCOUNT_TYPES.DEBT, label: ACCOUNT_TYPES.DEBT },
+    { value: ACCOUNT_TYPES.LENDING, label: ACCOUNT_TYPES.LENDING },
+    { value: ACCOUNT_TYPES.INVEST, label: ACCOUNT_TYPES.INVEST },
+  ];
 
-//   const onSubmit = async (data) => {
-//     try {
-//       const finalData = {
-//         ...data,
-//         balance:
-//           data.type === ACCOUNT_TYPES.CREDIT_CARD
-//             ? -Number(data.balance)
-//             : Number(data.balance) || 0,
-//         limit: data.limit ? Number(data.limit) : undefined,
-//         parentId: data.parentId || undefined,
-//       };
-//       await dispatch(createAccount(finalData)).unwrap();
-//       toast.success('Account created successfully');
-//       router.push('/home/account');
-//     } catch (error) {
-//       console.error('Error creating account:', error);
-//       toast.error('Failed to create account');
-//     }
-//   };
+  const memoizedGetAccountTypeOptions = (() => {
+    let cache: Array<Option>;
+    return () => {
+      if (!cache) {
+        const parentsArray = Array.from(
+          parentAccounts.data ? parentAccounts.data.map((item) => item.type) : [],
+        );
+        cache = accountTypeOptions.map((item) => {
+          const isDisabled = parentsArray.includes(item.value as any);
+          return {
+            ...item,
+            disabled: isDisabled,
+          };
+        });
+      }
+      return cache ? cache.sort((a, b) => Number(a.disabled) - Number(b.disabled)) : [];
+    };
+  })();
 
-//   return (
-//     <GlobalForm
-//       fields={fields}
-//       onSubmit={onSubmit}
-//       defaultValues={defaultNewAccountValues}
-//       schema={validateNewAccountSchema}
-//     />
-//   );
-// }
+  const fields = [
+    <GlobalIconSelect key="icon" name="icon" label="Icon" required />,
+    <InputField key="name" name="name" placeholder="Account Name" label="Name" required />,
+    <ParentAccountSelect key="parentId" name="parentId" options={parentOptions} label="Parent" />,
+    <AccountTypeSelect
+      key="type"
+      name="type"
+      label="Type"
+      options={memoizedGetAccountTypeOptions()}
+      required
+    />,
+    <CurrencySelect key="currency" name="currency" label="Currency" required />,
+    <LimitField key="limit" name="limit" label="Limit" />,
+    <AccountBalanceField key="balance" name="balance" label="Currency" required />,
+  ];
+
+  const onSubmit = async (data: any) => {
+    try {
+      await dispatch(createAccount(data))
+        .unwrap()
+        .then((value: Response<Account>) => {
+          if (value.status === 201) {
+            router.push('/home/account');
+            toast.success('You have create new Account successfully!');
+          } else if (value.message) {
+            toast.error(value.message);
+          } else {
+            toast.error('Failed to create the Account! Please try again!');
+          }
+        });
+      router.push('/home/account');
+    } catch (error) {
+      console.error('Error creating account:', error);
+      toast.error('Failed to create account');
+    }
+  };
+
+  return (
+    <GlobalForm
+      fields={fields}
+      onSubmit={onSubmit}
+      defaultValues={defaultNewAccountValues}
+      schema={validateNewAccountSchema}
+    />
+  );
+}

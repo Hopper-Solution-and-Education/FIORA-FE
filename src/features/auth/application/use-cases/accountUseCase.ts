@@ -206,10 +206,6 @@ export class AccountUseCase {
       throw new Error('Account not found');
     }
 
-    if (account.name === params.name) {
-      throw new Error('Account name is not changed');
-    }
-
     return await this.accountRepository.update(id, { ...params });
   }
 
@@ -290,7 +286,7 @@ export class AccountUseCase {
         }
         break;
       case AccountType.CreditCard:
-        if (!limit) {
+        if (!limit && limit !== 0) {
           throw new Error('Limit must be provided');
         }
 
@@ -298,8 +294,8 @@ export class AccountUseCase {
           throw new Error('Balance must be <= 0');
         }
 
-        if (limit <= 0) {
-          throw new Error('Limit must be > 0');
+        if (limit < 0) {
+          throw new Error('Limit must be >= 0');
         }
 
         if (limit < balance) {

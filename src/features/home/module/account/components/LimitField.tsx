@@ -1,33 +1,36 @@
 import React from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
 import { ACCOUNT_TYPES } from '@/shared/constants/account';
-import InputField from '@/components/common/atoms/InputField';
+import InputCurrency from '@/components/common/atoms/InputCurrency';
 
 interface LimitFieldProps {
   name: string;
-  value?: string;
-  onChange?: (value: string) => void;
+  value?: number;
+  onChange?: (value: number) => void;
   error?: FieldError;
   [key: string]: any;
 }
 
 const LimitField: React.FC<LimitFieldProps> = ({
   name,
-  value = '',
+  value = 0,
   onChange = () => {},
   error,
   ...props
 }) => {
   const { watch } = useFormContext();
   const type = watch('type');
+  const currencyType = watch('currency');
+
   if (type !== ACCOUNT_TYPES.CREDIT_CARD) return null;
 
   return (
-    <InputField
+    <InputCurrency
+      label="Limit"
       name={name}
       value={value}
+      currency={currencyType}
       onChange={onChange}
-      placeholder="0.00"
       error={error}
       {...props}
     />

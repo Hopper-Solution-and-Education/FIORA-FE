@@ -21,7 +21,7 @@ const AccountTypeSelect: React.FC<AccountTypeSelectProps> = ({
   ...props
 }) => {
   const { watch } = useFormContext();
-  const isTypeDisabled = watch('isTypeDisabled') || false;
+  const isSelectParentId = watch('parentId') || undefined;
 
   return (
     <SelectField
@@ -30,7 +30,7 @@ const AccountTypeSelect: React.FC<AccountTypeSelectProps> = ({
       onChange={onChange}
       options={options}
       placeholder="Select type"
-      disabled={isTypeDisabled}
+      disabled={isSelectParentId}
       error={error}
       {...props}
     />

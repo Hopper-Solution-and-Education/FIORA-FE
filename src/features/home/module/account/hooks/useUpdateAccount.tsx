@@ -1,4 +1,4 @@
-import { setAccountDialogOpen, setSelectedAccount } from '@/features/home/module/account/slices';
+import { setAccountDeleteDialog, setSelectedAccount } from '@/features/home/module/account/slices';
 import { fetchAccounts } from '@/features/home/module/account/slices/actions';
 import { findAccountById } from '@/features/home/module/account/slices/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -30,7 +30,7 @@ export function useUpdateAccount(id: string) {
 
     if (account) {
       dispatch(setSelectedAccount(account));
-      dispatch(setAccountDialogOpen(true));
+      dispatch(setAccountDeleteDialog(true));
     }
   }, [account, dispatch]);
 

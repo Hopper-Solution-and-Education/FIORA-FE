@@ -21,11 +21,19 @@ export const useGetIconLabel = (icon: string): string => {
   );
 };
 
-export const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('vi-VN', {
+export const formatCurrency = (value: number, currency: string = 'VND') => {
+  if (currency === 'USD') {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(value);
+  }
+
+  return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
     currency: 'VND',
   }).format(value);
+};
 
 export const convertUSDToVND = (amountUSD: number) => {
   const exchangeRate = 24800; // Fixed exchange rate
@@ -187,4 +195,32 @@ export const buildWhereClause = (filters: Filter) => {
   }
 
   return whereClause;
+};
+
+export const formatNumberInput = (value: string, currency: string = 'VND'): string => {
+  // Remove any non-numeric characters except decimal point and minus sign
+  const cleanValue = value.replace(/[^\d.-]/g, '');
+
+  // Handle empty input
+  if (!cleanValue) return '';
+
+  // Parse the number
+  const numValue = parseFloat(cleanValue);
+
+  // Check if it's a valid number
+  if (isNaN(numValue)) return '';
+
+  // Format based on currency
+  if (currency === 'USD') {
+    return numValue.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+
+  // Default to VND formatting
+  return numValue.toLocaleString('vi-VN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
 };

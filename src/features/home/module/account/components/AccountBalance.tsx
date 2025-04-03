@@ -1,39 +1,46 @@
+import InputCurrency from '@/components/common/atoms/InputCurrency';
+import { ACCOUNT_TYPES } from '@/shared/constants/account';
+import { cn } from '@/shared/utils';
 import React from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
-import { ACCOUNT_TYPES } from '@/shared/constants/account';
-import InputField from '@/components/common/atoms/InputField';
-import AvailableLimitDisplay from '@/features/home/module/account/components/AvailableLimitDisplay';
 
 interface AccountBalanceFieldProps {
   name: string;
-  value?: string;
-  onChange?: (value: string) => void;
+  value?: number;
+  onChange?: (value: number) => void;
   error?: FieldError;
   [key: string]: any;
 }
 
 const AccountBalanceField: React.FC<AccountBalanceFieldProps> = ({
   name,
-  value = '',
+  value = 0,
   onChange = () => {},
   error,
   ...props
 }) => {
-  const { watch } = useFormContext();
+  const { watch, setValue } = useFormContext();
+  const currencyType = watch('currency');
   const type = watch('type');
+
+  if (type === ACCOUNT_TYPES.CREDIT_CARD || type === ACCOUNT_TYPES.DEBT) {
+    if (value > 0) {
+      setValue('balance', -value);
+    }
+  }
 
   return (
     <>
-      <InputField
-        label={type === ACCOUNT_TYPES.CREDIT_CARD ? 'Current Balance' : 'Balance'}
+      <InputCurrency
+        label="Balance"
         name={name}
         value={value}
+        currency={currencyType}
         onChange={onChange}
-        placeholder="0.00"
         error={error}
+        className={cn(value < 0 && 'text-red-500')}
         {...props}
       />
-      <AvailableLimitDisplay />
     </>
   );
 };

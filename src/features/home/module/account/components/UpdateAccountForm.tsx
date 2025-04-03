@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import GlobalIconSelect from '@/components/common/atoms/GlobalIconSelect';
 import InputField from '@/components/common/atoms/InputField';
 import GlobalForm from '@/components/common/organisms/GlobalForm';
@@ -13,14 +14,22 @@ import {
   validateUpdateAccountSchema,
 } from '@/features/home/module/account/slices/types/formSchema';
 import { ACCOUNT_TYPES } from '@/shared/constants/account';
-import { useAppSelector } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
 import AccountBalanceField from '@/features/home/module/account/components/AccountBalance';
+import AvailableLimitDisplay from '@/features/home/module/account/components/AvailableLimitDisplay';
+import { updateAccount } from '@/features/home/module/account/slices/actions';
+import { Response } from '@/shared/types/Common.types';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import DeleteAccountDialog from '@/features/home/module/account/components/DeleteAccountDialog';
 
 interface UpdateAccountFormProps {
   initialData?: Account;
 }
 
 export default function UpdateAccountForm({ initialData }: UpdateAccountFormProps) {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
   const { parentAccounts } = useAppSelector((state) => state.account);
 
   const parentOptions =
@@ -46,7 +55,7 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
     if (initialData) {
       return initialData.type === ACCOUNT_TYPES.CREDIT_CARD
         ? -initialData.balance
-        : initialData.balance;
+        : Number(initialData.balance);
     }
     return 0;
   };
@@ -59,6 +68,17 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
     if (initialData.children && initialData.children.length > 0) return true;
 
     return false;
+  };
+
+  const generateAvailableLimitInitialValue = () => {
+    if (!initialData || (initialData && initialData.type !== ACCOUNT_TYPES.CREDIT_CARD)) return 0;
+    return Number(initialData.limit) || 0;
+  };
+
+  const generateLimitedInitialValue = () => {
+    return initialData && initialData.type === ACCOUNT_TYPES.CREDIT_CARD
+      ? Number(initialData.limit) || 0
+      : 0;
   };
 
   const fields = [
@@ -81,35 +101,45 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
     />,
     <CurrencySelect key="currency" name="currency" label="Currency" required />,
     <LimitField key="limit" name="limit" label="Limit" />,
-    <AccountBalanceField key="balance" name="balance" label="Currency" required />,
+    <AccountBalanceField key="balance" name="balance" label="Balance" required />,
+    <AvailableLimitDisplay key="availableLimit" name="availableLimit" />,
   ];
 
   const defaultValues = {
     ...defaultNewAccountValues,
     ...initialData,
     balance: generateBalanceInitialValue(),
+    limit: generateLimitedInitialValue(),
     isTypeDisabled: generateIsTypeDisabledInitialValue(),
+    availableLimit: generateAvailableLimitInitialValue(),
   };
 
   const onSubmit = async (data: any) => {
-    console.log('Form data:', data);
-    // try {
-    //   const finalData = {
-    //     ...data,
-    //     balance:
-    //       data.type === ACCOUNT_TYPES.CREDIT_CARD
-    //         ? -Number(data.balance)
-    //         : Number(data.balance) || 0,
-    //     limit: data.limit ? Number(data.limit) : undefined,
-    //     parentId: data.parentId || undefined,
-    //   };
-    //   await dispatch(updateAccount({ id: initialData.id, data: finalData })).unwrap();
-    //   toast.success('Account updated successfully');
-    //   router.push('/home/account');
-    // } catch (error) {
-    //   console.error('Error updating account:', error);
-    //   toast.error('Failed to update account');
-    // }
+    try {
+      if (!initialData) return;
+      const finalData: Account = {
+        ...data,
+        balance: data.balance || 0,
+        limit: data.limit ? Number(data.limit) : undefined,
+        parentId: data.parentId || undefined,
+        availableLimit: undefined,
+      };
+
+      await dispatch(updateAccount({ id: initialData.id, data: finalData }))
+        .unwrap()
+        .then((value: Response<Account>) => {
+          if (value.status == 200) {
+            router.push('/home/account');
+            toast.success('You have edit the Account successfully!');
+          } else if (value.message) {
+            toast.error(value.message);
+          } else {
+            toast.error('Failed to edit the Account! Please try again!');
+          }
+        });
+    } catch (error: any) {
+      console.log(error);
+    }
   };
 
   return (
@@ -120,6 +150,7 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
         defaultValues={defaultValues}
         schema={validateUpdateAccountSchema}
       />
+      <DeleteAccountDialog />
     </>
   );
 }

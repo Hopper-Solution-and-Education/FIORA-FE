@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Account } from '@/features/home/module/account/slices/types';
 import { formatCurrency } from '@/shared/utils';
+import DeleteAccountDialog from '@/features/home/module/account/components/DeleteAccountDialog';
 
 const AccountDashboard = () => {
   const dispatch = useAppDispatch();
@@ -78,6 +79,7 @@ const AccountDashboard = () => {
         }}
         callback={handleDisplayDetail}
       />
+      <DeleteAccountDialog />
     </div>
   );
 };

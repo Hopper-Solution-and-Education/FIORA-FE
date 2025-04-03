@@ -35,6 +35,7 @@ const ParentAccountSelect: React.FC<ParentAccountSelectProps> = ({
         setValue('isTypeDisabled', true);
       }
     } else {
+      setValue('type', '');
       setValue('isTypeDisabled', false);
     }
   };

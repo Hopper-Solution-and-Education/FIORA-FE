@@ -1,3 +1,4 @@
+'use client';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -6,52 +7,33 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  setAccountDeleteDialog,
-  setAccountUpdateDialog,
-  setRefresh,
-  setSelectedAccount,
-} from '@/features/home/module/account/slices';
-import { deleteAccount } from '@/features/home/module/account/slices/actions';
-import { useAppDispatch, useAppSelector } from '@/store';
-import React from 'react';
-import { toast } from 'sonner';
+import { useDeleteAccount } from '@/features/home/module/account/hooks/useDeleteAccount';
+import { useAppSelector } from '@/store';
+import React, { useEffect } from 'react';
 
 const DeleteAccountDialog: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const { accounts, refresh, selectedAccount, accountDeleteDialog } = useAppSelector(
-    (state) => state.account,
-  );
+  const { accountDeleteDialog, selectedAccount, isDeleting, handleDeleteAccount, handleClose } =
+    useDeleteAccount();
+  const { accounts } = useAppSelector((state) => state.account);
 
-  const handleDeleteCategory = async () => {
-    if (selectedAccount) {
-      const response = await dispatch(deleteAccount(selectedAccount.id)).unwrap();
-      if (response) {
-        toast.success('Account deleted successfully');
-        dispatch(setAccountDeleteDialog(false));
-        dispatch(setAccountUpdateDialog(false));
-        dispatch(setSelectedAccount(null));
-        dispatch(setRefresh(!refresh));
-      }
-    }
-  };
+  useEffect(() => {
+    console.log('accountDeleteDialog: ', accountDeleteDialog);
+    console.log('selectedAccount: ', selectedAccount);
+  }, [selectedAccount, accountDeleteDialog]);
 
   return (
-    <Dialog
-      open={accountDeleteDialog}
-      onOpenChange={(open) => dispatch(setAccountDeleteDialog(open))}
-    >
+    <Dialog open={accountDeleteDialog} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Confirm Delete</DialogTitle>
         </DialogHeader>
         <p>Are you sure you want to delete {selectedAccount?.name} account?</p>
         <DialogFooter>
-          <Button onClick={() => dispatch(setAccountDeleteDialog(false))}>No</Button>
+          <Button onClick={handleClose}>No</Button>
           <Button
             variant="destructive"
-            onClick={handleDeleteCategory}
-            disabled={!selectedAccount || accounts.isLoading}
+            onClick={handleDeleteAccount}
+            disabled={!selectedAccount || accounts.isLoading || isDeleting}
           >
             Yes
           </Button>
