@@ -20,22 +20,13 @@ type FilterProps = {
     | keyof TransactionPartner
     | keyof IRelationalTransaction;
   operator?: TransactionFilterOperator;
-  isSearch?: boolean;
 };
 
-export const handleApplyFilter = (props: FilterProps) => {
-  const {
-    currentFilter,
-    callBack,
-    target,
-    value,
-    comparator,
-    subTarget,
-    operator,
-    isSearch = false,
-  } = props;
+export const handleEditFilter = (props: FilterProps) => {
+  const { currentFilter, callBack, target, value, comparator, subTarget, operator } = props;
 
   let newFilterCriteria: TransactionFilterCriteria = { ...currentFilter };
+
   if (!operator && !subTarget) {
     newFilterCriteria = {
       ...newFilterCriteria,
@@ -64,11 +55,6 @@ export const handleApplyFilter = (props: FilterProps) => {
       },
     };
   }
-  if (isSearch) {
-    newFilterCriteria = {
-      ...newFilterCriteria,
-      search: JSON.stringify(value),
-    };
-  }
+
   callBack(newFilterCriteria);
 };
