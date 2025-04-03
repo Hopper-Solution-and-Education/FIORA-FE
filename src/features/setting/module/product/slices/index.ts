@@ -7,6 +7,7 @@ import { createCategoryProductAsyncThunk } from './actions/createCategoryProduct
 import { createProduct } from './actions/createProductAsyncThunk';
 import { deleteCategoryProductAsyncThunk } from './actions/deleteCategoryProductAsyncThunk';
 import { deleteProductAsyncThunk } from './actions/deleteProductAsyncThunk';
+import { deleteProductTransferAsyncThunk } from './actions/deleteProductTransferAsyncThunk';
 import { fetchCategoriesProduct } from './actions/fetchCategoriesProduct';
 import { getProductsAsyncThunk } from './actions/getProductsAsyncThunk';
 import { getProductTransactionAsyncThunk } from './actions/getProductTransactionAsyncThunk';
@@ -29,6 +30,9 @@ const productManagementSlice = createSlice({
     },
     setProductCategoryToEdit: (state, action) => {
       state.ProductCategoryToEdit = action.payload;
+    },
+    setProductIdToTransfer: (state, action) => {
+      state.ProductIdToTransfer = action.payload;
     },
     resetProductManagementState: () => initialProductState,
   },
@@ -126,6 +130,21 @@ const productManagementSlice = createSlice({
         });
       })
       .addCase(deleteProductAsyncThunk.rejected, (state, action) => {
+        state.isDeletingProduct = false;
+        state.error = action.error.message || 'Failed to delete product';
+      })
+      .addCase(deleteProductTransferAsyncThunk.pending, (state) => {
+        state.isDeletingProduct = true;
+      })
+      .addCase(deleteProductTransferAsyncThunk.fulfilled, (state, action) => {
+        state.isDeletingProduct = false;
+        const deletedProductId = action.payload.id;
+        state.products.items = state.products.items.filter((item) => item.id !== deletedProductId);
+        toast.success('Success', {
+          description: 'Delete product successfully!!',
+        });
+      })
+      .addCase(deleteProductTransferAsyncThunk.rejected, (state, action) => {
         state.isDeletingProduct = false;
         state.error = action.error.message || 'Failed to delete product';
       });
@@ -236,5 +255,6 @@ export const {
   setIsOpenDialogAddCategory,
   setProductCategoryFormState,
   setProductCategoryToEdit,
+  setProductIdToTransfer,
 } = productManagementSlice.actions;
 export default productManagementSlice.reducer;

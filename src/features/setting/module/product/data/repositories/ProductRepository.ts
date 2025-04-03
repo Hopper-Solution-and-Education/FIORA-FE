@@ -7,6 +7,8 @@ import {
   ProductGetTransactionRequest,
   ProductGetTransactionResponse,
   ProductsGetResponse,
+  ProductTransferDeleteRequest,
+  ProductTransferDeleteResponse,
   ProductUpdateRequest,
   ProductUpdateResponse,
 } from '../../domain/entities/Product';
@@ -24,6 +26,9 @@ export interface IProductRepository {
   getProductTransaction: (
     request: ProductGetTransactionRequest,
   ) => Promise<ProductGetTransactionResponse>;
+  deleteProductTransfer: (
+    request: ProductTransferDeleteRequest,
+  ) => Promise<ProductTransferDeleteResponse>;
 }
 
 export class ProductRepository implements IProductRepository {
@@ -65,6 +70,12 @@ export class ProductRepository implements IProductRepository {
     const requestAPI = ProductMapper.toGetProductTransactionAPIRequest(request);
     const response = await this.productApi.getProductTransaction(requestAPI);
     return ProductMapper.toGetProductTransactionResponse(response);
+  }
+
+  async deleteProductTransfer(request: ProductTransferDeleteRequest) {
+    const requestAPI = ProductMapper.toProductTransferDeleteAPIRequest(request);
+    const response = await this.productApi.deleteProductTransfer(requestAPI);
+    return ProductMapper.toProductTransferDeleteResponse(response);
   }
 }
 

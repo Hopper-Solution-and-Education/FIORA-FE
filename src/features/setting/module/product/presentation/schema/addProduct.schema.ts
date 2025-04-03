@@ -23,7 +23,7 @@ const productSchema = yup.object({
     .mixed<ProductType>()
     .oneOf(Object.values(ProductType))
     .required('Product type is required'),
-  categoryId: yup.string().required('Category is required'),
+  catId: yup.string().required('Category is required'),
   items: yup.array().of(itemSchema),
 });
 

@@ -73,7 +73,7 @@ const ProductCategoryField = ({ control }: ProductCategoryFieldProps) => {
     <>
       <FormField
         control={control}
-        name="categoryId"
+        name="catId"
         render={({ field }) => (
           <FormItem>
             <FormLabel>
@@ -83,7 +83,7 @@ const ProductCategoryField = ({ control }: ProductCategoryFieldProps) => {
               <FormControl>
                 <SelectTrigger
                   className={cn({
-                    'border-red-500': errors.categoryId,
+                    'border-red-500': errors.catId,
                   })}
                 >
                   <SelectValue placeholder="Select a category" />

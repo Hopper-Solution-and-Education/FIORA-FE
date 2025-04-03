@@ -1,12 +1,11 @@
 'use client';
 import Loading from '@/components/common/atoms/Loading';
-import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FIREBASE_GS_URL, FIREBASE_STORAGE_URL } from '@/shared/constants';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { CircleX, Loader2, Pencil, Save, Trash2 } from 'lucide-react';
+import { isEmpty } from 'lodash';
+import { Loader2, Pencil, Save, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -18,9 +17,12 @@ import { Product } from '../../domain/entities/Product';
 import { GetSingleProductUseCase } from '../../domain/usecases/GetSingleProductUsecase';
 import { createProduct } from '../../slices/actions/createProductAsyncThunk';
 import { deleteProductAsyncThunk } from '../../slices/actions/deleteProductAsyncThunk';
+import { deleteProductTransferAsyncThunk } from '../../slices/actions/deleteProductTransferAsyncThunk';
 import { fetchCategoriesProduct } from '../../slices/actions/fetchCategoriesProduct';
+import { getProductsAsyncThunk } from '../../slices/actions/getProductsAsyncThunk';
 import { updateProductAsyncThunk } from '../../slices/actions/updateProductAsyncThunk';
 import ProductForm from '../molecules/ProductFieldForm';
+import DeleteProductDialog from '../organisms/DeleteProductDialog';
 import ProductCatCreationDialog from '../organisms/ProductCatCreationDialog';
 import {
   defaultProductFormValue,
@@ -36,11 +38,20 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
   const { page, limit } = useAppSelector((state) => state.productManagement.categories);
   const isUpdatingProduct = useAppSelector((state) => state.productManagement.isUpdatingProduct);
   const isCreatingProduct = useAppSelector((state) => state.productManagement.isCreatingProduct);
+  const { page: pageProduct, pageSize } = useAppSelector(
+    (state) => state.productManagement.products,
+  );
   const [isLoadingGetProduct, setIsLoadingGetProduct] = useState(false);
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const productIdToTransfer = useAppSelector(
+    (state) => state.productManagement.ProductIdToTransfer,
+  );
+
+  const isDeletingProduct = useAppSelector((state) => state.productManagement.isDeletingProduct);
 
   const method = useForm<ProductFormValues>({
     resolver: yupResolver(productSchema),
@@ -55,6 +66,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
   useEffect(() => {
     const handleGetProduct = async () => {
       setIsLoadingGetProduct(true);
+      dispatch(getProductsAsyncThunk({ page: pageProduct, pageSize }));
       try {
         await dispatch(fetchCategoriesProduct({ page, pageSize: limit })).unwrap();
 
@@ -63,7 +75,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
             TYPES.IGetSingleProductUseCase,
           );
           const product = await getSingleProductUseCase.execute(productId);
-
+          setProductToEdit(product);
           if (product) {
             reset({
               id: product.id,
@@ -73,7 +85,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
               price: product.price ?? 0,
               taxRate: product.taxRate ?? 0,
               type: product.type ?? '',
-              categoryId: product.categoryId || '',
+              catId: product.catId || '',
               items: product.items || [],
             });
           }
@@ -88,7 +100,6 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
     };
 
     handleGetProduct();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId]);
 
   const confirmDelete = async () => {
@@ -103,27 +114,32 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
       await removeFromFirebase(productToDelete.icon);
     }
 
-    dispatch(deleteProductAsyncThunk({ id: productToDelete.id }));
-    setProductToDelete(null);
-    setIsDialogOpen(false);
-    router.replace('/setting/product');
+    if (!isEmpty(productToDelete.transactions)) {
+      dispatch(
+        deleteProductTransferAsyncThunk({
+          productIdToDelete: productToDelete.id,
+          productIdToTransfer,
+        }),
+      )
+        .unwrap()
+        .then(() => {
+          setProductToDelete(null);
+          setIsDialogOpen(false);
+          router.replace('/setting/product');
+        });
+    } else {
+      dispatch(deleteProductAsyncThunk({ id: productToDelete.id }))
+        .unwrap()
+        .then(() => {
+          setProductToDelete(null);
+          setIsDialogOpen(false);
+          router.replace('/setting/product');
+        });
+    }
   };
 
   const openDeleteDialog = () => {
-    const product: Product = {
-      id: method.getValues('id') ?? '',
-      name: method.getValues('name'),
-      description: method.getValues('description') ?? '',
-      icon: method.getValues('icon'),
-      type: method.getValues('type'),
-      price: method.getValues('price'),
-      taxRate: parseFloat(String(method.getValues('taxRate') ?? '0')),
-      categoryId: method.getValues('categoryId'),
-      items: method.getValues('items') || [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setProductToDelete(product);
+    setProductToDelete(productToEdit);
     setIsDialogOpen(true);
   };
 
@@ -176,7 +192,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
   return (
     <section className="mb-10">
       <FormProvider {...method}>
-        <>{isLoadingGetProduct && <Loading />}</>
+        <>{(isLoadingGetProduct || isDeletingProduct) && <Loading />}</>
         <div className="mx-auto max-w-4xl px-4">
           <h1 className="text-2xl font-bold mb-4">
             {productId ? 'Edit Product' : 'Create New Product'}
@@ -223,25 +239,13 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
             </div>
           </form>
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Confirm Delete</DialogTitle>
-              </DialogHeader>
-              <p>Are you sure you want to delete this product? This action cannot be undone.</p>
-              <div className="w-full flex justify-between mt-auto">
-                {/* Added flex and mt-auto */}
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  <CircleX />
-                </Button>
-                <Button onClick={confirmDelete} type="button" variant="destructive">
-                  <Icons.check />
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-
           <ProductCatCreationDialog />
+          <DeleteProductDialog
+            product={productToDelete}
+            open={isDialogOpen}
+            onOpenChange={setIsDialogOpen}
+            onConfirm={confirmDelete}
+          />
         </div>
       </FormProvider>
     </section>

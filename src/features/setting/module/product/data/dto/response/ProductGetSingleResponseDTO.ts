@@ -1,4 +1,4 @@
-import { Product } from '@prisma/client';
+import { Product } from '../../../domain/entities/Product';
 import { HttpResponse } from '../../../model';
 
 export type ProductGetSingleResponseDTO = HttpResponse<Product>;

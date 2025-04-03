@@ -117,7 +117,7 @@ const mapTransactionsToBarItems = (data: ProductTransactionCategoryResponse[]): 
             description: item.product.description || '',
             items: item.product.items || [],
             taxRate: item.product.taxRate || 0,
-            categoryId: item.product.catId || '',
+            catId: item.product.catId || '',
             icon: item.product.icon,
           },
           isChild: true,

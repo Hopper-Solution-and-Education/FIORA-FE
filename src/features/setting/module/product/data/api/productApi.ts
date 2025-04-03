@@ -4,13 +4,19 @@ import { httpClient } from '@/config/HttpClient';
 import { decorate, injectable } from 'inversify';
 
 import { ProductCreateRequestDTO } from '../dto/request/ProductCreateRequestDTO';
-import { ProductDeleteRequestDTO } from '../dto/request/ProductDeleteRequestDTO';
+import {
+  ProductDeleteRequestDTO,
+  ProductTransferDeleteRequestDTO,
+} from '../dto/request/ProductDeleteRequestDTO';
 import { ProductGetSingleRequestDTO } from '../dto/request/ProductGetSingleRequestDTO';
 import { ProductGetTransactionRequestDTO } from '../dto/request/ProductTransactionGetRequestDTO';
 import { ProductUpdateRequestDTO } from '../dto/request/ProductUpdateRequestDTO';
 import { ProductsGetRequestDTO } from '../dto/request/ProductsGetRequestDTO';
 import { ProductCreateResponseDTO } from '../dto/response/ProductCreateResponseDTO';
-import { ProductDeleteResponseDTO } from '../dto/response/ProductDeleteResponseDTO';
+import {
+  ProductDeleteResponseDTO,
+  ProductTransferDeleteResponseDTO,
+} from '../dto/response/ProductDeleteResponseDTO';
 import { ProductGetSingleResponseDTO } from '../dto/response/ProductGetSingleResponseDTO';
 import { ProductUpdateResponseDTO } from '../dto/response/ProductUpdateResponseDTO';
 import { ProductsGetResponseDTO } from '../dto/response/ProductsGetResponseDTO';
@@ -24,6 +30,9 @@ interface IProductAPI {
   getProductTransaction(
     data: ProductGetTransactionRequestDTO,
   ): Promise<ProductGetTransactionResponseDTO>;
+  deleteProductTransfer(
+    data: ProductTransferDeleteRequestDTO,
+  ): Promise<ProductTransferDeleteResponseDTO>;
 }
 
 class ProductAPI implements IProductAPI {
@@ -44,6 +53,23 @@ class ProductAPI implements IProductAPI {
 
   async deleteProduct(data: ProductDeleteRequestDTO) {
     return await httpClient.delete<ProductDeleteResponseDTO>(`/api/products/${data.id}`);
+  }
+
+  async deleteProductTransfer(
+    data: ProductTransferDeleteRequestDTO,
+  ): Promise<ProductTransferDeleteResponseDTO> {
+    const response = await httpClient.post<ProductTransferDeleteResponseDTO>(
+      `/api/products/transfer`,
+      data,
+    );
+
+    return {
+      data: {
+        id: data.sourceId,
+      },
+      message: response.message,
+      status: response.status,
+    };
   }
 
   async getProductTransaction(data: ProductGetTransactionRequestDTO) {

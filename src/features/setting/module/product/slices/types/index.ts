@@ -19,6 +19,7 @@ interface CategoryState {
   isDeletingProductCategory: boolean;
   ProductCategoryFormState: 'add' | 'edit';
   ProductCategoryToEdit: CategoryProduct | null;
+  ProductIdToTransfer: string;
   products: {
     isLoading: boolean;
     items: Product[];
@@ -43,7 +44,7 @@ export const initialProductState: CategoryState = {
     isLoading: false,
     data: [],
     page: 1,
-    limit: 20,
+    limit: 30,
     total: 0,
     hasMore: true,
   },
@@ -51,7 +52,7 @@ export const initialProductState: CategoryState = {
     isLoading: false,
     items: [],
     page: 1,
-    pageSize: 20,
+    pageSize: 30,
     total: 0,
     hasMore: true,
   },
@@ -73,4 +74,5 @@ export const initialProductState: CategoryState = {
   isUpdatingProductCategory: false,
   ProductCategoryFormState: 'add',
   ProductCategoryToEdit: null,
+  ProductIdToTransfer: '',
 };

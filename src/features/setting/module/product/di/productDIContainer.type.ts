@@ -14,4 +14,5 @@ export const TYPES = {
   ICreateCategoryProductUseCase: Symbol.for('ICreateCategoryProductUseCase'),
   IUpdateCategoryProductUseCase: Symbol.for('IUpdateCategoryProductUseCase'),
   IDeleteCategoryProductUseCase: Symbol.for('IDeleteCategoryProductUseCase'),
+  IDeleteProductTransferUseCase: Symbol.for('IDeleteProductTransferUseCase'),
 };

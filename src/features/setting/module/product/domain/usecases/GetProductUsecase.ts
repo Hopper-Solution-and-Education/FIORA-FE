@@ -31,10 +31,11 @@ export class GetProductUseCase implements IGetProductUseCase {
           item.price,
           item.taxRate,
           item.items,
-          item.categoryId,
+          item.catId,
           item.type,
           item.createdAt,
           item.updatedAt,
+          [],
         ),
     );
 

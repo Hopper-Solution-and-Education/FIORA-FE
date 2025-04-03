@@ -60,6 +60,8 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   const pathname = usePathname();
   const { section } = useGetSection(SectionType.HEADER, {
     revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
   });
   const isMobile = useIsMobile();
   const { open } = useSidebar();

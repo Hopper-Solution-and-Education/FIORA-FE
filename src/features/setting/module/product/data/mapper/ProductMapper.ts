@@ -10,15 +10,24 @@ import {
   ProductGetTransactionRequest,
   ProductGetTransactionResponse,
   ProductsGetResponse,
+  ProductTransferDeleteRequest,
+  ProductTransferDeleteResponse,
   ProductUpdateRequest,
   ProductUpdateResponse,
 } from '../../domain/entities/Product';
+import { Transaction } from '../../domain/entities/Transaction';
 import { ProductCreateRequestDTO } from '../dto/request/ProductCreateRequestDTO';
-import { ProductDeleteRequestDTO } from '../dto/request/ProductDeleteRequestDTO';
+import {
+  ProductDeleteRequestDTO,
+  ProductTransferDeleteRequestDTO,
+} from '../dto/request/ProductDeleteRequestDTO';
 import { ProductGetSingleRequestDTO } from '../dto/request/ProductGetSingleRequestDTO';
 import { ProductGetTransactionRequestDTO } from '../dto/request/ProductTransactionGetRequestDTO';
 import { ProductUpdateRequestDTO } from '../dto/request/ProductUpdateRequestDTO';
-import { ProductDeleteResponseDTO } from '../dto/response/ProductDeleteResponseDTO';
+import {
+  ProductDeleteResponseDTO,
+  ProductTransferDeleteResponseDTO,
+} from '../dto/response/ProductDeleteResponseDTO';
 import { ProductGetSingleResponseDTO } from '../dto/response/ProductGetSingleResponseDTO';
 import { ProductGetTransactionResponseDTO } from '../dto/response/ProductGetTransactionResponseDTO';
 import { ProductUpdateResponseDTO } from '../dto/response/ProductUpdateResponseDTO';
@@ -43,10 +52,11 @@ export class ProductMapper {
       description: item.description ?? '',
       items: ProductMapper.parseServerItemToList(item.items),
       taxRate: Number(item.taxRate),
-      categoryId: item.catId ?? '',
+      catId: item.catId ?? '',
       icon: item.icon,
       createdAt: String(item.createdAt),
       updatedAt: String(item.updatedAt),
+      transactions: item.transactions,
     };
   }
 
@@ -122,7 +132,7 @@ export class ProductMapper {
       tax_rate: request.taxRate,
       price: request.price,
       type: request.type,
-      category_id: request.categoryId,
+      category_id: request.catId,
       items: request.items,
     };
   }
@@ -136,7 +146,7 @@ export class ProductMapper {
       tax_rate: request.taxRate,
       price: request.price,
       type: request.type,
-      category_id: request.categoryId,
+      category_id: request.catId,
       items: request.items,
     };
   }
@@ -152,7 +162,8 @@ export class ProductMapper {
       items: Array.isArray(response.data.items)
         ? ProductMapper.parseServerItemToList(response.data.items as JsonArray)
         : [],
-      categoryId: response.data.catId ?? '',
+      transactions: response.data.transactions,
+      catId: response.data.catId ?? '',
       type: response.data.type,
       createdAt: new Date(response.data.createdAt).toISOString(),
       updatedAt: new Date(response.data.updatedAt).toISOString(),
@@ -162,7 +173,7 @@ export class ProductMapper {
   static toGetProductResponse(response: ProductsGetResponseDTO): ProductsGetResponse {
     const { data, page, pageSize, totalPage } = response.data;
 
-    return {
+    const dataResponse = {
       page,
       pageSize,
       totalPage,
@@ -170,6 +181,19 @@ export class ProductMapper {
         const items: ProductItem[] = Array.isArray(item.items)
           ? ProductMapper.parseServerItemToList(item.items as JsonArray)
           : [];
+        const transactions: Transaction[] =
+          item.transactions?.map(
+            (transaction) =>
+              new Transaction(
+                transaction.productId,
+                transaction.transactionId,
+                transaction.createdAt,
+                transaction.updatedAt,
+                transaction.createdBy,
+                transaction.updatedBy,
+              ),
+          ) ?? [];
+
         return new Product(
           item.id,
           item.name,
@@ -182,9 +206,12 @@ export class ProductMapper {
           item.type,
           item.createdAt ? format(new Date(item.createdAt), 'dd/MM/yyyy HH:mm:ss') : '',
           item.updatedAt ? format(new Date(item.updatedAt), 'dd/MM/yyyy HH:mm:ss') : '',
+          transactions,
         );
       }),
-    };
+    } as ProductsGetResponse;
+
+    return dataResponse;
   }
 
   static parseServerItemToList(items: JsonValue): ProductItem[] {
@@ -222,5 +249,22 @@ export class ProductMapper {
     });
 
     return result;
+  }
+
+  static toProductTransferDeleteAPIRequest(
+    request: ProductTransferDeleteRequest,
+  ): ProductTransferDeleteRequestDTO {
+    return {
+      sourceId: request.productIdToDelete,
+      targetId: request.productIdToTransfer,
+    };
+  }
+
+  static toProductTransferDeleteResponse(
+    response: ProductTransferDeleteResponseDTO,
+  ): ProductTransferDeleteResponse {
+    return {
+      id: response.data.id,
+    };
   }
 }
