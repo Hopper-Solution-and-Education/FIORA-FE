@@ -249,7 +249,7 @@ class ProductUseCase {
       throw new Error(Messages.TRANSACTION_DELETE_FAILED_CONSTRAINT);
     }
 
-    const deletedProduct = await this.productRepository.deleteProduct({ id });
+    const deletedProduct = await this.productRepository.deleteProduct({ id, userId });
     if (!deletedProduct) {
       throw new Error(Messages.DELETE_PRODUCT_FAILED);
     }
