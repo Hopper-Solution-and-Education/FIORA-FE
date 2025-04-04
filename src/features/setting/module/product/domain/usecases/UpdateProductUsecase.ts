@@ -1,9 +1,9 @@
 import { decorate, injectable } from 'inversify';
 import type { IProductRepository } from '../../data/repositories/ProductRepository';
-import { UpdateProductRequest, UpdateProductResponse } from '../entities/Product';
+import { ProductUpdateRequest, ProductUpdateResponse } from '../entities/Product';
 
 export interface IUpdateProductUseCase {
-  execute(params: UpdateProductRequest): Promise<UpdateProductResponse>;
+  execute(params: ProductUpdateRequest): Promise<ProductUpdateResponse>;
 }
 
 export class UpdateProductUseCase implements IUpdateProductUseCase {
@@ -13,7 +13,7 @@ export class UpdateProductUseCase implements IUpdateProductUseCase {
     this.productRepository = productRepository;
   }
 
-  execute(params: UpdateProductRequest): Promise<UpdateProductResponse> {
+  execute(params: ProductUpdateRequest): Promise<ProductUpdateResponse> {
     return this.productRepository.updateProduct(params);
   }
 }

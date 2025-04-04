@@ -18,7 +18,7 @@ export type CategoryProductFormValues = yup.InferType<typeof categoryProductsSch
 
 export const defaultCategoryProductValue: CategoryProductFormValues = {
   id: undefined,
-  icon: '',
+  icon: 'dashboard',
   name: '',
   description: '',
   tax_rate: 0,

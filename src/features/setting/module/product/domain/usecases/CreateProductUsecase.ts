@@ -1,10 +1,10 @@
 import { decorate, injectable } from 'inversify';
 import type { IProductRepository } from '../../data/repositories/ProductRepository';
 import { ProductFormValues } from '../../presentation/schema/addProduct.schema';
-import { CreateProductResponse } from '../entities/Product';
+import { ProductCreateResponse } from '../entities/Product';
 
 export interface ICreateProductUseCase {
-  execute(params: ProductFormValues): Promise<CreateProductResponse>;
+  execute(params: ProductFormValues): Promise<ProductCreateResponse>;
 }
 
 export class CreateProductUseCase implements ICreateProductUseCase {
@@ -14,7 +14,7 @@ export class CreateProductUseCase implements ICreateProductUseCase {
     this.productRepository = productRepository;
   }
 
-  execute(params: ProductFormValues): Promise<CreateProductResponse> {
+  execute(params: ProductFormValues): Promise<ProductCreateResponse> {
     return this.productRepository.createProduct(params);
   }
 }

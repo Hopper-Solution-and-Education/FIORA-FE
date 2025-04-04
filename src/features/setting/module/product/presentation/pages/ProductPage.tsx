@@ -5,15 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { DashboardHeading } from '@/features/home/components/DashboardHeading';
 import { removeFromFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
+import { FIREBASE_GS_URL, FIREBASE_STORAGE_URL } from '@/shared/constants';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { Plus } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Product } from '../../domain/entities/Product';
-import { setIsOpenDialogAddCategory } from '../../slices';
 import { deleteProductAsyncThunk } from '../../slices/actions/deleteProductAsyncThunk';
-import { getProductsAsyncThunk } from '../../slices/actions/getProductsAsyncThunk';
 import { getProductTransactionAsyncThunk } from '../../slices/actions/getProductTransactionAsyncThunk';
 import DeleteProductDialog from '../organisms/DeleteProductDialog';
 import ProductCatCreationDialog from '../organisms/ProductCatCreationDialog';
@@ -23,12 +22,15 @@ const ProductPage = () => {
   const { page: pageTransaction, pageSize } = useAppSelector(
     (state) => state.productManagement.productTransaction,
   );
-  const { page: productPage, pageSize: productPageSize } = useAppSelector(
-    (state) => state.productManagement.products,
-  );
   const isDeletingProduct = useAppSelector((state) => state.productManagement.isDeletingProduct);
-  const isOpenDialogProductCategoryCreation = useAppSelector(
-    (state) => state.productManagement.isOpenDialogAddCategory,
+  const isUpdatingCategoryProduct = useAppSelector(
+    (state) => state.productManagement.isUpdatingProductCategory,
+  );
+  const isDeletingCategoryProduct = useAppSelector(
+    (state) => state.productManagement.isDeletingProductCategory,
+  );
+  const isCreatingCategoryProduct = useAppSelector(
+    (state) => state.productManagement.isCreatingProductCategory,
   );
 
   const dispatch = useAppDispatch();
@@ -38,7 +40,7 @@ const ProductPage = () => {
   const { data } = useSession();
 
   useEffect(() => {
-    dispatch(getProductsAsyncThunk({ page: productPage, pageSize: productPageSize }));
+    // dispatch(getProductsAsyncThunk({ page: productPage, pageSize: productPageSize }));
     if (data?.user) {
       dispatch(
         getProductTransactionAsyncThunk({ page: pageTransaction, pageSize, userId: data?.user.id }),
@@ -56,8 +58,8 @@ const ProductPage = () => {
 
     const isFirebaseImage =
       productToDelete.icon &&
-      (productToDelete.icon.startsWith('https://firebasestorage.googleapis.com') ||
-        productToDelete.icon.startsWith('gs://'));
+      (productToDelete.icon.startsWith(FIREBASE_STORAGE_URL) ||
+        productToDelete.icon.startsWith(FIREBASE_GS_URL));
 
     if (isFirebaseImage) {
       console.log(productToDelete.icon);
@@ -71,7 +73,12 @@ const ProductPage = () => {
 
   return (
     <div className="p-2">
-      <>{isDeletingProduct && <Loading />}</>
+      <>
+        {(isDeletingProduct ||
+          isCreatingCategoryProduct ||
+          isUpdatingCategoryProduct ||
+          isDeletingCategoryProduct) && <Loading />}
+      </>
 
       <div className="flex flex-1 flex-col">
         <div className="flex items-start justify-between">
@@ -107,10 +114,7 @@ const ProductPage = () => {
         onConfirm={confirmDelete}
       />
 
-      <ProductCatCreationDialog
-        open={isOpenDialogProductCategoryCreation}
-        onOpenChange={(open) => dispatch(setIsOpenDialogAddCategory(open))}
-      />
+      <ProductCatCreationDialog />
     </div>
   );
 };

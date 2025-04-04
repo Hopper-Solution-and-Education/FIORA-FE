@@ -1,11 +1,11 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { productDIContainer } from '../../di/productDIContainer';
 import { TYPES } from '../../di/productDIContainer.type';
-import { GetProductResponse } from '../../domain/entities/Product';
+import { ProductsGetResponse } from '../../domain/entities/Product';
 import { IGetProductUseCase } from '../../domain/usecases/GetProductUsecase';
 
 export const getProductsAsyncThunk = createAsyncThunk<
-  GetProductResponse, // Return type
+  ProductsGetResponse,
   { page: number; pageSize: number },
   { rejectValue: string }
 >('product/getProduct', async ({ page, pageSize }, { rejectWithValue }) => {
@@ -15,6 +15,6 @@ export const getProductsAsyncThunk = createAsyncThunk<
     const response = await getProductUseCase.execute(page, pageSize);
     return response;
   } catch (error: any) {
-    return rejectWithValue(error.message || 'Failed to get product');
+    return rejectWithValue(error || 'Failed to get product');
   }
 });
