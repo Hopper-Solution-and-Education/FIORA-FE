@@ -1,23 +1,27 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { partnerDIContainer } from '../../di/partnerDIContainer';
 import { TYPES } from '../../di/partnerDIContainer.type';
-import { Partner } from '../../domain/entities/Partner';
-import { IDeletePartnerUseCase } from '../../domain/usecases/DeletePartnerUsecase';
 
-export const deletePartner = createAsyncThunk<Partner, string, { rejectValue: string }>(
-  'partner/deletePartner',
-  async (id, { rejectWithValue }) => {
-    try {
-      // Get the delete partner use case from the DI container
-      const deletePartnerUseCase = partnerDIContainer.get<IDeletePartnerUseCase>(
-        TYPES.IDeletePartnerUseCase,
-      );
+interface DeletePartnerParams {
+  id: string;
+  replacementId?: string;
+}
 
-      // Execute the use case with the partner ID
-      const response = await deletePartnerUseCase.execute(id);
-      return response;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to delete partner');
-    }
-  },
-);
+export const deletePartner = createAsyncThunk<
+  { id: string }, // Return the ID that was deleted instead of the partner object
+  DeletePartnerParams,
+  { rejectValue: string }
+>('partner/delete', async (params, { rejectWithValue }) => {
+  try {
+    const deletePartnerUseCase = partnerDIContainer.get(TYPES.IDeletePartnerUseCase);
+    await (
+      deletePartnerUseCase as { execute: (id: string, replacementId?: string) => Promise<void> }
+    ).execute(params.id, params.replacementId);
+
+    // Return the ID that was deleted since the API doesn't return the partner object
+    return { id: params.id };
+  } catch (error: any) {
+    console.error('Error in deletePartner thunk:', error);
+    return rejectWithValue(error.message || 'Failed to delete partner');
+  }
+});

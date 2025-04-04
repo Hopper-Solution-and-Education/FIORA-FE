@@ -1,29 +1,34 @@
 import { decorate, injectable } from 'inversify';
 import {
-  CreateProductResponse,
-  DeleteProductRequest,
-  DeleteProductResponse,
-  GetProductResponse,
-  GetProductTransactionRequest,
-  GetProductTransactionResponse,
-  GetSingleProductResponse,
-  UpdateProductRequest,
-  UpdateProductResponse,
+  ProductCreateResponse,
+  ProductDeleteRequest,
+  ProductDeleteResponse,
+  ProductGetSingleResponse,
+  ProductGetTransactionRequest,
+  ProductGetTransactionResponse,
+  ProductsGetResponse,
+  ProductTransferDeleteRequest,
+  ProductTransferDeleteResponse,
+  ProductUpdateRequest,
+  ProductUpdateResponse,
 } from '../../domain/entities/Product';
 import { ProductFormValues } from '../../presentation/schema/addProduct.schema';
 import type { IProductAPI } from '../api/productApi';
-import { GetProductAPIRequestDTO } from '../dto/request/GetProductAPIRequestDTO';
+import { ProductsGetRequestDTO } from '../dto/request/ProductsGetRequestDTO';
 import { ProductMapper } from '../mapper/ProductMapper';
 
 export interface IProductRepository {
-  createProduct: (request: ProductFormValues) => Promise<CreateProductResponse>;
-  getProducts: (request: GetProductAPIRequestDTO) => Promise<GetProductResponse>;
-  getSingleProduct: (id: string) => Promise<GetSingleProductResponse>;
-  updateProduct: (request: UpdateProductRequest) => Promise<UpdateProductResponse>;
-  deleteProduct: (request: DeleteProductRequest) => Promise<DeleteProductResponse>;
+  createProduct: (request: ProductFormValues) => Promise<ProductCreateResponse>;
+  getProducts: (request: ProductsGetRequestDTO) => Promise<ProductsGetResponse>;
+  getSingleProduct: (id: string) => Promise<ProductGetSingleResponse>;
+  updateProduct: (request: ProductUpdateRequest) => Promise<ProductUpdateResponse>;
+  deleteProduct: (request: ProductDeleteRequest) => Promise<ProductDeleteResponse>;
   getProductTransaction: (
-    request: GetProductTransactionRequest,
-  ) => Promise<GetProductTransactionResponse>;
+    request: ProductGetTransactionRequest,
+  ) => Promise<ProductGetTransactionResponse>;
+  deleteProductTransfer: (
+    request: ProductTransferDeleteRequest,
+  ) => Promise<ProductTransferDeleteResponse>;
 }
 
 export class ProductRepository implements IProductRepository {
@@ -39,7 +44,7 @@ export class ProductRepository implements IProductRepository {
     return ProductMapper.toGetSingleProductResponse(response);
   }
 
-  async deleteProduct(request: DeleteProductRequest) {
+  async deleteProduct(request: ProductDeleteRequest) {
     const requestAPI = ProductMapper.toDeleteProductAPIRequest(request);
     const response = await this.productApi.deleteProduct(requestAPI);
     return ProductMapper.toDeleteProductResponse(response);
@@ -50,21 +55,27 @@ export class ProductRepository implements IProductRepository {
     return this.productApi.createProduct(requestAPI);
   }
 
-  async updateProduct(request: UpdateProductRequest) {
+  async updateProduct(request: ProductUpdateRequest) {
     const requestAPI = ProductMapper.toUpdateProductAPIRequest(request);
     const response = await this.productApi.updateProduct(requestAPI);
     return ProductMapper.toUpdateProductResponse(response);
   }
 
-  async getProducts(request: GetProductAPIRequestDTO) {
+  async getProducts(request: ProductsGetRequestDTO) {
     const response = await this.productApi.getProducts(request);
     return ProductMapper.toGetProductResponse(response);
   }
 
-  async getProductTransaction(request: GetProductTransactionRequest) {
+  async getProductTransaction(request: ProductGetTransactionRequest) {
     const requestAPI = ProductMapper.toGetProductTransactionAPIRequest(request);
     const response = await this.productApi.getProductTransaction(requestAPI);
     return ProductMapper.toGetProductTransactionResponse(response);
+  }
+
+  async deleteProductTransfer(request: ProductTransferDeleteRequest) {
+    const requestAPI = ProductMapper.toProductTransferDeleteAPIRequest(request);
+    const response = await this.productApi.deleteProductTransfer(requestAPI);
+    return ProductMapper.toProductTransferDeleteResponse(response);
   }
 }
 

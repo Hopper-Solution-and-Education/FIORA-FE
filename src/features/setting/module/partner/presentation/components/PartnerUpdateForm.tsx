@@ -6,7 +6,6 @@ import SelectField from '@/components/common/atoms/SelectField';
 import TextareaField from '@/components/common/atoms/TextareaField';
 import UploadField from '@/components/common/atoms/UploadField';
 import GlobalForm from '@/components/common/organisms/GlobalForm';
-import { Button } from '@/components/ui/button';
 import { uploadToFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
 import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
 import {
@@ -132,11 +131,6 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
         schema={updatePartnerSchema}
         onSubmit={onSubmit}
         defaultValues={defaultValues}
-        renderSubmitButton={(formState) => (
-          <Button type="submit" disabled={formState.isSubmitting}>
-            {formState.isSubmitting ? 'Updating...' : 'Update Partner'}
-          </Button>
-        )}
       />
     </>
   );

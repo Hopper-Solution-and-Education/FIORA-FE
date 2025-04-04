@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, CircleX } from 'lucide-react';
 import { format, addDays, subDays } from 'date-fns';
 import { endOfMonth, endOfYear, startOfMonth, startOfYear, subMonths, subYears } from 'date-fns';
 import { DateRange } from 'react-day-picker';
@@ -120,13 +120,22 @@ const CustomDateRangePicker = forwardRef<HTMLInputElement, CustomDateRangePicker
             <Button
               variant="outline"
               className={cn(
-                'w-full justify-start text-left font-normal',
+                'relative w-full justify-start text-left font-normal',
                 !date && 'text-muted-foreground',
                 className,
               )}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
+              <CalendarIcon className="mr-2 h-4 w-4 opacity-60" />
               {formatDateRange(date)}
+              {date !== undefined && (
+                <Button
+                  variant={'ghost'}
+                  onClick={() => setDate(undefined)}
+                  className="absolute right-0 top-[50%] -translate-y-1/2 opacity-80"
+                >
+                  <CircleX size={15} />
+                </Button>
+              )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">

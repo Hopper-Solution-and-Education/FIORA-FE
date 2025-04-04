@@ -179,7 +179,9 @@ export function DateTimePicker({
     [setDate, setMonth],
   );
   const onSubmit = useCallback(() => {
-    onChange(new Date(date));
+    // Create a new Date object and ensure it's in ISO format for Prisma compatibility
+    const formattedDate = new Date(date);
+    onChange(formattedDate);
     setOpen(false);
   }, [date, onChange]);
 

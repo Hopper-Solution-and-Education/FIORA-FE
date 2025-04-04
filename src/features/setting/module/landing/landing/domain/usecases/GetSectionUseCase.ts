@@ -1,6 +1,7 @@
 import { SectionType } from '@prisma/client';
 import { decorate, injectable } from 'inversify';
 import type { ISectionRepository } from '../../data/repositories/sectionRepository';
+import { ISection } from '../../slices/types';
 
 export class GetSectionUseCase {
   private sectionRepository: ISectionRepository;
@@ -10,7 +11,15 @@ export class GetSectionUseCase {
   }
 
   async execute(sectionType: SectionType) {
-    return await this.sectionRepository.getSection(sectionType);
+    const response = await this.sectionRepository.getSection(sectionType);
+    return this.handleProcessResponse(response);
+  }
+
+  private handleProcessResponse(data: ISection): ISection {
+    data.medias.sort((a, b) => {
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    });
+    return data;
   }
 }
 

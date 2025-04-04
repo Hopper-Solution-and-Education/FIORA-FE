@@ -32,6 +32,7 @@ import { MouseEvent, useMemo } from 'react';
 import { updateVisibleColumns } from '../slices';
 import { TransactionColumn, TransactionTableColumnKey } from '../types';
 import { DEFAULT_TRANSACTION_TABLE_COLUMNS } from '../utils/constants';
+import { useSession } from 'next-auth/react';
 
 interface SortableItemProps {
   id: string;
@@ -54,6 +55,7 @@ const SortableItem = ({ id, children }: SortableItemProps) => {
 };
 
 const SettingsMenu = () => {
+  const { data } = useSession();
   const dispatch = useAppDispatch();
   const { visibleColumns } = useAppSelector((state) => state.transaction);
 
@@ -109,7 +111,10 @@ const SettingsMenu = () => {
       );
 
       dispatch(updateVisibleColumns(tmpVisibleColumns));
-      localStorage.setItem('visibleColumns', JSON.stringify(tmpVisibleColumns));
+      localStorage.setItem(
+        'config' + (data?.user.id.split('-')[0] ?? ''),
+        JSON.stringify(tmpVisibleColumns),
+      );
     }
   };
 
@@ -148,14 +153,20 @@ const SettingsMenu = () => {
     }
 
     dispatch(updateVisibleColumns(updatedColumns));
-    localStorage.setItem('visibleColumns', JSON.stringify(updatedColumns));
+    localStorage.setItem(
+      'config' + (data?.user.id.split('-')[0] ?? ''),
+      JSON.stringify(updatedColumns),
+    );
   };
 
   const handleResetSettings = () => {
     // Reset to default settings
     const defaultColumns = { ...DEFAULT_TRANSACTION_TABLE_COLUMNS };
     dispatch(updateVisibleColumns(defaultColumns));
-    localStorage.setItem('visibleColumns', JSON.stringify(defaultColumns));
+    localStorage.setItem(
+      'config' + (data?.user.id.split('-')[0] ?? ''),
+      JSON.stringify(defaultColumns),
+    );
   };
 
   // Memoize the columns to avoid unnecessary re-renders and sort
@@ -256,7 +267,7 @@ const SettingsMenu = () => {
                     <SortableItem key={key} id={key}>
                       <DropdownMenuItem
                         className="w-[200px] py-1 flex justify-between items-center cursor-pointer"
-                        onSelect={(e) => {
+                        onClick={(e) => {
                           toggleVisibility(e, key as TransactionColumn);
                         }}
                       >

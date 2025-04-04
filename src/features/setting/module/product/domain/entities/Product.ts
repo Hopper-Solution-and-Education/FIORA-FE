@@ -1,6 +1,7 @@
 import { PaginationResponse } from '@/shared/types/Common.types';
 import { CategoryType, ProductType } from '@prisma/client';
 import { ProductFormValues, ProductItem } from '../../presentation/schema/addProduct.schema';
+import { Transaction } from './Transaction';
 
 export class Product {
   id: string;
@@ -10,7 +11,8 @@ export class Product {
   price: number;
   taxRate: number;
   items: ProductItem[];
-  categoryId: string;
+  transactions: Transaction[];
+  catId: string;
   type: ProductType;
   createdAt: string;
   updatedAt: string;
@@ -27,6 +29,7 @@ export class Product {
     type: ProductType,
     createdAt: string,
     updatedAt: string,
+    transactions: Transaction[] = [],
   ) {
     this.id = id;
     this.name = name;
@@ -35,37 +38,47 @@ export class Product {
     this.price = price;
     this.taxRate = taxRate;
     this.items = items;
-    this.categoryId = categoryId;
+    this.transactions = transactions;
+    this.catId = categoryId;
     this.type = type;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
 }
 
-export class CreateProductResponse {}
+export class ProductCreateResponse {}
 
-export type GetProductResponse = PaginationResponse<Product>;
+export type ProductsGetResponse = PaginationResponse<Product>;
 
-export type GetSingleProductResponse = Product;
+export type ProductGetSingleResponse = Product;
 
-export type UpdateProductResponse = Product;
-export type UpdateProductRequest = ProductFormValues;
+export type ProductUpdateRequest = ProductFormValues;
+export type ProductUpdateResponse = Product;
 
-export type DeleteProductRequest = {
+export type ProductDeleteRequest = {
   id: string;
 };
 
-export type DeleteProductResponse = {
+export type ProductDeleteResponse = {
   id: string;
 };
 
-export type GetProductTransactionRequest = {
+export type ProductTransferDeleteRequest = {
+  productIdToDelete: string;
+  productIdToTransfer: string;
+};
+
+export type ProductTransferDeleteResponse = {
+  id: string;
+};
+
+export type ProductGetTransactionRequest = {
   userId: string;
   page: number;
   pageSize: number;
 };
 
-export type GetProductTransactionResponse = PaginationResponse<ProductTransactionCategoryResponse>;
+export type ProductGetTransactionResponse = PaginationResponse<ProductTransactionCategoryResponse>;
 
 export type ProductTransactionCategoryResponse = {
   category: {

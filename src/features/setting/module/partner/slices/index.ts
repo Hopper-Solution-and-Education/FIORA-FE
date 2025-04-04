@@ -84,11 +84,10 @@ const partnerManagementSlice = createSlice({
         state.isDeletingPartner = true;
         state.error = null;
       })
-      .addCase(deletePartner.fulfilled, (state, action: PayloadAction<Partner>) => {
+      .addCase(deletePartner.fulfilled, (state, action: PayloadAction<{ id: string }>) => {
         state.isDeletingPartner = false;
         // Remove the deleted partner from the state
         state.partners = state.partners.filter((partner) => partner.id !== action.payload.id);
-        toast.success('Partner deleted successfully!');
         state.refresh = !state.refresh; // Trigger refresh after delete
       })
       .addCase(deletePartner.rejected, (state, action) => {

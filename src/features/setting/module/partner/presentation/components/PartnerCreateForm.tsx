@@ -6,7 +6,6 @@ import SelectField from '@/components/common/atoms/SelectField';
 import TextareaField from '@/components/common/atoms/TextareaField';
 import UploadField from '@/components/common/atoms/UploadField';
 import GlobalForm from '@/components/common/organisms/GlobalForm';
-import { Button } from '@/components/ui/button';
 import { useCreatePartner } from '@/features/setting/hooks/useCreatePartner';
 import {
   PartnerFormValues,
@@ -90,11 +89,6 @@ export default function PartnerCreateForm() {
         parentId: 'none',
       }}
       onSubmit={handleSubmit}
-      renderSubmitButton={(formState) => (
-        <Button type="submit" disabled={formState.isSubmitting}>
-          {formState.isSubmitting ? 'Submitting...' : 'Create Partner'}
-        </Button>
-      )}
     />
   );
 }

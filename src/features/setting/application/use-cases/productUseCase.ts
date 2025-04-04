@@ -4,12 +4,14 @@ import {
   ProductUpdate,
 } from '@/features/setting/domain/repositories/productRepository.interface';
 import { productRepository } from '@/features/setting/infrastructure/repositories/productRepository';
+import prisma from '@/infrastructure/database/prisma';
+import { Messages } from '@/shared/constants/message';
 import { PaginationResponse } from '@/shared/types/Common.types';
+import { ProductItem } from '@/shared/types/product.types';
 import { Product, ProductType } from '@prisma/client';
-import { JsonArray } from '@prisma/client/runtime/library';
+import { Decimal, JsonArray } from '@prisma/client/runtime/library';
 import { ICategoryProductRepository } from '../../domain/repositories/categoryProductRepository.interface';
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
-import { Messages } from '@/shared/constants/message';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
@@ -85,6 +87,7 @@ class ProductUseCase {
         {
           include: {
             transactions: true,
+            productItems: true,
           },
         },
       );
@@ -122,30 +125,47 @@ class ProductUseCase {
         throw new Error(Messages.CATEGORY_PRODUCT_NOT_FOUND);
       }
 
-      let itemsJSON = [] as JsonArray;
+      const result = await prisma.$transaction(async (tx) => {
+        // Create the product
+        const product = await tx.product.create({
+          data: {
+            userId,
+            icon,
+            name,
+            taxRate: tax_rate ?? params.tax_rate,
+            price: new Decimal(price),
+            type,
+            catId: category_id,
+            createdBy: userId,
+            ...(description && { description }),
+          },
+          include: {
+            productItems: true,
+          },
+        });
 
-      if (Array.isArray(items)) {
-        itemsJSON = items.map((item) => JSON.stringify(item));
-      }
+        if (items && Array.isArray(items)) {
+          const itemsRes = await tx.productItems.createMany({
+            data: items.map((item) => ({
+              icon: item.icon,
+              name: item.name,
+              description: item.description,
+              userId,
+              productId: product.id,
+            })),
+          });
 
-      const product = await this.productRepository.createProduct({
-        userId,
-        icon,
-        name,
-        taxRate: tax_rate ?? params.tax_rate,
-        price,
-        type,
-        catId: category_id,
-        createdBy: userId,
-        ...(description && { description }),
-        ...(itemsJSON.length > 0 && { items: itemsJSON }),
+          if (!itemsRes) {
+            throw new Error(Messages.CREATE_PRODUCT_ITEM_FAILED);
+          }
+
+          product['productItems'] = itemsRes as unknown as ProductItem[];
+        }
+
+        return product;
       });
 
-      if (!product) {
-        throw new Error(Messages.CREATE_CATEGORY_PRODUCT_FAILED);
-      }
-
-      return product;
+      return result;
     } catch (error: any) {
       throw new Error(error.message || Messages.CREATE_PRODUCT_FAILED);
     }
@@ -229,12 +249,84 @@ class ProductUseCase {
       throw new Error(Messages.TRANSACTION_DELETE_FAILED_CONSTRAINT);
     }
 
-    const deletedProduct = await this.productRepository.deleteProduct({ id });
+    const deletedProduct = await this.productRepository.deleteProduct({ id, userId });
     if (!deletedProduct) {
       throw new Error(Messages.DELETE_PRODUCT_FAILED);
     }
 
     return deletedProduct;
+  }
+
+  async transferProductTransaction(params: { sourceId: string; targetId: string; userId: string }) {
+    const { sourceId, targetId, userId } = params;
+    if (!sourceId || !targetId) {
+      throw new Error(Messages.MISSING_PARAMS_INPUT + ' sourceId or targetId');
+    }
+
+    // Checking existance of source and target products
+    const sourceProduct = await this.productRepository.findUniqueProduct({ id: sourceId });
+    if (!sourceProduct) {
+      throw new Error(Messages.SOURCE_PRODUCT_NOT_FOUND);
+    }
+
+    const targetProduct = await this.productRepository.findUniqueProduct({ id: targetId });
+    if (!targetProduct) {
+      throw new Error(Messages.TARGET_PRODUCT_NOT_FOUND);
+    }
+
+    if (sourceProduct === targetProduct) {
+      throw new Error(Messages.SOURCE_PRODUCT_TRANSFER_SELF_FAILED);
+    }
+
+    // Start a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Get all ProductTransaction entries for the source product
+      const productTransactions = await tx.productTransaction.findMany({
+        where: { productId: sourceProduct.id },
+      });
+
+      if (productTransactions.length === 0) {
+        // delete the source product if no transactions are found
+        await tx.product.delete({
+          where: { id: sourceProduct.id },
+        });
+        return {
+          transferred: 0,
+          deleted: true,
+        };
+      }
+
+      // 2. Transfer transactions to target product
+      await tx.productTransaction.updateMany({
+        where: { productId: sourceProduct.id },
+        data: {
+          productId: targetProduct.id,
+          updatedAt: new Date(),
+          updatedBy: userId, // Assuming you have user in req
+        },
+      });
+
+      // 3. Verify no transactions remain with source product
+      const remainingTransactions = await tx.productTransaction.count({
+        where: { productId: sourceProduct.id },
+      });
+
+      if (remainingTransactions > 0) {
+        throw new Error(Messages.TRANSFER_TRANSACTION_FAILED);
+      }
+
+      // 4. Delete the source product
+      await tx.product.delete({
+        where: { id: sourceProduct.id },
+      });
+
+      return {
+        transferred: productTransactions.length,
+        deleted: true,
+      };
+    });
+
+    return result;
   }
 }
 

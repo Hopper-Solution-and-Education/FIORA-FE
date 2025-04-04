@@ -17,6 +17,7 @@ import { UserNav } from '@/components/layouts/UserNav';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { ICON_SIZE } from '@/shared/constants/size';
 import { SectionType } from '@prisma/client';
 import { useSession } from 'next-auth/react';
 import { useGetSection } from '../../hooks/useGetSection';
@@ -88,13 +89,13 @@ export default function Header() {
                   <>
                     <UserPlus
                       onClick={() => redirect('/auth/sign-up')}
-                      size={18}
+                      size={ICON_SIZE.MD}
                       className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
                     />
 
                     <LogInIcon
                       onClick={() => redirect('/auth/sign-in')}
-                      size={18}
+                      size={ICON_SIZE.MD}
                       className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
                     />
                   </>
