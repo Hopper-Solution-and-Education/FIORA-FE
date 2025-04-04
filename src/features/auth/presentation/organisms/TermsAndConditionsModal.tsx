@@ -45,54 +45,65 @@ const TermsAndConditionsModal = ({
 }: TermsAndConditionModalProps) => {
   const file: PDFFile = '/docs/sample-terms-and-conditions.pdf';
   const [numPages, setNumPages] = useState<number>();
-  const [pageWidth, setPageWidth] = useState<number>(0); // State to hold the width of the page
-  const containerRef = useRef<HTMLDivElement | null>(null); // Ref for the parent container
-  const targetDivRef = useRef(null);
+  const [pageWidth, setPageWidth] = useState<number>(0);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [isButtonActive, setIsButtonActive] = useState(false);
 
   function onDocumentLoadSuccess({ numPages: nextNumPages }: PDFDocumentProxy): void {
     setNumPages(nextNumPages);
   }
 
-  useEffect(() => {
-    const options = {
-      root: null, // viewport
-      rootMargin: '0px',
-      threshold: 0.5, // trigger when 50% of the div is visible
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        // Update button state based on visibility
-        setIsButtonActive(entry.isIntersecting);
-      });
-    }, options);
-
-    // Start observing the target element
-    if (targetDivRef.current) {
-      observer.observe(targetDivRef.current);
-    }
-
-    // Cleanup observer on component unmount
-    return () => {
-      if (targetDivRef.current) {
-        observer.unobserve(targetDivRef.current);
-      }
-    };
-  }, [targetDivRef.current]);
-
-  useEffect(() => {
+  // Handle scroll event to check if user has reached the bottom
+  const handleScroll = () => {
     if (containerRef.current) {
-      setPageWidth(containerRef.current.offsetWidth); // Set the width of the page based on parent container's width
+      const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+      // Check if user has scrolled to the bottom (with a small threshold)
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 20;
+
+      if (isAtBottom) {
+        setIsButtonActive(true);
+      }
     }
-  }, [containerRef.current]); // Recalculate when the component is mounted or the ref is updated
+  };
+
+  useEffect(() => {
+    // Reset button state when modal opens
+    if (isOpen) {
+      setIsButtonActive(false);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) {
+      // Set initial width
+      setPageWidth(container.offsetWidth);
+
+      // Add scroll event listener
+      container.addEventListener('scroll', handleScroll);
+
+      // Add resize listener to update page width if window resizes
+      const handleResize = () => {
+        setPageWidth(container.offsetWidth);
+      };
+      window.addEventListener('resize', handleResize);
+
+      // Cleanup
+      return () => {
+        container.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('resize', handleResize);
+      };
+    }
+  }, [containerRef.current, numPages]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose} defaultOpen={false}>
       <DialogContent className="w-[80%] max-w-[60vw]">
         <DialogHeader>
           <DialogTitle>Terms and Conditions</DialogTitle>
-          <DialogDescription>Please read the terms and conditions carefully.</DialogDescription>
+          <DialogDescription>
+            Please read the terms and conditions carefully. Scroll to the end to accept.
+          </DialogDescription>
         </DialogHeader>
         <div ref={containerRef} className="h-[70vh] overflow-y-scroll overflow-x-hidden">
           {typeof window !== 'undefined' ? (
@@ -108,12 +119,13 @@ const TermsAndConditionsModal = ({
                   key={`page_${index + 1}`}
                   pageNumber={index + 1}
                   loading={<div />}
-                  width={pageWidth} // Use the width from the state
-                  renderTextLayer={false} // Optional: Disable the text layer for better rendering performance
-                  renderAnnotationLayer={false} // Optional: Enable the annotation layer for interactive features
+                  width={pageWidth}
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
                 />
               ))}
-              <div ref={targetDivRef} className="target-div h-5"></div>
+              {/* Add padding at the bottom to ensure scrolling works correctly */}
+              <div className="h-10"></div>
             </Document>
           ) : (
             <Loading />
@@ -122,7 +134,7 @@ const TermsAndConditionsModal = ({
 
         <DialogFooter className="w-full h-fit flex flex-row !justify-center items-center gap-5">
           <DialogClose onClick={onDecline}>
-            <Button className="bg-red-200 hover:bg-red-300  w-[10vw] h-fit min-w-fit">
+            <Button className="bg-red-200 hover:bg-red-300 w-[10vw] h-fit min-w-fit">
               <CircleX className="block text-red-400 stroke-[3] transform transition-transform duration-200 drop-shadow-sm hover:text-red-200 !h-[23px] !w-[23px]" />
             </Button>
           </DialogClose>

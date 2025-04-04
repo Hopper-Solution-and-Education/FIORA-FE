@@ -66,7 +66,7 @@ export default function PartnerCreateForm() {
       defaultValue="none"
     />,
     <InputField key="name" name="name" label="Name" placeholder="Name" required />,
-    <UploadField key="logo" label="Logo" name="logo" />,
+    <UploadField key="logo" label="Logo" name="logo" previewShape="circle" />,
     <TextareaField
       key="description"
       name="description"
