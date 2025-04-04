@@ -196,3 +196,7 @@ export function buildWhereClause(filters: Filter) {
 
   return whereClause;
 }
+
+export const isImageUrl = (str: string): boolean => {
+  return str.startsWith('http') || str.startsWith('https') || str.startsWith('data:');
+};
