@@ -89,6 +89,7 @@ const PartnerSettingPage = () => {
           color,
           children: childrenBarItems,
           depth,
+          icon: partner.logo || undefined, // Add the logo as the icon
         };
       };
 
