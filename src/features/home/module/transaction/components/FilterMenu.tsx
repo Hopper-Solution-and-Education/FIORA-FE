@@ -23,71 +23,135 @@ import { TransactionFilterCriteria, TransactionFilterOptionResponse } from '../t
 import { DEFAULT_TRANSACTION_FILTER_CRITERIA, TransactionCurrency } from '../utils/constants';
 import { renderAmountSlider } from './renderSlider';
 
+type FilterParams = {
+  dateRange?: DateRange;
+  types?: string[];
+  partners?: string[];
+  subjectFrom?: string[];
+  subjectTo?: string[];
+  amountMin?: number;
+  amountMax?: number;
+};
+
+const filterParamsInitState: FilterParams = {
+  dateRange: undefined,
+  types: [],
+  partners: [],
+  subjectFrom: [],
+  subjectTo: [],
+  amountMin: 0,
+  amountMax: 10000,
+};
+
 type FilterMenuProps = {
   callBack: (newFilter: TransactionFilterCriteria) => void;
 };
 
 const FilterMenu = ({ callBack }: FilterMenuProps) => {
   const { amountMin, amountMax, filterCriteria } = useAppSelector((state) => state.transaction);
-  const [tmpFilterCriteria, setTmpFilterCriteria] = useState<TransactionFilterCriteria>(
-    {} as TransactionFilterCriteria,
-  );
+
   const [isOpen, setIsOpen] = useState(false);
 
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
-  const [partners, setPartners] = useState<string[]>([]);
-  const [subjectFrom, setSubjectFrom] = useState<string[]>([]);
-  const [subjectTo, setSubjectTo] = useState<string[]>([]);
-  const [types, setTypes] = useState<string[]>([]);
+  const [filterParams, setFilterParams] = useState<FilterParams>(filterParamsInitState);
 
   const { data } = useDataFetcher<TransactionFilterOptionResponse>({
     endpoint: isOpen ? '/api/transactions/options' : null,
     method: 'GET',
   });
 
-  const handleClose = () => {
-    setIsOpen(false);
-    setTmpFilterCriteria(filterCriteria);
-    setDateRange(undefined);
-    setPartners([]);
-    setSubjectFrom([]);
-    setSubjectTo([]);
-    setTypes([]);
-  };
-
   useEffect(() => {
     if (filterCriteria) {
-      setTmpFilterCriteria({
-        ...filterCriteria,
-        filters: {
-          ...filterCriteria.filters,
-          amount: {
-            gte: amountMin,
-            lte: amountMax,
-          },
-        },
-      });
+      let currentFilterParams = filterParams;
 
       //  Add existing filters to the state
+      if (isOpen) {
+        if (!filterCriteria.filters['OR']) {
+          const tmpFilterParams = filterCriteria.filters;
+          currentFilterParams = {
+            types: tmpFilterParams?.type
+              ? [...(currentFilterParams.types ?? []), tmpFilterParams?.type]
+              : currentFilterParams.types,
+            partners: tmpFilterParams?.partner?.name
+              ? [...(currentFilterParams.partners ?? []), tmpFilterParams?.partner?.name]
+              : currentFilterParams.partners,
+            subjectFrom:
+              tmpFilterParams?.fromAccount?.name || tmpFilterParams.fromCategory?.name
+                ? [
+                    ...(currentFilterParams.subjectFrom ?? []),
+                    tmpFilterParams?.fromAccount?.name ?? tmpFilterParams.fromCategory?.name,
+                  ]
+                : currentFilterParams.subjectFrom,
+            subjectTo:
+              tmpFilterParams?.toAccount?.name || tmpFilterParams.toCategory?.name
+                ? [
+                    ...(currentFilterParams.subjectTo ?? []),
+                    tmpFilterParams?.toAccount?.name ?? tmpFilterParams.toCategory?.name,
+                  ]
+                : currentFilterParams.subjectTo,
+            amountMin: amountMin,
+            amountMax: amountMax,
+          };
+          setFilterParams(currentFilterParams);
+        } else {
+          const tmpFilterOrParams = filterCriteria.filters['OR'];
+          type FilterOrValue = {
+            type?: string;
+            partner?: { name: string };
+            fromAccount?: { name: string };
+            fromCategory?: { name: string };
+            toAccount?: { name: string };
+            toCategory?: { name: string };
+          };
+
+          tmpFilterOrParams.forEach((filterValue: FilterOrValue) => {
+            // Process each OR condition
+            if ('type' in filterValue) {
+              // Handle transaction type
+              currentFilterParams.types = [
+                ...new Set([...(currentFilterParams.types || []), filterValue.type as string]),
+              ];
+            } else if ('partner' in filterValue && filterValue.partner?.name) {
+              // Handle partners
+              currentFilterParams.partners = [
+                ...new Set([...(currentFilterParams.partners || []), filterValue.partner.name]),
+              ];
+            } else if (
+              ('fromAccount' in filterValue && filterValue.fromAccount?.name) ||
+              ('fromCategory' in filterValue && filterValue.fromCategory?.name)
+            ) {
+              // Handle subject from (accounts or categories)
+              const fromName = (filterValue.fromAccount?.name ||
+                filterValue.fromCategory?.name) as string;
+              if (fromName) {
+                currentFilterParams.subjectFrom = [
+                  ...new Set([...(currentFilterParams.subjectFrom || []), fromName]),
+                ];
+              }
+            } else if (
+              ('toAccount' in filterValue && filterValue.toAccount?.name) ||
+              ('toCategory' in filterValue && filterValue.toCategory?.name)
+            ) {
+              // Handle subject to (accounts or categories)
+              const toName = (filterValue.toAccount?.name ||
+                filterValue.toCategory?.name) as string;
+              if (toName) {
+                currentFilterParams.subjectTo = [
+                  ...new Set([...(currentFilterParams.subjectTo || []), toName]),
+                ];
+              }
+            }
+            currentFilterParams.amountMin = amountMin;
+            currentFilterParams.amountMax = amountMax;
+          });
+          setFilterParams(currentFilterParams);
+        }
+      }
     }
   }, [filterCriteria, isOpen]);
 
-  const handleUpdateAmount = (target: 'gte' | 'lte', value: number) => {
-    // Check if the value is within the range
-    if (value < amountMin || value > amountMax) {
-      return; // Ignore the change if out of range
-    }
-
-    setTmpFilterCriteria((prev) => ({
-      ...prev,
-      filters: {
-        ...prev.filters,
-        amount: {
-          ...(prev.filters?.amount as any),
-          [target]: value,
-        },
-      },
-    }));
+  const handleClose = () => {
+    setIsOpen(false);
+    setFilterParams(filterParamsInitState);
   };
 
   const handeResetFilter = () => {
@@ -95,63 +159,64 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
     handleClose();
   };
 
-  const handleSaveFilterChanges = () => {
-    const updatedFilters = { ...tmpFilterCriteria.filters };
+  const handleEditFilter = (target: keyof FilterParams, value: any) => {
+    const tmpFilterParams = { ...filterParams };
+    tmpFilterParams[target] = value;
+    setFilterParams(tmpFilterParams);
+  };
 
-    if (dateRange?.from || dateRange?.to) {
+  const handleSaveFilterChanges = () => {
+    const tmpFilterCriteria = { ...filterCriteria };
+    const updatedFilters: Record<string, any> = {};
+
+    if (filterParams.dateRange?.from || filterParams.dateRange?.to) {
       updatedFilters.date = {
-        gte: dateRange.from ? dateRange.from.toISOString() : null,
-        lte: dateRange.to ? dateRange.to.toISOString() : null,
+        gte: filterParams.dateRange?.from ? filterParams.dateRange?.from.toISOString() : null,
+        lte: filterParams.dateRange?.to ? filterParams.dateRange?.to.toISOString() : null,
       } as any;
     }
 
-    if (types.length > 0 || partners.length > 0 || subjectFrom.length > 0 || subjectTo.length > 0) {
-      // Create filter objects
-      const filterObjects = [];
+    // Handle all filter params at once
+    // ['types', 'partners', 'subjectFrom', 'subjectTo'].forEach(field => {
+    //   const key = field as keyof FilterParams;
+    //   if (filterParams[key]?.length) {
+    //   handleFieldChange(key, filterParams[key]);
+    //   }
+    // });
 
-      // Add type filters
-      for (const type of types) {
-        filterObjects.push({
-          type: type,
-        });
-      }
+    // Create the OR filter conditions
+    const orConditions: any[] = [];
 
-      // Add partner filters
-      for (const partner of partners) {
-        filterObjects.push({
-          partner: {
-            name: partner,
-          },
-        });
-      }
+    // Add conditions based on filter parameters
+    if (filterParams.types?.length) {
+      filterParams.types.forEach((type) => orConditions.push({ type }));
+    }
 
-      // Add subject from filters
-      for (const from of subjectFrom) {
-        filterObjects.push({
-          fromAccount: {
-            name: from,
-          },
-          fromCategory: {
-            name: from,
-          },
-        });
-      }
+    if (filterParams.partners?.length) {
+      filterParams.partners.forEach((partner) => orConditions.push({ partner: { name: partner } }));
+    }
 
-      // Add subject to filters
-      for (const to of subjectTo) {
-        filterObjects.push({
-          toAccount: {
-            name: to,
-          },
-          toCategory: {
-            name: to,
-          },
-        });
-      }
+    if (filterParams.subjectFrom?.length) {
+      filterParams.subjectFrom.forEach((from) =>
+        orConditions.push({
+          fromAccount: { name: from },
+          fromCategory: { name: from },
+        }),
+      );
+    }
 
-      if (filterObjects.length > 0) {
-        updatedFilters.OR = filterObjects as any;
-      }
+    if (filterParams.subjectTo?.length) {
+      filterParams.subjectTo.forEach((to) =>
+        orConditions.push({
+          toAccount: { name: to },
+          toCategory: { name: to },
+        }),
+      );
+    }
+
+    // Only add OR conditions if there are any
+    if (orConditions.length > 0) {
+      updatedFilters.OR = orConditions as any;
     }
 
     callBack({
@@ -233,8 +298,8 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
                 <Label>Type</Label>
                 <MultiSelect
                   options={typeOptions}
-                  selected={types}
-                  onChange={setTypes}
+                  selected={filterParams.types ?? []}
+                  onChange={(values: string[]) => handleEditFilter('types', values)}
                   placeholder="Select types"
                   className="w-full px-4 py-3"
                 />
@@ -245,8 +310,8 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
                 <Label>Partner</Label>
                 <MultiSelect
                   options={partnerOptions}
-                  selected={partners}
-                  onChange={setPartners}
+                  selected={filterParams.partners ?? []}
+                  onChange={(values: string[]) => handleEditFilter('partners', values)}
                   placeholder="Select Partners"
                   className="w-full px-4 py-3"
                 />
@@ -257,8 +322,8 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
                 <Label>Subject (From)</Label>
                 <MultiSelect
                   options={subjectFromOptions}
-                  selected={subjectFrom}
-                  onChange={setSubjectFrom}
+                  selected={filterParams.subjectFrom ?? []}
+                  onChange={(values: string[]) => handleEditFilter('subjectFrom', values)}
                   placeholder="Select Subjects (From)"
                   className="w-full px-4 py-3"
                 />
@@ -269,8 +334,8 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
                 <Label>Subject (To)</Label>
                 <MultiSelect
                   options={subjectToOptions}
-                  selected={subjectTo}
-                  onChange={setSubjectTo}
+                  selected={filterParams.subjectTo ?? []}
+                  onChange={(values: string[]) => handleEditFilter('subjectTo', values)}
                   placeholder="Select Subjects (To)"
                   className="w-full px-4 py-3"
                 />
@@ -287,7 +352,12 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
             <div className="w-full h-full flex flex-col justify-start items-start gap-[.8rem]">
               <div className="w-full flex flex-col gap-2">
                 <Label>Date range</Label>
-                <DateRangePicker date={dateRange} onChange={setDateRange} />
+                <DateRangePicker
+                  date={filterParams.dateRange}
+                  onChange={(values: DateRange | undefined) =>
+                    handleEditFilter('dateRange', values)
+                  }
+                />
                 {/* <GlobalForm
                   fields={[
                     // <CustomDateRangePicker name="date" value={dateRange} onChange={setDateRange} />,
@@ -302,26 +372,23 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
               <div className="w-full flex flex-col gap-2">
                 <Label>Amount</Label>
                 {renderAmountSlider({
-                  amountMin: (tmpFilterCriteria.filters?.amount as any)?.gte ?? amountMin,
-                  amountMax: (tmpFilterCriteria.filters?.amount as any)?.lte ?? amountMax,
+                  amountMin: filterParams.amountMin ?? amountMin,
+                  amountMax: filterParams.amountMax ?? amountMax,
                   minRange: amountMin,
                   maxRange: amountMax,
-                  handleUpdateAmount,
+                  handleUpdateAmount: handleEditFilter,
                 })}
                 <div className="w-full flex flex-col gap-2">
                   <Label>Min</Label>
                   <Input
                     // disabled={isRegistering} // Disable during register period
-                    value={formatCurrency(
-                      (tmpFilterCriteria.filters?.amount as any)?.gte ?? 0,
-                      TransactionCurrency.VND,
-                    )}
+                    value={formatCurrency(filterParams.amountMin ?? 0, TransactionCurrency.VND)}
                     min={amountMin}
                     max={amountMax}
                     onFocus={(e) => e.target.select()}
                     placeholder="Min"
                     onChange={(e) =>
-                      handleUpdateAmount('gte', Number(e.target.value.split(',').join('')))
+                      handleEditFilter('amountMin', Number(e.target.value.split(',').join('')))
                     }
                     required
                     className={cn('w-full')}
@@ -331,16 +398,13 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
                   <Label>Max</Label>
                   <Input
                     // disabled={isRegistering} // Disable during register period
-                    value={formatCurrency(
-                      (tmpFilterCriteria.filters?.amount as any)?.lte ?? 0,
-                      TransactionCurrency.VND,
-                    )}
+                    value={formatCurrency(filterParams.amountMax ?? 0, TransactionCurrency.VND)}
                     min={amountMin}
                     max={amountMax}
                     placeholder="Max"
                     onFocus={(e) => e.target.select()}
                     onChange={(e) =>
-                      handleUpdateAmount('lte', Number(e.target.value.split(',').join('')))
+                      handleEditFilter('amountMax', Number(e.target.value.split(',').join('')))
                     }
                     required
                     className={cn('w-full')}

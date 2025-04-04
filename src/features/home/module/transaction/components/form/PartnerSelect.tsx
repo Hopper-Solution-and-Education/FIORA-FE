@@ -1,14 +1,15 @@
 import SelectField from '@/components/common/atoms/SelectField';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
+import useDataFetcher from '@/hooks/useDataFetcher';
+import { Partner } from '@prisma/client';
 import React, { useEffect } from 'react';
-import { FieldError, useFormContext } from 'react-hook-form';
+import { FieldError } from 'react-hook-form';
 import { DropdownOption } from '../../types';
-import { MOCK_ACCOUNTS, MOCK_CATEORIES } from '../../utils/constants';
 
 interface PartnerSelectProps {
   name: string;
   value?: string;
-  onChange?: (target: 'fromAccountId' | 'fromCategoryId', value: string) => void;
+  onChange?: any;
   error?: FieldError;
   [key: string]: any;
 }
@@ -16,18 +17,37 @@ interface PartnerSelectProps {
 const PartnerSelectField: React.FC<PartnerSelectProps> = ({
   name,
   value = '',
-  onChange = () => {},
+  onChange,
   error,
   ...props
 }) => {
-  const { watch } = useFormContext();
-  const transactionType = watch('type') || 'Expense';
-
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
+  const { data } = useDataFetcher<Partner[]>({
+    endpoint: '/api/partners',
+    method: 'GET',
+  });
 
   useEffect(() => {
-    setOptions(transactionType === 'Income' ? MOCK_CATEORIES : MOCK_ACCOUNTS);
-  }, [transactionType]);
+    if (data) {
+      const tmpOptions: DropdownOption[] = [];
+
+      if (data.data.length > 0) {
+        data.data.forEach((partner: Partner) => {
+          tmpOptions.push({
+            value: partner.id,
+            label: partner.name,
+          });
+        });
+      } else {
+        tmpOptions.push({
+          label: 'Select',
+          value: 'none',
+          disabled: true,
+        });
+      }
+      setOptions(tmpOptions);
+    }
+  }, [data]);
 
   return (
     <FormField
@@ -41,10 +61,8 @@ const PartnerSelectField: React.FC<PartnerSelectProps> = ({
             <SelectField
               className="px-4 py-2"
               name={name}
-              value={value}
-              onChange={(value) =>
-                onChange(transactionType === 'Income' ? 'fromCategoryId' : 'fromAccountId', value)
-              }
+              value={options.find((option) => option.value === value)?.label || 'Unknown'}
+              onChange={onChange}
               options={options}
               placeholder={'Select Partner'}
               error={error}

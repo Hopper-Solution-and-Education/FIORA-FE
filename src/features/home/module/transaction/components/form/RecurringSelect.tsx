@@ -11,7 +11,7 @@ import { DropdownOption } from '../../types';
 interface RecurringSelectProps {
   name: string;
   value?: string;
-  onChange?: (value: string) => void;
+  onChange?: any;
   error?: FieldError;
   [key: string]: any;
 }

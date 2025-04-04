@@ -65,10 +65,10 @@ const TransactionTable = () => {
   const toggleRef = useRef(null);
   const { visibleColumns, filterCriteria } = useAppSelector((state) => state.transaction);
 
+  const [displayData, setDisplayData] = useState<IRelationalTransaction[]>([]);
   const [sortOrder, setSortOrder] = useState<OrderType | undefined>('desc');
   const [sortTarget, setSortTarget] = useState<string>('date');
   const [hoveringIdx, setHoveringIdx] = useState<number>(-1);
-  const [displayData, setDisplayData] = useState<IRelationalTransaction[]>([]);
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize] = useState<number>(20);
