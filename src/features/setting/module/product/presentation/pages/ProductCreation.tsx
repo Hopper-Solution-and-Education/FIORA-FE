@@ -182,8 +182,6 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
           method.reset(defaultProductFormValue);
           router.replace('/setting/product');
         });
-
-      console.log('back to product page');
     } catch (error) {
       console.error('Error creating/updating product:', error);
     }

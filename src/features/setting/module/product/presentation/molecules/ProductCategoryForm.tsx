@@ -81,7 +81,6 @@ export default function ProductCategoryForm() {
             dispatch(setIsOpenDialogAddCategory(false));
           });
       }
-      console.log(data);
     } catch (error) {
       console.error('Error :', error);
       toast.error('Failed');
