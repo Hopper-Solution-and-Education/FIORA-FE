@@ -1,43 +1,37 @@
 'use client';
 
 import Loading from '@/components/common/atoms/Loading';
-import { Button } from '@/components/ui/button';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { landingDIContainer } from '@/features/landing/di/landingDIContainer';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { useAppSelector } from '@/store';
 import { SectionType } from '@prisma/client';
-import { Download, Upload } from 'lucide-react';
-import { useEffect } from 'react';
-import useBannerSettingLogic from '../hooks/useBannerSettingLogic';
+import { useState } from 'react';
 import SectionManager from './components/SectionManager';
 
+const sections = [
+  { value: 'header', label: 'Header', type: SectionType.HEADER },
+  { value: 'banner', label: 'Banner', type: SectionType.BANNER },
+  { value: 'vision', label: 'Vision & Mission', type: SectionType.VISION_MISSION },
+  { value: 'system', label: 'System', type: SectionType.SYSTEM },
+  { value: 'kps', label: 'KPS', type: SectionType.KPS },
+  { value: 'partners', label: 'Partners', type: SectionType.PARTNER_LOGO },
+  { value: 'review', label: 'Review', type: SectionType.REVIEW },
+  { value: 'footer', label: 'Footer', type: SectionType.FOOTER },
+];
+
 export default function MediaDashboard() {
-  const { exportData, importData } = useBannerSettingLogic();
+  // const { exportData, importData } = useBannerSettingLogic();
   const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
   const isLoading = useAppSelector((state) => state.landingSettings.isLoading);
-
-  useEffect(() => {
-    return () => {
-      landingDIContainer.unbindAll();
-    };
-  });
-
-  const sections = [
-    { value: 'banner', label: 'Banner', type: SectionType.BANNER },
-    { value: 'vision', label: 'Vision & Mission', type: SectionType.VISION_MISSION },
-    { value: 'kps', label: 'KPS', type: SectionType.KPS },
-    { value: 'partners', label: 'Partner Logos', type: SectionType.PARTNER_LOGO },
-    { value: 'header', label: 'Header', type: SectionType.HEADER },
-    { value: 'footer', label: 'Footer', type: SectionType.FOOTER },
-    { value: 'system', label: 'FIORA System', type: SectionType.SYSTEM },
-    { value: 'review', label: 'Review', type: SectionType.REVIEW },
-  ];
+  const isMobile = useIsMobile();
+  // State để lưu giá trị tab hiện tại
+  const [activeTab, setActiveTab] = useState('header');
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-7xl mx-auto p-4">
       {(isLoadingSaveChange || isLoading) && <Loading />}
-      <Card className="mb-6">
+      {/* <Card className="mb-6">
         <CardHeader>
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div>
@@ -56,20 +50,38 @@ export default function MediaDashboard() {
             </div>
           </div>
         </CardHeader>
-      </Card>
+      </Card> */}
 
-      <Tabs defaultValue="banner" className="w-full">
-        <TabsList className="flex flex-wrap gap-2 mb-10">
-          {sections.map((section) => (
-            <TabsTrigger
-              key={section.value}
-              value={section.value}
-              className="flex-1 min-w-[100px] text-center rounded-md bg-transparent hover:bg-gray-100 active:text-white transition-colors duration-200"
-            >
-              {section.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        {isMobile ? (
+          <div className="mb-4">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full">
+                {sections.find((section) => section.value === activeTab)?.label || 'Select Section'}
+              </SelectTrigger>
+              <SelectContent>
+                {sections.map((section) => (
+                  <SelectItem key={section.value} value={section.value}>
+                    {section.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : (
+          // Nếu không phải mobile, hiển thị dạng TabsList
+          <TabsList className="flex flex-wrap gap-2 mb-10">
+            {sections.map((section) => (
+              <TabsTrigger
+                key={section.value}
+                value={section.value}
+                className="flex-1 min-w-[100px] text-center rounded-md bg-transparent hover:bg-gray-100 active:text-white transition-colors duration-200"
+              >
+                {section.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        )}
 
         {sections.map((section) => (
           <TabsContent key={section.value} value={section.value}>
