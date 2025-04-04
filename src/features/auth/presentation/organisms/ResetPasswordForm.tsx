@@ -130,7 +130,7 @@ const ResetPasswordForm = ({
                           ))}
                       </button>
                     </div>
-                    <div className="hidden sm:block md:w-1/4 "></div>
+                    <div className="hidden sm:block md:w-1/4"></div>
                   </div>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center w-full">
                     <div className="w-1/4"></div>
