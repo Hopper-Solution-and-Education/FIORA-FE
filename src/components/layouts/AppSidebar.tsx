@@ -143,7 +143,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
         >
           {/* Logo */}
           <div
-            className={`flex aspect-square items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground transition-all duration-300 ${
+            className={`flex aspect-square items-center justify-center rounded-lg bg-transparent text-sidebar-primary-foreground transition-all duration-300 ${
               isMobile
                 ? open
                   ? 'size-10 sm:size-12'

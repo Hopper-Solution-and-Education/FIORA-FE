@@ -7,8 +7,19 @@ const partnerSchema = yup.object({
   identify: yup.string().nullable().notRequired(),
   dob: yup.string().nullable().notRequired(),
   taxNo: yup.string().nullable().notRequired(),
-  address: yup.string().nullable().notRequired(),
-  email: yup.string().email('Invalid email').nullable().notRequired(),
+  address: yup
+    .string()
+    .nullable()
+    .notRequired()
+    .max(200, 'Address must be less than 200 characters'),
+  email: yup
+    .string()
+    .nullable()
+    .notRequired()
+    .test('validEmail', 'Invalid email format', (value) => {
+      if (!value) return true;
+      return yup.string().email().isValidSync(value);
+    }),
   phone: yup
     .string()
     .nullable()
@@ -17,7 +28,7 @@ const partnerSchema = yup.object({
       if (!value) return true; // Cho phép bỏ trống
       return value.replace(/\D/g, '').length >= 10; // Chỉ kiểm tra nếu có số
     }),
-  description: yup.string().max(500, 'Maximum 500 characters').nullable().notRequired(),
+  description: yup.string().nullable().notRequired().max(500, 'Maximum 500 characters'),
   parentId: yup.string().nullable().notRequired(),
 });
 

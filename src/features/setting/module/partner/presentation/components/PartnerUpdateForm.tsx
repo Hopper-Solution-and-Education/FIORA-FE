@@ -8,13 +8,16 @@ import UploadField from '@/components/common/atoms/UploadField';
 import GlobalForm from '@/components/common/organisms/GlobalForm';
 import { uploadToFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
 import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
+import { fetchPartners } from '@/features/setting/module/partner/slices/actions/fetchPartnersAsyncThunk';
 import {
   UpdatePartnerFormValues,
   updatePartnerSchema,
 } from '@/features/setting/module/partner/presentation/schema/updatePartner.schema';
 import { updatePartner } from '@/features/setting/module/partner/slices/actions/updatePartnerAsyncThunk';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface PartnerUpdateFormProps {
@@ -25,11 +28,46 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
   const dispatch = useAppDispatch();
   const router = useRouter();
   const partners = useAppSelector((state) => state.partner.partners);
+  const { data: session, status } = useSession();
+  const [isDataFetched, setIsDataFetched] = useState(false);
 
+  useEffect(() => {
+    const fetchPartnersData = async () => {
+      if (status === 'authenticated' && session?.user?.id && !isDataFetched) {
+        try {
+          await dispatch(
+            fetchPartners({ userId: session.user.id, page: 1, pageSize: 100 }),
+          ).unwrap();
+          setIsDataFetched(true);
+        } catch (error) {
+          console.error('Error fetching partners:', error);
+          toast.error('Failed to load partners data');
+        }
+      }
+    };
+
+    fetchPartnersData();
+  }, [dispatch, status, session, isDataFetched]);
+
+  // Check if current partner has children
+  const hasChildren = partners.some((partner) => partner.parentId === initialData?.id);
+
+  // Filter parent options:
+  // 1. Exclude the current partner itself
+  // 2. Only include partners that don't have a parent (top-level)
+  // 3. If current partner has children, don't allow it to become a child of another partner
   const parentOptions = [
     { value: 'none', label: 'None' },
     ...partners
-      .filter((p) => p.id !== initialData?.id && p.parentId === null)
+      .filter((p) => {
+        // Exclude the current partner
+        if (p.id === initialData?.id) return false;
+
+        // Only include top-level partners (no parent)
+        if (p.parentId !== null) return false;
+
+        return true;
+      })
       .map((partner) => ({
         value: partner.id,
         label: partner.name,
@@ -49,6 +87,7 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
     parentId: initialData?.parentId || 'none',
   };
 
+  // If this partner has children, disable the parent selection field
   const fields = [
     <SelectField
       key="parentId"
@@ -57,6 +96,10 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
       options={parentOptions}
       placeholder="Select a parent partner"
       defaultValue={initialData?.parentId || 'none'}
+      disabled={hasChildren}
+      helperText={
+        hasChildren ? 'Cannot change parent because this partner has children' : undefined
+      }
     />,
     <InputField key="name" name="name" label="Name" placeholder="Name" />,
     <UploadField key="logo" label="Logo" name="logo" initialImageUrl={initialData?.logo || null} />,

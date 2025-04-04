@@ -1,8 +1,6 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
 import Link from 'next/link';
 
 const recommendations = [
@@ -12,8 +10,6 @@ const recommendations = [
     title: 'Invest Your Savings',
     description: 'You have about 9K free which could be staked into a saving to generate interest.',
     link: '#',
-    image:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-biyr4mO-BnQ3or0X1ROmQf92qu1h1_k4sg&s',
     attachments: [],
   },
   {
@@ -22,8 +18,6 @@ const recommendations = [
     title: 'Maximize Your Portfolio',
     description: 'Consider diversifying your assets for better returns.',
     link: '#',
-    image:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-biyr4mO-BnQ3or0X1ROmQf92qu1h1_k4sg&s',
     attachments: [],
   },
 ];
@@ -31,7 +25,7 @@ const recommendations = [
 export default function Recommendations() {
   return (
     <div className="h-[200px] sm:h-[320px] md:h-[440px] lg:h-[600px] overflow-y-auto">
-      <div className="font-bold text-lg">Recommendations</div>
+      <div className="font-bold text-lg mb-3">Recommendations</div>
       {recommendations.length === 0 ? (
         <div className="p-4 text-center border rounded-lg">
           <p className="text-gray-500 dark:text-gray-400">
@@ -39,29 +33,37 @@ export default function Recommendations() {
           </p>
         </div>
       ) : (
-        recommendations.map((rec, index) => (
-          <div key={rec.id} className="border-b py-3">
-            <div className="flex items-center last:border-none space-x-4 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-              <div className="w-20 h-20 flex-shrink-0 relative rounded-md overflow-hidden">
-                <Image src={rec.image} alt={rec.title} fill className="object-cover" />
+        <div className="space-y-3">
+          {recommendations.map((rec) => (
+            <div
+              key={rec.id}
+              className="border rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 hover:shadow-md"
+            >
+              <div className="flex-1 mb-3">
+                <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200">
+                  {rec.title}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rec.description}</p>
               </div>
-
-              <div className="flex-1">
-                <Badge variant="secondary">Suggestion #{index + 1}</Badge>
-                <h3 className="text-md font-semibold">{rec.title}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{rec.description}</p>
+              <div className="flex justify-between items-center pt-2 border-t">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-semibold text-sm"
+                >
+                  <Link href={rec.link}>Explore</Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-semibold text-sm"
+                >
+                  <Link href={rec.link}>Apply</Link>
+                </Button>
               </div>
             </div>
-            <div className="flex justify-between px-2 items-center">
-              <Button asChild variant="outline" className="text-blue-600 font-semibold text-sm">
-                <Link href={rec.link}>Explore</Link>
-              </Button>
-              <Button asChild variant="outline" className="text-blue-600 font-semibold text-sm">
-                <Link href={rec.link}>Apply</Link>
-              </Button>
-            </div>
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );

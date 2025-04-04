@@ -38,7 +38,10 @@ const EmailOtpForm = ({
 }: EmailOtpFormProps) => {
   return (
     <Form {...emailOtpForm}>
-      <form onSubmit={emailOtpForm.handleSubmit(handleOtpSubmit)} className="w-full space-y-4">
+      <form
+        onSubmit={emailOtpForm.handleSubmit(handleOtpSubmit)}
+        className="w-full space-y-4 max-w-2xl"
+      >
         <FormField
           control={emailOtpForm.control}
           name="email"
