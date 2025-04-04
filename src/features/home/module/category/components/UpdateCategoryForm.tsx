@@ -19,6 +19,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import DeleteDialog from './DeleteDialog';
 import GlobalLabel from '@/components/common/atoms/GlobalLabel';
+import { Response } from '@/shared/types/Common.types';
 
 interface UpdateCategoryFormProps {
   initialData?: Category;
@@ -41,34 +42,26 @@ export default function UpdateCategoryForm({ initialData }: UpdateCategoryFormPr
   const isParentDisabled = initialData && initialData.subCategories.length > 0 ? true : false;
 
   const fields = [
-    <InputField
-      key="name"
-      name="name"
-      placeholder="Category Name"
-      label={<GlobalLabel text="Name" htmlFor="name" required />}
-    />,
     <GlobalIconSelect
       key="icon"
       name="icon"
       label={<GlobalLabel text="Icon" htmlFor="icon" required />}
     />,
+    <InputField key="name" name="name" placeholder="Input Name" label="Name" required />,
     <ParentCategorySelectUpdate
       key="parentId"
       name="parentId"
+      placeholder="Select Master Category"
       options={parentOptions}
       disabled={isParentDisabled}
       label="Parent"
     />,
-    <TypeSelect
-      key="type"
-      name="type"
-      label={<GlobalLabel text="Type" required htmlFor="type" />}
-    />,
+    <TypeSelect key="type" name="type" label="Type" required />,
     <TextareaField
       key="description"
       name="description"
-      placeholder="Type your description here"
       label="Description"
+      placeholder="Input description"
     />,
   ];
 
@@ -94,12 +87,16 @@ export default function UpdateCategoryForm({ initialData }: UpdateCategoryFormPr
         parentId: data.parentId,
         isTypeDisabled: data.isTypeDisabled ?? false,
       };
-      await dispatch(updateCategory(updatedCategory)).unwrap();
-      toast.success('Category updated successfully');
-      router.push('/home/category');
+      await dispatch(updateCategory(updatedCategory))
+        .unwrap()
+        .then((value: Response<Category>) => {
+          if (value.status == 200) {
+            router.push('/home/category');
+            toast.success('You have edit Finance Category successfully!');
+          }
+        });
     } catch (error) {
       console.error('Error updating category:', error);
-      toast.error('Failed to update category');
     }
   };
 
