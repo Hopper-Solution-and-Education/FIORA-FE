@@ -1,8 +1,11 @@
 'use client';
 
 import Loading from '@/components/common/atoms/Loading';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { ArrowDown } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
@@ -193,7 +196,6 @@ const ChartPage = () => {
       {isLoading && <Loading />}
       <TwoSideBarChart
         data={chartData}
-        onPressArrowDown={loadMoreTransactionProduct}
         title="Product Overview"
         legendItems={[
           { name: 'Expense (Category)', color: COLORS.DEPS_DANGER.LEVEL_2 },
@@ -209,6 +211,24 @@ const ChartPage = () => {
         }}
         callbackYAxis={(e) => tryCallBackYaxis(e)}
       />
+      <div className="w-full text-center">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                disabled={!hasMore}
+                onClick={loadMoreTransactionProduct}
+                className="p-2 sm:p-3 md:p-4"
+              >
+                <ArrowDown className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Load More</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
     </div>
   );
 };

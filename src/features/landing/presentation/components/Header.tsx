@@ -6,7 +6,7 @@ import { LogInIcon, Menu, UserPlus, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import HelpCenter from '@/components/layouts/header-toggle/HelpCenter';
 import {
@@ -20,15 +20,23 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { SectionType } from '@prisma/client';
 import { useSession } from 'next-auth/react';
 import { useGetSection } from '../../hooks/useGetSection';
+import { ICON_SIZE } from '@/shared/constants/size';
 
 export default function Header() {
   const { section, isLoading, isError } = useGetSection(SectionType.HEADER);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
-  const [isOpenAnountment, setIsOpenAnountment] = useState(true);
+  const [isOpenAnountment, setIsOpenAnountment] = useState(() => {
+    const storedState = localStorage.getItem('isOpenAnnouncement');
+    return storedState === null ? true : JSON.parse(storedState);
+  });
   const { data } = useSession();
 
   const toggleMenu = () => setIsMenuOpen((prevState) => !prevState);
+
+  useEffect(() => {
+    localStorage.setItem('isOpenAnnouncement', JSON.stringify(isOpenAnountment));
+  }, [isOpenAnountment]);
 
   return (
     <header
@@ -88,13 +96,13 @@ export default function Header() {
                   <>
                     <UserPlus
                       onClick={() => redirect('/auth/sign-up')}
-                      size={18}
+                      size={ICON_SIZE.MD}
                       className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
                     />
 
                     <LogInIcon
                       onClick={() => redirect('/auth/sign-in')}
-                      size={18}
+                      size={ICON_SIZE.MD}
                       className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
                     />
                   </>
