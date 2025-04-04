@@ -62,6 +62,7 @@ export type PositiveAndNegativeBarChartProps = {
   height?: number;
   baseBarHeight?: number;
   expanded?: boolean;
+  header?: React.ReactNode;
 };
 
 const PositiveAndNegativeBarChart = ({
@@ -81,6 +82,7 @@ const PositiveAndNegativeBarChart = ({
   height = MIN_CHART_HEIGHT,
   baseBarHeight = BASE_BAR_HEIGHT,
   expanded = true,
+  header,
 }: PositiveAndNegativeBarChartProps) => {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [chartHeight, setChartHeight] = useState(height);
@@ -170,11 +172,12 @@ const PositiveAndNegativeBarChart = ({
 
   return (
     <div className="w-full bg-white dark:bg-gray-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 transition-colors duration-200">
-      {title && (
-        <h2 className="text-xl text-center font-semibold text-gray-800 dark:text-gray-200 mb-4">
-          {title}
-        </h2>
-      )}
+      {header ||
+        (title && (
+          <h2 className="text-xl text-center font-semibold text-gray-800 dark:text-gray-200 mb-4">
+            {title}
+          </h2>
+        ))}
       <div style={{ height: `${chartHeight}px` }} className="transition-all duration-300">
         <ResponsiveContainer width="100%" height={chartHeight}>
           <BarChart

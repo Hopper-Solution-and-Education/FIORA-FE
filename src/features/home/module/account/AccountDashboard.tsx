@@ -8,16 +8,27 @@ import { fetchAccounts, fetchParents } from '@/features/home/module/account/slic
 import { getAccountColorByType } from '@/features/home/module/account/slices/utils';
 import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Account } from '@/features/home/module/account/slices/types';
 import { formatCurrency } from '@/shared/utils';
 import DeleteAccountDialog from '@/features/home/module/account/components/DeleteAccountDialog';
+import NavigateToAccountDialog from '@/features/home/module/account/components/NavigateToAccountDialog';
+import AccountChartSkeleton from '@/features/home/module/account/components/AccountChartSkeleton';
+import { AccountModule } from '@/app/(dashboard)/home/account/page';
+import { MODULE } from '@/shared/constants';
+// import html2canvas from 'html2canvas';
 
-const AccountDashboard = () => {
+interface AccountDashboardProps {
+  module?: AccountModule;
+}
+
+const AccountDashboard = ({ module = MODULE.ACCOUNT }: AccountDashboardProps) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const chartRef = useRef<HTMLDivElement>(null);
+  const [showNavigateDialog, setShowNavigateDialog] = useState(false);
   const { accounts, refresh } = useAppSelector((state) => state.account);
 
   useEffect(() => {
@@ -28,27 +39,23 @@ const AccountDashboard = () => {
   const chartData: BarItem[] = useMemo(() => {
     if (!accounts.data) return [];
     return accounts.data
-      .filter((account: Account) => {
-        return !account?.parentId;
-      })
-      .map((account: Account) => {
-        return {
-          id: account.id,
-          name: account.name,
-          icon: account.icon,
-          value: Number(account.balance) || 0,
-          type: account.type,
-          color: getAccountColorByType(account.type),
-          children: account.children?.map((child) => ({
-            id: child.id,
-            name: child.name,
-            icon: child.icon,
-            value: Number(child.balance) || 0,
-            type: child.type,
-            color: getAccountColorByType(child.type),
-          })),
-        };
-      });
+      .filter((account: Account) => !account?.parentId)
+      .map((account: Account) => ({
+        id: account.id,
+        name: account.name,
+        icon: account.icon,
+        value: Number(account.balance) || 0,
+        type: account.type,
+        color: getAccountColorByType(account.type),
+        children: account.children?.map((child) => ({
+          id: child.id,
+          name: child.name,
+          icon: child.icon,
+          value: Number(child.balance) || 0,
+          type: child.type,
+          color: getAccountColorByType(child.type),
+        })),
+      }));
   }, [accounts]);
 
   const handleDisplayDetail = (item: any) => {
@@ -57,30 +64,69 @@ const AccountDashboard = () => {
     }
   };
 
-  if (accounts.isLoading) return <div>Loading...</div>;
+  const handleChartClick = () => {
+    if (module === MODULE.HOME) {
+      setShowNavigateDialog(true);
+    }
+  };
+
+  const handleNavigateConfirm = () => {
+    setShowNavigateDialog(false);
+    router.push('/home/account');
+  };
+
   if (accounts.error) return <div className="text-red-600">Error: {accounts.error}</div>;
 
   return (
-    <div className="p-4 md:px-6">
-      <div className="flex justify-end">
-        <Link href="/home/account/create">
-          <button className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white">
-            <Icons.add className="h-6 w-6" />
-          </button>
-        </Link>
-      </div>
-      <PositiveAndNegativeBarChart
-        title="Accounts"
-        data={chartData}
-        xAxisFormatter={(value) => formatCurrency(value)}
-        levelConfig={{
-          totalName: 'Net Balance',
-          colors: { 0: COLORS.DEPS_SUCCESS.LEVEL_1 },
-        }}
-        callback={handleDisplayDetail}
-      />
-      <DeleteAccountDialog />
-    </div>
+    <>
+      {module === MODULE.ACCOUNT && (
+        <div className="flex justify-end">
+          <Link href="/home/account/create">
+            <button className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white">
+              <Icons.add className="h-6 w-6" />
+            </button>
+          </Link>
+        </div>
+      )}
+      {accounts.isLoading ? (
+        <AccountChartSkeleton />
+      ) : (
+        <div
+          ref={chartRef}
+          onClick={handleChartClick}
+          className={module === MODULE.HOME ? 'cursor-pointer relative' : ''}
+        >
+          {module === 'HOME' && (
+            <span className="absolute top-2 right-2 text-sm text-gray-500">
+              Click to view details
+            </span>
+          )}
+          <PositiveAndNegativeBarChart
+            title={module === MODULE.ACCOUNT ? 'Accounts' : undefined}
+            data={chartData}
+            xAxisFormatter={(value) => formatCurrency(value)}
+            levelConfig={{
+              totalName: 'Net Balance',
+              colors: { 0: COLORS.DEPS_SUCCESS.LEVEL_1 },
+            }}
+            callback={module === MODULE.ACCOUNT ? handleDisplayDetail : undefined}
+            header={
+              module === MODULE.HOME ? (
+                <h3 className="text-lg font-semibold p-6">Account Balance</h3>
+              ) : undefined
+            }
+          />
+        </div>
+      )}
+      {module === MODULE.ACCOUNT && <DeleteAccountDialog />}
+      {module === MODULE.HOME && (
+        <NavigateToAccountDialog
+          isOpen={showNavigateDialog}
+          onClose={() => setShowNavigateDialog(false)}
+          onConfirm={handleNavigateConfirm}
+        />
+      )}
+    </>
   );
 };
 

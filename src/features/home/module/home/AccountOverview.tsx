@@ -50,10 +50,10 @@ export function AccountsOverview() {
   }, [theme]);
 
   return (
-    <Card className="p-2">
+    <Card className="p-4">
       {/* Tiêu đề */}
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg font-semibold">Account Balance</CardTitle>
+        <CardTitle className="text-lg font-semibold">Finance Chart</CardTitle>
         <Icons.wallet className="h-5 w-5 text-muted-foreground" />
       </CardHeader>
 

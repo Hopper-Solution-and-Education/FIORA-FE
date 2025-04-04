@@ -2,6 +2,8 @@ import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { AccountsOverview } from './AccountOverview';
 import RecentTransactions from './components/RecentTransactions';
 import Recommendations from './components/Recommendations';
+import AccountPage from '@/app/(dashboard)/home/account/page';
+import { MODULE } from '@/shared/constants';
 
 export default function HomePage() {
   return (
@@ -15,6 +17,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-10">
             {/* Left Section: Financial & Account Overview */}
             <div className="col-span-1 md:col-span-2 lg:col-span-7 space-y-4">
+              <AccountPage module={MODULE.HOME} />
               <AccountsOverview />
             </div>
 
