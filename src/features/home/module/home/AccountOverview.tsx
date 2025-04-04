@@ -11,8 +11,6 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  LineChart,
-  Line,
   Legend,
   CartesianGrid,
 } from 'recharts';
@@ -72,28 +70,6 @@ export function AccountsOverview() {
               <Bar dataKey="income" fill={chartColors.income} name="Income" />
               <Bar dataKey="expense" fill={chartColors.expense} name="Expense" />
             </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="mt-4 h-60">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={initialData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="year" />
-              <YAxis />
-              <Tooltip formatter={(value) => `$${value.toLocaleString()} USD`} />
-              <Legend />
-
-              {/* Đường cho Balance */}
-              <Line
-                type="monotone"
-                dataKey="balance"
-                stroke={chartColors.balance}
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                name="Balance"
-              />
-            </LineChart>
           </ResponsiveContainer>
         </div>
       </CardContent>

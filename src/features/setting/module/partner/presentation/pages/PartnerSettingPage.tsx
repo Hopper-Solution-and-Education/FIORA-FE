@@ -20,11 +20,12 @@ const PartnerSettingPage = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Dispatch fetchPartners khi component mount
+  // Always fetch partners data when the page loads to ensure we have the latest data
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.id) {
+      // Always fetch partners data to get the latest from the database
       dispatch(fetchPartners({ userId: session.user.id, page: 1, pageSize: 100 }));
-    } else {
+    } else if (status === 'unauthenticated') {
       toast.error('User not authenticated. Please log in.');
     }
   }, [dispatch, status, session]);
@@ -57,13 +58,24 @@ const PartnerSettingPage = () => {
         (partner) => !partner.parentId,
       );
 
+      // Calculate total balance including children recursively
+      const calculateTotalBalance = (partner: any): number => {
+        const ownBalance = partner.netAmount || 0;
+        const childrenBalance = partner.children.reduce(
+          (sum: number, child: any) => sum + calculateTotalBalance(child),
+          0,
+        );
+        return ownBalance + childrenBalance;
+      };
+
       const createBarItem = (partner: any, depth = 0): BarItem => {
-        const netAmount = partner.netAmount;
+        const totalNetAmount = calculateTotalBalance(partner);
+
         const childrenBarItems = partner.children.map((child: any) =>
           createBarItem(child, depth + 1),
         );
 
-        const isIncome = netAmount >= 0;
+        const isIncome = totalNetAmount >= 0;
         const colorLevel = Math.min(depth, 4);
         const color = isIncome
           ? COLORS.DEPS_SUCCESS[`LEVEL_${colorLevel + 1}` as keyof typeof COLORS.DEPS_SUCCESS]
@@ -72,7 +84,7 @@ const PartnerSettingPage = () => {
         return {
           id: partner.id,
           name: partner.name,
-          value: netAmount,
+          value: totalNetAmount,
           type: isIncome ? 'Income' : 'Expense',
           color,
           children: childrenBarItems,
