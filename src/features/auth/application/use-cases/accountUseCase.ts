@@ -142,6 +142,8 @@ export class AccountUseCase {
       {
         include: {
           children: true,
+          toTransactions: true,
+          fromTransactions: true,
         },
         orderBy: [
           {
