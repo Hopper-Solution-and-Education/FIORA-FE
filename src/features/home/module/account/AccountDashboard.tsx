@@ -1,25 +1,23 @@
 'use client';
+
 import PositiveAndNegativeBarChart, {
   BarItem,
 } from '@/components/common/positive-negative-bar-chart';
 import { Icons } from '@/components/Icon';
-import { CreateAccountModal } from '@/features/home/module/account/components/CreateAccountPage';
-import DeleteAccountDialog from '@/features/home/module/account/components/DeleteAccountDialog';
-import { UpdateAccountModal } from '@/features/home/module/account/components/UpdateAccountPage';
-import {
-  setAccountDialogOpen,
-  setAccountUpdateDialog,
-  setSelectedAccount,
-} from '@/features/home/module/account/slices';
 import { fetchAccounts, fetchParents } from '@/features/home/module/account/slices/actions';
-import { Account } from '@/features/home/module/account/slices/types';
 import { getAccountColorByType } from '@/features/home/module/account/slices/utils';
-import { COLORS, DEFAULT_LOCALE } from '@/shared/constants/chart';
+import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Account } from '@/features/home/module/account/slices/types';
+import { formatCurrency } from '@/shared/utils';
+import DeleteAccountDialog from '@/features/home/module/account/components/DeleteAccountDialog';
 
 const AccountDashboard = () => {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const { accounts, refresh } = useAppSelector((state) => state.account);
 
   useEffect(() => {
@@ -27,10 +25,8 @@ const AccountDashboard = () => {
     dispatch(fetchParents());
   }, [dispatch, refresh]);
 
-  // * CHART DATA ZONE *
   const chartData: BarItem[] = useMemo(() => {
     if (!accounts.data) return [];
-
     return accounts.data
       .filter((account: Account) => {
         return !account?.parentId;
@@ -55,51 +51,34 @@ const AccountDashboard = () => {
       });
   }, [accounts]);
 
-  // * LOGIC ZONE *
-  const handleDisplayDetailDialog = (item: any) => {
-    const findAccount = findAccountById(item.id, accounts.data);
-    if (findAccount) {
-      dispatch(setSelectedAccount(findAccount));
-      dispatch(setAccountUpdateDialog(true));
+  const handleDisplayDetail = (item: any) => {
+    if (item.id) {
+      router.push(`/home/account/update/${item.id}`);
     }
   };
 
-  const findAccountById = (id: string, accounts: Account[] | undefined): Account | undefined => {
-    if (!accounts) return undefined;
-    return accounts.find((account) => account.id === id);
-  };
+  if (accounts.isLoading) return <div>Loading...</div>;
+  if (accounts.error) return <div className="text-red-600">Error: {accounts.error}</div>;
 
   return (
     <div className="p-4 md:px-6">
       <div className="flex justify-end">
-        <button
-          onClick={() => dispatch(setAccountDialogOpen(true))}
-          className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white"
-        >
-          <Icons.add className="h-6 w-6" />
-        </button>
+        <Link href="/home/account/create">
+          <button className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white">
+            <Icons.add className="h-6 w-6" />
+          </button>
+        </Link>
       </div>
       <PositiveAndNegativeBarChart
         title="Accounts"
         data={chartData}
-        xAxisFormatter={(value) =>
-          new Intl.NumberFormat(DEFAULT_LOCALE, { style: 'currency', currency: 'VND' }).format(
-            value,
-          )
-        }
+        xAxisFormatter={(value) => formatCurrency(value)}
         levelConfig={{
           totalName: 'Net Balance',
-          colors: {
-            0: COLORS.DEPS_SUCCESS.LEVEL_1,
-          },
+          colors: { 0: COLORS.DEPS_SUCCESS.LEVEL_1 },
         }}
-        callback={handleDisplayDetailDialog}
+        callback={handleDisplayDetail}
       />
-
-      <CreateAccountModal />
-
-      <UpdateAccountModal />
-
       <DeleteAccountDialog />
     </div>
   );

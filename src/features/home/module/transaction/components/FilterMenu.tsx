@@ -1,3 +1,4 @@
+import DateRangePicker from '@/components/common/atoms/DateRangePicker';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -9,39 +10,198 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { MultiSelect } from '@/components/ui/multi-select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import useDataFetcher from '@/hooks/useDataFetcher';
 import { cn } from '@/shared/utils';
+import { useAppSelector } from '@/store';
 import { FunnelPlus } from 'lucide-react';
-import { useState } from 'react';
-import { DropdownOption, TransactionFilterCriteria } from '../types';
-import { DEFAULT_TRANSACTION_FILTER_CRITERIA, MOCK_ACCOUNTS } from '../utils/constants';
+import { useEffect, useMemo, useState } from 'react';
+import { DateRange } from 'react-day-picker';
+import { formatCurrency } from '../hooks/formatCurrency';
+import { TransactionFilterCriteria, TransactionFilterOptionResponse } from '../types';
+import { DEFAULT_TRANSACTION_FILTER_CRITERIA, TransactionCurrency } from '../utils/constants';
+import { renderAmountSlider } from './renderSlider';
 
 type FilterMenuProps = {
   callBack: (newFilter: TransactionFilterCriteria) => void;
 };
 
 const FilterMenu = ({ callBack }: FilterMenuProps) => {
-  const [minValue, setMinValue] = useState<number>(0);
-  const [maxValue, setMaxValue] = useState<number>(10000);
+  const { amountMin, amountMax, filterCriteria } = useAppSelector((state) => state.transaction);
+  const [tmpFilterCriteria, setTmpFilterCriteria] = useState<TransactionFilterCriteria>(
+    {} as TransactionFilterCriteria,
+  );
+  const [isOpen, setIsOpen] = useState(false);
 
-  const handeRemoveFilterCriteria = () => {
-    callBack(DEFAULT_TRANSACTION_FILTER_CRITERIA);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [partners, setPartners] = useState<string[]>([]);
+  const [subjectFrom, setSubjectFrom] = useState<string[]>([]);
+  const [subjectTo, setSubjectTo] = useState<string[]>([]);
+  const [types, setTypes] = useState<string[]>([]);
+
+  const { data } = useDataFetcher<TransactionFilterOptionResponse>({
+    endpoint: isOpen ? '/api/transactions/options' : null,
+    method: 'GET',
+  });
+
+  const handleClose = () => {
+    setIsOpen(false);
+    setTmpFilterCriteria(filterCriteria);
+    setDateRange(undefined);
+    setPartners([]);
+    setSubjectFrom([]);
+    setSubjectTo([]);
+    setTypes([]);
   };
 
+  useEffect(() => {
+    if (filterCriteria) {
+      setTmpFilterCriteria({
+        ...filterCriteria,
+        filters: {
+          ...filterCriteria.filters,
+          amount: {
+            gte: amountMin,
+            lte: amountMax,
+          },
+        },
+      });
+
+      //  Add existing filters to the state
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterCriteria, isOpen]);
+
+  const handleUpdateAmount = (target: 'gte' | 'lte', value: number) => {
+    // Check if the value is within the range
+    if (value < amountMin || value > amountMax) {
+      return; // Ignore the change if out of range
+    }
+
+    setTmpFilterCriteria((prev) => ({
+      ...prev,
+      filters: {
+        ...prev.filters,
+        amount: {
+          ...(prev.filters?.amount as any),
+          [target]: value,
+        },
+      },
+    }));
+  };
+
+  const handeResetFilter = () => {
+    callBack(DEFAULT_TRANSACTION_FILTER_CRITERIA);
+    handleClose();
+  };
+
+  const handleSaveFilterChanges = () => {
+    const updatedFilters = { ...tmpFilterCriteria.filters };
+
+    if (dateRange?.from || dateRange?.to) {
+      updatedFilters.date = {
+        gte: dateRange.from ? dateRange.from.toISOString() : null,
+        lte: dateRange.to ? dateRange.to.toISOString() : null,
+      } as any;
+    }
+
+    if (types.length > 0 || partners.length > 0 || subjectFrom.length > 0 || subjectTo.length > 0) {
+      // Create filter objects
+      const filterObjects = [];
+
+      // Add type filters
+      for (const type of types) {
+        filterObjects.push({
+          type: type,
+        });
+      }
+
+      // Add partner filters
+      for (const partner of partners) {
+        filterObjects.push({
+          partner: {
+            name: partner,
+          },
+        });
+      }
+
+      // Add subject from filters
+      for (const from of subjectFrom) {
+        filterObjects.push({
+          fromAccount: {
+            name: from,
+          },
+          fromCategory: {
+            name: from,
+          },
+        });
+      }
+
+      // Add subject to filters
+      for (const to of subjectTo) {
+        filterObjects.push({
+          toAccount: {
+            name: to,
+          },
+          toCategory: {
+            name: to,
+          },
+        });
+      }
+
+      if (filterObjects.length > 0) {
+        updatedFilters.OR = filterObjects as any;
+      }
+    }
+
+    callBack({
+      ...tmpFilterCriteria,
+      filters: updatedFilters,
+    });
+    handleClose();
+  };
+
+  const typeOptions = [
+    { value: 'Expense', label: 'Expense' },
+    { value: 'Income', label: 'Income' },
+    { value: 'Transfer', label: 'Transfer' },
+  ];
+
+  const partnerOptions = useMemo(() => {
+    return data
+      ? [...data.data.partners].map((option: string) => ({
+          value: option,
+          label: option,
+        }))
+      : [{ label: 'No option available', value: 'none', disabled: true }];
+  }, [data]);
+
+  const subjectFromOptions = useMemo(() => {
+    return data
+      ? [...data.data.fromAccounts, ...data.data.fromCategories].map((option: string) => ({
+          value: option,
+          label: option,
+        }))
+      : [{ label: 'No option available', value: 'none', disabled: true }];
+  }, [data]);
+
+  const subjectToOptions = useMemo(() => {
+    return data
+      ? [...data.data.toAccounts, ...data.data.toCategories].map((option: string) => ({
+          value: option,
+          label: option,
+        }))
+      : [{ label: 'No option available', value: 'none', disabled: true }];
+  }, [data]);
+
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isOpen} onOpenChange={handleClose}>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
-              <Button className="px-3 py-2">
+              <Button className="px-3 py-2" onClick={() => setIsOpen((prev) => !prev)}>
                 <FunnelPlus size={15} />
               </Button>
             </DropdownMenuTrigger>
@@ -55,7 +215,7 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
       <DropdownMenuContent
         className="w-fit min-w-200 rounded-lg p-4"
         side="bottom"
-        align="end"
+        align="start"
         sideOffset={4}
       >
         <DropdownMenuLabel className="p-0 font-normal">
@@ -64,140 +224,129 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
         <DropdownMenuSeparator />
 
         {/* Filter contentss */}
-        <div className="w-full h-fit flex justify-start items-start p-2">
+        <div className="w-full h-fit max-h-[45vh] overflow-y-auto flex justify-start items-start p-2 ">
           {/* Filter criteria */}
-          <DropdownMenuGroup className="w-[200px]">
+          <DropdownMenuGroup className="w-[220px]">
             {/* <h4 className="text-sm w-max">Filters</h4> */}
-            <div className="w-full h-full flex flex-col justify-start items-start gap-2">
+            <div className="w-full h-full flex flex-col justify-start items-start gap-3">
               {/* Type Filter */}
               <div className="w-full flex flex-col gap-2">
                 <Label>Type</Label>
-                <Select
-                  name="Select Type"
-                  // value={amountCurrency}
-                  required
-                  // onValueChange={(value) => setAmountCurrency(value as TransactionCurrency)}
-                >
-                  <SelectTrigger className="w-full px-4 py-3">
-                    <SelectValue placeholder="Select Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {['Expense', 'Income', 'Transfer'].map((typeOption) => (
-                      <SelectItem key={typeOption} value={typeOption.toString()}>
-                        {typeOption}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <MultiSelect
+                  options={typeOptions}
+                  selected={types}
+                  onChange={setTypes}
+                  placeholder="Select types"
+                  className="w-full px-4 py-3"
+                />
               </div>
-
-              {/* Seperator */}
-              <div className="w-[2px] h-full bg-gray-300 mx-4"></div>
 
               {/* Partner Filter */}
               <div className="w-full flex flex-col gap-2">
                 <Label>Partner</Label>
-                <Select
-                  name="Select Partners"
-                  // value={amountCurrency}
-                  required
-                  // onValueChange={(value) => setAmountCurrency(value as TransactionCurrency)}
-                >
-                  <SelectTrigger className="w-full px-4 py-3">
-                    <SelectValue placeholder="Select Partners" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MOCK_ACCOUNTS.map((option: DropdownOption, index: number) => (
-                      <SelectItem key={index} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <MultiSelect
+                  options={partnerOptions}
+                  selected={partners}
+                  onChange={setPartners}
+                  placeholder="Select Partners"
+                  className="w-full px-4 py-3"
+                />
+              </div>
+
+              {/* Account/Category Filter */}
+              <div className="w-full flex flex-col gap-2">
+                <Label>Subject (From)</Label>
+                <MultiSelect
+                  options={subjectFromOptions}
+                  selected={subjectFrom}
+                  onChange={setSubjectFrom}
+                  placeholder="Select Subjects (From)"
+                  className="w-full px-4 py-3"
+                />
+              </div>
+
+              {/* Account/Category Filter */}
+              <div className="w-full flex flex-col gap-2">
+                <Label>Subject (To)</Label>
+                <MultiSelect
+                  options={subjectToOptions}
+                  selected={subjectTo}
+                  onChange={setSubjectTo}
+                  placeholder="Select Subjects (To)"
+                  className="w-full px-4 py-3"
+                />
               </div>
             </div>
           </DropdownMenuGroup>
 
           {/* Seperator */}
-          <div className="w-[2px] h-full bg-gray-300 mx-4"></div>
+          <div className="w-[2px] h-full bg-gray-300 mx-2"></div>
 
           {/* Filter criteria */}
-          <DropdownMenuGroup className="w-[200px]">
+          <DropdownMenuGroup className="w-[250px]">
             {/* <h4 className="text-sm w-max">Filters</h4> */}
-            <div className="w-full h-full flex flex-col justify-start items-start gap-4">
+            <div className="w-full h-full flex flex-col justify-start items-start gap-[.8rem]">
+              <div className="w-full flex flex-col gap-2">
+                <Label>Date range</Label>
+                <DateRangePicker date={dateRange} onChange={setDateRange} />
+                {/* <GlobalForm
+                  fields={[
+                    // <CustomDateRangePicker name="date" value={dateRange} onChange={setDateRange} />,
+                  ]}
+                  onSubmit={() => {}}
+                  schema={{} as any}
+                  renderSubmitButton={() => <></>}
+                /> */}
+              </div>
+
               {/* Type Filter */}
-              <div className="w-full flex flex-col gap-3">
+              <div className="w-full flex flex-col gap-2">
                 <Label>Amount</Label>
-                <div className="w-full mb-2">
-                  <div className="flex justify-between mb-1 text-xs">
-                    <span>0</span>
-                    <span>10,000</span>
-                  </div>
-                  <div className="relative h-5 flex items-center">
-                    <div className="absolute w-full bg-gray-200 h-1 rounded-full" />
-                    <div
-                      className="absolute bg-primary h-1 rounded-full"
-                      style={{
-                        left: `${(minValue / 10000) * 100}%`,
-                        right: `${100 - (maxValue / 10000) * 100}%`,
-                      }}
-                    />
-                    <input
-                      type="range"
-                      min={0}
-                      max={10000}
-                      value={minValue}
-                      onChange={(e) => {
-                        const value = Number(e.target.value);
-                        if (value <= maxValue) setMinValue(value);
-                      }}
-                      className="absolute w-full cursor-pointer opacity-0 h-5 z-10"
-                    />
-                    <input
-                      type="range"
-                      min={0}
-                      max={10000}
-                      value={maxValue}
-                      onChange={(e) => {
-                        const value = Number(e.target.value);
-                        if (value >= minValue) setMaxValue(value);
-                      }}
-                      className="absolute w-full cursor-pointer opacity-0 h-5 z-10"
-                    />
-                    <div
-                      className="absolute w-4 h-4 bg-white border-2 border-primary rounded-full z-20"
-                      style={{ left: `calc(${(minValue / 10000) * 100}% - 8px)` }}
-                    />
-                    <div
-                      className="absolute w-4 h-4 bg-white border-2 border-primary rounded-full z-20"
-                      style={{ left: `calc(${(maxValue / 10000) * 100}% - 8px)` }}
-                    />
-                  </div>
-                  <div className="flex justify-between mt-1 text-xs font-medium">
-                    <span>{minValue}</span>
-                    <span>{maxValue}</span>
-                  </div>
+                {renderAmountSlider({
+                  amountMin: (tmpFilterCriteria.filters?.amount as any)?.gte ?? amountMin,
+                  amountMax: (tmpFilterCriteria.filters?.amount as any)?.lte ?? amountMax,
+                  minRange: amountMin,
+                  maxRange: amountMax,
+                  handleUpdateAmount,
+                })}
+                <div className="w-full flex flex-col gap-2">
+                  <Label>Min</Label>
+                  <Input
+                    // disabled={isRegistering} // Disable during register period
+                    value={formatCurrency(
+                      (tmpFilterCriteria.filters?.amount as any)?.gte ?? 0,
+                      TransactionCurrency.VND,
+                    )}
+                    min={amountMin}
+                    max={amountMax}
+                    onFocus={(e) => e.target.select()}
+                    placeholder="Min"
+                    onChange={(e) =>
+                      handleUpdateAmount('gte', Number(e.target.value.split(',').join('')))
+                    }
+                    required
+                    className={cn('w-full')}
+                  />
                 </div>
-                <Input
-                  type="number"
-                  // disabled={isRegistering} // Disable during register period
-                  // value={amountValue}
-                  min={0}
-                  placeholder="Min"
-                  // onChange={handleAmountChange}
-                  required
-                  className={cn('w-full')}
-                />
-                <Input
-                  type="number"
-                  // disabled={isRegistering} // Disable during register period
-                  // value={amountValue}
-                  min={0}
-                  placeholder="Max"
-                  // onChange={handleAmountChange}
-                  required
-                  className={cn('w-full')}
-                />
+                <div className="w-full flex flex-col gap-2">
+                  <Label>Max</Label>
+                  <Input
+                    // disabled={isRegistering} // Disable during register period
+                    value={formatCurrency(
+                      (tmpFilterCriteria.filters?.amount as any)?.lte ?? 0,
+                      TransactionCurrency.VND,
+                    )}
+                    min={amountMin}
+                    max={amountMax}
+                    placeholder="Max"
+                    onFocus={(e) => e.target.select()}
+                    onChange={(e) =>
+                      handleUpdateAmount('lte', Number(e.target.value.split(',').join('')))
+                    }
+                    required
+                    className={cn('w-full')}
+                  />
+                </div>
               </div>
             </div>
           </DropdownMenuGroup>
@@ -205,18 +354,17 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
 
         <DropdownMenuSeparator />
         <div className="w-full flex justify-end items-center gap-2">
-          <Button variant={'outline'} className="px-5" onClick={handeRemoveFilterCriteria}>
+          <Button
+            variant={'secondary'}
+            className="px-5 bg-red-100 hover:bg-red-200 text-red-600"
+            onClick={handeResetFilter}
+          >
             Clear Filter
           </Button>
-          <Button className="px-5">Apply</Button>
+          <Button className="px-5" onClick={handleSaveFilterChanges}>
+            Apply
+          </Button>
         </div>
-        {/* <DropdownMenuGroup>
-          <DropdownMenuItem>Account</DropdownMenuItem>
-          <DropdownMenuItem>Billing</DropdownMenuItem>
-          <DropdownMenuItem>Notifications</DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>Log out</DropdownMenuItem> */}
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -25,13 +25,13 @@ model User {
   role             UserRole            @default(User)
   accounts         Account[]           @relation("UserAccounts")
   categories       Category[]          @relation("UserCategories")
+  categoryProducts CategoryProducts[]
   partners         Partner[]           @relation("UserPartners")
+  products         Product[]           @relation("UserProducts")
+  productItems     ProductItems[]
   sessions         Session[]
   transactions     Transaction[]       @relation("UserTransactions")
   authentication   UserAuthentication?
-  products         Product[]           @relation("UserProducts")
-  productItems     ProductItems[]
-  categoryProducts CategoryProducts[]
 
   @@index([isDeleted])
 }
@@ -102,7 +102,6 @@ model Product {
   catId        String?              @db.Uuid
   type         ProductType
   icon         String
-  currency     Currency             @default(VND)
   name         String               @db.VarChar(50)
   description  String?              @db.VarChar(1000)
   price        Decimal              @db.Decimal(13, 2)
@@ -112,10 +111,11 @@ model Product {
   updatedAt    DateTime             @updatedAt
   createdBy    String               @db.Uuid
   updatedBy    String?              @db.Uuid
-  user         User                 @relation("UserProducts", fields: [userId], references: [id])
-  transactions ProductTransaction[] @relation("ProductTransactions")
+  currency     Currency             @default(VND)
   category     CategoryProducts?    @relation(fields: [catId], references: [id])
+  user         User                 @relation("UserProducts", fields: [userId], references: [id])
   productItems ProductItems[]
+  transactions ProductTransaction[] @relation("ProductTransactions")
 
   @@index([userId])
   @@index([catId])
@@ -126,16 +126,15 @@ model ProductItems {
   id          String   @id @default(uuid()) @db.Uuid
   name        String   @db.VarChar(50)
   description String?  @db.VarChar(1000)
-  icon        String
   userId      String   @db.Uuid
   productId   String   @db.Uuid
   createdBy   String?  @db.Uuid
   updatedBy   String?  @db.Uuid
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  product Product @relation(fields: [productId], references: [id])
-  user    User    @relation(fields: [userId], references: [id])
+  icon        String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, productId])
 }
@@ -147,10 +146,10 @@ model CategoryProducts {
   name        String    @db.VarChar(50)
   description String?   @db.VarChar(1000)
   tax_rate    Decimal?  @db.Decimal(13, 2)
-  createdBy   String?   @db.Uuid
-  updatedBy   String?   @db.Uuid
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  createdBy   String?   @db.Uuid
+  updatedBy   String?   @db.Uuid
   user        User      @relation(fields: [userId], references: [id])
   product     Product[]
 }
@@ -176,10 +175,10 @@ model Transaction {
   createdBy        String               @db.Uuid
   currency         Currency             @default(VND)
   productsRelation ProductTransaction[] @relation("ProductTransactions")
-  fromAccount      Account?             @relation("FromAccount", fields: [fromAccountId], references: [id])
+  fromAccount      Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Restrict)
   fromCategory     Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
   partner          Partner?             @relation("PartnerTransactions", fields: [partnerId], references: [id])
-  toAccount        Account?             @relation("ToAccount", fields: [toAccountId], references: [id])
+  toAccount        Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Restrict)
   toCategory       Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
   user             User?                @relation("UserTransactions", fields: [userId], references: [id])
 
@@ -316,6 +315,7 @@ enum AccountType {
   CreditCard
   Debt
   Lending
+  Invest
 }
 
 enum Currency {

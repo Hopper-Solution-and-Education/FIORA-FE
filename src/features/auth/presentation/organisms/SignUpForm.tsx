@@ -178,9 +178,7 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                     />
                   </div>
                   {fieldErrors.email && (
-                    <p className="w-full pl-[30%] text-red-500 text-sm break-words">
-                      {fieldErrors.email}
-                    </p>
+                    <p className="w-full  text-red-500 text-sm break-words">{fieldErrors.email}</p>
                   )}
                   <div className="relative flex flex-col sm:flex-row justify-start items-start sm:items-center gap-2 mt-2">
                     <Label
@@ -203,9 +201,7 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                     />
                   </div>
                   {fieldErrors.password && (
-                    <p className="w-full pl-[30%] text-red-500 text-sm mt-1">
-                      {fieldErrors.password}
-                    </p>
+                    <p className="w-full  text-red-500 text-sm mt-1">{fieldErrors.password}</p>
                   )}
                   <div className="relative flex flex-col sm:flex-row justify-start items-start sm:items-center gap-2 mt-2">
                     <Label
@@ -228,7 +224,7 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                     />
                   </div>
                   {fieldErrors.confirmPassword && (
-                    <p className="w-full pl-[30%] text-red-500 text-sm mt-1 break-all">
+                    <p className="w-full  text-red-500 text-sm mt-1 break-all">
                       {fieldErrors.confirmPassword}
                     </p>
                   )}
@@ -241,7 +237,7 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                     <Button
                       type="submit"
                       className={cn(
-                        'text-lg font-semibold w-48 py-4 bg-blue-500  hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700',
+                        'text-lg font-semibold w-48 py-6 bg-blue-500  hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700',
                         isRegistering && 'cursor-not-allowed',
                       )}
                       disabled={isSignUpNotAvailable}

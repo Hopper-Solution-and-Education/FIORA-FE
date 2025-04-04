@@ -1,4 +1,4 @@
-import { Banknote, CreditCard, PiggyBank, TrendingDown, Wallet } from 'lucide-react';
+import { Banknote, CreditCard, PiggyBank, TrendingDown, Wallet, TrendingUp } from 'lucide-react';
 
 // Define account types and their rules
 const ACCOUNT_TYPES = {
@@ -7,6 +7,7 @@ const ACCOUNT_TYPES = {
   CREDIT_CARD: 'CreditCard',
   DEBT: 'Debt',
   LENDING: 'Lending',
+  INVEST: 'Invest',
 };
 
 // Define account type validation rules
@@ -37,6 +38,11 @@ const ACCOUNT_RULES = {
     maxBalance: null,
     description: 'Use to record lending transactions only. Balance must be >= 0.',
   },
+  [ACCOUNT_TYPES.INVEST]: {
+    minBalance: 0,
+    maxBalance: null,
+    description: 'Use to record invest transactions only. Balance must be >= 0.',
+  },
 };
 
 // Define icons for each account type
@@ -46,6 +52,7 @@ const ACCOUNT_ICONS = [
   { id: 'credit-card', name: 'Credit Card', icon: CreditCard, types: [ACCOUNT_TYPES.CREDIT_CARD] },
   { id: 'trending-down', name: 'Debt', icon: TrendingDown, types: [ACCOUNT_TYPES.DEBT] },
   { id: 'banknote', name: 'Lending', icon: Banknote, types: [ACCOUNT_TYPES.LENDING] },
+  { id: 'trending-up', name: 'Invest', icon: TrendingUp, types: [ACCOUNT_TYPES.INVEST] },
 ];
 
 // Sample parent accounts for demo
@@ -55,6 +62,7 @@ const PARENT_ACCOUNTS = [
   { id: '3', name: 'My Credit Cards', type: ACCOUNT_TYPES.CREDIT_CARD },
   { id: '4', name: 'My Loans', type: ACCOUNT_TYPES.DEBT },
   { id: '5', name: 'My Lending', type: ACCOUNT_TYPES.LENDING },
+  { id: '6', name: 'My Investments', type: ACCOUNT_TYPES.INVEST },
 ];
 
 export { ACCOUNT_TYPES, ACCOUNT_RULES, ACCOUNT_ICONS, PARENT_ACCOUNTS };

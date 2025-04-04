@@ -9,14 +9,15 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import useDataFetcher from '@/hooks/useDataFetcher';
 import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { debounce } from 'lodash';
 import { FileText, Loader2, Search, Trash } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSWRConfig } from 'swr';
+import { formatCurrency } from '../hooks/formatCurrency';
 import { formatDate } from '../hooks/formatDate';
-import { formatNumber } from '../hooks/formatNumber';
-import { handleApplyFilter } from '../hooks/handleApplyFilter';
-import { updateFilterCriteria } from '../slices';
+import { handleEditFilter } from '../hooks/handleEditFilter';
+import { updateAmountRange, updateFilterCriteria } from '../slices';
 import {
   IRelationalTransaction,
   ITransactionPaginatedResponse,
@@ -28,6 +29,7 @@ import {
 import {
   DEFAULT_TRANSACTION_TABLE_COLUMNS,
   TRANSACTION_TYPE,
+  TransactionCurrency,
   TransactionTableToEntity,
 } from '../utils/constants';
 import FilterMenu from './FilterMenu';
@@ -42,7 +44,7 @@ const SortArrowBtn = ({
 }) => (
   <div
     className={` h-fit transition-transform duration-300 overflow-visible ${
-      isActivated && !(sortOrder === 'desc' || sortOrder === 'none') ? 'rotate-180' : 'rotate-0'
+      isActivated && !(sortOrder === 'asc' || sortOrder === 'none') ? 'rotate-0' : 'rotate-180'
     }`}
   >
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -63,7 +65,7 @@ const TransactionTable = () => {
   const toggleRef = useRef(null);
   const { visibleColumns, filterCriteria } = useAppSelector((state) => state.transaction);
 
-  const [sortOrder, setSortOrder] = useState<OrderType>('desc');
+  const [sortOrder, setSortOrder] = useState<OrderType | undefined>('desc');
   const [sortTarget, setSortTarget] = useState<string>('date');
   const [hoveringIdx, setHoveringIdx] = useState<number>(-1);
   const [displayData, setDisplayData] = useState<IRelationalTransaction[]>([]);
@@ -93,11 +95,11 @@ const TransactionTable = () => {
           }
         }
       },
-      { threshold: 0.1 },
+      { threshold: 0.2 },
     );
 
     const currentToggleRef = toggleRef.current;
-    if (currentToggleRef) {
+    if (currentToggleRef && displayData.length >= 20) {
       observer.observe(currentToggleRef);
     }
 
@@ -106,13 +108,26 @@ const TransactionTable = () => {
         observer.unobserve(currentToggleRef);
       }
     };
-  }, [isLoading, currentPage, totalPage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, currentPage, totalPage, fetchData]);
+
+  const debouncedFilterHandler = useMemo(
+    () =>
+      debounce((value: string) => {
+        handleFilterChange({ ...filterCriteria, search: value as string });
+      }, 1000),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filterCriteria],
+  );
 
   // Handle data fetched from API
   useEffect(() => {
     if (fetchData?.status === 201 && fetchData?.data.data) {
       setTotalPage(fetchData?.data.totalPage);
       setTotalItems(fetchData?.data.total);
+      dispatch(
+        updateAmountRange({ min: fetchData?.data.amountMin, max: fetchData?.data.amountMax }),
+      );
 
       if (currentPage === 1) {
         setDisplayData(fetchData?.data.data);
@@ -120,30 +135,34 @@ const TransactionTable = () => {
         setDisplayData((prev) => [...prev, ...(fetchData?.data.data || [])]);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchData]);
 
   // Mutate data when filter criteria and pageNumber changes for lazy loading and filter feature
   useEffect(() => {
-    mutate('/api/transactions', displayData, {
-      revalidate: true,
-    });
+    if (fetchData) {
+      mutate('/api/transactions', displayData, {
+        revalidate: true,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, filterCriteria]);
 
   // Handle sort logics for column header
   const handleSort = (header: string) => {
     if (sortTarget === header) {
       // Nếu đẫ có sort tồn tại
-      if (sortOrder === 'desc') {
-        setSortOrder('asc');
+      if (sortOrder === 'asc') {
+        setSortOrder('desc');
       } else {
-        setSortOrder('none');
+        setSortOrder(undefined);
         setSortTarget('');
       }
     } else {
       setSortTarget(header);
-      setSortOrder('desc');
+      setSortOrder('asc');
     }
-    handleFilterChange({ ...filterCriteria, sortBy: { [sortTarget]: sortOrder } });
+    handleFilterChange({ ...filterCriteria, sortBy: sortOrder ? { [sortTarget]: sortOrder } : {} });
   };
 
   // Navigate to create native page
@@ -185,7 +204,7 @@ const TransactionTable = () => {
   return (
     <Table className="border-[1px] border-gray-300">
       <TableHeader>
-        <TableRow className="hover:bg-white">
+        <TableRow className="hover:bg-none">
           <TableCell colSpan={8}>
             <div className="w-full flex justify-between py-2 px-5">
               {/* Search Box container*/}
@@ -196,24 +215,17 @@ const TransactionTable = () => {
                       title="Search"
                       placeholder="Search"
                       className="w-full"
-                      // onChange={(e) =>
-                      //   handleApplyFilter({
-                      //     currentFilter: filterCriteria,
-                      //     callBack: handleFilterChange,
-                      //     target: 'amount',
-                      //     value: e.target.value,
-                      //     isSearch: true,
-                      //   })
-                      // }
+                      onChange={(e) => debouncedFilterHandler(e.target.value)}
+                      onBlur={() => debouncedFilterHandler.flush()}
                     />
                     <Search
                       size={15}
-                      className="absolute top-[50%] right-[2%] -translate-y-[50%] opacity-50"
+                      className="absolute top-[50%] right-2 -translate-y-[50%] opacity-50"
                     />
                   </div>
                   <FilterMenu callBack={handleFilterChange} />
                 </div>
-                <Label className="text-gray-600">
+                <Label className="text-gray-600 dark:text-gray-400">
                   Displaying{' '}
                   <strong>
                     {displayData.length}/{totalItems}
@@ -279,12 +291,12 @@ const TransactionTable = () => {
                     sortTarget === entityKey && 'text-blue-500',
                   )}
                 >
-                  {key}{' '}
+                  {key}
                   {value.sortable && (hoveringIdx === idx || sortTarget === entityKey) && (
                     <>
                       {!isLoading && !isValidating ? (
                         <SortArrowBtn
-                          sortOrder={sortOrder}
+                          sortOrder={sortOrder ?? 'none'}
                           isActivated={sortTarget === entityKey}
                         />
                       ) : (
@@ -318,7 +330,7 @@ const TransactionTable = () => {
                         key={columnKey}
                         className="underline cursor-pointer"
                         onClick={() =>
-                          handleApplyFilter({
+                          handleEditFilter({
                             currentFilter: filterCriteria,
                             callBack: handleFilterChange,
                             target: 'date',
@@ -335,7 +347,7 @@ const TransactionTable = () => {
                         key={columnKey}
                         className={`underline cursor-pointer font-bold`}
                         onClick={() =>
-                          handleApplyFilter({
+                          handleEditFilter({
                             currentFilter: filterCriteria,
                             callBack: handleFilterChange,
                             target: 'type',
@@ -349,7 +361,11 @@ const TransactionTable = () => {
                   case 'Amount':
                     return (
                       <TableCell key={columnKey} className={`font-bold`}>
-                        {formatNumber(Number(transRecord.amount))}
+                        {formatCurrency(
+                          Number(transRecord.amount),
+                          transRecord.currency as TransactionCurrency,
+                        )}{' '}
+                        {transRecord.currency}
                       </TableCell>
                     );
                   case 'From':
@@ -363,15 +379,15 @@ const TransactionTable = () => {
                             : 'text-gray-500',
                         )}
                         onClick={() =>
-                          handleApplyFilter({
+                          handleEditFilter({
                             currentFilter: filterCriteria,
                             callBack: handleFilterChange,
-                            target:
-                              transRecord.type === 'Income' ? 'fromCategoryId' : 'fromAccountId',
+                            target: transRecord.type === 'Income' ? 'fromCategory' : 'fromAccount',
+                            subTarget: 'name',
                             value:
                               transRecord.type === 'Income'
-                                ? (transRecord.fromCategoryId ?? '')
-                                : (transRecord.fromAccountId ?? ''),
+                                ? (transRecord.fromCategory?.name ?? '')
+                                : (transRecord.fromAccount?.name ?? ''),
                           })
                         }
                       >
@@ -391,14 +407,15 @@ const TransactionTable = () => {
                             : 'text-gray-500',
                         )}
                         onClick={() =>
-                          handleApplyFilter({
+                          handleEditFilter({
                             currentFilter: filterCriteria,
                             callBack: handleFilterChange,
-                            target: transRecord.type === 'Expense' ? 'toCategoryId' : 'toAccountId',
+                            target: transRecord.type === 'Expense' ? 'toCategory' : 'toAccount',
+                            subTarget: 'name',
                             value:
-                              transRecord.type === 'Income'
-                                ? (transRecord.toCategoryId ?? '')
-                                : (transRecord.toAccountId ?? ''),
+                              transRecord.type === 'Expense'
+                                ? (transRecord.toCategory?.name ?? '')
+                                : (transRecord.toAccount?.name ?? ''),
                           })
                         }
                       >
@@ -414,13 +431,12 @@ const TransactionTable = () => {
                           transRecord.partnerId ? 'underline cursor-pointer' : 'text-gray-500',
                         )}
                         onClick={() =>
-                          handleApplyFilter({
+                          handleEditFilter({
                             currentFilter: filterCriteria,
                             callBack: handleFilterChange,
                             target: 'partner',
-                            value: transRecord.partner?.id ?? '',
-                            comparator: 'equals',
-                            subTarget: 'id',
+                            subTarget: 'name',
+                            value: transRecord.partner?.name ?? '',
                           })
                         }
                       >

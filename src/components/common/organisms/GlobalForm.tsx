@@ -30,13 +30,12 @@ const GlobalForm = <T extends yup.AnyObject>({
   defaultValues,
   onBack,
   renderSubmitButton,
-  mode,
 }: GlobalFormProps<T>): JSX.Element => {
   const router = useRouter();
   const methods = useForm<any>({
     resolver: yupResolver(schema), // Connects Yup schema to react-hook-form for validation
     defaultValues, // Sets initial values for the form fields
-    mode,
+    mode: 'onChange',
   });
 
   const { control, handleSubmit, formState } = methods;
