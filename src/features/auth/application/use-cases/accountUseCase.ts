@@ -128,6 +128,8 @@ export class AccountUseCase {
   }
 
   async getAllParentAccount(userId: string): Promise<Account[] | []> {
+    console.log("I'm here at getAllParentAccount");
+
     return this.accountRepository.findManyWithCondition({
       userId,
       parentId: null,
@@ -135,6 +137,8 @@ export class AccountUseCase {
   }
 
   async getAllAccountByUserId(userId: string): Promise<Account[] | []> {
+    console.log("I'm here at getAllAccountByUserId");
+
     return this.accountRepository.findManyWithCondition(
       {
         userId,
