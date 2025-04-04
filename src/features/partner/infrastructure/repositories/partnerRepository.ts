@@ -21,7 +21,9 @@ class PartnerRepository implements IPartnerRepository {
     return await prisma.partner.findFirst({
       where: { id, userId },
       include: {
+        transactions: true,
         children: true,
+        parent: true,
       },
     });
   }

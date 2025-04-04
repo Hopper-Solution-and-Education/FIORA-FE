@@ -20,6 +20,7 @@
     "start": "next start",
     "lint": "next lint",
     "migrate": "dotenv -e .env.development.local -- npx prisma migrate dev",
+    "seed": "dotenv -e .env.development.local -- npx prisma db seed",
     "generate": "dotenv -e .env.development.local -- npx prisma generate",
     "push": "dotenv -e .env.development.local -- npx prisma db push",
     "lint-staged": "lint-staged",
@@ -36,6 +37,9 @@
     "vercel-build:debug": "NEXT_DEBUG_BUILD=true vercel build",
     "check-paths": "node scripts/check-path-aliases.mjs",
     "fix-paths": "node scripts/fix-path-aliases.mjs"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@amplitude/analytics-browser": "^2.11.13",
@@ -153,6 +157,7 @@
     "prisma": "^6.4.1",
     "ts-jest": "^29.2.6",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.3",
     "typescript": "^5.8.2"
   }
 }

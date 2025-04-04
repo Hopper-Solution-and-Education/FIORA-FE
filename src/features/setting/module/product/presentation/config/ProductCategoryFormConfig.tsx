@@ -36,15 +36,17 @@ const useProductCategoryFormConfig = () => {
   }, []);
 
   const fields = [
-    <GlobalIconSelect key="icon" name="icon" label="Icon" />,
-    <InputField key="name" name="name" label="Name" />,
+    <GlobalIconSelect key="icon" name="icon" label="Icon" required />,
+    <InputField key="name" name="name" label="Name" required />,
     <TextareaField key="description" name="description" label="Description" />,
     <InputField
       key="tax-rate"
       name="tax_rate"
       placeholder="0.00%"
+      label="Tax Rate"
       onChange={(e) => handleInputChange(e)}
       onKeyDown={onKeyDownHandler}
+      required
     />,
   ];
 

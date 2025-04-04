@@ -3,6 +3,7 @@ import { fetchCategories } from '@/features/home/module/category/slices/actions'
 import { findCategoryById } from '@/features/home/module/category/slices/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo } from 'react';
+import { toast } from 'sonner';
 
 export function useUpdateCategory(id: string) {
   const dispatch = useAppDispatch();
@@ -22,6 +23,11 @@ export function useUpdateCategory(id: string) {
   }, [categories.data, id]);
 
   const handleDelete = useCallback(() => {
+    if (category && category.subCategories.length > 0) {
+      toast.error('Please delete the subcategories first!');
+      return;
+    }
+
     if (category) {
       dispatch(setSelectedCategory(category));
       dispatch(setDeleteConfirmOpen(true));

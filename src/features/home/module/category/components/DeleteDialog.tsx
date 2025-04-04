@@ -79,15 +79,36 @@ const DeleteDialog: React.FC = () => {
                 Please link the transactions to another category before deleting.
               </p>
             ) : (
-              <p
-                className={cn(
-                  'text-center text-sm sm:text-base',
-                  'text-gray-600 dark:text-gray-400',
-                  'mt-2 max-w-xs',
-                )}
-              >
-                Are you sure you want to delete this category?
-              </p>
+              <>
+                <p
+                  className={cn(
+                    'text-center text-sm sm:text-base',
+                    'text-gray-600 dark:text-gray-400',
+                    'mt-2 max-w-xs',
+                  )}
+                >
+                  You are going to delete your Category. Please carefully review your action!
+                </p>
+
+                <p
+                  className={cn(
+                    'text-center text-sm sm:text-base',
+                    'text-gray-600 dark:text-gray-400',
+                    'mt-8 max-w-xs',
+                  )}
+                >
+                  Click <span className="text-blue-500">←</span> to stay back
+                </p>
+                <p
+                  className={cn(
+                    'text-center text-sm sm:text-base',
+                    'text-gray-600 dark:text-gray-400',
+                    'max-w-xs',
+                  )}
+                >
+                  Or click <span className="text-green-500">✓</span> to confirm delete.
+                </p>
+              </>
             )}
           </div>
 

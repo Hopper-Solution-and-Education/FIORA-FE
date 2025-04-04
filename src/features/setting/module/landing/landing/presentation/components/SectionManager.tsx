@@ -1,5 +1,6 @@
 'use client';
 
+import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -149,7 +150,7 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
           <h2 className="text-2xl font-bold">{sectionType.replace('_', ' ')} Section</h2>
           <div className="flex space-x-2">
             <Button onClick={handleSubmit((data) => onSubmit(data))} variant="default">
-              Save Changes
+              <Icons.saveAll /> <span>Save</span>
             </Button>
           </div>
         </div>

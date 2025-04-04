@@ -21,11 +21,19 @@ export const useGetIconLabel = (icon: string): string => {
   );
 };
 
-export const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('vi-VN', {
+export const formatCurrency = (value: number, currency: string = 'VND') => {
+  if (currency === 'USD') {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(value);
+  }
+
+  return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
     currency: 'VND',
   }).format(value);
+};
 
 export const convertUSDToVND = (amountUSD: number) => {
   const exchangeRate = 24800; // Fixed exchange rate

@@ -1,12 +1,16 @@
 'use client';
 
-import type React from 'react';
-import { useState } from 'react';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/shared/utils';
 import LucieIcon from '@/features/home/module/category/components/LucieIcon';
+import { cn } from '@/shared/utils';
+import type React from 'react';
+import { useState } from 'react';
+
+import { throttle } from 'lodash';
+
+const THROTTLE_DELAY = 300; // Độ trễ giữa các lần gọi (ms)
 
 interface CustomYAxisTickProps {
   x: number;
@@ -32,19 +36,33 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
   const [isIconHovered, setIsIconHovered] = useState(false);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
 
-  // console.log(item);
+  const throttledToggleExpand = throttle(
+    (onToggleExpand, value) => {
+      onToggleExpand(value);
+    },
+    THROTTLE_DELAY,
+    { leading: true, trailing: false },
+  );
+
+  const throttledCallback = throttle(
+    (callback, item) => {
+      callback(item);
+    },
+    THROTTLE_DELAY,
+    { leading: true, trailing: false },
+  );
 
   const handleArrowClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (hasChildren) {
-      onToggleExpand(payload.value);
+      throttledToggleExpand(onToggleExpand, payload.value);
     }
   };
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (callback && item) {
-      callback(item);
+      throttledCallback(callback, item);
     }
   };
 

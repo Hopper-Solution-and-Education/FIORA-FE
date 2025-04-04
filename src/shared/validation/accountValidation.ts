@@ -5,6 +5,7 @@ export const ACCOUNT_TYPE_RULES = {
   [AccountType.Saving]: { minBalance: 0, allowNegative: false },
   [AccountType.CreditCard]: { minBalance: 0, allowNegative: true, hasLimit: true }, // Balance can be negative up to credit limit
   [AccountType.Debt]: { minBalance: 0, allowNegative: true }, // Balance must be negative or zero
+  [AccountType.Invest]: { minBalance: 0, allowNegative: false },
   [AccountType.Lending]: { minBalance: 0, allowNegative: false },
 };
 

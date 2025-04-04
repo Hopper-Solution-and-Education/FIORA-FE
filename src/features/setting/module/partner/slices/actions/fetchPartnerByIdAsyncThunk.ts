@@ -14,7 +14,7 @@ export const fetchPartnerById = createAsyncThunk<Partner, string, { rejectValue:
       const response = await getPartnerByIdUseCase.execute(id);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch partner');
+      return rejectWithValue(error || 'Failed to fetch partner');
     }
   },
 );

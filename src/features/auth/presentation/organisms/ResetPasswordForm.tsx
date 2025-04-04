@@ -10,7 +10,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { ArrowLeft, Check, Eye, EyeIcon as EyeClosed } from 'lucide-react';
+import { ArrowLeft, Check, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import type { UseFormReturn } from 'react-hook-form';
 
@@ -44,45 +44,52 @@ const ResetPasswordForm = ({
         className="w-full space-y-6"
       >
         <div className="flex flex-col items-center w-full">
-          <div className="w-full max-w-md space-y-4">
+          <div className="w-full space-y-4">
             <FormField
               control={resetPasswordForm.control}
               name="newPassword"
               render={({ field }) => (
-                <FormItem className="grid grid-cols-1 sm:grid-cols-[120px_1fr] items-center gap-4">
-                  <FormLabel
-                    className="text-sm text-foreground text-left sm:text-right whitespace-nowrap"
-                    htmlFor="new-password"
-                  >
-                    New Password
-                  </FormLabel>
-                  <div className="relative w-full">
-                    <FormControl>
-                      <Input
-                        id="new-password"
-                        type={showNewPassword ? 'text' : 'password'}
-                        placeholder="********"
-                        className="w-full bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-none pr-10"
-                        {...field}
-                        value={field.value ?? ''}
-                      />
-                    </FormControl>
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 flex items-center pr-3"
-                      onClick={() => setShowNewPassword(!showNewPassword)}
+                <FormItem className="flex flex-col w-full">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center w-full">
+                    <FormLabel
+                      className="text-sm text-foreground w-full sm:w-1/4 text-left sm:text-right pr-0 sm:pr-4 mb-2 sm:mb-0"
+                      htmlFor="new-password"
                     >
-                      {showNewPassword ? (
-                        <EyeClosed className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                      ) : (
-                        (field.value ?? '') && (
-                          <Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                        )
-                      )}
-                    </button>
+                      New Password
+                    </FormLabel>
+                    <div className="relative flex-1 w-full sm:max-w-[75%] sm:mx-auto">
+                      <FormControl>
+                        <Input
+                          id="new-password"
+                          type={showNewPassword ? 'text' : 'password'}
+                          placeholder="********"
+                          className="w-full bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-none pr-10"
+                          {...field}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 flex items-center pr-3"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                      >
+                        {field.value &&
+                          (showNewPassword ? (
+                            <EyeOff className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                          ) : (
+                            <Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                          ))}
+                      </button>
+                    </div>
+                    <div className="hidden sm:block md:w-1/4"></div>
                   </div>
-                  <div className="xs:hidden md:block"></div>
-                  <FormMessage />
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center w-full">
+                    <div className="w-1/4"></div>
+                    <div className="flex-1 w-full sm:max-w-[75%] sm:mx-auto">
+                      <FormMessage />
+                    </div>
+                    <div className="hidden sm:block sm:w-1/4"></div>
+                  </div>
                 </FormItem>
               )}
             />
@@ -91,40 +98,47 @@ const ResetPasswordForm = ({
               control={resetPasswordForm.control}
               name="confirmPassword"
               render={({ field }) => (
-                <FormItem className="grid grid-cols-1 sm:grid-cols-[120px_1fr] items-center gap-4">
-                  <FormLabel
-                    className="text-sm text-foreground text-left sm:text-right whitespace-nowrap"
-                    htmlFor="confirm-password"
-                  >
-                    Confirm Password
-                  </FormLabel>
-                  <div className="relative w-full">
-                    <FormControl>
-                      <Input
-                        id="confirm-password"
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        placeholder="********"
-                        className="w-full bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-none pr-10"
-                        {...field}
-                        value={field.value ?? ''}
-                      />
-                    </FormControl>
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 flex items-center pr-3"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                <FormItem className="flex flex-col w-full">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center w-full">
+                    <FormLabel
+                      className="text-sm text-foreground w-full sm:w-1/4 text-left sm:text-right pr-0 sm:pr-4 mb-2 sm:mb-0"
+                      htmlFor="confirm-password"
                     >
-                      {showConfirmPassword ? (
-                        <EyeClosed className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                      ) : (
-                        (field.value ?? '') && (
-                          <Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                        )
-                      )}
-                    </button>
+                      Confirm Password
+                    </FormLabel>
+                    <div className="relative flex-1 w-full sm:max-w-[75%] sm:mx-auto">
+                      <FormControl>
+                        <Input
+                          id="confirm-password"
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          placeholder="********"
+                          className="w-full bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-none pr-10"
+                          {...field}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 flex items-center pr-3"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {field.value &&
+                          (showConfirmPassword ? (
+                            <EyeOff className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                          ) : (
+                            <Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                          ))}
+                      </button>
+                    </div>
+                    <div className="hidden sm:block md:w-1/4"></div>
                   </div>
-                  <div className="xs:hidden md:block"></div>
-                  <FormMessage />
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center w-full">
+                    <div className="w-1/4"></div>
+                    <div className="flex-1 w-full sm:max-w-[75%] sm:mx-auto">
+                      <FormMessage />
+                    </div>
+                    <div className="hidden sm:block sm:w-1/4"></div>
+                  </div>
                 </FormItem>
               )}
             />
