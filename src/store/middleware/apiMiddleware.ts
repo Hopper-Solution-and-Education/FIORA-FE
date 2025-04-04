@@ -1,4 +1,4 @@
-import { getTitleFromStatusCode } from '@/config/getTitleFromStatusCode';
+// import { getTitleFromStatusCode } from '@/config/getTitleFromStatusCode';
 import { Middleware, isRejectedWithValue } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 
@@ -6,10 +6,10 @@ const apiMiddleware: Middleware = () => (next) => (action) => {
   if (isRejectedWithValue(action)) {
     try {
       const errorResponse = JSON.parse((action.payload as any).message as string);
-      const title = getTitleFromStatusCode(errorResponse.statusCode);
+      // const title = getTitleFromStatusCode(errorResponse.statusCode);
 
-      toast.error(title, {
-        description: errorResponse.message || 'Something went wrong!',
+      toast.error('Error', {
+        description: errorResponse.error || 'Something went wrong!',
         style: { color: 'red' },
       });
     } catch {

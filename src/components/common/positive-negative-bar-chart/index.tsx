@@ -61,6 +61,7 @@ export type PositiveAndNegativeBarChartProps = {
   levelConfig?: LevelConfig;
   height?: number;
   baseBarHeight?: number;
+  expanded?: boolean;
 };
 
 const PositiveAndNegativeBarChart = ({
@@ -79,6 +80,7 @@ const PositiveAndNegativeBarChart = ({
   levelConfig,
   height = MIN_CHART_HEIGHT,
   baseBarHeight = BASE_BAR_HEIGHT,
+  expanded = true,
 }: PositiveAndNegativeBarChartProps) => {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [chartHeight, setChartHeight] = useState(height);
@@ -104,6 +106,14 @@ const PositiveAndNegativeBarChart = ({
     depth: 0,
   };
   const chartData = [totalItem];
+
+  // Sync the expanded state of the total bar with the `expanded` prop
+  useEffect(() => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [totalName]: expanded,
+    }));
+  }, [expanded, totalName]);
 
   // Recursive function to process data with multiple levels
   const buildProcessedData = useCallback(
