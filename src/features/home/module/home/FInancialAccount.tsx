@@ -55,9 +55,7 @@ export default function FinancialAccount({
   const handleAccountClick = useCallback(
     (account: Account) => {
       // Get sub-accounts for this parent
-      console.log(accountsMap);
       const subAccounts = accountsMap.get(account.id) || [];
-      console.log(subAccounts);
       // Set the selected account with its sub-accounts
       setSelectedAccount({
         ...account,

@@ -142,13 +142,11 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
       let finalLogoUrl = data.logo;
 
       if (data.logo && typeof data.logo === 'object' && 'type' in data.logo) {
-        console.log('Uploading new logo file');
         finalLogoUrl = await uploadToFirebase({
           file: data.logo as File,
           path: 'partners/logos',
           fileName: `partner_logo_${initialData?.id}_${Date.now()}`,
         });
-        console.log('Uploaded logo URL:', finalLogoUrl);
       }
 
       // Always send all fields, using the original values if not changed

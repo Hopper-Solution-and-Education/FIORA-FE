@@ -20,7 +20,6 @@ interface IPartnerAPI {
 class PartnerAPI implements IPartnerAPI {
   async createPartner(data: CreatePartnerAPIRequestDTO) {
     const response = await httpClient.post<CreatePartnerAPIResponseDTO>('/api/partners', data);
-    console.log(response);
     return response;
   }
 

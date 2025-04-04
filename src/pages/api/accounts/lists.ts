@@ -32,7 +32,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     const { isParent } = req.query;
     if (isParent) {
       const accounts = await AccountUseCaseInstance.getAllParentAccount(userId);
-      console.log('🚀 ~ GET ~ accounts1:', accounts);
       return res
         .status(200)
         .json(createResponse(RESPONSE_CODE.OK, 'Lấy danh sách tài khoản thành công', accounts));

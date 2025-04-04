@@ -66,8 +66,6 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
     }
   };
 
-  console.log('ITEM: ', item);
-
   return (
     <g transform={`translate(${x},${y})`}>
       <TooltipProvider>
