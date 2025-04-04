@@ -19,6 +19,7 @@ interface GlobalFormProps<T extends yup.AnyObject> {
   defaultValues?: Partial<T>; // Optional default values for form fields
   onBack?: () => void;
   renderSubmitButton?: (formState: FormState<T>) => React.ReactNode; // Optional custom submit button renderer
+  mode?: 'onSubmit' | 'onBlur' | 'onChange' | 'onTouched' | 'all' | undefined;
 }
 
 // Generic GlobalForm component to manage and render forms

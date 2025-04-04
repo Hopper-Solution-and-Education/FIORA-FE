@@ -1,9 +1,9 @@
 import { decorate, injectable } from 'inversify';
 import type { IProductRepository } from '../../data/repositories/ProductRepository';
-import { GetProductTransactionResponse } from '../entities/Product';
+import { ProductGetTransactionResponse } from '../entities/Product';
 
 export interface IGetProductTransactionUseCase {
-  execute(page: number, pageSize: number, userId: string): Promise<GetProductTransactionResponse>;
+  execute(page: number, pageSize: number, userId: string): Promise<ProductGetTransactionResponse>;
 }
 
 export class GetProductTransactionUseCase implements IGetProductTransactionUseCase {
@@ -19,8 +19,8 @@ export class GetProductTransactionUseCase implements IGetProductTransactionUseCa
   }
 
   private transformResponse(
-    response: GetProductTransactionResponse,
-  ): GetProductTransactionResponse {
+    response: ProductGetTransactionResponse,
+  ): ProductGetTransactionResponse {
     const sortedData = response.data
       .sort((a, b) => {
         return new Date(b.category.createdAt).getTime() - new Date(a.category.createdAt).getTime();
@@ -30,7 +30,7 @@ export class GetProductTransactionUseCase implements IGetProductTransactionUseCa
           ...category,
           products: category.products.sort((a, b) => {
             return (
-              new Date(b.product.createdAt).getTime() - new Date(a.product.createdAt).getTime()
+              new Date(a.product.createdAt).getTime() - new Date(b.product.createdAt).getTime()
             );
           }),
         };

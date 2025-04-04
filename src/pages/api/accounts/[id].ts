@@ -116,6 +116,6 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, 'Delete account successfully', deletedRes));
   } catch (error: any) {
-    res.status(error.status).json({ error: error.message });
+    res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
 }

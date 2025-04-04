@@ -1,9 +1,9 @@
 import { decorate, injectable } from 'inversify';
 import type { IProductRepository } from '../../data/repositories/ProductRepository';
-import { GetSingleProductResponse } from '../entities/Product';
+import { ProductGetSingleResponse } from '../entities/Product';
 
 export interface IGetSingleProductUseCase {
-  execute(id: string): Promise<GetSingleProductResponse>;
+  execute(id: string): Promise<ProductGetSingleResponse>;
 }
 
 export class GetSingleProductUseCase implements IGetSingleProductUseCase {
@@ -13,7 +13,7 @@ export class GetSingleProductUseCase implements IGetSingleProductUseCase {
     this.productRepository = productRepository;
   }
 
-  execute(id: string): Promise<GetSingleProductResponse> {
+  execute(id: string): Promise<ProductGetSingleResponse> {
     return this.productRepository.getSingleProduct(id);
   }
 }

@@ -1,9 +1,9 @@
 import { decorate, injectable } from 'inversify';
 import type { IProductRepository } from '../../data/repositories/ProductRepository';
-import { DeleteProductRequest, DeleteProductResponse } from '../entities/Product';
+import { ProductDeleteRequest, ProductDeleteResponse } from '../entities/Product';
 
 export interface IDeleteProductUseCase {
-  execute(params: DeleteProductRequest): Promise<DeleteProductResponse>;
+  execute(params: ProductDeleteRequest): Promise<ProductDeleteResponse>;
 }
 
 export class DeleteProductUseCase implements IDeleteProductUseCase {
@@ -13,7 +13,7 @@ export class DeleteProductUseCase implements IDeleteProductUseCase {
     this.productRepository = productRepository;
   }
 
-  execute(params: DeleteProductRequest): Promise<DeleteProductResponse> {
+  execute(params: ProductDeleteRequest): Promise<ProductDeleteResponse> {
     return this.productRepository.deleteProduct(params);
   }
 }

@@ -3,6 +3,7 @@ import * as yup from 'yup';
 
 const itemSchema = yup.object().shape({
   name: yup.string().required('Item name is required').max(50, 'Maximum 50 characters'),
+  icon: yup.string().required('Item icon is required'),
   description: yup.string().max(500, 'Maximum 500 characters'),
 });
 
@@ -22,7 +23,7 @@ const productSchema = yup.object({
     .mixed<ProductType>()
     .oneOf(Object.values(ProductType))
     .required('Product type is required'),
-  categoryId: yup.string().required('Category is required'),
+  catId: yup.string().required('Category is required'),
   items: yup.array().of(itemSchema),
 });
 

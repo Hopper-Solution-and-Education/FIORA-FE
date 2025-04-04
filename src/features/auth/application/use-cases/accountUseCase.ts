@@ -124,7 +124,7 @@ export class AccountUseCase {
       parentId: null,
     });
 
-    return !!masterAccount;
+    return masterAccount ? true : false;
   }
 
   async getAllParentAccount(userId: string): Promise<Account[] | []> {
@@ -142,6 +142,8 @@ export class AccountUseCase {
       {
         include: {
           children: true,
+          toTransactions: true,
+          fromTransactions: true,
         },
         orderBy: [
           {
@@ -228,8 +230,7 @@ export class AccountUseCase {
         throw new Error('Cannot delete master account with sub account still existed');
       } else {
         const transaction = await this.transactionRepository.findManyTransactions({
-          id,
-          OR: [{ fromAccountId: id }, { toAccountId: id }],
+          OR: [{ fromAccountId: id }, { toAccountId: id }], // check if any transaction linked to this account
         });
 
         if (transaction.length > 0) {
@@ -241,6 +242,7 @@ export class AccountUseCase {
           where: {
             id,
             parentId: null,
+            userId,
           },
         });
 

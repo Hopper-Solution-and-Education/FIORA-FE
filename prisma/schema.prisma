@@ -175,10 +175,10 @@ model Transaction {
   createdBy        String               @db.Uuid
   currency         Currency             @default(VND)
   productsRelation ProductTransaction[] @relation("ProductTransactions")
-  fromAccount      Account?             @relation("FromAccount", fields: [fromAccountId], references: [id])
+  fromAccount      Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Restrict)
   fromCategory     Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
   partner          Partner?             @relation("PartnerTransactions", fields: [partnerId], references: [id])
-  toAccount        Account?             @relation("ToAccount", fields: [toAccountId], references: [id])
+  toAccount        Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Restrict)
   toCategory       Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
   user             User?                @relation("UserTransactions", fields: [userId], references: [id])
 

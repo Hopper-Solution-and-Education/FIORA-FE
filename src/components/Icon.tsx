@@ -42,6 +42,7 @@ import {
   Pizza,
   Plus,
   Save,
+  SaveAll,
   Settings,
   ShoppingCart,
   SunMedium,
@@ -133,4 +134,5 @@ export const Icons = {
   circleArrowLeft: CircleArrowLeft,
   layoutBanner: LayoutTemplate,
   banknoteArrowDown: BanknoteArrowDown,
+  saveAll: SaveAll,
 };
