@@ -68,7 +68,7 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
 
         return true;
       })
-      .map((partner) => ({
+      .map((partner: Partner) => ({
         value: partner.id,
         label: partner.name,
       })),
@@ -102,7 +102,13 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
       }
     />,
     <InputField key="name" name="name" label="Name" placeholder="Name" />,
-    <UploadField key="logo" label="Logo" name="logo" initialImageUrl={initialData?.logo || null} />,
+    <UploadField
+      key="logo"
+      label="Logo"
+      name="logo"
+      initialImageUrl={initialData?.logo || null}
+      previewShape="circle"
+    />,
     <TextareaField
       key="description"
       name="description"
@@ -145,18 +151,19 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
         console.log('Uploaded logo URL:', finalLogoUrl);
       }
 
+      // Always send all fields, using the original values if not changed
       const updateData = {
         id: initialData?.id,
-        name: data.name || undefined,
-        logo: finalLogoUrl,
-        identify: data.identify || undefined,
-        dob: data.dob || undefined,
-        taxNo: data.taxNo || undefined,
-        address: data.address || undefined,
-        email: data.email || undefined,
-        phone: data.phone || undefined,
-        description: data.description || undefined,
-        parentId: data.parentId === 'none' ? null : data.parentId,
+        name: data.name !== undefined ? data.name : initialData?.name,
+        logo: finalLogoUrl !== undefined ? finalLogoUrl : initialData?.logo,
+        identify: data.identify !== undefined ? data.identify : initialData?.identify,
+        dob: data.dob !== undefined ? data.dob : initialData?.dob,
+        taxNo: data.taxNo !== undefined ? data.taxNo : initialData?.taxNo,
+        address: data.address !== undefined ? data.address : initialData?.address,
+        email: data.email !== undefined ? data.email : initialData?.email,
+        phone: data.phone !== undefined ? data.phone : initialData?.phone,
+        description: data.description !== undefined ? data.description : initialData?.description,
+        parentId: data.parentId === 'none' ? null : data.parentId || initialData?.parentId,
       };
 
       await dispatch(updatePartner(updateData)).unwrap();
