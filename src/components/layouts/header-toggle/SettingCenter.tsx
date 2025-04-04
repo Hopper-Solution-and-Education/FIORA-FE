@@ -18,39 +18,41 @@ import {
   SunIcon,
   Users,
 } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { Session, useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 export const menuSettingItems = [
-  // { label: 'Accounts', icon: User, url: '/home/account' },
-  // { label: 'Categories', icon: Tag, url: '/home/category' },
   { label: 'Products & Services', icon: Package, url: '/setting/product' },
   { label: 'Partners', icon: Database, url: '/setting/partner' },
   { label: 'Users', icon: Users, url: '/users' },
-  { label: 'Landing Page', icon: LayoutTemplate, url: '/setting/landing' },
+  { label: 'Landing Page', icon: LayoutTemplate, url: '/setting/landing', role: 'Admin' },
 ];
 
 export default function SettingCenter() {
   const { theme, setTheme } = useTheme();
   const [language, setLanguage] = useState('en');
-  const { data } = useSession();
+  const { data: session } = useSession() as { data: Session | null };
 
   useEffect(() => {
     document.documentElement.lang = language;
   }, [language]);
 
   const toggleTheme = (e: any) => {
-    e.stopPropagation(); // Ngăn sự kiện lan truyền
+    e.stopPropagation();
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   const toggleLanguage = (e: any) => {
-    e.stopPropagation(); // Ngăn sự kiện lan truyền
+    e.stopPropagation();
     setLanguage(language === 'en' ? 'vi' : 'en');
   };
+
+  const filteredMenuItems = menuSettingItems.filter(
+    (item) => !item.role || session?.user?.role === item.role,
+  );
 
   return (
     <TooltipProvider>
@@ -64,12 +66,12 @@ export default function SettingCenter() {
         <DropdownMenuContent
           align="end"
           className={`${
-            data?.user ? 'w-[300px] grid-cols-4' : 'w-[100px] grid-cols-2'
+            session?.user ? 'w-[300px] grid-cols-4' : 'w-[100px] grid-cols-2'
           } p-4 grid gap-4 border shadow-md`}
-          onClick={(e) => e.stopPropagation()} // Ngăn scroll khi click vào menu
+          onClick={(e) => e.stopPropagation()}
         >
-          {data?.user &&
-            menuSettingItems.map((item, index) => (
+          {session?.user &&
+            filteredMenuItems.map((item, index) => (
               <Tooltip key={index}>
                 <TooltipTrigger asChild>
                   <Link href={item.url} passHref>
@@ -87,7 +89,7 @@ export default function SettingCenter() {
           <Tooltip>
             <TooltipTrigger asChild>
               <div
-                onClick={toggleTheme} // Sử dụng hàm với stopPropagation
+                onClick={toggleTheme}
                 className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
               >
                 {theme === 'dark' ? (
@@ -105,7 +107,7 @@ export default function SettingCenter() {
           <Tooltip>
             <TooltipTrigger asChild>
               <div
-                onClick={toggleLanguage} // Sử dụng hàm với stopPropagation
+                onClick={toggleLanguage}
                 className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
               >
                 {language === 'en' ? (

@@ -15,7 +15,7 @@ import { Account } from '@/features/home/module/account/slices/types';
 import { formatCurrency } from '@/shared/utils';
 import DeleteAccountDialog from '@/features/home/module/account/components/DeleteAccountDialog';
 import NavigateToAccountDialog from '@/features/home/module/account/components/NavigateToAccountDialog';
-import AccountChartSkeleton from '@/features/home/module/account/components/AccountChartSkeleton';
+import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import { AccountModule } from '@/app/(dashboard)/home/account/page';
 import { MODULE } from '@/shared/constants';
 // import html2canvas from 'html2canvas';
@@ -89,7 +89,7 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: AccountDashboardProps) =>
         </div>
       )}
       {accounts.isLoading ? (
-        <AccountChartSkeleton />
+        <ChartSkeleton />
       ) : (
         <div
           ref={chartRef}

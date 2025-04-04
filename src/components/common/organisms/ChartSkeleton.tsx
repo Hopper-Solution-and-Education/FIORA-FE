@@ -2,7 +2,7 @@
 
 import { Skeleton } from '@/components/ui/skeleton';
 
-const AccountChartSkeleton = () => {
+const ChartSkeleton = () => {
   return (
     <div className="w-full bg-white dark:bg-gray-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 transition-colors duration-200">
       {/* Header Skeleton */}
@@ -46,4 +46,4 @@ const AccountChartSkeleton = () => {
   );
 };
 
-export default AccountChartSkeleton;
+export default ChartSkeleton;

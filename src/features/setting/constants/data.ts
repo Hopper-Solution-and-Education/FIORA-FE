@@ -33,5 +33,6 @@ export const SettingNavItems: NavItem[] = [
     url: '/setting/landing',
     icon: 'layoutBanner',
     isActive: false,
+    role: 'Admin',
   },
 ];

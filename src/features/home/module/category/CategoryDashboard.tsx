@@ -1,5 +1,4 @@
 'use client';
-import Loading from '@/components/common/atoms/Loading';
 import NestedBarChart, { type BarItem } from '@/components/common/nested-bar-chart';
 import { Icons } from '@/components/Icon';
 import { formatCurrency } from '@/config/formatCurrency';
@@ -12,6 +11,7 @@ import { CategoryType } from '@prisma/client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo } from 'react';
+import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 
 const CategoryDashboard = () => {
   const dispatch = useAppDispatch();
@@ -65,7 +65,6 @@ const CategoryDashboard = () => {
     dispatch(fetchCategories());
   }, [dispatch]);
 
-  if (categories.isLoading) return <Loading />;
   if (categories.error)
     return <div className="text-red-600 dark:text-red-400">Error: {categories.error}</div>;
 
@@ -79,34 +78,43 @@ const CategoryDashboard = () => {
         </Link>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <NestedBarChart
-          title="Expense"
-          data={expenseData}
-          xAxisFormatter={(value) => formatCurrency(value)}
-          callback={handleDisplayDetail}
-          levelConfig={{
-            totalName: 'Total Spent',
-            colors: {
-              0: COLORS.DEPS_DANGER.LEVEL_1,
-              1: COLORS.DEPS_DANGER.LEVEL_3,
-              2: COLORS.DEPS_DANGER.LEVEL_5,
-            },
-          }}
-        />
-        <NestedBarChart
-          title="Income"
-          data={incomeData}
-          xAxisFormatter={(value) => formatCurrency(value)}
-          callback={handleDisplayDetail}
-          levelConfig={{
-            totalName: 'Total Income',
-            colors: {
-              0: COLORS.DEPS_SUCCESS.LEVEL_1,
-              1: COLORS.DEPS_SUCCESS.LEVEL_2,
-              2: COLORS.DEPS_SUCCESS.LEVEL_3,
-            },
-          }}
-        />
+        {categories.isLoading ? (
+          <>
+            <ChartSkeleton />
+            <ChartSkeleton />
+          </>
+        ) : (
+          <>
+            <NestedBarChart
+              title="Expense"
+              data={expenseData}
+              xAxisFormatter={(value) => formatCurrency(value)}
+              callback={handleDisplayDetail}
+              levelConfig={{
+                totalName: 'Total Spent',
+                colors: {
+                  0: COLORS.DEPS_DANGER.LEVEL_1,
+                  1: COLORS.DEPS_DANGER.LEVEL_3,
+                  2: COLORS.DEPS_DANGER.LEVEL_5,
+                },
+              }}
+            />
+            <NestedBarChart
+              title="Income"
+              data={incomeData}
+              xAxisFormatter={(value) => formatCurrency(value)}
+              callback={handleDisplayDetail}
+              levelConfig={{
+                totalName: 'Total Income',
+                colors: {
+                  0: COLORS.DEPS_SUCCESS.LEVEL_1,
+                  1: COLORS.DEPS_SUCCESS.LEVEL_2,
+                  2: COLORS.DEPS_SUCCESS.LEVEL_3,
+                },
+              }}
+            />
+          </>
+        )}
       </div>
       <DeleteDialog />
     </div>

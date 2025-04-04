@@ -8,15 +8,9 @@ const apiMiddleware: Middleware = () => (next) => (action) => {
       const errorResponse = JSON.parse((action.payload as any).message as string);
       // const title = getTitleFromStatusCode(errorResponse.statusCode);
 
-      toast.error('Error', {
-        description: errorResponse.error || 'Something went wrong!',
-        style: { color: 'red' },
-      });
+      toast.error(errorResponse.error || 'Something went wrong!');
     } catch {
-      toast.error('Error', {
-        description: 'Something went wrong!',
-        style: { color: 'red' },
-      });
+      toast.error('Something went wrong!');
     }
   }
   return next(action);
