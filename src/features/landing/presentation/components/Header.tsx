@@ -6,7 +6,7 @@ import { LogInIcon, Menu, UserPlus, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import HelpCenter from '@/components/layouts/header-toggle/HelpCenter';
 import {
@@ -17,26 +17,19 @@ import { UserNav } from '@/components/layouts/UserNav';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { ICON_SIZE } from '@/shared/constants/size';
 import { SectionType } from '@prisma/client';
 import { useSession } from 'next-auth/react';
 import { useGetSection } from '../../hooks/useGetSection';
-import { ICON_SIZE } from '@/shared/constants/size';
 
 export default function Header() {
   const { section, isLoading, isError } = useGetSection(SectionType.HEADER);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
-  const [isOpenAnountment, setIsOpenAnountment] = useState(() => {
-    const storedState = localStorage.getItem('isOpenAnnouncement');
-    return storedState === null ? true : JSON.parse(storedState);
-  });
+  const [isOpenAnountment, setIsOpenAnountment] = useState(true);
   const { data } = useSession();
 
   const toggleMenu = () => setIsMenuOpen((prevState) => !prevState);
-
-  useEffect(() => {
-    localStorage.setItem('isOpenAnnouncement', JSON.stringify(isOpenAnountment));
-  }, [isOpenAnountment]);
 
   return (
     <header
