@@ -23,7 +23,7 @@ export function useUpdateAccount(id: string) {
   }, [accounts.data, id]);
 
   const handleDelete = useCallback(() => {
-    if (account && account.children.length > 0) {
+    if (account && account?.children?.length > 0) {
       toast.error('Please delete the sub account first!');
       return;
     }

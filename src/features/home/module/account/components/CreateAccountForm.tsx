@@ -89,16 +89,11 @@ export default function CreateAccountForm() {
           if (value.status === 201) {
             router.push('/home/account');
             toast.success('You have create new Account successfully!');
-          } else if (value.message) {
-            toast.error(value.message);
-          } else {
-            toast.error('Failed to create the Account! Please try again!');
           }
         });
       router.push('/home/account');
     } catch (error) {
       console.error('Error creating account:', error);
-      toast.error('Failed to create account');
     }
   };
 

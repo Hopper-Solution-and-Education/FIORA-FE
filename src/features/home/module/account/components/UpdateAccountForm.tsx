@@ -49,6 +49,7 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
     { value: ACCOUNT_TYPES.CREDIT_CARD, label: ACCOUNT_TYPES.CREDIT_CARD },
     { value: ACCOUNT_TYPES.DEBT, label: ACCOUNT_TYPES.DEBT },
     { value: ACCOUNT_TYPES.LENDING, label: ACCOUNT_TYPES.LENDING },
+    { value: ACCOUNT_TYPES.INVEST, label: ACCOUNT_TYPES.INVEST },
   ];
 
   const generateBalanceInitialValue = () => {
@@ -131,10 +132,6 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
           if (value.status == 200) {
             router.push('/home/account');
             toast.success('You have edit the Account successfully!');
-          } else if (value.message) {
-            toast.error(value.message);
-          } else {
-            toast.error('Failed to edit the Account! Please try again!');
           }
         });
     } catch (error: any) {
