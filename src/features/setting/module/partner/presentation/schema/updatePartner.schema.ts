@@ -7,17 +7,21 @@ export const updatePartnerSchema = yup.object({
   identify: yup.string().nullable().notRequired(),
   dob: yup.string().nullable().notRequired(),
   taxNo: yup.string().nullable().notRequired(),
-  address: yup.string().nullable().notRequired(),
-  email: yup.string().email('Invalid email').nullable().notRequired(),
-  phone: yup
+  address: yup
     .string()
     .nullable()
     .notRequired()
-    .test('isValidPhone', 'Phone must be at least 10 digits', (value) => {
-      if (!value) return true; // Allow empty
-      return value.replace(/\D/g, '').length >= 10; // Check if digits >= 10
+    .max(200, 'Address must be less than 200 characters'),
+  email: yup
+    .string()
+    .nullable()
+    .notRequired()
+    .test('validEmail', 'Invalid email format', (value) => {
+      if (!value) return true;
+      return yup.string().email().isValidSync(value);
     }),
-  description: yup.string().max(500, 'Maximum 500 characters').nullable().notRequired(),
+  phone: yup.string().nullable().notRequired(),
+  description: yup.string().nullable().notRequired().max(500, 'Maximum 500 characters'),
   parentId: yup.string().nullable().notRequired(),
 });
 
