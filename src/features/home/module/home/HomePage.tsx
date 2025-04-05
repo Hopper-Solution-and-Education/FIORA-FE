@@ -5,15 +5,12 @@ import RecentTransactions from './components/RecentTransactions';
 import Recommendations from './components/Recommendations';
 import AccountPage from '@/app/(home)/account/page';
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { setModule } from '@/store/slices/moduleSlice';
+import { setCurrentModule } from '@/shared/utils/storage';
 
 export default function HomePage() {
-  const dispatch = useDispatch();
-
   useEffect(() => {
-    dispatch(setModule(MODULE.HOME));
-  }, [dispatch]);
+    setCurrentModule(MODULE.HOME);
+  }, []);
 
   return (
     <div className="flex flex-1 flex-col space-y-4 p-4">
