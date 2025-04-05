@@ -26,7 +26,7 @@ export default function AccountList({ className }: AccountListProps) {
       const data = await response.json();
 
       if (data.status !== 200) {
-        alert('Error fetching data');
+        // alert('Error fetching data');
       }
 
       const accountsData = data.data as Account[];
@@ -72,7 +72,7 @@ export default function AccountList({ className }: AccountListProps) {
       setParentAccounts(sortedParents);
       setAccountsMap(subAccountsMap);
     } catch (err) {
-      alert('Error fetching data');
+      // alert('Error fetching data');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTriggered, accountsMap, parentAccounts, setIsTriggered, setIsCreateModalOpen]);
