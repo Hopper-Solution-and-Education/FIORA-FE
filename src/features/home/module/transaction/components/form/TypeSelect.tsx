@@ -6,7 +6,7 @@ import { FieldError } from 'react-hook-form';
 interface TypeSelectProps {
   name: string;
   value?: string;
-  onChange?: (value: string) => void;
+  onChange?: any;
   error?: FieldError;
   [key: string]: any;
 }

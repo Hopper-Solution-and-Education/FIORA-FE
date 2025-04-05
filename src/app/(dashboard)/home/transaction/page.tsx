@@ -3,7 +3,6 @@
 import Loading from '@/components/common/atoms/Loading';
 import {
   updateFilterCriteria,
-  updateAmountRange,
   updateVisibleColumns,
 } from '@/features/home/module/transaction/slices';
 import { TransactionTableColumnKey } from '@/features/home/module/transaction/types';
@@ -11,10 +10,10 @@ import {
   DEFAULT_TRANSACTION_FILTER_CRITERIA,
   DEFAULT_TRANSACTION_TABLE_COLUMNS,
 } from '@/features/home/module/transaction/utils/constants';
-import { useAppDispatch } from '@/store';
-import { useSession } from 'next-auth/react';
 import { useFeatureFlagGuard } from '@/hooks/useFeatureFlagGuard';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { useAppDispatch } from '@/store';
+import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
 
@@ -44,10 +43,7 @@ const Transaction = () => {
       dispatch(updateVisibleColumns(DEFAULT_TRANSACTION_TABLE_COLUMNS));
     } else {
       // Nếu có data thì lưu vào redux state
-      dispatch(
-        updateVisibleColumns(visibleColumnsFromLocalStorage),
-        updateAmountRange({ min: 0, max: 10000 }),
-      );
+      dispatch(updateVisibleColumns(visibleColumnsFromLocalStorage));
     }
 
     dispatch(updateFilterCriteria(DEFAULT_TRANSACTION_FILTER_CRITERIA));
