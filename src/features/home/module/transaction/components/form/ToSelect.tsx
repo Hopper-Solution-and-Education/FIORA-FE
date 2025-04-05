@@ -2,6 +2,7 @@ import SelectField from '@/components/common/atoms/SelectField';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import useDataFetcher from '@/hooks/useDataFetcher';
 import { Account, Category } from '@prisma/client';
+import { Loader2 } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
 import { DropdownOption } from '../../types';
@@ -9,7 +10,7 @@ import { DropdownOption } from '../../types';
 interface ToSelectProps {
   name: string;
   value?: string;
-  onChange?: any;
+  // onChange?: any;
   error?: FieldError;
   [key: string]: any;
 }
@@ -17,42 +18,58 @@ interface ToSelectProps {
 const ToSelectField: React.FC<ToSelectProps> = ({
   name,
   value = '',
-  onChange = () => {},
+  // onChange,
   error,
   ...props
 }) => {
-  const { watch } = useFormContext();
+  const { watch, setValue } = useFormContext();
   const transactionType = watch('type') || 'Expense';
+  const selectedOption =
+    watch(`to${transactionType === 'Expense' ? 'Category' : 'Account'}Id`) || value;
 
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
   const [targetEndpoint, setTargetEndpoint] = React.useState<string | null>(null);
 
-  const { data, mutate } = useDataFetcher<any>({
+  const { data, mutate, isLoading, isValidating } = useDataFetcher<any>({
     endpoint: targetEndpoint,
     method: 'GET',
   });
 
   useEffect(() => {
     if (transactionType === 'Expense') {
-      setTargetEndpoint('/api/categories/expense-incomes');
+      setValue('toAccountId', undefined);
+      setTargetEndpoint('/api/categories/expense-income');
     } else {
+      setValue('toCategoryId', undefined);
       setTargetEndpoint('/api/accounts/lists');
     }
+    mutate();
   }, [transactionType]);
 
   useEffect(() => {
-    mutate();
     // Get categories case
     const tmpOptions: DropdownOption[] = [];
 
     if (data && transactionType === 'Expense') {
-      data.data.forEach((category: Category) => {
-        tmpOptions.push({
-          value: category.id,
-          label: category.name,
+      data.data
+        .filter((account: Account) => account.type === transactionType)
+        .forEach((category: Category) => {
+          tmpOptions.push({
+            value: category.id,
+            label: category.name,
+          });
         });
-      });
     } else if (data && transactionType !== 'Expense') {
+      if (transactionType === 'Income') {
+        data.data
+          .filter((account: Account) => account.type === 'CreditCard')
+          .forEach((account: Account) => {
+            tmpOptions.push({
+              value: account.id,
+              label: account.name,
+            });
+          });
+      }
       data.data.forEach((account: Account) => {
         tmpOptions.push({
           value: account.id,
@@ -70,21 +87,35 @@ const ToSelectField: React.FC<ToSelectProps> = ({
     return () => {
       setOptions([]);
     };
-  }, [data]);
+  }, [data, transactionType]);
+
+  const handleChange = (value: string) => {
+    if (transactionType === 'Expense') {
+      setValue('toCategoryId', value);
+    } else {
+      setValue('toAccountId', value);
+    }
+  };
+
   return (
     <FormField
-      name="to"
+      name="toId"
       render={() => (
         <FormItem className="w-full h-fit flex flex-col sm:flex-row justify-start items-start sm:items-center gap-4">
           <FormLabel className="text-right text-sm text-gray-700 dark:text-gray-300 sm:w-[20%]">
             To <span className="text-red-500">*</span>
           </FormLabel>
-          <div className="w-full">
+          <div className="w-full h-fit relative">
+            {(isLoading || isValidating) && (
+              <div className="w-fit h-fit absolute top-[50%] right-[10%] -translate-y-[25%] z-10">
+                <Loader2 className="h-5 w-5 text-primary animate-spin opacity-50 mb-4" />
+              </div>
+            )}
             <SelectField
               className="px-4 py-2"
               name={name}
-              value={options.find((option) => option.value === value)?.label || ''}
-              onChange={onChange}
+              value={selectedOption}
+              onValueChange={handleChange}
               options={options}
               placeholder={transactionType === 'Expense' ? 'Select Category' : 'Select Account'}
               error={error}

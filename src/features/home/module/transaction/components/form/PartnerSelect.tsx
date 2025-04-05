@@ -2,8 +2,9 @@ import SelectField from '@/components/common/atoms/SelectField';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import useDataFetcher from '@/hooks/useDataFetcher';
 import { Partner } from '@prisma/client';
+import { Loader2 } from 'lucide-react';
 import React, { useEffect } from 'react';
-import { FieldError } from 'react-hook-form';
+import { FieldError, useFormContext } from 'react-hook-form';
 import { DropdownOption } from '../../types';
 
 interface PartnerSelectProps {
@@ -21,8 +22,11 @@ const PartnerSelectField: React.FC<PartnerSelectProps> = ({
   error,
   ...props
 }) => {
+  const { watch } = useFormContext();
+  const selectedPartner = watch('partner') || value;
+
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
-  const { data } = useDataFetcher<Partner[]>({
+  const { data, isLoading, isValidating } = useDataFetcher<Partner[]>({
     endpoint: '/api/partners',
     method: 'GET',
   });
@@ -57,11 +61,16 @@ const PartnerSelectField: React.FC<PartnerSelectProps> = ({
           <FormLabel className="text-right text-sm text-gray-700 dark:text-gray-300 sm:w-[20%]">
             Partner
           </FormLabel>
-          <div className="w-full">
+          <div className="w-full h-fit relative">
+            {(isLoading || isValidating) && (
+              <div className="w-fit h-fit absolute top-[50%] right-[10%] -translate-y-[25%] z-10">
+                <Loader2 className="h-5 w-5 text-primary animate-spin opacity-50 mb-4" />
+              </div>
+            )}
             <SelectField
               className="px-4 py-2"
               name={name}
-              value={options.find((option) => option.value === value)?.label || 'Unknown'}
+              value={selectedPartner}
               onChange={onChange}
               options={options}
               placeholder={'Select Partner'}

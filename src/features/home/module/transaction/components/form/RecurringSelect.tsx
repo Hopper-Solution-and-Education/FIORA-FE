@@ -4,14 +4,14 @@ import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import React, { useEffect, useState } from 'react';
-import { FieldError } from 'react-hook-form';
-import { TransactionRecurringType } from '../../utils/constants';
+import { FieldError, useFormContext } from 'react-hook-form';
 import { DropdownOption } from '../../types';
+import { TransactionRecurringType } from '../../utils/constants';
 
 interface RecurringSelectProps {
   name: string;
   value?: string;
-  onChange?: any;
+  // onChange?: any;
   error?: FieldError;
   [key: string]: any;
 }
@@ -19,10 +19,14 @@ interface RecurringSelectProps {
 const RecurringSelectField: React.FC<RecurringSelectProps> = ({
   name,
   value = 'None',
-  onChange = () => {},
+  // onChange = () => {},
   error,
   ...props
 }) => {
+  const { watch, setValue } = useFormContext();
+  const currentRecurringType = watch('remark') || value;
+  const currentDate = watch('date') || value;
+
   const [recurringDate, setRecurringDate] = useState<Date | undefined>();
   const [recurringOption, setRecurringOption] = useState<string | undefined>();
   const [options, setOptions] = useState<DropdownOption[]>([]);
@@ -50,8 +54,8 @@ const RecurringSelectField: React.FC<RecurringSelectProps> = ({
             <SelectField
               className="px-4 py-2"
               name={name}
-              value={value}
-              onChange={onChange}
+              value={currentRecurringType}
+              onValueChange={(value: string) => setValue('remark', value)}
               options={options}
               placeholder={'Select Type'}
               error={error}
@@ -62,9 +66,17 @@ const RecurringSelectField: React.FC<RecurringSelectProps> = ({
             </FormLabel>
             <DateTimePicker
               modal={false}
-              value={recurringDate}
-              onChange={(date) => setRecurringDate(date)}
+              value={
+                currentRecurringType === TransactionRecurringType.DAILY
+                  ? currentDate
+                  : recurringDate
+              }
+              onChange={setRecurringDate}
               clearable
+              disabled={
+                currentRecurringType === TransactionRecurringType.NONE ||
+                currentRecurringType === TransactionRecurringType.DAILY
+              }
               hideTime // Chỉ hiển thị ngày
             />
           </FormItem>
