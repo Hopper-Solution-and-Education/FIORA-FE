@@ -2,8 +2,9 @@ import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { MultiSelect } from '@/components/ui/multi-select';
 import useDataFetcher from '@/hooks/useDataFetcher';
 import { Product } from '@prisma/client';
+import { Loader2 } from 'lucide-react';
 import React, { useEffect } from 'react';
-import { FieldError } from 'react-hook-form';
+import { FieldError, useFormContext } from 'react-hook-form';
 import { DropdownOption } from '../../types';
 
 interface ProductsSelectProps {
@@ -21,10 +22,12 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
   error,
   // ...props
 }) => {
-  const [options, setOptions] = React.useState<DropdownOption[]>([]);
-  const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
+  const { watch, setValue } = useFormContext();
+  const selectedOptions = watch('products') || [];
 
-  const { data } = useDataFetcher<any>({
+  const [options, setOptions] = React.useState<DropdownOption[]>([]);
+
+  const { data, isLoading, isValidating } = useDataFetcher<any>({
     endpoint: '/api/products',
     method: 'GET',
   });
@@ -51,6 +54,10 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
     }
   }, [data]);
 
+  const handleChange = (selected: string[]) => {
+    setValue('products', selected);
+  };
+
   return (
     <FormField
       name={name}
@@ -59,29 +66,22 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
           <FormLabel className="text-right text-sm text-gray-700 dark:text-gray-300 sm:w-[20%]">
             Products
           </FormLabel>
-          <div className="w-full">
+          <div className="w-full h-fit relative">
+            {(isLoading || isValidating) && (
+              <div className="w-fit h-fit absolute top-[50%] right-[10%] -translate-y-[25%] z-10">
+                <Loader2 className="h-5 w-5 text-primary animate-spin opacity-50 mb-4" />
+              </div>
+            )}
             <div className="space-y-2">
               <MultiSelect
                 options={options}
                 selected={selectedOptions}
-                onChange={setSelectedOptions}
+                onChange={handleChange}
                 placeholder="Select products"
                 className="w-full"
               />
               {error && <p className="text-sm text-red-500">{error.message}</p>}
             </div>
-            {/* <SelectField
-              className="px-4 py-2"
-              name={name}
-              value={value}
-              onChange={(value) =>
-                onChange(transactionType === 'Income' ? 'fromCategoryId' : 'fromAccountId', value)
-              }
-              options={options}
-              placeholder={transactionType === 'Income' ? 'Select Category' : 'Select Account'}
-              error={error}
-              {...props}
-            /> */}
           </div>
         </FormItem>
       )}

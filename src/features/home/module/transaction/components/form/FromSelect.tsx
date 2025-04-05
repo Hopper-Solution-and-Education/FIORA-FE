@@ -2,46 +2,48 @@ import SelectField from '@/components/common/atoms/SelectField';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import useDataFetcher from '@/hooks/useDataFetcher';
 import { Account, Category } from '@prisma/client';
+import { Loader2 } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
 import { DropdownOption } from '../../types';
 
 interface FromSelectProps {
-  name: string;
+  // name: string;
   value?: string;
-  onChange?: any;
+  // onChange?: any;
   error?: FieldError;
   [key: string]: any;
 }
 
 const FromSelectField: React.FC<FromSelectProps> = ({
-  name,
+  // name,
   value = '',
-  onChange = () => {},
+  // onChange,
   error,
   ...props
 }) => {
-  const { watch } = useFormContext();
+  const { watch, setValue } = useFormContext();
   const transactionType = watch('type') || 'Expense';
+  const selectedOption =
+    watch(`from${transactionType === 'Income' ? 'Category' : 'Account'}Id`) || value;
 
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
   const [targetEndpoint, setTargetEndpoint] = React.useState<string | null>(null);
 
-  const { data, mutate } = useDataFetcher<any>({
+  const { data, mutate, isLoading, isValidating } = useDataFetcher<any>({
     endpoint: targetEndpoint,
     method: 'GET',
   });
 
   useEffect(() => {
     if (transactionType === 'Income') {
-      setTargetEndpoint('/api/categories/expense-incomes');
+      setValue('fromAccountId', undefined);
+      setTargetEndpoint('/api/categories/expense-income');
     } else {
+      setValue('fromCategoryId', undefined);
       setTargetEndpoint('/api/accounts/lists');
     }
-    mutate(undefined, {
-      revalidate: true,
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    mutate();
   }, [transactionType]);
 
   useEffect(() => {
@@ -49,19 +51,32 @@ const FromSelectField: React.FC<FromSelectProps> = ({
     const tmpOptions: DropdownOption[] = [];
 
     if (data && data.data && transactionType === 'Income') {
-      data.data.forEach((category: Category) => {
-        tmpOptions.push({
-          value: category.id,
-          label: category.name,
+      data.data
+        .filter((account: Account) => account.type === transactionType)
+        .forEach((category: Category) => {
+          tmpOptions.push({
+            value: category.id,
+            label: category.name,
+          });
         });
-      });
     } else if (data && data.data && transactionType !== 'Income') {
-      data.data.forEach((account: Account) => {
-        tmpOptions.push({
-          value: account.id,
-          label: account.name,
+      if (transactionType === 'Expense') {
+        data.data
+          .filter((account: Account) => account.type === 'Payment')
+          .forEach((account: Account) => {
+            tmpOptions.push({
+              value: account.id,
+              label: account.name,
+            });
+          });
+      } else {
+        data.data.forEach((account: Account) => {
+          tmpOptions.push({
+            value: account.id,
+            label: account.name,
+          });
         });
-      });
+      }
     } else {
       tmpOptions.push({
         label: transactionType === 'Income' ? 'Select Category' : 'Select Account',
@@ -73,23 +88,31 @@ const FromSelectField: React.FC<FromSelectProps> = ({
     return () => {
       setOptions([]);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
+
+  const handleChange = (value: string) => {
+    setValue(transactionType === 'Income' ? 'fromCategoryId' : 'fromAccountId', value);
+  };
 
   return (
     <FormField
-      name="from"
+      name="fromId"
       render={() => (
         <FormItem className="w-full h-fit flex flex-col sm:flex-row justify-start items-start sm:items-center gap-4">
           <FormLabel className="text-right text-sm text-gray-700 dark:text-gray-300 sm:w-[20%]">
             From <span className="text-red-500">*</span>
           </FormLabel>
-          <div className="w-full">
+          <div className="w-full h-fit relative">
+            {(isLoading || isValidating) && (
+              <div className="w-fit h-fit absolute top-[50%] right-[10%] -translate-y-[25%] z-10">
+                <Loader2 className="h-5 w-5 text-primary animate-spin opacity-50 mb-4" />
+              </div>
+            )}
             <SelectField
               className="px-4 py-2"
-              name={name}
-              value={options.find((option) => option.value === value)?.label || ''}
-              onChange={onChange}
+              name={`from${transactionType === 'Income' ? 'Category' : 'Account'}Id`}
+              value={selectedOption}
+              onValueChange={handleChange}
               options={options}
               placeholder={transactionType === 'Income' ? 'Select Category' : 'Select Account'}
               error={error}
