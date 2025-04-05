@@ -4,6 +4,9 @@ import growthbook from '@/config/growthbook';
 import { NavItem } from '@/features/home/types/Nav.types';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { cn } from '@/lib/utils';
+import { ICON_SIZE } from '@/shared/constants/size';
+import { setCurrentModule } from '@/shared/utils/storage';
 import { SectionType } from '@prisma/client';
 import HopperLogo from '@public/images/logo.jpg';
 import { ChevronRight, ChevronsUpDown, LogOut } from 'lucide-react';
@@ -40,7 +43,6 @@ import {
 } from '../ui/sidebar';
 import { helpItems } from './header-toggle/HelpCenter';
 import { menuSettingItems } from './header-toggle/SettingCenter';
-import { ICON_SIZE } from '@/shared/constants/size';
 
 export const company = {
   name: 'FIORA Inc',
@@ -137,6 +139,12 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
     router.push('/');
   };
 
+  const handleNavClick = (item: NavItem) => {
+    if (item.module) {
+      setCurrentModule(item.module);
+    }
+  };
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -207,7 +215,14 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                         {item.items?.map((subItem) => (
                           <SidebarMenuSubItem key={subItem.title}>
                             <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
-                              <Link href={subItem.url}>
+                              <Link
+                                href={subItem.url}
+                                onClick={() => handleNavClick(subItem)}
+                                className={cn(
+                                  'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
+                                  pathname === subItem.url && 'bg-accent text-accent-foreground',
+                                )}
+                              >
                                 <span>{subItem.title}</span>
                               </Link>
                             </SidebarMenuSubButton>
@@ -220,7 +235,14 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
               ) : (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title} isActive={pathname === item.url}>
-                    <Link href={item.url}>
+                    <Link
+                      href={item.url}
+                      onClick={() => handleNavClick(item)}
+                      className={cn(
+                        'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
+                        pathname === item.url && 'bg-accent text-accent-foreground',
+                      )}
+                    >
                       <Icon />
                       <span>{item.title}</span>
                     </Link>
