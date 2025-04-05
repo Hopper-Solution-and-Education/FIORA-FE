@@ -91,6 +91,7 @@ class TransactionUseCase {
     const transactionAwaited = this.transactionRepository.findManyTransactions(
       {
         ...where,
+        isDeleted: false,
       },
       {
         skip,
