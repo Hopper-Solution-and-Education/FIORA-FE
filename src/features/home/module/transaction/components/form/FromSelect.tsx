@@ -41,6 +41,7 @@ const FromSelectField: React.FC<FromSelectProps> = ({
     mutate(undefined, {
       revalidate: true,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionType]);
 
   useEffect(() => {
@@ -72,6 +73,7 @@ const FromSelectField: React.FC<FromSelectProps> = ({
     return () => {
       setOptions([]);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   return (

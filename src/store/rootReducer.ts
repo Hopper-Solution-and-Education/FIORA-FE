@@ -9,6 +9,7 @@ import productManagementSlice from '@/features/setting/module/product/slices';
 import { combineReducers } from '@reduxjs/toolkit';
 import dialogSlices from './slices/dialog.slice';
 import settingSlices from './slices/setting.slice';
+import moduleReducer from './slices/moduleSlice';
 
 const reducer = {
   settings: settingSlices,
@@ -21,6 +22,7 @@ const reducer = {
   account: accountSlice,
   partner: partnerManagementSlice,
   transaction: transactionSlice,
+  module: moduleReducer,
 };
 
 const rootReducer = combineReducers(reducer);

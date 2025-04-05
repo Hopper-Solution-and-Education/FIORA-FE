@@ -70,6 +70,7 @@ const ToSelectField: React.FC<ToSelectProps> = ({
     return () => {
       setOptions([]);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
   return (
     <FormField

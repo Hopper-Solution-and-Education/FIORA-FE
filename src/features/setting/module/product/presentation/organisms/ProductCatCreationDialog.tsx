@@ -60,6 +60,7 @@ const ProductCatCreationDialog = () => {
     } else {
       reset(defaultCategoryProductValue);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productCategoryToEdit]);
 
   const isOpenProductCateDialog = useAppSelector(

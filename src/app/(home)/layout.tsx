@@ -1,12 +1,11 @@
-import AppSidebar from '@/components/layouts/AppSidebar';
 import AuthLayout from '@/components/layouts/auth-layout';
 import Header from '@/components/layouts/DashboardHeader';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { navItems as HomeNavItems } from '@/features/home/constants/data';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import type { Metadata } from 'next';
 import { getServerSession } from 'next-auth';
 import { cookies } from 'next/headers';
+import SessionSidebar from '@/components/layouts/SessionSidebar';
 
 export const metadata: Metadata = {
   title: 'Fiora Dashboard',
@@ -19,8 +18,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const defaultOpen = cookieStore.get('sidebar:state')?.value === 'true' || true;
   const session = await getServerSession(authOptions);
 
-  console.log(session);
-
   if (!session?.user) {
     return (
       <>
@@ -32,7 +29,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <AuthLayout requiresAuth={true}>
       <SidebarProvider defaultOpen={defaultOpen}>
-        <AppSidebar appLabel="Overview" navItems={HomeNavItems} />
+        <SessionSidebar />
         <SidebarInset>
           <Header />
           {/* page main content */}
