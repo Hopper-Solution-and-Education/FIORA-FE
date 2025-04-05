@@ -7,7 +7,7 @@ type SliderProps = {
   amountMax: number;
   minRange: number;
   maxRange: number;
-  handleUpdateAmount: (target: 'gte' | 'lte', value: number) => void;
+  handleUpdateAmount: (target: any, value: number) => void;
 };
 
 export const renderAmountSlider = (props: SliderProps): ReactNode => {

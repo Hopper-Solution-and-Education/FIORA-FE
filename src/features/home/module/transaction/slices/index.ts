@@ -7,7 +7,7 @@ import {
 
 export type TransactionSliceType = {
   visibleColumns: TransactionTableColumnKey;
-  filterCriteria: TransactionFilterCriteria;
+  filterCriteria: any;
   amountMin: number;
   amountMax: number;
 };

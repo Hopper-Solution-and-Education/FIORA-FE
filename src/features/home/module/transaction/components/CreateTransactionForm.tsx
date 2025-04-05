@@ -1,7 +1,10 @@
 'use client';
 
 import GlobalForm from '@/components/common/organisms/GlobalForm';
-import { validateNewTransactionSchema } from '../utils/schema';
+import {
+  defaultNewTransactionValues,
+  validateNewTransactionSchema,
+} from '../utils/transactionSchema';
 import AmountInputField from './form/AmountInput';
 import CurrencySelectField from './form/CurrencySelect';
 import TypeSelectField from './form/TypeSelect';
@@ -20,7 +23,7 @@ const CreateTransactionForm = () => {
   const fields = [
     <DateSelectField key="date" name="date" />,
     <TypeSelectField key="type" name="type" />,
-    <AmountInputField key="amount" name="amount" type="number" placeholder="Amount" />,
+    <AmountInputField key="amount" name="amount" placeholder="Amount" />,
     <CurrencySelectField key="currency" name="currency" />,
     <FromSelectField key="from" name="from" />,
     <ToSelectField key="to" name="to" />,
@@ -33,7 +36,7 @@ const CreateTransactionForm = () => {
     <GlobalForm
       fields={fields}
       onSubmit={onSubmit}
-      // defaultValues={}
+      defaultValues={defaultNewTransactionValues}
       schema={validateNewTransactionSchema}
     />
   );

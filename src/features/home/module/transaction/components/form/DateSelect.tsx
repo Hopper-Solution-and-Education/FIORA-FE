@@ -1,17 +1,16 @@
-import DateRangePicker from '@/components/common/atoms/DateRangePicker';
+import CustomDateTimePicker from '@/components/common/atoms/CustomDateTimePicker';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import React from 'react';
-import { DateRange } from 'react-day-picker';
-import { FieldError } from 'react-hook-form';
 
 interface TypeSelectProps {
-  value?: DateRange | undefined;
-  onChange?: (date: DateRange | undefined) => void;
-  error?: FieldError;
+  name: string;
+  // value?: Date | undefined;
+  // onChange?: any;
+  // error?: FieldError;
   [key: string]: any;
 }
 
-const DateSelectField: React.FC<TypeSelectProps> = ({ value, onChange, error }) => {
+const DateSelectField: React.FC<TypeSelectProps> = ({ name }) => {
   return (
     <FormField
       name="date"
@@ -21,11 +20,14 @@ const DateSelectField: React.FC<TypeSelectProps> = ({ value, onChange, error }) 
             Date <span className="text-red-500">*</span>
           </FormLabel>
           <div className="w-full">
-            <DateRangePicker
-              date={value}
-              onChange={onChange ?? (() => {})}
-              error={error}
-              placeholder={'Select Date'}
+            <CustomDateTimePicker
+              key={name}
+              name={name}
+              placeholder="Select date of birth"
+              showYearDropdown
+              showMonthDropdown
+              dropdownMode="select"
+              dateFormat="dd/MM/yyyy"
             />
           </div>
         </FormItem>
