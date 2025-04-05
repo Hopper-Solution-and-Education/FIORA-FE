@@ -16,12 +16,9 @@ import { formatCurrency } from '@/shared/utils';
 import DeleteAccountDialog from '@/features/home/module/account/components/DeleteAccountDialog';
 import NavigateToAccountDialog from '@/features/home/module/account/components/NavigateToAccountDialog';
 import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
-import { AccountModule } from '@/app/(home)/account/page';
 import { MODULE } from '@/shared/constants';
-// import html2canvas from 'html2canvas';
-
 interface AccountDashboardProps {
-  module?: AccountModule;
+  module?: string;
 }
 
 const AccountDashboard = ({ module = MODULE.ACCOUNT }: AccountDashboardProps) => {
