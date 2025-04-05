@@ -1,5 +1,6 @@
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { NavItem } from '../types/Nav.types';
+import { MODULE } from '@/shared/constants';
 
 //Info: The following data is used for the sidebar navigation and Cmd K bar.
 export const navItems: NavItem[] = [
@@ -10,6 +11,7 @@ export const navItems: NavItem[] = [
     isActive: false,
     shortcut: ['d', 'd'],
     items: [],
+    module: MODULE.HOME,
   },
   {
     title: 'Finance',
@@ -22,6 +24,7 @@ export const navItems: NavItem[] = [
         url: '/account',
         icon: 'userPen',
         shortcut: ['m', 'm'],
+        module: MODULE.ACCOUNT,
       },
       {
         title: 'Categories',

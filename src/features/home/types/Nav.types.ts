@@ -15,6 +15,7 @@ export interface NavItem {
   featureFlags?: FeatureFlags;
   items?: NavItem[];
   role?: UserRole;
+  module?: string;
 }
 
 export interface NavItemWithChildren extends NavItem {
