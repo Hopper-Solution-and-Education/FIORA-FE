@@ -15,7 +15,8 @@ export const renderAmountSlider = (props: SliderProps): ReactNode => {
 
   // Handle drag events for slider thumbs
   const createDragHandler =
-    (target: 'gte' | 'lte', minValue: number, maxValue: number) => (e: React.MouseEvent) => {
+    (target: 'amountMin' | 'amountMax', minValue: number, maxValue: number) =>
+    (e: React.MouseEvent) => {
       const slider = e.currentTarget.parentElement;
 
       const handleDrag = (moveEvent: MouseEvent) => {
@@ -37,9 +38,29 @@ export const renderAmountSlider = (props: SliderProps): ReactNode => {
     };
 
   // Min thumb drag handler
-  const handleMinThumbDrag = createDragHandler('gte', minRange, amountMax);
+  const handleMinThumbDrag = createDragHandler('amountMin', minRange, amountMax);
   // Max thumb drag handler
-  const handleMaxThumbDrag = createDragHandler('lte', amountMin, maxRange);
+  const handleMaxThumbDrag = createDragHandler('amountMax', amountMin, maxRange);
+
+  // Handle click on the track to move closest thumb
+  const handleTrackClick = (e: React.MouseEvent) => {
+    const track = e.currentTarget;
+    const rect = track.getBoundingClientRect();
+    const clickPosition = (e.clientX - rect.left) / rect.width;
+    const clickValue = Math.round(clickPosition * maxRange);
+
+    // Determine which thumb is closer to click position
+    const minThumbDistance = Math.abs(clickValue - amountMin);
+    const maxThumbDistance = Math.abs(clickValue - amountMax);
+
+    if (minThumbDistance <= maxThumbDistance) {
+      // Move min thumb if it's closer or equidistant
+      handleUpdateAmount('amountMin', Math.max(minRange, Math.min(amountMax, clickValue)));
+    } else {
+      // Move max thumb if it's closer
+      handleUpdateAmount('amountMax', Math.max(amountMin, Math.min(maxRange, clickValue)));
+    }
+  };
 
   return (
     <div className="w-full px-2">
@@ -50,8 +71,11 @@ export const renderAmountSlider = (props: SliderProps): ReactNode => {
       </div>
 
       <div className="relative h-5 flex items-center">
-        {/* Base track */}
-        <div className="absolute w-full bg-gray-200 h-1 rounded-full" />
+        {/* Base track with click handler */}
+        <div
+          className="absolute w-full bg-gray-200 h-1 rounded-full cursor-pointer"
+          onClick={handleTrackClick}
+        />
 
         {/* Selected range track */}
         <div
@@ -60,6 +84,7 @@ export const renderAmountSlider = (props: SliderProps): ReactNode => {
             left: `${(amountMin / maxRange) * 100}%`,
             right: `${100 - (amountMax / maxRange) * 100}%`,
           }}
+          onClick={handleTrackClick}
         />
 
         {/* Min value input */}
