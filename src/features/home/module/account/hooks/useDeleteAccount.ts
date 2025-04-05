@@ -41,7 +41,7 @@ export function useDeleteAccount() {
         dispatch(setAccountUpdateDialog(false));
         dispatch(setSelectedAccount(null));
         dispatch(setRefresh(!refresh));
-        router.push('/home/account');
+        router.push('/account');
       }
     } catch (error: any) {
       // Handle errors

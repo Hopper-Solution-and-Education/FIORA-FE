@@ -16,7 +16,7 @@ import { formatCurrency } from '@/shared/utils';
 import DeleteAccountDialog from '@/features/home/module/account/components/DeleteAccountDialog';
 import NavigateToAccountDialog from '@/features/home/module/account/components/NavigateToAccountDialog';
 import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
-import { AccountModule } from '@/app/(dashboard)/home/account/page';
+import { AccountModule } from '@/app/(home)/account/page';
 import { MODULE } from '@/shared/constants';
 // import html2canvas from 'html2canvas';
 
@@ -60,7 +60,7 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: AccountDashboardProps) =>
 
   const handleDisplayDetail = (item: any) => {
     if (item.id) {
-      router.push(`/home/account/update/${item.id}`);
+      router.push(`/account/update/${item.id}`);
     }
   };
 
@@ -72,7 +72,7 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: AccountDashboardProps) =>
 
   const handleNavigateConfirm = () => {
     setShowNavigateDialog(false);
-    router.push('/home/account');
+    router.push('/account');
   };
 
   if (accounts.error) return <div className="text-red-600">Error: {accounts.error}</div>;
@@ -81,7 +81,7 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: AccountDashboardProps) =>
     <>
       {module === MODULE.ACCOUNT && (
         <div className="flex justify-end">
-          <Link href="/home/account/create">
+          <Link href="/account/create">
             <button className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white">
               <Icons.add className="h-6 w-6" />
             </button>

@@ -31,7 +31,9 @@ const nextConfig: NextConfig = {
         hostname: '*',
       },
     ],
+    domains: ['firebasestorage.googleapis.com'],
   },
+
   //----Configurations for the PDF viewer
   webpack: (config) => {
     config.resolve.alias.canvas = false;

@@ -63,7 +63,7 @@ export default function CreateCategoryForm({ initialData }: CreateCategoryFormPr
         .unwrap()
         .then((value: Response<Category>) => {
           if (value.status == 201) {
-            router.push('/home/category');
+            router.push('/category');
             toast.success('You have create new Finance Category successfully!');
           }
         });

@@ -134,7 +134,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   };
 
   const handlePressLogo = () => {
-    router.push('/home');
+    router.push('/');
   };
 
   return (

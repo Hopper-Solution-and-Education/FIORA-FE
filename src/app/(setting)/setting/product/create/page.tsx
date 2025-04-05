@@ -14,7 +14,7 @@ export default function Page() {
       toast.error('Product feature is not enabled', {
         description: '',
       });
-      redirect('/home');
+      redirect('/');
     }
   }, [isProductFeatureEnabled]);
   return <ProductCreation />;

@@ -9,28 +9,20 @@ type BreadcrumbItem = {
 };
 
 const routeMapping: Record<string, BreadcrumbItem[]> = {
-  '/home': [{ title: 'Home', link: '/home' }],
-  '/home/employee': [
-    { title: 'Dashboard', link: '/home' },
-    { title: 'Employee', link: '/home/employee' },
+  '/': [{ title: 'Home', link: '/' }],
+  '/category': [
+    { title: 'Home', link: '/' },
+    { title: 'Category', link: '/category' },
   ],
-  '/home/product': [
-    { title: 'Dashboard', link: '/home' },
-    { title: 'Product', link: '/home/product' },
+  '/category/create': [
+    { title: 'Home', link: '/' },
+    { title: 'Category', link: '/category' },
+    { title: 'Create', link: '/category/create' },
   ],
-  '/home/category': [
-    { title: 'Dashboard', link: '/home' },
-    { title: 'Category', link: '/home/category' },
-  ],
-  '/home/category/create': [
-    { title: 'Dashboard', link: '/home' },
-    { title: 'Category', link: '/home/category' },
-    { title: 'Create', link: '/home/category/create' },
-  ],
-  '/home/category/update': [
-    { title: 'Dashboard', link: '/home' },
-    { title: 'Category', link: '/home/category' },
-    { title: 'Update', link: '/home/category/update' },
+  '/category/update': [
+    { title: 'Home', link: '/' },
+    { title: 'Category', link: '/category' },
+    { title: 'Update', link: '/category/update' },
   ],
   '/setting/product/update': [
     { title: 'Setting', link: '/setting' },

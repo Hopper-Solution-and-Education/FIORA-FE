@@ -81,7 +81,7 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
   const handleGoogleSignIn = async () => {
     setError(null); // Reset lỗi trước khi thử đăng nhập
     try {
-      const res = await signIn('google', { callbackUrl: '/home' });
+      const res = await signIn('google', { callbackUrl: '/' });
       if (!res?.ok) {
         setError('Google login failed. Please try again.');
       }
