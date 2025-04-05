@@ -153,3 +153,17 @@ export type PaginationProps = {
   page: number;
   pageSize: number;
 };
+
+export type CreateTransactionBody = {
+  fromAccountId: string | null;
+  fromCategoryId: string | null;
+  toCategoryId: string | null;
+  toAccountId: string | null;
+  amount: string | number;
+  products?: { id: string }[];
+  partnerId: string | null;
+  remark: string | null;
+  date: string | Date;
+  type: string;
+  currency: string;
+};

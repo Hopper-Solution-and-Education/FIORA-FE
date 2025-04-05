@@ -60,95 +60,98 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
   });
 
   useEffect(() => {
-    if (filterCriteria) {
-      let currentFilterParams = filterParams;
-
-      //  Add existing filters to the state
-      if (isOpen) {
-        if (!filterCriteria.filters['OR']) {
-          const tmpFilterParams = filterCriteria.filters;
-          currentFilterParams = {
-            types: tmpFilterParams?.type
-              ? [...(currentFilterParams.types ?? []), tmpFilterParams?.type]
-              : currentFilterParams.types,
-            partners: tmpFilterParams?.partner?.name
-              ? [...(currentFilterParams.partners ?? []), tmpFilterParams?.partner?.name]
-              : currentFilterParams.partners,
-            subjectFrom:
-              tmpFilterParams?.fromAccount?.name || tmpFilterParams.fromCategory?.name
-                ? [
-                    ...(currentFilterParams.subjectFrom ?? []),
-                    tmpFilterParams?.fromAccount?.name ?? tmpFilterParams.fromCategory?.name,
-                  ]
-                : currentFilterParams.subjectFrom,
-            subjectTo:
-              tmpFilterParams?.toAccount?.name || tmpFilterParams.toCategory?.name
-                ? [
-                    ...(currentFilterParams.subjectTo ?? []),
-                    tmpFilterParams?.toAccount?.name ?? tmpFilterParams.toCategory?.name,
-                  ]
-                : currentFilterParams.subjectTo,
-            amountMin: amountMin,
-            amountMax: amountMax,
-          };
-          setFilterParams(currentFilterParams);
-        } else {
-          const tmpFilterOrParams = filterCriteria.filters['OR'];
-          type FilterOrValue = {
-            type?: string;
-            partner?: { name: string };
-            fromAccount?: { name: string };
-            fromCategory?: { name: string };
-            toAccount?: { name: string };
-            toCategory?: { name: string };
-          };
-
-          tmpFilterOrParams.forEach((filterValue: FilterOrValue) => {
-            // Process each OR condition
-            if ('type' in filterValue) {
-              // Handle transaction type
-              currentFilterParams.types = [
-                ...new Set([...(currentFilterParams.types || []), filterValue.type as string]),
-              ];
-            } else if ('partner' in filterValue && filterValue.partner?.name) {
-              // Handle partners
-              currentFilterParams.partners = [
-                ...new Set([...(currentFilterParams.partners || []), filterValue.partner.name]),
-              ];
-            } else if (
-              ('fromAccount' in filterValue && filterValue.fromAccount?.name) ||
-              ('fromCategory' in filterValue && filterValue.fromCategory?.name)
-            ) {
-              // Handle subject from (accounts or categories)
-              const fromName = (filterValue.fromAccount?.name ||
-                filterValue.fromCategory?.name) as string;
-              if (fromName) {
-                currentFilterParams.subjectFrom = [
-                  ...new Set([...(currentFilterParams.subjectFrom || []), fromName]),
-                ];
+    if (filterCriteria && isOpen) {
+      if (!filterCriteria.filters['OR']) {
+        const tmpFilterParams = filterCriteria.filters;
+        setFilterParams({
+          types: tmpFilterParams?.type ? [tmpFilterParams?.type] : [],
+          partners: tmpFilterParams?.partner?.name ? [tmpFilterParams?.partner?.name] : [],
+          subjectFrom:
+            tmpFilterParams?.fromAccount?.name || tmpFilterParams.fromCategory?.name
+              ? [tmpFilterParams?.fromAccount?.name ?? tmpFilterParams.fromCategory?.name]
+              : [],
+          subjectTo:
+            tmpFilterParams?.toAccount?.name || tmpFilterParams.toCategory?.name
+              ? [tmpFilterParams?.toAccount?.name ?? tmpFilterParams.toCategory?.name]
+              : [],
+          amountMin: amountMin,
+          amountMax: amountMax,
+          dateRange: tmpFilterParams?.date
+            ? {
+                from: tmpFilterParams.date.gte ? new Date(tmpFilterParams.date.gte) : undefined,
+                to: tmpFilterParams.date.lte ? new Date(tmpFilterParams.date.lte) : undefined,
               }
-            } else if (
-              ('toAccount' in filterValue && filterValue.toAccount?.name) ||
-              ('toCategory' in filterValue && filterValue.toCategory?.name)
-            ) {
-              // Handle subject to (accounts or categories)
-              const toName = (filterValue.toAccount?.name ||
-                filterValue.toCategory?.name) as string;
-              if (toName) {
-                currentFilterParams.subjectTo = [
-                  ...new Set([...(currentFilterParams.subjectTo || []), toName]),
-                ];
-              }
+            : undefined,
+        });
+      } else {
+        const tmpFilterOrParams = filterCriteria.filters['OR'];
+        type FilterOrValue = {
+          type?: string;
+          partner?: { name: string };
+          fromAccount?: { name: string };
+          fromCategory?: { name: string };
+          toAccount?: { name: string };
+          toCategory?: { name: string };
+        };
+
+        // Initialize aggregated values
+        const types = new Set<string>();
+        const partners = new Set<string>();
+        const subjectFrom = new Set<string>();
+        const subjectTo = new Set<string>();
+        let currentAmountMin = amountMin;
+        let currentAmountMax = amountMax;
+
+        // Process all OR conditions at once
+        tmpFilterOrParams.forEach((filterValue: FilterOrValue) => {
+          if ('type' in filterValue && filterValue.type) {
+            types.add(filterValue.type);
+          }
+
+          if ('partner' in filterValue && filterValue.partner?.name) {
+            partners.add(filterValue.partner.name);
+          }
+
+          if ('fromAccount' in filterValue && filterValue.fromAccount?.name) {
+            subjectFrom.add(filterValue.fromAccount.name);
+          }
+
+          if ('fromCategory' in filterValue && filterValue.fromCategory?.name) {
+            subjectFrom.add(filterValue.fromCategory.name);
+          }
+
+          if ('toAccount' in filterValue && filterValue.toAccount?.name) {
+            subjectTo.add(filterValue.toAccount.name);
+          }
+
+          if ('toCategory' in filterValue && filterValue.toCategory?.name) {
+            subjectTo.add(filterValue.toCategory.name);
+          }
+
+          // Check for amount filter in current OR condition
+          if ('amount' in filterValue && filterValue.amount) {
+            const amountFilter = filterValue.amount as { gte?: number; lte?: number };
+            if (amountFilter.gte !== undefined) {
+              currentAmountMin = amountFilter.gte;
             }
-            currentFilterParams.amountMin = amountMin;
-            currentFilterParams.amountMax = amountMax;
-          });
-          setFilterParams(currentFilterParams);
-        }
+            if (amountFilter.lte !== undefined) {
+              currentAmountMax = amountFilter.lte;
+            }
+          }
+        });
+
+        setFilterParams({
+          types: Array.from(types),
+          partners: Array.from(partners),
+          subjectFrom: Array.from(subjectFrom),
+          subjectTo: Array.from(subjectTo),
+          amountMin: currentAmountMin,
+          amountMax: currentAmountMax,
+          dateRange: filterParams.dateRange,
+        });
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterCriteria, isOpen]);
+  }, [filterCriteria, isOpen, amountMin, amountMax]);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -214,6 +217,13 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
         }),
       );
     }
+
+    orConditions.push({
+      amount: {
+        gte: filterParams.amountMin,
+        lte: filterParams.amountMax,
+      },
+    });
 
     // Only add OR conditions if there are any
     if (orConditions.length > 0) {
