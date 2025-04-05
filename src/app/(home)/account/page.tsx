@@ -3,13 +3,8 @@ import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import Loading from '@/components/common/atoms/Loading';
 import { useFeatureFlagGuard } from '@/hooks/useFeatureFlagGuard';
 import dynamic from 'next/dynamic';
-import { MODULE } from '@/shared/constants';
-
-export type AccountModule = 'HOME' | 'ACCOUNT';
-
-interface AccountPageProps {
-  module?: AccountModule;
-}
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 const AccountDashboardRender = dynamic(
   () => import('@/features/home/module/account/AccountDashboard'),
@@ -18,8 +13,12 @@ const AccountDashboardRender = dynamic(
   },
 );
 
-const AccountPage = ({ module = MODULE.ACCOUNT }: AccountPageProps) => {
-  const { isLoaded, isFeatureOn } = useFeatureFlagGuard(FeatureFlags.ACCOUNT_FEATURE, module);
+const AccountPage = () => {
+  const currentModule = useSelector((state: RootState) => state.module.currentModule);
+  const { isLoaded, isFeatureOn } = useFeatureFlagGuard(
+    FeatureFlags.ACCOUNT_FEATURE,
+    currentModule,
+  );
 
   if (!isLoaded) {
     return <Loading />;
@@ -29,7 +28,7 @@ const AccountPage = ({ module = MODULE.ACCOUNT }: AccountPageProps) => {
     return null;
   }
 
-  return <AccountDashboardRender module={module} />;
+  return <AccountDashboardRender module={currentModule} />;
 };
 
 export default AccountPage;

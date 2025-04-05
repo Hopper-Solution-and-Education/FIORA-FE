@@ -5,7 +5,7 @@ import { NavItem } from '../types/Nav.types';
 export const navItems: NavItem[] = [
   {
     title: 'Home',
-    url: '/home',
+    url: '/',
     icon: 'dashboard',
     isActive: false,
     shortcut: ['d', 'd'],
@@ -19,26 +19,26 @@ export const navItems: NavItem[] = [
     items: [
       {
         title: 'Accounts',
-        url: '/home/account',
+        url: '/account',
         icon: 'userPen',
         shortcut: ['m', 'm'],
       },
       {
         title: 'Categories',
-        url: '/home/category',
+        url: '/category',
         icon: 'userPen',
         shortcut: ['m', 'm'],
         featureFlags: FeatureFlags.CATEGORY_FEATURE,
       },
       {
         title: 'Transaction',
-        url: '/home/transaction',
+        url: '/transaction',
         icon: 'userPen',
         shortcut: ['m', 'm'],
       },
       // {
       //   title: 'Budget Planning',
-      //   url: '/home/budget-control',
+      //   url: '/budget-control',
       //   icon: 'userPen',
       //   shortcut: ['m', 'm'],
       // },

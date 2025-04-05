@@ -87,11 +87,11 @@ export default function CreateAccountForm() {
         .unwrap()
         .then((value: Response<Account>) => {
           if (value.status === 201) {
-            router.push('/home/account');
+            router.push('/account');
             toast.success('You have create new Account successfully!');
           }
         });
-      router.push('/home/account');
+      router.push('/account');
     } catch (error) {
       console.error('Error creating account:', error);
     }

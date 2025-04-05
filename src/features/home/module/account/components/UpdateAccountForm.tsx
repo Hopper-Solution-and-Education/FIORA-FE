@@ -130,7 +130,7 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
         .unwrap()
         .then((value: Response<Account>) => {
           if (value.status == 200) {
-            router.push('/home/account');
+            router.push('/account');
             toast.success('You have edit the Account successfully!');
           }
         });

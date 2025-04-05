@@ -1,15 +1,14 @@
 'use client';
 
 import Loading from '@/components/common/atoms/Loading';
-import { Button } from '@/components/ui/button';
+import { Icons } from '@/components/Icon';
 import { Separator } from '@/components/ui/separator';
 import { DashboardHeading } from '@/features/home/components/DashboardHeading';
 import { removeFromFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
 import { FIREBASE_GS_URL, FIREBASE_STORAGE_URL } from '@/shared/constants';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { Plus } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Product } from '../../domain/entities/Product';
 import { deleteProductAsyncThunk } from '../../slices/actions/deleteProductAsyncThunk';
@@ -49,10 +48,6 @@ const ProductPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleNavigateToCreate = () => {
-    redirect('/setting/product/create');
-  };
-
   const confirmDelete = async () => {
     if (!productToDelete?.id) return;
 
@@ -82,9 +77,11 @@ const ProductPage = () => {
       <div className="flex flex-1 flex-col">
         <div className="flex items-start justify-between">
           <DashboardHeading title="Products" description="Manage products" />
-          <Button onClick={handleNavigateToCreate}>
-            <Plus />
-          </Button>
+          <Link href="/setting/product/create">
+            <button className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white">
+              <Icons.add className="h-6 w-6" />
+            </button>
+          </Link>
         </div>
 
         <Separator />
