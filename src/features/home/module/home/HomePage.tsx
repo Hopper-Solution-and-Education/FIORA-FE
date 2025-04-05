@@ -2,7 +2,7 @@ import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { AccountsOverview } from './AccountOverview';
 import RecentTransactions from './components/RecentTransactions';
 import Recommendations from './components/Recommendations';
-import AccountPage from '@/app/(dashboard)/home/account/page';
+import AccountPage from '@/app/(home)/account/page';
 import { MODULE } from '@/shared/constants';
 
 export default function HomePage() {

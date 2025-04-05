@@ -52,7 +52,7 @@ export function useDeleteCategory() {
       toast.success('You have delete Finance Category successfully!');
       dispatch(setDeleteConfirmOpen(false));
       dispatch(setSelectedCategory(null));
-      router.push('/home/category');
+      router.push('/category');
     } catch (error) {
       console.error('Error deleting category:', error);
       toast.error('Failed to delete category');

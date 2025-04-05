@@ -47,7 +47,7 @@ export function useLogin() {
 
       if (response?.ok) {
         form.reset(); // Reset form fields
-        router.push('/home');
+        router.push('/');
       } else {
         setError('LoginID or Password is incorrect!');
       }
@@ -61,7 +61,7 @@ export function useLogin() {
     setError(null);
     setSuccess(null);
     try {
-      await signIn('google', { redirect: true, callbackUrl: '/home' });
+      await signIn('google', { redirect: true, callbackUrl: '/' });
     } catch (error) {
       console.error('Google login error:', error);
       setError('An unexpected error occurred during Google login.');

@@ -91,7 +91,7 @@ export default function UpdateCategoryForm({ initialData }: UpdateCategoryFormPr
         .unwrap()
         .then((value: Response<Category>) => {
           if (value.status == 200) {
-            router.push('/home/category');
+            router.push('/category');
             toast.success('You have edit Finance Category successfully!');
           }
         });

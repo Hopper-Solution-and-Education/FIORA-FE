@@ -167,12 +167,12 @@ const TransactionTable = () => {
 
   // Navigate to create native page
   const handleCreateTransaction = () => {
-    router.push('/home/transaction/create');
+    router.push('/transaction/create');
   };
 
   // Navigate to delete page
   const handleDeleteTransaction = () => {
-    router.push('/home/transaction/delete');
+    router.push('/transaction/delete');
   };
 
   // Callback function to apply after updating filter criteria

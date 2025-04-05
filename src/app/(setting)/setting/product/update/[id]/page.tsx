@@ -21,7 +21,7 @@ export default function Page() {
   useEffect(() => {
     if (!isProductFeatureEnabled) {
       toast.error('Product feature is not enabled');
-      router.push('/home'); // Dùng router.push thay vì redirect
+      router.push('/'); // Dùng router.push thay vì redirect
     }
   }, [isProductFeatureEnabled, router]);
 

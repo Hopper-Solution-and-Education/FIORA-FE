@@ -56,7 +56,7 @@ const CategoryDashboard = () => {
   // * HANDLERS FUNCTIONS ZONE
   const handleDisplayDetail = (item: any) => {
     if (item.id) {
-      router.push(`/home/category/update/${item.id}`);
+      router.push(`/category/update/${item.id}`);
     }
   };
 
@@ -71,7 +71,7 @@ const CategoryDashboard = () => {
   return (
     <div className="p-4 md:px-6">
       <div className="flex justify-end">
-        <Link href="/home/category/create">
+        <Link href="/category/create">
           <button className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white">
             <Icons.add className="h-6 w-6" />
           </button>
