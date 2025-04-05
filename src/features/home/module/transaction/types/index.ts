@@ -5,7 +5,7 @@ export type OrderType = 'asc' | 'desc' | 'none';
 export type DropdownOption = {
   value: string;
   label: string;
-  extra?: string | number;
+  disabled?: boolean;
 };
 
 export type TransactionPartner = {
