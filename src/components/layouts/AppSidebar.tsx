@@ -7,7 +7,7 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { SectionType } from '@prisma/client';
 import HopperLogo from '@public/images/logo.jpg';
 import { ChevronRight, ChevronsUpDown, LogOut } from 'lucide-react';
-import { signOut, useSession } from 'next-auth/react';
+import { Session, signOut, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -56,7 +56,7 @@ type AppSideBarProps = {
 export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   const gb = growthbook;
   const [newNavItem, setNewNavItem] = useState<NavItem[]>([]);
-  const { data: session } = useSession();
+  const { data: session } = useSession() as { data: Session | null };
   const pathname = usePathname();
   const { section } = useGetSection(SectionType.HEADER, {
     revalidateOnFocus: false,
@@ -83,7 +83,10 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   useEffect(() => {
     const filterNavItems = (items: NavItem[]): NavItem[] => {
       return items.flatMap((item) => {
-        if (!item.featureFlags || gb.isOn(item.featureFlags)) {
+        const hasFeatureFlag = !item.featureFlags || gb.isOn(item.featureFlags);
+        const hasRoleAccess = !item.role || session?.user?.role === item.role;
+
+        if (hasFeatureFlag && hasRoleAccess) {
           return [
             {
               ...item,
@@ -103,7 +106,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
 
     handleCheckNavItem();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navItems]);
+  }, [navItems, session?.user?.role]);
 
   const isItemActive = (item: NavItem) => {
     if (item.url === pathname) return true;
@@ -143,7 +146,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
         >
           {/* Logo */}
           <div
-            className={`flex aspect-square items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground transition-all duration-300 ${
+            className={`flex aspect-square items-center justify-center rounded-lg bg-transparent text-sidebar-primary-foreground transition-all duration-300 ${
               isMobile
                 ? open
                   ? 'size-10 sm:size-12'

@@ -23,7 +23,6 @@ async function main() {
   await seedProductCategory();
   await seedProduct();
   await seedProductTransaction();
-  console.log('All seeding complete!');
 }
 
 main()

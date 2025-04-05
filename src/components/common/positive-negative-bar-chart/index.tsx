@@ -61,6 +61,8 @@ export type PositiveAndNegativeBarChartProps = {
   levelConfig?: LevelConfig;
   height?: number;
   baseBarHeight?: number;
+  expanded?: boolean;
+  header?: React.ReactNode;
 };
 
 const PositiveAndNegativeBarChart = ({
@@ -79,6 +81,8 @@ const PositiveAndNegativeBarChart = ({
   levelConfig,
   height = MIN_CHART_HEIGHT,
   baseBarHeight = BASE_BAR_HEIGHT,
+  expanded = true,
+  header,
 }: PositiveAndNegativeBarChartProps) => {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [chartHeight, setChartHeight] = useState(height);
@@ -104,6 +108,14 @@ const PositiveAndNegativeBarChart = ({
     depth: 0,
   };
   const chartData = [totalItem];
+
+  // Sync the expanded state of the total bar with the `expanded` prop
+  useEffect(() => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [totalName]: expanded,
+    }));
+  }, [expanded, totalName]);
 
   // Recursive function to process data with multiple levels
   const buildProcessedData = useCallback(
@@ -160,11 +172,12 @@ const PositiveAndNegativeBarChart = ({
 
   return (
     <div className="w-full bg-white dark:bg-gray-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 transition-colors duration-200">
-      {title && (
-        <h2 className="text-xl text-center font-semibold text-gray-800 dark:text-gray-200 mb-4">
-          {title}
-        </h2>
-      )}
+      {header ||
+        (title && (
+          <h2 className="text-xl text-center font-semibold text-gray-800 dark:text-gray-200 mb-4">
+            {title}
+          </h2>
+        ))}
       <div style={{ height: `${chartHeight}px` }} className="transition-all duration-300">
         <ResponsiveContainer width="100%" height={chartHeight}>
           <BarChart

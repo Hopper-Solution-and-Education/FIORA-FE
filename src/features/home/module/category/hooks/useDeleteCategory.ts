@@ -49,7 +49,7 @@ export function useDeleteCategory() {
       // Assuming deleteCategory accepts an optional newCategoryId for transfer
       await dispatch(deleteCategory({ id: selectedCategory.id, newCategoryId })).unwrap();
 
-      toast.success('Category deleted successfully');
+      toast.success('You have delete Finance Category successfully!');
       dispatch(setDeleteConfirmOpen(false));
       dispatch(setSelectedCategory(null));
       router.push('/home/category');

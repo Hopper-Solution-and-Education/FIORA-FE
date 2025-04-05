@@ -1,8 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
+import { createDefaultCategories } from '@/features/auth/application/use-cases/defaultCategories';
 
 const prisma = new PrismaClient();
 
@@ -30,6 +31,7 @@ export const authOptions: NextAuthOptions = {
             email: true,
             image: true,
             password: true,
+            role: true,
           },
         });
 
@@ -39,6 +41,7 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
             email: user.email,
             image: user.image,
+            role: user.role,
             rememberMe: credentials.rememberMe === 'true',
           };
         }
@@ -59,6 +62,13 @@ export const authOptions: NextAuthOptions = {
         try {
           let dbUser = await prisma.user.findUnique({
             where: { email: profile.email },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+              role: true,
+            },
           });
 
           if (!dbUser) {
@@ -67,6 +77,14 @@ export const authOptions: NextAuthOptions = {
                 email: profile.email,
                 name: profile.name || 'Google User',
                 image: profile.image || user.image,
+                role: 'User', // Default role for Google users
+              },
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+                role: true,
               },
             });
 
@@ -81,6 +99,11 @@ export const authOptions: NextAuthOptions = {
                 createdBy: dbUser.id,
               },
             });
+
+            const categoriesCreated = await createDefaultCategories(dbUser.id);
+            if (!categoriesCreated) {
+              console.error('Failed to create default categories for Google user:', dbUser.id);
+            }
           } else {
             await prisma.user.update({
               where: { email: profile.email },
@@ -92,6 +115,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           user.id = dbUser.id;
+          user.role = dbUser.role;
           return true;
         } catch (error) {
           console.error('Error saving Google user to database:', error);
@@ -105,6 +129,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.image = user.image;
+        token.role = user.role;
         token.rememberMe = user.rememberMe;
 
         const maxAge = user.rememberMe ? 60 * 60 * 24 : 30 * 60; // 24 giờ hoặc 30 phút
@@ -114,12 +139,13 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
 
-    async session({ session, token }) {
+    async session({ session, token }: { session: any; token: any & { role: UserRole } }) {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.image = token.image as string | null;
         session.user.email = token.email as string;
         session.user.name = token.name ?? '';
+        session.user.role = token.role;
       }
       return session;
     },

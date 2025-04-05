@@ -29,8 +29,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
 
   const { isValid } = form.formState;
 
-  console.log(showPassword);
-
   return (
     <div className={cn('flex flex-col items-center gap-6', className)} {...props}>
       <Card className="w-full overflow-hidden border-0 shadow-none">

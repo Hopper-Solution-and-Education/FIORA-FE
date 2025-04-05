@@ -1,6 +1,7 @@
 import { createResponse } from '@/config/createResponse';
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
 import { UserUSeCaseInstance } from '@/features/auth/application/use-cases/userUseCase';
+import { createDefaultCategories } from '@/features/auth/application/use-cases/defaultCategories';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -61,6 +62,13 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
       return res
         .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
         .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, 'Cannot create account'));
+    }
+
+    // Create default categories
+    const categoriesCreated = await createDefaultCategories(userCreationRes.id);
+    if (!categoriesCreated) {
+      console.error('Failed to create default categories for user:', userCreationRes.id);
+      // We don't return an error here as the user is already created
     }
 
     return res

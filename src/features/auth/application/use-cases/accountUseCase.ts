@@ -234,7 +234,7 @@ export class AccountUseCase {
         });
 
         if (transaction.length > 0) {
-          throw new Error('Cannot delete account with transaction still existed');
+          throw new Error('Sorry! You cannot delete Account which already has transactions');
         }
 
         // delete master account
