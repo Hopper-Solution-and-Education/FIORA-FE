@@ -28,7 +28,6 @@ export const createPartnerRepository = (api: IPartnerAPI): IPartnerRepository =>
 
   async createPartner(data: CreatePartnerAPIRequestDTO): Promise<Partner> {
     const response = await api.createPartner(data);
-    console.log('Response: {}', response.message);
 
     return PartnerMapper.toEntityFromCreate(response);
   },

@@ -177,7 +177,6 @@ const productManagementSlice = createSlice({
 
     builder.addCase(createCategoryProductAsyncThunk.fulfilled, (state, action) => {
       state.isCreatingProductCategory = false;
-      console.log(action.payload);
 
       state.categories.data = [
         ...state.categories.data,

@@ -109,6 +109,4 @@ export const setupGlobalErrorHandlers = () => {
     console.error('[Unhandled Rejection] at:', promise, 'reason:', reason);
     // Optionally exit or recover
   });
-
-  console.log('Global error handlers configured');
 };

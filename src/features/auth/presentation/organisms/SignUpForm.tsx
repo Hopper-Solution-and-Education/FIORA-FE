@@ -13,7 +13,7 @@ import {
   validateEmail,
   validatePassword,
 } from '@/shared/validation/signUpValidation';
-import { Check, Loader2 } from 'lucide-react';
+import { Check, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -37,6 +37,10 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
     confirmPassword: '',
     otp: '',
   });
+
+  // Add states for password visibility
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validateForm = () => {
     const emailError = validateEmail(email);
@@ -187,22 +191,38 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                     >
                       Password
                     </Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      disabled={isRegistering} // Disable during register period
-                      value={password}
-                      onChange={(e) => handleFieldChange('password', e.target.value)}
-                      required
-                      className={cn(
-                        'flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 py-2',
-                        fieldErrors.password ? 'border-red-500' : 'border-none',
+                    <div className="relative flex-1">
+                      <Input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        disabled={isRegistering}
+                        value={password}
+                        onChange={(e) => handleFieldChange('password', e.target.value)}
+                        required
+                        className={cn(
+                          'flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 py-2 pr-10',
+                          fieldErrors.password ? 'border-red-500' : 'border-none',
+                        )}
+                      />
+                      {password && (
+                        <button
+                          type="button"
+                          className="absolute inset-y-0 right-0 flex items-center pr-3"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                          ) : (
+                            <Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                          )}
+                        </button>
                       )}
-                    />
+                    </div>
                   </div>
                   {fieldErrors.password && (
-                    <p className="w-full  text-red-500 text-sm mt-1">{fieldErrors.password}</p>
+                    <p className="w-full text-red-500 text-sm mt-1">{fieldErrors.password}</p>
                   )}
+
                   <div className="relative flex flex-col sm:flex-row justify-start items-start sm:items-center gap-2 mt-2">
                     <Label
                       htmlFor="confirm-password"
@@ -210,21 +230,36 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                     >
                       Confirm Password
                     </Label>
-                    <Input
-                      id="confirm-password"
-                      type="password"
-                      disabled={isRegistering} // Disable during register period
-                      value={confirmPassword}
-                      onChange={(e) => handleFieldChange('confirmPassword', e.target.value)}
-                      required
-                      className={cn(
-                        'flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 py-2',
-                        fieldErrors.confirmPassword ? 'border-red-500' : 'border-none',
+                    <div className="relative flex-1">
+                      <Input
+                        id="confirm-password"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        disabled={isRegistering}
+                        value={confirmPassword}
+                        onChange={(e) => handleFieldChange('confirmPassword', e.target.value)}
+                        required
+                        className={cn(
+                          'flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 py-2 pr-10',
+                          fieldErrors.confirmPassword ? 'border-red-500' : 'border-none',
+                        )}
+                      />
+                      {confirmPassword && (
+                        <button
+                          type="button"
+                          className="absolute inset-y-0 right-0 flex items-center pr-3"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                          ) : (
+                            <Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                          )}
+                        </button>
                       )}
-                    />
+                    </div>
                   </div>
                   {fieldErrors.confirmPassword && (
-                    <p className="w-full  text-red-500 text-sm mt-1 break-all">
+                    <p className="w-full text-red-500 text-sm mt-1 break-all">
                       {fieldErrors.confirmPassword}
                     </p>
                   )}

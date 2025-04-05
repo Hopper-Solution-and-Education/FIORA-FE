@@ -77,8 +77,6 @@ export function useCreatePartner({ redirectPath }: Props) {
     }
 
     try {
-      console.log('Received form values:', values);
-
       const submissionData = { ...values };
       let logoUrl: string | undefined;
 
@@ -89,7 +87,6 @@ export function useCreatePartner({ redirectPath }: Props) {
           path: 'partners/logos',
           fileName: `partner_logo_${Date.now()}`,
         });
-        console.log('Uploaded logo URL:', logoUrl);
       }
 
       const partnerData = {
@@ -99,8 +96,6 @@ export function useCreatePartner({ redirectPath }: Props) {
         parentId:
           submissionData.parentId?.toLowerCase() === 'none' ? null : submissionData.parentId,
       };
-
-      console.log('Partner data before API call:', partnerData);
 
       const formattedPartnerData = convertNullToUndefined(partnerData);
 

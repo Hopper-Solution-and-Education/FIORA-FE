@@ -17,8 +17,6 @@ export const getProductTransactionAsyncThunk = createAsyncThunk<
     const response = await getProductTransactionUseCase.execute(page, pageSize, userId);
     return response;
   } catch (error: any) {
-    console.log(JSON.parse(error.message));
-
     return rejectWithValue(error || 'Failed to get product transaction');
   }
 });

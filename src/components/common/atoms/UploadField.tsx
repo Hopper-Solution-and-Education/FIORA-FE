@@ -154,18 +154,25 @@ const UploadField: React.FC<UploadFieldProps> = ({
             {...props}
           />
           {preview ? (
-            <div className="relative">
-              <Image
-                src={preview || '/placeholder.svg'}
-                alt="Preview"
-                width={128}
-                height={128}
+            <div className="relative w-32 h-32">
+              <div
                 className={cn(
-                  'object-cover border border-primary/10 transition-all duration-300 transform group-hover:scale-105',
-                  'shadow-[0_4px_20px_rgba(0,0,0,0.08)]',
+                  'w-full h-full overflow-hidden',
                   currentShape === 'circle' ? 'rounded-full' : 'rounded-md',
                 )}
-              />
+              >
+                <Image
+                  src={preview || '/placeholder.svg'}
+                  alt="Preview"
+                  width={128}
+                  height={128}
+                  className={cn(
+                    'object-cover border border-primary/10 transition-all duration-300 transform group-hover:scale-105',
+                    'shadow-[0_4px_20px_rgba(0,0,0,0.08)] w-full h-full',
+                  )}
+                  style={{ objectFit: 'cover' }}
+                />
+              </div>
               <div
                 className={cn(
                   'absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center',

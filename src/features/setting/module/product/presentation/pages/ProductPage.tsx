@@ -62,7 +62,6 @@ const ProductPage = () => {
         productToDelete.icon.startsWith(FIREBASE_GS_URL));
 
     if (isFirebaseImage) {
-      console.log(productToDelete.icon);
       await removeFromFirebase(productToDelete.icon);
     }
 

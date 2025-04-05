@@ -126,7 +126,6 @@ export const useForgotPassword = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.log('Error Data: {}', errorData);
         throw new Error(errorData.message || 'Failed to reset password');
       }
 

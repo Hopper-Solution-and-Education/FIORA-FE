@@ -57,6 +57,7 @@ import {
   UtensilsCrossed,
   Wallet,
   X,
+  CircleArrowRight,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -135,4 +136,5 @@ export const Icons = {
   layoutBanner: LayoutTemplate,
   banknoteArrowDown: BanknoteArrowDown,
   saveAll: SaveAll,
+  circleArrowRight: CircleArrowRight,
 };

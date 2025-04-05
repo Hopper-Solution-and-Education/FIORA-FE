@@ -42,10 +42,8 @@ export default function DeletePartnerButton({
   const [replacementPartnerId, setReplacementPartnerId] = useState<string>('');
 
   const partners = useAppSelector((state) => state.partner.partners);
-  // Lọc ra các partner khác với partner hiện tại và không có transaction
-  const availablePartners = partners.filter(
-    (p) => p.id !== partnerId && (!p.transactions || p.transactions.length === 0),
-  );
+  // Filter out only the current partner
+  const availablePartners = partners.filter((p) => p.id !== partnerId);
 
   // Check if partner has transactions or sub-partners
   const hasTransactions = partner.transactions && partner.transactions.length > 0;
@@ -111,8 +109,8 @@ export default function DeletePartnerButton({
                   {hasTransactions && (
                     <div className="mt-4">
                       <div className="text-amber-500 font-medium mb-2">
-                        This partner has associated transactions. You must select a replacement
-                        partner that has no transactions:
+                        This partner has associated transactions. Please select a replacement
+                        partner:
                       </div>
                       <div className="mt-2">
                         <Label htmlFor="replacement-partner">Replacement Partner</Label>
@@ -123,7 +121,7 @@ export default function DeletePartnerButton({
                           <SelectTrigger id="replacement-partner">
                             <SelectValue placeholder="Select a replacement partner" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="max-h-[200px]" position="popper">
                             {availablePartners.length > 0 ? (
                               availablePartners.map((partner) => (
                                 <SelectItem key={partner.id} value={partner.id}>
@@ -132,8 +130,7 @@ export default function DeletePartnerButton({
                               ))
                             ) : (
                               <div className="p-2 text-center text-muted-foreground">
-                                No eligible partners available. Please create another partner
-                                without transactions.
+                                No other partners available. Please create another partner first.
                               </div>
                             )}
                           </SelectContent>

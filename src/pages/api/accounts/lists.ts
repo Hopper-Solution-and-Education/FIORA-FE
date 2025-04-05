@@ -42,6 +42,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
         .json(createResponse(RESPONSE_CODE.OK, 'Lấy danh sách tài khoản thành công', accounts));
     }
   } catch (error: any) {
-    res.status(error.status).json({ error: error.message });
+    res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
 }

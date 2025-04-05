@@ -36,18 +36,20 @@ export function useDeleteAccount() {
       const response = await dispatch(deleteAccount(selectedAccount.id)).unwrap();
 
       if (response) {
-        toast.success('Account deleted successfully');
+        toast.success('You have delete Account successfully!');
         dispatch(setAccountDeleteDialog(false));
         dispatch(setAccountUpdateDialog(false));
         dispatch(setSelectedAccount(null));
         dispatch(setRefresh(!refresh));
         router.push('/home/account');
       }
-    } catch (error) {
-      console.error('Error deleting account:', error);
-      toast.error('Failed to delete account');
+    } catch (error: any) {
+      // Handle errors
+      console.log(error);
+      dispatch(setAccountDeleteDialog(false));
     } finally {
       setIsDeleting(false);
+      setAccountDeleteDialog(false);
     }
   }, [dispatch, router, selectedAccount, refresh]);
 

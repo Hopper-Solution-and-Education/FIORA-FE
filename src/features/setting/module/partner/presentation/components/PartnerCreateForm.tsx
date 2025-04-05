@@ -7,11 +7,14 @@ import TextareaField from '@/components/common/atoms/TextareaField';
 import UploadField from '@/components/common/atoms/UploadField';
 import GlobalForm from '@/components/common/organisms/GlobalForm';
 import { useCreatePartner } from '@/features/setting/hooks/useCreatePartner';
+import { fetchPartners } from '@/features/setting/module/partner/slices/actions/fetchPartnersAsyncThunk';
 import {
   PartnerFormValues,
   partnerSchema,
 } from '@/features/setting/module/partner/presentation/schema/addPartner.schema';
-import { useAppSelector } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function PartnerCreateForm() {
@@ -19,7 +22,29 @@ export default function PartnerCreateForm() {
     redirectPath: '/setting/partner',
   });
 
+  const dispatch = useAppDispatch();
   const partners = useAppSelector((state) => state.partner.partners);
+  const { data: session, status } = useSession();
+  const [isDataFetched, setIsDataFetched] = useState(false);
+
+  // Improved check for partners data on page load/refresh
+  useEffect(() => {
+    const fetchPartnersData = async () => {
+      if (status === 'authenticated' && session?.user?.id && !isDataFetched) {
+        try {
+          await dispatch(
+            fetchPartners({ userId: session.user.id, page: 1, pageSize: 100 }),
+          ).unwrap();
+          setIsDataFetched(true);
+        } catch (error) {
+          console.error('Error fetching partners:', error);
+          toast.error('Failed to load partners data');
+        }
+      }
+    };
+
+    fetchPartnersData();
+  }, [dispatch, status, session, isDataFetched]);
 
   const parentOptions = [
     { value: 'none', label: 'None' },
@@ -41,7 +66,7 @@ export default function PartnerCreateForm() {
       defaultValue="none"
     />,
     <InputField key="name" name="name" label="Name" placeholder="Name" required />,
-    <UploadField key="logo" label="Logo" name="logo" />,
+    <UploadField key="logo" label="Logo" name="logo" previewShape="circle" />,
     <TextareaField
       key="description"
       name="description"
