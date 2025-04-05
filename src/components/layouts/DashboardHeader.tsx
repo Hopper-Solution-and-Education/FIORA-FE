@@ -35,7 +35,7 @@ export default function Header() {
       const response = await fetch('/api/accounts/balance');
       const data = await response.json();
       if (data.status !== 200) {
-        alert('Error fetching user balance:' + data.message);
+        // alert('Error fetching user balance:' + data.message);
         return;
       } else {
         const { balance, dept } = data.data;
@@ -46,7 +46,8 @@ export default function Header() {
         setIsLoading(false);
       }
     } catch (error: any) {
-      alert('Error fetching user balance:' + error.message);
+      // alert('Error fetching user balance:' + error.message);
+      console.log(error);
     }
   };
 

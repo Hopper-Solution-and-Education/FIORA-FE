@@ -81,7 +81,7 @@ export default function FinancialAccount({
       const data = await response.json();
 
       if (data.status !== 201) {
-        alert('Error removing sub-account');
+        // alert('Error removing sub-account');
       }
       setTriggered(!isTriggered);
       return true;
@@ -104,7 +104,7 @@ export default function FinancialAccount({
 
       const removedRes = await handleRemoveAPI(parentId, subAccountId);
       if (!removedRes) {
-        alert('Error removing sub-account');
+        // alert('Error removing sub-account');
         return;
       }
       // Update the accounts map by removing the sub-account

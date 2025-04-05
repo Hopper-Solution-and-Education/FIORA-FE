@@ -1,28 +1,50 @@
 'use client';
 
 import AppSidebar from '@/components/layouts/AppSidebar';
+import AuthLayout from '@/components/layouts/auth-layout';
+import Header from '@/components/layouts/DashboardHeader';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { navItems as HomeNavItems } from '@/features/home/constants/data';
 import { Session, useSession } from 'next-auth/react';
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { setModule } from '@/store/slices/moduleSlice';
 import { MODULE } from '@/shared/constants';
+import { setCurrentModule } from '@/shared/utils/storage';
 
-export default function SessionSidebar() {
+interface SessionSidebarProps {
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}
+
+export default function SessionSidebar({ children, defaultOpen = true }: SessionSidebarProps) {
   const { data: session } = useSession() as { data: Session | null };
-  const dispatch = useDispatch();
 
   useEffect(() => {
     if (session?.user) {
       // Set initial module based on user role
       const currentModule = session.user.role === 'Admin' ? MODULE.ADMIN : MODULE.HOME;
-      dispatch(setModule(currentModule));
+      setCurrentModule(currentModule);
     }
-  }, [session?.user?.role, dispatch]);
+  }, [session?.user?.role]);
 
   if (!session?.user) {
-    return null;
+    return (
+      <>
+        <main>{children}</main>
+      </>
+    );
   }
 
-  return <AppSidebar appLabel="Overview" navItems={HomeNavItems} />;
+  return (
+    <AuthLayout requiresAuth={true}>
+      <SidebarProvider defaultOpen={defaultOpen}>
+        <AppSidebar appLabel="Overview" navItems={HomeNavItems} />
+        <SidebarInset>
+          <Header />
+          {/* page main content */}
+          {children}
+          {/* page main content ends */}
+        </SidebarInset>
+      </SidebarProvider>
+    </AuthLayout>
+  );
 }

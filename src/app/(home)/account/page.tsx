@@ -3,8 +3,9 @@ import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import Loading from '@/components/common/atoms/Loading';
 import { useFeatureFlagGuard } from '@/hooks/useFeatureFlagGuard';
 import dynamic from 'next/dynamic';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
+import { useEffect } from 'react';
+import { MODULE } from '@/shared/constants';
+import { getCurrentModule, setCurrentModule } from '@/shared/utils/storage';
 
 const AccountDashboardRender = dynamic(
   () => import('@/features/home/module/account/AccountDashboard'),
@@ -14,11 +15,17 @@ const AccountDashboardRender = dynamic(
 );
 
 const AccountPage = () => {
-  const currentModule = useSelector((state: RootState) => state.module.currentModule);
+  const currentModule = getCurrentModule();
   const { isLoaded, isFeatureOn } = useFeatureFlagGuard(
     FeatureFlags.ACCOUNT_FEATURE,
     currentModule,
   );
+
+  useEffect(() => {
+    if (!currentModule || currentModule === MODULE.HOME) {
+      setCurrentModule(MODULE.ACCOUNT);
+    }
+  }, [currentModule]);
 
   if (!isLoaded) {
     return <Loading />;

@@ -31,9 +31,9 @@ const IconUploader: React.FC<IconUploaderProps> = ({ fieldPath, maxSize = 2 * 10
     onDropRejected: (fileRejections) => {
       const rejection = fileRejections[0];
       if (rejection?.errors[0]?.code === 'file-too-large') {
-        alert(`File is too large. Max size is ${maxSize / 1024 / 1024}MB`);
+        // alert(`File is too large. Max size is ${maxSize / 1024 / 1024}MB`);
       } else if (rejection?.errors[0]?.code === 'file-invalid-type') {
-        alert('Invalid file type. Please upload an image file.');
+        // alert('Invalid file type. Please upload an image file.');
       }
     },
   });
