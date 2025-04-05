@@ -58,7 +58,6 @@ class TransactionUseCase {
       where = {
         AND: [
           where,
-          { userId },
           {
             OR: [
               { fromAccount: { name: { contains: typeSearchParams } } },
@@ -92,6 +91,7 @@ class TransactionUseCase {
       {
         ...where,
         isDeleted: false,
+        userId,
       },
       {
         skip,
