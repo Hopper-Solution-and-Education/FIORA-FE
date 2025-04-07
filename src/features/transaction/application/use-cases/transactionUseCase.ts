@@ -60,8 +60,8 @@ class TransactionUseCase {
           where,
           {
             OR: [
-              { fromAccount: { name: { contains: typeSearchParams } } },
-              { toAccount: { name: { contains: typeSearchParams } } },
+              { fromAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+              { toAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
               { partner: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
               {
                 amount: { gte: Number(typeSearchParams) || 0, lte: Number(typeSearchParams) || 0 },
