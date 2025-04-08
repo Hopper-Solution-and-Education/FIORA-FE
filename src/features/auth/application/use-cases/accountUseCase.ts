@@ -241,10 +241,13 @@ export class AccountUseCase {
         const res = await this.accountRepository.delete({
           where: {
             id,
-            parentId: null,
             userId,
           },
         });
+
+        if (!res) {
+          throw new Error('Cannot delete master account');
+        }
 
         return res;
       }
