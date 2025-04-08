@@ -172,7 +172,11 @@ export function buildOrderByTransactionV2(
       acc[key as keyof typeof Prisma.TransactionOrderByRelevanceFieldEnum] = value;
     }
 
-    return acc;
+    return {
+      ...acc,
+      createdAt: 'desc', // Default order by createdAt in descending order,
+      updatedAt: 'desc', // Default order by updatedAt in descending order
+    };
   }, {} as Prisma.TransactionOrderByWithRelationInput);
 }
 export function buildWhereClause(filters: Filter) {
