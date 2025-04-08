@@ -368,6 +368,7 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
                   onChange={(values: DateRange | undefined) =>
                     handleEditFilter('dateRange', values)
                   }
+                  colorScheme="default"
                 />
                 {/* <GlobalForm
                   fields={[
