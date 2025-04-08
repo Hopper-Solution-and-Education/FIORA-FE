@@ -9,6 +9,7 @@ export interface ICategoryProductRepository {
   ): Promise<CategoryProducts>;
   findUniqueCategoryProduct(
     where: Prisma.CategoryProductsWhereUniqueInput,
+    options?: Prisma.CategoryProductsFindUniqueArgs,
   ): Promise<CategoryProducts | null>;
   findManyCategoryProducts(
     where: Prisma.CategoryProductsWhereInput,

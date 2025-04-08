@@ -47,6 +47,7 @@ export enum Messages {
   DELETE_CATEGORY_PRODUCT_SUCCESS = 'Delete category product successfully',
   GET_CATEGORY_PRODUCT_SUCCESS = 'Get list category product successfully',
   GET_DETAIL_CATEGORY_PRODUCT_SUCCESS = 'Get detail category product successfully',
+  CATEGORY_PRODUCT_STILL_HAS_PRODUCTS = 'Category product still has products',
 
   // Category-Product Failed
   CATEGORY_PRODUCT_NOT_FOUND = 'Category product not found',
