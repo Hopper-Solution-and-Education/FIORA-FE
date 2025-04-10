@@ -6,7 +6,6 @@ import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { cn } from '@/lib/utils';
 import { ICON_SIZE } from '@/shared/constants/size';
-import { setCurrentModule } from '@/shared/utils/storage';
 import { SectionType } from '@prisma/client';
 import HopperLogo from '@public/images/logo.jpg';
 import { ChevronRight, ChevronsUpDown, LogOut } from 'lucide-react';
@@ -139,12 +138,6 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
     router.push('/');
   };
 
-  const handleNavClick = (item: NavItem) => {
-    if (item.module) {
-      setCurrentModule(item.module);
-    }
-  };
-
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -217,7 +210,6 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                             <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
                               <Link
                                 href={subItem.url}
-                                onClick={() => handleNavClick(subItem)}
                                 className={cn(
                                   'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
                                   pathname === subItem.url && 'bg-accent text-accent-foreground',
@@ -237,7 +229,6 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                   <SidebarMenuButton asChild tooltip={item.title} isActive={pathname === item.url}>
                     <Link
                       href={item.url}
-                      onClick={() => handleNavClick(item)}
                       className={cn(
                         'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
                         pathname === item.url && 'bg-accent text-accent-foreground',
