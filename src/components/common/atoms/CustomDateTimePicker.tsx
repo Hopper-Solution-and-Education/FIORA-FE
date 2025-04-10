@@ -99,7 +99,7 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
                 month_caption: 'mx-0',
                 day: 'h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-primary/10 hover:text-primary rounded-md transition-colors',
                 day_selected:
-                  '!bg-primary text-primary-foreground font-bold ring-2 ring-primary ring-offset-1 focus:outline-none focus:ring-2 focus:ring-primary',
+                  'bg-primary text-primary-foreground font-bold ring-2 ring-primary ring-offset-1 focus:outline-none focus:ring-2 focus:ring-primary',
                 day_today: 'bg-accent text-accent-foreground ring-1 ring-accent',
               }}
               captionLayout="dropdown"

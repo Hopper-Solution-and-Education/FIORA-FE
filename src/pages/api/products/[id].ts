@@ -78,6 +78,10 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
   try {
     const { id } = req.query;
 
+    if (!id) {
+      throw new Error(Messages.MISSING_PARAMS_INPUT + ' id');
+    }
+
     const newCategory = await productUseCase.deleteProduct({
       userId,
       id: id as string,

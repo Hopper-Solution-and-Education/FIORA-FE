@@ -236,10 +236,6 @@ class ProductUseCase {
   async deleteProduct(params: { userId: string; id: string }) {
     const { userId, id } = params;
 
-    if (!id) {
-      throw new Error(Messages.MISSING_PARAMS_INPUT + ' id');
-    }
-
     const foundProduct = await this.productRepository.findUniqueProduct({ id, userId });
     if (!foundProduct) {
       throw new Error(Messages.PRODUCT_NOT_FOUND);
@@ -263,7 +259,7 @@ class ProductUseCase {
       throw new Error(Messages.MISSING_PARAMS_INPUT + ' sourceId or targetId');
     }
 
-    // Checking existance of source and target products
+    // Checking existence of source and target products
     const sourceProduct = await this.productRepository.findUniqueProduct({ id: sourceId });
     if (!sourceProduct) {
       throw new Error(Messages.SOURCE_PRODUCT_NOT_FOUND);

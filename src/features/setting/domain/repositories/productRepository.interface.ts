@@ -11,7 +11,7 @@ export interface IProductRepository {
   ): Promise<Prisma.ProductGetPayload<{ include: { transactions: true } }> | null | null>;
   findManyProducts(
     where: Prisma.ProductWhereInput,
-    options: Prisma.ProductFindManyArgs,
+    options?: Prisma.ProductFindManyArgs,
   ): Promise<Product[]>;
   updateProduct(
     where: Prisma.ProductWhereUniqueInput,

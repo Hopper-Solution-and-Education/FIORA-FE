@@ -6,12 +6,19 @@ import {
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
 import { CategoryProducts, Prisma } from '@prisma/client';
 import { Messages } from '@/shared/constants/message';
+import { IProductRepository } from '../../domain/repositories/productRepository.interface';
+import { productRepository } from '../../infrastructure/repositories/productRepository';
 
 class CategoryProductsUseCase {
   private categoryProductRepository: ICategoryProductRepository;
+  private productRepository: IProductRepository;
 
-  constructor(categoryProductRepository: ICategoryProductRepository) {
+  constructor(
+    categoryProductRepository: ICategoryProductRepository,
+    productRepository: IProductRepository,
+  ) {
     this.categoryProductRepository = categoryProductRepository;
+    this.productRepository = productRepository;
   }
 
   async getAllCategoryProducts(params: {
@@ -119,6 +126,15 @@ class CategoryProductsUseCase {
         userId,
       });
 
+      const foundProductMapped = await this.productRepository.findManyProducts({
+        catId: id,
+        userId,
+      });
+
+      if (foundProductMapped.length > 0) {
+        throw new Error(Messages.CATEGORY_PRODUCT_STILL_HAS_PRODUCTS);
+      }
+
       if (!foundCategoryProduct) {
         throw new Error(Messages.CATEGORY_PRODUCT_NOT_FOUND);
       }
@@ -131,4 +147,7 @@ class CategoryProductsUseCase {
 }
 
 // Export a single instance using the exported productRepository
-export const categoryProductsUseCase = new CategoryProductsUseCase(categoryProductRepository);
+export const categoryProductsUseCase = new CategoryProductsUseCase(
+  categoryProductRepository,
+  productRepository,
+);

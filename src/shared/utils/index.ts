@@ -163,7 +163,7 @@ export function buildOrderByTransaction(orderBy: Record<string, any>): Record<st
 export function buildOrderByTransactionV2(
   orderBy: OrderByFields,
 ): Prisma.TransactionOrderByWithRelationInput {
-  return Object.entries(orderBy).reduce((acc, [key, value]) => {
+  const orderByObj = Object.entries(orderBy).reduce((acc, [key, value]) => {
     if (!value) return acc;
 
     if (key === 'fromAccount' || key === 'toAccount') {
@@ -174,6 +174,8 @@ export function buildOrderByTransactionV2(
 
     return acc;
   }, {} as Prisma.TransactionOrderByWithRelationInput);
+
+  return orderByObj;
 }
 export function buildWhereClause(filters: Filter) {
   const whereClause: any = {};
