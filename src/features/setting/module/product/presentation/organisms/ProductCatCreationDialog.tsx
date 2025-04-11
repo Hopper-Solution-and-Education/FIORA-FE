@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { memo, useLayoutEffect } from 'react';
+import { memo, useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { setIsOpenDialogAddCategory } from '../../slices';
 import ProductCategoryForm from '../molecules/ProductCategoryForm';
@@ -30,33 +30,29 @@ const ProductCatCreationDialog = () => {
 
   const methods = useForm<CategoryProductFormValues>({
     resolver: yupResolver(categoryProductsSchema),
-    defaultValues:
-      ProductCategoryFormState === 'add'
-        ? defaultCategoryProductValue
-        : ({
-            id: productCategoryToEdit?.id,
-            icon: productCategoryToEdit?.icon ?? 'dashboard',
-            name: productCategoryToEdit?.name ?? '',
-            description: productCategoryToEdit?.description ?? '',
-            tax_rate: parseFloat(String(productCategoryToEdit?.taxRate)),
-            createdAt: productCategoryToEdit?.createdAt,
-            updatedAt: productCategoryToEdit?.updatedAt,
-          } as CategoryProductFormValues),
+    defaultValues: defaultCategoryProductValue,
+    mode: 'onChange',
   });
 
   const { reset } = methods;
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (ProductCategoryFormState === 'edit' && productCategoryToEdit) {
-      reset({
+      const editProduct = {
         id: productCategoryToEdit.id,
         name: productCategoryToEdit.name,
         icon: productCategoryToEdit.icon,
         description: productCategoryToEdit.description,
-        tax_rate: productCategoryToEdit.taxRate ?? 0,
-        createdAt: new Date(productCategoryToEdit.createdAt),
-        updatedAt: new Date(productCategoryToEdit.updatedAt),
-      });
+        tax_rate: parseFloat(productCategoryToEdit.taxRate?.toString() ?? '0'),
+        createdAt: productCategoryToEdit.createdAt
+          ? new Date(productCategoryToEdit.createdAt)
+          : new Date(),
+        updatedAt: productCategoryToEdit.updatedAt
+          ? new Date(productCategoryToEdit.updatedAt)
+          : new Date(),
+      };
+      reset(editProduct);
+      console.log(editProduct);
     } else {
       reset(defaultCategoryProductValue);
     }

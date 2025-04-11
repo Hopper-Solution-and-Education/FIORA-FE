@@ -112,7 +112,9 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
         productToDelete.icon.startsWith(FIREBASE_GS_URL));
 
     if (isFirebaseImage) {
-      await removeFromFirebase(productToDelete.icon);
+      removeFromFirebase(productToDelete.icon).catch(() => {
+        console.warn('Failed to delete image from Firebase');
+      });
     }
 
     if (!isEmpty(productToDelete.transactions)) {

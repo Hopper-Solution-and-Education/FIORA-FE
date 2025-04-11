@@ -22,16 +22,6 @@ const ProductPage = () => {
     (state) => state.productManagement.productTransaction,
   );
   const isDeletingProduct = useAppSelector((state) => state.productManagement.isDeletingProduct);
-  const isUpdatingCategoryProduct = useAppSelector(
-    (state) => state.productManagement.isUpdatingProductCategory,
-  );
-  const isDeletingCategoryProduct = useAppSelector(
-    (state) => state.productManagement.isDeletingProductCategory,
-  );
-  const isCreatingCategoryProduct = useAppSelector(
-    (state) => state.productManagement.isCreatingProductCategory,
-  );
-
   const dispatch = useAppDispatch();
 
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
@@ -67,12 +57,7 @@ const ProductPage = () => {
 
   return (
     <div className="p-2">
-      <>
-        {(isDeletingProduct ||
-          isCreatingCategoryProduct ||
-          isUpdatingCategoryProduct ||
-          isDeletingCategoryProduct) && <Loading />}
-      </>
+      <>{isDeletingProduct && <Loading />}</>
 
       <div className="flex flex-1 flex-col">
         <div className="flex items-start justify-between">
@@ -83,24 +68,8 @@ const ProductPage = () => {
             </button>
           </Link>
         </div>
-
         <Separator />
         <ChartPage />
-
-        {/* <Tabs defaultValue="chart">
-          <TabsList className="my-2">
-            <TabsTrigger value="chart">Product Chart</TabsTrigger>
-            <TabsTrigger value="table">Product Table</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="chart">
-            <ChartPage />
-          </TabsContent>
-
-          <TabsContent value="table">
-            <TablePage setProductToDelete={handleDeleteProduct} />
-          </TabsContent>
-        </Tabs> */}
       </div>
 
       <DeleteProductDialog

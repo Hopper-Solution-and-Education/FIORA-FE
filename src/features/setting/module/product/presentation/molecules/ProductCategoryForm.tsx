@@ -7,9 +7,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader } from '@/compon
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { DialogTitle } from '@radix-ui/react-dialog';
+import { isEmpty } from 'lodash';
 import { Check, CircleX, Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { toast } from 'sonner';
 import {
@@ -21,30 +22,61 @@ import { createCategoryProductAsyncThunk } from '../../slices/actions/createCate
 import { deleteCategoryProductAsyncThunk } from '../../slices/actions/deleteCategoryProductAsyncThunk';
 import { updateCategoryProductAsyncThunk } from '../../slices/actions/updateCategoryProductAsyncThunk';
 import useProductCategoryFormConfig from '../config/ProductCategoryFormConfig';
-import { CategoryProductFormValues } from '../schema/productCategory.schema';
+import {
+  CategoryProductFormValues,
+  defaultCategoryProductValue,
+} from '../schema/productCategory.schema';
 
-export default function ProductCategoryForm() {
+const ProductCategoryForm = () => {
   const dispatch = useAppDispatch();
   const fields = useProductCategoryFormConfig();
+  const { data: userData } = useSession();
   const ProductCategoryFormState = useAppSelector(
     (state) => state.productManagement.ProductCategoryFormState,
   );
+  const productCategories = useAppSelector(
+    (state) => state.productManagement.productTransaction.data,
+  );
+  const isUpdatingCategoryProduct = useAppSelector(
+    (state) => state.productManagement.isUpdatingProductCategory,
+  );
+  const isCreatingCategoryProduct = useAppSelector(
+    (state) => state.productManagement.isCreatingProductCategory,
+  );
+
+  // Method of product category product
   const methods = useFormContext<CategoryProductFormValues>();
   const { handleSubmit, formState, getValues } = methods;
 
+  const isButtonDisabled = !formState.isValid || formState.isSubmitting || formState.isValidating;
+
   const [isOpenDialogDelete, setIsOpenDialogDelete] = useState(false);
 
+  // Handle Delete Category
   const handlePressDeleteCategory = () => {
-    dispatch(deleteCategoryProductAsyncThunk({ productCategoryId: getValues('id') ?? '' }))
-      .unwrap()
-      .then(() => {
-        dispatch(setIsOpenDialogAddCategory(false));
-        dispatch(setProductCategoryFormState('add'));
+    const categoryId = getValues('id') ?? '';
+    const categoryItem = productCategories.find((item) => item.category.id === categoryId);
+    if (isEmpty(categoryItem?.products)) {
+      dispatch(deleteCategoryProductAsyncThunk({ productCategoryId: getValues('id') ?? '' }))
+        .unwrap()
+        .then(() => {
+          dispatch(setIsOpenDialogAddCategory(false));
+          dispatch(setProductCategoryFormState('add'));
+        });
+    } else {
+      toast.error('Cannot delete category', {
+        description: 'This category contains products. Please remove them first.',
       });
-    setIsOpenDialogDelete(false);
+      setIsOpenDialogDelete(false);
+    }
   };
 
-  const { data: userData } = useSession();
+  const handleCloseDialog = () => {
+    dispatch(setIsOpenDialogAddCategory(false));
+    methods.reset(defaultCategoryProductValue);
+  };
+
+  console.log(formState.isSubmitting);
 
   const onSubmit = async (data: CategoryProductFormValues) => {
     try {
@@ -75,6 +107,7 @@ export default function ProductCategoryForm() {
           createdAt: new Date().toString(),
           updatedAt: new Date().toString(),
         };
+
         dispatch(updateCategoryProductAsyncThunk(requestParams))
           .unwrap()
           .then(() => {
@@ -113,10 +146,10 @@ export default function ProductCategoryForm() {
           <TooltipTrigger asChild>
             <Button
               type="submit"
-              disabled={!formState.isValid || formState.isSubmitting || formState.isValidating}
+              disabled={isButtonDisabled}
               className="flex items-center justify-center gap-2 px-10 py-2 rounded-lg transition bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400"
             >
-              {formState.isSubmitting ? (
+              {formState.isSubmitting || isUpdatingCategoryProduct || isCreatingCategoryProduct ? (
                 <Loader2 className="animate-spin h-5 w-5" />
               ) : (
                 <Check className="h-5 w-5" />
@@ -149,7 +182,7 @@ export default function ProductCategoryForm() {
           </DialogHeader>
           <div className="w-full flex justify-between mt-auto">
             {/* Added flex and mt-auto */}
-            <Button type="button" variant="outline" onClick={() => setIsOpenDialogDelete(false)}>
+            <Button type="button" variant="outline" onClick={handleCloseDialog}>
               <CircleX />
             </Button>
             <Button onClick={handlePressDeleteCategory} type="button" variant="destructive">
@@ -160,4 +193,6 @@ export default function ProductCategoryForm() {
       </Dialog>
     </form>
   );
-}
+};
+
+export default memo(ProductCategoryForm);
