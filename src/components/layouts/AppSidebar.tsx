@@ -219,7 +219,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                                 href={subItem.url}
                                 onClick={() => handleNavClick(subItem)}
                                 className={cn(
-                                  'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
+                                  'flex items-center rounded-lg text-sm font-medium hover:bg-accent hover:text-accent-foreground',
                                   pathname === subItem.url && 'bg-accent text-accent-foreground',
                                 )}
                               >
@@ -239,7 +239,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                       href={item.url}
                       onClick={() => handleNavClick(item)}
                       className={cn(
-                        'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
+                        'flex items-center rounded-lg text-sm font-medium hover:bg-accent hover:text-accent-foreground',
                         pathname === item.url && 'bg-accent text-accent-foreground',
                       )}
                     >
