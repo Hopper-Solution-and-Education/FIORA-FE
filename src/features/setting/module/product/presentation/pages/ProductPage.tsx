@@ -1,6 +1,5 @@
 'use client';
 
-import Loading from '@/components/common/atoms/Loading';
 import { Icons } from '@/components/Icon';
 import { Separator } from '@/components/ui/separator';
 import { DashboardHeading } from '@/features/home/components/DashboardHeading';
@@ -10,20 +9,16 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Product } from '../../domain/entities/Product';
-import { deleteProductAsyncThunk } from '../../slices/actions/deleteProductAsyncThunk';
-import { getProductTransactionAsyncThunk } from '../../slices/actions/getProductTransactionAsyncThunk';
-import DeleteProductDialog from '../organisms/DeleteProductDialog';
-import ProductCatCreationDialog from '../organisms/ProductCatCreationDialog';
+import { Product } from '../../domain/entities';
+import { deleteProductAsyncThunk, getProductTransactionAsyncThunk } from '../../slices/actions';
+import { DeleteProductDialog, ProductCatCreationDialog } from '../organisms';
 import ChartPage from './CharPage';
 
 const ProductPage = () => {
   const { page: pageTransaction, pageSize } = useAppSelector(
     (state) => state.productManagement.productTransaction,
   );
-  const isDeletingProduct = useAppSelector((state) => state.productManagement.isDeletingProduct);
   const dispatch = useAppDispatch();
-
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const { data } = useSession();
@@ -57,8 +52,6 @@ const ProductPage = () => {
 
   return (
     <div className="p-2">
-      <>{isDeletingProduct && <Loading />}</>
-
       <div className="flex flex-1 flex-col">
         <div className="flex items-start justify-between">
           <DashboardHeading title="Products" description="Manage products" />

@@ -6,15 +6,19 @@ import {
   CategoryProductGetResponse,
   CategoryProductUpdateRequest,
   CategoryProductUpdateResponse,
-} from '../../domain/entities/Category';
-import { CategoryProductCreateRequestDTO } from '../dto/request/CategoryProductCreateRequestDTO';
-import { CategoryProductDeleteRequestDTO } from '../dto/request/CategoryProductDeleteRequestDTO';
-import { CategoryProductGetRequestDTO } from '../dto/request/CategoryProductGetRequestDTO';
-import { CategoryProductUpdateRequestDTO } from '../dto/request/CategoryProductUpdateRequestDTO';
-import { CategoryProductCreateResponseDTO } from '../dto/response/CategoryProductCreateResponseDTO';
-import { CategoryProductDeleteResponseDTO } from '../dto/response/CategoryProductDeleteResponseDTO';
-import { CategoryProductGetResponseDTO } from '../dto/response/CategoryProductGetResponseDTO';
-import { CategoryProductUpdateResponseDTO } from '../dto/response/CategoryProductUpdateResponseDTO';
+} from '../../domain/entities';
+import {
+  CategoryProductCreateRequestDTO,
+  CategoryProductDeleteRequestDTO,
+  CategoryProductGetRequestDTO,
+  CategoryProductUpdateRequestDTO,
+} from '../dto/request';
+import {
+  CategoryProductCreateResponseDTO,
+  CategoryProductDeleteResponseDTO,
+  CategoryProductGetResponseDTO,
+  CategoryProductUpdateResponseDTO,
+} from '../dto/response';
 
 class CategoryProductMapper {
   // Get Category ------------------------------

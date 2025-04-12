@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 
 const BarLabel = ({ x, y, width, height, value, formatter }: any) => {
   if (width < 40) return null;
@@ -20,4 +20,4 @@ const BarLabel = ({ x, y, width, height, value, formatter }: any) => {
   );
 };
 
-export default BarLabel;
+export default memo(BarLabel);

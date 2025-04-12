@@ -7,9 +7,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ICON_SIZE } from '@/shared/constants/size';
+import { ControllerRenderProps } from 'react-hook-form';
+import { ProductFormValues } from '../schema';
 
 interface ProductIconSelectProps {
-  field: any;
+  field: ControllerRenderProps<ProductFormValues>;
   label?: string;
 }
 
@@ -22,7 +24,7 @@ const ProductIconSelect = ({ field, label }: ProductIconSelectProps) => {
   return (
     <div>
       <label className="block text-sm font-medium mb-2">{label}</label>
-      <Select onValueChange={field.onChange} value={field.value}>
+      <Select onValueChange={field.onChange} value={field.value as string}>
         <SelectTrigger>
           <SelectValue placeholder="Select an icon" />
         </SelectTrigger>

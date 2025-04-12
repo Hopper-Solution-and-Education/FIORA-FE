@@ -11,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { cn } from '@/shared/utils';
 import { useFormContext, type Control } from 'react-hook-form';
-import { ProductFormValues } from '../schema/addProduct.schema';
+import { ProductFormValues } from '../schema';
 
 interface ProductNameFieldProps {
   control: Control<ProductFormValues>;

@@ -7,12 +7,12 @@ import { Controller, FormState, Path, UseFormReturn } from 'react-hook-form';
 import * as yup from 'yup';
 
 // Defines the props for each field component in the form
-export interface FieldProps<T extends yup.AnyObject> {
+export interface FieldV2Props<T extends yup.AnyObject> {
   name: Path<T>; // Name of the field, must match a key in T, ensured by Path<T>
   [key: string]: any; // Allows additional props (e.g., placeholder, disabled) for flexibility
 }
 interface GlobalFormProps<T extends yup.AnyObject> {
-  fields: React.ReactElement<FieldProps<T>>[]; // Array of field components to render
+  fields: React.ReactElement<FieldV2Props<T>>[]; // Array of field components to render
   onBack?: () => void;
   renderSubmitButton?: (formState: FormState<T>) => React.ReactNode; // Optional custom submit button renderer
   methods: UseFormReturn<any>;

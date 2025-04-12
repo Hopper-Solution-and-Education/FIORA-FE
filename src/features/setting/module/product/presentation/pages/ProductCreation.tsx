@@ -1,11 +1,13 @@
 'use client';
 import Loading from '@/components/common/atoms/Loading';
+import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { FIREBASE_GS_URL, FIREBASE_STORAGE_URL } from '@/shared/constants';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { isEmpty } from 'lodash';
-import { Loader2, Pencil, Save, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -13,14 +15,17 @@ import { toast } from 'sonner';
 import { removeFromFirebase, uploadToFirebase } from '../../../landing/landing/firebaseUtils';
 import { productDIContainer } from '../../di/productDIContainer';
 import { TYPES } from '../../di/productDIContainer.type';
-import { Product } from '../../domain/entities/Product';
-import { GetSingleProductUseCase } from '../../domain/usecases/GetSingleProductUsecase';
-import { createProduct } from '../../slices/actions/createProductAsyncThunk';
-import { deleteProductAsyncThunk } from '../../slices/actions/deleteProductAsyncThunk';
-import { deleteProductTransferAsyncThunk } from '../../slices/actions/deleteProductTransferAsyncThunk';
-import { fetchCategoriesProduct } from '../../slices/actions/fetchCategoriesProduct';
-import { getProductsAsyncThunk } from '../../slices/actions/getProductsAsyncThunk';
-import { updateProductAsyncThunk } from '../../slices/actions/updateProductAsyncThunk';
+import { Product } from '../../domain/entities';
+import { GetSingleProductUseCase } from '../../domain/usecases';
+
+import {
+  createProduct,
+  deleteProductAsyncThunk,
+  deleteProductTransferAsyncThunk,
+  fetchCategoriesProduct,
+  getProductsAsyncThunk,
+  updateProductAsyncThunk,
+} from '../../slices/actions';
 import ProductForm from '../molecules/ProductFieldForm';
 import DeleteProductDialog from '../organisms/DeleteProductDialog';
 import ProductCatCreationDialog from '../organisms/ProductCatCreationDialog';
@@ -51,8 +56,6 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
     (state) => state.productManagement.ProductIdToTransfer,
   );
 
-  const isDeletingProduct = useAppSelector((state) => state.productManagement.isDeletingProduct);
-
   const method = useForm<ProductFormValues>({
     resolver: yupResolver(productSchema),
     defaultValues: defaultProductFormValue,
@@ -60,7 +63,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
 
   const {
     reset,
-    formState: { isValid },
+    formState: { isValid, isSubmitting },
   } = method;
 
   useEffect(() => {
@@ -173,7 +176,6 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
         await dispatch(updateProductAsyncThunk(formattedData))
           .unwrap()
           .then(() => {
-            method.reset(defaultProductFormValue);
             router.replace('/setting/product');
           });
         return;
@@ -190,14 +192,60 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
     }
   };
 
+  const renderSubmitButtonDefault = () => (
+    <TooltipProvider>
+      <div className="flex justify-between gap-4 mt-6">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => router.back()}
+              className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
+            >
+              <Icons.circleArrowLeft className="h-5 w-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Cancel and go back</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="submit"
+              disabled={!isValid || isCreatingProduct || isUpdatingProduct}
+              className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              {isSubmitting ? (
+                <Icons.spinner className="animate-spin h-5 w-5" />
+              ) : (
+                <Icons.check className="h-5 w-5" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{isSubmitting ? 'Submiting...' : 'Submit'}</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </TooltipProvider>
+  );
+
   return (
     <section className="mb-10">
       <FormProvider {...method}>
-        <>{(isLoadingGetProduct || isDeletingProduct) && <Loading />}</>
+        <>{isLoadingGetProduct && <Loading />}</>
         <div className="mx-auto max-w-4xl px-4">
-          <h1 className="text-2xl font-bold mb-4">
-            {productId ? 'Edit Product' : 'Create New Product'}
-          </h1>
+          <div className="flex justify-between">
+            <h1 className="text-2xl font-bold">
+              {productId ? `Edit Product: ${productToEdit?.name ?? ''}` : 'Create New Product'}
+            </h1>
+
+            <Button disabled={!productId} type="button" variant="ghost" onClick={openDeleteDialog}>
+              <Trash2 color="red" className="h-4 w-4" />
+            </Button>
+          </div>
 
           {/* Form tạo/cập nhật sản phẩm */}
           <form onSubmit={method.handleSubmit(handleSubmit)} id="hook-form">
@@ -205,39 +253,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
               <ProductForm method={method} />
             </div>
 
-            <div className="flex justify-between items-center">
-              <Button
-                disabled={!productId}
-                type="button"
-                variant="outline"
-                onClick={openDeleteDialog}
-              >
-                <Trash2 color="red" className="h-4 w-4" />
-              </Button>
-
-              <div className="flex gap-3">
-                <Button
-                  disabled={!isValid || isCreatingProduct || isUpdatingProduct}
-                  type="submit"
-                  form="hook-form"
-                  className="flex items-center gap-2 bg-green-500"
-                >
-                  {isCreatingProduct || isUpdatingProduct ? (
-                    <Loader2 className="animate-spin h-5 w-5" />
-                  ) : productId ? (
-                    <>
-                      <Pencil className="h-5 w-5" />
-                      <span>Update</span>
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-5 w-5" />
-                      <span>Create</span>
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
+            {renderSubmitButtonDefault()}
           </form>
 
           <ProductCatCreationDialog />

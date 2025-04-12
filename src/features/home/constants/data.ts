@@ -22,21 +22,21 @@ export const navItems: NavItem[] = [
       {
         title: 'Accounts',
         url: '/account',
-        icon: 'userPen',
+        icon: 'banknote',
         shortcut: ['m', 'm'],
         module: MODULE.ACCOUNT,
       },
       {
         title: 'Categories',
         url: '/category',
-        icon: 'userPen',
+        icon: 'package',
         shortcut: ['m', 'm'],
         featureFlags: FeatureFlags.CATEGORY_FEATURE,
       },
       {
         title: 'Transaction',
         url: '/transaction',
-        icon: 'userPen',
+        icon: 'shoppingCart',
         shortcut: ['m', 'm'],
       },
       // {

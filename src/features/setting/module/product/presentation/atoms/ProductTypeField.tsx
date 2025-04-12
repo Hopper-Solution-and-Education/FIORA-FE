@@ -11,7 +11,7 @@ import {
 import { cn } from '@/shared/utils';
 import { ProductType } from '@prisma/client';
 import { Control, useFormContext } from 'react-hook-form';
-import { ProductFormValues } from '../schema/addProduct.schema';
+import { ProductFormValues } from '../schema';
 
 interface ProductTypeFieldProps {
   control: Control<ProductFormValues>;

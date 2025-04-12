@@ -11,12 +11,12 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { memo, useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { setIsOpenDialogAddCategory } from '../../slices';
-import ProductCategoryForm from '../molecules/ProductCategoryForm';
+import { ProductCategoryForm } from '../molecules';
 import {
   CategoryProductFormValues,
   categoryProductsSchema,
   defaultCategoryProductValue,
-} from '../schema/productCategory.schema';
+} from '../schema';
 
 const ProductCatCreationDialog = () => {
   const dispatch = useAppDispatch();

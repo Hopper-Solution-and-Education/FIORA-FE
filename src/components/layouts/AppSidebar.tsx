@@ -13,8 +13,9 @@ import { ChevronRight, ChevronsUpDown, LogOut } from 'lucide-react';
 import { Session, signOut, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { redirect, usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { Icons } from '../Icon';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
 import {
@@ -70,6 +71,47 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
   const router = useRouter();
 
+  const handleLogout = async () => {
+    await signOut().catch(() => {
+      toast.error('Error logging out');
+    });
+
+    redirect('./');
+  };
+
+  const isItemActive = (item: NavItem): boolean => {
+    // Điều kiện 1: Khớp chính xác item.url với pathname
+    if (item.url === pathname) return true;
+
+    // Điều kiện 2: Kiểm tra nếu pathname là đường dẫn con của item.url
+    if (
+      pathname?.startsWith(item.url) &&
+      (pathname === item.url || pathname[item.url.length] === '/')
+    ) {
+      return true;
+    }
+
+    // Điều kiện 3: Kiểm tra nếu có subItem nào active (khớp chính xác hoặc là đường dẫn con)
+    if (
+      item.items?.some((subItem) => {
+        // Khớp chính xác subItem.url với pathname
+        if (subItem.url === pathname) return true;
+        // Kiểm tra nếu pathname là đường dẫn con của subItem.url
+        if (
+          pathname?.startsWith(subItem.url) &&
+          (pathname === subItem.url || pathname[subItem.url.length] === '/')
+        ) {
+          return true;
+        }
+        return false;
+      })
+    ) {
+      return true;
+    }
+
+    return false;
+  };
+
   useEffect(() => {
     const newOpenItems = navItems.reduce(
       (acc, item) => {
@@ -79,7 +121,6 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
       {} as Record<string, boolean>,
     );
     setOpenItems(newOpenItems);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, navItems]);
 
   useEffect(() => {
@@ -107,26 +148,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
     };
 
     handleCheckNavItem();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navItems, session?.user?.role]);
-
-  const isItemActive = (item: NavItem) => {
-    if (item.url === pathname) return true;
-    if (item.items?.some((subItem) => subItem.url === pathname)) return true;
-    return false;
-  };
-
-  useEffect(() => {
-    const newOpenItems = navItems.reduce(
-      (acc, item) => {
-        acc[item.title] = isItemActive(item);
-        return acc;
-      },
-      {} as Record<string, boolean>,
-    );
-    setOpenItems(newOpenItems);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, navItems]);
 
   const handleOpenChange = (title: string, isOpen: boolean) => {
     setOpenItems((prev) => ({
@@ -212,35 +234,40 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <SidebarMenuSub>
-                        {item.items?.map((subItem) => (
-                          <SidebarMenuSubItem key={subItem.title}>
-                            <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
-                              <Link
-                                href={subItem.url}
-                                onClick={() => handleNavClick(subItem)}
-                                className={cn(
-                                  'flex items-center rounded-lg text-sm font-medium hover:bg-accent hover:text-accent-foreground',
-                                  pathname === subItem.url && 'bg-accent text-accent-foreground',
-                                )}
-                              >
-                                <span>{subItem.title}</span>
-                              </Link>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
+                        {item.items?.map((subItem) => {
+                          const Icon = subItem.icon ? Icons[subItem.icon] : Icons.logo;
+
+                          return (
+                            <SidebarMenuSubItem key={subItem.title}>
+                              <SidebarMenuSubButton asChild isActive={isItemActive(subItem)}>
+                                <Link
+                                  href={subItem.url}
+                                  onClick={() => handleNavClick(subItem)}
+                                  className={cn(
+                                    'flex items-center rounded-lg text-sm font-medium hover:bg-accent hover:text-accent-foreground',
+                                    isItemActive(subItem) && 'bg-accent text-accent-foreground',
+                                  )}
+                                >
+                                  {item.icon && <Icon size={ICON_SIZE.MD} />}
+                                  <span>{subItem.title}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          );
+                        })}
                       </SidebarMenuSub>
                     </CollapsibleContent>
                   </SidebarMenuItem>
                 </Collapsible>
               ) : (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title} isActive={pathname === item.url}>
+                  <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
                     <Link
                       href={item.url}
                       onClick={() => handleNavClick(item)}
                       className={cn(
                         'flex items-center rounded-lg text-sm font-medium hover:bg-accent hover:text-accent-foreground',
-                        pathname === item.url && 'bg-accent text-accent-foreground',
+                        isActive && 'bg-accent text-accent-foreground',
                       )}
                     >
                       <Icon />
@@ -323,7 +350,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                     </DropdownMenuItem>
                   ))}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut()} className="flex items-center gap-2">
+                  <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2">
                     <LogOut />
                     Log out
                   </DropdownMenuItem>

@@ -11,7 +11,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/shared/utils';
 import { useFormContext, type Control } from 'react-hook-form';
-import { ProductFormValues } from '../schema/addProduct.schema';
+import { ProductFormValues } from '../schema';
 
 interface ProductDescriptionFieldProps {
   control: Control<ProductFormValues>;

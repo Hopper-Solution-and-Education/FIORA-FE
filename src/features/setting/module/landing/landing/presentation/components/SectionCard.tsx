@@ -57,7 +57,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
             </CollapsibleTrigger>
             <div className="flex items-center space-x-2">
               <Badge variant="outline" className="ml-2">
-                {sectionType.replace('_', ' ')}
+                {sectionType === 'KPS' ? 'KSP' : sectionType.replace('_', ' ')}
               </Badge>
               <Badge variant="secondary" className="ml-2">
                 {mediaFields.length} media items

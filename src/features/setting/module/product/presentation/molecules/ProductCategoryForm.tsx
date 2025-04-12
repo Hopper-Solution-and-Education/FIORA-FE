@@ -1,6 +1,6 @@
 'use client';
 
-import GlobalFormV2 from '@/components/common/organisms/GlobalFormV2';
+import { GlobalFormV2 } from '@/components/common/organisms';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader } from '@/components/ui/dialog';
@@ -13,19 +13,15 @@ import { useSession } from 'next-auth/react';
 import { memo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { toast } from 'sonner';
-import {
-  CategoryProductCreateRequest,
-  CategoryProductUpdateRequest,
-} from '../../domain/entities/Category';
+import { CategoryProductCreateRequest, CategoryProductUpdateRequest } from '../../domain/entities';
 import { setIsOpenDialogAddCategory, setProductCategoryFormState } from '../../slices';
-import { createCategoryProductAsyncThunk } from '../../slices/actions/createCategoryProductAsyncThunk';
-import { deleteCategoryProductAsyncThunk } from '../../slices/actions/deleteCategoryProductAsyncThunk';
-import { updateCategoryProductAsyncThunk } from '../../slices/actions/updateCategoryProductAsyncThunk';
-import useProductCategoryFormConfig from '../config/ProductCategoryFormConfig';
 import {
-  CategoryProductFormValues,
-  defaultCategoryProductValue,
-} from '../schema/productCategory.schema';
+  createCategoryProductAsyncThunk,
+  deleteCategoryProductAsyncThunk,
+  updateCategoryProductAsyncThunk,
+} from '../../slices/actions';
+import useProductCategoryFormConfig from '../config/ProductCategoryFormConfig';
+import { CategoryProductFormValues, defaultCategoryProductValue } from '../schema';
 
 const ProductCategoryForm = () => {
   const dispatch = useAppDispatch();
@@ -75,8 +71,6 @@ const ProductCategoryForm = () => {
     dispatch(setIsOpenDialogAddCategory(false));
     methods.reset(defaultCategoryProductValue);
   };
-
-  console.log(formState.isSubmitting);
 
   const onSubmit = async (data: CategoryProductFormValues) => {
     try {
