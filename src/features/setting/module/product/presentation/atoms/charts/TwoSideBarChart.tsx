@@ -26,7 +26,7 @@ import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipCont
 import { ContentType } from 'recharts/types/component/Tooltip';
 import BarLabel from '../BarLabel';
 import CustomTooltip from '../CustomTooltip';
-import { BarItem, LevelConfig } from './utils';
+import { BarItem, LevelConfig, processChartData, processVisibleData } from './utils';
 
 export type PositiveAndNegativeBarChartProps = {
   data: BarItem[];
@@ -61,7 +61,7 @@ const TwoSideBarChart = ({
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const { width } = useWindowSize();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Handle expand/collapse with transition to avoid lag
   const toggleExpand = useCallback(
     debounce((name: string) => {
       setExpandedItems((prev) => ({
@@ -72,118 +72,30 @@ const TwoSideBarChart = ({
     [],
   );
 
+  // Get icon for an item
   const getIcon = useCallback((item: BarItem) => {
-    if (item.icon) {
-      return item.icon;
-    }
-    if (!item.icon && item.product && item.product.icon) {
-      return item.product.icon;
-    }
+    if (item.icon) return item.icon;
+    if (!item.icon && item.product && item.product.icon) return item.product.icon;
     return null;
   }, []);
 
-  // Tính toán dữ liệu gốc
-  const chartData = useMemo(() => {
-    let totalIncome = 0;
-    let totalExpense = 0;
-    const groupedData: Record<string, BarItem> = {};
+  // Process chart data
+  const chartData = useMemo(() => processChartData(data, levelConfig), [data, levelConfig]);
 
-    data.forEach((item) => {
-      if (!groupedData[item.name]) {
-        groupedData[item.name] = { ...item };
-      }
-      if (item.type === 'expense') {
-        groupedData[item.name].expense = -Math.abs(item.value);
-        totalExpense += item.value;
-      } else if (item.type === 'income') {
-        groupedData[item.name].income = item.value;
-        totalIncome += item.value;
-      }
-      if (item.children && item.children.length > 0) {
-        groupedData[item.name].children = item.children.map((child) => ({
-          ...child,
-          parent: item.name,
-          isChild: true,
-        }));
-      }
-    });
+  // Process visible data for rendering
+  const visibleData = useMemo(
+    () => processVisibleData(chartData, expandedItems, levelConfig, getIcon),
+    [chartData, expandedItems, levelConfig, getIcon],
+  );
 
-    const totalName = levelConfig?.totalName || 'Total';
-    const totalColor = levelConfig?.colors[0] || '#888888';
-    return [
-      {
-        name: totalName,
-        expense: -totalExpense,
-        income: totalIncome,
-        type: 'total',
-        children: [],
-        color: totalColor,
-        depth: 0,
-      },
-      ...Object.entries(groupedData).map(([name, values]) => ({
-        id: values.id,
-        description: values.description,
-        taxRate: values.taxRate,
-        name,
-        expense: values.expense,
-        income: values.income,
-        type: 'product',
-        children: values.children || [],
-        color: values.color || '#888888',
-        depth: 0,
-        product: values.product,
-        icon: values.icon,
-        createdAt: values.createdAt,
-        updatedAt: values.updatedAt,
-        isChild: false,
-      })),
-    ];
-  }, [data, levelConfig]);
-
-  // Tính toán dữ liệu hiển thị
-  const visibleData = useMemo(() => {
-    const flattenedData: any[] = [];
-    const buildProcessedData = (items: any[], depth: number = 0) => {
-      items.forEach((item) => {
-        const currentItem = {
-          ...item,
-          depth,
-          color: item.color || levelConfig?.colors[depth] || '#888888',
-          parent: item.parent || undefined,
-          isChild: !!item.parent,
-          expense: item.expense ?? 0,
-          income: item.income ?? 0,
-          product: item.product,
-          type: item.type || 'product',
-          icon: getIcon(item),
-        };
-
-        // Ưu tiên sử dụng income/expense từ product nếu có
-        if (item && (item.income || item.expense)) {
-          currentItem.income = item.income ?? 0;
-          currentItem.expense = item.expense ? -Math.abs(item.expense) : 0;
-        }
-
-        flattenedData.push(currentItem);
-
-        if (expandedItems[item.name] && item.children && item.children.length > 0) {
-          buildProcessedData(item.children, depth + 1);
-        }
-      });
-    };
-
-    buildProcessedData(chartData);
-    return flattenedData;
-  }, [chartData, expandedItems, levelConfig, getIcon]);
-
-  // Tính toán chiều cao biểu đồ
+  // Compute chart height
   const chartHeight = useMemo(() => {
     const numBars = visibleData.length;
     const newHeight = numBars * (BASE_BAR_HEIGHT + 10); // BAR_CATEGORY_GAP = 10
     return Math.max(newHeight, MIN_CHART_HEIGHT);
-  }, [visibleData]);
+  }, [visibleData.length]);
 
-  // Tính toán giá trị tối đa cho trục X
+  // Compute max absolute value for X-axis
   const maxAbsValue = useMemo(() => {
     const absValues = visibleData.flatMap((item) =>
       [Math.abs(item.expense || 0), Math.abs(item.income || 0)].filter((v) => v !== 0),
@@ -191,16 +103,17 @@ const TwoSideBarChart = ({
     return Math.max(...absValues, 0) || 1;
   }, [visibleData]);
 
-  // Định nghĩa các hằng số
+  // Chart constants
   const BAR_HEIGHT = BASE_BAR_HEIGHT;
   const BAR_GAP = 0;
   const BAR_CATEGORY_GAP = 10;
 
-  // Tính toán margins
+  // Compute margins
   const expenseChartMargins = useMemo(
     () => ({
       ...getChartMargins(width),
       right: 0,
+      left: 40, // Space for indented labels
     }),
     [width],
   );
@@ -213,7 +126,7 @@ const TwoSideBarChart = ({
     [width, isMobile],
   );
 
-  // Memoize tooltip
+  // Memoized tooltip
   const customTooltipWithConfig = useCallback(
     (props: any) => (
       <CustomTooltip
@@ -238,7 +151,7 @@ const TwoSideBarChart = ({
         style={{ height: `${chartHeight}px` }}
         className="transition-all duration-300 flex flex-col md:flex-row"
       >
-        {/* Expense Chart (bars extend from 0 to the left) */}
+        {/* Expense Chart */}
         <ResponsiveContainer width="100%" height={chartHeight} className="md:w-1/2">
           <BarChart
             data={visibleData}
@@ -275,7 +188,11 @@ const TwoSideBarChart = ({
                 />
               )}
             />
-            <Tooltip trigger="hover" content={tooltipContent || customTooltipWithConfig} />
+            <Tooltip
+              trigger="hover"
+              content={tooltipContent || customTooltipWithConfig}
+              cursor={false}
+            />
             <Bar
               dataKey="expense"
               barSize={BAR_HEIGHT}
@@ -291,11 +208,11 @@ const TwoSideBarChart = ({
           </BarChart>
         </ResponsiveContainer>
 
-        {/* Income Chart (bars extend from 0 to the right) */}
+        {/* Income Chart */}
         <ResponsiveContainer
           width="100%"
           height={chartHeight}
-          className={`"md:w-1/2" ${isMobile && 'mt-10'}`}
+          className={`md:w-1/2 ${isMobile && 'mt-10'}`}
         >
           <BarChart
             data={visibleData}
@@ -322,6 +239,7 @@ const TwoSideBarChart = ({
               tickLine={false}
               axisLine={false}
               width={isMobile ? 70 : 0}
+              className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
               tick={(props) => (
                 <CustomYAxisTick
                   {...props}
@@ -331,9 +249,12 @@ const TwoSideBarChart = ({
                   callback={callbackYAxis}
                 />
               )}
-              className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
             />
-            <Tooltip trigger="hover" content={tooltipContent || customTooltipWithConfig} />
+            <Tooltip
+              trigger="hover"
+              content={tooltipContent || customTooltipWithConfig}
+              cursor={false}
+            />
             <Bar
               dataKey="income"
               barSize={BAR_HEIGHT}
@@ -343,15 +264,13 @@ const TwoSideBarChart = ({
             >
               {visibleData.map((entry, index) => {
                 const color = entry.isChild ? legendItems[3].color : legendItems[1].color;
-                return <Cell key={`income-cell-${index}`} fill={color} className="mr-20" />;
+                return <Cell key={`income-cell-${index}`} fill={color} />;
               })}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-
-        {isMobile && <ChartLegend items={legendItems} />}
       </div>
-      {!isMobile && <ChartLegend items={legendItems} />}
+      <ChartLegend items={legendItems} />
     </div>
   );
 };
