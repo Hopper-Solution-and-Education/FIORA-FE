@@ -21,7 +21,7 @@ import { useEffect, useState } from 'react';
 
 export const menuSettingItems = [
   { label: 'Products & Services', icon: Icons.package, url: '/setting/product' },
-  { label: 'Partners', icon: Icons.database, url: '/setting/partner' },
+  { label: 'Partners', icon: Icons.handShake, url: '/setting/partner' },
   { label: 'Users', icon: Icons.users, url: '/users' },
   { label: 'Role & Permission', icon: Icons.clipboardList, url: '/setting' },
   { label: 'Landing Page', icon: Icons.dashboard, url: '/setting/landing', role: 'Admin' },
@@ -108,7 +108,7 @@ export default function SettingCenter() {
               </div>
             </TooltipTrigger>
             <TooltipContent side="top">
-              <span>Toggle Currency</span>
+              <span>Toggle Language</span>
             </TooltipContent>
           </Tooltip>
 
@@ -126,7 +126,7 @@ export default function SettingCenter() {
               </div>
             </TooltipTrigger>
             <TooltipContent side="top">
-              <span>Toggle Language</span>
+              <span>Toggle Currency</span>
             </TooltipContent>
           </Tooltip>
 
