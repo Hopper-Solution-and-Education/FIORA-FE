@@ -14,7 +14,7 @@ const sections = [
   { value: 'banner', label: 'Banner', type: SectionType.BANNER },
   { value: 'vision', label: 'Vision & Mission', type: SectionType.VISION_MISSION },
   { value: 'system', label: 'System', type: SectionType.SYSTEM },
-  { value: 'kps', label: 'KPS', type: SectionType.KPS },
+  { value: 'kps', label: 'KSP', type: SectionType.KPS },
   { value: 'partners', label: 'Partners', type: SectionType.PARTNER_LOGO },
   { value: 'review', label: 'Review', type: SectionType.REVIEW },
   { value: 'footer', label: 'Footer', type: SectionType.FOOTER },
