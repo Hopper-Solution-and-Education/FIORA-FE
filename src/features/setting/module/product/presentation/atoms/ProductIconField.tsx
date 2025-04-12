@@ -3,21 +3,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { isImageFile, isUrl } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { useFormContext, type Control } from 'react-hook-form';
+import { Product } from '../../domain/entities';
 import { ProductFormValues } from '../schema';
 import IconSelect from './IconSelect';
 import IconUploader from './IconUploader';
 
 interface ProductIconFieldProps {
   control: Control<ProductFormValues>;
+  productToEdit: Product | null;
 }
 
 type ProductIconFormType = 'dropdown' | 'uploader';
 
-const ProductIconField = ({ control }: ProductIconFieldProps) => {
-  const { watch } = useFormContext<ProductFormValues>();
+const ProductIconField = ({ control, productToEdit }: ProductIconFieldProps) => {
+  const { watch, setValue } = useFormContext<ProductFormValues>();
   const fieldValue = watch('icon');
 
-  // Xác định tab dựa trên giá trị icon
   const [selectedTab, setSelectedTab] = useState<ProductIconFormType>(
     fieldValue && isUrl(fieldValue) ? 'uploader' : 'dropdown',
   );
@@ -27,6 +28,13 @@ const ProductIconField = ({ control }: ProductIconFieldProps) => {
       setSelectedTab(isUrl(fieldValue) || isImageFile(fieldValue) ? 'uploader' : 'dropdown');
     }
   }, [fieldValue]);
+
+  // để chắc rằng field icon sẽ được nhận
+  useEffect(() => {
+    if (productToEdit?.icon) {
+      setValue('icon', productToEdit.icon);
+    }
+  }, [productToEdit]);
 
   const handleOnTabChange = (newTab: string) => {
     setSelectedTab(newTab as ProductIconFormType);
