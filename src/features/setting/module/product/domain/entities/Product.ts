@@ -108,8 +108,11 @@ export type ProductTransactionResponse = {
     createdAt: string;
     updatedAt: string;
   };
-  transaction: {
-    id: string;
-    type: CategoryType;
-  } | null;
+  transactions: [
+    {
+      id: string;
+      type: CategoryType;
+      amount: number;
+    } | null,
+  ];
 };

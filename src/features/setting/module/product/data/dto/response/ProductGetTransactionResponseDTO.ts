@@ -34,8 +34,11 @@ export type ProductTransactionResponse = {
     created_at: string;
     updated_at: string;
   };
-  transaction: {
-    id: string;
-    type: CategoryType;
-  } | null;
+  transactions: [
+    {
+      id: string;
+      type: CategoryType;
+      amount: number;
+    } | null,
+  ];
 };

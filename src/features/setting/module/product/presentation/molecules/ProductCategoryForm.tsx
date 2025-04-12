@@ -76,8 +76,6 @@ const ProductCategoryForm = () => {
     methods.reset(defaultCategoryProductValue);
   };
 
-  console.log(formState.isSubmitting);
-
   const onSubmit = async (data: CategoryProductFormValues) => {
     try {
       if (ProductCategoryFormState === 'add') {

@@ -110,12 +110,7 @@ export class ProductMapper {
             createdAt: productItem.product.created_at,
             updatedAt: productItem.product.updated_at,
           },
-          transaction: productItem.transaction
-            ? {
-                id: productItem.transaction.id,
-                type: productItem.transaction.type,
-              }
-            : null,
+          transactions: productItem.transactions,
         })),
       })),
       page: response.data.page,
