@@ -1,13 +1,13 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { isUrl } from '@/lib/utils';
 import { Upload, X } from 'lucide-react';
 import Image from 'next/image';
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { ControllerRenderProps, useFormContext } from 'react-hook-form';
 import { ProductFormValues } from '../schema';
-import { isUrl } from '@/lib/utils';
 
 interface IconUploaderProps {
   field: ControllerRenderProps<ProductFormValues>;

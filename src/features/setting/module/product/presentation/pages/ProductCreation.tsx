@@ -78,7 +78,6 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
             TYPES.IGetSingleProductUseCase,
           );
           const product = await getSingleProductUseCase.execute(productId);
-          setProductToEdit(product);
           if (product) {
             reset({
               id: product.id,
@@ -92,6 +91,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
               items: product.items || [],
             });
           }
+          setProductToEdit(product);
         }
       } catch (error: any) {
         toast.error('Error getting product', {
@@ -250,7 +250,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
           {/* Form tạo/cập nhật sản phẩm */}
           <form onSubmit={method.handleSubmit(handleSubmit)} id="hook-form">
             <div className="mb-6">
-              <ProductForm method={method} />
+              <ProductForm method={method} productToEdit={productToEdit} />
             </div>
 
             {renderSubmitButtonDefault()}
