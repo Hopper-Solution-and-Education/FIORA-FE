@@ -1,4 +1,4 @@
-import SelectField from '@/components/common/atoms/SelectField';
+import { SelectField } from '@/components/common/atoms';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setProductIdToTransfer } from '../../slices';
 

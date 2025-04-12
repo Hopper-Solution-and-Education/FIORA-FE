@@ -4,14 +4,17 @@ import Loading from '@/components/common/atoms/Loading';
 import { useAppSelector } from '@/store';
 import { UseFormReturn } from 'react-hook-form';
 import PriceField from '../atoms/PriceField';
-import ProductCategoryField from '../atoms/ProductCategoryField';
-import ProductDescriptionField from '../atoms/ProductDescriptionField';
-import ProductIconField from '../atoms/ProductIconField';
-import ProductItemsField from '../atoms/ProductItemsField';
-import ProductNameField from '../atoms/ProductNameField';
-import ProductTypeField from '../atoms/ProductTypeField';
-import TaxRateField from '../atoms/TaxRateField';
-import { type ProductFormValues } from '../schema/addProduct.schema';
+
+import { type ProductFormValues } from '../schema';
+import {
+  ProductCategoryField,
+  ProductDescriptionField,
+  ProductIconField,
+  ProductItemsField,
+  ProductNameField,
+  ProductTypeField,
+  TaxRateField,
+} from '../atoms';
 
 interface ProductFormProps {
   method: UseFormReturn<ProductFormValues>;

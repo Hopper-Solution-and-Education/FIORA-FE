@@ -1,8 +1,8 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { productDIContainer } from '../../di/productDIContainer';
 import { TYPES } from '../../di/productDIContainer.type';
-import { ProductCreateResponse } from '../../domain/entities/Product';
-import { ICreateProductUseCase } from '../../domain/usecases/CreateProductUsecase';
+import { ProductCreateResponse } from '../../domain/entities';
+import { ICreateProductUseCase } from '../../domain/usecases';
 import { ProductFormValues } from '../../presentation/schema/addProduct.schema';
 
 export const createProduct = createAsyncThunk<

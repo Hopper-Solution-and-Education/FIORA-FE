@@ -22,8 +22,8 @@ import {
   setProductCategoryFormState,
   setProductCategoryToEdit,
 } from '../../slices';
-import { fetchCategoriesProduct } from '../../slices/actions/fetchCategoriesProduct';
-import { ProductFormValues } from '../schema/addProduct.schema';
+import { fetchCategoriesProduct } from '../../slices/actions';
+import { ProductFormValues } from '../schema';
 
 interface ProductCategoryFieldProps {
   control: Control<ProductFormValues>;

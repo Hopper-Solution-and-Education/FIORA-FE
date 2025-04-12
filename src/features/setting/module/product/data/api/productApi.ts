@@ -2,24 +2,23 @@ import { ProductGetTransactionResponseDTO } from './../dto/response/ProductGetTr
 // src/api/product.ts (hoặc nơi bạn định nghĩa ProductAPI)
 import { httpClient } from '@/config/HttpClient';
 import { decorate, injectable } from 'inversify';
-
-import { ProductCreateRequestDTO } from '../dto/request/ProductCreateRequestDTO';
 import {
+  ProductCreateRequestDTO,
   ProductDeleteRequestDTO,
+  ProductGetSingleRequestDTO,
+  ProductGetTransactionRequestDTO,
+  ProductsGetRequestDTO,
   ProductTransferDeleteRequestDTO,
-} from '../dto/request/ProductDeleteRequestDTO';
-import { ProductGetSingleRequestDTO } from '../dto/request/ProductGetSingleRequestDTO';
-import { ProductGetTransactionRequestDTO } from '../dto/request/ProductTransactionGetRequestDTO';
-import { ProductUpdateRequestDTO } from '../dto/request/ProductUpdateRequestDTO';
-import { ProductsGetRequestDTO } from '../dto/request/ProductsGetRequestDTO';
-import { ProductCreateResponseDTO } from '../dto/response/ProductCreateResponseDTO';
+  ProductUpdateRequestDTO,
+} from '../dto/request';
 import {
+  ProductCreateResponseDTO,
   ProductDeleteResponseDTO,
+  ProductGetSingleResponseDTO,
+  ProductsGetResponseDTO,
   ProductTransferDeleteResponseDTO,
-} from '../dto/response/ProductDeleteResponseDTO';
-import { ProductGetSingleResponseDTO } from '../dto/response/ProductGetSingleResponseDTO';
-import { ProductUpdateResponseDTO } from '../dto/response/ProductUpdateResponseDTO';
-import { ProductsGetResponseDTO } from '../dto/response/ProductsGetResponseDTO';
+  ProductUpdateResponseDTO,
+} from '../dto/response';
 
 interface IProductAPI {
   createProduct(data: ProductCreateRequestDTO): Promise<ProductCreateResponseDTO>;

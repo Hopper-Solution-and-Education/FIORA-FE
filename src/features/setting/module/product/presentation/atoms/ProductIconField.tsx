@@ -14,7 +14,7 @@ import { isImageFile, isUrl } from '@/lib/utils';
 import { isEmpty } from 'lodash';
 import { useEffect, useState } from 'react';
 import { useFormContext, type Control } from 'react-hook-form';
-import { ProductFormValues } from '../schema/addProduct.schema';
+import { ProductFormValues } from '../schema';
 import IconSelect from './IconSelect';
 import IconUploader from './IconUploader';
 

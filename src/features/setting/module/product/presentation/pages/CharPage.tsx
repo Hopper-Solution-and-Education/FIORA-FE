@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
-import { CategoryProduct } from '../../domain/entities/Category';
+import { CategoryProduct } from '../../domain/entities';
 import {
   setIsOpenDialogAddCategory,
   setProductCategoryFormState,

@@ -5,8 +5,8 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/shared/utils';
 import { useAppSelector } from '@/store';
 import isEmpty from 'lodash/isEmpty';
-import { Product } from '../../domain/entities/Product';
-import ProductSelect from '../atoms/ProductSelect';
+import { Product } from '../../domain/entities';
+import { ProductSelect } from '../atoms';
 
 interface DeleteProductDialogProps {
   product: Product | null;

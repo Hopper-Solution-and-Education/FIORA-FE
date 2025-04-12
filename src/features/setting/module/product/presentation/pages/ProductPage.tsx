@@ -10,11 +10,9 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Product } from '../../domain/entities/Product';
-import { deleteProductAsyncThunk } from '../../slices/actions/deleteProductAsyncThunk';
-import { getProductTransactionAsyncThunk } from '../../slices/actions/getProductTransactionAsyncThunk';
-import DeleteProductDialog from '../organisms/DeleteProductDialog';
-import ProductCatCreationDialog from '../organisms/ProductCatCreationDialog';
+import { Product } from '../../domain/entities';
+import { deleteProductAsyncThunk, getProductTransactionAsyncThunk } from '../../slices/actions';
+import { DeleteProductDialog, ProductCatCreationDialog } from '../organisms';
 import ChartPage from './CharPage';
 
 const ProductPage = () => {

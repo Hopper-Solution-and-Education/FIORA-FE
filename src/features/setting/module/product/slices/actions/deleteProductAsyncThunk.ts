@@ -1,8 +1,8 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { productDIContainer } from '../../di/productDIContainer';
 import { TYPES } from '../../di/productDIContainer.type';
-import { ProductDeleteRequest, ProductDeleteResponse } from '../../domain/entities/Product';
-import { IDeleteProductUseCase } from '../../domain/usecases/DeleteProductUsecase';
+import { ProductDeleteRequest, ProductDeleteResponse } from '../../domain/entities';
+import { IDeleteProductUseCase } from '../../domain/usecases';
 
 export const deleteProductAsyncThunk = createAsyncThunk<
   ProductDeleteResponse,

@@ -1,8 +1,6 @@
 'use client';
 
-import GlobalIconSelect from '@/components/common/atoms/GlobalIconSelect';
-import InputField from '@/components/common/atoms/InputField';
-import TextareaField from '@/components/common/atoms/TextareaField';
+import { GlobalIconSelect, InputField, TextareaField } from '@/components/common/atoms';
 import { KeyboardEvent, useCallback } from 'react';
 
 const useProductCategoryFormConfig = () => {

@@ -24,7 +24,7 @@ import { iconOptions } from '@/shared/constants/data';
 import { cn, useGetIconLabel } from '@/shared/utils';
 import { Plus } from 'lucide-react';
 import { type Control, useFieldArray, useFormContext } from 'react-hook-form';
-import type { ProductFormValues } from '../schema/addProduct.schema';
+import type { ProductFormValues } from '../schema';
 
 interface ListIconProps {
   icon: string;
