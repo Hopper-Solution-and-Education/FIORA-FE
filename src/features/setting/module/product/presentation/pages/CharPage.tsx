@@ -12,7 +12,7 @@ import {
   setProductCategoryFormState,
   setProductCategoryToEdit,
 } from '../../slices';
-import TwoSideBarChart, { BarItem } from '../atoms/charts';
+import { BarItem, TwoSideBarChart } from '../atoms/charts';
 import { mapTransactionsToBarItems } from '../utils';
 
 // Hàm mapping dữ liệu thành BarItem
