@@ -3,9 +3,10 @@ import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/shared/utils';
-import { useAppSelector } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
 import isEmpty from 'lodash/isEmpty';
 import { Product } from '../../domain/entities';
+import { setProductIdToTransfer } from '../../slices';
 import { ProductSelect } from '../atoms';
 
 interface DeleteProductDialogProps {
@@ -21,10 +22,26 @@ const DeleteProductDialog = ({
   onOpenChange,
   onConfirm,
 }: DeleteProductDialogProps) => {
+  const dispatch = useAppDispatch();
   const isDeletingProduct = useAppSelector((state) => state.productManagement.isDeletingProduct);
+  const productToTransferId = useAppSelector(
+    (state) => state.productManagement.ProductIdToTransfer,
+  );
+
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      dispatch(setProductIdToTransfer(''));
+    }
+    onOpenChange(isOpen);
+  };
+
+  const isSubmitDisabled =
+    isDeletingProduct ||
+    !product ||
+    (product.transactions.length > 0 && isEmpty(productToTransferId));
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className={cn(
           'p-0 overflow-hidden border-none shadow-2xl',
@@ -37,7 +54,7 @@ const DeleteProductDialog = ({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onOpenChange(false)}
+            onClick={() => handleOpenChange(false)}
             className={cn(
               'rounded-full h-8 w-8 p-0',
               'hover:bg-gray-100 dark:hover:bg-gray-800',
@@ -112,14 +129,14 @@ const DeleteProductDialog = ({
               >
                 Product
               </label>
-              <ProductSelect />
+              <ProductSelect productId={product?.id} />
             </div>
           ) : null}
 
           <div className={cn('flex gap-2 sm:gap-3 mt-2 sm:mt-4', 'flex-col sm:flex-row')}>
             <Button
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
               disabled={isDeletingProduct}
               className={cn(
                 'flex-1 font-medium',
@@ -136,7 +153,7 @@ const DeleteProductDialog = ({
             <Button
               variant="destructive"
               onClick={onConfirm}
-              disabled={isDeletingProduct}
+              disabled={isSubmitDisabled}
               className={cn(
                 'flex-1 font-medium',
                 'bg-red-500 hover:bg-red-600',

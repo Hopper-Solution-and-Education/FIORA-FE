@@ -21,11 +21,11 @@ import { GetSingleProductUseCase } from '../../domain/usecases';
 import {
   createProduct,
   deleteProductAsyncThunk,
+  deleteProductTransferAsyncThunk,
   fetchCategoriesProduct,
   getProductsAsyncThunk,
   updateProductAsyncThunk,
 } from '../../slices/actions';
-import { deleteProductTransferAsyncThunk } from '../../slices/actions/deleteProductTransferAsyncThunk';
 import ProductForm from '../molecules/ProductFieldForm';
 import DeleteProductDialog from '../organisms/DeleteProductDialog';
 import ProductCatCreationDialog from '../organisms/ProductCatCreationDialog';
@@ -55,8 +55,6 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
   const productIdToTransfer = useAppSelector(
     (state) => state.productManagement.ProductIdToTransfer,
   );
-
-  const isDeletingProduct = useAppSelector((state) => state.productManagement.isDeletingProduct);
 
   const method = useForm<ProductFormValues>({
     resolver: yupResolver(productSchema),
@@ -178,7 +176,6 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
         await dispatch(updateProductAsyncThunk(formattedData))
           .unwrap()
           .then(() => {
-            method.reset(defaultProductFormValue);
             router.replace('/setting/product');
           });
         return;
@@ -238,14 +235,17 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
   return (
     <section className="mb-10">
       <FormProvider {...method}>
-        <Button disabled={!productId} type="button" variant="outline" onClick={openDeleteDialog}>
-          <Trash2 color="red" className="h-4 w-4" />
-        </Button>
-        <>{(isLoadingGetProduct || isDeletingProduct) && <Loading />}</>
+        <>{isLoadingGetProduct && <Loading />}</>
         <div className="mx-auto max-w-4xl px-4">
-          <h1 className="text-2xl font-bold mb-4">
-            {productId ? 'Edit Product' : 'Create New Product'}
-          </h1>
+          <div className="flex justify-between">
+            <h1 className="text-2xl font-bold">
+              {productId ? `Edit Product: ${productToEdit?.name ?? ''}` : 'Create New Product'}
+            </h1>
+
+            <Button disabled={!productId} type="button" variant="ghost" onClick={openDeleteDialog}>
+              <Trash2 color="red" className="h-4 w-4" />
+            </Button>
+          </div>
 
           {/* Form tạo/cập nhật sản phẩm */}
           <form onSubmit={method.handleSubmit(handleSubmit)} id="hook-form">

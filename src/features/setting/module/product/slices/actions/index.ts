@@ -2,6 +2,7 @@ export * from './createCategoryProductAsyncThunk';
 export * from './createProductAsyncThunk';
 export * from './deleteCategoryProductAsyncThunk';
 export * from './deleteProductAsyncThunk';
+export * from './deleteProductTransferAsyncThunk';
 export * from './fetchCategoriesProduct';
 export * from './getProductTransactionAsyncThunk';
 export * from './getProductsAsyncThunk';
