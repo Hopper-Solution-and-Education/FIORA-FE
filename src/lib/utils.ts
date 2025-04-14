@@ -24,12 +24,17 @@ export function createResponse<T>(
   };
 }
 
-export function createErrorResponse(statusCode: number, message: string): ResponseObject {
+export function createErrorResponse(
+  statusCode: number,
+  message: string,
+  error?: { [key: string]: string },
+): ResponseObject {
   return {
     statusCode,
     status: 'error',
     data: null,
     message,
+    error: error,
   };
 }
 
