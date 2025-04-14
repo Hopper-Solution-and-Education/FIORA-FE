@@ -1,10 +1,10 @@
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
-import { productUseCase } from '@/features/setting/application/use-cases/productUseCase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { ProductType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { productUseCase } from '@/features/setting/api/domain/use-cases/productUseCase';
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {

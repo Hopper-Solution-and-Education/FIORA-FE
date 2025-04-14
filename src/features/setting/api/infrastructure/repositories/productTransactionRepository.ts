@@ -1,6 +1,6 @@
 import { Prisma, Product } from '@prisma/client';
-import { IProductRepository } from '../../domain/repositories/productRepository.interface';
 import { prisma } from '@/config';
+import { IProductRepository } from '../../application/repositories/productRepository.interface';
 
 class ProductTransactionRepository implements IProductRepository {
   async createProduct(data: Prisma.ProductUncheckedCreateInput): Promise<Product> {
