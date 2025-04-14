@@ -1,8 +1,8 @@
 // infrastructure/repositories/userRepository.ts
+import { prisma } from '@/config';
+import { IUserRepository } from '@/features/auth/domain/repositories/userRepository.interface';
 import { User } from '@prisma/client';
 import bcrypt from 'bcrypt';
-import { IUserRepository } from '@/features/auth/domain/repositories/userRepository.interface';
-import prisma from '@/infrastructure/database/prisma';
 
 class UserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {

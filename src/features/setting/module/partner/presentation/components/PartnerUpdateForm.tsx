@@ -1,11 +1,11 @@
 'use client';
 
-import CustomDateTimePicker from '@/components/common/atoms/CustomDateTimePicker';
-import InputField from '@/components/common/atoms/InputField';
-import SelectField from '@/components/common/atoms/SelectField';
-import TextareaField from '@/components/common/atoms/TextareaField';
-import UploadField from '@/components/common/atoms/UploadField';
-import GlobalForm from '@/components/common/organisms/GlobalForm';
+import CustomDateTimePicker from '@/components/common/forms/date-time-picker/CustomDateTimePicker';
+import InputField from '@/components/common/forms/input/InputField';
+import SelectField from '@/components/common/forms/select/SelectField';
+import TextareaField from '@/components/common/forms/text-area/TextareaField';
+import UploadField from '@/components/common/forms/upload/UploadField';
+import GlobalForm from '@/components/common/forms/GlobalForm';
 import { uploadToFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
 import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
 import { fetchPartners } from '@/features/setting/module/partner/slices/actions/fetchPartnersAsyncThunk';

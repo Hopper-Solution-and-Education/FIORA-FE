@@ -1,6 +1,6 @@
-import SelectField from '@/components/common/atoms/SelectField';
+import SelectField from '@/components/common/forms/select/SelectField';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
-import useDataFetcher from '@/hooks/useDataFetcher';
+import useDataFetcher from '@/shared/hooks/useDataFetcher';
 import { Partner } from '@prisma/client';
 import React, { useEffect } from 'react';
 import { FieldError } from 'react-hook-form';

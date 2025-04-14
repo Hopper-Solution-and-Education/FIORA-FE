@@ -1,6 +1,6 @@
 'use client';
 
-import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
+import { useBreadcrumbs } from '@/shared/hooks/useBreadcrumbs';
 import { Slash } from 'lucide-react';
 import { Fragment } from 'react';
 import {

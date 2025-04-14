@@ -1,9 +1,8 @@
-import { BooleanUtils } from '@/config/booleanUtils';
+import { prisma } from '@/config';
 import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
-import { ICategoryRepository } from '@/features/setting/domain/repositories/categoryRepository.interface';
-import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
-import prisma from '@/infrastructure/database/prisma';
+
+import { BooleanUtils } from '@/shared/lib/booleanUtils';
 import { Messages } from '@/shared/constants/message';
 import { PaginationResponse } from '@/shared/types/Common.types';
 import { TransactionGetPagination } from '@/shared/types/transaction.types';
@@ -18,6 +17,8 @@ import {
 } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '../../infrastructure/repositories/transactionRepository';
+import { ICategoryRepository } from '@/features/setting/api/application/repositories/categoryRepository.interface';
+import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
 
 class TransactionUseCase {
   constructor(

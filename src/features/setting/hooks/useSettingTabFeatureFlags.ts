@@ -1,5 +1,5 @@
-import { configureServerSideGrowthBook } from '@/config/growthbookServer';
-import growthbook from '@/config/growthbook';
+import { configureServerSideGrowthBook } from '@/config/growthbook/growthbookServer';
+import growthbook from '@/config/growthbook/growthbook';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { validTabs } from '@/features/setting/module/partner/data/constant';
 import { notFound } from 'next/navigation';

@@ -1,6 +1,6 @@
+import { prisma } from '@/config';
 import { Prisma, Transaction } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
-import prisma from '@/infrastructure/database/prisma';
 
 class TransactionRepository implements ITransactionRepository {
   async getTransactionsByUserId(userId: string): Promise<Transaction[]> {

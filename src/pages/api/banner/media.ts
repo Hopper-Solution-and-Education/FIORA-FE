@@ -1,4 +1,4 @@
-import prisma from '@/infrastructure/database/prisma';
+import { prisma } from '@/config';
 import { SectionType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 

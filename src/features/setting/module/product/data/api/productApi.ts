@@ -1,6 +1,6 @@
 import { ProductGetTransactionResponseDTO } from './../dto/response/ProductGetTransactionResponseDTO';
 // src/api/product.ts (hoặc nơi bạn định nghĩa ProductAPI)
-import { httpClient } from '@/config/HttpClient';
+import { httpClient } from '@/config/http-client/HttpClient';
 import { decorate, injectable } from 'inversify';
 import {
   ProductCreateRequestDTO,
