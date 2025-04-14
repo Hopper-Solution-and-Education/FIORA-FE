@@ -10,8 +10,6 @@ import {
   DEFAULT_TRANSACTION_FILTER_CRITERIA,
   DEFAULT_TRANSACTION_TABLE_COLUMNS,
 } from '@/features/home/module/transaction/utils/constants';
-import { useFeatureFlagGuard } from '@/hooks/useFeatureFlagGuard';
-import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { useAppDispatch } from '@/store';
 import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
@@ -27,7 +25,6 @@ const TransactionPage = dynamic(
 const Transaction = () => {
   const { data } = useSession();
   const dispatch = useAppDispatch();
-  const { isLoaded, isFeatureOn } = useFeatureFlagGuard(FeatureFlags.TRANSACTION_FEATURE);
 
   const visibleColumnsFromLocalStorage: TransactionTableColumnKey = JSON.parse(
     localStorage.getItem('config' + (data?.user.id.split('-')[0] ?? '')) || '{}',
@@ -49,14 +46,6 @@ const Transaction = () => {
     dispatch(updateFilterCriteria(DEFAULT_TRANSACTION_FILTER_CRITERIA));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  if (!isLoaded) {
-    return <Loading />;
-  }
-
-  if (!isFeatureOn) {
-    return null;
-  }
 
   return <TransactionPage />;
 };

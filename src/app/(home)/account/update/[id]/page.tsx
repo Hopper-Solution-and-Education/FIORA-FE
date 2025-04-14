@@ -7,8 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import UpdateAccountForm from '@/features/home/module/account/components/UpdateAccountForm';
 import { useUpdateAccount } from '@/features/home/module/account/hooks/useUpdateAccount';
-import { useFeatureFlagGuard } from '@/hooks/useFeatureFlagGuard';
-import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { useParams } from 'next/navigation';
 
 export default function UpdateAccount() {
@@ -16,8 +14,6 @@ export default function UpdateAccount() {
   const accountId = params?.id as string;
 
   const { account, isLoading, handleDelete } = useUpdateAccount(accountId);
-
-  const { isLoaded } = useFeatureFlagGuard(FeatureFlags.ACCOUNT_FEATURE);
 
   const renderDeleteButton = (
     <TooltipProvider>
@@ -39,7 +35,7 @@ export default function UpdateAccount() {
     </TooltipProvider>
   );
 
-  if (isLoading || !isLoaded) {
+  if (isLoading) {
     return <Loading />;
   }
 
