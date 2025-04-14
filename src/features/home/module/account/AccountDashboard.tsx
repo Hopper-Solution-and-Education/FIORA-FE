@@ -17,11 +17,8 @@ import DeleteAccountDialog from '@/features/home/module/account/components/Delet
 import NavigateToAccountDialog from '@/features/home/module/account/components/NavigateToAccountDialog';
 import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import { MODULE } from '@/shared/constants';
-interface AccountDashboardProps {
-  module?: string;
-}
 
-const AccountDashboard = ({ module = MODULE.ACCOUNT }: AccountDashboardProps) => {
+const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefined }) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const chartRef = useRef<HTMLDivElement>(null);

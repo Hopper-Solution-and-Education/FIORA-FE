@@ -1,17 +1,19 @@
+'use client';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { MODULE } from '@/shared/constants';
 import { AccountsOverview } from './AccountOverview';
 import RecentTransactions from './components/RecentTransactions';
 import Recommendations from './components/Recommendations';
-import AccountPage from '@/app/(home)/account/page';
-import { useEffect } from 'react';
-import { setCurrentModule } from '@/shared/utils/storage';
+import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { useFeatureFlagGuard } from '@/hooks/useFeatureFlagGuard';
+import AccountDashboard from '../account/AccountDashboard';
 
 export default function HomePage() {
-  useEffect(() => {
-    setCurrentModule(MODULE.HOME);
-  }, []);
+  const { isFeatureOn } = useFeatureFlagGuard(FeatureFlags.ACCOUNT_FEATURE, MODULE.HOME);
 
+  if (!isFeatureOn) {
+    return null;
+  }
   return (
     <div className="flex flex-1 flex-col space-y-4 p-4">
       <div className="flex items-center justify-between space-y-2">
@@ -23,7 +25,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-10">
             {/* Left Section: Financial & Account Overview */}
             <div className="col-span-1 md:col-span-2 lg:col-span-7 space-y-4">
-              <AccountPage />
+              {isFeatureOn && <AccountDashboard module={MODULE.HOME} />}
               <AccountsOverview />
             </div>
 

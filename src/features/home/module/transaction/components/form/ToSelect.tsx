@@ -44,6 +44,7 @@ const ToSelectField: React.FC<ToSelectProps> = ({
       setTargetEndpoint('/api/accounts/lists');
     }
     mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionType]);
 
   useEffect(() => {

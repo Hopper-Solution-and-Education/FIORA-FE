@@ -1,21 +1,19 @@
 'use client';
-import growthbook from '@/config/growthbook';
+import Loading from '@/components/common/atoms/Loading';
 import ProductCreation from '@/features/setting/module/product/presentation/pages/ProductCreation';
+import { useFeatureFlagGuard } from '@/hooks/useFeatureFlagGuard';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
-import { redirect } from 'next/navigation';
-import { useEffect } from 'react';
-import { toast } from 'sonner';
 
 export default function Page() {
-  const isProductFeatureEnabled = growthbook.isOn(FeatureFlags.PRODUCT_FEATURE);
+  const { isLoaded, isFeatureOn } = useFeatureFlagGuard(FeatureFlags.PRODUCT_FEATURE);
 
-  useEffect(() => {
-    if (!isProductFeatureEnabled) {
-      toast.error('Product feature is not enabled', {
-        description: '',
-      });
-      redirect('/');
-    }
-  }, [isProductFeatureEnabled]);
+  if (!isLoaded) {
+    return <Loading />;
+  }
+
+  if (!isFeatureOn) {
+    return null;
+  }
+
   return <ProductCreation />;
 }
