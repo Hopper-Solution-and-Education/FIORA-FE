@@ -82,6 +82,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
             id: true,
             userId: true,
             type: true,
+            amount: true,
           },
         },
       },
@@ -94,10 +95,18 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
         if (!acc[pt.productId]) {
           acc[pt.productId] = [];
         }
-        acc[pt.productId].push(pt.transaction);
+        acc[pt.productId].push({
+          id: pt.transaction.id,
+          userId: pt.transaction.userId,
+          type: pt.transaction.type,
+          amount: pt.transaction.amount.toNumber(),
+        });
         return acc;
       },
-      {} as Record<string, Array<{ id: string; userId: string | null; type: string }>>, // Sửa ở đây
+      {} as Record<
+        string,
+        Array<{ id: string; userId: string | null; type: string; amount: number }>
+      >, // Sửa ở đây
     );
 
     // Gộp sản phẩm theo danh mục
@@ -122,12 +131,12 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
               catId: product.catId,
               icon: product.icon,
             },
-            transaction: transactions.length > 0 ? transactions[0] : null, // Lấy giao dịch đầu tiên
+            transactions,
           });
         }
         return acc;
       },
-      {} as Record<string, Array<{ product: any; transaction: any | null }>>,
+      {} as Record<string, Array<{ product: any; transactions: any | null }>>,
     );
 
     // Bước 7: Tạo dữ liệu trả về

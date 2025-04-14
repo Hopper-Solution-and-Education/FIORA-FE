@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { productDIContainer } from '../../di/productDIContainer';
 import { TYPES } from '../../di/productDIContainer.type';
-import { IGetCategoryProductUseCase } from '../../domain/usecases/GetCategoryProductUseCase';
+import { IGetCategoryProductUseCase } from '../../domain/usecases';
 
 export const fetchCategoriesProduct = createAsyncThunk(
   'product/fetchCategories',

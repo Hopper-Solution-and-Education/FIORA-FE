@@ -24,6 +24,7 @@ import {
   Eye,
   File,
   FileText,
+  Handshake,
   HelpCircle,
   Home,
   Image,
@@ -145,4 +146,5 @@ export const Icons = {
   package: Package,
   database: Database,
   clipboardList: ClipboardList,
+  handShake: Handshake,
 };

@@ -14,24 +14,24 @@ import {
   ProductTransferDeleteResponse,
   ProductUpdateRequest,
   ProductUpdateResponse,
-} from '../../domain/entities/Product';
-import { Transaction } from '../../domain/entities/Transaction';
-import { ProductCreateRequestDTO } from '../dto/request/ProductCreateRequestDTO';
+  Transaction,
+} from '../../domain/entities';
 import {
+  ProductCreateRequestDTO,
   ProductDeleteRequestDTO,
+  ProductGetSingleRequestDTO,
+  ProductGetTransactionRequestDTO,
   ProductTransferDeleteRequestDTO,
-} from '../dto/request/ProductDeleteRequestDTO';
-import { ProductGetSingleRequestDTO } from '../dto/request/ProductGetSingleRequestDTO';
-import { ProductGetTransactionRequestDTO } from '../dto/request/ProductTransactionGetRequestDTO';
-import { ProductUpdateRequestDTO } from '../dto/request/ProductUpdateRequestDTO';
+  ProductUpdateRequestDTO,
+} from '../dto/request';
 import {
   ProductDeleteResponseDTO,
+  ProductGetSingleResponseDTO,
+  ProductGetTransactionResponseDTO,
+  ProductsGetResponseDTO,
   ProductTransferDeleteResponseDTO,
-} from '../dto/response/ProductDeleteResponseDTO';
-import { ProductGetSingleResponseDTO } from '../dto/response/ProductGetSingleResponseDTO';
-import { ProductGetTransactionResponseDTO } from '../dto/response/ProductGetTransactionResponseDTO';
-import { ProductUpdateResponseDTO } from '../dto/response/ProductUpdateResponseDTO';
-import { ProductsGetResponseDTO } from '../dto/response/ProductsGetResponseDTO';
+  ProductUpdateResponseDTO,
+} from '../dto/response';
 
 export class ProductMapper {
   static toGetSingleProductAPIRequest(id: string): ProductGetSingleRequestDTO {
@@ -110,12 +110,7 @@ export class ProductMapper {
             createdAt: productItem.product.created_at,
             updatedAt: productItem.product.updated_at,
           },
-          transaction: productItem.transaction
-            ? {
-                id: productItem.transaction.id,
-                type: productItem.transaction.type,
-              }
-            : null,
+          transactions: productItem.transactions,
         })),
       })),
       page: response.data.page,

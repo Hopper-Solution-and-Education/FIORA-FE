@@ -1,8 +1,8 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { productDIContainer } from '../../di/productDIContainer';
 import { TYPES } from '../../di/productDIContainer.type';
-import { ProductUpdateRequest, ProductUpdateResponse } from '../../domain/entities/Product';
-import { IUpdateProductUseCase } from '../../domain/usecases/UpdateProductUsecase';
+import { ProductUpdateRequest, ProductUpdateResponse } from '../../domain/entities';
+import { IUpdateProductUseCase } from '../../domain/usecases';
 
 export const updateProductAsyncThunk = createAsyncThunk<
   ProductUpdateResponse,

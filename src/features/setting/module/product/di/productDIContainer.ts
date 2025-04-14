@@ -1,55 +1,36 @@
 import { Container } from 'inversify';
-import { ICategoryAPI, createCategoryAPI } from '../data/api/categoryApi';
-import { IProductAPI, createProductAPI } from '../data/api/productApi';
+import { createCategoryAPI, createProductAPI, ICategoryAPI, IProductAPI } from '../data/api';
+
 import {
-  ICategoryRepository,
   createCategoryRepository,
-} from '../data/repositories/CategoryRepository';
-import {
-  IProductRepository,
   createProductRepository,
-} from '../data/repositories/ProductRepository';
+  ICategoryRepository,
+  IProductRepository,
+} from '../data/repositories';
 import {
-  ICreateCategoryProductUseCase,
   createCreateCategoryProductUseCase,
-} from '../domain/usecases/CreateCategoryProductUseCase';
-import {
-  ICreateProductUseCase,
   createCreateProductUseCase,
-} from '../domain/usecases/CreateProductUsecase';
-import {
-  IDeleteCategoryProductUseCase,
   createDeleteCategoryProductUseCase,
-} from '../domain/usecases/DeleteCategoryProductUseCase';
-import {
-  IDeleteProductTransferUseCase,
   createDeleteProductTransferUseCase,
-} from '../domain/usecases/DeleteProductTransferUseCase';
-import {
-  IDeleteProductUseCase,
   createDeleteProductUseCase,
-} from '../domain/usecases/DeleteProductUsecase';
-import {
-  IGetCategoryProductUseCase,
   createGetCategoryProductUseCase,
-} from '../domain/usecases/GetCategoryProductUseCase';
-import {
-  IGetProductTransactionUseCase,
   createGetProductTransactionUseCase,
-} from '../domain/usecases/GetProductTransactionUseCase';
-import { IGetProductUseCase, createGetProductUseCase } from '../domain/usecases/GetProductUsecase';
-import {
-  IGetSingleProductUseCase,
+  createGetProductUseCase,
   createGetSingleProductUseCase,
-} from '../domain/usecases/GetSingleProductUsecase';
-import {
-  IUpdateCategoryProductUseCase,
   createUpdateCategoryProductUseCase,
-} from '../domain/usecases/UpdateCategoryProductUseCase';
-import {
-  IUpdateProductUseCase,
   createUpdateProductUseCase,
-} from '../domain/usecases/UpdateProductUsecase';
+  ICreateCategoryProductUseCase,
+  ICreateProductUseCase,
+  IDeleteCategoryProductUseCase,
+  IDeleteProductTransferUseCase,
+  IDeleteProductUseCase,
+  IGetCategoryProductUseCase,
+  IGetProductTransactionUseCase,
+  IGetProductUseCase,
+  IGetSingleProductUseCase,
+  IUpdateCategoryProductUseCase,
+  IUpdateProductUseCase,
+} from '../domain/usecases';
 import { TYPES } from './productDIContainer.type';
 
 const productDIContainer = new Container();
