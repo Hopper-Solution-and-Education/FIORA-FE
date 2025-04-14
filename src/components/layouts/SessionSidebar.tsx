@@ -16,9 +16,9 @@ export default function SessionSidebar({ children, defaultOpen = true }: Session
 
   if (!session?.user) {
     return (
-      <>
+      <AuthLayout requiresAuth={true}>
         <main>{children}</main>
-      </>
+      </AuthLayout>
     );
   }
 
