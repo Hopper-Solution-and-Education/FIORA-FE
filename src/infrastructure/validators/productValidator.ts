@@ -1,7 +1,7 @@
 import { Currency } from '@prisma/client';
 import Joi from 'joi';
 
-export const productItemSchema = Joi.object({
+export const productItemBodySchema = Joi.object({
   icon: Joi.string().required().messages({
     'string.empty': 'Product item icon url is invalid',
     'any.required': 'Product item icon is required',
@@ -13,7 +13,7 @@ export const productItemSchema = Joi.object({
   description: Joi.string().allow('').optional(),
 });
 
-export const productSchema = Joi.object({
+export const productBodySchema = Joi.object({
   icon: Joi.string().required().messages({
     'string.empty': 'Product icon url is invalid',
     'any.required': 'Product icon is required',
@@ -44,7 +44,7 @@ export const productSchema = Joi.object({
     'any.required': 'Tax rate is required',
   }),
   description: Joi.string().allow('').optional(),
-  items: Joi.array().items(productItemSchema).optional().messages({
+  items: Joi.array().items(productItemBodySchema).optional().messages({
     'array.base': 'Items must be an array',
     'array.items': 'Each item must be a valid product item',
   }),
