@@ -132,5 +132,7 @@ export enum Messages {
   UPDATE_PARTNER_SUCCESS = 'Update partner successfully.',
   DELETE_PARTNER_SUCCESS = 'Delete partner successfully.',
 
+  // COMMON ERRORS
   INVALID_CURRENCY = 'Invalid currency. Must be either VND or USD.',
+  VALIDATION_ERROR = 'Validation error.',
 }
