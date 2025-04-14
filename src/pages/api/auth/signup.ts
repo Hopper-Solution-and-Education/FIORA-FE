@@ -1,4 +1,4 @@
-import { createResponse } from '@/config/createResponse';
+import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
 import { UserUSeCaseInstance } from '@/features/auth/application/use-cases/userUseCase';
 import { createDefaultCategories } from '@/features/auth/application/use-cases/defaultCategories';

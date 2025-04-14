@@ -1,4 +1,4 @@
-import { httpClient } from '@/config/HttpClient';
+import { httpClient } from '@/config/http-client/HttpClient';
 import { Account } from '@/features/home/module/account/slices/types';
 import {
   NewAccountDefaultValues,

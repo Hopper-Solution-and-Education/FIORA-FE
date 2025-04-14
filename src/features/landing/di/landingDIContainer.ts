@@ -1,5 +1,5 @@
 import { Container } from 'inversify';
-import { httpClient, IHttpClient } from '../../../config/HttpClient';
+import { httpClient, IHttpClient } from '../../../config/http-client/HttpClient';
 import { ILandingAPI, createLandingAPI } from '../data/api/api';
 import { IMediaRepository, createMediaRepository } from '../data/repositories/mediaRepository';
 import {

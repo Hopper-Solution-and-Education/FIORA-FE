@@ -1,4 +1,4 @@
-import { httpClient } from '@/config/HttpClient';
+import { httpClient } from '@/config/http-client/HttpClient';
 import { decorate, injectable } from 'inversify';
 import {
   CategoryProductCreateRequestDTO,

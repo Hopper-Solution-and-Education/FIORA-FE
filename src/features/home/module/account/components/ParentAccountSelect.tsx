@@ -1,7 +1,7 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { FieldError } from 'react-hook-form';
-import SelectField from '@/components/common/atoms/SelectField';
+import SelectField from '@/components/common/forms/select/SelectField';
 import { AccountType } from '@prisma/client';
 
 interface ParentAccountSelectProps {

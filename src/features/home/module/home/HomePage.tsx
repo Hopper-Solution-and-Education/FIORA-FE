@@ -5,7 +5,7 @@ import { AccountsOverview } from './AccountOverview';
 import RecentTransactions from './components/RecentTransactions';
 import Recommendations from './components/Recommendations';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
-import { useFeatureFlagGuard } from '@/hooks/useFeatureFlagGuard';
+import { useFeatureFlagGuard } from '@/shared/hooks/useFeatureFlagGuard';
 import AccountDashboard from '../account/AccountDashboard';
 
 export default function HomePage() {

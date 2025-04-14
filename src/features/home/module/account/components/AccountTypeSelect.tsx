@@ -1,7 +1,7 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { FieldError } from 'react-hook-form';
-import SelectField, { Option } from '@/components/common/atoms/SelectField';
+import SelectField, { Option } from '@/components/common/forms/select/SelectField';
 
 interface AccountTypeSelectProps {
   name: string;

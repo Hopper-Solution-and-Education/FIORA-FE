@@ -1,4 +1,4 @@
-import FormPage from '@/components/common/organisms/FormPage';
+import FormPage from '@/components/common/forms/FormPage';
 import CreateTransactionForm from '@/features/home/module/transaction/components/CreateTransactionForm';
 import React from 'react';
 

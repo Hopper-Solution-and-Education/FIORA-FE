@@ -1,6 +1,6 @@
+import { prisma } from '@/config';
 import { Partner, Prisma } from '@prisma/client';
 import { IPartnerRepository } from '../../domain/repositories/partnerRepository.interface';
-import prisma from '@/infrastructure/database/prisma';
 
 class PartnerRepository implements IPartnerRepository {
   async getPartnersByUserId(userId: string): Promise<Partner[]> {
