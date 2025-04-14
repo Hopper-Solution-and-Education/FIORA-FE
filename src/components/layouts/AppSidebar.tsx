@@ -120,6 +120,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
       {} as Record<string, boolean>,
     );
     setOpenItems(newOpenItems);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, navItems]);
 
   useEffect(() => {
@@ -147,6 +148,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
     };
 
     handleCheckNavItem();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navItems, session?.user?.role]);
 
   const handleOpenChange = (title: string, isOpen: boolean) => {

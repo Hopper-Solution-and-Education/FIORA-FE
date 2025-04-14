@@ -44,6 +44,7 @@ const FromSelectField: React.FC<FromSelectProps> = ({
       setTargetEndpoint('/api/accounts/lists');
     }
     mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionType]);
 
   useEffect(() => {
@@ -88,6 +89,7 @@ const FromSelectField: React.FC<FromSelectProps> = ({
     return () => {
       setOptions([]);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   const handleChange = (value: string) => {

@@ -34,6 +34,7 @@ const ProductIconField = ({ control, productToEdit }: ProductIconFieldProps) => 
     if (productToEdit?.icon) {
       setValue('icon', productToEdit.icon);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productToEdit]);
 
   const handleOnTabChange = (newTab: string) => {
