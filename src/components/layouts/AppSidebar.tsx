@@ -6,7 +6,6 @@ import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { cn } from '@/lib/utils';
 import { ICON_SIZE } from '@/shared/constants/size';
-import { setCurrentModule } from '@/shared/utils/storage';
 import { SectionType } from '@prisma/client';
 import HopperLogo from '@public/images/logo.jpg';
 import { ChevronRight, ChevronsUpDown, LogOut } from 'lucide-react';
@@ -121,6 +120,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
       {} as Record<string, boolean>,
     );
     setOpenItems(newOpenItems);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, navItems]);
 
   useEffect(() => {
@@ -148,6 +148,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
     };
 
     handleCheckNavItem();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navItems, session?.user?.role]);
 
   const handleOpenChange = (title: string, isOpen: boolean) => {
@@ -159,12 +160,6 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
 
   const handlePressLogo = () => {
     router.push('/');
-  };
-
-  const handleNavClick = (item: NavItem) => {
-    if (item.module) {
-      setCurrentModule(item.module);
-    }
   };
 
   return (
@@ -234,27 +229,21 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <SidebarMenuSub>
-                        {item.items?.map((subItem) => {
-                          const Icon = subItem.icon ? Icons[subItem.icon] : Icons.logo;
-
-                          return (
-                            <SidebarMenuSubItem key={subItem.title}>
-                              <SidebarMenuSubButton asChild isActive={isItemActive(subItem)}>
-                                <Link
-                                  href={subItem.url}
-                                  onClick={() => handleNavClick(subItem)}
-                                  className={cn(
-                                    'flex items-center rounded-lg text-sm font-medium hover:bg-accent hover:text-accent-foreground',
-                                    isItemActive(subItem) && 'bg-accent text-accent-foreground',
-                                  )}
-                                >
-                                  {item.icon && <Icon size={ICON_SIZE.MD} />}
-                                  <span>{subItem.title}</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          );
-                        })}
+                        {item.items?.map((subItem) => (
+                          <SidebarMenuSubItem key={subItem.title}>
+                            <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
+                              <Link
+                                href={subItem.url}
+                                className={cn(
+                                  'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
+                                  pathname === subItem.url && 'bg-accent text-accent-foreground',
+                                )}
+                              >
+                                <span>{subItem.title}</span>
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
                       </SidebarMenuSub>
                     </CollapsibleContent>
                   </SidebarMenuItem>
@@ -264,7 +253,6 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                   <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
                     <Link
                       href={item.url}
-                      onClick={() => handleNavClick(item)}
                       className={cn(
                         'flex items-center rounded-lg text-sm font-medium hover:bg-accent hover:text-accent-foreground',
                         isActive && 'bg-accent text-accent-foreground',
