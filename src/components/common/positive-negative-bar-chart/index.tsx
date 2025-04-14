@@ -26,6 +26,7 @@ import {
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { ContentType } from 'recharts/types/component/Tooltip';
 import BarLabel from './atoms/BarLabel';
+import { debounce } from 'lodash';
 
 export type BarItem = {
   id?: string;
@@ -88,12 +89,15 @@ const PositiveAndNegativeBarChart = ({
   const [chartHeight, setChartHeight] = useState(height);
   const { width } = useWindowSize();
 
-  const toggleExpand = useCallback((name: string) => {
-    setExpandedItems((prev) => ({
-      ...prev,
-      [name]: !prev[name],
-    }));
-  }, []);
+  const toggleExpand = useCallback(
+    debounce((name: string) => {
+      setExpandedItems((prev) => ({
+        ...prev,
+        [name]: !prev[name],
+      }));
+    }, 100),
+    [],
+  );
 
   // Initial data processing
   const totalAmount = data.reduce((sum, item) => sum + item.value, 0);

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import {
@@ -25,6 +26,7 @@ import BarLabel from './atoms/BarLabel';
 import ChartLegend from './atoms/ChartLegend';
 import CustomTooltip from './atoms/CustomTooltip';
 import CustomYAxisTick from './atoms/CustomYAxisTick';
+import { debounce } from 'lodash';
 
 // Define the structure of a bar item
 export type BarItem = {
@@ -86,12 +88,15 @@ const NestedBarChart = ({
   const { width } = useWindowSize();
 
   // Function to toggle the expansion of a bar
-  const toggleExpand = useCallback((name: string) => {
-    setExpandedItems((prev) => ({
-      ...prev,
-      [name]: !prev[name],
-    }));
-  }, []);
+  const toggleExpand = useCallback(
+    debounce((name: string) => {
+      setExpandedItems((prev) => ({
+        ...prev,
+        [name]: !prev[name],
+      }));
+    }, 100),
+    [],
+  );
 
   // **Initial Data Processing**
   // Calculate total amount from the data
@@ -117,7 +122,7 @@ const NestedBarChart = ({
   }, [expanded, totalName]);
 
   // Base chart data starts with the total item
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   const chartData = [totalItem];
 
   // **Recursive Data Processing**
