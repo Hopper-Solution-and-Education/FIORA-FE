@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { MediaType } from '@prisma/client';
 import { Upload, X } from 'lucide-react';
 import { useState } from 'react';

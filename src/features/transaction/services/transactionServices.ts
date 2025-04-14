@@ -1,4 +1,4 @@
-import { httpClient } from '@/config/HttpClient';
+import { httpClient } from '@/config/http-client/HttpClient';
 import { Category } from '@/features/home/module/category/slices/types';
 import { Response } from '@/shared/types/Common.types';
 

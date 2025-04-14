@@ -8,15 +8,15 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { useState } from 'react';
 
-import HelpCenter from '@/components/layouts/header-toggle/HelpCenter';
+import HelpCenter from '@/components/layouts/dashboard-header/HelpCenter';
 import {
   default as SettingCenter,
   default as ThemeToggle,
-} from '@/components/layouts/header-toggle/SettingCenter';
-import { UserNav } from '@/components/layouts/UserNav';
+} from '@/components/layouts/dashboard-header/SettingCenter';
+import { UserNav } from '@/components/layouts/user-nav/UserNav';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { ICON_SIZE } from '@/shared/constants/size';
 import { SectionType } from '@prisma/client';
 import { useSession } from 'next-auth/react';

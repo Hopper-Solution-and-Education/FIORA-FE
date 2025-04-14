@@ -1,7 +1,7 @@
 'use client';
 
 import Loading from '@/components/common/atoms/Loading';
-import FormPage from '@/components/common/organisms/FormPage';
+import FormPage from '@/components/common/forms/FormPage';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';

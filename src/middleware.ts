@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { FeatureFlags } from './shared/constants/featuresFlags';
-import growthbook from './config/growthbook';
+import growthbook from './config/growthbook/growthbook';
 
 const publicRoutes = ['/', '/auth/sign-in', '/auth/sign-up'];
 

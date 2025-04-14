@@ -1,4 +1,4 @@
-import { createError, createResponse } from '@/config/createResponse';
+import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { productUseCase } from '@/features/setting/application/use-cases/productUseCase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';

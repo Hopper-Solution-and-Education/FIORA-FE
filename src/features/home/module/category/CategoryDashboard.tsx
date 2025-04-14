@@ -1,7 +1,7 @@
 'use client';
 import NestedBarChart, { type BarItem } from '@/components/common/nested-bar-chart';
 import { Icons } from '@/components/Icon';
-import { formatCurrency } from '@/config/formatCurrency';
+import { formatCurrency } from '@/shared/lib/formatCurrency';
 import DeleteDialog from '@/features/home/module/category/components/DeleteDialog';
 import { fetchCategories } from '@/features/home/module/category/slices/actions';
 import { Category } from '@/features/home/module/category/slices/types';

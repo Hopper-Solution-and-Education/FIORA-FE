@@ -1,5 +1,5 @@
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { createError } from '@/config/createResponse';
+import { createError } from '@/shared/lib/responseUtils/createResponse';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { userRepository } from '@/features/auth/infrastructure/repositories/userRepository';
 

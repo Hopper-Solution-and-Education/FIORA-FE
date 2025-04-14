@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { transactionUseCase } from '@/features/transaction/application/use-cases/transactionUseCase';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { UUID } from 'crypto';
-import { createError, createResponse } from '@/config/createResponse';
+import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { Messages } from '@/shared/constants/message';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { Currency } from '@prisma/client';

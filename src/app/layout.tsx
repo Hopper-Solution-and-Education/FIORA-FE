@@ -2,11 +2,8 @@
 import React from 'react';
 import { SessionTimeoutModal } from '@/components/common/SessionTimeoutModal';
 import KBar from '@/components/kbar';
-import { AmplitudeProvider } from '@/components/providers/AmplitudeContextProvider';
-import { ReduxProvider } from '@/components/providers/ReduxProvider';
-import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
-import { swrOptions } from '@/config/swrConfig';
+import { swrOptions } from '@/config/swr/swrConfig';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import { SectionType } from '@prisma/client';
 import { SessionProvider } from 'next-auth/react';
@@ -16,8 +13,9 @@ import NextTopLoader from 'nextjs-toploader';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import 'reflect-metadata';
 import { SWRConfig } from 'swr';
-import growthbook from '@/config/growthbook';
+import growthbook from '@/config/growthbook/growthbook';
 import './globals.css';
+import { AmplitudeProvider, ReduxProvider, ThemeProvider } from '@/components/providers';
 const defaultIconHeader = 'https://static.thenounproject.com/png/2864213-200.png';
 
 const inter = Inter({ subsets: ['latin'] });

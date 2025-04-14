@@ -1,11 +1,11 @@
 // infrastructure/repositories/accountRepository.ts
-import prisma from '@/infrastructure/database/prisma';
 import { Account, Prisma } from '@prisma/client';
 import {
   IAccountRepository,
   Pagination,
   SelectOptions,
 } from '../../domain/repositories/accountRepository.interface';
+import { prisma } from '@/config';
 
 export class AccountRepository implements IAccountRepository {
   async create(account: Prisma.AccountUncheckedCreateInput): Promise<Account> {
