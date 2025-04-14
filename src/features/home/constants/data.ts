@@ -1,15 +1,17 @@
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { NavItem } from '../types/Nav.types';
+import { MODULE } from '@/shared/constants';
 
 //Info: The following data is used for the sidebar navigation and Cmd K bar.
 export const navItems: NavItem[] = [
   {
     title: 'Home',
-    url: '/home',
+    url: '/',
     icon: 'dashboard',
     isActive: false,
     shortcut: ['d', 'd'],
     items: [],
+    module: MODULE.HOME,
   },
   {
     title: 'Finance',
@@ -19,26 +21,27 @@ export const navItems: NavItem[] = [
     items: [
       {
         title: 'Accounts',
-        url: '/home/account',
-        icon: 'userPen',
+        url: '/account',
+        icon: 'banknote',
         shortcut: ['m', 'm'],
+        module: MODULE.ACCOUNT,
       },
       {
         title: 'Categories',
-        url: '/home/category',
-        icon: 'userPen',
+        url: '/category',
+        icon: 'package',
         shortcut: ['m', 'm'],
         featureFlags: FeatureFlags.CATEGORY_FEATURE,
       },
       {
         title: 'Transaction',
-        url: '/home/transaction',
-        icon: 'userPen',
+        url: '/transaction',
+        icon: 'shoppingCart',
         shortcut: ['m', 'm'],
       },
       // {
       //   title: 'Budget Planning',
-      //   url: '/home/budget-control',
+      //   url: '/budget-control',
       //   icon: 'userPen',
       //   shortcut: ['m', 'm'],
       // },

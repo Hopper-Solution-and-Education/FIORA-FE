@@ -11,9 +11,9 @@ import { buildOrderByTransactionV2, buildWhereClause } from '@/shared/utils';
 import {
   AccountType,
   CategoryType,
+  Prisma,
   TransactionType,
   type Account,
-  type Prisma,
   type Transaction,
 } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
@@ -37,14 +37,17 @@ class TransactionUseCase {
     const take = pageSize;
     const skip = (page - 1) * pageSize;
 
-    let where = buildWhereClause(filters);
+    let where = buildWhereClause(filters) as Prisma.TransactionWhereInput;
     if (searchParams) {
-      let typeSearchParams = searchParams.toLowerCase();
+      const typeSearchParams = searchParams.toLowerCase();
       // test with Regex-Type Transaction
       const regex = new RegExp('^' + typeSearchParams, 'i'); // ^: start with, i: ignore case
       const typeTransaction = Object.values(TransactionType).find((type) => regex.test(type));
+
+      let typeTransactionWhere = '';
+
       if (typeTransaction) {
-        typeSearchParams = typeTransaction;
+        typeTransactionWhere = typeTransaction;
       }
 
       // test with Regex-Date format YYYY-MM-DD
@@ -57,10 +60,16 @@ class TransactionUseCase {
           where,
           {
             OR: [
-              { fromAccount: { name: { contains: searchParams } } },
-              { toAccount: { name: { contains: searchParams } } },
-              { partner: { name: { contains: searchParams } } },
-              ...(typeTransaction ? [{ type: { contains: typeTransaction } }] : []),
+              { fromAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+              { toAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+              { partner: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+              {
+                amount: { gte: Number(typeSearchParams) || 0, lte: Number(typeSearchParams) || 0 },
+              },
+              // adding typeTransactionWhere to where clause if exists
+              ...(typeTransactionWhere
+                ? [{ type: typeTransactionWhere as unknown as TransactionType }]
+                : []),
               ...(isSearchDate
                 ? [
                     {
@@ -81,6 +90,7 @@ class TransactionUseCase {
     const transactionAwaited = this.transactionRepository.findManyTransactions(
       {
         ...where,
+        isDeleted: false,
         userId,
       },
       {
@@ -96,7 +106,9 @@ class TransactionUseCase {
         },
       },
     );
-    const totalTransactionAwaited = this.transactionRepository.count({});
+    const totalTransactionAwaited = this.transactionRepository.count({
+      ...where,
+    });
     // getting amountMax from transactions
     const amountMaxAwaited = this.transactionRepository.aggregate({
       where: { userId },

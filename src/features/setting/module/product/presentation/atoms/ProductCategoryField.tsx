@@ -17,9 +17,13 @@ import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { Plus } from 'lucide-react';
 import { useFormContext, type Control } from 'react-hook-form';
-import { setIsOpenDialogAddCategory } from '../../slices';
-import { fetchCategoriesProduct } from '../../slices/actions/fetchCategoriesProduct';
-import { ProductFormValues } from '../schema/addProduct.schema';
+import {
+  setIsOpenDialogAddCategory,
+  setProductCategoryFormState,
+  setProductCategoryToEdit,
+} from '../../slices';
+import { fetchCategoriesProduct } from '../../slices/actions';
+import { ProductFormValues } from '../schema';
 
 interface ProductCategoryFieldProps {
   control: Control<ProductFormValues>;
@@ -61,13 +65,15 @@ const ProductCategoryField = ({ control }: ProductCategoryFieldProps) => {
 
   const handleOpenDialog = () => {
     dispatch(setIsOpenDialogAddCategory(true));
+    dispatch(setProductCategoryFormState('add'));
+    dispatch(setProductCategoryToEdit(null));
   };
 
   return (
     <>
       <FormField
         control={control}
-        name="categoryId"
+        name="catId"
         render={({ field }) => (
           <FormItem>
             <FormLabel>
@@ -77,7 +83,7 @@ const ProductCategoryField = ({ control }: ProductCategoryFieldProps) => {
               <FormControl>
                 <SelectTrigger
                   className={cn({
-                    'border-red-500': errors.categoryId,
+                    'border-red-500': errors.catId,
                   })}
                 >
                   <SelectValue placeholder="Select a category" />
@@ -90,32 +96,22 @@ const ProductCategoryField = ({ control }: ProductCategoryFieldProps) => {
                 sideOffset={4}
               >
                 <>
-                  {categories.length === 0 ? (
-                    <div>
-                      <Button
-                        onClick={handleOpenDialog}
-                        title="Add Category"
-                        className="flex items-center gap-2 px-4 py-2 rounded-md shadow-sm transition-colors duration-200"
-                      >
-                        <Plus className="w-4 h-4" />
-                        <span>Add Category</span>
-                      </Button>
-                    </div>
-                  ) : (
-                    categories.map((category) => {
-                      const CategoryIcon =
-                        Icons[category.icon as keyof typeof Icons] || Icons['product'];
+                  {categories.map((category) => {
+                    const CategoryIcon =
+                      Icons[category.icon as keyof typeof Icons] || Icons['product'];
 
-                      return (
-                        <SelectItem key={category.id} value={category.id}>
-                          <div className="flex justify-between items-center gap-4">
-                            <CategoryIcon size={ICON_SIZE.MD} />
-                            <span className="text-sm">{category.name}</span>
-                          </div>
-                        </SelectItem>
-                      );
-                    })
-                  )}
+                    return (
+                      <SelectItem key={category.id} value={category.id}>
+                        <div className="flex justify-between items-center gap-4">
+                          <CategoryIcon size={ICON_SIZE.MD} />
+                          <span className="text-sm">{category.name}</span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                  <Button onClick={handleOpenDialog} className="w-full mx-auto">
+                    <Plus className="w-4 h-4" />
+                  </Button>
                 </>
 
                 {isLoading && (

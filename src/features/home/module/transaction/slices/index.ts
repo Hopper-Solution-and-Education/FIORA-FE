@@ -7,14 +7,16 @@ import {
 
 export type TransactionSliceType = {
   visibleColumns: TransactionTableColumnKey;
-  filterCriteria: TransactionFilterCriteria;
-  isFiltering: boolean;
+  filterCriteria: any;
+  amountMin: number;
+  amountMax: number;
 };
 
 const transactionInitialState: TransactionSliceType = {
   visibleColumns: DEFAULT_TRANSACTION_TABLE_COLUMNS,
   filterCriteria: DEFAULT_TRANSACTION_FILTER_CRITERIA,
-  isFiltering: false,
+  amountMin: 0,
+  amountMax: 10000,
 };
 
 const transactionSlice = createSlice({
@@ -33,8 +35,10 @@ const transactionSlice = createSlice({
       state.visibleColumns = action.payload;
     },
 
-    updateFilteringStatus(state, action: PayloadAction<boolean>) {
-      state.isFiltering = action.payload;
+    updateAmountRange(state, action: PayloadAction<{ min: number; max: number }>) {
+      const { min, max } = action.payload;
+      state.amountMin = min;
+      state.amountMax = max;
     },
 
     resetFilterCriteria(state) {
@@ -48,7 +52,7 @@ export const {
   updateFilterCriteria,
   updateVisibleColumns,
   resetFilterCriteria,
-  updateFilteringStatus,
+  updateAmountRange,
 } = transactionSlice.actions;
 
 export default transactionSlice.reducer;

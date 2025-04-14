@@ -5,14 +5,16 @@ import { GetPartnerAPIRequestDTO } from '../dto/request/GetPartnerAPIRequestDTO'
 import { CreatePartnerAPIRequestDTO } from '../dto/request/CreatePartnerAPIRequestDTO';
 import { UpdatePartnerAPIRequestDTO } from '../dto/request/UpdatePartnerAPIRequestDTO';
 
+// In the IPartnerRepository interface
 export interface IPartnerRepository {
   getPartners(data: GetPartnerAPIRequestDTO): Promise<Partner[]>;
   getPartnerById(id: string): Promise<Partner>;
   createPartner(data: CreatePartnerAPIRequestDTO): Promise<Partner>;
   updatePartner(data: UpdatePartnerAPIRequestDTO): Promise<Partner>;
-  deletePartner(id: string): Promise<Partner>; // Add this method
+  deletePartner(id: string, replacementId?: string | null): Promise<void>;
 }
 
+// In the implementation
 export const createPartnerRepository = (api: IPartnerAPI): IPartnerRepository => ({
   async getPartners(data: GetPartnerAPIRequestDTO): Promise<Partner[]> {
     const response = await api.getPartners(data);
@@ -26,7 +28,6 @@ export const createPartnerRepository = (api: IPartnerAPI): IPartnerRepository =>
 
   async createPartner(data: CreatePartnerAPIRequestDTO): Promise<Partner> {
     const response = await api.createPartner(data);
-    console.log('Response: {}', response.message);
 
     return PartnerMapper.toEntityFromCreate(response);
   },
@@ -36,8 +37,13 @@ export const createPartnerRepository = (api: IPartnerAPI): IPartnerRepository =>
     return PartnerMapper.toEntityFromCreate(response); // Giả định response tương tự create
   },
 
-  async deletePartner(id: string): Promise<Partner> {
-    const response = await api.deletePartner(id);
-    return response.data;
+  async deletePartner(id: string, replacementId?: string | null): Promise<void> {
+    try {
+      // API only returns status and message
+      await api.deletePartner(id, replacementId);
+    } catch (error) {
+      console.error('Error in PartnerRepository.deletePartner:', error);
+      throw error;
+    }
   },
 });

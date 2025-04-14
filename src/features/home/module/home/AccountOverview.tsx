@@ -11,8 +11,6 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  LineChart,
-  Line,
   Legend,
   CartesianGrid,
 } from 'recharts';
@@ -52,10 +50,10 @@ export function AccountsOverview() {
   }, [theme]);
 
   return (
-    <Card className="p-2">
+    <Card className="p-4">
       {/* Tiêu đề */}
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg font-semibold">Account Balance</CardTitle>
+        <CardTitle className="text-lg font-semibold">Finance Chart</CardTitle>
         <Icons.wallet className="h-5 w-5 text-muted-foreground" />
       </CardHeader>
 
@@ -72,28 +70,6 @@ export function AccountsOverview() {
               <Bar dataKey="income" fill={chartColors.income} name="Income" />
               <Bar dataKey="expense" fill={chartColors.expense} name="Expense" />
             </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="mt-4 h-60">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={initialData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="year" />
-              <YAxis />
-              <Tooltip formatter={(value) => `$${value.toLocaleString()} USD`} />
-              <Legend />
-
-              {/* Đường cho Balance */}
-              <Line
-                type="monotone"
-                dataKey="balance"
-                stroke={chartColors.balance}
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                name="Balance"
-              />
-            </LineChart>
           </ResponsiveContainer>
         </div>
       </CardContent>

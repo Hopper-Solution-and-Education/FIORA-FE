@@ -1,20 +1,19 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { productDIContainer } from '../../di/productDIContainer';
 import { TYPES } from '../../di/productDIContainer.type';
-import { IGetCategoryUseCase } from '../../domain/usecases/GetCategoryUsecase';
+import { IGetCategoryProductUseCase } from '../../domain/usecases';
 
 export const fetchCategoriesProduct = createAsyncThunk(
   'product/fetchCategories',
-  async ({ page, pageSize }: { page: number; pageSize: number }) => {
+  async ({ page, pageSize }: { page: number; pageSize: number }, { rejectWithValue }) => {
     try {
-      const getCategoryUseCase = productDIContainer.get<IGetCategoryUseCase>(
-        TYPES.IGetCategoryUseCase,
+      const getCategoryUseCase = productDIContainer.get<IGetCategoryProductUseCase>(
+        TYPES.IGetCategoryProductUseCase,
       );
       const response = await getCategoryUseCase.execute(page, pageSize);
       return response;
     } catch (error) {
-      const message = (error as Error).message || 'Failed to fetch categories';
-      throw new Error(message);
+      return rejectWithValue(error || 'Failed to fetch category product');
     }
   },
 );

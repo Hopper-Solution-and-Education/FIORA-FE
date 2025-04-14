@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 @layer utilities {
-
   /* Hide scrollbar for IE, Edge and Firefox */
   .no-scrollbar {
     -ms-overflow-style: none;
@@ -86,6 +85,8 @@
     --background: 240 10% 3.9%;
 
     --foreground: 0 0% 98%;
+
+    --foreground-reverse: 240 10% 3.9%;
 
     --card: 240 10% 3.9%;
 

@@ -14,10 +14,12 @@ class CategoryProductRepository implements ICategoryProductRepository {
   }
 
   async findUniqueCategoryProduct(
-    where: Prisma.CategoryProductsWhereUniqueInput,
+    where: Prisma.CategoryProductsWhereInput,
+    options?: Prisma.CategoryProductsFindFirstArgs,
   ): Promise<CategoryProducts | null> {
-    return prisma.categoryProducts.findUnique({
+    return prisma.categoryProducts.findFirst({
       where,
+      ...options,
     });
   }
 

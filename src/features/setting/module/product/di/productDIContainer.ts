@@ -1,39 +1,36 @@
 import { Container } from 'inversify';
-import { ICategoryAPI, createCategoryAPI } from '../data/api/categoryApi';
-import { IProductAPI, createProductAPI } from '../data/api/productApi';
+import { createCategoryAPI, createProductAPI, ICategoryAPI, IProductAPI } from '../data/api';
+
 import {
-  ICategoryRepository,
   createCategoryRepository,
-} from '../data/repositories/CategoryRepository';
-import {
-  IProductRepository,
   createProductRepository,
-} from '../data/repositories/ProductRepository';
+  ICategoryRepository,
+  IProductRepository,
+} from '../data/repositories';
 import {
-  ICreateProductUseCase,
+  createCreateCategoryProductUseCase,
   createCreateProductUseCase,
-} from '../domain/usecases/CreateProductUsecase';
-import {
-  IDeleteProductUseCase,
+  createDeleteCategoryProductUseCase,
+  createDeleteProductTransferUseCase,
   createDeleteProductUseCase,
-} from '../domain/usecases/DeleteProductUsecase';
-import {
-  IGetCategoryUseCase,
-  createGetCategoryUseCase,
-} from '../domain/usecases/GetCategoryUsecase';
-import {
-  IGetProductTransactionUseCase,
+  createGetCategoryProductUseCase,
   createGetProductTransactionUseCase,
-} from '../domain/usecases/GetProductTransactionUseCase';
-import { IGetProductUseCase, createGetProductUseCase } from '../domain/usecases/GetProductUsecase';
-import {
+  createGetProductUseCase,
   createGetSingleProductUseCase,
-  IGetSingleProductUseCase,
-} from '../domain/usecases/GetSingleProductUsecase';
-import {
-  IUpdateProductUseCase,
+  createUpdateCategoryProductUseCase,
   createUpdateProductUseCase,
-} from '../domain/usecases/UpdateProductUsecase';
+  ICreateCategoryProductUseCase,
+  ICreateProductUseCase,
+  IDeleteCategoryProductUseCase,
+  IDeleteProductTransferUseCase,
+  IDeleteProductUseCase,
+  IGetCategoryProductUseCase,
+  IGetProductTransactionUseCase,
+  IGetProductUseCase,
+  IGetSingleProductUseCase,
+  IUpdateCategoryProductUseCase,
+  IUpdateProductUseCase,
+} from '../domain/usecases';
 import { TYPES } from './productDIContainer.type';
 
 const productDIContainer = new Container();
@@ -47,13 +44,17 @@ const categoryRepository = createCategoryRepository(categoryAPI);
 const productRepository = createProductRepository(productAPI);
 
 // Create use case instances
-const getCategoryUseCase = createGetCategoryUseCase(categoryRepository);
+const getCategoryProductUseCase = createGetCategoryProductUseCase(categoryRepository);
 const createProductUseCase = createCreateProductUseCase(productRepository);
 const getProductUseCase = createGetProductUseCase(productRepository);
 const updateProductUseCase = createUpdateProductUseCase(productRepository);
 const deleteProductUseCase = createDeleteProductUseCase(productRepository);
+const deleteProductTransferUseCase = createDeleteProductTransferUseCase(productRepository);
 const getProductTransactionUseCase = createGetProductTransactionUseCase(productRepository);
 const getSingleProductUseCase = createGetSingleProductUseCase(productRepository);
+const createCategoryProductUseCase = createCreateCategoryProductUseCase(categoryRepository);
+const updateCategoryProductUseCase = createUpdateCategoryProductUseCase(categoryRepository);
+const deleteCategoryProductUseCase = createDeleteCategoryProductUseCase(categoryRepository);
 
 // Bind all instances
 productDIContainer.bind<ICategoryAPI>(TYPES.ICategoryAPI).toConstantValue(categoryAPI);
@@ -66,8 +67,8 @@ productDIContainer
   .toConstantValue(productRepository);
 
 productDIContainer
-  .bind<IGetCategoryUseCase>(TYPES.IGetCategoryUseCase)
-  .toConstantValue(getCategoryUseCase);
+  .bind<IGetCategoryProductUseCase>(TYPES.IGetCategoryProductUseCase)
+  .toConstantValue(getCategoryProductUseCase);
 productDIContainer
   .bind<ICreateProductUseCase>(TYPES.ICreateProductUseCase)
   .toConstantValue(createProductUseCase);
@@ -86,5 +87,17 @@ productDIContainer
 productDIContainer
   .bind<IGetSingleProductUseCase>(TYPES.IGetSingleProductUseCase)
   .toConstantValue(getSingleProductUseCase);
+productDIContainer
+  .bind<ICreateCategoryProductUseCase>(TYPES.ICreateCategoryProductUseCase)
+  .toConstantValue(createCategoryProductUseCase);
+productDIContainer
+  .bind<IUpdateCategoryProductUseCase>(TYPES.IUpdateCategoryProductUseCase)
+  .toConstantValue(updateCategoryProductUseCase);
+productDIContainer
+  .bind<IDeleteCategoryProductUseCase>(TYPES.IDeleteCategoryProductUseCase)
+  .toConstantValue(deleteCategoryProductUseCase);
+productDIContainer
+  .bind<IDeleteProductTransferUseCase>(TYPES.IDeleteProductTransferUseCase)
+  .toConstantValue(deleteProductTransferUseCase);
 
 export { productDIContainer };

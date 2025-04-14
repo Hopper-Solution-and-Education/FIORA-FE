@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 const ChartLegend = ({ items }: { items: { name: string; color: string }[] }) => {
   if (!items || items.length === 0) return null;
@@ -15,4 +15,4 @@ const ChartLegend = ({ items }: { items: { name: string; color: string }[] }) =>
   );
 };
 
-export default ChartLegend;
+export default memo(ChartLegend);

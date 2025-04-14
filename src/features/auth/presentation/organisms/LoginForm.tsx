@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/shared/utils';
-import { Check, Eye, EyeIcon as EyeClosed } from 'lucide-react';
+import { Check, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import type React from 'react';
 import { useState } from 'react';
@@ -31,7 +31,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
 
   return (
     <div className={cn('flex flex-col items-center gap-6', className)} {...props}>
-      <Card className="w-full max-w-2xl overflow-hidden border-0 shadow-none">
+      <Card className="w-full overflow-hidden border-0 shadow-none">
         <CardContent className="p-6 md:p-8">
           <div className="flex flex-col items-center gap-6">
             <h1 className="text-4xl font-bold text-black dark:text-white">SIGN IN</h1>
@@ -45,13 +45,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                   control={form.control}
                   name="email"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col w-full max-w-md">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 w-full">
-                        <FormLabel className="text-sm text-foreground w-full sm:w-1/4 text-left sm:text-right">
+                    <FormItem className="flex flex-col w-full">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center w-full">
+                        <FormLabel className="text-sm text-foreground w-full sm:w-1/4 text-left sm:text-right pr-0 sm:pr-4 whitespace-nowrap mb-2 sm:mb-0">
                           Email
                         </FormLabel>
-                        <div className="flex-1">
-                          <FormControl>
+                        <div className="flex-1 w-full sm:max-w-[75%] sm:mx-auto">
+                          <FormControl className="w-full">
                             <Input
                               id="email"
                               type="email"
@@ -61,8 +61,15 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                             />
                           </FormControl>
                         </div>
+                        <div className="hidden sm:block sm:w-1/4"></div>
                       </div>
-                      <FormMessage className="w-full text-left sm:pl-[calc(25%+1rem)]" />
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center w-full">
+                        <div className="w-1/4"></div>
+                        <div className="flex-1 w-full sm:max-w-[75%] sm:mx-auto">
+                          <FormMessage />
+                        </div>
+                        <div className="hidden sm:block sm:w-1/4"></div>
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -71,12 +78,12 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                   control={form.control}
                   name="password"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col w-full max-w-md">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 w-full">
-                        <FormLabel className="text-sm text-foreground w-full sm:w-1/4 text-left sm:text-right">
+                    <FormItem className="flex flex-col w-full">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center w-full">
+                        <FormLabel className="text-sm text-foreground w-full sm:w-1/4 text-left sm:text-right pr-0 sm:pr-4 whitespace-nowrap mb-2 sm:mb-0">
                           Password
                         </FormLabel>
-                        <div className="relative flex-1">
+                        <div className="relative flex-1 w-full sm:max-w-[75%] sm:mx-auto">
                           <FormControl>
                             <Input
                               id="password"
@@ -86,29 +93,36 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                               {...field}
                             />
                           </FormControl>
-                          <button
-                            type="button"
-                            className="absolute inset-y-0 right-0 flex items-center pr-3"
-                            onClick={() => setShowPassword(!showPassword)}
-                          >
-                            {showPassword
-                              ? field.value && (
-                                  <EyeClosed className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                                )
-                              : field.value && (
-                                  <Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                                )}
-                          </button>
+                          {field.value && (
+                            <button
+                              type="button"
+                              className="absolute inset-y-0 right-0 flex items-center pr-3"
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                              ) : (
+                                <Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                              )}
+                            </button>
+                          )}
                         </div>
+                        <div className="hidden sm:block sm:w-1/4"></div>
                       </div>
-                      <FormMessage className="w-full text-left sm:pl-[calc(25%+1rem)]" />
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center w-full">
+                        <div className="w-1/4"></div>
+                        <div className="flex-1 w-full sm:max-w-[75%] sm:mx-auto">
+                          <FormMessage />
+                        </div>
+                        <div className="hidden sm:block sm:w-1/4"></div>
+                      </div>
                     </FormItem>
                   )}
                 />
 
-                <div className="flex flex-col sm:flex-row w-full max-w-md gap-2 sm:gap-4 sm:items-center">
-                  <div className="w-full sm:w-1/4"></div>
-                  <div className="w-full sm:flex-1 flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center w-full">
+                  <div className="hidden sm:block sm:w-1/4"></div>
+                  <div className="flex-1 w-full sm:max-w-[75%] sm:mx-auto flex items-center gap-2">
                     <Checkbox
                       id="remember-me"
                       checked={rememberMe}
@@ -126,12 +140,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                       Remember me
                     </Label>
                   </div>
+                  <div className="hidden sm:block sm:w-1/4"></div>
                 </div>
 
                 <div className="flex justify-center w-full mt-7">
                   <Button
                     type="submit"
-                    disabled={!isValid} // Disable button if form is not valid
+                    disabled={!isValid}
                     className="group text-lg font-semibold w-44 py-6 bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed"
                   >
                     <Check className="block text-green-300 stroke-[4] transform transition-transform duration-200 drop-shadow-sm hover:text-green-100 !h-[28px] !w-[28px]" />

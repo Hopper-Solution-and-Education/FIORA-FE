@@ -13,6 +13,7 @@ import {
   NewCategoryDefaultValues,
   validateNewCategorySchema,
 } from '@/features/home/module/category/slices/utils/formSchema';
+import { Response } from '@/shared/types/Common.types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -34,11 +35,22 @@ export default function CreateCategoryForm({ initialData }: CreateCategoryFormPr
     })) || [];
 
   const fields = [
-    <GlobalIconSelect key="icon" name="icon" />,
-    <InputField key="name" name="name" placeholder="Category Name" />,
-    <ParentCategorySelectUpdate key="parentId" name="parentId" options={parentOptions} />,
-    <TypeSelect key="type" name="type" />,
-    <TextareaField key="description" name="description" placeholder="Category description" />,
+    <GlobalIconSelect key="icon" name="icon" label="Icon" htmlFor="icon" required />,
+    <InputField key="name" name="name" placeholder="Input name" label="Name" required />,
+    <ParentCategorySelectUpdate
+      key="parentId"
+      name="parentId"
+      label="Parent"
+      placeholder="Select Master Category"
+      options={parentOptions}
+    />,
+    <TypeSelect key="type" name="type" label="Type" required />,
+    <TextareaField
+      key="description"
+      name="description"
+      label="Description"
+      placeholder="Input description"
+    />,
   ];
 
   const onSubmit = async (data: any) => {
@@ -47,12 +59,16 @@ export default function CreateCategoryForm({ initialData }: CreateCategoryFormPr
         ...defaultNewCategoryValues,
         ...data,
       };
-      await dispatch(createCategory(payload)).unwrap();
-      toast.success('Category created successfully');
-      router.push('/home/category');
+      await dispatch(createCategory(payload))
+        .unwrap()
+        .then((value: Response<Category>) => {
+          if (value.status == 201) {
+            router.push('/category');
+            toast.success('You have create new Finance Category successfully!');
+          }
+        });
     } catch (error) {
       console.error('Error creating category:', error);
-      toast.error('Failed to create category');
     }
   };
 

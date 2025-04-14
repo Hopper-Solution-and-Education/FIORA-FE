@@ -1,39 +1,27 @@
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { isImageFile, isUrl } from '@/lib/utils';
-import { isEmpty } from 'lodash';
 import { useEffect, useState } from 'react';
 import { useFormContext, type Control } from 'react-hook-form';
-import { ProductFormValues } from '../schema/addProduct.schema';
+import { Product } from '../../domain/entities';
+import { ProductFormValues } from '../schema';
 import IconSelect from './IconSelect';
 import IconUploader from './IconUploader';
 
 interface ProductIconFieldProps {
   control: Control<ProductFormValues>;
+  productToEdit: Product | null;
 }
 
 type ProductIconFormType = 'dropdown' | 'uploader';
 
-const ProductIconField = ({ control }: ProductIconFieldProps) => {
-  const { setValue, watch } = useFormContext<ProductFormValues>();
+const ProductIconField = ({ control, productToEdit }: ProductIconFieldProps) => {
+  const { watch, setValue } = useFormContext<ProductFormValues>();
   const fieldValue = watch('icon');
 
-  // Xác định tab dựa trên giá trị icon
   const [selectedTab, setSelectedTab] = useState<ProductIconFormType>(
     fieldValue && isUrl(fieldValue) ? 'uploader' : 'dropdown',
   );
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [nextTab, setNextTab] = useState<ProductIconFormType | null>(null);
 
   useEffect(() => {
     if (fieldValue) {
@@ -41,27 +29,16 @@ const ProductIconField = ({ control }: ProductIconFieldProps) => {
     }
   }, [fieldValue]);
 
+  // để chắc rằng field icon sẽ được nhận
+  useEffect(() => {
+    if (productToEdit?.icon) {
+      setValue('icon', productToEdit.icon);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productToEdit]);
+
   const handleOnTabChange = (newTab: string) => {
-    if (!isEmpty(fieldValue) && newTab !== selectedTab) {
-      setNextTab(newTab as ProductIconFormType);
-      setIsAlertOpen(true);
-    } else {
-      setSelectedTab(newTab as ProductIconFormType);
-    }
-  };
-
-  const confirmTabChange = () => {
-    if (nextTab) {
-      setValue('icon', '', { shouldValidate: true });
-      setSelectedTab(nextTab);
-      setIsAlertOpen(false);
-      setNextTab(null);
-    }
-  };
-
-  const cancelTabChange = () => {
-    setIsAlertOpen(false);
-    setNextTab(null);
+    setSelectedTab(newTab as ProductIconFormType);
   };
 
   return (
@@ -80,7 +57,7 @@ const ProductIconField = ({ control }: ProductIconFieldProps) => {
             </TabsList>
 
             <TabsContent value="uploader">
-              <IconUploader fieldPath={field.name} maxSize={2 * 1024 * 1024} />
+              <IconUploader field={field} maxSize={2 * 1024 * 1024} />
             </TabsContent>
 
             <TabsContent value="dropdown">
@@ -89,21 +66,6 @@ const ProductIconField = ({ control }: ProductIconFieldProps) => {
           </Tabs>
 
           <FormMessage />
-
-          <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Confirm Tab Switch</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Switching will reset the selected icon. Do you want to continue?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={cancelTabChange}>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={confirmTabChange}>Continue</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </FormItem>
       )}
     />

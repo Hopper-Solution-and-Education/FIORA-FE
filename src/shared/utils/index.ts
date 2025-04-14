@@ -21,11 +21,19 @@ export const useGetIconLabel = (icon: string): string => {
   );
 };
 
-export const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('vi-VN', {
+export const formatCurrency = (value: number, currency: string = 'VND') => {
+  if (currency === 'USD') {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(value);
+  }
+
+  return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
     currency: 'VND',
   }).format(value);
+};
 
 export const convertUSDToVND = (amountUSD: number) => {
   const exchangeRate = 24800; // Fixed exchange rate
@@ -155,7 +163,7 @@ export function buildOrderByTransaction(orderBy: Record<string, any>): Record<st
 export function buildOrderByTransactionV2(
   orderBy: OrderByFields,
 ): Prisma.TransactionOrderByWithRelationInput {
-  return Object.entries(orderBy).reduce((acc, [key, value]) => {
+  const orderByObj = Object.entries(orderBy).reduce((acc, [key, value]) => {
     if (!value) return acc;
 
     if (key === 'fromAccount' || key === 'toAccount') {
@@ -166,8 +174,10 @@ export function buildOrderByTransactionV2(
 
     return acc;
   }, {} as Prisma.TransactionOrderByWithRelationInput);
+
+  return orderByObj;
 }
-export const buildWhereClause = (filters: Filter) => {
+export function buildWhereClause(filters: Filter) {
   const whereClause: any = {};
 
   if (!filters) {
@@ -187,4 +197,8 @@ export const buildWhereClause = (filters: Filter) => {
   }
 
   return whereClause;
+}
+
+export const isImageUrl = (str: string): boolean => {
+  return str.startsWith('http') || str.startsWith('https') || str.startsWith('data:');
 };

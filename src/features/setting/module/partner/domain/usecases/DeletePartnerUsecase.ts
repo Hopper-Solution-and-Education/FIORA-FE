@@ -1,19 +1,23 @@
-import { Partner } from '../entities/Partner';
 import { IPartnerRepository } from '../../data/repositories/PartnerRepository';
 
 export interface IDeletePartnerUseCase {
-  execute(id: string): Promise<Partner>;
+  execute(id: string, replacementId?: string | null): Promise<void>;
 }
 
 export class DeletePartnerUseCase implements IDeletePartnerUseCase {
   constructor(private partnerRepository: IPartnerRepository) {}
 
-  async execute(id: string): Promise<Partner> {
-    return await this.partnerRepository.deletePartner(id);
+  async execute(id: string, replacementId?: string | null): Promise<void> {
+    try {
+      // The API only returns status and message, not the partner object
+      await this.partnerRepository.deletePartner(id, replacementId);
+    } catch (error) {
+      console.error('Error in DeletePartnerUseCase:', error);
+      throw error;
+    }
   }
 }
 
-// Add a factory function to create the use case
 export const createDeletePartnerUseCase = (
   partnerRepository: IPartnerRepository,
 ): IDeletePartnerUseCase => {

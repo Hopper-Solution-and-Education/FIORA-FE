@@ -1,5 +1,6 @@
 'use client';
 
+import { LoadingIndicator } from '@/components/common/atoms/LoadingIndicator';
 import FormPage from '@/components/common/organisms/FormPage';
 import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
 import PartnerUpdateForm from '@/features/setting/module/partner/presentation/components/PartnerUpdateForm';
@@ -37,7 +38,7 @@ export default function PartnerUpdatePage() {
   }, [id, dispatch]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingIndicator />;
   }
 
   if (error || !partner) {
@@ -49,7 +50,7 @@ export default function PartnerUpdatePage() {
       title="Update Partner"
       FormComponent={PartnerUpdateForm}
       initialData={partner}
-      headerActions={<DeletePartnerButton partnerId={id} />}
+      headerActions={<DeletePartnerButton partnerId={id} partner={partner} partnerName="" />}
     />
   );
 }

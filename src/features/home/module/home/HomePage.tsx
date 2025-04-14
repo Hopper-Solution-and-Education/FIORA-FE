@@ -1,14 +1,19 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+'use client';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { MODULE } from '@/shared/constants';
 import { AccountsOverview } from './AccountOverview';
-import { AreaGraph } from './components/AreaGraph';
-import BarGraph from './components/BarGraph';
-import PieGraph from './components/PieGraph';
 import RecentTransactions from './components/RecentTransactions';
 import Recommendations from './components/Recommendations';
-import FinancialOverview from './FinancialOverview';
+import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { useFeatureFlagGuard } from '@/hooks/useFeatureFlagGuard';
+import AccountDashboard from '../account/AccountDashboard';
 
 export default function HomePage() {
+  const { isFeatureOn } = useFeatureFlagGuard(FeatureFlags.ACCOUNT_FEATURE, MODULE.HOME);
+
+  if (!isFeatureOn) {
+    return null;
+  }
   return (
     <div className="flex flex-1 flex-col space-y-4 p-4">
       <div className="flex items-center justify-between space-y-2">
@@ -20,9 +25,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-10">
             {/* Left Section: Financial & Account Overview */}
             <div className="col-span-1 md:col-span-2 lg:col-span-7 space-y-4">
-              <div className="h-[200px] sm:h-[320px] md:h-[440px] lg:h-[600px] overflow-y-auto">
-                <FinancialOverview />
-              </div>
+              {isFeatureOn && <AccountDashboard module={MODULE.HOME} />}
               <AccountsOverview />
             </div>
 
@@ -30,40 +33,6 @@ export default function HomePage() {
             <div className="col-span-1 md:col-span-2 lg:col-span-3 space-y-4">
               <RecentTransactions />
               <Recommendations />
-            </div>
-
-            {/* Graphs Section */}
-            <div className="col-span-1 md:col-span-2 lg:col-span-10 space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base sm:text-lg font-semibold">
-                    Financial Performance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <BarGraph />
-                </CardContent>
-              </Card>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base sm:text-lg font-semibold">Area Graph</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <AreaGraph />
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base sm:text-lg font-semibold">Pie Chart</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <PieGraph />
-                  </CardContent>
-                </Card>
-              </div>
             </div>
           </div>
         </TabsContent>

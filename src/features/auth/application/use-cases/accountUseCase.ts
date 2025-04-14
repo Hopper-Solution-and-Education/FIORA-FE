@@ -142,6 +142,8 @@ export class AccountUseCase {
       {
         include: {
           children: true,
+          toTransactions: true,
+          fromTransactions: true,
         },
         orderBy: [
           {
@@ -161,7 +163,7 @@ export class AccountUseCase {
       where: {
         userId,
         type: {
-          in: [AccountType.Payment, AccountType.Lending, AccountType.Saving],
+          in: [AccountType.Payment, AccountType.Lending, AccountType.Saving, AccountType.Invest],
         },
         parentId: null,
       },
@@ -206,16 +208,11 @@ export class AccountUseCase {
       throw new Error('Account not found');
     }
 
-    if (account.name === params.name) {
-      throw new Error('Account name is not changed');
-    }
-
     return await this.accountRepository.update(id, { ...params });
   }
 
   async deleteAccount(id: string, userId: string): Promise<Account | null> {
     const foundAccount = await this.accountRepository.findByCondition({
-      id,
       userId,
     });
 
@@ -233,28 +230,30 @@ export class AccountUseCase {
         throw new Error('Cannot delete master account with sub account still existed');
       } else {
         const transaction = await this.transactionRepository.findManyTransactions({
-          id,
-          OR: [{ fromAccountId: id }, { toAccountId: id }],
+          OR: [{ fromAccountId: id }, { toAccountId: id }], // check if any transaction linked to this account
         });
 
         if (transaction.length > 0) {
-          throw new Error('Cannot delete account with transaction still existed');
+          throw new Error('Sorry! You cannot delete Account which already has transactions');
         }
 
         // delete master account
         const res = await this.accountRepository.delete({
           where: {
             id,
-            parentId: null,
+            userId,
           },
         });
+
+        if (!res) {
+          throw new Error('Cannot delete master account');
+        }
 
         return res;
       }
     } else {
       // checked whether any transaction linked into account
       const transaction = await this.transactionRepository.findManyTransactions({
-        id,
         OR: [{ fromAccountId: id }, { toAccountId: id }],
       });
 
@@ -280,6 +279,7 @@ export class AccountUseCase {
       case AccountType.Payment:
       case AccountType.Saving:
       case AccountType.Lending:
+      case AccountType.Invest:
         if (balance < 0) {
           throw new Error('Balance must be >= 0');
         }
@@ -290,7 +290,7 @@ export class AccountUseCase {
         }
         break;
       case AccountType.CreditCard:
-        if (!limit) {
+        if (!limit && limit !== 0) {
           throw new Error('Limit must be provided');
         }
 
@@ -298,8 +298,8 @@ export class AccountUseCase {
           throw new Error('Balance must be <= 0');
         }
 
-        if (limit <= 0) {
-          throw new Error('Limit must be > 0');
+        if (limit < 0) {
+          throw new Error('Limit must be >= 0');
         }
 
         if (limit < balance) {

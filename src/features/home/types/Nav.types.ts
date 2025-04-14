@@ -1,4 +1,6 @@
 import { Icons } from '@/components/Icon';
+import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { UserRole } from '@prisma/client';
 
 export interface NavItem {
   title: string;
@@ -10,8 +12,10 @@ export interface NavItem {
   label?: string;
   description?: string;
   isActive?: boolean;
-  featureFlags?: string;
+  featureFlags?: FeatureFlags;
   items?: NavItem[];
+  role?: UserRole;
+  module?: string;
 }
 
 export interface NavItemWithChildren extends NavItem {

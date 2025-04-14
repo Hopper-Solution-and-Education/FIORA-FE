@@ -1,32 +1,31 @@
 'use client';
 
-import Loading from '@/components/common/atoms/Loading';
-import { useAppSelector } from '@/store';
 import { UseFormReturn } from 'react-hook-form';
 import PriceField from '../atoms/PriceField';
-import ProductCategoryField from '../atoms/ProductCategoryField';
-import ProductDescriptionField from '../atoms/ProductDescriptionField';
-import ProductIconField from '../atoms/ProductIconField';
-import ProductItemsField from '../atoms/ProductItemsField';
-import ProductNameField from '../atoms/ProductNameField';
-import ProductTypeField from '../atoms/ProductTypeField';
-import TaxRateField from '../atoms/TaxRateField';
-import { type ProductFormValues } from '../schema/addProduct.schema';
+
+import { Product } from '../../domain/entities';
+import {
+  ProductCategoryField,
+  ProductDescriptionField,
+  ProductIconField,
+  ProductItemsField,
+  ProductNameField,
+  ProductTypeField,
+  TaxRateField,
+} from '../atoms';
+import { type ProductFormValues } from '../schema';
 
 interface ProductFormProps {
   method: UseFormReturn<ProductFormValues>;
+  productToEdit: Product | null;
 }
 
-const ProductForm = ({ method }: ProductFormProps) => {
-  const isCreatingProduct = useAppSelector((state) => state.productManagement.isCreatingProduct);
-  const isUpdatingProduct = useAppSelector((state) => state.productManagement.isUpdatingProduct);
-
+const ProductForm = ({ method, productToEdit }: ProductFormProps) => {
   return (
     <>
-      {(isCreatingProduct || isUpdatingProduct) && <Loading />}
       <div className="mx-auto">
         <div className="space-y-4">
-          <ProductIconField control={method.control} />
+          <ProductIconField control={method.control} productToEdit={productToEdit} />
           <ProductNameField control={method.control} />
           <ProductTypeField control={method.control} />
           <ProductCategoryField control={method.control} />

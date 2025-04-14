@@ -4,14 +4,17 @@ import growthbook from '@/config/growthbook';
 import { NavItem } from '@/features/home/types/Nav.types';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { cn } from '@/lib/utils';
+import { ICON_SIZE } from '@/shared/constants/size';
 import { SectionType } from '@prisma/client';
 import HopperLogo from '@public/images/logo.jpg';
 import { ChevronRight, ChevronsUpDown, LogOut } from 'lucide-react';
-import { signOut, useSession } from 'next-auth/react';
+import { Session, signOut, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { redirect, usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { Icons } from '../Icon';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
 import {
@@ -40,7 +43,6 @@ import {
 } from '../ui/sidebar';
 import { helpItems } from './header-toggle/HelpCenter';
 import { menuSettingItems } from './header-toggle/SettingCenter';
-import { ICON_SIZE } from '@/shared/constants/size';
 
 export const company = {
   name: 'FIORA Inc',
@@ -56,15 +58,58 @@ type AppSideBarProps = {
 export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   const gb = growthbook;
   const [newNavItem, setNewNavItem] = useState<NavItem[]>([]);
-  const { data: session } = useSession();
+  const { data: session } = useSession() as { data: Session | null };
   const pathname = usePathname();
   const { section } = useGetSection(SectionType.HEADER, {
     revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
   });
   const isMobile = useIsMobile();
   const { open } = useSidebar();
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
   const router = useRouter();
+
+  const handleLogout = async () => {
+    await signOut().catch(() => {
+      toast.error('Error logging out');
+    });
+
+    redirect('./');
+  };
+
+  const isItemActive = (item: NavItem): boolean => {
+    // Điều kiện 1: Khớp chính xác item.url với pathname
+    if (item.url === pathname) return true;
+
+    // Điều kiện 2: Kiểm tra nếu pathname là đường dẫn con của item.url
+    if (
+      pathname?.startsWith(item.url) &&
+      (pathname === item.url || pathname[item.url.length] === '/')
+    ) {
+      return true;
+    }
+
+    // Điều kiện 3: Kiểm tra nếu có subItem nào active (khớp chính xác hoặc là đường dẫn con)
+    if (
+      item.items?.some((subItem) => {
+        // Khớp chính xác subItem.url với pathname
+        if (subItem.url === pathname) return true;
+        // Kiểm tra nếu pathname là đường dẫn con của subItem.url
+        if (
+          pathname?.startsWith(subItem.url) &&
+          (pathname === subItem.url || pathname[subItem.url.length] === '/')
+        ) {
+          return true;
+        }
+        return false;
+      })
+    ) {
+      return true;
+    }
+
+    return false;
+  };
 
   useEffect(() => {
     const newOpenItems = navItems.reduce(
@@ -81,7 +126,10 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   useEffect(() => {
     const filterNavItems = (items: NavItem[]): NavItem[] => {
       return items.flatMap((item) => {
-        if (!item.featureFlags || gb.isOn(item.featureFlags)) {
+        const hasFeatureFlag = !item.featureFlags || gb.isOn(item.featureFlags);
+        const hasRoleAccess = !item.role || session?.user?.role === item.role;
+
+        if (hasFeatureFlag && hasRoleAccess) {
           return [
             {
               ...item,
@@ -101,25 +149,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
 
     handleCheckNavItem();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navItems]);
-
-  const isItemActive = (item: NavItem) => {
-    if (item.url === pathname) return true;
-    if (item.items?.some((subItem) => subItem.url === pathname)) return true;
-    return false;
-  };
-
-  useEffect(() => {
-    const newOpenItems = navItems.reduce(
-      (acc, item) => {
-        acc[item.title] = isItemActive(item);
-        return acc;
-      },
-      {} as Record<string, boolean>,
-    );
-    setOpenItems(newOpenItems);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, navItems]);
+  }, [navItems, session?.user?.role]);
 
   const handleOpenChange = (title: string, isOpen: boolean) => {
     setOpenItems((prev) => ({
@@ -129,7 +159,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   };
 
   const handlePressLogo = () => {
-    router.push('/home');
+    router.push('/');
   };
 
   return (
@@ -141,7 +171,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
         >
           {/* Logo */}
           <div
-            className={`flex aspect-square items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground transition-all duration-300 ${
+            className={`flex aspect-square items-center justify-center rounded-lg bg-transparent text-sidebar-primary-foreground transition-all duration-300 ${
               isMobile
                 ? open
                   ? 'size-10 sm:size-12'
@@ -202,7 +232,13 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                         {item.items?.map((subItem) => (
                           <SidebarMenuSubItem key={subItem.title}>
                             <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
-                              <Link href={subItem.url}>
+                              <Link
+                                href={subItem.url}
+                                className={cn(
+                                  'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
+                                  pathname === subItem.url && 'bg-accent text-accent-foreground',
+                                )}
+                              >
                                 <span>{subItem.title}</span>
                               </Link>
                             </SidebarMenuSubButton>
@@ -214,8 +250,14 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                 </Collapsible>
               ) : (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title} isActive={pathname === item.url}>
-                    <Link href={item.url}>
+                  <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
+                    <Link
+                      href={item.url}
+                      className={cn(
+                        'flex items-center rounded-lg text-sm font-medium hover:bg-accent hover:text-accent-foreground',
+                        isActive && 'bg-accent text-accent-foreground',
+                      )}
+                    >
                       <Icon />
                       <span>{item.title}</span>
                     </Link>
@@ -296,7 +338,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                     </DropdownMenuItem>
                   ))}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut()} className="flex items-center gap-2">
+                  <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2">
                     <LogOut />
                     Log out
                   </DropdownMenuItem>

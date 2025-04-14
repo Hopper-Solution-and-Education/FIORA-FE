@@ -1,9 +1,9 @@
 import { decorate, injectable } from 'inversify';
 import type { IProductRepository } from '../../data/repositories/ProductRepository';
-import { GetProductResponse, Product } from '../entities/Product';
+import { Product, ProductsGetResponse } from '../entities/Product';
 
 export interface IGetProductUseCase {
-  execute(page: number, pageSize: number): Promise<GetProductResponse>;
+  execute(page: number, pageSize: number): Promise<ProductsGetResponse>;
 }
 
 export class GetProductUseCase implements IGetProductUseCase {
@@ -13,7 +13,7 @@ export class GetProductUseCase implements IGetProductUseCase {
     this.productRepository = productRepository;
   }
 
-  async execute(page: number, pageSize: number): Promise<GetProductResponse> {
+  async execute(page: number, pageSize: number): Promise<ProductsGetResponse> {
     // Fetch products with sorting by createdAt (newest to oldest)
     const response = await this.productRepository.getProducts({
       page,
@@ -31,10 +31,11 @@ export class GetProductUseCase implements IGetProductUseCase {
           item.price,
           item.taxRate,
           item.items,
-          item.categoryId,
+          item.catId,
           item.type,
           item.createdAt,
           item.updatedAt,
+          [],
         ),
     );
 

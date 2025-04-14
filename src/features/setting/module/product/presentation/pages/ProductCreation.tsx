@@ -1,15 +1,12 @@
 'use client';
 import Loading from '@/components/common/atoms/Loading';
+import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { FIREBASE_GS_URL, FIREBASE_STORAGE_URL } from '@/shared/constants';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { isEmpty } from 'lodash';
 import { Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -18,14 +15,19 @@ import { toast } from 'sonner';
 import { removeFromFirebase, uploadToFirebase } from '../../../landing/landing/firebaseUtils';
 import { productDIContainer } from '../../di/productDIContainer';
 import { TYPES } from '../../di/productDIContainer.type';
-import { Product } from '../../domain/entities/Product';
-import { GetSingleProductUseCase } from '../../domain/usecases/GetSingleProductUsecase';
-import { setIsOpenDialogAddCategory } from '../../slices';
-import { createProduct } from '../../slices/actions/createProductAsyncThunk';
-import { deleteProductAsyncThunk } from '../../slices/actions/deleteProductAsyncThunk';
-import { fetchCategoriesProduct } from '../../slices/actions/fetchCategoriesProduct';
-import { updateProductAsyncThunk } from '../../slices/actions/updateProductAsyncThunk';
+import { Product } from '../../domain/entities';
+import { GetSingleProductUseCase } from '../../domain/usecases';
+
+import {
+  createProduct,
+  deleteProductAsyncThunk,
+  deleteProductTransferAsyncThunk,
+  fetchCategoriesProduct,
+  getProductsAsyncThunk,
+  updateProductAsyncThunk,
+} from '../../slices/actions';
 import ProductForm from '../molecules/ProductFieldForm';
+import DeleteProductDialog from '../organisms/DeleteProductDialog';
 import ProductCatCreationDialog from '../organisms/ProductCatCreationDialog';
 import {
   defaultProductFormValue,
@@ -41,14 +43,18 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
   const { page, limit } = useAppSelector((state) => state.productManagement.categories);
   const isUpdatingProduct = useAppSelector((state) => state.productManagement.isUpdatingProduct);
   const isCreatingProduct = useAppSelector((state) => state.productManagement.isCreatingProduct);
-  const isOpenDialogProductCategoryCreation = useAppSelector(
-    (state) => state.productManagement.isOpenDialogAddCategory,
+  const { page: pageProduct, pageSize } = useAppSelector(
+    (state) => state.productManagement.products,
   );
   const [isLoadingGetProduct, setIsLoadingGetProduct] = useState(false);
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const productIdToTransfer = useAppSelector(
+    (state) => state.productManagement.ProductIdToTransfer,
+  );
 
   const method = useForm<ProductFormValues>({
     resolver: yupResolver(productSchema),
@@ -57,12 +63,13 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
 
   const {
     reset,
-    formState: { isValid },
+    formState: { isValid, isSubmitting },
   } = method;
 
   useEffect(() => {
     const handleGetProduct = async () => {
       setIsLoadingGetProduct(true);
+      dispatch(getProductsAsyncThunk({ page: pageProduct, pageSize }));
       try {
         await dispatch(fetchCategoriesProduct({ page, pageSize: limit })).unwrap();
 
@@ -71,7 +78,6 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
             TYPES.IGetSingleProductUseCase,
           );
           const product = await getSingleProductUseCase.execute(productId);
-
           if (product) {
             reset({
               id: product.id,
@@ -81,10 +87,11 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
               price: product.price ?? 0,
               taxRate: product.taxRate ?? 0,
               type: product.type ?? '',
-              categoryId: product.categoryId || '',
+              catId: product.catId || '',
               items: product.items || [],
             });
           }
+          setProductToEdit(product);
         }
       } catch (error: any) {
         toast.error('Error getting product', {
@@ -104,34 +111,41 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
 
     const isFirebaseImage =
       productToDelete.icon &&
-      (productToDelete.icon.startsWith('https://firebasestorage.googleapis.com') ||
-        productToDelete.icon.startsWith('gs://'));
+      (productToDelete.icon.startsWith(FIREBASE_STORAGE_URL) ||
+        productToDelete.icon.startsWith(FIREBASE_GS_URL));
 
     if (isFirebaseImage) {
-      await removeFromFirebase(productToDelete.icon);
+      removeFromFirebase(productToDelete.icon).catch(() => {
+        console.warn('Failed to delete image from Firebase');
+      });
     }
 
-    dispatch(deleteProductAsyncThunk({ id: productToDelete.id }));
-    setProductToDelete(null);
-    setIsDialogOpen(false);
-    router.replace('/setting/product');
+    if (!isEmpty(productToDelete.transactions)) {
+      dispatch(
+        deleteProductTransferAsyncThunk({
+          productIdToDelete: productToDelete.id,
+          productIdToTransfer,
+        }),
+      )
+        .unwrap()
+        .then(() => {
+          setProductToDelete(null);
+          setIsDialogOpen(false);
+          router.replace('/setting/product');
+        });
+    } else {
+      dispatch(deleteProductAsyncThunk({ id: productToDelete.id }))
+        .unwrap()
+        .then(() => {
+          setProductToDelete(null);
+          setIsDialogOpen(false);
+          router.replace('/setting/product');
+        });
+    }
   };
 
   const openDeleteDialog = () => {
-    const product: Product = {
-      id: method.getValues('id') ?? '',
-      name: method.getValues('name'),
-      description: method.getValues('description') ?? '',
-      icon: method.getValues('icon'),
-      type: method.getValues('type'),
-      price: method.getValues('price'),
-      taxRate: parseFloat(String(method.getValues('taxRate') ?? '0')),
-      categoryId: method.getValues('categoryId'),
-      items: method.getValues('items') || [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setProductToDelete(product);
+    setProductToDelete(productToEdit);
     setIsDialogOpen(true);
   };
 
@@ -162,7 +176,6 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
         await dispatch(updateProductAsyncThunk(formattedData))
           .unwrap()
           .then(() => {
-            method.reset(defaultProductFormValue);
             router.replace('/setting/product');
           });
         return;
@@ -174,72 +187,81 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
           method.reset(defaultProductFormValue);
           router.replace('/setting/product');
         });
-
-      console.log('back to product page');
     } catch (error) {
       console.error('Error creating/updating product:', error);
     }
   };
+
+  const renderSubmitButtonDefault = () => (
+    <TooltipProvider>
+      <div className="flex justify-between gap-4 mt-6">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => router.back()}
+              className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
+            >
+              <Icons.circleArrowLeft className="h-5 w-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Cancel and go back</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="submit"
+              disabled={!isValid || isCreatingProduct || isUpdatingProduct}
+              className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              {isSubmitting ? (
+                <Icons.spinner className="animate-spin h-5 w-5" />
+              ) : (
+                <Icons.check className="h-5 w-5" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{isSubmitting ? 'Submiting...' : 'Submit'}</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </TooltipProvider>
+  );
 
   return (
     <section className="mb-10">
       <FormProvider {...method}>
         <>{isLoadingGetProduct && <Loading />}</>
         <div className="mx-auto max-w-4xl px-4">
-          <h1 className="text-2xl font-bold mb-4">
-            {productId ? 'Edit Product' : 'Create New Product'}
-          </h1>
+          <div className="flex justify-between">
+            <h1 className="text-2xl font-bold">
+              {productId ? `Edit Product: ${productToEdit?.name ?? ''}` : 'Create New Product'}
+            </h1>
+
+            <Button disabled={!productId} type="button" variant="ghost" onClick={openDeleteDialog}>
+              <Trash2 color="red" className="h-4 w-4" />
+            </Button>
+          </div>
 
           {/* Form tạo/cập nhật sản phẩm */}
           <form onSubmit={method.handleSubmit(handleSubmit)} id="hook-form">
             <div className="mb-6">
-              <ProductForm method={method} />
+              <ProductForm method={method} productToEdit={productToEdit} />
             </div>
 
-            <div className="flex justify-between items-center">
-              {productId && (
-                <Button type="button" variant="ghost" onClick={openDeleteDialog}>
-                  <Trash2 color="red" className="h-4 w-4" />
-                </Button>
-              )}
-              <div className="flex gap-3">
-                <Button
-                  disabled={!isValid || isCreatingProduct || isUpdatingProduct}
-                  type="submit"
-                  form="hook-form"
-                >
-                  {productId
-                    ? isUpdatingProduct
-                      ? 'Updating...'
-                      : 'Update Product'
-                    : isCreatingProduct
-                      ? 'Creating...'
-                      : 'Create Product'}
-                </Button>
-              </div>
-            </div>
+            {renderSubmitButtonDefault()}
           </form>
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Confirm Delete</DialogTitle>
-              </DialogHeader>
-              <p>Are you sure you want to delete this product? This action cannot be undone.</p>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button variant="destructive" onClick={confirmDelete}>
-                  Delete
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          <ProductCatCreationDialog
-            open={isOpenDialogProductCategoryCreation}
-            onOpenChange={(open) => dispatch(setIsOpenDialogAddCategory(open))}
+          <ProductCatCreationDialog />
+          <DeleteProductDialog
+            product={productToDelete}
+            open={isDialogOpen}
+            onOpenChange={setIsDialogOpen}
+            onConfirm={confirmDelete}
           />
         </div>
       </FormProvider>

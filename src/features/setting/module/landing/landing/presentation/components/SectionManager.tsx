@@ -1,5 +1,6 @@
 'use client';
 
+import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -146,10 +147,12 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
     <FormProvider {...methods}>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">{sectionType.replace('_', ' ')} Section</h2>
+          <h2 className="text-2xl font-bold">
+            {sectionType === 'KPS' ? 'KSP' : sectionType.replace('_', ' ')} Section
+          </h2>
           <div className="flex space-x-2">
             <Button onClick={handleSubmit((data) => onSubmit(data))} variant="default">
-              Save Changes
+              <Icons.saveAll /> <span>Save</span>
             </Button>
           </div>
         </div>

@@ -20,7 +20,7 @@ class ProductRepository implements IProductRepository {
 
   async findManyProducts(
     where: Prisma.ProductWhereInput,
-    options: Prisma.ProductFindManyArgs,
+    options?: Prisma.ProductFindManyArgs,
   ): Promise<Product[]> {
     return prisma.product.findMany({ where, ...options });
   }

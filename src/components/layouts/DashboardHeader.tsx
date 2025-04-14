@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ICON_SIZE } from '@/shared/constants/size';
 import { formatCurrency } from '@/shared/utils';
 import { Bell, Gift } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -17,21 +18,24 @@ import { SidebarTrigger } from '../ui/sidebar';
 import { UserNav } from './UserNav';
 import HelpCenter from './header-toggle/HelpCenter';
 import SettingCenter from './header-toggle/SettingCenter';
-import { ICON_SIZE } from '@/shared/constants/size';
 
 export default function Header() {
   // state
   const [FBalance, setFBalance] = useState('0.0');
   const [FDebt, setFDebt] = useState('0.0');
   const [isLoading, setIsLoading] = useState(true);
-  const [isOpenAnountment, setIsOpenAnountment] = useState(true);
+  const [isOpenAnnouncement, setIsOpenAnnouncement] = useState(() => {
+    // Get the stored state from localStorage, default to true if not found
+    const storedState = localStorage.getItem('isOpenAnnouncement');
+    return storedState === null ? true : JSON.parse(storedState);
+  });
 
   const fetchUserBalance = async () => {
     try {
       const response = await fetch('/api/accounts/balance');
       const data = await response.json();
       if (data.status !== 200) {
-        alert('Error fetching user balance:' + data.message);
+        // alert('Error fetching user balance:' + data.message);
         return;
       } else {
         const { balance, dept } = data.data;
@@ -42,7 +46,8 @@ export default function Header() {
         setIsLoading(false);
       }
     } catch (error: any) {
-      alert('Error fetching user balance:' + error.message);
+      // alert('Error fetching user balance:' + error.message);
+      console.log(error);
     }
   };
 
@@ -50,10 +55,15 @@ export default function Header() {
     fetchUserBalance();
   }, []);
 
+  // Update localStorage whenever isOpenAnnouncement changes
+  useEffect(() => {
+    localStorage.setItem('isOpenAnnouncement', JSON.stringify(isOpenAnnouncement));
+  }, [isOpenAnnouncement]);
+
   return (
     <header className="transition-[width,height] ease-linear">
       {/* Announcement */}
-      {isOpenAnountment && (
+      {isOpenAnnouncement && (
         <div className="relative w-full">
           <Alert variant="default" className="rounded-none hidden md:block relative">
             <AlertDescription>This is an important announcement for all users.</AlertDescription>
@@ -61,7 +71,7 @@ export default function Header() {
               variant="ghost"
               size="icon"
               className="absolute top-2 right-2 p-2 rounded-full hover:bg-gray-100"
-              onClick={() => setIsOpenAnountment(false)}
+              onClick={() => setIsOpenAnnouncement(false)}
             >
               ✕
             </Button>

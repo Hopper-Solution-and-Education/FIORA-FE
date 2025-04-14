@@ -8,7 +8,7 @@ import {
   MIN_CHART_HEIGHT,
 } from '@/shared/constants/chart';
 import { getChartMargins, useWindowSize } from '@/shared/utils/device';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -270,4 +270,4 @@ const NestedBarChart = ({
   );
 };
 
-export default NestedBarChart;
+export default memo(NestedBarChart);

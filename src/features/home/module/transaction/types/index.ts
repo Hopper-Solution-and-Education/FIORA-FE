@@ -5,7 +5,7 @@ export type OrderType = 'asc' | 'desc' | 'none';
 export type DropdownOption = {
   value: string;
   label: string;
-  extra?: string | number;
+  disabled?: boolean;
 };
 
 export type TransactionPartner = {
@@ -118,6 +118,7 @@ export type PrimitiveType = string | number | boolean | Date | null;
 export type TransactionFilterObject = {
   [key: string | TransactionFilterComparator | TransactionFilterOperator]:
     | PrimitiveType
+    | TransactionFilterComparator
     | TransactionFilterObject;
 };
 
@@ -130,15 +131,39 @@ export type TransactionFilterCriteria = {
   search?: string;
 };
 
-export interface ITransactionPaginatedResponse {
+export type ITransactionPaginatedResponse = {
   data: Transaction[];
+  amountMin: number;
+  amountMax: number;
   page: number;
   pageSize: number;
   totalPage: number;
   total: number;
-}
+};
+
+export type TransactionFilterOptionResponse = {
+  fromAccounts: string[];
+  toAccounts: string[];
+  fromCategories: string[];
+  toCategories: string[];
+  partners: string[];
+};
 
 export type PaginationProps = {
   page: number;
   pageSize: number;
+};
+
+export type CreateTransactionBody = {
+  fromAccountId: string | null;
+  fromCategoryId: string | null;
+  toCategoryId: string | null;
+  toAccountId: string | null;
+  amount: string | number;
+  products?: { id: string }[];
+  partnerId: string | null;
+  remark: string | null;
+  date: string | Date;
+  type: string;
+  currency: string;
 };

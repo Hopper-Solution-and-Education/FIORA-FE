@@ -29,7 +29,9 @@ export function useDeleteCategory() {
 
   // Get available categories for transfer (excluding the selected one)
   const availableCategories = useMemo(() => {
-    return categories.data?.filter((category) => category.id !== selectedCategory?.id) || [];
+    return (
+      categories.data?.filter((category: Category) => category.id !== selectedCategory?.id) || []
+    );
   }, [categories.data, selectedCategory?.id]);
 
   // Handle delete action
@@ -47,10 +49,10 @@ export function useDeleteCategory() {
       // Assuming deleteCategory accepts an optional newCategoryId for transfer
       await dispatch(deleteCategory({ id: selectedCategory.id, newCategoryId })).unwrap();
 
-      toast.success('Category deleted successfully');
+      toast.success('You have delete Finance Category successfully!');
       dispatch(setDeleteConfirmOpen(false));
       dispatch(setSelectedCategory(null));
-      router.push('/home/category');
+      router.push('/category');
     } catch (error) {
       console.error('Error deleting category:', error);
       toast.error('Failed to delete category');

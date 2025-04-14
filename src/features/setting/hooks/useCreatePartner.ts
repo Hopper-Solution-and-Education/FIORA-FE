@@ -68,7 +68,7 @@ export function useCreatePartner({ redirectPath }: Props) {
     if (status === 'authenticated' && session?.user?.id) {
       fetchPartners(session.user.id);
     }
-  }, [status, session, fetchPartners]); // Thêm fetchPartners vào mảng phụ thuộc
+  }, [status, session, fetchPartners]);
 
   async function onSubmit(values: PartnerFormValues) {
     if (status !== 'authenticated' || !session?.user?.id) {
@@ -77,8 +77,6 @@ export function useCreatePartner({ redirectPath }: Props) {
     }
 
     try {
-      console.log('Received form values:', values);
-
       const submissionData = { ...values };
       let logoUrl: string | undefined;
 
@@ -89,7 +87,6 @@ export function useCreatePartner({ redirectPath }: Props) {
           path: 'partners/logos',
           fileName: `partner_logo_${Date.now()}`,
         });
-        console.log('Uploaded logo URL:', logoUrl);
       }
 
       const partnerData = {
@@ -100,8 +97,6 @@ export function useCreatePartner({ redirectPath }: Props) {
           submissionData.parentId?.toLowerCase() === 'none' ? null : submissionData.parentId,
       };
 
-      console.log('Partner data before API call:', partnerData);
-
       const formattedPartnerData = convertNullToUndefined(partnerData);
 
       await createPartnerUseCase.execute(formattedPartnerData as CreatePartnerAPIRequestDTO);
@@ -111,7 +106,23 @@ export function useCreatePartner({ redirectPath }: Props) {
       await fetchPartners(session.user.id);
       router.push(redirectPath);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to create partner');
+      // Improved error handling
+      let errorMessage = 'Failed to create partner';
+
+      if (error.message) {
+        try {
+          // Try to parse the error message if it's a JSON string
+          const parsedError = JSON.parse(error.message);
+          if (parsedError.message) {
+            errorMessage = parsedError.message;
+          }
+        } catch {
+          // If parsing fails, use the error message directly
+          errorMessage = error.message;
+        }
+      }
+
+      toast.error(errorMessage);
       console.error('Create partner error:', error);
     }
   }

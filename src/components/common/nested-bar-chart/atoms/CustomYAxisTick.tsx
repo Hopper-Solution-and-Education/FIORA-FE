@@ -1,12 +1,16 @@
 'use client';
 
-import type React from 'react';
-import { useState } from 'react';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/shared/utils';
-import LucieIcon from '@/features/home/module/category/components/LucieIcon';
+import type React from 'react';
+import { memo, useState } from 'react';
+
+import { throttle } from 'lodash';
+import { IconDisplay } from '@/components/common/atoms/IconDisplay';
+
+const THROTTLE_DELAY = 300; // Độ trễ giữa các lần gọi (ms)
 
 interface CustomYAxisTickProps {
   x: number;
@@ -32,19 +36,33 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
   const [isIconHovered, setIsIconHovered] = useState(false);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
 
-  // console.log(item);
+  const throttledToggleExpand = throttle(
+    (onToggleExpand, value) => {
+      onToggleExpand(value);
+    },
+    THROTTLE_DELAY,
+    { leading: true, trailing: false },
+  );
+
+  const throttledCallback = throttle(
+    (callback, item) => {
+      callback(item);
+    },
+    THROTTLE_DELAY,
+    { leading: true, trailing: false },
+  );
 
   const handleArrowClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (hasChildren) {
-      onToggleExpand(payload.value);
+      throttledToggleExpand(onToggleExpand, payload.value);
     }
   };
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (callback && item) {
-      callback(item);
+      throttledCallback(callback, item);
     }
   };
 
@@ -62,25 +80,12 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
               onMouseEnter={() => setIsIconHovered(true)}
               onMouseLeave={() => setIsIconHovered(false)}
             >
-              {/* Circular icon */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  'h-8 w-8 p-0 rounded-full border transition-all duration-300',
-                  isIconHovered ? 'bg-primary/20 shadow-sm' : 'hover:bg-muted/60',
-                  expandedItems[payload.value] && 'bg-primary/10',
-                )}
+              <IconDisplay
+                icon={item?.icon || 'activity'}
+                isHovered={isIconHovered}
+                className={cn(expandedItems[payload.value] && 'bg-primary/10')}
                 onClick={handleEditClick}
-              >
-                <LucieIcon
-                  icon={item?.icon || 'activity'}
-                  className={cn(
-                    'h-4 w-4 transition-all duration-200',
-                    isIconHovered ? 'text-primary' : 'text-muted-foreground',
-                  )}
-                />
-              </Button>
+              />
             </foreignObject>
           </TooltipTrigger>
           <TooltipContent
@@ -152,4 +157,4 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
   );
 };
 
-export default CustomYAxisTick;
+export default memo(CustomYAxisTick);

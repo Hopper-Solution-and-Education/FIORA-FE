@@ -19,6 +19,7 @@ interface GlobalFormProps<T extends yup.AnyObject> {
   defaultValues?: Partial<T>; // Optional default values for form fields
   onBack?: () => void;
   renderSubmitButton?: (formState: FormState<T>) => React.ReactNode; // Optional custom submit button renderer
+  mode?: 'onSubmit' | 'onBlur' | 'onChange' | 'onTouched' | 'all' | undefined;
 }
 
 // Generic GlobalForm component to manage and render forms
@@ -34,6 +35,7 @@ const GlobalForm = <T extends yup.AnyObject>({
   const methods = useForm<any>({
     resolver: yupResolver(schema), // Connects Yup schema to react-hook-form for validation
     defaultValues, // Sets initial values for the form fields
+    mode: 'onChange',
   });
 
   const { control, handleSubmit, formState } = methods;

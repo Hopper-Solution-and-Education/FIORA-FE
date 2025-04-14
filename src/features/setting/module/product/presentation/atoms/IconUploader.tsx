@@ -1,21 +1,23 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { isUrl } from '@/lib/utils';
 import { Upload, X } from 'lucide-react';
 import Image from 'next/image';
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useFormContext } from 'react-hook-form';
+import { ControllerRenderProps, useFormContext } from 'react-hook-form';
+import { ProductFormValues } from '../schema';
 
 interface IconUploaderProps {
-  fieldPath: string;
+  field: ControllerRenderProps<ProductFormValues>;
   maxSize?: number;
 }
 
-const IconUploader: React.FC<IconUploaderProps> = ({ fieldPath, maxSize = 2 * 1024 * 1024 }) => {
+const IconUploader: React.FC<IconUploaderProps> = ({ field, maxSize = 2 * 1024 * 1024 }) => {
   const { setValue, watch } = useFormContext();
   const [fileName, setFileName] = useState<string | null>(null);
-  const iconUrl = watch(fieldPath);
+  const iconUrl = watch(field.name);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.svg', '.gif', '.webp'] },
@@ -24,33 +26,32 @@ const IconUploader: React.FC<IconUploaderProps> = ({ fieldPath, maxSize = 2 * 10
       if (acceptedFiles.length > 0) {
         const file = acceptedFiles[0];
         const fileUrl = URL.createObjectURL(file);
-        setValue(fieldPath, fileUrl, { shouldValidate: true });
+        setValue(field.name, fileUrl, { shouldValidate: true });
         setFileName(file.name);
       }
     },
     onDropRejected: (fileRejections) => {
       const rejection = fileRejections[0];
       if (rejection?.errors[0]?.code === 'file-too-large') {
-        alert(`File is too large. Max size is ${maxSize / 1024 / 1024}MB`);
+        // alert(`File is too large. Max size is ${maxSize / 1024 / 1024}MB`);
       } else if (rejection?.errors[0]?.code === 'file-invalid-type') {
-        alert('Invalid file type. Please upload an image file.');
+        // alert('Invalid file type. Please upload an image file.');
       }
     },
   });
 
   const handleRemoveFile = () => {
-    setValue(fieldPath, '', { shouldValidate: true });
+    setValue(field.name, '', { shouldValidate: true });
     setFileName(null);
   };
 
+  // Kiểm tra xem iconUrl có phải là một URL hợp lệ (bao gồm cả blob:)
+  const shouldShowPreview = iconUrl && (isUrl(iconUrl) || iconUrl.startsWith('blob:'));
+
   return (
     <div className="space-y-2">
-      {/* <Label htmlFor={fieldPath} className="text-sm font-medium mb-2">
-        {label} <span className="text-red-500">*</span>
-      </Label> */}
-
-      {!iconUrl ? (
-        // Upload Section
+      {!shouldShowPreview ? (
+        // Upload Section: Hiển thị nếu iconUrl không phải là URL hợp lệ
         <div
           {...getRootProps()}
           className={`border border-dashed rounded-md p-4 text-center cursor-pointer transition-colors flex items-center justify-center h-[150px] ${
@@ -69,7 +70,7 @@ const IconUploader: React.FC<IconUploaderProps> = ({ fieldPath, maxSize = 2 * 10
           </div>
         </div>
       ) : (
-        // Preview Section
+        // Preview Section: Chỉ hiển thị nếu iconUrl là URL hợp lệ (bao gồm blob:)
         <div className="relative border rounded-md bg-gray-50 dark:bg-gray-800 flex items-center justify-center h-[140px]">
           <Image
             src={iconUrl}
