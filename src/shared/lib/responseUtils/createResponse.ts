@@ -1,6 +1,10 @@
 import { NextApiResponse } from 'next';
 
-export const createResponse = (status: number, message: string, data?: any) => {
+export const createResponse = (
+  status: number,
+  message: string | { [key: string]: string },
+  data?: any,
+) => {
   return {
     status,
     message,
@@ -8,6 +12,10 @@ export const createResponse = (status: number, message: string, data?: any) => {
   };
 };
 
-export const createError = (response: NextApiResponse, status: number, message: string) => {
+export const createError = (
+  response: NextApiResponse,
+  status: number = 500,
+  message: string | { [key: string]: string },
+) => {
   return response.status(status).json(createResponse(status, message));
 };
