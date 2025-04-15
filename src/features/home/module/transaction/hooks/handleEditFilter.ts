@@ -2,7 +2,6 @@ import {
   IRelationalTransaction,
   TransactionAccount,
   TransactionCategory,
-  TransactionFilterComparator,
   TransactionFilterCriteria,
   TransactionFilterOperator,
   TransactionPartner,
@@ -13,7 +12,7 @@ type FilterProps = {
   callBack: (newFilter: TransactionFilterCriteria) => void;
   target: keyof IRelationalTransaction;
   value: string | number | boolean;
-  comparator?: TransactionFilterComparator;
+  comparator: 'AND' | 'OR';
   subTarget?:
     | keyof TransactionAccount
     | keyof TransactionCategory
@@ -32,7 +31,10 @@ export const handleEditFilter = (props: FilterProps) => {
       ...newFilterCriteria,
       filters: {
         ...newFilterCriteria.filters,
-        [target]: comparator ? { [comparator]: value } : value,
+        [comparator]: [
+          ...((newFilterCriteria.filters?.[comparator] as object[]) ?? []),
+          { [target]: value },
+        ],
       },
     };
   } else if (!operator && subTarget) {
@@ -40,7 +42,10 @@ export const handleEditFilter = (props: FilterProps) => {
       ...newFilterCriteria,
       filters: {
         ...newFilterCriteria.filters,
-        [target]: { [subTarget as string]: comparator ? { [comparator]: value } : value },
+        [comparator]: [
+          ...((newFilterCriteria.filters?.[comparator] as object[]) ?? []),
+          { [target]: { [subTarget as string]: value } },
+        ],
       },
     };
   } else if (operator && subTarget) {
@@ -48,10 +53,15 @@ export const handleEditFilter = (props: FilterProps) => {
       ...newFilterCriteria,
       filters: {
         ...newFilterCriteria.filters,
-        [operator]: {
-          ...((newFilterCriteria.filters?.[operator] as object) ?? {}),
-          [target]: { [subTarget as string]: comparator ? { [comparator]: value } : value },
-        },
+        [comparator]: [
+          ...((newFilterCriteria.filters?.[comparator] as object[]) ?? []),
+          {
+            [operator]: {
+              ...((newFilterCriteria.filters?.[operator] as object) ?? {}),
+              [target]: { [subTarget as string]: value },
+            },
+          },
+        ],
       },
     };
   }

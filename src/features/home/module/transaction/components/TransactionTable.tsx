@@ -11,8 +11,10 @@ import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { debounce } from 'lodash';
 import { FileText, Loader2, Search, Trash } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { useSWRConfig } from 'swr';
 import { formatCurrency } from '../hooks/formatCurrency';
 import { formatDate } from '../hooks/formatDate';
@@ -35,7 +37,6 @@ import {
 import DeleteTransactionDialog from './DeleteTransactionDialog';
 import FilterMenu from './FilterMenu';
 import SettingsMenu from './SettingMenu';
-import { toast } from 'sonner';
 
 const SortArrowBtn = ({
   sortOrder,
@@ -61,6 +62,7 @@ const SortArrowBtn = ({
 );
 
 const TransactionTable = () => {
+  const { data } = useSession();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { mutate } = useSWRConfig();
@@ -80,6 +82,7 @@ const TransactionTable = () => {
   const [pageSize] = useState<number>(20);
   const [totalPage, setTotalPage] = useState<number>(0);
   const [totalItems, setTotalItems] = useState<number>(0);
+  const [currentDate] = useState<Date>(new Date());
 
   const {
     data: fetchData,
@@ -88,7 +91,13 @@ const TransactionTable = () => {
   } = useDataFetcher<ITransactionPaginatedResponse>({
     endpoint: '/api/transactions',
     method: 'POST',
-    body: { ...filterCriteria, page: currentPage, pageSize, sortBy: { [sortTarget]: sortOrder } },
+    body: {
+      ...filterCriteria,
+      page: currentPage,
+      pageSize,
+      sortBy: { [sortTarget]: sortOrder },
+      userId: data?.user.id,
+    },
   });
 
   // Implement intersection observer for infinite scrolling
@@ -224,6 +233,18 @@ const TransactionTable = () => {
     dispatch(updateFilterCriteria(newFilter));
   };
 
+  // Function to check if a date is older than 3 months
+  const isDeleteForbidden = (date: string | Date): boolean => {
+    const transactionDate = new Date(date);
+
+    // Calculate date 3 months ago from current date
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(currentDate.getMonth() - 3);
+
+    // Return true if transaction date is before the 3-months-ago date
+    return transactionDate < threeMonthsAgo;
+  };
+
   // Memoize the visible columns to avoid re-rendering
   const tableVisibleColumns: TransactionTableColumnKey = useMemo((): TransactionTableColumnKey => {
     const columns =
@@ -356,179 +377,201 @@ const TransactionTable = () => {
         </TableHeader>
         <TableBody>
           {/* Table data loop */}
-          {displayData.map((transRecord: IRelationalTransaction, index: number) => (
-            <TableRow
-              key={index}
-              className={`text-center text-${TRANSACTION_TYPE[transRecord.type.toUpperCase()]}`}
-            >
-              {Object.entries(tableVisibleColumns)
-                .sort(([, a], [, b]) => a.index - b.index)
-                .filter(([, col]) => col.index > 0)
-                .map(([columnKey]) => {
-                  switch (columnKey) {
-                    case 'No.':
-                      return <TableCell key={columnKey}>{index + 1}</TableCell>;
-                    case 'Date':
-                      return (
-                        <TableCell
-                          key={columnKey}
-                          className="underline cursor-pointer"
-                          onClick={() =>
-                            handleEditFilter({
-                              currentFilter: filterCriteria,
-                              callBack: handleFilterChange,
-                              target: 'date',
-                              value: transRecord.date.toString(),
-                            })
-                          }
-                        >
-                          {formatDate(new Date(transRecord.date.toString()))}
-                        </TableCell>
-                      );
-                    case 'Type':
-                      return (
-                        <TableCell
-                          key={columnKey}
-                          className={`underline cursor-pointer font-bold`}
-                          onClick={() =>
-                            handleEditFilter({
-                              currentFilter: filterCriteria,
-                              callBack: handleFilterChange,
-                              target: 'type',
-                              value: transRecord.type,
-                            })
-                          }
-                        >
-                          {transRecord.type}
-                        </TableCell>
-                      );
-                    case 'Amount':
-                      return (
-                        <TableCell key={columnKey} className={`font-bold`}>
-                          {formatCurrency(
-                            Number(transRecord.amount),
-                            transRecord.currency as TransactionCurrency,
-                          )}{' '}
-                        </TableCell>
-                      );
-                    case 'From':
-                      return (
-                        <TableCell
-                          key={columnKey}
-                          className={cn(
-                            'cursor-default',
-                            transRecord.fromAccountId || transRecord.fromCategoryId
-                              ? 'underline cursor-pointer'
-                              : 'text-gray-500',
-                          )}
-                          onClick={() =>
-                            handleEditFilter({
-                              currentFilter: filterCriteria,
-                              callBack: handleFilterChange,
-                              target:
-                                transRecord.type === 'Income' ? 'fromCategory' : 'fromAccount',
-                              subTarget: 'name',
-                              value:
-                                transRecord.type === 'Income'
-                                  ? (transRecord.fromCategory?.name ?? '')
-                                  : (transRecord.fromAccount?.name ?? ''),
-                            })
-                          }
-                        >
-                          {transRecord.fromAccount?.name ??
-                            transRecord.fromCategory?.name ??
-                            'Unknown'}
-                        </TableCell>
-                      );
-                    case 'To':
-                      return (
-                        <TableCell
-                          key={columnKey}
-                          className={cn(
-                            'cursor-default',
-                            transRecord.toAccountId || transRecord.toCategoryId
-                              ? 'underline cursor-pointer'
-                              : 'text-gray-500',
-                          )}
-                          onClick={() =>
-                            handleEditFilter({
-                              currentFilter: filterCriteria,
-                              callBack: handleFilterChange,
-                              target: transRecord.type === 'Expense' ? 'toCategory' : 'toAccount',
-                              subTarget: 'name',
-                              value:
-                                transRecord.type === 'Expense'
-                                  ? (transRecord.toCategory?.name ?? '')
-                                  : (transRecord.toAccount?.name ?? ''),
-                            })
-                          }
-                        >
-                          {transRecord.toAccount?.name ?? transRecord.toCategory?.name ?? 'Unknown'}
-                        </TableCell>
-                      );
-                    case 'Partner':
-                      return (
-                        <TableCell
-                          key={columnKey}
-                          className={cn(
-                            'cursor-default',
-                            transRecord.partnerId ? 'underline cursor-pointer' : 'text-gray-500',
-                          )}
-                          onClick={() =>
-                            handleEditFilter({
-                              currentFilter: filterCriteria,
-                              callBack: handleFilterChange,
-                              target: 'partner',
-                              subTarget: 'name',
-                              value: transRecord.partner?.name ?? '',
-                            })
-                          }
-                        >
-                          {transRecord.partner?.name ?? 'Unknown'}
-                        </TableCell>
-                      );
-                    case 'Actions':
-                      return (
-                        <TableCell key={columnKey} className="flex justify-center gap-2">
-                          {/* Detail button */}
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" className="px-3 py-2 hover:bg-gray-200 ">
-                                  <FileText size={18} color="#595959" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Details</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+          {displayData.map((transRecord: IRelationalTransaction, index: number) => {
+            const recordDate = new Date(transRecord.date.toString());
 
-                          {/* Delete button */}
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  className="px-3 py-2 hover:bg-red-200"
-                                  onClick={() => handleOpenDeleteModal(transRecord)}
-                                >
-                                  <Trash size={18} color="red" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Delete Transaction</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </TableCell>
-                      );
-                    default:
-                      return <TableCell key={columnKey}>-</TableCell>;
-                  }
-                })}
-            </TableRow>
-          ))}
+            return (
+              <TableRow
+                key={index}
+                className={`text-center text-${TRANSACTION_TYPE[transRecord.type.toUpperCase()]}`}
+              >
+                {Object.entries(tableVisibleColumns)
+                  .sort(([, a], [, b]) => a.index - b.index)
+                  .filter(([, col]) => col.index > 0)
+                  .map(([columnKey]) => {
+                    switch (columnKey) {
+                      case 'No.':
+                        return <TableCell key={columnKey}>{index + 1}</TableCell>;
+                      case 'Date':
+                        return (
+                          <TableCell
+                            key={columnKey}
+                            className="underline cursor-pointer"
+                            onClick={() =>
+                              handleEditFilter({
+                                currentFilter: filterCriteria,
+                                callBack: handleFilterChange,
+                                target: 'date',
+                                comparator: 'AND',
+                                value: transRecord.date.toString(),
+                              })
+                            }
+                          >
+                            {formatDate(recordDate)}
+                          </TableCell>
+                        );
+                      case 'Type':
+                        return (
+                          <TableCell
+                            key={columnKey}
+                            className={`underline cursor-pointer font-bold`}
+                            onClick={() =>
+                              handleEditFilter({
+                                currentFilter: filterCriteria,
+                                callBack: handleFilterChange,
+                                target: 'type',
+                                comparator: 'AND',
+                                value: transRecord.type,
+                              })
+                            }
+                          >
+                            {transRecord.type}
+                          </TableCell>
+                        );
+                      case 'Amount':
+                        return (
+                          <TableCell key={columnKey} className={`font-bold`}>
+                            {formatCurrency(
+                              Number(transRecord.amount),
+                              transRecord.currency as TransactionCurrency,
+                            )}{' '}
+                          </TableCell>
+                        );
+                      case 'From':
+                        return (
+                          <TableCell
+                            key={columnKey}
+                            className={cn(
+                              'cursor-default',
+                              transRecord.fromAccountId || transRecord.fromCategoryId
+                                ? 'underline cursor-pointer'
+                                : 'text-gray-500',
+                            )}
+                            onClick={() =>
+                              handleEditFilter({
+                                currentFilter: filterCriteria,
+                                callBack: handleFilterChange,
+                                target:
+                                  transRecord.type === 'Income' ? 'fromCategory' : 'fromAccount',
+                                subTarget: 'name',
+                                comparator: 'AND',
+                                value:
+                                  transRecord.type === 'Income'
+                                    ? (transRecord.fromCategory?.name ?? '')
+                                    : (transRecord.fromAccount?.name ?? ''),
+                              })
+                            }
+                          >
+                            {transRecord.fromAccount?.name ??
+                              transRecord.fromCategory?.name ??
+                              'Unknown'}
+                          </TableCell>
+                        );
+                      case 'To':
+                        return (
+                          <TableCell
+                            key={columnKey}
+                            className={cn(
+                              'cursor-default',
+                              transRecord.toAccountId || transRecord.toCategoryId
+                                ? 'underline cursor-pointer'
+                                : 'text-gray-500',
+                            )}
+                            onClick={() =>
+                              handleEditFilter({
+                                currentFilter: filterCriteria,
+                                callBack: handleFilterChange,
+                                target: transRecord.type === 'Expense' ? 'toCategory' : 'toAccount',
+                                subTarget: 'name',
+                                comparator: 'AND',
+                                value:
+                                  transRecord.type === 'Expense'
+                                    ? (transRecord.toCategory?.name ?? '')
+                                    : (transRecord.toAccount?.name ?? ''),
+                              })
+                            }
+                          >
+                            {transRecord.toAccount?.name ??
+                              transRecord.toCategory?.name ??
+                              'Unknown'}
+                          </TableCell>
+                        );
+                      case 'Partner':
+                        return (
+                          <TableCell
+                            key={columnKey}
+                            className={cn(
+                              'cursor-default',
+                              transRecord.partnerId ? 'underline cursor-pointer' : 'text-gray-500',
+                            )}
+                            onClick={() =>
+                              handleEditFilter({
+                                currentFilter: filterCriteria,
+                                callBack: handleFilterChange,
+                                target: 'partner',
+                                subTarget: 'name',
+                                comparator: 'AND',
+                                value: transRecord.partner?.name ?? '',
+                              })
+                            }
+                          >
+                            {transRecord.partner?.name ?? 'Unknown'}
+                          </TableCell>
+                        );
+                      case 'Actions':
+                        return (
+                          <TableCell key={columnKey} className="flex justify-center gap-2">
+                            {/* Detail button */}
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" className="px-3 py-2 hover:bg-gray-200 ">
+                                    <FileText size={18} color="#595959" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Details</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                            {/* Delete button */}
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    className={`px-3 py-2 ${isDeleteForbidden(recordDate) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-200'}`}
+                                    onClick={() => {
+                                      if (!isDeleteForbidden(recordDate)) {
+                                        handleOpenDeleteModal(transRecord);
+                                      }
+                                    }}
+                                    disabled={isDeleteForbidden(recordDate)}
+                                  >
+                                    <Trash
+                                      size={18}
+                                      color={isDeleteForbidden(recordDate) ? 'gray' : 'red'}
+                                    />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>
+                                    {isDeleteForbidden(recordDate)
+                                      ? "Can't delete transactions older than 3 months"
+                                      : 'Delete Transaction'}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </TableCell>
+                        );
+                      default:
+                        return <TableCell key={columnKey}>-</TableCell>;
+                    }
+                  })}
+              </TableRow>
+            );
+          })}
           {displayData.length === 0 && !isLoading && !isValidating && (
             <TableRow>
               <TableCell colSpan={Object.entries(tableVisibleColumns).length}>

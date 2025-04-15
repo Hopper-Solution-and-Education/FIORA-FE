@@ -20,9 +20,7 @@ export const DEFAULT_TRANSACTION_TABLE_COLUMNS: TransactionTableColumnKey = {
 
 export const DEFAULT_TRANSACTION_FILTER_CRITERIA: TransactionFilterCriteria = {
   userId: '',
-  filters: {
-    isDeleted: false,
-  },
+  filters: {},
 };
 
 export enum TransactionCurrency {

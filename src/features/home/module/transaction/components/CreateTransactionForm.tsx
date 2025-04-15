@@ -32,7 +32,7 @@ const CreateTransactionForm = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ ...body, date: body.date }),
       });
 
       if (!response.ok) {
@@ -42,8 +42,7 @@ const CreateTransactionForm = () => {
 
       const res = await response.json();
       toast.success(res.message || 'Transaction created successfully!');
-      router.refresh();
-      // router.push('/home/transaction');
+      router.replace('/transaction');
     } catch (error: any) {
       alert(error.message || 'An error occurred');
     }
