@@ -5,7 +5,7 @@ export * from './date-time-picker/DateTimePicker';
 export * from './FormPage';
 export * from './FormSheet';
 export { default as GlobalForm } from './GlobalForm';
-export { default as GlobalFormV2 } from './GlobalFormV2';
+export { default as FormConfig } from './FormConfig';
 export { default as InputCurrency } from './input/InputCurrency';
 export { default as InputField } from './input/InputField';
 export { default as GlobalIconSelect } from './select/GlobalIconSelect';
