@@ -59,6 +59,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
   const method = useForm<ProductFormValues>({
     resolver: yupResolver(productSchema),
     defaultValues: defaultProductFormValue,
+    mode: 'onChange',
   });
 
   const {
@@ -157,6 +158,17 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
         taxRate: data.taxRate ? Number(data.taxRate) : null,
       };
 
+      // let formattedData: ProductFormValues = {
+      //   icon: '',
+      //   name: '',
+      //   description: '',
+      //   price: 0,
+      //   taxRate: 0,
+      //   type: 'Product',
+      //   items: [],
+      //   catId: '',
+      // };
+
       if (formattedData.icon && formattedData.icon.startsWith('blob:')) {
         const response = await fetch(formattedData.icon);
         const blob = await response.blob();
@@ -181,7 +193,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
         return;
       }
 
-      await dispatch(createProduct(formattedData))
+      await dispatch(createProduct({ data: formattedData, setError: method.setError }))
         .unwrap()
         .then(() => {
           method.reset(defaultProductFormValue);
