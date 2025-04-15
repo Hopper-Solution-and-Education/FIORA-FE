@@ -4,7 +4,7 @@ import { CategoryWithTransactions } from '@/shared/types/category.types';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { Messages } from '@/shared/constants/message';
-import { ICategoryRepository } from '../../application/repositories/categoryRepository.interface';
+import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
 
 class CategoryUseCase {
   private categoryRepository: ICategoryRepository;

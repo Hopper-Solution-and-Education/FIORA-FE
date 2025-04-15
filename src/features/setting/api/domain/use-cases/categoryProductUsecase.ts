@@ -4,11 +4,11 @@ import { categoryProductRepository } from '../../infrastructure/repositories/cat
 import { CategoryProducts, Prisma } from '@prisma/client';
 import { Messages } from '@/shared/constants/message';
 import { productRepository } from '../../infrastructure/repositories/productRepository';
-import { IProductRepository } from '../../application/repositories/productRepository.interface';
 import {
   CategoryProductCreation,
   ICategoryProductRepository,
-} from '../../application/repositories/categoryProductRepository.interface';
+} from '../../repositories/categoryProductRepository.interface';
+import { IProductRepository } from '../../repositories/productRepository.interface';
 
 class CategoryProductsUseCase {
   private categoryProductRepository: ICategoryProductRepository;
