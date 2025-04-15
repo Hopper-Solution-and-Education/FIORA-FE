@@ -1,6 +1,6 @@
 import { FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { isImageFile, isUrl } from '@/lib/utils';
+import { isImageFile, isUrl } from '@/shared/lib/utils';
 import { useEffect, useState } from 'react';
 import { useFormContext, type Control } from 'react-hook-form';
 import { Product } from '../../domain/entities';
@@ -34,6 +34,7 @@ const ProductIconField = ({ control, productToEdit }: ProductIconFieldProps) => 
     if (productToEdit?.icon) {
       setValue('icon', productToEdit.icon);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productToEdit]);
 
   const handleOnTabChange = (newTab: string) => {

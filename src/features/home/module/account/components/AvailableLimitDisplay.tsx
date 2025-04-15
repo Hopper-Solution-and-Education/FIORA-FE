@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useFormContext, FieldError } from 'react-hook-form';
 import { ACCOUNT_TYPES } from '@/shared/constants/account';
 import { cn } from '@/shared/utils';
-import InputCurrency from '@/components/common/atoms/InputCurrency';
+import InputCurrency from '@/components/common/forms/input/InputCurrency';
 
 interface AvailableLimitDisplayProps {
   name: string;

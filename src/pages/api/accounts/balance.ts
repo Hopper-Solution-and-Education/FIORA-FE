@@ -3,7 +3,7 @@ import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/ac
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
-import { createResponse } from '@/config/createResponse';
+import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {

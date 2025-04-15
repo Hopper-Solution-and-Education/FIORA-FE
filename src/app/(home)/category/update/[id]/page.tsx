@@ -1,14 +1,12 @@
 'use client';
 
 import Loading from '@/components/common/atoms/Loading';
-import FormPage from '@/components/common/organisms/FormPage';
+import FormPage from '@/components/common/forms/FormPage';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import UpdateCategoryForm from '@/features/home/module/category/components/UpdateCategoryForm';
 import { useUpdateCategory } from '@/features/home/module/category/hooks/useUpdateCategory';
-import { useFeatureFlagGuard } from '@/hooks/useFeatureFlagGuard';
-import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { useParams } from 'next/navigation';
 
 export default function UpdateCategory() {
@@ -16,8 +14,6 @@ export default function UpdateCategory() {
   const categoryId = params?.id as string;
 
   const { category, isLoading, handleDelete } = useUpdateCategory(categoryId);
-
-  const { isLoaded } = useFeatureFlagGuard(FeatureFlags.CATEGORY_FEATURE);
 
   const renderDeleteButton = (
     <TooltipProvider>
@@ -39,7 +35,7 @@ export default function UpdateCategory() {
     </TooltipProvider>
   );
 
-  if (isLoading || !isLoaded) {
+  if (isLoading) {
     return <Loading />;
   }
 

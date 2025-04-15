@@ -1,6 +1,5 @@
 'use client';
 
-import { GlobalFormV2 } from '@/components/common/organisms';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader } from '@/components/ui/dialog';
@@ -22,6 +21,7 @@ import {
 } from '../../slices/actions';
 import useProductCategoryFormConfig from '../config/ProductCategoryFormConfig';
 import { CategoryProductFormValues, defaultCategoryProductValue } from '../schema';
+import { GlobalFormV2 } from '@/components/common/forms';
 
 const ProductCategoryForm = () => {
   const dispatch = useAppDispatch();

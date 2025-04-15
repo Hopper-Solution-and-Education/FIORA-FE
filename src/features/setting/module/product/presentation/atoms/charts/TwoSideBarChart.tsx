@@ -2,7 +2,7 @@
 
 import ChartLegend from '@/components/common/nested-bar-chart/atoms/ChartLegend';
 import CustomYAxisTick from '@/components/common/nested-bar-chart/atoms/CustomYAxisTick';
-import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import {
   BASE_BAR_HEIGHT,
   DEFAULT_CURRENCY,

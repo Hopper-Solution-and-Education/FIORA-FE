@@ -1,4 +1,4 @@
-import SelectField from '@/components/common/atoms/SelectField';
+import SelectField from '@/components/common/forms/select/SelectField';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import React from 'react';
 import { FieldError } from 'react-hook-form';

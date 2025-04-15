@@ -1,6 +1,6 @@
-import SelectField from '@/components/common/atoms/SelectField';
+import SelectField from '@/components/common/forms/select/SelectField';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
-import useDataFetcher from '@/hooks/useDataFetcher';
+import useDataFetcher from '@/shared/hooks/useDataFetcher';
 import { Account, Category } from '@prisma/client';
 import { Loader2 } from 'lucide-react';
 import React, { useEffect } from 'react';
@@ -44,6 +44,7 @@ const FromSelectField: React.FC<FromSelectProps> = ({
       setTargetEndpoint('/api/accounts/lists');
     }
     mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionType]);
 
   useEffect(() => {
@@ -88,6 +89,7 @@ const FromSelectField: React.FC<FromSelectProps> = ({
     return () => {
       setOptions([]);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   const handleChange = (value: string) => {

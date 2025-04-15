@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'next/navigation';
-import { sendOtp } from '@/config/sendGrid';
+import { sendOtp } from '@/config/send-grid/sendGrid';
 import { generateOtp } from '@/shared/utils';
 import { toast } from 'sonner';
 

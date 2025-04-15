@@ -1,4 +1,4 @@
-import CustomDateTimePicker from '@/components/common/atoms/CustomDateTimePicker';
+import CustomDateTimePicker from '@/components/common/forms/date-time-picker/CustomDateTimePicker';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import React from 'react';
 

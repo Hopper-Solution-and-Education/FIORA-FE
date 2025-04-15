@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { isUrl } from '@/lib/utils';
+import { isUrl } from '@/shared/lib/utils';
 import { Upload, X } from 'lucide-react';
 import Image from 'next/image';
 import React, { useState } from 'react';

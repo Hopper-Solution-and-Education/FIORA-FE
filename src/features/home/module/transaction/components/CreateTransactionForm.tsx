@@ -1,6 +1,6 @@
 'use client';
 
-import GlobalForm from '@/components/common/organisms/GlobalForm';
+import GlobalForm from '@/components/common/forms/GlobalForm';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { CreateTransactionBody } from '../types';

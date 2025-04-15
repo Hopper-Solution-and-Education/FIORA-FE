@@ -1,4 +1,4 @@
-import { SelectField } from '@/components/common/atoms';
+import { SelectField } from '@/components/common/forms';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { isEmpty } from 'lodash';
 import { setProductIdToTransfer } from '../../slices';

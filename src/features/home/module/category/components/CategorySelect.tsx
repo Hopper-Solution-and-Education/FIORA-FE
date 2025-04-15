@@ -1,6 +1,6 @@
 import React from 'react';
 import { Category } from '@/features/home/module/category/slices/types';
-import SelectField from '@/components/common/atoms/SelectField';
+import SelectField from '@/components/common/forms/select/SelectField';
 
 interface CategorySelectProps {
   name: string;

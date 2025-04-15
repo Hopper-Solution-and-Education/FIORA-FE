@@ -1,10 +1,10 @@
 import { type Prisma, type Partner } from '@prisma/client';
 import { IPartnerRepository } from '../../domain/repositories/partnerRepository.interface';
-import prisma from '@/infrastructure/database/prisma';
 import { Messages } from '@/shared/constants/message';
 import { partnerRepository } from '../../infrastructure/repositories/partnerRepository';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { prisma } from '@/config';
 
 class PartnerUseCase {
   constructor(

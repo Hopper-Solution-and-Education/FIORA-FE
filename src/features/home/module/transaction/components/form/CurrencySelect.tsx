@@ -1,4 +1,4 @@
-import SelectField from '@/components/common/atoms/SelectField';
+import SelectField from '@/components/common/forms/select/SelectField';
 import React from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
 import { TransactionCurrency } from '../../utils/constants';
