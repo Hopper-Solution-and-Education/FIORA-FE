@@ -128,7 +128,7 @@ export enum Messages {
   INVALID_PARENT_PARTNER_SELF = 'Partner cannot be its own parent',
   PARTNER_EMAIL_EXISTS = 'Email already exists',
   PARTNER_PHONE_EXISTS = 'Phone number already exists',
-  PARTNER_TAX_EXISTS = 'Tax number already exists',
+  PARTNER_TAXNO_EXISTS = 'Tax number already exists',
   PARTNER_IDENTIFY_EXISTS = 'Identifier already exists',
 
   GET_PARTNER_SUCCESS = 'Get partner list successfully.',

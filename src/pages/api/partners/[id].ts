@@ -62,13 +62,23 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_PARTNER_SUCCESS, updatedPartner));
   } catch (error: any) {
+    // Check if this is a validation error object
+    if (error.validationErrors) {
+      return res.status(RESPONSE_CODE.BAD_REQUEST).json(
+        createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, {
+          errors: error.validationErrors,
+        }),
+      );
+    }
+
+    // Handle other errors
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
       .json(
-        createError(
-          res,
+        createResponse(
           RESPONSE_CODE.INTERNAL_SERVER_ERROR,
           error.message || Messages.INTERNAL_ERROR,
+          null,
         ),
       );
   }
