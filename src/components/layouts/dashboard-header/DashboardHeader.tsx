@@ -19,6 +19,8 @@ import { UserNav } from '../user-nav/UserNav';
 import HelpCenter from './HelpCenter';
 import SettingCenter from './SettingCenter';
 
+const keyOpenAnnouncement = 'isOpenAnnouncement';
+
 export default function Header() {
   // state
   const [FBalance, setFBalance] = useState('0.0');
@@ -26,7 +28,7 @@ export default function Header() {
   const [isLoading, setIsLoading] = useState(true);
   const [isOpenAnnouncement, setIsOpenAnnouncement] = useState(() => {
     // Get the stored state from localStorage, default to true if not found
-    const storedState = localStorage.getItem('isOpenAnnouncement');
+    const storedState = localStorage.getItem(keyOpenAnnouncement);
     return storedState === null ? true : JSON.parse(storedState);
   });
 
@@ -57,7 +59,7 @@ export default function Header() {
 
   // Update localStorage whenever isOpenAnnouncement changes
   useEffect(() => {
-    localStorage.setItem('isOpenAnnouncement', JSON.stringify(isOpenAnnouncement));
+    localStorage.setItem(keyOpenAnnouncement, isOpenAnnouncement);
   }, [isOpenAnnouncement]);
 
   return (

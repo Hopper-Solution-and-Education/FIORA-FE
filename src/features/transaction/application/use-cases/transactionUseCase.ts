@@ -17,8 +17,8 @@ import {
 } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '../../infrastructure/repositories/transactionRepository';
-import { ICategoryRepository } from '@/features/setting/api/application/repositories/categoryRepository.interface';
 import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
+import { ICategoryRepository } from '@/features/setting/api/repositories/categoryRepository.interface';
 
 class TransactionUseCase {
   constructor(

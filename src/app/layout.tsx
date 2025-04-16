@@ -31,7 +31,7 @@ export default function RootLayout({
       <head>
         <link
           rel="icon"
-          href={section?.medias[0].media_url ?? defaultIconHeader}
+          href={section?.medias[0]?.media_url ?? defaultIconHeader}
           className="rounded-full"
         />
       </head>

@@ -8,6 +8,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ICON_SIZE } from '@/shared/constants/size';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { changeLanguage, toggleCurrency } from '@/store/slices/setting.slice';
 import EnglishIcon from '@public/icons/united-kingdom.png';
 import usdIcon from '@public/icons/usd.svg';
 import VietnameseIcon from '@public/icons/vietnam.png';
@@ -17,32 +19,33 @@ import { Session, useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { Currency, Language, menuSettingItems } from './utils';
+import { useEffect } from 'react';
+import { menuSettingItems } from './utils';
 
 export default function SettingCenter() {
   const { theme, setTheme } = useTheme();
-  const [language, setLanguage] = useState<Language>('en');
-  const [currency, setCurrency] = useState<Currency>('vnd');
+  const { currency, language } = useAppSelector((state) => state.settings);
+  const dispatch = useAppDispatch();
+
   const { data: session } = useSession() as { data: Session | null };
 
   useEffect(() => {
     document.documentElement.lang = language;
-  }, [language]);
+  }, [currency, language]);
 
   const toggleTheme = (e: any) => {
     e.stopPropagation();
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
-  const toggleLanguage = (e: any) => {
+  const handleToggleLanguage = (e: any) => {
     e.stopPropagation();
-    setLanguage(language === 'en' ? 'vi' : 'en');
+    dispatch(changeLanguage(language === 'en' ? 'vi' : 'en'));
   };
 
-  const toggleCurrency = (e: any) => {
+  const handleToggleCurrency = (e: any) => {
     e.stopPropagation();
-    setCurrency(currency === 'usd' ? 'vnd' : 'usd');
+    dispatch(toggleCurrency(currency === 'USD' ? 'VND' : 'USD'));
   };
 
   const filteredMenuItems = menuSettingItems.filter(
@@ -64,7 +67,6 @@ export default function SettingCenter() {
           className={`${
             session?.user ? 'w-[300px] grid-cols-5' : 'w-[120px] grid-cols-2'
           } p-4 grid gap-4 border shadow-md`}
-          onClick={(e) => e.stopPropagation()}
         >
           <Tooltip>
             <TooltipTrigger asChild>
@@ -87,7 +89,7 @@ export default function SettingCenter() {
           <Tooltip>
             <TooltipTrigger asChild>
               <div
-                onClick={toggleLanguage}
+                onClick={handleToggleLanguage}
                 className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
               >
                 {language === 'en' ? (
@@ -105,13 +107,13 @@ export default function SettingCenter() {
           <Tooltip>
             <TooltipTrigger asChild>
               <div
-                onClick={toggleCurrency}
+                onClick={handleToggleCurrency}
                 className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
               >
-                {currency === 'vnd' ? (
-                  <Image src={vndIcon} alt="VND" width={20} height={20} className="text-red-400" />
+                {currency === 'VND' ? (
+                  <Image src={vndIcon} alt="VND" width={20} height={20} className="dark:invert" />
                 ) : (
-                  <Image src={usdIcon} alt="USD" width={20} height={20} />
+                  <Image src={usdIcon} alt="USD" width={20} height={20} className="dark:invert" />
                 )}
               </div>
             </TooltipTrigger>

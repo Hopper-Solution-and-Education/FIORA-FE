@@ -32,8 +32,8 @@ export interface ProductCreation {
   price: number;
   type: ProductType;
   category_id: string;
-  currency?: string;
   items?: Items[] | null;
+  currency?: string;
 }
 
 export interface ProductUpdate {
