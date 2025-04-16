@@ -3,15 +3,16 @@ import {
   ProductCreation,
   ProductUpdate,
 } from '@/features/setting/api/repositories/productRepository.interface';
-import { productRepository } from '@/features/setting/infrastructure/repositories/productRepository';
-import prisma from '@/infrastructure/database/prisma';
+
+import { prisma } from '@/config';
 import { Messages } from '@/shared/constants/message';
 import { PaginationResponse } from '@/shared/types/Common.types';
 import { ProductItem } from '@/shared/types/product.types';
 import { Product, ProductType } from '@prisma/client';
 import { Decimal, JsonArray } from '@prisma/client/runtime/library';
-import { ICategoryProductRepository } from '../../domain/repositories/categoryProductRepository.interface';
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
+import { productRepository } from '../../infrastructure/repositories/productRepository';
+import { ICategoryProductRepository } from '../../repositories/categoryProductRepository.interface';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
