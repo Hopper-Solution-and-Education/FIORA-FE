@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog';
-import { useIdle } from '@/hooks/useIdle';
+import { useIdle } from '@/shared/hooks/useIdle';
 
 export function SessionTimeoutModal() {
   const { data: session, status, update } = useSession();

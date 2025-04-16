@@ -1,5 +1,5 @@
-import { DateTimePicker } from '@/components/common/atoms/DateTimePicker';
-import SelectField from '@/components/common/atoms/SelectField';
+import { DateTimePicker } from '@/components/common/forms/date-time-picker/DateTimePicker';
+import SelectField from '@/components/common/forms/select/SelectField';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';

@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react';
 import Page from '@/app/(home)/setting/product/page';
 import AccountPage from '@/app/(home)/profile/page';
-import { renderWithProviders } from '@/config/test-utils';
+import { renderWithProviders } from '@/shared/lib/test-utils/test-utils';
 import '@testing-library/jest-dom';
 
 describe('Page', () => {

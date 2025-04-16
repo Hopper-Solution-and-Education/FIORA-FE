@@ -1,7 +1,7 @@
 'use client';
 
 import Loading from '@/components/common/atoms/Loading';
-import FormPage from '@/components/common/organisms/FormPage';
+import FormPage from '@/components/common/forms/FormPage';
 import CreateAccountForm from '@/features/home/module/account/components/CreateAccountForm';
 import { fetchParents } from '@/features/home/module/account/slices/actions';
 import { useAppDispatch, useAppSelector } from '@/store';

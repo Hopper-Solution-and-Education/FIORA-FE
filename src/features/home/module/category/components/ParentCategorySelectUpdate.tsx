@@ -2,7 +2,7 @@ import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { FieldError } from 'react-hook-form';
 import { CategoryType } from '@prisma/client';
-import SelectField from '@/components/common/atoms/SelectField';
+import SelectField from '@/components/common/forms/select/SelectField';
 
 interface ParentCategorySelectUpdateProps {
   name: string;

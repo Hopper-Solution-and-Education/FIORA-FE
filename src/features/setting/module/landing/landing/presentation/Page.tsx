@@ -3,7 +3,7 @@
 import Loading from '@/components/common/atoms/Loading';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { useAppSelector } from '@/store';
 import { SectionType } from '@prisma/client';
 import { useState } from 'react';

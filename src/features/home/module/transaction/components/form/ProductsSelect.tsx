@@ -1,6 +1,6 @@
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { MultiSelect } from '@/components/ui/multi-select';
-import useDataFetcher from '@/hooks/useDataFetcher';
+import useDataFetcher from '@/shared/hooks/useDataFetcher';
 import { Product } from '@prisma/client';
 import { Loader2 } from 'lucide-react';
 import React, { useEffect } from 'react';

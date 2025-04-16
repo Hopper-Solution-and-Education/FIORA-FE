@@ -1,7 +1,7 @@
 'use client';
 
 import { LoadingIndicator } from '@/components/common/atoms/LoadingIndicator';
-import FormPage from '@/components/common/organisms/FormPage';
+import FormPage from '@/components/common/forms/FormPage';
 import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
 import PartnerUpdateForm from '@/features/setting/module/partner/presentation/components/PartnerUpdateForm';
 import { fetchPartnerById } from '@/features/setting/module/partner/slices/actions/fetchPartnerByIdAsyncThunk';

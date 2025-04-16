@@ -1,9 +1,9 @@
 'use client';
 
-import GlobalIconSelect from '@/components/common/atoms/GlobalIconSelect';
-import InputField from '@/components/common/atoms/InputField';
-import TextareaField from '@/components/common/atoms/TextareaField';
-import GlobalForm from '@/components/common/organisms/GlobalForm';
+import GlobalIconSelect from '@/components/common/forms/select/GlobalIconSelect';
+import InputField from '@/components/common/forms/input/InputField';
+import TextareaField from '@/components/common/forms/text-area/TextareaField';
+import GlobalForm from '@/components/common/forms/GlobalForm';
 import ParentCategorySelectUpdate from '@/features/home/module/category/components/ParentCategorySelectUpdate';
 import TypeSelect from '@/features/home/module/category/components/TypeSelect';
 import { createCategory } from '@/features/home/module/category/slices/actions';

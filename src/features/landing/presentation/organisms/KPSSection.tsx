@@ -5,7 +5,7 @@ import { SectionType } from '@prisma/client';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
 import { useGetSection } from '../../hooks/useGetSection';
-import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { motion } from 'framer-motion';
 
 // Định nghĩa các giá trị responsive

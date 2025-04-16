@@ -1,4 +1,4 @@
-import { createResponse } from '@/config/createResponse';
+import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';

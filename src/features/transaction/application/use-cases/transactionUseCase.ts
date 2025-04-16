@@ -1,9 +1,8 @@
-import { BooleanUtils } from '@/config/booleanUtils';
+import { prisma } from '@/config';
 import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
-import { ICategoryRepository } from '@/features/setting/domain/repositories/categoryRepository.interface';
-import { categoryRepository } from '@/features/setting/infrastructure/repositories/categoryRepository';
-import prisma from '@/infrastructure/database/prisma';
+
+import { BooleanUtils } from '@/shared/lib/booleanUtils';
 import { Messages } from '@/shared/constants/message';
 import { PaginationResponse } from '@/shared/types/Common.types';
 import { TransactionGetPagination } from '@/shared/types/transaction.types';
@@ -18,6 +17,8 @@ import {
 } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '../../infrastructure/repositories/transactionRepository';
+import { ICategoryRepository } from '@/features/setting/api/application/repositories/categoryRepository.interface';
+import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
 
 class TransactionUseCase {
   constructor(
@@ -194,14 +195,11 @@ class TransactionUseCase {
     await this.revertProductPrices(tx, transaction);
     await tx.productTransaction.deleteMany({ where: { transactionId: transaction.id } });
   }
-
   async getTransactionFilterOptions(userId: string) {
     const filterOptions = await this.transactionRepository.getFilterOptions(userId);
     return {
-      fromAccounts: filterOptions.fromAccounts ?? [],
-      toAccounts: filterOptions.toAccounts ?? [],
-      fromCategories: filterOptions.fromCategories ?? [],
-      toCategories: filterOptions.toCategories ?? [],
+      accounts: filterOptions.accounts ?? [],
+      categories: filterOptions.categories ?? [],
       partners: filterOptions.partners ?? [],
     };
   }
@@ -233,6 +231,13 @@ class TransactionUseCase {
       const transaction = await tx.transaction.findUnique({ where: { id } });
       if (!transaction) {
         throw new Error(Messages.TRANSACTION_NOT_FOUND);
+      }
+
+      const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+      const now = Date.now();
+      const createdAt = new Date(transaction.createdAt).getTime();
+      if (now - createdAt > THIRTY_DAYS_MS) {
+        throw new Error(Messages.TRANSACTION_TOO_OLD_TO_DELETE);
       }
 
       await this.revertOldTransaction(tx, transaction);

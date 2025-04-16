@@ -1,4 +1,4 @@
-import prisma from '@/infrastructure/database/prisma';
+import { prisma } from '@/config';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { Media, SectionType } from '@prisma/client';

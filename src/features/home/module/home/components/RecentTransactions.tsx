@@ -3,7 +3,7 @@
 import { Icons } from '@/components/Icon';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import useDataFetcher from '@/hooks/useDataFetcher';
+import useDataFetcher from '@/shared/hooks/useDataFetcher';
 import { ArrowRight } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { useState } from 'react';

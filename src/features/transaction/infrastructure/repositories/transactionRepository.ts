@@ -1,6 +1,6 @@
+import { prisma } from '@/config';
 import { Prisma, Transaction } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
-import prisma from '@/infrastructure/database/prisma';
 
 class TransactionRepository implements ITransactionRepository {
   async getTransactionsByUserId(userId: string): Promise<Transaction[]> {
@@ -62,9 +62,7 @@ class TransactionRepository implements ITransactionRepository {
         where: { userId, fromAccountId: { not: null } },
         select: {
           fromAccount: {
-            select: {
-              name: true,
-            },
+            select: { name: true },
           },
         },
         distinct: ['fromAccountId'],
@@ -73,9 +71,7 @@ class TransactionRepository implements ITransactionRepository {
         where: { userId, toAccountId: { not: null } },
         select: {
           toAccount: {
-            select: {
-              name: true,
-            },
+            select: { name: true },
           },
         },
         distinct: ['toAccountId'],
@@ -84,9 +80,7 @@ class TransactionRepository implements ITransactionRepository {
         where: { userId, fromCategoryId: { not: null } },
         select: {
           fromCategory: {
-            select: {
-              name: true,
-            },
+            select: { name: true },
           },
         },
         distinct: ['fromCategoryId'],
@@ -95,9 +89,7 @@ class TransactionRepository implements ITransactionRepository {
         where: { userId, toCategoryId: { not: null } },
         select: {
           toCategory: {
-            select: {
-              name: true,
-            },
+            select: { name: true },
           },
         },
         distinct: ['toCategoryId'],
@@ -106,20 +98,26 @@ class TransactionRepository implements ITransactionRepository {
         where: { userId, partnerId: { not: null } },
         select: {
           partner: {
-            select: {
-              name: true,
-            },
+            select: { name: true },
           },
         },
         distinct: ['partnerId'],
       }),
     ]);
 
+    const accountsSet = new Set([
+      ...fromAccounts.map((t) => t.fromAccount?.name),
+      ...toAccounts.map((t) => t.toAccount?.name),
+    ]);
+
+    const categoriesSet = new Set([
+      ...fromCategories.map((t) => t.fromCategory?.name),
+      ...toCategories.map((t) => t.toCategory?.name),
+    ]);
+
     return {
-      fromAccounts: fromAccounts.map((t) => t.fromAccount?.name),
-      toAccounts: toAccounts.map((t) => t.toAccount?.name),
-      fromCategories: fromCategories.map((t) => t.fromCategory?.name),
-      toCategories: toCategories.map((t) => t.toCategory?.name),
+      accounts: Array.from(accountsSet),
+      categories: Array.from(categoriesSet),
       partners: partners.map((t) => t.partner?.name),
     };
   }

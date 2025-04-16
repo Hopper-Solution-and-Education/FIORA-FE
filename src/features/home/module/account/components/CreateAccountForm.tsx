@@ -1,8 +1,8 @@
 'use client';
 
-import GlobalIconSelect from '@/components/common/atoms/GlobalIconSelect';
-import InputField from '@/components/common/atoms/InputField';
-import GlobalForm from '@/components/common/organisms/GlobalForm';
+import GlobalIconSelect from '@/components/common/forms/select/GlobalIconSelect';
+import InputField from '@/components/common/forms/input/InputField';
+import GlobalForm from '@/components/common/forms/GlobalForm';
 import AccountTypeSelect from '@/features/home/module/account/components/AccountTypeSelect';
 import CurrencySelect from '@/features/home/module/account/components/CurrencySelect';
 import LimitField from '@/features/home/module/account/components/LimitField';
@@ -19,7 +19,7 @@ import { Response } from '@/shared/types/Common.types';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { Account } from '@/features/home/module/account/slices/types';
-import { Option } from '@/components/common/atoms/SelectField';
+import { Option } from '@/components/common/forms/select/SelectField';
 
 export default function CreateAccountForm() {
   const router = useRouter();

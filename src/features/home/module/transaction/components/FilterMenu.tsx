@@ -1,4 +1,4 @@
-import DateRangePicker from '@/components/common/atoms/DateRangePicker';
+import DateRangePicker from '@/components/common/forms/date-range-picker/DateRangePicker';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import useDataFetcher from '@/hooks/useDataFetcher';
+import useDataFetcher from '@/shared/hooks/useDataFetcher';
 import { cn } from '@/shared/utils';
 import { useAppSelector } from '@/store';
 import { FunnelPlus } from 'lucide-react';

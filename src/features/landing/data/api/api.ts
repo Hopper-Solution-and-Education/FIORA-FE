@@ -1,4 +1,4 @@
-import type { IHttpClient } from '@/config/HttpClient';
+import type { IHttpClient } from '@/config/http-client/HttpClient';
 import { SectionType } from '@prisma/client';
 import { decorate, injectable } from 'inversify';
 import { ISection } from '../../domain/interfaces/Section';

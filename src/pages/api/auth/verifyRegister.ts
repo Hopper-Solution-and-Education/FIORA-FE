@@ -1,6 +1,6 @@
 import { UserUSeCaseInstance } from '@/features/auth/application/use-cases/userUseCase';
-import { errorHandler, NotFoundError, ValidationError } from '@/config/errors';
-import redis from '@/config/redis';
+import { errorHandler, NotFoundError, ValidationError } from '@/shared/lib/responseUtils/errors';
+import redis from '@/config/redis/redis';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
