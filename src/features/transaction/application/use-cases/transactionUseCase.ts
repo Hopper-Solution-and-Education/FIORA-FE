@@ -233,6 +233,13 @@ class TransactionUseCase {
         throw new Error(Messages.TRANSACTION_NOT_FOUND);
       }
 
+      const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+      const now = Date.now();
+      const createdAt = new Date(transaction.createdAt).getTime();
+      if (now - createdAt > THIRTY_DAYS_MS) {
+        throw new Error(Messages.TRANSACTION_TOO_OLD_TO_DELETE);
+      }
+
       await this.revertOldTransaction(tx, transaction);
 
       return await this.transactionRepository.deleteTransaction(id, userId);
