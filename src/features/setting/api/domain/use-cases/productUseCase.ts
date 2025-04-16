@@ -1,4 +1,3 @@
-import { productRepository } from '@/features/setting/api/infrastructure/repositories/productRepository';
 import { Messages } from '@/shared/constants/message';
 
 import { prisma } from '@/config';
@@ -13,6 +12,7 @@ import {
   ProductCreation,
   ProductUpdate,
 } from '../../repositories/productRepository.interface';
+import { productRepository } from '../../infrastructure/repositories/productRepository';
 
 class ProductUseCase {
   private productRepository: IProductRepository;

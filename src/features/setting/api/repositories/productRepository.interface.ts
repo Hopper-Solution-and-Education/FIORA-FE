@@ -33,6 +33,7 @@ export interface ProductCreation {
   type: ProductType;
   category_id: string;
   items?: Items[] | null;
+  currency?: string;
 }
 
 export interface ProductUpdate {
