@@ -3,9 +3,9 @@
 import ChartLegend from '@/components/common/nested-bar-chart/atoms/ChartLegend';
 import CustomYAxisTick from '@/components/common/nested-bar-chart/atoms/CustomYAxisTick';
 import TwoSideBarChartV2Tooltip from '@/components/common/positive-negative-bar-chart-v2/atoms/TwoSideBarChartV2Tooltip';
-import { useIsMobile } from '@/hooks/useIsMobile';
 import {
   BASE_BAR_HEIGHT,
+  COLORS,
   DEFAULT_CURRENCY,
   DEFAULT_LOCALE,
   DEFAULT_MAX_BAR_RATIO,
@@ -26,6 +26,7 @@ import {
 } from 'recharts';
 import BarLabel from './atoms/BarLabel';
 import { PositiveAndNegativeBarChartV2Props, TwoSideBarItem } from './types';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 
 const PositiveAndNegativeBarChartV2 = ({
   data,
@@ -45,8 +46,6 @@ const PositiveAndNegativeBarChartV2 = ({
   baseBarHeight = BASE_BAR_HEIGHT,
   showTotal = false,
   totalName = 'Total',
-  totalColor = '#888888',
-  callbackYAxis,
   expanded = true,
   header,
 }: PositiveAndNegativeBarChartV2Props) => {
@@ -77,12 +76,14 @@ const PositiveAndNegativeBarChartV2 = ({
       name: totalName,
       positiveValue: totalPositive,
       negativeValue: totalNegative,
-      color: totalColor,
+      colorPositive: levelConfig?.colorPositive[0] || COLORS.DEPS_SUCCESS.LEVEL_2,
+      colorNegative: levelConfig?.colorNegative[0] || COLORS.DEPS_DANGER.LEVEL_2,
       type: 'total',
       depth: 0,
       isChild: false,
     };
-  }, [data, totalName, totalColor]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, totalName]);
 
   // Prepare chart data with total item
   const chartData = useMemo(() => {
@@ -106,10 +107,12 @@ const PositiveAndNegativeBarChartV2 = ({
     (items: TwoSideBarItem[], depth: number = 0, parent?: string): TwoSideBarItem[] => {
       const result: TwoSideBarItem[] = [];
       items.forEach((item) => {
-        const color = item.color || levelConfig?.colors[depth] || '#888888';
         const currentItem: TwoSideBarItem = {
           ...item,
-          color,
+          colorPositive:
+            levelConfig?.colorPositive[depth] || item.colorPositive || COLORS.DEPS_SUCCESS.LEVEL_2,
+          colorNegative:
+            levelConfig?.colorNegative[depth] || item.colorNegative || COLORS.DEPS_DANGER.LEVEL_2,
           depth,
           parent,
           isChild: !!parent,
@@ -122,6 +125,7 @@ const PositiveAndNegativeBarChartV2 = ({
       });
       return result;
     },
+
     [expandedItems, levelConfig],
   );
 
@@ -184,6 +188,7 @@ const PositiveAndNegativeBarChartV2 = ({
             {title}
           </h2>
         ))}
+      {isMobile && <ChartLegend items={legendItems} />}
       <div
         style={{ height: `${chartHeight}px` }}
         className="transition-all duration-300 flex flex-col md:flex-row"
@@ -221,7 +226,7 @@ const PositiveAndNegativeBarChartV2 = ({
                   processedData={visibleData}
                   expandedItems={expandedItems}
                   onToggleExpand={toggleExpand}
-                  callback={callbackYAxis}
+                  callback={callback}
                 />
               )}
             />
@@ -237,7 +242,7 @@ const PositiveAndNegativeBarChartV2 = ({
               className="transition-all duration-300 cursor-pointer"
             >
               {visibleData.map((entry, index) => (
-                <Cell key={`negative-cell-${index}`} fill={entry.color} />
+                <Cell key={`negative-cell-${index}`} fill={entry.colorNegative} />
               ))}
             </Bar>
           </BarChart>
@@ -281,7 +286,7 @@ const PositiveAndNegativeBarChartV2 = ({
                   processedData={visibleData}
                   expandedItems={expandedItems}
                   onToggleExpand={toggleExpand}
-                  callback={callbackYAxis}
+                  callback={callback}
                 />
               )}
             />
@@ -297,13 +302,13 @@ const PositiveAndNegativeBarChartV2 = ({
               className="transition-all duration-300 cursor-pointer"
             >
               {visibleData.map((entry, index) => (
-                <Cell key={`positive-cell-${index}`} fill={entry.color} />
+                <Cell key={`positive-cell-${index}`} fill={entry.colorPositive} />
               ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <ChartLegend items={legendItems} />
+      {!isMobile && <ChartLegend items={legendItems} />}
     </div>
   );
 };

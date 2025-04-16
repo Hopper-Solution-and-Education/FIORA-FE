@@ -259,12 +259,9 @@ const NestedBarChart = ({
                 if (callback) return callback(props);
               }}
             >
-              {processedData.map((entry, index) => {
-                const color = entry.isChild
-                  ? entry.color + Math.round(255).toString(16).padStart(2, '0')
-                  : entry.color;
-                return <Cell key={`cell-${index}`} fill={color} />;
-              })}
+              {processedData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>

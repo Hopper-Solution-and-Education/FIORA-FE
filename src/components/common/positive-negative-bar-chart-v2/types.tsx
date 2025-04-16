@@ -6,8 +6,9 @@ export type TwoSideBarItem = {
   name: string;
   positiveValue: number;
   negativeValue: number;
+  colorPositive?: string;
+  colorNegative?: string;
   icon?: string;
-  color?: string;
   type?: string;
   parent?: string;
   children?: TwoSideBarItem[];
@@ -15,9 +16,12 @@ export type TwoSideBarItem = {
   depth?: number;
 };
 
-export type LevelConfig = {
+export type PositiveAndNegativeV2LevelConfig = {
   totalName?: string;
-  colors: {
+  colorPositive: {
+    [depth: number]: string;
+  };
+  colorNegative: {
     [depth: number]: string;
   };
 };
@@ -28,18 +32,17 @@ export type PositiveAndNegativeBarChartV2Props = {
   currency?: string;
   locale?: string;
   maxBarRatio?: number;
-  xAxisFormatter?: (value: number) => string;
   tooltipContent?: ContentType<ValueType, NameType>;
   legendItems: { name: string; color: string }[];
+  levelConfig?: PositiveAndNegativeV2LevelConfig;
   tutorialText?: string;
-  callback?: (item: TwoSideBarItem) => void;
-  levelConfig?: LevelConfig;
   height?: number;
   baseBarHeight?: number;
   showTotal?: boolean;
   totalName?: string;
-  totalColor?: string;
-  callbackYAxis?: (item: TwoSideBarItem) => void;
   expanded?: boolean;
   header?: React.ReactNode;
+  xAxisFormatter?: (value: number) => string;
+  callbackYAxis?: (item: TwoSideBarItem) => void;
+  callback?: (item: TwoSideBarItem) => void;
 };

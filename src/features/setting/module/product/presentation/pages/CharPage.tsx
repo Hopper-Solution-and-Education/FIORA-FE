@@ -30,8 +30,10 @@ const ChartPage = () => {
     dispatch(setIsOpenDialogAddCategory(true));
   };
 
-  const tryCallBackYaxis = (item: any) => {
-    if (item.type === 'product') {
+  const handleCallback = (item: any) => {
+    if (!item || !item.id) return;
+
+    if (item.type !== 'category') {
       router.push(`/setting/product/update/${item.id}`);
     } else {
       const categoryProduct: CategoryProduct = {
@@ -39,10 +41,10 @@ const ChartPage = () => {
         userId: userData?.user.id ?? '',
         icon: item.icon ?? '',
         name: item.name,
-        description: '',
-        taxRate: 0,
-        createdAt: '',
-        updatedAt: '',
+        description: item.description,
+        taxRate: item.taxRate,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
       };
       handleEditCategoryProduct(categoryProduct);
     }
@@ -58,15 +60,28 @@ const ChartPage = () => {
         <PositiveAndNegativeBarChartV2
           data={chartData}
           title="Product Overview"
+          levelConfig={{
+            totalName: 'Total',
+            colorPositive: {
+              0: COLORS.DEPS_DANGER.LEVEL_1,
+              1: COLORS.DEPS_DANGER.LEVEL_3,
+              2: COLORS.DEPS_DANGER.LEVEL_5,
+            },
+            colorNegative: {
+              0: COLORS.DEPS_SUCCESS.LEVEL_1,
+              1: COLORS.DEPS_SUCCESS.LEVEL_3,
+              2: COLORS.DEPS_SUCCESS.LEVEL_5,
+            },
+          }}
           legendItems={[
-            { name: 'Expense (Category)', color: COLORS.DEPS_DANGER.LEVEL_2 },
-            { name: 'Income (Category)', color: COLORS.DEPS_SUCCESS.LEVEL_2 },
+            { name: 'Expense (Category)', color: COLORS.DEPS_DANGER.LEVEL_1 },
+            { name: 'Income (Category)', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
             { name: 'Expense (Product)', color: COLORS.DEPS_DANGER.LEVEL_3 },
             { name: 'Income (Product)', color: COLORS.DEPS_SUCCESS.LEVEL_3 },
           ]}
           showTotal
           totalName="Total Transaction"
-          callbackYAxis={tryCallBackYaxis}
+          callback={handleCallback}
         />
       )}
     </div>

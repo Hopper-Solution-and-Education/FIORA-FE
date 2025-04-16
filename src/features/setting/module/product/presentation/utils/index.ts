@@ -6,6 +6,14 @@ import { ProductTransactionCategoryResponse } from '../../domain/entities/Produc
 export const mapTransactionsToTwoSideBarItems = (
   data: ProductTransactionCategoryResponse[],
 ): TwoSideBarItem[] => {
+  const generateColor = (balance: number, isChild: boolean) => {
+    if (balance > 0) {
+      return isChild ? COLORS.DEPS_SUCCESS.LEVEL_3 : COLORS.DEPS_SUCCESS.LEVEL_2;
+    } else {
+      return isChild ? COLORS.DEPS_DANGER.LEVEL_3 : COLORS.DEPS_DANGER.LEVEL_2;
+    }
+  };
+
   return data.map((categoryItem) => {
     const catId = categoryItem.category.id;
     let categoryPositive = 0;
@@ -21,8 +29,8 @@ export const mapTransactionsToTwoSideBarItems = (
           productPositive += amount;
           categoryPositive += amount;
         } else if (tx?.type === TransactionType.Expense) {
-          productNegative += -Math.abs(amount ?? 0);
-          categoryNegative += -Math.abs(amount ?? 0);
+          productNegative -= amount;
+          categoryNegative -= amount;
         }
       });
 
@@ -32,13 +40,9 @@ export const mapTransactionsToTwoSideBarItems = (
         positiveValue: productPositive,
         negativeValue: productNegative,
         icon: item.product.icon,
-        type: productPositive > 0 ? 'income' : productNegative > 0 ? 'expense' : 'unknown',
-        color:
-          productPositive > 0
-            ? COLORS.DEPS_SUCCESS.LEVEL_2
-            : productNegative > 0
-              ? COLORS.DEPS_DANGER.LEVEL_2
-              : COLORS.DEPS_DANGER.LEVEL_1,
+        type: productPositive + productNegative > 0 ? 'income' : 'expense',
+        colorPositive: generateColor(productPositive, true),
+        colorNegative: generateColor(productNegative, true),
       };
     });
 
@@ -50,7 +54,8 @@ export const mapTransactionsToTwoSideBarItems = (
       icon: categoryItem.category.icon,
       children,
       type: 'category',
-      color: categoryPositive > 0 ? COLORS.DEPS_SUCCESS.LEVEL_4 : COLORS.DEPS_DANGER.LEVEL_4,
+      colorPositive: generateColor(categoryPositive, false),
+      colorNegative: generateColor(categoryNegative, false),
     };
   });
 };
