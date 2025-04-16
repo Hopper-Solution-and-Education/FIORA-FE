@@ -1,18 +1,17 @@
-import { productRepository } from '@/features/setting/api/infrastructure/repositories/productRepository';
-import { Messages } from '@/shared/constants/message';
-
-import { prisma } from '@/config';
-import { Product, ProductType } from '@prisma/client';
-import { Decimal, JsonArray } from '@prisma/client/runtime/library';
-import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
-
-import { PaginationResponse, ProductItem } from '@/shared/types';
-import { ICategoryProductRepository } from '../../repositories/categoryProductRepository.interface';
 import {
   IProductRepository,
   ProductCreation,
   ProductUpdate,
-} from '../../repositories/productRepository.interface';
+} from '@/features/setting/api/repositories/productRepository.interface';
+import { productRepository } from '@/features/setting/infrastructure/repositories/productRepository';
+import prisma from '@/infrastructure/database/prisma';
+import { Messages } from '@/shared/constants/message';
+import { PaginationResponse } from '@/shared/types/Common.types';
+import { ProductItem } from '@/shared/types/product.types';
+import { Product, ProductType } from '@prisma/client';
+import { Decimal, JsonArray } from '@prisma/client/runtime/library';
+import { ICategoryProductRepository } from '../../domain/repositories/categoryProductRepository.interface';
+import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
