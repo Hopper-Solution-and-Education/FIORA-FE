@@ -51,11 +51,11 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
   } catch (error: any) {
     // Check if this is a validation error object
     if (error.validationErrors) {
-      return res.status(RESPONSE_CODE.BAD_REQUEST).json(
-        createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, {
-          errors: error.validationErrors,
-        }),
-      );
+      return res.status(RESPONSE_CODE.BAD_REQUEST).json({
+        status: RESPONSE_CODE.BAD_REQUEST,
+        message: Messages.VALIDATION_ERROR,
+        error: error.validationErrors,
+      });
     }
 
     // Handle other errors

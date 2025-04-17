@@ -64,11 +64,11 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   } catch (error: any) {
     // Check if this is a validation error object
     if (error.validationErrors) {
-      return res.status(RESPONSE_CODE.BAD_REQUEST).json(
-        createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, {
-          errors: error.validationErrors,
-        }),
-      );
+      return res.status(RESPONSE_CODE.BAD_REQUEST).json({
+        status: RESPONSE_CODE.BAD_REQUEST,
+        message: Messages.VALIDATION_ERROR,
+        error: error.validationErrors,
+      });
     }
 
     // Handle other errors
@@ -122,6 +122,15 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.DELETE_PARTNER_SUCCESS));
   } catch (error: any) {
+    // Check if this is a validation error object
+    if (error.validationErrors) {
+      return res.status(RESPONSE_CODE.BAD_REQUEST).json({
+        status: RESPONSE_CODE.BAD_REQUEST,
+        message: Messages.VALIDATION_ERROR,
+        error: error.validationErrors,
+      });
+    }
+
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
       .json(
