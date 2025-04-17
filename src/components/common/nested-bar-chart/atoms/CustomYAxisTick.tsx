@@ -1,3 +1,4 @@
+// Location: src\components\common\nested-bar-chart\atoms\CustomYAxisTick.tsx
 'use client';
 
 import { Icons } from '@/components/Icon';
@@ -20,6 +21,7 @@ interface CustomYAxisTickProps {
   expandedItems: any;
   onToggleExpand: (name: string) => void;
   callback?: (item: any) => void;
+  setShowAll?: () => void;
 }
 
 const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
@@ -30,6 +32,7 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
   expandedItems,
   onToggleExpand,
   callback,
+  setShowAll,
 }) => {
   const item = processedData.find((d: any) => d.name === payload.value);
   const hasChildren = item?.children && item.children.length > 0;
@@ -61,8 +64,10 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (callback && item) {
-      throttledCallback(callback, item);
+    if (item?.isOthers && setShowAll) {
+      setShowAll(); // Trigger toggleShowAll when clicking the icon of "Others"
+    } else if (callback && item) {
+      throttledCallback(callback, item); // Trigger callback for other items (e.g., navigation)
     }
   };
 

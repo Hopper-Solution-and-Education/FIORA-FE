@@ -1,7 +1,7 @@
 import { memo } from 'react';
 
 const BarLabel = ({ x, y, width, height, value, formatter }: any) => {
-  if (Math.abs(width) < 40) return null;
+  if (Math.abs(width) < 60) return null;
 
   return (
     <text
@@ -9,7 +9,7 @@ const BarLabel = ({ x, y, width, height, value, formatter }: any) => {
       y={y + height / 2}
       textAnchor="middle"
       dominantBaseline="middle"
-      className={`font-medium ${Math.abs(width) > 60 ? 'text-sm' : 'text-xs'} fill-white dark:fill-white`}
+      className={`font-medium text-sm fill-white dark:fill-white`}
       style={{
         filter: 'drop-shadow(0px 1px 1px rgba(0,0,0,0.3))',
         pointerEvents: 'none',

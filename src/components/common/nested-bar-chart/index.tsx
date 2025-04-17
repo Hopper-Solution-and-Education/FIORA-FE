@@ -1,3 +1,4 @@
+// Location: src\components\common\nested-bar-chart\index.tsx
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
@@ -40,6 +41,7 @@ export type BarItem = {
   children?: BarItem[];
   isChild?: boolean;
   depth?: number;
+  isOthers?: boolean;
 };
 
 // Configuration for levels in the chart
@@ -56,14 +58,14 @@ export type NestedBarChartProps = {
   title?: string;
   currency?: string;
   locale?: string;
-  xAxisFormatter?: (value: number) => string;
   tooltipContent?: ContentType<ValueType, NameType>;
   legendItems?: { name: string; color: string }[];
   maxBarRatio?: number;
   tutorialText?: string;
-  callback?: (item: any) => void;
   levelConfig?: LevelConfig;
-  expanded?: boolean; // Controls initial expansion of the total bar
+  expanded?: boolean;
+  xAxisFormatter?: (value: number) => string;
+  callback?: (item: any) => void;
 };
 
 const NestedBarChart = ({
@@ -78,8 +80,12 @@ const NestedBarChart = ({
   tutorialText,
   callback,
   levelConfig,
-  expanded = true, // Default to true
+  expanded = true,
 }: NestedBarChartProps) => {
+  // State to track whether to show all categories or just top 10
+  const [showAll, setShowAll] = useState(false);
+  // State to track loading during expand/collapse
+  const [isLoading, setIsLoading] = useState(false);
   // State to track which bars are expanded
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   // State to dynamically adjust chart height
@@ -98,18 +104,43 @@ const NestedBarChart = ({
     [],
   );
 
-  // **Initial Data Processing**
-  // Calculate total amount from the data
-  const totalAmount = data.reduce((sum, item) => sum + Math.abs(item.value), 0);
+  // Function to toggle showAll with fake loading
+  const handleToggleShowAll = useCallback(() => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setShowAll((prev) => !prev); // Toggle between showing all and top 10
+      setIsLoading(false);
+    }, 500); // Fake delay of 500ms
+  }, []);
+
+  // **Prepare Initial Data: First 10 + Others**
+  const preparedData = useMemo(() => {
+    if (showAll) return data; // Show all data if toggled
+    const first10 = data.slice(0, 10); // Take first 10 (assumes parent has sorted)
+    const othersSum = data.slice(10).reduce((sum, item) => sum + item.value, 0); // Sum remaining
+    if (data.length > 10) {
+      const othersItem: BarItem = {
+        name: `Others (${data[0]?.type || 'unknown'})`, // e.g., "Others (Expense)"
+        value: othersSum,
+        color: levelConfig?.colors[0] || '#888888', // Default color for "Others"
+        type: data[0]?.type || 'unknown',
+        isOthers: true, // Mark as "Others" bar
+      };
+      return [...first10, othersItem]; // Combine first 10 with "Others"
+    }
+    return first10; // If ≤ 10 items, return as is
+  }, [data, showAll, levelConfig]);
+
+  // **Calculate Total Bar**
+  const totalAmount = preparedData.reduce((sum, item) => sum + Math.abs(item.value), 0);
   const totalName = levelConfig?.totalName || 'Total Amount';
   const totalColor = levelConfig?.colors[0] || '#888888';
-  // Create the total bar item
   const totalItem: BarItem = {
     name: totalName,
     value: totalAmount,
     color: totalColor,
-    type: data[0]?.type || 'unknown',
-    children: data,
+    type: preparedData[0]?.type || 'unknown',
+    children: preparedData, // Use prepared data (first 10 + Others or all)
     depth: 0,
   };
 
@@ -122,11 +153,9 @@ const NestedBarChart = ({
   }, [expanded, totalName]);
 
   // Base chart data starts with the total item
-
   const chartData = [totalItem];
 
   // **Recursive Data Processing**
-  // Builds the processed data array based on expanded items
   const buildProcessedData = useCallback(
     (items: BarItem[], parentName?: string, parentValue?: number, depth: number = 0): BarItem[] => {
       const result: BarItem[] = [];
@@ -142,7 +171,6 @@ const NestedBarChart = ({
           depth,
         };
         result.push(currentItem);
-        // If the item is expanded and has children, process them recursively
         if (expandedItems[item.name] && item.children && item.children.length > 0) {
           const children = buildProcessedData(item.children, item.name, itemValue, depth + 1);
           result.push(...children);
@@ -153,14 +181,13 @@ const NestedBarChart = ({
     [expandedItems, levelConfig],
   );
 
-  // Memoize processed data to optimize performance
+  // Memoize processed data
   const processedData = useMemo(
     () => buildProcessedData(chartData),
     [buildProcessedData, chartData],
   );
 
   // **Dynamic Chart Height**
-  // Adjust chart height based on the number of visible bars
   useEffect(() => {
     const numBars = processedData.length;
     const newHeight = Math.max(numBars * BASE_BAR_HEIGHT, MIN_CHART_HEIGHT);
@@ -168,16 +195,14 @@ const NestedBarChart = ({
   }, [processedData]);
 
   // **X-Axis Domain Calculation**
-  // Calculate the maximum absolute value for the X-axis
   const maxAbsValue = useMemo(() => {
-    const allValues = data.flatMap((item) => [
+    const allValues = preparedData.flatMap((item) => [
       Math.abs(item.value),
       ...(item.children?.map((child) => Math.abs(child.value)) || []),
     ]);
     return Math.max(...allValues);
-  }, [data]);
+  }, [preparedData]);
 
-  // Define the X-axis domain
   const domain = useMemo(() => {
     if (maxAbsValue === 0) return [0, 1];
     const maxX = maxAbsValue / maxBarRatio;
@@ -185,11 +210,9 @@ const NestedBarChart = ({
   }, [maxAbsValue, maxBarRatio]);
 
   // **Responsive Margins**
-  // Calculate chart margins based on window width
   const chartMargins = useMemo(() => getChartMargins(width), [width]);
 
   // **Custom Tooltip**
-  // Define a custom tooltip with currency and locale formatting
   const customTooltipWithConfig = useCallback(
     (props: any) => (
       <CustomTooltip {...props} currency={currency} locale={locale} tutorialText={tutorialText} />
@@ -200,73 +223,77 @@ const NestedBarChart = ({
   // **Render the Chart**
   return (
     <div className="w-full bg-white dark:bg-gray-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 transition-colors duration-200">
-      {/* Optional Title */}
       {title && (
         <h2 className="text-xl text-center font-semibold text-gray-800 dark:text-gray-200 mb-4">
           {title}
         </h2>
       )}
-      {/* Chart Container with Dynamic Height */}
       <div style={{ height: `${chartHeight}px` }} className="transition-all duration-300">
-        <ResponsiveContainer width="100%" height={chartHeight}>
-          <BarChart
-            data={processedData}
-            layout="vertical"
-            margin={chartMargins}
-            className="transition-all duration-300"
-          >
-            {/* Grid */}
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="#E5E7EB"
-              className="dark:stroke-gray-600 transition-colors duration-200"
-              horizontal={true}
-              vertical={false}
-            />
-            {/* X-Axis */}
-            <XAxis
-              type="number"
-              domain={domain}
-              tickFormatter={xAxisFormatter}
-              className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
-            />
-            {/* Y-Axis */}
-            <YAxis
-              type="category"
-              dataKey="name"
-              className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
-              tickLine={false}
-              axisLine={false}
-              tick={(props) => (
-                <CustomYAxisTick
-                  {...props}
-                  processedData={processedData}
-                  expandedItems={expandedItems}
-                  onToggleExpand={toggleExpand}
-                  callback={callback}
-                />
-              )}
-            />
-            {/* Tooltip */}
-            <Tooltip trigger="hover" content={tooltipContent || customTooltipWithConfig} />
-            {/* Bar */}
-            <Bar
-              dataKey="value"
-              radius={[0, 4, 4, 0]}
-              className="transition-all duration-300 cursor-pointer"
-              label={(props) => <BarLabel {...props} formatter={xAxisFormatter} />}
-              onClick={(props) => {
-                if (callback) return callback(props);
-              }}
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900 dark:border-gray-100"></div>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={chartHeight}>
+            <BarChart
+              data={processedData}
+              layout="vertical"
+              margin={chartMargins}
+              className="transition-all duration-300"
             >
-              {processedData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#E5E7EB"
+                className="dark:stroke-gray-600 transition-colors duration-200"
+                horizontal={true}
+                vertical={false}
+              />
+              <XAxis
+                type="number"
+                domain={domain}
+                tickFormatter={xAxisFormatter}
+                className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
+              />
+              <YAxis
+                type="category"
+                dataKey="name"
+                className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
+                tickLine={false}
+                axisLine={false}
+                tick={(props) => (
+                  <CustomYAxisTick
+                    {...props}
+                    processedData={processedData}
+                    expandedItems={expandedItems}
+                    onToggleExpand={toggleExpand}
+                    callback={callback}
+                    setShowAll={handleToggleShowAll} // Pass the toggle function
+                  />
+                )}
+              />
+              <Tooltip trigger="hover" content={tooltipContent || customTooltipWithConfig} />
+              <Bar
+                dataKey="value"
+                radius={[0, 4, 4, 0]}
+                className="transition-all duration-300 cursor-pointer"
+                label={(props) => <BarLabel {...props} formatter={xAxisFormatter} />}
+                onClick={(props) => {
+                  const item = props.payload;
+                  if (item.isOthers) {
+                    handleToggleShowAll(); // Toggle showAll when "Others" bar is clicked
+                  } else if (callback) {
+                    callback(item); // Handle regular item clicks (e.g., navigation)
+                  }
+                }}
+              >
+                {processedData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </div>
-      {/* Legend */}
       <ChartLegend items={legendItems || []} />
     </div>
   );
