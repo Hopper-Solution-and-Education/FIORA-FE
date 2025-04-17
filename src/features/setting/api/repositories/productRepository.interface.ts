@@ -32,8 +32,8 @@ export interface ProductCreation {
   price: number;
   type: ProductType;
   category_id: string;
-  currency?: string;
   items?: Items[] | null;
+  currency?: string;
 }
 
 export interface ProductUpdate {
@@ -50,6 +50,7 @@ export interface ProductUpdate {
 }
 
 export type Items = {
+  id?: string;
   icon: string;
   name: string;
   description: string;

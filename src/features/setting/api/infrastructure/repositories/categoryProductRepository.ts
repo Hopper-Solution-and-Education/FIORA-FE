@@ -1,6 +1,6 @@
 import { CategoryProducts, Prisma } from '@prisma/client';
 import { prisma } from '@/config';
-import { ICategoryProductRepository } from '../../application/repositories/categoryProductRepository.interface';
+import { ICategoryProductRepository } from '../../repositories/categoryProductRepository.interface';
 
 class CategoryProductRepository implements ICategoryProductRepository {
   async createCategoryProduct(
@@ -46,6 +46,16 @@ class CategoryProductRepository implements ICategoryProductRepository {
     data: Prisma.CategoryProductsUpdateInput,
   ): Promise<CategoryProducts> {
     return prisma.categoryProducts.update({
+      where,
+      data,
+    });
+  }
+
+  async updateManyCategoryProduct(
+    where: Prisma.CategoryProductsWhereInput,
+    data: Prisma.CategoryProductsUpdateManyMutationInput,
+  ): Promise<Prisma.BatchPayload> {
+    return prisma.categoryProducts.updateMany({
       where,
       data,
     });

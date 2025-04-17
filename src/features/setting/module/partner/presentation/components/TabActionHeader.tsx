@@ -22,11 +22,13 @@ export const TabActionHeader = ({
         </div>
         <Button
           variant="default"
-          className="flex items-center gap-2"
-          size="default"
+          className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full"
+          size="icon"
           onClick={() => router.push(redirectPath)}
         >
-          <Plus className="w-7 h-7" />
+          {/* <div className="bg-blue-600 rounded-full p-1 flex items-center justify-center"> */}
+          <Plus className="w-4 h-4" />
+          {/* </div> */}
           {buttonLabel}
         </Button>
       </div>

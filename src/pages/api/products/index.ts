@@ -1,12 +1,12 @@
 import { productUseCase } from '@/features/setting/api/domain/use-cases/productUseCase';
-import { productBodySchema } from '@/infrastructure/validators/productValidator';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createErrorResponse } from '@/shared/lib';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { validateBody } from '@/shared/utils/validate';
-import { ProductType } from '@prisma/client';
+import { Currency, ProductType } from '@prisma/client';
+import { productBodySchema } from '@/shared/validators/productValidator';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
@@ -32,17 +32,19 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     return res.status(RESPONSE_CODE.METHOD_NOT_ALLOWED).json({ error: 'Method not allowed' });
   }
   try {
+    const userCurrency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
     const { page, pageSize } = req.query;
 
     const categories = await productUseCase.getAllProducts({
       userId,
       page: Number(page) || 1,
       pageSize: Number(pageSize) || 20,
+      currency: userCurrency,
     });
 
     return res
       .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_ACCOUNT_SUCCESS, categories));
+      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_ALL_PRODUCT_SUCCESS, categories));
   } catch (error: any) {
     res
       .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)

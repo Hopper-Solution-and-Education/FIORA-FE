@@ -1,10 +1,10 @@
 import { Category, CategoryType } from '@prisma/client';
-import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
+import { ICategoryRepository } from '@/features/setting/api/repositories/categoryRepository.interface';
 import { CategoryWithTransactions } from '@/shared/types/category.types';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { Messages } from '@/shared/constants/message';
-import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
+import { categoryRepository } from '../../infrastructure/repositories/categoryRepository';
 
 class CategoryUseCase {
   private categoryRepository: ICategoryRepository;

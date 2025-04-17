@@ -5,6 +5,8 @@ import { partnerRepository } from '../../infrastructure/repositories/partnerRepo
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { prisma } from '@/config';
+import { validatePartnerData } from '../../exception/partnerExceptionHandler';
+import { PartnerValidationData } from '../../exception/partnerException.type';
 
 class PartnerUseCase {
   constructor(
@@ -54,6 +56,34 @@ class PartnerUseCase {
         throw new Error(Messages.PARTNER_NOT_FOUND);
       }
 
+      // Convert to PartnerValidationData format for validation
+      const validationData: PartnerValidationData = {
+        userId: userId,
+        email: data.email as string | null,
+        phone: data.phone as string | null,
+        taxNo: data.taxNo as string | null,
+        identify: data.identify as string | null,
+        name: data.name as string,
+        description: data.description as string | null,
+        address: data.address as string | null,
+        logo: data.logo as string | null,
+        dob: data.dob ? new Date(data.dob as string | Date) : null,
+        parentId: data.parentId as string | null,
+        id: id, // Include ID for update validation
+      };
+
+      // Validate the data using the schema
+      const validationErrors = await validatePartnerData(validationData, tx, true);
+
+      // If there are validation errors, throw them as an object
+      if (validationErrors.length > 0) {
+        const errorObject: Record<string, string> = {};
+        validationErrors.forEach((err) => {
+          errorObject[err.field] = err.message;
+        });
+        throw { validationErrors: errorObject };
+      }
+
       if (data.parentId) {
         const parentPartner = await tx.partner.findUnique({
           where: { id: data.parentId as string },
@@ -99,68 +129,37 @@ class PartnerUseCase {
 
   async createPartner(data: Prisma.PartnerUncheckedCreateInput): Promise<Partner> {
     return prisma.$transaction(async (tx) => {
-      if (!data.userId) {
-        throw new Error(Messages.INVALID_USER);
-      }
+      // Convert to PartnerValidationData format
+      const validationData: PartnerValidationData = {
+        userId: data.userId as string,
+        email: data.email as string | null,
+        phone: data.phone as string | null,
+        taxNo: data.taxNo as string | null,
+        identify: data.identify as string | null,
+        name: data.name as string,
+        description: data.description as string | null,
+        address: data.address as string | null,
+        logo: data.logo as string | null,
+        dob: data.dob ? new Date(data.dob as string | Date) : null,
+        parentId: data.parentId as string | null,
+      };
 
-      if (data.phone && data.phone.length < 10) {
-        throw new Error(Messages.INVALID_PHONE);
-      }
+      // Validate the data
+      const validationErrors = await validatePartnerData(validationData, tx, false);
 
-      if (data.dob && new Date(data.dob) > new Date()) {
-        throw new Error(Messages.INVALID_DOB);
-      }
-
-      // Check for uniqueness of email, phone, taxNo, identify if provided
-      if (data.email) {
-        const existingEmail = await tx.partner.findFirst({
-          where: { email: data.email as string, userId: data.userId as string },
+      // If there are validation errors, throw them as an object
+      if (validationErrors.length > 0) {
+        const errorObject: Record<string, string> = {};
+        validationErrors.forEach((err) => {
+          errorObject[err.field] = err.message;
         });
-        if (existingEmail) {
-          throw new Error(Messages.PARTNER_EMAIL_EXISTS);
-        }
+        throw { validationErrors: errorObject };
       }
 
-      if (data.phone) {
-        const existingPhone = await tx.partner.findFirst({
-          where: { phone: data.phone as string, userId: data.userId as string },
-        });
-        if (existingPhone) {
-          throw new Error(Messages.PARTNER_PHONE_EXISTS);
-        }
-      }
-
-      if (data.taxNo) {
-        const existingTaxNo = await tx.partner.findFirst({
-          where: { taxNo: data.taxNo as string, userId: data.userId as string },
-        });
-        if (existingTaxNo) {
-          throw new Error(Messages.PARTNER_TAX_EXISTS);
-        }
-      }
-
-      if (data.identify) {
-        const existingIdentify = await tx.partner.findFirst({
-          where: { identify: data.identify as string, userId: data.userId as string },
-        });
-        if (existingIdentify) {
-          throw new Error(Messages.PARTNER_IDENTIFY_EXISTS);
-        }
-      }
-
-      if (data.parentId) {
-        const parentPartner = await tx.partner.findUnique({
-          where: { id: data.parentId },
-          select: { parentId: true },
-        });
-        if (parentPartner?.parentId) {
-          throw new Error(Messages.INVALID_PARENT_HIERARCHY);
-        }
-      }
-
+      // Create the partner with validated data
       const partner = await tx.partner.create({
         data: {
-          userId: data.userId,
+          userId: data.userId as string,
           email: data.email,
           identify: data.identify,
           description: data.description,
@@ -170,8 +169,8 @@ class PartnerUseCase {
           phone: data.phone,
           name: data.name,
           address: data.address,
-          createdBy: data.userId,
-          updatedBy: data.userId,
+          createdBy: data.userId as string,
+          updatedBy: data.userId as string,
           parentId: data.parentId || null,
         },
       });
@@ -199,23 +198,6 @@ class PartnerUseCase {
       throw error;
     }
   }
-
-  // async deletePartner(id: string, userId: string): Promise<Partner> {
-  //   try {
-  //     // First check if the partner exists
-  //     const partner = await this.partnerRepository.getPartnerById(id, userId);
-
-  //     if (!partner) {
-  //       throw new Error(Messages.PARTNER_NOT_FOUND);
-  //     }
-
-  //     // Use the repository to handle the deletion
-  //     return await this.partnerRepository.deletePartner(id, userId);
-  //   } catch (error) {
-  //     console.error('Error deleting partner:', error);
-  //     throw error;
-  //   }
-  // }
 }
 
 export const partnerUseCase = new PartnerUseCase(partnerRepository, transactionRepository);

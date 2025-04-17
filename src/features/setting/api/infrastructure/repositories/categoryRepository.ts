@@ -1,6 +1,6 @@
 import { Category, CategoryType } from '@prisma/client';
 import { prisma } from '@/config';
-import { ICategoryRepository } from '../../application/repositories/categoryRepository.interface';
+import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
 
 class CategoryRepository implements ICategoryRepository {
   async createCategory(data: {
