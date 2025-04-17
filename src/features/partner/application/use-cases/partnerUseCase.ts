@@ -56,6 +56,34 @@ class PartnerUseCase {
         throw new Error(Messages.PARTNER_NOT_FOUND);
       }
 
+      // Convert to PartnerValidationData format for validation
+      const validationData: PartnerValidationData = {
+        userId: userId,
+        email: data.email as string | null,
+        phone: data.phone as string | null,
+        taxNo: data.taxNo as string | null,
+        identify: data.identify as string | null,
+        name: data.name as string,
+        description: data.description as string | null,
+        address: data.address as string | null,
+        logo: data.logo as string | null,
+        dob: data.dob ? new Date(data.dob as string | Date) : null,
+        parentId: data.parentId as string | null,
+        id: id, // Include ID for update validation
+      };
+
+      // Validate the data using the schema
+      const validationErrors = await validatePartnerData(validationData, tx, true);
+
+      // If there are validation errors, throw them as an object
+      if (validationErrors.length > 0) {
+        const errorObject: Record<string, string> = {};
+        validationErrors.forEach((err) => {
+          errorObject[err.field] = err.message;
+        });
+        throw { validationErrors: errorObject };
+      }
+
       if (data.parentId) {
         const parentPartner = await tx.partner.findUnique({
           where: { id: data.parentId as string },
@@ -112,19 +140,20 @@ class PartnerUseCase {
         description: data.description as string | null,
         address: data.address as string | null,
         logo: data.logo as string | null,
-        dob: data.dob,
+        dob: data.dob ? new Date(data.dob as string | Date) : null,
         parentId: data.parentId as string | null,
       };
 
       // Validate the data
       const validationErrors = await validatePartnerData(validationData, tx, false);
 
-      // If there are validation errors, throw them all at once
+      // If there are validation errors, throw them as an object
       if (validationErrors.length > 0) {
-        const errorMessages = validationErrors
-          .map((err) => `${err.field}: ${err.message}`)
-          .join('; ');
-        throw new Error(errorMessages);
+        const errorObject: Record<string, string> = {};
+        validationErrors.forEach((err) => {
+          errorObject[err.field] = err.message;
+        });
+        throw { validationErrors: errorObject };
       }
 
       // Create the partner with validated data
