@@ -1,6 +1,6 @@
 'use client';
 
-import { GlobalFormV2 } from '@/components/common/forms';
+import { FormConfig } from '@/components/common/forms';
 import CustomDateTimePicker from '@/components/common/forms/date-time-picker/CustomDateTimePicker';
 import InputField from '@/components/common/forms/input/InputField';
 import SelectField from '@/components/common/forms/select/SelectField';
@@ -113,7 +113,7 @@ export default function PartnerCreateForm() {
   return (
     <FormProvider {...methods}>
       <form onSubmit={methods.handleSubmit(handleSubmit)} className="space-y-4">
-        <GlobalFormV2 methods={methods} fields={fields} onBack={() => window.history.back()} />
+        <FormConfig methods={methods} fields={fields} onBack={() => window.history.back()} />
       </form>
     </FormProvider>
   );
