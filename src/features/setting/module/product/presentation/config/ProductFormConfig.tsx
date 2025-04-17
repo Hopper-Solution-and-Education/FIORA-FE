@@ -1,24 +1,31 @@
 'use client';
 
-import { InputCurrency, InputField, TextareaField } from '@/components/common/forms';
+import {
+  ArrayField,
+  GlobalIconSelect,
+  InputCurrency,
+  InputField,
+  SelectField,
+  TextareaField,
+} from '@/components/common/forms';
+import IconSelectUpload from '@/components/common/forms/select/IconSelectUpload';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { Currency, ProductType } from '@prisma/client';
 import { KeyboardEvent, useCallback } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Product } from '../../domain/entities';
 import {
-  ProductCategoryField,
-  ProductIconField,
-  ProductItemsField,
-  ProductTypeField,
-} from '../atoms';
-import { ProductFormValues } from '../schema';
+  setIsOpenDialogAddCategory,
+  setProductCategoryFormState,
+  setProductCategoryToEdit,
+} from '../../slices';
 
-type props = {
-  productToEdit: Product | null;
-};
+const useProductFormConfig = () => {
+  const {
+    formState: { isSubmitting },
+  } = useFormContext();
 
-const useProductFormConfig = ({ productToEdit }: props) => {
-  const { control } = useFormContext<ProductFormValues>();
-
+  const { data } = useAppSelector((state) => state.productManagement.categories);
+  const dispatch = useAppDispatch();
   const removeLeadingZeros = useCallback((value: string): string => {
     return value.replace(/^0+(?=[1-9]|\.)/, '') || '0';
   }, []);
@@ -48,23 +55,101 @@ const useProductFormConfig = ({ productToEdit }: props) => {
     }
   }, []);
 
+  const handleOpenDialog = () => {
+    dispatch(setIsOpenDialogAddCategory(true));
+    dispatch(setProductCategoryFormState('add'));
+    dispatch(setProductCategoryToEdit(null));
+  };
+
   const fields = [
-    <ProductIconField key="icon" control={control} productToEdit={productToEdit} />,
+    <IconSelectUpload key="icon" name="icon" required disabled={isSubmitting} />,
+    <SelectField
+      options={data.map((item) => ({ label: item.name, value: item.id }))}
+      key="catId"
+      name="catId"
+      label="Category"
+      disabled={isSubmitting}
+      onCustomAction={handleOpenDialog}
+      customActionLabel="Add New"
+    />,
     <InputField key="name" name="name" label="Name" required />,
-    <ProductTypeField key="product-type" control={control} />,
-    <ProductCategoryField key="catId" control={control} />,
-    <InputCurrency key="price" name="price" label="price" currency={'vnd'} />,
-    <TextareaField key="description" name="description" label="Description" />,
+    <SelectField
+      options={Object.entries(ProductType).map(([key, value]) => ({
+        label: key,
+        value,
+      }))}
+      key="type"
+      name="type"
+      label="Type"
+      required
+      disabled={isSubmitting}
+    />,
+    <SelectField
+      options={Object.entries(Currency).map(([key, value]) => ({ label: key, value }))}
+      key="currency"
+      name="currency"
+      label="Currency"
+      required
+      disabled={isSubmitting}
+    />,
+    <InputCurrency
+      key="price"
+      name="price"
+      label="Price"
+      currency={'vnd'}
+      required
+      disabled={isSubmitting}
+    />,
+    <TextareaField
+      key="description"
+      name="description"
+      label="Description"
+      disabled={isSubmitting}
+    />,
     <InputField
-      key="tax-rate"
-      name="tax_rate"
+      key="taxRate"
+      name="taxRate"
       placeholder="0.00%"
       label="Tax Rate"
       onChange={(e) => handleInputChange(e)}
       onKeyDown={onKeyDownHandler}
+      onFocus={(e: React.FocusEvent<HTMLInputElement, Element>) => {
+        if (e.target.value === '0') {
+          e.target.value = '';
+        }
+      }}
       required
+      disabled={isSubmitting}
     />,
-    <ProductItemsField key="product-item" control={control} />,
+    <ArrayField
+      key="items"
+      name="items"
+      emptyItem={{ name: '', description: '', icon: '' }}
+      fields={[
+        <InputField
+          name="name"
+          placeholder="Name"
+          key="name"
+          label="Item Name"
+          required
+          disabled={isSubmitting}
+        />,
+        <TextareaField
+          name="description"
+          placeholder="Description"
+          key="description"
+          label="Description"
+          disabled={isSubmitting}
+        />,
+        <GlobalIconSelect
+          name="icon"
+          key="icon"
+          label="Item Icon"
+          required
+          disabled={isSubmitting}
+        />,
+      ]}
+    />,
   ];
 
   return fields;

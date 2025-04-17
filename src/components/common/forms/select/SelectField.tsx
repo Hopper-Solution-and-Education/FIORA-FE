@@ -1,7 +1,6 @@
 'use client';
 
-import React, { memo } from 'react';
-import { FieldError } from 'react-hook-form';
+import GlobalLabel from '@/components/common/atoms/GlobalLabel';
 import {
   Select,
   SelectContent,
@@ -10,9 +9,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import GlobalLabel from '@/components/common/atoms/GlobalLabel';
 import LucieIcon from '@/features/home/module/category/components/LucieIcon';
 import { cn } from '@/shared/utils';
+import { Plus } from 'lucide-react';
+import React, { memo } from 'react';
+import { FieldError } from 'react-hook-form';
 
 export interface Option {
   value: string;
@@ -34,6 +35,8 @@ interface SelectFieldProps {
   required?: boolean;
   disabled?: boolean;
   id?: string;
+  onCustomAction?: () => void;
+  customActionLabel?: string;
   [key: string]: any;
 }
 
@@ -51,6 +54,8 @@ const SelectField: React.FC<SelectFieldProps> = ({
   required = false,
   disabled = false,
   id = name,
+  onCustomAction,
+  customActionLabel,
   ...props
 }) => (
   <div className="space-y-2">
@@ -88,6 +93,20 @@ const SelectField: React.FC<SelectFieldProps> = ({
             </SelectItem>
           ))}
         </SelectGroup>
+
+        {/* 👇 Move this OUTSIDE SelectGroup 👇 */}
+        {onCustomAction && (
+          <div className="border-t">
+            <button
+              type="button"
+              onClick={onCustomAction}
+              className="w-full flex items-center gap-2 text-left px-2 py-1 text-primary hover:bg-muted rounded text-sm"
+            >
+              <Plus className="w-4 h-4" />
+              {customActionLabel || 'Add New'}
+            </button>
+          </div>
+        )}
       </SelectContent>
     </Select>
     {error && <p className="text-sm text-red-500">{error.message}</p>}

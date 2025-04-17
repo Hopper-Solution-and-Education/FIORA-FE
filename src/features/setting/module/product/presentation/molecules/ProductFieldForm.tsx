@@ -8,15 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
-import { Product } from '../../domain/entities';
 import useProductFormConfig from '../config/ProductFormConfig';
 import { type ProductFormValues } from '../schema';
 
-interface ProductFormProps {
-  productToEdit: Product | null;
-}
-
-const ProductForm = ({ productToEdit }: ProductFormProps) => {
+const ProductForm = () => {
   const router = useRouter();
   const method = useFormContext<ProductFormValues>();
 
@@ -26,7 +21,7 @@ const ProductForm = ({ productToEdit }: ProductFormProps) => {
 
   const isUpdatingProduct = useAppSelector((state) => state.productManagement.isUpdatingProduct);
   const isCreatingProduct = useAppSelector((state) => state.productManagement.isCreatingProduct);
-  const fields = useProductFormConfig({ productToEdit });
+  const fields = useProductFormConfig();
 
   const renderSubmitButtonDefault = () => (
     <TooltipProvider>
@@ -77,14 +72,6 @@ const ProductForm = ({ productToEdit }: ProductFormProps) => {
             methods={method}
             renderSubmitButton={renderSubmitButtonDefault}
           />
-          {/* <ProductIconField control={method.control} productToEdit={productToEdit} />
-          <ProductNameField control={method.control} />
-          <ProductTypeField control={method.control} />
-          <ProductCategoryField control={method.control} />
-          <PriceField control={method.control} />
-          <TaxRateField control={method.control} />
-          <ProductDescriptionField control={method.control} />
-          <ProductItemsField control={method.control} /> */}
         </div>
       </div>
     </>

@@ -34,6 +34,7 @@ interface IconSelectProps {
   props?: React.HTMLAttributes<HTMLDivElement>;
   required?: boolean; // Thêm prop required
   label?: string; // Thêm prop label để hiển thị nhãn nếu cần
+  isCheckError?: boolean;
 }
 
 const IconSelect: React.FC<IconSelectProps> = ({
@@ -43,6 +44,7 @@ const IconSelect: React.FC<IconSelectProps> = ({
   props,
   required = false, // Giá trị mặc định là false
   label,
+  isCheckError = true,
 }) => {
   return (
     <div className={cn('mb-4', className)} {...props}>
@@ -59,7 +61,12 @@ const IconSelect: React.FC<IconSelectProps> = ({
         </label>
       )}
       <Select value={selectedIcon} onValueChange={(value) => onIconChange(value)}>
-        <SelectTrigger className={cn('w-full', required && !selectedIcon ? 'border-red-500' : '')}>
+        <SelectTrigger
+          className={cn(
+            'w-full',
+            isCheckError && (required && !selectedIcon ? 'border-red-500' : ''),
+          )}
+        >
           <SelectValue>
             <div className="flex items-center gap-2">
               <ListIcon icon={selectedIcon} />

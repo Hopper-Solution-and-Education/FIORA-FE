@@ -152,26 +152,19 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
         taxRate: data.taxRate ? Number(data.taxRate) : null,
       };
 
-      // let formattedData: ProductFormValues = {
-      //   icon: '',
-      //   name: '',
-      //   description: '',
-      //   price: 0,
-      //   taxRate: 0,
-      //   type: 'Product',
-      //   items: [],
-      //   catId: '',
-      // };
-
       if (formattedData.icon && formattedData.icon.startsWith('blob:')) {
         const response = await fetch(formattedData.icon);
         const blob = await response.blob();
+
         const fileName = formattedData.name.replace(/\s+/g, '_').toLowerCase() + '_' + Date.now();
+        const file = new File([blob], fileName, { type: blob.type });
+
         const firebaseUrl = await uploadToFirebase({
-          file: blob,
+          file: file,
           path: 'images/product_icons',
           fileName,
         });
+
         formattedData = {
           ...formattedData,
           icon: firebaseUrl,
@@ -216,7 +209,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
           {/* Form tạo/cập nhật sản phẩm */}
           <form onSubmit={method.handleSubmit(handleSubmit)} id="hook-form">
             <div className="mb-6">
-              <ProductForm productToEdit={productToEdit} />
+              <ProductForm />
             </div>
           </form>
 
