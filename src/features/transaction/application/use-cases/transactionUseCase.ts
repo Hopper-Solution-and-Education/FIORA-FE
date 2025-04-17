@@ -17,8 +17,8 @@ import {
 } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '../../infrastructure/repositories/transactionRepository';
-import { ICategoryRepository } from '@/features/setting/api/application/repositories/categoryRepository.interface';
 import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
+import { ICategoryRepository } from '@/features/setting/api/repositories/categoryRepository.interface';
 
 class TransactionUseCase {
   constructor(
@@ -231,6 +231,13 @@ class TransactionUseCase {
       const transaction = await tx.transaction.findUnique({ where: { id } });
       if (!transaction) {
         throw new Error(Messages.TRANSACTION_NOT_FOUND);
+      }
+
+      const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+      const now = Date.now();
+      const createdAt = new Date(transaction.createdAt).getTime();
+      if (now - createdAt > THIRTY_DAYS_MS) {
+        throw new Error(Messages.TRANSACTION_TOO_OLD_TO_DELETE);
       }
 
       await this.revertOldTransaction(tx, transaction);

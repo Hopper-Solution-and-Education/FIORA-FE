@@ -1,14 +1,21 @@
+'use client';
+
+import { Currency } from '@prisma/client';
+
 export type Language = 'vi' | 'en';
+
+export const keyLocalCurrency = 'currency';
+export const keyLanguage = 'language';
 
 interface SettingStateType {
   language: Language;
-  isDarkMode: boolean;
+  currency: Currency;
 }
 
 const initialSettingState: SettingStateType = {
   language: 'vi',
-  isDarkMode: false,
+  currency: 'VND',
 };
 
-export type { SettingStateType };
 export { initialSettingState };
+export type { SettingStateType };

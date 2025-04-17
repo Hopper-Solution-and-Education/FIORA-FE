@@ -134,7 +134,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
             }`}
           >
             <Image
-              src={section?.medias[0].media_url || company.logo}
+              src={section?.medias[0]?.media_url || company.logo}
               alt="Fiora Logo"
               width={160}
               height={160}
@@ -146,7 +146,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
           {/* Text Info */}
           <div className="grid flex-1 text-left">
             <span className="truncate font-semibold text-base sm:text-md md:text-lg">
-              {section?.medias[0].description}
+              {section?.medias[0]?.description}
             </span>
             <span className="truncate text-sm sm:text-sm md:text-md text-gray-400">
               {company.plan}

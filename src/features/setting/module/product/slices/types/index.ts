@@ -36,7 +36,6 @@ interface CategoryState {
     total: number;
     hasMore: boolean;
   };
-  error: string | null;
 }
 
 export const initialProductState: CategoryState = {
@@ -64,7 +63,6 @@ export const initialProductState: CategoryState = {
     total: 0,
     hasMore: true,
   },
-  error: null,
   isCreatingProduct: false,
   isUpdatingProduct: false,
   isDeletingProduct: false,

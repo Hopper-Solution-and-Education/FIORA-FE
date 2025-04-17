@@ -40,7 +40,6 @@ const productManagementSlice = createSlice({
     builder
       .addCase(fetchCategoriesProduct.pending, (state) => {
         state.categories.isLoading = true;
-        state.error = null;
       })
       .addCase(
         fetchCategoriesProduct.fulfilled,
@@ -56,9 +55,8 @@ const productManagementSlice = createSlice({
           };
         },
       )
-      .addCase(fetchCategoriesProduct.rejected, (state, action) => {
+      .addCase(fetchCategoriesProduct.rejected, (state) => {
         state.categories.isLoading = false;
-        state.error = action.error.message || 'Failed to fetch categories';
       });
 
     builder
@@ -72,11 +70,8 @@ const productManagementSlice = createSlice({
           description: 'Create product successfully!!',
         });
       })
-      .addCase(createProduct.rejected, (state, action) => {
+      .addCase(createProduct.rejected, (state) => {
         state.isCreatingProduct = false;
-        toast.error('Failed to create product', {
-          description: (state.error = action.error.message || 'Failed to create product'),
-        });
       });
 
     builder
@@ -89,9 +84,8 @@ const productManagementSlice = createSlice({
         state.products.total = action.payload.totalPage;
         state.products.page = action.payload.page;
       })
-      .addCase(getProductsAsyncThunk.rejected, (state, action) => {
+      .addCase(getProductsAsyncThunk.rejected, (state) => {
         state.products.isLoading = false;
-        state.error = action.error.message || 'Failed to get products';
       });
 
     builder
@@ -112,9 +106,8 @@ const productManagementSlice = createSlice({
           description: 'Update product successfully!!',
         });
       })
-      .addCase(updateProductAsyncThunk.rejected, (state, action) => {
+      .addCase(updateProductAsyncThunk.rejected, (state) => {
         state.isUpdatingProduct = false;
-        state.error = action.error.message || 'Failed to update product';
       });
 
     builder
@@ -129,9 +122,8 @@ const productManagementSlice = createSlice({
           description: 'Delete product successfully!!',
         });
       })
-      .addCase(deleteProductAsyncThunk.rejected, (state, action) => {
+      .addCase(deleteProductAsyncThunk.rejected, (state) => {
         state.isDeletingProduct = false;
-        state.error = action.error.message || 'Failed to delete product';
       })
       .addCase(deleteProductTransferAsyncThunk.pending, (state) => {
         state.isDeletingProduct = true;
@@ -144,9 +136,8 @@ const productManagementSlice = createSlice({
           description: 'Delete product successfully!!',
         });
       })
-      .addCase(deleteProductTransferAsyncThunk.rejected, (state, action) => {
+      .addCase(deleteProductTransferAsyncThunk.rejected, (state) => {
         state.isDeletingProduct = false;
-        state.error = action.error.message || 'Failed to delete product';
       });
 
     builder.addCase(getProductTransactionAsyncThunk.pending, (state) => {
@@ -196,9 +187,8 @@ const productManagementSlice = createSlice({
       });
     });
 
-    builder.addCase(createCategoryProductAsyncThunk.rejected, (state, action) => {
+    builder.addCase(createCategoryProductAsyncThunk.rejected, (state) => {
       state.isCreatingProductCategory = false;
-      state.error = action.error.message || 'Failed to create category';
     });
 
     builder
@@ -217,9 +207,8 @@ const productManagementSlice = createSlice({
           description: 'Update category successfully!!',
         });
       })
-      .addCase(updateCategoryProductAsyncThunk.rejected, (state, action) => {
+      .addCase(updateCategoryProductAsyncThunk.rejected, (state) => {
         state.isUpdatingProductCategory = false;
-        state.error = action.error.message || 'Failed to update category';
       });
 
     builder
@@ -241,9 +230,8 @@ const productManagementSlice = createSlice({
           description: 'Delete category successfully!!',
         });
       })
-      .addCase(deleteCategoryProductAsyncThunk.rejected, (state, action) => {
+      .addCase(deleteCategoryProductAsyncThunk.rejected, (state) => {
         state.isDeletingProductCategory = false;
-        state.error = action.error.message || 'Failed to delete category';
       });
   },
 });

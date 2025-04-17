@@ -19,7 +19,7 @@ interface GlobalFormProps<T extends yup.AnyObject> {
 }
 
 // Generic GlobalForm component to manage and render forms
-const GlobalFormV2 = <T extends yup.AnyObject>({
+const FormConfig = <T extends yup.AnyObject>({
   fields,
   onBack,
   renderSubmitButton,
@@ -88,4 +88,4 @@ const GlobalFormV2 = <T extends yup.AnyObject>({
   );
 };
 
-export default GlobalFormV2;
+export default FormConfig;

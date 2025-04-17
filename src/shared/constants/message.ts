@@ -71,6 +71,7 @@ export enum Messages {
   CREATE_TRANSACTION_FAILED = 'Failed to create transaction',
   TRANSACTION_NOT_FOUND = 'Transaction not found',
   UPDATE_TRANSACTION_FAILED = 'Failed to update transaction',
+  TRANSACTION_TOO_OLD_TO_DELETE = 'Cannot delete a transaction older than 30 days',
 
   // Account-related errors
   ACCOUNT_NOT_FOUND = 'Account not found',

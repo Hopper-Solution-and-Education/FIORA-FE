@@ -1,5 +1,4 @@
 import { productUseCase } from '@/features/setting/api/domain/use-cases/productUseCase';
-import { productBodySchema } from '@/infrastructure/validators/productValidator';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createErrorResponse } from '@/shared/lib';
@@ -7,6 +6,7 @@ import { createError, createResponse } from '@/shared/lib/responseUtils/createRe
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { validateBody } from '@/shared/utils/validate';
 import { Currency, ProductType } from '@prisma/client';
+import { productBodySchema } from '@/shared/validators/productValidator';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
