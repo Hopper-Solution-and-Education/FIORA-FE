@@ -28,7 +28,20 @@ class ProductUseCase {
     this.categoryProductRepository = categoryProductRepository;
   }
 
-  async getAllProducts(params: {
+  async getAllProducts(params: { userId: string }): Promise<Product[]> {
+    const { userId } = params;
+    try {
+      const products = await this.productRepository.findManyProducts({
+        userId,
+      });
+
+      return products;
+    } catch (error: any) {
+      throw new Error('Failed to get all products ', error.message);
+    }
+  }
+
+  async getAllProductsPagination(params: {
     userId: string;
     page?: number;
     pageSize?: number;
