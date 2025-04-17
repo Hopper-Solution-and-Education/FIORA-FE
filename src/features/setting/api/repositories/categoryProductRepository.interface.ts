@@ -6,6 +6,7 @@ export declare type JsonValue = string | number | boolean | null | JsonObject | 
 export interface ICategoryProductRepository {
   createCategoryProduct(
     data: Prisma.CategoryProductsUncheckedCreateInput,
+    options?: Prisma.CategoryProductsCreateArgs,
   ): Promise<CategoryProducts>;
   findUniqueCategoryProduct(
     where: Prisma.CategoryProductsWhereUniqueInput,
@@ -19,6 +20,10 @@ export interface ICategoryProductRepository {
     where: Prisma.CategoryProductsWhereUniqueInput,
     data: Prisma.CategoryProductsUpdateInput,
   ): Promise<CategoryProducts>;
+  updateManyCategoryProduct(
+    where: Prisma.CategoryProductsWhereInput,
+    data: Prisma.CategoryProductsUpdateManyMutationInput,
+  ): Promise<Prisma.BatchPayload>;
   deleteCategoryProduct(where: Prisma.CategoryProductsWhereUniqueInput): Promise<CategoryProducts>;
   aggregate(options: Prisma.CategoryProductsAggregateArgs): Promise<any>;
   // groupBy(options: Prisma.CategoryProductsGroupByArgs): Promise<any>;

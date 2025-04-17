@@ -12,14 +12,12 @@ export async function validatePartnerData(
 ): Promise<ValidationError[]> {
   const errors: ValidationError[] = [];
 
-  // Schema động
   const schema = isUpdate
     ? basePartnerSchema
     : basePartnerSchema.shape({
         name: Yup.string().required(Messages.NAME_REQUIRED).max(255, Messages.NAME_TOO_LONG),
       });
 
-  // Validate với Yup
   try {
     await schema.validate(data, { abortEarly: false });
   } catch (error) {
@@ -33,7 +31,6 @@ export async function validatePartnerData(
     }
   }
 
-  // Validate uniqueness song song
   const uniquenessFields = ['email', 'phone', 'taxNo', 'identify']
     .map((field) => ({ field, value: data[field as keyof PartnerValidationData] as string }))
     .filter(({ value }) => value);

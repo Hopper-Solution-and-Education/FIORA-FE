@@ -99,31 +99,8 @@ export type TransactionColumn =
 
 export type TransactionTableColumnKey = { [key in TransactionColumn]: TransactionTableColumn };
 
-export type TransactionFilterComparator =
-  | 'equals'
-  | 'contains'
-  | 'startsWith'
-  | 'endsWith'
-  | 'gt' //greater than
-  | 'gte' //greater than or equal to
-  | 'lt' //less than
-  | 'lte' //less than or equal to
-  | 'some' // for array
-  | 'every'; // for array
-
-export type TransactionFilterOperator = 'AND' | 'OR';
-
-export type PrimitiveType = string | number | boolean | Date | null;
-
-export type TransactionFilterObject = {
-  [key: string | TransactionFilterComparator | TransactionFilterOperator]:
-    | PrimitiveType
-    | TransactionFilterComparator
-    | TransactionFilterObject;
-};
-
 export type TransactionFilterCriteria = {
-  filters?: TransactionFilterObject;
+  filters?: any;
   sortBy?: {
     [key: string]: OrderType;
   };
@@ -142,12 +119,22 @@ export type ITransactionPaginatedResponse = {
 };
 
 export type TransactionFilterOptionResponse = {
-  fromAccounts: string[];
-  toAccounts: string[];
-  fromCategories: string[];
-  toCategories: string[];
+  accounts: string[];
+  categories: string[];
   partners: string[];
 };
+
+export type TransactionFilterOperator =
+  | 'equals'
+  | 'contains'
+  | 'startsWith'
+  | 'endsWith'
+  | 'gt'
+  | 'gte'
+  | 'lt'
+  | 'lte'
+  | 'some'
+  | 'every';
 
 export type PaginationProps = {
   page: number;

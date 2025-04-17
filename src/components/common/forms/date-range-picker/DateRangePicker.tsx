@@ -63,7 +63,7 @@ export default function DateRangePicker(props: DateRangePickerProps) {
 
   const yesterday = {
     from: subDays(today, 1),
-    to: subDays(today, 1),
+    to: subDays(today.setDate(today.getDate() + 1), 1),
   };
   const last7Days = {
     from: subDays(today, 6),

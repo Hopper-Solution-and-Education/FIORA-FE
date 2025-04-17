@@ -18,6 +18,7 @@ import {
   PartnerFormValues,
   partnerSchema,
 } from '../module/partner/presentation/schema/addPartner.schema';
+import { setErrorsFromObject } from '@/shared/lib';
 
 function convertNullToUndefined<T>(obj: T): T {
   const result = { ...obj };
@@ -70,7 +71,7 @@ export function useCreatePartner({ redirectPath }: Props) {
     }
   }, [status, session, fetchPartners]);
 
-  async function onSubmit(values: PartnerFormValues) {
+  async function onSubmit(values: PartnerFormValues, setError: any) {
     if (status !== 'authenticated' || !session?.user?.id) {
       toast.error('User not authenticated. Please log in.');
       return;
@@ -80,7 +81,6 @@ export function useCreatePartner({ redirectPath }: Props) {
       const submissionData = { ...values };
       let logoUrl: string | undefined;
 
-      // Xử lý logo đơn giản hơn
       if (values.logo instanceof File) {
         logoUrl = await uploadToFirebase({
           file: values.logo,
@@ -101,29 +101,17 @@ export function useCreatePartner({ redirectPath }: Props) {
 
       await createPartnerUseCase.execute(formattedPartnerData as CreatePartnerAPIRequestDTO);
 
-      toast.success('Partner added successfully!');
-      form.reset();
+      // form.reset();
       await fetchPartners(session.user.id);
       router.push(redirectPath);
     } catch (error: any) {
-      // Improved error handling
-      let errorMessage = 'Failed to create partner';
+      const errorMessage = 'Failed to create partner';
 
       if (error.message) {
-        try {
-          // Try to parse the error message if it's a JSON string
-          const parsedError = JSON.parse(error.message);
-          if (parsedError.message) {
-            errorMessage = parsedError.message;
-          }
-        } catch {
-          // If parsing fails, use the error message directly
-          errorMessage = error.message;
-        }
+        setErrorsFromObject(error.message, setError);
       }
 
       toast.error(errorMessage);
-      console.error('Create partner error:', error);
     }
   }
 

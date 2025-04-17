@@ -1,20 +1,22 @@
 'use client';
 
+import { FormConfig } from '@/components/common/forms';
 import CustomDateTimePicker from '@/components/common/forms/date-time-picker/CustomDateTimePicker';
 import InputField from '@/components/common/forms/input/InputField';
 import SelectField from '@/components/common/forms/select/SelectField';
 import TextareaField from '@/components/common/forms/text-area/TextareaField';
 import UploadField from '@/components/common/forms/upload/UploadField';
-import GlobalForm from '@/components/common/forms/GlobalForm';
 import { useCreatePartner } from '@/features/setting/hooks/useCreatePartner';
-import { fetchPartners } from '@/features/setting/module/partner/slices/actions/fetchPartnersAsyncThunk';
 import {
   PartnerFormValues,
   partnerSchema,
 } from '@/features/setting/module/partner/presentation/schema/addPartner.schema';
+import { fetchPartners } from '@/features/setting/module/partner/slices/actions/fetchPartnersAsyncThunk';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 export default function PartnerCreateForm() {
@@ -26,6 +28,15 @@ export default function PartnerCreateForm() {
   const partners = useAppSelector((state) => state.partner.partners);
   const { data: session, status } = useSession();
   const [isDataFetched, setIsDataFetched] = useState(false);
+
+  // Create form methods directly to access setError
+  const methods = useForm<PartnerFormValues>({
+    resolver: yupResolver(partnerSchema),
+    defaultValues: {
+      parentId: 'none',
+    },
+    mode: 'onChange',
+  });
 
   // Improved check for partners data on page load/refresh
   useEffect(() => {
@@ -96,24 +107,14 @@ export default function PartnerCreateForm() {
   ];
 
   const handleSubmit = async (data: PartnerFormValues) => {
-    try {
-      // Simply pass the data to the submitPartner function
-      // The logo upload will be handled in useCreatePartner
-      await submitPartner(data);
-    } catch (error) {
-      toast.error('Failed to create partner');
-      console.error('Create partner error:', error);
-    }
+    await submitPartner(data, methods.setError);
   };
 
   return (
-    <GlobalForm
-      fields={fields}
-      schema={partnerSchema}
-      defaultValues={{
-        parentId: 'none',
-      }}
-      onSubmit={handleSubmit}
-    />
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(handleSubmit)} className="space-y-4">
+        <FormConfig methods={methods} fields={fields} onBack={() => window.history.back()} />
+      </form>
+    </FormProvider>
   );
 }
