@@ -131,7 +131,7 @@ const DeleteTransactionDialog = (props: DeleteAccountDialogProps) => {
             <Button
               variant="destructive"
               onClick={onDelete}
-              // disabled={!selectedAccount || accounts.isLoading || isDeleting}
+              disabled={isDeleting}
               className={cn(
                 'flex-1 font-medium',
                 'bg-red-500 hover:bg-red-600',

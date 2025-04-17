@@ -119,10 +119,8 @@ export type ITransactionPaginatedResponse = {
 };
 
 export type TransactionFilterOptionResponse = {
-  fromAccounts: string[];
-  toAccounts: string[];
-  fromCategories: string[];
-  toCategories: string[];
+  accounts: string[];
+  categories: string[];
   partners: string[];
 };
 

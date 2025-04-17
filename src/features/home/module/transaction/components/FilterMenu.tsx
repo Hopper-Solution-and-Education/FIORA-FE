@@ -15,7 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import useDataFetcher from '@/shared/hooks/useDataFetcher';
 import { cn } from '@/shared/utils';
 import { useAppSelector } from '@/store';
-import { FunnelPlus } from 'lucide-react';
+import { FunnelPlus, Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { formatCurrency } from '../hooks/formatCurrency';
@@ -51,11 +51,12 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
   const { amountMin, amountMax, filterCriteria } = useAppSelector((state) => state.transaction);
 
   const [isOpen, setIsOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isMinEditing, setIsMinEditing] = useState(false);
+  const [isMaxEditing, setIsMaxEditing] = useState(false);
 
   const [filterParams, setFilterParams] = useState<FilterParams>(filterParamsInitState);
 
-  const { data } = useDataFetcher<TransactionFilterOptionResponse>({
+  const { data, isLoading } = useDataFetcher<TransactionFilterOptionResponse>({
     endpoint: isOpen ? '/api/transactions/options' : null,
     method: 'GET',
   });
@@ -71,21 +72,6 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
       let currentAmountMax = amountMax;
       let dateFrom: Date | undefined;
       let dateTo: Date | undefined;
-
-      // Helper function to process date values
-      const processDate = (dateValue: any) => {
-        if (!dateValue) return;
-
-        // Handle date as string or object with gte/lte
-        if (typeof dateValue === 'string') {
-          return new Date(dateValue);
-        } else if (dateValue.gte) {
-          return new Date(dateValue.gte);
-        } else if (dateValue.lte) {
-          return new Date(dateValue.lte);
-        }
-        return undefined;
-      };
 
       // Process the filter structure
       if (filterCriteria.filters) {
@@ -115,15 +101,6 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
 
             if (condition.toCategory?.name) {
               accounts.add(condition.toCategory.name);
-            }
-
-            // Handle date condition
-            if (condition.date) {
-              const parsedDate = processDate(condition.date);
-              if (parsedDate) {
-                dateFrom = parsedDate;
-                dateTo = parsedDate;
-              }
             }
 
             // Handle amount condition
@@ -322,18 +299,18 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
       : [{ label: 'No option available', value: 'none', disabled: true }];
   }, [data]);
 
-  const subjectFromOptions = useMemo(() => {
+  const accountOptions = useMemo(() => {
     return data
-      ? [...data.data.fromAccounts, ...data.data.toAccounts].map((option: string) => ({
+      ? [...data.data.accounts].map((option: string) => ({
           value: option,
           label: option,
         }))
       : [{ label: 'No option available', value: 'none', disabled: true }];
   }, [data]);
 
-  const subjectToOptions = useMemo(() => {
+  const categoryOptions = useMemo(() => {
     return data
-      ? [...data.data.fromCategories, ...data.data.toCategories].map((option: string) => ({
+      ? [...data.data.categories].map((option: string) => ({
           value: option,
           label: option,
         }))
@@ -369,9 +346,9 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
         <DropdownMenuSeparator />
 
         {/* Filter contentss */}
-        <div className="w-full h-fit max-h-[45vh] flex justify-start items-start p-2 ">
+        <div className="w-full h-fit max-h-[45vh] flex justify-start items-start p-2 pb-5">
           {/* Filter criteria */}
-          <DropdownMenuGroup className="w-[220px]">
+          <DropdownMenuGroup className="w-[260px]">
             {/* <h4 className="text-sm w-max">Filters</h4> */}
             <div className="w-full h-full flex flex-col justify-start items-start gap-3">
               {/* Type Filter */}
@@ -386,40 +363,90 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
                 />
               </div>
 
-              {/* Partner Filter */}
-              <div className="w-full flex flex-col gap-2">
-                <Label>Partner</Label>
-                <MultiSelect
-                  options={partnerOptions}
-                  selected={filterParams.partners ?? []}
-                  onChange={(values: string[]) => handleEditFilter('partners', values)}
-                  placeholder="Select Partners"
-                  className="w-full px-4 py-2"
-                />
-              </div>
-
-              {/* Account/Category Filter */}
+              {/* Account Filter */}
               <div className="w-full flex flex-col gap-2">
                 <Label>Category</Label>
-                <MultiSelect
-                  options={subjectFromOptions}
-                  selected={filterParams.categories ?? []}
-                  onChange={(values: string[]) => handleEditFilter('categories', values)}
-                  placeholder="Select Categories"
-                  className="w-full px-4 py-2"
-                />
+                <div className="relative w-full h-fit">
+                  {isLoading && (
+                    <div className="w-fit h-fit absolute top-[50%] right-[15%] -translate-y-[25%] z-10">
+                      <Loader2 className="h-5 w-5 text-primary animate-spin opacity-50 mb-4" />
+                    </div>
+                  )}
+                  <MultiSelect
+                    options={accountOptions}
+                    selected={filterParams.categories ?? []}
+                    onChange={(values: string[]) => handleEditFilter('categories', values)}
+                    placeholder="Select Categories"
+                    className="w-full px-4 py-2"
+                  />
+                </div>
               </div>
 
-              {/* Account/Category Filter */}
+              {/* Amount Filter */}
               <div className="w-full flex flex-col gap-2">
-                <Label>Account</Label>
-                <MultiSelect
-                  options={subjectToOptions}
-                  selected={filterParams.accounts ?? []}
-                  onChange={(values: string[]) => handleEditFilter('accounts', values)}
-                  placeholder="Select Accounts"
-                  className="w-full px-4 py-2"
-                />
+                <Label>Amount</Label>
+                <div className="w-full flex flex-row items-center justify-between gap-2">
+                  <Input
+                    // disabled={isRegistering} // Disable during register period
+                    value={
+                      !isMinEditing
+                        ? formatCurrency(
+                            filterParams.amountMin ?? 0,
+                            TransactionCurrency.VND,
+                            false,
+                          )
+                        : filterParams.amountMin
+                    }
+                    min={amountMin}
+                    max={amountMax}
+                    onFocus={(e) => {
+                      setIsMinEditing(true);
+                      e.target.select();
+                    }}
+                    onBlur={() => setIsMinEditing(false)}
+                    placeholder="Min"
+                    onChange={(e) =>
+                      handleEditFilter('amountMin', Number(e.target.value.split(',').join('')))
+                    }
+                    required
+                    className={cn('w-[40%]')}
+                  />
+
+                  <Label>To</Label>
+
+                  <Input
+                    // disabled={isRegistering} // Disable during register period
+                    value={
+                      !isMaxEditing
+                        ? formatCurrency(
+                            filterParams.amountMax ?? 0,
+                            TransactionCurrency.VND,
+                            false,
+                          )
+                        : filterParams.amountMax
+                    }
+                    min={amountMin}
+                    max={amountMax}
+                    placeholder="Max"
+                    onFocus={(e) => {
+                      setIsMaxEditing(true);
+                      e.target.select();
+                    }}
+                    onBlur={() => setIsMaxEditing(false)}
+                    onChange={(e) =>
+                      handleEditFilter('amountMax', Number(e.target.value.split(',').join('')))
+                    }
+                    required
+                    className={cn('w-[60%]')}
+                  />
+                </div>
+                {renderAmountSlider({
+                  amountMin: filterParams.amountMin ?? amountMin,
+                  amountMax: filterParams.amountMax ?? amountMax,
+                  minRange: amountMin,
+                  maxRange: amountMax,
+                  handleUpdateAmount: handleEditFilter,
+                })}
               </div>
             </div>
           </DropdownMenuGroup>
@@ -428,11 +455,11 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
           <div className="w-[2px] h-full bg-gray-300 mx-2"></div>
 
           {/* Filter criteria */}
-          <DropdownMenuGroup className="w-[250px]">
+          <DropdownMenuGroup className="w-[240px]">
             {/* <h4 className="text-sm w-max">Filters</h4> */}
             <div className="w-full h-full flex flex-col justify-start items-start gap-[.8rem]">
               <div className="w-full flex flex-col gap-2">
-                <Label>Date range</Label>
+                <Label>Date</Label>
                 <DateRangePicker
                   date={filterParams.dateRange}
                   onChange={(values: DateRange | undefined) =>
@@ -450,68 +477,40 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
                 /> */}
               </div>
 
-              {/* Type Filter */}
+              {/* Category Filter */}
               <div className="w-full flex flex-col gap-2">
-                <Label>Amount</Label>
-                {renderAmountSlider({
-                  amountMin: filterParams.amountMin ?? amountMin,
-                  amountMax: filterParams.amountMax ?? amountMax,
-                  minRange: amountMin,
-                  maxRange: amountMax,
-                  handleUpdateAmount: handleEditFilter,
-                })}
-                <div className="w-full flex flex-col gap-2">
-                  <Label>Min</Label>
-                  <Input
-                    // disabled={isRegistering} // Disable during register period
-                    value={
-                      !isEditing
-                        ? formatCurrency(
-                            filterParams.amountMin ?? 0,
-                            TransactionCurrency.VND,
-                            false,
-                          )
-                        : filterParams.amountMin
-                    }
-                    min={amountMin}
-                    max={amountMax}
-                    onFocus={(e) => {
-                      setIsEditing(true);
-                      e.target.select();
-                    }}
-                    onBlur={() => setIsEditing(false)}
-                    placeholder="Min"
-                    onChange={(e) =>
-                      handleEditFilter('amountMin', Number(e.target.value.split(',').join('')))
-                    }
-                    required
-                    className={cn('w-full')}
+                <Label>Account</Label>
+                <div className="relative w-full h-fit">
+                  {isLoading && (
+                    <div className="w-fit h-fit absolute top-[50%] right-[15%] -translate-y-[25%] z-10">
+                      <Loader2 className="h-5 w-5 text-primary animate-spin opacity-50 mb-4" />
+                    </div>
+                  )}
+                  <MultiSelect
+                    options={categoryOptions}
+                    selected={filterParams.accounts ?? []}
+                    onChange={(values: string[]) => handleEditFilter('accounts', values)}
+                    placeholder="Select Accounts"
+                    className="w-full px-4 py-2"
                   />
-                  <Label>Max</Label>
-                  <Input
-                    // disabled={isRegistering} // Disable during register period
-                    value={
-                      !isEditing
-                        ? formatCurrency(
-                            filterParams.amountMax ?? 0,
-                            TransactionCurrency.VND,
-                            false,
-                          )
-                        : filterParams.amountMax
-                    }
-                    min={amountMin}
-                    max={amountMax}
-                    placeholder="Max"
-                    onFocus={(e) => {
-                      setIsEditing(true);
-                      e.target.select();
-                    }}
-                    onBlur={() => setIsEditing(false)}
-                    onChange={(e) =>
-                      handleEditFilter('amountMax', Number(e.target.value.split(',').join('')))
-                    }
-                    required
-                    className={cn('w-full')}
+                </div>
+              </div>
+
+              {/* Partner Filter */}
+              <div className="w-full flex flex-col gap-2">
+                <Label>Partner</Label>
+                <div className="relative w-full h-fit">
+                  {isLoading && (
+                    <div className="w-fit h-fit absolute top-[50%] right-[15%] -translate-y-[25%] z-10">
+                      <Loader2 className="h-5 w-5 text-primary animate-spin opacity-50 mb-4" />
+                    </div>
+                  )}
+                  <MultiSelect
+                    options={partnerOptions}
+                    selected={filterParams.partners ?? []}
+                    onChange={(values: string[]) => handleEditFilter('partners', values)}
+                    placeholder="Select Partners"
+                    className="w-full px-4 py-2"
                   />
                 </div>
               </div>

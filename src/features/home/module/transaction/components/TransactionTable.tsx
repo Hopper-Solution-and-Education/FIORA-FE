@@ -38,6 +38,20 @@ import DeleteTransactionDialog from './DeleteTransactionDialog';
 import FilterMenu from './FilterMenu';
 import SettingsMenu from './SettingMenu';
 
+type PaginationParams = {
+  currentPage: number;
+  pageSize: number;
+  totalPage: number;
+  totalItems: number;
+};
+
+const initPaginationParams: PaginationParams = {
+  currentPage: 1,
+  pageSize: 20,
+  totalPage: 0,
+  totalItems: 0,
+};
+
 const SortArrowBtn = ({
   sortOrder,
   isActivated,
@@ -69,20 +83,19 @@ const TransactionTable = () => {
   const toggleRef = useRef(null);
   const { visibleColumns, filterCriteria } = useAppSelector((state) => state.transaction);
 
+  //Sort states
   const [displayData, setDisplayData] = useState<IRelationalTransaction[]>([]);
   const [sortOrder, setSortOrder] = useState<OrderType | undefined>('desc');
   const [sortTarget, setSortTarget] = useState<string>('date');
   const [hoveringIdx, setHoveringIdx] = useState<number>(-1);
+  const [paginationParams, setPaginationParams] = useState<PaginationParams>(initPaginationParams);
+  const [currentDate] = useState<Date>(new Date());
+
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [selectedTransaction, setSelectedTransaction] = useState<
     IRelationalTransaction | undefined
   >();
-
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize] = useState<number>(20);
-  const [totalPage, setTotalPage] = useState<number>(0);
-  const [totalItems, setTotalItems] = useState<number>(0);
-  const [currentDate] = useState<Date>(new Date());
 
   const {
     data: fetchData,
@@ -93,8 +106,8 @@ const TransactionTable = () => {
     method: 'POST',
     body: {
       ...filterCriteria,
-      page: currentPage,
-      pageSize,
+      page: paginationParams.currentPage,
+      pageSize: paginationParams.pageSize,
       sortBy: { [sortTarget]: sortOrder },
       userId: data?.user.id,
     },
@@ -104,9 +117,17 @@ const TransactionTable = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !isLoading && currentPage < totalPage) {
-          if (currentPage < totalPage && !isLoading && !isValidating) {
-            setCurrentPage(currentPage + 1);
+        if (
+          entries[0].isIntersecting &&
+          !isLoading &&
+          paginationParams.currentPage < paginationParams.totalPage
+        ) {
+          if (
+            paginationParams.currentPage < paginationParams.totalPage &&
+            !isLoading &&
+            !isValidating
+          ) {
+            setPaginationParams((prev) => ({ ...prev, currentPage: prev.currentPage + 1 }));
           }
         }
       },
@@ -124,7 +145,7 @@ const TransactionTable = () => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, currentPage, totalPage, fetchData]);
+  }, [isLoading, paginationParams.currentPage, paginationParams.totalPage, fetchData]);
 
   const debouncedFilterHandler = useMemo(
     () =>
@@ -138,13 +159,16 @@ const TransactionTable = () => {
   // Handle data fetched from API
   useEffect(() => {
     if (fetchData?.status === 201 && fetchData?.data.data) {
-      setTotalPage(fetchData?.data.totalPage);
-      setTotalItems(fetchData?.data.total);
+      setPaginationParams((prev) => ({
+        ...prev,
+        totalPage: fetchData?.data.totalPage,
+        totalItems: fetchData?.data.total,
+      }));
       dispatch(
         updateAmountRange({ min: fetchData?.data.amountMin, max: fetchData?.data.amountMax }),
       );
 
-      if (currentPage === 1) {
+      if (paginationParams.currentPage === 1) {
         setDisplayData(fetchData?.data.data);
       } else {
         setDisplayData((prev) => [...prev, ...(fetchData?.data.data || [])]);
@@ -161,7 +185,7 @@ const TransactionTable = () => {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, filterCriteria]);
+  }, [paginationParams.currentPage, filterCriteria]);
 
   // Handle sort logics for column header
   const handleSort = (header: string) => {
@@ -188,6 +212,7 @@ const TransactionTable = () => {
   const handleDeleteTransaction = () => {
     //delete logics here
     const endpoint = `/api/transactions/transaction?id=${selectedTransaction?.id}`;
+    setIsDeleting(true);
     fetch(endpoint, {
       method: 'DELETE',
     })
@@ -212,7 +237,12 @@ const TransactionTable = () => {
       .catch((error) => {
         console.error('Error deleting transaction:', error);
         alert('Failed to delete transaction');
-      });
+      })
+      .finally(
+        () => {
+          setIsDeleting(false);
+        }, // Reset deleting state
+      );
   };
 
   // Navigate to delete page
@@ -229,7 +259,7 @@ const TransactionTable = () => {
 
   // Callback function to apply after updating filter criteria
   const handleFilterChange = (newFilter: TransactionFilterCriteria) => {
-    setCurrentPage(1); // Reset current page to 1 when applying a new filter
+    setPaginationParams((prev) => ({ ...prev, currentPage: 1 })); // Reset current page to 1 when applying a new filter
     dispatch(updateFilterCriteria(newFilter));
   };
 
@@ -293,7 +323,7 @@ const TransactionTable = () => {
                   <Label className="text-gray-600 dark:text-gray-400">
                     Displaying{' '}
                     <strong>
-                      {displayData.length}/{totalItems}
+                      {displayData.length}/{paginationParams.totalItems}
                     </strong>{' '}
                     transaction records
                   </Label>
@@ -598,7 +628,7 @@ const TransactionTable = () => {
         onClose={handleCloseDeleteModal}
         onDelete={handleDeleteTransaction}
         data={selectedTransaction}
-        isDeleting={false}
+        isDeleting={isDeleting}
       />
     </>
   );
