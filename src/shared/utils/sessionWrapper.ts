@@ -14,7 +14,8 @@ export function sessionWrapper(handler: HandlerWithUser): NextApiHandler {
       return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
     }
 
-    const userId = session.user.id;
+    // const userId = session.user.id;
+    const userId = 'f6413727-4a29-485e-9db8-29b64aaeb36e';
 
     try {
       return await handler(req, res, userId);

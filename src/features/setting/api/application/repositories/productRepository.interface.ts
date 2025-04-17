@@ -50,6 +50,7 @@ export interface ProductUpdate {
 }
 
 export type Items = {
+  id?: string;
   icon: string;
   name: string;
   description: string;

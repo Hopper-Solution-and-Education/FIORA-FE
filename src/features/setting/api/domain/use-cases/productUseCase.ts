@@ -1,17 +1,19 @@
 import { productRepository } from '@/features/setting/api/infrastructure/repositories/productRepository';
 import { Messages } from '@/shared/constants/message';
 
-import { Product, ProductType } from '@prisma/client';
-import { Decimal, JsonArray } from '@prisma/client/runtime/library';
-import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
 import { prisma } from '@/config';
+import { InternalServerError } from '@/shared/lib';
+import { PaginationResponse, ProductItem } from '@/shared/types';
+import { convertCurrency } from '@/shared/utils/exchangeRate';
+import { Currency, Product, ProductType } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
+import { ICategoryProductRepository } from '../../application/repositories/categoryProductRepository.interface';
 import {
   IProductRepository,
   ProductCreation,
   ProductUpdate,
 } from '../../application/repositories/productRepository.interface';
-import { ICategoryProductRepository } from '../../application/repositories/categoryProductRepository.interface';
-import { PaginationResponse, ProductItem } from '@/shared/types';
+import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
@@ -29,9 +31,10 @@ class ProductUseCase {
     userId: string;
     page?: number;
     pageSize?: number;
+    currency?: Currency;
   }): Promise<PaginationResponse<Product>> {
     try {
-      const { userId, page = 1, pageSize = 20 } = params;
+      const { userId, page = 1, pageSize = 20, currency = 'VND' } = params;
       const productsAwaited = this.productRepository.findManyProducts(
         { userId },
         { skip: (page - 1) * pageSize, take: pageSize },
@@ -47,8 +50,23 @@ class ProductUseCase {
 
       const totalPage = Math.ceil(count / pageSize);
 
+      // Transform the product price to the user's target currency if needed
+      const transformedProductsAwaited = products.map(async (product) => {
+        const transformedPrice =
+          (await convertCurrency(product.price, product.currency, currency)) ||
+          product.price.toNumber();
+
+        return {
+          ...product,
+          price: transformedPrice,
+          currency: currency,
+        };
+      });
+
+      const transformedProducts = await Promise.all(transformedProductsAwaited);
+
       return {
-        data: products,
+        data: transformedProducts,
         page,
         pageSize,
         totalPage,
@@ -184,6 +202,7 @@ class ProductUseCase {
       category_id,
       items,
     } = params;
+
     let category = null;
 
     if (category_id) {
@@ -205,10 +224,6 @@ class ProductUseCase {
       throw new Error(Messages.PRODUCT_NOT_FOUND);
     }
 
-    let itemsJSON = [] as JsonArray;
-    if (Array.isArray(items)) {
-      itemsJSON = items.map((item) => JSON.stringify(item));
-    }
     const updatedProduct = await this.productRepository.updateProduct(
       {
         id,
@@ -222,7 +237,6 @@ class ProductUseCase {
         ...(tax_rate && { taxRate: tax_rate }),
         ...(price && { price }),
         ...(type && { type }),
-        ...(itemsJSON.length > 0 && { items: itemsJSON }),
         updatedBy: userId,
       },
     );
@@ -230,6 +244,31 @@ class ProductUseCase {
     if (!updatedProduct) {
       throw new Error(Messages.UPDATE_PRODUCT_FAILED);
     }
+
+    // update product items
+    if (items && Array.isArray(items)) {
+      const updatePromises = items.map(async (item) => {
+        const { id: itemId, ...itemData } = item;
+        if (itemId) {
+          return this.categoryProductRepository.updateCategoryProduct(
+            {
+              id: itemId,
+              userId,
+            },
+            {
+              ...itemData,
+              updatedBy: userId,
+            },
+          );
+        }
+      });
+
+      const updateCategoryProductItems = await Promise.all(updatePromises);
+      if (!updateCategoryProductItems) {
+        throw new InternalServerError(Messages.UPDATE_PRODUCT_ITEM_FAILED);
+      }
+    }
+
     return updatedProduct;
   }
 

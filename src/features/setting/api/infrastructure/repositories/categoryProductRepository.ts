@@ -51,6 +51,16 @@ class CategoryProductRepository implements ICategoryProductRepository {
     });
   }
 
+  async updateManyCategoryProduct(
+    where: Prisma.CategoryProductsWhereInput,
+    data: Prisma.CategoryProductsUpdateManyMutationInput,
+  ): Promise<Prisma.BatchPayload> {
+    return prisma.categoryProducts.updateMany({
+      where,
+      data,
+    });
+  }
+
   async deleteCategoryProduct(
     where: Prisma.CategoryProductsWhereUniqueInput,
   ): Promise<CategoryProducts> {

@@ -53,6 +53,7 @@ export enum Messages {
   CATEGORY_PRODUCT_NOT_FOUND = 'Category product not found',
   CREATE_CATEGORY_PRODUCT_FAILED = 'Failed to create category product',
   UPDATE_CATEGORY_PRODUCT_FAILED = 'Failed to update category product',
+  UPDATE_CATEGORY_PRODUCT_MANY_FAILED = 'Failed to update many category product',
   DELETE_CATEGORY_PRODUCT_FAILED = 'Failed to delete category product',
   GET_CATEGORY_PRODUCT_FAILED = 'Failed to get category product',
 
