@@ -26,6 +26,7 @@ const DateSelectField: React.FC<TypeSelectProps> = ({ name }) => {
               placeholder="Select date of birth"
               showYearDropdown
               showMonthDropdown
+              required
               dropdownMode="select"
               dateFormat="dd/MM/yyyy"
             />
