@@ -1,8 +1,6 @@
 'use client';
 import Loading from '@/components/common/atoms/Loading';
-import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { FIREBASE_GS_URL, FIREBASE_STORAGE_URL } from '@/shared/constants';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -41,8 +39,7 @@ type ProductCreationType = {
 
 const ProductCreation = ({ productId }: ProductCreationType) => {
   const { page, limit } = useAppSelector((state) => state.productManagement.categories);
-  const isUpdatingProduct = useAppSelector((state) => state.productManagement.isUpdatingProduct);
-  const isCreatingProduct = useAppSelector((state) => state.productManagement.isCreatingProduct);
+
   const { page: pageProduct, pageSize } = useAppSelector(
     (state) => state.productManagement.products,
   );
@@ -62,10 +59,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
     mode: 'onChange',
   });
 
-  const {
-    reset,
-    formState: { isValid, isSubmitting },
-  } = method;
+  const { reset } = method;
 
   useEffect(() => {
     const handleGetProduct = async () => {
@@ -204,46 +198,6 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
     }
   };
 
-  const renderSubmitButtonDefault = () => (
-    <TooltipProvider>
-      <div className="flex justify-between gap-4 mt-6">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              type="button"
-              onClick={() => router.back()}
-              className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
-            >
-              <Icons.circleArrowLeft className="h-5 w-5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Cancel and go back</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="submit"
-              disabled={!isValid || isCreatingProduct || isUpdatingProduct}
-              className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
-            >
-              {isSubmitting ? (
-                <Icons.spinner className="animate-spin h-5 w-5" />
-              ) : (
-                <Icons.check className="h-5 w-5" />
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{isSubmitting ? 'Submiting...' : 'Submit'}</p>
-          </TooltipContent>
-        </Tooltip>
-      </div>
-    </TooltipProvider>
-  );
-
   return (
     <section className="mb-10">
       <FormProvider {...method}>
@@ -262,10 +216,8 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
           {/* Form tạo/cập nhật sản phẩm */}
           <form onSubmit={method.handleSubmit(handleSubmit)} id="hook-form">
             <div className="mb-6">
-              <ProductForm method={method} productToEdit={productToEdit} />
+              <ProductForm productToEdit={productToEdit} />
             </div>
-
-            {renderSubmitButtonDefault()}
           </form>
 
           <ProductCatCreationDialog />
