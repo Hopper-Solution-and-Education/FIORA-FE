@@ -1,10 +1,13 @@
-import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { productUseCase } from '@/features/setting/api/domain/use-cases/productUseCase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { createErrorResponse } from '@/shared/lib';
+import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { validateBody } from '@/shared/utils/validate';
+import { productUpdateBodySchema } from '@/shared/validators/productValidator';
 import { ProductType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { productUseCase } from '@/features/setting/api/domain/use-cases/productUseCase';
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {
@@ -51,6 +54,14 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
 
     if (![ProductType.Product, ProductType.Service].includes(type)) {
       return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Invalid product type' });
+    }
+
+    const { error } = validateBody(productUpdateBodySchema, { ...req.body, id });
+
+    if (error) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
     }
 
     const newCategory = await productUseCase.updateProduct({
