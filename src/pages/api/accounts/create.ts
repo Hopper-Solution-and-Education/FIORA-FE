@@ -5,8 +5,8 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { validateBody } from '@/shared/utils/validate';
-import { accountCreateBody } from '@/infrastructure/validators/accountValidator';
 import { createErrorResponse } from '@/shared/lib';
+import { accountCreateBody } from '@/shared/validators/accountValidator';
 
 export default sessionWrapper(
   async (request: NextApiRequest, response: NextApiResponse, userId: string) => {
