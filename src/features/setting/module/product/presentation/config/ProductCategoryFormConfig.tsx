@@ -2,8 +2,13 @@
 
 import { GlobalIconSelect, InputField, TextareaField } from '@/components/common/forms';
 import { KeyboardEvent, useCallback } from 'react';
+import { useFormContext } from 'react-hook-form';
 
 const useProductCategoryFormConfig = () => {
+  const {
+    formState: { isSubmitting },
+  } = useFormContext();
+
   const removeLeadingZeros = useCallback((value: string): string => {
     return value.replace(/^0+(?=[1-9]|\.)/, '') || '0';
   }, []);
@@ -34,9 +39,14 @@ const useProductCategoryFormConfig = () => {
   }, []);
 
   const fields = [
-    <GlobalIconSelect key="icon" name="icon" label="Icon" required />,
-    <InputField key="name" name="name" label="Name" required />,
-    <TextareaField key="description" name="description" label="Description" />,
+    <GlobalIconSelect key="icon" name="icon" label="Icon" required disabled={isSubmitting} />,
+    <InputField key="name" name="name" label="Name" required disabled={isSubmitting} />,
+    <TextareaField
+      key="description"
+      name="description"
+      label="Description"
+      disabled={isSubmitting}
+    />,
     <InputField
       key="tax-rate"
       name="tax_rate"
@@ -45,6 +55,7 @@ const useProductCategoryFormConfig = () => {
       onChange={(e) => handleInputChange(e)}
       onKeyDown={onKeyDownHandler}
       required
+      disabled={isSubmitting}
     />,
   ];
 
