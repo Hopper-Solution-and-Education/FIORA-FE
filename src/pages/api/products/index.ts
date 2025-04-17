@@ -5,9 +5,10 @@ import { createErrorResponse } from '@/shared/lib';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { validateBody } from '@/shared/utils/validate';
-import { Currency, ProductType } from '@prisma/client';
+import { Currency, Product, ProductType } from '@prisma/client';
 import { productBodySchema } from '@/shared/validators/productValidator';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { PaginationResponse } from '@/shared/types';
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {
@@ -33,14 +34,19 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
   }
   try {
     const userCurrency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
-    const { page, pageSize } = req.query;
+    const { page, pageSize, isPaginate = true } = req.query;
 
-    const categories = await productUseCase.getAllProducts({
-      userId,
-      page: Number(page) || 1,
-      pageSize: Number(pageSize) || 20,
-      currency: userCurrency,
-    });
+    let categories: PaginationResponse<Product> | Product[] = [];
+    if (!isPaginate) {
+      categories = await productUseCase.getAllProducts({ userId });
+    } else {
+      categories = await productUseCase.getAllProductsPagination({
+        userId,
+        page: Number(page) || 1,
+        pageSize: Number(pageSize) || 20,
+        currency: userCurrency,
+      });
+    }
 
     return res
       .status(RESPONSE_CODE.OK)
