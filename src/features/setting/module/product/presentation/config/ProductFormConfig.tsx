@@ -22,6 +22,7 @@ import {
 const useProductFormConfig = () => {
   const {
     formState: { isSubmitting },
+    watch,
   } = useFormContext();
 
   const { data } = useAppSelector((state) => state.productManagement.categories);
@@ -64,7 +65,7 @@ const useProductFormConfig = () => {
   const fields = [
     <IconSelectUpload key="icon" name="icon" required disabled={isSubmitting} />,
     <SelectField
-      options={data.map((item) => ({ label: item.name, value: item.id }))}
+      options={data.map((item) => ({ label: item.name, value: item.id, icon: item.icon }))}
       key="catId"
       name="catId"
       label="Category"
@@ -72,7 +73,7 @@ const useProductFormConfig = () => {
       onCustomAction={handleOpenDialog}
       customActionLabel="Add New"
     />,
-    <InputField key="name" name="name" label="Name" required />,
+    <InputField key="name" name="name" placeholder="Product Name" label="Name" required />,
     <SelectField
       options={Object.entries(ProductType).map(([key, value]) => ({
         label: key,
@@ -89,6 +90,7 @@ const useProductFormConfig = () => {
       key="currency"
       name="currency"
       label="Currency"
+      placeholder="Select Currency"
       required
       disabled={isSubmitting}
     />,
@@ -96,7 +98,7 @@ const useProductFormConfig = () => {
       key="price"
       name="price"
       label="Price"
-      currency={'vnd'}
+      currency={watch('currency') ?? 'vnd'}
       required
       disabled={isSubmitting}
     />,
@@ -104,6 +106,7 @@ const useProductFormConfig = () => {
       key="description"
       name="description"
       label="Description"
+      placeholder="Product Description"
       disabled={isSubmitting}
     />,
     <InputField
@@ -122,6 +125,7 @@ const useProductFormConfig = () => {
       disabled={isSubmitting}
     />,
     <ArrayField
+      label="Product Items"
       key="items"
       name="items"
       emptyItem={{ name: '', description: '', icon: '' }}
@@ -130,13 +134,13 @@ const useProductFormConfig = () => {
           name="name"
           placeholder="Name"
           key="name"
-          label="Item Name"
+          label="Product Item Name"
           required
           disabled={isSubmitting}
         />,
         <TextareaField
           name="description"
-          placeholder="Description"
+          placeholder="Product Item Description"
           key="description"
           label="Description"
           disabled={isSubmitting}

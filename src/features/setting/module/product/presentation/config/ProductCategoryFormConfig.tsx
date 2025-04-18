@@ -40,11 +40,19 @@ const useProductCategoryFormConfig = () => {
 
   const fields = [
     <GlobalIconSelect key="icon" name="icon" label="Icon" required disabled={isSubmitting} />,
-    <InputField key="name" name="name" label="Name" required disabled={isSubmitting} />,
+    <InputField
+      key="name"
+      name="name"
+      label="Name"
+      placeholder="Category Name"
+      required
+      disabled={isSubmitting}
+    />,
     <TextareaField
       key="description"
       name="description"
       label="Description"
+      placeholder="Category Description"
       disabled={isSubmitting}
     />,
     <InputField
