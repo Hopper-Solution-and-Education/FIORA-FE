@@ -16,7 +16,12 @@ const validateNewAccountSchema = yup.object({
     .required('Account name is required')
     .min(2, 'Name must be at least 2 characters'),
   currency: yup.string().required('Please select a currency'),
-  limit: yup.number().min(0, 'Limit must be greater than or equal to 0').notRequired(),
+  limit: yup
+    .number()
+    .transform((value) => (isNaN(value) ? undefined : value))
+    .min(0, 'Limit must be greater than or equal to 0')
+    .typeError('Please enter a valid number for the limit')
+    .notRequired(),
   balance: yup
     .number()
     .test('balance-validation', 'Invalid balance for account type', function (value) {
@@ -63,7 +68,12 @@ const validateUpdateAccountSchema = yup.object({
   parentId: yup.string().nullable(),
   type: yup.string().required('Please select a type'),
   currency: yup.string().required('Please select a currency'),
-  limit: yup.number().min(0, 'Limit must be greater than or equal to 0').notRequired(),
+  limit: yup
+    .number()
+    .transform((value) => (isNaN(value) ? undefined : value))
+    .min(0, 'Limit must be greater than or equal to 0')
+    .typeError('Please enter a valid number for the limit')
+    .notRequired(),
   balance: yup
     .number()
     .test('balance-validation', 'Invalid balance for account type', function (value) {
@@ -109,6 +119,7 @@ const defaultNewAccountValues: NewAccountDefaultValues = {
   balance: 0,
   parentId: null,
   isTypeDisabled: false,
+  availableLimit: 0,
 };
 
 export { validateNewAccountSchema, validateUpdateAccountSchema, defaultNewAccountValues };

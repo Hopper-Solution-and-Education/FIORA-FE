@@ -35,7 +35,7 @@ const AvailableLimitDisplay: React.FC<AvailableLimitDisplayProps> = ({
         trigger('availableLimit');
       }
     }
-  }, [balance, limit, type, setValue, trigger]);
+  }, [balance, limit, type]);
 
   useEffect(() => {
     if (error) {
@@ -53,7 +53,6 @@ const AvailableLimitDisplay: React.FC<AvailableLimitDisplayProps> = ({
   return (
     <div>
       <InputCurrency
-        label="Available Limit"
         name={name}
         value={value}
         placeholder="0.00"
@@ -61,7 +60,6 @@ const AvailableLimitDisplay: React.FC<AvailableLimitDisplayProps> = ({
         className={cn('cursor-not-allowed', 'text-red-500')}
         error={displayError}
         readOnly
-        onChange={() => {}}
         {...props}
       />
     </div>

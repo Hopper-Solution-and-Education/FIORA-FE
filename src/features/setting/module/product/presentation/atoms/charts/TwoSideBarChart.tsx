@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
-import ChartLegend from '@/components/common/nested-bar-chart/atoms/ChartLegend';
-import CustomYAxisTick from '@/components/common/nested-bar-chart/atoms/CustomYAxisTick';
+import ChartLegend from '@/components/common/atoms/ChartLegend';
+import CustomYAxisTick from '@/components/common/atoms/CustomYAxisTick';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import {
   BASE_BAR_HEIGHT,

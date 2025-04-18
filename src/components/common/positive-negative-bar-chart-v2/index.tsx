@@ -1,8 +1,5 @@
 'use client';
 
-import ChartLegend from '@/components/common/nested-bar-chart/atoms/ChartLegend';
-import CustomYAxisTick from '@/components/common/nested-bar-chart/atoms/CustomYAxisTick';
-import TwoSideBarChartV2Tooltip from '@/components/common/positive-negative-bar-chart-v2/atoms/TwoSideBarChartV2Tooltip';
 import {
   BASE_BAR_HEIGHT,
   COLORS,
@@ -24,9 +21,14 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import BarLabel from './atoms/BarLabel';
 import { PositiveAndNegativeBarChartV2Props, TwoSideBarItem } from './types';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
+import {
+  ChartLegend,
+  CustomYAxisTick,
+  PositiveAndNegativeV2BarLabel,
+  PositiveAndNegativeV2Tooltip,
+} from '@/components/common/atoms';
 
 const PositiveAndNegativeBarChartV2 = ({
   data,
@@ -170,7 +172,7 @@ const PositiveAndNegativeBarChartV2 = ({
   // Memoized tooltip
   const customTooltipWithConfig = useCallback(
     (props: any) => (
-      <TwoSideBarChartV2Tooltip
+      <PositiveAndNegativeV2Tooltip
         {...props}
         currency={currency}
         locale={locale}
@@ -238,7 +240,9 @@ const PositiveAndNegativeBarChartV2 = ({
             />
             <Bar
               dataKey="negativeValue"
-              label={(props) => <BarLabel {...props} formatter={xAxisFormatter} />}
+              label={(props) => (
+                <PositiveAndNegativeV2BarLabel {...props} formatter={xAxisFormatter} />
+              )}
               onClick={(props) => callback && callback(props.payload)}
               className="transition-all duration-300 cursor-pointer"
             >
@@ -298,7 +302,9 @@ const PositiveAndNegativeBarChartV2 = ({
             />
             <Bar
               dataKey="positiveValue"
-              label={(props) => <BarLabel {...props} formatter={xAxisFormatter} />}
+              label={(props) => (
+                <PositiveAndNegativeV2BarLabel {...props} formatter={xAxisFormatter} />
+              )}
               onClick={(props) => callback && callback(props.payload)}
               className="transition-all duration-300 cursor-pointer"
             >

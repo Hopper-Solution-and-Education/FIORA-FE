@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { Account } from '@/features/home/module/account/slices/types';
 import { Option } from '@/components/common/forms/select/SelectField';
+import AvailableLimitDisplay from '@/features/home/module/account/components/AvailableLimitDisplay';
 
 export default function CreateAccountForm() {
   const router = useRouter();
@@ -68,7 +69,13 @@ export default function CreateAccountForm() {
   const fields = [
     <GlobalIconSelect key="icon" name="icon" label="Icon" required />,
     <InputField key="name" name="name" placeholder="Account Name" label="Name" required />,
-    <ParentAccountSelect key="parentId" name="parentId" options={parentOptions} label="Parent" />,
+    <ParentAccountSelect
+      key="parentId"
+      name="parentId"
+      options={parentOptions}
+      label="Parent Account"
+      disabled={false}
+    />,
     <AccountTypeSelect
       key="type"
       name="type"
@@ -78,22 +85,39 @@ export default function CreateAccountForm() {
     />,
     <CurrencySelect key="currency" name="currency" label="Currency" required />,
     <LimitField key="limit" name="limit" label="Limit" />,
-    <AccountBalanceField key="balance" name="balance" label="Currency" required />,
+    <AccountBalanceField key="balance" name="balance" required />,
+    <AvailableLimitDisplay key="availableLimit" name="availableLimit" label="Available Limit" />,
   ];
+
+  const defaultValues = {
+    ...defaultNewAccountValues,
+    parentName: '',
+    parentIcon: '',
+    parentType: '',
+    parentIsTypeDisabled: false,
+  };
 
   const onSubmit = async (data: any) => {
     try {
-      await dispatch(createAccount(data))
+      const finalData = {
+        ...data,
+        balance: data.balance || 0,
+        limit: data.limit ? Number(data.limit) : undefined,
+        parentId: data.parentId || undefined,
+        isTypeDisabled: data.isTypeDisabled,
+        availableLimit: data.availableLimit,
+      };
+
+      await dispatch(createAccount(finalData))
         .unwrap()
         .then((value: Response<Account>) => {
-          if (value.status === 201) {
+          if (value.status == 200) {
             router.push('/account');
-            toast.success('You have create new Account successfully!');
+            toast.success('You have created the Account successfully!');
           }
         });
-      router.push('/account');
-    } catch (error) {
-      console.error('Error creating account:', error);
+    } catch (error: any) {
+      console.log(error);
     }
   };
 
@@ -101,7 +125,7 @@ export default function CreateAccountForm() {
     <GlobalForm
       fields={fields}
       onSubmit={onSubmit}
-      defaultValues={defaultNewAccountValues}
+      defaultValues={defaultValues}
       schema={validateNewAccountSchema}
     />
   );

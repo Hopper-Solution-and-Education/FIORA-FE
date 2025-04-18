@@ -27,6 +27,10 @@ const AccountBalanceField: React.FC<AccountBalanceFieldProps> = ({
     if (value > 0) {
       setValue('balance', -value);
     }
+  } else {
+    if (value < 0) {
+      setValue('balance', -value);
+    }
   }
 
   return (

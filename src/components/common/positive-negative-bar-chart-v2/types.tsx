@@ -16,7 +16,7 @@ export type TwoSideBarItem = {
   depth?: number;
 };
 
-export type PositiveAndNegativeV2LevelConfig = {
+export type PositiveAndNegativeBarV2LevelConfig = {
   totalName?: string;
   colorPositive: {
     [depth: number]: string;
@@ -34,7 +34,7 @@ export type PositiveAndNegativeBarChartV2Props = {
   maxBarRatio?: number;
   tooltipContent?: ContentType<ValueType, NameType>;
   legendItems: { name: string; color: string }[];
-  levelConfig?: PositiveAndNegativeV2LevelConfig;
+  levelConfig?: PositiveAndNegativeBarV2LevelConfig;
   tutorialText?: string;
   height?: number;
   baseBarHeight?: number;

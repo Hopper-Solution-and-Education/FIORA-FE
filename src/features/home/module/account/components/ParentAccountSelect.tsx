@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { FieldError } from 'react-hook-form';
 import SelectField from '@/components/common/forms/select/SelectField';
@@ -7,9 +7,8 @@ import { AccountType } from '@prisma/client';
 interface ParentAccountSelectProps {
   name: string;
   options: { value: string; label: string; icon?: string; disabled?: boolean; type: AccountType }[];
-  disabled?: boolean;
-  value?: string | null;
-  onChange?: (value: string | null) => void;
+  disabled: boolean;
+  value?: string;
   error?: FieldError;
   [key: string]: any;
 }
@@ -18,30 +17,18 @@ const ParentAccountSelect: React.FC<ParentAccountSelectProps> = ({
   name,
   options,
   disabled,
-  value = null,
-  onChange = () => {},
+  value,
   error,
   ...props
 }) => {
-  const { setValue } = useFormContext();
+  const { getValues, setValue, trigger } = useFormContext();
 
-  const handleChange = (selectedValue: string) => {
-    const newValue = selectedValue === 'null' ? null : selectedValue;
-    onChange(newValue);
-    if (newValue) {
-      const selectedOption = options.find((option) => option.value === newValue);
-      if (selectedOption) {
-        setValue('type', selectedOption.type);
-        setValue('isTypeDisabled', true);
-      }
-    } else {
-      setValue('type', '');
-      setValue('isTypeDisabled', false);
-    }
-  };
+  // If this is a sub-account (has parentId), we should show the parent's name
+  const currentParentId = getValues('parentId');
+  const currentParentName = getValues('parentName');
 
   const selectOptions = disabled
-    ? [{ value: 'null', label: 'Parent locked' }]
+    ? [{ value: currentParentId || 'null', label: currentParentName || 'Parent locked' }]
     : [
         { value: 'null', label: 'None' },
         ...options.map((option) => ({
@@ -52,11 +39,28 @@ const ParentAccountSelect: React.FC<ParentAccountSelectProps> = ({
         })),
       ];
 
+  useEffect(() => {
+    const handleParentChange = (value: string) => {
+      if (value === 'null') {
+        setValue('type', null);
+        return;
+      }
+
+      // Find the selected parent option to get its type
+      const selectedParent = options.find((option) => option.value === value);
+      if (selectedParent) {
+        setValue('type', selectedParent.type);
+        trigger('type');
+      }
+    };
+
+    handleParentChange(currentParentId);
+  }, [currentParentId]);
+
   return (
     <SelectField
       name={name}
-      value={value ?? 'null'}
-      onChange={handleChange}
+      value={value || currentParentId || 'null'}
       options={selectOptions}
       placeholder="Select parent"
       disabled={disabled}

@@ -1,9 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
-import ChartLegend from '@/components/common/nested-bar-chart/atoms/ChartLegend';
-import CustomTooltip from '@/components/common/nested-bar-chart/atoms/CustomTooltip';
-import CustomYAxisTick from '@/components/common/nested-bar-chart/atoms/CustomYAxisTick';
 import {
   BASE_BAR_HEIGHT,
   DEFAULT_CURRENCY,
@@ -25,8 +22,13 @@ import {
 } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { ContentType } from 'recharts/types/component/Tooltip';
-import BarLabel from './atoms/BarLabel';
 import { debounce } from 'lodash';
+import {
+  PositiveAndNegativeBarLabel,
+  ChartLegend,
+  CustomTooltip,
+  CustomYAxisTick,
+} from '@/components/common/atoms';
 
 export type BarItem = {
   id?: string;
@@ -41,9 +43,12 @@ export type BarItem = {
   depth?: number;
 };
 
-export type LevelConfig = {
+export type PositiveAndNegativeBarLevelConfig = {
   totalName?: string;
-  colors: {
+  colorPositive: {
+    [depth: number]: string;
+  };
+  colorNegative: {
     [depth: number]: string;
   };
 };
@@ -59,7 +64,7 @@ export type PositiveAndNegativeBarChartProps = {
   maxBarRatio?: number;
   tutorialText?: string;
   callback?: (item: any) => void;
-  levelConfig?: LevelConfig;
+  levelConfig?: PositiveAndNegativeBarLevelConfig;
   height?: number;
   baseBarHeight?: number;
   expanded?: boolean;
@@ -102,11 +107,10 @@ const PositiveAndNegativeBarChart = ({
   // Initial data processing
   const totalAmount = data.reduce((sum, item) => sum + item.value, 0);
   const totalName = levelConfig?.totalName || 'Net Total';
-  const totalColor = levelConfig?.colors[0] || '#888888';
   const totalItem: BarItem = {
     name: totalName,
     value: totalAmount,
-    color: totalColor,
+    color: totalAmount > 0 ? levelConfig?.colorPositive[0] : levelConfig?.colorNegative[0],
     type: data[0]?.type || 'unknown',
     children: data,
     depth: 0,
@@ -126,10 +130,10 @@ const PositiveAndNegativeBarChart = ({
     (items: BarItem[], parentName?: string, depth: number = 0): BarItem[] => {
       const result: BarItem[] = [];
       items.forEach((item) => {
-        const color = item.color || levelConfig?.colors[depth] || '#888888';
         const currentItem = {
           ...item,
-          color,
+          color:
+            item.value > 0 ? levelConfig?.colorPositive[depth] : levelConfig?.colorNegative[depth],
           parent: parentName,
           isChild: !!parentName,
           depth,
@@ -221,7 +225,9 @@ const PositiveAndNegativeBarChart = ({
             <Bar
               dataKey="value"
               className="transition-all duration-300 cursor-pointer"
-              label={(props) => <BarLabel {...props} formatter={xAxisFormatter} />}
+              label={(props) => (
+                <PositiveAndNegativeBarLabel {...props} formatter={xAxisFormatter} />
+              )}
               onClick={(props) => {
                 if (callback) return callback(props);
               }}

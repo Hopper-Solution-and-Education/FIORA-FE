@@ -1,6 +1,6 @@
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/shared/constants/chart';
 
-interface TwoSideBarChartV2TooltipProps {
+interface PositiveAndNegativeV2TooltipProps {
   active?: boolean;
   payload?: any[];
   currency?: string;
@@ -9,7 +9,7 @@ interface TwoSideBarChartV2TooltipProps {
   formatter: (value: number) => string;
 }
 
-const TwoSideBarChartV2Tooltip = ({
+const PositiveAndNegativeV2Tooltip = ({
   active,
   payload,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -18,7 +18,7 @@ const TwoSideBarChartV2Tooltip = ({
   locale = DEFAULT_LOCALE,
   tutorialText,
   formatter,
-}: TwoSideBarChartV2TooltipProps) => {
+}: PositiveAndNegativeV2TooltipProps) => {
   if (!active || !payload || !payload.length) return null;
 
   const item = payload[0].payload;
@@ -39,4 +39,4 @@ const TwoSideBarChartV2Tooltip = ({
   );
 };
 
-export default TwoSideBarChartV2Tooltip;
+export default PositiveAndNegativeV2Tooltip;

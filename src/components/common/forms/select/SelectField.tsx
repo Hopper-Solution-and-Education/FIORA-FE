@@ -22,7 +22,7 @@ export interface Option {
 }
 interface SelectFieldProps {
   name: string;
-  value?: string;
+  value: string;
   defaultValue?: string;
   onChange?: (value: string) => void;
   onBlur?: () => void;
@@ -41,7 +41,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
   name,
   value,
   defaultValue,
-  onChange = () => {},
+  onChange,
   onBlur,
   options,
   placeholder,

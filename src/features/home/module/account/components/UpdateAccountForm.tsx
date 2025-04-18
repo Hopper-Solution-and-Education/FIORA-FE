@@ -83,27 +83,26 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
   };
 
   const fields = [
-    <GlobalIconSelect key="icon" name="icon" label="Icon" required />,
-    <InputField key="name" name="name" placeholder="Account Name" label="Name" required />,
+    <GlobalIconSelect key="icon" name="icon" label="Icon" />,
+    <InputField key="name" name="name" label="Name" />,
     <ParentAccountSelect
       key="parentId"
       name="parentId"
       options={parentOptions}
-      disabled={true}
-      label="Parent"
+      label="Parent Account"
+      disabled={generateIsTypeDisabledInitialValue()}
     />,
     <AccountTypeSelect
       key="type"
       name="type"
       label="Type"
       options={accountTypeOptions}
-      disabled={true}
-      required
+      disabled={generateIsTypeDisabledInitialValue()}
     />,
-    <CurrencySelect key="currency" name="currency" label="Currency" required />,
+    <CurrencySelect key="currency" name="currency" label="Currency" />,
+    <AccountBalanceField key="balance" name="balance" label="Balance" />,
     <LimitField key="limit" name="limit" label="Limit" />,
-    <AccountBalanceField key="balance" name="balance" label="Balance" required />,
-    <AvailableLimitDisplay key="availableLimit" name="availableLimit" />,
+    <AvailableLimitDisplay key="availableLimit" name="availableLimit" label="Available Limit" />,
   ];
 
   const defaultValues = {
@@ -113,17 +112,22 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
     limit: generateLimitedInitialValue(),
     isTypeDisabled: generateIsTypeDisabledInitialValue(),
     availableLimit: generateAvailableLimitInitialValue(),
+    parentName: initialData?.parent?.name || '',
+    parentIcon: initialData?.parent?.icon || '',
+    parentType: initialData?.parent?.type || '',
+    parentIsTypeDisabled: Boolean(initialData?.parentId),
   };
 
   const onSubmit = async (data: any) => {
     try {
       if (!initialData) return;
-      const finalData: Account = {
+      const finalData = {
         ...data,
         balance: data.balance || 0,
         limit: data.limit ? Number(data.limit) : undefined,
         parentId: data.parentId || undefined,
-        availableLimit: undefined,
+        isTypeDisabled: data.isTypeDisabled,
+        availableLimit: data.availableLimit,
       };
 
       await dispatch(updateAccount({ id: initialData.id, data: finalData }))
@@ -131,7 +135,7 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
         .then((value: Response<Account>) => {
           if (value.status == 200) {
             router.push('/account');
-            toast.success('You have edit the Account successfully!');
+            toast.success('You have edited the Account successfully!');
           }
         });
     } catch (error: any) {
