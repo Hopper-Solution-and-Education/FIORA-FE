@@ -49,3 +49,41 @@ export const productBodySchema = Joi.object({
     'array.items': 'Each item must be a valid product item',
   }),
 });
+
+export const productUpdateBodySchema = Joi.object({
+  id: Joi.string().required().messages({
+    'string.empty': 'Product id is invalid',
+    'any.required': 'Product id is required',
+  }),
+  icon: Joi.string().optional().messages({
+    'string.empty': 'Product icon url is invalid',
+    'any.required': 'Product icon is required',
+  }),
+  name: Joi.string().optional().messages({
+    'string.empty': 'Product name is invalid',
+    'any.required': 'Product name is required',
+  }),
+  category_id: Joi.string().optional().messages({
+    'any.required': 'Product category id is required',
+    'string.empty': 'Product category id is invalid',
+    'string.base': 'Product category id must be a string',
+  }),
+  type: Joi.string().optional().messages({
+    'any.required': 'Product type is required',
+  }),
+  price: Joi.number().min(0).optional().messages({
+    'number.base': 'Price must be a number',
+    'any.required': 'Price is required',
+  }),
+  tax_rate: Joi.number().optional().allow(null).min(0).max(100).messages({
+    'number.base': 'Tax rate must be a number',
+    'number.min': 'Tax rate must be greater than 0',
+    'number.max': 'Tax rate must be smaller than or equal 100',
+    'any.required': 'Tax rate is required',
+  }),
+  description: Joi.string().allow('').optional(),
+  items: Joi.array().items(productItemBodySchema).optional().messages({
+    'array.base': 'Items must be an array',
+    'array.items': 'Each item must be a valid product item',
+  }),
+});

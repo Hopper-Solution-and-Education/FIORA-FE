@@ -1,9 +1,10 @@
 import { prisma } from '@/config';
 import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
-
-import { BooleanUtils } from '@/shared/lib/booleanUtils';
+import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
+import { ICategoryRepository } from '@/features/setting/api/repositories/categoryRepository.interface';
 import { Messages } from '@/shared/constants/message';
+import { BooleanUtils } from '@/shared/lib/booleanUtils';
 import { PaginationResponse } from '@/shared/types/Common.types';
 import { TransactionGetPagination } from '@/shared/types/transaction.types';
 import { buildOrderByTransactionV2, buildWhereClause } from '@/shared/utils';
@@ -17,8 +18,6 @@ import {
 } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '../../infrastructure/repositories/transactionRepository';
-import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
-import { ICategoryRepository } from '@/features/setting/api/repositories/categoryRepository.interface';
 
 class TransactionUseCase {
   constructor(
@@ -31,12 +30,8 @@ class TransactionUseCase {
     return this.transactionRepository.getTransactionsByUserId(userId);
   }
 
-  async getTransactions(
-    params: TransactionGetPagination,
-  ): Promise<PaginationResponse<Transaction> & { amountMin?: number; amountMax?: number }> {
-    const { page = 1, pageSize = 20, searchParams = '', filters, sortBy = {}, userId } = params;
-    const take = pageSize;
-    const skip = (page - 1) * pageSize;
+  async getTransactions(params: Partial<TransactionGetPagination>) {
+    const { searchParams = '', filters, sortBy = {}, userId } = params;
 
     let where = buildWhereClause(filters) as Prisma.TransactionWhereInput;
     if (searchParams) {
@@ -95,8 +90,6 @@ class TransactionUseCase {
         userId,
       },
       {
-        skip,
-        take,
         orderBy,
         include: {
           fromAccount: true,
@@ -109,6 +102,114 @@ class TransactionUseCase {
     );
     const totalTransactionAwaited = this.transactionRepository.count({
       ...where,
+    });
+    // getting amountMax from transactions
+    const amountMaxAwaited = this.transactionRepository.aggregate({
+      where: { userId },
+      _max: { amount: true },
+    });
+    const amountMinAwaited = this.transactionRepository.aggregate({
+      where: { userId },
+      _min: { amount: true },
+    });
+
+    const [transactions, total, amountMax, amountMin] = await Promise.all([
+      transactionAwaited,
+      totalTransactionAwaited,
+      amountMaxAwaited,
+      amountMinAwaited,
+    ]);
+
+    return {
+      data: transactions,
+      amountMax: Number(amountMax['_max']?.amount) || 0,
+      amountMin: Number(amountMin['_min']?.amount) || 0,
+      total,
+    };
+  }
+
+  async getTransactionsPagination(
+    params: TransactionGetPagination,
+  ): Promise<PaginationResponse<Transaction> & { amountMin?: number; amountMax?: number }> {
+    const { page = 1, pageSize = 20, searchParams = '', filters, sortBy = {}, userId } = params;
+    const take = pageSize;
+    const skip = (page - 1) * pageSize;
+
+    let where = buildWhereClause(filters) as Prisma.TransactionWhereInput;
+
+    if (searchParams) {
+      const typeSearchParams = searchParams.toLowerCase();
+      // test with Regex-Type Transaction
+      const regex = new RegExp('^' + typeSearchParams, 'i'); // ^: start with, i: ignore case
+      const typeTransaction = Object.values(TransactionType).find((type) => regex.test(type));
+
+      let typeTransactionWhere = '';
+
+      if (typeTransaction) {
+        typeTransactionWhere = typeTransaction;
+      }
+
+      // test with Regex-Date format YYYY-MM-DD
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD format
+      const date = new Date(typeSearchParams);
+      const isSearchDate = dateRegex.test(typeSearchParams) && !isNaN(date.getTime());
+
+      where = {
+        AND: [
+          where,
+          {
+            OR: [
+              { fromAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+              { toAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+              { partner: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+              {
+                amount: { gte: Number(typeSearchParams) || 0, lte: Number(typeSearchParams) || 0 },
+              },
+              // adding typeTransactionWhere to where clause if exists
+              ...(typeTransactionWhere
+                ? [{ type: typeTransactionWhere as unknown as TransactionType }]
+                : []),
+              ...(isSearchDate
+                ? [
+                    {
+                      date: {
+                        gte: new Date(typeSearchParams),
+                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
+                      },
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ],
+      };
+    }
+
+    const orderBy = buildOrderByTransactionV2(sortBy);
+
+    const transactionAwaited = this.transactionRepository.findManyTransactions(
+      {
+        ...where,
+        isDeleted: false,
+        userId,
+      },
+      {
+        skip,
+        take,
+        orderBy,
+        include: {
+          fromAccount: true,
+          fromCategory: true,
+          toAccount: true,
+          toCategory: true,
+          partner: true,
+        },
+      },
+    );
+
+    const totalTransactionAwaited = this.transactionRepository.count({
+      ...where,
+      AND: [{ isDeleted: false }, { userId }],
     });
     // getting amountMax from transactions
     const amountMaxAwaited = this.transactionRepository.aggregate({

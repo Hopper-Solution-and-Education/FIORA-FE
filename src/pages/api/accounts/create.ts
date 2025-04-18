@@ -4,6 +4,9 @@ import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { validateBody } from '@/shared/utils/validate';
+import { createErrorResponse } from '@/shared/lib';
+import { accountCreateBody } from '@/shared/validators/accountValidator';
 
 export default sessionWrapper(
   async (request: NextApiRequest, response: NextApiResponse, userId: string) => {
@@ -25,6 +28,12 @@ export async function POST(request: NextApiRequest, response: NextApiResponse, u
 
     const { name, type, currency, balance = 0, limit, icon, parentId } = body;
 
+    const { error } = validateBody(accountCreateBody, body);
+    if (error) {
+      return response
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
+    }
     const isValidAccountType = AccountUseCaseInstance.validateAccountType(type, balance, limit);
     if (!isValidAccountType) {
       return response

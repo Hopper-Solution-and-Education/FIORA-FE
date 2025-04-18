@@ -53,6 +53,7 @@ export enum Messages {
   CATEGORY_PRODUCT_NOT_FOUND = 'Category product not found',
   CREATE_CATEGORY_PRODUCT_FAILED = 'Failed to create category product',
   UPDATE_CATEGORY_PRODUCT_FAILED = 'Failed to update category product',
+  UPDATE_CATEGORY_PRODUCT_MANY_FAILED = 'Failed to update many category product',
   DELETE_CATEGORY_PRODUCT_FAILED = 'Failed to delete category product',
   GET_CATEGORY_PRODUCT_FAILED = 'Failed to get category product',
 
@@ -129,7 +130,7 @@ export enum Messages {
   INVALID_PARENT_PARTNER_SELF = 'Partner cannot be its own parent',
   PARTNER_EMAIL_EXISTS = 'Email already exists',
   PARTNER_PHONE_EXISTS = 'Phone number already exists',
-  PARTNER_TAX_EXISTS = 'Tax number already exists',
+  PARTNER_TAXNO_EXISTS = 'Tax number already exists',
   PARTNER_IDENTIFY_EXISTS = 'Identifier already exists',
 
   GET_PARTNER_SUCCESS = 'Get partner list successfully.',

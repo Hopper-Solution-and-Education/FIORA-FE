@@ -1,4 +1,5 @@
-import { ReactNode } from 'react';
+import { debounce } from 'lodash';
+import { ReactNode, useMemo } from 'react';
 import { formatCurrency } from '../hooks/formatCurrency';
 import { TransactionCurrency } from '../utils/constants';
 
@@ -12,6 +13,22 @@ type SliderProps = {
 
 export const renderAmountSlider = (props: SliderProps): ReactNode => {
   const { amountMax, amountMin, handleUpdateAmount, maxRange, minRange } = props;
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const debouncedUpdateAmountHandler = useMemo(
+    () =>
+      debounce((minThumbDistance: number, maxThumbDistance: number, clickValue: number) => {
+        if (minThumbDistance <= maxThumbDistance) {
+          // Move min thumb if it's closer or equidistant
+          handleUpdateAmount('amountMin', Math.max(minRange, Math.min(amountMax, clickValue)));
+        } else {
+          // Move max thumb if it's closer
+          handleUpdateAmount('amountMax', Math.max(amountMin, Math.min(maxRange, clickValue)));
+        }
+      }, 1000),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [amountMax, amountMin],
+  );
 
   // Handle drag events for slider thumbs
   const createDragHandler =
@@ -53,23 +70,11 @@ export const renderAmountSlider = (props: SliderProps): ReactNode => {
     const minThumbDistance = Math.abs(clickValue - amountMin);
     const maxThumbDistance = Math.abs(clickValue - amountMax);
 
-    if (minThumbDistance <= maxThumbDistance) {
-      // Move min thumb if it's closer or equidistant
-      handleUpdateAmount('amountMin', Math.max(minRange, Math.min(amountMax, clickValue)));
-    } else {
-      // Move max thumb if it's closer
-      handleUpdateAmount('amountMax', Math.max(amountMin, Math.min(maxRange, clickValue)));
-    }
+    debouncedUpdateAmountHandler(minThumbDistance, maxThumbDistance, clickValue);
   };
 
   return (
     <div className="w-full px-2">
-      {/* Range labels */}
-      <div className="flex justify-between mb-1 text-xs">
-        <span className="text-gray-500">{formatCurrency(minRange, TransactionCurrency.VND)}</span>
-        <span className="text-gray-500">{formatCurrency(maxRange, TransactionCurrency.VND)}</span>
-      </div>
-
       <div className="relative h-5 flex items-center">
         {/* Base track with click handler */}
         <div

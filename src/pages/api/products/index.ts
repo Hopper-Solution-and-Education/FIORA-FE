@@ -5,9 +5,10 @@ import { createErrorResponse } from '@/shared/lib';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { validateBody } from '@/shared/utils/validate';
+import { Currency, Product, ProductType } from '@prisma/client';
 import { productBodySchema } from '@/shared/validators/productValidator';
-import { ProductType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { PaginationResponse } from '@/shared/types';
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {
@@ -32,17 +33,24 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     return res.status(RESPONSE_CODE.METHOD_NOT_ALLOWED).json({ error: 'Method not allowed' });
   }
   try {
-    const { page, pageSize } = req.query;
+    const userCurrency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
+    const { page, pageSize, isPaginate = true } = req.query;
 
-    const categories = await productUseCase.getAllProducts({
-      userId,
-      page: Number(page) || 1,
-      pageSize: Number(pageSize) || 20,
-    });
+    let categories: PaginationResponse<Product> | Product[] = [];
+    if (!isPaginate) {
+      categories = await productUseCase.getAllProducts({ userId });
+    } else {
+      categories = await productUseCase.getAllProductsPagination({
+        userId,
+        page: Number(page) || 1,
+        pageSize: Number(pageSize) || 20,
+        currency: userCurrency,
+      });
+    }
 
     return res
       .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_ACCOUNT_SUCCESS, categories));
+      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_ALL_PRODUCT_SUCCESS, categories));
   } catch (error: any) {
     res
       .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)

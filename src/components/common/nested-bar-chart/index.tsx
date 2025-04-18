@@ -1,4 +1,3 @@
-// Location: src\components\common\nested-bar-chart\index.tsx
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
