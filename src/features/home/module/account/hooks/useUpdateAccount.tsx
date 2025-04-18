@@ -1,5 +1,5 @@
 import { setAccountDeleteDialog, setSelectedAccount } from '@/features/home/module/account/slices';
-import { fetchAccounts } from '@/features/home/module/account/slices/actions';
+import { fetchAccounts, fetchParents } from '@/features/home/module/account/slices/actions';
 import { findAccountById } from '@/features/home/module/account/slices/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo } from 'react';
@@ -7,13 +7,16 @@ import { toast } from 'sonner';
 
 export function useUpdateAccount(id: string) {
   const dispatch = useAppDispatch();
-  const { accounts } = useAppSelector((state) => state.account);
+  const { accounts, parentAccounts } = useAppSelector((state) => state.account);
 
   useEffect(() => {
     if (!accounts.data && !accounts.isLoading) {
       dispatch(fetchAccounts());
     }
-  }, [accounts.data, accounts.isLoading, dispatch]);
+    if (!parentAccounts.data && !parentAccounts.isLoading) {
+      dispatch(fetchParents());
+    }
+  }, [accounts.data, accounts.isLoading, dispatch, parentAccounts.data, parentAccounts.isLoading]);
 
   const account = useMemo(() => {
     if (!accounts.data) {

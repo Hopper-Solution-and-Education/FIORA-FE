@@ -35,26 +35,14 @@ export const formatCurrency = (value: number, currency: string = 'VND') => {
   }).format(value);
 };
 
-export const convertUSDToVND = (amountUSD: number) => {
-  const exchangeRate = 24800; // Fixed exchange rate
-  const amountVND = amountUSD * exchangeRate;
-
-  // Format the output with Vietnamese number formatting
-  return amountVND.toLocaleString('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-  });
+export const convertVNDToUSD = (amountVND: number): number => {
+  const exchangeRate = 25000; // 1 USD = 25000 VND
+  return amountVND / exchangeRate;
 };
 
-export const convertVNDToUSD = (amountVND: number) => {
-  const exchangeRate = 24800; // Fixed exchange rate
-  const amountUSD = amountVND / exchangeRate;
-
-  // Format the output with USD number formatting
-  return amountUSD.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  });
+export const convertUSDToVND = (amountUSD: number): number => {
+  const exchangeRate = 25000; // 1 USD = 25000 VND
+  return amountUSD * exchangeRate;
 };
 
 export const calculateAvailableLimit = (limit: string, balance: string): string => {

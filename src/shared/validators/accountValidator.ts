@@ -15,6 +15,7 @@ export const accountCreateBody = Joi.object({
       AccountType.Lending,
       AccountType.CreditCard,
       AccountType.Payment,
+      AccountType.Saving,
     )
     .messages({
       'string.empty': 'Account type is invalid',

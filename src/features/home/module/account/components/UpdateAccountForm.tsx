@@ -61,16 +61,6 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
     return 0;
   };
 
-  const generateIsTypeDisabledInitialValue = () => {
-    if (!initialData) return false;
-
-    if (initialData.parentId) return true;
-
-    if (initialData.children && initialData.children.length > 0) return true;
-
-    return false;
-  };
-
   const generateAvailableLimitInitialValue = () => {
     if (!initialData || (initialData && initialData.type !== ACCOUNT_TYPES.CREDIT_CARD)) return 0;
     return Number(initialData.limit) || 0;
@@ -82,15 +72,37 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
       : 0;
   };
 
+  const getParentInfo = (field: string) => {
+    if (initialData && initialData.parentId) {
+      const findParent = parentAccounts.data?.find(
+        (account) => account.id === initialData.parentId,
+      );
+
+      if (findParent) {
+        switch (field) {
+          case 'parentName':
+            return findParent.name || '';
+          case 'parentIcon':
+            return findParent.icon || '';
+          case 'parentType':
+            return findParent.type || '';
+          default:
+            return '';
+        }
+      }
+    }
+    return '';
+  };
+
   const fields = [
-    <GlobalIconSelect key="icon" name="icon" label="Icon" required />,
-    <InputField key="name" name="name" placeholder="Account Name" label="Name" required />,
+    <GlobalIconSelect key="icon" name="icon" label="Icon" />,
+    <InputField key="name" name="name" label="Name" />,
     <ParentAccountSelect
       key="parentId"
       name="parentId"
       options={parentOptions}
+      label="Parent Account"
       disabled={true}
-      label="Parent"
     />,
     <AccountTypeSelect
       key="type"
@@ -98,12 +110,11 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
       label="Type"
       options={accountTypeOptions}
       disabled={true}
-      required
     />,
-    <CurrencySelect key="currency" name="currency" label="Currency" required />,
+    <CurrencySelect key="currency" name="currency" label="Currency" />,
+    <AccountBalanceField key="balance" name="balance" label="Balance" />,
     <LimitField key="limit" name="limit" label="Limit" />,
-    <AccountBalanceField key="balance" name="balance" label="Balance" required />,
-    <AvailableLimitDisplay key="availableLimit" name="availableLimit" />,
+    <AvailableLimitDisplay key="availableLimit" name="availableLimit" label="Available Limit" />,
   ];
 
   const defaultValues = {
@@ -111,19 +122,24 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
     ...initialData,
     balance: generateBalanceInitialValue(),
     limit: generateLimitedInitialValue(),
-    isTypeDisabled: generateIsTypeDisabledInitialValue(),
     availableLimit: generateAvailableLimitInitialValue(),
+    parentName: getParentInfo('parentName'),
+    parentIcon: getParentInfo('parentIcon'),
+    parentType: getParentInfo('parentType'),
+    isTypeDisabled: true,
+    parentIsTypeDisabled: true,
   };
 
   const onSubmit = async (data: any) => {
     try {
       if (!initialData) return;
-      const finalData: Account = {
+      const finalData = {
         ...data,
         balance: data.balance || 0,
         limit: data.limit ? Number(data.limit) : undefined,
         parentId: data.parentId || undefined,
-        availableLimit: undefined,
+        isTypeDisabled: data.isTypeDisabled,
+        availableLimit: data.availableLimit,
       };
 
       await dispatch(updateAccount({ id: initialData.id, data: finalData }))
@@ -131,7 +147,7 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
         .then((value: Response<Account>) => {
           if (value.status == 200) {
             router.push('/account');
-            toast.success('You have edit the Account successfully!');
+            toast.success('You have edited the Account successfully!');
           }
         });
     } catch (error: any) {
