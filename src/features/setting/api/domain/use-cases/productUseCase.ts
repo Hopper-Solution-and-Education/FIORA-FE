@@ -146,6 +146,7 @@ class ProductUseCase {
         type,
         category_id,
         items,
+        currency = Currency.VND,
       } = params;
 
       const category = await this.categoryProductRepository.findUniqueCategoryProduct({
@@ -169,6 +170,7 @@ class ProductUseCase {
             type,
             catId: category_id,
             createdBy: userId,
+            currency: currency,
             ...(description && { description }),
           },
           include: {
@@ -215,6 +217,7 @@ class ProductUseCase {
       type,
       category_id,
       items,
+      currency = Currency.VND,
     } = params;
 
     let category = null;
@@ -251,6 +254,7 @@ class ProductUseCase {
         ...(tax_rate && { taxRate: tax_rate }),
         ...(price && { price }),
         ...(type && { type }),
+        ...(currency && { currency }),
         updatedBy: userId,
       },
     );
