@@ -55,6 +55,7 @@ const ParentAccountSelect: React.FC<ParentAccountSelectProps> = ({
     };
 
     handleParentChange(currentParentId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentParentId]);
 
   return (
