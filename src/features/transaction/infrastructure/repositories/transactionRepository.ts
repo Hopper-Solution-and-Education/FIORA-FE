@@ -56,8 +56,6 @@ class TransactionRepository implements ITransactionRepository {
     return await prisma.transaction.count({
       where: {
         ...where,
-        isDeleted: false, // Add this condition to count only non-deleted transactions
-        userId: where.userId, // Ensure userId is included in the where clause
       },
     });
   }

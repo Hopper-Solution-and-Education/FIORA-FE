@@ -208,7 +208,8 @@ class TransactionUseCase {
     );
 
     const totalTransactionAwaited = this.transactionRepository.count({
-      userId,
+      ...where,
+      AND: [{ isDeleted: false }, { userId }],
     });
     // getting amountMax from transactions
     const amountMaxAwaited = this.transactionRepository.aggregate({
