@@ -32,7 +32,7 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
   callback,
   setShowAll,
 }) => {
-  const item = processedData.find((d: any) => d.name === payload.value);
+  const item = processedData[payload.index];
   const hasChildren = item?.children && item.children.length > 0;
   const [isIconHovered, setIsIconHovered] = useState(false);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
