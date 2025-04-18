@@ -5,7 +5,6 @@ import {
   COLORS,
   DEFAULT_CURRENCY,
   DEFAULT_LOCALE,
-  DEFAULT_MAX_BAR_RATIO,
   MIN_CHART_HEIGHT,
 } from '@/shared/constants/chart';
 import { getChartMargins, useWindowSize } from '@/shared/utils/device';
@@ -29,14 +28,22 @@ import {
   PositiveAndNegativeV2BarLabel,
   PositiveAndNegativeV2Tooltip,
 } from '@/components/common/atoms';
+import { Button } from '@/components/ui/button';
+import { Icons } from '@/components/Icon';
+import { cn } from '@/shared/utils';
+import {
+  Tooltip as TooltipShadcn,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { ChartSkeleton } from '@/components/common/organisms';
 
 const PositiveAndNegativeBarChartV2 = ({
   data,
   title,
   currency = DEFAULT_CURRENCY,
   locale = DEFAULT_LOCALE,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  maxBarRatio = DEFAULT_MAX_BAR_RATIO,
   xAxisFormatter = (value) =>
     new Intl.NumberFormat(locale, { style: 'currency', currency }).format(value),
   tooltipContent,
@@ -53,13 +60,14 @@ const PositiveAndNegativeBarChartV2 = ({
 }: PositiveAndNegativeBarChartV2Props) => {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [chartHeight, setChartHeight] = useState(height);
+  const [showAll, setShowAll] = useState(false);
+  const [isLoadingViewAll, setIsLoadingViewAll] = useState(false);
   const { width } = useWindowSize();
   const isMobile = useIsMobile();
   const BAR_GAP = 0;
   const BAR_CATEGORY_GAP = 10;
 
   // Toggle expand/collapse with debounce
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const toggleExpand = useCallback(
     debounce((name: string) => {
       setExpandedItems((prev) => ({
@@ -69,6 +77,14 @@ const PositiveAndNegativeBarChartV2 = ({
     }, 100),
     [],
   );
+
+  const handleToggleShowAll = useCallback(() => {
+    setIsLoadingViewAll(true);
+    setTimeout(() => {
+      setShowAll((prev) => !prev);
+      setIsLoadingViewAll(false);
+    }, 200);
+  }, []);
 
   // Calculate total item if showTotal is true
   const getTotalItem = useCallback((): TwoSideBarItem => {
@@ -85,17 +101,48 @@ const PositiveAndNegativeBarChartV2 = ({
       depth: 0,
       isChild: false,
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, totalName]);
+  }, [data, totalName, levelConfig]);
 
-  // Prepare chart data with total item
-  const chartData = useMemo(() => {
+  // Prepare chart data with total item and handle showAll
+  const preparedData = useMemo(() => {
+    let items = data;
+    if (!showAll && data.length > 5) {
+      const first5 = data.slice(0, 5);
+      const others = data.slice(5);
+      const othersTotal = others.reduce(
+        (acc, item) => ({
+          positiveValue: acc.positiveValue + (item.positiveValue || 0),
+          negativeValue: acc.negativeValue + (item.negativeValue || 0),
+        }),
+        { positiveValue: 0, negativeValue: 0 },
+      );
+      items = [
+        ...first5,
+        {
+          id: 'others',
+          name: `Others (${others.length} items)`,
+          positiveValue: othersTotal.positiveValue,
+          negativeValue: othersTotal.negativeValue,
+          icon: 'expand',
+          type: 'others',
+          colorPositive: COLORS.DEPS_SUCCESS.LEVEL_2,
+          colorNegative: COLORS.DEPS_DANGER.LEVEL_2,
+          isOthers: true,
+        },
+      ];
+    }
     if (showTotal) {
       const totalItem = getTotalItem();
-      return [totalItem, ...data];
+      return [totalItem, ...items];
     }
-    return data;
-  }, [data, showTotal, getTotalItem]);
+    return items;
+  }, [data, showAll, showTotal, getTotalItem]);
+
+  // Count only main bars (excluding sub-bars)
+  const mainBarCount = useMemo(() => {
+    if (showAll) return data.length;
+    return Math.min(data.length, 5) + (data.length > 5 ? 1 : 0);
+  }, [data.length, showAll]);
 
   // Sync the expanded state of the total bar with the `expanded` prop
   useEffect(() => {
@@ -128,11 +175,13 @@ const PositiveAndNegativeBarChartV2 = ({
       });
       return result;
     },
-
     [expandedItems, levelConfig],
   );
 
-  const visibleData = useMemo(() => buildProcessedData(chartData), [buildProcessedData, chartData]);
+  const visibleData = useMemo(
+    () => buildProcessedData(preparedData),
+    [buildProcessedData, preparedData],
+  );
 
   // Calculate max absolute value for X-axis
   const maxAbsValue = useMemo(() => {
@@ -148,8 +197,7 @@ const PositiveAndNegativeBarChartV2 = ({
     const numBars = visibleData.length;
     const newHeight = Math.max(numBars * baseBarHeight, height);
     setChartHeight(newHeight);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleData]);
+  }, [visibleData, baseBarHeight, height]);
 
   // Compute margins
   const negativeChartMargins = useMemo(
@@ -183,137 +231,202 @@ const PositiveAndNegativeBarChartV2 = ({
     [currency, locale, tutorialText, xAxisFormatter],
   );
 
+  // Render Skeleton Loading
+  const renderSkeleton = () => <ChartSkeleton />;
+
   return (
     <div className="w-full transition-colors rounded-lg py-4 duration-200">
-      {header ||
-        (title && (
-          <h2 className="text-xl text-center font-semibold text-gray-800 dark:text-gray-200 mb-4">
-            {title}
-          </h2>
-        ))}
+      <div className="flex justify-between items-center mb-4">
+        {header || (
+          <>
+            {title && (
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{title}</h2>
+            )}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Showing {mainBarCount} of {data.length} items
+              </span>
+              {data.length > 5 && (
+                <TooltipProvider>
+                  <TooltipShadcn>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleToggleShowAll}
+                        className="h-8 w-8 hover:bg-primary/10 relative"
+                        disabled={isLoadingViewAll}
+                      >
+                        {isLoadingViewAll ? (
+                          <Icons.spinner className="h-5 w-5 text-primary animate-spin" />
+                        ) : showAll ? (
+                          <Icons.shrink
+                            className={cn(
+                              'h-5 w-5 transition-colors duration-200 text-primary dark:text-gray-400',
+                            )}
+                          />
+                        ) : (
+                          <Icons.expand
+                            className={cn(
+                              'h-5 w-5 transition-colors duration-200 text-primary dark:text-gray-400',
+                            )}
+                          />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <span>{showAll ? 'Show Less' : 'View All'}</span>
+                    </TooltipContent>
+                  </TooltipShadcn>
+                </TooltipProvider>
+              )}
+            </div>
+          </>
+        )}
+      </div>
       {isMobile && <ChartLegend items={legendItems} />}
       <div
         style={{ height: `${chartHeight}px` }}
         className="transition-all duration-300 flex flex-col md:flex-row"
       >
-        {/* Negative Chart */}
-        <ResponsiveContainer width="100%" height={chartHeight} className="md:w-1/2">
-          <BarChart
-            data={visibleData}
-            layout="vertical"
-            margin={negativeChartMargins}
-            barCategoryGap={BAR_CATEGORY_GAP}
-            barGap={BAR_GAP}
-            className="transition-all duration-300"
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="#E5E7EB"
-              className="dark:stroke-gray-600 transition-colors duration-200"
-            />
-            <XAxis
-              type="number"
-              domain={[maxAbsValue, 0]}
-              tickFormatter={(value) => xAxisFormatter(Math.abs(value))}
-              className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
-            />
-            <YAxis
-              type="category"
-              dataKey="name"
-              tickLine={false}
-              axisLine={false}
-              className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
-              tick={(props) => (
-                <CustomYAxisTick
-                  {...props}
-                  processedData={visibleData}
-                  expandedItems={expandedItems}
-                  onToggleExpand={toggleExpand}
-                  callback={callback}
+        {isLoadingViewAll ? (
+          renderSkeleton()
+        ) : (
+          <>
+            {/* Negative Chart */}
+            <ResponsiveContainer width="100%" height={chartHeight} className="md:w-1/2">
+              <BarChart
+                data={visibleData}
+                layout="vertical"
+                margin={negativeChartMargins}
+                barCategoryGap={BAR_CATEGORY_GAP}
+                barGap={BAR_GAP}
+                className="transition-all duration-300"
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#E5E7EB"
+                  className="dark:stroke-gray-600 transition-colors duration-200"
                 />
-              )}
-            />
-            <Tooltip
-              trigger="hover"
-              content={tooltipContent || customTooltipWithConfig}
-              cursor={false}
-            />
-            <Bar
-              dataKey="negativeValue"
-              label={(props) => (
-                <PositiveAndNegativeV2BarLabel {...props} formatter={xAxisFormatter} />
-              )}
-              onClick={(props) => callback && callback(props.payload)}
-              className="transition-all duration-300 cursor-pointer"
-            >
-              {visibleData.map((entry, index) => (
-                <Cell key={`negative-cell-${index}`} fill={entry.colorNegative} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+                <XAxis
+                  type="number"
+                  domain={[maxAbsValue, 0]}
+                  tickFormatter={(value) => xAxisFormatter(Math.abs(value))}
+                  className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
+                />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  tickLine={false}
+                  axisLine={false}
+                  className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
+                  tick={(props) => (
+                    <CustomYAxisTick
+                      {...props}
+                      processedData={visibleData}
+                      expandedItems={expandedItems}
+                      onToggleExpand={toggleExpand}
+                      callback={callback}
+                    />
+                  )}
+                />
+                <Tooltip
+                  trigger="hover"
+                  content={tooltipContent || customTooltipWithConfig}
+                  cursor={false}
+                />
+                <Bar
+                  dataKey="negativeValue"
+                  label={(props) => (
+                    <PositiveAndNegativeV2BarLabel {...props} formatter={xAxisFormatter} />
+                  )}
+                  onClick={(props) => {
+                    const item = props.payload;
+                    if (item.isOthers) {
+                      handleToggleShowAll();
+                    } else if (callback) {
+                      callback(item);
+                    }
+                  }}
+                  className="transition-all duration-300 cursor-pointer"
+                >
+                  {visibleData.map((entry, index) => (
+                    <Cell key={`negative-cell-${index}`} fill={entry.colorNegative} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
 
-        {/* Positive Chart */}
-        <ResponsiveContainer
-          width="100%"
-          height={chartHeight}
-          className={`md:w-1/2 ${isMobile && 'mt-10'}`}
-        >
-          <BarChart
-            data={visibleData}
-            layout="vertical"
-            margin={positiveChartMargins}
-            barCategoryGap={BAR_CATEGORY_GAP}
-            barGap={BAR_GAP}
-            className="transition-all duration-300"
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="#E5E7EB"
-              className="dark:stroke-gray-600 transition-colors duration-200"
-            />
-            <XAxis
-              type="number"
-              domain={[0, maxAbsValue]}
-              tickFormatter={(value) => xAxisFormatter(Math.abs(value))}
-              className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
-            />
-            <YAxis
-              type="category"
-              dataKey="name"
-              tickLine={false}
-              axisLine={false}
-              width={isMobile ? 70 : 0}
-              className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
-              tick={(props) => (
-                <CustomYAxisTick
-                  {...props}
-                  processedData={visibleData}
-                  expandedItems={expandedItems}
-                  onToggleExpand={toggleExpand}
-                  callback={callback}
-                />
-              )}
-            />
-            <Tooltip
-              trigger="hover"
-              content={tooltipContent || customTooltipWithConfig}
-              cursor={false}
-            />
-            <Bar
-              dataKey="positiveValue"
-              label={(props) => (
-                <PositiveAndNegativeV2BarLabel {...props} formatter={xAxisFormatter} />
-              )}
-              onClick={(props) => callback && callback(props.payload)}
-              className="transition-all duration-300 cursor-pointer"
+            {/* Positive Chart */}
+            <ResponsiveContainer
+              width="100%"
+              height={chartHeight}
+              className={`md:w-1/2 ${isMobile && 'mt-10'}`}
             >
-              {visibleData.map((entry, index) => (
-                <Cell key={`positive-cell-${index}`} fill={entry.colorPositive} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+              <BarChart
+                data={visibleData}
+                layout="vertical"
+                margin={positiveChartMargins}
+                barCategoryGap={BAR_CATEGORY_GAP}
+                barGap={BAR_GAP}
+                className="transition-all duration-300"
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#E5E7EB"
+                  className="dark:stroke-gray-600 transition-colors duration-200"
+                />
+                <XAxis
+                  type="number"
+                  domain={[0, maxAbsValue]}
+                  tickFormatter={(value) => xAxisFormatter(Math.abs(value))}
+                  className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
+                />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  tickLine={false}
+                  axisLine={false}
+                  width={isMobile ? 70 : 0}
+                  className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
+                  tick={(props) => (
+                    <CustomYAxisTick
+                      {...props}
+                      processedData={visibleData}
+                      expandedItems={expandedItems}
+                      onToggleExpand={toggleExpand}
+                      callback={callback}
+                    />
+                  )}
+                />
+                <Tooltip
+                  trigger="hover"
+                  content={tooltipContent || customTooltipWithConfig}
+                  cursor={false}
+                />
+                <Bar
+                  dataKey="positiveValue"
+                  label={(props) => (
+                    <PositiveAndNegativeV2BarLabel {...props} formatter={xAxisFormatter} />
+                  )}
+                  onClick={(props) => {
+                    const item = props.payload;
+                    if (item.isOthers) {
+                      handleToggleShowAll();
+                    } else if (callback) {
+                      callback(item);
+                    }
+                  }}
+                  className="transition-all duration-300 cursor-pointer"
+                >
+                  {visibleData.map((entry, index) => (
+                    <Cell key={`positive-cell-${index}`} fill={entry.colorPositive} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </>
+        )}
       </div>
       {!isMobile && <ChartLegend items={legendItems} />}
     </div>

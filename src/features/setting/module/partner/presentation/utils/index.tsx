@@ -2,16 +2,20 @@ import { TwoSideBarItem } from '@/components/common/positive-negative-bar-chart-
 import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
 import { generateColor } from '@/shared/lib/charts';
 import { TransactionType } from '@prisma/client';
+import { convertVNDToUSD } from '@/shared/utils';
 
 /**
  * Recursively maps a Partner object to a TwoSideBarItem, including its own transactions
  * and those of its descendants.
  * @param partner The Partner object to map
+ * @param currency The current currency setting
  * @returns A TwoSideBarItem representing the partner and its children
  */
-const mapPartnerToTwoSideBarItem = (partner: Partner): TwoSideBarItem => {
+const mapPartnerToTwoSideBarItem = (partner: Partner, currency: string): TwoSideBarItem => {
   // Recursively map children
-  const childrenItems = (partner.children || []).map((child) => mapPartnerToTwoSideBarItem(child));
+  const childrenItems = (partner.children || []).map((child) =>
+    mapPartnerToTwoSideBarItem(child, currency),
+  );
 
   // Calculate the partner's own positive and negative values from its transactions
   let ownPositive = 0;
@@ -29,11 +33,15 @@ const mapPartnerToTwoSideBarItem = (partner: Partner): TwoSideBarItem => {
     }
   });
 
+  // Convert values based on currency
+  const convertedPositive = currency === 'USD' ? convertVNDToUSD(ownPositive) : ownPositive;
+  const convertedNegative = currency === 'USD' ? convertVNDToUSD(ownNegative) : ownNegative;
+
   // Total values include own transactions plus children's totals
   const totalPositive =
-    ownPositive + childrenItems.reduce((sum, child) => sum + child.positiveValue, 0);
+    convertedPositive + childrenItems.reduce((sum, child) => sum + child.positiveValue, 0);
   const totalNegative =
-    ownNegative + childrenItems.reduce((sum, child) => sum + child.negativeValue, 0);
+    convertedNegative + childrenItems.reduce((sum, child) => sum + child.negativeValue, 0);
   const isChild: boolean = Boolean(partner.parent !== null);
 
   return {
@@ -53,10 +61,14 @@ const mapPartnerToTwoSideBarItem = (partner: Partner): TwoSideBarItem => {
  * Maps an array of Partner objects to an array of TwoSideBarItem objects,
  * starting with top-level partners only.
  * @param data Array of Partner objects from the server response
+ * @param currency The current currency setting
  * @returns Array of TwoSideBarItem objects for the chart
  */
-export const mapPartnersToTwoSideBarItems = (data: Partner[]): TwoSideBarItem[] => {
+export const mapPartnersToTwoSideBarItems = (
+  data: Partner[],
+  currency: string,
+): TwoSideBarItem[] => {
   // Filter for top-level partners to avoid processing children twice
   const topLevelPartners = data.filter((partner) => partner.parentId === null);
-  return topLevelPartners.map((partner) => mapPartnerToTwoSideBarItem(partner));
+  return topLevelPartners.map((partner) => mapPartnerToTwoSideBarItem(partner, currency));
 };

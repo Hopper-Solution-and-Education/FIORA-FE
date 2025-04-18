@@ -14,6 +14,7 @@ export type TwoSideBarItem = {
   children?: TwoSideBarItem[];
   isChild?: boolean;
   depth?: number;
+  isOthers?: boolean;
 };
 
 export type PositiveAndNegativeBarV2LevelConfig = {

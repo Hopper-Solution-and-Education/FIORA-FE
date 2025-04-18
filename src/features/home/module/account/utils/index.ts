@@ -1,6 +1,7 @@
 import { BarItem } from '@/components/common/positive-negative-bar-chart';
 import { Account } from '@/features/home/module/account/slices/types';
 import { generateColor } from '@/shared/lib/charts';
+import { convertVNDToUSD } from '@/shared/utils';
 
 /**
  * Builds a hierarchical structure from a flat list of accounts based on parentId.
@@ -33,11 +34,13 @@ const buildAccountHierarchy = (flatAccounts: Account[]): Account[] => {
  * Recursively maps an Account object to a BarItem, including its children,
  * with the value representing the sum of its own balance and its children's balances.
  * @param account The Account object to map
+ * @param currency The current currency setting
  * @returns A BarItem representing the account and its children
  */
-const mapAccountToBarItem = (account: Account): BarItem => {
+const mapAccountToBarItem = (account: Account, currency: string): BarItem => {
   // Recursively map children
-  const childrenItems = account.children?.map(mapAccountToBarItem) || [];
+  const childrenItems =
+    account.children?.map((child) => mapAccountToBarItem(child, currency)) || [];
 
   // Calculate the total value: own balance + sum of children's values
   const ownBalance = Number(account.balance) || 0;
@@ -45,11 +48,14 @@ const mapAccountToBarItem = (account: Account): BarItem => {
   const totalValue = ownBalance + childrenTotalBalance;
   const isChild = !!account.parentId;
 
+  // Convert value based on currency
+  const convertedValue = currency === 'USD' ? convertVNDToUSD(totalValue) : totalValue;
+
   return {
     id: account.id,
     name: account.name,
     icon: account.icon,
-    value: totalValue,
+    value: convertedValue,
     type: account.type,
     color: generateColor(totalValue, isChild),
     children: childrenItems,
@@ -59,11 +65,12 @@ const mapAccountToBarItem = (account: Account): BarItem => {
 /**
  * Maps server response account data to an array of BarItem objects for the chart.
  * @param accounts Array of Account objects from the server response
+ * @param currency The current currency setting
  * @returns Array of BarItem objects representing the account hierarchy
  */
-export const mapAccountsToBarItems = (accounts: Account[]): BarItem[] => {
+export const mapAccountsToBarItems = (accounts: Account[], currency: string): BarItem[] => {
   // Build hierarchy from flat list
   const hierarchicalAccounts = buildAccountHierarchy(accounts);
   // Map top-level accounts to BarItems, including their children
-  return hierarchicalAccounts.map(mapAccountToBarItem);
+  return hierarchicalAccounts.map((account) => mapAccountToBarItem(account, currency));
 };

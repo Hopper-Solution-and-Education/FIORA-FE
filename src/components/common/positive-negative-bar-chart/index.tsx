@@ -226,7 +226,11 @@ const PositiveAndNegativeBarChart = ({
               dataKey="value"
               className="transition-all duration-300 cursor-pointer"
               label={(props) => (
-                <PositiveAndNegativeBarLabel {...props} formatter={xAxisFormatter} />
+                <PositiveAndNegativeBarLabel
+                  {...props}
+                  currency={currency}
+                  formatter={xAxisFormatter}
+                />
               )}
               onClick={(props) => {
                 if (callback) return callback(props);

@@ -12,10 +12,12 @@ import { mapPartnersToTwoSideBarItems } from '@/features/setting/module/partner/
 import { ChartSkeleton } from '@/components/common/organisms';
 import PositiveAndNegativeBarChartV2 from '@/components/common/positive-negative-bar-chart-v2';
 import { TwoSideBarItem } from '@/components/common/positive-negative-bar-chart-v2/types';
+import { formatCurrency } from '@/shared/utils';
 
 const PartnerSettingPage = () => {
   const dispatch = useAppDispatch();
   const { partners, isLoading } = useAppSelector((state) => state.partner);
+  const { currency } = useAppSelector((state) => state.settings);
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -27,7 +29,10 @@ const PartnerSettingPage = () => {
     }
   }, [dispatch, status, session?.user?.id, partners.length]);
 
-  const barData = useMemo(() => mapPartnersToTwoSideBarItems(partners), [partners]);
+  const barData = useMemo(
+    () => mapPartnersToTwoSideBarItems(partners, currency),
+    [partners, currency],
+  );
 
   const handleNavigateToUpdate = (item: TwoSideBarItem) => {
     if (item.name === levelConfig.totalName || !item.id) {
@@ -73,6 +78,8 @@ const PartnerSettingPage = () => {
           showTotal
           totalName="Total"
           callback={handleNavigateToUpdate}
+          xAxisFormatter={(value) => formatCurrency(value, currency)}
+          currency={currency}
         />
       )}
     </div>
