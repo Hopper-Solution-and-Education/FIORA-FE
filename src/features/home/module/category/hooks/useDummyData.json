@@ -1,0 +1,303 @@
+{
+  "status": 200,
+  "message": "Get category successfully",
+  "data": [
+    {
+      "id": "c7a0a271-b89e-4af5-97e1-b7ff3a173189",
+      "userId": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "type": "Expense",
+      "icon": "arrowRight",
+      "name": "Wholesale 123",
+      "description": "",
+      "parentId": "9dd332c0-5bac-409f-add1-8ec50b457225",
+      "createdAt": "2025-03-11T14:25:46.635Z",
+      "updatedAt": "2025-04-05T07:48:19.749Z",
+      "createdBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "updatedBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "balance": 10000,
+      "tax_rate": null,
+      "fromTransactions": [
+        {
+          "amount": "3000000"
+        }
+      ],
+      "toTransactions": [
+        {
+          "amount": "10000"
+        }
+      ]
+    },
+    {
+      "id": "b0090ca7-a3ea-43c6-a5eb-2a0644de2a9b",
+      "userId": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "type": "Expense",
+      "icon": "store",
+      "name": "Retail",
+      "description": "",
+      "parentId": "9dd332c0-5bac-409f-add1-8ec50b457225",
+      "createdAt": "2025-03-11T14:25:46.635Z",
+      "updatedAt": "2025-04-05T07:49:02.939Z",
+      "createdBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "updatedBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "balance": 0,
+      "tax_rate": null,
+      "fromTransactions": [
+        {
+          "amount": "2000000"
+        },
+        {
+          "amount": "150000"
+        },
+        {
+          "amount": "100000000"
+        }
+      ],
+      "toTransactions": []
+    },
+    {
+      "id": "b4129d94-85d4-4a31-b75a-ac5a0e952474",
+      "userId": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "type": "Expense",
+      "icon": "briefcase",
+      "name": "Main salary",
+      "description": null,
+      "parentId": "9dd332c0-5bac-409f-add1-8ec50b457225",
+      "createdAt": "2025-03-11T14:25:46.635Z",
+      "updatedAt": "2025-04-05T07:47:50.788Z",
+      "createdBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "updatedBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "balance": 0,
+      "tax_rate": null,
+      "fromTransactions": [
+        {
+          "amount": "5000000"
+        }
+      ],
+      "toTransactions": []
+    },
+    {
+      "id": "fadd0b6e-52f9-4efa-8e02-7afda13d036a",
+      "userId": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "type": "Expense",
+      "icon": "gift",
+      "name": "Reward",
+      "description": null,
+      "parentId": "9dd332c0-5bac-409f-add1-8ec50b457225",
+      "createdAt": "2025-03-11T14:25:46.635Z",
+      "updatedAt": "2025-04-05T07:47:50.788Z",
+      "createdBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "updatedBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "balance": 10000000,
+      "tax_rate": null,
+      "fromTransactions": [
+        {
+          "amount": "200000"
+        },
+        {
+          "amount": "100000"
+        }
+      ],
+      "toTransactions": [
+        {
+          "amount": "10000000"
+        }
+      ]
+    },
+    {
+      "id": "8bd947e5-e164-4549-9b78-76de790bb0f7",
+      "userId": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "type": "Expense",
+      "icon": "add",
+      "name": "Gasoline",
+      "description": "",
+      "parentId": "c6b200ea-0baa-477e-8892-8c9e8bbd16e5",
+      "createdAt": "2025-03-11T14:25:46.635Z",
+      "updatedAt": "2025-04-10T02:32:27.145Z",
+      "createdBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "updatedBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "balance": 80001,
+      "tax_rate": null,
+      "fromTransactions": [
+        {
+          "amount": "500000"
+        }
+      ],
+      "toTransactions": [
+        {
+          "amount": "80000"
+        },
+        {
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "e31b4ecd-fdc7-4398-bd4a-9cae60d7fe54",
+      "userId": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "type": "Expense",
+      "icon": "add",
+      "name": "Test #10",
+      "description": "",
+      "parentId": null,
+      "createdAt": "2025-04-17T14:54:07.021Z",
+      "updatedAt": "2025-04-17T14:54:07.021Z",
+      "createdBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "updatedBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "balance": 0,
+      "tax_rate": "0",
+      "fromTransactions": [],
+      "toTransactions": []
+    },
+    {
+      "id": "9dd332c0-5bac-409f-add1-8ec50b457225",
+      "userId": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "type": "Expense",
+      "icon": "dollarSign",
+      "name": "Salary 123",
+      "description": "",
+      "parentId": null,
+      "createdAt": "2025-03-11T14:14:07.141Z",
+      "updatedAt": "2025-04-05T07:47:50.373Z",
+      "createdBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "updatedBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "balance": 10010000,
+      "tax_rate": null,
+      "fromTransactions": [
+        {
+          "amount": "5000000"
+        },
+        {
+          "amount": "5000000"
+        }
+      ],
+      "toTransactions": []
+    },
+    {
+      "id": "c6b200ea-0baa-477e-8892-8c9e8bbd16e5",
+      "userId": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "type": "Expense",
+      "icon": "car",
+      "name": "Transport",
+      "description": null,
+      "parentId": null,
+      "createdAt": "2025-03-11T14:14:07.141Z",
+      "updatedAt": "2025-03-11T14:14:07.141Z",
+      "createdBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "updatedBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "balance": 15930001,
+      "tax_rate": null,
+      "fromTransactions": [],
+      "toTransactions": [
+        {
+          "amount": "5000000"
+        },
+        {
+          "amount": "500000"
+        },
+        {
+          "amount": "10000000"
+        },
+        {
+          "amount": "350000"
+        }
+      ]
+    },
+    {
+      "id": "b82d2cc1-04c6-42b0-8623-312201a2850a",
+      "userId": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "type": "Expense",
+      "icon": "add",
+      "name": "Test #1",
+      "description": "",
+      "parentId": null,
+      "createdAt": "2025-04-17T14:52:56.219Z",
+      "updatedAt": "2025-04-17T14:52:56.219Z",
+      "createdBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "updatedBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "balance": 0,
+      "tax_rate": "0",
+      "fromTransactions": [],
+      "toTransactions": []
+    },
+    {
+      "id": "21b7ef10-bc1f-4ecf-bd9b-9866c5cb584a",
+      "userId": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "type": "Expense",
+      "icon": "add",
+      "name": "Test #2",
+      "description": "",
+      "parentId": null,
+      "createdAt": "2025-04-17T14:53:08.226Z",
+      "updatedAt": "2025-04-17T14:53:08.226Z",
+      "createdBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "updatedBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "balance": 0,
+      "tax_rate": "0",
+      "fromTransactions": [],
+      "toTransactions": []
+    },
+    {
+      "id": "937da6e8-7f40-4d58-8b48-d6135f35ce91",
+      "userId": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "type": "Income",
+      "icon": "shoppingCart",
+      "name": "Selling",
+      "description": null,
+      "parentId": null,
+      "createdAt": "2025-03-11T14:14:07.141Z",
+      "updatedAt": "2025-03-11T14:14:07.141Z",
+      "createdBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "updatedBy": "f6413727-4a29-485e-9db8-29b64aaeb36e",
+      "balance": 241120000,
+      "tax_rate": null,
+      "fromTransactions": [
+        {
+          "amount": "5000000"
+        },
+        {
+          "amount": "10000000"
+        },
+        {
+          "amount": "5000000"
+        },
+        {
+          "amount": "5000000"
+        },
+        {
+          "amount": "5000000"
+        },
+        {
+          "amount": "1000000"
+        },
+        {
+          "amount": "10000000"
+        },
+        {
+          "amount": "10000"
+        },
+        {
+          "amount": "100000"
+        },
+        {
+          "amount": "50000000"
+        },
+        {
+          "amount": "50000000"
+        },
+        {
+          "amount": "10000"
+        },
+        {
+          "amount": "100000000"
+        }
+      ],
+      "toTransactions": []
+    }
+  ],
+  "totalExpense": 143610001,
+  "totalIncome": 241120000,
+  "otherExpense": 71805000,
+  "otherIncome": 120560000,
+  "nextCursor": "937da6e8-7f40-4d58-8b48-d6135f35ce91",
+  "total": 999
+}

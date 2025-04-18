@@ -1,19 +1,11 @@
 import { TwoSideBarItem } from '@/components/common/positive-negative-bar-chart-v2/types';
-import { COLORS } from '@/shared/constants/chart';
 import { TransactionType } from '@prisma/client';
 import { ProductTransactionCategoryResponse } from '../../domain/entities/Product';
+import { generateColor } from '@/shared/lib/charts';
 
 export const mapTransactionsToTwoSideBarItems = (
   data: ProductTransactionCategoryResponse[],
 ): TwoSideBarItem[] => {
-  const generateColor = (balance: number, isChild: boolean) => {
-    if (balance > 0) {
-      return isChild ? COLORS.DEPS_SUCCESS.LEVEL_3 : COLORS.DEPS_SUCCESS.LEVEL_2;
-    } else {
-      return isChild ? COLORS.DEPS_DANGER.LEVEL_3 : COLORS.DEPS_DANGER.LEVEL_2;
-    }
-  };
-
   return data.map((categoryItem) => {
     const catId = categoryItem.category.id;
     let categoryPositive = 0;

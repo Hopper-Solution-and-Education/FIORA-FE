@@ -45,12 +45,16 @@ const CategoryDashboard = () => {
     }));
   }, [categories]);
 
+  // Sort and filter expense data
   const expenseData = useMemo(() => {
-    return chartData.filter((item) => item.type === CategoryType.Expense);
+    const expenses = chartData.filter((item) => item.type === CategoryType.Expense);
+    return [...expenses].sort((a, b) => b.value - a.value);
   }, [chartData]);
 
+  // Sort and filter income data
   const incomeData = useMemo(() => {
-    return chartData.filter((item) => item.type === CategoryType.Income);
+    const incomes = chartData.filter((item) => item.type === CategoryType.Income);
+    return [...incomes].sort((a, b) => b.value - a.value);
   }, [chartData]);
 
   // * HANDLERS FUNCTIONS ZONE

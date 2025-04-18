@@ -27,10 +27,10 @@ const TwoSideBarChartV2Tooltip = ({
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm p-3 rounded-md">
       <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{item.name}</p>
       <p className="text-xs text-gray-600 dark:text-gray-400">
-        Negative Value: <span className="font-bold">{formatter(item.negativeValue)}</span>
+        Expense: <span className="font-bold">{formatter(item.negativeValue)}</span>
       </p>
       <p className="text-xs text-gray-600 dark:text-gray-400">
-        Positive Value: <span className="font-bold">{formatter(item.positiveValue)}</span>
+        Income: <span className="font-bold">{formatter(item.positiveValue)}</span>
       </p>
       {tutorialText && (
         <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 italic">{tutorialText}</p>
