@@ -1,6 +1,7 @@
 export enum Messages {
   // Transaction
   GET_TRANSACTION_SUCCESS = 'Get transaction list successfully',
+  GET_TRANSACTION_BY_ID_SUCCESS = 'Get transaction by id successfully',
   GET_FILTER_OPTIONS_SUCCESS = 'Get transaction filter options successfully',
   CREATE_TRANSACTION_SUCCESS = 'Create transaction successfully',
   UPDATE_TRANSACTION_SUCCESS = 'Update transaction successfully',

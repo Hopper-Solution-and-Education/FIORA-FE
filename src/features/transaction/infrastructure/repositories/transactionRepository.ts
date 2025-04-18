@@ -14,6 +14,13 @@ class TransactionRepository implements ITransactionRepository {
   async getTransactionById(id: string, userId: string): Promise<Transaction | null> {
     return await prisma.transaction.findFirst({
       where: { id: id, userId: userId },
+      include: {
+        partner: true,
+        fromAccount: true,
+        toAccount: true,
+        fromCategory: true,
+        toCategory: true,
+      },
     });
   }
 
