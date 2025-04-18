@@ -29,7 +29,6 @@ export default function PartnerCreateForm() {
   const { data: session, status } = useSession();
   const [isDataFetched, setIsDataFetched] = useState(false);
 
-  // Create form methods directly to access setError
   const methods = useForm<PartnerFormValues>({
     resolver: yupResolver(partnerSchema),
     defaultValues: {
@@ -38,7 +37,6 @@ export default function PartnerCreateForm() {
     mode: 'onChange',
   });
 
-  // Improved check for partners data on page load/refresh
   useEffect(() => {
     const fetchPartnersData = async () => {
       if (status === 'authenticated' && session?.user?.id && !isDataFetched) {
@@ -73,37 +71,43 @@ export default function PartnerCreateForm() {
       name="parentId"
       label="Parent"
       options={parentOptions}
-      placeholder="Select a parent partner"
+      placeholder="FIORA"
       defaultValue="none"
     />,
-    <InputField key="name" name="name" label="Name" placeholder="Name" required />,
+    <InputField key="name" name="name" label="Name" placeholder="Nguyen Van A" required />,
     <UploadField key="logo" label="Logo" name="logo" previewShape="circle" />,
     <TextareaField
       key="description"
       name="description"
       label="Description"
-      placeholder="Enter description"
+      placeholder="E.g., Leading provider of technology solutions"
     />,
     <CustomDateTimePicker
       key="dob"
       name="dob"
       label="Date of Birth"
-      placeholder="Select date of birth"
+      placeholder="15/05/1990"
       showYearDropdown
       showMonthDropdown
       dropdownMode="select"
       dateFormat="dd/MM/yyyy"
     />,
+    <InputField key="identify" name="identify" label="Identification" placeholder="123456789012" />,
+    <InputField key="taxNo" name="taxNo" label="Tax Number" placeholder="0101234567" />,
+    <InputField key="phone" name="phone" label="Phone" placeholder="0123456789" />,
     <InputField
-      key="identify"
-      name="identify"
-      label="Identification"
-      placeholder="Identification Number"
+      key="address"
+      name="address"
+      label="Address"
+      placeholder="123 Le Loi Street, District 1, Ho Chi Minh City"
     />,
-    <InputField key="taxNo" name="taxNo" label="Tax Number" placeholder="Tax Number" />,
-    <InputField key="phone" name="phone" label="Phone" placeholder="Phone Number" />,
-    <InputField key="address" name="address" label="Address" placeholder="Address" />,
-    <InputField key="email" name="email" label="Email" placeholder="Email" type="email" />,
+    <InputField
+      key="email"
+      name="email"
+      label="Email"
+      placeholder="contact@fiora.com"
+      type="email"
+    />,
   ];
 
   const handleSubmit = async (data: PartnerFormValues) => {
