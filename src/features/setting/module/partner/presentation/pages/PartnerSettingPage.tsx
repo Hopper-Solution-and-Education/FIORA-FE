@@ -14,7 +14,6 @@ import PositiveAndNegativeBarChartV2 from '@/components/common/positive-negative
 import { TwoSideBarItem } from '@/components/common/positive-negative-bar-chart-v2/types';
 
 const PartnerSettingPage = () => {
-  // const [barData, setBarData] = useState<BarItem[]>([]);
   const dispatch = useAppDispatch();
   const { partners, isLoading } = useAppSelector((state) => state.partner);
   const { data: session, status } = useSession();
