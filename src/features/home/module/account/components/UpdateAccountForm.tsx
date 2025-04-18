@@ -61,16 +61,6 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
     return 0;
   };
 
-  const generateIsTypeDisabledInitialValue = () => {
-    if (!initialData) return false;
-
-    if (initialData.parentId) return true;
-
-    if (initialData.children && initialData.children.length > 0) return true;
-
-    return false;
-  };
-
   const generateAvailableLimitInitialValue = () => {
     if (!initialData || (initialData && initialData.type !== ACCOUNT_TYPES.CREDIT_CARD)) return 0;
     return Number(initialData.limit) || 0;
@@ -82,6 +72,28 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
       : 0;
   };
 
+  const getParentInfo = (field: string) => {
+    if (initialData && initialData.parentId) {
+      const findParent = parentAccounts.data?.find(
+        (account) => account.id === initialData.parentId,
+      );
+
+      if (findParent) {
+        switch (field) {
+          case 'parentName':
+            return findParent.name || '';
+          case 'parentIcon':
+            return findParent.icon || '';
+          case 'parentType':
+            return findParent.type || '';
+          default:
+            return '';
+        }
+      }
+    }
+    return '';
+  };
+
   const fields = [
     <GlobalIconSelect key="icon" name="icon" label="Icon" />,
     <InputField key="name" name="name" label="Name" />,
@@ -90,14 +102,14 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
       name="parentId"
       options={parentOptions}
       label="Parent Account"
-      disabled={generateIsTypeDisabledInitialValue()}
+      disabled={true}
     />,
     <AccountTypeSelect
       key="type"
       name="type"
       label="Type"
       options={accountTypeOptions}
-      disabled={generateIsTypeDisabledInitialValue()}
+      disabled={true}
     />,
     <CurrencySelect key="currency" name="currency" label="Currency" />,
     <AccountBalanceField key="balance" name="balance" label="Balance" />,
@@ -110,12 +122,12 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
     ...initialData,
     balance: generateBalanceInitialValue(),
     limit: generateLimitedInitialValue(),
-    isTypeDisabled: generateIsTypeDisabledInitialValue(),
     availableLimit: generateAvailableLimitInitialValue(),
-    parentName: initialData?.parent?.name || '',
-    parentIcon: initialData?.parent?.icon || '',
-    parentType: initialData?.parent?.type || '',
-    parentIsTypeDisabled: Boolean(initialData?.parentId),
+    parentName: getParentInfo('parentName'),
+    parentIcon: getParentInfo('parentIcon'),
+    parentType: getParentInfo('parentType'),
+    isTypeDisabled: true,
+    parentIsTypeDisabled: true,
   };
 
   const onSubmit = async (data: any) => {

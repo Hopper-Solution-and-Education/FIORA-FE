@@ -111,7 +111,7 @@ export default function CreateAccountForm() {
       await dispatch(createAccount(finalData))
         .unwrap()
         .then((value: Response<Account>) => {
-          if (value.status == 200) {
+          if (value.status == 201) {
             router.push('/account');
             toast.success('You have created the Account successfully!');
           }

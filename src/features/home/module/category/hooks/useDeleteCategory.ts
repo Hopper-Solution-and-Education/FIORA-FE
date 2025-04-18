@@ -30,9 +30,14 @@ export function useDeleteCategory() {
   // Get available categories for transfer (excluding the selected one)
   const availableCategories = useMemo(() => {
     return (
-      categories.data?.filter((category: Category) => category.id !== selectedCategory?.id) || []
+      categories.data?.filter(
+        (category: Category) =>
+          category.id !== selectedCategory?.id &&
+          category.type === selectedCategory?.type &&
+          !category.parentId,
+      ) || []
     );
-  }, [categories.data, selectedCategory?.id]);
+  }, [categories.data, selectedCategory?.id, selectedCategory?.type]);
 
   // Handle delete action
   const handleDeleteCategory = useCallback(async () => {
