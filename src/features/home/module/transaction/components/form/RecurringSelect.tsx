@@ -24,7 +24,7 @@ const RecurringSelectField: React.FC<RecurringSelectProps> = ({
   ...props
 }) => {
   const { watch, setValue } = useFormContext();
-  const currentRecurringType = watch('remark') || value;
+  const currentRecurringType: string = watch('remark') || value;
   const currentDate = watch('date') || value;
 
   const [recurringDate, setRecurringDate] = useState<Date | undefined>();
@@ -64,21 +64,23 @@ const RecurringSelectField: React.FC<RecurringSelectProps> = ({
             <FormLabel className="w-[10%] text-right text-sm text-gray-700 dark:text-gray-300">
               At
             </FormLabel>
-            <DateTimePicker
-              modal={false}
-              value={
-                currentRecurringType === TransactionRecurringType.DAILY
-                  ? currentDate
-                  : recurringDate
-              }
-              onChange={setRecurringDate}
-              clearable
-              disabled={
-                currentRecurringType === TransactionRecurringType.NONE ||
-                currentRecurringType === TransactionRecurringType.DAILY
-              }
-              hideTime // Chỉ hiển thị ngày
-            />
+            <div className="w-full h-fit relative">
+              <DateTimePicker
+                modal={false}
+                value={
+                  currentRecurringType === TransactionRecurringType.DAILY
+                    ? currentDate
+                    : recurringDate
+                }
+                onChange={setRecurringDate}
+                clearable
+                disabled={
+                  currentRecurringType === TransactionRecurringType.NONE ||
+                  currentRecurringType === TransactionRecurringType.DAILY
+                }
+                hideTime // Chỉ hiển thị ngày
+              />
+            </div>
           </FormItem>
         )}
       />

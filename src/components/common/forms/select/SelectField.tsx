@@ -72,7 +72,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
       <SelectTrigger id={id} className={cn(error ? 'border-red-500' : '', className)}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent className="max-h-[25vh] overflow-y-scroll no-scrollbar">
+      <SelectContent className="max-h-[30vh] overflow-y-scroll no-scrollbar">
         <SelectGroup>
           {options.map((option) => (
             <SelectItem key={option.value} value={option.value} disabled={option.disabled}>

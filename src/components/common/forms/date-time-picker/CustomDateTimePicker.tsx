@@ -2,6 +2,8 @@
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
@@ -12,7 +14,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, ClockIcon } from 'lucide-react';
 import { forwardRef, useState } from 'react';
 import type { DropdownNavProps, DropdownProps } from 'react-day-picker';
 import { useFormContext } from 'react-hook-form';
@@ -29,6 +31,7 @@ interface CustomDateTimePickerProps {
   dateFormat?: string;
   className?: string;
   error?: any;
+  containTimePicker?: boolean;
 }
 
 const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerProps>(
@@ -38,9 +41,10 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
       label,
       placeholder = 'Select date',
       required = false,
-      dateFormat = 'dd/MM/yyyy',
+      dateFormat = 'dd/MM/yyyy HH:mm:ss',
       className,
       error,
+      containTimePicker = false,
     },
     ref,
   ) => {
@@ -70,6 +74,23 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
       } else {
         setValue(name, null, { shouldValidate: true, shouldDirty: true });
       }
+    };
+
+    const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (!selectedDate) return; // If no date is selected, do nothing
+
+      // Extract time parts from the input value
+      const [hours, minutes, seconds] = e.target.value.split(':').map(Number);
+
+      // Create a new date object with the same date but updated time
+      const updatedDate = new Date(selectedDate);
+      updatedDate.setHours(hours || 0);
+      updatedDate.setMinutes(minutes || 0);
+      updatedDate.setSeconds(seconds || 0);
+
+      // Update the state and form
+      setDate(updatedDate);
+      setValue(name, updatedDate.toISOString(), { shouldValidate: true, shouldDirty: true });
     };
 
     return (
@@ -140,6 +161,25 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
                 },
               }}
             />
+            {containTimePicker && (
+              <div className="border-t py-2 px-3">
+                <div className="flex items-center gap-3">
+                  <Label className="text-xs">Enter time</Label>
+                  <div className="relative grow">
+                    <Input
+                      type="time"
+                      step="1"
+                      defaultValue={format(date || new Date(), 'HH:mm:ss')}
+                      onChange={handleTimeChange}
+                      className="peer appearance-none ps-9 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                    />
+                    <div className="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
+                      <ClockIcon size={16} aria-hidden="true" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </PopoverContent>
         </Popover>
         <input type="hidden" {...register(name)} ref={ref} />

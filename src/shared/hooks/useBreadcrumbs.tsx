@@ -39,9 +39,10 @@ const defaultConfig: BreadcrumbConfig = {
   customTitles: {
     create: 'Create',
     update: 'Update',
+    details: 'Details',
   },
   displaySegments: undefined,
-  skipUuidAfter: ['update'],
+  skipUuidAfter: ['update', 'details'],
 };
 
 /**
@@ -75,6 +76,11 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
   '/transaction': [
     { title: 'Home', link: '/' },
     { title: 'Transaction', link: '/transaction' },
+  ],
+  '/transaction/details': [
+    { title: 'Home', link: '/' },
+    { title: 'Transaction', link: '/transaction' },
+    { title: 'Details', link: '/transaction/details' },
   ],
   '/category': [
     { title: 'Home', link: '/' },
