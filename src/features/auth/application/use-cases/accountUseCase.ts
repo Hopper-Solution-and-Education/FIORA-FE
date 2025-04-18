@@ -1,10 +1,9 @@
-import { Account, AccountType, Currency, Prisma } from '@prisma/client';
-import { IAccountRepository } from '../../domain/repositories/accountRepository.interface';
-import { Decimal } from '@prisma/client/runtime/library';
-import { accountRepository } from '../../infrastructure/repositories/accountRepository';
-import { convertUSDToVND } from '@/shared/utils';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { Account, AccountType, Currency, Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
+import { IAccountRepository } from '../../domain/repositories/accountRepository.interface';
+import { accountRepository } from '../../infrastructure/repositories/accountRepository';
 
 const descriptions = {
   ['Payment']:
@@ -46,8 +45,6 @@ export class AccountUseCase {
       userId,
     } = params;
 
-    const currencyValue = currency === 'USD' ? convertUSDToVND(balance) : balance;
-
     if (parentId) {
       await this.validateParentAccount(parentId, type);
       const subAccount = await this.accountRepository.create({
@@ -56,7 +53,7 @@ export class AccountUseCase {
         description: descriptions[type as keyof typeof descriptions],
         icon: icon,
         userId,
-        balance: currencyValue,
+        balance: new Decimal(balance),
         currency,
         limit: type === AccountType.CreditCard ? limit : new Decimal(0),
         parentId: parentId,
@@ -75,7 +72,7 @@ export class AccountUseCase {
         description: descriptions[type as keyof typeof descriptions],
         icon: icon,
         userId,
-        balance: currencyValue,
+        balance: new Decimal(balance),
         currency,
         limit: type === AccountType.CreditCard ? limit : new Decimal(0),
         parentId: null,
