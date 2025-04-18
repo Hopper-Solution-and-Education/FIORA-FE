@@ -13,3 +13,5 @@ export { default as IconSelect } from './select/IconSelect';
 export { default as SelectField } from './select/SelectField';
 export { default as TextareaField } from './text-area/TextareaField';
 export { default as UploadField } from './upload/UploadField';
+export { default as ArrayField } from './array-field/ArrayField';
+export { default as IconSelectUpload } from './select/IconSelectUpload';

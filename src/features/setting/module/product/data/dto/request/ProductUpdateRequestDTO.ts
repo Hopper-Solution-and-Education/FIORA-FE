@@ -11,4 +11,5 @@ export type ProductUpdateRequestDTO = {
   type: ProductType;
   category_id: string;
   items?: ProductItem[];
+  currency: string;
 };

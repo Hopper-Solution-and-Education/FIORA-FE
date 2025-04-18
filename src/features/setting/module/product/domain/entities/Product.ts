@@ -14,6 +14,7 @@ export class Product {
   transactions: Transaction[];
   catId: string;
   type: ProductType;
+  currency: string;
   createdAt: string;
   updatedAt: string;
 
@@ -30,6 +31,7 @@ export class Product {
     createdAt: string,
     updatedAt: string,
     transactions: Transaction[] = [],
+    currency: string,
   ) {
     this.id = id;
     this.name = name;
@@ -43,6 +45,7 @@ export class Product {
     this.type = type;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
+    this.currency = currency;
   }
 }
 

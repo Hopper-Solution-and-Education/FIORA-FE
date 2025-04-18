@@ -73,6 +73,7 @@ const PositiveAndNegativeBarChartV2 = ({
     const totalPositive = data.reduce((sum, item) => sum + (item.positiveValue || 0), 0);
     const totalNegative = data.reduce((sum, item) => sum + (item.negativeValue || 0), 0);
     return {
+      id: undefined,
       name: totalName,
       positiveValue: totalPositive,
       negativeValue: totalNegative,

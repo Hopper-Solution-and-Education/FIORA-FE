@@ -52,7 +52,6 @@ const ProductCatCreationDialog = () => {
           : new Date(),
       };
       reset(editProduct);
-      console.log(editProduct);
     } else {
       reset(defaultCategoryProductValue);
     }
@@ -73,8 +72,8 @@ const ProductCatCreationDialog = () => {
           <DialogHeader>
             <DialogTitle>
               {ProductCategoryFormState === 'add'
-                ? 'Add Product Category'
-                : 'Update Product Category'}
+                ? 'Add New Product Category'
+                : `Update ${productCategoryToEdit?.name} - Product Category`}
             </DialogTitle>
           </DialogHeader>
           <DialogDescription>

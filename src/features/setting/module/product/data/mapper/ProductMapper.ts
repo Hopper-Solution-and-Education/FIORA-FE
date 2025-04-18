@@ -54,6 +54,7 @@ export class ProductMapper {
       taxRate: Number(item.taxRate),
       catId: item.catId ?? '',
       icon: item.icon,
+      currency: item.currency,
       createdAt: String(item.createdAt),
       updatedAt: String(item.updatedAt),
       transactions: item.transactions,
@@ -129,6 +130,7 @@ export class ProductMapper {
       type: request.type,
       category_id: request.catId,
       items: request.items,
+      currency: request.currency,
     };
   }
 
@@ -143,6 +145,7 @@ export class ProductMapper {
       type: request.type,
       category_id: request.catId,
       items: request.items,
+      currency: request.currency,
     };
   }
 
@@ -160,6 +163,7 @@ export class ProductMapper {
       transactions: response.data.transactions,
       catId: response.data.catId ?? '',
       type: response.data.type,
+      currency: response.data.currency,
       createdAt: new Date(response.data.createdAt).toISOString(),
       updatedAt: new Date(response.data.updatedAt).toISOString(),
     };
@@ -202,6 +206,7 @@ export class ProductMapper {
           item.createdAt ? format(new Date(item.createdAt), 'dd/MM/yyyy HH:mm:ss') : '',
           item.updatedAt ? format(new Date(item.updatedAt), 'dd/MM/yyyy HH:mm:ss') : '',
           transactions,
+          item.currency,
         );
       }),
     } as ProductsGetResponse;

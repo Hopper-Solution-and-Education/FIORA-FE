@@ -10,4 +10,5 @@ export type ProductCreateRequestDTO = {
   type: ProductType;
   category_id: string;
   items?: ProductItem[];
+  currency: string;
 };
