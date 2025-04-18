@@ -1,5 +1,5 @@
 import { debounce } from 'lodash';
-import { ReactNode, useMemo } from 'react';
+import { ReactNode, useCallback, useState } from 'react';
 import { formatCurrency } from '../hooks/formatCurrency';
 import { TransactionCurrency } from '../utils/constants';
 
@@ -15,19 +15,28 @@ export const renderAmountSlider = (props: SliderProps): ReactNode => {
   const { amountMax, amountMin, handleUpdateAmount, maxRange, minRange } = props;
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const debouncedUpdateAmountHandler = useMemo(
+  const [amountParams, setAmountParams] = useState<{ min: number; max: number }>({
+    min: amountMin,
+    max: amountMax,
+  });
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useCallback(
     () =>
-      debounce((minThumbDistance: number, maxThumbDistance: number, clickValue: number) => {
-        if (minThumbDistance <= maxThumbDistance) {
+      debounce(() => {
+        //Update the amount parameters only if the new value is different from the current value
+        if (amountParams.min !== amountMin) {
           // Move min thumb if it's closer or equidistant
-          handleUpdateAmount('amountMin', Math.max(minRange, Math.min(amountMax, clickValue)));
-        } else {
+          handleUpdateAmount('amountMin', amountParams.min);
+        }
+        //Update the amount parameters only if the new value is different from the current value
+        if (amountParams.max !== amountMax) {
           // Move max thumb if it's closer
-          handleUpdateAmount('amountMax', Math.max(amountMin, Math.min(maxRange, clickValue)));
+          handleUpdateAmount('amountMax', amountParams.max);
         }
       }, 1000),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [amountMax, amountMin],
+    [amountParams],
   );
 
   // Handle drag events for slider thumbs
@@ -70,7 +79,19 @@ export const renderAmountSlider = (props: SliderProps): ReactNode => {
     const minThumbDistance = Math.abs(clickValue - amountMin);
     const maxThumbDistance = Math.abs(clickValue - amountMax);
 
-    debouncedUpdateAmountHandler(minThumbDistance, maxThumbDistance, clickValue);
+    if (minThumbDistance <= maxThumbDistance) {
+      // Move min thumb if it's closer or equidistant
+      setAmountParams((prev) => ({
+        ...prev,
+        min: Math.max(minRange, Math.min(amountMax, clickValue)),
+      }));
+    } else {
+      // Move max thumb if it's closer
+      setAmountParams((prev) => ({
+        ...prev,
+        max: Math.max(amountMin, Math.min(maxRange, clickValue)),
+      }));
+    }
   };
 
   return (

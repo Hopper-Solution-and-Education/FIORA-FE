@@ -386,60 +386,96 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
               <div className="w-full flex flex-col gap-2">
                 <Label>Amount</Label>
                 <div className="w-full flex flex-row items-center justify-between gap-2">
-                  <Input
-                    // disabled={isRegistering} // Disable during register period
-                    value={
-                      !isMinEditing
-                        ? formatCurrency(
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Input
+                          // disabled={isRegistering} // Disable during register period
+                          value={
+                            !isMinEditing
+                              ? formatCurrency(
+                                  filterParams.amountMin ?? 0,
+                                  TransactionCurrency.VND,
+                                  false,
+                                )
+                              : filterParams.amountMin
+                          }
+                          min={amountMin}
+                          max={amountMax}
+                          onFocus={(e) => {
+                            setIsMinEditing(true);
+                            e.target.select();
+                          }}
+                          onBlur={() => setIsMinEditing(false)}
+                          placeholder="Min"
+                          onChange={(e) =>
+                            handleEditFilter(
+                              'amountMin',
+                              Number(e.target.value.split(',').join('')),
+                            )
+                          }
+                          required
+                          className={cn('w-[40%]')}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          {formatCurrency(
                             filterParams.amountMin ?? 0,
                             TransactionCurrency.VND,
                             false,
-                          )
-                        : filterParams.amountMin
-                    }
-                    min={amountMin}
-                    max={amountMax}
-                    onFocus={(e) => {
-                      setIsMinEditing(true);
-                      e.target.select();
-                    }}
-                    onBlur={() => setIsMinEditing(false)}
-                    placeholder="Min"
-                    onChange={(e) =>
-                      handleEditFilter('amountMin', Number(e.target.value.split(',').join('')))
-                    }
-                    required
-                    className={cn('w-[40%]')}
-                  />
+                          )}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
 
                   <Label>To</Label>
-
-                  <Input
-                    // disabled={isRegistering} // Disable during register period
-                    value={
-                      !isMaxEditing
-                        ? formatCurrency(
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Input
+                          // disabled={isRegistering} // Disable during register period
+                          value={
+                            !isMaxEditing
+                              ? formatCurrency(
+                                  filterParams.amountMax ?? 0,
+                                  TransactionCurrency.VND,
+                                  false,
+                                )
+                              : filterParams.amountMax
+                          }
+                          min={amountMin}
+                          max={amountMax}
+                          placeholder="Max"
+                          onFocus={(e) => {
+                            setIsMaxEditing(true);
+                            e.target.select();
+                          }}
+                          onBlur={() => setIsMaxEditing(false)}
+                          onChange={(e) =>
+                            handleEditFilter(
+                              'amountMax',
+                              Number(e.target.value.split(',').join('')),
+                            )
+                          }
+                          required
+                          className={cn('w-[60%]')}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          {formatCurrency(
                             filterParams.amountMax ?? 0,
                             TransactionCurrency.VND,
                             false,
-                          )
-                        : filterParams.amountMax
-                    }
-                    min={amountMin}
-                    max={amountMax}
-                    placeholder="Max"
-                    onFocus={(e) => {
-                      setIsMaxEditing(true);
-                      e.target.select();
-                    }}
-                    onBlur={() => setIsMaxEditing(false)}
-                    onChange={(e) =>
-                      handleEditFilter('amountMax', Number(e.target.value.split(',').join('')))
-                    }
-                    required
-                    className={cn('w-[60%]')}
-                  />
+                          )}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
+
                 {renderAmountSlider({
                   amountMin: filterParams.amountMin ?? amountMin,
                   amountMax: filterParams.amountMax ?? amountMax,

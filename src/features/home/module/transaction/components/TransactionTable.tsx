@@ -555,7 +555,13 @@ const TransactionTable = () => {
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Button variant="ghost" className="px-3 py-2 hover:bg-gray-200 ">
+                                  <Button
+                                    variant="ghost"
+                                    className="px-3 py-2 hover:bg-gray-200 "
+                                    onClick={() =>
+                                      router.push(`/transaction/details/${transRecord.id}`)
+                                    }
+                                  >
                                     <FileText size={18} color="#595959" />
                                   </Button>
                                 </TooltipTrigger>
