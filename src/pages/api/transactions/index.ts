@@ -22,7 +22,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
   try {
     const { filters, page, pageSize, sortBy, search } = req.body;
 
-    const transactions = await transactionUseCase.getTransactions({
+    const transactions = await transactionUseCase.getTransactionsPagination({
       page,
       pageSize,
       filters,

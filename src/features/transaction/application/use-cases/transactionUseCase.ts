@@ -127,6 +127,7 @@ class TransactionUseCase {
       total,
     };
   }
+
   async getTransactionsPagination(
     params: TransactionGetPagination,
   ): Promise<PaginationResponse<Transaction> & { amountMin?: number; amountMax?: number }> {
@@ -135,6 +136,7 @@ class TransactionUseCase {
     const skip = (page - 1) * pageSize;
 
     let where = buildWhereClause(filters) as Prisma.TransactionWhereInput;
+
     if (searchParams) {
       const typeSearchParams = searchParams.toLowerCase();
       // test with Regex-Type Transaction
@@ -182,6 +184,7 @@ class TransactionUseCase {
         ],
       };
     }
+
     const orderBy = buildOrderByTransactionV2(sortBy);
 
     const transactionAwaited = this.transactionRepository.findManyTransactions(
@@ -203,10 +206,10 @@ class TransactionUseCase {
         },
       },
     );
+
     const totalTransactionAwaited = this.transactionRepository.count({
       ...where,
-      userId,
-      isDeleted: false,
+      AND: [{ isDeleted: false }, { userId }],
     });
     // getting amountMax from transactions
     const amountMaxAwaited = this.transactionRepository.aggregate({
@@ -236,6 +239,14 @@ class TransactionUseCase {
       amountMin: Number(amountMin['_min']?.amount) || 0,
       total,
     };
+  }
+
+  async getTransactionById(id: string, userId: string): Promise<Transaction | null> {
+    const transaction = await this.transactionRepository.getTransactionById(id, userId);
+    if (!transaction) {
+      throw new Error(Messages.TRANSACTION_NOT_FOUND);
+    }
+    return transaction;
   }
 
   async viewTransaction(id: string, userId: string): Promise<Transaction> {

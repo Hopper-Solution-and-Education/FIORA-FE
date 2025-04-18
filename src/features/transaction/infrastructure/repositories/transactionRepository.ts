@@ -14,6 +14,13 @@ class TransactionRepository implements ITransactionRepository {
   async getTransactionById(id: string, userId: string): Promise<Transaction | null> {
     return await prisma.transaction.findFirst({
       where: { id: id, userId: userId },
+      include: {
+        partner: true,
+        fromAccount: true,
+        toAccount: true,
+        fromCategory: true,
+        toCategory: true,
+      },
     });
   }
 
@@ -53,7 +60,11 @@ class TransactionRepository implements ITransactionRepository {
   }
 
   async count(where: Prisma.TransactionWhereInput): Promise<number> {
-    return await prisma.transaction.count({ where });
+    return await prisma.transaction.count({
+      where: {
+        ...where,
+      },
+    });
   }
 
   async getFilterOptions(userId: string) {
