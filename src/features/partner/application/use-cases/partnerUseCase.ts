@@ -37,6 +37,7 @@ class PartnerUseCase {
       if (!newPartner) {
         throw new Error(Messages.PARTNER_NOT_FOUND);
       }
+
       await this.transactionRepository.updateTransactionsPartner(id, newId);
     }
 
@@ -56,7 +57,6 @@ class PartnerUseCase {
         throw new Error(Messages.PARTNER_NOT_FOUND);
       }
 
-      // Convert to PartnerValidationData format for validation
       const validationData: PartnerValidationData = {
         userId: userId,
         email: data.email as string | null,
@@ -69,13 +69,11 @@ class PartnerUseCase {
         logo: data.logo as string | null,
         dob: data.dob ? new Date(data.dob as string | Date) : null,
         parentId: data.parentId as string | null,
-        id: id, // Include ID for update validation
+        id: id,
       };
 
-      // Validate the data using the schema
       const validationErrors = await validatePartnerData(validationData, tx, true);
 
-      // If there are validation errors, throw them as an object
       if (validationErrors.length > 0) {
         const errorObject: Record<string, string> = {};
         validationErrors.forEach((err) => {
@@ -100,7 +98,6 @@ class PartnerUseCase {
         // }
       }
 
-      // Avoid updating userId to maintain transaction integrity, unless explicitly intended
       const updateData = {
         email: data.email,
         identify: data.identify,
@@ -112,7 +109,7 @@ class PartnerUseCase {
         name: data.name,
         address: data.address,
         parentId: data.parentId,
-        updatedBy: data.userId || userId, // Use provided userId or fallback to current user
+        updatedBy: data.userId || userId,
       };
 
       const updatedPartner = await tx.partner.update({
@@ -129,7 +126,6 @@ class PartnerUseCase {
 
   async createPartner(data: Prisma.PartnerUncheckedCreateInput): Promise<Partner> {
     return prisma.$transaction(async (tx) => {
-      // Convert to PartnerValidationData format
       const validationData: PartnerValidationData = {
         userId: data.userId as string,
         email: data.email as string | null,
@@ -144,10 +140,8 @@ class PartnerUseCase {
         parentId: data.parentId as string | null,
       };
 
-      // Validate the data
       const validationErrors = await validatePartnerData(validationData, tx, false);
 
-      // If there are validation errors, throw them as an object
       if (validationErrors.length > 0) {
         const errorObject: Record<string, string> = {};
         validationErrors.forEach((err) => {
@@ -156,7 +150,6 @@ class PartnerUseCase {
         throw { validationErrors: errorObject };
       }
 
-      // Create the partner with validated data
       const partner = await tx.partner.create({
         data: {
           userId: data.userId as string,
@@ -185,7 +178,6 @@ class PartnerUseCase {
 
   async getPartnerById(id: string, userId: string) {
     try {
-      // Sử dụng phương thức getPartnerById đã có sẵn trong repository
       const partner = await this.partnerRepository.getPartnerById(id, userId);
 
       if (!partner) {

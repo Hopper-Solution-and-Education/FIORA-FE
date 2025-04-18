@@ -49,7 +49,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       .status(RESPONSE_CODE.CREATED)
       .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_PARTNER_SUCCESS, newPartner));
   } catch (error: any) {
-    // Check if this is a validation error object
     if (error.validationErrors) {
       return res.status(RESPONSE_CODE.BAD_REQUEST).json({
         status: RESPONSE_CODE.BAD_REQUEST,

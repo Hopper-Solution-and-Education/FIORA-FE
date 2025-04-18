@@ -6,6 +6,7 @@ export type DropdownOption = {
   value: string;
   label: string;
   disabled?: boolean;
+  icon?: string;
 };
 
 export type TransactionPartner = {

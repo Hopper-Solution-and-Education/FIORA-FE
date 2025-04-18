@@ -7,15 +7,11 @@ class ProductRepository implements IProductRepository {
     return prisma.product.create({ data });
   }
 
-  async findUniqueProduct(
-    where: Prisma.ProductWhereUniqueInput,
-  ): Promise<Prisma.ProductGetPayload<{ include: { transactions: true } }> | null> {
-    return prisma.product.findUnique({
-      where,
-      include: {
-        transactions: true,
-      },
-    });
+  async findProductById(
+    where: Prisma.ProductWhereInput,
+    options?: Prisma.ProductFindFirstArgs,
+  ): Promise<Product | null> {
+    return prisma.product.findFirst({ where, ...options });
   }
 
   async findManyProducts(

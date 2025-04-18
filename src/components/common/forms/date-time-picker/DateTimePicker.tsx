@@ -148,6 +148,7 @@ export function DateTimePicker({
   clearable,
   classNames,
   timePicker,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   modal = false,
   ...props
 }: DateTimePickerProps & CalendarProps) {
@@ -174,16 +175,12 @@ export function DateTimePicker({
         d.setHours(max.getHours(), max.getMinutes(), max.getSeconds());
       }
       setDate(d);
+      onChange(d);
+      setOpen(false);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [setDate, setMonth],
   );
-  const onSubmit = useCallback(() => {
-    // Create a new Date object and ensure it's in ISO format for Prisma compatibility
-    const formattedDate = new Date(date);
-    onChange(formattedDate);
-    setOpen(false);
-  }, [date, onChange]);
 
   const onMonthYearChanged = useCallback(
     (d: Date, mode: 'month' | 'year') => {
@@ -226,10 +223,17 @@ export function DateTimePicker({
   }, [displayValue, hideTime, use12HourFormat]);
 
   return (
-    <Popover open={open} onOpenChange={setOpen} modal={modal}>
-      <PopoverTrigger asChild>
+    <Popover
+      open={open}
+      onOpenChange={(newOpen) => {
+        // Prevent opening if disabled
+        if (disabled && newOpen) return;
+        setOpen(newOpen);
+      }}
+    >
+      <PopoverTrigger className="w-full">
         {renderTrigger ? (
-          renderTrigger({ value: displayValue, open, timezone, disabled, use12HourFormat, setOpen })
+          renderTrigger({ value, open, timezone, disabled, use12HourFormat, setOpen })
         ) : (
           <div
             className={cn(
@@ -239,9 +243,16 @@ export function DateTimePicker({
               disabled && 'opacity-50 cursor-not-allowed',
               classNames?.trigger,
             )}
-            tabIndex={0}
+            tabIndex={disabled ? -1 : 0}
+            onClick={(e) => {
+              if (disabled) {
+                e.preventDefault();
+                return;
+              }
+              setOpen(true);
+            }}
           >
-            <div className="flex-grow flex items-center">
+            <div className="!w-full flex-grow flex items-center">
               <CalendarIcon className="mr-2 size-4" />
               {dislayFormat}
             </div>
@@ -372,9 +383,6 @@ export function DateTimePicker({
             />
           )}
           <div className="flex flex-row-reverse items-center justify-between">
-            <Button className="ms-2 h-7 px-2" onClick={onSubmit}>
-              Done
-            </Button>
             {timezone && (
               <div className="text-sm">
                 <span>Timezone:</span>
