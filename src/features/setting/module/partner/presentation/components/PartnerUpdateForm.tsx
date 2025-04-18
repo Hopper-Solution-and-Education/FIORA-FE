@@ -34,7 +34,6 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
   const { data: session, status } = useSession();
   const [isDataFetched, setIsDataFetched] = useState(false);
 
-  // Create form methods directly to access setError
   const methods = useForm<UpdatePartnerFormValues>({
     resolver: yupResolver(updatePartnerSchema),
     defaultValues: {
@@ -76,10 +75,8 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
     { value: 'none', label: 'None' },
     ...partners
       .filter((p) => {
-        // Exclude the current partner
         if (p.id === initialData?.id) return false;
 
-        // Only include top-level partners (no parent)
         if (p.parentId !== null) return false;
 
         return true;
@@ -96,14 +93,14 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
       name="parentId"
       label="Parent"
       options={parentOptions}
-      placeholder="Select a parent partner"
+      placeholder="E.g., FIORA"
       defaultValue={initialData?.parentId || 'none'}
       disabled={hasChildren}
       helperText={
         hasChildren ? 'Cannot change parent because this partner has children' : undefined
       }
     />,
-    <InputField key="name" name="name" label="Name" placeholder="Name" />,
+    <InputField key="name" name="name" label="Name" placeholder="Nguyen Van A" />,
     <UploadField
       key="logo"
       label="Logo"
@@ -115,28 +112,34 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
       key="description"
       name="description"
       label="Description"
-      placeholder="Enter description"
+      placeholder="E.g., Leading provider of technology solutions"
     />,
     <CustomDateTimePicker
       key="dob"
       name="dob"
       label="Date of Birth"
-      placeholder="Select date of birth"
+      placeholder="15/05/1990"
       showYearDropdown
       showMonthDropdown
       dropdownMode="select"
       dateFormat="dd/MM/yyyy"
     />,
+    <InputField key="identify" name="identify" label="Identification" placeholder="123456789012" />,
+    <InputField key="taxNo" name="taxNo" label="Tax Number" placeholder="0101234567" />,
+    <InputField key="phone" name="phone" label="Phone" placeholder="0123456789" />,
     <InputField
-      key="identify"
-      name="identify"
-      label="Identification"
-      placeholder="Identification Number"
+      key="address"
+      name="address"
+      label="Address"
+      placeholder="123 Le Loi Street, District 1, Ho Chi Minh City"
     />,
-    <InputField key="taxNo" name="taxNo" label="Tax Number" placeholder="Tax Number" />,
-    <InputField key="phone" name="phone" label="Phone" placeholder="Phone Number" />,
-    <InputField key="address" name="address" label="Address" placeholder="Address" />,
-    <InputField key="email" name="email" label="Email" placeholder="Email" type="email" />,
+    <InputField
+      key="email"
+      name="email"
+      label="Email"
+      placeholder="contact@fiora.com"
+      type="email"
+    />,
   ];
 
   const handleSubmit = async (data: UpdatePartnerFormValues) => {
@@ -151,7 +154,6 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
         });
       }
 
-      // Always send all fields, using the original values if not changed
       const updateData = {
         id: initialData?.id,
         name: data.name !== undefined ? data.name : initialData?.name,
@@ -174,7 +176,6 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
       } else {
         toast.error('Failed to update partner');
       }
-      console.error('Update partner error:', error);
     }
   };
 

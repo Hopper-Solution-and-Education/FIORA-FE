@@ -24,7 +24,6 @@ export default withAuthorization({
   }
 });
 
-// Thêm hàm GET để lấy partner theo ID
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { id } = req.query;
@@ -62,7 +61,6 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_PARTNER_SUCCESS, updatedPartner));
   } catch (error: any) {
-    // Check if this is a validation error object
     if (error.validationErrors) {
       return res.status(RESPONSE_CODE.BAD_REQUEST).json({
         status: RESPONSE_CODE.BAD_REQUEST,
@@ -71,7 +69,6 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       });
     }
 
-    // Handle other errors
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
       .json(
@@ -122,7 +119,6 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.DELETE_PARTNER_SUCCESS));
   } catch (error: any) {
-    // Check if this is a validation error object
     if (error.validationErrors) {
       return res.status(RESPONSE_CODE.BAD_REQUEST).json({
         status: RESPONSE_CODE.BAD_REQUEST,
