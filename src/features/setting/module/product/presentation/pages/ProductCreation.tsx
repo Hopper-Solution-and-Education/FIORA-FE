@@ -84,6 +84,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
               type: product.type ?? '',
               catId: product.catId || '',
               items: product.items || [],
+              currency: product.currency ?? '',
             });
           }
           setProductToEdit(product);
