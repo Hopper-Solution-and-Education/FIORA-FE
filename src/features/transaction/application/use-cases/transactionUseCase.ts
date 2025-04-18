@@ -241,6 +241,14 @@ class TransactionUseCase {
     };
   }
 
+  async getTransactionById(id: string, userId: string): Promise<Transaction | null> {
+    const transaction = await this.transactionRepository.getTransactionById(id, userId);
+    if (!transaction) {
+      throw new Error(Messages.TRANSACTION_NOT_FOUND);
+    }
+    return transaction;
+  }
+
   async viewTransaction(id: string, userId: string): Promise<Transaction> {
     const transaction = await this.transactionRepository.getTransactionById(id, userId);
     if (!transaction) {
