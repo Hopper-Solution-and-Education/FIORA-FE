@@ -5,10 +5,10 @@ export declare type JsonValue = string | number | boolean | null | JsonObject | 
 
 export interface IProductRepository {
   createProduct(data: Prisma.ProductUncheckedCreateInput): Promise<Product>;
-  findUniqueProduct(
-    where: Prisma.ProductWhereUniqueInput,
+  findProductById(
+    where: Prisma.ProductWhereInput,
     options?: Prisma.ProductFindFirstArgs,
-  ): Promise<Prisma.ProductGetPayload<{ include: { transactions: true } }> | null | null>;
+  ): Promise<Product | null>;
   findManyProducts(
     where: Prisma.ProductWhereInput,
     options?: Prisma.ProductFindManyArgs,
