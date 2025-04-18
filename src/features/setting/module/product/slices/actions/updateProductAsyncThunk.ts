@@ -10,10 +10,10 @@ export const updateProductAsyncThunk = createAsyncThunk<
   { rejectValue: string }
 >('product/updateProduct', async (data: ProductUpdateRequest, { rejectWithValue }) => {
   try {
-    const createProductUseCase = productDIContainer.get<IUpdateProductUseCase>(
+    const updateProductUseCase = productDIContainer.get<IUpdateProductUseCase>(
       TYPES.IUpdateProductUseCase,
     );
-    const response = await createProductUseCase.execute(data);
+    const response = await updateProductUseCase.execute(data);
     return response;
   } catch (error: any) {
     return rejectWithValue(error || 'Failed to update product');

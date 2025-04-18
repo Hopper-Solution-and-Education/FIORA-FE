@@ -1,14 +1,13 @@
 'use client';
 
 import { FormConfig } from '@/components/common/forms';
+import { GlobalDialog } from '@/components/common/organisms';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { DialogTitle } from '@radix-ui/react-dialog';
 import { isEmpty } from 'lodash';
-import { Check, CircleX, Loader2 } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { memo, useCallback, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -21,7 +20,7 @@ import {
   updateCategoryProductAsyncThunk,
 } from '../../slices/actions';
 import useProductCategoryFormConfig from '../config/ProductCategoryFormConfig';
-import { CategoryProductFormValues, defaultCategoryProductValue } from '../schema';
+import { CategoryProductFormValues } from '../schema';
 
 const ProductCategoryForm = () => {
   const dispatch = useAppDispatch();
@@ -42,7 +41,7 @@ const ProductCategoryForm = () => {
 
   // Method of product category product
   const methods = useFormContext<CategoryProductFormValues>();
-  const { handleSubmit, formState, getValues, reset } = methods;
+  const { handleSubmit, formState, getValues } = methods;
 
   const isButtonDisabled = !formState.isValid || formState.isSubmitting || formState.isValidating;
 
@@ -67,10 +66,10 @@ const ProductCategoryForm = () => {
     }
   }, [productCategories]);
 
-  const handleCloseDialog = useCallback(() => {
-    dispatch(setIsOpenDialogAddCategory(false));
-    reset(defaultCategoryProductValue);
-  }, []);
+  // const handleCloseDialog = useCallback(() => {
+  //   dispatch(setIsOpenDialogAddCategory(false));
+  //   reset(defaultCategoryProductValue);
+  // }, []);
 
   const onSubmit = useCallback(
     async (data: CategoryProductFormValues) => {
@@ -172,30 +171,6 @@ const ProductCategoryForm = () => {
     ],
   );
 
-  const renderDialogDelete = useCallback(() => {
-    return (
-      <Dialog open={isOpenDialogDelete} onOpenChange={setIsOpenDialogDelete}>
-        <DialogContent className="sm:max-w-md flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Confirm Delete</DialogTitle>
-            <DialogDescription>
-              Are you sure to delete this category? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="w-full flex justify-between mt-auto">
-            {/* Added flex and mt-auto */}
-            <Button type="button" variant="outline" onClick={handleCloseDialog}>
-              <CircleX />
-            </Button>
-            <Button onClick={handlePressDeleteCategory} type="button" variant="destructive">
-              <Icons.check />
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }, [handleCloseDialog, handlePressDeleteCategory, isOpenDialogDelete]);
-
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <FormConfig
@@ -204,7 +179,15 @@ const ProductCategoryForm = () => {
         onBack={() => dispatch(setIsOpenDialogAddCategory(false))}
         renderSubmitButton={footerButtonGroup}
       />
-      {renderDialogDelete()}
+      <GlobalDialog
+        open={isOpenDialogDelete}
+        onOpenChange={setIsOpenDialogDelete}
+        title={`Confirm Delete ${methods.getValues('name')}`}
+        description="Are you sure to delete this category? This action cannot be undone."
+        onConfirm={handlePressDeleteCategory}
+        onCancel={() => setIsOpenDialogDelete(false)}
+        variant="danger"
+      />
     </form>
   );
 };

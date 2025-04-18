@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Fiora Product',
+  title: 'Product and Services',
   description: 'Basic Fiora dashboard with Next.js and Shadcn',
 };
 
