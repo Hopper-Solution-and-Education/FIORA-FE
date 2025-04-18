@@ -53,7 +53,11 @@ class TransactionRepository implements ITransactionRepository {
   }
 
   async count(where: Prisma.TransactionWhereInput): Promise<number> {
-    return await prisma.transaction.count({ where });
+    return await prisma.transaction.count({
+      where: {
+        ...where,
+      },
+    });
   }
 
   async getFilterOptions(userId: string) {
