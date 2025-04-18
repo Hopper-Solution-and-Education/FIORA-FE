@@ -1,16 +1,20 @@
+'use client';
+
 import { Icons } from '@/components/Icon';
+import { Button } from '@/components/ui/button';
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { iconOptions } from '@/shared/constants/data';
 import { cn, useGetIconLabel } from '@/shared/utils';
-import React, { memo } from 'react';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 
 interface ListIconProps {
   icon: string;
@@ -32,8 +36,9 @@ interface IconSelectProps {
   onIconChange: (value: string) => void;
   className?: string;
   props?: React.HTMLAttributes<HTMLDivElement>;
-  required?: boolean; // Thêm prop required
-  label?: string; // Thêm prop label để hiển thị nhãn nếu cần
+  required?: boolean;
+  label?: string;
+  isCheckError?: boolean;
 }
 
 const IconSelect: React.FC<IconSelectProps> = ({
@@ -41,9 +46,20 @@ const IconSelect: React.FC<IconSelectProps> = ({
   onIconChange,
   className,
   props,
-  required = false, // Giá trị mặc định là false
+  required = false,
   label,
+  isCheckError = true,
 }) => {
+  const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus CommandInput when Popover opens
+  useEffect(() => {
+    if (open && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [open]);
+
   return (
     <div className={cn('mb-4', className)} {...props}>
       {label && (
@@ -58,30 +74,61 @@ const IconSelect: React.FC<IconSelectProps> = ({
           </span>
         </label>
       )}
-      <Select value={selectedIcon} onValueChange={(value) => onIconChange(value)}>
-        <SelectTrigger className={cn('w-full', required && !selectedIcon ? 'border-red-500' : '')}>
-          <SelectValue>
-            <div className="flex items-center gap-2">
-              <ListIcon icon={selectedIcon} />
-            </div>
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent className="h-60 overflow-y-auto">
-          {iconOptions.map((data) => (
-            <SelectGroup key={data.label}>
-              <SelectLabel>{data.label}</SelectLabel>
-              {data.options.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
-                  <div className="flex items-center gap-2">
-                    {item.icon ? <item.icon className="w-4 h-4" /> : <span>No Icon</span>}
-                    <span>{item.label}</span>
-                  </div>
-                </SelectItem>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className={cn(
+              'w-full justify-between',
+              isCheckError && required && !selectedIcon ? 'border-red-500' : '',
+            )}
+            onClick={() => setOpen((prev) => !prev)}
+          >
+            <span
+              className={cn('flex items-center gap-2', !selectedIcon && 'text-muted-foreground')}
+            >
+              {selectedIcon ? <ListIcon icon={selectedIcon} /> : 'Select an icon...'}
+            </span>
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="p-0 w-[--radix-popover-trigger-width] z-[1000] max-h-60 overflow-y-auto">
+          <Command>
+            <CommandInput ref={inputRef} placeholder="Search icons..." className="h-9" />
+            <CommandList>
+              <CommandEmpty>No icons found.</CommandEmpty>
+              {iconOptions.map((data) => (
+                <CommandGroup key={data.label} heading={data.label}>
+                  {data.options.map((item) => (
+                    <CommandItem
+                      key={item.value}
+                      value={`${item.label} ${item.value}`}
+                      onSelect={() => {
+                        onIconChange(item.value);
+                        setOpen(false);
+                      }}
+                      className="data-[disabled='true']:pointer-events-none data-[disabled='true']:opacity-50"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        {item.icon ? <item.icon className="w-4 h-4" /> : <span>No Icon</span>}
+                        <span>{item.label}</span>
+                        <Check
+                          className={cn(
+                            'ml-auto h-4 w-4',
+                            selectedIcon === item.value ? 'opacity-100' : 'opacity-0',
+                          )}
+                        />
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
               ))}
-            </SelectGroup>
-          ))}
-        </SelectContent>
-      </Select>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };

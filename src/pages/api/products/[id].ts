@@ -50,7 +50,17 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { id } = req.query;
-    const { icon, name, description, tax_rate, price, type, category_id, items = [] } = req.body;
+    const {
+      icon,
+      name,
+      description,
+      tax_rate,
+      price,
+      type,
+      category_id,
+      items = [],
+      currency,
+    } = req.body;
 
     if (![ProductType.Product, ProductType.Service].includes(type)) {
       return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Invalid product type' });
@@ -75,6 +85,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       category_id,
       items,
       id: id as string,
+      currency,
     });
 
     return res

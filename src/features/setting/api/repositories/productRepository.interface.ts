@@ -1,14 +1,14 @@
-import { Prisma, Product, ProductType } from '@prisma/client';
+import { Currency, Prisma, Product, ProductType } from '@prisma/client';
 import { JsonArray, JsonObject } from '@prisma/client/runtime/library';
 
 export declare type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
 
 export interface IProductRepository {
   createProduct(data: Prisma.ProductUncheckedCreateInput): Promise<Product>;
-  findUniqueProduct(
-    where: Prisma.ProductWhereUniqueInput,
+  findProductById(
+    where: Prisma.ProductWhereInput,
     options?: Prisma.ProductFindFirstArgs,
-  ): Promise<Prisma.ProductGetPayload<{ include: { transactions: true } }> | null | null>;
+  ): Promise<Product | null>;
   findManyProducts(
     where: Prisma.ProductWhereInput,
     options?: Prisma.ProductFindManyArgs,
@@ -33,7 +33,7 @@ export interface ProductCreation {
   type: ProductType;
   category_id: string;
   items?: Items[] | null;
-  currency?: string;
+  currency?: Currency;
 }
 
 export interface ProductUpdate {
@@ -47,6 +47,7 @@ export interface ProductUpdate {
   type?: ProductType;
   category_id?: string;
   items?: Items[] | null;
+  currency?: Currency;
 }
 
 export type Items = {

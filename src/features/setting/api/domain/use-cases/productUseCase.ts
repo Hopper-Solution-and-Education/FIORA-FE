@@ -8,13 +8,13 @@ import { Currency, Product, ProductType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
+import { productRepository } from '../../infrastructure/repositories/productRepository';
+import { ICategoryProductRepository } from '../../repositories/categoryProductRepository.interface';
 import {
   IProductRepository,
   ProductCreation,
   ProductUpdate,
 } from '../../repositories/productRepository.interface';
-import { ICategoryProductRepository } from '../../repositories/categoryProductRepository.interface';
-import { productRepository } from '../../infrastructure/repositories/productRepository';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
@@ -111,15 +111,22 @@ class ProductUseCase {
   async getProductById(params: { userId: string; id: string }) {
     const { userId, id } = params;
     try {
-      const product = await this.productRepository.findUniqueProduct(
+      const product = await this.productRepository.findProductById(
         {
           id,
           userId,
         },
         {
           include: {
+            productItems: {
+              select: {
+                id: true,
+                icon: true,
+                name: true,
+                description: true,
+              },
+            },
             transactions: true,
-            productItems: true,
           },
         },
       );
@@ -146,6 +153,7 @@ class ProductUseCase {
         type,
         category_id,
         items,
+        currency = Currency.VND,
       } = params;
 
       const category = await this.categoryProductRepository.findUniqueCategoryProduct({
@@ -169,6 +177,7 @@ class ProductUseCase {
             type,
             catId: category_id,
             createdBy: userId,
+            currency: currency,
             ...(description && { description }),
           },
           include: {
@@ -177,7 +186,7 @@ class ProductUseCase {
         });
 
         if (items && Array.isArray(items)) {
-          const itemsRes = await tx.productItems.createMany({
+          const itemsRes = await tx.productItems.createManyAndReturn({
             data: items.map((item) => ({
               icon: item.icon,
               name: item.name,
@@ -215,6 +224,7 @@ class ProductUseCase {
       type,
       category_id,
       items,
+      currency = Currency.VND,
     } = params;
 
     let category = null;
@@ -233,7 +243,7 @@ class ProductUseCase {
       throw new Error(Messages.MISSING_PARAMS_INPUT + ' id');
     }
 
-    const foundProduct = await this.productRepository.findUniqueProduct({ id });
+    const foundProduct = await this.productRepository.findProductById({ id });
     if (!foundProduct) {
       throw new Error(Messages.PRODUCT_NOT_FOUND);
     }
@@ -251,6 +261,7 @@ class ProductUseCase {
         ...(tax_rate && { taxRate: tax_rate }),
         ...(price && { price }),
         ...(type && { type }),
+        ...(currency && { currency }),
         updatedBy: userId,
       },
     );
@@ -289,7 +300,14 @@ class ProductUseCase {
   async deleteProduct(params: { userId: string; id: string }) {
     const { userId, id } = params;
 
-    const foundProduct = await this.productRepository.findUniqueProduct({ id, userId });
+    const foundProduct = (await this.productRepository.findProductById(
+      { id, userId },
+      {
+        include: {
+          transactions: true,
+        },
+      },
+    )) as Product & { transactions: any[] };
     if (!foundProduct) {
       throw new Error(Messages.PRODUCT_NOT_FOUND);
     }
@@ -313,12 +331,12 @@ class ProductUseCase {
     }
 
     // Checking existence of source and target products
-    const sourceProduct = await this.productRepository.findUniqueProduct({ id: sourceId });
+    const sourceProduct = await this.productRepository.findProductById({ id: sourceId });
     if (!sourceProduct) {
       throw new Error(Messages.SOURCE_PRODUCT_NOT_FOUND);
     }
 
-    const targetProduct = await this.productRepository.findUniqueProduct({ id: targetId });
+    const targetProduct = await this.productRepository.findProductById({ id: targetId });
     if (!targetProduct) {
       throw new Error(Messages.TARGET_PRODUCT_NOT_FOUND);
     }

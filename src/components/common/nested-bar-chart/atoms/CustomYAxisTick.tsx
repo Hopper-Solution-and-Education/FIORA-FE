@@ -6,11 +6,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/shared/utils';
 import type React from 'react';
 import { memo, useState } from 'react';
-
 import { throttle } from 'lodash';
 import { IconDisplay } from '@/components/common/atoms/IconDisplay';
 
-const THROTTLE_DELAY = 300; // Độ trễ giữa các lần gọi (ms)
+const THROTTLE_DELAY = 300;
 
 interface CustomYAxisTickProps {
   x: number;
@@ -20,6 +19,7 @@ interface CustomYAxisTickProps {
   expandedItems: any;
   onToggleExpand: (name: string) => void;
   callback?: (item: any) => void;
+  setShowAll?: () => void;
 }
 
 const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
@@ -30,8 +30,9 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
   expandedItems,
   onToggleExpand,
   callback,
+  setShowAll,
 }) => {
-  const item = processedData.find((d: any) => d.name === payload.value);
+  const item = processedData[payload.index];
   const hasChildren = item?.children && item.children.length > 0;
   const [isIconHovered, setIsIconHovered] = useState(false);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
@@ -61,7 +62,9 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (callback && item) {
+    if (item?.isOthers && setShowAll) {
+      setShowAll();
+    } else if (callback && item) {
       throttledCallback(callback, item);
     }
   };

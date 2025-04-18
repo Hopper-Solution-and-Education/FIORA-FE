@@ -63,14 +63,14 @@ const ChartPage = () => {
           levelConfig={{
             totalName: 'Total',
             colorPositive: {
-              0: COLORS.DEPS_DANGER.LEVEL_1,
-              1: COLORS.DEPS_DANGER.LEVEL_3,
-              2: COLORS.DEPS_DANGER.LEVEL_5,
-            },
-            colorNegative: {
               0: COLORS.DEPS_SUCCESS.LEVEL_1,
               1: COLORS.DEPS_SUCCESS.LEVEL_3,
               2: COLORS.DEPS_SUCCESS.LEVEL_5,
+            },
+            colorNegative: {
+              0: COLORS.DEPS_DANGER.LEVEL_1,
+              1: COLORS.DEPS_DANGER.LEVEL_3,
+              2: COLORS.DEPS_DANGER.LEVEL_5,
             },
           }}
           legendItems={[
