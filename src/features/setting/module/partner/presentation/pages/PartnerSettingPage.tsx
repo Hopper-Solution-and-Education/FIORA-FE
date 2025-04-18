@@ -19,15 +19,13 @@ const PartnerSettingPage = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Always fetch partners data when the page loads to ensure we have the latest data
   useEffect(() => {
-    if (status === 'authenticated' && session?.user?.id) {
-      // Always fetch partners data to get the latest from the database
+    if (status === 'authenticated' && session?.user?.id && !partners.length) {
       dispatch(fetchPartners({ userId: session.user.id, page: 1, pageSize: 100 }));
     } else if (status === 'unauthenticated') {
       toast.error('User not authenticated. Please log in.');
     }
-  }, [dispatch, status, session]);
+  }, [dispatch, status, session?.user?.id, partners.length]);
 
   const barData = useMemo(() => mapPartnersToTwoSideBarItems(partners), [partners]);
 
