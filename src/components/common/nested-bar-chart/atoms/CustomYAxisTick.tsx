@@ -1,4 +1,3 @@
-// Location: src\components\common\nested-bar-chart\atoms\CustomYAxisTick.tsx
 'use client';
 
 import { Icons } from '@/components/Icon';
@@ -7,11 +6,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/shared/utils';
 import type React from 'react';
 import { memo, useState } from 'react';
-
 import { throttle } from 'lodash';
 import { IconDisplay } from '@/components/common/atoms/IconDisplay';
 
-const THROTTLE_DELAY = 300; // Độ trễ giữa các lần gọi (ms)
+const THROTTLE_DELAY = 300;
 
 interface CustomYAxisTickProps {
   x: number;
@@ -65,9 +63,9 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (item?.isOthers && setShowAll) {
-      setShowAll(); // Trigger toggleShowAll when clicking the icon of "Others"
+      setShowAll();
     } else if (callback && item) {
-      throttledCallback(callback, item); // Trigger callback for other items (e.g., navigation)
+      throttledCallback(callback, item);
     }
   };
 

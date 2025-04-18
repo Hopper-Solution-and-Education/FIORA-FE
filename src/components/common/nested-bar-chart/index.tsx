@@ -22,11 +22,21 @@ import {
 } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { ContentType } from 'recharts/types/component/Tooltip';
+import { Button } from '@/components/ui/button';
+import {
+  Tooltip as TooltipShadcn,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Icons } from '@/components/Icon';
 import BarLabel from './atoms/BarLabel';
 import ChartLegend from './atoms/ChartLegend';
 import CustomTooltip from './atoms/CustomTooltip';
 import CustomYAxisTick from './atoms/CustomYAxisTick';
 import { debounce } from 'lodash';
+import { cn } from '@/shared/utils';
+import { ChartSkeleton } from '../organisms';
 
 // Define the structure of a bar item
 export type BarItem = {
@@ -84,13 +94,19 @@ const NestedBarChart = ({
   // State to track whether to show all categories or just top 10
   const [showAll, setShowAll] = useState(false);
   // State to track loading during expand/collapse
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   // State to track which bars are expanded
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   // State to dynamically adjust chart height
   const [chartHeight, setChartHeight] = useState(MIN_CHART_HEIGHT);
   // Get window width for responsive design
   const { width } = useWindowSize();
+
+  // Simulate initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Function to toggle the expansion of a bar
   const toggleExpand = useCallback(
@@ -107,30 +123,31 @@ const NestedBarChart = ({
   const handleToggleShowAll = useCallback(() => {
     setIsLoading(true);
     setTimeout(() => {
-      setShowAll((prev) => !prev); // Toggle between showing all and top 10
+      setShowAll((prev) => !prev);
       setIsLoading(false);
-    }, 500); // Fake delay of 500ms
+    }, 200);
   }, []);
 
-  // **Prepare Initial Data: First 10 + Others**
+  // Prepare Initial Data: First 5 + Others
   const preparedData = useMemo(() => {
-    if (showAll) return data; // Show all data if toggled
-    const first10 = data.slice(0, 10); // Take first 10 (assumes parent has sorted)
-    const othersSum = data.slice(10).reduce((sum, item) => sum + item.value, 0); // Sum remaining
-    if (data.length > 10) {
+    if (showAll) return data;
+    const first5 = data.slice(0, 5);
+    const othersSum = data.slice(5).reduce((sum, item) => sum + item.value, 0);
+    if (data.length > 5) {
       const othersItem: BarItem = {
-        name: `Others (${data[0]?.type || 'unknown'})`, // e.g., "Others (Expense)"
+        name: `Others (${data[0]?.type || 'unknown'})`,
         value: othersSum,
-        color: levelConfig?.colors[0] || '#888888', // Default color for "Others"
+        color: levelConfig?.colors[0] || '#888888',
         type: data[0]?.type || 'unknown',
-        isOthers: true, // Mark as "Others" bar
+        icon: 'expand',
+        isOthers: true,
       };
-      return [...first10, othersItem]; // Combine first 10 with "Others"
+      return [...first5, othersItem];
     }
-    return first10; // If ≤ 10 items, return as is
+    return first5;
   }, [data, showAll, levelConfig]);
 
-  // **Calculate Total Bar**
+  // Calculate Total Bar
   const totalAmount = preparedData.reduce((sum, item) => sum + Math.abs(item.value), 0);
   const totalName = levelConfig?.totalName || 'Total Amount';
   const totalColor = levelConfig?.colors[0] || '#888888';
@@ -139,7 +156,7 @@ const NestedBarChart = ({
     value: totalAmount,
     color: totalColor,
     type: preparedData[0]?.type || 'unknown',
-    children: preparedData, // Use prepared data (first 10 + Others or all)
+    children: preparedData,
     depth: 0,
   };
 
@@ -154,7 +171,7 @@ const NestedBarChart = ({
   // Base chart data starts with the total item
   const chartData = [totalItem];
 
-  // **Recursive Data Processing**
+  // Recursive Data Processing
   const buildProcessedData = useCallback(
     (items: BarItem[], parentName?: string, parentValue?: number, depth: number = 0): BarItem[] => {
       const result: BarItem[] = [];
@@ -186,14 +203,14 @@ const NestedBarChart = ({
     [buildProcessedData, chartData],
   );
 
-  // **Dynamic Chart Height**
+  // Dynamic Chart Height
   useEffect(() => {
     const numBars = processedData.length;
     const newHeight = Math.max(numBars * BASE_BAR_HEIGHT, MIN_CHART_HEIGHT);
     setChartHeight(newHeight);
   }, [processedData]);
 
-  // **X-Axis Domain Calculation**
+  // X-Axis Domain Calculation
   const maxAbsValue = useMemo(() => {
     const allValues = preparedData.flatMap((item) => [
       Math.abs(item.value),
@@ -208,10 +225,10 @@ const NestedBarChart = ({
     return [0, maxX];
   }, [maxAbsValue, maxBarRatio]);
 
-  // **Responsive Margins**
+  // Responsive Margins
   const chartMargins = useMemo(() => getChartMargins(width), [width]);
 
-  // **Custom Tooltip**
+  // Custom Tooltip
   const customTooltipWithConfig = useCallback(
     (props: any) => (
       <CustomTooltip {...props} currency={currency} locale={locale} tutorialText={tutorialText} />
@@ -219,19 +236,59 @@ const NestedBarChart = ({
     [currency, locale, tutorialText],
   );
 
-  // **Render the Chart**
+  // Render Skeleton Loading
+  const renderSkeleton = () => <ChartSkeleton />;
+
+  // Render the Chart
   return (
     <div className="w-full bg-white dark:bg-gray-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 transition-colors duration-200">
       {title && (
-        <h2 className="text-xl text-center font-semibold text-gray-800 dark:text-gray-200 mb-4">
-          {title}
-        </h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{title}</h2>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Showing {preparedData.length} of {data.length} items
+            </span>
+            {data.length > 5 && (
+              <TooltipProvider>
+                <TooltipShadcn>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleToggleShowAll}
+                      className="h-8 w-8 hover:bg-primary/10 relative"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <Icons.spinner className="h-5 w-5 text-primary animate-spin" />
+                      ) : showAll ? (
+                        <Icons.shrink
+                          className={cn(
+                            'h-5 w-5 transition-colors duration-200 text-primary dark:text-gray-400',
+                          )}
+                        />
+                      ) : (
+                        <Icons.expand
+                          className={cn(
+                            'h-5 w-5 transition-colors duration-200 text-primary dark:text-gray-400',
+                          )}
+                        />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <span>{showAll ? 'Show Less' : 'View All'}</span>
+                  </TooltipContent>
+                </TooltipShadcn>
+              </TooltipProvider>
+            )}
+          </div>
+        </div>
       )}
       <div style={{ height: `${chartHeight}px` }} className="transition-all duration-300">
         {isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900 dark:border-gray-100"></div>
-          </div>
+          renderSkeleton()
         ) : (
           <ResponsiveContainer width="100%" height={chartHeight}>
             <BarChart
@@ -266,7 +323,7 @@ const NestedBarChart = ({
                     expandedItems={expandedItems}
                     onToggleExpand={toggleExpand}
                     callback={callback}
-                    setShowAll={handleToggleShowAll} // Pass the toggle function
+                    setShowAll={handleToggleShowAll}
                   />
                 )}
               />
@@ -279,9 +336,9 @@ const NestedBarChart = ({
                 onClick={(props) => {
                   const item = props.payload;
                   if (item.isOthers) {
-                    handleToggleShowAll(); // Toggle showAll when "Others" bar is clicked
+                    handleToggleShowAll();
                   } else if (callback) {
-                    callback(item); // Handle regular item clicks (e.g., navigation)
+                    callback(item);
                   }
                 }}
               >
