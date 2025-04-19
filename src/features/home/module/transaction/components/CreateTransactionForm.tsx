@@ -24,7 +24,11 @@ const CreateTransactionForm = () => {
   const onSubmit = async (data: any) => {
     const body: CreateTransactionBody = {
       ...data,
-      products: data.products.map((product: string) => ({ id: product })),
+      product: undefined,
+      [`from${data.type === 'Income' ? 'Category' : 'Account'}Id`]: data.fromId,
+      [`to${data.type === 'Expense' ? 'Category' : 'Account'}Id`]: data.toId,
+      products: [{ id: data.product }],
+      date: data.date.toISOString(),
     };
     try {
       const response = await fetch('/api/transactions/transaction', {
@@ -41,10 +45,10 @@ const CreateTransactionForm = () => {
       }
 
       const res = await response.json();
-      toast.success(res.message || 'Transaction created successfully!');
       router.replace('/transaction');
+      toast.success(res.message || 'Transaction created successfully!');
     } catch (error: any) {
-      alert(error.message || 'An error occurred');
+      toast.error(error.message || 'An error occurred');
     }
   };
 
@@ -56,7 +60,7 @@ const CreateTransactionForm = () => {
     <FromSelectField key="fromId" name="fromId" required />,
     <ToSelectField key="toId" name="toId" required />,
     <PartnerSelectField key="partnerId" name="partnerId" />,
-    <ProductsSelectField key="products" name="products" />,
+    <ProductsSelectField key="product" name="product" />,
     <RecurringSelectField key="remark" name="remark" />,
   ];
 

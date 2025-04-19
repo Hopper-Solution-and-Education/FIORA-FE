@@ -40,8 +40,13 @@ const AmountInputField: React.FC<AmountInputProps> = ({
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = Number(e.target.value);
-    if (!Number.isNaN(newValue)) {
+    const input = e.target.value;
+
+    // Allow empty input, digits, and a single decimal point
+    const isValidInput = /^$|^[0-9]*\.?[0-9]*$/.test(input);
+
+    if (isValidInput) {
+      const newValue = input === '' ? 0 : Number(input);
       if (newValue >= 0) {
         onChange(newValue);
       }
@@ -74,9 +79,9 @@ const AmountInputField: React.FC<AmountInputProps> = ({
               />
             </div>
           </div>
-          <div className="w-[80%] flex flex-col justify-between items-start overflow-y-hidden overflow-x-auto">
-            {/* Increate button group */}
-            {value && value > 0 && isEditing ? (
+          {value > 0 && (
+            <div className="w-[80%] flex flex-col justify-between items-start overflow-y-hidden overflow-x-auto">
+              {/* Increate button group */}
               <div className="w-full h-11 flex justify-evenly items-center gap-2 py-2">
                 <Button
                   type="button"
@@ -111,10 +116,8 @@ const AmountInputField: React.FC<AmountInputProps> = ({
                   {formatCurrency(value * 10000, amountCurrency, true)}
                 </Button>
               </div>
-            ) : (
-              <></>
-            )}
-          </div>
+            </div>
+          )}
         </FormItem>
       )}
     />

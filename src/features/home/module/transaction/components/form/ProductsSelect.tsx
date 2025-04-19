@@ -23,12 +23,12 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
   ...props
 }) => {
   const { watch, setValue } = useFormContext();
-  const selectedOption: string[] = watch('products') || [];
+  const selectedOption: string = watch('product') || '';
 
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
 
   const { data, isLoading, isValidating } = useDataFetcher<any>({
-    endpoint: '/api/products',
+    endpoint: `/api/products?page=${1}&pageSize=${9999999999}`,
     method: 'GET',
   });
 
@@ -45,21 +45,20 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
             icon: product.icon,
           });
         });
-      } else {
-        tmpOptions.push({
-          label: 'Select Products',
-          value: 'none',
-          disabled: true,
-        });
       }
       setOptions(tmpOptions);
+    } else {
+      options.push({
+        label: 'Select Product',
+        value: 'none',
+        disabled: true,
+      });
     }
   }, [data]);
 
   const handleChange = (selected: string) => {
     // Create an array with the selected value instead of spreading the string
-    const selectedValue: string[] = [selected];
-    setValue('products', selectedValue);
+    setValue('product', selected);
   };
 
   return (
@@ -72,15 +71,16 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
           </FormLabel>
           <div className="w-full h-fit relative">
             {(isLoading || isValidating) && (
-              <div className="w-fit h-fit absolute top-[50%] right-[10%] -translate-y-[25%] z-10">
+              <div className="w-fit h-fit absolute top-[50%] right-[10%] -translate-y-[50%] z-10">
                 <Loader2 className="h-5 w-5 text-primary animate-spin opacity-50 mb-4" />
               </div>
             )}
 
             <SelectField
-              className="px-4 py-2"
+              className="w-full flex justify-between px-4 py-2"
               name={name}
-              value={selectedOption.length > 0 ? selectedOption[0] : undefined}
+              disabled={isLoading || isValidating}
+              value={selectedOption ?? undefined}
               onChange={handleChange}
               options={options}
               placeholder={'Select Product'}

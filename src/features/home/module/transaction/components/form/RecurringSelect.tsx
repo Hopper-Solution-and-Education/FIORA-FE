@@ -52,7 +52,7 @@ const RecurringSelectField: React.FC<RecurringSelectProps> = ({
               Recurring
             </FormLabel>
             <SelectField
-              className="px-4 py-2"
+              className="w-full flex justify-between px-4 py-2"
               name={name}
               value={currentRecurringType}
               onValueChange={(value: string) => setValue('remark', value)}
@@ -97,7 +97,7 @@ const RecurringSelectField: React.FC<RecurringSelectProps> = ({
               <RadioGroup
                 defaultValue={recurringOption}
                 className="w-full flex gap-10"
-                onValueChange={setRecurringOption}
+                onValueChange={(value: string) => setRecurringOption(value)}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="do-nothing" id="do-nothing" />

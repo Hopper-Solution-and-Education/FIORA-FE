@@ -7,11 +7,9 @@ const validateNewTransactionSchema = yup.object({
   date: yup.date().required(),
   amount: yup.number().min(1, 'Amount of money must be a positive number!').required(),
   currency: yup.mixed<TransactionCurrency>().oneOf(Object.values(TransactionCurrency)).required(),
-  products: yup.array().of(yup.string()),
-  fromAccountId: yup.string().nullable(),
-  fromCategoryId: yup.string().nullable(),
-  toAccountId: yup.string().nullable(),
-  toCategoryId: yup.string().nullable(),
+  product: yup.string().nullable(),
+  fromId: yup.string().required(),
+  toId: yup.string().required(),
   partner: yup.string().nullable(),
   remark: yup
     .mixed<TransactionRecurringType>()
@@ -24,11 +22,9 @@ const defaultNewTransactionValues: NewTransactionDefaultValues = {
   date: new Date(),
   amount: 1,
   currency: TransactionCurrency.VND,
-  products: [],
-  fromAccountId: undefined,
-  toAccountId: undefined,
-  fromCategoryId: undefined,
-  toCategoryId: undefined,
+  product: '',
+  fromId: '', // From account or category ID
+  toId: '', // To account or category ID
   partner: undefined,
   remark: TransactionRecurringType.NONE,
 };

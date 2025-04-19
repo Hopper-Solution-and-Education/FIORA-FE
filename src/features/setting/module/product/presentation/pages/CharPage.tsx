@@ -14,6 +14,7 @@ import {
 } from '../../slices';
 import { mapTransactionsToTwoSideBarItems } from '../utils';
 import PositiveAndNegativeBarChartV2 from '@/components/common/positive-negative-bar-chart-v2';
+import { formatCurrency } from '@/shared/utils';
 
 const ChartPage = () => {
   const data = useAppSelector((state) => state.productManagement.productTransaction.data);
@@ -23,6 +24,7 @@ const ChartPage = () => {
   );
   const dispatch = useAppDispatch();
   const { data: userData } = useSession();
+  const { currency } = useAppSelector((state) => state.settings);
 
   const handleEditCategoryProduct = (categoryProduct: CategoryProduct) => {
     dispatch(setProductCategoryFormState('edit'));
@@ -82,6 +84,8 @@ const ChartPage = () => {
           showTotal
           totalName="Total Transaction"
           callback={handleCallback}
+          currency={currency}
+          xAxisFormatter={(value) => formatCurrency(value, currency)}
         />
       )}
     </div>

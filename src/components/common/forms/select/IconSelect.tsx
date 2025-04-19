@@ -13,7 +13,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { iconOptions } from '@/shared/constants/data';
 import { cn, useGetIconLabel } from '@/shared/utils';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check } from 'lucide-react';
 import React, { memo, useEffect, useRef, useState } from 'react';
 
 interface ListIconProps {
@@ -87,17 +87,25 @@ const IconSelect: React.FC<IconSelectProps> = ({
             onClick={() => setOpen((prev) => !prev)}
           >
             <span
-              className={cn('flex items-center gap-2', !selectedIcon && 'text-muted-foreground')}
+              className={cn(
+                'flex items-center gap-2 font-normal',
+                !selectedIcon && 'text-muted-foreground',
+              )}
             >
               {selectedIcon ? <ListIcon icon={selectedIcon} /> : 'Select an icon...'}
             </span>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <Icons.chevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="p-0 w-[--radix-popover-trigger-width] z-[1000] max-h-60 overflow-y-auto">
+        <PopoverContent
+          className="p-0 w-[--radix-popover-trigger-width] z-[1000]"
+          side="bottom"
+          sideOffset={5}
+          avoidCollisions
+        >
           <Command>
             <CommandInput ref={inputRef} placeholder="Search icons..." className="h-9" />
-            <CommandList>
+            <CommandList className="max-h-[240px] overflow-y-auto">
               <CommandEmpty>No icons found.</CommandEmpty>
               {iconOptions.map((data) => (
                 <CommandGroup key={data.label} heading={data.label}>

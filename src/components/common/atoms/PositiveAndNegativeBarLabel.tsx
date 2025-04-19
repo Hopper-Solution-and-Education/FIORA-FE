@@ -1,7 +1,7 @@
 import React from 'react';
 
 const PositiveAndNegativeBarLabel = ({ x, y, width, height, value, formatter }: any) => {
-  if (Math.abs(width) < 60) return null;
+  if (Math.abs(width) < 100) return null;
 
   return (
     <text
