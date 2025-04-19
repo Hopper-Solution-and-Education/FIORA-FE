@@ -106,7 +106,6 @@ model Product {
   description  String?              @db.VarChar(1000)
   price        Decimal              @db.Decimal(13, 2)
   taxRate      Decimal?             @db.Decimal(13, 2)
-  items        Json?                @db.Json
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
   createdBy    String               @db.Uuid
@@ -114,7 +113,7 @@ model Product {
   currency     Currency             @default(VND)
   category     CategoryProducts?    @relation(fields: [catId], references: [id])
   user         User                 @relation("UserProducts", fields: [userId], references: [id])
-  productItems ProductItems[]
+  items        ProductItems[]
   transactions ProductTransaction[] @relation("ProductTransactions")
 
   @@index([userId])

@@ -9,7 +9,7 @@ import { Messages } from '@/shared/constants/message';
 import { PaginationResponse } from '@/shared/types/Common.types';
 import { ProductItem } from '@/shared/types/product.types';
 import { Prisma, Product, ProductType } from '@prisma/client';
-import { Decimal, JsonArray } from '@prisma/client/runtime/library';
+import { Decimal } from '@prisma/client/runtime/library';
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
 import { productRepository } from '../../infrastructure/repositories/productRepository';
 import { ICategoryProductRepository } from '../../repositories/categoryProductRepository.interface';
@@ -88,7 +88,7 @@ class ProductUseCase {
         {
           include: {
             transactions: true,
-            productItems: true,
+            items: true,
           },
         },
       );
@@ -141,7 +141,7 @@ class ProductUseCase {
             ...(description && { description }),
           },
           include: {
-            productItems: true,
+            items: true,
           },
         });
 
@@ -160,7 +160,7 @@ class ProductUseCase {
             throw new Error(Messages.CREATE_PRODUCT_ITEM_FAILED);
           }
 
-          product['productItems'] = itemsRes as unknown as ProductItem[];
+          product['items'] = itemsRes as unknown as ProductItem[];
         }
 
         return product;
@@ -206,10 +206,6 @@ class ProductUseCase {
       throw new Error(Messages.PRODUCT_NOT_FOUND);
     }
 
-    let itemsJSON = [] as JsonArray;
-    if (Array.isArray(items)) {
-      itemsJSON = items.map((item) => JSON.stringify(item));
-    }
     const updatedProduct = await this.productRepository.updateProduct(
       {
         id,
@@ -223,13 +219,41 @@ class ProductUseCase {
         ...(tax_rate && { taxRate: tax_rate }),
         ...(price && { price }),
         ...(type && { type }),
-        ...(itemsJSON.length > 0 && { items: itemsJSON }),
+        ...(items && {
+          items: {
+            update: items.map((item) => ({
+              where: { id: item.id },
+              data: {
+                icon: item.icon,
+                name: item.name,
+                description: item.description,
+                updatedBy: userId,
+              },
+            })),
+          },
+        }),
         updatedBy: userId,
       },
     );
 
     if (!updatedProduct) {
       throw new Error(Messages.UPDATE_PRODUCT_FAILED);
+    }
+
+    if (items && Array.isArray(items)) {
+      const itemsRes = await this.productItem.updateProductItems(
+        {
+          id: updatedProduct.id,
+          userId,
+        },
+        items,
+      );
+
+      if (!itemsRes) {
+        throw new Error(Messages.UPDATE_PRODUCT_ITEM_FAILED);
+      }
+
+      updatedProduct['items'] = itemsRes as unknown as ProductItem[];
     }
     return updatedProduct;
   }
