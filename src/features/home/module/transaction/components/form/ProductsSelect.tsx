@@ -71,7 +71,7 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
           </FormLabel>
           <div className="w-full h-fit relative">
             {(isLoading || isValidating) && (
-              <div className="w-fit h-fit absolute top-[50%] right-[10%] -translate-y-[25%] z-10">
+              <div className="w-fit h-fit absolute top-[50%] right-[10%] -translate-y-[50%] z-10">
                 <Loader2 className="h-5 w-5 text-primary animate-spin opacity-50 mb-4" />
               </div>
             )}

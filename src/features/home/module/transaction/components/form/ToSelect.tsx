@@ -24,8 +24,7 @@ const ToSelectField: React.FC<ToSelectProps> = ({
 }) => {
   const { watch, setValue } = useFormContext();
   const transactionType = watch('type') || 'Expense';
-  const selectedOption =
-    watch(`to${transactionType === 'Expense' ? 'Category' : 'Account'}Id`) || value;
+  const selectedOption = watch('toId') || value;
 
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
   const [targetEndpoint, setTargetEndpoint] = React.useState<string | null>(null);
@@ -91,11 +90,7 @@ const ToSelectField: React.FC<ToSelectProps> = ({
   }, [data, transactionType]);
 
   const handleChange = (value: string) => {
-    if (transactionType === 'Expense') {
-      setValue('toCategoryId', value);
-    } else {
-      setValue('toAccountId', value);
-    }
+    setValue('toId', value);
   };
 
   return (
@@ -108,7 +103,7 @@ const ToSelectField: React.FC<ToSelectProps> = ({
           </FormLabel>
           <div className="w-full h-fit relative">
             {(isLoading || isValidating) && (
-              <div className="w-fit h-fit absolute top-[50%] right-[10%] -translate-y-[25%] z-10">
+              <div className="w-fit h-fit absolute top-[50%] right-[10%] -translate-y-[50%] z-10">
                 <Loader2 className="h-5 w-5 text-primary animate-spin opacity-50 mb-4" />
               </div>
             )}
@@ -117,7 +112,7 @@ const ToSelectField: React.FC<ToSelectProps> = ({
               name={name}
               disabled={isLoading || isValidating}
               value={selectedOption}
-              onValueChange={handleChange}
+              onValueChange={(value: string) => handleChange(value)}
               options={options}
               placeholder={transactionType === 'Expense' ? 'Select Category' : 'Select Account'}
               error={error}
