@@ -86,6 +86,14 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
   ];
 
   const fields = [
+    <UploadField
+      key="logo"
+      label="Logo"
+      name="logo"
+      initialImageUrl={initialData?.logo || null}
+      previewShape="circle"
+    />,
+    <InputField key="name" name="name" label="Name" placeholder="Nguyen Van A" />,
     <SelectField
       key="parentId"
       name="parentId"
@@ -97,14 +105,6 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
       helperText={
         hasChildren ? 'Cannot change parent because this partner has children' : undefined
       }
-    />,
-    <InputField key="name" name="name" label="Name" placeholder="Nguyen Van A" />,
-    <UploadField
-      key="logo"
-      label="Logo"
-      name="logo"
-      initialImageUrl={initialData?.logo || null}
-      previewShape="circle"
     />,
     <TextareaField
       key="description"
