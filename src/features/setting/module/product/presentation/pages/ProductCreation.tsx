@@ -214,7 +214,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
             </div>
           </form>
 
-          <ProductCatCreationDialog />
+          <ProductCatCreationDialog setValue={method.setValue} />
           <DeleteProductDialog
             product={productToDelete}
             open={isDialogOpen}

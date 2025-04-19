@@ -39,6 +39,8 @@ interface SelectFieldProps {
   isLoading?: boolean;
   loadOptions?: () => Promise<Option[]>;
   customRenderEmpty?: React.ReactNode;
+  onCustomAction?: () => void;
+  customActionLabel?: string;
   [key: string]: any;
 }
 
@@ -56,6 +58,8 @@ const SelectField: React.FC<SelectFieldProps> = ({
   isLoading = false,
   loadOptions,
   customRenderEmpty,
+  onCustomAction,
+  customActionLabel,
   ...props
 }) => {
   const [open, setOpen] = useState(false);
@@ -166,6 +170,17 @@ const SelectField: React.FC<SelectFieldProps> = ({
                     </CommandItem>
                   ))}
                 </CommandGroup>
+              )}
+              {onCustomAction && (
+                <Button
+                  className="w-full flex justify-center items-center"
+                  type="button"
+                  variant="ghost"
+                  onClick={onCustomAction}
+                >
+                  <Icons.add />
+                  {customActionLabel ?? 'Add New'}
+                </Button>
               )}
             </CommandList>
           </Command>
