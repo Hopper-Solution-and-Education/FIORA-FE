@@ -25,7 +25,10 @@ const CreateTransactionForm = () => {
     const body: CreateTransactionBody = {
       ...data,
       product: undefined,
-      products: [data.product],
+      [`from${data.type === 'Income' ? 'Category' : 'Account'}Id`]: data.fromId,
+      [`to${data.type === 'Expense' ? 'Category' : 'Account'}Id`]: data.toId,
+      products: [{ id: data.product }],
+      date: data.date.toISOString(),
     };
     try {
       const response = await fetch('/api/transactions/transaction', {
@@ -42,8 +45,8 @@ const CreateTransactionForm = () => {
       }
 
       const res = await response.json();
-      toast.success(res.message || 'Transaction created successfully!');
       router.replace('/transaction');
+      toast.success(res.message || 'Transaction created successfully!');
     } catch (error: any) {
       toast.error(error.message || 'An error occurred');
     }
