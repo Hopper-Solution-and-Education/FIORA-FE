@@ -25,7 +25,6 @@ export default function PartnerUpdatePage() {
         const result = await dispatch(fetchPartnerById(id)).unwrap();
         setPartner(result);
       } catch (err) {
-        console.error('Failed to fetch partner:', err);
         setError(err as string);
       } finally {
         setLoading(false);
