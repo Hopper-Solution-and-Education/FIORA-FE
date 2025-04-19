@@ -240,21 +240,6 @@ class ProductUseCase {
       throw new Error(Messages.UPDATE_PRODUCT_FAILED);
     }
 
-    if (items && Array.isArray(items)) {
-      const itemsRes = await this.productItem.updateProductItems(
-        {
-          id: updatedProduct.id,
-          userId,
-        },
-        items,
-      );
-
-      if (!itemsRes) {
-        throw new Error(Messages.UPDATE_PRODUCT_ITEM_FAILED);
-      }
-
-      updatedProduct['items'] = itemsRes as unknown as ProductItem[];
-    }
     return updatedProduct;
   }
 
