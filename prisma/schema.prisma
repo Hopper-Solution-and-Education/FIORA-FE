@@ -156,7 +156,7 @@ model CategoryProducts {
 model Transaction {
   id               String               @id @default(uuid()) @db.Uuid
   userId           String?              @db.Uuid
-  date             DateTime             @db.Date
+  date             DateTime             @db.Timestamp()
   type             TransactionType
   amount           Decimal              @db.Decimal(13, 2)
   fromAccountId    String?              @db.Uuid
