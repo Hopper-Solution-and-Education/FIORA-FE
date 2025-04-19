@@ -72,6 +72,7 @@ const useProductFormConfig = () => {
       disabled={isSubmitting}
       onCustomAction={handleOpenDialog}
       customActionLabel="Add New"
+      required
     />,
     <InputField key="name" name="name" placeholder="Product Name" label="Name" required />,
     <SelectField
