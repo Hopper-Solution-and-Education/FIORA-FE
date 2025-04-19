@@ -31,6 +31,7 @@ const TransactionDetailsPage = ({ id }: TransactionDetailsPageProps) => {
       return `${transaction.type} (${transaction.fromAccount?.name ?? transaction.fromCategory?.name} - ${transaction.toAccount?.name ?? transaction.toCategory?.name})`;
     }
     return 'Transaction Details';
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transaction, data]);
   return (
     <div className="container mx-auto px-4 py-6 min-h-screen">

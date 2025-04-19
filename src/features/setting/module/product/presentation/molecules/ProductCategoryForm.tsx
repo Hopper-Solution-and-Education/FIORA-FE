@@ -64,6 +64,7 @@ const ProductCategoryForm = () => {
       });
       setIsOpenDialogDelete(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productCategories]);
 
   // const handleCloseDialog = useCallback(() => {
@@ -113,6 +114,7 @@ const ProductCategoryForm = () => {
         toast.error('Failed');
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [ProductCategoryFormState, userData?.user.id],
   );
 

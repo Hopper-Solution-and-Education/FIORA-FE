@@ -24,11 +24,12 @@ const DeleteDialog: React.FC = () => {
     <Dialog open={deleteConfirmOpen} onOpenChange={handleClose}>
       <DialogContent
         className={cn(
-          'p-0 overflow-hidden border-none shadow-2xl',
+          'p-0 overflow-visible border-none shadow-2xl',
           'dark:bg-gray-900 dark:text-gray-100',
           'w-[95vw] max-w-md rounded-lg sm:rounded-xl',
           'transition-all duration-200',
         )}
+        style={{ overflow: 'visible' }}
       >
         <div className="absolute top-2 right-2 z-10">
           <Button
@@ -158,7 +159,7 @@ const DeleteDialog: React.FC = () => {
             <Button
               variant="destructive"
               onClick={handleDeleteCategory}
-              disabled={isDeleting}
+              disabled={isDeleting || Boolean(!newCategoryId && hasBalance)}
               className={cn(
                 'flex-1 font-medium',
                 'bg-red-500 hover:bg-red-600',

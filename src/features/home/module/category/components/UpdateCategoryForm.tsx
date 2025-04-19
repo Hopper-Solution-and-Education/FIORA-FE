@@ -39,7 +39,22 @@ export default function UpdateCategoryForm({ initialData }: UpdateCategoryFormPr
         type: category.type,
       })) || [];
 
-  const isParentDisabled = initialData && initialData.subCategories.length > 0 ? true : false;
+  const getParentInfo = (field: string) => {
+    if (initialData && initialData.parentId) {
+      const findParent = categories.data?.find((category) => category.id === initialData.parentId);
+      if (findParent) {
+        switch (field) {
+          case 'parentName':
+            return findParent.name || '';
+          case 'parentType':
+            return findParent.type || CategoryType.Expense;
+          default:
+            return '';
+        }
+      }
+    }
+    return field === 'parentType' ? CategoryType.Expense : '';
+  };
 
   const fields = [
     <GlobalIconSelect
@@ -51,12 +66,11 @@ export default function UpdateCategoryForm({ initialData }: UpdateCategoryFormPr
     <ParentCategorySelectUpdate
       key="parentId"
       name="parentId"
-      placeholder="Select Master Category"
       options={parentOptions}
-      disabled={isParentDisabled}
+      disabled={true}
       label="Parent"
     />,
-    <TypeSelect key="type" name="type" label="Type" required />,
+    <TypeSelect key="type" name="type" label="Type" required disabled={true} />,
     <TextareaField
       key="description"
       name="description"
@@ -72,7 +86,9 @@ export default function UpdateCategoryForm({ initialData }: UpdateCategoryFormPr
         icon: initialData.icon || '',
         description: initialData.description || '',
         parentId: initialData.parentId || null,
-        isTypeDisabled: initialData.parentId ? true : false,
+        parentName: getParentInfo('parentName'),
+        parentType: getParentInfo('parentType') as CategoryType,
+        isTypeDisabled: true,
       }
     : defaultUpdateCategoryValues;
 
@@ -85,6 +101,8 @@ export default function UpdateCategoryForm({ initialData }: UpdateCategoryFormPr
         icon: data.icon,
         description: data.description ?? undefined,
         parentId: data.parentId,
+        parentName: data.parentName,
+        parentType: data.parentType,
         isTypeDisabled: data.isTypeDisabled ?? false,
       };
       await dispatch(updateCategory(updatedCategory))

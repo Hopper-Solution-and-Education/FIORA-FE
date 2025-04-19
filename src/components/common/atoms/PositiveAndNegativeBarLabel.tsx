@@ -1,6 +1,6 @@
-import { memo } from 'react';
+import React from 'react';
 
-const BarLabel = ({ x, y, width, height, value, formatter }: any) => {
+const PositiveAndNegativeBarLabel = ({ x, y, width, height, value, formatter }: any) => {
   if (Math.abs(width) < 60) return null;
 
   return (
@@ -20,4 +20,4 @@ const BarLabel = ({ x, y, width, height, value, formatter }: any) => {
   );
 };
 
-export default memo(BarLabel);
+export default PositiveAndNegativeBarLabel;

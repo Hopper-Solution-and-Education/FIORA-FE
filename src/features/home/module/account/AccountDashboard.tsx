@@ -5,18 +5,17 @@ import PositiveAndNegativeBarChart, {
 } from '@/components/common/positive-negative-bar-chart';
 import { Icons } from '@/components/Icon';
 import { fetchAccounts, fetchParents } from '@/features/home/module/account/slices/actions';
-import { getAccountColorByType } from '@/features/home/module/account/slices/utils';
 import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Account } from '@/features/home/module/account/slices/types';
 import { formatCurrency } from '@/shared/utils';
 import DeleteAccountDialog from '@/features/home/module/account/components/DeleteAccountDialog';
 import NavigateToAccountDialog from '@/features/home/module/account/components/NavigateToAccountDialog';
 import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import { MODULE } from '@/shared/constants';
+import { mapAccountsToBarItems } from '@/features/home/module/account/utils';
 
 const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefined }) => {
   const dispatch = useAppDispatch();
@@ -24,6 +23,7 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
   const chartRef = useRef<HTMLDivElement>(null);
   const [showNavigateDialog, setShowNavigateDialog] = useState(false);
   const { accounts, refresh } = useAppSelector((state) => state.account);
+  const { currency } = useAppSelector((state) => state.settings);
 
   useEffect(() => {
     dispatch(fetchAccounts());
@@ -32,25 +32,28 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
 
   const chartData: BarItem[] = useMemo(() => {
     if (!accounts.data) return [];
-    return accounts.data
-      .filter((account: Account) => !account?.parentId)
-      .map((account: Account) => ({
-        id: account.id,
-        name: account.name,
-        icon: account.icon,
-        value: Number(account.balance) || 0,
-        type: account.type,
-        color: getAccountColorByType(account.type),
-        children: account.children?.map((child) => ({
-          id: child.id,
-          name: child.name,
-          icon: child.icon,
-          value: Number(child.balance) || 0,
-          type: child.type,
-          color: getAccountColorByType(child.type),
-        })),
-      }));
-  }, [accounts]);
+    return mapAccountsToBarItems(accounts.data, currency);
+  }, [accounts.data, currency]);
+
+  type Depth = 0 | 1 | 2;
+
+  const levelConfig: {
+    totalName: string;
+    colorPositive: Record<Depth, string>;
+    colorNegative: Record<Depth, string>;
+  } = {
+    totalName: 'Total',
+    colorPositive: {
+      0: COLORS.DEPS_SUCCESS.LEVEL_1,
+      1: COLORS.DEPS_SUCCESS.LEVEL_3,
+      2: COLORS.DEPS_SUCCESS.LEVEL_5,
+    },
+    colorNegative: {
+      0: COLORS.DEPS_DANGER.LEVEL_1,
+      1: COLORS.DEPS_DANGER.LEVEL_3,
+      2: COLORS.DEPS_DANGER.LEVEL_5,
+    },
+  };
 
   const handleDisplayDetail = (item: any) => {
     if (item.id) {
@@ -98,11 +101,9 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
           <PositiveAndNegativeBarChart
             title={module === MODULE.ACCOUNT ? 'Accounts' : undefined}
             data={chartData}
-            xAxisFormatter={(value) => formatCurrency(value)}
-            levelConfig={{
-              totalName: 'Net Balance',
-              colors: { 0: COLORS.DEPS_SUCCESS.LEVEL_1 },
-            }}
+            xAxisFormatter={(value) => formatCurrency(value, currency)}
+            currency={currency}
+            levelConfig={levelConfig}
             callback={module === MODULE.ACCOUNT ? handleDisplayDetail : undefined}
             header={
               module === MODULE.HOME ? (

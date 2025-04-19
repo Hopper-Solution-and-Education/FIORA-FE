@@ -21,7 +21,8 @@ const AccountTypeSelect: React.FC<AccountTypeSelectProps> = ({
   ...props
 }) => {
   const { watch } = useFormContext();
-  const isSelectParentId = watch('parentId') || undefined;
+  const parentId = watch('parentId');
+  const isSelectParentId: boolean = Boolean(parentId !== 'null' && parentId);
 
   return (
     <SelectField

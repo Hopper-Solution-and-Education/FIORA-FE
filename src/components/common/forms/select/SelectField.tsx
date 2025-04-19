@@ -117,10 +117,21 @@ const SelectField: React.FC<SelectFieldProps> = ({
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent align="start" className="p-0 w-[--radix-popover-trigger-width] z-[1000]">
+        <PopoverContent
+          align="start"
+          className="p-0 w-[--radix-popover-trigger-width] z-[9999]"
+          side="top"
+          sideOffset={5}
+          avoidCollisions={true}
+          collisionPadding={10}
+          style={{
+            position: 'fixed',
+            maxHeight: '300px',
+          }}
+        >
           <Command>
             <CommandInput ref={inputRef} placeholder="Search..." className="h-9" />
-            <CommandList>
+            <CommandList className="max-h-[200px] overflow-y-auto">
               {isLoading ? (
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="animate-spin w-4 h-4 text-muted-foreground" />
