@@ -22,11 +22,11 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_PARAMS_INPUT + ' id');
     }
 
-    const transactions = await transactionUseCase.getTransactionById(userId, id as string);
+    const transactions = await transactionUseCase.getTransactionById(id as string, userId);
 
     return res
-      .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, Messages.GET_TRANSACTION_SUCCESS, transactions));
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_TRANSACTION_SUCCESS, transactions));
   } catch (error: any) {
     return createError(
       res,
