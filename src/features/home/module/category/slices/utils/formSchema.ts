@@ -41,17 +41,21 @@ const validateUpdateCategorySchema = yup.object({
   icon: yup.string().required('Please select an icon'),
   description: yup.string().max(500, 'Description cannot exceed 500 characters').nullable(),
   parentId: yup.string().nullable(),
+  parentName: yup.string().nullable(),
+  parentType: yup.mixed<CategoryType>().nullable(),
   isTypeDisabled: yup.boolean().required(),
 });
 
-const defaultUpdateCategoryValues: UpdateCategoryDefaultValues = {
+const defaultUpdateCategoryValues = {
   name: '',
   type: CategoryType.Expense,
   icon: iconOptions[0].options[0].value,
   description: '',
   parentId: null,
+  parentName: null,
+  parentType: null,
   isTypeDisabled: false,
-};
+} as const;
 
 // * 3. Delete Category Schema
 

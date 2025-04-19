@@ -23,7 +23,9 @@ const ParentCategorySelectUpdate: React.FC<ParentCategorySelectUpdateProps> = ({
   error,
   ...props
 }) => {
-  const { setValue } = useFormContext();
+  const { setValue, getValues } = useFormContext();
+  const currentParentId = getValues('parentId');
+  const currentParentName = getValues('parentName');
 
   const handleChange = (selectedValue: string) => {
     const newValue = selectedValue === 'null' ? null : selectedValue;
@@ -33,14 +35,18 @@ const ParentCategorySelectUpdate: React.FC<ParentCategorySelectUpdateProps> = ({
       if (selectedOption) {
         setValue('type', selectedOption.type);
         setValue('isTypeDisabled', true);
+        setValue('parentName', selectedOption.label);
+        setValue('parentType', selectedOption.type);
       }
     } else {
       setValue('isTypeDisabled', false);
+      setValue('parentName', '');
+      setValue('parentType', '');
     }
   };
 
   const selectOptions = disabled
-    ? [{ value: 'null', label: 'Subcategories exist. Parent locked' }]
+    ? [{ value: currentParentId, label: currentParentName || 'Parent locked' }]
     : [
         { value: 'null', label: 'None' },
         ...options.map((option) => ({ value: option.value, label: option.label })),
@@ -49,10 +55,10 @@ const ParentCategorySelectUpdate: React.FC<ParentCategorySelectUpdateProps> = ({
   return (
     <SelectField
       name={name}
-      value={value ?? 'null'}
+      value={value || currentParentId || 'null'}
       onChange={handleChange}
       options={selectOptions}
-      placeholder="Select parent category"
+      placeholder="Select parent"
       disabled={disabled}
       error={error}
       {...props}

@@ -28,7 +28,8 @@ const DateSelectField: React.FC<TypeSelectProps> = ({ name }) => {
               showMonthDropdown
               required
               dropdownMode="select"
-              dateFormat="dd/MM/yyyy"
+              dateFormat="dd/MM/yyyy HH:mm:ss"
+              containTimePicker
             />
           </div>
         </FormItem>

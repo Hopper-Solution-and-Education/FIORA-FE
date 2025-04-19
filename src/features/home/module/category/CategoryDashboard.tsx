@@ -1,7 +1,7 @@
 'use client';
 import NestedBarChart, { type BarItem } from '@/components/common/nested-bar-chart';
 import { Icons } from '@/components/Icon';
-import { formatCurrency } from '@/shared/lib/formatCurrency';
+import { formatCurrency, convertVNDToUSD } from '@/shared/utils';
 import DeleteDialog from '@/features/home/module/category/components/DeleteDialog';
 import { fetchCategories } from '@/features/home/module/category/slices/actions';
 import { Category } from '@/features/home/module/category/slices/types';
@@ -17,33 +17,45 @@ const CategoryDashboard = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { categories } = useAppSelector((state) => state.category);
+  const { currency } = useAppSelector((state) => state.settings);
 
   // * INITIALIZATION CHART DATA ZONE
   const chartData: BarItem[] = useMemo(() => {
     if (!categories.data) return [];
-    return categories.data.map((category: Category) => ({
-      id: category.id,
-      name: category.name,
-      value: category.balance || 0,
-      icon: category.icon,
-      color:
-        category.type === CategoryType.Expense
-          ? COLORS.DEPS_DANGER.LEVEL_1
-          : COLORS.DEPS_SUCCESS.LEVEL_1,
-      type: category.type === CategoryType.Expense ? CategoryType.Expense : CategoryType.Income,
-      children: category.subCategories?.map((subCategory) => ({
-        id: subCategory.id,
-        name: subCategory.name,
-        value: subCategory.balance || 0,
-        icon: subCategory.icon,
+    return categories.data.map((category: Category) => {
+      const balance = category.balance || 0;
+      const convertedBalance = currency === 'USD' ? convertVNDToUSD(balance) : balance;
+
+      return {
+        id: category.id,
+        name: category.name,
+        value: convertedBalance,
+        icon: category.icon,
         color:
           category.type === CategoryType.Expense
             ? COLORS.DEPS_DANGER.LEVEL_1
             : COLORS.DEPS_SUCCESS.LEVEL_1,
         type: category.type === CategoryType.Expense ? CategoryType.Expense : CategoryType.Income,
-      })),
-    }));
-  }, [categories]);
+        children: category.subCategories?.map((subCategory) => {
+          const subBalance = subCategory.balance || 0;
+          const convertedSubBalance = currency === 'USD' ? convertVNDToUSD(subBalance) : subBalance;
+
+          return {
+            id: subCategory.id,
+            name: subCategory.name,
+            value: convertedSubBalance,
+            icon: subCategory.icon,
+            color:
+              category.type === CategoryType.Expense
+                ? COLORS.DEPS_DANGER.LEVEL_1
+                : COLORS.DEPS_SUCCESS.LEVEL_1,
+            type:
+              category.type === CategoryType.Expense ? CategoryType.Expense : CategoryType.Income,
+          };
+        }),
+      };
+    });
+  }, [categories.data, currency]);
 
   // Sort and filter expense data
   const expenseData = useMemo(() => {
@@ -92,7 +104,8 @@ const CategoryDashboard = () => {
             <NestedBarChart
               title="Expense"
               data={expenseData}
-              xAxisFormatter={(value) => formatCurrency(value)}
+              xAxisFormatter={(value) => formatCurrency(value, currency)}
+              currency={currency}
               callback={handleDisplayDetail}
               levelConfig={{
                 totalName: 'Total Spent',
@@ -106,7 +119,8 @@ const CategoryDashboard = () => {
             <NestedBarChart
               title="Income"
               data={incomeData}
-              xAxisFormatter={(value) => formatCurrency(value)}
+              xAxisFormatter={(value) => formatCurrency(value, currency)}
+              currency={currency}
               callback={handleDisplayDetail}
               levelConfig={{
                 totalName: 'Total Income',

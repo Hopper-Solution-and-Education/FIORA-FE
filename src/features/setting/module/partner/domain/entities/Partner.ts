@@ -24,6 +24,9 @@ export class Partner {
   children: Partner[];
   user: User;
   transactions: Transaction[];
+  expense: number;
+  income: number;
+  icon: string;
 
   constructor(
     id: string,
@@ -46,6 +49,9 @@ export class Partner {
     updatedBy: string | null = null,
     parentId: string | null = null,
     parent: Partner | null = null,
+    expense: number = 0,
+    income: number = 0,
+    icon: string = '',
   ) {
     this.id = id;
     this.userId = userId;
@@ -67,6 +73,9 @@ export class Partner {
     this.children = children;
     this.user = user;
     this.transactions = transactions;
+    this.expense = expense;
+    this.income = income;
+    this.icon = icon;
   }
 }
 

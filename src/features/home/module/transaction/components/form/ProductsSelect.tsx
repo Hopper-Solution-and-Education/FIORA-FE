@@ -1,5 +1,5 @@
+import { SelectField } from '@/components/common/forms';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
-import { MultiSelect } from '@/components/ui/multi-select';
 import useDataFetcher from '@/shared/hooks/useDataFetcher';
 import { Product } from '@prisma/client';
 import { Loader2 } from 'lucide-react';
@@ -20,10 +20,10 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
   // value = '',
   // onChange,
   error,
-  // ...props
+  ...props
 }) => {
   const { watch, setValue } = useFormContext();
-  const selectedOptions = watch('products') || [];
+  const selectedOption: string[] = watch('products') || [];
 
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
 
@@ -35,12 +35,14 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
   useEffect(() => {
     if (data) {
       const tmpOptions: DropdownOption[] = [];
+      const fetchedData = data.data.data || [];
 
-      if (data.data.data.length > 0) {
-        data.data.data.forEach((product: Product) => {
+      if (fetchedData.length > 0) {
+        fetchedData.forEach((product: Product) => {
           tmpOptions.push({
             value: product.id,
             label: product.name,
+            icon: product.icon,
           });
         });
       } else {
@@ -54,8 +56,10 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
     }
   }, [data]);
 
-  const handleChange = (selected: string[]) => {
-    setValue('products', selected);
+  const handleChange = (selected: string) => {
+    // Create an array with the selected value instead of spreading the string
+    const selectedValue: string[] = [selected];
+    setValue('products', selectedValue);
   };
 
   return (
@@ -64,7 +68,7 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
       render={() => (
         <FormItem className="w-full h-fit flex flex-col sm:flex-row justify-start items-start sm:items-center gap-4">
           <FormLabel className="text-right text-sm text-gray-700 dark:text-gray-300 sm:w-[20%]">
-            Products
+            Product
           </FormLabel>
           <div className="w-full h-fit relative">
             {(isLoading || isValidating) && (
@@ -72,16 +76,17 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
                 <Loader2 className="h-5 w-5 text-primary animate-spin opacity-50 mb-4" />
               </div>
             )}
-            <div className="space-y-2">
-              <MultiSelect
-                options={options}
-                selected={selectedOptions}
-                onChange={handleChange}
-                placeholder="Select products"
-                className="w-full"
-              />
-              {error && <p className="text-sm text-red-500">{error.message}</p>}
-            </div>
+
+            <SelectField
+              className="px-4 py-2"
+              name={name}
+              value={selectedOption.length > 0 ? selectedOption[0] : undefined}
+              onChange={handleChange}
+              options={options}
+              placeholder={'Select Product'}
+              error={error}
+              {...props}
+            />
           </div>
         </FormItem>
       )}

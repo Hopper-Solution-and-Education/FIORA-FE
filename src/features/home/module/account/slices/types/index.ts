@@ -9,6 +9,7 @@ export interface Account {
   limit?: number;
   balance: number;
   parentId?: string | null;
+  parent?: Account | null;
   children?: Account[];
   createdAt: Date;
   updatedAt: Date;

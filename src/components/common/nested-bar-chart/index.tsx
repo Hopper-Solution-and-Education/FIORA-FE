@@ -30,13 +30,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Icons } from '@/components/Icon';
-import BarLabel from './atoms/BarLabel';
-import ChartLegend from './atoms/ChartLegend';
-import CustomTooltip from './atoms/CustomTooltip';
-import CustomYAxisTick from './atoms/CustomYAxisTick';
 import { debounce } from 'lodash';
 import { cn } from '@/shared/utils';
-import { ChartSkeleton } from '../organisms';
+import { BarLabel, ChartLegend, CustomTooltip, CustomYAxisTick } from '@/components/common/atoms';
+import { ChartSkeleton } from '@/components/common/organisms';
 
 // Define the structure of a bar item
 export type BarItem = {
