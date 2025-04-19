@@ -5,6 +5,45 @@ import { TransactionType } from '@prisma/client';
 import { convertVNDToUSD } from '@/shared/utils';
 
 /**
+ * Properly organizes partners into a hierarchical structure
+ * @param partners Flat array of partners from API
+ * @returns Restructured array with proper parent-child relationships
+ */
+const organizePartnerHierarchy = (partners: Partner[]): Partner[] => {
+  // Create a map for quick partner lookup by ID
+  const partnerMap = new Map<string, Partner>();
+
+  // First pass: add all partners to the map
+  partners.forEach((partner) => {
+    // Create a clean copy with empty children array
+    const cleanPartner = { ...partner, children: [] };
+    partnerMap.set(partner.id, cleanPartner);
+  });
+
+  // Second pass: build the hierarchy
+  const rootPartners: Partner[] = [];
+
+  partners.forEach((partner) => {
+    const mappedPartner = partnerMap.get(partner.id);
+
+    if (partner.parentId && partnerMap.has(partner.parentId)) {
+      // This is a child partner, add it to its parent's children array
+      const parent = partnerMap.get(partner.parentId);
+      if (parent && mappedPartner) {
+        parent.children.push(mappedPartner);
+      }
+    } else {
+      // This is a root partner (no parent or parent not in our data)
+      if (mappedPartner) {
+        rootPartners.push(mappedPartner);
+      }
+    }
+  });
+
+  return rootPartners;
+};
+
+/**
  * Recursively maps a Partner object to a TwoSideBarItem, including its own transactions
  * and those of its descendants.
  * @param partner The Partner object to map
@@ -68,7 +107,9 @@ export const mapPartnersToTwoSideBarItems = (
   data: Partner[],
   currency: string,
 ): TwoSideBarItem[] => {
-  // Filter for top-level partners to avoid processing children twice
-  const topLevelPartners = data.filter((partner) => partner.parentId === null);
-  return topLevelPartners.map((partner) => mapPartnerToTwoSideBarItem(partner, currency));
+  // Organize partners into proper hierarchy first
+  const rootPartners = organizePartnerHierarchy(data);
+
+  // Then map the properly structured data to chart items
+  return rootPartners.map((partner) => mapPartnerToTwoSideBarItem(partner, currency));
 };

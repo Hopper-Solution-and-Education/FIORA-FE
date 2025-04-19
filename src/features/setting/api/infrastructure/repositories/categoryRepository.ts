@@ -74,12 +74,12 @@ class CategoryRepository implements ICategoryRepository {
     return prisma.category.findMany({
       where: {
         userId,
-        toTransactions: { some: { isDeleted: false } },
-        fromTransactions: { some: { isDeleted: false } },
+        toTransactions: { every: { isDeleted: false } },
+        fromTransactions: { every: { isDeleted: false } },
       },
       include: {
-        fromTransactions: { select: { amount: true } }, // Lấy số tiền từ fromTransactions
-        toTransactions: { select: { amount: true } }, // Lấy số tiền từ toTransactions
+        fromTransactions: { select: { amount: true } },
+        toTransactions: { select: { amount: true } },
       },
       orderBy: [{ type: 'asc' }, { parentId: 'asc' }],
     });

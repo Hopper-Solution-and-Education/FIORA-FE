@@ -8,7 +8,7 @@ class PartnerRepository implements IPartnerRepository {
       where: {
         userId: userId,
         transactions: {
-          some: {
+          every: {
             isDeleted: false,
           },
         },

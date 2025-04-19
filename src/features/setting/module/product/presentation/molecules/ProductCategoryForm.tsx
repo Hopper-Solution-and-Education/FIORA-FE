@@ -17,6 +17,7 @@ import { setIsOpenDialogAddCategory, setProductCategoryFormState } from '../../s
 import {
   createCategoryProductAsyncThunk,
   deleteCategoryProductAsyncThunk,
+  getProductTransactionAsyncThunk,
   updateCategoryProductAsyncThunk,
 } from '../../slices/actions';
 import useProductCategoryFormConfig from '../config/ProductCategoryFormConfig';
@@ -107,6 +108,13 @@ const ProductCategoryForm = () => {
             .unwrap()
             .then(() => {
               dispatch(setIsOpenDialogAddCategory(false));
+              dispatch(
+                getProductTransactionAsyncThunk({
+                  page: 1,
+                  pageSize: 100,
+                  userId: userData?.user.id ?? '',
+                }),
+              );
             });
         }
       } catch (error) {

@@ -79,43 +79,45 @@ const AmountInputField: React.FC<AmountInputProps> = ({
               />
             </div>
           </div>
-          <div className="w-[80%] flex flex-col justify-between items-start overflow-y-hidden overflow-x-auto">
-            {/* Increate button group */}
-            <div className="w-full h-11 flex justify-evenly items-center gap-2 py-2">
-              <Button
-                type="button"
-                variant={'secondary'}
-                className="w-full h-full"
-                onClick={() => onChange(value * 10)}
-              >
-                {formatCurrency(value * 10, amountCurrency, true)}
-              </Button>
-              <Button
-                type="button"
-                variant={'secondary'}
-                className="w-full h-full"
-                onClick={() => onChange(value * 100)}
-              >
-                {formatCurrency(value * 100, amountCurrency, true)}
-              </Button>
-              <Button
-                type="button"
-                variant={'secondary'}
-                className="w-full h-full"
-                onClick={() => onChange(value * 1000)}
-              >
-                {formatCurrency(value * 1000, amountCurrency, true)}
-              </Button>
-              <Button
-                type="button"
-                variant={'secondary'}
-                className="w-full h-full"
-                onClick={() => onChange(value * 10000)}
-              >
-                {formatCurrency(value * 10000, amountCurrency, true)}
-              </Button>
+          {value > 0 && (
+            <div className="w-[80%] flex flex-col justify-between items-start overflow-y-hidden overflow-x-auto">
+              {/* Increate button group */}
+              <div className="w-full h-11 flex justify-evenly items-center gap-2 py-2">
+                <Button
+                  type="button"
+                  variant={'secondary'}
+                  className="w-full h-full"
+                  onClick={() => onChange(value * 10)}
+                >
+                  {formatCurrency(value * 10, amountCurrency, true)}
+                </Button>
+                <Button
+                  type="button"
+                  variant={'secondary'}
+                  className="w-full h-full"
+                  onClick={() => onChange(value * 100)}
+                >
+                  {formatCurrency(value * 100, amountCurrency, true)}
+                </Button>
+                <Button
+                  type="button"
+                  variant={'secondary'}
+                  className="w-full h-full"
+                  onClick={() => onChange(value * 1000)}
+                >
+                  {formatCurrency(value * 1000, amountCurrency, true)}
+                </Button>
+                <Button
+                  type="button"
+                  variant={'secondary'}
+                  className="w-full h-full"
+                  onClick={() => onChange(value * 10000)}
+                >
+                  {formatCurrency(value * 10000, amountCurrency, true)}
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </FormItem>
       )}
     />

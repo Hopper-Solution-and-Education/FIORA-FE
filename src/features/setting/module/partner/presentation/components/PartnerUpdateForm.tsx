@@ -55,9 +55,7 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
     const fetchPartnersData = async () => {
       if (status === 'authenticated' && session?.user?.id && !isDataFetched) {
         try {
-          await dispatch(
-            fetchPartners({ userId: session.user.id, page: 1, pageSize: 100 }),
-          ).unwrap();
+          await dispatch(fetchPartners({ page: 1, pageSize: 100 })).unwrap();
           setIsDataFetched(true);
         } catch (error) {
           console.error('Error fetching partners:', error);

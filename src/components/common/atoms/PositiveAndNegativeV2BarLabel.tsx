@@ -1,7 +1,7 @@
 import { memo } from 'react';
 
 const PositiveAndNegativeV2BarLabel = ({ x, y, width, height, value, formatter }: any) => {
-  if (Math.abs(width) < 60) return null;
+  if (Math.abs(width) < 100) return null;
 
   return (
     <text
