@@ -1,33 +1,27 @@
 'use client';
 
-import { fetchPartners } from '@/features/setting/module/partner/slices/actions/fetchPartnersAsyncThunk';
-import { COLORS } from '@/shared/constants/chart';
-import { useAppDispatch, useAppSelector } from '@/store';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo } from 'react';
-import { toast } from 'sonner';
-import { TabActionHeader } from '../components/TabActionHeader';
-import { mapPartnersToTwoSideBarItems } from '@/features/setting/module/partner/presentation/utils';
 import { ChartSkeleton } from '@/components/common/organisms';
 import PositiveAndNegativeBarChartV2 from '@/components/common/positive-negative-bar-chart-v2';
 import { TwoSideBarItem } from '@/components/common/positive-negative-bar-chart-v2/types';
+import { mapPartnersToTwoSideBarItems } from '@/features/setting/module/partner/presentation/utils';
+import { fetchPartners } from '@/features/setting/module/partner/slices/actions/fetchPartnersAsyncThunk';
+import { COLORS } from '@/shared/constants/chart';
 import { formatCurrency } from '@/shared/utils';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo } from 'react';
+import { TabActionHeader } from '../components/TabActionHeader';
 
 const PartnerSettingPage = () => {
   const dispatch = useAppDispatch();
   const { partners, isLoading } = useAppSelector((state) => state.partner);
   const { currency } = useAppSelector((state) => state.settings);
-  const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'authenticated' && session?.user?.id && !partners.length) {
-      dispatch(fetchPartners({ userId: session.user.id, page: 1, pageSize: 100 }));
-    } else if (status === 'unauthenticated') {
-      toast.error('User not authenticated. Please log in.');
-    }
-  }, [dispatch, status, session?.user?.id, partners.length]);
+    // Always fetch partners when component mounts to ensure fresh data
+    dispatch(fetchPartners({ page: 1, pageSize: 100 }));
+  }, [dispatch]);
 
   const barData = useMemo(
     () => mapPartnersToTwoSideBarItems(partners, currency),
@@ -38,6 +32,7 @@ const PartnerSettingPage = () => {
     if (item.name === levelConfig.totalName || !item.id) {
       return;
     }
+
     router.push(`/setting/partner/update/${item.id}`);
   };
 

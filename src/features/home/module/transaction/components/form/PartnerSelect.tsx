@@ -43,14 +43,14 @@ const PartnerSelectField: React.FC<PartnerSelectProps> = ({
             label: partner.name,
           });
         });
-      } else {
-        tmpOptions.push({
-          label: 'Select Partner',
-          value: 'none',
-          disabled: true,
-        });
+        setOptions(tmpOptions);
       }
-      setOptions(tmpOptions);
+    } else {
+      options.push({
+        label: 'Select Products',
+        value: 'none',
+        disabled: true,
+      });
     }
   }, [data]);
 
@@ -78,8 +78,9 @@ const PartnerSelectField: React.FC<PartnerSelectProps> = ({
             )}
 
             <SelectField
-              className="px-4 py-2"
+              className="w-full flex justify-between px-4 py-2"
               name={name}
+              disabled={isLoading || isValidating}
               value={partnerId}
               onChange={handleChange}
               options={options}

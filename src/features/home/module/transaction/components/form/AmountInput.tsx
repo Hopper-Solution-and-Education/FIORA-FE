@@ -40,8 +40,13 @@ const AmountInputField: React.FC<AmountInputProps> = ({
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = Number(e.target.value);
-    if (!Number.isNaN(newValue)) {
+    const input = e.target.value;
+
+    // Allow empty input, digits, and a single decimal point
+    const isValidInput = /^$|^[0-9]*\.?[0-9]*$/.test(input);
+
+    if (isValidInput) {
+      const newValue = input === '' ? 0 : Number(input);
       if (newValue >= 0) {
         onChange(newValue);
       }
@@ -76,44 +81,40 @@ const AmountInputField: React.FC<AmountInputProps> = ({
           </div>
           <div className="w-[80%] flex flex-col justify-between items-start overflow-y-hidden overflow-x-auto">
             {/* Increate button group */}
-            {value && value > 0 && isEditing ? (
-              <div className="w-full h-11 flex justify-evenly items-center gap-2 py-2">
-                <Button
-                  type="button"
-                  variant={'secondary'}
-                  className="w-full h-full"
-                  onClick={() => onChange(value * 10)}
-                >
-                  {formatCurrency(value * 10, amountCurrency, true)}
-                </Button>
-                <Button
-                  type="button"
-                  variant={'secondary'}
-                  className="w-full h-full"
-                  onClick={() => onChange(value * 100)}
-                >
-                  {formatCurrency(value * 100, amountCurrency, true)}
-                </Button>
-                <Button
-                  type="button"
-                  variant={'secondary'}
-                  className="w-full h-full"
-                  onClick={() => onChange(value * 1000)}
-                >
-                  {formatCurrency(value * 1000, amountCurrency, true)}
-                </Button>
-                <Button
-                  type="button"
-                  variant={'secondary'}
-                  className="w-full h-full"
-                  onClick={() => onChange(value * 10000)}
-                >
-                  {formatCurrency(value * 10000, amountCurrency, true)}
-                </Button>
-              </div>
-            ) : (
-              <></>
-            )}
+            <div className="w-full h-11 flex justify-evenly items-center gap-2 py-2">
+              <Button
+                type="button"
+                variant={'secondary'}
+                className="w-full h-full"
+                onClick={() => onChange(value * 10)}
+              >
+                {formatCurrency(value * 10, amountCurrency, true)}
+              </Button>
+              <Button
+                type="button"
+                variant={'secondary'}
+                className="w-full h-full"
+                onClick={() => onChange(value * 100)}
+              >
+                {formatCurrency(value * 100, amountCurrency, true)}
+              </Button>
+              <Button
+                type="button"
+                variant={'secondary'}
+                className="w-full h-full"
+                onClick={() => onChange(value * 1000)}
+              >
+                {formatCurrency(value * 1000, amountCurrency, true)}
+              </Button>
+              <Button
+                type="button"
+                variant={'secondary'}
+                className="w-full h-full"
+                onClick={() => onChange(value * 10000)}
+              >
+                {formatCurrency(value * 10000, amountCurrency, true)}
+              </Button>
+            </div>
           </div>
         </FormItem>
       )}
