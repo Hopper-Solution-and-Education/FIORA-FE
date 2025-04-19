@@ -120,7 +120,7 @@ const PositiveAndNegativeBarChartV2 = ({
       items = [
         ...first5,
         {
-          id: 'others',
+          id: undefined,
           name: `Others (${others.length} items)`,
           positiveValue: othersTotal.positiveValue,
           negativeValue: othersTotal.negativeValue,

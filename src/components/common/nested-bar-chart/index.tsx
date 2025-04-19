@@ -132,6 +132,7 @@ const NestedBarChart = ({
     const othersSum = data.slice(5).reduce((sum, item) => sum + item.value, 0);
     if (data.length > 5) {
       const othersItem: BarItem = {
+        id: undefined,
         name: `Others (${data[0]?.type || 'unknown'})`,
         value: othersSum,
         color: levelConfig?.colors[0] || '#888888',
