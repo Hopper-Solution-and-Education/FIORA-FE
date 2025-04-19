@@ -1,7 +1,6 @@
 import { Messages } from '@/shared/constants/message';
 
 import { prisma } from '@/config';
-import { InternalServerError } from '@/shared/lib';
 import { PaginationResponse, ProductItem } from '@/shared/types';
 import { convertCurrency } from '@/shared/utils/exchangeRate';
 import { Currency, Product, ProductType } from '@prisma/client';
@@ -272,25 +271,31 @@ class ProductUseCase {
 
     // update product items
     if (items && Array.isArray(items)) {
-      const updatePromises = items.map(async (item) => {
-        const { id: itemId, ...itemData } = item;
-        if (itemId) {
-          return this.categoryProductRepository.updateCategoryProduct(
-            {
-              id: itemId,
+      for await (const item of items) {
+        if (item.id) {
+          await prisma.productItems.update({
+            where: { id: item.id },
+            data: {
+              icon: item.icon,
+              name: item.name,
+              description: item.description,
               userId,
-            },
-            {
-              ...itemData,
+              productId: updatedProduct.id,
               updatedBy: userId,
             },
-          );
+          });
+        } else {
+          await prisma.productItems.create({
+            data: {
+              icon: item.icon,
+              name: item.name,
+              description: item.description,
+              userId,
+              productId: updatedProduct.id,
+              createdBy: userId,
+            },
+          });
         }
-      });
-
-      const updateCategoryProductItems = await Promise.all(updatePromises);
-      if (!updateCategoryProductItems) {
-        throw new InternalServerError(Messages.UPDATE_PRODUCT_ITEM_FAILED);
       }
     }
 
