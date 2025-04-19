@@ -22,6 +22,7 @@
     "migrate": "dotenv -e .env.development.local -- npx prisma migrate dev",
     "seed": "dotenv -e .env.development.local -- npx prisma db seed",
     "generate": "dotenv -e .env.development.local -- npx prisma generate",
+    "prisma": "npx prisma db pull && npx prisma generate",
     "push": "dotenv -e .env.development.local -- npx prisma db push",
     "lint-staged": "lint-staged",
     "format": "prettier --write \"**/*.{ts, tsx,js,jsx,md,mdx,css,yaml,yml}\"",
