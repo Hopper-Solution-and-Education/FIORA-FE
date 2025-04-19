@@ -7,6 +7,11 @@ class PartnerRepository implements IPartnerRepository {
     return await prisma.partner.findMany({
       where: {
         userId: userId,
+        transactions: {
+          some: {
+            isDeleted: false,
+          },
+        },
       },
       include: {
         transactions: true,
@@ -19,7 +24,7 @@ class PartnerRepository implements IPartnerRepository {
 
   async getPartnerById(id: string, userId: string): Promise<Partner | null> {
     return await prisma.partner.findFirst({
-      where: { id, userId },
+      where: { id, userId, transactions: { some: { isDeleted: false } } },
       include: {
         transactions: true,
         children: true,
