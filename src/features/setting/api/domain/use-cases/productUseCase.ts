@@ -118,7 +118,7 @@ class ProductUseCase {
         },
         {
           include: {
-            productItems: {
+            items: {
               select: {
                 id: true,
                 icon: true,
@@ -181,7 +181,7 @@ class ProductUseCase {
             ...(description && { description }),
           },
           include: {
-            productItems: true,
+            items: true,
           },
         });
 
@@ -200,7 +200,7 @@ class ProductUseCase {
             throw new Error(Messages.CREATE_PRODUCT_ITEM_FAILED);
           }
 
-          product['productItems'] = itemsRes as unknown as ProductItem[];
+          product['items'] = itemsRes as unknown as ProductItem[];
         }
 
         return product;

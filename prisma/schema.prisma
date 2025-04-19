@@ -113,7 +113,7 @@ model Product {
   currency     Currency             @default(VND)
   category     CategoryProducts?    @relation(fields: [catId], references: [id])
   user         User                 @relation("UserProducts", fields: [userId], references: [id])
-  productItems ProductItems[]
+  items        ProductItems[]
   transactions ProductTransaction[] @relation("ProductTransactions")
 
   @@index([userId])
