@@ -122,11 +122,11 @@ export const GlobalDialog = ({
               customRightButton
             ) : !hideConfirm ? (
               <Button
+                type="button"
                 onClick={() => {
                   onConfirm?.();
                   onOpenChange(false);
                 }}
-                type="button"
                 variant={VARIANT_BUTTON_MAP[variant]}
                 className={clsx(VARIANT_BUTTON_BG_MAP[variant])}
               >

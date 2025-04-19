@@ -6,6 +6,7 @@ import { TYPES } from '@/features/setting/module/partner/di/partnerDIContainer.t
 import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
 import { ICreatePartnerUseCase } from '@/features/setting/module/partner/domain/usecases/CreatePartnerUsecase';
 import { IGetPartnerUseCase } from '@/features/setting/module/partner/domain/usecases/GetPartnerUsecase';
+import { setErrorsFromObject } from '@/shared/lib';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -18,7 +19,6 @@ import {
   PartnerFormValues,
   partnerSchema,
 } from '../module/partner/presentation/schema/addPartner.schema';
-import { setErrorsFromObject } from '@/shared/lib';
 
 function convertNullToUndefined<T>(obj: T): T {
   const result = { ...obj };
@@ -53,21 +53,18 @@ export function useCreatePartner({ redirectPath }: Props) {
     TYPES.ICreatePartnerUseCase,
   );
 
-  const fetchPartners = useCallback(
-    async (userId: string) => {
-      try {
-        const response = await getPartnerUseCase.execute({ userId, page: 1, pageSize: 100 });
-        setPartners(response.filter((partner) => partner.parentId === null));
-      } catch (error: unknown) {
-        console.error('Error fetching partners:', error);
-      }
-    },
-    [getPartnerUseCase],
-  );
+  const fetchPartners = useCallback(async () => {
+    try {
+      const response = await getPartnerUseCase.execute({ page: 1, pageSize: 100 });
+      setPartners(response.filter((partner) => partner.parentId === null));
+    } catch (error: unknown) {
+      console.error('Error fetching partners:', error);
+    }
+  }, [getPartnerUseCase]);
 
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.id) {
-      fetchPartners(session.user.id);
+      fetchPartners();
     }
   }, [status, session, fetchPartners]);
 
@@ -102,7 +99,7 @@ export function useCreatePartner({ redirectPath }: Props) {
       await createPartnerUseCase.execute(formattedPartnerData as CreatePartnerAPIRequestDTO);
 
       // form.reset();
-      await fetchPartners(session.user.id);
+      await fetchPartners();
       router.push(redirectPath);
     } catch (error: any) {
       const errorMessage = 'Failed to create partner';

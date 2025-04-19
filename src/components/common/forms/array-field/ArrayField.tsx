@@ -41,7 +41,6 @@ const ArrayField = <T extends FieldValues>({
 }: ArrayFieldConfig<T>) => {
   const { control } = useFormContext<T>();
   const { fields: items, append, remove } = useFieldArray({ control, name });
-
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
 
   return (
@@ -74,6 +73,7 @@ const ArrayField = <T extends FieldValues>({
               {/* Delete Button */}
               <Button
                 variant="ghost"
+                type="button"
                 onClick={() => setDeleteIndex(index)}
                 className="absolute top-4 right-4 text-destructive hover:bg-destructive/10 rounded-full transition"
               >
