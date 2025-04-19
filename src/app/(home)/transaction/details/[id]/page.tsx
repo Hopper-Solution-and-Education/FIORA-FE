@@ -1,6 +1,6 @@
 import dynamic from 'next/dynamic';
 
-type TransactionDetailProps = { params: Promise<{ slug: string }> };
+type TransactionDetailProps = { params: Promise<{ id: string }> };
 
 const TransactionDetails = dynamic(
   () => import('@/features/home/module/transaction/[id]/TransactionDetailsPage'),
@@ -10,7 +10,7 @@ const TransactionDetails = dynamic(
 );
 
 export default async function Page({ params }: TransactionDetailProps) {
-  const { slug } = await params;
+  const { id } = await params;
 
-  return <TransactionDetails id={slug} />;
+  return <TransactionDetails id={id} />;
 }

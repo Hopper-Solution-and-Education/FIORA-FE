@@ -111,9 +111,10 @@ const FromSelectField: React.FC<FromSelectProps> = ({
               </div>
             )}
             <SelectField
-              className="px-4 py-2"
+              className="w-full flex justify-between px-4 py-2"
               name={`from${transactionType === 'Income' ? 'Category' : 'Account'}Id`}
               value={selectedOption}
+              disabled={isLoading || isValidating}
               onValueChange={handleChange}
               options={options}
               placeholder={transactionType === 'Income' ? 'Select Category' : 'Select Account'}
