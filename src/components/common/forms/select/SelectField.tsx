@@ -1,7 +1,7 @@
 'use client';
 
-import React, { memo, useEffect, useState, useRef } from 'react';
-import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
+import GlobalLabel from '@/components/common/atoms/GlobalLabel';
+import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -12,10 +12,11 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { FieldError } from 'react-hook-form';
-import GlobalLabel from '@/components/common/atoms/GlobalLabel';
-import { cn } from '@/shared/utils';
 import LucieIcon from '@/features/home/module/category/components/LucieIcon';
+import { cn } from '@/shared/utils';
+import { Check, Loader2 } from 'lucide-react';
+import React, { memo, useEffect, useRef, useState } from 'react';
+import { FieldError } from 'react-hook-form';
 
 export interface Option {
   value: string;
@@ -103,7 +104,10 @@ const SelectField: React.FC<SelectFieldProps> = ({
             {...props}
           >
             <span
-              className={cn('flex items-center gap-2', !selectedLabel && 'text-muted-foreground')}
+              className={cn(
+                'flex items-center gap-2 font-normal',
+                !selectedLabel && 'text-muted-foreground',
+              )}
             >
               {value && internalOptions.find((opt) => opt.value === value)?.icon && (
                 <LucieIcon
@@ -113,25 +117,22 @@ const SelectField: React.FC<SelectFieldProps> = ({
               )}
               {selectedLabel || placeholder}
             </span>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+
+            <Icons.chevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
 
         <PopoverContent
           align="start"
-          className="p-0 w-[--radix-popover-trigger-width] z-[9999]"
-          side="top"
+          side="bottom"
           sideOffset={5}
           avoidCollisions={true}
           collisionPadding={10}
-          style={{
-            position: 'fixed',
-            maxHeight: '300px',
-          }}
+          className="p-0 w-[--radix-popover-trigger-width] z-[9999] overflow-visible"
         >
           <Command>
             <CommandInput ref={inputRef} placeholder="Search..." className="h-9" />
-            <CommandList className="max-h-[200px] overflow-y-auto">
+            <CommandList className="max-h-[240px] overflow-y-auto">
               {isLoading ? (
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="animate-spin w-4 h-4 text-muted-foreground" />

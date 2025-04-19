@@ -61,10 +61,17 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
         name: true,
         type: true,
         description: true,
-        items: true,
         taxRate: true,
         catId: true,
         icon: true,
+        items: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            icon: true,
+          },
+        },
       },
     });
 

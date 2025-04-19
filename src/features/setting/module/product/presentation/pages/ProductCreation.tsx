@@ -74,6 +74,9 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
           );
           const product = await getSingleProductUseCase.execute(productId);
           if (product) {
+            console.log('====================================');
+            console.log(product);
+            console.log('====================================');
             reset({
               id: product.id,
               icon: product.icon || '',
