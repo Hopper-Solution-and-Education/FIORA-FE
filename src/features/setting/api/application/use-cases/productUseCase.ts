@@ -8,7 +8,7 @@ import { prisma } from '@/config';
 import { Messages } from '@/shared/constants/message';
 import { PaginationResponse } from '@/shared/types/Common.types';
 import { ProductItem } from '@/shared/types/product.types';
-import { Product, ProductType } from '@prisma/client';
+import { Prisma, Product, ProductType } from '@prisma/client';
 import { Decimal, JsonArray } from '@prisma/client/runtime/library';
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
 import { productRepository } from '../../infrastructure/repositories/productRepository';
@@ -80,7 +80,7 @@ class ProductUseCase {
   async getProductById(params: { userId: string; id: string }) {
     const { userId, id } = params;
     try {
-      const product = await this.productRepository.findUniqueProduct(
+      const product = await this.productRepository.findProductById(
         {
           id,
           userId,
@@ -201,7 +201,7 @@ class ProductUseCase {
       throw new Error(Messages.MISSING_PARAMS_INPUT + ' id');
     }
 
-    const foundProduct = await this.productRepository.findUniqueProduct({ id });
+    const foundProduct = await this.productRepository.findProductById({ id });
     if (!foundProduct) {
       throw new Error(Messages.PRODUCT_NOT_FOUND);
     }
@@ -237,7 +237,15 @@ class ProductUseCase {
   async deleteProduct(params: { userId: string; id: string }) {
     const { userId, id } = params;
 
-    const foundProduct = await this.productRepository.findUniqueProduct({ id, userId });
+    const foundProduct = (await this.productRepository.findProductById({
+      id,
+      userId,
+    })) as Prisma.ProductGetPayload<{
+      include: {
+        transactions: true;
+      };
+    }>;
+
     if (!foundProduct) {
       throw new Error(Messages.PRODUCT_NOT_FOUND);
     }
@@ -261,12 +269,12 @@ class ProductUseCase {
     }
 
     // Checking existence of source and target products
-    const sourceProduct = await this.productRepository.findUniqueProduct({ id: sourceId });
+    const sourceProduct = await this.productRepository.findProductById({ id: sourceId });
     if (!sourceProduct) {
       throw new Error(Messages.SOURCE_PRODUCT_NOT_FOUND);
     }
 
-    const targetProduct = await this.productRepository.findUniqueProduct({ id: targetId });
+    const targetProduct = await this.productRepository.findProductById({ id: targetId });
     if (!targetProduct) {
       throw new Error(Messages.TARGET_PRODUCT_NOT_FOUND);
     }
