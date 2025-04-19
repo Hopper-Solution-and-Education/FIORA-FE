@@ -64,6 +64,8 @@ export default function PartnerCreateForm() {
   ];
 
   const fields = [
+    <UploadField key="logo" label="Logo" name="logo" previewShape="circle" />,
+    <InputField key="name" name="name" label="Name" placeholder="Nguyen Van A" required />,
     <SelectField
       key="parentId"
       name="parentId"
@@ -72,8 +74,6 @@ export default function PartnerCreateForm() {
       placeholder="FIORA"
       defaultValue="none"
     />,
-    <InputField key="name" name="name" label="Name" placeholder="Nguyen Van A" required />,
-    <UploadField key="logo" label="Logo" name="logo" previewShape="circle" />,
     <TextareaField
       key="description"
       name="description"
