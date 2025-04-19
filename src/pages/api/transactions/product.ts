@@ -64,7 +64,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
         taxRate: true,
         catId: true,
         icon: true,
-        productItems: {
+        items: {
           select: {
             id: true,
             name: true,
@@ -133,7 +133,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
               name: product.name,
               type: product.type,
               description: product.description,
-              items: product.productItems,
+              items: product.items,
               taxRate: product.taxRate,
               catId: product.catId,
               icon: product.icon,
