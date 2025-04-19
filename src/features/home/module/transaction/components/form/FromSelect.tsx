@@ -24,8 +24,7 @@ const FromSelectField: React.FC<FromSelectProps> = ({
 }) => {
   const { watch, setValue } = useFormContext();
   const transactionType = watch('type') || 'Expense';
-  const selectedOption =
-    watch(`from${transactionType === 'Income' ? 'Category' : 'Account'}Id`) || value;
+  const selectedOption = watch('fromId') || value;
 
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
   const [targetEndpoint, setTargetEndpoint] = React.useState<string | null>(null);
@@ -93,7 +92,7 @@ const FromSelectField: React.FC<FromSelectProps> = ({
   }, [data]);
 
   const handleChange = (value: string) => {
-    setValue(transactionType === 'Income' ? 'fromCategoryId' : 'fromAccountId', value);
+    setValue('fromId', value);
   };
 
   return (
@@ -106,13 +105,13 @@ const FromSelectField: React.FC<FromSelectProps> = ({
           </FormLabel>
           <div className="w-full h-fit relative">
             {(isLoading || isValidating) && (
-              <div className="w-fit h-fit absolute top-[50%] right-[10%] -translate-y-[25%] z-10">
+              <div className="w-fit h-fit absolute top-[50%] right-[10%] -translate-y-[50%] z-10">
                 <Loader2 className="h-5 w-5 text-primary animate-spin opacity-50 mb-4" />
               </div>
             )}
             <SelectField
               className="w-full flex justify-between px-4 py-2"
-              name={`from${transactionType === 'Income' ? 'Category' : 'Account'}Id`}
+              name={`fromId`}
               value={selectedOption}
               disabled={isLoading || isValidating}
               onValueChange={handleChange}
