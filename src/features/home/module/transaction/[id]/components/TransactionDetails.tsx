@@ -5,6 +5,10 @@ import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { TransactionCurrency } from '../../utils/constants';
+import LucieIcon from '../../../category/components/LucieIcon';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 
 // Custom formatCurrency function
 const formatCurrency = (
@@ -49,6 +53,10 @@ type TransactionDetailsProps = {
 const TransactionDetails = ({ data }: TransactionDetailsProps) => {
   // Format the date to a readable format
   const formattedDate = data.date ? format(new Date(data.date), 'PPP') : 'N/A';
+  const router = useRouter();
+  const handleBack = () => {
+    router.back();
+  };
 
   // Get transaction type color
   const getTypeColor = () => {
@@ -71,15 +79,22 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
   );
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Transaction Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Left Column */}
-            <div className="space-y-4">
+    <div className="container mx-auto px-4 pb-6 min-h-screen">
+      <div className="flex items-center justify-center">
+        <Card className="w-full max-w-2xl shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              Transaction Details
+            </CardTitle>
+            <div className="mb-6">
+              <Button variant="outline" onClick={handleBack} className="flex items-center gap-2">
+                <ArrowLeft size={16} />
+                Back to Transactions
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
               {/* Basic Transaction Details */}
               <div className="space-y-2">
                 <h3 className="font-medium text-lg">Basic Information</h3>
@@ -116,9 +131,10 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                         <div className="text-sm text-muted-foreground">Account</div>
                         <div className="flex items-center gap-2">
                           {data.fromAccount.icon && (
-                            <span className="inline-block w-5 h-5 text-center">
-                              {data.fromAccount.icon}
-                            </span>
+                            <LucieIcon
+                              icon={data.fromAccount.icon}
+                              className="w-4 h-4 border-1 border-gray-500"
+                            />
                           )}
                           {data.fromAccount.name}
                         </div>
@@ -130,9 +146,10 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                         <div className="text-sm text-muted-foreground">Category</div>
                         <div className="flex items-center gap-2">
                           {data.fromCategory.icon && (
-                            <span className="inline-block w-5 h-5 text-center">
-                              {data.fromCategory.icon}
-                            </span>
+                            <LucieIcon
+                              icon={data.fromCategory.icon}
+                              className="w-4 h-4 border-1 border-gray-500"
+                            />
                           )}
                           {data.fromCategory.name}
                         </div>
@@ -141,10 +158,9 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                   </div>
                 </div>
               )}
-            </div>
 
-            {/* Right Column */}
-            <div className="space-y-4">
+              <Separator />
+
               {/* To Account/Category */}
               {(data.toAccount || data.toCategory) && (
                 <div className="space-y-2">
@@ -155,9 +171,10 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                         <div className="text-sm text-muted-foreground">Account</div>
                         <div className="flex items-center gap-2">
                           {data.toAccount.icon && (
-                            <span className="inline-block w-5 h-5 text-center">
-                              {data.toAccount.icon}
-                            </span>
+                            <LucieIcon
+                              icon={data.toAccount.icon}
+                              className="w-4 h-4 border-1 border-gray-500"
+                            />
                           )}
                           {data.toAccount.name}
                         </div>
@@ -169,9 +186,10 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                         <div className="text-sm text-muted-foreground">Category</div>
                         <div className="flex items-center gap-2">
                           {data.toCategory.icon && (
-                            <span className="inline-block w-5 h-5 text-center">
-                              {data.toCategory.icon}
-                            </span>
+                            <LucieIcon
+                              icon={data.toCategory.icon}
+                              className="w-4 h-4 border-1 border-gray-500"
+                            />
                           )}
                           {data.toCategory.name}
                         </div>
@@ -214,7 +232,7 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
 
               {/* Products Information */}
               {data.products && Array.isArray(data.products) && data.products.length > 0 && (
-                <div className="space-y-2 mt-4">
+                <div className="space-y-2">
                   <h3 className="font-medium text-lg">Products</h3>
                   <div className="grid grid-cols-1 gap-2">
                     {data.products.map((product: any, index: number) => (
@@ -234,20 +252,24 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                   </div>
                 </div>
               )}
-            </div>
-          </div>
 
-          {/* Meta Information */}
-          <div className="mt-6 pt-4 border-t border-gray-200">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-gray-500">
-              <div>Created: {data.createdAt ? format(new Date(data.createdAt), 'PPp') : 'N/A'}</div>
-              <div>Created By: {data.createdBy || 'N/A'}</div>
-              <div>Updated: {data.updatedAt ? format(new Date(data.updatedAt), 'PPp') : 'N/A'}</div>
-              <div>Updated By: {data.updatedBy || 'N/A'}</div>
+              {/* Meta Information */}
+              <div className="pt-4 border-t border-gray-200">
+                <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                  <div>
+                    Created: {data.createdAt ? format(new Date(data.createdAt), 'PPp') : 'N/A'}
+                  </div>
+                  <div>Created By: {data.createdBy || 'N/A'}</div>
+                  <div>
+                    Updated: {data.updatedAt ? format(new Date(data.updatedAt), 'PPp') : 'N/A'}
+                  </div>
+                  <div>Updated By: {data.updatedBy || 'N/A'}</div>
+                </div>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

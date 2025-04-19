@@ -1,12 +1,12 @@
 'use client';
 
 import useDataFetcher from '@/shared/hooks/useDataFetcher';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IRelationalTransaction } from '../types';
 import TransactionDetails from './components/TransactionDetails';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, FileX } from 'lucide-react';
+import { FileX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 
@@ -29,17 +29,13 @@ const TransactionDetailsPage = ({ id }: TransactionDetailsPageProps) => {
     }
   }, [data]);
 
-  const renderTransactionName = useMemo((): string => {
-    if (!transaction) return 'Transaction Details';
+  // const renderTransactionName = useMemo((): string => {
+  //   if (!transaction) return 'Transaction Details';
 
-    const date = transaction.date ? new Date(transaction.date).toLocaleDateString() : '';
+  //   const date = transaction.date ? new Date(transaction.date).toLocaleDateString() : '';
 
-    return `${transaction.type} - ${date}`;
-  }, [transaction]);
-
-  const handleBack = () => {
-    router.back();
-  };
+  //   return `${transaction.type} - ${date}`;
+  // }, [transaction]);
 
   // No data component
   const NoDataDisplay = () => (
@@ -65,17 +61,10 @@ const TransactionDetailsPage = ({ id }: TransactionDetailsPageProps) => {
 
   return (
     <div className="container px-4 py-6 mx-auto">
-      <div className="mb-6">
-        <Button variant="ghost" onClick={handleBack} className="flex items-center gap-2">
-          <ArrowLeft size={16} />
-          Back to Transactions
-        </Button>
-      </div>
-
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">{renderTransactionName}</h1>
+      {/* <div className="mb-6">
+        <h1 className="text-2xl font-bold">{renderTransactionName}</h1>
         <p className="text-muted-foreground">View detailed information about this transaction</p>
-      </div>
+      </div> */}
 
       {isLoading ? (
         <Card>
@@ -85,7 +74,7 @@ const TransactionDetailsPage = ({ id }: TransactionDetailsPageProps) => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
               <div className="space-y-4">
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-3/4" />

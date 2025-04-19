@@ -23,7 +23,7 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
   ...props
 }) => {
   const { watch, setValue } = useFormContext();
-  const selectedOption: string[] = watch('products') || [];
+  const selectedOption: string = watch('product') || '';
 
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
 
@@ -48,9 +48,8 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
       }
       setOptions(tmpOptions);
     } else {
-      alert('No data found');
       options.push({
-        label: 'Select Products',
+        label: 'Select Product',
         value: 'none',
         disabled: true,
       });
@@ -59,8 +58,7 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
 
   const handleChange = (selected: string) => {
     // Create an array with the selected value instead of spreading the string
-    const selectedValue: string[] = [selected];
-    setValue('products', selectedValue);
+    setValue('product', selected);
   };
 
   return (
@@ -82,7 +80,7 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
               className="w-full flex justify-between px-4 py-2"
               name={name}
               disabled={isLoading || isValidating}
-              value={selectedOption.length > 0 ? selectedOption[0] : undefined}
+              value={selectedOption ?? undefined}
               onChange={handleChange}
               options={options}
               placeholder={'Select Product'}
