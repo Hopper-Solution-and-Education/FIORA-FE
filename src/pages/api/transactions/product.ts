@@ -61,10 +61,17 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
         name: true,
         type: true,
         description: true,
-        items: true,
         taxRate: true,
         catId: true,
         icon: true,
+        productItems: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            icon: true,
+          },
+        },
       },
     });
 
@@ -126,7 +133,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
               name: product.name,
               type: product.type,
               description: product.description,
-              items: product.items,
+              items: product.productItems,
               taxRate: product.taxRate,
               catId: product.catId,
               icon: product.icon,
