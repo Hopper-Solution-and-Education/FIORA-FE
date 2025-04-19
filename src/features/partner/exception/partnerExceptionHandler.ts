@@ -4,7 +4,6 @@ import { Prisma } from '@prisma/client';
 import { basePartnerSchema } from '../schema/basePartner.schema';
 import * as Yup from 'yup';
 
-// Remove 'async const' and just use 'async function'
 export async function validatePartnerData(
   data: PartnerValidationData,
   tx: Prisma.TransactionClient,
@@ -41,7 +40,6 @@ export async function validatePartnerData(
         tx.partner.findFirst({
           where: {
             [field]: value,
-            userId: data.userId,
             ...(isUpdate && data.id ? { NOT: { id: data.id } } : {}),
           },
           select: { id: true },
