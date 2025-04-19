@@ -28,7 +28,7 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
 
   const { data, isLoading, isValidating } = useDataFetcher<any>({
-    endpoint: '/api/products',
+    endpoint: `/api/products?page=${1}&pageSize=${9999999999}`,
     method: 'GET',
   });
 
@@ -45,14 +45,15 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
             icon: product.icon,
           });
         });
-      } else {
-        tmpOptions.push({
-          label: 'Select Products',
-          value: 'none',
-          disabled: true,
-        });
       }
       setOptions(tmpOptions);
+    } else {
+      alert('No data found');
+      options.push({
+        label: 'Select Products',
+        value: 'none',
+        disabled: true,
+      });
     }
   }, [data]);
 
@@ -78,8 +79,9 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
             )}
 
             <SelectField
-              className="px-4 py-2"
+              className="w-full flex justify-between px-4 py-2"
               name={name}
+              disabled={isLoading || isValidating}
               value={selectedOption.length > 0 ? selectedOption[0] : undefined}
               onChange={handleChange}
               options={options}

@@ -19,7 +19,7 @@ const useDataFetcher = <T = any>(props: DataFetcherProps) => {
 
     const data = await response.json();
     if (!response.ok) {
-      toast.error(data.error || 'Something went wrong!');
+      toast.error(data.error || data.message || 'Something went wrong!');
       return null;
     }
     return data as Response<T>;
