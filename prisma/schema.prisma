@@ -32,6 +32,8 @@ model User {
   sessions         Session[]
   transactions     Transaction[]       @relation("UserTransactions")
   authentication   UserAuthentication?
+  Budgets          Budgets[]
+  BudgetDetail     BudgetDetail[]
 
   @@index([isDeleted])
 }
@@ -205,12 +207,12 @@ model Partner {
   userId       String        @db.Uuid
   logo         String?
   name         String        @db.VarChar(255)
-  identify     String?       @db.VarChar(50) @unique
+  identify     String?       @unique @db.VarChar(50)
   dob          DateTime?     @db.Date
-  taxNo        String?       @db.VarChar(20) @unique
+  taxNo        String?       @unique @db.VarChar(20)
   address      String?       @db.VarChar(255)
-  email        String?       @db.VarChar(50) @unique
-  phone        String?       @db.VarChar(50) @unique
+  email        String?       @unique @db.VarChar(50)
+  phone        String?       @unique @db.VarChar(50)
   description  String?       @db.VarChar(1000)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
@@ -263,27 +265,127 @@ model Media {
 }
 
 model Category {
-  id               String        @id @default(uuid()) @db.Uuid
-  userId           String        @db.Uuid
-  type             CategoryType
-  icon             String
-  name             String        @db.VarChar(50)
-  description      String?       @db.VarChar(1000)
-  parentId         String?       @db.Uuid
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  createdBy        String        @db.Uuid
-  updatedBy        String?       @db.Uuid
-  balance          Decimal       @default(0) @db.Decimal(13, 2)
-  tax_rate         Decimal?      @db.Decimal(13, 2)
-  parent           Category?     @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
-  subCategories    Category[]    @relation("SubCategories")
-  user             User          @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
-  fromTransactions Transaction[] @relation("FromCategory")
-  toTransactions   Transaction[] @relation("ToCategory")
+  id                  String         @id @default(uuid()) @db.Uuid
+  userId              String         @db.Uuid
+  type                CategoryType
+  icon                String
+  name                String         @db.VarChar(50)
+  description         String?        @db.VarChar(1000)
+  parentId            String?        @db.Uuid
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  createdBy           String         @db.Uuid
+  updatedBy           String?        @db.Uuid
+  balance             Decimal        @default(0) @db.Decimal(13, 2)
+  tax_rate            Decimal?       @db.Decimal(13, 2)
+  parent              Category?      @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
+  subCategories       Category[]     @relation("SubCategories")
+  user                User           @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
+  fromTransactions    Transaction[]  @relation("FromCategory")
+  toTransactions      Transaction[]  @relation("ToCategory")
+  MonthlyBudgetDetail BudgetDetail[]
 
   @@index([userId])
   @@index([parentId])
+}
+
+model Budgets {
+  id          String        @id @default(uuid())
+  user_id     String
+  fiscal_year String
+  isDeleted   Boolean       @default(false)
+  type        FinancialType
+  total_exp   Decimal?      @db.Decimal(13, 2)
+  total_inc   Decimal?      @db.Decimal(13, 2)
+  h1_exp      Decimal?      @db.Decimal(13, 2)
+  h1_inc      Decimal?      @db.Decimal(13, 2)
+  h2_exp      Decimal?      @db.Decimal(13, 2)
+  h2_inc      Decimal?      @db.Decimal(13, 2)
+  q1_exp      Decimal?      @db.Decimal(13, 2)
+  q1_inc      Decimal?      @db.Decimal(13, 2)
+  q2_exp      Decimal?      @db.Decimal(13, 2)
+  q2_inc      Decimal?      @db.Decimal(13, 2)
+  q3_exp      Decimal?      @db.Decimal(13, 2)
+  q3_inc      Decimal?      @db.Decimal(13, 2)
+  q4_exp      Decimal?      @db.Decimal(13, 2)
+  q4_inc      Decimal?      @db.Decimal(13, 2)
+  m1_exp      Decimal?      @db.Decimal(13, 2)
+  m1_inc      Decimal?      @db.Decimal(13, 2)
+  m2_exp      Decimal?      @db.Decimal(13, 2)
+  m2_inc      Decimal?      @db.Decimal(13, 2)
+  m3_exp      Decimal?      @db.Decimal(13, 2)
+  m3_inc      Decimal?      @db.Decimal(13, 2)
+  m4_exp      Decimal?      @db.Decimal(13, 2)
+  m4_inc      Decimal?      @db.Decimal(13, 2)
+  m5_exp      Decimal?      @db.Decimal(13, 2)
+  m5_inc      Decimal?      @db.Decimal(13, 2)
+  m6_exp      Decimal?      @db.Decimal(13, 2)
+  m6_inc      Decimal?      @db.Decimal(13, 2)
+  m7_exp      Decimal?      @db.Decimal(13, 2)
+  m7_inc      Decimal?      @db.Decimal(13, 2)
+  m8_exp      Decimal?      @db.Decimal(13, 2)
+  m8_inc      Decimal?      @db.Decimal(13, 2)
+  m9_exp      Decimal?      @db.Decimal(13, 2)
+  m9_inc      Decimal?      @db.Decimal(13, 2)
+  m10_exp     Decimal?      @db.Decimal(13, 2)
+  m10_inc     Decimal?      @db.Decimal(13, 2)
+  m11_exp     Decimal?      @db.Decimal(13, 2)
+  m11_inc     Decimal?      @db.Decimal(13, 2)
+  m12_exp     Decimal?      @db.Decimal(13, 2)
+  m12_inc     Decimal?      @db.Decimal(13, 2)
+
+  created_at DateTime @default(now())
+  create_by  String?
+  updated_at DateTime @updatedAt
+  updated_by String?
+
+  user         User           @relation(fields: [user_id], references: [id])
+  budgetDetail BudgetDetail[]
+}
+
+model BudgetDetail {
+  id          String           @id @default(uuid())
+  user_id     String
+  budget_id   String
+  isDeleted   Boolean          @default(false)
+  type        BudgetDetailType
+  category_id String
+  month       Month
+  amount      Decimal          @db.Decimal(13, 2)
+  created_at  DateTime         @default(now())
+  create_by   String?
+  updated_at  DateTime         @updatedAt
+  updated_by  String?
+
+  user     User     @relation(fields: [user_id], references: [id])
+  category Category @relation(fields: [category_id], references: [id])
+  budget   Budgets  @relation(fields: [budget_id], references: [id])
+}
+
+enum BudgetDetailType {
+  Expense
+  Income
+}
+
+enum Month {
+  Jan
+  Feb
+  Mar
+  Apr
+  May
+  Jun
+  Jul
+  Aug
+  Sep
+  Oct
+  Nov
+  Dec
+}
+
+enum FinancialType {
+  Top
+  Bot
+  Act
 }
 
 enum MediaType {
