@@ -10,32 +10,30 @@ datasource db {
 }
 
 model User {
-  id                  String                @id @default(uuid()) @db.Uuid
-  name                String?
-  email               String                @unique
-  password            String?
-  emailVerified       Boolean?              @default(false)
-  image               String?
-  isDeleted           Boolean               @default(false)
-  deletedAt           DateTime?
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  createdBy           String?               @db.Uuid
-  updatedBy           String?               @db.Uuid
-  role                UserRole              @default(User)
-  accounts            Account[]             @relation("UserAccounts")
-  categories          Category[]            @relation("UserCategories")
-  categoryProducts    CategoryProducts[]
-  partners            Partner[]             @relation("UserPartners")
-  products            Product[]             @relation("UserProducts")
-  productItems        ProductItems[]
-  sessions            Session[]
-  transactions        Transaction[]         @relation("UserTransactions")
-  authentication      UserAuthentication?
-  Budgets             Budgets[]
-  MonthlyBudgetDetail MonthlyBudgetDetail[]
-  MonthlyBudgetDetail MonthlyBudgetDetail[]
-  MonthlyBudgetDetail MonthlyBudgetDetail[]
+  id               String              @id @default(uuid()) @db.Uuid
+  name             String?
+  email            String              @unique
+  password         String?
+  emailVerified    Boolean?            @default(false)
+  image            String?
+  isDeleted        Boolean             @default(false)
+  deletedAt        DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  createdBy        String?             @db.Uuid
+  updatedBy        String?             @db.Uuid
+  role             UserRole            @default(User)
+  accounts         Account[]           @relation("UserAccounts")
+  categories       Category[]          @relation("UserCategories")
+  categoryProducts CategoryProducts[]
+  partners         Partner[]           @relation("UserPartners")
+  products         Product[]           @relation("UserProducts")
+  productItems     ProductItems[]
+  sessions         Session[]
+  transactions     Transaction[]       @relation("UserTransactions")
+  authentication   UserAuthentication?
+  Budgets          Budgets[]
+  BudgetDetail     BudgetDetail[]
 
   @@index([isDeleted])
 }
@@ -267,25 +265,25 @@ model Media {
 }
 
 model Category {
-  id                  String                @id @default(uuid()) @db.Uuid
-  userId              String                @db.Uuid
+  id                  String         @id @default(uuid()) @db.Uuid
+  userId              String         @db.Uuid
   type                CategoryType
   icon                String
-  name                String                @db.VarChar(50)
-  description         String?               @db.VarChar(1000)
-  parentId            String?               @db.Uuid
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  createdBy           String                @db.Uuid
-  updatedBy           String?               @db.Uuid
-  balance             Decimal               @default(0) @db.Decimal(13, 2)
-  tax_rate            Decimal?              @db.Decimal(13, 2)
-  parent              Category?             @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
-  subCategories       Category[]            @relation("SubCategories")
-  user                User                  @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
-  fromTransactions    Transaction[]         @relation("FromCategory")
-  toTransactions      Transaction[]         @relation("ToCategory")
-  MonthlyBudgetDetail MonthlyBudgetDetail[]
+  name                String         @db.VarChar(50)
+  description         String?        @db.VarChar(1000)
+  parentId            String?        @db.Uuid
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  createdBy           String         @db.Uuid
+  updatedBy           String?        @db.Uuid
+  balance             Decimal        @default(0) @db.Decimal(13, 2)
+  tax_rate            Decimal?       @db.Decimal(13, 2)
+  parent              Category?      @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
+  subCategories       Category[]     @relation("SubCategories")
+  user                User           @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
+  fromTransactions    Transaction[]  @relation("FromCategory")
+  toTransactions      Transaction[]  @relation("ToCategory")
+  MonthlyBudgetDetail BudgetDetail[]
 
   @@index([userId])
   @@index([parentId])
@@ -341,13 +339,11 @@ model Budgets {
   updated_at DateTime @updatedAt
   updated_by String?
 
-  user                User                  @relation(fields: [user_id], references: [id])
-  createdBy           User?                 @relation("CreatedMonthlyBudgetDetails", fields: [create_by], references: [id])
-  updatedBy           User?                 @relation("UpdatedMonthlyBudgetDetails", fields: [updated_by], references: [id])
-  MonthlyBudgetDetail MonthlyBudgetDetail[]
+  user         User           @relation(fields: [user_id], references: [id])
+  budgetDetail BudgetDetail[]
 }
 
-model MonthlyBudgetDetail {
+model BudgetDetail {
   id          String           @id @default(uuid())
   user_id     String
   budget_id   String
@@ -361,11 +357,9 @@ model MonthlyBudgetDetail {
   updated_at  DateTime         @updatedAt
   updated_by  String?
 
-  user      User     @relation(fields: [user_id], references: [id])
-  category  Category @relation(fields: [category_id], references: [id])
-  budget    Budgets  @relation(fields: [budget_id], references: [id])
-  createdBy User?    @relation("CreatedMonthlyBudgetDetails", fields: [create_by], references: [id])
-  updatedBy User?    @relation("UpdatedMonthlyBudgetDetails", fields: [updated_by], references: [id])
+  user     User     @relation(fields: [user_id], references: [id])
+  category Category @relation(fields: [category_id], references: [id])
+  budget   Budgets  @relation(fields: [budget_id], references: [id])
 }
 
 enum BudgetDetailType {
