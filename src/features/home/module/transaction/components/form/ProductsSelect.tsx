@@ -28,7 +28,7 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
 
   const { data, isLoading, isValidating } = useDataFetcher<any>({
-    endpoint: `/api/products?page=${1}&pageSize=${9999999999}`,
+    endpoint: `/api/products`,
     method: 'GET',
   });
 
