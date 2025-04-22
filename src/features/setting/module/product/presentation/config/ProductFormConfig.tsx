@@ -11,7 +11,6 @@ import {
 import IconSelectUpload from '@/components/common/forms/select/IconSelectUpload';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { Currency, ProductType } from '@prisma/client';
-import { KeyboardEvent, useCallback } from 'react';
 import { useFormContext } from 'react-hook-form';
 import {
   setIsOpenDialogAddCategory,
@@ -27,34 +26,6 @@ const useProductFormConfig = () => {
 
   const { data } = useAppSelector((state) => state.productManagement.categories);
   const dispatch = useAppDispatch();
-  const removeLeadingZeros = useCallback((value: string): string => {
-    return value.replace(/^0+(?=[1-9]|\.)/, '') || '0';
-  }, []);
-
-  const handleInputChange = useCallback(
-    (e: string) => {
-      let newValue = e.replace(/[^0-9.]/g, '');
-      if (newValue.includes('.')) {
-        const [integerPart, decimalPart = ''] = newValue.split('.');
-        newValue = `${integerPart.slice(0, 3)}.${decimalPart.slice(0, 2)}`;
-      } else {
-        newValue = newValue.slice(0, 3); // Max 3 integer digits
-      }
-
-      newValue = removeLeadingZeros(newValue);
-      return newValue;
-    },
-    [removeLeadingZeros],
-  );
-
-  const onKeyDownHandler = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
-    if (
-      isNaN(Number(e.key)) &&
-      !['Backspace', 'Delete', '.', 'ArrowLeft', 'ArrowRight'].includes(e.key)
-    ) {
-      e.preventDefault();
-    }
-  }, []);
 
   const handleOpenDialog = () => {
     dispatch(setIsOpenDialogAddCategory(true));
@@ -115,15 +86,13 @@ const useProductFormConfig = () => {
       name="taxRate"
       placeholder="0.00%"
       label="Tax Rate"
-      onChange={(e) => handleInputChange(e)}
-      onKeyDown={onKeyDownHandler}
-      onFocus={(e: React.FocusEvent<HTMLInputElement, Element>) => {
-        if (e.target.value === '0') {
-          e.target.value = '';
-        }
-      }}
       required
+      maxLength={3}
       disabled={isSubmitting}
+      options={{
+        percent: true,
+        maxPercent: 100,
+      }}
     />,
     <ArrayField
       label="Product Items"
@@ -131,6 +100,13 @@ const useProductFormConfig = () => {
       name="items"
       emptyItem={{ name: '', description: '', icon: '' }}
       fields={[
+        <GlobalIconSelect
+          name="icon"
+          key="icon"
+          label="Item Icon"
+          required
+          disabled={isSubmitting}
+        />,
         <InputField
           name="name"
           placeholder="Name"
@@ -144,13 +120,6 @@ const useProductFormConfig = () => {
           placeholder="Product Item Description"
           key="description"
           label="Description"
-          disabled={isSubmitting}
-        />,
-        <GlobalIconSelect
-          name="icon"
-          key="icon"
-          label="Item Icon"
-          required
           disabled={isSubmitting}
         />,
       ]}
