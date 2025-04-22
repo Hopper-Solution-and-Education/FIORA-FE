@@ -110,36 +110,36 @@ jobs:
       - name: Disable Vercel CLI telemetry
         run: vercel telemetry disable
 
-      - name: Set environment-specific variables
-        run: |
-          if [[ "${{ env.DEPLOY_ENV }}" == "development" ]]; then
-            echo "AUTH_SECRET=${{ secrets.AUTH_SECRET_DEV }}" >> $GITHUB_ENV
-            echo "DATABASE_URL=${{ secrets.DATABASE_URL_DEV }}" >> $GITHUB_ENV
-            echo "NEXT_DECRYPTION_GROWTHBOOK_KEY=${{ secrets.NEXT_DECRYPTION_GROWTHBOOK_KEY_DEV }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_GROWTHBOOK_API_HOST=https://cdn.growthbook.io" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=sdk-ijlfMdcecDKRKQA" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_GROWTHBOOK_API_ENDPOINT=https://cdn.growthbook.io/api/features/sdk-ijlfMdcecDKRKQA" >> $GITHUB_ENV
-            echo "NEXTAUTH_URL=${{ vars.NEXTAUTH_URL_DEV }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_API_BASE_URL=${{ vars.NEXT_PUBLIC_API_BASE_URL_DEV }}" >> $GITHUB_ENV
-          elif [[ "${{ env.DEPLOY_ENV }}" == "staging" ]]; then
-            echo "AUTH_SECRET=${{ secrets.AUTH_SECRET_STAGING }}" >> $GITHUB_ENV
-            echo "DATABASE_URL=${{ secrets.DATABASE_URL_STAGING }}" >> $GITHUB_ENV
-            echo "NEXT_DECRYPTION_GROWTHBOOK_KEY=${{ secrets.NEXT_DECRYPTION_GROWTHBOOK_KEY_STAGING }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_GROWTHBOOK_API_HOST=https://cdn.growthbook.io" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=sdk-89JLnlXzFzkW6lBf" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_GROWTHBOOK_API_ENDPOINT=https://cdn.growthbook.io/api/features/sdk-fCB5FPgUx0AlDpfZ" >> $GITHUB_ENV
-            echo "NEXTAUTH_URL=${{ vars.NEXTAUTH_URL_STAGING }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_API_BASE_URL=${{ vars.NEXT_PUBLIC_API_BASE_URL_STAGING }}" >> $GITHUB_ENV
-          elif [[ "${{ env.DEPLOY_ENV }}" == "production" ]]; then
-            echo "AUTH_SECRET=${{ secrets.AUTH_SECRET_PROD }}" >> $GITHUB_ENV
-            echo "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" >> $GITHUB_ENV
-            echo "NEXT_DECRYPTION_GROWTHBOOK_KEY=${{ secrets.NEXT_DECRYPTION_GROWTHBOOK_KEY_PROD }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_GROWTHBOOK_API_HOST=https://cdn.growthbook.io" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=sdk-89JLnlXzFzkW6lBf" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_GROWTHBOOK_API_ENDPOINT=https://cdn.growthbook.io/api/features/sdk-fCB5FPgUx0AlDpfZ" >> $GITHUB_ENV
-            echo "NEXTAUTH_URL=${{ vars.NEXTAUTH_URL_PROD }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_API_BASE_URL=${{ vars.NEXT_PUBLIC_API_BASE_URL_PROD }}" >> $GITHUB_ENV
-          fi
+      # - name: Set environment-specific variables
+      #   run: |
+      #     if [[ "${{ env.DEPLOY_ENV }}" == "development" ]]; then
+      #       echo "AUTH_SECRET=${{ secrets.AUTH_SECRET_DEV }}" >> $GITHUB_ENV
+      #       echo "DATABASE_URL=${{ secrets.DATABASE_URL_DEV }}" >> $GITHUB_ENV
+      #       echo "NEXT_DECRYPTION_GROWTHBOOK_KEY=${{ secrets.NEXT_DECRYPTION_GROWTHBOOK_KEY_DEV }}" >> $GITHUB_ENV
+      #       echo "NEXT_PUBLIC_GROWTHBOOK_API_HOST=https://cdn.growthbook.io" >> $GITHUB_ENV
+      #       echo "NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=sdk-ijlfMdcecDKRKQA" >> $GITHUB_ENV
+      #       echo "NEXT_PUBLIC_GROWTHBOOK_API_ENDPOINT=https://cdn.growthbook.io/api/features/sdk-ijlfMdcecDKRKQA" >> $GITHUB_ENV
+      #       echo "NEXTAUTH_URL=${{ vars.NEXTAUTH_URL_DEV }}" >> $GITHUB_ENV
+      #       echo "NEXT_PUBLIC_API_BASE_URL=${{ vars.NEXT_PUBLIC_API_BASE_URL_DEV }}" >> $GITHUB_ENV
+      #     elif [[ "${{ env.DEPLOY_ENV }}" == "staging" ]]; then
+      #       echo "AUTH_SECRET=${{ secrets.AUTH_SECRET_STAGING }}" >> $GITHUB_ENV
+      #       echo "DATABASE_URL=${{ secrets.DATABASE_URL_STAGING }}" >> $GITHUB_ENV
+      #       echo "NEXT_DECRYPTION_GROWTHBOOK_KEY=${{ secrets.NEXT_DECRYPTION_GROWTHBOOK_KEY_STAGING }}" >> $GITHUB_ENV
+      #       echo "NEXT_PUBLIC_GROWTHBOOK_API_HOST=https://cdn.growthbook.io" >> $GITHUB_ENV
+      #       echo "NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=sdk-89JLnlXzFzkW6lBf" >> $GITHUB_ENV
+      #       echo "NEXT_PUBLIC_GROWTHBOOK_API_ENDPOINT=https://cdn.growthbook.io/api/features/sdk-fCB5FPgUx0AlDpfZ" >> $GITHUB_ENV
+      #       echo "NEXTAUTH_URL=${{ vars.NEXTAUTH_URL_STAGING }}" >> $GITHUB_ENV
+      #       echo "NEXT_PUBLIC_API_BASE_URL=${{ vars.NEXT_PUBLIC_API_BASE_URL_STAGING }}" >> $GITHUB_ENV
+      #     elif [[ "${{ env.DEPLOY_ENV }}" == "production" ]]; then
+      #       echo "AUTH_SECRET=${{ secrets.AUTH_SECRET_PROD }}" >> $GITHUB_ENV
+      #       echo "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" >> $GITHUB_ENV
+      #       echo "NEXT_DECRYPTION_GROWTHBOOK_KEY=${{ secrets.NEXT_DECRYPTION_GROWTHBOOK_KEY_PROD }}" >> $GITHUB_ENV
+      #       echo "NEXT_PUBLIC_GROWTHBOOK_API_HOST=https://cdn.growthbook.io" >> $GITHUB_ENV
+      #       echo "NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=sdk-89JLnlXzFzkW6lBf" >> $GITHUB_ENV
+      #       echo "NEXT_PUBLIC_GROWTHBOOK_API_ENDPOINT=https://cdn.growthbook.io/api/features/sdk-fCB5FPgUx0AlDpfZ" >> $GITHUB_ENV
+      #       echo "NEXTAUTH_URL=${{ vars.NEXTAUTH_URL_PROD }}" >> $GITHUB_ENV
+      #       echo "NEXT_PUBLIC_API_BASE_URL=${{ vars.NEXT_PUBLIC_API_BASE_URL_PROD }}" >> $GITHUB_ENV
+      #     fi
 
       - name: Deploy to Vercel with environment variables
         id: deploy
@@ -156,15 +156,15 @@ jobs:
           # Create deployment command with environment variables
           DEPLOY_CMD="vercel --token=\"${{ secrets.VERCEL_TOKEN }}\""
 
-          # Add environment variables
-          DEPLOY_CMD="$DEPLOY_CMD --env AUTH_SECRET=\"${{ env.AUTH_SECRET }}\""
-          DEPLOY_CMD="$DEPLOY_CMD --env DATABASE_URL=\"${{ env.DATABASE_URL }}\""
-          DEPLOY_CMD="$DEPLOY_CMD --env NEXT_DECRYPTION_GROWTHBOOK_KEY=\"${{ env.NEXT_DECRYPTION_GROWTHBOOK_KEY }}\""
-          DEPLOY_CMD="$DEPLOY_CMD --env NEXT_PUBLIC_GROWTHBOOK_API_HOST=\"${{ env.NEXT_PUBLIC_GROWTHBOOK_API_HOST }}\""
-          DEPLOY_CMD="$DEPLOY_CMD --env NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=\"${{ env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY }}\""
-          DEPLOY_CMD="$DEPLOY_CMD --env NEXT_PUBLIC_GROWTHBOOK_API_ENDPOINT=\"${{ env.NEXT_PUBLIC_GROWTHBOOK_API_ENDPOINT }}\""
-          DEPLOY_CMD="$DEPLOY_CMD --env NEXTAUTH_URL=\"${{ env.NEXTAUTH_URL }}\""
-          DEPLOY_CMD="$DEPLOY_CMD --env NEXT_PUBLIC_API_BASE_URL=\"${{ env.NEXT_PUBLIC_API_BASE_URL }}\""
+          # # Add environment variables
+          # DEPLOY_CMD="$DEPLOY_CMD --env AUTH_SECRET=\"${{ env.AUTH_SECRET }}\""
+          # DEPLOY_CMD="$DEPLOY_CMD --env DATABASE_URL=\"${{ env.DATABASE_URL }}\""
+          # DEPLOY_CMD="$DEPLOY_CMD --env NEXT_DECRYPTION_GROWTHBOOK_KEY=\"${{ env.NEXT_DECRYPTION_GROWTHBOOK_KEY }}\""
+          # DEPLOY_CMD="$DEPLOY_CMD --env NEXT_PUBLIC_GROWTHBOOK_API_HOST=\"${{ env.NEXT_PUBLIC_GROWTHBOOK_API_HOST }}\""
+          # DEPLOY_CMD="$DEPLOY_CMD --env NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=\"${{ env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY }}\""
+          # DEPLOY_CMD="$DEPLOY_CMD --env NEXT_PUBLIC_GROWTHBOOK_API_ENDPOINT=\"${{ env.NEXT_PUBLIC_GROWTHBOOK_API_ENDPOINT }}\""
+          # DEPLOY_CMD="$DEPLOY_CMD --env NEXTAUTH_URL=\"${{ env.NEXTAUTH_URL }}\""
+          # DEPLOY_CMD="$DEPLOY_CMD --env NEXT_PUBLIC_API_BASE_URL=\"${{ env.NEXT_PUBLIC_API_BASE_URL }}\""
 
           # Add production flag if needed
           if [[ "${{ env.DEPLOY_ENV }}" == "production" ]]; then
