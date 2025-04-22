@@ -8,17 +8,22 @@ import {
 } from '@/components/ui/dialog';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { memo, useEffect } from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
+import { memo, useCallback, useEffect } from 'react';
+import { FormProvider, useForm, UseFormSetValue } from 'react-hook-form';
 import { setIsOpenDialogAddCategory } from '../../slices';
 import { ProductCategoryForm } from '../molecules';
 import {
   CategoryProductFormValues,
   categoryProductsSchema,
   defaultCategoryProductValue,
+  ProductFormValues,
 } from '../schema';
 
-const ProductCatCreationDialog = () => {
+type ProductCatCreationDialogType = {
+  setValue?: UseFormSetValue<ProductFormValues>;
+};
+
+const ProductCatCreationDialog = ({ setValue }: ProductCatCreationDialogType) => {
   const dispatch = useAppDispatch();
 
   const productCategoryToEdit = useAppSelector(
@@ -61,13 +66,20 @@ const ProductCatCreationDialog = () => {
   const isOpenProductCateDialog = useAppSelector(
     (state) => state.productManagement.isOpenDialogAddCategory,
   );
-  const handleChangeOpenDialog = (value: boolean) => {
-    dispatch(setIsOpenDialogAddCategory(value));
-  };
+
+  const handleCloseDialog = useCallback(() => {
+    dispatch(setIsOpenDialogAddCategory(false));
+    reset(defaultCategoryProductValue);
+  }, []);
 
   return (
     <FormProvider {...methods}>
-      <Dialog open={isOpenProductCateDialog} onOpenChange={handleChangeOpenDialog}>
+      <Dialog
+        open={isOpenProductCateDialog}
+        onOpenChange={() => {
+          handleCloseDialog();
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -80,7 +92,7 @@ const ProductCatCreationDialog = () => {
             Please provide the name and any other relevant details for the new product category.
           </DialogDescription>
           <div>
-            <ProductCategoryForm />
+            <ProductCategoryForm setValue={setValue} />
           </div>
         </DialogContent>
       </Dialog>

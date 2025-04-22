@@ -10,7 +10,7 @@ import { isEmpty } from 'lodash';
 import { Check, Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { memo, useCallback, useState } from 'react';
-import { useFormContext } from 'react-hook-form';
+import { useFormContext, UseFormSetValue } from 'react-hook-form';
 import { toast } from 'sonner';
 import { CategoryProductCreateRequest, CategoryProductUpdateRequest } from '../../domain/entities';
 import { setIsOpenDialogAddCategory, setProductCategoryFormState } from '../../slices';
@@ -21,9 +21,13 @@ import {
   updateCategoryProductAsyncThunk,
 } from '../../slices/actions';
 import useProductCategoryFormConfig from '../config/ProductCategoryFormConfig';
-import { CategoryProductFormValues } from '../schema';
+import { CategoryProductFormValues, ProductFormValues } from '../schema';
 
-const ProductCategoryForm = () => {
+type productCategoryFormType = {
+  setValue?: UseFormSetValue<ProductFormValues>;
+};
+
+const ProductCategoryForm = ({ setValue }: productCategoryFormType) => {
   const dispatch = useAppDispatch();
   const fields = useProductCategoryFormConfig();
   const { data: userData } = useSession();
@@ -68,11 +72,6 @@ const ProductCategoryForm = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productCategories]);
 
-  // const handleCloseDialog = useCallback(() => {
-  //   dispatch(setIsOpenDialogAddCategory(false));
-  //   reset(defaultCategoryProductValue);
-  // }, []);
-
   const onSubmit = useCallback(
     async (data: CategoryProductFormValues) => {
       try {
@@ -89,7 +88,11 @@ const ProductCategoryForm = () => {
 
           dispatch(createCategoryProductAsyncThunk(requestParams))
             .unwrap()
-            .then(() => {
+            .then((response) => {
+              // set value vào category product sau khi tạo xong
+              if (typeof setValue === 'function') {
+                setValue('catId', response.id);
+              }
               dispatch(setIsOpenDialogAddCategory(false));
             });
         } else if (ProductCategoryFormState === 'edit') {
