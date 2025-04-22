@@ -54,7 +54,7 @@ const ProductPage = () => {
     <div className="p-2">
       <div className="flex flex-1 flex-col">
         <div className="flex items-start justify-between">
-          <DashboardHeading title="Products" description="Manage products" />
+          <DashboardHeading title="" description="" />
           <Link href="/setting/product/create">
             <button className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white">
               <Icons.add className="h-6 w-6" />
