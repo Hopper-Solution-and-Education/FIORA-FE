@@ -32,6 +32,8 @@ model User {
   sessions         Session[]
   transactions     Transaction[]       @relation("UserTransactions")
   authentication   UserAuthentication?
+  budgetControl    BudgetsTable[]
+  budgetDetails    BudgetDetails[]
 
   @@index([isDeleted])
 }
@@ -43,7 +45,7 @@ model Session {
   expires      DateTime
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  createdBy    String   @db.Uuid
+  createdBy    String?  @db.Uuid
   updatedBy    String?  @db.Uuid
   user         User     @relation(fields: [userId], references: [id])
 }
@@ -61,7 +63,7 @@ model Account {
   parentId         String?       @db.Uuid
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
-  createdBy        String        @db.Uuid
+  createdBy        String?       @db.Uuid
   updatedBy        String?       @db.Uuid
   color            String?
   parent           Account?      @relation("ChildAccounts", fields: [parentId], references: [id])
@@ -89,7 +91,7 @@ model UserAuthentication {
   session_state     String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  createdBy         String   @db.Uuid
+  createdBy         String?  @db.Uuid
   updatedBy         String?  @db.Uuid
   user              User     @relation(fields: [userId], references: [id])
 
@@ -108,7 +110,7 @@ model Product {
   taxRate      Decimal?             @db.Decimal(13, 2)
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
-  createdBy    String               @db.Uuid
+  createdBy    String?              @db.Uuid
   updatedBy    String?              @db.Uuid
   currency     Currency             @default(VND)
   category     CategoryProducts?    @relation(fields: [catId], references: [id])
@@ -171,7 +173,7 @@ model Transaction {
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
   updatedBy        String?              @db.Uuid
-  createdBy        String               @db.Uuid
+  createdBy        String?              @db.Uuid
   currency         Currency             @default(VND)
   productsRelation ProductTransaction[] @relation("ProductTransactions")
   fromAccount      Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Restrict)
@@ -192,7 +194,7 @@ model ProductTransaction {
   transactionId String      @db.Uuid
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
-  createdBy     String      @db.Uuid
+  createdBy     String?     @db.Uuid
   updatedBy     String?     @db.Uuid
   product       Product     @relation("ProductTransactions", fields: [productId], references: [id])
   transaction   Transaction @relation("ProductTransactions", fields: [transactionId], references: [id])
@@ -205,22 +207,25 @@ model Partner {
   userId       String        @db.Uuid
   logo         String?
   name         String        @db.VarChar(255)
-  identify     String?       @unique @db.VarChar(50)
   dob          DateTime?     @db.Date
-  taxNo        String?       @unique @db.VarChar(20)
   address      String?       @db.VarChar(255)
+  identify     String?       @unique @db.VarChar(50)
+  taxNo        String?       @unique @db.VarChar(20)
   email        String?       @unique @db.VarChar(50)
   phone        String?       @unique @db.VarChar(50)
   description  String?       @db.VarChar(1000)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  createdBy    String        @db.Uuid
+  createdBy    String?       @db.Uuid
   updatedBy    String?       @db.Uuid
   parentId     String?       @db.Uuid
   parent       Partner?      @relation("ParentChildPartners", fields: [parentId], references: [id])
   children     Partner[]     @relation("ParentChildPartners")
   user         User          @relation("UserPartners", fields: [userId], references: [id])
   transactions Transaction[] @relation("PartnerTransactions")
+
+  @@index([userId])
+  @@index([parentId])
 }
 
 model VerificationToken {
@@ -240,7 +245,7 @@ model Section {
   order        Int
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
-  createdBy    String      @db.Uuid
+  createdBy    String?     @db.Uuid
   updatedBy    String?     @db.Uuid
   medias       Media[]
 }
@@ -263,27 +268,113 @@ model Media {
 }
 
 model Category {
-  id               String        @id @default(uuid()) @db.Uuid
-  userId           String        @db.Uuid
+  id               String          @id @default(uuid()) @db.Uuid
+  userId           String          @db.Uuid
   type             CategoryType
   icon             String
-  name             String        @db.VarChar(50)
-  description      String?       @db.VarChar(1000)
-  parentId         String?       @db.Uuid
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  createdBy        String        @db.Uuid
-  updatedBy        String?       @db.Uuid
-  balance          Decimal       @default(0) @db.Decimal(13, 2)
-  tax_rate         Decimal?      @db.Decimal(13, 2)
-  parent           Category?     @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
-  subCategories    Category[]    @relation("SubCategories")
-  user             User          @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
-  fromTransactions Transaction[] @relation("FromCategory")
-  toTransactions   Transaction[] @relation("ToCategory")
+  name             String          @db.VarChar(50)
+  description      String?         @db.VarChar(1000)
+  parentId         String?         @db.Uuid
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  createdBy        String?         @db.Uuid
+  updatedBy        String?         @db.Uuid
+  balance          Decimal         @default(0) @db.Decimal(13, 2)
+  tax_rate         Decimal?        @db.Decimal(13, 2)
+  parent           Category?       @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
+  subCategories    Category[]      @relation("SubCategories")
+  user             User            @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
+  fromTransactions Transaction[]   @relation("FromCategory")
+  toTransactions   Transaction[]   @relation("ToCategory")
+  budgetDetails    BudgetDetails[]
 
   @@index([userId])
   @@index([parentId])
+}
+
+model BudgetsTable {
+  id           String          @id @default(uuid()) @db.Uuid
+  userId       String          @db.Uuid
+  fiscalYear   Int             @db.SmallInt
+  type         BudgetType
+  total_exp    Decimal         @default(0) @db.Decimal(13, 2)
+  total_inc    Decimal         @default(0) @db.Decimal(13, 2)
+  h1_exp       Decimal         @default(0) @db.Decimal(13, 2)
+  h1_inc       Decimal         @default(0) @db.Decimal(13, 2)
+  h2_exp       Decimal         @default(0) @db.Decimal(13, 2)
+  h2_inc       Decimal         @default(0) @db.Decimal(13, 2)
+  q1_exp       Decimal         @default(0) @db.Decimal(13, 2)
+  q1_inc       Decimal         @default(0) @db.Decimal(13, 2)
+  q2_exp       Decimal         @default(0) @db.Decimal(13, 2)
+  q2_inc       Decimal         @default(0) @db.Decimal(13, 2)
+  q3_exp       Decimal         @default(0) @db.Decimal(13, 2)
+  q3_inc       Decimal         @default(0) @db.Decimal(13, 2)
+  q4_exp       Decimal         @default(0) @db.Decimal(13, 2)
+  q4_inc       Decimal         @default(0) @db.Decimal(13, 2)
+  m1_exp       Decimal         @default(0) @db.Decimal(13, 2)
+  m1_inc       Decimal         @default(0) @db.Decimal(13, 2)
+  m2_exp       Decimal         @default(0) @db.Decimal(13, 2)
+  m2_inc       Decimal         @default(0) @db.Decimal(13, 2)
+  m3_exp       Decimal         @default(0) @db.Decimal(13, 2)
+  m3_inc       Decimal         @default(0) @db.Decimal(13, 2)
+  m4_exp       Decimal         @default(0) @db.Decimal(13, 2)
+  m4_inc       Decimal         @default(0) @db.Decimal(13, 2)
+  m5_exp       Decimal         @default(0) @db.Decimal(13, 2)
+  m5_inc       Decimal         @default(0) @db.Decimal(13, 2)
+  m6_exp       Decimal         @default(0) @db.Decimal(13, 2)
+  m6_inc       Decimal         @default(0) @db.Decimal(13, 2)
+  m7_exp       Decimal         @default(0) @db.Decimal(13, 2)
+  m7_inc       Decimal         @default(0) @db.Decimal(13, 2)
+  m8_exp       Decimal         @default(0) @db.Decimal(13, 2)
+  m8_inc       Decimal         @default(0) @db.Decimal(13, 2)
+  m9_exp       Decimal         @default(0) @db.Decimal(13, 2)
+  m9_inc       Decimal         @default(0) @db.Decimal(13, 2)
+  m10_exp      Decimal         @default(0) @db.Decimal(13, 2)
+  m10_inc      Decimal         @default(0) @db.Decimal(13, 2)
+  m11_exp      Decimal         @default(0) @db.Decimal(13, 2)
+  m11_inc      Decimal         @default(0) @db.Decimal(13, 2)
+  m12_exp      Decimal         @default(0) @db.Decimal(13, 2)
+  m12_inc      Decimal         @default(0) @db.Decimal(13, 2)
+  createdAt    DateTime        @default(now())
+  createdBy    String?         @db.Uuid
+  updatedBy    String?         @db.Uuid
+  updatedAt    DateTime        @updatedAt
+  user         User            @relation(fields: [userId], references: [id])
+  budgetDetail BudgetDetails[]
+
+  @@index([userId])
+}
+
+model BudgetDetails {
+  id         String           @id @default(uuid()) @db.Uuid
+  userId     String           @db.Uuid
+  budgetId   String           @db.Uuid
+  type       BudgetDetailType
+  categoryId String           @db.Uuid
+  amount     Decimal          @default(0) @db.Decimal(13, 2)  
+  month      Int              @db.SmallInt
+  createdAt  DateTime         @default(now())
+  createdBy  String?          @db.Uuid
+  updatedBy  String?          @db.Uuid
+  updatedAt  DateTime         @updatedAt
+  user       User             @relation(fields: [userId], references: [id])
+  category   Category         @relation(fields: [categoryId], references: [id])
+  budget     BudgetsTable     @relation(fields: [budgetId], references: [id])
+
+  @@index([userId])
+  @@index([budgetId])
+  @@index([categoryId])
+}
+
+enum BudgetType {
+  Top
+  Bot
+  Act
+}
+
+enum BudgetDetailType {
+  Income
+  Expense
 }
 
 enum MediaType {
