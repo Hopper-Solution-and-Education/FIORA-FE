@@ -3,7 +3,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -28,7 +27,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, RefreshCcw, SlidersHorizontal } from 'lucide-react';
-import { MouseEvent, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { updateVisibleColumns } from '../slices';
 import { TransactionColumn, TransactionTableColumnKey } from '../types';
 import { DEFAULT_TRANSACTION_TABLE_COLUMNS } from '../utils/constants';
@@ -40,11 +39,15 @@ interface SortableItemProps {
 }
 
 const SortableItem = ({ id, children }: SortableItemProps) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1 : 0,
   };
 
   return (
@@ -58,9 +61,15 @@ const SettingsMenu = () => {
   const { data } = useSession();
   const dispatch = useAppDispatch();
   const { visibleColumns } = useAppSelector((state) => state.transaction);
+  const [isOpen, setIsOpen] = useState(false);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      // Require a more intentional drag to start
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
@@ -69,7 +78,7 @@ const SettingsMenu = () => {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (active.id !== over?.id) {
+    if (active.id !== over?.id && over?.id) {
       const tmpVisibleColumns = Object.keys(visibleColumns).reduce(
         (acc, key) => {
           const typeKey = key as TransactionColumn;
@@ -111,16 +120,17 @@ const SettingsMenu = () => {
       );
 
       dispatch(updateVisibleColumns(tmpVisibleColumns));
-      localStorage.setItem(
-        'config' + (data?.user.id.split('-')[0] ?? ''),
-        JSON.stringify(tmpVisibleColumns),
-      );
+      saveToLocalStorage(tmpVisibleColumns);
     }
   };
 
-  const toggleVisibility = (event: Event | MouseEvent, col: TransactionColumn) => {
-    event.stopPropagation();
-    event.preventDefault();
+  // Separated save to localStorage function to avoid repetition
+  const saveToLocalStorage = (columns: typeof visibleColumns) => {
+    localStorage.setItem('config' + (data?.user.id.split('-')[0] ?? ''), JSON.stringify(columns));
+  };
+
+  // Handle column visibility toggling - separate from the dropdown menu item click
+  const toggleVisibility = (col: TransactionColumn) => {
     const updatedColumns = { ...visibleColumns };
 
     if (updatedColumns[col].index > -1) {
@@ -128,7 +138,7 @@ const SettingsMenu = () => {
       const targetIndex = updatedColumns[col].index;
       updatedColumns[col] = {
         ...updatedColumns[col],
-        index: -visibleColumns[col].index,
+        index: -Math.abs(visibleColumns[col].index), // Ensure it's negative
         sortedBy: 'none',
       };
 
@@ -153,20 +163,14 @@ const SettingsMenu = () => {
     }
 
     dispatch(updateVisibleColumns(updatedColumns));
-    localStorage.setItem(
-      'config' + (data?.user.id.split('-')[0] ?? ''),
-      JSON.stringify(updatedColumns),
-    );
+    saveToLocalStorage(updatedColumns);
   };
 
   const handleResetSettings = () => {
     // Reset to default settings
     const defaultColumns = { ...DEFAULT_TRANSACTION_TABLE_COLUMNS };
     dispatch(updateVisibleColumns(defaultColumns));
-    localStorage.setItem(
-      'config' + (data?.user.id.split('-')[0] ?? ''),
-      JSON.stringify(defaultColumns),
-    );
+    saveToLocalStorage(defaultColumns);
   };
 
   // Memoize the columns to avoid unnecessary re-renders and sort
@@ -210,7 +214,7 @@ const SettingsMenu = () => {
   }, [visibleColumns]);
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -265,49 +269,44 @@ const SettingsMenu = () => {
                 <div className="w-full h-full flex flex-col justify-start items-center">
                   {Object.keys(tableVisibleColumns).map((key: string) => (
                     <SortableItem key={key} id={key}>
-                      <DropdownMenuItem
-                        className="w-[200px] py-1 flex justify-between items-center cursor-pointer"
-                        onClick={(e) => {
-                          toggleVisibility(e, key as TransactionColumn);
-                        }}
-                      >
+                      <div className="w-[200px] py-1 flex justify-between items-center px-2 rounded-md hover:bg-gray-100">
                         <div className="flex items-center gap-2">
                           <GripVertical size={15} className="cursor-grab text-gray-400" />
+                          <p className="w-full font-semibold">{key}</p>
                         </div>
-                        <p className="w-full font-semibold">{key}</p>
                         <Switch
                           checked={tableVisibleColumns[key as TransactionColumn].index > 0}
-                          onClick={(e) => {
-                            toggleVisibility(e, key as TransactionColumn);
-                          }}
+                          onCheckedChange={() => toggleVisibility(key as TransactionColumn)}
                           className="z-10"
                         />
-                      </DropdownMenuItem>
+                      </div>
                     </SortableItem>
                   ))}
                 </div>
               </SortableContext>
             </DndContext>
-            {Object.keys(hiddenColumns).map((key: string) => (
-              <DropdownMenuItem
-                key={key}
-                className="w-[200px] py-1 flex justify-between items-center cursor-pointer"
-                onClick={(e) => {
-                  toggleVisibility(e, key as TransactionColumn);
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <GripVertical size={15} className="cursor-not-allowed text-gray-400" />
+
+            {Object.keys(hiddenColumns).length > 0 ? (
+              Object.keys(hiddenColumns).map((key: string) => (
+                <div
+                  key={key}
+                  className="w-[200px] py-1 flex justify-between items-center px-2 rounded-md hover:bg-gray-100"
+                >
+                  <div className="flex items-center gap-2">
+                    <GripVertical size={15} className="cursor-not-allowed text-gray-300" />
+                    <p className="w-full font-normal text-gray-700">{key}</p>
+                  </div>
+                  <Switch
+                    checked={false}
+                    onCheckedChange={() => toggleVisibility(key as TransactionColumn)}
+                  />
                 </div>
-                <p className="w-full font-normal text-gray-700">{key}</p>
-                <Switch
-                  checked={hiddenColumns[key as TransactionColumn].index > 0}
-                  onClick={(e) => {
-                    toggleVisibility(e, key as TransactionColumn);
-                  }}
-                />
-              </DropdownMenuItem>
-            ))}
+              ))
+            ) : (
+              <div className="text-xs text-center pt-2 text-gray-400 italic px-2">
+                No hidden columns
+              </div>
+            )}
           </DropdownMenuGroup>
         </div>
       </DropdownMenuContent>

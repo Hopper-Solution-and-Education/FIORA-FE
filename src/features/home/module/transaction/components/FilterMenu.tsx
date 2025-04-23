@@ -15,7 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import useDataFetcher from '@/shared/hooks/useDataFetcher';
 import { cn } from '@/shared/utils';
 import { useAppSelector } from '@/store';
-import { FunnelPlus, Loader2 } from 'lucide-react';
+import { Check, FunnelPlus, FunnelX, Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { formatCurrency } from '../hooks/formatCurrency';
@@ -556,16 +556,31 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
 
         <DropdownMenuSeparator />
         <div className="w-full flex justify-end items-center gap-2">
-          <Button
-            variant={'secondary'}
-            className="px-5 bg-red-100 hover:bg-red-200 text-red-600"
-            onClick={handeResetFilter}
-          >
-            Clear Filter
-          </Button>
-          <Button className="px-5" onClick={handleSaveFilterChanges}>
-            Apply
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant={'destructive'} className="px-3 py-2" onClick={handeResetFilter}>
+                  <FunnelX className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Clear Filter</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button className="px-3 py-2" onClick={handleSaveFilterChanges}>
+                  <Check className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Apply</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
