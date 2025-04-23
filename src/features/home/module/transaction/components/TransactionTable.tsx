@@ -169,9 +169,20 @@ const TransactionTable = () => {
       );
 
       if (paginationParams.currentPage === 1) {
-        setDisplayData(fetchData?.data.data);
+        setDisplayData(
+          fetchData?.data.data.map((item) => ({
+            ...item,
+            createdBy: item.createdBy || '', // Ensure createdBy is never null
+          })) as IRelationalTransaction[],
+        );
       } else {
-        setDisplayData((prev) => [...prev, ...(fetchData?.data.data || [])]);
+        setDisplayData((prev) => [
+          ...prev,
+          ...((fetchData?.data.data.map((item) => ({
+            ...item,
+            createdBy: item.createdBy || '', // Ensure createdBy is never null
+          })) as IRelationalTransaction[]) || []),
+        ]);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
