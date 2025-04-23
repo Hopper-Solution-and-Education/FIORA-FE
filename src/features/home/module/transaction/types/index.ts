@@ -62,6 +62,13 @@ export type TransactionCategory = {
   tax_rate: string | null;
 };
 
+export type TransactionSubjectStamp = {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+};
+
 export interface IRelationalTransaction extends Transaction {
   fromAccountId: string | null;
   fromCategoryId: string | null;
@@ -73,8 +80,8 @@ export interface IRelationalTransaction extends Transaction {
   deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
-  createdBy: string;
-  updatedBy: string | null;
+  createdBy: any;
+  updatedBy: any;
   fromAccount?: TransactionAccount | null;
   fromCategory?: TransactionCategory | null;
   toAccount?: TransactionAccount | null;

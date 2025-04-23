@@ -8,7 +8,11 @@ import { TransactionCurrency } from '../../utils/constants';
 import LucieIcon from '../../../category/components/LucieIcon';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trash } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useState } from 'react';
+import DeleteTransactionDialog from '../../components/DeleteTransactionDialog';
+import { toast } from 'sonner';
 
 // Custom formatCurrency function
 const formatCurrency = (
@@ -58,6 +62,9 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
     router.back();
   };
 
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+
   // Get transaction type color
   const getTypeColor = () => {
     switch (data.type) {
@@ -78,6 +85,47 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
     (data.currency as TransactionCurrency) || TransactionCurrency.VND,
   );
 
+  const handleOpenDeleteModal = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteTransaction = () => {
+    //delete logics here
+    const endpoint = `/api/transactions/transaction?id=${data?.id}`;
+    setIsDeleting(true);
+    fetch(endpoint, {
+      method: 'DELETE',
+    })
+      .then((response) => {
+        if (response.ok) {
+          // Close the delete modal
+          setIsDeleteModalOpen(false);
+
+          // Alert the user of successful deletion
+          toast.success('Transaction deleted successfully');
+
+          // Revalidate data
+        } else {
+          throw new Error('Failed to delete transaction');
+        }
+      })
+      .catch((error) => {
+        console.error('Error deleting transaction:', error);
+        alert('Failed to delete transaction');
+      })
+      .finally(
+        () => {
+          setIsDeleting(false);
+        }, // Reset deleting state
+      );
+  };
+
+  // Navigate to delete page
+  const handleCloseDeleteModal = () => {
+    //delete logics here
+    setIsDeleteModalOpen(false);
+  };
+
   return (
     <div className="container mx-auto px-4 pb-6 min-h-screen">
       <div className="flex items-center justify-center">
@@ -87,14 +135,28 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
               Transaction Details
             </CardTitle>
             <div className="mb-6">
-              <Button variant="outline" onClick={handleBack} className="flex items-center gap-2">
-                <ArrowLeft size={16} />
-                Back to Transactions
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      className="px-3 py-2 hover:bg-red-200"
+                      onClick={() => {
+                        handleOpenDeleteModal();
+                      }}
+                    >
+                      <Trash size={18} color="white" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Delete Transaction</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
+            <div className="space-y-2">
               {/* Basic Transaction Details */}
               <div className="space-y-2">
                 <h3 className="font-medium text-lg">Basic Information</h3>
@@ -212,8 +274,8 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                         <Image
                           src={data.partner.logo}
                           alt={data.partner.name}
-                          width={24}
-                          height={24}
+                          width={30}
+                          height={30}
                           className="rounded-full"
                         />
                       )}
@@ -254,22 +316,48 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
               )}
 
               {/* Meta Information */}
-              <div className="pt-4 border-t border-gray-200">
+              <div className="py-4 border-t border-gray-200">
                 <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
                   <div>
                     Created: {data.createdAt ? format(new Date(data.createdAt), 'PPp') : 'N/A'}
                   </div>
-                  <div>Created By: {data.createdBy || 'N/A'}</div>
+                  <div>Created By: {data.createdBy.email || 'N/A'}</div>
                   <div>
                     Updated: {data.updatedAt ? format(new Date(data.updatedAt), 'PPp') : 'N/A'}
                   </div>
-                  <div>Updated By: {data.updatedBy || 'N/A'}</div>
+                  <div>Updated By: {data.updatedBy.email || 'N/A'}</div>
                 </div>
               </div>
+            </div>
+
+            <div className="w-full h-fit flex justify-end">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      onClick={handleBack}
+                      className="mt-2 flex items-center gap-2"
+                    >
+                      <ArrowLeft size={16} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Back to Transactions</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </CardContent>
         </Card>
       </div>
+      <DeleteTransactionDialog
+        open={isDeleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onDelete={handleDeleteTransaction}
+        data={data}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };
