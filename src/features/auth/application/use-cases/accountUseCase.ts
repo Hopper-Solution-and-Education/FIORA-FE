@@ -149,10 +149,7 @@ export class AccountUseCase {
         },
         orderBy: [
           {
-            type: 'asc',
-          },
-          {
-            balance: 'asc',
+            balance: 'desc',
           },
         ],
       },

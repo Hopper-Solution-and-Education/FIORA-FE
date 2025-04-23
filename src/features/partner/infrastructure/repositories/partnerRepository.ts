@@ -7,13 +7,14 @@ class PartnerRepository implements IPartnerRepository {
     return await prisma.partner.findMany({
       where: {
         userId: userId,
+        transactions: { some: { isDeleted: false } },
       },
       include: {
         transactions: true,
         children: true,
         parent: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { transactions: { _count: 'desc' } },
     });
   }
 

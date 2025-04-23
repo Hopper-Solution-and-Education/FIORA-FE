@@ -108,6 +108,9 @@ export class AccountRepository implements IAccountRepository {
     return prisma.account.findMany({
       where,
       ...options,
+      orderBy: {
+        balance: 'desc',
+      },
     });
   }
 
