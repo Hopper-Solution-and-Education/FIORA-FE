@@ -1,6 +1,6 @@
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/shared/constants/chart';
-import { BarItem } from '../nested-bar-chart/index'; // Ensure BarItem is imported
 import { memo } from 'react';
+import { BarItem } from '../nested-bar-chart/type';
 
 interface CustomTooltipProps {
   active?: boolean;
