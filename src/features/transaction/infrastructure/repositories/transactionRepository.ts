@@ -12,7 +12,7 @@ class TransactionRepository implements ITransactionRepository {
   }
 
   async getTransactionById(id: string, userId: string): Promise<Transaction | null> {
-    return await prisma.transaction.findFirst({
+    const transaction = await prisma.transaction.findFirst({
       where: {
         id: id,
         userId: userId,
@@ -26,6 +26,31 @@ class TransactionRepository implements ITransactionRepository {
         toCategory: true,
       },
     });
+
+    if (!transaction) return null;
+
+    // Fetch creator and updater user information separately
+    const [createdBy, updatedBy] = await Promise.all([
+      transaction.createdBy
+        ? prisma.user.findUnique({
+            where: { id: transaction.createdBy },
+            select: { id: true, name: true, email: true, image: true },
+          })
+        : null,
+      transaction.updatedBy
+        ? prisma.user.findUnique({
+            where: { id: transaction.updatedBy },
+            select: { id: true, name: true, email: true, image: true },
+          })
+        : null,
+    ]);
+
+    // Return transaction with user information
+    return {
+      ...transaction,
+      createdBy,
+      updatedBy,
+    } as any; // Using type assertion to avoid TypeScript errors
   }
 
   async updateTransaction(
