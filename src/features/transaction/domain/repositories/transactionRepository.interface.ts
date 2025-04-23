@@ -1,4 +1,4 @@
-import type { Prisma, Transaction } from '@prisma/client'; // Sử dụng Transaction từ Prisma Client
+import type { Prisma, Transaction, TransactionType } from '@prisma/client'; // Sử dụng Transaction từ Prisma Client
 
 export interface ITransactionRepository {
   getTransactionsByUserId(userId: string): Promise<Transaction[]>;
@@ -17,6 +17,7 @@ export interface ITransactionRepository {
   ): Promise<Transaction[]>;
   count(where: Prisma.TransactionWhereInput): Promise<number>;
   getFilterOptions(userId: string): Promise<any>;
+  getValidCategoryAccount(userId: string, type: TransactionType): Promise<any>;
   // *CATEGORY ZONE
   updateTransactionsCategory(oldCategoryId: string, newCategoryId: string): Promise<void>;
 
