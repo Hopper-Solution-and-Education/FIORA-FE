@@ -14,12 +14,18 @@ import { BudgetCreationFormValues } from '../schema';
 const useBudgetFieldConfig = () => {
   const {
     formState: { isSubmitting },
+    watch,
   } = useFormContext<BudgetCreationFormValues>();
 
   const fields = [
     <IconSelectUpload key="icon" name="icon" required disabled={isSubmitting} />,
-    <CustomDateTimePicker key="fiscalYear" name="fiscalYear" label="Fiscal Year" yearOnly />,
-
+    <CustomDateTimePicker
+      key="fiscalYear"
+      name="fiscalYear"
+      label="Fiscal Year"
+      yearOnly
+      required
+    />,
     <SelectField
       options={Object.entries(Currency).map(([key, value]) => ({ label: key, value }))}
       key="currency"
@@ -33,7 +39,7 @@ const useBudgetFieldConfig = () => {
       key="price"
       name="totalExpense"
       label="Estimated Total Expense"
-      currency={'vnd'}
+      currency={watch('currency')}
       required
       disabled={isSubmitting}
     />,
@@ -41,7 +47,7 @@ const useBudgetFieldConfig = () => {
       key="price"
       name="totalIncome"
       label="Estimated Total Income"
-      currency={'vnd'}
+      currency={watch('currency')}
       required
       disabled={isSubmitting}
     />,

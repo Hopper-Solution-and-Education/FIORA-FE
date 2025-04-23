@@ -51,6 +51,8 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
     const [date, setDate] = useState<Date | undefined>(
       selectedDate ? new Date(selectedDate) : undefined,
     );
+    const [open, setOpen] = useState(false);
+
     const [yearRange, setYearRange] = useState({
       start: Math.floor((date?.getFullYear() || new Date().getFullYear()) / 12) * 12,
     });
@@ -58,20 +60,34 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
     const handleSelect = (newDate: Date | undefined) => {
       setDate(newDate);
       if (newDate) {
-        const isoDate = newDate.toISOString();
-        setValue(name, isoDate, { shouldValidate: true, shouldDirty: true });
+        if (yearOnly) {
+          setValue(name, newDate.getFullYear().toString(), {
+            shouldValidate: true,
+            shouldDirty: true,
+          });
+        } else {
+          const isoDate = newDate.toISOString();
+          setValue(name, isoDate, { shouldValidate: true, shouldDirty: true });
+        }
       } else {
         setValue(name, null, { shouldValidate: true, shouldDirty: true });
       }
     };
 
     const handleYearSelect = (year: number) => {
+      setOpen(false);
       const newDate = new Date(date || new Date());
       newDate.setFullYear(year);
       newDate.setMonth(0); // Default to January
       newDate.setDate(1); // Default to 1st
       newDate.setHours(0, 0, 0, 0); // Reset time
-      handleSelect(newDate);
+      setDate(newDate);
+
+      if (yearOnly) {
+        setValue(name, year.toString(), { shouldValidate: true, shouldDirty: true });
+      } else {
+        handleSelect(newDate);
+      }
     };
 
     const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,7 +109,7 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
     return (
       <div className="space-y-2 mb-4">
         {label && <GlobalLabel text={label} required={required} htmlFor={name} />}
-        <Popover>
+        <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"

@@ -1,1 +1,1 @@
-export { default as BudgetFieldForm } from './BudgetFieldForm';
+export { default } from './BudgetFieldForm';
