@@ -4,6 +4,7 @@ import { Account, AccountType, Currency, Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IAccountRepository } from '../../domain/repositories/accountRepository.interface';
 import { accountRepository } from '../../infrastructure/repositories/accountRepository';
+import { prisma } from '@/config';
 
 const descriptions = {
   ['Payment']:
@@ -99,7 +100,31 @@ export class AccountUseCase {
   }
 
   async findById(id: string): Promise<Account | null> {
-    return this.accountRepository.findById(id);
+    const account = await this.accountRepository.findById(id);
+    if (!account) {
+      throw new Error('Account not found');
+    }
+
+    const [createdBy, updatedBy] = await Promise.all([
+      account.createdBy
+        ? prisma.user.findFirst({
+            where: { id: account.createdBy },
+            select: { id: true, name: true, email: true, image: true },
+          })
+        : null,
+      account.updatedBy
+        ? prisma.user.findFirst({
+            where: { id: account.updatedBy },
+            select: { id: true, name: true, email: true, image: true },
+          })
+        : null,
+    ]);
+
+    return {
+      ...account,
+      createdBy: createdBy,
+      updatedBy: updatedBy,
+    };
   }
 
   async findManyByCondition(where: Prisma.AccountWhereInput) {

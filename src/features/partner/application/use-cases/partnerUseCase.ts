@@ -184,7 +184,26 @@ class PartnerUseCase {
         throw new Error(Messages.PARTNER_NOT_FOUND);
       }
 
-      return partner;
+      const [createdBy, updatedBy] = await Promise.all([
+        partner.createdBy
+          ? prisma.user.findFirst({
+              where: { id: partner.createdBy },
+              select: { id: true, name: true, email: true, image: true },
+            })
+          : null,
+        partner.updatedBy
+          ? prisma.user.findFirst({
+              where: { id: partner.updatedBy },
+              select: { id: true, name: true, email: true, image: true },
+            })
+          : null,
+      ]);
+
+      return {
+        ...partner,
+        createdBy: createdBy || null,
+        updatedBy: updatedBy || null,
+      };
     } catch (error) {
       console.error('Error getting partner by ID:', error);
       throw error;
