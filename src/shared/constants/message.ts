@@ -42,6 +42,12 @@ export enum Messages {
   CREATE_PRODUCT_ITEM_FAILED = 'Failed to create product item',
   UPDATE_PRODUCT_ITEM_FAILED = 'Failed to update product item',
 
+  // Budget Service
+
+  // Budget Service Failed
+  INVALID_BUDGET_TYPE = 'Invalid budget type. Budget type must be Act, Bot, or Top',
+  DUPLICATED_BUDGET_FISCAL_YEAR = 'Fiscal year already exists',
+
   // Category-Product Success
   CREATE_CATEGORY_PRODUCT_SUCCESS = 'Create category product successfully',
   UPDATE_CATEGORY_PRODUCT_SUCCESS = 'Update category product successfully',

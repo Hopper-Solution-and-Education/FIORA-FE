@@ -5,6 +5,11 @@ export interface IBudgetRepository {
     data: Prisma.BudgetsTableUncheckedCreateInput,
     options?: Prisma.BudgetsTableCreateArgs,
   ): Promise<BudgetsTable>;
+
+  findBudgetData(
+    where: Prisma.BudgetsTableWhereUniqueInput,
+    options?: Prisma.BudgetsTableFindUniqueArgs,
+  ): Promise<BudgetsTable | null>;
 }
 
 export interface BudgetCreation {

@@ -123,6 +123,17 @@ class BudgetUseCase {
       budgetDetails,
     };
   }
+
+  async checkedDuplicated(userId: string, fiscalYear: number): Promise<boolean> {
+    const foundBudget = await this.budgetRepository.findBudgetData({
+      userId,
+      fiscalYear,
+    });
+    if (foundBudget) {
+      return true;
+    }
+    return false;
+  }
 }
 
 export const budgetUseCase = new BudgetUseCase(
