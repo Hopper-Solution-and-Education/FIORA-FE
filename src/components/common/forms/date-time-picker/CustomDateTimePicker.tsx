@@ -28,7 +28,11 @@ interface CustomDateTimePickerProps {
   className?: string;
   error?: any;
   containTimePicker?: boolean;
+  showYearDropdown?: boolean; // remove later
+  showMonthDropdown?: boolean; // remove later
+  dropdownMode?: string; // remove later
   yearOnly?: boolean; // Enable year-only mode
+  disabled?: boolean;
 }
 
 const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerProps>(
@@ -43,6 +47,7 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
       error,
       containTimePicker = false,
       yearOnly = false,
+      disabled = false,
     },
     ref,
   ) => {
@@ -112,6 +117,7 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
+              disabled={disabled}
               variant="outline"
               className={cn(
                 'w-full justify-start text-left font-normal',
@@ -181,6 +187,7 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
             ) : (
               // Default calendar picker
               <Calendar
+                disabled={disabled}
                 mode="single"
                 selected={date}
                 onSelect={handleSelect}
@@ -203,6 +210,7 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
                   ),
                   Dropdown: ({ value, onChange, options }) => (
                     <Select
+                      disabled={disabled}
                       value={String(value)}
                       onValueChange={(newValue) => {
                         if (onChange) {
@@ -238,6 +246,7 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
                   <Label className="text-xs">Enter time</Label>
                   <div className="relative grow">
                     <Input
+                      disabled={disabled}
                       type="time"
                       step="1"
                       defaultValue={format(date || new Date(), 'HH:mm:ss')}

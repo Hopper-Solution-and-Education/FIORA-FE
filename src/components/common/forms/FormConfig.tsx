@@ -16,6 +16,7 @@ interface GlobalFormProps<T extends yup.AnyObject> {
   onBack?: () => void;
   renderSubmitButton?: (formState: FormState<T>) => React.ReactNode; // Optional custom submit button renderer
   methods: UseFormReturn<any>;
+  isLoading?: boolean;
 }
 
 // Generic GlobalForm component to manage and render forms
@@ -24,6 +25,7 @@ const FormConfig = <T extends yup.AnyObject>({
   onBack,
   renderSubmitButton,
   methods,
+  isLoading,
 }: GlobalFormProps<T>): JSX.Element => {
   const router = useRouter();
   const { control, formState } = methods;
@@ -53,7 +55,7 @@ const FormConfig = <T extends yup.AnyObject>({
               disabled={!formState.isValid || formState.isSubmitting || formState.isValidating}
               className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
             >
-              {formState.isSubmitting ? (
+              {formState.isSubmitting || isLoading ? (
                 <Icons.spinner className="animate-spin h-5 w-5" />
               ) : (
                 <Icons.check className="h-5 w-5" />
