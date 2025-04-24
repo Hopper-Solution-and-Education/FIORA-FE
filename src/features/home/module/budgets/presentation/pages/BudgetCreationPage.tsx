@@ -3,10 +3,12 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { FormProvider, useForm } from 'react-hook-form';
 // Assuming defaultBudgetFormValue is now correctly defined in schema.ts
 import { Button } from '@/components/ui/button';
+import { uploadToFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { cn } from '@/shared/utils';
 import { Trash2 } from 'lucide-react';
-import { BudgetFieldForm } from '../molecules';
+import { FIREBASE_ICON_BUDGETS_PATH } from '../../constants';
+import BudgetFieldForm from '../molecules';
 import { BudgetCreationFormValues, budgetCreationSchema, defaultBudgetFormValue } from '../schema';
 
 const BudgetCreationPage = () => {
@@ -18,12 +20,34 @@ const BudgetCreationPage = () => {
     mode: 'onChange',
   });
 
-  const { handleSubmit } = methods;
+  const { handleSubmit, watch } = methods;
+
+  console.log(watch('fiscalYear'));
 
   const onSubmit = async (data: BudgetCreationFormValues) => {
-    console.log('====================================');
-    console.log('Form Data:', data);
-    console.log('====================================');
+    let formattedData = {
+      ...data,
+      fiscalYear: data.fiscalYear.toString(),
+    };
+    if (formattedData.icon && formattedData.icon.startsWith('blob:')) {
+      const response = await fetch(formattedData.icon);
+      const blob = await response.blob();
+
+      const fileName =
+        formattedData.fiscalYear.replace(/\s+/g, '_').toLowerCase() + '_' + Date.now();
+      const file = new File([blob], fileName, { type: blob.type });
+
+      const firebaseUrl = await uploadToFirebase({
+        file: file,
+        path: FIREBASE_ICON_BUDGETS_PATH,
+        fileName,
+      });
+
+      formattedData = {
+        ...formattedData,
+        icon: firebaseUrl,
+      };
+    }
     // Implement your budget creation logic here (e.g., API call)
   };
 
@@ -40,7 +64,7 @@ const BudgetCreationPage = () => {
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="mt-10">
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-4">
           <BudgetFieldForm />
         </form>
       </div>
