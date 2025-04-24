@@ -1,6 +1,8 @@
-import { prisma } from '@/config';
-import { convertCurrency } from '@/shared/utils/currencyExchange';
-import { BudgetDetailType, Prisma, TransactionType } from '@prisma/client';
+import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
+import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { Messages } from '@/shared/constants/message';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { BudgetDetailType, BudgetsTable, Currency, Prisma, TransactionType } from '@prisma/client';
 import _ from 'lodash';
 import { budgetDetailRepository } from '../../infrastructure/repositories/budgetDetailRepository';
 import { budgetRepository } from '../../infrastructure/repositories/budgetProductRepository';
@@ -10,17 +12,21 @@ import {
   BudgetGetAnnualYearParams,
   IBudgetRepository,
 } from '../../repositories/budgetRepository';
+import { prisma } from '@/config';
 
 class BudgetUseCase {
   private budgetRepository: IBudgetRepository;
   private budgetDetailRepository: IBudgetDetailRepository;
+  private transactionRepository: ITransactionRepository;
 
   constructor(
     budgetRepository: IBudgetRepository,
     budgetDetailRepository: IBudgetDetailRepository,
+    transactionRepository: ITransactionRepository,
   ) {
     this.budgetRepository = budgetRepository;
     this.budgetDetailRepository = budgetDetailRepository;
+    this.transactionRepository = transactionRepository;
   }
 
   async createBudget(params: BudgetCreation) {
@@ -34,18 +40,46 @@ class BudgetUseCase {
       currency,
     } = params;
 
-    const monthlyExpense = _.round(estimatedTotalExpense / 12, 2);
-    const monthlyIncome = _.round(estimatedTotalIncome / 12, 2);
+    const transactions = await this.transactionRepository.findManyTransactions(
+      {
+        userId,
+        date: {
+          gte: new Date(`${fiscalYear}-01-01`),
+          lte: new Date(`${fiscalYear}-12-31`),
+        },
+        isDeleted: false,
+      },
+      {
+        select: {
+          type: true,
+          amount: true,
+          currency: true,
+        },
+      },
+    );
+
+    // Calculate total income and expense for 'Act' budget with currency conversion
+    const totalExpenseAct = transactions
+      .filter((t) => t.type === TransactionType.Expense)
+      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+
+    const totalIncomeAct = transactions
+      .filter((t) => t.type === TransactionType.Income)
+      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+
+    // Step 2: Define budget data for all three types
+    const budgetTypesData: {
+      type: BudgetsTable['type'];
+      totalExpense: number;
+      totalIncome: number;
+    }[] = [
+      { type: 'Top', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
+      { type: 'Bot', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
+      { type: 'Act', totalExpense: totalExpenseAct, totalIncome: totalIncomeAct },
+    ];
 
     // Create budget details for each month
     const months = Array.from({ length: 12 }, (_, i) => i + 1);
-
-    // Monthly fields
-    const monthFields = months.reduce<Record<string, number>>((acc, m) => {
-      acc[`m${m}_exp`] = monthlyExpense;
-      acc[`m${m}_inc`] = monthlyIncome;
-      return acc;
-    }, {});
 
     // Quarterly fields
     const quarters = {
@@ -55,69 +89,85 @@ class BudgetUseCase {
       q4: [10, 11, 12],
     };
 
-    const quarterFields = Object.entries(quarters).reduce<Record<string, number>>(
-      (acc, [q, ms]) => {
-        acc[`${q}_exp`] = _.round(ms.length * monthlyExpense, 2);
-        acc[`${q}_inc`] = _.round(ms.length * monthlyIncome, 2);
+    const createdBudgets: BudgetsTable[] = [];
+
+    // Step 3: Create budgets for each type
+    for (const { type, totalExpense, totalIncome } of budgetTypesData) {
+      const monthlyExpense = _.round(totalExpense / 12, 2);
+      const monthlyIncome = _.round(totalIncome / 12, 2);
+
+      // Monthly fields
+      const monthFields = months.reduce<Record<string, number>>((acc, m) => {
+        acc[`m${m}_exp`] = monthlyExpense;
+        acc[`m${m}_inc`] = monthlyIncome;
         return acc;
-      },
-      {},
-    );
+      }, {});
 
-    // Half year totals
-    const h1_exp = _.round(monthlyExpense * 6, 2);
-    const h2_exp = _.round(monthlyExpense * 6, 2);
-    const h1_inc = _.round(monthlyIncome * 6, 2);
-    const h2_inc = _.round(monthlyIncome * 6, 2);
+      // Quarterly fields
+      const quarterFields = Object.entries(quarters).reduce<Record<string, number>>(
+        (acc, [q, ms]) => {
+          acc[`${q}_exp`] = _.round(ms.length * monthlyExpense, 2);
+          acc[`${q}_inc`] = _.round(ms.length * monthlyIncome, 2);
+          return acc;
+        },
+        {},
+      );
 
-    // ---------------------------
-    // Step 1: Create Budget
-    // ---------------------------
-    const newBudget = await this.budgetRepository.createBudget({
-      userId,
-      fiscalYear,
-      icon,
-      total_exp: estimatedTotalExpense,
-      total_inc: estimatedTotalIncome,
-      h1_exp,
-      h2_exp,
-      h1_inc,
-      h2_inc,
-      ...quarterFields,
-      ...monthFields,
-      description,
-      currency,
-      createdBy: userId,
-    });
+      // Half-year totals
+      const h1_exp = _.round(monthlyExpense * 6, 2);
+      const h2_exp = _.round(monthlyExpense * 6, 2);
+      const h1_inc = _.round(monthlyIncome * 6, 2);
+      const h2_inc = _.round(monthlyIncome * 6, 2);
 
-    // ---------------------------
-    // Step 2: Create BudgetDetails (24 rows)
-    // ---------------------------
-    const detailData = months.flatMap((month) => [
-      {
+      // Create Budget
+      const newBudget = await this.budgetRepository.createBudget({
         userId,
-        budgetId: newBudget.id,
-        type: BudgetDetailType.Expense,
-        amount: monthlyExpense,
-        month,
+        icon,
+        fiscalYear,
+        type,
+        total_exp: totalExpense,
+        total_inc: totalIncome,
+        h1_exp,
+        h2_exp,
+        h1_inc,
+        h2_inc,
+        ...quarterFields,
+        ...monthFields,
         createdBy: userId,
-      },
-      {
-        userId,
-        budgetId: newBudget.id,
-        type: BudgetDetailType.Income,
-        amount: monthlyIncome,
-        month,
-        createdBy: userId,
-      },
-    ]) as Prisma.BudgetDetailsCreateManyInput[];
+        description,
+        currency,
+      });
 
-    const budgetDetails = await this.budgetDetailRepository.createManyBudgetDetails(detailData);
+      // Create BudgetDetails (24 rows)
+      const detailData = months.flatMap((month) => [
+        {
+          userId,
+          budgetId: newBudget.id,
+          type: BudgetDetailType.Expense,
+          amount: monthlyExpense,
+          month,
+          createdBy: userId,
+        },
+        {
+          userId,
+          budgetId: newBudget.id,
+          type: BudgetDetailType.Income,
+          amount: monthlyIncome,
+          month,
+          createdBy: userId,
+        },
+      ]);
 
-    return {
-      ...newBudget,
-      budgetDetails,
-    };
+      const createdBudgetDetailRes =
+        await this.budgetDetailRepository.createManyBudgetDetails(detailData);
+
+      if (!createdBudgetDetailRes) {
+        throw new Error(Messages.BUDGET_DETAILS_CREATE_FAILED);
+      }
+      createdBudgets.push(newBudget);
+    }
+
+    return createdBudgets;
   }
 
   async getAnnualBudgetByYears(params: BudgetGetAnnualYearParams) {
@@ -249,4 +299,8 @@ class BudgetUseCase {
   }
 }
 
-export const budgetUseCase = new BudgetUseCase(budgetRepository, budgetDetailRepository);
+export const budgetUseCase = new BudgetUseCase(
+  budgetRepository,
+  budgetDetailRepository,
+  transactionRepository,
+);
