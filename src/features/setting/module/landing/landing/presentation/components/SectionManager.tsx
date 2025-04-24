@@ -9,7 +9,7 @@ import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { removeFromFirebase, uploadToFirebase } from '../../firebaseUtils';
+
 import {
   defaultValues,
   SectionDefaultValues,
@@ -20,6 +20,7 @@ import { fetchMediaBySection } from '../../slices/actions/fetchMediaBySection';
 import { updateMediaBySection } from '../../slices/actions/updateMediaBySection';
 import { ISection } from '../../slices/types';
 import SectionCard from './SectionCard';
+import { removeFromFirebase, uploadToFirebase } from '@/shared/lib';
 
 interface SectionManagerProps {
   sectionType: SectionType;
