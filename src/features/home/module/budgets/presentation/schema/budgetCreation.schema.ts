@@ -26,7 +26,6 @@ const budgetCreationSchema = yup.object({
 export const defaultBudgetFormValue = {
   icon: 'banknote',
   fiscalYear: new Date().getFullYear().toString(),
-  type: '',
   currency: Currency.VND,
   totalExpense: 0,
   totalIncome: 0,

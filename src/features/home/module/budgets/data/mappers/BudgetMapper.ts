@@ -5,7 +5,10 @@ import { BudgetCreateResponseDTO } from '../dto/response/BudgetCreateResponseDTO
 class BudgetMapper {
   // Get Category ------------------------------
   static toCreateBudgetRequestDTO(requestDTO: BudgetCreateRequest): BudgetCreateRequestDTO {
-    return requestDTO;
+    return {
+      ...requestDTO,
+      fiscalYear: Number(requestDTO.fiscalYear),
+    };
   }
 
   static toCreateBudgetResponse(apiResponse: BudgetCreateResponseDTO): BudgetCreateResponse {

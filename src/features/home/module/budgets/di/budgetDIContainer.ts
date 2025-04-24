@@ -4,7 +4,7 @@ import { createBudgetRepository, IBudgetRepository } from '../data/repositories'
 import { createCreateBudgetUseCase, ICreateBudgetUseCase } from '../domain/usecases';
 import { TYPES } from './budgetDIContainer.type';
 
-const productDIContainer = new Container();
+const budgetDIContainer = new Container();
 
 // Create API instances
 const budgetAPI = createBudgetAPI();
@@ -16,12 +16,12 @@ const categoryRepository = createBudgetRepository(budgetAPI);
 const createBudgetUseCase = createCreateBudgetUseCase(categoryRepository);
 
 // Bind all instances
-productDIContainer.bind<IBudgetAPI>(TYPES.IBudgetAPI).toConstantValue(budgetAPI);
-productDIContainer
+budgetDIContainer.bind<IBudgetAPI>(TYPES.IBudgetAPI).toConstantValue(budgetAPI);
+budgetDIContainer
   .bind<IBudgetRepository>(TYPES.IBudgetRepository)
   .toConstantValue(categoryRepository);
-productDIContainer
+budgetDIContainer
   .bind<ICreateBudgetUseCase>(TYPES.ICreateBudgetUseCase)
   .toConstantValue(createBudgetUseCase);
 
-export { productDIContainer };
+export { budgetDIContainer };
