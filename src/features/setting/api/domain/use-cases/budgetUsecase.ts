@@ -6,6 +6,7 @@ import { budgetDetailRepository } from '../../infrastructure/repositories/budget
 import { userRepository } from '@/features/auth/infrastructure/repositories/userRepository';
 import _ from 'lodash';
 import { BudgetDetailType, BudgetType, Prisma } from '@prisma/client';
+import { Messages } from '@/shared/constants/message';
 
 class BudgetUseCase {
   private budgetRepository: IBudgetRepository;
@@ -76,7 +77,6 @@ class BudgetUseCase {
         // ---------------------------
         // Step 1: Create Budget by 3 budget types
         // ---------------------------
-
         const newBudget = await this.budgetRepository.createBudget({
           userId,
           fiscalYear,
@@ -96,7 +96,7 @@ class BudgetUseCase {
         });
 
         if (!newBudget) {
-          throw new Error('Failed to create budget');
+          throw new Error(Messages.BUDGET_CREATE_FAILED);
         }
 
         // ---------------------------
@@ -123,7 +123,7 @@ class BudgetUseCase {
 
         const budgetDetails = await this.budgetDetailRepository.createManyBudgetDetails(detailData);
         if (!budgetDetails) {
-          throw new Error('Failed to create budget details');
+          throw new Error(Messages.BUDGET_DETAILS_CREATE_FAILED);
         }
 
         return {
