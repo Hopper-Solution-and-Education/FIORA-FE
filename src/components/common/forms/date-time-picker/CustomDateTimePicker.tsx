@@ -123,6 +123,7 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
                 'w-full justify-start text-left font-normal',
                 !date && 'text-muted-foreground',
                 className,
+                error && required ? 'border-red-500' : '',
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
