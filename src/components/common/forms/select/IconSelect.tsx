@@ -39,6 +39,7 @@ interface IconSelectProps {
   required?: boolean;
   label?: string;
   isCheckError?: boolean;
+  disabled?: boolean;
 }
 
 const IconSelect: React.FC<IconSelectProps> = ({
@@ -49,6 +50,7 @@ const IconSelect: React.FC<IconSelectProps> = ({
   required = false,
   label,
   isCheckError = true,
+  disabled = false,
 }) => {
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -77,6 +79,7 @@ const IconSelect: React.FC<IconSelectProps> = ({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
+            disabled={disabled}
             variant="outline"
             role="combobox"
             aria-expanded={open}

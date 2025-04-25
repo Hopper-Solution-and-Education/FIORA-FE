@@ -14,9 +14,8 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, ClockIcon } from 'lucide-react';
+import { CalendarIcon, ChevronLeft, ChevronRight, ClockIcon } from 'lucide-react';
 import { forwardRef, useState } from 'react';
-import type { DropdownNavProps, DropdownProps } from 'react-day-picker';
 import { useFormContext } from 'react-hook-form';
 import GlobalLabel from '../../atoms/GlobalLabel';
 
@@ -25,13 +24,15 @@ interface CustomDateTimePickerProps {
   label?: string;
   placeholder?: string;
   required?: boolean;
-  showYearDropdown?: boolean;
-  showMonthDropdown?: boolean;
-  dropdownMode?: string;
   dateFormat?: string;
   className?: string;
   error?: any;
   containTimePicker?: boolean;
+  showYearDropdown?: boolean; // remove later
+  showMonthDropdown?: boolean; // remove later
+  dropdownMode?: string; // remove later
+  yearOnly?: boolean; // Enable year-only mode
+  disabled?: boolean;
 }
 
 const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerProps>(
@@ -45,100 +46,179 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
       className,
       error,
       containTimePicker = false,
+      yearOnly = false,
+      disabled = false,
     },
     ref,
   ) => {
     const { register, setValue, watch } = useFormContext();
-    const selectedDate = watch(name); // Giá trị từ form, mong đợi là ISO string
+    const selectedDate = watch(name); // Expected to be ISO string
     const [date, setDate] = useState<Date | undefined>(
       selectedDate ? new Date(selectedDate) : undefined,
     );
+    const [open, setOpen] = useState(false);
 
-    const handleCalendarChange = (
-      _value: string | number,
-      _e: React.ChangeEventHandler<HTMLSelectElement>,
-    ) => {
-      const _event = {
-        target: {
-          value: String(_value),
-        },
-      } as React.ChangeEvent<HTMLSelectElement>;
-      _e(_event);
-    };
+    const [yearRange, setYearRange] = useState({
+      start: Math.floor((date?.getFullYear() || new Date().getFullYear()) / 12) * 12,
+    });
 
-    const handleSelect = (date: Date | undefined) => {
-      setDate(date);
-      if (date) {
-        const isoDate = date.toISOString();
-        setValue(name, isoDate, { shouldValidate: true, shouldDirty: true });
+    const handleSelect = (newDate: Date | undefined) => {
+      setDate(newDate);
+      if (newDate) {
+        if (yearOnly) {
+          setValue(name, newDate.getFullYear().toString(), {
+            shouldValidate: true,
+            shouldDirty: true,
+          });
+        } else {
+          const isoDate = newDate.toISOString();
+          setValue(name, isoDate, { shouldValidate: true, shouldDirty: true });
+        }
       } else {
         setValue(name, null, { shouldValidate: true, shouldDirty: true });
       }
     };
 
+    const handleYearSelect = (year: number) => {
+      setOpen(false);
+      const newDate = new Date(date || new Date());
+      newDate.setFullYear(year);
+      newDate.setMonth(0); // Default to January
+      newDate.setDate(1); // Default to 1st
+      newDate.setHours(0, 0, 0, 0); // Reset time
+      setDate(newDate);
+
+      if (yearOnly) {
+        setValue(name, year.toString(), { shouldValidate: true, shouldDirty: true });
+      } else {
+        handleSelect(newDate);
+      }
+    };
+
     const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (!selectedDate) return; // If no date is selected, do nothing
+      if (!selectedDate) return;
 
-      // Extract time parts from the input value
       const [hours, minutes, seconds] = e.target.value.split(':').map(Number);
-
-      // Create a new date object with the same date but updated time
       const updatedDate = new Date(selectedDate);
       updatedDate.setHours(hours || 0);
       updatedDate.setMinutes(minutes || 0);
       updatedDate.setSeconds(seconds || 0);
 
-      // Update the state and form
       setDate(updatedDate);
       setValue(name, updatedDate.toISOString(), { shouldValidate: true, shouldDirty: true });
     };
 
+    // Generate years for the current range (12 years, 3x4 grid)
+    const years = Array.from({ length: 12 }, (_, i) => yearRange.start + i);
+
     return (
-      <div className="space-y-2">
+      <div className="space-y-2 mb-4">
         {label && <GlobalLabel text={label} required={required} htmlFor={name} />}
-        <Popover>
+        <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
+              disabled={disabled}
               variant="outline"
               className={cn(
                 'w-full justify-start text-left font-normal',
                 !date && 'text-muted-foreground',
                 className,
+                error && required ? 'border-red-500' : '',
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, dateFormat) : <span>{placeholder}</span>}
+              {date ? (
+                yearOnly ? (
+                  date.getFullYear()
+                ) : (
+                  format(date, dateFormat)
+                )
+              ) : (
+                <span>{placeholder}</span>
+              )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={handleSelect}
-              className="rounded-md border p-2"
-              classNames={{
-                month_caption: 'mx-0',
-                day: 'h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-primary/10 hover:text-primary rounded-md transition-colors',
-                day_selected:
-                  'bg-primary text-primary-foreground font-bold ring-2 ring-primary ring-offset-1 focus:outline-none focus:ring-2 focus:ring-primary',
-                day_today: 'bg-accent text-accent-foreground ring-1 ring-accent',
-              }}
-              captionLayout="dropdown"
-              defaultMonth={date || new Date()}
-              initialFocus
-              startMonth={new Date(1980, 6)}
-              hideNavigation
-              components={{
-                DropdownNav: (props: DropdownNavProps) => {
-                  return <div className="flex w-full items-center gap-2">{props.children}</div>;
-                },
-                Dropdown: (props: DropdownProps) => {
-                  return (
+            {yearOnly ? (
+              // Year-only picker styled like Shadcn/UI Calendar
+              <div className="rounded-md border p-2">
+                <div className="flex items-center justify-between p-2">
+                  <Button
+                    variant="outline"
+                    type="button"
+                    size="icon"
+                    onClick={() => setYearRange({ start: yearRange.start - 12 })}
+                    className="h-7 w-7"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm font-medium">
+                    {yearRange.start}–{yearRange.start + 11}
+                  </span>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    size="icon"
+                    onClick={() => setYearRange({ start: yearRange.start + 12 })}
+                    className="h-7 w-7"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-4 gap-2 p-2">
+                  {years.map((year) => (
+                    <Button
+                      type="button"
+                      key={year}
+                      variant={date?.getFullYear() === year ? 'default' : 'ghost'}
+                      className={cn(
+                        'h-9 w-16 text-sm',
+                        date?.getFullYear() === year
+                          ? 'bg-primary text-primary-foreground font-bold'
+                          : 'hover:bg-primary/10 hover:text-primary',
+                        new Date().getFullYear() === year && 'ring-1 ring-accent',
+                      )}
+                      onClick={() => handleYearSelect(year)}
+                    >
+                      {year}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              // Default calendar picker
+              <Calendar
+                disabled={disabled}
+                mode="single"
+                selected={date}
+                onSelect={handleSelect}
+                className="rounded-md border p-2"
+                classNames={{
+                  month_caption: 'mx-0',
+                  day: 'h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-primary/10 hover:text-primary rounded-md transition-colors',
+                  day_selected:
+                    'bg-primary text-primary-foreground font-bold ring-2 ring-primary ring-offset-1 focus:outline-none focus:ring-2 focus:ring-primary',
+                  day_today: 'bg-accent text-accent-foreground ring-1 ring-accent',
+                }}
+                captionLayout="dropdown"
+                defaultMonth={date || new Date()}
+                initialFocus
+                startMonth={new Date(1980, 6)}
+                hideNavigation
+                components={{
+                  DropdownNav: ({ children }) => (
+                    <div className="flex w-full items-center gap-2">{children}</div>
+                  ),
+                  Dropdown: ({ value, onChange, options }) => (
                     <Select
-                      value={String(props.value)}
-                      onValueChange={(value) => {
-                        if (props.onChange) {
-                          handleCalendarChange(value, props.onChange);
+                      disabled={disabled}
+                      value={String(value)}
+                      onValueChange={(newValue) => {
+                        if (onChange) {
+                          const event = {
+                            target: { value: newValue },
+                          } as React.ChangeEvent<HTMLSelectElement>;
+                          onChange(event);
                         }
                       }}
                     >
@@ -146,7 +226,7 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="max-h-[min(26rem,var(--radix-select-content-available-height))]">
-                        {props.options?.map((option) => (
+                        {options?.map((option) => (
                           <SelectItem
                             key={option.value}
                             value={String(option.value)}
@@ -157,16 +237,17 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
                         ))}
                       </SelectContent>
                     </Select>
-                  );
-                },
-              }}
-            />
-            {containTimePicker && (
+                  ),
+                }}
+              />
+            )}
+            {containTimePicker && !yearOnly && (
               <div className="border-t py-2 px-3">
                 <div className="flex items-center gap-3">
                   <Label className="text-xs">Enter time</Label>
                   <div className="relative grow">
                     <Input
+                      disabled={disabled}
                       type="time"
                       step="1"
                       defaultValue={format(date || new Date(), 'HH:mm:ss')}

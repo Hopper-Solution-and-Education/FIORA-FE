@@ -346,6 +346,7 @@ model BudgetsTable {
   user         User            @relation(fields: [userId], references: [id])
 
   @@index([userId])
+  @@index([fiscalYear])
 }
 
 model BudgetDetails {
