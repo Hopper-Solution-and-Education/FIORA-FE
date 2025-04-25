@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { Prisma, Transaction } from '@prisma/client';
+import { Prisma, Transaction, TransactionType } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
 
 class TransactionRepository implements ITransactionRepository {
@@ -12,7 +12,7 @@ class TransactionRepository implements ITransactionRepository {
   }
 
   async getTransactionById(id: string, userId: string): Promise<Transaction | null> {
-    return await prisma.transaction.findFirst({
+    const transaction = await prisma.transaction.findFirst({
       where: {
         id: id,
         userId: userId,
@@ -26,6 +26,31 @@ class TransactionRepository implements ITransactionRepository {
         toCategory: true,
       },
     });
+
+    if (!transaction) return null;
+
+    // Fetch creator and updater user information separately
+    const [createdBy, updatedBy] = await Promise.all([
+      transaction.createdBy
+        ? prisma.user.findUnique({
+            where: { id: transaction.createdBy },
+            select: { id: true, name: true, email: true, image: true },
+          })
+        : null,
+      transaction.updatedBy
+        ? prisma.user.findUnique({
+            where: { id: transaction.updatedBy },
+            select: { id: true, name: true, email: true, image: true },
+          })
+        : null,
+    ]);
+
+    // Return transaction with user information
+    return {
+      ...transaction,
+      createdBy,
+      updatedBy,
+    } as any; // Using type assertion to avoid TypeScript errors
   }
 
   async updateTransaction(
@@ -134,6 +159,91 @@ class TransactionRepository implements ITransactionRepository {
       accounts: Array.from(accountsSet),
       categories: Array.from(categoriesSet),
       partners: partners.map((t) => t.partner?.name),
+    };
+  }
+
+  async getValidCategoryAccount(userId: string, type: TransactionType) {
+    let fromAccounts: any[] = [];
+    let toAccounts: any[] = [];
+    const fromCategories: any[] = [];
+    let toCategories: any[] = [];
+
+    if (type === TransactionType.Expense) {
+      [fromAccounts, toCategories] = await Promise.all([
+        prisma.account.findMany({
+          where: {
+            userId,
+            OR: [{ type: 'Payment' }, { type: 'CreditCard' }],
+          },
+          select: {
+            id: true,
+            name: true,
+          },
+        }),
+        prisma.category.findMany({
+          where: { userId, type: 'Expense' },
+          select: {
+            id: true,
+            name: true,
+          },
+        }),
+      ]);
+    }
+
+    if (type === TransactionType.Income) {
+      [fromAccounts, toCategories] = await Promise.all([
+        prisma.account.findMany({
+          where: {
+            userId,
+            OR: [{ type: 'Payment' }, { type: 'CreditCard' }],
+          },
+          select: {
+            id: true,
+            name: true,
+          },
+        }),
+        prisma.category.findMany({
+          where: { userId, type: 'Income' },
+          select: {
+            id: true,
+            name: true,
+          },
+        }),
+      ]);
+    }
+
+    if (type === TransactionType.Transfer) {
+      [fromAccounts, toAccounts] = await Promise.all([
+        prisma.account.findMany({
+          where: {
+            userId,
+            OR: [
+              { type: 'Payment' },
+              { type: 'CreditCard' },
+              { type: 'Saving' },
+              { type: 'Lending' },
+            ],
+          },
+          select: {
+            id: true,
+            name: true,
+          },
+        }),
+        prisma.account.findMany({
+          where: { userId },
+          select: {
+            id: true,
+            name: true,
+          },
+        }),
+      ]);
+    }
+
+    return {
+      fromAccounts: fromAccounts.map((a) => a.name),
+      toAccounts: toAccounts.map((a) => a.name),
+      fromCategories: fromCategories.map((c) => c.name),
+      toCategories: toCategories.map((c) => c.name),
     };
   }
 

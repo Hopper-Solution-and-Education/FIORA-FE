@@ -1,6 +1,6 @@
 'use client';
 
-import { notFound } from 'next/navigation'; // Thêm để ném 404
+import { notFound } from 'next/navigation';
 import { SettingSubTabComponentProps } from '@/features/setting/presentation/types';
 import dynamic from 'next/dynamic';
 import { ComponentType } from 'react';
@@ -31,8 +31,8 @@ type TabKey = keyof typeof subTabConfig;
 type SubTabKey<T extends TabKey> = keyof (typeof subTabConfig)[T];
 
 interface SettingSubTabContentProps {
-  tab: string; // Tab cha (ví dụ: 'partner')
-  subTab: string; // Sub-tab (ví dụ: 'create', 'update')
+  tab: string;
+  subTab: string;
 }
 
 export default function SettingSubTabContent({ tab, subTab }: SettingSubTabContentProps) {

@@ -99,7 +99,12 @@ export class AccountUseCase {
   }
 
   async findById(id: string): Promise<Account | null> {
-    return this.accountRepository.findById(id);
+    const account = await this.accountRepository.findById(id);
+    if (!account) {
+      throw new Error('Account not found');
+    }
+
+    return account;
   }
 
   async findManyByCondition(where: Prisma.AccountWhereInput) {
@@ -144,10 +149,7 @@ export class AccountUseCase {
         },
         orderBy: [
           {
-            type: 'asc',
-          },
-          {
-            balance: 'asc',
+            balance: 'desc',
           },
         ],
       },
