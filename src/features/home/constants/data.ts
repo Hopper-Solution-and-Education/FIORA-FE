@@ -34,17 +34,17 @@ export const navItems: NavItem[] = [
         featureFlags: FeatureFlags.CATEGORY_FEATURE,
       },
       {
+        title: 'Budgets',
+        url: '/budgets',
+        icon: 'chartBar',
+        shortcut: ['m', 'm'],
+      },
+      {
         title: 'Transaction',
         url: '/transaction',
         icon: 'shoppingCart',
         shortcut: ['m', 'm'],
       },
-      // {
-      //   title: 'Budget Planning',
-      //   url: '/budget-control',
-      //   icon: 'userPen',
-      //   shortcut: ['m', 'm'],
-      // },
     ],
   },
 ];

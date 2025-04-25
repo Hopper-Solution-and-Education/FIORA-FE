@@ -6,6 +6,7 @@ import {
   BanknoteArrowDown,
   BellRing,
   Car,
+  ChartBar,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -21,6 +22,7 @@ import {
   CreditCard,
   Database,
   DollarSign,
+  Expand,
   Eye,
   File,
   FileText,
@@ -50,6 +52,7 @@ import {
   SaveAll,
   Settings,
   ShoppingCart,
+  Shrink,
   SunMedium,
   Trash,
   Trello,
@@ -63,8 +66,6 @@ import {
   UtensilsCrossed,
   Wallet,
   X,
-  Expand,
-  Shrink,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -151,4 +152,5 @@ export const Icons = {
   handShake: Handshake,
   expand: Expand,
   shrink: Shrink,
+  chartBar: ChartBar,
 };

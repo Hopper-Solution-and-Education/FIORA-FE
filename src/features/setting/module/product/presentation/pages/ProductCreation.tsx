@@ -10,12 +10,13 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { removeFromFirebase, uploadToFirebase } from '../../../landing/landing/firebaseUtils';
+
 import { productDIContainer } from '../../di/productDIContainer';
 import { TYPES } from '../../di/productDIContainer.type';
 import { Product } from '../../domain/entities';
 import { GetSingleProductUseCase } from '../../domain/usecases';
 
+import { removeFromFirebase, uploadToFirebase } from '@/shared/lib';
 import {
   createProduct,
   deleteProductAsyncThunk,

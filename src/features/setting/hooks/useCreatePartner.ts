@@ -1,12 +1,11 @@
 'use client';
 
-import { uploadToFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
 import { partnerDIContainer } from '@/features/setting/module/partner/di/partnerDIContainer';
 import { TYPES } from '@/features/setting/module/partner/di/partnerDIContainer.type';
 import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
 import { ICreatePartnerUseCase } from '@/features/setting/module/partner/domain/usecases/CreatePartnerUsecase';
 import { IGetPartnerUseCase } from '@/features/setting/module/partner/domain/usecases/GetPartnerUsecase';
-import { setErrorsFromObject } from '@/shared/lib';
+import { setErrorsFromObject, uploadToFirebase } from '@/shared/lib';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
