@@ -71,7 +71,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
 
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { cursor, take } = req.query; // Cursor will be a year (e.g., 2023)
+    const { cursor, take, search } = req.query; // Cursor will be a year (e.g., 2023)
     // take default take when its not given
     const takeValue = take ? Number(take) : 3; // Default to 10 if not provided
     const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
@@ -81,6 +81,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       cursor: cursor ? Number(cursor) : undefined,
       take: takeValue,
       currency,
+      search: search ? String(search) : undefined,
     });
 
     return res

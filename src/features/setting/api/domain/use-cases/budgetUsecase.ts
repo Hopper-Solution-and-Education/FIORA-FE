@@ -1,6 +1,4 @@
 import { prisma } from '@/config';
-import { IUserRepository } from '@/features/auth/domain/repositories/userRepository.interface';
-import { userRepository } from '@/features/auth/infrastructure/repositories/userRepository';
 import { convertCurrency } from '@/shared/utils/currencyExchange';
 import { BudgetDetailType, Prisma, TransactionType } from '@prisma/client';
 import _ from 'lodash';
@@ -16,16 +14,13 @@ import {
 class BudgetUseCase {
   private budgetRepository: IBudgetRepository;
   private budgetDetailRepository: IBudgetDetailRepository;
-  private userRepository: IUserRepository;
 
   constructor(
     budgetRepository: IBudgetRepository,
     budgetDetailRepository: IBudgetDetailRepository,
-    userRepository: IUserRepository,
   ) {
     this.budgetRepository = budgetRepository;
     this.budgetDetailRepository = budgetDetailRepository;
-    this.userRepository = userRepository;
   }
 
   async createBudget(params: BudgetCreation) {
@@ -126,21 +121,31 @@ class BudgetUseCase {
   }
 
   async getAnnualBudgetByYears(params: BudgetGetAnnualYearParams) {
-    const { userId, cursor, take, currency } = params;
+    const { userId, cursor, take, currency, search } = params;
+
+    let where = {
+      userId,
+      fiscalYear: cursor ? { gt: cursor } : undefined,
+    } as Prisma.BudgetsTableWhereInput;
+
+    if (search) {
+      where = {
+        ...where,
+        fiscalYear: { equals: Number(search) },
+      };
+    }
 
     // Step 2: Fetch budgets for the user from BudgetsTable
     const budgets = await prisma.budgetsTable.findMany({
-      where: {
-        userId: userId,
-        ...(cursor && {
-          fiscalYear: { gt: cursor },
-        }),
-      },
+      where: where,
       select: {
+        id: true,
         fiscalYear: true,
         total_inc: true,
         total_exp: true,
         currency: true,
+        createdAt: true,
+        type: true,
       },
       orderBy: {
         fiscalYear: 'desc',
@@ -207,6 +212,7 @@ class BudgetUseCase {
       );
 
       return {
+        id: budget.id,
         year: year,
         budgetIncome: convertedBudgetIncome, // Budgeted income
         budgetExpense: convertedBudgetExpense, // Budgeted expense
@@ -243,8 +249,4 @@ class BudgetUseCase {
   }
 }
 
-export const budgetUseCase = new BudgetUseCase(
-  budgetRepository,
-  budgetDetailRepository,
-  userRepository,
-);
+export const budgetUseCase = new BudgetUseCase(budgetRepository, budgetDetailRepository);

@@ -27,6 +27,7 @@ export interface BudgetGetAnnualYearParams {
   cursor?: number;
   take: number;
   currency: Currency;
+  search?: string;
 }
 
 export type BudgetYearSummary = {
