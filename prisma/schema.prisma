@@ -295,7 +295,7 @@ model Category {
 model BudgetsTable {
   id           String          @id @default(uuid()) @db.Uuid
   userId       String          @db.Uuid
-  fiscalYear   Int             @unique @db.SmallInt
+  fiscalYear   Int             @db.SmallInt
   type         BudgetType      @default(Top)
   total_exp    Decimal         @default(0) @db.Decimal(13, 2)
   total_inc    Decimal         @default(0) @db.Decimal(13, 2)

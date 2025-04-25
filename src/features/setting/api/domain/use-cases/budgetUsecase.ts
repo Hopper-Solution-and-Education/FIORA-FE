@@ -5,7 +5,7 @@ import { budgetRepository } from '../../infrastructure/repositories/budgetProduc
 import { budgetDetailRepository } from '../../infrastructure/repositories/budgetDetailRepository';
 import { userRepository } from '@/features/auth/infrastructure/repositories/userRepository';
 import _ from 'lodash';
-import { BudgetDetailType, Prisma } from '@prisma/client';
+import { BudgetDetailType, BudgetType, Prisma } from '@prisma/client';
 
 class BudgetUseCase {
   private budgetRepository: IBudgetRepository;
@@ -32,11 +32,6 @@ class BudgetUseCase {
       icon,
       currency,
     } = params;
-
-    const foundUser = await this.userRepository.findById(userId);
-    if (!foundUser) {
-      throw new Error('User not found');
-    }
 
     const monthlyExpense = _.round(estimatedTotalExpense / 12, 2);
     const monthlyIncome = _.round(estimatedTotalIncome / 12, 2);
@@ -74,54 +69,71 @@ class BudgetUseCase {
     const h1_inc = _.round(monthlyIncome * 6, 2);
     const h2_inc = _.round(monthlyIncome * 6, 2);
 
-    // ---------------------------
-    // Step 1: Create Budget
-    // ---------------------------
-    const newBudget = await this.budgetRepository.createBudget({
-      userId,
-      fiscalYear,
-      icon,
-      total_exp: estimatedTotalExpense,
-      total_inc: estimatedTotalIncome,
-      h1_exp,
-      h2_exp,
-      h1_inc,
-      h2_inc,
-      ...quarterFields,
-      ...monthFields,
-      description,
-      currency,
-      createdBy: foundUser.id,
-    });
+    const budgetTypes = [BudgetType.Act, BudgetType.Bot, BudgetType.Top];
 
-    // ---------------------------
-    // Step 2: Create BudgetDetails (24 rows)
-    // ---------------------------
-    const detailData = months.flatMap((month) => [
-      {
-        userId,
-        budgetId: newBudget.id,
-        type: BudgetDetailType.Expense,
-        amount: monthlyExpense,
-        month,
-        createdBy: foundUser.id,
-      },
-      {
-        userId,
-        budgetId: newBudget.id,
-        type: BudgetDetailType.Income,
-        amount: monthlyIncome,
-        month,
-        createdBy: foundUser.id,
-      },
-    ]) as Prisma.BudgetDetailsCreateManyInput[];
+    const budgetDetails = await Promise.all(
+      budgetTypes.map(async (type: BudgetType) => {
+        // ---------------------------
+        // Step 1: Create Budget by 3 budget types
+        // ---------------------------
 
-    const budgetDetails = await this.budgetDetailRepository.createManyBudgetDetails(detailData);
+        const newBudget = await this.budgetRepository.createBudget({
+          userId,
+          fiscalYear,
+          icon,
+          total_exp: estimatedTotalExpense,
+          total_inc: estimatedTotalIncome,
+          h1_exp,
+          h2_exp,
+          h1_inc,
+          h2_inc,
+          ...quarterFields,
+          ...monthFields,
+          description,
+          currency,
+          createdBy: userId,
+          type,
+        });
 
-    return {
-      ...newBudget,
-      budgetDetails,
-    };
+        if (!newBudget) {
+          throw new Error('Failed to create budget');
+        }
+
+        // ---------------------------
+        // Step 2: Create BudgetDetails (24 rows)
+        // ---------------------------
+        const detailData = months.flatMap((month) => [
+          {
+            userId,
+            budgetId: newBudget.id,
+            type: BudgetDetailType.Expense,
+            amount: monthlyExpense,
+            month,
+            createdBy: userId,
+          },
+          {
+            userId,
+            budgetId: newBudget.id,
+            type: BudgetDetailType.Income,
+            amount: monthlyIncome,
+            month,
+            createdBy: userId,
+          },
+        ]) as Prisma.BudgetDetailsCreateManyInput[];
+
+        const budgetDetails = await this.budgetDetailRepository.createManyBudgetDetails(detailData);
+        if (!budgetDetails) {
+          throw new Error('Failed to create budget details');
+        }
+
+        return {
+          ...newBudget,
+          budgetDetails,
+        };
+      }),
+    );
+
+    return budgetDetails;
   }
 
   async checkedDuplicated(userId: string, fiscalYear: number): Promise<boolean> {
