@@ -67,7 +67,7 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
     fetchPartnersData();
   }, [dispatch, status, session, isDataFetched]);
 
-  const hasChildren = partners.some((partner) => partner.parentId === initialData?.id);
+  const hasChildren = partners.some((partner: any) => partner.parentId === initialData?.id);
 
   const parentOptions = [
     { value: 'none', label: 'None' },
