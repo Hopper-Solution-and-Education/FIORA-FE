@@ -65,12 +65,15 @@ const BudgetCreationPage = () => {
 
     await dispatch(
       createBudgetAsyncThunk({
-        icon: data.icon,
-        fiscalYear: data.fiscalYear,
-        estimatedTotalExpense: data.totalExpense,
-        estimatedTotalIncome: data.totalIncome,
-        description: data.description ?? '',
-        currency: data.currency as Currency,
+        data: {
+          icon: data.icon,
+          fiscalYear: data.fiscalYear,
+          estimatedTotalExpense: data.totalExpense,
+          estimatedTotalIncome: data.totalIncome,
+          description: data.description ?? '',
+          currency: data.currency as Currency,
+        },
+        setError: setError,
       }),
     )
       .unwrap()

@@ -1,5 +1,3 @@
-// src/store/slices/categorySlice.ts
-
 import { createSlice } from '@reduxjs/toolkit';
 import { initialBudgetControlState } from './types';
 import { createBudgetAsyncThunk } from './actions';
