@@ -360,10 +360,10 @@ model BudgetDetails {
   createdAt  DateTime         @default(now()) @db.Timestamptz(0)
   createdBy  String?          @db.Uuid
   updatedBy  String?          @db.Uuid
-  user       User             @relation(fields: [userId], references: [id])
-  category   Category?        @relation(fields: [categoryId], references: [id])
-  budget     BudgetsTable     @relation(fields: [budgetId], references: [id], onDelete: Cascade)
   updatedAt  DateTime         @updatedAt @db.Timestamptz(0)
+  budget     BudgetsTable     @relation(fields: [budgetId], references: [id])
+  category   Category?        @relation(fields: [categoryId], references: [id])
+  user       User             @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([budgetId])
