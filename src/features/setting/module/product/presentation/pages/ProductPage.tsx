@@ -3,8 +3,8 @@
 import { Icons } from '@/components/Icon';
 import { Separator } from '@/components/ui/separator';
 import { DashboardHeading } from '@/features/home/components/DashboardHeading';
-import { removeFromFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
 import { FIREBASE_GS_URL, FIREBASE_STORAGE_URL } from '@/shared/constants';
+import { removeFromFirebase } from '@/shared/lib';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';

@@ -134,7 +134,26 @@ class ProductUseCase {
         throw new Error(Messages.PRODUCT_NOT_FOUND);
       }
 
-      return product;
+      const [createdBy, updatedBy] = await Promise.all([
+        product.createdBy
+          ? prisma.user.findFirst({
+              where: { id: product.createdBy },
+              select: { id: true, name: true, email: true, image: true },
+            })
+          : null,
+        product.updatedBy
+          ? prisma.user.findFirst({
+              where: { id: product.updatedBy },
+              select: { id: true, name: true, email: true, image: true },
+            })
+          : null,
+      ]);
+
+      return {
+        ...product,
+        createdBy: createdBy || null,
+        updatedBy: updatedBy || null,
+      };
     } catch (error: any) {
       throw new Error(error.message || Messages.GET_PRODUCT_FAILED);
     }

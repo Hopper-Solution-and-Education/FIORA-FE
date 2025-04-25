@@ -86,7 +86,7 @@ const IconSelectUpload = ({
 
         <TabsContent value="dropdown">
           <IconSelect
-            isCheckError={false}
+            isCheckError={!!error}
             selectedIcon={
               selectedTab === 'dropdown' && !(isUrl(value ?? '') || isImageFile(value ?? ''))
                 ? (value ?? '')
@@ -96,6 +96,7 @@ const IconSelectUpload = ({
               onChange?.(value);
             }}
             required={required}
+            disabled={disabled}
           />
         </TabsContent>
       </Tabs>

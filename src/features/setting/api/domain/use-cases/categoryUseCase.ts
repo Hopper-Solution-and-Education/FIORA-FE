@@ -74,7 +74,6 @@ class CategoryUseCase {
   async getCategories(userId: string): Promise<any[]> {
     const categories = await this.categoryRepository.findCategoriesWithTransactions(userId);
 
-    // Hàm tính balance cho từng category
     const calculateBalance = (category: CategoryWithTransactions): number => {
       if (category.type === CategoryType.Expense.valueOf()) {
         return (category.toTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
@@ -84,7 +83,6 @@ class CategoryUseCase {
       return 0;
     };
 
-    // Map qua danh sách category để thêm balance
     const categoryMap = new Map<string, any>();
     categories.forEach((category) => {
       categoryMap.set(category.id, {
@@ -93,7 +91,6 @@ class CategoryUseCase {
       });
     });
 
-    // Cập nhật balance cho danh mục cha
     categories.forEach((category) => {
       if (category.parentId) {
         const parent = categoryMap.get(category.parentId);

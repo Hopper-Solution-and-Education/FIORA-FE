@@ -1,0 +1,13 @@
+import { BudgetDetails, Prisma } from '@prisma/client';
+
+export interface IBudgetDetailRepository {
+  createBudgetDetail(
+    data: Prisma.BudgetDetailsUncheckedCreateInput,
+    options?: Prisma.BudgetDetailsCreateArgs,
+  ): Promise<BudgetDetails>;
+
+  createManyBudgetDetails(
+    data: Prisma.BudgetDetailsCreateManyInput | Prisma.BudgetDetailsCreateManyInput[],
+    options?: Prisma.BudgetDetailsCreateManyArgs,
+  ): Promise<BudgetDetails[]>;
+}
