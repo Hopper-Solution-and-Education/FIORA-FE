@@ -240,10 +240,10 @@ class TransactionRepository implements ITransactionRepository {
     }
 
     return {
-      fromAccounts: fromAccounts.map((a) => a.name),
-      toAccounts: toAccounts.map((a) => a.name),
-      fromCategories: fromCategories.map((c) => c.name),
-      toCategories: toCategories.map((c) => c.name),
+      fromAccounts: fromAccounts,
+      toAccounts: toAccounts,
+      fromCategories: fromCategories,
+      toCategories: toCategories,
     };
   }
 
