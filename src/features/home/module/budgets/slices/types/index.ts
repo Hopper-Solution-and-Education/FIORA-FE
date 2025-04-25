@@ -1,7 +1,9 @@
 interface BudgetControlState {
   isLoadingGetBudget: boolean;
+  isCreatingBudget: boolean;
 }
 
-export const initialProductState: BudgetControlState = {
+export const initialBudgetControlState: BudgetControlState = {
   isLoadingGetBudget: false,
+  isCreatingBudget: false,
 };

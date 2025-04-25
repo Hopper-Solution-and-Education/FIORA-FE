@@ -39,6 +39,16 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
         .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
     }
 
+    // check duplicated fiscalYear
+    const isDuplicated = await budgetUseCase.checkedDuplicated(userId, fiscalYear);
+    if (isDuplicated) {
+      return res.status(RESPONSE_CODE.BAD_REQUEST).json(
+        createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, {
+          fiscalYear: Messages.DUPLICATED_BUDGET_FISCAL_YEAR,
+        }),
+      );
+    }
+
     const newProduct = await budgetUseCase.createBudget({
       userId,
       fiscalYear,
@@ -75,7 +85,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 
     return res
       .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_BUDGET_SUCCESS, budgets));
+      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_BUDGET_ITEM_SUCCESS, budgets));
   } catch (error: any) {
     return res
       .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)

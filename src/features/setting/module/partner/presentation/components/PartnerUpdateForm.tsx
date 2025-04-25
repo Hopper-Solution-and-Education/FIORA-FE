@@ -6,7 +6,6 @@ import InputField from '@/components/common/forms/input/InputField';
 import SelectField from '@/components/common/forms/select/SelectField';
 import TextareaField from '@/components/common/forms/text-area/TextareaField';
 import UploadField from '@/components/common/forms/upload/UploadField';
-import { uploadToFirebase } from '@/features/setting/module/landing/landing/firebaseUtils';
 import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
 import {
   UpdatePartnerFormValues,
@@ -14,6 +13,7 @@ import {
 } from '@/features/setting/module/partner/presentation/schema/updatePartner.schema';
 import { fetchPartners } from '@/features/setting/module/partner/slices/actions/fetchPartnersAsyncThunk';
 import { updatePartner } from '@/features/setting/module/partner/slices/actions/updatePartnerAsyncThunk';
+import { uploadToFirebase } from '@/shared/lib';
 import { setErrorsFromObject } from '@/shared/lib/forms/setErrorsFromObject';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';

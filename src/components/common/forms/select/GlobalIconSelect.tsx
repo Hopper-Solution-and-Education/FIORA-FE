@@ -13,6 +13,7 @@ interface GlobalIconSelectProps {
   label?: React.ReactNode | string;
   required?: boolean;
   id?: string;
+  disabled?: boolean;
   [key: string]: any;
 }
 
@@ -24,6 +25,7 @@ const GlobalIconSelect: React.FC<GlobalIconSelectProps> = ({
   label,
   required = false,
   id = name,
+  disabled = false,
   ...props
 }) => {
   return (
@@ -38,6 +40,7 @@ const GlobalIconSelect: React.FC<GlobalIconSelectProps> = ({
         selectedIcon={value}
         onIconChange={onChange}
         className={error ? 'border-red-500' : ''}
+        disabled={disabled}
         {...props}
       />
       {error && <p className="text-sm text-red-500">{error.message}</p>}

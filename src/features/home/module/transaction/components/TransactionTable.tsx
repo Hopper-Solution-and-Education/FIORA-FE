@@ -581,6 +581,7 @@ const TransactionTable = () => {
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
+
                             {/* Delete button */}
                             <TooltipProvider>
                               <Tooltip>
