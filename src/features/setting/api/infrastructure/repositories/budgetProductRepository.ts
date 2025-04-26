@@ -14,10 +14,10 @@ class BudgetRepository implements IBudgetRepository {
   }
 
   async findBudgetData(
-    where: Prisma.BudgetsTableWhereUniqueInput,
+    where: Prisma.BudgetsTableWhereInput,
     options?: Prisma.BudgetsTableFindUniqueArgs,
   ): Promise<BudgetsTable | null> {
-    return prisma.budgetsTable.findUnique({
+    return prisma.budgetsTable.findFirst({
       where,
       ...options,
     });

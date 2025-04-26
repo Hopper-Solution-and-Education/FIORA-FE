@@ -7,7 +7,7 @@ export interface IBudgetRepository {
   ): Promise<BudgetsTable>;
 
   findBudgetData(
-    where: Prisma.BudgetsTableWhereUniqueInput,
+    where: Prisma.BudgetsTableWhereInput,
     options?: Prisma.BudgetsTableFindUniqueArgs,
   ): Promise<BudgetsTable | null>;
 }
