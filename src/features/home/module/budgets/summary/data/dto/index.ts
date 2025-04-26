@@ -1,6 +1,6 @@
-import { BudgetType } from '../enum/BudgetType';
+import { BudgetType } from '../../domain/enum/BudgetType';
 
-export interface BudgetsDto {
+export interface BudgetDto {
   id: string | undefined;
   user_id: string | undefined;
   fiscal_year: string | undefined;

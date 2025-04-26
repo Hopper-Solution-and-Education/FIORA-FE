@@ -1,7 +1,7 @@
-import { BudgetsDto } from '../dto';
+import { BudgetDto } from '../../data/dto';
 import { BudgetType } from '../enum/BudgetType';
 
-export class Budgets {
+export class Budget {
   public id: string | undefined;
   public userId: string | undefined;
   public fiscalYear: string | undefined;
@@ -98,8 +98,8 @@ export class Budgets {
     this.updatedBy = builder.updatedBy;
   }
 
-  public static fromDto(dto: BudgetsDto): Budgets {
-    return Budgets.builder()
+  public static fromDto(dto: BudgetDto): Budget {
+    return Budget.builder()
       .setId(dto.id)
       .setUserId(dto.user_id)
       .setFiscalYear(dto.fiscal_year)
@@ -432,7 +432,7 @@ export class BudgetBuilder {
     return this;
   }
 
-  public build(): Budgets {
+  public build(): Budget {
     if (
       !this.id ||
       !this.userId ||
@@ -445,6 +445,6 @@ export class BudgetBuilder {
         'Mandatory fields (id, userId, fiscalYear, type, createdAt, updatedAt) must be set',
       );
     }
-    return new Budgets(this);
+    return new Budget(this);
   }
 }
