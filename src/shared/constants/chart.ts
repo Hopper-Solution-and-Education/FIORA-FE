@@ -37,3 +37,9 @@ export const COLORS = {
     LEVEL_5: '#d4eaff',
   },
 };
+
+export enum STACK_TYPE {
+  EXPENSE = 'EXPENSE',
+  INCOME = 'INCOME',
+  PROFIT = 'PROFIT',
+}

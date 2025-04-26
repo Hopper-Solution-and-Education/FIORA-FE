@@ -1,12 +1,12 @@
 'use client';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { MODULE } from '@/shared/constants';
-import { AccountsOverview } from './AccountOverview';
-import RecentTransactions from './components/RecentTransactions';
-import Recommendations from './components/Recommendations';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { useFeatureFlagGuard } from '@/shared/hooks/useFeatureFlagGuard';
 import AccountDashboard from '../account/AccountDashboard';
+import { AccountsOverview } from './AccountOverview';
+import RecentTransactions from './components/RecentTransactions';
+import Recommendations from './components/Recommendations';
 
 export default function HomePage() {
   const { isFeatureOn } = useFeatureFlagGuard(FeatureFlags.ACCOUNT_FEATURE, MODULE.HOME);

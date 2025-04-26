@@ -67,6 +67,7 @@ import {
   UtensilsCrossed,
   Wallet,
   X,
+  HandCoins,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -155,4 +156,5 @@ export const Icons = {
   shrink: Shrink,
   chartBar: ChartBar,
   loader: LoaderCircle,
+  handCoins: HandCoins,
 };
