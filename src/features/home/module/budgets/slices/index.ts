@@ -1,8 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 import { createBudgetAsyncThunk } from './actions';
-import { initialBudgetControlState } from './types';
 import { getBudgetAsyncThunk } from './actions/getBudgetAsyncThunk';
+import { initialBudgetControlState } from './types';
 
 const budgetControlSlice = createSlice({
   name: 'budgetControl',
@@ -13,6 +13,15 @@ const budgetControlSlice = createSlice({
     },
     setNextCursor: (state, action) => {
       state.getBudget = action.payload;
+    },
+    resetBudgetControlState: () => initialBudgetControlState,
+    resetGetBudgetState: (state) => {
+      state.getBudget = {
+        budgets: [],
+        isLoading: false,
+        nextCursor: null,
+        isLast: false,
+      };
     },
   },
   extraReducers: (builder) => {
@@ -34,8 +43,18 @@ const budgetControlSlice = createSlice({
       })
       .addCase(getBudgetAsyncThunk.fulfilled, (state, action) => {
         state.getBudget.isLoading = false;
-        state.getBudget.budgets = action.payload.data;
+        // Deduplicate budgets by id
+        const newBudgets = action.payload.data.filter(
+          (newBudget) =>
+            !state.getBudget.budgets.some(
+              (existingBudget) => existingBudget.year === newBudget.year,
+            ),
+        );
+        state.getBudget.budgets = [...state.getBudget.budgets, ...newBudgets];
         state.getBudget.nextCursor = action.payload.nextCursor;
+        if (action.payload.nextCursor === null) {
+          state.getBudget.isLast = true;
+        }
       })
       .addCase(getBudgetAsyncThunk.rejected, (state) => {
         state.getBudget.isLoading = false;
@@ -44,5 +63,6 @@ const budgetControlSlice = createSlice({
 });
 
 export * from './types';
-export const { setIsLoadingBudget, setNextCursor } = budgetControlSlice.actions;
+export const { setIsLoadingBudget, setNextCursor, resetBudgetControlState, resetGetBudgetState } =
+  budgetControlSlice.actions;
 export default budgetControlSlice.reducer;

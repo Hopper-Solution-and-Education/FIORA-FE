@@ -8,6 +8,7 @@ interface BudgetControlState {
     isLoading: boolean;
     nextCursor: number | null;
     budgets: BudgetGetDataResponse[];
+    isLast: boolean;
   };
 }
 
@@ -18,5 +19,6 @@ export const initialBudgetControlState: BudgetControlState = {
     isLoading: false,
     nextCursor: null,
     budgets: [],
+    isLast: false,
   },
 };

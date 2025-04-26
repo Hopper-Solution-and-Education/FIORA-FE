@@ -17,7 +17,7 @@ class BudgetAPI implements IBudgetAPI {
 
   async getBudget(request: BudgetGetRequestDTO): Promise<BudgetGetResponseDTO> {
     return await httpClient.get(
-      `/api/budgets?cursor=${request.cursor}&take=${request.take}&search=${request.search}`,
+      `/api/budgets?${request.cursor ? `cursor=${request?.cursor}` : ''}&take=${request.take}&search=${request.search}`,
     );
   }
 }
