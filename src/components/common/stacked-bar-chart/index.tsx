@@ -2,10 +2,16 @@
 
 import { BarLabel, ChartLegend } from '@/components/common/atoms';
 import StackYAxisTick from '@/components/common/atoms/StackYAxisTick';
-import { BASE_BAR_HEIGHT, DEFAULT_CURRENCY, MIN_CHART_HEIGHT } from '@/shared/constants/chart';
+import {
+  BASE_BAR_HEIGHT,
+  COLORS,
+  DEFAULT_CURRENCY,
+  MIN_CHART_HEIGHT,
+  STACK_TYPE,
+} from '@/shared/constants/chart';
 import { cn, formatCurrency } from '@/shared/utils';
 import { getChartMargins, useWindowSize } from '@/shared/utils/device';
-import { memo, useEffect, useMemo, useState } from 'react';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -17,7 +23,30 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { StackedBarProps, TooltipProps } from './type';
+import { CustomBarItem, StackBarDisplay, StackedBarProps, TooltipProps } from './type';
+
+const largestKey = (item: CustomBarItem): string => {
+  const largestValue = Math.max(item.A, item.B, item.T);
+  return largestValue === item.A ? 'A' : largestValue === item.B ? 'B' : 'T';
+};
+
+const calculateDisplayValues = (data: CustomBarItem[]): StackBarDisplay[] => {
+  return data.map((item) => {
+    const displayA = item.A;
+    const displayT = item.T - item.A;
+    const displayB = item.B - item.T;
+    return {
+      ...item,
+      A: displayA,
+      T: displayT > displayA ? displayT : 0,
+      B: displayB > displayT ? displayB : 0,
+      AOriginalValue: item.A,
+      BOriginalValue: item.B,
+      TOriginalValue: item.T,
+      maxKey: largestKey(item),
+    };
+  });
+};
 
 const StackedBarChart = ({
   data = [],
@@ -33,8 +62,28 @@ const StackedBarChart = ({
   const { width } = useWindowSize();
   const chartMargins = useMemo(() => getChartMargins(width), [width]);
 
+  const processedData = useMemo(() => calculateDisplayValues(data), [data]);
+
   const formatter = (key: string, value: number): string => {
     return `${key}: ${formatCurrency(value, currency)}`;
+  };
+
+  const calculateRValue = (item: StackBarDisplay): number => {
+    let R: number = 0;
+    switch (item.type) {
+      case STACK_TYPE.EXPENSE:
+        R = item.BOriginalValue - item.AOriginalValue;
+        break;
+      case STACK_TYPE.INCOME:
+        R = item.AOriginalValue - item.BOriginalValue;
+        break;
+      case STACK_TYPE.PROFIT:
+        R = item.AOriginalValue - item.BOriginalValue;
+        break;
+      default:
+        break;
+    }
+    return R;
   };
 
   const renderTooltipContent = (props: TooltipProps) => {
@@ -47,32 +96,33 @@ const StackedBarChart = ({
     return (
       <div className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm">
         <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{label}</p>
-        {payload.map((entry, index: number) => {
-          if (!entry.value) return null;
-          const layerId = entry.dataKey as string;
-          return (
-            <div
-              key={index}
-              className="flex items-center text-xs text-gray-600 dark:text-gray-400 mt-1"
-            >
-              <div
-                className="w-3 h-3 mr-2 rounded-sm"
-                style={{ backgroundColor: item.colors[layerId as any] }}
-              />
-              <span>{layerId}:</span>
-              <span className="font-bold ml-1">{formatCurrency(entry.value, currency)}</span>
-            </div>
-          );
-        })}
-        <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 pt-1 border-t border-gray-200 dark:border-gray-700">
-          Total:{' '}
-          <span className="font-bold">
-            {formatCurrency(
-              payload.reduce((sum: number, entry) => sum + (entry.value || 0), 0),
-              currency,
-            )}
-          </span>
-        </p>
+        {/* A ZONE */}
+        <div
+          key={item.A}
+          className="flex items-center text-xs text-gray-600 dark:text-gray-400 mt-1"
+        >
+          <div className="w-3 h-3 mr-2 rounded-sm" style={{ backgroundColor: item.colors.A }} />
+          <span>A:</span>
+          <span className="font-bold ml-1">{formatCurrency(item.A, currency)}</span>
+        </div>
+        {/* T ZONE */}
+        <div
+          key={item.T}
+          className="flex items-center text-xs text-gray-600 dark:text-gray-400 mt-1"
+        >
+          <div className="w-3 h-3 mr-2 rounded-sm" style={{ backgroundColor: item.colors.T }} />
+          <span>T:</span>
+          <span className="font-bold ml-1">{formatCurrency(item.T, currency)}</span>
+        </div>
+        {/* B ZONE */}
+        <div
+          key={item.B}
+          className="flex items-center text-xs text-gray-600 dark:text-gray-400 mt-1"
+        >
+          <div className="w-3 h-3 mr-2 rounded-sm" style={{ backgroundColor: item.colors.B }} />
+          <span>B:</span>
+          <span className="font-bold ml-1">{formatCurrency(item.B, currency)}</span>
+        </div>
         {tutorialText && (
           <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 italic">{tutorialText}</p>
         )}
@@ -81,16 +131,15 @@ const StackedBarChart = ({
   };
 
   // Custom label renderer for T, B, R
-  const renderCustomLabel = (data: any, props: any) => {
+  const renderCustomLabel = (data: StackBarDisplay[], props: any, dataKey: string) => {
     const { x, y, width, height, index } = props;
     const entry = data[index];
-    const T = entry['T'];
-    const B = entry['B'];
-    const A = entry['A'];
-    const R = T - A;
 
-    // Position the label at the end of the bar
-    const labelX = x + width + 10; // Offset by 10px to the right
+    if (dataKey !== entry.maxKey) return null;
+
+    const R = calculateRValue(entry);
+
+    const labelX = x + width + 10;
     const labelY = y + height / 2 - 5;
 
     return (
@@ -102,16 +151,19 @@ const StackedBarChart = ({
           textAnchor="start"
           dominantBaseline="middle"
           fontSize={12}
+          fontWeight={600}
         >
-          T: {formatCurrency(T, currency)} → B: {formatCurrency(B, currency)}
+          T: {formatCurrency(entry.TOriginalValue, currency)} → B:{' '}
+          {formatCurrency(entry.BOriginalValue, currency)}
         </text>
         <text
           x={labelX}
-          y={labelY + 15} // Offset for the next line
-          fill="#666"
+          y={labelY + 15}
+          fill={R >= 0 ? COLORS.DEPS_INFO.LEVEL_1 : COLORS.DEPS_DANGER.LEVEL_1}
           textAnchor="start"
           dominantBaseline="middle"
           fontSize={12}
+          fontWeight={600}
         >
           R: {formatCurrency(R, currency)}
         </text>
@@ -141,9 +193,9 @@ const StackedBarChart = ({
       <div style={{ height: `${chartHeight}px` }} className="transition-all duration-300">
         <ResponsiveContainer width="100%" height={chartHeight}>
           <BarChart
-            data={data}
+            data={processedData}
             layout="vertical"
-            margin={{ ...chartMargins, left: 0, right: 150 }} // Increased right margin for labels
+            margin={{ ...chartMargins, left: 0, right: 150 }}
             className="transition-all duration-300"
           >
             <CartesianGrid
@@ -182,16 +234,14 @@ const StackedBarChart = ({
                   />
                 )}
               >
-                {data.map((entry, index) => (
-                  <Cell key={index} fill={entry.colors[key as any] || '#cccccc'} />
+                {processedData.map((entry, index) => (
+                  <Cell key={index} fill={entry.colors[key as keyof typeof entry.colors]} />
                 ))}
-                {key === 'B' && (
-                  <LabelList
-                    dataKey={key}
-                    content={(props) => renderCustomLabel(data, props)}
-                    position="right"
-                  />
-                )}
+                <LabelList
+                  dataKey={key}
+                  content={(props) => renderCustomLabel(processedData, props, key)}
+                  position="right"
+                />
               </Bar>
             ))}
           </BarChart>

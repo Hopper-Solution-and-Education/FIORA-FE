@@ -71,9 +71,6 @@ const StackYAxisTick: React.FC<StackYAxisTick> = ({
           >
             <div className="flex flex-col gap-1">
               <span className="font-medium text-gray-900 dark:text-gray-300">{payload.value}</span>
-              {item?.type && (
-                <span className="text-xs text-gray-600 dark:text-gray-400">Type: {item.type}</span>
-              )}
             </div>
           </TooltipContent>
         </Tooltip>
