@@ -84,7 +84,7 @@ const BudgetCreationPage = () => {
 
   return (
     <FormProvider {...methods}>
-      <div className={cn('w-full', isMobile ? 'px-4' : 'px-16 md:px-32 lg:px-64')}>
+      <div className={cn('w-full', isMobile ? 'px-4' : 'px-16 md:px-32 lg:px-52')}>
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl md:text-2xl font-bold">Create New Budget</h1>
           <Button

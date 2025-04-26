@@ -1,7 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { initialBudgetControlState } from './types';
-import { createBudgetAsyncThunk } from './actions';
 import { toast } from 'sonner';
+import { createBudgetAsyncThunk } from './actions';
+import { initialBudgetControlState } from './types';
+import { getBudgetAsyncThunk } from './actions/getBudgetAsyncThunk';
 
 const budgetControlSlice = createSlice({
   name: 'budgetControl',
@@ -9,6 +10,9 @@ const budgetControlSlice = createSlice({
   reducers: {
     setIsLoadingBudget: (state, action) => {
       state.isLoadingGetBudget = action.payload;
+    },
+    setNextCursor: (state, action) => {
+      state.getBudget = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -23,9 +27,22 @@ const budgetControlSlice = createSlice({
       .addCase(createBudgetAsyncThunk.rejected, (state) => {
         state.isCreatingBudget = false;
       });
+
+    builder
+      .addCase(getBudgetAsyncThunk.pending, (state) => {
+        state.getBudget.isLoading = true;
+      })
+      .addCase(getBudgetAsyncThunk.fulfilled, (state, action) => {
+        state.getBudget.isLoading = false;
+        state.getBudget.budgets = action.payload.data;
+        state.getBudget.nextCursor = action.payload.nextCursor;
+      })
+      .addCase(getBudgetAsyncThunk.rejected, (state) => {
+        state.getBudget.isLoading = false;
+      });
   },
 });
 
 export * from './types';
-export const { setIsLoadingBudget } = budgetControlSlice.actions;
+export const { setIsLoadingBudget, setNextCursor } = budgetControlSlice.actions;
 export default budgetControlSlice.reducer;
