@@ -1,7 +1,6 @@
 import SelectField from '@/components/common/forms/select/SelectField';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import useDataFetcher from '@/shared/hooks/useDataFetcher';
-import { Account, Category } from '@prisma/client';
 import { Loader2 } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
@@ -27,22 +26,16 @@ const FromSelectField: React.FC<FromSelectProps> = ({
   const selectedOption = watch('fromId') || value;
 
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
-  const [targetEndpoint, setTargetEndpoint] = React.useState<string | null>(null);
 
   const { data, mutate, isLoading, isValidating } = useDataFetcher<any>({
-    endpoint: targetEndpoint,
+    endpoint: transactionType ? `/api/transactions/supporting-data?type=${transactionType}` : null,
     method: 'GET',
   });
 
   useEffect(() => {
-    if (transactionType === 'Income') {
-      setValue('fromAccountId', undefined);
-      setTargetEndpoint('/api/categories/expense-income');
-    } else {
-      setValue('fromCategoryId', undefined);
-      setTargetEndpoint('/api/accounts/lists');
+    if (transactionType) {
+      mutate();
     }
-    mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionType]);
 
@@ -50,33 +43,13 @@ const FromSelectField: React.FC<FromSelectProps> = ({
     // Get categories case
     const tmpOptions: DropdownOption[] = [];
 
-    if (data && data.data && transactionType === 'Income') {
-      data.data
-        .filter((account: Account) => account.type === transactionType)
-        .forEach((category: Category) => {
-          tmpOptions.push({
-            value: category.id,
-            label: category.name,
-          });
+    if (data) {
+      [...data.data.fromAccounts, ...data.data.fromCategories].forEach((option: any) => {
+        tmpOptions.push({
+          value: option.id,
+          label: option.name,
         });
-    } else if (data && data.data && transactionType !== 'Income') {
-      if (transactionType === 'Expense') {
-        data.data
-          .filter((account: Account) => account.type === 'Payment')
-          .forEach((account: Account) => {
-            tmpOptions.push({
-              value: account.id,
-              label: account.name,
-            });
-          });
-      } else {
-        data.data.forEach((account: Account) => {
-          tmpOptions.push({
-            value: account.id,
-            label: account.name,
-          });
-        });
-      }
+      });
     } else {
       tmpOptions.push({
         label: transactionType === 'Income' ? 'Select Category' : 'Select Account',
