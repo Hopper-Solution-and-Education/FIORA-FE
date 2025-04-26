@@ -67,6 +67,8 @@ import {
   Wallet,
   X,
   HandCoins,
+  Calendar,
+  CircleChevronLeft,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -155,4 +157,6 @@ export const Icons = {
   shrink: Shrink,
   chartBar: ChartBar,
   handCoins: HandCoins,
+  calendar: Calendar,
+  circleChevronLeft: CircleChevronLeft,
 };
