@@ -10,6 +10,11 @@ export interface IBudgetRepository {
     where: Prisma.BudgetsTableWhereInput,
     options?: Prisma.BudgetsTableFindUniqueArgs,
   ): Promise<BudgetsTable | null>;
+
+  findManyBudgetData(
+    where: Prisma.BudgetsTableWhereInput,
+    options?: Prisma.BudgetsTableFindManyArgs,
+  ): Promise<BudgetsTable[]>;
 }
 
 export interface BudgetCreation {

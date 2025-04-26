@@ -2,7 +2,14 @@ import { ITransactionRepository } from '@/features/transaction/domain/repositori
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { Messages } from '@/shared/constants/message';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
-import { BudgetDetailType, BudgetsTable, Currency, Prisma, TransactionType } from '@prisma/client';
+import {
+  BudgetDetailType,
+  BudgetsTable,
+  BudgetType,
+  Currency,
+  Prisma,
+  TransactionType,
+} from '@prisma/client';
 import _ from 'lodash';
 import { budgetDetailRepository } from '../../infrastructure/repositories/budgetDetailRepository';
 import { budgetRepository } from '../../infrastructure/repositories/budgetProductRepository';
@@ -12,7 +19,6 @@ import {
   BudgetGetAnnualYearParams,
   IBudgetRepository,
 } from '../../repositories/budgetRepository';
-import { prisma } from '@/config';
 
 class BudgetUseCase {
   private budgetRepository: IBudgetRepository;
@@ -171,11 +177,16 @@ class BudgetUseCase {
   }
 
   async getAnnualBudgetByYears(params: BudgetGetAnnualYearParams) {
-    const { userId, cursor, take, currency, search } = params;
+    const { userId, cursor = null, take, currency, search } = params;
+
+    const currentYear = new Date().getFullYear(); // 2025
 
     let where = {
       userId,
-      fiscalYear: cursor ? { gt: cursor } : undefined,
+      fiscalYear: {
+        lte: currentYear, // Allow up to next year,
+        ...(cursor && { lt: cursor }), // Use cursor for pagination
+      },
     } as Prisma.BudgetsTableWhereInput;
 
     if (search) {
@@ -185,9 +196,76 @@ class BudgetUseCase {
       };
     }
 
-    // Step 2: Fetch budgets for the user from BudgetsTable
-    const budgets = await prisma.budgetsTable.findMany({
-      where: where,
+    // Step 1.1: Check if budgets exist for the current year
+    const currentYearBudgets = await this.budgetRepository.findManyBudgetData(
+      {
+        userId: userId,
+        fiscalYear: currentYear,
+      },
+      {
+        select: {
+          fiscalYear: true,
+          type: true,
+        },
+      },
+    );
+
+    // Step 2.1: If no budgets for the current year, create them
+    if (currentYearBudgets.length === 0) {
+      // Find the most recent past year's budgets
+      const latestPastBudgets = await this.budgetRepository.findManyBudgetData(
+        {
+          userId: userId,
+          fiscalYear: { lt: currentYear },
+        },
+        {
+          select: {
+            fiscalYear: true,
+            type: true,
+            total_inc: true,
+            total_exp: true,
+            description: true,
+            currency: true,
+          },
+          orderBy: { fiscalYear: 'desc' },
+          take: 3, // Get budgets for the most recent year (Top, Bot, Act)
+        },
+      );
+
+      if (latestPastBudgets.length > 0) {
+        const topBudget = latestPastBudgets.find((b) => b.type === BudgetType.Top);
+        const currency = topBudget?.currency || Currency.VND; // Default to VND if not found
+        const description = topBudget?.description || 'Auto-generated budget';
+
+        // Create budgets for the current year using the most recent past year's data
+        // For Act, createBudget will fetch current year's transactions
+        await this.createBudget({
+          userId: userId,
+          fiscalYear: currentYear, // Use current year
+          estimatedTotalExpense: topBudget?.total_exp.toNumber() || 0,
+          estimatedTotalIncome: topBudget?.total_inc.toNumber() || 0,
+          description: description,
+          currency: currency, // Use the currency from the latest past budget
+        });
+      }
+    }
+
+    // Step 3: Fetch distinct years with budgets, sorted descending
+    const distinctYears = await this.budgetRepository.findManyBudgetData(where, {
+      select: {
+        fiscalYear: true,
+      },
+      distinct: ['fiscalYear'], // Get unique years
+      orderBy: {
+        fiscalYear: 'desc',
+      },
+      take: take, // Take 3 distinct years
+    });
+
+    const years = distinctYears.map((d) => d.fiscalYear);
+
+    // Step 3: Fetch budgets for the user with pagination, from current year and earlier
+    const budgets = await this.budgetRepository.findManyBudgetData(where, {
       select: {
         id: true,
         fiscalYear: true,
@@ -198,87 +276,111 @@ class BudgetUseCase {
         type: true,
       },
       orderBy: {
-        fiscalYear: 'desc',
-      },
-      take: take,
-    });
-
-    // Step 3: Fetch actual transactions for the user, grouped by year
-    const transactions = await prisma.transaction.findMany({
-      where: {
-        userId: userId,
-        isDeleted: false, // Exclude deleted transactions
-      },
-      select: {
-        date: true,
-        type: true,
-        amount: true,
-        currency: true, // Include currency in the selection
+        fiscalYear: 'desc', // Sort by year in descending order
       },
     });
 
-    // Step 4: Process transactions to calculate actual income/expense per year
-    const actualDataByYear = transactions.reduce(
-      (acc: Record<number, { actualIncome: number; actualExpense: number }>, transaction) => {
-        const year = new Date(transaction.date).getFullYear();
-        if (!acc[year]) {
-          acc[year] = { actualIncome: 0, actualExpense: 0 };
+    // Step 4: Group budgets by year and extract Top, Bot, Act
+    const budgetsByYear = budgets.reduce(
+      (
+        acc: Record<number, Record<string, { total_inc: any; total_exp: any; currency: string }>>,
+        budget,
+      ) => {
+        if (!acc[budget.fiscalYear]) {
+          acc[budget.fiscalYear] = {};
         }
-        // Convert Prisma.Decimal to number before passing to convertCurrency
-        const convertedAmount = convertCurrency(
-          transaction.amount, // Prisma.Decimal is handled by convertCurrency
-          transaction.currency,
-          currency,
-        );
-        if (transaction.type === TransactionType.Income) {
-          acc[year].actualIncome += convertedAmount;
-        } else if (transaction.type === TransactionType.Expense) {
-          acc[year].actualExpense += convertedAmount;
-        }
-        // Ignore 'Transfer' type as it doesn't contribute to income/expense directly
+        acc[budget.fiscalYear][budget.type] = {
+          total_inc: budget.total_inc,
+          total_exp: budget.total_exp,
+          currency: budget.currency,
+        };
         return acc;
       },
       {},
     );
 
-    // Step 5: Combine budget and actual data into the desired response format
-    const response = budgets.map((budget) => {
-      const year = budget.fiscalYear;
+    // Step 5: Fetch actual transactions for the selected years
+    const transactions = await this.transactionRepository.findManyTransactions(
+      {
+        userId: userId,
+        isDeleted: false,
+        date: {
+          gte: new Date(`${Math.min(...years)}-01-01`),
+          lte: new Date(`${Math.max(...years)}-12-31`),
+        },
+      },
+      {
+        select: {
+          date: true,
+          type: true,
+          amount: true,
+          currency: true,
+        },
+      },
+    );
+
+    // Step 6: Process transactions to calculate actual income/expense per year
+    const actualDataByYear = transactions.reduce(
+      (acc: Record<number, { budgetActIncome: number; budgetActExpense: number }>, transaction) => {
+        const year = new Date(transaction.date).getFullYear();
+        if (!acc[year]) {
+          acc[year] = { budgetActIncome: 0, budgetActExpense: 0 };
+        }
+
+        const convertedAmount = convertCurrency(
+          transaction.amount,
+          transaction.currency as Currency,
+          currency,
+        );
+        if (transaction.type === TransactionType.Income) {
+          acc[year].budgetActIncome += convertedAmount;
+        } else if (transaction.type === TransactionType.Expense) {
+          acc[year].budgetActExpense += convertedAmount;
+        }
+        return acc;
+      },
+      {},
+    );
+
+    // Step 7: Combine budget and actual data into the desired response format
+    const response = years.map((year) => {
+      const budgetData = budgetsByYear[year] || {};
+      const topData = budgetData[BudgetType.Top] || {
+        total_inc: 0,
+        total_exp: 0,
+        currency: Currency.VND,
+      };
+      const botData = budgetData[BudgetType.Bot] || {
+        total_inc: 0,
+        total_exp: 0,
+        currency: Currency.VND,
+      };
       const actualData = actualDataByYear[year] || {
-        actualIncome: 0,
-        actualExpense: 0,
+        budgetActIncome: 0,
+        budgetActExpense: 0,
       };
 
-      // Convert Prisma.Decimal to number before passing to convertCurrency
-      const convertedBudgetIncome = convertCurrency(
-        budget.total_inc, // Prisma.Decimal is handled by convertCurrency
-        budget.currency,
-        currency,
-      );
-      const convertedBudgetExpense = convertCurrency(
-        budget.total_exp, // Prisma.Decimal is handled by convertCurrency
-        budget.currency,
-        currency,
-      );
-
       return {
-        id: budget.id,
         year: year,
-        budgetIncome: convertedBudgetIncome, // Budgeted income
-        budgetExpense: convertedBudgetExpense, // Budgeted expense
-        actualIncome: actualData.actualIncome, // Actual income from transactions
-        actualExpense: actualData.actualExpense, // Actual expense from transactions,
+        budgetTopIncome: convertCurrency(topData.total_inc, topData.currency as Currency, currency),
+        budgetTopExpense: convertCurrency(
+          topData.total_exp,
+          topData.currency as Currency,
+          currency,
+        ),
+        budgetBotIncome: convertCurrency(botData.total_inc, botData.currency as Currency, currency),
+        budgetBotExpense: convertCurrency(
+          botData.total_exp,
+          botData.currency as Currency,
+          currency,
+        ),
+        budgetActIncome: Number(actualData.budgetActIncome.toFixed(2)),
+        budgetActExpense: Number(actualData.budgetActExpense.toFixed(2)),
       };
     });
 
-    // Step 7: Include the next cursor in the response (if there are more records)
-    const nextCursor =
-      response.length === take
-        ? response[response.length - 1].year // Use the last year as the next cursor
-        : null;
-
-    // Step 6: Sort by year (optional, if you want consistent ordering)
-    response.sort((a, b) => a.year + b.year);
+    // Step 9: Include the next cursor in the response
+    const nextCursor = response.length === take ? response[response.length - 1].year : null;
 
     return {
       data: response,
