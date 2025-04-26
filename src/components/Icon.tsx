@@ -34,6 +34,7 @@ import {
   LayoutDashboardIcon,
   LayoutTemplate,
   Loader2,
+  LoaderCircle,
   LogIn,
   LucideIcon,
   LucideProps,
@@ -153,4 +154,5 @@ export const Icons = {
   expand: Expand,
   shrink: Shrink,
   chartBar: ChartBar,
+  loader: LoaderCircle,
 };
