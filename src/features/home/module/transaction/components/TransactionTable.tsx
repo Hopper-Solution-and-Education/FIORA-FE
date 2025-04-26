@@ -247,7 +247,6 @@ const TransactionTable = () => {
       })
       .catch((error) => {
         console.error('Error deleting transaction:', error);
-        alert('Failed to delete transaction');
       })
       .finally(
         () => {
