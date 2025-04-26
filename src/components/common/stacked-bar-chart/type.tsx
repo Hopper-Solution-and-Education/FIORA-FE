@@ -3,6 +3,7 @@ import { TooltipProps as RechartsTooltipProps } from 'recharts';
 
 // Types for bar item
 export type CustomBarItem = {
+  id?: string;
   name: string;
   icon?: string;
   type: STACK_TYPE;
@@ -29,12 +30,15 @@ export type TooltipProps = RechartsTooltipProps<number, string>;
 export type StackedBarProps = {
   data?: CustomBarItem[];
   title?: string;
+  icon?: string;
   currency?: string;
   locale?: string;
   isLoading?: boolean;
-  onItemClick?: (item: CustomBarItem) => void;
+  callback?: (item: any) => void;
   className?: string;
   xAxisFormatter?: (value: number) => string;
   tutorialText?: string;
   legendItems?: { name: string; color: string }[];
+  showButton?: boolean;
+  onClickButton?: () => void;
 };

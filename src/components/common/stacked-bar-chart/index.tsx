@@ -1,11 +1,12 @@
 'use client';
 
-import { BarLabel, ChartLegend } from '@/components/common/atoms';
+import { BarLabel, ChartLegend, IconDisplay } from '@/components/common/atoms';
 import StackYAxisTick from '@/components/common/atoms/StackYAxisTick';
 import {
   BASE_BAR_HEIGHT,
   COLORS,
   DEFAULT_CURRENCY,
+  DEFAULT_BUDGET_ICON,
   MIN_CHART_HEIGHT,
   STACK_TYPE,
 } from '@/shared/constants/chart';
@@ -24,6 +25,15 @@ import {
   YAxis,
 } from 'recharts';
 import { CustomBarItem, StackBarDisplay, StackedBarProps, TooltipProps } from './type';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
+import { Button } from '@/components/ui/button';
+import { Icons } from '@/components/Icon';
+import {
+  TooltipContent,
+  Tooltip as TooltipShadcn,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 const largestKey = (item: CustomBarItem): string => {
   const largestValue = Math.max(item.A, item.B, item.T);
@@ -51,16 +61,21 @@ const calculateDisplayValues = (data: CustomBarItem[]): StackBarDisplay[] => {
 const StackedBarChart = ({
   data = [],
   title,
+  icon = DEFAULT_BUDGET_ICON,
   currency = DEFAULT_CURRENCY,
-  onItemClick,
+  callback,
   className,
-  xAxisFormatter = (value) => value.toString(),
+  xAxisFormatter = (value) => formatCurrency(value, currency),
   tutorialText,
   legendItems,
+  showButton,
+  onClickButton,
 }: StackedBarProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const [chartHeight, setChartHeight] = useState(MIN_CHART_HEIGHT);
   const { width } = useWindowSize();
   const chartMargins = useMemo(() => getChartMargins(width), [width]);
+  const isMobile = useIsMobile();
 
   const processedData = useMemo(() => calculateDisplayValues(data), [data]);
 
@@ -90,39 +105,24 @@ const StackedBarChart = ({
     const { active, payload, label } = props;
     if (!active || !payload || !payload.length) return null;
 
-    const item = data.find((item) => item.name === label);
-    if (!item) return null;
-
     return (
       <div className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm">
         <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{label}</p>
-        {/* A ZONE */}
-        <div
-          key={item.A}
-          className="flex items-center text-xs text-gray-600 dark:text-gray-400 mt-1"
-        >
-          <div className="w-3 h-3 mr-2 rounded-sm" style={{ backgroundColor: item.colors.A }} />
-          <span>A:</span>
-          <span className="font-bold ml-1">{formatCurrency(item.A, currency)}</span>
-        </div>
-        {/* T ZONE */}
-        <div
-          key={item.T}
-          className="flex items-center text-xs text-gray-600 dark:text-gray-400 mt-1"
-        >
-          <div className="w-3 h-3 mr-2 rounded-sm" style={{ backgroundColor: item.colors.T }} />
-          <span>T:</span>
-          <span className="font-bold ml-1">{formatCurrency(item.T, currency)}</span>
-        </div>
-        {/* B ZONE */}
-        <div
-          key={item.B}
-          className="flex items-center text-xs text-gray-600 dark:text-gray-400 mt-1"
-        >
-          <div className="w-3 h-3 mr-2 rounded-sm" style={{ backgroundColor: item.colors.B }} />
-          <span>B:</span>
-          <span className="font-bold ml-1">{formatCurrency(item.B, currency)}</span>
-        </div>
+        {payload.map((item) => (
+          <div
+            key={item.dataKey}
+            className="flex items-center text-xs text-gray-600 dark:text-gray-400 mt-1"
+          >
+            <div
+              className="w-3 h-3 mr-2 rounded-sm"
+              style={{ backgroundColor: item.payload.colors[item.dataKey as string] }}
+            />
+            <span>{item.dataKey}:</span>
+            <span className="font-bold ml-1">
+              {formatCurrency(item.payload[`${item.dataKey}OriginalValue`], currency)}
+            </span>
+          </div>
+        ))}
         {tutorialText && (
           <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 italic">{tutorialText}</p>
         )}
@@ -143,11 +143,12 @@ const StackedBarChart = ({
     const labelY = y + height / 2 - 5;
 
     return (
-      <g>
+      <g className="hidden md:block">
         <text
           x={labelX}
-          y={labelY}
-          fill="#666"
+          y={labelY - 5}
+          fill="currentColor"
+          className="text-gray-600 dark:text-gray-400"
           textAnchor="start"
           dominantBaseline="middle"
           fontSize={12}
@@ -160,6 +161,7 @@ const StackedBarChart = ({
           x={labelX}
           y={labelY + 15}
           fill={R >= 0 ? COLORS.DEPS_INFO.LEVEL_1 : COLORS.DEPS_DANGER.LEVEL_1}
+          className={R >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}
           textAnchor="start"
           dominantBaseline="middle"
           fontSize={12}
@@ -169,6 +171,14 @@ const StackedBarChart = ({
         </text>
       </g>
     );
+  };
+
+  const handleButtonClick = () => {
+    const newState = !isExpanded;
+    setIsExpanded(newState);
+    if (onClickButton) {
+      onClickButton();
+    }
   };
 
   // Dynamic Chart Height
@@ -186,68 +196,77 @@ const StackedBarChart = ({
       )}
     >
       {title && (
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-start items-center gap-4 mb-4 ml-2">
+          <IconDisplay icon={icon} className="w-12 h-12" />
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{title}</h2>
         </div>
       )}
-      <div style={{ height: `${chartHeight}px` }} className="transition-all duration-300">
-        <ResponsiveContainer width="100%" height={chartHeight}>
-          <BarChart
-            data={processedData}
-            layout="vertical"
-            margin={{ ...chartMargins, left: 0, right: 150 }}
-            className="transition-all duration-300"
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="#E5E7EB"
-              className="dark:stroke-gray-600 transition-colors duration-200"
-              horizontal={true}
-              vertical={false}
-            />
-            <XAxis
-              type="number"
-              tickFormatter={xAxisFormatter}
-              className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
-            />
-            <YAxis
-              type="category"
-              dataKey="name"
-              className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
-              tickLine={false}
-              axisLine={false}
-              tick={(props) => (
-                <StackYAxisTick {...props} processedData={data} callback={onItemClick} />
+      <ResponsiveContainer width="100%" height={chartHeight}>
+        <BarChart
+          data={processedData}
+          layout="vertical"
+          margin={{ ...chartMargins, left: 0, right: isMobile ? 0 : 100 }}
+          className="transition-all duration-300"
+        >
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke="#E5E7EB"
+            className="dark:stroke-gray-600 transition-colors duration-200"
+            horizontal={true}
+            vertical={false}
+          />
+          <XAxis
+            type="number"
+            tickFormatter={xAxisFormatter}
+            className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
+          />
+          <YAxis
+            type="category"
+            dataKey="name"
+            className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
+            tickLine={false}
+            axisLine={false}
+            tick={(props) => <StackYAxisTick {...props} processedData={data} callback={callback} />}
+          />
+          <Tooltip content={renderTooltipContent} />
+          {['A', 'T', 'B'].map((key) => (
+            <Bar
+              key={key}
+              dataKey={key}
+              stackId="a"
+              label={(props) => (
+                <BarLabel {...props} fontSize="text-xs" renderValue={formatter(key, props.value)} />
               )}
-            />
-            <Tooltip content={renderTooltipContent} />
-            {['A', 'T', 'B'].map((key) => (
-              <Bar
-                key={key}
+              onClick={(props) => callback && callback(props.payload)}
+            >
+              {processedData.map((entry, index) => (
+                <Cell key={index} fill={entry.colors[key as keyof typeof entry.colors]} />
+              ))}
+              <LabelList
                 dataKey={key}
-                stackId="a"
-                label={(props) => (
-                  <BarLabel
-                    {...props}
-                    fontSize="text-xs"
-                    renderValue={formatter(key, props.value)}
-                  />
-                )}
-              >
-                {processedData.map((entry, index) => (
-                  <Cell key={index} fill={entry.colors[key as keyof typeof entry.colors]} />
-                ))}
-                <LabelList
-                  dataKey={key}
-                  content={(props) => renderCustomLabel(processedData, props, key)}
-                  position="right"
-                />
-              </Bar>
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+                content={(props) => renderCustomLabel(processedData, props, key)}
+                position="right"
+              />
+            </Bar>
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
       <ChartLegend items={legendItems || []} />
+
+      {showButton && (
+        <div className="flex justify-end mt-4">
+          <TooltipProvider>
+            <TooltipShadcn>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="icon" onClick={handleButtonClick}>
+                  {isExpanded ? <Icons.circleChevronDown /> : <Icons.circleChevronLeft />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{isExpanded ? <p>Collapse</p> : <p>Expand</p>}</TooltipContent>
+            </TooltipShadcn>
+          </TooltipProvider>
+        </div>
+      )}
     </div>
   );
 };
