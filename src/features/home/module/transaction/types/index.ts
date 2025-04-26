@@ -26,6 +26,7 @@ export type TransactionPartner = {
   createdBy: string;
   updatedBy: string | null;
   parentId: string | null;
+  type?: string;
 };
 
 export type TransactionAccount = {
