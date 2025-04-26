@@ -1,10 +1,12 @@
-import { COLORS } from '@/shared/constants/chart';
+import { COLORS, STACK_TYPE } from '@/shared/constants/chart';
 import { BudgetGetDataResponse } from '../domain/entities/Budget';
 
 export const mapBudgetToData = (budget: BudgetGetDataResponse): any[] => {
   return [
     {
       name: 'Expense',
+      type: STACK_TYPE.EXPENSE,
+      icon: 'banknoteArrowDown',
       A: budget.budgetActExpense,
       T: budget.budgetTopExpense,
       B: budget.budgetBotExpense,
@@ -16,6 +18,8 @@ export const mapBudgetToData = (budget: BudgetGetDataResponse): any[] => {
     },
     {
       name: 'Income',
+      type: STACK_TYPE.INCOME,
+      icon: 'banknote',
       A: budget.budgetActIncome,
       T: budget.budgetTopIncome,
       B: budget.budgetBotIncome,
@@ -27,6 +31,8 @@ export const mapBudgetToData = (budget: BudgetGetDataResponse): any[] => {
     },
     {
       name: 'Profit',
+      type: STACK_TYPE.PROFIT,
+      icon: 'handCoins',
       A: budget.budgetActIncome - budget.budgetActExpense,
       T: Math.max(budget.budgetTopIncome - budget.budgetTopExpense, 0),
       B: Math.max(budget.budgetBotIncome - budget.budgetBotExpense, 0),

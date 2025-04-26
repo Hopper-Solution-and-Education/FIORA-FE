@@ -29,7 +29,7 @@ const BudgetDashboard = ({ search = '' }: Props) => {
 
   const handleItemClick = useCallback(
     (item: CustomBarItem) => {
-      router.push(`/budgets/${item.id}`);
+      router.push(`/budgets/${item.name}`);
     },
     [router],
   );
@@ -100,8 +100,6 @@ const BudgetDashboard = ({ search = '' }: Props) => {
                   onItemClick={handleItemClick}
                   xAxisFormatter={(value) => `$${value.toLocaleString()}`}
                   tutorialText="Click on a bar to view details."
-                  showExpandCollapse={true}
-                  maxItems={5}
                   className="my-4"
                   legendItems={legendItems}
                 />

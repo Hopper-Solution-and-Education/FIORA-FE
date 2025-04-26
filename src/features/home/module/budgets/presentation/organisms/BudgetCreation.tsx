@@ -7,6 +7,8 @@ import { FIREBASE_ICON_BUDGETS_PATH } from '../../constants';
 import { createBudgetAsyncThunk } from '../../slices/actions';
 import { BudgetFieldForm } from '../molecules';
 import { BudgetCreationFormValues } from '../schema';
+import { resetGetBudgetState } from '../../slices';
+import { getBudgetAsyncThunk } from '../../slices/actions/getBudgetAsyncThunk';
 
 type Props = {
   methods: UseFormReturn<BudgetCreationFormValues>;
@@ -69,7 +71,15 @@ const BudgetCreation = ({ methods }: Props) => {
     )
       .unwrap()
       .then(() => {
-        router.push('/budgets');
+        dispatch(resetGetBudgetState());
+        dispatch(
+          getBudgetAsyncThunk({
+            cursor: null,
+            search: '',
+            take: 3,
+          }),
+        );
+        router.replace('/budgets');
       });
   };
   return (
