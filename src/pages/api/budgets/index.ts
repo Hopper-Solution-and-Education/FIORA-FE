@@ -58,7 +58,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
 
     return res
       .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_PRODUCT_SUCCESS, newProduct));
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_BUDGET_SUCCESS, newProduct));
   } catch (error: any) {
     return res
       .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
