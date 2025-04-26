@@ -44,10 +44,16 @@ export enum Messages {
 
   // Budget Service
   GET_BUDGET_ITEM_SUCCESS = 'Get budget item successfully',
+  CREATE_BUDGET_SUCCESS = 'Create budget successfully',
+  UPDATE_BUDGET_SUCCESS = 'Update budget successfully',
 
   // Budget Service Failed
   INVALID_BUDGET_TYPE = 'Invalid budget type. Budget type must be Act, Bot, or Top',
   DUPLICATED_BUDGET_FISCAL_YEAR = 'Fiscal year already exists',
+  BUDGET_DETAILS_CREATE_FAILED = 'Failed to create budget details',
+  BUDGET_CREATE_FAILED = 'Failed to create budget',
+  BUDGET_NOT_FOUND = 'Budget not found',
+  BUDGET_DETAILS_NOT_FOUND = 'Budget details not found',
 
   // Category-Product Success
   CREATE_CATEGORY_PRODUCT_SUCCESS = 'Create category product successfully',
