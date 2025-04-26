@@ -6,12 +6,20 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/shared/utils';
 
 interface NavigateToAccountDialogProps {
+  title?: string;
+  description?: string;
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
 }
 
-const NavigateDialog = ({ isOpen, onClose, onConfirm }: NavigateToAccountDialogProps) => {
+const NavigateDialog = ({
+  title,
+  description,
+  isOpen,
+  onClose,
+  onConfirm,
+}: NavigateToAccountDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
@@ -57,7 +65,7 @@ const NavigateDialog = ({ isOpen, onClose, onConfirm }: NavigateToAccountDialogP
                 'text-center',
               )}
             >
-              View Transactions Details
+              {title}
             </DialogTitle>
 
             <p
@@ -67,8 +75,7 @@ const NavigateDialog = ({ isOpen, onClose, onConfirm }: NavigateToAccountDialogP
                 'mt-2 max-w-xs',
               )}
             >
-              You are about to navigate to the Transaction page where you can view and manage your
-              transaction settings.
+              {description}
             </p>
 
             <p
