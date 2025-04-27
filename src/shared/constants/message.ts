@@ -141,6 +141,7 @@ export enum Messages {
   PARTNER_IDENTIFY_EXISTS = 'Identifier already exists',
 
   GET_PARTNER_SUCCESS = 'Get partner list successfully.',
+  GET_PARTNER_FILTERED_SUCCESS = 'Get partner filtered successfully.',
   CREATE_PARTNER_SUCCESS = 'Create partner successfully.',
   UPDATE_PARTNER_SUCCESS = 'Update partner successfully.',
   DELETE_PARTNER_SUCCESS = 'Delete partner successfully.',

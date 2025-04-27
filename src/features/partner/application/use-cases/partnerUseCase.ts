@@ -7,6 +7,10 @@ import { transactionRepository } from '@/features/transaction/infrastructure/rep
 import { prisma } from '@/config';
 import { validatePartnerData } from '../../exception/partnerExceptionHandler';
 import { PartnerValidationData } from '../../exception/partnerException.type';
+import { globalFilters } from '@/shared/types';
+import { buildWhereClause } from '@/shared/utils';
+import { safeString } from '@/shared/utils/ExStringUtils';
+import { BooleanUtils } from '@/shared/lib';
 
 class PartnerUseCase {
   constructor(
@@ -24,6 +28,46 @@ class PartnerUseCase {
       throw new Error(Messages.PARTNER_NOT_FOUND);
     }
     return partner;
+  }
+
+  async filterPartnerOptions(params: globalFilters, userId: string) {
+    const searchParams = safeString(params.search);
+    let where = buildWhereClause(params.filters) as Prisma.PartnerWhereInput;
+
+    if (BooleanUtils.isTrue(searchParams)) {
+      const typeSearchParams = searchParams.toLowerCase();
+
+      where = {
+        AND: [
+          where,
+          {
+            OR: [
+              { name: { contains: typeSearchParams, mode: 'insensitive' } },
+              { identify: { contains: typeSearchParams, mode: 'insensitive' } },
+              { taxNo: { contains: typeSearchParams, mode: 'insensitive' } },
+              { phone: { contains: typeSearchParams, mode: 'insensitive' } },
+              { email: { contains: typeSearchParams, mode: 'insensitive' } },
+              { address: { contains: typeSearchParams, mode: 'insensitive' } },
+            ],
+          },
+        ],
+      };
+    }
+    const partnerFiltered = await this.partnerRepository.findManyPartner(
+      {
+        ...where,
+        userId: userId,
+      },
+      {
+        include: {
+          transactions: true,
+          children: true,
+          parent: true,
+        },
+        orderBy: { transactions: { _count: 'desc' } },
+      },
+    );
+    return partnerFiltered;
   }
 
   async deletePartner(id: string, userId: string, newId?: string): Promise<void> {
