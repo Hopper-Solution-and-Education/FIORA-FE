@@ -1,76 +1,69 @@
-import {
-  BudgetByTypeResponseDTO,
-  BudgetSummaryResponseDTO,
-} from '../dto/response/BudgetSummaryResponseDTO';
-import { BudgetSummary, BudgetSummaryByType } from '../../domain/entities/BudgetSummary';
-import { Budget } from '../../domain/entities/Budget';
+import { BudgetSummary } from '../../domain/entities/BudgetSummary';
+import { BudgetSummaryByType } from '../../domain/entities/BudgetSummaryByType';
+import { BudgetSummaryResponseDTO } from '../dto/response/BudgetSummaryResponseDTO';
+import { BudgetByTypeResponseDTO } from '../dto/response/BudgetSummaryResponseDTO';
+import { BudgetType } from '@prisma/client';
 
-class BudgetSummaryMapper {
-  static toBudgetSummary(apiResponse: BudgetSummaryResponseDTO): BudgetSummary {
-    const { topBudget, botBudget, actBudget, allBudgets } = apiResponse.data;
-
+export class BudgetSummaryMapper {
+  static toBudgetSummary(dto: BudgetSummaryResponseDTO): BudgetSummary {
     return {
-      topBudget: topBudget ? this.mapBudgetFromDto(topBudget) : null,
-      botBudget: botBudget ? this.mapBudgetFromDto(botBudget) : null,
-      actBudget: actBudget ? this.mapBudgetFromDto(actBudget) : null,
-      allBudgets: allBudgets.map((budget) => this.mapBudgetFromDto(budget)),
+      topBudget: dto.topBudget,
+      botBudget: dto.botBudget,
+      actBudget: dto.actBudget,
+      allBudgets: dto.allBudgets,
     };
   }
 
-  static toBudgetByType(apiResponse: BudgetByTypeResponseDTO): BudgetSummaryByType {
-    return this.mapBudgetFromDto(apiResponse.data);
-  }
-
-  private static mapBudgetFromDto(dto: any): Budget {
-    return Budget.builder()
-      .setId(dto.id)
-      .setUserId(dto.userId || dto.user_id)
-      .setFiscalYear(dto.fiscalYear || dto.fiscal_year)
-      .setType(dto.type)
-      .setTotalExp(dto.totalExp || dto.total_exp)
-      .setTotalInc(dto.totalInc || dto.total_inc)
-      .setH1Exp(dto.h1Exp || dto.h1_exp)
-      .setH1Inc(dto.h1Inc || dto.h1_inc)
-      .setH2Exp(dto.h2Exp || dto.h2_exp)
-      .setH2Inc(dto.h2Inc || dto.h2_inc)
-      .setQ1Exp(dto.q1Exp || dto.q1_exp)
-      .setQ1Inc(dto.q1Inc || dto.q1_inc)
-      .setQ2Exp(dto.q2Exp || dto.q2_exp)
-      .setQ2Inc(dto.q2Inc || dto.q2_inc)
-      .setQ3Exp(dto.q3Exp || dto.q3_exp)
-      .setQ3Inc(dto.q3Inc || dto.q3_inc)
-      .setQ4Exp(dto.q4Exp || dto.q4_exp)
-      .setQ4Inc(dto.q4Inc || dto.q4_inc)
-      .setM1Exp(dto.m1Exp || dto.m1_exp)
-      .setM1Inc(dto.m1Inc || dto.m1_inc)
-      .setM2Exp(dto.m2Exp || dto.m2_exp)
-      .setM2Inc(dto.m2Inc || dto.m2_inc)
-      .setM3Exp(dto.m3Exp || dto.m3_exp)
-      .setM3Inc(dto.m3Inc || dto.m3_inc)
-      .setM4Exp(dto.m4Exp || dto.m4_exp)
-      .setM4Inc(dto.m4Inc || dto.m4_inc)
-      .setM5Exp(dto.m5Exp || dto.m5_exp)
-      .setM5Inc(dto.m5Inc || dto.m5_inc)
-      .setM6Exp(dto.m6Exp || dto.m6_exp)
-      .setM6Inc(dto.m6Inc || dto.m6_inc)
-      .setM7Exp(dto.m7Exp || dto.m7_exp)
-      .setM7Inc(dto.m7Inc || dto.m7_inc)
-      .setM8Exp(dto.m8Exp || dto.m8_exp)
-      .setM8Inc(dto.m8Inc || dto.m8_inc)
-      .setM9Exp(dto.m9Exp || dto.m9_exp)
-      .setM9Inc(dto.m9Inc || dto.m9_inc)
-      .setM10Exp(dto.m10Exp || dto.m10_exp)
-      .setM10Inc(dto.m10Inc || dto.m10_inc)
-      .setM11Exp(dto.m11Exp || dto.m11_exp)
-      .setM11Inc(dto.m11Inc || dto.m11_inc)
-      .setM12Exp(dto.m12Exp || dto.m12_exp)
-      .setM12Inc(dto.m12Inc || dto.m12_inc)
-      .setCreatedAt(dto.createdAt || dto.created_at)
-      .setCreatedBy(dto.createdBy || dto.created_by)
-      .setUpdatedAt(dto.updatedAt || dto.updated_at)
-      .setUpdatedBy(dto.updatedBy || dto.updated_by)
-      .build();
+  static toBudgetByType(dto: BudgetByTypeResponseDTO): BudgetSummaryByType {
+    return {
+      budget: {
+        id: dto.data.id || '',
+        userId: dto.data.user_id || '',
+        fiscalYear: dto.data.fiscal_year || '',
+        type: dto.data.type || BudgetType.Top,
+        totalExp: dto.data.total_exp || 0,
+        totalInc: dto.data.total_inc || 0,
+        h1Exp: dto.data.h1_exp || 0,
+        h1Inc: dto.data.h1_inc || 0,
+        h2Exp: dto.data.h2_exp || 0,
+        h2Inc: dto.data.h2_inc || 0,
+        q1Exp: dto.data.q1_exp || 0,
+        q1Inc: dto.data.q1_inc || 0,
+        q2Exp: dto.data.q2_exp || 0,
+        q2Inc: dto.data.q2_inc || 0,
+        q3Exp: dto.data.q3_exp || 0,
+        q3Inc: dto.data.q3_inc || 0,
+        q4Exp: dto.data.q4_exp || 0,
+        q4Inc: dto.data.q4_inc || 0,
+        m1Exp: dto.data.m1_exp || 0,
+        m1Inc: dto.data.m1_inc || 0,
+        m2Exp: dto.data.m2_exp || 0,
+        m2Inc: dto.data.m2_inc || 0,
+        m3Exp: dto.data.m3_exp || 0,
+        m3Inc: dto.data.m3_inc || 0,
+        m4Exp: dto.data.m4_exp || 0,
+        m4Inc: dto.data.m4_inc || 0,
+        m5Exp: dto.data.m5_exp || 0,
+        m5Inc: dto.data.m5_inc || 0,
+        m6Exp: dto.data.m6_exp || 0,
+        m6Inc: dto.data.m6_inc || 0,
+        m7Exp: dto.data.m7_exp || 0,
+        m7Inc: dto.data.m7_inc || 0,
+        m8Exp: dto.data.m8_exp || 0,
+        m8Inc: dto.data.m8_inc || 0,
+        m9Exp: dto.data.m9_exp || 0,
+        m9Inc: dto.data.m9_inc || 0,
+        m10Exp: dto.data.m10_exp || 0,
+        m10Inc: dto.data.m10_inc || 0,
+        m11Exp: dto.data.m11_exp || 0,
+        m11Inc: dto.data.m11_inc || 0,
+        m12Exp: dto.data.m12_exp || 0,
+        m12Inc: dto.data.m12_inc || 0,
+        createdAt: dto.data.created_at || '',
+        updatedAt: dto.data.updated_at || '',
+        createdBy: dto.data.created_by || '',
+        updatedBy: dto.data.updated_by || '',
+      },
+    };
   }
 }
-
-export default BudgetSummaryMapper;

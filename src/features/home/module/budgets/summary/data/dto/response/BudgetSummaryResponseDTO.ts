@@ -1,9 +1,10 @@
 import { BudgetType } from '@prisma/client';
+import { BudgetsTable } from '@prisma/client';
 
 export interface BudgetDTO {
   id: string;
-  userId: string;
-  fiscalYear: number;
+  user_id: string;
+  fiscal_year: string;
   type: BudgetType;
   total_exp: number;
   total_inc: number;
@@ -43,21 +44,17 @@ export interface BudgetDTO {
   m11_inc: number;
   m12_exp: number;
   m12_inc: number;
-  createdAt: string;
-  updatedAt: string;
-  createdBy?: string;
-  updatedBy?: string;
+  created_at: string;
+  updated_at: string;
+  created_by?: string;
+  updated_by?: string;
 }
 
 export interface BudgetSummaryResponseDTO {
-  code: number;
-  message: string;
-  data: {
-    topBudget: BudgetDTO | null;
-    botBudget: BudgetDTO | null;
-    actBudget: BudgetDTO | null;
-    allBudgets: BudgetDTO[];
-  };
+  topBudget: BudgetsTable | null;
+  botBudget: BudgetsTable | null;
+  actBudget: BudgetsTable | null;
+  allBudgets: BudgetsTable[];
 }
 
 export interface BudgetByTypeResponseDTO {

@@ -4,6 +4,9 @@ import {
   fetchBudgetSummarySuccess,
   fetchBudgetSummaryFailure,
 } from '../budgetSummarySlice';
+import { budgetSummaryDIContainer } from '../../di/budgetSummaryDIContainer';
+import { TYPES } from '../../di/budgetSummaryDIContainer.type';
+import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
 
 export const fetchBudgetSummaryAsyncThunk = createAsyncThunk(
   'budgetSummary/fetchBudgetSummary',
@@ -11,25 +14,22 @@ export const fetchBudgetSummaryAsyncThunk = createAsyncThunk(
     try {
       dispatch(fetchBudgetSummaryStart());
 
-      const response = await fetch(`/api/budgets/summary/${userId}?fiscalYear=${fiscalYear}`);
+      const budgetSummaryUseCase = budgetSummaryDIContainer.get<IBudgetSummaryUseCase>(
+        TYPES.IBudgetSummaryUseCase,
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Không thể lấy dữ liệu ngân sách');
-      }
-
-      const data = await response.json();
+      const data = await budgetSummaryUseCase.getBudgetsByUserIdAndFiscalYear(userId, fiscalYear);
 
       dispatch(
         fetchBudgetSummarySuccess({
-          topBudget: data.data.topBudget,
-          botBudget: data.data.botBudget,
-          actBudget: data.data.actBudget,
-          allBudgets: data.data.allBudgets,
+          topBudget: data.topBudget,
+          botBudget: data.botBudget,
+          actBudget: data.actBudget,
+          allBudgets: data.allBudgets,
         }),
       );
 
-      return data.data;
+      return data;
     } catch (error) {
       dispatch(fetchBudgetSummaryFailure(error instanceof Error ? error.message : 'Đã xảy ra lỗi'));
       throw error;

@@ -10,9 +10,6 @@ export {
   resetBudgetSummary,
 } from './budgetSummarySlice';
 
-// Export thunks
-export { fetchBudgetSummary, fetchBudgetByType } from './budgetSummaryThunks';
-
 // Export selectors
 export {
   selectBudgetSummaryState,

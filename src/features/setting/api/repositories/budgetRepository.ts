@@ -15,6 +15,8 @@ export interface IBudgetRepository {
     where: Prisma.BudgetsTableWhereInput,
     options?: Prisma.BudgetsTableFindManyArgs,
   ): Promise<BudgetsTable[]>;
+
+  findBudgetsByUserIdAndFiscalYear(userId: string, fiscalYear: number): Promise<BudgetsTable[]>;
 }
 
 export interface BudgetCreation {

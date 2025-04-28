@@ -1,5 +1,5 @@
-import { BudgetDto } from '../../data/dto';
-import { BudgetType } from '../enum/BudgetType';
+import { BudgetDTO } from '../../data/dto/response/BudgetSummaryResponseDTO';
+import { BudgetType } from '@prisma/client';
 
 export class Budget {
   public id: string | undefined;
@@ -98,7 +98,7 @@ export class Budget {
     this.updatedBy = builder.updatedBy;
   }
 
-  public static fromDto(dto: BudgetDto): Budget {
+  public static fromDto(dto: BudgetDTO): Budget {
     return Budget.builder()
       .setId(dto.id)
       .setUserId(dto.user_id)

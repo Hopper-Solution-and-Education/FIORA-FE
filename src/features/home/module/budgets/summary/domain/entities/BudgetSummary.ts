@@ -1,10 +1,11 @@
-import { Budgets } from './Budget';
+import { BudgetsTable } from '@prisma/client';
+import { Budget } from './Budget';
 
 export interface BudgetSummary {
-  topBudget: Budgets | null;
-  botBudget: Budgets | null;
-  actBudget: Budgets | null;
-  allBudgets: Budgets[];
+  topBudget: BudgetsTable | null;
+  botBudget: BudgetsTable | null;
+  actBudget: BudgetsTable | null;
+  allBudgets: BudgetsTable[];
 }
 
-export type BudgetSummaryByType = Budgets;
+export type BudgetSummaryByType = Budget;

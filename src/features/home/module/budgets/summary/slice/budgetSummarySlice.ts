@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { BudgetsTable, BudgetType } from '@prisma/client';
+// Import the thunk
 
 export interface BudgetSummaryState {
   topBudget: BudgetsTable | null;

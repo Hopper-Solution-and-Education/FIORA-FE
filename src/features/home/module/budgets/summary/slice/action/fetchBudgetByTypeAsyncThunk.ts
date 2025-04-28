@@ -1,27 +1,21 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { BudgetType } from '@prisma/client';
+import { budgetSummaryDIContainer } from '../../di/budgetSummaryDIContainer';
+import { TYPES } from '../../di/budgetSummaryDIContainer.type';
+import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
 
 export const fetchBudgetByTypeAsyncThunk = createAsyncThunk(
   'budgetSummary/fetchBudgetByType',
-  async ({
-    userId,
-    fiscalYear,
-    type,
-  }: {
-    userId: string;
-    fiscalYear: number;
-    type: BudgetType;
-  }) => {
-    const response = await fetch(
-      `/api/budgets/summary/${userId}?fiscalYear=${fiscalYear}&type=${type}`,
-    );
+  async ({ fiscalYear, type }: { fiscalYear: number; type: BudgetType }) => {
+    try {
+      const budgetSummaryUseCase = budgetSummaryDIContainer.get<IBudgetSummaryUseCase>(
+        TYPES.IBudgetSummaryUseCase,
+      );
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Không thể lấy dữ liệu ngân sách theo loại');
+      const data = await budgetSummaryUseCase.getBudgetByType(fiscalYear, type);
+      return data;
+    } catch (error) {
+      throw error instanceof Error ? error : new Error('Không thể lấy dữ liệu ngân sách theo loại');
     }
-
-    const data = await response.json();
-    return data.data;
   },
 );
