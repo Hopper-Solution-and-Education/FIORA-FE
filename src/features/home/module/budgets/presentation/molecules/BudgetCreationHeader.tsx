@@ -1,6 +1,5 @@
 import { DeleteDialog } from '@/components/common/organisms';
 import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -19,7 +18,7 @@ const BudgetCreationHeader = () => {
         aria-label="Delete budget"
         onClick={() => setOpenDelete(true)}
       >
-        <Trash2 className="h-5 w-5 md:h-6 md:w-6 text-red-500" />
+        {/* <Trash2 className="h-5 w-5 md:h-6 md:w-6 text-red-500" /> */}
       </Button>
 
       <DeleteDialog

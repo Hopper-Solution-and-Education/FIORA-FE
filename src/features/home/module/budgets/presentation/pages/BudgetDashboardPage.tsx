@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getBudgetAsyncThunk } from '../../slices/actions/getBudgetAsyncThunk';
 import { BudgetDashboardHeader } from '../molecules';
 import { BudgetDashboard } from '../organisms';
+import { resetGetBudgetState } from '../../slices';
 
 const BudgetDashboardPage = () => {
   const [inputValue, setInputValue] = useState('');
@@ -18,6 +19,7 @@ const BudgetDashboardPage = () => {
 
   const handleGetBudgetData = useCallback(() => {
     if (isLoading || budgets.length > 0) return;
+    dispatch(resetGetBudgetState()); // reset before call get budget Async Thunk
     dispatch(
       getBudgetAsyncThunk({
         cursor: null,

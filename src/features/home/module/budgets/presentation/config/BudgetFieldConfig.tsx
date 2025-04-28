@@ -44,6 +44,7 @@ const useBudgetFieldConfig = () => {
       name="totalExpense"
       label="Estimated Total Expense"
       currency={watch('currency')}
+      maxLength={11}
       required
       disabled={isDisabledField}
     />,
@@ -52,6 +53,7 @@ const useBudgetFieldConfig = () => {
       name="totalIncome"
       label="Estimated Total Income"
       currency={watch('currency')}
+      maxLength={11}
       required
       disabled={isDisabledField}
     />,

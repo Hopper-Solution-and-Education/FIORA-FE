@@ -25,17 +25,17 @@ const BudgetCreation = ({ methods }: Props) => {
       fiscalYear: Number(data.fiscalYear),
     };
 
-    if (data.totalExpense.toString().length > 13) {
+    if (data.totalExpense.toString().length > 11) {
       setError('totalExpense', {
-        message: 'Total expense must be less than 13 digits',
+        message: 'Total expense must be less than 11 digits',
         type: 'validate',
       });
       return;
     }
 
-    if (data.totalIncome.toString().length > 13) {
+    if (data.totalIncome.toString().length > 11) {
       setError('totalIncome', {
-        message: 'Total income must be less than 13 digits',
+        message: 'Total income must be less than 11 digits',
         type: 'validate',
       });
       return;
