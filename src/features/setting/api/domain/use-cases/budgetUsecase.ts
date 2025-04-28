@@ -44,6 +44,7 @@ class BudgetUseCase {
       estimatedTotalIncome,
       icon,
       currency,
+      isSystemGenerated = false,
     } = params;
 
     const transactions = await this.transactionRepository.findManyTransactions(
@@ -139,7 +140,7 @@ class BudgetUseCase {
         h2_inc,
         ...quarterFields,
         ...monthFields,
-        createdBy: userId,
+        createdBy: !isSystemGenerated ? userId : undefined,
         description,
         currency,
       });
@@ -212,11 +213,16 @@ class BudgetUseCase {
 
     // Step 2.1: If no budgets for the current year, create them
     if (currentYearBudgets.length === 0) {
-      // Find the most recent past year's budgets
+      // Find the least recent past year's budgets (if current year is 2025 => get 2024 )
+      const targetYear = new Date().getFullYear() - 1; // 2024
+      const defaultIcon = 'banknote';
+
       const latestPastBudgets = await this.budgetRepository.findManyBudgetData(
         {
           userId: userId,
-          fiscalYear: { lt: currentYear },
+          fiscalYear: {
+            equals: targetYear,
+          },
         },
         {
           select: {
@@ -235,17 +241,31 @@ class BudgetUseCase {
       if (latestPastBudgets.length > 0) {
         const topBudget = latestPastBudgets.find((b) => b.type === BudgetType.Top);
         const currency = topBudget?.currency || Currency.VND; // Default to VND if not found
-        const description = topBudget?.description || 'Auto-generated budget';
+        const description = topBudget?.description || 'Auto-generated bud get';
 
         // Create budgets for the current year using the most recent past year's data
         // For Act, createBudget will fetch current year's transactions
         await this.createBudget({
           userId: userId,
           fiscalYear: currentYear, // Use current year
-          estimatedTotalExpense: topBudget?.total_exp.toNumber() || 0,
-          estimatedTotalIncome: topBudget?.total_inc.toNumber() || 0,
+          estimatedTotalExpense: topBudget!.total_exp.toNumber(),
+          estimatedTotalIncome: topBudget!.total_inc.toNumber(),
           description: description,
           currency: currency, // Use the currency from the latest past budget
+          icon: topBudget?.icon ?? defaultIcon,
+          isSystemGenerated: true,
+        });
+      } else {
+        const defaultDescription = 'Auto-generated budget';
+        await this.createBudget({
+          userId: userId,
+          fiscalYear: currentYear, // Use current year
+          estimatedTotalExpense: 0,
+          estimatedTotalIncome: 0,
+          description: defaultDescription,
+          currency: currency, // Use the currency from the user preference
+          icon: defaultIcon,
+          isSystemGenerated: true,
         });
       }
     }
@@ -332,6 +352,7 @@ class BudgetUseCase {
           transaction.currency as Currency,
           currency,
         );
+
         if (transaction.type === TransactionType.Income) {
           acc[year].budgetActIncome += convertedAmount;
         } else if (transaction.type === TransactionType.Expense) {
@@ -374,8 +395,8 @@ class BudgetUseCase {
           botData.currency as Currency,
           currency,
         ),
-        budgetActIncome: Number(actualData.budgetActIncome.toFixed(2)),
-        budgetActExpense: Number(actualData.budgetActExpense.toFixed(2)),
+        budgetActIncome: actualData.budgetActIncome,
+        budgetActExpense: actualData.budgetActExpense,
       };
     });
 
