@@ -14,7 +14,7 @@ import {
   useFormContext,
 } from 'react-hook-form';
 import { GlobalLabel } from '../../atoms';
-import { GlobalDialog } from '../../organisms';
+import { GlobalDialog } from '../../molecules';
 import { FieldV2Props } from '../FormConfig';
 
 export interface ArrayFieldConfig<T extends FieldValues> {

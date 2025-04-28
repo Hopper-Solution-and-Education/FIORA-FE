@@ -1,7 +1,7 @@
 'use client';
 
 import { FormConfig } from '@/components/common/forms';
-import { GlobalDialog } from '@/components/common/organisms';
+import { GlobalDialog } from '@/components/common/molecules';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
