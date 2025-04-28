@@ -1,35 +1,27 @@
-import { ReactNode } from 'react';
+import { STACK_TYPE } from '@/shared/constants/chart';
 import { TooltipProps as RechartsTooltipProps } from 'recharts';
-
-// Types for text positioning
-export type TextPosition = 'top' | 'bottom' | 'center' | 'left' | 'right';
-
-// Types for layer data
-export type BarLayerData = {
-  id: string;
-  value: number;
-  color: string;
-  text?: string | ReactNode;
-  textPosition?: TextPosition;
-  type?: string;
-};
-
-// Types for transformed data
-export type TransformedDataItem = {
-  name: string;
-  [key: string]: number | string | Record<string, string>;
-  colors: Record<string, string>;
-};
 
 // Types for bar item
 export type CustomBarItem = {
-  id: string;
+  id?: string;
   name: string;
   icon?: string;
-  type: string;
-  colors: string[];
-  layers: BarLayerData[];
-  isOthers?: boolean;
+  type: STACK_TYPE;
+  A: number;
+  T: number;
+  B: number;
+  colors: {
+    A: string;
+    T: string;
+    B: string;
+  };
+};
+
+export type StackBarDisplay = CustomBarItem & {
+  maxKey: string;
+  AOriginalValue: number;
+  BOriginalValue: number;
+  TOriginalValue: number;
 };
 
 // Types for tooltip
@@ -38,14 +30,15 @@ export type TooltipProps = RechartsTooltipProps<number, string>;
 export type StackedBarProps = {
   data?: CustomBarItem[];
   title?: string;
+  icon?: string;
   currency?: string;
   locale?: string;
   isLoading?: boolean;
-  onItemClick?: (item: CustomBarItem) => void;
+  callback?: (item: any) => void;
   className?: string;
   xAxisFormatter?: (value: number) => string;
   tutorialText?: string;
   legendItems?: { name: string; color: string }[];
-  showExpandCollapse?: boolean;
-  maxItems?: number;
+  showButton?: boolean;
+  onClickButton?: () => void;
 };
