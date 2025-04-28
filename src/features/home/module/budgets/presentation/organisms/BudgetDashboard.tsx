@@ -2,9 +2,7 @@
 
 import { ChartSkeleton } from '@/components/common/organisms';
 import StackedBarChart from '@/components/common/stacked-bar-chart';
-import { CustomBarItem } from '@/components/common/stacked-bar-chart/type';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef } from 'react';
 import { getBudgetAsyncThunk } from '../../slices/actions/getBudgetAsyncThunk';
 import { legendItems, mapBudgetToData } from '../../utils';
@@ -14,7 +12,7 @@ type Props = {
 };
 
 const BudgetDashboard = ({ search = '' }: Props) => {
-  const router = useRouter();
+  // const router = useRouter();
   const currency = useAppSelector((state) => state.settings.currency);
   const { budgets, isLoading, nextCursor, isLast } = useAppSelector(
     (state) => state.budgetControl.getBudget,
@@ -27,12 +25,12 @@ const BudgetDashboard = ({ search = '' }: Props) => {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  const handleItemClick = useCallback(
-    (item: CustomBarItem) => {
-      router.push(`/budgets/${item.name}`);
-    },
-    [router],
-  );
+  // const handleItemClick = useCallback(
+  //   (item: CustomBarItem) => {
+  //     router.push(`/budgets/${item.name}`);
+  //   },
+  //   [router],
+  // );
 
   const handleCallGetBudget = useCallback(
     (cursor: number | null) => {
@@ -96,7 +94,7 @@ const BudgetDashboard = ({ search = '' }: Props) => {
                   data={data}
                   title={`${budgetItem.year}`}
                   currency={currency}
-                  callback={handleItemClick}
+                  // callback={handleItemClick}
                   tutorialText="Click on a bar to view details."
                   className="my-4"
                   legendItems={legendItems}

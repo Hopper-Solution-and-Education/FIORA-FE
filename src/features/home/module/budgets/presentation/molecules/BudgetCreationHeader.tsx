@@ -12,7 +12,7 @@ const BudgetCreationHeader = () => {
     <div className="flex items-center justify-between mb-6">
       <h1 className="text-xl md:text-2xl font-bold">Create New Budget</h1>
       <Button
-        // disabled
+        disabled
         type="button"
         variant="ghost"
         className="p-2"
