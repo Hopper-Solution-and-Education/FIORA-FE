@@ -345,7 +345,7 @@ model BudgetsTable {
   budgetDetail BudgetDetails[]
   user         User            @relation(fields: [userId], references: [id])
 
-  @@unique([fiscalYear, type]) // ensure  fiscal year is unique for each type
+  @@unique([fiscalYear, type, userId]) // ensure  fiscal year is unique for each type
   @@index([userId])
   @@index([fiscalYear])
 }
