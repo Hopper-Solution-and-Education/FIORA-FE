@@ -96,9 +96,7 @@ const BudgetDashboard = ({ search = '' }: Props) => {
                   data={data}
                   title={`${budgetItem.year}`}
                   currency={currency}
-                  locale="en-US"
-                  onItemClick={handleItemClick}
-                  xAxisFormatter={(value) => `$${value.toLocaleString()}`}
+                  callback={handleItemClick}
                   tutorialText="Click on a bar to view details."
                   className="my-4"
                   legendItems={legendItems}
