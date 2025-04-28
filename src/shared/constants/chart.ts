@@ -1,5 +1,7 @@
 export const DEFAULT_LOCALE = 'vi-VN';
 export const DEFAULT_CURRENCY = 'VND';
+export const DEFAULT_ICON = 'activity';
+export const DEFAULT_BUDGET_ICON = 'calendar';
 export const DEFAULT_MAX_BAR_RATIO = 0.9; // 90% of chart width for largest bar
 export const CHART_MARGINS = { top: 10, right: 30, left: 100, bottom: 30 };
 export const BASE_BAR_HEIGHT = 70; // Minimum height per bar in pixels
