@@ -4,6 +4,10 @@ import { Account, AccountType, Currency, Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IAccountRepository } from '../../domain/repositories/accountRepository.interface';
 import { accountRepository } from '../../infrastructure/repositories/accountRepository';
+import { safeString } from '@/shared/utils/ExStringUtils';
+import { globalFilters } from '@/shared/types';
+import { buildWhereClause } from '@/shared/utils';
+import { BooleanUtils } from '@/shared/lib';
 
 const descriptions = {
   ['Payment']:
@@ -84,6 +88,47 @@ export class AccountUseCase {
       }
       return parentAccount;
     }
+  }
+
+  async filterAccountOptions(params: globalFilters, userId: string) {
+    const searchParams = safeString(params.search);
+    let where = buildWhereClause(params.filters) as Prisma.AccountWhereInput;
+
+    if (BooleanUtils.isTrue(searchParams)) {
+      const typeSearchParams = searchParams.toLowerCase();
+
+      where = {
+        AND: [
+          where,
+          {
+            OR: [
+              { name: { contains: typeSearchParams, mode: 'insensitive' } },
+              { type: { equals: typeSearchParams as AccountType } },
+            ],
+          },
+        ],
+      };
+    }
+
+    const accountFiltered = await this.accountRepository.findManyWithCondition(
+      {
+        ...where,
+        userId: userId,
+      },
+      {
+        include: {
+          children: true,
+          toTransactions: true,
+          fromTransactions: true,
+        },
+        orderBy: [
+          {
+            balance: 'desc',
+          },
+        ],
+      },
+    );
+    return accountFiltered;
   }
 
   async validateParentAccount(parentId: string, type: AccountType): Promise<void> {

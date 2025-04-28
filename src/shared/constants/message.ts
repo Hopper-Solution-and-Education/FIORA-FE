@@ -68,6 +68,7 @@ export enum Messages {
   // Account
   CREATE_ACCOUNT_FAILED = 'Failed to create account',
   CREATE_ACCOUNT_SUCCESS = 'Account created successfully',
+  GET_ACCOUNT_FILTERED_SUCCESS = 'Get account filtered successfully.',
   UPDATE_ACCOUNT_SUCCESS = 'Account updated successfully',
   DELETE_ACCOUNT_SUCCESS = 'Account deleted successfully',
   GET_ACCOUNT_SUCCESS = 'Get account list successfully',
