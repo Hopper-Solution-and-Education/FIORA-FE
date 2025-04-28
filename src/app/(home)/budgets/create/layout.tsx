@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Budgets Control - Create',
+  title: 'Budgets Control | Creation',
   description: 'FIORA Budgets Control',
 };
 
