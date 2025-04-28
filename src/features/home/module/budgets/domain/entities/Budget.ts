@@ -148,6 +148,28 @@ export class Budget {
   }
 }
 
+export type BudgetGetRequest = {
+  cursor: number | null;
+  take: number;
+  search: string;
+};
+
+export type BudgetGetResponse = {
+  currency: Currency;
+  data: BudgetGetDataResponse[];
+  nextCursor: number;
+};
+
+export type BudgetGetDataResponse = {
+  year: number;
+  budgetTopIncome: number;
+  budgetTopExpense: number;
+  budgetBotIncome: number;
+  budgetBotExpense: number;
+  budgetActIncome: number;
+  budgetActExpense: number;
+};
+
 export type BudgetCreateRequest = {
   icon: string;
   fiscalYear: string;

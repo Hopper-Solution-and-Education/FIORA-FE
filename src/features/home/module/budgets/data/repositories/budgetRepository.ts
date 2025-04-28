@@ -1,10 +1,16 @@
 import { decorate, injectable } from 'inversify';
-import { BudgetCreateRequest, BudgetCreateResponse } from '../../domain/entities/Budget';
+import {
+  BudgetCreateRequest,
+  BudgetCreateResponse,
+  BudgetGetRequest,
+  BudgetGetResponse,
+} from '../../domain/entities/Budget';
 import { IBudgetAPI } from '../api/budgetApi';
 import BudgetMapper from '../mappers/BudgetMapper';
 
 export interface IBudgetRepository {
   createBudget(request: BudgetCreateRequest): Promise<BudgetCreateResponse>;
+  getBudget(request: BudgetGetRequest): Promise<BudgetGetResponse>;
 }
 
 export class CategoryRepository implements IBudgetRepository {
@@ -18,6 +24,12 @@ export class CategoryRepository implements IBudgetRepository {
     const requestAPI = BudgetMapper.toCreateBudgetRequestDTO(request);
     const response = await this.budgetAPI.createBudget(requestAPI);
     return BudgetMapper.toCreateBudgetResponse(response);
+  }
+
+  async getBudget(request: BudgetGetRequest): Promise<BudgetGetResponse> {
+    const requestAPI = BudgetMapper.toGetBudgetRequestDTO(request);
+    const response = await this.budgetAPI.getBudget(requestAPI);
+    return BudgetMapper.toGetBudgetResponse(response);
   }
 }
 

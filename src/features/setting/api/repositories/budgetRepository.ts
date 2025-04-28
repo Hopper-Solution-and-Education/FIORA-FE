@@ -27,6 +27,7 @@ export interface BudgetCreation {
   description?: string;
   userId: string;
   currency: Currency;
+  isSystemGenerated?: boolean;
 }
 
 export interface BudgetGetAnnualYearParams {
