@@ -1,5 +1,5 @@
 import { BudgetType } from '@prisma/client';
-import { BudgetsTable } from '@prisma/client';
+import { Budget } from '../../../domain/entities/Budget';
 
 export interface BudgetDTO {
   id: string;
@@ -51,10 +51,10 @@ export interface BudgetDTO {
 }
 
 export interface BudgetSummaryResponseDTO {
-  topBudget: BudgetsTable | null;
-  botBudget: BudgetsTable | null;
-  actBudget: BudgetsTable | null;
-  allBudgets: BudgetsTable[];
+  topBudget: Budget | null;
+  botBudget: Budget | null;
+  actBudget: Budget | null;
+  allBudgets: Budget[];
 }
 
 export interface BudgetByTypeResponseDTO {

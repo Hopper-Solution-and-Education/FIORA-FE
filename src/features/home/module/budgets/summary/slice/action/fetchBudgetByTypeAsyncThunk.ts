@@ -15,7 +15,7 @@ export const fetchBudgetByTypeAsyncThunk = createAsyncThunk(
       const data = await budgetSummaryUseCase.getBudgetByType(fiscalYear, type);
       return data;
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Không thể lấy dữ liệu ngân sách theo loại');
+      throw error instanceof Error ? error : new Error('Fail to Fetch');
     }
   },
 );

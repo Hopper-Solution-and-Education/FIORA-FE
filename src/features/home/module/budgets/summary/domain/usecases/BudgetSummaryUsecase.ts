@@ -2,17 +2,9 @@ import { BudgetType } from '@prisma/client';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
 import type { IBudgetSummaryRepository } from '../../data/repositories/IBudgetSummaryRepository';
-import { BudgetsTable } from '@prisma/client';
 import { IBudgetSummaryUseCase } from './IBudgetSummaryUseCase';
 import { BudgetSummaryByType } from '../entities/BudgetSummaryByType';
-
-export interface BudgetSummaryResponse {
-  topBudget: BudgetsTable | null;
-  botBudget: BudgetsTable | null;
-  actBudget: BudgetsTable | null;
-  allBudgets: BudgetsTable[];
-}
-
+import { BudgetSummaryResponseDTO } from '../../data/dto/response/BudgetSummaryResponseDTO';
 @injectable()
 export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
   constructor(
@@ -23,7 +15,7 @@ export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
   async getBudgetsByUserIdAndFiscalYear(
     userId: string,
     fiscalYear: number,
-  ): Promise<BudgetSummaryResponse> {
+  ): Promise<BudgetSummaryResponseDTO> {
     const budgets = await this.budgetSummaryRepository.getBudgetsByUserIdAndFiscalYear(
       userId,
       fiscalYear,

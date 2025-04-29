@@ -31,7 +31,7 @@ export const fetchBudgetSummaryAsyncThunk = createAsyncThunk(
 
       return data;
     } catch (error) {
-      dispatch(fetchBudgetSummaryFailure(error instanceof Error ? error.message : 'Đã xảy ra lỗi'));
+      dispatch(fetchBudgetSummaryFailure(error instanceof Error ? error.message : 'Fail to fetch'));
       throw error;
     }
   },

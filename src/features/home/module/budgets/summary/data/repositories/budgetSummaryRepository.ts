@@ -1,4 +1,4 @@
-import { BudgetType, BudgetsTable } from '@prisma/client';
+import { BudgetType } from '@prisma/client';
 import { inject, injectable } from 'inversify';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
 import { BudgetSummary } from '../../domain/entities/BudgetSummary';
@@ -7,6 +7,7 @@ import type { IBudgetSummaryAPI } from '../api/IBudgetSummaryAPI';
 import { BudgetSummaryRequestDTO } from '../dto/request/BudgetSummaryRequestDTO';
 import { BudgetSummaryMapper } from '../mappers/BudgetSummaryMapper';
 import { IBudgetSummaryRepository } from './IBudgetSummaryRepository';
+import { Budget } from '../../domain/entities/Budget';
 
 @injectable()
 export class BudgetSummaryRepository implements IBudgetSummaryRepository {
@@ -32,10 +33,7 @@ export class BudgetSummaryRepository implements IBudgetSummaryRepository {
     }
   }
 
-  async getBudgetsByUserIdAndFiscalYear(
-    userId: string,
-    fiscalYear: number,
-  ): Promise<BudgetsTable[]> {
+  async getBudgetsByUserIdAndFiscalYear(userId: string, fiscalYear: number): Promise<Budget[]> {
     try {
       const data = await this.budgetSummaryAPI.getBudgetSummary({ fiscalYear });
       return data.allBudgets.filter((budget) => budget.userId === userId);

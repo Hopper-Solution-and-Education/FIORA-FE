@@ -1,11 +1,11 @@
 import { BudgetType } from '@prisma/client';
-import { BudgetSummaryResponse } from './BudgetSummaryUsecase';
 import { BudgetSummaryByType } from '../entities/BudgetSummaryByType';
+import { BudgetSummaryResponseDTO } from '../../data/dto/response/BudgetSummaryResponseDTO';
 
 export interface IBudgetSummaryUseCase {
   getBudgetsByUserIdAndFiscalYear(
     userId: string,
     fiscalYear: number,
-  ): Promise<BudgetSummaryResponse>;
+  ): Promise<BudgetSummaryResponseDTO>;
   getBudgetByType(fiscalYear: number, type: BudgetType): Promise<BudgetSummaryByType | null>;
 }
