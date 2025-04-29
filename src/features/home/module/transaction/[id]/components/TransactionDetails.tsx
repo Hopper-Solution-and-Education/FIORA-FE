@@ -1,10 +1,11 @@
+import { Icons } from '@/components/Icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { format } from 'date-fns';
-import { ArrowLeft, Trash } from 'lucide-react';
+import { Trash } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -58,9 +59,6 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
   // Format the date to a readable format
   const formattedDate = data.date ? format(new Date(data.date), 'Ppp') : 'N/A';
   const router = useRouter();
-  const handleBack = () => {
-    router.back();
-  };
 
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
@@ -139,13 +137,13 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant="destructive"
+                      variant="secondary"
                       className="px-3 py-2 hover:bg-red-200"
                       onClick={() => {
                         handleOpenDeleteModal();
                       }}
                     >
-                      <Trash size={18} color="white" />
+                      <Trash size={18} color="red" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -167,7 +165,7 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                   <div className="text-sm text-muted-foreground">Type</div>
                   <div className="flex justify-end">
                     <Badge
-                      className={`${getTypeColor()} text-white cursor-default hover:bg-red-500`}
+                      className={`${getTypeColor()} text-white cursor-default hover:${getTypeColor()}`}
                     >
                       {data.type}
                     </Badge>
@@ -394,24 +392,39 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
               </div>
             </div>
 
-            <div className="w-full h-fit flex justify-end">
-              <TooltipProvider>
+            <TooltipProvider>
+              <div className="flex justify-between gap-4 mt-6">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="outline"
-                      onClick={handleBack}
-                      className="mt-2 flex items-center gap-2"
+                      type="button"
+                      onClick={() => router.back()}
+                      className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
                     >
-                      <ArrowLeft size={16} />
+                      <Icons.circleArrowLeft className="h-5 w-5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Back to Transactions</p>
+                    <p>Cancel and go back</p>
                   </TooltipContent>
                 </Tooltip>
-              </TooltipProvider>
-            </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      onClick={() => router.back()}
+                      className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
+                    >
+                      <Icons.check className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Done reading</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
           </CardContent>
         </Card>
       </div>
