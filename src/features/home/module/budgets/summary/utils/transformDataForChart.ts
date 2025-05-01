@@ -1,6 +1,6 @@
 import { COLORS, STACK_TYPE } from '@/shared/constants/chart';
 import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
-import { CustomBarItem } from '@/components/common/stacked-bar-chart/type';
+import { ChartItem, HierarchicalBarItem } from '../presentation/types';
 
 interface TransformDataParams {
   topBudget: BudgetSummaryByType | null;
@@ -14,13 +14,13 @@ export const transformDataForChart = ({
   botBudget,
   actBudget,
   selectedYear,
-}: TransformDataParams): CustomBarItem[] => {
+}: TransformDataParams): HierarchicalBarItem[] => {
   if (!topBudget?.budget || !botBudget?.budget || !actBudget?.budget) {
     return [];
   }
 
   // Helper function to map budget data for a given time period
-  const mapBudgetForPeriod = (period: string, expField: string, incField: string): any[] => {
+  const mapBudgetForPeriod = (period: string, expField: string, incField: string): ChartItem[] => {
     return [
       {
         name: 'Expense',
@@ -139,51 +139,51 @@ export const transformDataForChart = ({
     ];
   };
 
-  const yearData: any = {
+  const yearData: HierarchicalBarItem = {
     id: 'year',
     name: selectedYear.toString(),
-    type: 'year',
+    type: STACK_TYPE.EXPENSE,
     data: mapBudgetForPeriod('year', 'totalExp', 'totalInc'),
   };
 
-  const halfYearData: any[] = [
+  const halfYearData: HierarchicalBarItem[] = [
     {
       id: 'half-year-1',
       name: 'First Half Year',
-      type: 'half-year',
+      type: STACK_TYPE.EXPENSE,
       data: mapBudgetForPeriod('half-year-1', 'h1Exp', 'h1Inc'),
     },
     {
       id: 'half-year-2',
       name: 'Second Half Year',
-      type: 'half-year',
+      type: STACK_TYPE.EXPENSE,
       data: mapBudgetForPeriod('half-year-2', 'h2Exp', 'h2Inc'),
     },
   ];
 
-  const quarterData: any[] = [
+  const quarterData: HierarchicalBarItem[] = [
     {
       id: 'quarter-1',
       name: 'Quarter 1',
-      type: 'quarter',
+      type: STACK_TYPE.EXPENSE,
       data: mapBudgetForPeriod('quarter-1', 'q1Exp', 'q1Inc'),
     },
     {
       id: 'quarter-2',
       name: 'Quarter 2',
-      type: 'quarter',
+      type: STACK_TYPE.EXPENSE,
       data: mapBudgetForPeriod('quarter-2', 'q2Exp', 'q2Inc'),
     },
     {
       id: 'quarter-3',
       name: 'Quarter 3',
-      type: 'quarter',
+      type: STACK_TYPE.EXPENSE,
       data: mapBudgetForPeriod('quarter-3', 'q3Exp', 'q3Inc'),
     },
     {
       id: 'quarter-4',
       name: 'Quarter 4',
-      type: 'quarter',
+      type: STACK_TYPE.EXPENSE,
       data: mapBudgetForPeriod('quarter-4', 'q4Exp', 'q4Inc'),
     },
   ];
@@ -231,10 +231,10 @@ export const transformDataForChart = ({
     'm12Inc',
   ];
 
-  const monthData: any[] = monthFieldsExp.map((expField, index) => ({
+  const monthData: HierarchicalBarItem[] = monthFieldsExp.map((expField, index) => ({
     id: `month-${index + 1}`,
     name: monthNames[index],
-    type: 'month',
+    type: STACK_TYPE.EXPENSE,
     data: mapBudgetForPeriod(`month-${index + 1}`, expField, monthFieldsInc[index]),
   }));
 

@@ -1,12 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { BudgetsTable, BudgetType } from '@prisma/client';
+import { BudgetType } from '@prisma/client';
+import { Budget } from '../domain/entities/Budget';
 // Import the thunk
 
 export interface BudgetSummaryState {
-  topBudget: BudgetsTable | null;
-  botBudget: BudgetsTable | null;
-  actBudget: BudgetsTable | null;
-  allBudgets: BudgetsTable[];
+  topBudget: Budget | null;
+  botBudget: Budget | null;
+  actBudget: Budget | null;
+  allBudgets: Budget[];
   loading: boolean;
   error: string | null;
 }
@@ -31,10 +32,10 @@ const budgetSummarySlice = createSlice({
     fetchBudgetSummarySuccess(
       state,
       action: PayloadAction<{
-        topBudget: BudgetsTable | null;
-        botBudget: BudgetsTable | null;
-        actBudget: BudgetsTable | null;
-        allBudgets: BudgetsTable[];
+        topBudget: Budget | null;
+        botBudget: Budget | null;
+        actBudget: Budget | null;
+        allBudgets: Budget[];
       }>,
     ) {
       state.loading = false;
@@ -47,7 +48,7 @@ const budgetSummarySlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
-    updateBudgetByType(state, action: PayloadAction<{ type: BudgetType; budget: BudgetsTable }>) {
+    updateBudgetByType(state, action: PayloadAction<{ type: BudgetType; budget: Budget }>) {
       const { type, budget } = action.payload;
 
       if (type === BudgetType.Top) {

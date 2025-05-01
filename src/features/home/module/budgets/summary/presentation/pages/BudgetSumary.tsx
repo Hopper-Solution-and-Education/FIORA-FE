@@ -1,7 +1,6 @@
 'use client';
 
 import { ChartSkeleton } from '@/components/common/organisms';
-import { CustomBarItem } from '@/components/common/stacked-bar-chart/type';
 import { BudgetType } from '@prisma/client';
 import { useEffect, useState } from 'react';
 import { budgetSummaryDIContainer } from '../../../summary/di/budgetSummaryDIContainer';
@@ -12,13 +11,7 @@ import { transformDataForChart } from '../../utils/transformDataForChart';
 import { BudgetSummaryByType } from '../../domain/entities/BudgetSummaryByType';
 import BudgetTreeView from '../molecules/BudgetSummaryTreeView';
 import { toast } from 'sonner';
-
-interface HierarchicalBarItem extends CustomBarItem {
-  children?: HierarchicalBarItem[];
-  isExpanded?: boolean;
-  data?: any[];
-  level?: number;
-}
+import { HierarchicalBarItem } from '../types';
 
 interface BudgetSummaryProps {
   year: number;

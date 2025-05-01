@@ -1,20 +1,10 @@
 'use client';
 
-import { CustomBarItem } from '@/components/common/stacked-bar-chart/type';
 import { useEffect, useState } from 'react';
 import BudgetTreeItem from '../atoms/BudgetSummaryTreeItem';
 import BudgetChart from '../atoms/BudgetSummaryChart';
-import { STACK_TYPE } from '@/shared/constants/chart';
+import { HierarchicalBarItem } from '../types';
 
-// Interface for hierarchical budget data structure
-interface HierarchicalBarItem extends CustomBarItem {
-  children?: HierarchicalBarItem[];
-  data?: any[];
-  level?: number;
-  type: STACK_TYPE;
-}
-
-// Props for the BudgetTreeView component
 interface BudgetTreeViewProps {
   data: HierarchicalBarItem[];
   currency: string;
