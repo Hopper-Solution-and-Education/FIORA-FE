@@ -1,68 +1,75 @@
 'use client';
 
-import { ChevronDown, ChevronLeft } from 'lucide-react';
-import { ReactNode } from 'react';
 import { cn } from '@/shared/utils';
+import { ChevronLeft } from 'lucide-react';
+import { ReactNode, forwardRef } from 'react';
+import {
+  BUDGET_SUMMARY_TREE_INCRESEMENT_LENGTH_PER_LEVEL,
+  BUDGET_SUMMARY_TREE_LINE_STOKE,
+} from '../../data/constants';
+import { motion } from 'framer-motion';
 
-// Props for the BudgetTreeItem component
 interface BudgetTreeItemProps {
-  id: string; // Unique identifier for the item
-  level: number; // Nesting level in the tree (0 = year, 1 = half-year, 2 = quarter, etc.)
-  hasChildren?: boolean; // Whether this item has child items
-  isExpanded?: boolean; // Whether this item is expanded to show children
-  onToggle: (id: string) => void; // Function to toggle expand/collapse
-  showVerticalLine?: boolean; // Whether to show vertical connection line
-  showHorizontalLine?: boolean; // Whether to show horizontal connection line
-  children: ReactNode; // Content to render inside the item
+  id: string;
+  level: number;
+  hasChildren?: boolean;
+  isExpanded?: boolean;
+  onToggle: (id: string) => void;
+  showVerticalLine?: boolean;
+  showHorizontalLine?: boolean;
+  children: ReactNode;
 }
 
-const BudgetTreeItem = ({
-  id,
-  level,
-  hasChildren = false,
-  isExpanded = false,
-  onToggle,
-  showVerticalLine = false,
-  showHorizontalLine = false,
-  children,
-}: BudgetTreeItemProps) => {
-  return (
-    <div className="relative mb-4">
-      {/* Horizontal line connecting to parent's vertical line */}
-      {showHorizontalLine && (
-        <div
-          className="absolute w-4 h-0.5 bg-gray-300 dark:bg-gray-700"
-          style={{
-            left: `${level * 24 + 8}px`,
-            top: '50%',
-            transform: 'translateY(-50%)',
-          }}
-        />
-      )}
-
-      <div className="flex items-center">
-        <div
-          className={cn('flex items-center w-full relative', showVerticalLine ? 'ml-8' : '')}
-          style={{ marginLeft: level >= 2 ? `${level * 24}px` : '0px' }}
-        >
-          {/* Main content container */}
-          <div className="flex-1 relative">
+const BudgetTreeItem = forwardRef<HTMLDivElement, BudgetTreeItemProps>(
+  (
+    {
+      id,
+      level,
+      hasChildren = false,
+      isExpanded = false,
+      onToggle,
+      showHorizontalLine = false,
+      children,
+    },
+    ref,
+  ) => {
+    return (
+      <div className="relative mb-4" ref={ref}>
+        <div className="flex items-center">
+          <div
+            className={cn('flex items-center w-full relative')}
+            style={{
+              marginLeft:
+                level >= 1
+                  ? `${(level - 1) * BUDGET_SUMMARY_TREE_INCRESEMENT_LENGTH_PER_LEVEL}px`
+                  : '0px',
+            }}
+          >
+            {/* Main content container */}
+            {showHorizontalLine && (
+              <div
+                className={`h-[${BUDGET_SUMMARY_TREE_LINE_STOKE}] bg-gray-300 dark:bg-gray-700 w-6`}
+              />
+            )}
             {children}
 
-            {/* Expand/collapse button for items with children */}
             {hasChildren && (
-              <button
+              <motion.button
                 onClick={() => onToggle(id)}
                 className="absolute bottom-2 right-2 p-1 text-gray-500 hover:text-gray-700 focus:outline-none bg-white rounded-full shadow-sm z-10"
+                animate={{ rotate: isExpanded ? -90 : 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
               >
-                {isExpanded ? <ChevronDown size={16} /> : <ChevronLeft size={16} />}
-              </button>
+                <ChevronLeft size={16} />
+              </motion.button>
             )}
           </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  },
+);
+
+BudgetTreeItem.displayName = 'BudgetTreeItem';
 
 export default BudgetTreeItem;
