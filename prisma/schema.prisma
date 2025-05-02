@@ -345,6 +345,7 @@ model BudgetsTable {
   budgetDetail BudgetDetails[]
   user         User            @relation(fields: [userId], references: [id])
 
+  @@unique([fiscalYear, type, userId]) // ensure  fiscal year is unique for each type
   @@index([userId])
   @@index([fiscalYear])
 }
@@ -361,7 +362,7 @@ model BudgetDetails {
   createdBy  String?          @db.Uuid
   updatedBy  String?          @db.Uuid
   updatedAt  DateTime         @updatedAt @db.Timestamptz(0)
-  budget     BudgetsTable     @relation(fields: [budgetId], references: [id])
+  budget     BudgetsTable     @relation(fields: [budgetId], references: [id], onDelete: Cascade)
   category   Category?        @relation(fields: [categoryId], references: [id])
   user       User             @relation(fields: [userId], references: [id])
 

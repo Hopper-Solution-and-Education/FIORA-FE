@@ -22,6 +22,16 @@ class BudgetRepository implements IBudgetRepository {
       ...options,
     });
   }
+
+  async findManyBudgetData(
+    where: Prisma.BudgetsTableWhereInput,
+    options?: Prisma.BudgetsTableFindManyArgs,
+  ): Promise<BudgetsTable[]> {
+    return prisma.budgetsTable.findMany({
+      where,
+      ...options,
+    });
+  }
 }
 
 // Export a single instance

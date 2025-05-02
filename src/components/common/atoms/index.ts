@@ -9,3 +9,4 @@ export { default as CustomYAxisTick } from './CustomYAxisTick';
 export { default as PositiveAndNegativeBarLabel } from './PositiveAndNegativeBarLabel';
 export { default as PositiveAndNegativeV2BarLabel } from './PositiveAndNegativeV2BarLabel';
 export { default as PositiveAndNegativeV2Tooltip } from './PositiveAndNegativeV2Tooltip';
+export { default as ButtonCreation } from './ButtonCreation';

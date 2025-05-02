@@ -10,6 +10,11 @@ export interface IBudgetRepository {
     where: Prisma.BudgetsTableWhereInput,
     options?: Prisma.BudgetsTableFindUniqueArgs,
   ): Promise<BudgetsTable | null>;
+
+  findManyBudgetData(
+    where: Prisma.BudgetsTableWhereInput,
+    options?: Prisma.BudgetsTableFindManyArgs,
+  ): Promise<BudgetsTable[]>;
 }
 
 export interface BudgetCreation {
@@ -20,4 +25,21 @@ export interface BudgetCreation {
   description?: string;
   userId: string;
   currency: Currency;
+  isSystemGenerated?: boolean;
 }
+
+export interface BudgetGetAnnualYearParams {
+  userId: string;
+  cursor?: number;
+  take: number;
+  currency: Currency;
+  search?: string;
+}
+
+export type BudgetYearSummary = {
+  year: number;
+  budgetIncome: number;
+  budgetExpense: number;
+  actualIncome: number;
+  actualExpense: number;
+};
