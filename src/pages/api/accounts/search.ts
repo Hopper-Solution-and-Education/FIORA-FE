@@ -6,13 +6,12 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
 
 export default withAuthorization({
-  PUT: ['User', 'Admin', 'CS'],
+  POST: ['User', 'Admin', 'CS'],
   GET: ['User', 'Admin', 'CS'],
-  DELETE: ['User', 'Admin', 'CS'],
 })(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   switch (req.method) {
-    case 'GET':
-      return GET(req, res, userId);
+    case 'POST':
+      return POST(req, res, userId);
 
     default:
       return res
@@ -21,7 +20,7 @@ export default withAuthorization({
   }
 });
 
-export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const account = await AccountUseCaseInstance.filterAccountOptions(req.body, userId);
 
