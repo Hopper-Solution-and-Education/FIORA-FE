@@ -1,0 +1,363 @@
+import { Button } from '../../components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../../components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../../components/ui/tooltip';
+import {
+  FilterColumn,
+  FilterComponentConfig,
+  FilterCriteria,
+  FilterFieldMapping,
+  FilterOperator,
+} from '../types/filter.types';
+
+import { Check, FunnelPlus, FunnelX } from 'lucide-react';
+import React, { useCallback, useMemo, useState } from 'react';
+
+export const DEFAULT_FILTER_CRITERIA: FilterCriteria = {
+  userId: '',
+  filters: {},
+};
+
+// Type for direct filter editing
+export type FilterEditorProps<T = any> = {
+  currentFilter: T;
+  target: string;
+  value: string | number | boolean;
+  comparator: string;
+  callBack: (newFilter: T) => void;
+  subTarget?: string;
+  operator?: FilterOperator;
+};
+
+// Enhanced props type for more flexibility
+export interface FilterProps<T = any> {
+  filterParams: T;
+  filterComponents: FilterComponentConfig[];
+  callBack: (newFilter: any) => void;
+  fieldMappings?: FilterFieldMapping<T>[];
+  defaultFilterCriteria?: FilterCriteria;
+  structureCreator?: (params: T) => Record<string, any>;
+}
+
+export const editFilter = <T = any,>(props: FilterEditorProps<T>) => {
+  const { currentFilter, callBack, target, value, comparator, subTarget, operator } = props;
+
+  let newFilterCriteria: T | any = { ...currentFilter };
+
+  if (!operator && !subTarget) {
+    newFilterCriteria = {
+      ...newFilterCriteria,
+      filters: {
+        ...newFilterCriteria.filters,
+        [comparator]: [
+          ...((newFilterCriteria.filters?.[comparator] as object[]) ?? []),
+          { [target]: value },
+        ],
+      },
+    };
+  } else if (!operator && subTarget) {
+    newFilterCriteria = {
+      ...newFilterCriteria,
+      filters: {
+        ...newFilterCriteria.filters,
+        [comparator]: [
+          ...((newFilterCriteria.filters?.[comparator] as object[]) ?? []),
+          { [target]: { [subTarget as string]: value } },
+        ],
+      },
+    };
+  } else if (operator && subTarget) {
+    newFilterCriteria = {
+      ...newFilterCriteria,
+      filters: {
+        ...newFilterCriteria.filters,
+        [comparator]: [
+          ...((newFilterCriteria.filters?.[comparator] as object[]) ?? []),
+          {
+            [operator]: {
+              ...((newFilterCriteria.filters?.[operator] as object) ?? {}),
+              [target]: { [subTarget as string]: value },
+            },
+          },
+        ],
+      },
+    };
+  }
+
+  callBack(newFilterCriteria);
+};
+
+export function useFilter<T = any>(props: FilterProps<T>) {
+  const {
+    filterParams,
+    filterComponents,
+    callBack,
+    fieldMappings = [],
+    defaultFilterCriteria = DEFAULT_FILTER_CRITERIA,
+    structureCreator,
+  } = props;
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handleResetFilter = () => {
+    callBack(defaultFilterCriteria);
+    handleClose();
+  };
+
+  // Creates the filter structure from the UI state based on field mappings or custom creator
+  const createFilterStructure = useCallback(
+    (params: T): Record<string, any> => {
+      // If custom structure creator is provided, use it
+      if (structureCreator) {
+        return structureCreator(params);
+      }
+
+      const updatedFilters: Record<string, any> = {};
+      const andConditions: any[] = [];
+      const orConditions: any[] = [];
+
+      // Process each field according to its mapping
+      fieldMappings.forEach((mapping) => {
+        const value: any = params[mapping.key];
+
+        // Skip if value should be excluded based on condition
+        if (mapping.condition && !mapping.condition(value)) {
+          return;
+        }
+
+        if (!mapping.mapping) {
+          // Simple direct mapping
+          if (Array.isArray(value) && value.length > 0) {
+            const condition = {
+              OR: value.map((item) => ({ [mapping.key as string]: item })),
+            };
+
+            if (mapping.comparator === 'AND') {
+              andConditions.push(condition);
+            } else {
+              orConditions.push(condition);
+            }
+          } else if (value !== undefined && value !== null) {
+            // Direct non-array value
+            updatedFilters[mapping.key as string] = value;
+          }
+        } else {
+          // Complex mapping with field transformation
+          const { field, nestedField, transform } = mapping.mapping;
+
+          if (Array.isArray(value) && value.length > 0) {
+            // Array values with complex mapping
+            const mappedValues = value.map((item) => {
+              const transformedValue = transform ? transform(item) : item;
+
+              if (nestedField) {
+                return { [field]: { [nestedField]: transformedValue } };
+              }
+
+              return { [field]: transformedValue };
+            });
+
+            const condition = { OR: mappedValues };
+
+            if (mapping.comparator === 'AND') {
+              andConditions.push(condition);
+            } else {
+              orConditions.push(condition);
+            }
+          } else if (value !== undefined && value !== null) {
+            // Handle range values (like date ranges or numeric ranges)
+            if (typeof value === 'object' && !Array.isArray(value)) {
+              const rangeValue: Record<string, any> = {};
+
+              if ('from' in value || 'min' in value) {
+                const minVal = transform
+                  ? transform(value.from || value.min)
+                  : value.from || value.min;
+                rangeValue.gte = minVal;
+              }
+
+              if ('to' in value || 'max' in value) {
+                const maxVal = transform ? transform(value.to || value.max) : value.to || value.max;
+                rangeValue.lte = maxVal;
+              }
+
+              if (Object.keys(rangeValue).length > 0) {
+                updatedFilters[field] = rangeValue;
+              }
+            } else {
+              // Single values with complex mapping
+              const transformedValue = transform ? transform(value) : value;
+
+              if (nestedField) {
+                updatedFilters[field] = { [nestedField]: transformedValue };
+              } else {
+                updatedFilters[field] = transformedValue;
+              }
+            }
+          }
+        }
+      });
+
+      // Add AND conditions if there are any
+      if (andConditions.length > 0) {
+        updatedFilters.AND = andConditions;
+      }
+
+      // Add OR conditions if there are any
+      if (orConditions.length > 0) {
+        updatedFilters.OR = orConditions;
+      }
+
+      return updatedFilters;
+    },
+    [fieldMappings, structureCreator],
+  );
+
+  const handleSaveFilterChanges = () => {
+    const updatedFilters = createFilterStructure(filterParams);
+
+    callBack({
+      ...defaultFilterCriteria,
+      filters: updatedFilters,
+    });
+
+    handleClose();
+  };
+
+  const handleClose = () => {
+    setIsOpen(false);
+    setError(false);
+  };
+
+  // Split filterComponents into left and right columns
+  const { leftColumnFilters, rightColumnFilters } = useMemo(() => {
+    const leftFilters = filterComponents
+      .filter((config) => config.column === FilterColumn.LEFT)
+      .sort((a, b) => a.order - b.order);
+
+    const rightFilters = filterComponents
+      .filter((config) => config.column === FilterColumn.RIGHT)
+      .sort((a, b) => a.order - b.order);
+
+    return {
+      leftColumnFilters: leftFilters,
+      rightColumnFilters: rightFilters,
+    };
+  }, [filterComponents]);
+
+  const FiltersComponent: React.FC = () => (
+    <DropdownMenu open={isOpen} onOpenChange={(open) => setIsOpen(open)}>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button className="px-3 py-2" onClick={() => setIsOpen((prev) => !prev)}>
+                <FunnelPlus size={15} />
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Filters</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      <DropdownMenuContent
+        className="w-fit min-w-200 rounded-lg p-4"
+        side="bottom"
+        align="start"
+        sideOffset={4}
+      >
+        <DropdownMenuLabel className="p-0 font-normal">
+          <h2 className="font-semibold">Filter & Settings</h2>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+
+        {/* Filter contents */}
+        <div className="w-full h-fit max-h-[45vh] flex justify-start items-start p-2 pb-5">
+          {/* Left column filters */}
+          <DropdownMenuGroup className="w-[260px]">
+            <div className="w-full h-full flex flex-col justify-start items-start gap-3">
+              {leftColumnFilters.map((config) => (
+                <div key={config.key} className="w-full">
+                  {config.component}
+                </div>
+              ))}
+            </div>
+          </DropdownMenuGroup>
+
+          {/* Separator */}
+          <div className="w-[2px] h-full bg-gray-300 mx-2"></div>
+
+          {/* Right column filters */}
+          <DropdownMenuGroup className="w-[240px]">
+            <div className="w-full h-full flex flex-col justify-start items-start gap-[.8rem]">
+              {rightColumnFilters.map((config) => (
+                <div key={config.key} className="w-full">
+                  {config.component}
+                </div>
+              ))}
+            </div>
+          </DropdownMenuGroup>
+        </div>
+
+        {error && (
+          <div className="w-full p-2 my-1 text-sm text-red-500">
+            Error loading filter options. Please try again.
+          </div>
+        )}
+
+        <DropdownMenuSeparator />
+        <div className="w-full flex justify-end items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant={'destructive'} className="px-3 py-2" onClick={handleResetFilter}>
+                  <FunnelX className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Clear Filter</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button className="px-3 py-2" onClick={handleSaveFilterChanges}>
+                  <Check className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Apply</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
+  return {
+    FiltersComponent,
+    isOpen,
+    setIsOpen,
+    handleClose,
+    handleResetFilter,
+    handleSaveFilterChanges,
+    createFilterStructure,
+  };
+}
