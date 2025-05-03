@@ -1,4 +1,5 @@
-import { TransactionFilterCriteria, TransactionTableColumnKey } from '../types';
+import { FilterCriteria } from '@/shared/types';
+import { TransactionTableColumnKey } from '../types';
 
 export const TRANSACTION_TYPE: { [key: string]: string } = {
   EXPENSE: 'red-500',
@@ -18,7 +19,7 @@ export const DEFAULT_TRANSACTION_TABLE_COLUMNS: TransactionTableColumnKey = {
   Actions: { sortable: false, index: 8, sortedBy: 'none' },
 };
 
-export const DEFAULT_TRANSACTION_FILTER_CRITERIA: TransactionFilterCriteria = {
+export const DEFAULT_TRANSACTION_FILTER_CRITERIA: FilterCriteria = {
   userId: '',
   filters: {},
 };

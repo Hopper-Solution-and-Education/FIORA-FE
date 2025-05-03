@@ -1,7 +1,7 @@
 import { debounce } from 'lodash';
 import { ReactNode, useCallback, useState } from 'react';
-import { formatCurrency } from '../hooks/formatCurrency';
-import { TransactionCurrency } from '../utils/constants';
+import { formatCurrency } from '../../hooks/formatCurrency';
+import { TransactionCurrency } from '../../utils/constants';
 
 type SliderProps = {
   amountMin: number;

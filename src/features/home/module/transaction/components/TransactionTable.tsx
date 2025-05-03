@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import useDataFetcher from '@/shared/hooks/useDataFetcher';
+import { FilterCriteria } from '@/shared/types';
 import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { debounce } from 'lodash';
@@ -18,14 +19,12 @@ import { toast } from 'sonner';
 import { useSWRConfig } from 'swr';
 import { formatCurrency } from '../hooks/formatCurrency';
 import { formatDate } from '../hooks/formatDate';
-import { handleEditFilter } from '../hooks/handleEditFilter';
 import { updateAmountRange, updateFilterCriteria } from '../slices';
 import {
   IRelationalTransaction,
   ITransactionPaginatedResponse,
   OrderType,
   TransactionColumn,
-  TransactionFilterCriteria,
   TransactionTableColumnKey,
 } from '../types';
 import {
@@ -37,6 +36,7 @@ import {
 import DeleteTransactionDialog from './DeleteTransactionDialog';
 import FilterMenu from './FilterMenu';
 import SettingsMenu from './SettingMenu';
+import { editFilter } from '@/shared/hooks/useFilter';
 
 type PaginationParams = {
   currentPage: number;
@@ -268,7 +268,7 @@ const TransactionTable = () => {
   };
 
   // Callback function to apply after updating filter criteria
-  const handleFilterChange = (newFilter: TransactionFilterCriteria) => {
+  const handleFilterChange = (newFilter: FilterCriteria) => {
     setPaginationParams((prev) => ({ ...prev, currentPage: 1 })); // Reset current page to 1 when applying a new filter
     dispatch(updateFilterCriteria(newFilter));
   };
@@ -438,7 +438,7 @@ const TransactionTable = () => {
                             key={columnKey}
                             className="underline cursor-pointer"
                             onClick={() =>
-                              handleEditFilter({
+                              editFilter({
                                 currentFilter: filterCriteria,
                                 callBack: handleFilterChange,
                                 target: 'date',
@@ -456,7 +456,7 @@ const TransactionTable = () => {
                             key={columnKey}
                             className={`underline cursor-pointer font-bold`}
                             onClick={() =>
-                              handleEditFilter({
+                              editFilter({
                                 currentFilter: filterCriteria,
                                 callBack: handleFilterChange,
                                 target: 'type',
@@ -488,7 +488,7 @@ const TransactionTable = () => {
                                 : 'text-gray-500',
                             )}
                             onClick={() =>
-                              handleEditFilter({
+                              editFilter({
                                 currentFilter: filterCriteria,
                                 callBack: handleFilterChange,
                                 target:
@@ -518,7 +518,7 @@ const TransactionTable = () => {
                                 : 'text-gray-500',
                             )}
                             onClick={() =>
-                              handleEditFilter({
+                              editFilter({
                                 currentFilter: filterCriteria,
                                 callBack: handleFilterChange,
                                 target: transRecord.type === 'Expense' ? 'toCategory' : 'toAccount',
@@ -545,7 +545,7 @@ const TransactionTable = () => {
                               transRecord.partnerId ? 'underline cursor-pointer' : 'text-gray-500',
                             )}
                             onClick={() =>
-                              handleEditFilter({
+                              editFilter({
                                 currentFilter: filterCriteria,
                                 callBack: handleFilterChange,
                                 target: 'partner',
