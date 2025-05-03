@@ -1,27 +1,19 @@
-import DateRangePicker from '@/components/common/forms/date-range-picker/DateRangePicker';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { MultiSelect } from '@/components/ui/multi-select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import useDataFetcher from '@/shared/hooks/useDataFetcher';
-import { cn } from '@/shared/utils';
+import { useFilter } from '@/shared/hooks/useFilter';
+import { FilterColumn, FilterComponentConfig, FilterCriteria } from '@/shared/types/filter.types';
 import { useAppSelector } from '@/store';
-import { Check, FunnelPlus, FunnelX, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
-import { formatCurrency } from '../hooks/formatCurrency';
-import { TransactionFilterCriteria, TransactionFilterOptionResponse } from '../types';
-import { DEFAULT_TRANSACTION_FILTER_CRITERIA, TransactionCurrency } from '../utils/constants';
-import { renderAmountSlider } from './renderSlider';
+import { TransactionFilterOptionResponse } from '../types';
+import { DEFAULT_TRANSACTION_FILTER_CRITERIA } from '../utils/constants';
+import {
+  AccountFilter,
+  AmountFilter,
+  CategoryFilter,
+  DateRangeFilter,
+  PartnerFilter,
+  TypeFilter,
+} from './filter';
 
 type FilterParams = {
   dateRange?: DateRange;
@@ -43,26 +35,27 @@ const filterParamsInitState: FilterParams = {
   amountMax: 10000,
 };
 
-type FilterMenuProps = {
-  callBack: (newFilter: TransactionFilterCriteria) => void;
+type FilterMenuProps<T> = {
+  callBack: (newFilter: FilterCriteria) => void;
+  // filterConfig?: FilterComponentConfig[];
+  components?: FilterComponentConfig[];
+  filterParams?: T;
 };
 
-const FilterMenu = ({ callBack }: FilterMenuProps) => {
+const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
+  const { callBack, components } = props;
   const { amountMin, amountMax, filterCriteria } = useAppSelector((state) => state.transaction);
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [isMinEditing, setIsMinEditing] = useState(false);
-  const [isMaxEditing, setIsMaxEditing] = useState(false);
-
+  // State for managing filter parameters
   const [filterParams, setFilterParams] = useState<FilterParams>({
     ...filterParamsInitState,
     amountMin: amountMin || 0,
     amountMax: amountMax || 10000,
   });
 
-  // Fetch filter options only when dropdown is open
-  const { data, isLoading, error } = useDataFetcher<TransactionFilterOptionResponse>({
-    endpoint: isOpen ? '/api/transactions/options' : null,
+  // Fetch filter options
+  const { data, isLoading } = useDataFetcher<TransactionFilterOptionResponse>({
+    endpoint: '/api/transactions/options',
     method: 'GET',
   });
 
@@ -97,46 +90,33 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
           if (condition.toAccount?.name) accounts.add(condition.toAccount.name);
           if (condition.toCategory?.name) accounts.add(condition.toCategory.name);
 
-          // Direct amount conditions
-          if (condition.amount) {
-            if (condition.amount.gte !== undefined) currentAmountMin = condition.amount.gte;
-            if (condition.amount.lte !== undefined) currentAmountMax = condition.amount.lte;
-          }
-
-          // Handle OR conditions
-          if (condition.OR && Array.isArray(condition.OR)) {
-            condition.OR.forEach((orItem: any) => {
-              // Type OR conditions
-              if (orItem.type) types.add(orItem.type);
-
-              // Partner OR conditions
-              if (orItem.partner?.name) partners.add(orItem.partner.name);
-
-              // Handle nested OR structures for accounts/categories
-              if (orItem.OR && Array.isArray(orItem.OR)) {
-                orItem.OR.forEach((nestedItem: any) => {
-                  if (nestedItem.fromAccount?.name) categories.add(nestedItem.fromAccount.name);
-                  if (nestedItem.fromCategory?.name) categories.add(nestedItem.fromCategory.name);
-                  if (nestedItem.toAccount?.name) accounts.add(nestedItem.toAccount.name);
-                  if (nestedItem.toCategory?.name) accounts.add(nestedItem.toCategory.name);
-                });
+          // Handle OR conditions within AND
+          if (Array.isArray(condition.OR)) {
+            condition.OR.forEach((orCondition: any) => {
+              // OR type conditions
+              if (orCondition.type && typeof orCondition.type === 'string') {
+                types.add(orCondition.type);
               }
+
+              // OR partner conditions
+              if (orCondition.partner?.name) {
+                partners.add(orCondition.partner.name);
+              }
+
+              // OR account/category conditions
+              if (orCondition.fromAccount?.name) categories.add(orCondition.fromAccount.name);
+              if (orCondition.fromCategory?.name) categories.add(orCondition.fromCategory.name);
+              if (orCondition.toAccount?.name) accounts.add(orCondition.toAccount.name);
+              if (orCondition.toCategory?.name) accounts.add(orCondition.toCategory.name);
             });
           }
         });
-      } else {
-        // Handle flat structure
-        const flatFilters = filters || {};
+      }
 
-        // Process simple fields
-        if (flatFilters.type) types.add(flatFilters.type);
-        if (flatFilters.partner?.name) partners.add(flatFilters.partner.name);
-        if (flatFilters.fromAccount?.name) categories.add(flatFilters.fromAccount.name);
-        if (flatFilters.fromCategory?.name) categories.add(flatFilters.fromCategory.name);
-        if (flatFilters.toAccount?.name) accounts.add(flatFilters.toAccount.name);
-        if (flatFilters.toCategory?.name) accounts.add(flatFilters.toCategory.name);
-
-        // Process date range
+      // Process flat filter structure
+      if (!Array.isArray(filters?.AND) && typeof filters === 'object' && filters) {
+        const flatFilters = filters;
+        // Handle date range
         if (flatFilters.date) {
           dateFrom = flatFilters.date.gte ? new Date(flatFilters.date.gte) : undefined;
           dateTo = flatFilters.date.lte ? new Date(flatFilters.date.lte) : undefined;
@@ -164,119 +144,20 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
     [amountMin, amountMax],
   );
 
-  // Update filter params when filter criteria changes
+  // Sync filter params when filter criteria changes
   useEffect(() => {
-    if (filterCriteria && isOpen) {
-      const extractedData = extractFilterData(filterCriteria.filters);
-      setFilterParams(extractedData);
-    }
-  }, [filterCriteria, isOpen, extractFilterData]);
+    const extractedData = extractFilterData(filterCriteria.filters);
+    setFilterParams(extractedData);
+  }, [filterCriteria, extractFilterData]);
 
-  const handleClose = () => {
-    setIsOpen(false);
-    setFilterParams({
-      ...filterParamsInitState,
-      amountMin: amountMin || 0,
-      amountMax: amountMax || 10000,
-    });
-  };
-
-  const handleResetFilter = () => {
-    callBack(DEFAULT_TRANSACTION_FILTER_CRITERIA);
-    handleClose();
-  };
-
-  const handleEditFilter = (target: keyof FilterParams, value: any) => {
+  const handleEditFilter = useCallback((target: keyof FilterParams, value: any) => {
     setFilterParams((prevParams) => ({
       ...prevParams,
       [target]: value,
     }));
-  };
-
-  // Creates the filter structure from the UI state
-  const createFilterStructure = useCallback((params: FilterParams): Record<string, any> => {
-    const updatedFilters: Record<string, any> = {};
-    const andConditions: any[] = [];
-
-    // Handle date range
-    if (params.dateRange?.from || params.dateRange?.to) {
-      updatedFilters.date = {
-        gte: params.dateRange?.from ? params.dateRange.from.toISOString() : null,
-        lte: params.dateRange?.to ? params.dateRange.to.toISOString() : null,
-      };
-    }
-
-    // Types OR group
-    if (params.types?.length) {
-      andConditions.push({
-        OR: params.types.map((type) => ({ type })),
-      });
-    }
-
-    // Partners OR group
-    if (params.partners?.length) {
-      andConditions.push({
-        OR: params.partners.map((partner) => ({
-          partner: { name: partner },
-        })),
-      });
-    }
-
-    // Categories OR group
-    if (params.categories?.length) {
-      andConditions.push({
-        OR: params.categories.map((from) => ({
-          OR: [{ fromAccount: { name: from } }, { fromCategory: { name: from } }],
-        })),
-      });
-    }
-
-    // Accounts OR group
-    if (params.accounts?.length) {
-      andConditions.push({
-        OR: params.accounts.map((to) => ({
-          OR: [{ toAccount: { name: to } }, { toCategory: { name: to } }],
-        })),
-      });
-    }
-
-    // Amount as a separate condition
-    andConditions.push({
-      amount: {
-        gte: params.amountMin,
-        lte: params.amountMax,
-      },
-    });
-
-    // Add AND conditions if there are any
-    if (andConditions.length > 0) {
-      updatedFilters.AND = andConditions;
-    }
-
-    return updatedFilters;
   }, []);
 
-  const handleSaveFilterChanges = () => {
-    const updatedFilters = createFilterStructure(filterParams);
-
-    callBack({
-      ...filterCriteria,
-      filters: updatedFilters,
-    });
-
-    handleClose();
-  };
-
-  // Options for filter selects
-  const typeOptions = useMemo(
-    () => [
-      { value: 'Expense', label: 'Expense' },
-      { value: 'Income', label: 'Income' },
-      { value: 'Transfer', label: 'Transfer' },
-    ],
-    [],
-  );
-
+  // Options for filter selects - memoized to prevent re-renders
   const partnerOptions = useMemo(() => {
     if (!data?.data?.partners) {
       return [{ label: 'No option available', value: 'none', disabled: true }];
@@ -310,255 +191,186 @@ const FilterMenu = ({ callBack }: FilterMenuProps) => {
     }));
   }, [data]);
 
-  // Loading indicator component
-  const LoadingIndicator = () => (
-    <div className="w-fit h-fit absolute top-[50%] right-[15%] -translate-y-[25%] z-10">
-      <Loader2 className="h-5 w-5 text-primary animate-spin opacity-50 mb-4" />
-    </div>
-  );
+  // Create filter components configuration - each component is memoized
+  const filterComponents = useMemo(() => {
+    // Create memoized filter components
+    const typeFilterComponent = (
+      <TypeFilter
+        selected={filterParams.types}
+        onChange={(values) => handleEditFilter('types', values)}
+      />
+    );
 
-  return (
-    <DropdownMenu open={isOpen} onOpenChange={(open) => (open ? setIsOpen(open) : handleClose())}>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <Button className="px-3 py-2" onClick={() => setIsOpen((prev) => !prev)}>
-                <FunnelPlus size={15} />
-              </Button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Filters </p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+    const categoryFilterComponent = (
+      <CategoryFilter
+        options={categoryOptions}
+        selected={filterParams.categories}
+        onChange={(values) => handleEditFilter('categories', values)}
+        isLoading={isLoading}
+      />
+    );
 
-      <DropdownMenuContent
-        className="w-fit min-w-200 rounded-lg p-4"
-        side="bottom"
-        align="start"
-        sideOffset={4}
-      >
-        <DropdownMenuLabel className="p-0 font-normal">
-          <h2 className="font-semibold">Filter & Settings</h2>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
+    const amountFilterComponent = (
+      <AmountFilter
+        amountMin={filterParams.amountMin}
+        amountMax={filterParams.amountMax}
+        minRange={amountMin || 0}
+        maxRange={amountMax || 10000}
+        onAmountChange={(target, value) => handleEditFilter(target, value)}
+      />
+    );
 
-        {/* Filter contents */}
-        <div className="w-full h-fit max-h-[45vh] flex justify-start items-start p-2 pb-5">
-          {/* Left column filters */}
-          <DropdownMenuGroup className="w-[260px]">
-            <div className="w-full h-full flex flex-col justify-start items-start gap-3">
-              {/* Type Filter */}
-              <div className="w-full flex flex-col gap-2">
-                <Label>Type</Label>
-                <MultiSelect
-                  options={typeOptions}
-                  selected={filterParams.types}
-                  onChange={(values: string[]) => handleEditFilter('types', values)}
-                  placeholder="Select Types"
-                  className="w-full px-4 py-2"
-                />
-              </div>
+    const dateFilterComponent = (
+      <DateRangeFilter
+        dateRange={filterParams.dateRange}
+        onChange={(values) => handleEditFilter('dateRange', values)}
+      />
+    );
 
-              {/* Category Filter */}
-              <div className="w-full flex flex-col gap-2">
-                <Label>Category</Label>
-                <div className="relative w-full h-fit">
-                  {isLoading && <LoadingIndicator />}
-                  <MultiSelect
-                    options={accountOptions}
-                    selected={filterParams.categories}
-                    onChange={(values: string[]) => handleEditFilter('categories', values)}
-                    placeholder="Select Categories"
-                    className="w-full px-4 py-2"
-                  />
-                </div>
-              </div>
+    const accountFilterComponent = (
+      <AccountFilter
+        options={accountOptions}
+        selected={filterParams.accounts}
+        onChange={(values) => handleEditFilter('accounts', values)}
+        isLoading={isLoading}
+      />
+    );
 
-              {/* Amount Filter */}
-              <div className="w-full flex flex-col gap-2">
-                <Label>Amount</Label>
-                <div className="w-full flex flex-row items-center justify-between gap-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Input
-                          value={
-                            !isMinEditing
-                              ? formatCurrency(
-                                  filterParams.amountMin,
-                                  TransactionCurrency.VND,
-                                  false,
-                                )
-                              : filterParams.amountMin
-                          }
-                          min={amountMin}
-                          max={amountMax}
-                          onFocus={(e) => {
-                            setIsMinEditing(true);
-                            e.target.select();
-                          }}
-                          onBlur={() => setIsMinEditing(false)}
-                          placeholder="Min"
-                          onChange={(e) =>
-                            handleEditFilter(
-                              'amountMin',
-                              Number(e.target.value.split(',').join('')),
-                            )
-                          }
-                          required
-                          className={cn('w-[40%]')}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          {formatCurrency(filterParams.amountMin, TransactionCurrency.VND, false)}
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+    const partnerFilterComponent = (
+      <PartnerFilter
+        options={partnerOptions}
+        selected={filterParams.partners}
+        onChange={(values) => handleEditFilter('partners', values)}
+        isLoading={isLoading}
+      />
+    );
 
-                  <Label>To</Label>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Input
-                          value={
-                            !isMaxEditing
-                              ? formatCurrency(
-                                  filterParams.amountMax,
-                                  TransactionCurrency.VND,
-                                  false,
-                                )
-                              : filterParams.amountMax
-                          }
-                          min={amountMin}
-                          max={amountMax}
-                          placeholder="Max"
-                          onFocus={(e) => {
-                            setIsMaxEditing(true);
-                            e.target.select();
-                          }}
-                          onBlur={() => setIsMaxEditing(false)}
-                          onChange={(e) =>
-                            handleEditFilter(
-                              'amountMax',
-                              Number(e.target.value.split(',').join('')),
-                            )
-                          }
-                          required
-                          className={cn('w-[60%]')}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          {formatCurrency(filterParams.amountMax, TransactionCurrency.VND, false)}
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
+    return [
+      {
+        key: 'typeFilter',
+        component: typeFilterComponent,
+        column: FilterColumn.LEFT,
+        order: 0,
+      },
+      {
+        key: 'categoryFilter',
+        component: categoryFilterComponent,
+        column: FilterColumn.LEFT,
+        order: 1,
+      },
+      {
+        key: 'amountFilter',
+        component: amountFilterComponent,
+        column: FilterColumn.LEFT,
+        order: 2,
+      },
+      {
+        key: 'dateFilter',
+        component: dateFilterComponent,
+        column: FilterColumn.RIGHT,
+        order: 0,
+      },
+      {
+        key: 'accountFilter',
+        component: accountFilterComponent,
+        column: FilterColumn.RIGHT,
+        order: 1,
+      },
+      {
+        key: 'partnerFilter',
+        component: partnerFilterComponent,
+        column: FilterColumn.RIGHT,
+        order: 2,
+      },
+    ];
+  }, [
+    filterParams,
+    categoryOptions,
+    accountOptions,
+    partnerOptions,
+    amountMin,
+    amountMax,
+    isLoading,
+    handleEditFilter,
+  ]);
 
-                {renderAmountSlider({
-                  amountMin: filterParams.amountMin,
-                  amountMax: filterParams.amountMax,
-                  minRange: amountMin,
-                  maxRange: amountMax,
-                  handleUpdateAmount: handleEditFilter,
-                })}
-              </div>
-            </div>
-          </DropdownMenuGroup>
+  // Creates the filter structure from the UI state
+  const createFilterStructure = useCallback((params: FilterParams): Record<string, any> => {
+    const updatedFilters: Record<string, any> = {};
+    const andConditions: any[] = [];
 
-          {/* Separator */}
-          <div className="w-[2px] h-full bg-gray-300 mx-2"></div>
+    // Handle date range
+    if (params.dateRange?.from || params.dateRange?.to) {
+      updatedFilters.date = {
+        gte: params.dateRange?.from ? params.dateRange.from.toISOString() : null,
+        lte: params.dateRange?.to ? params.dateRange.to.toISOString() : null,
+      };
+    }
 
-          {/* Right column filters */}
-          <DropdownMenuGroup className="w-[240px]">
-            <div className="w-full h-full flex flex-col justify-start items-start gap-[.8rem]">
-              <div className="w-full flex flex-col gap-2">
-                <Label>Date</Label>
-                <DateRangePicker
-                  date={filterParams.dateRange}
-                  onChange={(values: DateRange | undefined) =>
-                    handleEditFilter('dateRange', values)
-                  }
-                  colorScheme="default"
-                />
-              </div>
+    // Types OR group
+    if (params.types?.length) {
+      andConditions.push({
+        OR: params.types.map((type) => ({ type })),
+      });
+    }
 
-              {/* Account Filter */}
-              <div className="w-full flex flex-col gap-2">
-                <Label>Account</Label>
-                <div className="relative w-full h-fit">
-                  {isLoading && <LoadingIndicator />}
-                  <MultiSelect
-                    options={categoryOptions}
-                    selected={filterParams.accounts}
-                    onChange={(values: string[]) => handleEditFilter('accounts', values)}
-                    placeholder="Select Accounts"
-                    className="w-full px-4 py-2"
-                  />
-                </div>
-              </div>
+    // Partners OR group
+    if (params.partners?.length) {
+      andConditions.push({
+        OR: params.partners.map((partner) => ({ partner: { name: partner } })),
+      });
+    }
 
-              {/* Partner Filter */}
-              <div className="w-full flex flex-col gap-2">
-                <Label>Partner</Label>
-                <div className="relative w-full h-fit">
-                  {isLoading && <LoadingIndicator />}
-                  <MultiSelect
-                    options={partnerOptions}
-                    selected={filterParams.partners}
-                    onChange={(values: string[]) => handleEditFilter('partners', values)}
-                    placeholder="Select Partners"
-                    className="w-full px-4 py-2"
-                  />
-                </div>
-              </div>
-            </div>
-          </DropdownMenuGroup>
-        </div>
+    // Categories OR group
+    if (params.categories?.length) {
+      andConditions.push({
+        OR: params.categories.map((from) => ({ fromCategory: { name: from } })),
+      });
+    }
 
-        {error && (
-          <div className="w-full p-2 my-1 text-sm text-red-500">
-            Error loading filter options. Please try again.
-          </div>
-        )}
+    // Accounts OR group
+    if (params.accounts?.length) {
+      andConditions.push({
+        OR: params.accounts.map((to) => ({
+          OR: [{ toAccount: { name: to } }, { toCategory: { name: to } }],
+        })),
+      });
+    }
 
-        <DropdownMenuSeparator />
-        <div className="w-full flex justify-end items-center gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant={'destructive'} className="px-3 py-2" onClick={handleResetFilter}>
-                  <FunnelX className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Clear Filter</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+    // Amount as a separate condition
+    andConditions.push({
+      amount: {
+        gte: params.amountMin,
+        lte: params.amountMax,
+      },
+    });
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button className="px-3 py-2" onClick={handleSaveFilterChanges}>
-                  <Check className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Apply</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+    // Add AND conditions if there are any
+    if (andConditions.length > 0) {
+      updatedFilters.AND = andConditions;
+    }
+
+    return updatedFilters;
+  }, []);
+
+  // Use our custom useFilter hook with memoized callback
+  const { FiltersComponent } = useFilter<FilterParams>({
+    filterParams,
+    filterComponents: components || filterComponents,
+    callBack: useCallback(
+      (newFilter) => {
+        callBack({
+          ...filterCriteria,
+          filters: newFilter.filters,
+        });
+      },
+      [callBack, filterCriteria],
+    ),
+    defaultFilterCriteria: DEFAULT_TRANSACTION_FILTER_CRITERIA,
+    structureCreator: createFilterStructure,
+  });
+
+  return <FiltersComponent />;
 };
 
 export default FilterMenu;
