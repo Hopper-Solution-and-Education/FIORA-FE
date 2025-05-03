@@ -43,6 +43,7 @@ export enum Messages {
   UPDATE_PRODUCT_ITEM_FAILED = 'Failed to update product item',
 
   // Budget Service
+  GET_BUDGET_ITEM_SUCCESS = 'Get budget item successfully',
   CREATE_BUDGET_SUCCESS = 'Create budget successfully',
   UPDATE_BUDGET_SUCCESS = 'Update budget successfully',
 

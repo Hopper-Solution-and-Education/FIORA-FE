@@ -18,6 +18,7 @@ type GlobalDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title?: string;
+  heading?: string;
   description?: string;
   confirmText?: string;
   cancelText?: string;
@@ -64,6 +65,7 @@ export const GlobalDialog = ({
   open,
   onOpenChange,
   title,
+  heading,
   description,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
@@ -83,12 +85,15 @@ export const GlobalDialog = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={clsx('sm:max-w-md flex flex-col', VARIANT_BORDER_MAP[variant], className)}
+        className={clsx('sm:max-w-lg flex flex-col', VARIANT_BORDER_MAP[variant], className)}
       >
-        <DialogHeader className="flex gap-2 items-start">
-          <div className="flex flex-col">
-            {title && <DialogTitle className="text-xl font-bold">{title}</DialogTitle>}
-            {description && <DialogDescription>{description}</DialogDescription>}
+        <DialogHeader className="flex items-start">
+          <div className="text-center">
+            {title && <DialogTitle className="text-xl font-bold mb-3">{title}</DialogTitle>}
+            <div className="text-left flex flex-col gap-2">
+              {heading && <DialogTitle className="font-normal text-md">{heading}</DialogTitle>}
+              {description && <DialogDescription>{description}</DialogDescription>}
+            </div>
           </div>
         </DialogHeader>
 

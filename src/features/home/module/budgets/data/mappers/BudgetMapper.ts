@@ -1,6 +1,13 @@
-import { BudgetCreateRequest, BudgetCreateResponse } from '../../domain/entities/Budget';
+import {
+  BudgetCreateRequest,
+  BudgetCreateResponse,
+  BudgetGetRequest,
+  BudgetGetResponse,
+} from '../../domain/entities/Budget';
 import { BudgetCreateRequestDTO } from '../dto/request/BudgetCreateRequestDTO';
+import { BudgetGetRequestDTO } from '../dto/request/BudgetGetRequestDTO';
 import { BudgetCreateResponseDTO } from '../dto/response/BudgetCreateResponseDTO';
+import { BudgetGetResponseDTO } from '../dto/response/BudgetGetResponseDTO';
 
 class BudgetMapper {
   // Get Category ------------------------------
@@ -55,6 +62,20 @@ class BudgetMapper {
       m11Expense: apiResponse.data.m11Expense,
       m12Income: apiResponse.data.m12Income,
       m12Expense: apiResponse.data.m12Expense,
+    };
+  }
+
+  static toGetBudgetRequestDTO(requestDTO: BudgetGetRequest): BudgetGetRequestDTO {
+    return {
+      ...requestDTO,
+    };
+  }
+
+  static toGetBudgetResponse(apiResponse: BudgetGetResponseDTO): BudgetGetResponse {
+    return {
+      currency: apiResponse.data.currency,
+      data: apiResponse.data.data,
+      nextCursor: apiResponse.data.nextCursor,
     };
   }
 }
