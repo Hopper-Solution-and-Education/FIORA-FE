@@ -1,6 +1,6 @@
 import { Category, CategoryType } from '@prisma/client';
 import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
-import { CategoryWithTransactions } from '@/shared/types/category.types';
+import { CategoryExtras } from '@/shared/types/category.types';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { Messages } from '@/shared/constants/message';
@@ -74,7 +74,7 @@ class CategoryUseCase {
   async getCategories(userId: string): Promise<any[]> {
     const categories = await this.categoryRepository.findCategoriesWithTransactions(userId);
 
-    const calculateBalance = (category: CategoryWithTransactions): number => {
+    const calculateBalance = (category: CategoryExtras): number => {
       if (category.type === CategoryType.Expense.valueOf()) {
         return (category.toTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
       } else if (category.type === CategoryType.Income.valueOf()) {
@@ -87,7 +87,7 @@ class CategoryUseCase {
     categories.forEach((category) => {
       categoryMap.set(category.id, {
         ...category,
-        balance: calculateBalance(category as CategoryWithTransactions),
+        balance: calculateBalance(category),
       });
     });
 
