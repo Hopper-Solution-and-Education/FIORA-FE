@@ -1,3 +1,4 @@
+import { CategoryExtras } from '@/shared/types';
 import { Category, CategoryType } from '@prisma/client';
 
 export interface ICategoryRepository {
@@ -21,5 +22,5 @@ export interface ICategoryRepository {
    */
   updateCategory(id: string, data: Partial<Category>): Promise<Category>;
   deleteCategory(id: string): Promise<void>;
-  findCategoriesWithTransactions(userId: string): Promise<Category[]>;
+  findCategoriesWithTransactions(userId: string): Promise<CategoryExtras[]>;
 }
