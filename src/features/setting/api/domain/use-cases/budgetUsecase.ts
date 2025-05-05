@@ -470,10 +470,10 @@ class BudgetUseCase {
         ),
         budgetActIncome: combinedActIncome,
         budgetActExpense: combinedActExpense,
-        actualIncome: convertCurrency(actData.total_inc, actData.currency as Currency, currency),
-        actualExpense: convertCurrency(actData.total_exp, actData.currency as Currency, currency),
-        tentativeTotalsIncome: tentativeTotals.total_inc,
-        tentativeTotalsExpense: tentativeTotals.total_exp,
+        // actualIncome: convertCurrency(actData.total_inc, actData.currency as Currency, currency),
+        // actualExpense: convertCurrency(actData.total_exp, actData.currency as Currency, currency),
+        // tentativeTotalsIncome: tentativeTotals.total_inc,
+        // tentativeTotalsExpense: tentativeTotals.total_exp,
       };
     });
 
