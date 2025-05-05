@@ -1,13 +1,13 @@
-import React, { memo } from 'react';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Filter } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/shared/utils';
+import { Filter, X } from 'lucide-react';
+import React, { memo, useRef } from 'react';
 
 interface DropdownPosition {
   align?: 'start' | 'center' | 'end';
@@ -19,6 +19,7 @@ interface DropdownPosition {
 interface SearchBarProps {
   value?: string;
   onChange?: (value: string) => void;
+  onClear?: () => void;
   onBlur?: () => void;
   placeholder?: string;
   leftIcon?: React.ReactNode;
@@ -32,12 +33,12 @@ interface SearchBarProps {
   dropdownPosition?: DropdownPosition;
   id?: string;
   disabled?: boolean;
-  [key: string]: any;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
-  value = '',
+  value,
   onChange = () => {},
+  onClear,
   onBlur,
   placeholder = 'Search...',
   leftIcon,
@@ -59,12 +60,18 @@ const SearchBar: React.FC<SearchBarProps> = ({
   ...inputProps
 }) => {
   const { align, side, sideOffset, alignOffset } = dropdownPosition;
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Default right icon: show X icon if ref has value and no custom rightIcon
+  const defaultRightIcon =
+    inputRef.current?.value && !rightIcon ? (
+      <X className="h-5 w-5 text-gray-500 cursor-pointer" onClick={onClear} />
+    ) : null;
 
   return (
     <div
       className={cn(
         'relative flex items-center w-full max-w-full',
-        // Responsive container width
         'sm:max-w-md md:max-w-lg lg:max-w-xl',
         className,
       )}
@@ -73,19 +80,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
       <div className="relative flex-1">
         {/* Left Icon */}
         {leftIcon && (
-          <div
-            className={cn(
-              'absolute inset-y-0 left-0 flex items-center pl-2',
-              // Responsive padding for left icon
-              'sm:pl-3',
-            )}
-          >
+          <div className={cn('absolute inset-y-0 left-0 flex items-center pl-2', 'sm:pl-3')}>
             {leftIcon}
           </div>
         )}
 
         {/* Input */}
         <Input
+          ref={inputRef}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onBlur={onBlur}
@@ -94,26 +96,22 @@ const SearchBar: React.FC<SearchBarProps> = ({
           disabled={disabled}
           className={cn(
             'w-full text-sm',
-            // Responsive padding based on icons
             leftIcon ? 'pl-8 sm:pl-10' : 'pl-3 sm:pl-4',
-            rightIcon ? 'pr-8 sm:pr-10' : showFilter ? 'pr-10 sm:pr-12' : 'pr-3 sm:pr-4',
-            // Responsive font size
+            rightIcon || defaultRightIcon
+              ? 'pr-8 sm:pr-10'
+              : showFilter
+                ? 'pr-10 sm:pr-12'
+                : 'pr-3 sm:pr-4',
             'text-sm sm:text-base',
             inputClassName,
           )}
           {...inputProps}
         />
 
-        {/* Right Icon */}
-        {rightIcon && (
-          <div
-            className={cn(
-              'absolute inset-y-0 right-0 flex items-center pr-2',
-              // Responsive padding for right icon
-              'sm:pr-3',
-            )}
-          >
-            {rightIcon}
+        {/* Right Icon (custom or default) */}
+        {(rightIcon || defaultRightIcon) && (
+          <div className={cn('absolute inset-y-0 right-0 flex items-center pr-2', 'sm:pr-3')}>
+            {rightIcon || defaultRightIcon}
           </div>
         )}
       </div>
@@ -125,34 +123,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className={cn(
-                'ml-1 h-8 w-8',
-                // Responsive margin and size
-                'sm:ml-2 sm:h-9 sm:w-9',
-                filterButtonClassName,
-              )}
+              className={cn('ml-1 h-8 w-8', 'sm:ml-2 sm:h-9 sm:w-9', filterButtonClassName)}
               disabled={disabled}
               aria-label="Toggle filter options"
             >
-              <Filter
-                className={cn(
-                  'h-4 w-4',
-                  // Responsive icon size
-                  'sm:h-5 sm:w-5',
-                )}
-              />
+              <Filter className={cn('h-4 w-4', 'sm:h-5 sm:w-5')} />
             </Button>
           </DropdownMenuTrigger>
           {filterContent && (
             <DropdownMenuContent
-              className={cn(
-                // Responsive dropdown width
-                'w-56 p-3',
-                'sm:w-64 sm:p-4',
-                // Ensure dropdown doesn't overflow on small screens
-                'max-w-[90vw]',
-                dropdownClassName,
-              )}
+              className={cn('w-56 p-3', 'sm:w-64 sm:p-4', 'max-w-[90vw]', dropdownClassName)}
               align={align}
               side={side}
               sideOffset={sideOffset}

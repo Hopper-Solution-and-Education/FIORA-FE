@@ -152,6 +152,13 @@ export type BudgetGetRequest = {
   cursor: number | null;
   take: number;
   search: string;
+  filters?: {
+    fiscalYear: {
+      gte: number;
+      lte: number;
+    };
+  };
+  currency?: Currency;
 };
 
 export type BudgetGetResponse = {

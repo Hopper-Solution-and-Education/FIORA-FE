@@ -4,20 +4,23 @@ import { ChartSkeleton } from '@/components/common/organisms';
 import StackedBarChart from '@/components/common/stacked-bar-chart';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useRef } from 'react';
+import { useFormContext } from 'react-hook-form';
 import { getBudgetAsyncThunk } from '../../slices/actions/getBudgetAsyncThunk';
 import { legendItems, mapBudgetToData } from '../../utils';
+import { BudgetGetFormValues } from '../schema';
 
 type Props = {
-  search?: string;
+  handleGetBudgetData: (cursor: number | null, handleNext?: () => void) => void;
 };
 
-const BudgetDashboard = ({ search = '' }: Props) => {
+const BudgetDashboard = ({ handleGetBudgetData }: Props) => {
   const currency = useAppSelector((state) => state.settings.currency);
   const { budgets, isLoading, nextCursor, isLast } = useAppSelector(
     (state) => state.budgetControl.getBudget,
   );
+  const methods = useFormContext<BudgetGetFormValues>();
 
-  console.log(search);
+  const { watch } = methods;
 
   const dispatch = useAppDispatch();
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -28,11 +31,26 @@ const BudgetDashboard = ({ search = '' }: Props) => {
     (cursor: number | null) => {
       if (isLast || isLoading) return;
       const scrollPosition = scrollRef.current?.scrollTop || window.scrollY;
+      // handleGetBudgetData(cursor, () => {
+      //   if (scrollRef.current) {
+      //     scrollRef.current.scrollTop = scrollPosition;
+      //   } else {
+      //     window.scrollTo(0, scrollPosition);
+      //   }
+      // });
+
       dispatch(
         getBudgetAsyncThunk({
           cursor,
           search: '',
           take: 3,
+          filters: {
+            fiscalYear: {
+              lte: Number(watch('toYear')),
+              gte: Number(watch('fromYear')),
+            },
+          },
+          currency,
         }),
       ).then(() => {
         if (scrollRef.current) {
@@ -42,7 +60,7 @@ const BudgetDashboard = ({ search = '' }: Props) => {
         }
       });
     },
-    [dispatch, isLast, isLoading],
+    [handleGetBudgetData, isLast, isLoading],
   );
 
   useEffect(() => {
