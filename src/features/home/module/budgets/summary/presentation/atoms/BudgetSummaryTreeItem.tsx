@@ -48,7 +48,8 @@ const BudgetTreeItem = forwardRef<HTMLDivElement, BudgetTreeItemProps>(
             {/* Main content container */}
             {showHorizontalLine && (
               <div
-                className={`h-[${BUDGET_SUMMARY_TREE_LINE_STOKE}] bg-gray-300 dark:bg-gray-700 w-6`}
+                className={cn('bg-gray-300 dark:bg-gray-700 w-6')}
+                style={{ height: `${BUDGET_SUMMARY_TREE_LINE_STOKE}px` }}
               />
             )}
             {children}
