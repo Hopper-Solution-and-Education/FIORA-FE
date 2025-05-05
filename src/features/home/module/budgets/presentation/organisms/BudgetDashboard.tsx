@@ -2,9 +2,7 @@
 
 import { ChartSkeleton } from '@/components/common/organisms';
 import StackedBarChart from '@/components/common/stacked-bar-chart';
-import { CustomBarItem } from '@/components/common/stacked-bar-chart/type';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef } from 'react';
 import { getBudgetAsyncThunk } from '../../slices/actions/getBudgetAsyncThunk';
 import { legendItems, mapBudgetToData } from '../../utils';
@@ -14,7 +12,6 @@ type Props = {
 };
 
 const BudgetDashboard = ({ search = '' }: Props) => {
-  const router = useRouter();
   const currency = useAppSelector((state) => state.settings.currency);
   const { budgets, isLoading, nextCursor, isLast } = useAppSelector(
     (state) => state.budgetControl.getBudget,
@@ -26,13 +23,6 @@ const BudgetDashboard = ({ search = '' }: Props) => {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
-
-  const handleItemClick = useCallback(
-    (item: CustomBarItem) => {
-      router.push(`/budgets/${item.name}`);
-    },
-    [router],
-  );
 
   const handleCallGetBudget = useCallback(
     (cursor: number | null) => {
@@ -84,27 +74,36 @@ const BudgetDashboard = ({ search = '' }: Props) => {
   return (
     <div ref={scrollRef} className="overflow-auto min-h-screen">
       <div>
-        {isLoading && !budgets.length
-          ? Array.from({ length: 3 }).map((_, index) => (
-              <ChartSkeleton key={index} className="h-[300px] w-full my-16" />
-            ))
-          : budgets?.map((budgetItem) => {
-              const data = mapBudgetToData(budgetItem);
-              return (
-                <StackedBarChart
-                  key={budgetItem.year}
-                  data={data}
-                  title={`${budgetItem.year}`}
-                  currency={currency}
-                  locale="en-US"
-                  onItemClick={handleItemClick}
-                  xAxisFormatter={(value) => `$${value.toLocaleString()}`}
-                  tutorialText="Click on a bar to view details."
-                  className="my-4"
-                  legendItems={legendItems}
-                />
-              );
-            })}
+        {isLoading && !budgets.length ? (
+          // Show skeletons while loading and no data
+          Array.from({ length: 3 }).map((_, index) => (
+            <ChartSkeleton key={index} className="h-[300px] w-full my-16" />
+          ))
+        ) : budgets.length === 0 ? (
+          // Show empty state when no budgets are available
+          <div className="flex flex-col items-center justify-center h-[300px] my-16 text-center">
+            <p className="text-lg font-medium text-gray-500">No budgets found.</p>
+            <p className="text-sm text-gray-400">
+              Try adjusting your search or adding a new budget.
+            </p>
+          </div>
+        ) : (
+          // Render budget charts
+          budgets.map((budgetItem) => {
+            const data = mapBudgetToData(budgetItem);
+            return (
+              <StackedBarChart
+                key={budgetItem.year}
+                data={data}
+                title={`${budgetItem.year}`}
+                currency={currency}
+                tutorialText="Click on a bar to view details."
+                className="my-4"
+                legendItems={legendItems}
+              />
+            );
+          })
+        )}
       </div>
       {!isLast && (
         <div ref={sentinelRef} className="h-10">

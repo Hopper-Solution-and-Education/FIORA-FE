@@ -15,6 +15,7 @@ interface InputCurrencyProps {
   id?: string;
   required?: boolean;
   currency: string;
+  maxLength?: number;
   [key: string]: any;
 }
 
@@ -28,6 +29,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   id,
   required,
   currency,
+  maxLength,
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -56,7 +58,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
     // Parse the input to a number
     const parsedValue = parseFloat(localValue);
     // Pass parsed number to form (NaN if invalid, validation will handle it)
-    onChange(isNaN(parsedValue) ? NaN : parsedValue);
+    onChange(isNaN(parsedValue) ? 0 : parsedValue);
     if (onBlur) onBlur();
   };
 
@@ -74,6 +76,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
         onFocus={handleFocus}
         onBlur={handleBlur}
         placeholder={placeholder}
+        maxLength={maxLength}
         id={id}
         className={error ? 'border-red-500' : ''}
         {...props}

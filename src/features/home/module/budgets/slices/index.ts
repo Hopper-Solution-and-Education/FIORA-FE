@@ -57,6 +57,7 @@ const budgetControlSlice = createSlice({
         }
       })
       .addCase(getBudgetAsyncThunk.rejected, (state) => {
+        state.getBudget.isLast = true;
         state.getBudget.isLoading = false;
       });
   },

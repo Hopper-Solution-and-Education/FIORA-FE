@@ -49,7 +49,6 @@ const BudgetDashboardHeader = ({ value, onChange, debouncedSearch }: Props) => {
         placeholder="Search budgets..."
         leftIcon={<Search className="h-5 w-5 text-gray-500" />}
         rightIcon={renderRightIcon()}
-        showFilter
         filterContent={<BudgetDashboardFilter />}
         className="max-w-md"
         inputClassName="border-gray-300"

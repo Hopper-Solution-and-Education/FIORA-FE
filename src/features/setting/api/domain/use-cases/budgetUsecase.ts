@@ -241,6 +241,7 @@ class BudgetUseCase {
     }
 
     // Step 1.1: Check if budgets exist for the current year
+    // IMPORTANT
     const currentYearBudgets = await this.budgetRepository.findManyBudgetData(
       {
         userId: userId,
@@ -765,7 +766,6 @@ class BudgetUseCase {
       }
 
       // ----------------------- UPDATE ACT BUDGET AT YEAR -----------------------
-      // Xác định phạm vi từ đầu năm đến cuối tháng target
       // Xác định phạm vi từ đầu năm đến cuối tháng target
       const yearStart = new Date(fiscalYear, 0, 1); // Ngày 1/1 của năm
       const targetMonthEnd = new Date(fiscalYear, targetMonth, 0); // Ngày cuối của tháng target (hoặc cuối năm)
