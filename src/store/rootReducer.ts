@@ -11,6 +11,7 @@ import { combineReducers } from '@reduxjs/toolkit';
 import dialogSlices from './slices/dialog.slice';
 import moduleReducer from './slices/moduleSlice';
 import settingSlices from './slices/setting.slice';
+import { budgetSummarySlice } from '@/features/home/module/budgets/summary';
 
 const reducer = {
   settings: settingSlices,
@@ -18,6 +19,7 @@ const reducer = {
   landing: landingSlices,
   landingSettings: landingSettingSlice,
   budgetControl: budgetControlSlice,
+  budgetSummary: budgetSummarySlice,
   productManagement: productManagementSlice,
   category: categorySlice,
   account: accountSlice,

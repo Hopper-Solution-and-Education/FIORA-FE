@@ -68,6 +68,21 @@ class BudgetRepository implements IBudgetRepository {
       ...options,
     });
   }
+
+  async findBudgetsByUserIdAndFiscalYear(
+    userId: string,
+    fiscalYear: number,
+  ): Promise<BudgetsTable[]> {
+    return prisma.budgetsTable.findMany({
+      where: {
+        userId,
+        fiscalYear,
+      },
+      orderBy: {
+        type: 'asc',
+      },
+    });
+  }
 }
 
 // Export a single instance
