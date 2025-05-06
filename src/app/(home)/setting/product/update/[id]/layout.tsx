@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Product and Services - Update',
-  description: 'Basic Fiora dashboard with Next.js and Shadcn',
+  title: 'FIORA | Update Product and Services',
+  description: 'FIORA - Update Product and Services',
 };
 
 export default async function UpdateProductLayout({ children }: { children: React.ReactNode }) {

@@ -3,7 +3,7 @@ import { SectionType } from '@prisma/client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useGetSection } from '../../hooks/useGetSection';
-const defaultURL = 'https://www.facebook.com/HopperSolutionAndEducation';
+const DEFAULT_URL = 'https://www.facebook.com/HopperSolutionAndEducation';
 
 export default function Footer() {
   const { section, isError, isLoading } = useGetSection(SectionType.FOOTER);
@@ -43,7 +43,7 @@ export default function Footer() {
             <Link
               target="_blank"
               key={index}
-              href={icon.redirect_url ?? defaultURL}
+              href={icon.redirect_url ?? DEFAULT_URL}
               className="hover:scale-110 transition-transform"
             >
               <Image
@@ -56,7 +56,7 @@ export default function Footer() {
             </Link>
           ))}
         </div>
-        <p className="mt-4 md:mt-0 text-sm">Copyright &copy; FIORA.live</p>
+        <p className="mt-4 md:mt-0 text-sm">{section.name}</p>
       </div>
     </footer>
   );
