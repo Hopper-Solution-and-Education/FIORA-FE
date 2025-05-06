@@ -5,12 +5,9 @@ import { Session, useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
-const BannerPage = dynamic(
-  () => import('@/features/setting/module/landing/landing/presentation/Page'),
-  {
-    loading: () => <Loading />,
-  },
-);
+const BannerPage = dynamic(() => import('@/features/setting/module/landing/presentation/Page'), {
+  loading: () => <Loading />,
+});
 
 const Page = () => {
   const { data: session } = useSession() as { data: Session | null };

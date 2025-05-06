@@ -4,7 +4,7 @@ import budgetControlSlice from '@/features/home/module/budgets/slices';
 import categorySlice from '@/features/home/module/category/slices';
 import transactionSlice from '@/features/home/module/transaction/slices';
 import landingSlices from '@/features/landing/slices';
-import landingSettingSlice from '@/features/setting/module/landing/landing/slices';
+import landingSettingSlice from '@/features/setting/module/landing/slices';
 import partnerManagementSlice from '@/features/setting/module/partner/slices';
 import productManagementSlice from '@/features/setting/module/product/slices';
 import { combineReducers } from '@reduxjs/toolkit';
