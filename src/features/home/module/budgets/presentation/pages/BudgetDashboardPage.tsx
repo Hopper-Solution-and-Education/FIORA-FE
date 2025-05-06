@@ -50,7 +50,7 @@ const BudgetDashboardPage = () => {
     <div className="p-6">
       <FormProvider {...methods}>
         <BudgetDashboardHeader />
-        <BudgetDashboard handleGetBudgetData={handleGetBudgetData} />
+        <BudgetDashboard />
       </FormProvider>
     </div>
   );
