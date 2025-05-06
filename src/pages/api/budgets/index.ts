@@ -51,7 +51,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       );
     }
 
-    const newProduct = await budgetUseCase.createBudget({
+    const newBudget = await budgetUseCase.createBudgetTransaction({
       userId,
       fiscalYear,
       estimatedTotalExpense,
@@ -63,7 +63,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
 
     return res
       .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_BUDGET_SUCCESS, newProduct));
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_BUDGET_SUCCESS, newBudget));
   } catch (error: any) {
     return res
       .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
@@ -104,7 +104,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
     if (fiscalYear) {
       updatedBudget = await budgetUseCase.updateActBudget(userId, fiscalYear, currency);
     } else {
-      updatedBudget = await budgetUseCase.updateActBudgetTotalYears(userId, currency);
+      updatedBudget = await budgetUseCase.updateActBudgetTransaction(userId, currency);
     }
 
     return res
