@@ -27,7 +27,7 @@ export enum Messages {
   UPDATE_PRODUCT_FAILED = 'Failed to update product',
   DELETE_PRODUCT_FAILED = 'Failed to delete product',
   GET_PRODUCT_FAILED = 'Failed to get product',
-  INVALID_PRODUCT_TYPE = 'Invalid product type. Must be either Product or Service',
+  INVALID_PRODUCT_TYPE = 'Invalid product type. Must be either Product or Service or Edu',
 
   // Product & Service
   TRANSFER_TRANSACTION_SUCCESS = 'Transfer transaction successfully',

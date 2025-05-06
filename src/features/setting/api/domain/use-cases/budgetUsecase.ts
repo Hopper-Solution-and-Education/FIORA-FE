@@ -474,82 +474,82 @@ class BudgetUseCase {
       };
     }
 
-    // Step 1.1: Check if budgets exist for the current year
-    // IMPORTANT
-    const currentYearBudgets = await this.budgetRepository.findManyBudgetData(
-      {
-        userId: userId,
-        fiscalYear: currentYear,
-      },
-      {
-        select: {
-          fiscalYear: true,
-          type: true,
-        },
-      },
-    );
+    // ------------------------IMPORTANT
+    // // Step 1.1: Check if budgets exist for the current year
+    // const currentYearBudgets = await this.budgetRepository.findManyBudgetData(
+    //   {
+    //     userId: userId,
+    //     fiscalYear: currentYear,
+    //   },
+    //   {
+    //     select: {
+    //       fiscalYear: true,
+    //       type: true,
+    //     },
+    //   },
+    // );
 
-    // Step 2.1: If no budgets for the current year, create them
-    if (currentYearBudgets.length === 0) {
-      // Find the least recent past year's budgets (if current year is 2025 => get 2024 )
-      const defaultIcon = 'banknote';
+    // // Step 2.1: If no budgets for the current year, create them
+    // if (currentYearBudgets.length === 0) {
+    //   // Find the least recent past year's budgets (if current year is 2025 => get 2024 )
+    //   const defaultIcon = 'banknote';
 
-      const latestPastBudgets = await this.budgetRepository.findManyBudgetData(
-        {
-          userId: userId,
-          fiscalYear: {
-            lte: currentYear, // Allow up to next year,
-          },
-        },
-        {
-          select: {
-            fiscalYear: true,
-            type: true,
-            total_inc: true,
-            total_exp: true,
-            description: true,
-            currency: true,
-          },
-          orderBy: { fiscalYear: 'desc' },
-          take: 3, // Get budgets for the most recent year (Top, Bot, Act)
-        },
-      );
+    //   const latestPastBudgets = await this.budgetRepository.findManyBudgetData(
+    //     {
+    //       userId: userId,
+    //       fiscalYear: {
+    //         lte: currentYear, // Allow up to next year,
+    //       },
+    //     },
+    //     {
+    //       select: {
+    //         fiscalYear: true,
+    //         type: true,
+    //         total_inc: true,
+    //         total_exp: true,
+    //         description: true,
+    //         currency: true,
+    //       },
+    //       orderBy: { fiscalYear: 'desc' },
+    //       take: 3, // Get budgets for the most recent year (Top, Bot, Act)
+    //     },
+    //   );
 
-      if (latestPastBudgets.length > 0) {
-        const topBudget = latestPastBudgets.find((b) => b.type === BudgetType.Top);
-        const currency = topBudget?.currency || Currency.VND; // Default to VND if not found
-        const description = topBudget?.description || 'Auto-generated bud get';
+    //   if (latestPastBudgets.length > 0) {
+    //     const topBudget = latestPastBudgets.find((b) => b.type === BudgetType.Top);
+    //     const currency = topBudget?.currency || Currency.VND; // Default to VND if not found
+    //     const description = topBudget?.description || 'Auto-generated bud get';
 
-        // Create budgets for the current year using the most recent past year's data
-        // For Act, createBudget will fetch current year's transactions
-        await this.createBudget({
-          userId: userId,
-          fiscalYear: currentYear, // Use current year
-          estimatedTotalExpense: topBudget!.total_exp.toNumber() || 0,
-          estimatedTotalIncome: topBudget!.total_inc.toNumber() || 0,
-          description: description,
-          currency: currency, // Use the currency from the latest past budget
-          icon: topBudget?.icon ?? defaultIcon,
-          isSystemGenerated: true,
-        });
-      } else {
-        const defaultDescription = 'Auto-generated budget';
+    //     // Create budgets for the current year using the most recent past year's data
+    //     // For Act, createBudget will fetch current year's transactions
+    //     await this.createBudget({
+    //       userId: userId,
+    //       fiscalYear: currentYear, // Use current year
+    //       estimatedTotalExpense: topBudget!.total_exp.toNumber() || 0,
+    //       estimatedTotalIncome: topBudget!.total_inc.toNumber() || 0,
+    //       description: description,
+    //       currency: currency, // Use the currency from the latest past budget
+    //       icon: topBudget?.icon ?? defaultIcon,
+    //       isSystemGenerated: true,
+    //     });
+    //   } else {
+    //     const defaultDescription = 'Auto-generated budget';
 
-        const defaultEstimatedTotalExpense = 0;
-        const defaultEstimatedTotalIncome = 0;
+    //     const defaultEstimatedTotalExpense = 0;
+    //     const defaultEstimatedTotalIncome = 0;
 
-        await this.createBudget({
-          userId: userId,
-          fiscalYear: currentYear, // Use current year
-          estimatedTotalExpense: defaultEstimatedTotalExpense,
-          estimatedTotalIncome: defaultEstimatedTotalIncome,
-          description: defaultDescription,
-          currency: currency, // Use the currency from the user preference
-          icon: defaultIcon,
-          isSystemGenerated: true,
-        });
-      }
-    }
+    //     await this.createBudget({
+    //       userId: userId,
+    //       fiscalYear: currentYear, // Use current year
+    //       estimatedTotalExpense: defaultEstimatedTotalExpense,
+    //       estimatedTotalIncome: defaultEstimatedTotalIncome,
+    //       description: defaultDescription,
+    //       currency: currency, // Use the currency from the user preference
+    //       icon: defaultIcon,
+    //       isSystemGenerated: true,
+    //     });
+    //   }
+    // }
 
     // Step 3: Fetch distinct years with budgets, sorted descending
     const distinctYears = await this.budgetRepository.findManyBudgetData(where, {
