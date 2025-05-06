@@ -29,6 +29,7 @@ const useBudgetFieldConfig = () => {
       yearOnly
       required
       disabled={isDisabledField}
+      isYearDisabled={(year) => year > new Date().getFullYear() + 1}
     />,
     <SelectField
       options={Object.entries(Currency).map(([key, value]) => ({ label: key, value }))}

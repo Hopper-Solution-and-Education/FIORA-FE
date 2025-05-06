@@ -2,58 +2,89 @@ import { ButtonCreation } from '@/components/common/atoms';
 import { SearchBar } from '@/components/common/organisms';
 import useDebounce from '@/shared/hooks/useDebounce';
 import { useAppDispatch } from '@/store';
-import { Search, X } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { resetGetBudgetState } from '../../slices';
 import { getBudgetAsyncThunk } from '../../slices/actions/getBudgetAsyncThunk';
 import { BudgetDashboardFilter } from '../atoms';
 import { BudgetGetFormValues } from '../schema';
-import { isNumber } from 'lodash';
 
 const BudgetDashboardHeader = () => {
   const methods = useFormContext<BudgetGetFormValues>();
-  const { setValue, watch, setError } = methods;
+  const {
+    setValue,
+    setError,
+    clearErrors,
+    formState: { errors },
+  } = methods;
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const [isShowDropdownFilter, setIsShowDropdownFilter] = useState(false);
 
-  // Handle input change: update ref and call debounced setValue
+  const handleSearch = useCallback((inputString: string) => {
+    // Trim whitespace from the input string
+    const trimmedInput = inputString.trim();
 
-  const search = watch('search');
-
-  const handleSearch = useCallback(
-    (e: string) => {
-      if (!isNumber(e)) {
-        setError('search', {
-          message: 'Search must be a number',
-          type: 'validate',
-        });
-        return;
-      }
-      setValue('search', e);
+    // If input is empty, clear any errors and search with empty string
+    if (trimmedInput === '') {
+      clearErrors('search'); // Clear previous errors for 'search' field
+      setValue('search', ''); // Set form value to empty string
       dispatch(resetGetBudgetState());
       dispatch(
         getBudgetAsyncThunk({
           cursor: null,
-          search: e,
+          search: '', // Search with empty string (effectively no year filter)
           take: 3,
         }),
       );
-    },
-    [dispatch, setError, setValue],
-  );
+      return; // Stop processing
+    }
+
+    // Attempt to parse the trimmed input as an integer
+    const yearNumber = parseInt(trimmedInput, 10); // Use radix 10
+
+    // Define a reasonable range for years (adjust as needed)
+    const currentYear = new Date().getFullYear();
+    const minYear = 1900;
+    const maxYear = currentYear + 10;
+
+    // --- Validation Logic for a Year ---
+    const isValidYear =
+      !isNaN(yearNumber) && // Check if parsing resulted in a valid number
+      Number.isInteger(yearNumber) && // Check if it's an integer
+      String(yearNumber) === trimmedInput && // Strict check: original string matches parsed number string (handles "01", "2024a" etc.)
+      yearNumber >= minYear && // Check minimum year
+      yearNumber <= maxYear; // Check maximum year
+    // --- End Validation Logic ---
+
+    if (isValidYear) {
+      // Input is a valid year
+      clearErrors('search'); // Clear any previous year validation errors
+      setValue('search', String(yearNumber)); // Set the form value as a number
+      dispatch(resetGetBudgetState());
+      dispatch(
+        getBudgetAsyncThunk({
+          cursor: null,
+          search: String(yearNumber), // Pass the valid year number to the thunk
+          take: 3,
+        }),
+      );
+    } else {
+      // Input is NOT a valid year
+      setError('search', {
+        message: 'Please enter a valid four-digit fiscal year ',
+        type: 'manual',
+      });
+    }
+  }, []);
 
   const handleInputChange = useDebounce(handleSearch, 500);
 
   const handleClickButtonCreation = useCallback(() => {
     router.push('/budgets/create');
   }, []);
-
-  // Default right icon: show X icon if ref has value and no custom rightIcon
-  const renderRightIcon = search ? (
-    <X className="h-5 w-5 text-gray-500 cursor-pointer" onClick={() => setValue('search', '')} />
-  ) : null;
 
   return (
     <div className="flex items-center justify-between mb-6">
@@ -62,14 +93,18 @@ const BudgetDashboardHeader = () => {
         onChange={handleInputChange}
         placeholder="Search budgets..."
         leftIcon={<Search className="h-5 w-5 text-gray-500" />}
-        rightIcon={renderRightIcon}
-        showFilter
-        filterContent={<BudgetDashboardFilter />}
+        showFilterButton
+        filterContent={
+          <BudgetDashboardFilter onFilterDropdownOpenChange={setIsShowDropdownFilter} />
+        }
         className="max-w-md"
         inputClassName="border-gray-300"
         dropdownPosition={{
           side: 'bottom',
         }}
+        isFilterDropdownOpen={isShowDropdownFilter}
+        onFilterDropdownOpenChange={setIsShowDropdownFilter}
+        error={errors['search']?.message}
       />
 
       <ButtonCreation action={handleClickButtonCreation} toolTip="Create New Budget" />

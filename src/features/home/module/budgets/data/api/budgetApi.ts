@@ -1,5 +1,4 @@
 import { httpClient } from '@/config/http-client/HttpClient';
-import { Currency } from '@prisma/client';
 import { decorate, injectable } from 'inversify';
 import isEmpty from 'lodash/isEmpty';
 import { BudgetCreateRequestDTO } from '../dto/request';
@@ -34,7 +33,7 @@ class BudgetAPI implements IBudgetAPI {
       },
 
       {
-        'x-user-currency': request.currency ?? Currency.VND,
+        'x-user-currency': request.currency ?? 'VND',
       },
     );
   }

@@ -41,4 +41,5 @@ export type StackedBarProps = {
   legendItems?: { name: string; color: string }[];
   showButton?: boolean;
   onClickButton?: () => void;
+  onClickTitle?: () => void;
 };

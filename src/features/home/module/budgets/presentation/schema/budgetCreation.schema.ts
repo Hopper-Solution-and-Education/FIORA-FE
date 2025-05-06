@@ -1,4 +1,3 @@
-import { Currency } from '@prisma/client';
 import * as yup from 'yup';
 
 const budgetCreationSchema = yup.object({
@@ -26,7 +25,7 @@ const budgetCreationSchema = yup.object({
 export const defaultBudgetFormValue = {
   icon: 'banknote',
   fiscalYear: new Date().getFullYear().toString(),
-  currency: Currency.VND,
+  currency: 'VND',
   totalExpense: 0,
   totalIncome: 0,
   description: '',

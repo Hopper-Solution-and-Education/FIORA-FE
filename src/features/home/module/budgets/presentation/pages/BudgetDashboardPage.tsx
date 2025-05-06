@@ -47,12 +47,12 @@ const BudgetDashboardPage = () => {
   }, []);
 
   return (
-    <div className="p-6">
-      <FormProvider {...methods}>
+    <FormProvider {...methods}>
+      <div className="p-6">
         <BudgetDashboardHeader />
         <BudgetDashboard />
-      </FormProvider>
-    </div>
+      </div>
+    </FormProvider>
   );
 };
 
