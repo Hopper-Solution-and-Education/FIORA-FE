@@ -9,16 +9,14 @@ import { getBudgetAsyncThunk } from '../../slices/actions/getBudgetAsyncThunk';
 import { legendItems, mapBudgetToData } from '../../utils';
 import { BudgetGetFormValues } from '../schema';
 
-type Props = {
-  handleGetBudgetData: (cursor: number | null, handleNext?: () => void) => void;
-};
-
-const BudgetDashboard = ({ handleGetBudgetData }: Props) => {
+const BudgetDashboard = () => {
   const currency = useAppSelector((state) => state.settings.currency);
   const { budgets, isLoading, nextCursor, isLast } = useAppSelector(
     (state) => state.budgetControl.getBudget,
   );
   const methods = useFormContext<BudgetGetFormValues>();
+
+  const handleOnClickItem = useCallback(() => {}, []);
 
   const { watch } = methods;
 
@@ -31,13 +29,6 @@ const BudgetDashboard = ({ handleGetBudgetData }: Props) => {
     (cursor: number | null) => {
       if (isLast || isLoading) return;
       const scrollPosition = scrollRef.current?.scrollTop || window.scrollY;
-      // handleGetBudgetData(cursor, () => {
-      //   if (scrollRef.current) {
-      //     scrollRef.current.scrollTop = scrollPosition;
-      //   } else {
-      //     window.scrollTo(0, scrollPosition);
-      //   }
-      // });
 
       dispatch(
         getBudgetAsyncThunk({
@@ -60,7 +51,8 @@ const BudgetDashboard = ({ handleGetBudgetData }: Props) => {
         }
       });
     },
-    [handleGetBudgetData, isLast, isLoading],
+
+    [isLast, isLoading],
   );
 
   useEffect(() => {
@@ -118,6 +110,7 @@ const BudgetDashboard = ({ handleGetBudgetData }: Props) => {
                 tutorialText="Click on a bar to view details."
                 className="my-4"
                 legendItems={legendItems}
+                onClickTitle={handleOnClickItem}
               />
             );
           })
