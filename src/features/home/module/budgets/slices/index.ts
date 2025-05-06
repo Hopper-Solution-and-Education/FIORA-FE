@@ -21,6 +21,7 @@ const budgetControlSlice = createSlice({
         isLoading: false,
         nextCursor: null,
         isLast: false,
+        currency: 'VND',
       };
     },
   },
@@ -55,6 +56,7 @@ const budgetControlSlice = createSlice({
         if (action.payload.nextCursor === null) {
           state.getBudget.isLast = true;
         }
+        state.getBudget.currency = action.payload.currency;
       })
       .addCase(getBudgetAsyncThunk.rejected, (state) => {
         state.getBudget.isLast = true;

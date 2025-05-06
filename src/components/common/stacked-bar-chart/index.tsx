@@ -2,17 +2,26 @@
 
 import { BarLabel, ChartLegend, IconDisplay } from '@/components/common/atoms';
 import StackYAxisTick from '@/components/common/atoms/StackYAxisTick';
+import { Icons } from '@/components/Icon';
+import { Button } from '@/components/ui/button';
+import {
+  TooltipContent,
+  TooltipProvider,
+  Tooltip as TooltipShadcn,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   BASE_BAR_HEIGHT,
   COLORS,
-  DEFAULT_CURRENCY,
   DEFAULT_BUDGET_ICON,
+  DEFAULT_CURRENCY,
   MIN_CHART_HEIGHT,
   STACK_TYPE,
 } from '@/shared/constants/chart';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { cn, formatCurrency } from '@/shared/utils';
 import { getChartMargins, useWindowSize } from '@/shared/utils/device';
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -25,15 +34,6 @@ import {
   YAxis,
 } from 'recharts';
 import { CustomBarItem, StackBarDisplay, StackedBarProps, TooltipProps } from './type';
-import { useIsMobile } from '@/shared/hooks/useIsMobile';
-import { Button } from '@/components/ui/button';
-import { Icons } from '@/components/Icon';
-import {
-  TooltipContent,
-  Tooltip as TooltipShadcn,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 const largestKey = (item: CustomBarItem): string => {
   const largestValue = Math.max(item.A, item.B, item.T);
@@ -70,6 +70,7 @@ const StackedBarChart = ({
   legendItems,
   showButton,
   onClickButton,
+  onClickTitle,
 }: StackedBarProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [chartHeight, setChartHeight] = useState(MIN_CHART_HEIGHT);
@@ -197,7 +198,7 @@ const StackedBarChart = ({
     >
       {title && (
         <div className="flex justify-start items-center gap-4 mb-4 ml-2">
-          <IconDisplay icon={icon} className="w-12 h-12" />
+          <IconDisplay icon={icon} className="w-12 h-12" onClick={onClickTitle} />
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{title}</h2>
         </div>
       )}

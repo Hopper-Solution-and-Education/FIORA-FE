@@ -54,6 +54,7 @@ export enum Messages {
   BUDGET_CREATE_FAILED = 'Failed to create budget',
   BUDGET_NOT_FOUND = 'Budget not found',
   BUDGET_DETAILS_NOT_FOUND = 'Budget details not found',
+  BUDGET_UPDATE_FAILED = 'Failed to update budget',
 
   // Category-Product Success
   CREATE_CATEGORY_PRODUCT_SUCCESS = 'Create category product successfully',

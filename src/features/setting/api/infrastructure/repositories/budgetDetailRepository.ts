@@ -22,6 +22,18 @@ class BudgetDetailRepository implements IBudgetDetailRepository {
       ...options,
     });
   }
+
+  async updateManyBudgetDetails(
+    data: Prisma.BudgetDetailsUpdateManyMutationInput,
+    where: Prisma.BudgetDetailsWhereInput,
+    options?: Prisma.BudgetDetailsUpdateManyArgs,
+  ): Promise<any> {
+    return prisma.budgetDetails.updateMany({
+      data,
+      where,
+      ...options,
+    });
+  }
 }
 
 // Export a single instance
