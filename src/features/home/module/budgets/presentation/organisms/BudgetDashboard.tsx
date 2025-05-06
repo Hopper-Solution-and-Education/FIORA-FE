@@ -1,8 +1,9 @@
 'use client';
 
-import { ChartSkeleton } from '@/components/common/organisms';
+import { StackedBarChartSkeleton } from '@/components/common/organisms';
 import StackedBarChart from '@/components/common/stacked-bar-chart';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { getBudgetAsyncThunk } from '../../slices/actions/getBudgetAsyncThunk';
@@ -14,9 +15,12 @@ const BudgetDashboard = () => {
   const { budgets, isLoading, nextCursor, isLast } = useAppSelector(
     (state) => state.budgetControl.getBudget,
   );
+  const router = useRouter();
   const methods = useFormContext<BudgetGetFormValues>();
 
-  const handleOnClickItem = useCallback(() => {}, []);
+  const handleOnClickItem = useCallback((year: number) => {
+    router.push(`/budgets/summary/${year}`);
+  }, []);
 
   const { watch } = methods;
 
@@ -87,7 +91,7 @@ const BudgetDashboard = () => {
         {isLoading && !budgets.length ? (
           // Show skeletons while loading and no data
           Array.from({ length: 3 }).map((_, index) => (
-            <ChartSkeleton key={index} className="h-[300px] w-full my-16" />
+            <StackedBarChartSkeleton key={index} className="h-[300px] w-full my-16" />
           ))
         ) : budgets.length === 0 ? (
           // Show empty state when no budgets are available
@@ -102,23 +106,28 @@ const BudgetDashboard = () => {
           budgets.map((budgetItem) => {
             const data = mapBudgetToData(budgetItem);
             return (
-              <StackedBarChart
+              <div
                 key={budgetItem.year}
-                data={data}
-                title={`${budgetItem.year}`}
-                currency={currency}
-                tutorialText="Click on a bar to view details."
-                className="my-4"
-                legendItems={legendItems}
-                onClickTitle={handleOnClickItem}
-              />
+                className="cursor-pointer"
+                onClick={() => handleOnClickItem(budgetItem.year)}
+              >
+                <StackedBarChart
+                  data={data}
+                  title={`${budgetItem.year}`}
+                  currency={currency}
+                  tutorialText="Click on a bar to view details."
+                  className="my-4"
+                  legendItems={legendItems}
+                  onClickTitle={() => handleOnClickItem(budgetItem.year)}
+                />
+              </div>
             );
           })
         )}
       </div>
       {!isLast && (
         <div ref={sentinelRef} className="h-10">
-          {isLoading && <ChartSkeleton className="h-[300px] w-full" />}
+          {isLoading && <StackedBarChartSkeleton />}
         </div>
       )}
     </div>
