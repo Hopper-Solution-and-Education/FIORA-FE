@@ -31,26 +31,6 @@ export default function MediaDashboard() {
   return (
     <div className="w-full max-w-7xl mx-auto p-4">
       {(isLoadingSaveChange || isLoading) && <Loading />}
-      {/* <Card className="mb-6">
-        <CardHeader>
-          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-            <div>
-              <CardTitle className="text-2xl">Section & Media Manager</CardTitle>
-              <CardDescription>Manage your sections and media in one place</CardDescription>
-            </div>
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-              <Button variant="outline" onClick={importData} className="w-full sm:w-auto">
-                <Upload className="h-4 w-4 mr-2" />
-                Import All
-              </Button>
-              <Button variant="outline" onClick={exportData} className="w-full sm:w-auto">
-                <Download className="h-4 w-4 mr-2" />
-                Export All
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-      </Card> */}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         {isMobile ? (

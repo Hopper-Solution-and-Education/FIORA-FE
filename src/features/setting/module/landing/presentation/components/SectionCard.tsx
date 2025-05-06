@@ -70,7 +70,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
           <CardContent className="pt-0 px-4 pb-4">
             <div className="mb-4">
               <Label htmlFor="description" className="mb-2 block">
-                Description
+                {sectionType === SectionType.FOOTER ? 'Copyright Text' : 'Description'}
               </Label>
               <Input
                 id="name"
