@@ -43,6 +43,7 @@ const BudgetDashboardFilter = ({ onFilterDropdownOpenChange }: Props) => {
       name="fromYear"
       placeholder="Select From Year"
       label="From Year"
+      isYearDisabled={(year) => year > new Date().getFullYear() + 1}
     />,
     <CustomDateTimePicker
       key="toYear"
@@ -50,6 +51,7 @@ const BudgetDashboardFilter = ({ onFilterDropdownOpenChange }: Props) => {
       name="toYear"
       placeholder="Select To Year"
       label="To Year"
+      isYearDisabled={(year) => year > new Date().getFullYear() + 1}
     />,
   ];
 
