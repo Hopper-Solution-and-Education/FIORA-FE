@@ -11,13 +11,11 @@ interface TabLayoutProps {
 }
 
 export default function TabLayout({ children, params }: TabLayoutProps) {
-  // Unwrap params Promise bằng React.use()
   const unwrappedParams = use(params);
   const { checkTabAccess } = useSettingTabFeatureFlags();
 
   useEffect(() => {
     try {
-      // Sử dụng unwrappedParams đã được unwrap
       checkTabAccess(unwrappedParams.tab);
     } catch {
       notFound();
