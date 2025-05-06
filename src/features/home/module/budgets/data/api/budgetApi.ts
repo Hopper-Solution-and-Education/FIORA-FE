@@ -1,5 +1,6 @@
 import { httpClient } from '@/config/http-client/HttpClient';
 import { decorate, injectable } from 'inversify';
+import isEmpty from 'lodash/isEmpty';
 import { BudgetCreateRequestDTO } from '../dto/request';
 import { BudgetGetRequestDTO } from '../dto/request/BudgetGetRequestDTO';
 import { BudgetCreateResponseDTO } from '../dto/response';
@@ -15,9 +16,25 @@ class BudgetAPI implements IBudgetAPI {
     return await httpClient.post(`/api/budgets`, request);
   }
 
+  // async getBudget(request: BudgetGetRequestDTO): Promise<BudgetGetResponseDTO> {
+  //   return await httpClient.get(
+  //     `/api/budgets?${request.cursor ? `cursor=${request?.cursor}` : ''}&take=${request.take}&search=${request.search}`,
+  //   );
+  // }
+
   async getBudget(request: BudgetGetRequestDTO): Promise<BudgetGetResponseDTO> {
-    return await httpClient.get(
-      `/api/budgets?${request.cursor ? `cursor=${request?.cursor}` : ''}&take=${request.take}&search=${request.search}`,
+    return await httpClient.post(
+      `/api/budgets/dashboard`,
+      {
+        cursor: request.cursor,
+        take: request.take,
+        search: request.filters ? null : isEmpty(request.search) ? null : request.search,
+        filters: request.filters,
+      },
+
+      {
+        'x-user-currency': request.currency ?? 'VND',
+      },
     );
   }
 }

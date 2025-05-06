@@ -3,8 +3,8 @@ import { cookies } from 'next/headers';
 import SessionSidebar from '@/components/providers/SessionSidebar';
 
 export const metadata: Metadata = {
-  title: 'Fiora Dashboard',
-  description: 'Basic Fiora dashboard',
+  title: 'FIORA | Home',
+  description: 'Basic Fiora landing',
 };
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {

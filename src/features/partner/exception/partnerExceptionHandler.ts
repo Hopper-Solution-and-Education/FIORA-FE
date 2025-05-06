@@ -40,6 +40,7 @@ export async function validatePartnerData(
         tx.partner.findFirst({
           where: {
             [field]: value,
+            userId: data.userId,
             ...(isUpdate && data.id ? { NOT: { id: data.id } } : {}),
           },
           select: { id: true },

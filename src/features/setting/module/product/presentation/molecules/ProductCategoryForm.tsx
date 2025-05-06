@@ -21,7 +21,11 @@ import {
   updateCategoryProductAsyncThunk,
 } from '../../slices/actions';
 import useProductCategoryFormConfig from '../config/ProductCategoryFormConfig';
-import { CategoryProductFormValues, ProductFormValues } from '../schema';
+import {
+  CategoryProductFormValues,
+  defaultCategoryProductValue,
+  ProductFormValues,
+} from '../schema';
 
 type productCategoryFormType = {
   setValue?: UseFormSetValue<ProductFormValues>;
@@ -46,7 +50,7 @@ const ProductCategoryForm = ({ setValue }: productCategoryFormType) => {
 
   // Method of product category product
   const methods = useFormContext<CategoryProductFormValues>();
-  const { handleSubmit, formState, getValues } = methods;
+  const { handleSubmit, formState, getValues, reset } = methods;
 
   const isButtonDisabled = !formState.isValid || formState.isSubmitting || formState.isValidating;
 
@@ -94,6 +98,7 @@ const ProductCategoryForm = ({ setValue }: productCategoryFormType) => {
                 setValue('catId', response.id);
               }
               dispatch(setIsOpenDialogAddCategory(false));
+              reset(defaultCategoryProductValue);
             });
         } else if (ProductCategoryFormState === 'edit') {
           const requestParams: CategoryProductUpdateRequest = {
@@ -111,6 +116,7 @@ const ProductCategoryForm = ({ setValue }: productCategoryFormType) => {
             .unwrap()
             .then(() => {
               dispatch(setIsOpenDialogAddCategory(false));
+              reset(defaultCategoryProductValue);
               dispatch(
                 getProductTransactionAsyncThunk({
                   page: 1,

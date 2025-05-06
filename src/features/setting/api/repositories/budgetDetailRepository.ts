@@ -10,4 +10,10 @@ export interface IBudgetDetailRepository {
     data: Prisma.BudgetDetailsCreateManyInput | Prisma.BudgetDetailsCreateManyInput[],
     options?: Prisma.BudgetDetailsCreateManyArgs,
   ): Promise<BudgetDetails[]>;
+
+  updateManyBudgetDetails(
+    data: Prisma.BudgetDetailsUpdateManyMutationInput,
+    where: Prisma.BudgetDetailsWhereInput,
+    options?: Prisma.BudgetDetailsUpdateManyArgs,
+  ): Promise<any>;
 }

@@ -16,6 +16,8 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
         return POST(req, res, userId);
       case 'GET':
         return GET(req, res, userId);
+      case 'PUT':
+        return PUT(req, res, userId);
       default:
         return res
           .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -87,6 +89,27 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.GET_BUDGET_ITEM_SUCCESS, budgets));
+  } catch (error: any) {
+    return res
+      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(createErrorResponse(error.status, error.message, error));
+  }
+}
+
+export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  try {
+    const { fiscalYear } = req.body; // Cursor will be a year (e.g., 2023)
+    const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
+    let updatedBudget;
+    if (fiscalYear) {
+      updatedBudget = await budgetUseCase.updateActBudget(userId, fiscalYear, currency);
+    } else {
+      updatedBudget = await budgetUseCase.updateActBudgetTotalYears(userId, currency);
+    }
+
+    return res
+      .status(RESPONSE_CODE.CREATED)
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.UPDATE_BUDGET_SUCCESS, updatedBudget));
   } catch (error: any) {
     return res
       .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)

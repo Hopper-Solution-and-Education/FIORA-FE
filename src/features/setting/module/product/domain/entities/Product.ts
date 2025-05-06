@@ -116,6 +116,7 @@ export type ProductTransactionResponse = {
       id: string;
       type: CategoryType;
       amount: number;
+      currency: 'VND' | 'USD';
     } | null,
   ];
 };

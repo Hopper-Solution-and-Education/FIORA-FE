@@ -1,4 +1,5 @@
-import { BudgetType, Currency } from '@prisma/client';
+import { Currency } from '@/shared/types';
+import { BudgetType } from '@prisma/client';
 
 export class Budget {
   id: string;
@@ -152,6 +153,13 @@ export type BudgetGetRequest = {
   cursor: number | null;
   take: number;
   search: string;
+  filters?: {
+    fiscalYear: {
+      gte: number;
+      lte: number;
+    };
+  };
+  currency?: Currency;
 };
 
 export type BudgetGetResponse = {

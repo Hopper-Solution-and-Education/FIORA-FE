@@ -64,6 +64,10 @@ const useProductCategoryFormConfig = () => {
       onKeyDown={onKeyDownHandler}
       required
       disabled={isSubmitting}
+      options={{
+        percent: true,
+        maxPercent: 100,
+      }}
     />,
   ];
 
