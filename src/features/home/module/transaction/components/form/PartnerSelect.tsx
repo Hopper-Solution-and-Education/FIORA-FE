@@ -48,7 +48,7 @@ const PartnerSelectField: React.FC<PartnerSelectProps> = ({
       }
     } else {
       options.push({
-        label: 'Select Products',
+        label: 'Select Partner',
         value: 'none',
         disabled: true,
       });
