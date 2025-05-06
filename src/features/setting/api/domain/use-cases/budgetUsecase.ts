@@ -2,6 +2,12 @@ import { prisma } from '@/config';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { Messages } from '@/shared/constants/message';
+import {
+  BudgetAllocation,
+  BudgetCreationParams,
+  BudgetTypeData,
+  FetchTransactionResponse,
+} from '@/shared/types/budget.types';
 import { buildWhereClause } from '@/shared/utils';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import {
@@ -10,6 +16,8 @@ import {
   BudgetType,
   Currency,
   Prisma,
+  PrismaClient,
+  Transaction,
   TransactionType,
 } from '@prisma/client';
 import _ from 'lodash';
@@ -37,6 +45,232 @@ class BudgetUseCase {
     this.transactionRepository = transactionRepository;
   }
 
+  private calculateTransactionRange(fiscalYear: number): {
+    yearStart: Date;
+    effectiveEndDate: Date;
+  } {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
+    const yearStart = new Date(`${fiscalYear}-01-01`);
+    let targetMonthEnd: Date;
+
+    if (fiscalYear === currentYear) {
+      const targetMonth = currentMonth - 2;
+      targetMonthEnd = targetMonth < 1 ? yearStart : new Date(fiscalYear, targetMonth, 0);
+    } else {
+      targetMonthEnd = new Date(`${fiscalYear}-12-31`);
+    }
+
+    const effectiveEndDate = targetMonthEnd < thirtyDaysAgo ? targetMonthEnd : thirtyDaysAgo;
+    return { yearStart, effectiveEndDate };
+  }
+
+  private async fetchTransactionsTx(
+    userId: string,
+    yearStart: Date,
+    effectiveEndDate: Date,
+    prisma: Prisma.TransactionClient,
+  ): Promise<FetchTransactionResponse[] | []> {
+    return await prisma.transaction.findMany({
+      where: {
+        userId,
+        date: {
+          gte: yearStart,
+          lte: effectiveEndDate,
+        },
+        isDeleted: false,
+        type: {
+          in: [TransactionType.Expense, TransactionType.Income],
+        },
+      },
+      select: {
+        type: true,
+        amount: true,
+        currency: true,
+      },
+    });
+  }
+
+  private calculateActualTotals(
+    transactions: FetchTransactionResponse[] | [],
+    currency: Currency,
+  ): { totalExpenseAct: number; totalIncomeAct: number } {
+    const totalExpenseAct = transactions
+      .filter((t) => t.type === TransactionType.Expense)
+      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+
+    const totalIncomeAct = transactions
+      .filter((t) => t.type === TransactionType.Income)
+      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+    return { totalExpenseAct, totalIncomeAct };
+  }
+
+  private calculateBudgetAllocation(totalExpense: number, totalIncome: number): BudgetAllocation {
+    // Create budget details for each month
+    const months = Array.from({ length: 12 }, (_, i) => i + 1);
+
+    // Quarterly fields
+    const quarters = {
+      q1: [1, 2, 3],
+      q2: [4, 5, 6],
+      q3: [7, 8, 9],
+      q4: [10, 11, 12],
+    };
+
+    const monthlyExpense = _.round(totalExpense / 12, 2); // calculate with 2 decimal places
+    const monthlyIncome = _.round(totalIncome / 12, 2); // calculate with 2 decimal places
+
+    // Monthly fields split into 12 months
+    const monthFields = months.reduce<Record<string, number>>((acc, m) => {
+      acc[`m${m}_exp`] = monthlyExpense;
+      acc[`m${m}_inc`] = monthlyIncome;
+      return acc;
+    }, {});
+
+    // Quarterly fields
+    const quarterFields = Object.entries(quarters).reduce<Record<string, number>>(
+      (acc, [q, ms]) => {
+        acc[`${q}_exp`] = _.round(ms.length * monthlyExpense, 2); // by multiplying by 3 months with monthlyExpense
+        acc[`${q}_inc`] = _.round(ms.length * monthlyIncome, 2); // by multiplying by 3 months with monthlyIncome
+        return acc;
+      },
+      {},
+    );
+
+    // Half-year totals
+    const h1_exp = _.round(monthlyExpense * 6, 2); // 6 months in half-year
+    const h2_exp = _.round(monthlyExpense * 6, 2); // 6 months in half-year
+    const h1_inc = _.round(monthlyIncome * 6, 2); // 6 months in half-year
+    const h2_inc = _.round(monthlyIncome * 6, 2); // 6 months in half-year
+
+    return {
+      monthFields,
+      quarterFields,
+      halfYearFields: { h1_exp, h2_exp, h1_inc, h2_inc },
+      monthlyExpense,
+      monthlyIncome,
+    };
+  }
+
+  private async createSingleBudget(
+    prisma: Prisma.TransactionClient,
+    userId: string,
+    fiscalYear: number,
+    { type, totalExpense, totalIncome }: BudgetTypeData,
+    { description, icon, currency, isSystemGenerated }: Partial<BudgetCreationParams>,
+  ): Promise<BudgetsTable> {
+    const { monthFields, quarterFields, halfYearFields, monthlyExpense, monthlyIncome } =
+      this.calculateBudgetAllocation(totalExpense, totalIncome);
+
+    const newBudget = await prisma.budgetsTable.create({
+      data: {
+        userId,
+        icon,
+        fiscalYear,
+        type,
+        total_exp: totalExpense,
+        total_inc: totalIncome,
+        ...halfYearFields,
+        ...quarterFields,
+        ...monthFields,
+        createdBy: !isSystemGenerated ? userId : undefined,
+        description,
+        currency,
+      },
+    });
+
+    if (!newBudget || !newBudget.id) {
+      throw new Error(Messages.BUDGET_CREATE_FAILED);
+    }
+
+    const months = Array.from({ length: 12 }, (_, i) => i + 1);
+
+    const detailData = months.flatMap((month) => [
+      {
+        userId,
+        budgetId: newBudget.id,
+        type: BudgetDetailType.Expense,
+        amount: monthlyExpense,
+        month,
+        createdBy: userId,
+      },
+      {
+        userId,
+        budgetId: newBudget.id,
+        type: BudgetDetailType.Income,
+        amount: monthlyIncome,
+        month,
+        createdBy: userId,
+      },
+    ]) as Prisma.BudgetDetailsCreateManyInput[];
+
+    const createdBudgetDetailRes = await prisma.budgetDetails.createManyAndReturn({
+      data: detailData,
+      skipDuplicates: true,
+    });
+
+    if (!createdBudgetDetailRes) {
+      throw new Error(Messages.BUDGET_DETAILS_CREATE_FAILED);
+    }
+
+    return newBudget;
+  }
+
+  // =============== CREATE BUDGET VERSION 2 WITH TRANSACTION ==============
+
+  async createBudgetTransaction(params: BudgetCreationParams): Promise<BudgetsTable[]> {
+    const {
+      userId,
+      fiscalYear,
+      description,
+      estimatedTotalExpense,
+      estimatedTotalIncome,
+      icon,
+      currency,
+      isSystemGenerated = false,
+    } = params;
+
+    return await prisma.$transaction(async (prisma) => {
+      const { yearStart, effectiveEndDate } = this.calculateTransactionRange(fiscalYear);
+
+      const transactions = await this.fetchTransactionsTx(
+        userId,
+        yearStart,
+        effectiveEndDate,
+        prisma,
+      );
+
+      const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
+        transactions || [],
+        currency,
+      );
+
+      const budgetTypesData: BudgetTypeData[] = [
+        { type: 'Top', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
+        { type: 'Bot', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
+        { type: 'Act', totalExpense: totalExpenseAct, totalIncome: totalIncomeAct },
+      ];
+
+      const createdBudgets: BudgetsTable[] = [];
+
+      for (const budgetTypeData of budgetTypesData) {
+        const budget = await this.createSingleBudget(prisma, userId, fiscalYear, budgetTypeData, {
+          description,
+          icon,
+          currency,
+          isSystemGenerated,
+        });
+        createdBudgets.push(budget);
+      }
+
+      return createdBudgets;
+    });
+  }
+
+  // ======================= CREATE BUDGET VERSION 1 =======================
   async createBudget(params: BudgetCreation) {
     const {
       userId,
@@ -877,6 +1111,109 @@ class BudgetUseCase {
         throw new Error(Messages.BUDGET_UPDATE_FAILED);
       }
     }
+  }
+
+  async updateActBudgetTransaction(userId: string, currency: Currency): Promise<void> {
+    return await prisma.$transaction(async (prisma) => {
+      const years = await this.getAllTransactionGroupByFiscalYears(prisma, userId);
+      if (years.length === 0) return;
+
+      for (const fiscalYear of years) {
+        await this.updateBudgetForYear(prisma, userId, fiscalYear, currency);
+      }
+    });
+  }
+
+  private async getAllTransactionGroupByFiscalYears(
+    prisma: any,
+    userId: string,
+  ): Promise<number[]> {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+
+    const distinctYears = await prisma.transaction.findMany({
+      where: {
+        userId,
+        isDeleted: false,
+      },
+      select: {
+        date: true,
+      },
+      distinct: ['date'],
+    });
+
+    const minYear =
+      distinctYears.length > 0
+        ? Math.min(...distinctYears.map((t: Pick<Transaction, 'date'>) => t.date.getFullYear()))
+        : currentYear;
+
+    return Array.from({ length: currentYear - minYear + 1 }, (_, i) => minYear + i);
+  }
+
+  private async updateBudget(
+    prisma: PrismaClient,
+    userId: string,
+    fiscalYear: number,
+    currency: Currency,
+    { totalExpense, totalIncome }: { totalExpense: number; totalIncome: number },
+  ): Promise<void> {
+    const { monthFields, quarterFields, halfYearFields } = this.calculateBudgetAllocation(
+      totalExpense,
+      totalIncome,
+    );
+
+    await prisma.budgetsTable.update({
+      where: {
+        fiscalYear_type_userId: { userId, fiscalYear, type: BudgetType.Act },
+      },
+      data: {
+        total_exp: totalExpense,
+        total_inc: totalIncome,
+        ...halfYearFields,
+        ...quarterFields,
+        ...monthFields,
+        currency,
+      },
+    });
+  }
+
+  private async updateBudgetForYear(
+    prisma: any,
+    userId: string,
+    fiscalYear: number,
+    currency: Currency,
+  ): Promise<void> {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+    const isCurrentYear = fiscalYear === currentYear;
+    const targetMonth = isCurrentYear ? currentMonth - 2 : 12;
+
+    if (isCurrentYear && targetMonth < 1) {
+      return; // Không cập nhật nếu là tháng 1 hoặc 2
+    }
+
+    const { yearStart, effectiveEndDate } = this.calculateTransactionRange(fiscalYear);
+    const transactions = await this.fetchTransactionsTx(
+      userId,
+      yearStart,
+      effectiveEndDate,
+      prisma,
+    );
+
+    if (!transactions || transactions.length === 0) {
+      return; // Không có giao dịch nào để cập nhật
+    }
+
+    const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
+      transactions || [],
+      currency,
+    );
+
+    await this.updateBudget(prisma, userId, fiscalYear, currency, {
+      totalExpense: totalExpenseAct,
+      totalIncome: totalIncomeAct,
+    });
   }
 
   async checkedDuplicated(userId: string, fiscalYear: number): Promise<boolean> {
