@@ -12,9 +12,13 @@ import { BudgetGetFormValues } from '../schema';
 
 const BudgetDashboard = () => {
   const currency = useAppSelector((state) => state.settings.currency);
-  const { budgets, isLoading, nextCursor, isLast } = useAppSelector(
-    (state) => state.budgetControl.getBudget,
-  );
+  const {
+    budgets,
+    isLoading,
+    nextCursor,
+    isLast,
+    currency: budgetCurrency,
+  } = useAppSelector((state) => state.budgetControl.getBudget);
   const router = useRouter();
   const methods = useFormContext<BudgetGetFormValues>();
 
@@ -56,7 +60,7 @@ const BudgetDashboard = () => {
       });
     },
 
-    [isLast, isLoading],
+    [currency, isLast, isLoading],
   );
 
   useEffect(() => {
@@ -86,7 +90,7 @@ const BudgetDashboard = () => {
   }, [nextCursor, isLast, isLoading, handleCallGetBudget]);
 
   return (
-    <div ref={scrollRef} className="overflow-auto min-h-screen">
+    <div ref={scrollRef} className="overflow-hidden min-h-screen">
       <div>
         {isLoading && !budgets.length ? (
           // Show skeletons while loading and no data
@@ -104,7 +108,7 @@ const BudgetDashboard = () => {
         ) : (
           // Render budget charts
           budgets.map((budgetItem) => {
-            const data = mapBudgetToData(budgetItem);
+            const data = mapBudgetToData(budgetItem, budgetCurrency, currency);
             return (
               <div
                 key={budgetItem.year}

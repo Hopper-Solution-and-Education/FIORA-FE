@@ -1,4 +1,5 @@
-import { BudgetType, Currency } from '@prisma/client';
+import { Currency } from '@/shared/types';
+import { BudgetType } from '@prisma/client';
 
 export class Budget {
   id: string;

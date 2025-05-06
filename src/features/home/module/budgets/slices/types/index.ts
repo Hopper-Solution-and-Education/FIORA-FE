@@ -1,3 +1,4 @@
+import { Currency } from '@prisma/client';
 import { BudgetGetDataResponse } from '../../domain/entities/Budget';
 
 interface BudgetControlState {
@@ -9,6 +10,7 @@ interface BudgetControlState {
     nextCursor: number | null;
     budgets: BudgetGetDataResponse[];
     isLast: boolean;
+    currency: Currency;
   };
 }
 
@@ -20,5 +22,6 @@ export const initialBudgetControlState: BudgetControlState = {
     nextCursor: null,
     budgets: [],
     isLast: false,
+    currency: Currency.VND,
   },
 };

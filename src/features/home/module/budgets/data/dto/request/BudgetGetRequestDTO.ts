@@ -1,4 +1,4 @@
-import { Currency } from '@prisma/client';
+import { Currency } from '@/shared/types';
 
 export type BudgetGetRequestDTO = {
   cursor: number | null;
