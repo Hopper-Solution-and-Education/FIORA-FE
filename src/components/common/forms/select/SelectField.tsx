@@ -88,7 +88,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
   // Render icon or image based on the icon value
   const renderIconOrImage = (iconValue?: string) => {
     if (!iconValue) {
-      return <LucieIcon icon="command" className="w-4 h-4" />;
+      return <></>; // if icon is not provided, return empty
     }
 
     if (isImageUrl(iconValue)) {
