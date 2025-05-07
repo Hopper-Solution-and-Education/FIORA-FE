@@ -1,7 +1,7 @@
 'use client';
 
+import { LoadingIndicator } from '@/components/common/atoms';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Form,
   FormControl,
@@ -10,10 +10,10 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { ArrowLeft, Check } from 'lucide-react';
 import Link from 'next/link';
 import type { UseFormReturn } from 'react-hook-form';
-import type React from 'react';
 
 interface EmailOtpFormProps {
   emailOtpForm: UseFormReturn<
@@ -27,6 +27,7 @@ interface EmailOtpFormProps {
   onSubmitForgotPassword: any;
   isOtpSent: boolean;
   countdown: number | null;
+  isLoading: boolean;
 }
 
 const EmailOtpForm = ({
@@ -35,7 +36,9 @@ const EmailOtpForm = ({
   onSubmitForgotPassword,
   isOtpSent,
   countdown,
+  isLoading,
 }: EmailOtpFormProps) => {
+  const { isSubmitting } = emailOtpForm.formState;
   return (
     <Form {...emailOtpForm}>
       <form
@@ -145,7 +148,11 @@ const EmailOtpForm = ({
             disabled={!emailOtpForm.formState.isValid}
             className={`group text-base sm:text-lg font-semibold w-32 sm:w-44 py-5 sm:py-6 bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center transition-all duration-200 ${!emailOtpForm.formState.isValid && 'cursor-not-allowed'}`}
           >
-            <Check className="block text-green-300 stroke-[4] transform transition-transform duration-200 drop-shadow-sm hover:text-green-100 h-6 w-6 sm:!h-[28px] sm:!w-[28px]" />
+            {isLoading || isSubmitting ? (
+              <LoadingIndicator className="w-4 h-4" color="white" />
+            ) : (
+              <Check className="block text-green-300 stroke-[4] transform transition-transform duration-200 drop-shadow-sm hover:text-green-100 h-6 w-6 sm:!h-[28px] sm:!w-[28px]" />
+            )}
           </Button>
         </div>
       </form>
