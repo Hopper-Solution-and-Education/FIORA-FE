@@ -8,6 +8,18 @@ export enum FilterColumn {
   RIGHT = 'right',
 }
 
+export type FilterOperator =
+  | 'equals'
+  | 'contains'
+  | 'startsWith'
+  | 'endsWith'
+  | 'gt'
+  | 'gte'
+  | 'lt'
+  | 'lte'
+  | 'some'
+  | 'every';
+
 export type OrderType = 'asc' | 'desc' | 'none';
 
 /**
