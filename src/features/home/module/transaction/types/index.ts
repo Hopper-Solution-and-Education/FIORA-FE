@@ -1,13 +1,7 @@
 import { Transaction } from '@prisma/client';
 
 export type OrderType = 'asc' | 'desc' | 'none';
-
-export type DropdownOption = {
-  value: string;
-  label: string;
-  disabled?: boolean;
-  icon?: string;
-};
+export type DropdownOption = { value: string; label: string; disabled?: boolean; icon?: string };
 
 export type TransactionPartner = {
   id: string;
@@ -26,6 +20,7 @@ export type TransactionPartner = {
   createdBy: string;
   updatedBy: string | null;
   parentId: string | null;
+  type?: string;
 };
 
 export type TransactionAccount = {
@@ -62,6 +57,13 @@ export type TransactionCategory = {
   tax_rate: string | null;
 };
 
+export type TransactionSubjectStamp = {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+};
+
 export interface IRelationalTransaction extends Transaction {
   fromAccountId: string | null;
   fromCategoryId: string | null;
@@ -73,8 +75,8 @@ export interface IRelationalTransaction extends Transaction {
   deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
-  createdBy: string;
-  updatedBy: string | null;
+  createdBy: any;
+  updatedBy: any;
   fromAccount?: TransactionAccount | null;
   fromCategory?: TransactionCategory | null;
   toAccount?: TransactionAccount | null;
@@ -100,15 +102,6 @@ export type TransactionColumn =
 
 export type TransactionTableColumnKey = { [key in TransactionColumn]: TransactionTableColumn };
 
-export type TransactionFilterCriteria = {
-  filters?: any;
-  sortBy?: {
-    [key: string]: OrderType;
-  };
-  userId: string;
-  search?: string;
-};
-
 export type ITransactionPaginatedResponse = {
   data: Transaction[];
   amountMin: number;
@@ -124,18 +117,6 @@ export type TransactionFilterOptionResponse = {
   categories: string[];
   partners: string[];
 };
-
-export type TransactionFilterOperator =
-  | 'equals'
-  | 'contains'
-  | 'startsWith'
-  | 'endsWith'
-  | 'gt'
-  | 'gte'
-  | 'lt'
-  | 'lte'
-  | 'some'
-  | 'every';
 
 export type PaginationProps = {
   page: number;

@@ -13,8 +13,9 @@ import {
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import LucieIcon from '@/features/home/module/category/components/LucieIcon';
-import { cn } from '@/shared/utils';
+import { cn, isImageUrl } from '@/shared/utils';
 import { Check, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { FieldError } from 'react-hook-form';
 
@@ -66,6 +67,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
   const [internalOptions, setInternalOptions] = useState<Option[]>(options);
   const inputRef = useRef<HTMLInputElement>(null);
   const selectedLabel = internalOptions.find((opt) => opt.value === value)?.label;
+  const selectedIcon = internalOptions.find((opt) => opt.value === value)?.icon;
 
   // Auto-load options if provided
   useEffect(() => {
@@ -82,6 +84,42 @@ const SelectField: React.FC<SelectFieldProps> = ({
       inputRef.current.focus();
     }
   }, [open]);
+
+  // Render icon or image based on the icon value
+  const renderIconOrImage = (iconValue?: string) => {
+    if (!iconValue) {
+      return <></>; // if icon is not provided, return empty
+    }
+
+    if (isImageUrl(iconValue)) {
+      return (
+        <div className="w-5 h-5 rounded-full overflow-hidden">
+          <Image
+            src={iconValue}
+            alt="logo"
+            width={20}
+            height={20}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.parentElement?.classList.add(
+                'flex',
+                'items-center',
+                'justify-center',
+                'bg-gray-100',
+              );
+              const fallbackIcon = document.createElement('div');
+              fallbackIcon.innerHTML =
+                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-400"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg>';
+              e.currentTarget.parentElement?.appendChild(fallbackIcon.firstChild as Node);
+            }}
+          />
+        </div>
+      );
+    }
+
+    return <LucieIcon icon={iconValue} className="w-4 h-4" />;
+  };
 
   return (
     <div className="mb-4">
@@ -113,12 +151,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
                 !selectedLabel && 'text-muted-foreground',
               )}
             >
-              {value && internalOptions.find((opt) => opt.value === value)?.icon && (
-                <LucieIcon
-                  icon={internalOptions.find((opt) => opt.value === value)?.icon}
-                  className="w-4 h-4"
-                />
-              )}
+              {value && renderIconOrImage(selectedIcon)}
               {selectedLabel || placeholder}
             </span>
 
@@ -158,7 +191,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
                       className="data-[disabled='true']:pointer-events-none data-[disabled='true']:opacity-50"
                     >
                       <div className="flex items-center gap-2 w-full">
-                        {option.icon && <LucieIcon icon={option.icon} className="w-4 h-4" />}
+                        {renderIconOrImage(option.icon)}
                         {option.label}
                         <Check
                           className={cn(

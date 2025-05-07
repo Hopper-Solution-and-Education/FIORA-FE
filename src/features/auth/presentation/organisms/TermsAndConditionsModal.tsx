@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
-import Loading from '@/components/common/atoms/Loading';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,22 +12,13 @@ import {
 } from '@/components/ui/dialog';
 import { DialogClose } from '@radix-ui/react-dialog';
 import { useEffect, useRef, useState } from 'react';
+import { Check, CircleX, Loader2, TriangleAlert } from 'lucide-react';
 import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 
-import type { PDFDocumentProxy } from 'pdfjs-dist';
-import { Check, CircleX } from 'lucide-react';
-
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString();
-
-const options = {
-  cMapUrl: '/cmaps/',
-  standardFontDataUrl: '/standard_fonts/',
-};
-
-type PDFFile = string | File | null;
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 type TermsAndConditionModalProps = {
   isOpen: boolean;
@@ -37,21 +27,32 @@ type TermsAndConditionModalProps = {
   onDecline: () => void;
 };
 
-const TermsAndConditionsModal = ({
-  isOpen,
-  onClose,
-  onAccept,
-  onDecline,
-}: TermsAndConditionModalProps) => {
-  const file: PDFFile = '/docs/sample-terms-and-conditions.pdf';
-  const [numPages, setNumPages] = useState<number>();
-  const [pageWidth, setPageWidth] = useState<number>(0);
+const Loading = () => (
+  <div className="fixed inset-0 flex flex-col items-center justify-center h-full w-full py-8">
+    <Loader2 className="h-16 w-16 text-primary animate-spin mb-4" />
+    <h2 className="text-2xl font-semibold text-primary">Loading...</h2>
+    <p className="text-gray-300 mt-2">Please wait while we prepare your content</p>
+  </div>
+);
+
+const ErrorLoading = () => (
+  <div className="fixed inset-0 flex flex-col items-center justify-center h-full w-full py-8">
+    <TriangleAlert className="h-16 w-16 text-red-500 mb-4" />
+    <h2 className="text-xl font-semibold text-red-500">Failed to load document</h2>
+    <p className="text-gray-400 mt-2">
+      An error occurred while loading the terms and conditions. Please try again later.
+    </p>
+  </div>
+);
+
+const TermsAndConditionsModal = (props: TermsAndConditionModalProps) => {
+  const { isOpen, onClose, onAccept, onDecline } = props;
+
+  const pdfUrl = '/docs/sample-terms-and-conditions.pdf';
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [isButtonActive, setIsButtonActive] = useState(false);
-
-  function onDocumentLoadSuccess({ numPages: nextNumPages }: PDFDocumentProxy): void {
-    setNumPages(nextNumPages);
-  }
+  const [error, setError] = useState<string | null>(null);
+  const [numPages, setNumPages] = useState<number>(0);
 
   // Handle scroll event to check if user has reached the bottom
   const handleScroll = () => {
@@ -66,35 +67,35 @@ const TermsAndConditionsModal = ({
     }
   };
 
+  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
+    setNumPages(numPages);
+  }
+
+  function onDocumentLoadError(error: Error) {
+    console.error('Error loading PDF:', error);
+    setError(error.message);
+  }
+
   useEffect(() => {
-    // Reset button state when modal opens
+    // Reset states when modal opens
     if (isOpen) {
       setIsButtonActive(false);
+      setError(null);
     }
   }, [isOpen]);
 
   useEffect(() => {
     const container = containerRef.current;
     if (container) {
-      // Set initial width
-      setPageWidth(container.offsetWidth);
-
       // Add scroll event listener
       container.addEventListener('scroll', handleScroll);
-
-      // Add resize listener to update page width if window resizes
-      const handleResize = () => {
-        setPageWidth(container.offsetWidth);
-      };
-      window.addEventListener('resize', handleResize);
 
       // Cleanup
       return () => {
         container.removeEventListener('scroll', handleScroll);
-        window.removeEventListener('resize', handleResize);
       };
     }
-  }, [containerRef.current, numPages]);
+  }, [containerRef.current]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose} defaultOpen={false}>
@@ -106,29 +107,33 @@ const TermsAndConditionsModal = ({
           </DialogDescription>
         </DialogHeader>
         <div ref={containerRef} className="h-[70vh] overflow-y-scroll overflow-x-hidden">
-          {typeof window !== 'undefined' ? (
-            <Document
-              file={file}
-              className={`relative w-full h-fit`}
-              onLoadSuccess={onDocumentLoadSuccess}
-              options={options}
-              loading={<Loading />}
-            >
-              {Array.from(new Array(numPages), (_el, index) => (
-                <Page
-                  key={`page_${index + 1}`}
-                  pageNumber={index + 1}
-                  loading={<div />}
-                  width={pageWidth}
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                />
-              ))}
-              {/* Add padding at the bottom to ensure scrolling works correctly */}
-              <div className="h-10"></div>
-            </Document>
+          {error ? (
+            <ErrorLoading />
           ) : (
-            <Loading />
+            <div className="flex flex-col items-center w-full">
+              <Document
+                file={pdfUrl}
+                onLoadSuccess={onDocumentLoadSuccess}
+                onLoadError={onDocumentLoadError}
+                loading={<Loading />}
+                error={<ErrorLoading />}
+              >
+                {Array.from(new Array(numPages), (_, index) => (
+                  <Page
+                    key={`page_${index + 1}`}
+                    pageNumber={index + 1}
+                    width={
+                      containerRef.current?.clientWidth
+                        ? containerRef.current.clientWidth - 30
+                        : undefined
+                    }
+                    renderTextLayer={true}
+                    renderAnnotationLayer={true}
+                    className="mb-4"
+                  />
+                ))}
+              </Document>
+            </div>
           )}
         </div>
 

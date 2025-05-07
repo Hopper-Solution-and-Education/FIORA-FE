@@ -1,5 +1,5 @@
 'use client';
-import NestedBarChart, { type BarItem } from '@/components/common/nested-bar-chart';
+import NestedBarChart from '@/components/common/nested-bar-chart';
 import { Icons } from '@/components/Icon';
 import { formatCurrency, convertVNDToUSD } from '@/shared/utils';
 import DeleteDialog from '@/features/home/module/category/components/DeleteDialog';
@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo } from 'react';
 import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
+import { BarItem } from '@/components/common/nested-bar-chart/type';
 
 const CategoryDashboard = () => {
   const dispatch = useAppDispatch();

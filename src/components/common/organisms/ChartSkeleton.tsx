@@ -1,10 +1,20 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/shared/utils';
 
-const ChartSkeleton = () => {
+type Props = {
+  className?: string;
+};
+
+const ChartSkeleton = ({ className }: Props) => {
   return (
-    <div className="w-full bg-white dark:bg-gray-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 transition-colors duration-200">
+    <div
+      className={cn(
+        'w-full bg-white dark:bg-gray-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 transition-colors duration-200',
+        className,
+      )}
+    >
       {/* Header Skeleton */}
       <div className="mb-4">
         <Skeleton className="h-6 w-48 mx-auto" />

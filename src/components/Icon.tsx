@@ -6,6 +6,7 @@ import {
   BanknoteArrowDown,
   BellRing,
   Car,
+  ChartBar,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -21,6 +22,7 @@ import {
   CreditCard,
   Database,
   DollarSign,
+  Expand,
   Eye,
   File,
   FileText,
@@ -32,6 +34,7 @@ import {
   LayoutDashboardIcon,
   LayoutTemplate,
   Loader2,
+  LoaderCircle,
   LogIn,
   LucideIcon,
   LucideProps,
@@ -50,6 +53,7 @@ import {
   SaveAll,
   Settings,
   ShoppingCart,
+  Shrink,
   SunMedium,
   Trash,
   Trello,
@@ -63,8 +67,9 @@ import {
   UtensilsCrossed,
   Wallet,
   X,
-  Expand,
-  Shrink,
+  HandCoins,
+  Calendar,
+  CircleChevronLeft,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -151,4 +156,9 @@ export const Icons = {
   handShake: Handshake,
   expand: Expand,
   shrink: Shrink,
+  chartBar: ChartBar,
+  loader: LoaderCircle,
+  handCoins: HandCoins,
+  calendar: Calendar,
+  circleChevronLeft: CircleChevronLeft,
 };

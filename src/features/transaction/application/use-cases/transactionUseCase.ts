@@ -314,6 +314,17 @@ class TransactionUseCase {
     };
   }
 
+  async getValidCategoryAccount(userId: string, type: TransactionType) {
+    const filterOptions = await this.transactionRepository.getValidCategoryAccount(userId, type);
+
+    return {
+      fromAccounts: filterOptions.fromAccounts ?? [],
+      toAccounts: filterOptions.toAccounts ?? [],
+      fromCategories: filterOptions.fromCategories ?? [],
+      toCategories: filterOptions.toCategories ?? [],
+    };
+  }
+
   private validateSufficientBalance(balance: number, amount: number, errorMessage: string) {
     if (balance < amount) {
       throw new Error(errorMessage);

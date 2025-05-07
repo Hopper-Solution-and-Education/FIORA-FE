@@ -1,14 +1,19 @@
-import { IRelationalTransaction } from '../../types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Icons } from '@/components/Icon';
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
-import { Separator } from '@/components/ui/separator';
-import Image from 'next/image';
-import { TransactionCurrency } from '../../utils/constants';
-import LucieIcon from '../../../category/components/LucieIcon';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { format } from 'date-fns';
+import { Trash } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import LucieIcon from '../../../category/components/LucieIcon';
+import DeleteTransactionDialog from '../../components/DeleteTransactionDialog';
+import { IRelationalTransaction } from '../../types';
+import { TransactionCurrency } from '../../utils/constants';
 
 // Custom formatCurrency function
 const formatCurrency = (
@@ -52,11 +57,11 @@ type TransactionDetailsProps = {
 
 const TransactionDetails = ({ data }: TransactionDetailsProps) => {
   // Format the date to a readable format
-  const formattedDate = data.date ? format(new Date(data.date), 'PPP') : 'N/A';
+  const formattedDate = data.date ? format(new Date(data.date), 'Ppp') : 'N/A';
   const router = useRouter();
-  const handleBack = () => {
-    router.back();
-  };
+
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
 
   // Get transaction type color
   const getTypeColor = () => {
@@ -78,42 +83,101 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
     (data.currency as TransactionCurrency) || TransactionCurrency.VND,
   );
 
+  const handleOpenDeleteModal = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteTransaction = () => {
+    //delete logics here
+    const endpoint = `/api/transactions/transaction?id=${data?.id}`;
+    setIsDeleting(true);
+    fetch(endpoint, {
+      method: 'DELETE',
+    })
+      .then((response) => {
+        if (response.ok) {
+          // Close the delete modal
+          setIsDeleteModalOpen(false);
+
+          // Alert the user of successful deletion
+          toast.success('Transaction deleted successfully');
+
+          // Revalidate data
+        } else {
+          throw new Error('Failed to delete transaction');
+        }
+      })
+      .catch((error) => {
+        console.error('Error deleting transaction:', error);
+        alert('Failed to delete transaction');
+      })
+      .finally(
+        () => {
+          setIsDeleting(false);
+        }, // Reset deleting state
+      );
+  };
+
+  // Navigate to delete page
+  const handleCloseDeleteModal = () => {
+    //delete logics here
+    setIsDeleteModalOpen(false);
+  };
+
   return (
     <div className="container mx-auto px-4 pb-6 min-h-screen">
       <div className="flex items-center justify-center">
-        <Card className="w-full max-w-2xl shadow-lg">
+        <Card className="relative w-full max-w-lg shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               Transaction Details
             </CardTitle>
             <div className="mb-6">
-              <Button variant="outline" onClick={handleBack} className="flex items-center gap-2">
-                <ArrowLeft size={16} />
-                Back to Transactions
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="secondary"
+                      className="px-3 py-2 hover:bg-red-200"
+                      onClick={() => {
+                        handleOpenDeleteModal();
+                      }}
+                    >
+                      <Trash size={18} color="red" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Delete Transaction</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
+            <div className="space-y-2">
               {/* Basic Transaction Details */}
               <div className="space-y-2">
-                <h3 className="font-medium text-lg">Basic Information</h3>
+                <h3 className="font-medium text-md">Basic Information</h3>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="text-sm text-muted-foreground">Date</div>
-                  <div>{formattedDate}</div>
+                  <div className=" text-right">{formattedDate}</div>
 
                   <div className="text-sm text-muted-foreground">Type</div>
-                  <div>
-                    <Badge className={`${getTypeColor()} text-white`}>{data.type}</Badge>
+                  <div className="flex justify-end">
+                    <Badge
+                      className={`${getTypeColor()} text-white cursor-default hover:${getTypeColor()}`}
+                    >
+                      {data.type}
+                    </Badge>
                   </div>
 
                   <div className="text-sm text-muted-foreground">Amount</div>
-                  <div className="font-medium">{formattedAmount}</div>
+                  <div className="font-medium text-right">{formattedAmount}</div>
 
                   {data.remark && (
                     <>
                       <div className="text-sm text-muted-foreground">Remark</div>
-                      <div>{data.remark}</div>
+                      <div className=" text-right">{data.remark}</div>
                     </>
                   )}
                 </div>
@@ -124,35 +188,59 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
               {/* From Account/Category */}
               {(data.fromAccount || data.fromCategory) && (
                 <div className="space-y-2">
-                  <h3 className="font-medium text-lg">From</h3>
-                  <div className="grid grid-cols-2 gap-2">
+                  <h3 className="font-medium text-md">From</h3>
+                  <div className="w-full flex justify-between items-center">
                     {data.fromAccount && (
                       <>
                         <div className="text-sm text-muted-foreground">Account</div>
-                        <div className="flex items-center gap-2">
-                          {data.fromAccount.icon && (
-                            <LucieIcon
-                              icon={data.fromAccount.icon}
-                              className="w-4 h-4 border-1 border-gray-500"
-                            />
-                          )}
-                          {data.fromAccount.name}
-                        </div>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                                {data.fromAccount.icon && (
+                                  <LucieIcon
+                                    icon={data.fromAccount.icon}
+                                    className="w-4 h-4 border-1 border-gray-500"
+                                  />
+                                )}
+
+                                <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                                  {data.fromAccount.name}
+                                </h3>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{data.fromAccount.name}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </>
                     )}
 
                     {data.fromCategory && (
                       <>
                         <div className="text-sm text-muted-foreground">Category</div>
-                        <div className="flex items-center gap-2">
-                          {data.fromCategory.icon && (
-                            <LucieIcon
-                              icon={data.fromCategory.icon}
-                              className="w-4 h-4 border-1 border-gray-500"
-                            />
-                          )}
-                          {data.fromCategory.name}
-                        </div>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                                {data.fromCategory.icon && (
+                                  <LucieIcon
+                                    icon={data.fromCategory.icon}
+                                    className="w-4 h-4 border-1 border-gray-500"
+                                  />
+                                )}
+
+                                <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                                  {data.fromCategory.name}
+                                </h3>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{data.fromCategory.name}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </>
                     )}
                   </div>
@@ -165,34 +253,58 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
               {(data.toAccount || data.toCategory) && (
                 <div className="space-y-2">
                   <h3 className="font-medium text-lg">To</h3>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex justify-between items-center">
                     {data.toAccount && (
                       <>
                         <div className="text-sm text-muted-foreground">Account</div>
-                        <div className="flex items-center gap-2">
-                          {data.toAccount.icon && (
-                            <LucieIcon
-                              icon={data.toAccount.icon}
-                              className="w-4 h-4 border-1 border-gray-500"
-                            />
-                          )}
-                          {data.toAccount.name}
-                        </div>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                                {data.toAccount.icon && (
+                                  <LucieIcon
+                                    icon={data.toAccount.icon}
+                                    className="w-4 h-4 border-1 border-gray-500"
+                                  />
+                                )}
+
+                                <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                                  {data.toAccount.name}
+                                </h3>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{data.toAccount.name}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </>
                     )}
 
                     {data.toCategory && (
                       <>
                         <div className="text-sm text-muted-foreground">Category</div>
-                        <div className="flex items-center gap-2">
-                          {data.toCategory.icon && (
-                            <LucieIcon
-                              icon={data.toCategory.icon}
-                              className="w-4 h-4 border-1 border-gray-500"
-                            />
-                          )}
-                          {data.toCategory.name}
-                        </div>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                                {data.toCategory.icon && (
+                                  <LucieIcon
+                                    icon={data.toCategory.icon}
+                                    className="w-4 h-4 border-1 border-gray-500"
+                                  />
+                                )}
+
+                                <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                                  {data.toCategory.name}
+                                </h3>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p> {data.toCategory.name}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </>
                     )}
                   </div>
@@ -204,29 +316,41 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
               {/* Partner Information */}
               {data.partner && (
                 <div className="space-y-2">
-                  <h3 className="font-medium text-lg">Partner</h3>
-                  <div className="grid grid-cols-2 gap-2">
+                  <h3 className="font-medium text-md">Partner</h3>
+                  <div className="relative w-full flex justify-between items-center">
                     <div className="text-sm text-muted-foreground">Name</div>
-                    <div className="flex items-center gap-2">
-                      {data.partner.logo && (
-                        <Image
-                          src={data.partner.logo}
-                          alt={data.partner.name}
-                          width={24}
-                          height={24}
-                          className="rounded-full"
-                        />
-                      )}
-                      {data.partner.name}
-                    </div>
-
-                    {data.partner.address && (
-                      <>
-                        <div className="text-sm text-muted-foreground">Address</div>
-                        <div>{data.partner.address}</div>
-                      </>
-                    )}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                            {data.partner.logo && (
+                              <Image
+                                src={data.partner.logo}
+                                alt={data.partner.name}
+                                width={30}
+                                height={30}
+                                className="rounded-full"
+                              />
+                            )}
+                            <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                              {data.partner.name}
+                            </h3>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{data.partner.name}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
+                  {data.partner.type && (
+                    <div className="relative w-full flex justify-between items-center">
+                      <div className="text-sm text-muted-foreground">Type</div>
+                      <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                        {data.partner.type}
+                      </h3>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -254,22 +378,63 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
               )}
 
               {/* Meta Information */}
-              <div className="pt-4 border-t border-gray-200">
+              <div className="py-4 border-t border-gray-200">
                 <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
                   <div>
-                    Created: {data.createdAt ? format(new Date(data.createdAt), 'PPp') : 'N/A'}
+                    Created: {data.createdAt ? format(new Date(data.createdAt), 'Ppp') : 'N/A'}
                   </div>
-                  <div>Created By: {data.createdBy || 'N/A'}</div>
+                  <div>Created By: {data.createdBy.email || 'N/A'}</div>
                   <div>
-                    Updated: {data.updatedAt ? format(new Date(data.updatedAt), 'PPp') : 'N/A'}
+                    Updated: {data.updatedAt ? format(new Date(data.updatedAt), 'Ppp') : 'N/A'}
                   </div>
-                  <div>Updated By: {data.updatedBy || 'N/A'}</div>
+                  <div>Updated By: {data.updatedBy.email || 'N/A'}</div>
                 </div>
               </div>
             </div>
+
+            <TooltipProvider>
+              <div className="flex justify-between gap-4 mt-6">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      onClick={() => router.back()}
+                      className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
+                    >
+                      <Icons.circleArrowLeft className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Cancel and go back</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      onClick={() => router.back()}
+                      className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
+                    >
+                      <Icons.check className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Done reading</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
           </CardContent>
         </Card>
       </div>
+      <DeleteTransactionDialog
+        open={isDeleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onDelete={handleDeleteTransaction}
+        data={data}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };

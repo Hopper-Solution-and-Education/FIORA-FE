@@ -104,6 +104,11 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Product', link: '/setting/product' },
     { title: 'Create', link: '/setting/product/create' },
   ],
+  '/budgets': [{ title: 'Budgets', link: '/budgets' }],
+  '/budgets/create': [
+    { title: 'Budgets', link: '/budgets' },
+    { title: 'Create', link: '/budgets/create' },
+  ],
 };
 
 /**

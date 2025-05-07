@@ -1,9 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { TransactionFilterCriteria, TransactionTableColumnKey } from '../types';
+import { TransactionTableColumnKey } from '../types';
 import {
   DEFAULT_TRANSACTION_FILTER_CRITERIA,
   DEFAULT_TRANSACTION_TABLE_COLUMNS,
 } from '../utils/constants';
+import { FilterCriteria } from '@/shared/types';
 
 export type TransactionSliceType = {
   visibleColumns: TransactionTableColumnKey;
@@ -27,7 +28,7 @@ const transactionSlice = createSlice({
       state.filterCriteria.userId = action.payload;
     },
 
-    updateFilterCriteria(state, action: PayloadAction<TransactionFilterCriteria>) {
+    updateFilterCriteria(state, action: PayloadAction<FilterCriteria>) {
       state.filterCriteria = action.payload;
     },
 

@@ -72,12 +72,14 @@ class CategoryRepository implements ICategoryRepository {
 
   async findCategoriesWithTransactions(userId: string): Promise<any[]> {
     return prisma.category.findMany({
-      where: { userId },
-      include: {
-        fromTransactions: { select: { amount: true } }, // Lấy số tiền từ fromTransactions
-        toTransactions: { select: { amount: true } }, // Lấy số tiền từ toTransactions
+      where: {
+        userId,
       },
-      orderBy: [{ type: 'asc' }, { parentId: 'asc' }],
+      include: {
+        fromTransactions: { select: { amount: true, isDeleted: true } },
+        toTransactions: { select: { amount: true, isDeleted: true } },
+      },
+      orderBy: [{ toTransactions: { _count: 'desc' } }, { fromTransactions: { _count: 'desc' } }],
     });
   }
 }

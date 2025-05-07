@@ -73,7 +73,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       currency,
     } = req.body;
 
-    if (![ProductType.Product, ProductType.Service].includes(type)) {
+    if (![ProductType.Product, ProductType.Service, ProductType.Edu].includes(type)) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_PRODUCT_TYPE);
     }
     const { error } = validateBody(productBodySchema, req.body);

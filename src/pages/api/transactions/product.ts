@@ -3,6 +3,7 @@ import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { Currency } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req, res, userId) => {
@@ -64,6 +65,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
         taxRate: true,
         catId: true,
         icon: true,
+        currency: true,
         items: {
           select: {
             id: true,
@@ -90,6 +92,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
             userId: true,
             type: true,
             amount: true,
+            currency: true,
           },
         },
       },
@@ -107,13 +110,20 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
           userId: pt.transaction.userId,
           type: pt.transaction.type,
           amount: pt.transaction.amount.toNumber(),
+          currency: pt.transaction.currency,
         });
         return acc;
       },
       {} as Record<
         string,
-        Array<{ id: string; userId: string | null; type: string; amount: number }>
-      >, // Sửa ở đây
+        Array<{
+          id: string;
+          userId: string | null;
+          type: string;
+          amount: number;
+          currency: Currency;
+        }>
+      >,
     );
 
     // Gộp sản phẩm theo danh mục
@@ -137,6 +147,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
               taxRate: product.taxRate,
               catId: product.catId,
               icon: product.icon,
+              currency: product.currency,
             },
             transactions,
           });
