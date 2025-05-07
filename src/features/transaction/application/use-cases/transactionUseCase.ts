@@ -641,6 +641,10 @@ class TransactionUseCase {
     const productIds = products.map((p) => p.id);
     const splitAmount = amount / productIds.length;
 
+    if (productIds.toString() == '') {
+      return;
+    }
+
     const existingProducts = await tx.product.findMany({
       where: { id: { in: productIds } },
       select: { id: true, price: true },
