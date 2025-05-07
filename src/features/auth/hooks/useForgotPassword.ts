@@ -1,14 +1,14 @@
 // useForgotPassword.ts
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import * as Yup from 'yup';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { useRouter } from 'next/navigation';
 import { sendOtp } from '@/config/send-grid/sendGrid';
 import { generateOtp } from '@/shared/utils';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import * as Yup from 'yup';
 
 const forgotPasswordSchema = Yup.object().shape({
   email: Yup.string().email('Enter a valid email').required('Email is required'),
@@ -35,6 +35,8 @@ export const useForgotPassword = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const emailOtpForm = useForm({
     resolver: yupResolver(forgotPasswordSchema),
@@ -77,20 +79,25 @@ export const useForgotPassword = () => {
   const onSubmitForgotPassword = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     const email = emailOtpForm.getValues('email');
-    if (!emailOtpForm.formState.errors.email && email) {
-      try {
-        const generatedOtp = generateOtp();
-        await sendOtp(email, generatedOtp);
-        setOtp(generatedOtp);
-        setIsOtpSent(true);
-        setCountdown(60);
-        toast.success('OTP sent to your email');
-      } catch (error: any) {
-        console.error(error);
-        toast.error(error?.message ?? 'Failed to send OTP');
-      }
-    } else {
+    if (emailOtpForm.formState.errors.email && email) {
       toast.error('Please enter a valid email');
+      return;
+    }
+
+    // Execute the function only if the email is valid
+    setIsLoading(true);
+    try {
+      const generatedOtp = generateOtp();
+      await sendOtp(email, generatedOtp);
+      setOtp(generatedOtp);
+      setIsOtpSent(true);
+      setCountdown(60);
+      toast.success('OTP sent to your email');
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error?.message ?? 'Failed to send OTP');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -112,6 +119,7 @@ export const useForgotPassword = () => {
     newPassword: string;
     confirmPassword: string;
   }) => {
+    setIsLoading(true);
     try {
       const response = await fetch('/api/auth/forgot-password', {
         method: 'POST',
@@ -133,6 +141,8 @@ export const useForgotPassword = () => {
       router.push('/auth/sign-in?reset=success');
     } catch (error: any) {
       toast.error(error.message || 'Failed to reset password');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -150,5 +160,6 @@ export const useForgotPassword = () => {
     showConfirmPassword,
     setShowConfirmPassword,
     countdown,
+    isLoading,
   };
 };

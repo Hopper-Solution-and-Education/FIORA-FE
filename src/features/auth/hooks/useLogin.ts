@@ -20,6 +20,7 @@ const loginSchema = Yup.object().shape({
 
 export function useLogin() {
   const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const { data: session } = useSession();
@@ -37,6 +38,7 @@ export function useLogin() {
   const handleCredentialsSignIn = async (data: { email: string; password: string }) => {
     setError(null);
     setSuccess(null);
+    setIsLoading(true);
 
     try {
       const response = await signIn('credentials', {
@@ -54,6 +56,8 @@ export function useLogin() {
     } catch (error) {
       setError('An unexpected error occurred. Please try again.');
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -88,5 +92,6 @@ export function useLogin() {
     handleCredentialsSignIn,
     handleGoogleSignIn,
     session,
+    isLoading,
   };
 }
