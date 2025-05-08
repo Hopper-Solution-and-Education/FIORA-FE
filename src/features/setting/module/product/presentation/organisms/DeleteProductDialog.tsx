@@ -44,7 +44,7 @@ const DeleteProductDialog = ({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className={cn(
-          'p-0 overflow-hidden border-none shadow-2xl',
+          'p-0 overflow-visible border-none shadow-2xl',
           'dark:bg-gray-900 dark:text-gray-100',
           'w-[95vw] max-w-md rounded-lg sm:rounded-xl',
           'transition-all duration-200',

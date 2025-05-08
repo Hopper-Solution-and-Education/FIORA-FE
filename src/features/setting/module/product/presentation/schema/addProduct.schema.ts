@@ -36,7 +36,7 @@ export const defaultProductFormValue: any = {
   price: 0,
   taxRate: 0,
   type: 'Product',
-  categoryId: '',
+  catId: '',
   items: [],
   currency: Currency.VND,
 };
