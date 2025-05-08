@@ -42,6 +42,7 @@ interface SelectFieldProps {
   customRenderEmpty?: React.ReactNode;
   onCustomAction?: () => void;
   customActionLabel?: string;
+  className?: string;
   [key: string]: any;
 }
 
@@ -61,6 +62,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
   customRenderEmpty,
   onCustomAction,
   customActionLabel,
+  className,
   ...props
 }) => {
   const [open, setOpen] = useState(false);
@@ -122,14 +124,13 @@ const SelectField: React.FC<SelectFieldProps> = ({
   };
 
   return (
-    <div className="mb-4">
+    <div className={cn('mb-4', className)}>
       {label &&
         (typeof label === 'string' ? (
           <GlobalLabel text={label} htmlFor={id} required={required} />
         ) : (
           label
         ))}
-
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -219,7 +220,6 @@ const SelectField: React.FC<SelectFieldProps> = ({
           </Command>
         </PopoverContent>
       </Popover>
-
       {error && <p className="mt-1 text-sm text-red-500">{error.message}</p>}
     </div>
   );

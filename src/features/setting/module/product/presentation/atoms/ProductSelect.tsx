@@ -48,6 +48,7 @@ const ProductSelect = ({ productId }: ProductSelectType) => {
           onChange={handleChangeSelect}
           options={options}
           placeholder="Select a Product"
+          className="z-[9999]"
         />
       )}
     </>

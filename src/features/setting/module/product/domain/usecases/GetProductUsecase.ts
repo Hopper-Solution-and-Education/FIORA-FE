@@ -37,6 +37,8 @@ export class GetProductUseCase implements IGetProductUseCase {
           item.updatedAt,
           [],
           item.currency,
+          item.createdBy,
+          item.updatedBy,
         ),
     );
 

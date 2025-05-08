@@ -3,16 +3,19 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 import { CategoryProductGetResponse } from '../domain/entities/Category';
-import { createCategoryProductAsyncThunk } from './actions/createCategoryProductAsyncThunk';
-import { createProduct } from './actions/createProductAsyncThunk';
-import { deleteCategoryProductAsyncThunk } from './actions/deleteCategoryProductAsyncThunk';
-import { deleteProductAsyncThunk } from './actions/deleteProductAsyncThunk';
-import { deleteProductTransferAsyncThunk } from './actions/deleteProductTransferAsyncThunk';
-import { fetchCategoriesProduct } from './actions/fetchCategoriesProduct';
-import { getProductsAsyncThunk } from './actions/getProductsAsyncThunk';
-import { getProductTransactionAsyncThunk } from './actions/getProductTransactionAsyncThunk';
-import { updateCategoryProductAsyncThunk } from './actions/updateCategoryProductAsyncThunk';
-import { updateProductAsyncThunk } from './actions/updateProductAsyncThunk';
+import {
+  createCategoryProductAsyncThunk,
+  createProduct,
+  deleteCategoryProductAsyncThunk,
+  deleteProductAsyncThunk,
+  deleteProductTransferAsyncThunk,
+  fetchCategoriesProduct,
+  getProductsAsyncThunk,
+  getProductTransactionAsyncThunk,
+  updateCategoryProductAsyncThunk,
+  updateProductAsyncThunk,
+} from './actions';
+
 import { initialProductState } from './types';
 
 const productManagementSlice = createSlice({
@@ -21,6 +24,9 @@ const productManagementSlice = createSlice({
   reducers: {
     updateProductListItems: (state, action) => {
       state.products.items = action.payload;
+    },
+    setProductDetail: (state, action) => {
+      state.productDetail = action.payload;
     },
     setIsOpenDialogAddCategory: (state, action) => {
       state.isOpenDialogAddCategory = action.payload;
@@ -92,15 +98,15 @@ const productManagementSlice = createSlice({
       .addCase(updateProductAsyncThunk.pending, (state) => {
         state.isUpdatingProduct = true;
       })
-      .addCase(updateProductAsyncThunk.fulfilled, (state, action) => {
+      .addCase(updateProductAsyncThunk.fulfilled, (state) => {
         state.isUpdatingProduct = false;
 
-        const updatedProduct = action.payload;
-        const index = state.products.items.findIndex((item) => item.id === updatedProduct.id);
+        // const updatedProduct = action.payload;
+        // const index = state.products.items.findIndex((item) => item.id === updatedProduct.id);
 
-        if (index !== -1) {
-          state.products.items[index] = updatedProduct;
-        }
+        // if (index !== -1) {
+        //   state.products.items[index] = updatedProduct;
+        // }
 
         toast.success('Success', {
           description: 'Update product successfully!!',
@@ -114,10 +120,10 @@ const productManagementSlice = createSlice({
       .addCase(deleteProductAsyncThunk.pending, (state) => {
         state.isDeletingProduct = true;
       })
-      .addCase(deleteProductAsyncThunk.fulfilled, (state, action) => {
+      .addCase(deleteProductAsyncThunk.fulfilled, (state) => {
         state.isDeletingProduct = false;
-        const deletedProductId = action.payload.id;
-        state.products.items = state.products.items.filter((item) => item.id !== deletedProductId);
+        // const deletedProductId = action.payload.id;
+        // state.products.items = state.products.items.filter((item) => item.id !== deletedProductId);
         toast.success('Success', {
           description: 'Delete product successfully!!',
         });
@@ -128,10 +134,10 @@ const productManagementSlice = createSlice({
       .addCase(deleteProductTransferAsyncThunk.pending, (state) => {
         state.isDeletingProduct = true;
       })
-      .addCase(deleteProductTransferAsyncThunk.fulfilled, (state, action) => {
+      .addCase(deleteProductTransferAsyncThunk.fulfilled, (state) => {
         state.isDeletingProduct = false;
-        const deletedProductId = action.payload.id;
-        state.products.items = state.products.items.filter((item) => item.id !== deletedProductId);
+        // const deletedProductId = action.payload.id;
+        // state.products.items = state.products.items.filter((item) => item.id !== deletedProductId);
         toast.success('Success', {
           description: 'Delete product successfully!!',
         });
@@ -243,5 +249,6 @@ export const {
   setProductCategoryFormState,
   setProductCategoryToEdit,
   setProductIdToTransfer,
+  setProductDetail,
 } = productManagementSlice.actions;
 export default productManagementSlice.reducer;
