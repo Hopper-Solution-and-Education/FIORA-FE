@@ -1,9 +1,8 @@
 'use client';
 
 import { useSettingTabFeatureFlags } from '@/features/setting/hooks/useSettingTabFeatureFlags';
-import { useEffect } from 'react';
 import { notFound } from 'next/navigation';
-import { use } from 'react';
+import { use, useEffect } from 'react';
 
 interface TabLayoutProps {
   children: React.ReactNode;
