@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Budgets Summary',
-  description: 'FIORA Budgets Summary',
+  title: 'FIORA | Budget Summary',
+  description: 'FIORA - Budget Summary',
 };
 
 interface BudgetsSumaryLayoutProps {

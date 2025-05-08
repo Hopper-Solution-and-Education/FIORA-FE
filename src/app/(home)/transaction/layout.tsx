@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Transaction | Hopper Solution and Education',
-  description: 'Hopper Solution and Education Landing Page',
+  title: 'FIORA | Transactions',
+  description: 'FIORA - Transactions',
 };
 
 interface TransactionLayoutProps {
