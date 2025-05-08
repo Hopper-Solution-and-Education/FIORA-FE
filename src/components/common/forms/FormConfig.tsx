@@ -1,11 +1,13 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Separator } from '@radix-ui/react-separator';
 import { useRouter } from 'next/navigation';
 import React, { JSX } from 'react';
 import { Controller, FormState, Path, UseFormReturn } from 'react-hook-form';
 import * as yup from 'yup';
-
+import { FormDetailInfo } from '../atoms';
+import { CreatedBy, UpdatedBy } from '@/shared/types';
 // Defines the props for each field component in the form
 export interface FieldV2Props<T extends yup.AnyObject> {
   name: Path<T>; // Name of the field, must match a key in T, ensured by Path<T>
@@ -17,6 +19,11 @@ interface GlobalFormProps<T extends yup.AnyObject> {
   renderSubmitButton?: (formState: FormState<T>) => React.ReactNode; // Optional custom submit button renderer
   methods: UseFormReturn<any>;
   isLoading?: boolean;
+  // Detail info form to show in the bottom of the form
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  createdBy?: CreatedBy | null;
+  updatedBy?: UpdatedBy | null;
 }
 
 // Generic GlobalForm component to manage and render forms
@@ -26,9 +33,15 @@ const FormConfig = <T extends yup.AnyObject>({
   renderSubmitButton,
   methods,
   isLoading,
+  createdAt,
+  updatedAt,
+  createdBy,
+  updatedBy,
 }: GlobalFormProps<T>): JSX.Element => {
   const router = useRouter();
   const { control, formState } = methods;
+
+  const hasDetailInfo = createdBy || updatedBy;
 
   const renderSubmitButtonDefault = () => (
     <TooltipProvider>
@@ -84,6 +97,18 @@ const FormConfig = <T extends yup.AnyObject>({
           }
         />
       ))}
+
+      <Separator className="my-2 border-gray-600" />
+      {hasDetailInfo && (
+        <FormDetailInfo
+          createdAt={createdAt}
+          updatedAt={updatedAt}
+          createdBy={createdBy}
+          updatedBy={updatedBy}
+          className="w-full"
+        />
+      )}
+
       {/* Conditionally render custom submit button or default button */}
       {renderSubmitButton ? renderSubmitButton(formState) : renderSubmitButtonDefault()}
     </>
