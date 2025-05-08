@@ -1,10 +1,10 @@
-import { FilterComparator, FilterOperator } from '../types';
+import { FilterOperator } from '../types';
 
 type FilterProps<T = any> = {
   currentFilter: T;
   target: string;
   value: string | number | boolean;
-  comparator: FilterComparator;
+  comparator: any;
   callBack: (newFilter: T) => void;
   subTarget?: string;
   operator?: FilterOperator;

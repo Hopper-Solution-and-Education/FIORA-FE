@@ -1,7 +1,7 @@
 'use client';
 
 import { Icons } from '@/components/Icon';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HttpResponse } from '@/features/setting/module/product/model';
@@ -10,6 +10,7 @@ import { cn, formatCurrency } from '@/shared/utils';
 import { useAppSelector } from '@/store';
 import { TransactionType } from '@prisma/client';
 import { ArrowRight } from 'lucide-react';
+import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import { IRelationalTransaction } from '../../transaction/types';
 import { formatDate } from '../utils/date';
@@ -54,7 +55,7 @@ export function Transaction({ tx }: { tx: IRelationalTransaction }) {
   const formattedAmount = formatCurrency(displayAmount, displayCurrency);
 
   return (
-    <div onClick={handlePressTransactionItem} className="border-b last:border-b-0 py-2">
+    <div onClick={handlePressTransactionItem} className="border-b last:border-b-0 py-2 text-sm">
       <div className="flex items-center">
         {/* Partner Avatar (logo or icon) */}
         <Avatar className="h-10 w-10 flex-shrink-0">
@@ -63,11 +64,21 @@ export function Transaction({ tx }: { tx: IRelationalTransaction }) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="flex items-center justify-center h-full w-full">
-                    <AvatarImage
-                      src={tx.partner.logo}
-                      alt={tx.partner.name}
-                      className="object-cover"
-                    />
+                    {tx.partner?.logo ? (
+                      <div className="w-8 h-8 rounded-full overflow-hidden">
+                        <Image
+                          src={tx.partner.logo}
+                          alt={tx.partner.name}
+                          width={32}
+                          height={32}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold">
+                        {tx.partner.name?.slice(0, 2)?.toUpperCase() || 'CN'}
+                      </div>
+                    )}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="top" align="center">
@@ -187,8 +198,8 @@ export default function RecentTransactions() {
           <div className="h-6 w-1/3 bg-gray-200 rounded animate-pulse" />
           <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
         </div>
-        <div className="overflow-y-auto max-h-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-          {[...Array(3)].map((_, idx) => (
+        <div className="overflow-y-auto max-h-full scrollbar-thin scrollbar-thumb-gray-300 ">
+          {[...Array(6)].map((_, idx) => (
             <TransactionSkeleton key={idx} />
           ))}
         </div>
@@ -199,7 +210,7 @@ export default function RecentTransactions() {
   return (
     <>
       <div
-        className="h-[350px] md:h-[400px] lg:h-[500px] border rounded-md border-gray-100 p-4 shadow-sm cursor-pointer relative"
+        className="h-[350px] md:h-[400px] lg:h-[500px] border rounded-md border-gray-100 dark:border-gray-800 pl-3 py-2 shadow-sm cursor-pointer relative"
         role="region"
         aria-label="Recent Transactions"
         tabIndex={0}
@@ -209,7 +220,7 @@ export default function RecentTransactions() {
         </div>
         <div
           className={cn(
-            'overflow-y-auto max-h-[calc(100%-2rem)] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100',
+            'overflow-y-auto max-h-[calc(100%-2rem)] scrollbar-thin',
             transactions?.length > 0 && 'pr-2',
           )}
         >
@@ -219,9 +230,6 @@ export default function RecentTransactions() {
             <div className="text-gray-500 text-center py-4">No transactions found.</div>
           )}
         </div>
-        {transactions.length > 5 && (
-          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-100 to-transparent pointer-events-none" />
-        )}
       </div>
     </>
   );

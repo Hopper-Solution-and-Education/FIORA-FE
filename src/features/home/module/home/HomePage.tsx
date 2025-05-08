@@ -4,7 +4,6 @@ import { MODULE } from '@/shared/constants';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { useFeatureFlagGuard } from '@/shared/hooks/useFeatureFlagGuard';
 import AccountDashboard from '../account/AccountDashboard';
-import { AccountsOverview } from './AccountOverview';
 import RecentTransactions from './components/RecentTransactions';
 import Recommendations from './components/Recommendations';
 
@@ -26,7 +25,6 @@ export default function HomePage() {
             {/* Left Section: Financial & Account Overview */}
             <div className="col-span-1 md:col-span-2 lg:col-span-7 space-y-4">
               {isFeatureOn && <AccountDashboard module={MODULE.HOME} />}
-              <AccountsOverview />
             </div>
 
             {/* Right Section: Transactions & Recommendations */}
