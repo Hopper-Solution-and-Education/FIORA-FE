@@ -96,13 +96,13 @@ export default function Recommendations() {
     <>
       <div
         onClick={handleClickRecommendationsPage}
-        className="h-[350px] md:h-[400px] lg:h-[500px] border rounded-md border-gray-100 p-4 shadow-sm cursor-pointer relative"
+        className="h-[350px] md:h-[400px] lg:h-[500px] border rounded-md border-gray-100 dark:border-gray-800 shadow-sm cursor-pointer relative"
         role="region"
         aria-label="Recommendations"
         tabIndex={0}
       >
         <div className="flex justify-between items-center mb-2">
-          <div className="font-bold text-lg">Recommendations</div>
+          <div className="font-bold text-lg p-3">Recommendations</div>
         </div>
         <div
           className={cn(
@@ -131,7 +131,7 @@ export default function Recommendations() {
                 return (
                   <div
                     key={rec.id}
-                    className="border rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 hover:shadow-md"
+                    className="rounded-lg p-3 border-none hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 hover:shadow-md"
                   >
                     <div className="flex-1 mb-3">
                       <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200">
@@ -167,9 +167,6 @@ export default function Recommendations() {
             <div className="text-gray-500 text-center py-4">No recommendations found.</div>
           )}
         </div>
-        {recommendations.length > 5 && (
-          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-100 to-transparent pointer-events-none" />
-        )}
       </div>
       <NavigateDialog
         title="View Recommendation"
