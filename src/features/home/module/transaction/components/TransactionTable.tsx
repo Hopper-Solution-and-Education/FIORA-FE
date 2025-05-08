@@ -150,7 +150,8 @@ const TransactionTable = () => {
   const debouncedFilterHandler = useMemo(
     () =>
       debounce((value: string) => {
-        handleFilterChange({ ...filterCriteria, search: value as string });
+        console.log('value', value);
+        handleFilterChange({ ...filterCriteria, search: String(value).trim() });
       }, 1000),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [filterCriteria],
