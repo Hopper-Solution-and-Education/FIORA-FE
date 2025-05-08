@@ -1,5 +1,13 @@
 import { ReactNode } from 'react';
 
+/**
+ * Enum to define which column a filter component should be placed in
+ */
+export enum FilterColumn {
+  LEFT = 'left',
+  RIGHT = 'right',
+}
+
 export type FilterOperator =
   | 'equals'
   | 'contains'
@@ -12,13 +20,11 @@ export type FilterOperator =
   | 'some'
   | 'every';
 
-export type FilterComparator = 'AND' | 'OR';
+export type OrderType = 'asc' | 'desc' | 'none';
 
-export enum FilterColumn {
-  LEFT = 'left',
-  RIGHT = 'right',
-}
-
+/**
+ * Interface defining a filter component configuration
+ */
 export interface FilterComponentConfig {
   key: string;
   component: ReactNode;
@@ -26,30 +32,28 @@ export interface FilterComponentConfig {
   order: number;
 }
 
-export interface FilterLayoutConfig {
-  components: FilterComponentConfig[];
-}
-
-export type OrderType = 'asc' | 'desc' | 'none';
-
-export type FilterCriteria = {
-  filters?: any;
+/**
+ * Basic filter criteria structure
+ */
+export interface FilterCriteria {
+  filters: Record<string, any>;
   sortBy?: {
     [key: string]: OrderType;
   };
   userId: string;
   search?: string;
-};
+}
 
-// Define a generic field mapping for filter conversion
+/**
+ * Interface for field mappings to create complex filter structures
+ */
 export interface FilterFieldMapping<T = any> {
   key: keyof T;
+  comparator?: 'AND' | 'OR';
   mapping?: {
     field: string;
     nestedField?: string;
-    operator?: string;
     transform?: (value: any) => any;
   };
   condition?: (value: any) => boolean;
-  comparator: 'AND' | 'OR';
 }

@@ -1,19 +1,14 @@
+import DateRangeFilter from '@/components/common/filters/DateRangeFilter';
+import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
+import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
+import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import useDataFetcher from '@/shared/hooks/useDataFetcher';
-import { useFilter } from '@/shared/hooks/useFilter';
 import { FilterColumn, FilterComponentConfig, FilterCriteria } from '@/shared/types/filter.types';
 import { useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { TransactionFilterOptionResponse } from '../types';
 import { DEFAULT_TRANSACTION_FILTER_CRITERIA } from '../utils/constants';
-import {
-  AccountFilter,
-  AmountFilter,
-  CategoryFilter,
-  DateRangeFilter,
-  PartnerFilter,
-  TypeFilter,
-} from './filter';
 
 type FilterParams = {
   dateRange?: DateRange;
@@ -37,10 +32,15 @@ const filterParamsInitState: FilterParams = {
 
 type FilterMenuProps<T> = {
   callBack: (newFilter: FilterCriteria) => void;
-  // filterConfig?: FilterComponentConfig[];
   components?: FilterComponentConfig[];
   filterParams?: T;
 };
+
+const options = [
+  { value: 'Expense', label: 'Expense' },
+  { value: 'Income', label: 'Income' },
+  { value: 'Transfer', label: 'Transfer' },
+];
 
 const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
   const { callBack, components } = props;
@@ -195,28 +195,42 @@ const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
   const filterComponents = useMemo(() => {
     // Create memoized filter components
     const typeFilterComponent = (
-      <TypeFilter
-        selected={filterParams.types}
+      <MultiSelectFilter
+        options={options}
+        selectedValues={filterParams.types}
         onChange={(values) => handleEditFilter('types', values)}
+        label="Transaction Types"
+        placeholder="Select types"
+        disabled={isLoading}
       />
     );
 
     const categoryFilterComponent = (
-      <CategoryFilter
+      <MultiSelectFilter
         options={categoryOptions}
-        selected={filterParams.categories}
+        selectedValues={filterParams.categories}
         onChange={(values) => handleEditFilter('categories', values)}
-        isLoading={isLoading}
+        label="Categories"
+        placeholder="Select categories"
+        disabled={isLoading}
       />
     );
 
     const amountFilterComponent = (
-      <AmountFilter
-        amountMin={filterParams.amountMin}
-        amountMax={filterParams.amountMax}
-        minRange={amountMin || 0}
-        maxRange={amountMax || 10000}
-        onAmountChange={(target, value) => handleEditFilter(target, value)}
+      <NumberRangeFilter
+        minValue={filterParams.amountMin}
+        maxValue={filterParams.amountMax}
+        minRange={0}
+        maxRange={150000000}
+        onValueChange={(target, value) =>
+          handleEditFilter(target === 'minValue' ? 'amountMin' : 'amountMax', value)
+        }
+        label="Amount"
+        minLabel="Min Amount"
+        maxLabel="Max Amount"
+        formatValue={(value, isEditing) => (isEditing ? value : value.toLocaleString())}
+        tooltipFormat={(value) => `${value.toLocaleString()} USD`}
+        step={1000}
       />
     );
 
@@ -224,24 +238,29 @@ const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
       <DateRangeFilter
         dateRange={filterParams.dateRange}
         onChange={(values) => handleEditFilter('dateRange', values)}
+        label="Date"
       />
     );
 
     const accountFilterComponent = (
-      <AccountFilter
+      <MultiSelectFilter
         options={accountOptions}
-        selected={filterParams.accounts}
+        selectedValues={filterParams.accounts}
         onChange={(values) => handleEditFilter('accounts', values)}
-        isLoading={isLoading}
+        label="Accounts"
+        placeholder="Select accounts"
+        disabled={isLoading}
       />
     );
 
     const partnerFilterComponent = (
-      <PartnerFilter
+      <MultiSelectFilter
         options={partnerOptions}
-        selected={filterParams.partners}
+        selectedValues={filterParams.partners}
         onChange={(values) => handleEditFilter('partners', values)}
-        isLoading={isLoading}
+        label="Partners"
+        placeholder="Select partners"
+        disabled={isLoading}
       />
     );
 
@@ -353,24 +372,20 @@ const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
     return updatedFilters;
   }, []);
 
-  // Use our custom useFilter hook with memoized callback
-  const { FiltersComponent } = useFilter<FilterParams>({
-    filterParams,
-    filterComponents: components || filterComponents,
-    callBack: useCallback(
-      (newFilter) => {
+  return (
+    <GlobalFilter<FilterParams>
+      filterParams={filterParams}
+      filterComponents={components || filterComponents}
+      onFilterChange={(newFilter) => {
         callBack({
           ...filterCriteria,
           filters: newFilter.filters,
         });
-      },
-      [callBack, filterCriteria],
-    ),
-    defaultFilterCriteria: DEFAULT_TRANSACTION_FILTER_CRITERIA,
-    structureCreator: createFilterStructure,
-  });
-
-  return <FiltersComponent />;
+      }}
+      defaultFilterCriteria={DEFAULT_TRANSACTION_FILTER_CRITERIA}
+      structureCreator={createFilterStructure}
+    />
+  );
 };
 
 export default FilterMenu;
