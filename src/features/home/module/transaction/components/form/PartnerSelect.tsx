@@ -41,7 +41,7 @@ const PartnerSelectField: React.FC<PartnerSelectProps> = ({
           tmpOptions.push({
             value: partner.id,
             label: partner.name,
-            icon: partner.logo ?? undefined,
+            icon: partner.logo ?? 'handshake',
           });
         });
         setOptions(tmpOptions);
