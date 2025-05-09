@@ -50,16 +50,21 @@ class BudgetSummaryUsecase {
     const budget = budgets.find((budget) => budget.type === type) || null;
 
     if (budget && type === BudgetType.Act) {
-      // get transaction from last 1 month ago to now
       const now = new Date();
       const oneMonthAgo = new Date();
       oneMonthAgo.setMonth(now.getMonth() - 1);
 
+      const startOfFiscalYear = new Date(`${fiscalYear}-01-01`);
+      const endOfFiscalYear = new Date(`${fiscalYear}-12-31`);
+
+      const startDate = oneMonthAgo < startOfFiscalYear ? startOfFiscalYear : oneMonthAgo;
+      const endDate = now > endOfFiscalYear ? endOfFiscalYear : now;
+
       const transactions = await this._transactionRepository.findManyTransactions({
         userId,
         date: {
-          gte: oneMonthAgo,
-          lte: now,
+          gte: startDate,
+          lte: endDate,
         },
         isDeleted: false,
       });
