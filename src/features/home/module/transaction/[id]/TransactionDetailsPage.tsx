@@ -29,15 +29,6 @@ const TransactionDetailsPage = ({ id }: TransactionDetailsPageProps) => {
     }
   }, [data]);
 
-  // const renderTransactionName = useMemo((): string => {
-  //   if (!transaction) return 'Transaction Details';
-
-  //   const date = transaction.date ? new Date(transaction.date).toLocaleDateString() : '';
-
-  //   return `${transaction.type} - ${date}`;
-  // }, [transaction]);
-
-  // No data component
   const NoDataDisplay = () => (
     <Card>
       <CardContent className="py-16">
@@ -67,27 +58,62 @@ const TransactionDetailsPage = ({ id }: TransactionDetailsPageProps) => {
       </div> */}
 
       {isLoading ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <Skeleton className="h-8 w-1/2" />
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+        <div className="flex items-center justify-center">
+          <Card className="relative w-full max-w-lg shadow-lg">
+            <CardHeader>
+              <CardTitle>
+                <Skeleton className="h-8 w-1/3" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="space-y-4">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-5/6" />
+                {/* Basic Information */}
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-1/3" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-4 w-3/4 ml-auto" />
+
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-4 w-1/3 ml-auto" />
+
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-4 w-1/2 ml-auto" />
+                  </div>
+                </div>
+                <Skeleton className="h-px w-full" /> {/* Separator */}
+                {/* From section */}
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-1/4" />
+                  <div className="flex justify-between items-center">
+                    <Skeleton className="h-4 w-1/4" />
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-4 rounded-full" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                  </div>
+                </div>
+                <Skeleton className="h-px w-full" /> {/* Separator */}
+                {/* To section */}
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-1/4" />
+                  <div className="flex justify-between items-center">
+                    <Skeleton className="h-4 w-1/4" />
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-4 rounded-full" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                  </div>
+                </div>
+                {/* Footer buttons */}
+                <div className="flex justify-between gap-4 mt-6">
+                  <Skeleton className="h-12 w-32" />
+                  <Skeleton className="h-12 w-32" />
+                </div>
               </div>
-              <div className="space-y-4">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-5/6" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       ) : error ? (
         <Card>
           <CardContent className="py-8">

@@ -52,7 +52,7 @@ const RecurringSelectField: React.FC<RecurringSelectProps> = ({
               Recurring
             </FormLabel>
             <SelectField
-              className="w-full flex justify-between px-4 py-2"
+              className="w-[50%] flex justify-between"
               name={name}
               value={currentRecurringType}
               onValueChange={(value: string) => setValue('remark', value)}

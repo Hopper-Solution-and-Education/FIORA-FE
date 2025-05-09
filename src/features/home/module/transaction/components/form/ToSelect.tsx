@@ -82,7 +82,7 @@ const ToSelectField: React.FC<ToSelectProps> = ({
               </div>
             )}
             <SelectField
-              className="w-full flex justify-between px-4 py-2"
+              className="w-full flex justify-between "
               name={name}
               disabled={isLoading || isValidating}
               value={selectedOption}
