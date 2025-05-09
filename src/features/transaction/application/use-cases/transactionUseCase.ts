@@ -284,7 +284,7 @@ class TransactionUseCase {
           this.validateSufficientBalance(
             toAccount.balance!.toNumber(),
             amount,
-            `Tài khoản ${toAccount.name} không đủ số dư để hoàn tác giao dịch thu nhập.`,
+            `Account ${toAccount.name} does not have sufficient balance to reverse the income transaction.`,
           );
           await this.accountRepository.deductBalance(tx, toAccount.id, amount);
         }
@@ -295,7 +295,7 @@ class TransactionUseCase {
           this.validateSufficientBalance(
             toAccount.balance!.toNumber(),
             amount,
-            `Tài khoản ${toAccount.name} không đủ số dư để hoàn trả giao dịch chuyển khoản.`,
+            `Account ${toAccount.name} does not have sufficient balance to refund the transfer transaction.`,
           );
           await this.accountRepository.transferBalance(tx, toAccount.id, fromAccount.id, amount);
         }

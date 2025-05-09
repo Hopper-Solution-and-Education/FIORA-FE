@@ -227,7 +227,9 @@ const TransactionTable = () => {
     fetch(endpoint, {
       method: 'DELETE',
     })
-      .then((response) => {
+      .then(async (response) => {
+        const responseData = await response.json();
+
         if (response.ok) {
           // Remove the deleted transaction from the display data
           setDisplayData((prev) => prev.filter((item) => item.id !== selectedTransaction?.id));
@@ -240,19 +242,17 @@ const TransactionTable = () => {
           toast.success('Transaction deleted successfully');
 
           // Revalidate data
-          mutate('/api/transactions', displayData, { revalidate: true });
+          mutate('/api/transactions');
         } else {
-          throw new Error('Failed to delete transaction');
+          throw new Error(responseData.message || 'Failed to delete transaction');
         }
       })
       .catch((error) => {
-        console.error('Error deleting transaction:', error);
+        toast.error(error.message || 'Failed to delete transaction');
       })
-      .finally(
-        () => {
-          setIsDeleting(false);
-        }, // Reset deleting state
-      );
+      .finally(() => {
+        setIsDeleting(false);
+      });
   };
 
   // Navigate to delete page
