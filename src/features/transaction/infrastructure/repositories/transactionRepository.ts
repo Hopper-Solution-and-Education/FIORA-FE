@@ -224,6 +224,7 @@ class TransactionRepository implements ITransactionRepository {
           select: {
             id: true,
             name: true,
+            type: true,
           },
         }),
         prisma.category.findMany({
@@ -248,12 +249,13 @@ class TransactionRepository implements ITransactionRepository {
         prisma.account.findMany({
           where: {
             userId,
-            OR: [{ type: 'Payment' }, { type: 'CreditCard' }],
+            OR: [{ type: 'Payment' }, { type: 'CreditCard' }, { type: 'Debt' }],
           },
 
           select: {
             id: true,
             name: true,
+            type: true,
           },
         }),
       ]);
@@ -274,6 +276,7 @@ class TransactionRepository implements ITransactionRepository {
           select: {
             id: true,
             name: true,
+            type: true,
           },
         }),
         prisma.account.findMany({
@@ -281,6 +284,7 @@ class TransactionRepository implements ITransactionRepository {
           select: {
             id: true,
             name: true,
+            type: true,
           },
         }),
       ]);

@@ -505,7 +505,11 @@ class TransactionUseCase {
         throw new Error(Messages.ACCOUNT_NOT_FOUND);
       }
 
-      if (account.type !== AccountType.Payment) {
+      if (
+        account.type !== AccountType.Payment &&
+        account.type !== AccountType.CreditCard &&
+        account.type !== AccountType.Debt
+      ) {
         throw new Error(Messages.INVALID_ACCOUNT_TYPE_FOR_INCOME);
       }
 
