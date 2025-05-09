@@ -1,5 +1,6 @@
 'use client';
-import { BudgetDashboardPage } from '@/features/home/module/budgets';
+
+import { BudgetDashboardPage } from '@/features/home/module/budgets/creation-dashboard';
 
 const page = () => {
   return <BudgetDashboardPage />;
