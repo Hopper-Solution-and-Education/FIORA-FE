@@ -211,7 +211,7 @@ class TransactionRepository implements ITransactionRepository {
   async getValidCategoryAccount(userId: string, type: TransactionType) {
     let fromAccounts: any[] = [];
     let toAccounts: any[] = [];
-    const fromCategories: any[] = [];
+    let fromCategories: any[] = [];
     let toCategories: any[] = [];
 
     if (type === TransactionType.Expense) {
@@ -237,19 +237,20 @@ class TransactionRepository implements ITransactionRepository {
     }
 
     if (type === TransactionType.Income) {
-      [fromAccounts, toCategories] = await Promise.all([
-        prisma.account.findMany({
-          where: {
-            userId,
-            OR: [{ type: 'Payment' }, { type: 'CreditCard' }],
-          },
+      [fromCategories, toAccounts] = await Promise.all([
+        prisma.category.findMany({
+          where: { userId, type: 'Income' },
           select: {
             id: true,
             name: true,
           },
         }),
-        prisma.category.findMany({
-          where: { userId, type: 'Income' },
+        prisma.account.findMany({
+          where: {
+            userId,
+            OR: [{ type: 'Payment' }, { type: 'CreditCard' }],
+          },
+
           select: {
             id: true,
             name: true,
