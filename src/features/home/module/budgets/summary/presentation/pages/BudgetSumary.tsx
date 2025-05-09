@@ -62,6 +62,7 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
         botBudget,
         actBudget,
         selectedYear,
+        currency,
       });
 
       const addLevelToItems = (items: HierarchicalBarItem[], level = 0): HierarchicalBarItem[] => {
