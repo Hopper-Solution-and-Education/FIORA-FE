@@ -18,6 +18,8 @@ const BudgetDashboardFilter = ({ onFilterDropdownOpenChange }: Props) => {
   const dispatch = useAppDispatch();
   const currency = useAppSelector((state) => state.settings.currency);
 
+  const { watch } = methods;
+
   const onSubmit = (data: BudgetGetFormValues) => {
     dispatch(resetGetBudgetState());
     dispatch(
@@ -43,7 +45,9 @@ const BudgetDashboardFilter = ({ onFilterDropdownOpenChange }: Props) => {
       name="fromYear"
       placeholder="Select From Year"
       label="From Year"
-      isYearDisabled={(year) => year > new Date().getFullYear() + 1}
+      isYearDisabled={(year) =>
+        year > new Date().getFullYear() + 1 || year > Number(watch('toYear'))
+      }
     />,
     <CustomDateTimePicker
       key="toYear"
@@ -51,7 +55,9 @@ const BudgetDashboardFilter = ({ onFilterDropdownOpenChange }: Props) => {
       name="toYear"
       placeholder="Select To Year"
       label="To Year"
-      isYearDisabled={(year) => year > new Date().getFullYear() + 1}
+      isYearDisabled={(year) =>
+        year > new Date().getFullYear() + 1 || year < Number(watch('fromYear'))
+      }
     />,
   ];
 

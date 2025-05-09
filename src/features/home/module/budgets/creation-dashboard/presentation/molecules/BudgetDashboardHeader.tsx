@@ -98,6 +98,7 @@ const BudgetDashboardHeader = () => {
           <BudgetDashboardFilter onFilterDropdownOpenChange={setIsShowDropdownFilter} />
         }
         className="max-w-md"
+        type="number"
         inputClassName="border-gray-300"
         dropdownPosition={{
           side: 'bottom',

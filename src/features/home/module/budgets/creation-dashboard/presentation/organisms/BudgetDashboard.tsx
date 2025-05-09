@@ -95,7 +95,7 @@ const BudgetDashboard = () => {
         {isLoading && !budgets.length ? (
           // Show skeletons while loading and no data
           Array.from({ length: 3 }).map((_, index) => (
-            <StackedBarChartSkeleton key={index} className="h-[300px] w-full my-16" />
+            <StackedBarChartSkeleton key={index} className="h-[300px] w-full my-4" />
           ))
         ) : budgets.length === 0 ? (
           // Show empty state when no budgets are available
