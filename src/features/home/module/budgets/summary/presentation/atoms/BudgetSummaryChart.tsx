@@ -22,7 +22,6 @@ const BudgetChart = ({ data, title, currency }: BudgetChartProps) => {
         { name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
         { name: 'Profit', color: COLORS.DEPS_INFO.LEVEL_1 },
       ]}
-      tutorialText="Click on a bar to see details"
     />
   );
 };

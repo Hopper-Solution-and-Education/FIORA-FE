@@ -2,12 +2,15 @@ import { COLORS, STACK_TYPE } from '@/shared/constants/chart';
 import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
 import { ChartItem, HierarchicalBarItem } from '../presentation/types';
 import { Budget } from '../domain/entities/Budget';
+import { Currency } from '@/shared/types';
+import { convertVNDToUSD } from '@/shared/utils';
 
 interface TransformDataParams {
   topBudget: BudgetSummaryByType | null;
   botBudget: BudgetSummaryByType | null;
   actBudget: BudgetSummaryByType | null;
   selectedYear: number;
+  currency: Currency;
 }
 
 export const transformDataForChart = ({
@@ -15,6 +18,7 @@ export const transformDataForChart = ({
   botBudget,
   actBudget,
   selectedYear,
+  currency,
 }: TransformDataParams): HierarchicalBarItem[] => {
   if (!topBudget?.budget || !botBudget?.budget || !actBudget?.budget) {
     return [];
@@ -43,54 +47,90 @@ export const transformDataForChart = ({
         name: 'Expense',
         type: STACK_TYPE.EXPENSE,
         icon: 'banknoteArrowDown',
-        A: actExp,
-        T: topExp,
-        B: botExp,
+        A: currency === 'USD' ? convertVNDToUSD(actExp) : actExp,
+        T: currency === 'USD' ? convertVNDToUSD(topExp) : topExp,
+        B: currency === 'USD' ? convertVNDToUSD(botExp) : botExp,
         colors: {
           A: COLORS.DEPS_DANGER.LEVEL_1,
           T: COLORS.DEPS_DANGER.LEVEL_3,
           B: COLORS.DEPS_DANGER.LEVEL_5,
         },
         layers: [
-          { id: 'A', value: actExp, color: COLORS.DEPS_DANGER.LEVEL_1 },
-          { id: 'T', value: topExp, color: COLORS.DEPS_DANGER.LEVEL_3 },
-          { id: 'B', value: botExp, color: COLORS.DEPS_DANGER.LEVEL_5 },
+          {
+            id: 'A',
+            value: currency === 'USD' ? convertVNDToUSD(actExp) : actExp,
+            color: COLORS.DEPS_DANGER.LEVEL_1,
+          },
+          {
+            id: 'T',
+            value: currency === 'USD' ? convertVNDToUSD(topExp) : topExp,
+            color: COLORS.DEPS_DANGER.LEVEL_3,
+          },
+          {
+            id: 'B',
+            value: currency === 'USD' ? convertVNDToUSD(botExp) : botExp,
+            color: COLORS.DEPS_DANGER.LEVEL_5,
+          },
         ],
       },
       {
         name: 'Income',
         type: STACK_TYPE.INCOME,
         icon: 'banknote',
-        A: actInc,
-        T: topInc,
-        B: botInc,
+        A: currency === 'USD' ? convertVNDToUSD(actInc) : actInc,
+        T: currency === 'USD' ? convertVNDToUSD(topInc) : topInc,
+        B: currency === 'USD' ? convertVNDToUSD(botInc) : botInc,
         colors: {
           A: COLORS.DEPS_SUCCESS.LEVEL_1,
           T: COLORS.DEPS_SUCCESS.LEVEL_3,
           B: COLORS.DEPS_SUCCESS.LEVEL_5,
         },
         layers: [
-          { id: 'A', value: actInc, color: COLORS.DEPS_SUCCESS.LEVEL_1 },
-          { id: 'T', value: topInc, color: COLORS.DEPS_SUCCESS.LEVEL_3 },
-          { id: 'B', value: botInc, color: COLORS.DEPS_SUCCESS.LEVEL_5 },
+          {
+            id: 'A',
+            value: currency === 'USD' ? convertVNDToUSD(actInc) : actInc,
+            color: COLORS.DEPS_SUCCESS.LEVEL_1,
+          },
+          {
+            id: 'T',
+            value: currency === 'USD' ? convertVNDToUSD(topInc) : topInc,
+            color: COLORS.DEPS_SUCCESS.LEVEL_3,
+          },
+          {
+            id: 'B',
+            value: currency === 'USD' ? convertVNDToUSD(botInc) : botInc,
+            color: COLORS.DEPS_SUCCESS.LEVEL_5,
+          },
         ],
       },
       {
         name: 'Profit',
         type: STACK_TYPE.PROFIT,
         icon: 'handCoins',
-        A: actProfit,
-        T: topProfit,
-        B: botProfit,
+        A: currency === 'USD' ? convertVNDToUSD(actProfit) : actProfit,
+        T: currency === 'USD' ? convertVNDToUSD(topProfit) : topProfit,
+        B: currency === 'USD' ? convertVNDToUSD(botProfit) : botProfit,
         colors: {
           A: COLORS.DEPS_INFO.LEVEL_1,
           T: COLORS.DEPS_INFO.LEVEL_3,
           B: COLORS.DEPS_INFO.LEVEL_5,
         },
         layers: [
-          { id: 'A', value: actProfit, color: COLORS.DEPS_INFO.LEVEL_1 },
-          { id: 'T', value: topProfit, color: COLORS.DEPS_INFO.LEVEL_3 },
-          { id: 'B', value: botProfit, color: COLORS.DEPS_INFO.LEVEL_5 },
+          {
+            id: 'A',
+            value: currency === 'USD' ? convertVNDToUSD(actProfit) : actProfit,
+            color: COLORS.DEPS_INFO.LEVEL_1,
+          },
+          {
+            id: 'T',
+            value: currency === 'USD' ? convertVNDToUSD(topProfit) : topProfit,
+            color: COLORS.DEPS_INFO.LEVEL_3,
+          },
+          {
+            id: 'B',
+            value: currency === 'USD' ? convertVNDToUSD(botProfit) : botProfit,
+            color: COLORS.DEPS_INFO.LEVEL_5,
+          },
         ],
       },
     ];
