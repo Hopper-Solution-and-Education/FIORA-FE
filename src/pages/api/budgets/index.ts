@@ -104,7 +104,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
     if (fiscalYear) {
       updatedBudget = await budgetUseCase.updateActBudget(userId, fiscalYear, currency);
     } else {
-      updatedBudget = await budgetUseCase.updateActBudgetTransaction(userId, currency);
+      updatedBudget = await budgetUseCase.updateActBudgetTotalYears(userId, currency);
     }
 
     return res

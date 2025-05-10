@@ -29,6 +29,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     const takeValue = take ? Number(take) : 3; // Default to 10 if not provided
     const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
 
+    await budgetUseCase.updateActBudgetTotalYears(userId, currency);
     const budgets = await budgetUseCase.getAnnualBudgetByYears({
       userId,
       cursor: cursor ? Number(cursor) : undefined,
