@@ -2,7 +2,7 @@ import { BudgetSummary } from '../../domain/entities/BudgetSummary';
 import { BudgetSummaryByType } from '../../domain/entities/BudgetSummaryByType';
 import { BudgetSummaryResponseDTO } from '../dto/response/BudgetSummaryResponseDTO';
 import { BudgetByTypeResponseDTO } from '../dto/response/BudgetSummaryResponseDTO';
-import { BudgetType } from '@prisma/client';
+import { BudgetType } from '../../domain/entities/BudgetType';
 
 export class BudgetSummaryMapper {
   static toBudgetSummary(dto: BudgetSummaryResponseDTO): BudgetSummary {

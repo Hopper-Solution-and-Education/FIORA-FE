@@ -1,7 +1,7 @@
 'use client';
 
 import { ChartSkeleton } from '@/components/common/organisms';
-import { BudgetType } from '@prisma/client';
+import { BudgetType } from '../../domain/entities/BudgetType';
 import { useEffect, useState } from 'react';
 import { budgetSummaryDIContainer } from '../../../summary/di/budgetSummaryDIContainer';
 import { TYPES } from '../../../summary/di/budgetSummaryDIContainer.type';
