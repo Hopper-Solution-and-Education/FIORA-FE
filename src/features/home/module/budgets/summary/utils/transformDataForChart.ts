@@ -24,6 +24,10 @@ export const transformDataForChart = ({
     return [];
   }
 
+  const formatCurrency = (value: number): number => {
+    return currency === 'USD' ? convertVNDToUSD(value) : value;
+  };
+
   const getBudgetValue = (budget: Budget, field: string): number => {
     return parseFloat(budget?.[field as keyof typeof budget] as string) || 0;
   };
@@ -47,9 +51,9 @@ export const transformDataForChart = ({
         name: 'Expense',
         type: STACK_TYPE.EXPENSE,
         icon: 'banknoteArrowDown',
-        A: currency === 'USD' ? convertVNDToUSD(actExp) : actExp,
-        T: currency === 'USD' ? convertVNDToUSD(topExp) : topExp,
-        B: currency === 'USD' ? convertVNDToUSD(botExp) : botExp,
+        A: formatCurrency(actExp),
+        T: formatCurrency(topExp),
+        B: formatCurrency(botExp),
         colors: {
           A: COLORS.DEPS_DANGER.LEVEL_1,
           T: COLORS.DEPS_DANGER.LEVEL_3,
@@ -58,17 +62,17 @@ export const transformDataForChart = ({
         layers: [
           {
             id: 'A',
-            value: currency === 'USD' ? convertVNDToUSD(actExp) : actExp,
+            value: formatCurrency(actExp),
             color: COLORS.DEPS_DANGER.LEVEL_1,
           },
           {
             id: 'T',
-            value: currency === 'USD' ? convertVNDToUSD(topExp) : topExp,
+            value: formatCurrency(topExp),
             color: COLORS.DEPS_DANGER.LEVEL_3,
           },
           {
             id: 'B',
-            value: currency === 'USD' ? convertVNDToUSD(botExp) : botExp,
+            value: formatCurrency(botExp),
             color: COLORS.DEPS_DANGER.LEVEL_5,
           },
         ],
@@ -77,9 +81,9 @@ export const transformDataForChart = ({
         name: 'Income',
         type: STACK_TYPE.INCOME,
         icon: 'banknote',
-        A: currency === 'USD' ? convertVNDToUSD(actInc) : actInc,
-        T: currency === 'USD' ? convertVNDToUSD(topInc) : topInc,
-        B: currency === 'USD' ? convertVNDToUSD(botInc) : botInc,
+        A: formatCurrency(actInc),
+        T: formatCurrency(topInc),
+        B: formatCurrency(botInc),
         colors: {
           A: COLORS.DEPS_SUCCESS.LEVEL_1,
           T: COLORS.DEPS_SUCCESS.LEVEL_3,
@@ -88,17 +92,17 @@ export const transformDataForChart = ({
         layers: [
           {
             id: 'A',
-            value: currency === 'USD' ? convertVNDToUSD(actInc) : actInc,
+            value: formatCurrency(actInc),
             color: COLORS.DEPS_SUCCESS.LEVEL_1,
           },
           {
             id: 'T',
-            value: currency === 'USD' ? convertVNDToUSD(topInc) : topInc,
+            value: formatCurrency(topInc),
             color: COLORS.DEPS_SUCCESS.LEVEL_3,
           },
           {
             id: 'B',
-            value: currency === 'USD' ? convertVNDToUSD(botInc) : botInc,
+            value: formatCurrency(botInc),
             color: COLORS.DEPS_SUCCESS.LEVEL_5,
           },
         ],
@@ -107,9 +111,9 @@ export const transformDataForChart = ({
         name: 'Profit',
         type: STACK_TYPE.PROFIT,
         icon: 'handCoins',
-        A: currency === 'USD' ? convertVNDToUSD(actProfit) : actProfit,
-        T: currency === 'USD' ? convertVNDToUSD(topProfit) : topProfit,
-        B: currency === 'USD' ? convertVNDToUSD(botProfit) : botProfit,
+        A: formatCurrency(actProfit),
+        T: formatCurrency(topProfit),
+        B: formatCurrency(botProfit),
         colors: {
           A: COLORS.DEPS_INFO.LEVEL_1,
           T: COLORS.DEPS_INFO.LEVEL_3,
@@ -118,17 +122,17 @@ export const transformDataForChart = ({
         layers: [
           {
             id: 'A',
-            value: currency === 'USD' ? convertVNDToUSD(actProfit) : actProfit,
+            value: formatCurrency(actProfit),
             color: COLORS.DEPS_INFO.LEVEL_1,
           },
           {
             id: 'T',
-            value: currency === 'USD' ? convertVNDToUSD(topProfit) : topProfit,
+            value: formatCurrency(topProfit),
             color: COLORS.DEPS_INFO.LEVEL_3,
           },
           {
             id: 'B',
-            value: currency === 'USD' ? convertVNDToUSD(botProfit) : botProfit,
+            value: formatCurrency(botProfit),
             color: COLORS.DEPS_INFO.LEVEL_5,
           },
         ],

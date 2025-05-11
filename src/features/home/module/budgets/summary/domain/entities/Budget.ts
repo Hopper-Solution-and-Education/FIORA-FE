@@ -1,5 +1,5 @@
 import { BudgetDTO } from '../../data/dto/response/BudgetSummaryResponseDTO';
-import { BudgetType } from '@prisma/client';
+import { BudgetType } from './BudgetType';
 
 export class Budget {
   public id: string | undefined;

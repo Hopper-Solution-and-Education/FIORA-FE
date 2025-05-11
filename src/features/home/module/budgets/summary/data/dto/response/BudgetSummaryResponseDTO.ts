@@ -1,5 +1,5 @@
-import { BudgetType } from '@prisma/client';
 import { Budget } from '../../../domain/entities/Budget';
+import { BudgetType } from '../../../domain/entities/BudgetType';
 
 export interface BudgetDTO {
   id: string;

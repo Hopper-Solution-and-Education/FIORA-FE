@@ -1,4 +1,4 @@
-import { BudgetType } from '@prisma/client';
+import { BudgetType } from '../entities/BudgetType';
 import { BudgetSummaryByType } from '../entities/BudgetSummaryByType';
 import { BudgetSummaryResponseDTO } from '../../data/dto/response/BudgetSummaryResponseDTO';
 
