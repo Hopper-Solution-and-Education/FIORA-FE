@@ -1,4 +1,4 @@
-import { BudgetType } from '@prisma/client';
+import { BudgetType } from '../../domain/entities/BudgetType';
 import { injectable } from 'inversify';
 import { IBudgetSummaryAPI } from './IBudgetSummaryAPI';
 import { BudgetSummaryRequestDTO } from '../dto/request/BudgetSummaryRequestDTO';

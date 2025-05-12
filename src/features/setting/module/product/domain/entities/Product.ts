@@ -2,7 +2,7 @@ import { PaginationResponse } from '@/shared/types/Common.types';
 import { CategoryType, ProductType } from '@prisma/client';
 import { ProductFormValues, ProductItem } from '../../presentation/schema/addProduct.schema';
 import { Transaction } from './Transaction';
-
+import { CreatedBy, UpdatedBy } from '@/shared/types';
 export class Product {
   id: string;
   name: string;
@@ -17,6 +17,8 @@ export class Product {
   currency: string;
   createdAt: string;
   updatedAt: string;
+  createdBy: CreatedBy;
+  updatedBy: UpdatedBy;
 
   constructor(
     id: string,
@@ -32,6 +34,8 @@ export class Product {
     updatedAt: string,
     transactions: Transaction[] = [],
     currency: string,
+    createdBy: CreatedBy,
+    updatedBy: UpdatedBy,
   ) {
     this.id = id;
     this.name = name;
@@ -46,6 +50,8 @@ export class Product {
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
     this.currency = currency;
+    this.createdBy = createdBy;
+    this.updatedBy = updatedBy;
   }
 }
 

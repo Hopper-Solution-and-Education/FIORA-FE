@@ -1,7 +1,7 @@
 'use client';
 
 import { ChartSkeleton } from '@/components/common/organisms';
-import { BudgetType } from '@prisma/client';
+import { BudgetType } from '../../domain/entities/BudgetType';
 import { useEffect, useState } from 'react';
 import { budgetSummaryDIContainer } from '../../../summary/di/budgetSummaryDIContainer';
 import { TYPES } from '../../../summary/di/budgetSummaryDIContainer.type';
@@ -62,6 +62,7 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
         botBudget,
         actBudget,
         selectedYear,
+        currency,
       });
 
       const addLevelToItems = (items: HierarchicalBarItem[], level = 0): HierarchicalBarItem[] => {

@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { BudgetType } from '@prisma/client';
+import { BudgetType } from '../domain/entities/BudgetType';
 import { Budget } from '../domain/entities/Budget';
 // Import the thunk
 

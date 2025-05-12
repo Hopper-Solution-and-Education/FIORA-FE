@@ -25,6 +25,7 @@ type TermsAndConditionModalProps = {
   onClose: () => void;
   onAccept: () => void;
   onDecline: () => void;
+  pdfUrl?: string;
 };
 
 const Loading = () => (
@@ -46,13 +47,59 @@ const ErrorLoading = () => (
 );
 
 const TermsAndConditionsModal = (props: TermsAndConditionModalProps) => {
-  const { isOpen, onClose, onAccept, onDecline } = props;
+  const { isOpen, onClose, onAccept, onDecline, pdfUrl } = props;
 
-  const pdfUrl = '/docs/sample-terms-and-conditions.pdf';
+  // Default PDF URL if none is provided through props
+  const defaultPdfUrl =
+    'https://firebasestorage.googleapis.com/v0/b/hopper-3d98d.firebasestorage.app/o/Terms%20%26%20Conditions%2Fsample-terms-conditions-agreement.pdf?alt=media&token=cbbcd191-6ee1-4099-ba65-73714f9cf83d';
+
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [isButtonActive, setIsButtonActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [numPages, setNumPages] = useState<number>(0);
+  const [pdfDocument, setPdfDocument] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch the PDF when the component mounts or when pdfUrl changes
+  useEffect(() => {
+    const fetchPdf = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Use provided URL or default
+        const urlToFetch = pdfUrl || defaultPdfUrl;
+
+        // Fetch the PDF
+        const response = await fetch(urlToFetch);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch PDF. Status: ${response.status}`);
+        }
+
+        // Get the PDF data
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        setPdfDocument(objectUrl);
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Error fetching PDF:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load document');
+        setIsLoading(false);
+      }
+    };
+
+    if (isOpen) {
+      fetchPdf();
+    }
+
+    return () => {
+      // Clean up any object URLs when the component unmounts
+      if (pdfDocument) {
+        URL.revokeObjectURL(pdfDocument);
+      }
+    };
+  }, [isOpen, pdfUrl]);
 
   // Handle scroll event to check if user has reached the bottom
   const handleScroll = () => {
@@ -69,11 +116,13 @@ const TermsAndConditionsModal = (props: TermsAndConditionModalProps) => {
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages);
+    setIsLoading(false);
   }
 
   function onDocumentLoadError(error: Error) {
     console.error('Error loading PDF:', error);
     setError(error.message);
+    setIsLoading(false);
   }
 
   useEffect(() => {
@@ -107,12 +156,14 @@ const TermsAndConditionsModal = (props: TermsAndConditionModalProps) => {
           </DialogDescription>
         </DialogHeader>
         <div ref={containerRef} className="h-[70vh] overflow-y-scroll overflow-x-hidden">
-          {error ? (
+          {isLoading ? (
+            <Loading />
+          ) : error ? (
             <ErrorLoading />
           ) : (
             <div className="flex flex-col items-center w-full">
               <Document
-                file={pdfUrl}
+                file={pdfDocument}
                 onLoadSuccess={onDocumentLoadSuccess}
                 onLoadError={onDocumentLoadError}
                 loading={<Loading />}

@@ -1,4 +1,3 @@
-import { BudgetType } from '@prisma/client';
 import { inject, injectable } from 'inversify';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
 import { BudgetSummary } from '../../domain/entities/BudgetSummary';
@@ -8,6 +7,7 @@ import { BudgetSummaryRequestDTO } from '../dto/request/BudgetSummaryRequestDTO'
 import { BudgetSummaryMapper } from '../mappers/BudgetSummaryMapper';
 import { IBudgetSummaryRepository } from './IBudgetSummaryRepository';
 import { Budget } from '../../domain/entities/Budget';
+import { BudgetType } from '../../domain/entities/BudgetType';
 
 @injectable()
 export class BudgetSummaryRepository implements IBudgetSummaryRepository {

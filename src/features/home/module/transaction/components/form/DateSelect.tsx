@@ -4,9 +4,6 @@ import React from 'react';
 
 interface TypeSelectProps {
   name: string;
-  // value?: Date | undefined;
-  // onChange?: any;
-  // error?: FieldError;
   [key: string]: any;
 }
 

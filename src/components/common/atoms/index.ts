@@ -10,3 +10,4 @@ export { default as PositiveAndNegativeBarLabel } from './PositiveAndNegativeBar
 export { default as PositiveAndNegativeV2BarLabel } from './PositiveAndNegativeV2BarLabel';
 export { default as PositiveAndNegativeV2Tooltip } from './PositiveAndNegativeV2Tooltip';
 export { default as ButtonCreation } from './ButtonCreation';
+export { default as FormDetailInfo } from './FormDetailInfo';

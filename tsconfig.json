@@ -36,7 +36,6 @@
     "src/app/(client)/auth/sign-in/forgot-password",
     "commitlint.config.ts",
     "src/features/setting/presentation/module/account/components/AccountDetailPage.tss",
-    "src/shared/hooks/useFilter.tsx",
     "next-auth.d.ts",
     "prisma/**/*"
   ],

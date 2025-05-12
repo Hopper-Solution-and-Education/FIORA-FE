@@ -2,12 +2,15 @@ import { COLORS, STACK_TYPE } from '@/shared/constants/chart';
 import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
 import { ChartItem, HierarchicalBarItem } from '../presentation/types';
 import { Budget } from '../domain/entities/Budget';
+import { Currency } from '@/shared/types';
+import { convertVNDToUSD } from '@/shared/utils';
 
 interface TransformDataParams {
   topBudget: BudgetSummaryByType | null;
   botBudget: BudgetSummaryByType | null;
   actBudget: BudgetSummaryByType | null;
   selectedYear: number;
+  currency: Currency;
 }
 
 export const transformDataForChart = ({
@@ -15,10 +18,15 @@ export const transformDataForChart = ({
   botBudget,
   actBudget,
   selectedYear,
+  currency,
 }: TransformDataParams): HierarchicalBarItem[] => {
   if (!topBudget?.budget || !botBudget?.budget || !actBudget?.budget) {
     return [];
   }
+
+  const formatCurrency = (value: number): number => {
+    return currency === 'USD' ? convertVNDToUSD(value) : value;
+  };
 
   const getBudgetValue = (budget: Budget, field: string): number => {
     return parseFloat(budget?.[field as keyof typeof budget] as string) || 0;
@@ -43,54 +51,90 @@ export const transformDataForChart = ({
         name: 'Expense',
         type: STACK_TYPE.EXPENSE,
         icon: 'banknoteArrowDown',
-        A: actExp,
-        T: topExp,
-        B: botExp,
+        A: formatCurrency(actExp),
+        T: formatCurrency(topExp),
+        B: formatCurrency(botExp),
         colors: {
           A: COLORS.DEPS_DANGER.LEVEL_1,
           T: COLORS.DEPS_DANGER.LEVEL_3,
           B: COLORS.DEPS_DANGER.LEVEL_5,
         },
         layers: [
-          { id: 'A', value: actExp, color: COLORS.DEPS_DANGER.LEVEL_1 },
-          { id: 'T', value: topExp, color: COLORS.DEPS_DANGER.LEVEL_3 },
-          { id: 'B', value: botExp, color: COLORS.DEPS_DANGER.LEVEL_5 },
+          {
+            id: 'A',
+            value: formatCurrency(actExp),
+            color: COLORS.DEPS_DANGER.LEVEL_1,
+          },
+          {
+            id: 'T',
+            value: formatCurrency(topExp),
+            color: COLORS.DEPS_DANGER.LEVEL_3,
+          },
+          {
+            id: 'B',
+            value: formatCurrency(botExp),
+            color: COLORS.DEPS_DANGER.LEVEL_5,
+          },
         ],
       },
       {
         name: 'Income',
         type: STACK_TYPE.INCOME,
         icon: 'banknote',
-        A: actInc,
-        T: topInc,
-        B: botInc,
+        A: formatCurrency(actInc),
+        T: formatCurrency(topInc),
+        B: formatCurrency(botInc),
         colors: {
           A: COLORS.DEPS_SUCCESS.LEVEL_1,
           T: COLORS.DEPS_SUCCESS.LEVEL_3,
           B: COLORS.DEPS_SUCCESS.LEVEL_5,
         },
         layers: [
-          { id: 'A', value: actInc, color: COLORS.DEPS_SUCCESS.LEVEL_1 },
-          { id: 'T', value: topInc, color: COLORS.DEPS_SUCCESS.LEVEL_3 },
-          { id: 'B', value: botInc, color: COLORS.DEPS_SUCCESS.LEVEL_5 },
+          {
+            id: 'A',
+            value: formatCurrency(actInc),
+            color: COLORS.DEPS_SUCCESS.LEVEL_1,
+          },
+          {
+            id: 'T',
+            value: formatCurrency(topInc),
+            color: COLORS.DEPS_SUCCESS.LEVEL_3,
+          },
+          {
+            id: 'B',
+            value: formatCurrency(botInc),
+            color: COLORS.DEPS_SUCCESS.LEVEL_5,
+          },
         ],
       },
       {
         name: 'Profit',
         type: STACK_TYPE.PROFIT,
         icon: 'handCoins',
-        A: actProfit,
-        T: topProfit,
-        B: botProfit,
+        A: formatCurrency(actProfit),
+        T: formatCurrency(topProfit),
+        B: formatCurrency(botProfit),
         colors: {
           A: COLORS.DEPS_INFO.LEVEL_1,
           T: COLORS.DEPS_INFO.LEVEL_3,
           B: COLORS.DEPS_INFO.LEVEL_5,
         },
         layers: [
-          { id: 'A', value: actProfit, color: COLORS.DEPS_INFO.LEVEL_1 },
-          { id: 'T', value: topProfit, color: COLORS.DEPS_INFO.LEVEL_3 },
-          { id: 'B', value: botProfit, color: COLORS.DEPS_INFO.LEVEL_5 },
+          {
+            id: 'A',
+            value: formatCurrency(actProfit),
+            color: COLORS.DEPS_INFO.LEVEL_1,
+          },
+          {
+            id: 'T',
+            value: formatCurrency(topProfit),
+            color: COLORS.DEPS_INFO.LEVEL_3,
+          },
+          {
+            id: 'B',
+            value: formatCurrency(botProfit),
+            color: COLORS.DEPS_INFO.LEVEL_5,
+          },
         ],
       },
     ];

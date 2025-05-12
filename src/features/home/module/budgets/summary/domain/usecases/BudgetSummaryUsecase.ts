@@ -1,4 +1,4 @@
-import { BudgetType } from '@prisma/client';
+import { BudgetType } from '../entities/BudgetType';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
 import type { IBudgetSummaryRepository } from '../../data/repositories/IBudgetSummaryRepository';

@@ -33,6 +33,7 @@ interface SearchBarProps {
   id?: string;
   disabled?: boolean;
   type?: React.HTMLInputTypeAttribute;
+  maxLength?: number;
   error?: string | null | undefined;
 
   isFilterDropdownOpen?: boolean;
@@ -64,6 +65,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   error,
   isFilterDropdownOpen,
   onFilterDropdownOpenChange,
+  maxLength,
   // -------------------------
   ...inputProps
 }) => {
@@ -111,8 +113,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
             rightIcon ? 'pr-8 sm:pr-10' : showFilterButton ? 'pr-10 sm:pr-12' : 'pr-3 sm:pr-4', // Sử dụng showFilterButton
             'text-sm sm:text-base',
             inputClassName,
+            type === 'number' && 'no-spinner',
             error ? 'border-destructive focus-visible:ring-destructive' : '',
           )}
+          maxLength={maxLength}
           {...inputProps}
         />
 

@@ -211,7 +211,7 @@ class TransactionRepository implements ITransactionRepository {
   async getValidCategoryAccount(userId: string, type: TransactionType) {
     let fromAccounts: any[] = [];
     let toAccounts: any[] = [];
-    const fromCategories: any[] = [];
+    let fromCategories: any[] = [];
     let toCategories: any[] = [];
 
     if (type === TransactionType.Expense) {
@@ -224,6 +224,7 @@ class TransactionRepository implements ITransactionRepository {
           select: {
             id: true,
             name: true,
+            type: true,
           },
         }),
         prisma.category.findMany({
@@ -237,22 +238,24 @@ class TransactionRepository implements ITransactionRepository {
     }
 
     if (type === TransactionType.Income) {
-      [fromAccounts, toCategories] = await Promise.all([
-        prisma.account.findMany({
-          where: {
-            userId,
-            OR: [{ type: 'Payment' }, { type: 'CreditCard' }],
-          },
-          select: {
-            id: true,
-            name: true,
-          },
-        }),
+      [fromCategories, toAccounts] = await Promise.all([
         prisma.category.findMany({
           where: { userId, type: 'Income' },
           select: {
             id: true,
             name: true,
+          },
+        }),
+        prisma.account.findMany({
+          where: {
+            userId,
+            OR: [{ type: 'Payment' }, { type: 'CreditCard' }, { type: 'Debt' }],
+          },
+
+          select: {
+            id: true,
+            name: true,
+            type: true,
           },
         }),
       ]);
@@ -273,6 +276,7 @@ class TransactionRepository implements ITransactionRepository {
           select: {
             id: true,
             name: true,
+            type: true,
           },
         }),
         prisma.account.findMany({
@@ -280,6 +284,7 @@ class TransactionRepository implements ITransactionRepository {
           select: {
             id: true,
             name: true,
+            type: true,
           },
         }),
       ]);
