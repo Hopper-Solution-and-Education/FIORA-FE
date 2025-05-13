@@ -57,8 +57,8 @@ export const mapBudgetToData = (
       B: convertedBotExpense,
       colors: {
         A: COLORS.DEPS_DANGER.LEVEL_1,
-        T: COLORS.DEPS_DANGER.LEVEL_1,
-        B: COLORS.DEPS_DANGER.LEVEL_1,
+        T: COLORS.DEPS_DANGER.LEVEL_3,
+        B: COLORS.DEPS_DANGER.LEVEL_5,
       },
     },
     {
@@ -70,8 +70,8 @@ export const mapBudgetToData = (
       B: convertedBotIncome,
       colors: {
         A: COLORS.DEPS_SUCCESS.LEVEL_1,
-        T: COLORS.DEPS_SUCCESS.LEVEL_1,
-        B: COLORS.DEPS_SUCCESS.LEVEL_1,
+        T: COLORS.DEPS_SUCCESS.LEVEL_3,
+        B: COLORS.DEPS_SUCCESS.LEVEL_5,
       },
     },
     {
@@ -83,24 +83,15 @@ export const mapBudgetToData = (
       B: convertedBotProfit,
       colors: {
         A: COLORS.DEPS_INFO.LEVEL_1,
-        T: COLORS.DEPS_INFO.LEVEL_1,
-        B: COLORS.DEPS_INFO.LEVEL_1,
+        T: COLORS.DEPS_INFO.LEVEL_3,
+        B: COLORS.DEPS_INFO.LEVEL_5,
       },
     },
   ];
 };
 
 export const legendItems = [
-  {
-    name: 'Expense',
-    color: COLORS.DEPS_DANGER.LEVEL_1,
-  },
-  {
-    name: 'Income',
-    color: COLORS.DEPS_SUCCESS.LEVEL_1,
-  },
-  {
-    name: 'Profit',
-    color: COLORS.DEPS_INFO.LEVEL_1,
-  },
+  { name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_1 },
+  { name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
+  { name: 'Profit', color: COLORS.DEPS_INFO.LEVEL_1 },
 ];

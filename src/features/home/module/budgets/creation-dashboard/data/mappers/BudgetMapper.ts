@@ -66,14 +66,16 @@ class BudgetMapper {
   }
 
   static toGetBudgetRequestDTO(requestDTO: BudgetGetRequest): BudgetGetRequestDTO {
-    if (requestDTO.filters?.fiscalYear.gte && requestDTO.filters?.fiscalYear.lte) {
-      return { ...requestDTO };
-    }
-
     return {
       cursor: requestDTO.cursor,
       take: requestDTO.take,
       search: requestDTO.search,
+      filters: {
+        fiscalYear: {
+          gte: requestDTO.filters?.fiscalYear?.gte ?? 0,
+          lte: requestDTO.filters?.fiscalYear?.lte ?? 9999,
+        },
+      },
     };
   }
 
