@@ -6,6 +6,7 @@ import {
   BudgetAllocation,
   BudgetCreationParams,
   BudgetTypeData,
+  BudgetUpdateParams,
   FetchTransactionResponse,
 } from '@/shared/types/budget.types';
 import { buildWhereClause } from '@/shared/utils';
@@ -302,6 +303,61 @@ class BudgetUseCase {
     });
   }
 
+  // =============== UPDATE BUDGET VERSION 2 WITH TRANSACTION ==============
+  // update budget top bot
+  async updateBudgetTransaction(params: BudgetUpdateParams): Promise<BudgetsTable> {
+    const {
+      budgetId,
+      userId,
+      fiscalYear,
+      description,
+      estimatedTotalExpense,
+      estimatedTotalIncome,
+      icon,
+      currency,
+      type,
+    } = params;
+
+    return await prisma.$transaction(async (prisma) => {
+      const { yearStart, effectiveEndDate } = this.calculateTransactionRange(fiscalYear);
+
+      const transactions = await this.fetchTransactionsTx(
+        userId,
+        yearStart,
+        effectiveEndDate,
+        prisma,
+      );
+
+      const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
+        transactions || [],
+        currency,
+      );
+
+      // Only update the specified type
+      const budgetTypeData: BudgetTypeData = {
+        type,
+        totalExpense: type === 'Act' ? totalExpenseAct : estimatedTotalExpense,
+        totalIncome: type === 'Act' ? totalIncomeAct : estimatedTotalIncome,
+      };
+
+      const budget = await this.updateSingleBudget(
+        prisma,
+        userId,
+        fiscalYear,
+        budgetId,
+        budgetTypeData,
+        {
+          description,
+          icon,
+          currency,
+        },
+      );
+
+      return budget;
+    });
+  }
+
+  // ======================= CREATE BUDGET VERSION 1 =======================
   async createBudget(params: BudgetCreation) {
     const {
       userId,

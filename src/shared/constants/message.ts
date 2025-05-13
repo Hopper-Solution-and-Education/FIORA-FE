@@ -49,7 +49,7 @@ export enum Messages {
   BUDGET_PAST_YEAR_NOT_ALLOWED = 'Fiscal year cannot be in the past',
   BUDGET_DELETE_SUCCESS = 'Budget deleted successfully',
   BUDGET_GET_BY_ID_SUCCESS = 'Get budget by id successfully',
-
+  BUDGET_UPDATE_SUCCESS = 'Update budget successfully !',
   // Budget Service Failed
   INVALID_BUDGET_TYPE = 'Invalid budget type. Budget type must be Act, Bot, or Top',
   DUPLICATED_BUDGET_FISCAL_YEAR = 'Fiscal year already exists',
