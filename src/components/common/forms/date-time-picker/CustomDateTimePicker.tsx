@@ -15,7 +15,7 @@ import {
 import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
 import { CalendarIcon, ChevronLeft, ChevronRight, ClockIcon } from 'lucide-react';
-import { forwardRef, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import GlobalLabel from '../../atoms/GlobalLabel';
 
@@ -112,6 +112,50 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
 
     // Generate years for the current range (12 years, 3x4 grid)
     const years = Array.from({ length: 12 }, (_, i) => yearRange.start + i);
+
+    useEffect(() => {
+      // Logic để parse selectedDate tùy thuộc vào yearOnly
+      let newDateObject: Date | undefined;
+      if (selectedDate) {
+        try {
+          if (yearOnly) {
+            // yearOnly lưu string năm, parse thành ngày đầu năm
+            const year = Number(selectedDate);
+            if (!isNaN(year)) {
+              newDateObject = new Date(year, 0, 1);
+              // Đảm bảo newDateObject hợp lệ và năm đúng
+              if (newDateObject.getFullYear() !== year) {
+                newDateObject = undefined; // Invalid date creation
+              }
+            }
+          } else {
+            // Parse ISO string
+            newDateObject = new Date(selectedDate);
+            // Kiểm tra xem parsing có thành công và là ngày hợp lệ không
+            if (isNaN(newDateObject.getTime())) {
+              newDateObject = undefined; // Invalid date
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing selectedDate:', e);
+          newDateObject = undefined; // Handle potential parsing errors
+        }
+      }
+
+      // So sánh giá trị form mới (newDateObject) với state hiện tại (date)
+      // Sử dụng timestamp để so sánh date object an toàn
+      const formTimestamp = newDateObject?.getTime();
+      const stateTimestamp = date?.getTime();
+
+      // Nếu giá trị form khác với state hiện tại, cập nhật state
+      if (formTimestamp !== stateTimestamp) {
+        setDate(newDateObject);
+        // Cập nhật lại yearRange nếu cần khi date thay đổi từ bên ngoài
+        if (newDateObject && yearOnly) {
+          setYearRange({ start: Math.floor(newDateObject.getFullYear() / 12) * 12 });
+        }
+      }
+    }, [selectedDate, yearOnly]);
 
     return (
       <div className="space-y-2 mb-4">
