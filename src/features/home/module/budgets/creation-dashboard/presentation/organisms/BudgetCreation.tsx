@@ -1,23 +1,63 @@
+import { Loading } from '@/components/common/atoms';
 import { uploadToFirebase } from '@/shared/lib';
 import { useAppDispatch } from '@/store';
 import { Currency } from '@prisma/client';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
+import { toast } from 'sonner';
 import { FIREBASE_ICON_BUDGETS_PATH } from '../../constants';
+import { budgetDIContainer } from '../../di/budgetDIContainer';
+import { TYPES } from '../../di/budgetDIContainer.type';
+import { IGetBudgetByIdUseCase } from '../../domain/usecases';
+import { resetGetBudgetState } from '../../slices';
 import { createBudgetAsyncThunk } from '../../slices/actions';
+import { getBudgetAsyncThunk } from '../../slices/actions/getBudgetAsyncThunk';
 import { BudgetFieldForm } from '../molecules';
 import { BudgetCreationFormValues } from '../schema';
-import { resetGetBudgetState } from '../../slices';
-import { getBudgetAsyncThunk } from '../../slices/actions/getBudgetAsyncThunk';
 
 type Props = {
   methods: UseFormReturn<BudgetCreationFormValues>;
 };
+
 const BudgetCreation = ({ methods }: Props) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { year: budgetYear } = useParams() as { year: string };
+  const { handleSubmit, setError, reset } = methods;
+  const [isLoadingGetBudgetById, setIsLoadingGetBudgetById] = useState(false);
 
-  const { handleSubmit, setError } = methods;
+  const handleGetBudgetById = async () => {
+    try {
+      setIsLoadingGetBudgetById(true);
+      const getBudgetByIdUseCase = budgetDIContainer.get<IGetBudgetByIdUseCase>(
+        TYPES.IGetBudgetByIdUseCase,
+      );
+
+      const budget = await getBudgetByIdUseCase.execute({ fiscalYear: budgetYear, type: 'Top' });
+
+      reset({
+        icon: budget.icon,
+        fiscalYear: String(budget.fiscalYear),
+        currency: budget.currency,
+        estimatedTotalExpense: budget.estimatedTotalExpense,
+        estimatedTotalIncome: budget.estimatedTotalIncome,
+        description: budget.description,
+      });
+    } catch (error) {
+      toast.error('Failed to get budget by id', {
+        description: (error as Error).message,
+      });
+    } finally {
+      setIsLoadingGetBudgetById(false);
+    }
+  };
+
+  useEffect(() => {
+    if (budgetYear) {
+      handleGetBudgetById();
+    }
+  }, [budgetYear]);
 
   const onSubmit = async (data: BudgetCreationFormValues) => {
     let formattedData = {
@@ -83,9 +123,12 @@ const BudgetCreation = ({ methods }: Props) => {
       });
   };
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <BudgetFieldForm />
-    </form>
+    <React.Fragment>
+      {isLoadingGetBudgetById && <Loading />}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <BudgetFieldForm />
+      </form>
+    </React.Fragment>
   );
 };
 

@@ -1,11 +1,15 @@
 import {
   BudgetCreateRequest,
   BudgetCreateResponse,
+  BudgetGetByIdRequest,
+  BudgetGetByIdResponse,
   BudgetGetRequest,
   BudgetGetResponse,
 } from '../../domain/entities/Budget';
+import { BudgetGetByIdRequestDTO } from '../dto/request';
 import { BudgetCreateRequestDTO } from '../dto/request/BudgetCreateRequestDTO';
 import { BudgetGetRequestDTO } from '../dto/request/BudgetGetRequestDTO';
+import { BudgetGetByIdResponseDTO } from '../dto/response';
 import { BudgetCreateResponseDTO } from '../dto/response/BudgetCreateResponseDTO';
 import { BudgetGetResponseDTO } from '../dto/response/BudgetGetResponseDTO';
 
@@ -84,6 +88,25 @@ class BudgetMapper {
       currency: apiResponse.data.currency,
       data: apiResponse.data.data,
       nextCursor: apiResponse.data.nextCursor,
+    };
+  }
+
+  static toGetBudgetByIdRequestDTO(requestDTO: BudgetGetByIdRequest): BudgetGetByIdRequestDTO {
+    return {
+      fiscalYear: requestDTO.fiscalYear,
+      type: requestDTO.type,
+    };
+  }
+
+  static toGetBudgetByIdResponse(apiResponse: BudgetGetByIdResponseDTO): BudgetGetByIdResponse {
+    return {
+      id: apiResponse.data.id,
+      icon: apiResponse.data.icon,
+      fiscalYear: apiResponse.data.fiscalYear,
+      estimatedTotalExpense: apiResponse.data.estimatedTotalExpense,
+      estimatedTotalIncome: apiResponse.data.estimatedTotalIncome,
+      description: apiResponse.data.description,
+      currency: apiResponse.data.currency,
     };
   }
 }

@@ -3,4 +3,5 @@ export const TYPES = {
   IBudgetRepository: Symbol.for('IBudgetRepository'),
   ICreateBudgetUseCase: Symbol.for('ICreateBudgetUseCase'),
   IGetBudgetUseCase: Symbol.for('IGetBudgetUseCase'),
+  IGetBudgetByIdUseCase: Symbol.for('IGetBudgetByIdUseCase'),
 };

@@ -1,26 +1,29 @@
 import { httpClient } from '@/config/http-client/HttpClient';
 import { decorate, injectable } from 'inversify';
 import isEmpty from 'lodash/isEmpty';
-import { BudgetCreateRequestDTO } from '../dto/request';
-import { BudgetGetRequestDTO } from '../dto/request/BudgetGetRequestDTO';
-import { BudgetCreateResponseDTO } from '../dto/response';
-import { BudgetGetResponseDTO } from '../dto/response/BudgetGetResponseDTO';
+import {
+  BudgetCreateRequestDTO,
+  BudgetDeleteRequestDTO,
+  BudgetGetByIdRequestDTO,
+  BudgetGetRequestDTO,
+} from '../dto/request';
+import {
+  BudgetCreateResponseDTO,
+  BudgetDeleteResponseDTO,
+  BudgetGetByIdResponseDTO,
+  BudgetGetResponseDTO,
+} from '../dto/response';
 
 interface IBudgetAPI {
   createBudget(request: BudgetCreateRequestDTO): Promise<BudgetCreateResponseDTO>;
   getBudget(request: BudgetGetRequestDTO): Promise<BudgetGetResponseDTO>;
+  getBudgetById(request: BudgetGetByIdRequestDTO): Promise<BudgetGetByIdResponseDTO>;
 }
 
 class BudgetAPI implements IBudgetAPI {
   async createBudget(request: BudgetCreateRequestDTO): Promise<BudgetCreateResponseDTO> {
     return await httpClient.post(`/api/budgets`, request);
   }
-
-  // async getBudget(request: BudgetGetRequestDTO): Promise<BudgetGetResponseDTO> {
-  //   return await httpClient.get(
-  //     `/api/budgets?${request.cursor ? `cursor=${request?.cursor}` : ''}&take=${request.take}&search=${request.search}`,
-  //   );
-  // }
 
   async getBudget(request: BudgetGetRequestDTO): Promise<BudgetGetResponseDTO> {
     return await httpClient.post(
@@ -36,6 +39,14 @@ class BudgetAPI implements IBudgetAPI {
         'x-user-currency': request.currency ?? 'VND',
       },
     );
+  }
+
+  async getBudgetById(request: BudgetGetByIdRequestDTO): Promise<BudgetGetByIdResponseDTO> {
+    return await httpClient.get(`/api/budgets/${request.fiscalYear}?type=${request.type}`);
+  }
+
+  async deleteBudget(request: BudgetDeleteRequestDTO): Promise<BudgetDeleteResponseDTO> {
+    return await httpClient.delete(`/api/budgets/delete/${request.budgetId}`);
   }
 }
 

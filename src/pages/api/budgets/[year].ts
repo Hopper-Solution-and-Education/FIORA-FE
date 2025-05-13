@@ -1,5 +1,7 @@
 import { prisma } from '@/config';
+import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { BudgetType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -24,6 +26,8 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { year: budgetId, type: budgetType } = req.query;
+
+    // check if budget is found
     const budget = await prisma.budgetsTable.findUnique({
       where: {
         fiscalYear_type_userId: {
@@ -34,10 +38,12 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       },
     });
 
+    // check if budget is found
     if (!budget) {
       return res.status(RESPONSE_CODE.NOT_FOUND).json({ message: 'Budget not found' });
     }
 
+    // get budget response
     const budgetResponse = {
       id: budget.id,
       fiscalYear: budget.fiscalYear,
@@ -48,7 +54,9 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       currency: budget.currency,
     };
 
-    return res.status(RESPONSE_CODE.OK).json(budgetResponse);
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, Messages.BUDGET_GET_BY_ID_SUCCESS, budgetResponse));
   } catch (error: any) {
     return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }

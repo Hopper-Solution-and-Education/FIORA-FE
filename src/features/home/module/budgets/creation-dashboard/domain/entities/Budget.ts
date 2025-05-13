@@ -231,3 +231,18 @@ export type BudgetCreateResponse = {
   m12Income: number;
   m12Expense: number;
 };
+
+export type BudgetGetByIdRequest = {
+  fiscalYear: string;
+  type: 'Top' | 'Bottom';
+};
+
+export type BudgetGetByIdResponse = {
+  id: string;
+  icon: string;
+  fiscalYear: string;
+  estimatedTotalExpense: number;
+  estimatedTotalIncome: number;
+  description: string;
+  currency: Currency;
+};

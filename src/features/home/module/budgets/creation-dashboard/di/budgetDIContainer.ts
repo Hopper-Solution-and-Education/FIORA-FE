@@ -1,8 +1,14 @@
 import { Container } from 'inversify';
 import { createBudgetAPI, IBudgetAPI } from '../data/api';
 import { createBudgetRepository, IBudgetRepository } from '../data/repositories';
-import { createCreateBudgetUseCase, ICreateBudgetUseCase } from '../domain/usecases';
-import { createGetBudgetUseCase, IGetBudgetUseCase } from '../domain/usecases/getBudgetUseCase';
+import {
+  createCreateBudgetUseCase,
+  createGetBudgetByIdUseCase,
+  createGetBudgetUseCase,
+  ICreateBudgetUseCase,
+  IGetBudgetByIdUseCase,
+  IGetBudgetUseCase,
+} from '../domain/usecases';
 import { TYPES } from './budgetDIContainer.type';
 
 const budgetDIContainer = new Container();
@@ -19,6 +25,9 @@ const createBudgetUseCase = createCreateBudgetUseCase(categoryRepository);
 // create get use cases
 const getBudgetUseCase = createGetBudgetUseCase(categoryRepository);
 
+// create get budget by id use case
+const getBudgetByIdUseCase = createGetBudgetByIdUseCase(categoryRepository);
+
 // Bind all instances
 budgetDIContainer.bind<IBudgetAPI>(TYPES.IBudgetAPI).toConstantValue(budgetAPI);
 budgetDIContainer
@@ -30,5 +39,8 @@ budgetDIContainer
 budgetDIContainer
   .bind<IGetBudgetUseCase>(TYPES.IGetBudgetUseCase)
   .toConstantValue(getBudgetUseCase);
+budgetDIContainer
+  .bind<IGetBudgetByIdUseCase>(TYPES.IGetBudgetByIdUseCase)
+  .toConstantValue(getBudgetByIdUseCase);
 
 export { budgetDIContainer };
