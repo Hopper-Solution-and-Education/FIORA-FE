@@ -105,12 +105,17 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Product', link: '/setting/product' },
     { title: 'Create', link: '/setting/product/create' },
   ],
-  '/budgets': [{ title: 'Budgets', link: '/budgets' }],
+  '/budgets': [
+    { title: 'Home', link: '/' },
+    { title: 'Budgets', link: '/budgets' },
+  ],
   '/budgets/create': [
+    { title: 'Home', link: '/' },
     { title: 'Budgets', link: '/budgets' },
     { title: 'Create', link: '/budgets/create' },
   ],
   '/budgets/summary': [
+    { title: 'Home', link: '/' },
     { title: 'Budgets', link: '/budgets' },
     { title: 'Summary', link: '/budgets/summary' },
   ],
@@ -180,14 +185,18 @@ export const shouldSkipSegment = (
     return true;
   }
 
-  // Skip if displaySegments is provided and segment is not in it
-  if (config.displaySegments && !config.displaySegments.includes(segment)) {
-    return true;
-  }
+  // // Skip if displaySegments is provided and segment is not in it
+  // if (config.displaySegments && !config.displaySegments.includes(segment)) {
+  //   return true;
+  // }
 
-  // Skip year segment in budget path
-  if (segments[0] === 'budgets' && segments[1] === 'summary' && index === 2) {
-    return true;
+  // Skip numeric segments (years, ids) after specific segments
+  if (index > 0 && /^\d+$/.test(segment)) {
+    const prevSegment = segments[index - 1];
+    const skipAfterSegments = ['summary', 'update', 'details', 'create'];
+    if (skipAfterSegments.includes(prevSegment)) {
+      return true;
+    }
   }
 
   return false;
