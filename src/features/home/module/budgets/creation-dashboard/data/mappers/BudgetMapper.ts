@@ -1,15 +1,17 @@
 import {
   BudgetCreateRequest,
   BudgetCreateResponse,
+  BudgetDeleteRequest,
+  BudgetDeleteResponse,
   BudgetGetByIdRequest,
   BudgetGetByIdResponse,
   BudgetGetRequest,
   BudgetGetResponse,
 } from '../../domain/entities/Budget';
-import { BudgetGetByIdRequestDTO } from '../dto/request';
+import { BudgetDeleteRequestDTO, BudgetGetByIdRequestDTO } from '../dto/request';
 import { BudgetCreateRequestDTO } from '../dto/request/BudgetCreateRequestDTO';
 import { BudgetGetRequestDTO } from '../dto/request/BudgetGetRequestDTO';
-import { BudgetGetByIdResponseDTO } from '../dto/response';
+import { BudgetDeleteResponseDTO, BudgetGetByIdResponseDTO } from '../dto/response';
 import { BudgetCreateResponseDTO } from '../dto/response/BudgetCreateResponseDTO';
 import { BudgetGetResponseDTO } from '../dto/response/BudgetGetResponseDTO';
 
@@ -107,6 +109,18 @@ class BudgetMapper {
       estimatedTotalIncome: apiResponse.data.estimatedTotalIncome,
       description: apiResponse.data.description,
       currency: apiResponse.data.currency,
+    };
+  }
+
+  static toDeleteBudgetRequestDTO(requestDTO: BudgetDeleteRequest): BudgetDeleteRequestDTO {
+    return {
+      budgetId: requestDTO.budgetId,
+    };
+  }
+
+  static toDeleteBudgetResponse(apiResponse: BudgetDeleteResponseDTO): BudgetDeleteResponse {
+    return {
+      message: apiResponse.message,
     };
   }
 }

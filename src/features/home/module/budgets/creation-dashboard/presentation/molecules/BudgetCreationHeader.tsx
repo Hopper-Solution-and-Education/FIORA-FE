@@ -1,13 +1,38 @@
 import { DeleteDialog } from '@/components/common/organisms';
 import { Button } from '@/components/ui/button';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { Trash2 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useFormContext } from 'react-hook-form';
+import { toast } from 'sonner';
+import { deleteBudgetAsyncThunk } from '../../slices/actions';
+import { BudgetCreationFormValues } from '../schema';
 
 const BudgetCreationHeader = () => {
   const router = useRouter();
   const [openDelete, setOpenDelete] = useState(false);
   const { year: budgetYear } = useParams() as { year: string };
+  const isLoading = useAppSelector((state) => state.budgetControl.isDeletingBudget);
+  const dispatch = useAppDispatch();
+  const { getValues } = useFormContext<BudgetCreationFormValues>();
+
+  const handlePressDeleteBudget = useCallback(() => {
+    setOpenDelete(true);
+  }, []);
+
+  const handlePressConfirmDeleteBudget = useCallback(() => {
+    const budgetId = getValues('id');
+    if (!budgetId) {
+      toast.error('Budget ID is not found');
+      return;
+    }
+    dispatch(deleteBudgetAsyncThunk({ budgetId }))
+      .unwrap()
+      .then(() => {
+        router.push('/budgets');
+      });
+  }, [budgetYear, dispatch]);
 
   return (
     <div className="flex items-center justify-between mb-6">
@@ -21,7 +46,7 @@ const BudgetCreationHeader = () => {
         variant="ghost"
         className="p-2"
         aria-label="Delete budget"
-        onClick={() => setOpenDelete(true)}
+        onClick={handlePressDeleteBudget}
       >
         <Trash2 className="h-5 w-5 md:h-6 md:w-6 text-red-500" />
       </Button>
@@ -29,9 +54,10 @@ const BudgetCreationHeader = () => {
       <DeleteDialog
         open={openDelete}
         onOpenChange={setOpenDelete}
-        confirmText="You are going to rollback the budgets. Please ensure the Account Balance for rollback process!"
+        confirmText={`This action will delete the Top Down Planning budget for ${getValues('fiscalYear')} only. Please ensure the Account Balance is verified for the rollback process.`}
         description="Click ← to stay back Or click V to confirm delete."
-        onConfirm={() => router.push('/budgets')}
+        onConfirm={handlePressConfirmDeleteBudget}
+        isLoading={isLoading}
       />
     </div>
   );

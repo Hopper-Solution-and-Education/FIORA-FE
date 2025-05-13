@@ -6,13 +6,15 @@ import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { toast } from 'sonner';
-import { FIREBASE_ICON_BUDGETS_PATH } from '../../constants';
+import {
+  FIREBASE_ICON_BUDGETS_PATH,
+  MAX_NUMBER_OF_DIGITS_FOR_BUDGET_AMOUNT,
+} from '../../constants';
 import { budgetDIContainer } from '../../di/budgetDIContainer';
 import { TYPES } from '../../di/budgetDIContainer.type';
 import { IGetBudgetByIdUseCase } from '../../domain/usecases';
 import { resetGetBudgetState } from '../../slices';
-import { createBudgetAsyncThunk } from '../../slices/actions';
-import { getBudgetAsyncThunk } from '../../slices/actions/getBudgetAsyncThunk';
+import { createBudgetAsyncThunk, getBudgetAsyncThunk } from '../../slices/actions';
 import { BudgetFieldForm } from '../molecules';
 import { BudgetCreationFormValues } from '../schema';
 
@@ -65,7 +67,7 @@ const BudgetCreation = ({ methods }: Props) => {
       fiscalYear: Number(data.fiscalYear),
     };
 
-    if (data.estimatedTotalExpense.toString().length > 11) {
+    if (data.estimatedTotalExpense.toString().length > MAX_NUMBER_OF_DIGITS_FOR_BUDGET_AMOUNT) {
       setError('estimatedTotalExpense', {
         message: 'Total expense must be less than 11 digits',
         type: 'validate',
@@ -73,7 +75,7 @@ const BudgetCreation = ({ methods }: Props) => {
       return;
     }
 
-    if (data.estimatedTotalIncome.toString().length > 11) {
+    if (data.estimatedTotalIncome.toString().length > MAX_NUMBER_OF_DIGITS_FOR_BUDGET_AMOUNT) {
       setError('estimatedTotalIncome', {
         message: 'Total income must be less than 11 digits',
         type: 'validate',

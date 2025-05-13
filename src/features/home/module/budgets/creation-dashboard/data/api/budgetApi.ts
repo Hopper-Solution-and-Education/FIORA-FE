@@ -18,6 +18,7 @@ interface IBudgetAPI {
   createBudget(request: BudgetCreateRequestDTO): Promise<BudgetCreateResponseDTO>;
   getBudget(request: BudgetGetRequestDTO): Promise<BudgetGetResponseDTO>;
   getBudgetById(request: BudgetGetByIdRequestDTO): Promise<BudgetGetByIdResponseDTO>;
+  deleteBudget(request: BudgetDeleteRequestDTO): Promise<BudgetDeleteResponseDTO>;
 }
 
 class BudgetAPI implements IBudgetAPI {

@@ -4,4 +4,5 @@ export const TYPES = {
   ICreateBudgetUseCase: Symbol.for('ICreateBudgetUseCase'),
   IGetBudgetUseCase: Symbol.for('IGetBudgetUseCase'),
   IGetBudgetByIdUseCase: Symbol.for('IGetBudgetByIdUseCase'),
+  IDeleteBudgetUseCase: Symbol.for('IDeleteBudgetUseCase'),
 };

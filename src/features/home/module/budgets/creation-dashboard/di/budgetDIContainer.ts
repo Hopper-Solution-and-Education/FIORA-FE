@@ -3,9 +3,11 @@ import { createBudgetAPI, IBudgetAPI } from '../data/api';
 import { createBudgetRepository, IBudgetRepository } from '../data/repositories';
 import {
   createCreateBudgetUseCase,
+  createDeleteBudgetUseCase,
   createGetBudgetByIdUseCase,
   createGetBudgetUseCase,
   ICreateBudgetUseCase,
+  IDeleteBudgetUseCase,
   IGetBudgetByIdUseCase,
   IGetBudgetUseCase,
 } from '../domain/usecases';
@@ -28,6 +30,9 @@ const getBudgetUseCase = createGetBudgetUseCase(categoryRepository);
 // create get budget by id use case
 const getBudgetByIdUseCase = createGetBudgetByIdUseCase(categoryRepository);
 
+// create delete budget use case
+const deleteBudgetUseCase = createDeleteBudgetUseCase(categoryRepository);
+
 // Bind all instances
 budgetDIContainer.bind<IBudgetAPI>(TYPES.IBudgetAPI).toConstantValue(budgetAPI);
 budgetDIContainer
@@ -42,5 +47,8 @@ budgetDIContainer
 budgetDIContainer
   .bind<IGetBudgetByIdUseCase>(TYPES.IGetBudgetByIdUseCase)
   .toConstantValue(getBudgetByIdUseCase);
+budgetDIContainer
+  .bind<IDeleteBudgetUseCase>(TYPES.IDeleteBudgetUseCase)
+  .toConstantValue(deleteBudgetUseCase);
 
 export { budgetDIContainer };

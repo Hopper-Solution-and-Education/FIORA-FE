@@ -1,7 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
-import { createBudgetAsyncThunk } from './actions';
-import { getBudgetAsyncThunk } from './actions/getBudgetAsyncThunk';
+import { createBudgetAsyncThunk, deleteBudgetAsyncThunk, getBudgetAsyncThunk } from './actions';
 import { initialBudgetControlState } from './types';
 
 const budgetControlSlice = createSlice({
@@ -61,6 +60,18 @@ const budgetControlSlice = createSlice({
       .addCase(getBudgetAsyncThunk.rejected, (state) => {
         state.getBudget.isLast = true;
         state.getBudget.isLoading = false;
+      });
+    builder
+      .addCase(deleteBudgetAsyncThunk.pending, (state) => {
+        state.isDeletingBudget = true;
+      })
+      .addCase(deleteBudgetAsyncThunk.fulfilled, (state, action) => {
+        state.isDeletingBudget = false;
+        toast.success(action.payload.message);
+      })
+      .addCase(deleteBudgetAsyncThunk.rejected, (state) => {
+        state.isDeletingBudget = false;
+        toast.error('Failed to delete budget');
       });
   },
 });

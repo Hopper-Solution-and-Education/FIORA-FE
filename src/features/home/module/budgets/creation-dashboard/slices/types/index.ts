@@ -12,6 +12,8 @@ interface BudgetControlState {
     isLast: boolean;
     currency: Currency;
   };
+
+  isDeletingBudget: boolean;
 }
 
 export const initialBudgetControlState: BudgetControlState = {
@@ -24,4 +26,5 @@ export const initialBudgetControlState: BudgetControlState = {
     isLast: false,
     currency: Currency.VND,
   },
+  isDeletingBudget: false,
 };

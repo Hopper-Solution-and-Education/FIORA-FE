@@ -246,3 +246,11 @@ export type BudgetGetByIdResponse = {
   description: string;
   currency: Currency;
 };
+
+export type BudgetDeleteRequest = {
+  budgetId: string;
+};
+
+export type BudgetDeleteResponse = {
+  message: string;
+};
