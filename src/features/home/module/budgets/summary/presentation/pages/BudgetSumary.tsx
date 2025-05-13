@@ -1,16 +1,19 @@
 'use client';
 
 import { ChartSkeleton } from '@/components/common/organisms';
-import { BudgetType } from '../../domain/entities/BudgetType';
+import { Button } from '@/components/ui/button';
+import { useAppSelector } from '@/store';
+import { Edit } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { budgetSummaryDIContainer } from '../../../summary/di/budgetSummaryDIContainer';
 import { TYPES } from '../../../summary/di/budgetSummaryDIContainer.type';
 import { IBudgetSummaryUseCase } from '../../../summary/domain/usecases/IBudgetSummaryUseCase';
-import { useAppSelector } from '@/store';
-import { transformDataForChart } from '../../utils/transformDataForChart';
 import { BudgetSummaryByType } from '../../domain/entities/BudgetSummaryByType';
+import { BudgetType } from '../../domain/entities/BudgetType';
+import { transformDataForChart } from '../../utils/transformDataForChart';
 import BudgetTreeView from '../molecules/BudgetSummaryTreeView';
-import { toast } from 'sonner';
 import { HierarchicalBarItem } from '../types';
 
 interface BudgetSummaryProps {
@@ -23,12 +26,16 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
   const [botBudget, setBotBudget] = useState<BudgetSummaryByType | null>(null);
   const [actBudget, setActBudget] = useState<BudgetSummaryByType | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
+  const router = useRouter();
   const { currency } = useAppSelector((state) => state.settings);
 
   const budgetSummaryUseCase = budgetSummaryDIContainer.get<IBudgetSummaryUseCase>(
     TYPES.IBudgetSummaryUseCase,
   );
+
+  const handleEditBudget = () => {
+    router.push(`/budgets/update/${selectedYear}`);
+  };
 
   const fetchAllBudgetData = async () => {
     setIsLoading(true);
@@ -79,6 +86,13 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
 
   return (
     <div className="p-4">
+      <div className="flex justify-between mb-4">
+        <h1 className="text-2xl font-bold">Budget Summary</h1>
+
+        <Button type="button" variant="ghost" onClick={handleEditBudget}>
+          <Edit color="blue" />
+        </Button>
+      </div>
       {isLoading ? (
         <ChartSkeleton />
       ) : (

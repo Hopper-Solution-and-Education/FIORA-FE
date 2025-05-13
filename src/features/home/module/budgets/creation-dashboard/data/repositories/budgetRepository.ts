@@ -8,6 +8,8 @@ import {
   BudgetGetByIdResponse,
   BudgetGetRequest,
   BudgetGetResponse,
+  BudgetUpdateRequest,
+  BudgetUpdateResponse,
 } from '../../domain/entities/Budget';
 import { IBudgetAPI } from '../api/budgetApi';
 import BudgetMapper from '../mappers/BudgetMapper';
@@ -17,6 +19,7 @@ export interface IBudgetRepository {
   getBudget(request: BudgetGetRequest): Promise<BudgetGetResponse>;
   getBudgetById(request: BudgetGetByIdRequest): Promise<BudgetGetByIdResponse>;
   deleteBudget(request: BudgetDeleteRequest): Promise<BudgetDeleteResponse>;
+  updateBudget(request: BudgetUpdateRequest): Promise<BudgetUpdateResponse>;
 }
 
 export class BudgetRepository implements IBudgetRepository {
@@ -48,6 +51,12 @@ export class BudgetRepository implements IBudgetRepository {
     const requestAPI = BudgetMapper.toDeleteBudgetRequestDTO(request);
     const response = await this.budgetAPI.deleteBudget(requestAPI);
     return BudgetMapper.toDeleteBudgetResponse(response);
+  }
+
+  async updateBudget(request: BudgetUpdateRequest): Promise<BudgetUpdateResponse> {
+    const requestAPI = BudgetMapper.toUpdateBudgetRequestDTO(request);
+    const response = await this.budgetAPI.updateBudget(requestAPI);
+    return BudgetMapper.toUpdateBudgetResponse(response);
   }
 }
 

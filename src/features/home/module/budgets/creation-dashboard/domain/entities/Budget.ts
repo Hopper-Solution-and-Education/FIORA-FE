@@ -254,3 +254,24 @@ export type BudgetDeleteRequest = {
 export type BudgetDeleteResponse = {
   message: string;
 };
+
+export type BudgetUpdateRequest = {
+  budgetYear: string;
+  icon: string;
+  fiscalYear: number;
+  estimatedTotalExpense: number;
+  estimatedTotalIncome: number;
+  description: string;
+  currency: Currency;
+  type: 'Top' | 'Bottom';
+};
+
+export type BudgetUpdateResponse = {
+  icon: string;
+  fiscalYear: number;
+  estimatedTotalExpense: number;
+  estimatedTotalIncome: number;
+  description: string;
+  currency: Currency;
+  type: 'Top' | 'Bot';
+};

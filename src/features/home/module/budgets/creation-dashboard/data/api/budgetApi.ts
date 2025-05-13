@@ -6,12 +6,14 @@ import {
   BudgetDeleteRequestDTO,
   BudgetGetByIdRequestDTO,
   BudgetGetRequestDTO,
+  BudgetUpdateRequestDTO,
 } from '../dto/request';
 import {
   BudgetCreateResponseDTO,
   BudgetDeleteResponseDTO,
   BudgetGetByIdResponseDTO,
   BudgetGetResponseDTO,
+  BudgetUpdateResponseDTO,
 } from '../dto/response';
 
 interface IBudgetAPI {
@@ -19,6 +21,7 @@ interface IBudgetAPI {
   getBudget(request: BudgetGetRequestDTO): Promise<BudgetGetResponseDTO>;
   getBudgetById(request: BudgetGetByIdRequestDTO): Promise<BudgetGetByIdResponseDTO>;
   deleteBudget(request: BudgetDeleteRequestDTO): Promise<BudgetDeleteResponseDTO>;
+  updateBudget(request: BudgetUpdateRequestDTO): Promise<BudgetUpdateResponseDTO>;
 }
 
 class BudgetAPI implements IBudgetAPI {
@@ -48,6 +51,10 @@ class BudgetAPI implements IBudgetAPI {
 
   async deleteBudget(request: BudgetDeleteRequestDTO): Promise<BudgetDeleteResponseDTO> {
     return await httpClient.delete(`/api/budgets/delete/${request.budgetId}`);
+  }
+
+  async updateBudget(request: BudgetUpdateRequestDTO): Promise<BudgetUpdateResponseDTO> {
+    return await httpClient.put(`/api/budgets/${request.budgetYear}`, request);
   }
 }
 

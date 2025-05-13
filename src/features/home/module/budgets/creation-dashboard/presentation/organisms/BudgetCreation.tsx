@@ -3,7 +3,7 @@ import { uploadToFirebase } from '@/shared/lib';
 import { useAppDispatch } from '@/store';
 import { Currency } from '@prisma/client';
 import { useParams, useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { toast } from 'sonner';
 import {
@@ -14,7 +14,11 @@ import { budgetDIContainer } from '../../di/budgetDIContainer';
 import { TYPES } from '../../di/budgetDIContainer.type';
 import { IGetBudgetByIdUseCase } from '../../domain/usecases';
 import { resetGetBudgetState } from '../../slices';
-import { createBudgetAsyncThunk, getBudgetAsyncThunk } from '../../slices/actions';
+import {
+  createBudgetAsyncThunk,
+  getBudgetAsyncThunk,
+  updateBudgetAsyncThunk,
+} from '../../slices/actions';
 import { BudgetFieldForm } from '../molecules';
 import { BudgetCreationFormValues } from '../schema';
 
@@ -29,7 +33,7 @@ const BudgetCreation = ({ methods }: Props) => {
   const { handleSubmit, setError, reset } = methods;
   const [isLoadingGetBudgetById, setIsLoadingGetBudgetById] = useState(false);
 
-  const handleGetBudgetById = async () => {
+  const handleGetBudgetById = useCallback(async () => {
     try {
       setIsLoadingGetBudgetById(true);
       const getBudgetByIdUseCase = budgetDIContainer.get<IGetBudgetByIdUseCase>(
@@ -53,7 +57,7 @@ const BudgetCreation = ({ methods }: Props) => {
     } finally {
       setIsLoadingGetBudgetById(false);
     }
-  };
+  }, [budgetYear]);
 
   useEffect(() => {
     if (budgetYear) {
@@ -67,6 +71,7 @@ const BudgetCreation = ({ methods }: Props) => {
       fiscalYear: Number(data.fiscalYear),
     };
 
+    // Validate the estimated total expense and income
     if (data.estimatedTotalExpense.toString().length > MAX_NUMBER_OF_DIGITS_FOR_BUDGET_AMOUNT) {
       setError('estimatedTotalExpense', {
         message: 'Total expense must be less than 11 digits',
@@ -75,6 +80,7 @@ const BudgetCreation = ({ methods }: Props) => {
       return;
     }
 
+    // Validate the estimated total income
     if (data.estimatedTotalIncome.toString().length > MAX_NUMBER_OF_DIGITS_FOR_BUDGET_AMOUNT) {
       setError('estimatedTotalIncome', {
         message: 'Total income must be less than 11 digits',
@@ -83,6 +89,7 @@ const BudgetCreation = ({ methods }: Props) => {
       return;
     }
 
+    // Validate the icon
     if (formattedData.icon && formattedData.icon.startsWith('blob:')) {
       const response = await fetch(formattedData.icon);
       const blob = await response.blob();
@@ -98,31 +105,55 @@ const BudgetCreation = ({ methods }: Props) => {
       formattedData = { ...formattedData, icon: firebaseUrl };
     }
 
-    await dispatch(
-      createBudgetAsyncThunk({
-        data: {
-          icon: data.icon,
-          fiscalYear: data.fiscalYear,
-          estimatedTotalExpense: data.estimatedTotalExpense,
-          estimatedTotalIncome: data.estimatedTotalIncome,
-          description: data.description ?? '',
-          currency: data.currency as Currency,
-        },
-        setError: setError,
-      }),
-    )
-      .unwrap()
-      .then(() => {
-        dispatch(resetGetBudgetState());
-        dispatch(
-          getBudgetAsyncThunk({
-            cursor: null,
-            search: '',
-            take: 3,
-          }),
-        );
-        router.replace('/budgets');
-      });
+    // Update the budget
+    if (budgetYear) {
+      await dispatch(
+        updateBudgetAsyncThunk({
+          data: {
+            budgetYear,
+            currency: data.currency as Currency,
+            description: data.description ?? '',
+            estimatedTotalExpense: data.estimatedTotalExpense,
+            estimatedTotalIncome: data.estimatedTotalIncome,
+            fiscalYear: Number(data.fiscalYear),
+            icon: data.icon,
+            type: 'Top',
+          },
+          setError: setError,
+        }),
+      )
+        .unwrap()
+        .then(() => {
+          router.back();
+        });
+    } else {
+      // Create the budget
+      await dispatch(
+        createBudgetAsyncThunk({
+          data: {
+            icon: data.icon,
+            fiscalYear: data.fiscalYear,
+            estimatedTotalExpense: data.estimatedTotalExpense,
+            estimatedTotalIncome: data.estimatedTotalIncome,
+            description: data.description ?? '',
+            currency: data.currency as Currency,
+          },
+          setError: setError,
+        }),
+      )
+        .unwrap()
+        .then(() => {
+          dispatch(resetGetBudgetState());
+          dispatch(
+            getBudgetAsyncThunk({
+              cursor: null,
+              search: '',
+              take: 3,
+            }),
+          );
+          router.replace('/budgets');
+        });
+    }
   };
   return (
     <React.Fragment>

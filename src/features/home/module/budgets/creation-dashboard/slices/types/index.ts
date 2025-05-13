@@ -14,11 +14,14 @@ interface BudgetControlState {
   };
 
   isDeletingBudget: boolean;
+
+  isUpdatingBudget: boolean;
 }
 
 export const initialBudgetControlState: BudgetControlState = {
   isLoadingGetBudget: false,
   isCreatingBudget: false,
+
   getBudget: {
     isLoading: false,
     nextCursor: null,
@@ -26,5 +29,7 @@ export const initialBudgetControlState: BudgetControlState = {
     isLast: false,
     currency: Currency.VND,
   },
+
   isDeletingBudget: false,
+  isUpdatingBudget: false,
 };
