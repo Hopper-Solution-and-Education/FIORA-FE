@@ -39,8 +39,8 @@ const BudgetDashboardPage = () => {
         take: 3,
         filters: {
           fiscalYear: {
-            lte: Number(getValues('toYear')),
-            gte: Number(getValues('fromYear')),
+            lte: Number(getValues('toYear') ?? 9999),
+            gte: Number(getValues('fromYear') ?? 0),
           },
         },
         currency,

@@ -9,11 +9,11 @@ const budgetCreationSchema = yup.object({
     .max(4, 'Fiscal year must be 4 digits')
     .required('Fiscal year is required'),
   currency: yup.string().required('Currency is required'),
-  totalExpense: yup
+  estimatedTotalExpense: yup
     .number()
     .required('Total expense is required')
     .min(1, 'Total income must be greater than 0'),
-  totalIncome: yup
+  estimatedTotalIncome: yup
     .number()
     .required('Total income is required')
     .min(1, 'Total income must be greater than 0'),
@@ -26,8 +26,8 @@ export const defaultBudgetFormValue = {
   icon: 'banknote',
   fiscalYear: new Date().getFullYear().toString(),
   currency: 'VND',
-  totalExpense: 0,
-  totalIncome: 0,
+  estimatedTotalExpense: 0,
+  estimatedTotalIncome: 0,
   description: '',
 };
 
