@@ -43,7 +43,6 @@ const GlobalFilter = <T = any,>(props: GlobalFilterProps<T>) => {
   } = props;
 
   const [isOpen, setIsOpen] = useState(false);
-  const [error, setError] = useState(false);
 
   const handleResetFilter = () => {
     onFilterChange(defaultFilterCriteria);
@@ -169,7 +168,6 @@ const GlobalFilter = <T = any,>(props: GlobalFilterProps<T>) => {
 
   const handleClose = () => {
     setIsOpen(false);
-    setError(false);
   };
 
   // Split filterComponents into left and right columns
@@ -245,12 +243,6 @@ const GlobalFilter = <T = any,>(props: GlobalFilterProps<T>) => {
             </DropdownMenuGroup>
           )}
         </div>
-
-        {error && (
-          <div className="w-full p-2 my-1 text-sm text-red-500">
-            Error loading filter options. Please try again.
-          </div>
-        )}
 
         <DropdownMenuSeparator />
         <div className="w-full flex justify-end items-center gap-2">
