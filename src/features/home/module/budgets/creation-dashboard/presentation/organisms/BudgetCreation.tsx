@@ -25,16 +25,16 @@ const BudgetCreation = ({ methods }: Props) => {
       fiscalYear: Number(data.fiscalYear),
     };
 
-    if (data.totalExpense.toString().length > 11) {
-      setError('totalExpense', {
+    if (data.estimatedTotalExpense.toString().length > 11) {
+      setError('estimatedTotalExpense', {
         message: 'Total expense must be less than 11 digits',
         type: 'validate',
       });
       return;
     }
 
-    if (data.totalIncome.toString().length > 11) {
-      setError('totalIncome', {
+    if (data.estimatedTotalIncome.toString().length > 11) {
+      setError('estimatedTotalIncome', {
         message: 'Total income must be less than 11 digits',
         type: 'validate',
       });
@@ -61,8 +61,8 @@ const BudgetCreation = ({ methods }: Props) => {
         data: {
           icon: data.icon,
           fiscalYear: data.fiscalYear,
-          estimatedTotalExpense: data.totalExpense,
-          estimatedTotalIncome: data.totalIncome,
+          estimatedTotalExpense: data.estimatedTotalExpense,
+          estimatedTotalIncome: data.estimatedTotalIncome,
           description: data.description ?? '',
           currency: data.currency as Currency,
         },
