@@ -9,6 +9,7 @@ import {
 import IconSelectUpload from '@/components/common/forms/select/IconSelectUpload';
 import { useAppSelector } from '@/store';
 import { Currency } from '@prisma/client';
+import { useParams } from 'next/navigation';
 import { useFormContext } from 'react-hook-form';
 import { BudgetCreationFormValues } from '../schema';
 
@@ -19,6 +20,8 @@ const useBudgetFieldConfig = () => {
   } = useFormContext<BudgetCreationFormValues>();
   const isLoadingCreateBudget = useAppSelector((state) => state.budgetControl.isCreatingBudget);
   const isDisabledField = isSubmitting || isLoadingCreateBudget;
+  const currentYear = new Date().getFullYear();
+  const { year: budgetYear } = useParams() as { year: string };
 
   const fields = [
     <IconSelectUpload key="icon" name="icon" required disabled={isDisabledField} />,
@@ -28,8 +31,8 @@ const useBudgetFieldConfig = () => {
       label="Fiscal Year"
       yearOnly
       required
-      disabled={isDisabledField}
-      isYearDisabled={(year) => year < new Date().getFullYear()}
+      disabled={isDisabledField || !!budgetYear}
+      isYearDisabled={(year) => (budgetYear ? false : year < currentYear)}
     />,
     <SelectField
       options={Object.entries(Currency).map(([key, value]) => ({ label: key, value }))}

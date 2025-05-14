@@ -6,6 +6,7 @@ import {
   BudgetAllocation,
   BudgetCreationParams,
   BudgetTypeData,
+  BudgetUpdateParams,
   FetchTransactionResponse,
 } from '@/shared/types/budget.types';
 import { buildWhereClause } from '@/shared/utils';
@@ -89,48 +90,6 @@ class BudgetUseCase {
       .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
 
     return { totalExpense, totalIncome };
-  }
-
-  private calculateBudgetAllocation(totalExpense: number, totalIncome: number): BudgetAllocation {
-    // Create budget details for each month
-    const months = Array.from({ length: 12 }, (_, i) => i + 1);
-
-    // Quarterly fields
-    const quarters = { q1: [1, 2, 3], q2: [4, 5, 6], q3: [7, 8, 9], q4: [10, 11, 12] };
-
-    const monthlyExpense = _.round(totalExpense / 12, 2); // calculate with 2 decimal places
-    const monthlyIncome = _.round(totalIncome / 12, 2); // calculate with 2 decimal places
-
-    // Monthly fields split into 12 months
-    const monthFields = months.reduce<Record<string, number>>((acc, m) => {
-      acc[`m${m}_exp`] = monthlyExpense;
-      acc[`m${m}_inc`] = monthlyIncome;
-      return acc;
-    }, {});
-
-    // Quarterly fields
-    const quarterFields = Object.entries(quarters).reduce<Record<string, number>>(
-      (acc, [q, ms]) => {
-        acc[`${q}_exp`] = _.round(ms.length * monthlyExpense, 2); // by multiplying by 3 months with monthlyExpense
-        acc[`${q}_inc`] = _.round(ms.length * monthlyIncome, 2); // by multiplying by 3 months with monthlyIncome
-        return acc;
-      },
-      {},
-    );
-
-    // Half-year totals
-    const h1_exp = _.round(monthlyExpense * 6, 2); // 6 months in half-year
-    const h2_exp = _.round(monthlyExpense * 6, 2); // 6 months in half-year
-    const h1_inc = _.round(monthlyIncome * 6, 2); // 6 months in half-year
-    const h2_inc = _.round(monthlyIncome * 6, 2); // 6 months in half-year
-
-    return {
-      monthFields,
-      quarterFields,
-      halfYearFields: { h1_exp, h2_exp, h1_inc, h2_inc },
-      monthlyExpense,
-      monthlyIncome,
-    };
   }
 
   // =============== CREATE BUDGET VERSION 2 WITH TRANSACTION ==============
@@ -235,6 +194,55 @@ class BudgetUseCase {
     });
   }
 
+  private calculateBudgetAllocation(totalExpense: number, totalIncome: number): BudgetAllocation {
+    // Create budget details for each month
+    const months = Array.from({ length: 12 }, (_, i) => i + 1);
+
+    // Quarterly fields
+    const quarters = {
+      q1: [1, 2, 3],
+      q2: [4, 5, 6],
+      q3: [7, 8, 9],
+      q4: [10, 11, 12],
+    };
+
+    const monthlyExpense = _.round(totalExpense / 12, 2); // calculate with 2 decimal places
+    const monthlyIncome = _.round(totalIncome / 12, 2); // calculate with 2 decimal places
+
+    // Monthly fields split into 12 months
+    const monthFields = months.reduce<Record<string, number>>((acc, m) => {
+      acc[`m${m}_exp`] = monthlyExpense;
+      acc[`m${m}_inc`] = monthlyIncome;
+      return acc;
+    }, {});
+
+    // Quarterly fields
+    const quarterFields = Object.entries(quarters).reduce<Record<string, number>>(
+      (acc, [q, ms]) => {
+        acc[`${q}_exp`] = _.round(ms.length * monthlyExpense, 2); // by multiplying by 3 months with monthlyExpense
+        acc[`${q}_inc`] = _.round(ms.length * monthlyIncome, 2); // by multiplying by 3 months with monthlyIncome
+        return acc;
+      },
+      {},
+    );
+
+    // Half-year totals
+    const h1_exp = _.round(monthlyExpense * 6, 2); // 6 months in half-year
+    const h2_exp = _.round(monthlyExpense * 6, 2); // 6 months in half-year
+    const h1_inc = _.round(monthlyIncome * 6, 2); // 6 months in half-year
+    const h2_inc = _.round(monthlyIncome * 6, 2); // 6 months in half-year
+
+    return {
+      monthFields,
+      quarterFields,
+      halfYearFields: { h1_exp, h2_exp, h1_inc, h2_inc },
+      monthlyExpense,
+      monthlyIncome,
+    };
+  }
+
+  // =============== CREATE BUDGET VERSION 2 WITH TRANSACTION ==============
+
   async createBudgetTransaction(params: BudgetCreationParams): Promise<BudgetsTable[]> {
     const {
       userId,
@@ -302,6 +310,135 @@ class BudgetUseCase {
     });
   }
 
+  // =============== UPDATE BUDGET VERSION 2 WITH TRANSACTION ==============
+  // update budget top bot
+  async updateBudgetTransaction(params: BudgetUpdateParams): Promise<BudgetsTable[]> {
+    const {
+      budgetId,
+      userId,
+      fiscalYear,
+      description,
+      estimatedTotalExpense,
+      estimatedTotalIncome,
+      icon,
+      currency,
+      type,
+    } = params;
+
+    if (type === 'Act') {
+      throw new Error('Act budget is not allowed to be update manually');
+    }
+
+    const budgetTypeData: BudgetTypeData[] = [
+      { type: 'Top', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
+      // { type: 'Act', totalExpense: totalExpenseAct, totalIncome: totalIncomeAct },
+    ];
+
+    // update budget
+
+    const updatedBudgets = await Promise.all(
+      budgetTypeData.map((budgetTypeData) =>
+        this.updateSingleBudget(prisma, userId, fiscalYear, budgetId, budgetTypeData, {
+          description,
+          icon,
+          currency,
+        }),
+      ),
+    );
+    // return budget
+    return updatedBudgets;
+    // update budget top bot
+    // return await prisma.$transaction(async (prisma) => {
+    //   // calculate transaction range
+    //   const { yearStart, effectiveEndDate } = this.calculateTransactionRange(fiscalYear);
+
+    //   // fetch transactions
+    //   const transactions = await this.fetchTransactionsTx(
+    //     userId,
+    //     yearStart,
+    //     effectiveEndDate,
+    //     prisma,
+    //   );
+
+    //   // calculate actual totals
+    //   const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
+    //     transactions || [],
+    //     currency,
+    //   );
+
+    //   // calculate budget type data
+    //   const budgetTypeData: BudgetTypeData[] = [
+    //     { type: 'Top', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
+    //     // { type: 'Act', totalExpense: totalExpenseAct, totalIncome: totalIncomeAct },
+    //   ];
+
+    //   // update budget
+
+    //   const updatedBudgets = await Promise.all(
+    //     budgetTypeData.map((budgetTypeData) =>
+    //       this.updateSingleBudget(prisma, userId, fiscalYear, budgetId, budgetTypeData, {
+    //         description,
+    //         icon,
+    //         currency,
+    //       }),
+    //     ),
+    //   );
+    //   // return budget
+    //   return updatedBudgets;
+    // });
+  }
+
+  private async updateSingleBudget(
+    prisma: Prisma.TransactionClient,
+    userId: string,
+    fiscalYear: number,
+    budgetId: string,
+    { type, totalExpense, totalIncome }: BudgetTypeData,
+    { description, icon, currency }: Partial<BudgetCreationParams>,
+  ) {
+    // Check if budget exists
+    const existingBudget = await prisma.budgetsTable.findUnique({
+      where: {
+        id: budgetId,
+        type: type as BudgetType,
+      },
+    });
+
+    if (!existingBudget) {
+      throw new Error(Messages.BUDGET_NOT_FOUND);
+    }
+
+    const { monthFields, quarterFields, halfYearFields } = this.calculateBudgetAllocation(
+      totalExpense,
+      totalIncome,
+    );
+
+    const updatedBudget = await prisma.budgetsTable.update({
+      where: {
+        id: budgetId,
+        type: type as BudgetType,
+      },
+      data: {
+        total_exp: totalExpense,
+        total_inc: totalIncome,
+        ...halfYearFields,
+        ...quarterFields,
+        ...monthFields,
+        description,
+        icon,
+        currency,
+        updatedBy: userId,
+      },
+    });
+
+    if (!updatedBudget) {
+      throw new Error(Messages.BUDGET_UPDATE_FAILED);
+    }
+
+    return updatedBudget;
+  }
+
+  // ======================= CREATE BUDGET VERSION 1 =======================
   async createBudget(params: BudgetCreation) {
     const {
       userId,

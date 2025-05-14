@@ -231,3 +231,47 @@ export type BudgetCreateResponse = {
   m12Income: number;
   m12Expense: number;
 };
+
+export type BudgetGetByYearAndTypeRequest = {
+  fiscalYear: string;
+  type: 'Top' | 'Bottom';
+};
+
+export type BudgetGetByYearAndTypeResponse = {
+  id: string;
+  icon: string;
+  fiscalYear: string;
+  estimatedTotalExpense: number;
+  estimatedTotalIncome: number;
+  description: string;
+  currency: Currency;
+};
+
+export type BudgetDeleteRequest = {
+  budgetYear: string;
+};
+
+export type BudgetDeleteResponse = {
+  message: string;
+};
+
+export type BudgetUpdateRequest = {
+  budgetYear: string;
+  icon: string;
+  fiscalYear: number;
+  estimatedTotalExpense: number;
+  estimatedTotalIncome: number;
+  description: string;
+  currency: Currency;
+  type: 'Top' | 'Bottom';
+};
+
+export type BudgetUpdateResponse = {
+  icon: string;
+  fiscalYear: number;
+  estimatedTotalExpense: number;
+  estimatedTotalIncome: number;
+  description: string;
+  currency: Currency;
+  type: 'Top' | 'Bot';
+};

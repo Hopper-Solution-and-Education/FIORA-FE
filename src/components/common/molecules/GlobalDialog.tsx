@@ -34,6 +34,7 @@ type GlobalDialogProps = {
   variant?: DialogVariant;
   customLeftButton?: ReactNode;
   customRightButton?: ReactNode;
+  isLoading?: boolean;
 };
 
 const VARIANT_BORDER_MAP: Record<DialogVariant, string> = {
@@ -81,9 +82,13 @@ export const GlobalDialog = ({
   variant = 'default',
   customLeftButton,
   customRightButton,
+  isLoading,
 }: GlobalDialogProps) => {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={isLoading ? (isLoading ? undefined : onOpenChange) : onOpenChange}
+    >
       <DialogContent
         className={clsx('sm:max-w-lg flex flex-col', VARIANT_BORDER_MAP[variant], className)}
       >
