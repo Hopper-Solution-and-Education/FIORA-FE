@@ -17,6 +17,7 @@ import {
 } from './actions';
 
 import { initialProductState } from './types';
+import { FilterCriteria } from '@/shared/types/filter.types';
 
 const productManagementSlice = createSlice({
   name: 'productManagement',
@@ -41,6 +42,10 @@ const productManagementSlice = createSlice({
       state.ProductIdToTransfer = action.payload;
     },
     resetProductManagementState: () => initialProductState,
+
+    updateProductFilterCriteria(state, action: PayloadAction<FilterCriteria>) {
+      state.filterCriteria = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -250,5 +255,6 @@ export const {
   setProductCategoryToEdit,
   setProductIdToTransfer,
   setProductDetail,
+  updateProductFilterCriteria,
 } = productManagementSlice.actions;
 export default productManagementSlice.reducer;

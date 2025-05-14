@@ -59,7 +59,7 @@ const ProductPage = () => {
     <div className="p-2">
       <div className="flex flex-1 flex-col">
         <div className="flex items-start justify-between">
-          <DashboardHeading title="" description="" />
+          <DashboardHeading />
           <ButtonCreation
             className="mb-4"
             action={handleClickButtonCreation}

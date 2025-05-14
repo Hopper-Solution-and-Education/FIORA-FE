@@ -1,5 +1,7 @@
+import { DEFAULT_FILTER_CRITERIA } from '@/components/common/filters/GlobalFilter';
 import { CategoryProduct } from '../../domain/entities/Category';
 import { Product, ProductTransactionCategoryResponse } from '../../domain/entities/Product';
+import { FilterCriteria } from '@/shared/types';
 
 interface CategoryState {
   categories: {
@@ -37,6 +39,7 @@ interface CategoryState {
     hasMore: boolean;
   };
   productDetail: Product | null;
+  filterCriteria: FilterCriteria;
 }
 
 export const initialProductState: CategoryState = {
@@ -75,4 +78,5 @@ export const initialProductState: CategoryState = {
   ProductCategoryToEdit: null,
   ProductIdToTransfer: '',
   productDetail: null,
+  filterCriteria: DEFAULT_FILTER_CRITERIA,
 };
