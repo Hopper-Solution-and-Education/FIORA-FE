@@ -9,6 +9,7 @@ import { useFormContext } from 'react-hook-form';
 import { getBudgetAsyncThunk } from '../../slices/actions/getBudgetAsyncThunk';
 import { legendItems, mapBudgetToData } from '../../utils';
 import { BudgetGetFormValues } from '../schema';
+import PositiveNegativeStackBarChart from '@/components/common/positive-negative-stack-bar-chart';
 
 const BudgetDashboard = () => {
   const currency = useAppSelector((state) => state.settings.currency);
@@ -115,7 +116,7 @@ const BudgetDashboard = () => {
                 className="cursor-pointer"
                 onClick={() => handleOnClickItem(budgetItem.year)}
               >
-                <StackedBarChart
+                <PositiveNegativeStackBarChart
                   data={data}
                   title={`${budgetItem.year}`}
                   currency={currency}
