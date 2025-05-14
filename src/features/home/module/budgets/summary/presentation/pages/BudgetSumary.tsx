@@ -1,9 +1,8 @@
 'use client';
 
 import { ChartSkeleton } from '@/components/common/organisms';
-import { Button } from '@/components/ui/button';
 import { useAppSelector } from '@/store';
-import { Edit } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -15,6 +14,8 @@ import { BudgetType } from '../../domain/entities/BudgetType';
 import { transformDataForChart } from '../../utils/transformDataForChart';
 import BudgetTreeView from '../molecules/BudgetSummaryTreeView';
 import { HierarchicalBarItem } from '../types';
+import { COLORS } from '@/shared/constants/chart';
+import { ICON_SIZE } from '@/shared/constants/size';
 
 interface BudgetSummaryProps {
   year: number;
@@ -89,9 +90,19 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
       <div className="flex justify-between mb-4">
         <h1 className="text-2xl font-bold">Budget Summary</h1>
 
-        <Button type="button" variant="ghost" onClick={handleEditBudget}>
-          <Edit color="blue" />
-        </Button>
+        <div className="flex items-center gap-x-3 mr-2">
+          <Edit
+            className="cursor-pointer scale-100 transition-transform duration-200 hover:scale-125"
+            color={COLORS.DEPS_INFO.LEVEL_1}
+            size={ICON_SIZE.MD}
+            onClick={handleEditBudget}
+          />
+          <Trash2
+            className="cursor-pointer scale-100 transition-transform duration-200 hover:scale-125"
+            color={COLORS.DEPS_DANGER.LEVEL_1}
+            size={ICON_SIZE.MD}
+          />
+        </div>
       </div>
       {isLoading ? (
         <ChartSkeleton />

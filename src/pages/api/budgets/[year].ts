@@ -28,8 +28,11 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
   }
 });
 
+// update budget
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  // hiện tại api này đang chỉ phục vụ cho việc update budget type top down planning
   try {
+    // get budget year and type
     const { year: budgetYear } = req.query;
     const {
       fiscalYear,
@@ -41,6 +44,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       type,
     } = req.body;
 
+    // validate body
     const { error } = validateBody(budgetCreateBody, req.body);
     if (error) {
       return res
@@ -48,7 +52,8 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
         .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
     }
 
-    if (fiscalYear !== budgetYear) {
+    // check if fiscal year is duplicated
+    if (fiscalYear !== Number(budgetYear)) {
       const isDuplicated = await budgetUseCase.checkedDuplicated(userId, fiscalYear);
       if (isDuplicated) {
         return res.status(RESPONSE_CODE.BAD_REQUEST).json(
@@ -59,6 +64,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       }
     }
 
+    // get budget to update
     const budgetToUpdate = await prisma.budgetsTable.findUnique({
       where: {
         fiscalYear_type_userId: {
@@ -73,6 +79,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       return res.status(RESPONSE_CODE.NOT_FOUND).json({ message: 'Budget not found' });
     }
 
+    // update budget
     const updatedBudget = await budgetUseCase.updateBudgetTransaction({
       budgetId: budgetToUpdate.id,
       userId,
@@ -93,7 +100,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   }
 }
 
-// get budget by id
+// get budget by fiscal year and type
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { year: budgetId, type: budgetType } = req.query;

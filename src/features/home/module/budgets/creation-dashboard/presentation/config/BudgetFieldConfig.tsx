@@ -9,9 +9,9 @@ import {
 import IconSelectUpload from '@/components/common/forms/select/IconSelectUpload';
 import { useAppSelector } from '@/store';
 import { Currency } from '@prisma/client';
+import { useParams } from 'next/navigation';
 import { useFormContext } from 'react-hook-form';
 import { BudgetCreationFormValues } from '../schema';
-import { useParams } from 'next/navigation';
 
 const useBudgetFieldConfig = () => {
   const {
@@ -31,7 +31,7 @@ const useBudgetFieldConfig = () => {
       label="Fiscal Year"
       yearOnly
       required
-      disabled={isDisabledField}
+      disabled={isDisabledField || !!budgetYear}
       isYearDisabled={(year) => (budgetYear ? false : year < currentYear)}
     />,
     <SelectField

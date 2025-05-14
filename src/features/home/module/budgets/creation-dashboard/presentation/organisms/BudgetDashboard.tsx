@@ -2,92 +2,20 @@
 
 import { StackedBarChartSkeleton } from '@/components/common/organisms';
 import StackedBarChart from '@/components/common/stacked-bar-chart';
-import { useAppDispatch, useAppSelector } from '@/store';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef } from 'react';
-import { useFormContext } from 'react-hook-form';
-import { getBudgetAsyncThunk } from '../../slices/actions/getBudgetAsyncThunk';
+import { useAppSelector } from '@/store';
 import { legendItems, mapBudgetToData } from '../../utils';
-import { BudgetGetFormValues } from '../schema';
+import { useBudgetDashboardLogic } from '../hooks';
 
 const BudgetDashboard = () => {
   const currency = useAppSelector((state) => state.settings.currency);
   const {
     budgets,
     isLoading,
-    nextCursor,
     isLast,
     currency: budgetCurrency,
   } = useAppSelector((state) => state.budgetControl.getBudget);
-  const router = useRouter();
-  const methods = useFormContext<BudgetGetFormValues>();
 
-  const handleOnClickItem = useCallback((year: number) => {
-    router.push(`/budgets/summary/${year}`);
-  }, []);
-
-  const { watch } = methods;
-
-  const dispatch = useAppDispatch();
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-
-  const handleCallGetBudget = useCallback(
-    (cursor: number | null) => {
-      if (isLast || isLoading) return;
-      const scrollPosition = scrollRef.current?.scrollTop || window.scrollY;
-
-      dispatch(
-        getBudgetAsyncThunk({
-          cursor,
-          search: '',
-          take: 3,
-          filters: {
-            fiscalYear: {
-              lte: Number(watch('toYear') ?? 9999),
-              gte: Number(watch('fromYear') ?? 0),
-            },
-          },
-          currency,
-        }),
-      ).then(() => {
-        if (scrollRef.current) {
-          scrollRef.current.scrollTop = scrollPosition;
-        } else {
-          window.scrollTo(0, scrollPosition);
-        }
-      });
-    },
-
-    [currency, isLast, isLoading],
-  );
-
-  useEffect(() => {
-    if (isLast || isLoading) return;
-
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          handleCallGetBudget(nextCursor);
-        }
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '200px',
-      },
-    );
-
-    if (sentinelRef.current) {
-      observerRef.current.observe(sentinelRef.current);
-    }
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [nextCursor, isLast, isLoading, handleCallGetBudget]);
+  const { scrollRef, handleOnClickItem, sentinelRef } = useBudgetDashboardLogic();
 
   return (
     <div ref={scrollRef} className="overflow-hidden min-h-screen">
