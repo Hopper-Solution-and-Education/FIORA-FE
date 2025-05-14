@@ -1,10 +1,11 @@
-import { CustomBarItem } from '../stacked-bar-chart/type';
+import { CustomBarItem, StackBarDisplay } from '../stacked-bar-chart/type';
 
 export interface ChartDataConfig {
   hasNegativeValues: boolean;
-  positiveData: CustomBarItem[];
-  negativeData: CustomBarItem[];
-  maxAbs: number;
+  positiveData: StackBarDisplay[];
+  negativeData: StackBarDisplay[];
+  minNegative: number;
+  maxPositive: number;
   chartHeight: number;
   negativeChartMargins: object;
   positiveChartMargins: object;

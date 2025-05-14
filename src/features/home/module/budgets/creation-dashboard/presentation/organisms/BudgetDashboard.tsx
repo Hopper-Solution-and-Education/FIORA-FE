@@ -1,7 +1,6 @@
 'use client';
 
 import { StackedBarChartSkeleton } from '@/components/common/organisms';
-import StackedBarChart from '@/components/common/stacked-bar-chart';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef } from 'react';

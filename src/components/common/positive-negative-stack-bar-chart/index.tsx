@@ -13,11 +13,21 @@ import {
   LabelList,
 } from 'recharts';
 import { cn, formatCurrency } from '@/shared/utils';
-import { BarLabel, ChartLegend, IconDisplay } from '@/components/common/atoms';
+import {
+  BarLabel,
+  ChartLegend,
+  IconDisplay,
+  PositiveAndNegativeV2BarLabel,
+} from '@/components/common/atoms';
 import StackYAxisTick from '@/components/common/atoms/StackYAxisTick';
 import { useWindowSize } from '@/shared/utils/device';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
-import { DEFAULT_BUDGET_ICON, DEFAULT_CURRENCY, STACK_TYPE } from '@/shared/constants/chart';
+import {
+  COLORS,
+  DEFAULT_BUDGET_ICON,
+  DEFAULT_CURRENCY,
+  STACK_TYPE,
+} from '@/shared/constants/chart';
 import { PositiveNegativeStackBarChartProps } from './type';
 import { processChartData } from './utils';
 import { StackBarDisplay, TooltipProps } from '../stacked-bar-chart/type';
@@ -45,11 +55,13 @@ const PositiveNegativeStackBarChart = ({
     hasNegativeValues,
     positiveData,
     negativeData,
-    maxAbs,
+    minNegative,
+    maxPositive,
     chartHeight,
     negativeChartMargins,
     positiveChartMargins,
   } = processChartData(data, width, isMobile);
+  console.log('DATA: ', data);
 
   const calculateRValue = (item: StackBarDisplay): number => {
     let R: number = 0;
@@ -98,7 +110,7 @@ const PositiveNegativeStackBarChart = ({
     );
   };
 
-  const renderCustomLabel = (data: CustomBarItem[], props: any, dataKey: string) => {
+  const renderCustomLabel = (data: StackBarDisplay[], props: any, dataKey: string) => {
     const { x, y, width, height, index } = props;
     const entry = data[index];
 
@@ -154,89 +166,105 @@ const PositiveNegativeStackBarChart = ({
         </div>
       )}
       {hasNegativeValues ? (
-        <div className="flex">
-          {/* Negative Chart */}
-          <ResponsiveContainer width="50%" height={chartHeight}>
-            <BarChart data={negativeData} layout="vertical" margin={negativeChartMargins}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis
-                type="number"
-                domain={[-maxAbs, 0]}
-                tickFormatter={xAxisFormatter}
-                className="text-sm text-gray-600"
-              />
-              <YAxis
-                type="category"
-                dataKey="name"
-                hide={false}
-                tickLine={false}
-                axisLine={false}
-                tick={(props) => <StackYAxisTick {...props} processedData={data} />}
-                className="text-sm text-gray-600"
-              />
-              <Tooltip content={renderTooltipContent} />
-              <Bar dataKey="A" stackId="stack">
-                {negativeData.map((entry, index) => (
-                  <Cell key={`A-${index}`} fill={entry.colors.A} />
+        <>
+          <div className="flex">
+            {/* Negative Chart */}
+            <ResponsiveContainer width="30%" height={chartHeight}>
+              <BarChart data={negativeData} layout="vertical" margin={negativeChartMargins}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                <XAxis
+                  type="number"
+                  domain={[minNegative, 0]}
+                  tickFormatter={xAxisFormatter}
+                  className="text-sm text-gray-600"
+                />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  hide={false}
+                  tickLine={false}
+                  axisLine={false}
+                  tick={(props) => <StackYAxisTick {...props} processedData={data} />}
+                  className="text-sm text-gray-600"
+                />
+                <Tooltip content={renderTooltipContent} />
+                {['A', 'T', 'B'].map((key) => (
+                  <Bar
+                    key={key}
+                    dataKey={key}
+                    stackId="a"
+                    label={(props) => {
+                      console.log('PROPS: ', props);
+                      return (
+                        <PositiveAndNegativeV2BarLabel
+                          {...props}
+                          formatter={formatter(key, props.value, currency)}
+                        />
+                      );
+                    }}
+                    onClick={(props) => callback && callback(props.payload)}
+                  >
+                    {negativeData.map((entry, index) => (
+                      <Cell key={index} fill={entry.colors[key as keyof typeof entry.colors]} />
+                    ))}
+                  </Bar>
                 ))}
-              </Bar>
-              <Bar dataKey="T" stackId="stack">
-                {negativeData.map((entry, index) => (
-                  <Cell key={`T-${index}`} fill={entry.colors.T} />
+              </BarChart>
+            </ResponsiveContainer>
+            {/* Positive Chart */}
+            <ResponsiveContainer width="70%" height={chartHeight}>
+              <BarChart data={positiveData} layout="vertical" margin={positiveChartMargins}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                <XAxis
+                  type="number"
+                  domain={[0, maxPositive]}
+                  tickFormatter={xAxisFormatter}
+                  className="text-sm text-gray-600"
+                />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  hide={true}
+                  tickLine={false}
+                  axisLine={false}
+                  tick={(props) => <StackYAxisTick {...props} processedData={data} />}
+                  className="text-sm text-gray-600"
+                />
+                <Tooltip content={renderTooltipContent} />
+                {['A', 'T', 'B'].map((key) => (
+                  <Bar
+                    key={key}
+                    dataKey={key}
+                    stackId="a"
+                    label={(props) => (
+                      <PositiveAndNegativeV2BarLabel
+                        {...props}
+                        formatter={formatter(key, props.value, currency)}
+                      />
+                    )}
+                    onClick={(props) => callback && callback(props.payload)}
+                  >
+                    {positiveData.map((entry, index) => (
+                      <Cell key={index} fill={entry.colors[key as keyof typeof entry.colors]} />
+                    ))}
+                    <LabelList
+                      dataKey={key}
+                      content={(props) => renderCustomLabel(positiveData, props, key)}
+                      position="right"
+                    />
+                  </Bar>
                 ))}
-              </Bar>
-              <Bar dataKey="B" stackId="stack">
-                {negativeData.map((entry, index) => (
-                  <Cell key={`B-${index}`} fill={entry.colors.B} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-          {/* Positive Chart */}
-          <ResponsiveContainer width="50%" height={chartHeight}>
-            <BarChart data={positiveData} layout="vertical" margin={positiveChartMargins}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis
-                type="number"
-                domain={[0, maxAbs]}
-                tickFormatter={xAxisFormatter}
-                className="text-sm text-gray-600"
-              />
-              <YAxis
-                type="category"
-                dataKey="name"
-                hide={true}
-                tickLine={false}
-                axisLine={false}
-                tick={(props) => <StackYAxisTick {...props} processedData={data} />}
-                className="text-sm text-gray-600"
-              />
-              <Tooltip content={renderTooltipContent} />
-              <Bar dataKey="A" stackId="stack">
-                {positiveData.map((entry, index) => (
-                  <Cell key={`A-${index}`} fill={entry.colors.A} />
-                ))}
-              </Bar>
-              <Bar dataKey="T" stackId="stack">
-                {positiveData.map((entry, index) => (
-                  <Cell key={`T-${index}`} fill={entry.colors.T} />
-                ))}
-              </Bar>
-              <Bar dataKey="B" stackId="stack">
-                {positiveData.map((entry, index) => (
-                  <Cell key={`B-${index}`} fill={entry.colors.B} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </>
       ) : (
         <ResponsiveContainer width="100%" height={chartHeight}>
           <BarChart data={positiveData} layout="vertical" margin={positiveChartMargins}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
             <XAxis
               type="number"
-              domain={[0, maxAbs]}
+              domain={[0, maxPositive]}
               tickFormatter={xAxisFormatter}
               className="text-sm text-gray-600"
             />
@@ -250,31 +278,15 @@ const PositiveNegativeStackBarChart = ({
               className="text-sm text-gray-600"
             />
             <Tooltip content={renderTooltipContent} />
-            {/* <Bar dataKey="A" stackId="stack">
-              {positiveData.map((entry, index) => (
-                <Cell key={`A-${index}`} fill={entry.colors.A} />
-              ))}
-            </Bar>
-            <Bar dataKey="T" stackId="stack">
-              {positiveData.map((entry, index) => (
-                <Cell key={`T-${index}`} fill={entry.colors.T} />
-              ))}
-            </Bar>
-            <Bar dataKey="B" stackId="stack">
-              {positiveData.map((entry, index) => (
-                <Cell key={`B-${index}`} fill={entry.colors.B} />
-              ))}
-            </Bar> */}
             {['A', 'T', 'B'].map((key) => (
               <Bar
                 key={key}
                 dataKey={key}
                 stackId="a"
                 label={(props) => (
-                  <BarLabel
+                  <PositiveAndNegativeV2BarLabel
                     {...props}
-                    fontSize="text-xs"
-                    renderValue={formatter(key, props.value, currency)}
+                    formatter={formatter(key, props.value, currency)}
                   />
                 )}
                 onClick={(props) => callback && callback(props.payload)}

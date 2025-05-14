@@ -175,6 +175,7 @@ model Transaction {
   updatedBy        String?              @db.Uuid
   createdBy        String?              @db.Uuid
   currency         Currency             @default(VND)
+  isMarked         Boolean              @default(false)
   productsRelation ProductTransaction[] @relation("ProductTransactions")
   fromAccount      Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Restrict)
   fromCategory     Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
@@ -380,6 +381,7 @@ enum BudgetType {
 enum BudgetDetailType {
   Income
   Expense
+  Act
 }
 
 enum MediaType {

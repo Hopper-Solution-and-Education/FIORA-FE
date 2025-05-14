@@ -3,6 +3,11 @@ import { getChartMargins } from '@/shared/utils/device';
 import { BASE_BAR_HEIGHT, MIN_CHART_HEIGHT } from '@/shared/constants/chart';
 import { CustomBarItem } from '../stacked-bar-chart/type';
 
+const largestKey = (item: CustomBarItem): string => {
+  const largestValue = Math.max(item.A, item.B, item.T);
+  return largestValue === item.A ? 'A' : largestValue === item.B ? 'B' : 'T';
+};
+
 // Function to process chart data and compute configurations
 export const processChartData = (
   data: CustomBarItem[],
@@ -23,14 +28,16 @@ export const processChartData = (
   );
   const minNegative = Math.min(...negativeSums, 0);
 
-  const maxAbs = Math.max(Math.abs(minNegative), maxPositive);
-
   // Prepare data for negative and positive charts
   const negativeData = data.map((item) => ({
     ...item,
     A: item.A < 0 ? item.A : 0,
     T: item.T < 0 ? item.T : 0,
     B: item.B < 0 ? item.B : 0,
+    AOriginalValue: item.A,
+    BOriginalValue: item.B,
+    TOriginalValue: item.T,
+    maxKey: largestKey(item),
   }));
 
   const positiveData = data.map((item) => ({
@@ -38,6 +45,10 @@ export const processChartData = (
     A: item.A > 0 ? item.A : 0,
     T: item.T > 0 ? item.T : 0,
     B: item.B > 0 ? item.B : 0,
+    AOriginalValue: item.A,
+    BOriginalValue: item.B,
+    TOriginalValue: item.T,
+    maxKey: largestKey(item),
   }));
 
   // Compute chart height
@@ -47,19 +58,21 @@ export const processChartData = (
   const negativeChartMargins = {
     ...getChartMargins(width),
     right: 0,
-    left: 40,
+    left: isMobile ? 0 : 40,
   };
 
   const positiveChartMargins = {
     ...getChartMargins(width),
-    left: isMobile ? 10 : 0,
+    right: isMobile ? 0 : 200,
+    left: 0,
   };
 
   return {
     hasNegativeValues,
     positiveData,
     negativeData,
-    maxAbs,
+    minNegative,
+    maxPositive,
     chartHeight,
     negativeChartMargins,
     positiveChartMargins,
