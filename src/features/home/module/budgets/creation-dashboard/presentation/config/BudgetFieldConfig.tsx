@@ -7,10 +7,10 @@ import {
   TextareaField,
 } from '@/components/common/forms';
 import IconSelectUpload from '@/components/common/forms/select/IconSelectUpload';
+import { useAppSelector } from '@/store';
 import { Currency } from '@prisma/client';
 import { useFormContext } from 'react-hook-form';
 import { BudgetCreationFormValues } from '../schema';
-import { useAppSelector } from '@/store';
 
 const useBudgetFieldConfig = () => {
   const {
@@ -29,7 +29,7 @@ const useBudgetFieldConfig = () => {
       yearOnly
       required
       disabled={isDisabledField}
-      isYearDisabled={(year) => year > new Date().getFullYear() + 1}
+      isYearDisabled={(year) => year < new Date().getFullYear()}
     />,
     <SelectField
       options={Object.entries(Currency).map(([key, value]) => ({ label: key, value }))}
@@ -41,28 +41,32 @@ const useBudgetFieldConfig = () => {
       disabled={isDisabledField}
     />,
     <InputCurrency
-      key="price"
-      name="totalExpense"
+      key="estimatedTotalExpense"
+      name="estimatedTotalExpense"
       label="Estimated Total Expense"
       currency={watch('currency')}
       maxLength={11}
       required
       disabled={isDisabledField}
+      showSuggestion
+      mode="onChange"
     />,
     <InputCurrency
-      key="price"
-      name="totalIncome"
+      key="estimatedTotalIncome"
+      name="estimatedTotalIncome"
       label="Estimated Total Income"
       currency={watch('currency')}
       maxLength={11}
       required
       disabled={isDisabledField}
+      showSuggestion
+      mode="onChange"
     />,
     <TextareaField
       key="description"
       name="description"
       label="Description"
-      placeholder="Product Description"
+      placeholder="Budget Description"
       disabled={isDisabledField}
     />,
   ];

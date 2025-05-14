@@ -9,8 +9,8 @@ const budgetGetSchema = yup.object({
 // Example of a default value object for Budget:
 export const defaultBudgeGetFormValue = {
   search: '',
-  fromYear: (new Date().getFullYear() - 10).toString(),
-  toYear: new Date().getFullYear().toString(),
+  fromYear: null,
+  toYear: null,
 };
 
 // Define the form values type

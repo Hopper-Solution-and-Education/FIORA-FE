@@ -30,8 +30,8 @@ const BudgetDashboardFilter = ({ onFilterDropdownOpenChange }: Props) => {
         take: 3,
         filters: {
           fiscalYear: {
-            lte: Number(data.toYear),
-            gte: Number(data.fromYear),
+            lte: Number(data.toYear ?? 9999),
+            gte: Number(data.fromYear ?? 0),
           },
         },
       }),
@@ -43,21 +43,17 @@ const BudgetDashboardFilter = ({ onFilterDropdownOpenChange }: Props) => {
       key="fromYear"
       yearOnly
       name="fromYear"
-      placeholder="Select From Year"
+      placeholder="From Year"
       label="From Year"
-      isYearDisabled={(year) =>
-        year > new Date().getFullYear() + 1 || year > Number(watch('toYear'))
-      }
+      isYearDisabled={(year) => (watch('toYear') ? year > Number(watch('toYear')) : false)}
     />,
     <CustomDateTimePicker
       key="toYear"
       yearOnly
       name="toYear"
-      placeholder="Select To Year"
+      placeholder="To Year"
       label="To Year"
-      isYearDisabled={(year) =>
-        year > new Date().getFullYear() + 1 || year < Number(watch('fromYear'))
-      }
+      isYearDisabled={(year) => (watch('fromYear') ? year < Number(watch('fromYear')) : false)}
     />,
   ];
 
