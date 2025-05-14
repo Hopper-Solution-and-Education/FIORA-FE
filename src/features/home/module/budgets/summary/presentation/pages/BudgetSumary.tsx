@@ -94,13 +94,13 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
           <Edit
             className="cursor-pointer scale-100 transition-transform duration-200 hover:scale-125"
             color={COLORS.DEPS_INFO.LEVEL_1}
-            size={ICON_SIZE.MD}
+            size={ICON_SIZE.SM}
             onClick={handleEditBudget}
           />
           <Trash2
             className="cursor-pointer scale-100 transition-transform duration-200 hover:scale-125"
             color={COLORS.DEPS_DANGER.LEVEL_1}
-            size={ICON_SIZE.MD}
+            size={ICON_SIZE.SM}
           />
         </div>
       </div>

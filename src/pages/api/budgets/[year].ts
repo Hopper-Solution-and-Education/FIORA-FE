@@ -147,8 +147,6 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
   try {
     const { year: budgetYear } = req.query;
 
-    console.log('budgetYear', budgetYear);
-
     // Basic validation for missing ID
     if (!budgetYear || typeof budgetYear !== 'string') {
       return res

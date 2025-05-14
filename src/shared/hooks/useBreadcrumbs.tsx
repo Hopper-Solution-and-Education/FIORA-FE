@@ -114,6 +114,11 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Budgets', link: '/budgets' },
     { title: 'Create', link: '/budgets/create' },
   ],
+  '/budgets/update/[id]': [
+    { title: 'Home', link: '/' },
+    { title: 'Budgets', link: '/budgets' },
+    { title: 'Update', link: '/budgets/update/[id]' },
+  ],
   '/budgets/summary': [
     { title: 'Home', link: '/' },
     { title: 'Budgets', link: '/budgets' },
@@ -279,8 +284,26 @@ export function useBreadcrumbs(config: BreadcrumbConfig = defaultConfig): Breadc
       return routeMapping[pathname];
     }
 
+    // Check for dynamic routes
+    const dynamicRoute = Object.keys(routeMapping).find((route) => {
+      const routePattern = route.replace(/\[.*?\]/g, '[^/]+');
+      const regex = new RegExp(`^${routePattern}$`);
+      return regex.test(pathname);
+    });
+
+    if (dynamicRoute) {
+      return routeMapping[dynamicRoute];
+    }
+
     // Build breadcrumbs dynamically using segments
-    return buildBreadcrumbItems(segments, config);
+    const items = buildBreadcrumbItems(segments, config);
+
+    // Always add Home as the first item if it's not already there
+    if (items.length > 0 && items[0].title !== 'Home') {
+      items.unshift({ title: 'Home', link: '/' });
+    }
+
+    return items;
   }, [pathname, segments, config]);
 
   return breadcrumbs;

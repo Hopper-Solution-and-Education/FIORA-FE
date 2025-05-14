@@ -432,7 +432,7 @@ class BudgetUseCase {
 
   // =============== UPDATE BUDGET VERSION 2 WITH TRANSACTION ==============
   // update budget top bot
-  async updateBudgetTransaction(params: BudgetUpdateParams): Promise<BudgetsTable> {
+  async updateBudgetTransaction(params: BudgetUpdateParams): Promise<BudgetsTable[]> {
     const {
       budgetId,
       userId,
@@ -445,6 +445,9 @@ class BudgetUseCase {
       type,
     } = params;
 
+    if (type === 'Act') {
+      throw new Error('Act budget is not allowed to be update manually');
+    }
     // update budget top bot
     return await prisma.$transaction(async (prisma) => {
       // calculate transaction range
@@ -465,28 +468,24 @@ class BudgetUseCase {
       );
 
       // calculate budget type data
-      const budgetTypeData: BudgetTypeData = {
-        type,
-        totalExpense: type === 'Act' ? totalExpenseAct : estimatedTotalExpense,
-        totalIncome: type === 'Act' ? totalIncomeAct : estimatedTotalIncome,
-      };
+      const budgetTypeData: BudgetTypeData[] = [
+        { type: 'Top', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
+        { type: 'Act', totalExpense: totalExpenseAct, totalIncome: totalIncomeAct },
+      ];
 
       // update budget
-      const budget = await this.updateSingleBudget(
-        prisma,
-        userId,
-        fiscalYear,
-        budgetId,
-        budgetTypeData,
-        {
-          description,
-          icon,
-          currency,
-        },
-      );
 
+      const updatedBudgets = await Promise.all(
+        budgetTypeData.map((budgetTypeData) =>
+          this.updateSingleBudget(prisma, userId, fiscalYear, budgetId, budgetTypeData, {
+            description,
+            icon,
+            currency,
+          }),
+        ),
+      );
       // return budget
-      return budget;
+      return updatedBudgets;
     });
   }
 
