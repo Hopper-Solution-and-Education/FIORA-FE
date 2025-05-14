@@ -92,48 +92,6 @@ class BudgetUseCase {
     return { totalExpense, totalIncome };
   }
 
-  private calculateBudgetAllocation(totalExpense: number, totalIncome: number): BudgetAllocation {
-    // Create budget details for each month
-    const months = Array.from({ length: 12 }, (_, i) => i + 1);
-
-    // Quarterly fields
-    const quarters = { q1: [1, 2, 3], q2: [4, 5, 6], q3: [7, 8, 9], q4: [10, 11, 12] };
-
-    const monthlyExpense = _.round(totalExpense / 12, 2); // calculate with 2 decimal places
-    const monthlyIncome = _.round(totalIncome / 12, 2); // calculate with 2 decimal places
-
-    // Monthly fields split into 12 months
-    const monthFields = months.reduce<Record<string, number>>((acc, m) => {
-      acc[`m${m}_exp`] = monthlyExpense;
-      acc[`m${m}_inc`] = monthlyIncome;
-      return acc;
-    }, {});
-
-    // Quarterly fields
-    const quarterFields = Object.entries(quarters).reduce<Record<string, number>>(
-      (acc, [q, ms]) => {
-        acc[`${q}_exp`] = _.round(ms.length * monthlyExpense, 2); // by multiplying by 3 months with monthlyExpense
-        acc[`${q}_inc`] = _.round(ms.length * monthlyIncome, 2); // by multiplying by 3 months with monthlyIncome
-        return acc;
-      },
-      {},
-    );
-
-    // Half-year totals
-    const h1_exp = _.round(monthlyExpense * 6, 2); // 6 months in half-year
-    const h2_exp = _.round(monthlyExpense * 6, 2); // 6 months in half-year
-    const h1_inc = _.round(monthlyIncome * 6, 2); // 6 months in half-year
-    const h2_inc = _.round(monthlyIncome * 6, 2); // 6 months in half-year
-
-    return {
-      monthFields,
-      quarterFields,
-      halfYearFields: { h1_exp, h2_exp, h1_inc, h2_inc },
-      monthlyExpense,
-      monthlyIncome,
-    };
-  }
-
   // =============== CREATE BUDGET VERSION 2 WITH TRANSACTION ==============
   private async createSingleBudget(
     prisma: Prisma.TransactionClient,
@@ -236,20 +194,6 @@ class BudgetUseCase {
     });
   }
 
-  private calculateActualTotals(
-    transactions: FetchTransactionResponse[] | [],
-    currency: Currency,
-  ): { totalExpenseAct: number; totalIncomeAct: number } {
-    const totalExpenseAct = transactions
-      .filter((t) => t.type === TransactionType.Expense)
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
-
-    const totalIncomeAct = transactions
-      .filter((t) => t.type === TransactionType.Income)
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
-    return { totalExpenseAct, totalIncomeAct };
-  }
-
   private calculateBudgetAllocation(totalExpense: number, totalIncome: number): BudgetAllocation {
     // Create budget details for each month
     const months = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -295,70 +239,6 @@ class BudgetUseCase {
       monthlyExpense,
       monthlyIncome,
     };
-  }
-
-  private async createSingleBudget(
-    prisma: Prisma.TransactionClient,
-    userId: string,
-    fiscalYear: number,
-    { type, totalExpense, totalIncome }: BudgetTypeData,
-    { description, icon, currency, isSystemGenerated }: Partial<BudgetCreationParams>,
-  ): Promise<BudgetsTable> {
-    const { monthFields, quarterFields, halfYearFields, monthlyExpense, monthlyIncome } =
-      this.calculateBudgetAllocation(totalExpense, totalIncome);
-
-    const newBudget = await prisma.budgetsTable.create({
-      data: {
-        userId,
-        icon,
-        fiscalYear,
-        type,
-        total_exp: totalExpense,
-        total_inc: totalIncome,
-        ...halfYearFields,
-        ...quarterFields,
-        ...monthFields,
-        createdBy: !isSystemGenerated ? userId : undefined,
-        description,
-        currency,
-      },
-    });
-
-    if (!newBudget || !newBudget.id) {
-      throw new Error(Messages.BUDGET_CREATE_FAILED);
-    }
-
-    const months = Array.from({ length: 12 }, (_, i) => i + 1);
-
-    const detailData = months.flatMap((month) => [
-      {
-        userId,
-        budgetId: newBudget.id,
-        type: BudgetDetailType.Expense,
-        amount: monthlyExpense,
-        month,
-        createdBy: userId,
-      },
-      {
-        userId,
-        budgetId: newBudget.id,
-        type: BudgetDetailType.Income,
-        amount: monthlyIncome,
-        month,
-        createdBy: userId,
-      },
-    ]) as Prisma.BudgetDetailsCreateManyInput[];
-
-    const createdBudgetDetailRes = await prisma.budgetDetails.createManyAndReturn({
-      data: detailData,
-      skipDuplicates: true,
-    });
-
-    if (!createdBudgetDetailRes) {
-      throw new Error(Messages.BUDGET_DETAILS_CREATE_FAILED);
-    }
-
-    return newBudget;
   }
 
   // =============== CREATE BUDGET VERSION 2 WITH TRANSACTION ==============
