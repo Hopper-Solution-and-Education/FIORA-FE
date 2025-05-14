@@ -17,6 +17,8 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
         return GET(req, res, userId);
       case 'PUT':
         return PUT(req, res, userId);
+      case 'DELETE':
+        return DELETE(req, res, userId);
 
       default:
         return res
@@ -137,5 +139,84 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       .json(createResponse(RESPONSE_CODE.OK, Messages.BUDGET_GET_BY_ID_SUCCESS, budgetResponse));
   } catch (error: any) {
     return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: error.message });
+  }
+}
+
+// delete budget top bot
+export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  try {
+    const { year: budgetYear } = req.query;
+
+    console.log('budgetYear', budgetYear);
+
+    // Basic validation for missing ID
+    if (!budgetYear || typeof budgetYear !== 'string') {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.BUDGET_ID_MISSING, null)); // Added a specific message
+    }
+
+    // --- Optimization: Dynamically build the data object ---
+    // List all the fields that represent financial values to be zeroed out
+    const financialFieldsToZero: string[] = [];
+    const budgetType = [BudgetType.Top, BudgetType.Bot];
+    const types = ['exp', 'inc'];
+
+    // Add total fields
+    financialFieldsToZero.push('total_exp', 'total_inc');
+
+    // Add half-yearly fields (h1_exp, h1_inc, h2_exp, h2_inc)
+    for (let i = 1; i <= 2; i++) {
+      types.forEach((type) => {
+        financialFieldsToZero.push(`h${i}_${type}`);
+      });
+    }
+
+    // Add quarterly fields (q1_exp, q1_inc, ..., q4_exp, q4_inc)
+    for (let i = 1; i <= 4; i++) {
+      types.forEach((type) => {
+        financialFieldsToZero.push(`q${i}_${type}`);
+      });
+    }
+
+    // Add monthly fields (m1_exp, m1_inc, ..., m12_exp, m12_inc)
+    for (let i = 1; i <= 12; i++) {
+      types.forEach((type) => {
+        financialFieldsToZero.push(`m${i}_${type}`);
+      });
+    }
+    // --- End Dynamic Generation ---
+
+    // Create the update data object using the dynamically generated list
+    const updateData: { [key: string]: number } = Object.fromEntries(
+      financialFieldsToZero.map((field) => [field, 0]),
+    );
+
+    // Perform the update operation
+    // This will set all fields listed in financialFieldsToZero to 0
+    await Promise.all(
+      budgetType.map(async (type) => {
+        await prisma.budgetsTable.update({
+          where: {
+            fiscalYear_type_userId: {
+              fiscalYear: Number(budgetYear),
+              type: type as BudgetType,
+              userId,
+            },
+          },
+          data: updateData,
+        });
+      }),
+    );
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, Messages.BUDGET_DELETE_SUCCESS, null));
+  } catch (error: any) {
+    // Handle other potential errors (database errors, etc.)
+    console.error('Error deleting budget:', error); // Log the error for debugging
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, Messages.INTERNAL_ERROR, null)); // Use generic internal server error message
+    // --- End Improved Error Handling ---
   }
 }

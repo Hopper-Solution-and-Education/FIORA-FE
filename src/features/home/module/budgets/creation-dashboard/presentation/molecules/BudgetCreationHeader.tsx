@@ -27,7 +27,7 @@ const BudgetCreationHeader = () => {
       toast.error('Budget ID is not found');
       return;
     }
-    dispatch(deleteBudgetAsyncThunk({ budgetId }))
+    dispatch(deleteBudgetAsyncThunk({ budgetYear }))
       .unwrap()
       .then(() => {
         router.push('/budgets');
@@ -54,7 +54,7 @@ const BudgetCreationHeader = () => {
       <DeleteDialog
         open={openDelete}
         onOpenChange={setOpenDelete}
-        confirmText={`This action will delete the Top Down Planning budget for ${getValues('fiscalYear')} only. Please ensure the Account Balance is verified for the rollback process.`}
+        confirmText={`This action will delete budget for ${budgetYear}. Please ensure the Account Balance is verified for the rollback process.`}
         description="Click ← to stay back Or click V to confirm delete."
         onConfirm={handlePressConfirmDeleteBudget}
         isLoading={isLoading}

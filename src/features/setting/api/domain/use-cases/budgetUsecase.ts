@@ -498,18 +498,27 @@ class BudgetUseCase {
     { type, totalExpense, totalIncome }: BudgetTypeData,
     { description, icon, currency }: Partial<BudgetCreationParams>,
   ) {
+    // Check if budget exists
+    const existingBudget = await prisma.budgetsTable.findUnique({
+      where: {
+        id: budgetId,
+        type: type as BudgetType,
+      },
+    });
+
+    if (!existingBudget) {
+      throw new Error(Messages.BUDGET_NOT_FOUND);
+    }
+
     const { monthFields, quarterFields, halfYearFields } = this.calculateBudgetAllocation(
       totalExpense,
       totalIncome,
     );
 
-    if (type === 'Act') {
-      throw new Error(Messages.BUDGET_UPDATE_FAILED);
-    }
-
     const updatedBudget = await prisma.budgetsTable.update({
       where: {
         id: budgetId,
+        type: type as BudgetType,
       },
       data: {
         total_exp: totalExpense,

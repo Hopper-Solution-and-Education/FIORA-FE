@@ -54,7 +54,7 @@ class BudgetAPI implements IBudgetAPI {
   }
 
   async deleteBudget(request: BudgetDeleteRequestDTO): Promise<BudgetDeleteResponseDTO> {
-    return await httpClient.delete(`/api/budgets/delete/${request.budgetId}`);
+    return await httpClient.delete(`/api/budgets/${request.budgetYear}`);
   }
 
   async updateBudget(request: BudgetUpdateRequestDTO): Promise<BudgetUpdateResponseDTO> {

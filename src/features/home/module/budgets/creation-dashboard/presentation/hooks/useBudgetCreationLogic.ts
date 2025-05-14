@@ -42,6 +42,7 @@ export const useBudgetCreationLogic = () => {
       });
 
       reset({
+        id: budget.id,
         icon: budget.icon,
         fiscalYear: String(budget.fiscalYear),
         currency: budget.currency,

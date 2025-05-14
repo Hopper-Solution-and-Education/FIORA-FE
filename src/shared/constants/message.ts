@@ -51,6 +51,7 @@ export enum Messages {
   BUDGET_GET_BY_ID_SUCCESS = 'Get budget by id successfully',
   BUDGET_UPDATE_SUCCESS = 'Update budget successfully !',
   // Budget Service Failed
+  BUDGET_ID_MISSING = 'Budget id is missing',
   INVALID_BUDGET_TYPE = 'Invalid budget type. Budget type must be Act, Bot, or Top',
   DUPLICATED_BUDGET_FISCAL_YEAR = 'Fiscal year already exists',
   BUDGET_DETAILS_CREATE_FAILED = 'Failed to create budget details',

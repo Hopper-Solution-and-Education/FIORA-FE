@@ -128,7 +128,7 @@ class BudgetMapper {
 
   static toDeleteBudgetRequestDTO(requestDTO: BudgetDeleteRequest): BudgetDeleteRequestDTO {
     return {
-      budgetId: requestDTO.budgetId,
+      budgetYear: requestDTO.budgetYear,
     };
   }
 

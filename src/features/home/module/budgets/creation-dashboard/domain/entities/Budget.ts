@@ -248,7 +248,7 @@ export type BudgetGetByYearAndTypeResponse = {
 };
 
 export type BudgetDeleteRequest = {
-  budgetId: string;
+  budgetYear: string;
 };
 
 export type BudgetDeleteResponse = {
