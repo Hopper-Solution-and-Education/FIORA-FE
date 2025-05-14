@@ -3,8 +3,8 @@ import {
   BudgetCreateResponse,
   BudgetDeleteRequest,
   BudgetDeleteResponse,
-  BudgetGetByIdRequest,
-  BudgetGetByIdResponse,
+  BudgetGetByYearAndTypeRequest,
+  BudgetGetByYearAndTypeResponse,
   BudgetGetRequest,
   BudgetGetResponse,
   BudgetUpdateRequest,
@@ -12,14 +12,14 @@ import {
 } from '../../domain/entities/Budget';
 import {
   BudgetDeleteRequestDTO,
-  BudgetGetByIdRequestDTO,
+  BudgetGetByYearAndTypeRequestDTO,
   BudgetUpdateRequestDTO,
 } from '../dto/request';
 import { BudgetCreateRequestDTO } from '../dto/request/BudgetCreateRequestDTO';
 import { BudgetGetRequestDTO } from '../dto/request/BudgetGetRequestDTO';
 import {
   BudgetDeleteResponseDTO,
-  BudgetGetByIdResponseDTO,
+  BudgetGetByYearAndTypeResponseDTO,
   BudgetUpdateResponseDTO,
 } from '../dto/response';
 import { BudgetCreateResponseDTO } from '../dto/response/BudgetCreateResponseDTO';
@@ -103,14 +103,18 @@ class BudgetMapper {
     };
   }
 
-  static toGetBudgetByIdRequestDTO(requestDTO: BudgetGetByIdRequest): BudgetGetByIdRequestDTO {
+  static toGetBudgetByYearAndTypeRequestDTO(
+    requestDTO: BudgetGetByYearAndTypeRequest,
+  ): BudgetGetByYearAndTypeRequestDTO {
     return {
       fiscalYear: requestDTO.fiscalYear,
       type: requestDTO.type,
     };
   }
 
-  static toGetBudgetByIdResponse(apiResponse: BudgetGetByIdResponseDTO): BudgetGetByIdResponse {
+  static toGetBudgetByYearAndTypeResponse(
+    apiResponse: BudgetGetByYearAndTypeResponseDTO,
+  ): BudgetGetByYearAndTypeResponse {
     return {
       id: apiResponse.data.id,
       icon: apiResponse.data.icon,

@@ -3,7 +3,7 @@ export const TYPES = {
   IBudgetRepository: Symbol.for('IBudgetRepository'),
   ICreateBudgetUseCase: Symbol.for('ICreateBudgetUseCase'),
   IGetBudgetUseCase: Symbol.for('IGetBudgetUseCase'),
-  IGetBudgetByIdUseCase: Symbol.for('IGetBudgetByIdUseCase'),
+  IGetBudgetByYearAndTypeUseCase: Symbol.for('IGetBudgetByYearAndTypeUseCase'),
   IDeleteBudgetUseCase: Symbol.for('IDeleteBudgetUseCase'),
   IUpdateBudgetUseCase: Symbol.for('IUpdateBudgetUseCase'),
 };

@@ -12,7 +12,7 @@ import {
 } from '../../constants';
 import { budgetDIContainer } from '../../di/budgetDIContainer';
 import { TYPES } from '../../di/budgetDIContainer.type';
-import { IGetBudgetByIdUseCase } from '../../domain/usecases';
+import { IGetBudgetByYearAndTypeUseCase } from '../../domain/usecases';
 import { resetGetBudgetState } from '../../slices';
 import {
   createBudgetAsyncThunk,
@@ -36,11 +36,14 @@ const BudgetCreation = ({ methods }: Props) => {
   const handleGetBudgetById = useCallback(async () => {
     try {
       setIsLoadingGetBudgetById(true);
-      const getBudgetByIdUseCase = budgetDIContainer.get<IGetBudgetByIdUseCase>(
-        TYPES.IGetBudgetByIdUseCase,
+      const getBudgetByYearAndTypeUseCase = budgetDIContainer.get<IGetBudgetByYearAndTypeUseCase>(
+        TYPES.IGetBudgetByYearAndTypeUseCase,
       );
 
-      const budget = await getBudgetByIdUseCase.execute({ fiscalYear: budgetYear, type: 'Top' });
+      const budget = await getBudgetByYearAndTypeUseCase.execute({
+        fiscalYear: budgetYear,
+        type: 'Top',
+      });
 
       reset({
         icon: budget.icon,

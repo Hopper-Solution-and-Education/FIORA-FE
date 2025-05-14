@@ -232,12 +232,12 @@ export type BudgetCreateResponse = {
   m12Expense: number;
 };
 
-export type BudgetGetByIdRequest = {
+export type BudgetGetByYearAndTypeRequest = {
   fiscalYear: string;
   type: 'Top' | 'Bottom';
 };
 
-export type BudgetGetByIdResponse = {
+export type BudgetGetByYearAndTypeResponse = {
   id: string;
   icon: string;
   fiscalYear: string;

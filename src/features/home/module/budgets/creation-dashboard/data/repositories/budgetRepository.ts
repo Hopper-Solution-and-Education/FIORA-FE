@@ -4,8 +4,8 @@ import {
   BudgetCreateResponse,
   BudgetDeleteRequest,
   BudgetDeleteResponse,
-  BudgetGetByIdRequest,
-  BudgetGetByIdResponse,
+  BudgetGetByYearAndTypeRequest,
+  BudgetGetByYearAndTypeResponse,
   BudgetGetRequest,
   BudgetGetResponse,
   BudgetUpdateRequest,
@@ -17,7 +17,9 @@ import BudgetMapper from '../mappers/BudgetMapper';
 export interface IBudgetRepository {
   createBudget(request: BudgetCreateRequest): Promise<BudgetCreateResponse>;
   getBudget(request: BudgetGetRequest): Promise<BudgetGetResponse>;
-  getBudgetById(request: BudgetGetByIdRequest): Promise<BudgetGetByIdResponse>;
+  getBudgetByYearAndType(
+    request: BudgetGetByYearAndTypeRequest,
+  ): Promise<BudgetGetByYearAndTypeResponse>;
   deleteBudget(request: BudgetDeleteRequest): Promise<BudgetDeleteResponse>;
   updateBudget(request: BudgetUpdateRequest): Promise<BudgetUpdateResponse>;
 }
@@ -41,10 +43,12 @@ export class BudgetRepository implements IBudgetRepository {
     return BudgetMapper.toGetBudgetResponse(response);
   }
 
-  async getBudgetById(request: BudgetGetByIdRequest): Promise<BudgetGetByIdResponse> {
-    const requestAPI = BudgetMapper.toGetBudgetByIdRequestDTO(request);
-    const response = await this.budgetAPI.getBudgetById(requestAPI);
-    return BudgetMapper.toGetBudgetByIdResponse(response);
+  async getBudgetByYearAndType(
+    request: BudgetGetByYearAndTypeRequest,
+  ): Promise<BudgetGetByYearAndTypeResponse> {
+    const requestAPI = BudgetMapper.toGetBudgetByYearAndTypeRequestDTO(request);
+    const response = await this.budgetAPI.getBudgetByYearAndType(requestAPI);
+    return BudgetMapper.toGetBudgetByYearAndTypeResponse(response);
   }
 
   async deleteBudget(request: BudgetDeleteRequest): Promise<BudgetDeleteResponse> {

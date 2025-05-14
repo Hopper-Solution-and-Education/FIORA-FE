@@ -1,6 +1,6 @@
 import { Currency, HttpResponse } from '@/shared/types';
 
-export type BudgetGetByIdResponseDTO = HttpResponse<{
+export type BudgetGetByYearAndTypeResponseDTO = HttpResponse<{
   id: string;
   icon: string;
   fiscalYear: string;

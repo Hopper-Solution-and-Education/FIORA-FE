@@ -4,12 +4,12 @@ import { createBudgetRepository, IBudgetRepository } from '../data/repositories'
 import {
   createCreateBudgetUseCase,
   createDeleteBudgetUseCase,
-  createGetBudgetByIdUseCase,
+  createGetBudgetByYearAndTypeUseCase,
   createGetBudgetUseCase,
   createUpdateBudgetUseCase,
   ICreateBudgetUseCase,
   IDeleteBudgetUseCase,
-  IGetBudgetByIdUseCase,
+  IGetBudgetByYearAndTypeUseCase,
   IGetBudgetUseCase,
   IUpdateBudgetUseCase,
 } from '../domain/usecases';
@@ -30,7 +30,7 @@ const createBudgetUseCase = createCreateBudgetUseCase(categoryRepository);
 const getBudgetUseCase = createGetBudgetUseCase(categoryRepository);
 
 // create get budget by id use case
-const getBudgetByIdUseCase = createGetBudgetByIdUseCase(categoryRepository);
+const getBudgetByYearAndTypeUseCase = createGetBudgetByYearAndTypeUseCase(categoryRepository);
 
 // create delete budget use case
 const deleteBudgetUseCase = createDeleteBudgetUseCase(categoryRepository);
@@ -50,8 +50,8 @@ budgetDIContainer
   .bind<IGetBudgetUseCase>(TYPES.IGetBudgetUseCase)
   .toConstantValue(getBudgetUseCase);
 budgetDIContainer
-  .bind<IGetBudgetByIdUseCase>(TYPES.IGetBudgetByIdUseCase)
-  .toConstantValue(getBudgetByIdUseCase);
+  .bind<IGetBudgetByYearAndTypeUseCase>(TYPES.IGetBudgetByYearAndTypeUseCase)
+  .toConstantValue(getBudgetByYearAndTypeUseCase);
 budgetDIContainer
   .bind<IDeleteBudgetUseCase>(TYPES.IDeleteBudgetUseCase)
   .toConstantValue(deleteBudgetUseCase);

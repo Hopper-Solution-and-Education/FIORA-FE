@@ -4,14 +4,14 @@ import isEmpty from 'lodash/isEmpty';
 import {
   BudgetCreateRequestDTO,
   BudgetDeleteRequestDTO,
-  BudgetGetByIdRequestDTO,
+  BudgetGetByYearAndTypeRequestDTO,
   BudgetGetRequestDTO,
   BudgetUpdateRequestDTO,
 } from '../dto/request';
 import {
   BudgetCreateResponseDTO,
   BudgetDeleteResponseDTO,
-  BudgetGetByIdResponseDTO,
+  BudgetGetByYearAndTypeResponseDTO,
   BudgetGetResponseDTO,
   BudgetUpdateResponseDTO,
 } from '../dto/response';
@@ -19,7 +19,9 @@ import {
 interface IBudgetAPI {
   createBudget(request: BudgetCreateRequestDTO): Promise<BudgetCreateResponseDTO>;
   getBudget(request: BudgetGetRequestDTO): Promise<BudgetGetResponseDTO>;
-  getBudgetById(request: BudgetGetByIdRequestDTO): Promise<BudgetGetByIdResponseDTO>;
+  getBudgetByYearAndType(
+    request: BudgetGetByYearAndTypeRequestDTO,
+  ): Promise<BudgetGetByYearAndTypeResponseDTO>;
   deleteBudget(request: BudgetDeleteRequestDTO): Promise<BudgetDeleteResponseDTO>;
   updateBudget(request: BudgetUpdateRequestDTO): Promise<BudgetUpdateResponseDTO>;
 }
@@ -45,7 +47,9 @@ class BudgetAPI implements IBudgetAPI {
     );
   }
 
-  async getBudgetById(request: BudgetGetByIdRequestDTO): Promise<BudgetGetByIdResponseDTO> {
+  async getBudgetByYearAndType(
+    request: BudgetGetByYearAndTypeRequestDTO,
+  ): Promise<BudgetGetByYearAndTypeResponseDTO> {
     return await httpClient.get(`/api/budgets/${request.fiscalYear}?type=${request.type}`);
   }
 
