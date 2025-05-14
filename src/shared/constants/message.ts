@@ -46,6 +46,7 @@ export enum Messages {
   GET_BUDGET_ITEM_SUCCESS = 'Get budget item successfully',
   CREATE_BUDGET_SUCCESS = 'Create budget successfully',
   UPDATE_BUDGET_SUCCESS = 'Update budget successfully',
+  BUDGET_PAST_YEAR_NOT_ALLOWED = 'Fiscal year cannot be in the past',
 
   // Budget Service Failed
   INVALID_BUDGET_TYPE = 'Invalid budget type. Budget type must be Act, Bot, or Top',

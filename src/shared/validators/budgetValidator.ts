@@ -37,10 +37,6 @@ export const budgetCreateBody = Joi.object({
       'any.required': 'Estimated total income is required',
     }),
   description: Joi.string().optional().allow(''),
-  icon: Joi.string().required().messages({
-    'string.empty': 'Icon is invalid',
-    'any.required': 'Icon is required',
-  }),
   currency: Joi.string().valid(Currency.USD, Currency.VND).required().messages({
     'string.empty': 'Currency is invalid',
     'any.required': 'Currency is required',

@@ -1,4 +1,4 @@
-import { BudgetsTable, Currency, Prisma } from '@prisma/client';
+import { BudgetsTable, BudgetType, Currency, Prisma } from '@prisma/client';
 
 export interface IBudgetRepository {
   createBudget(
@@ -45,6 +45,8 @@ export interface BudgetCreation {
   userId: string;
   currency: Currency;
   isSystemGenerated?: boolean;
+  type?: BudgetType;
+  skipActCalculation?: boolean;
 }
 
 export interface BudgetGetAnnualYearParams {

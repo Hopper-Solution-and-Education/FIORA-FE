@@ -23,6 +23,16 @@ class TransactionRepository implements ITransactionRepository {
     });
   }
 
+  async findFirstTransaction(
+    where: Prisma.TransactionWhereInput,
+    options?: Prisma.TransactionFindFirstArgs,
+  ): Promise<Transaction | null> {
+    return await prisma.transaction.findFirst({
+      where,
+      ...options,
+    });
+  }
+
   async getTransactionById(id: string, userId: string): Promise<Transaction | null> {
     const transaction = await prisma.transaction.findFirst({
       where: {

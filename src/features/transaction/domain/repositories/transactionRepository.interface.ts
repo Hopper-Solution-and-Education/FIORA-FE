@@ -23,4 +23,8 @@ export interface ITransactionRepository {
 
   // *PARTNER ZONE
   updateTransactionsPartner(oldPartnerId: string, newPartnerId: string): Promise<void>;
+  findFirstTransaction(
+    where: Prisma.TransactionWhereInput,
+    options?: Prisma.TransactionFindFirstArgs,
+  ): Promise<Transaction | null>;
 }
