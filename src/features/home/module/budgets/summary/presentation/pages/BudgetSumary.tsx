@@ -1,8 +1,10 @@
 'use client';
 
 import { ChartSkeleton } from '@/components/common/organisms';
+import { COLORS } from '@/shared/constants/chart';
+import { ICON_SIZE } from '@/shared/constants/size';
 import { useAppSelector } from '@/store';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -14,8 +16,6 @@ import { BudgetType } from '../../domain/entities/BudgetType';
 import { transformDataForChart } from '../../utils/transformDataForChart';
 import BudgetTreeView from '../molecules/BudgetSummaryTreeView';
 import { HierarchicalBarItem } from '../types';
-import { COLORS } from '@/shared/constants/chart';
-import { ICON_SIZE } from '@/shared/constants/size';
 
 interface BudgetSummaryProps {
   year: number;
@@ -96,11 +96,6 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
             color={COLORS.DEPS_INFO.LEVEL_1}
             size={ICON_SIZE.SM}
             onClick={handleEditBudget}
-          />
-          <Trash2
-            className="cursor-pointer scale-100 transition-transform duration-200 hover:scale-125"
-            color={COLORS.DEPS_DANGER.LEVEL_1}
-            size={ICON_SIZE.SM}
           />
         </div>
       </div>

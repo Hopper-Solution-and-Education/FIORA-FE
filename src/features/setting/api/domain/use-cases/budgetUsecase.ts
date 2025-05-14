@@ -448,45 +448,64 @@ class BudgetUseCase {
     if (type === 'Act') {
       throw new Error('Act budget is not allowed to be update manually');
     }
+
+    const budgetTypeData: BudgetTypeData[] = [
+      { type: 'Top', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
+      // { type: 'Act', totalExpense: totalExpenseAct, totalIncome: totalIncomeAct },
+    ];
+
+    // update budget
+
+    const updatedBudgets = await Promise.all(
+      budgetTypeData.map((budgetTypeData) =>
+        this.updateSingleBudget(prisma, userId, fiscalYear, budgetId, budgetTypeData, {
+          description,
+          icon,
+          currency,
+        }),
+      ),
+    );
+    // return budget
+    return updatedBudgets;
     // update budget top bot
-    return await prisma.$transaction(async (prisma) => {
-      // calculate transaction range
-      const { yearStart, effectiveEndDate } = this.calculateTransactionRange(fiscalYear);
+    // return await prisma.$transaction(async (prisma) => {
+    //   // calculate transaction range
+    //   const { yearStart, effectiveEndDate } = this.calculateTransactionRange(fiscalYear);
 
-      // fetch transactions
-      const transactions = await this.fetchTransactionsTx(
-        userId,
-        yearStart,
-        effectiveEndDate,
-        prisma,
-      );
+    //   // fetch transactions
+    //   const transactions = await this.fetchTransactionsTx(
+    //     userId,
+    //     yearStart,
+    //     effectiveEndDate,
+    //     prisma,
+    //   );
 
-      // calculate actual totals
-      const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
-        transactions || [],
-        currency,
-      );
+    //   // calculate actual totals
+    //   const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
+    //     transactions || [],
+    //     currency,
+    //   );
 
-      // calculate budget type data
-      const budgetTypeData: BudgetTypeData[] = [
-        { type: 'Top', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
-        { type: 'Act', totalExpense: totalExpenseAct, totalIncome: totalIncomeAct },
-      ];
+    //   // calculate budget type data
+    //   const budgetTypeData: BudgetTypeData[] = [
+    //     { type: 'Top', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
+    //     // { type: 'Act', totalExpense: totalExpenseAct, totalIncome: totalIncomeAct },
+    //   ];
 
-      // update budget
+    //   // update budget
 
-      const updatedBudgets = await Promise.all(
-        budgetTypeData.map((budgetTypeData) =>
-          this.updateSingleBudget(prisma, userId, fiscalYear, budgetId, budgetTypeData, {
-            description,
-            icon,
-            currency,
-          }),
-        ),
-      );
-      // return budget
-      return updatedBudgets;
-    });
+    //   const updatedBudgets = await Promise.all(
+    //     budgetTypeData.map((budgetTypeData) =>
+    //       this.updateSingleBudget(prisma, userId, fiscalYear, budgetId, budgetTypeData, {
+    //         description,
+    //         icon,
+    //         currency,
+    //       }),
+    //     ),
+    //   );
+    //   // return budget
+    //   return updatedBudgets;
+    // });
   }
 
   private async updateSingleBudget(
