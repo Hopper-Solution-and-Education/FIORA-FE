@@ -169,6 +169,7 @@ model Transaction {
   partnerId        String?              @db.Uuid
   remark           String?              @db.VarChar(255)
   isDeleted        Boolean              @default(false)
+  isMarked         Boolean              @default(false)
   deletedAt        DateTime?            @db.Timestamptz(0)
   createdAt        DateTime             @default(now()) @db.Timestamptz(0)
   updatedAt        DateTime             @updatedAt @db.Timestamptz(0)
@@ -380,6 +381,7 @@ enum BudgetType {
 enum BudgetDetailType {
   Income
   Expense
+  Act
 }
 
 enum MediaType {

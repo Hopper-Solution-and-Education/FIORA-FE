@@ -9,6 +9,8 @@ export interface BudgetCreationParams {
   icon: string;
   currency: Currency;
   isSystemGenerated?: boolean;
+  type?: BudgetsTable['type'];
+  skipActCalculation?: boolean;
 }
 
 export interface BudgetAllocation {
@@ -27,6 +29,7 @@ export interface BudgetTypeData {
 
 export type FetchTransactionResponse = Prisma.TransactionGetPayload<{
   select: {
+    id: true;
     type: true;
     amount: true;
     currency: true;
