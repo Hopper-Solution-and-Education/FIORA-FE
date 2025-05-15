@@ -50,9 +50,6 @@ const PositiveNegativeStackBarChart = ({
     calculateRValue,
   } = processChartData(data, width, isMobile);
 
-  console.log(`Budget Chart ${title} positiveData`, positiveData);
-  console.log(`Budget Chart ${title}: Min ${minNegative} - Max ${maxPositive}`);
-
   const renderTooltipContent = (props: TooltipProps) => {
     const { active, payload, label } = props;
     if (!active || !payload || !payload.length) return null;
@@ -142,7 +139,7 @@ const PositiveNegativeStackBarChart = ({
         <>
           <div className="flex">
             {/* Negative Chart */}
-            <ResponsiveContainer width="30%" height={chartHeight}>
+            <ResponsiveContainer width="40%" height={chartHeight}>
               <BarChart data={negativeData} layout="vertical" margin={negativeChartMargins}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
                 <XAxis
@@ -157,22 +154,26 @@ const PositiveNegativeStackBarChart = ({
                   hide={false}
                   tickLine={false}
                   axisLine={false}
-                  tick={(props) => <StackYAxisTick {...props} processedData={data} />}
+                  tick={(props) => (
+                    <StackYAxisTick {...props} processedData={data} callback={callback} />
+                  )}
                   className="text-sm text-gray-600"
                 />
                 <Tooltip content={renderTooltipContent} />
                 {[STACK_KEY.A, STACK_KEY.T, STACK_KEY.B].map((key) => (
                   <Bar
+                    radius={[0, 4, 4, 0]}
                     key={key}
                     dataKey={key}
                     stackId="a"
                     label={(props) => (
                       <PositiveAndNegativeV2BarLabel
                         {...props}
-                        formatter={formatter(key, props.value, currency)}
+                        renderValue={formatter(key, props.value, currency)}
                       />
                     )}
                     onClick={(props) => callback && callback(props.payload)}
+                    className="transition-all duration-300 cursor-pointer"
                   >
                     {negativeData.map((entry, index) => (
                       <Cell key={index} fill={entry.colors[key as keyof typeof entry.colors]} />
@@ -182,7 +183,7 @@ const PositiveNegativeStackBarChart = ({
               </BarChart>
             </ResponsiveContainer>
             {/* Positive Chart */}
-            <ResponsiveContainer width="70%" height={chartHeight}>
+            <ResponsiveContainer width="60%" height={chartHeight}>
               <BarChart data={positiveData} layout="vertical" margin={positiveChartMargins}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
                 <XAxis
@@ -197,22 +198,26 @@ const PositiveNegativeStackBarChart = ({
                   hide={true}
                   tickLine={false}
                   axisLine={false}
-                  tick={(props) => <StackYAxisTick {...props} processedData={data} />}
+                  tick={(props) => (
+                    <StackYAxisTick {...props} processedData={data} callback={callback} />
+                  )}
                   className="text-sm text-gray-600"
                 />
                 <Tooltip content={renderTooltipContent} />
                 {[STACK_KEY.A, STACK_KEY.T, STACK_KEY.B].map((key) => (
                   <Bar
+                    radius={[0, 4, 4, 0]}
                     key={key}
                     dataKey={key}
                     stackId="a"
                     label={(props) => (
                       <PositiveAndNegativeV2BarLabel
                         {...props}
-                        formatter={formatter(key, props.value, currency)}
+                        renderValue={formatter(key, props.value, currency)}
                       />
                     )}
                     onClick={(props) => callback && callback(props.payload)}
+                    className="transition-all duration-300 cursor-pointer"
                   >
                     {positiveData.map((entry, index) => (
                       <Cell key={index} fill={entry.colors[key as keyof typeof entry.colors]} />
@@ -244,22 +249,26 @@ const PositiveNegativeStackBarChart = ({
               hide={false}
               tickLine={false}
               axisLine={false}
-              tick={(props) => <StackYAxisTick {...props} processedData={data} />}
+              tick={(props) => (
+                <StackYAxisTick {...props} processedData={data} callback={callback} />
+              )}
               className="text-sm text-gray-600"
             />
             <Tooltip content={renderTooltipContent} />
             {[STACK_KEY.A, STACK_KEY.T, STACK_KEY.B].map((key) => (
               <Bar
+                radius={[0, 4, 4, 0]}
                 key={key}
                 dataKey={key}
                 stackId="a"
                 label={(props) => (
                   <PositiveAndNegativeV2BarLabel
                     {...props}
-                    formatter={formatter(key, props.value, currency)}
+                    renderValue={formatter(key, props.value, currency)}
                   />
                 )}
                 onClick={(props) => callback && callback(props.payload)}
+                className="transition-all duration-300 cursor-pointer"
               >
                 {positiveData.map((entry, index) => (
                   <Cell key={index} fill={entry.colors[key as keyof typeof entry.colors]} />

@@ -4,12 +4,12 @@ import { BASE_BAR_HEIGHT, MIN_CHART_HEIGHT, STACK_KEY, STACK_TYPE } from '@/shar
 import { CustomBarItem, StackBarDisplay } from '../stacked-bar-chart/type';
 
 const largestKey = (item: CustomBarItem): string => {
-  const largestValue = Math.max(item.A, item.B, item.T);
+  const largestValue = Math.max(item.A, item.T, item.B);
   return largestValue === item.A
     ? STACK_KEY.A
-    : largestValue === item.B
-      ? STACK_KEY.B
-      : STACK_KEY.T;
+    : largestValue === item.T
+      ? STACK_KEY.T
+      : STACK_KEY.B;
 };
 
 const calculateChartDomains = (
