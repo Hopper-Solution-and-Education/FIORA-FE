@@ -770,6 +770,7 @@ class BudgetUseCase {
     const budgets = await this.budgetRepository.findManyBudgetData(where, {
       select: {
         id: true,
+        icon: true,
         fiscalYear: true,
         total_inc: true,
         total_exp: true,
@@ -826,7 +827,10 @@ class BudgetUseCase {
     // Step 5: Group budgets by year and extract Top, Bot, Act
     const budgetsByYear = budgets.reduce(
       (
-        acc: Record<string, Record<string, { total_inc: any; total_exp: any; currency: string }>>,
+        acc: Record<
+          string,
+          Record<string, { total_inc: any; total_exp: any; currency: string; icon: string }>
+        >,
         budget,
       ) => {
         if (!acc[budget.fiscalYear]) {
@@ -836,6 +840,7 @@ class BudgetUseCase {
           total_inc: budget.total_inc,
           total_exp: budget.total_exp,
           currency: budget.currency,
+          icon: budget.icon || '',
         };
         return acc;
       },
@@ -849,6 +854,7 @@ class BudgetUseCase {
         total_inc: 0,
         total_exp: 0,
         currency: Currency.VND,
+        icon: budgetsByYear[year].icon || '',
       };
       const botData = budgetData[BudgetType.Bot] || {
         total_inc: 0,
@@ -877,6 +883,7 @@ class BudgetUseCase {
         tentativeTotals.total_exp;
 
       return {
+        icon: topData.icon,
         year,
         budgetTopIncome: convertCurrency(topData.total_inc, topData.currency as Currency, currency),
         budgetTopExpense: convertCurrency(
