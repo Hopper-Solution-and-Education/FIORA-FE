@@ -30,8 +30,8 @@ const BudgetDashboardFilter = ({ onFilterDropdownOpenChange }: Props) => {
         take: 3,
         filters: {
           fiscalYear: {
-            lte: Number(data.toYear ?? 9999),
-            gte: Number(data.fromYear ?? 0),
+            lte: String(data.toYear ?? 9999),
+            gte: String(data.fromYear ?? 0),
           },
         },
       }),
