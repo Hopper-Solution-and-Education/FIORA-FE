@@ -23,7 +23,7 @@ class BudgetSummaryUsecase {
   ): Promise<BudgetSummaryResponse> {
     const budgets = await this._budgetRepository.findBudgetsByUserIdAndFiscalYear(
       userId,
-      fiscalYear,
+      fiscalYear.toString(),
     );
 
     const topBudget = budgets.find((budget) => budget.type === BudgetType.Top) || null;
@@ -45,7 +45,7 @@ class BudgetSummaryUsecase {
   ): Promise<BudgetsTable | null> {
     const budgets = await this._budgetRepository.findBudgetsByUserIdAndFiscalYear(
       userId,
-      fiscalYear,
+      fiscalYear.toString(),
     );
     const budget = budgets.find((budget) => budget.type === type) || null;
 
