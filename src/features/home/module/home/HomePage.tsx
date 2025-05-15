@@ -1,12 +1,11 @@
 'use client';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { MODULE } from '@/shared/constants';
-import { AccountsOverview } from './AccountOverview';
-import RecentTransactions from './components/RecentTransactions';
-import Recommendations from './components/Recommendations';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { useFeatureFlagGuard } from '@/shared/hooks/useFeatureFlagGuard';
 import AccountDashboard from '../account/AccountDashboard';
+import RecentTransactions from './components/RecentTransactions';
+import Recommendations from './components/Recommendations';
 
 export default function HomePage() {
   const { isFeatureOn } = useFeatureFlagGuard(FeatureFlags.ACCOUNT_FEATURE, MODULE.HOME);
@@ -26,7 +25,6 @@ export default function HomePage() {
             {/* Left Section: Financial & Account Overview */}
             <div className="col-span-1 md:col-span-2 lg:col-span-7 space-y-4">
               {isFeatureOn && <AccountDashboard module={MODULE.HOME} />}
-              <AccountsOverview />
             </div>
 
             {/* Right Section: Transactions & Recommendations */}

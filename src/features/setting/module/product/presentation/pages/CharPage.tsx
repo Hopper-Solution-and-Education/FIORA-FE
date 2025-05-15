@@ -1,7 +1,9 @@
 'use client';
 
 import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
+import PositiveAndNegativeBarChartV2 from '@/components/common/positive-negative-bar-chart-v2';
 import { COLORS } from '@/shared/constants/chart';
+import { formatCurrency } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -13,8 +15,6 @@ import {
   setProductCategoryToEdit,
 } from '../../slices';
 import { mapTransactionsToTwoSideBarItems } from '../utils';
-import PositiveAndNegativeBarChartV2 from '@/components/common/positive-negative-bar-chart-v2';
-import { formatCurrency } from '@/shared/utils';
 
 const ChartPage = () => {
   const data = useAppSelector((state) => state.productManagement.productTransaction.data);
@@ -24,7 +24,7 @@ const ChartPage = () => {
   );
   const dispatch = useAppDispatch();
   const { data: userData } = useSession();
-  const { currency } = useAppSelector((state) => state.settings);
+  const currency = useAppSelector((state) => state.settings.currency);
 
   const handleEditCategoryProduct = (categoryProduct: CategoryProduct) => {
     dispatch(setProductCategoryFormState('edit'));
@@ -52,7 +52,10 @@ const ChartPage = () => {
     }
   };
 
-  const chartData = useMemo(() => mapTransactionsToTwoSideBarItems(data), [data]);
+  const chartData = useMemo(
+    () => mapTransactionsToTwoSideBarItems(data, currency),
+    [currency, data],
+  );
 
   return (
     <div>

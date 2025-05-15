@@ -87,7 +87,6 @@ const useProductFormConfig = () => {
       placeholder="0.00%"
       label="Tax Rate"
       required
-      maxLength={3}
       disabled={isSubmitting}
       options={{
         percent: true,

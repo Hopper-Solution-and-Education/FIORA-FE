@@ -34,6 +34,7 @@ import {
   LayoutDashboardIcon,
   LayoutTemplate,
   Loader2,
+  LoaderCircle,
   LogIn,
   LucideIcon,
   LucideProps,
@@ -66,6 +67,9 @@ import {
   UtensilsCrossed,
   Wallet,
   X,
+  HandCoins,
+  Calendar,
+  CircleChevronLeft,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -153,4 +157,8 @@ export const Icons = {
   expand: Expand,
   shrink: Shrink,
   chartBar: ChartBar,
+  loader: LoaderCircle,
+  handCoins: HandCoins,
+  calendar: Calendar,
+  circleChevronLeft: CircleChevronLeft,
 };

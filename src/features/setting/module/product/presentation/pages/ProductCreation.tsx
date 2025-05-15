@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { FIREBASE_GS_URL, FIREBASE_STORAGE_URL } from '@/shared/constants';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { isEmpty } from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -17,6 +17,7 @@ import { Product } from '../../domain/entities';
 import { GetSingleProductUseCase } from '../../domain/usecases';
 
 import { removeFromFirebase, uploadToFirebase } from '@/shared/lib';
+import { setProductDetail } from '../../slices';
 import {
   createProduct,
   deleteProductAsyncThunk,
@@ -40,7 +41,6 @@ type ProductCreationType = {
 
 const ProductCreation = ({ productId }: ProductCreationType) => {
   const { page, limit } = useAppSelector((state) => state.productManagement.categories);
-
   const { page: pageProduct, pageSize } = useAppSelector(
     (state) => state.productManagement.products,
   );
@@ -65,7 +65,6 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
   useEffect(() => {
     const handleGetProduct = async () => {
       setIsLoadingGetProduct(true);
-      dispatch(getProductsAsyncThunk({ page: pageProduct, pageSize }));
       try {
         await dispatch(fetchCategoriesProduct({ page, pageSize: limit })).unwrap();
 
@@ -74,7 +73,11 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
             TYPES.IGetSingleProductUseCase,
           );
           const product = await getSingleProductUseCase.execute(productId);
+          if (!isEmpty(product.transactions)) {
+            dispatch(getProductsAsyncThunk({ page: pageProduct, pageSize }));
+          }
           if (product) {
+            dispatch(setProductDetail(product));
             reset({
               id: product.id,
               icon: product.icon || '',

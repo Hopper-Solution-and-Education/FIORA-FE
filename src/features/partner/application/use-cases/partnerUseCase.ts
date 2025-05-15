@@ -1,4 +1,4 @@
-import { type Prisma, type Partner } from '@prisma/client';
+import { type Prisma, type Partner, Transaction } from '@prisma/client';
 import { IPartnerRepository } from '../../domain/repositories/partnerRepository.interface';
 import { Messages } from '@/shared/constants/message';
 import { partnerRepository } from '../../infrastructure/repositories/partnerRepository';
@@ -32,7 +32,9 @@ class PartnerUseCase {
 
   async filterPartnerOptions(params: globalFilters, userId: string) {
     const searchParams = safeString(params.search);
-    let where = buildWhereClause(params.filters) as Prisma.PartnerWhereInput;
+    const filters = params.filters || {};
+
+    let where = buildWhereClause(filters) as Prisma.PartnerWhereInput;
 
     if (BooleanUtils.isTrue(searchParams)) {
       const typeSearchParams = searchParams.toLowerCase();
@@ -53,10 +55,11 @@ class PartnerUseCase {
         ],
       };
     }
-    const partnerFiltered = await this.partnerRepository.findManyPartner(
+
+    const partners = await this.partnerRepository.findManyPartner(
       {
         ...where,
-        userId: userId,
+        userId,
       },
       {
         include: {
@@ -67,7 +70,41 @@ class PartnerUseCase {
         orderBy: { transactions: { _count: 'desc' } },
       },
     );
-    return partnerFiltered;
+
+    const filteredPartners = this.filterByTransactionRange(partners, filters);
+    return filteredPartners;
+  }
+
+  async filterByTransactionRange(
+    partners: Array<any>,
+    filters: {
+      totalIncomeMin?: number;
+      totalIncomeMax?: number;
+      totalExpenseMin?: number;
+      totalExpenseMax?: number;
+    },
+  ) {
+    const {
+      totalIncomeMin = 0,
+      totalIncomeMax = Number.MAX_SAFE_INTEGER,
+      totalExpenseMin = 0,
+      totalExpenseMax = Number.MAX_SAFE_INTEGER,
+    } = filters;
+
+    return partners.filter((partner) => {
+      const totalExpense = partner.transactions
+        .filter((t: Transaction) => t.type === 'Expense')
+        .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
+
+      const totalIncome = partner.transactions
+        .filter((t: Transaction) => t.type === 'Income')
+        .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
+
+      const isValidExpense = totalExpense >= totalExpenseMin && totalExpense <= totalExpenseMax;
+      const isValidIncome = totalIncome >= totalIncomeMin && totalIncome <= totalIncomeMax;
+
+      return isValidExpense || isValidIncome;
+    });
   }
 
   async deletePartner(id: string, userId: string, newId?: string): Promise<void> {

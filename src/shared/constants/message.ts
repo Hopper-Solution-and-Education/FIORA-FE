@@ -28,7 +28,7 @@ export enum Messages {
   UPDATE_PRODUCT_FAILED = 'Failed to update product',
   DELETE_PRODUCT_FAILED = 'Failed to delete product',
   GET_PRODUCT_FAILED = 'Failed to get product',
-  INVALID_PRODUCT_TYPE = 'Invalid product type. Must be either Product or Service',
+  INVALID_PRODUCT_TYPE = 'Invalid product type. Must be either Product or Service or Edu',
 
   // Product & Service
   TRANSFER_TRANSACTION_SUCCESS = 'Transfer transaction successfully',
@@ -44,10 +44,18 @@ export enum Messages {
   UPDATE_PRODUCT_ITEM_FAILED = 'Failed to update product item',
 
   // Budget Service
+  GET_BUDGET_ITEM_SUCCESS = 'Get budget item successfully',
+  CREATE_BUDGET_SUCCESS = 'Create budget successfully',
+  UPDATE_BUDGET_SUCCESS = 'Update budget successfully',
 
   // Budget Service Failed
   INVALID_BUDGET_TYPE = 'Invalid budget type. Budget type must be Act, Bot, or Top',
   DUPLICATED_BUDGET_FISCAL_YEAR = 'Fiscal year already exists',
+  BUDGET_DETAILS_CREATE_FAILED = 'Failed to create budget details',
+  BUDGET_CREATE_FAILED = 'Failed to create budget',
+  BUDGET_NOT_FOUND = 'Budget not found',
+  BUDGET_DETAILS_NOT_FOUND = 'Budget details not found',
+  BUDGET_UPDATE_FAILED = 'Failed to update budget',
 
   // Category-Product Success
   CREATE_CATEGORY_PRODUCT_SUCCESS = 'Create category product successfully',

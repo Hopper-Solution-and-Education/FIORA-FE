@@ -1,6 +1,18 @@
 import { prisma } from '@/config';
-import { Prisma, Transaction, TransactionType } from '@prisma/client';
+import { Prisma, Transaction, TransactionType, Partner } from '@prisma/client';
 import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
+
+// Interface for enhanced partner with type information
+interface EnhancedPartner extends Partner {
+  type?: string;
+}
+
+// Interface for enhanced transaction with user info and enhanced partner
+interface EnhancedTransaction extends Transaction {
+  partner: EnhancedPartner | null;
+  createdBy: any | null;
+  updatedBy: any | null;
+}
 
 class TransactionRepository implements ITransactionRepository {
   async getTransactionsByUserId(userId: string): Promise<Transaction[]> {
@@ -45,12 +57,46 @@ class TransactionRepository implements ITransactionRepository {
         : null,
     ]);
 
-    // Return transaction with user information
-    return {
+    // Create enhanced transaction object
+    const enhancedTransaction: EnhancedTransaction = {
       ...transaction,
       createdBy,
       updatedBy,
-    } as any; // Using type assertion to avoid TypeScript errors
+      partner: transaction.partner ? { ...transaction.partner } : null,
+    };
+
+    // Determine partner type if partner exists
+    if (enhancedTransaction.partner && transaction.partnerId) {
+      // Get all transactions for this partner
+      const partnerTransactions = await prisma.transaction.findMany({
+        where: {
+          partnerId: transaction.partnerId,
+          userId: userId,
+          isDeleted: false,
+        },
+        select: {
+          type: true,
+        },
+      });
+
+      // Check transaction types
+      const hasIncomeType = partnerTransactions.some((t) => t.type === TransactionType.Income);
+      const hasExpenseType = partnerTransactions.some((t) => t.type === TransactionType.Expense);
+
+      // Determine partner type
+      if (hasIncomeType && !hasExpenseType) {
+        enhancedTransaction.partner.type = 'Supplier';
+      } else if (!hasIncomeType && hasExpenseType) {
+        enhancedTransaction.partner.type = 'Customer';
+      } else if (hasIncomeType && hasExpenseType) {
+        enhancedTransaction.partner.type = 'Customer & Supplier';
+      } else {
+        enhancedTransaction.partner.type = 'Unknown';
+      }
+    }
+
+    // Return enhanced transaction
+    return enhancedTransaction as any;
   }
 
   async updateTransaction(
@@ -165,7 +211,7 @@ class TransactionRepository implements ITransactionRepository {
   async getValidCategoryAccount(userId: string, type: TransactionType) {
     let fromAccounts: any[] = [];
     let toAccounts: any[] = [];
-    const fromCategories: any[] = [];
+    let fromCategories: any[] = [];
     let toCategories: any[] = [];
 
     if (type === TransactionType.Expense) {
@@ -178,6 +224,7 @@ class TransactionRepository implements ITransactionRepository {
           select: {
             id: true,
             name: true,
+            type: true,
           },
         }),
         prisma.category.findMany({
@@ -191,22 +238,24 @@ class TransactionRepository implements ITransactionRepository {
     }
 
     if (type === TransactionType.Income) {
-      [fromAccounts, toCategories] = await Promise.all([
-        prisma.account.findMany({
-          where: {
-            userId,
-            OR: [{ type: 'Payment' }, { type: 'CreditCard' }],
-          },
-          select: {
-            id: true,
-            name: true,
-          },
-        }),
+      [fromCategories, toAccounts] = await Promise.all([
         prisma.category.findMany({
           where: { userId, type: 'Income' },
           select: {
             id: true,
             name: true,
+          },
+        }),
+        prisma.account.findMany({
+          where: {
+            userId,
+            OR: [{ type: 'Payment' }, { type: 'CreditCard' }, { type: 'Debt' }],
+          },
+
+          select: {
+            id: true,
+            name: true,
+            type: true,
           },
         }),
       ]);
@@ -227,6 +276,7 @@ class TransactionRepository implements ITransactionRepository {
           select: {
             id: true,
             name: true,
+            type: true,
           },
         }),
         prisma.account.findMany({
@@ -234,16 +284,17 @@ class TransactionRepository implements ITransactionRepository {
           select: {
             id: true,
             name: true,
+            type: true,
           },
         }),
       ]);
     }
 
     return {
-      fromAccounts: fromAccounts.map((a) => a.name),
-      toAccounts: toAccounts.map((a) => a.name),
-      fromCategories: fromCategories.map((c) => c.name),
-      toCategories: toCategories.map((c) => c.name),
+      fromAccounts: fromAccounts,
+      toAccounts: toAccounts,
+      fromCategories: fromCategories,
+      toCategories: toCategories,
     };
   }
 

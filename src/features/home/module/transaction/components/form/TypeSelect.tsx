@@ -34,7 +34,7 @@ const TypeSelectField: React.FC<TypeSelectProps> = ({
           </FormLabel>
           <div className="w-full">
             <SelectField
-              className="w-full flex justify-between px-4 py-2"
+              className="!w-full flex justify-between"
               name={name}
               value={value}
               onChange={onChange}

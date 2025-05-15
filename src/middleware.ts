@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { pathToRegexp } from 'path-to-regexp';
 // import { FeatureFlags } from './shared/constants/featuresFlags';
 // import growthbook from './config/growthbook/growthbook';
 
-const publicRoutes = ['/', '/auth/sign-in', '/auth/sign-up'];
+const publicPatterns = ['/', '/auth/*path'];
 
 // const featureProtectedRoutes: { [key: string]: FeatureFlags } = {
 //   '/transaction': FeatureFlags.TRANSACTION_FEATURE,
@@ -14,6 +15,14 @@ const publicRoutes = ['/', '/auth/sign-in', '/auth/sign-up'];
 //   '/setting/partner': FeatureFlags.PARTNER_FEATURE,
 // };
 
+// document: https:// github.com/pillarjs/path-to-regexp
+
+const isPathMatchPattern = (path: string, pattern: string): boolean => {
+  const { regexp } = pathToRegexp(pattern);
+
+  return regexp.test(path);
+};
+
 export async function middleware(request: NextRequest) {
   try {
     // const gb = growthbook;
@@ -22,7 +31,7 @@ export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // *CHECK ROUTE ZONE
-    const isPublicRoute = publicRoutes.includes(pathname);
+    const isPublicRoute = publicPatterns.some((pattern) => isPathMatchPattern(pathname, pattern));
 
     if (!isPublicRoute && !token) {
       return NextResponse.redirect(new URL('/auth/sign-in', request.url));
@@ -60,5 +69,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|firebasestorage.googleapis.com).*)'],
 };

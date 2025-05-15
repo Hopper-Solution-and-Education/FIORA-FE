@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
-import Loading from '@/components/common/atoms/Loading';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,45 +12,94 @@ import {
 } from '@/components/ui/dialog';
 import { DialogClose } from '@radix-ui/react-dialog';
 import { useEffect, useRef, useState } from 'react';
+import { Check, CircleX, Loader2, TriangleAlert } from 'lucide-react';
 import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 
-import type { PDFDocumentProxy } from 'pdfjs-dist';
-import { Check, CircleX } from 'lucide-react';
-
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString();
-
-const options = {
-  cMapUrl: '/cmaps/',
-  standardFontDataUrl: '/standard_fonts/',
-};
-
-type PDFFile = string | File | null;
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 type TermsAndConditionModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onAccept: () => void;
   onDecline: () => void;
+  pdfUrl?: string;
 };
 
-const TermsAndConditionsModal = ({
-  isOpen,
-  onClose,
-  onAccept,
-  onDecline,
-}: TermsAndConditionModalProps) => {
-  const file: PDFFile = '/docs/sample-terms-and-conditions.pdf';
-  const [numPages, setNumPages] = useState<number>();
-  const [pageWidth, setPageWidth] = useState<number>(0);
+const Loading = () => (
+  <div className="fixed inset-0 flex flex-col items-center justify-center h-full w-full py-8">
+    <Loader2 className="h-16 w-16 text-primary animate-spin mb-4" />
+    <h2 className="text-2xl font-semibold text-primary">Loading...</h2>
+    <p className="text-gray-300 mt-2">Please wait while we prepare your content</p>
+  </div>
+);
+
+const ErrorLoading = () => (
+  <div className="fixed inset-0 flex flex-col items-center justify-center h-full w-full py-8">
+    <TriangleAlert className="h-16 w-16 text-red-500 mb-4" />
+    <h2 className="text-xl font-semibold text-red-500">Failed to load document</h2>
+    <p className="text-gray-400 mt-2">
+      An error occurred while loading the terms and conditions. Please try again later.
+    </p>
+  </div>
+);
+
+const TermsAndConditionsModal = (props: TermsAndConditionModalProps) => {
+  const { isOpen, onClose, onAccept, onDecline, pdfUrl } = props;
+
+  // Default PDF URL if none is provided through props
+  const defaultPdfUrl =
+    'https://firebasestorage.googleapis.com/v0/b/hopper-3d98d.firebasestorage.app/o/Terms%20%26%20Conditions%2Fsample-terms-conditions-agreement.pdf?alt=media&token=cbbcd191-6ee1-4099-ba65-73714f9cf83d';
+
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [isButtonActive, setIsButtonActive] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [numPages, setNumPages] = useState<number>(0);
+  const [pdfDocument, setPdfDocument] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  function onDocumentLoadSuccess({ numPages: nextNumPages }: PDFDocumentProxy): void {
-    setNumPages(nextNumPages);
-  }
+  // Fetch the PDF when the component mounts or when pdfUrl changes
+  useEffect(() => {
+    const fetchPdf = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Use provided URL or default
+        const urlToFetch = pdfUrl || defaultPdfUrl;
+
+        // Fetch the PDF
+        const response = await fetch(urlToFetch);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch PDF. Status: ${response.status}`);
+        }
+
+        // Get the PDF data
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        setPdfDocument(objectUrl);
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Error fetching PDF:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load document');
+        setIsLoading(false);
+      }
+    };
+
+    if (isOpen) {
+      fetchPdf();
+    }
+
+    return () => {
+      // Clean up any object URLs when the component unmounts
+      if (pdfDocument) {
+        URL.revokeObjectURL(pdfDocument);
+      }
+    };
+  }, [isOpen, pdfUrl]);
 
   // Handle scroll event to check if user has reached the bottom
   const handleScroll = () => {
@@ -66,35 +114,37 @@ const TermsAndConditionsModal = ({
     }
   };
 
+  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
+    setNumPages(numPages);
+    setIsLoading(false);
+  }
+
+  function onDocumentLoadError(error: Error) {
+    console.error('Error loading PDF:', error);
+    setError(error.message);
+    setIsLoading(false);
+  }
+
   useEffect(() => {
-    // Reset button state when modal opens
+    // Reset states when modal opens
     if (isOpen) {
       setIsButtonActive(false);
+      setError(null);
     }
   }, [isOpen]);
 
   useEffect(() => {
     const container = containerRef.current;
     if (container) {
-      // Set initial width
-      setPageWidth(container.offsetWidth);
-
       // Add scroll event listener
       container.addEventListener('scroll', handleScroll);
-
-      // Add resize listener to update page width if window resizes
-      const handleResize = () => {
-        setPageWidth(container.offsetWidth);
-      };
-      window.addEventListener('resize', handleResize);
 
       // Cleanup
       return () => {
         container.removeEventListener('scroll', handleScroll);
-        window.removeEventListener('resize', handleResize);
       };
     }
-  }, [containerRef.current, numPages]);
+  }, [containerRef.current]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose} defaultOpen={false}>
@@ -106,29 +156,35 @@ const TermsAndConditionsModal = ({
           </DialogDescription>
         </DialogHeader>
         <div ref={containerRef} className="h-[70vh] overflow-y-scroll overflow-x-hidden">
-          {typeof window !== 'undefined' ? (
-            <Document
-              file={file}
-              className={`relative w-full h-fit`}
-              onLoadSuccess={onDocumentLoadSuccess}
-              options={options}
-              loading={<Loading />}
-            >
-              {Array.from(new Array(numPages), (_el, index) => (
-                <Page
-                  key={`page_${index + 1}`}
-                  pageNumber={index + 1}
-                  loading={<div />}
-                  width={pageWidth}
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                />
-              ))}
-              {/* Add padding at the bottom to ensure scrolling works correctly */}
-              <div className="h-10"></div>
-            </Document>
-          ) : (
+          {isLoading ? (
             <Loading />
+          ) : error ? (
+            <ErrorLoading />
+          ) : (
+            <div className="flex flex-col items-center w-full">
+              <Document
+                file={pdfDocument}
+                onLoadSuccess={onDocumentLoadSuccess}
+                onLoadError={onDocumentLoadError}
+                loading={<Loading />}
+                error={<ErrorLoading />}
+              >
+                {Array.from(new Array(numPages), (_, index) => (
+                  <Page
+                    key={`page_${index + 1}`}
+                    pageNumber={index + 1}
+                    width={
+                      containerRef.current?.clientWidth
+                        ? containerRef.current.clientWidth - 30
+                        : undefined
+                    }
+                    renderTextLayer={true}
+                    renderAnnotationLayer={true}
+                    className="mb-4"
+                  />
+                ))}
+              </Document>
+            </div>
           )}
         </div>
 

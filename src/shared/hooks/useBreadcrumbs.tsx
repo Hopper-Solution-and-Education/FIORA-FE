@@ -40,9 +40,10 @@ const defaultConfig: BreadcrumbConfig = {
     create: 'Create',
     update: 'Update',
     details: 'Details',
+    summary: 'Summary',
   },
   displaySegments: undefined,
-  skipUuidAfter: ['update', 'details'],
+  skipUuidAfter: ['update', 'details', 'summary'],
 };
 
 /**
@@ -104,14 +105,14 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Product', link: '/setting/product' },
     { title: 'Create', link: '/setting/product/create' },
   ],
-  '/budgets': [
-    { title: 'Home', link: '/' },
-    { title: 'Budgets', link: '/budgets' },
-  ],
+  '/budgets': [{ title: 'Budgets', link: '/budgets' }],
   '/budgets/create': [
-    { title: 'Home', link: '/' },
     { title: 'Budgets', link: '/budgets' },
     { title: 'Create', link: '/budgets/create' },
+  ],
+  '/budgets/summary': [
+    { title: 'Budgets', link: '/budgets' },
+    { title: 'Summary', link: '/budgets/summary' },
   ],
 };
 
@@ -181,6 +182,11 @@ export const shouldSkipSegment = (
 
   // Skip if displaySegments is provided and segment is not in it
   if (config.displaySegments && !config.displaySegments.includes(segment)) {
+    return true;
+  }
+
+  // Skip year segment in budget path
+  if (segments[0] === 'budgets' && segments[1] === 'summary' && index === 2) {
     return true;
   }
 

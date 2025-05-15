@@ -1,0 +1,16 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'FIORA | Categories',
+  description: 'FIORA - Categories',
+};
+
+export default async function layout({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      {/* page main content */}
+      {children}
+      {/* page main content ends */}
+    </>
+  );
+}

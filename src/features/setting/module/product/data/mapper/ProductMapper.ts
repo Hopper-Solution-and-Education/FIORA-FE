@@ -58,6 +58,8 @@ export class ProductMapper {
       createdAt: String(item.createdAt),
       updatedAt: String(item.updatedAt),
       transactions: item.transactions,
+      createdBy: item.createdBy,
+      updatedBy: item.updatedBy,
     };
   }
 
@@ -165,6 +167,8 @@ export class ProductMapper {
       currency: response.data.currency,
       createdAt: new Date(response.data.createdAt).toISOString(),
       updatedAt: new Date(response.data.updatedAt).toISOString(),
+      createdBy: response.data.createdBy,
+      updatedBy: response.data.updatedBy,
     };
   }
 
@@ -206,50 +210,14 @@ export class ProductMapper {
           item.updatedAt ? format(new Date(item.updatedAt), 'dd/MM/yyyy HH:mm:ss') : '',
           transactions,
           item.currency,
+          item.createdBy,
+          item.updatedBy,
         );
       }),
     } as ProductsGetResponse;
 
     return dataResponse;
   }
-
-  // static parseServerItemToList(items: JsonValue): ProductItem[] {
-  //   if (items === null) {
-  //     return [];
-  //   }
-
-  //   if (!Array.isArray(items)) {
-  //     console.error(`Expected an array but received:`, items);
-  //     return [];
-  //   }
-
-  //   const result: ProductItem[] = [];
-
-  //   items.forEach((item) => {
-  //     if (typeof item === 'string') {
-  //       try {
-  //         const parsedObject = JSON.parse(item);
-  //         if (
-  //           parsedObject &&
-  //           typeof parsedObject === 'object' &&
-  //           'name' in parsedObject &&
-  //           'description' in parsedObject
-  //         ) {
-  //           result.push({
-  //             name: String(parsedObject.name),
-  //             description: String(parsedObject.description),
-  //             icon: String(parsedObject.icon),
-  //           });
-  //         }
-  //       } catch (error) {
-  //         console.error(`Lỗi khi parse JSON:`, error);
-  //       }
-  //     }
-  //   });
-
-  //   return result;
-  // }
-
   static toProductTransferDeleteAPIRequest(
     request: ProductTransferDeleteRequest,
   ): ProductTransferDeleteRequestDTO {

@@ -1,13 +1,13 @@
 import { prisma } from '@/config';
 import { Partner, Prisma } from '@prisma/client';
 import { IPartnerRepository } from '../../domain/repositories/partnerRepository.interface';
+import { PartnerExtras } from '@/shared/types/partner.types';
 
 class PartnerRepository implements IPartnerRepository {
-  async getPartnersByUserId(userId: string): Promise<Partner[]> {
+  async getPartnersByUserId(userId: string): Promise<PartnerExtras[]> {
     return await prisma.partner.findMany({
       where: {
         userId: userId,
-        transactions: { some: { isDeleted: false } },
       },
       include: {
         transactions: true,

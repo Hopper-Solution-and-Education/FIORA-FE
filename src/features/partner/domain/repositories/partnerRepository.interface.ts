@@ -1,7 +1,8 @@
+import { PartnerExtras } from '@/shared/types/partner.types';
 import { Partner, Prisma } from '@prisma/client';
 
 export interface IPartnerRepository {
-  getPartnersByUserId(userId: string): Promise<Partner[]>;
+  getPartnersByUserId(userId: string): Promise<PartnerExtras[]>;
   getPartnerById(id: string, userId: string): Promise<Partner | null>;
   createPartner(data: Prisma.PartnerUncheckedCreateInput): Promise<Partner>;
   updatePartner(

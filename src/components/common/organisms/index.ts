@@ -1,3 +1,4 @@
 export { default as ChartSkeleton } from './ChartSkeleton';
-export * from './GlobalDialog';
+export * from './DeleteDialog';
 export { default as SearchBar } from './SearchBar';
+export { default as StackedBarChartSkeleton } from './StackedBarChartSkeleton';

@@ -1,4 +1,4 @@
-import BudgetCreationPage from '@/features/home/module/budgets/presentation/pages/BudgetCreationPage';
+import { BudgetCreationPage } from '@/features/home/module/budgets/creation-dashboard';
 
 const page = () => {
   return <BudgetCreationPage />;

@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Budgets Control - Create',
-  description: 'FIORA Budgets Control',
+  title: 'FIORA | Create Budget',
+  description: 'FIORA - Create Budget',
 };
 
 export default async function layout({ children }: { children: React.ReactNode }) {

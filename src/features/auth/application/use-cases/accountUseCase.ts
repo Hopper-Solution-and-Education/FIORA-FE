@@ -1,13 +1,10 @@
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
-import { Account, AccountType, Currency, Prisma } from '@prisma/client';
+import { Account, AccountType, Currency, Prisma, Transaction } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IAccountRepository } from '../../domain/repositories/accountRepository.interface';
 import { accountRepository } from '../../infrastructure/repositories/accountRepository';
-import { safeString } from '@/shared/utils/ExStringUtils';
-import { globalFilters } from '@/shared/types';
-import { buildWhereClause } from '@/shared/utils';
-import { BooleanUtils } from '@/shared/lib';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
 
 const descriptions = {
   ['Payment']:
@@ -181,8 +178,8 @@ export class AccountUseCase {
     });
   }
 
-  async getAllAccountByUserId(userId: string): Promise<Account[] | []> {
-    return this.accountRepository.findManyWithCondition(
+  async getAllAccountByUserId(userId: string, currency: Currency) {
+    const accountRes = (await this.accountRepository.findManyWithCondition(
       {
         userId,
       },
@@ -198,7 +195,70 @@ export class AccountUseCase {
           },
         ],
       },
-    );
+    )) as Prisma.AccountGetPayload<{
+      include: {
+        children: true;
+        toTransactions: true;
+        fromTransactions: true;
+      };
+    }>[];
+
+    const accountWithConvertedBalance = accountRes.map((acc: any) => {
+      const convertedBalance = convertCurrency(
+        acc.balance?.toNumber() || 0,
+        acc.currency,
+        currency,
+      );
+
+      return {
+        ...acc,
+        balance: convertedBalance.toString(),
+        currency: currency,
+        ...(acc.children && {
+          children: acc.children.map((child: Account) => {
+            const childConvertedBalance = convertCurrency(
+              child.balance?.toNumber() || 0,
+              child.currency,
+              currency,
+            );
+            return {
+              ...child,
+              balance: childConvertedBalance.toString(),
+              currency: currency,
+            };
+          }),
+        }),
+        ...(acc.toTransactions && {
+          toTransactions: acc.toTransactions.map((tx: Transaction) => {
+            const txConvertedBalance = convertCurrency(
+              tx.amount?.toNumber() || 0,
+              tx.currency,
+              currency,
+            );
+            return {
+              ...tx,
+              amount: txConvertedBalance.toString(),
+              currency: currency,
+            };
+          }),
+        }),
+        ...(acc.fromTransactions && {
+          fromTransactions: acc.fromTransactions.map((tx: Transaction) => {
+            const txConvertedBalance = convertCurrency(
+              tx.amount?.toNumber() || 0,
+              tx.currency,
+              currency,
+            );
+            return {
+              ...tx,
+              amount: txConvertedBalance.toString(),
+              currency: currency,
+            };
+          }),
+        }),
+      };
+    });
+    return accountWithConvertedBalance;
   }
 
   async fetchBalanceByUserId(userId: string): Promise<any> {

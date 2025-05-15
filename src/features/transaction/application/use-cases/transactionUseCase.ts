@@ -284,7 +284,7 @@ class TransactionUseCase {
           this.validateSufficientBalance(
             toAccount.balance!.toNumber(),
             amount,
-            `Tài khoản ${toAccount.name} không đủ số dư để hoàn tác giao dịch thu nhập.`,
+            `Account ${toAccount.name} does not have sufficient balance to reverse the income transaction.`,
           );
           await this.accountRepository.deductBalance(tx, toAccount.id, amount);
         }
@@ -295,7 +295,7 @@ class TransactionUseCase {
           this.validateSufficientBalance(
             toAccount.balance!.toNumber(),
             amount,
-            `Tài khoản ${toAccount.name} không đủ số dư để hoàn trả giao dịch chuyển khoản.`,
+            `Account ${toAccount.name} does not have sufficient balance to refund the transfer transaction.`,
           );
           await this.accountRepository.transferBalance(tx, toAccount.id, fromAccount.id, amount);
         }
@@ -505,7 +505,11 @@ class TransactionUseCase {
         throw new Error(Messages.ACCOUNT_NOT_FOUND);
       }
 
-      if (account.type !== AccountType.Payment) {
+      if (
+        account.type !== AccountType.Payment &&
+        account.type !== AccountType.CreditCard &&
+        account.type !== AccountType.Debt
+      ) {
         throw new Error(Messages.INVALID_ACCOUNT_TYPE_FOR_INCOME);
       }
 
@@ -640,6 +644,10 @@ class TransactionUseCase {
     const amount = transaction.amount.toNumber();
     const productIds = products.map((p) => p.id);
     const splitAmount = amount / productIds.length;
+
+    if (productIds.toString() == '') {
+      return;
+    }
 
     const existingProducts = await tx.product.findMany({
       where: { id: { in: productIds } },

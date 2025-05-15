@@ -42,8 +42,16 @@ const AmountInputField: React.FC<AmountInputProps> = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
 
-    // Allow empty input, digits, and a single decimal point
-    const isValidInput = /^$|^[0-9]*\.?[0-9]*$/.test(input);
+    // Use different validation patterns based on currency
+    let isValidInput = false;
+
+    if (amountCurrency === 'VND') {
+      // VND: Only allow whole numbers (no decimals)
+      isValidInput = /^$|^[0-9]*$/.test(input);
+    } else {
+      // Other currencies (USD, etc): Allow decimals
+      isValidInput = /^$|^[0-9]*\.?[0-9]*$/.test(input);
+    }
 
     if (isValidInput) {
       const newValue = input === '' ? 0 : Number(input);

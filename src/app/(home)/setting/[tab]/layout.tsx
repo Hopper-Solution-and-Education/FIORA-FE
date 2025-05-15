@@ -1,9 +1,8 @@
 'use client';
 
 import { useSettingTabFeatureFlags } from '@/features/setting/hooks/useSettingTabFeatureFlags';
-import { useEffect } from 'react';
 import { notFound } from 'next/navigation';
-import { use } from 'react';
+import { use, useEffect } from 'react';
 
 interface TabLayoutProps {
   children: React.ReactNode;
@@ -11,13 +10,11 @@ interface TabLayoutProps {
 }
 
 export default function TabLayout({ children, params }: TabLayoutProps) {
-  // Unwrap params Promise bằng React.use()
   const unwrappedParams = use(params);
   const { checkTabAccess } = useSettingTabFeatureFlags();
 
   useEffect(() => {
     try {
-      // Sử dụng unwrappedParams đã được unwrap
       checkTabAccess(unwrappedParams.tab);
     } catch {
       notFound();

@@ -33,6 +33,7 @@ interface CustomDateTimePickerProps {
   dropdownMode?: string; // remove later
   yearOnly?: boolean; // Enable year-only mode
   disabled?: boolean;
+  isYearDisabled?: (year: number) => boolean;
 }
 
 const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerProps>(
@@ -48,6 +49,7 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
       containTimePicker = false,
       yearOnly = false,
       disabled = false,
+      isYearDisabled,
     },
     ref,
   ) => {
@@ -179,6 +181,9 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
                         new Date().getFullYear() === year && 'ring-1 ring-accent',
                       )}
                       onClick={() => handleYearSelect(year)}
+                      // THÊM DÒNG NÀY:
+                      disabled={disabled || (isYearDisabled ? isYearDisabled(year) : false)}
+                      // LƯU Ý: disabled tổng của component vẫn được ưu tiên.
                     >
                       {year}
                     </Button>

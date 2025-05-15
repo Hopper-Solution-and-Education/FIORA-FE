@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import useDataFetcher from '@/shared/hooks/useDataFetcher';
+import { FilterCriteria, OrderType } from '@/shared/types';
 import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { debounce } from 'lodash';
@@ -18,14 +19,11 @@ import { toast } from 'sonner';
 import { useSWRConfig } from 'swr';
 import { formatCurrency } from '../hooks/formatCurrency';
 import { formatDate } from '../hooks/formatDate';
-import { handleEditFilter } from '../hooks/handleEditFilter';
 import { updateAmountRange, updateFilterCriteria } from '../slices';
 import {
   IRelationalTransaction,
   ITransactionPaginatedResponse,
-  OrderType,
   TransactionColumn,
-  TransactionFilterCriteria,
   TransactionTableColumnKey,
 } from '../types';
 import {
@@ -37,6 +35,7 @@ import {
 import DeleteTransactionDialog from './DeleteTransactionDialog';
 import FilterMenu from './FilterMenu';
 import SettingsMenu from './SettingMenu';
+import { handleEditFilter } from '@/components/common/filters';
 
 type PaginationParams = {
   currentPage: number;
@@ -150,7 +149,8 @@ const TransactionTable = () => {
   const debouncedFilterHandler = useMemo(
     () =>
       debounce((value: string) => {
-        handleFilterChange({ ...filterCriteria, search: value as string });
+        console.log('value', value);
+        handleFilterChange({ ...filterCriteria, search: String(value).trim() });
       }, 1000),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [filterCriteria],
@@ -227,7 +227,9 @@ const TransactionTable = () => {
     fetch(endpoint, {
       method: 'DELETE',
     })
-      .then((response) => {
+      .then(async (response) => {
+        const responseData = await response.json();
+
         if (response.ok) {
           // Remove the deleted transaction from the display data
           setDisplayData((prev) => prev.filter((item) => item.id !== selectedTransaction?.id));
@@ -240,20 +242,17 @@ const TransactionTable = () => {
           toast.success('Transaction deleted successfully');
 
           // Revalidate data
-          mutate('/api/transactions', displayData, { revalidate: true });
+          mutate('/api/transactions');
         } else {
-          throw new Error('Failed to delete transaction');
+          throw new Error(responseData.message || 'Failed to delete transaction');
         }
       })
       .catch((error) => {
-        console.error('Error deleting transaction:', error);
-        alert('Failed to delete transaction');
+        toast.error(error.message || 'Failed to delete transaction');
       })
-      .finally(
-        () => {
-          setIsDeleting(false);
-        }, // Reset deleting state
-      );
+      .finally(() => {
+        setIsDeleting(false);
+      });
   };
 
   // Navigate to delete page
@@ -269,7 +268,7 @@ const TransactionTable = () => {
   };
 
   // Callback function to apply after updating filter criteria
-  const handleFilterChange = (newFilter: TransactionFilterCriteria) => {
+  const handleFilterChange = (newFilter: FilterCriteria) => {
     setPaginationParams((prev) => ({ ...prev, currentPage: 1 })); // Reset current page to 1 when applying a new filter
     dispatch(updateFilterCriteria(newFilter));
   };

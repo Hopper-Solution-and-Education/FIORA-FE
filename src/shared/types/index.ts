@@ -4,3 +4,20 @@ export * from './category.types';
 export * from './formsheet.type';
 export * from './product.types';
 export * from './transaction.types';
+export * from './filter.types';
+
+export type Currency = 'VND' | 'USD';
+
+export type CreatedBy = {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+};
+
+export type UpdatedBy = {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+};

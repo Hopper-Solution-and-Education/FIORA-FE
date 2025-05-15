@@ -23,6 +23,12 @@ interface LoadingIndicatorProps {
    * @default false
    */
   centered?: boolean;
+
+  /**
+   * The color of the loading indicator
+   * @default "primary"
+   */
+  color?: string;
 }
 
 export function LoadingIndicator({
@@ -30,6 +36,7 @@ export function LoadingIndicator({
   text,
   className,
   centered = false,
+  color,
 }: LoadingIndicatorProps) {
   // Map size to appropriate classes
   const sizeClasses = {
@@ -48,7 +55,7 @@ export function LoadingIndicator({
 
   return (
     <div className={containerClasses} role="status" aria-live="polite">
-      <Loader2 className={cn('text-primary animate-spin', sizeClasses[size])} />
+      <Loader2 className={cn('text-primary animate-spin', sizeClasses[size])} color={color} />
       {text && <p className="mt-2 text-sm text-muted-foreground">{text}</p>}
       <span className="sr-only">Loading</span>
     </div>

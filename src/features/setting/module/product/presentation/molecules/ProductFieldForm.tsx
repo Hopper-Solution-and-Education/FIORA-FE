@@ -14,6 +14,7 @@ import { type ProductFormValues } from '../schema';
 const ProductForm = () => {
   const router = useRouter();
   const method = useFormContext<ProductFormValues>();
+  const productDetail = useAppSelector((state) => state.productManagement.productDetail);
 
   const {
     formState: { isValid, isSubmitting },
@@ -71,6 +72,10 @@ const ProductForm = () => {
             fields={fields}
             methods={method}
             renderSubmitButton={renderSubmitButtonDefault}
+            createdAt={productDetail?.createdAt}
+            updatedAt={productDetail?.updatedAt}
+            createdBy={productDetail?.createdBy}
+            updatedBy={productDetail?.updatedBy}
           />
         </div>
       </div>
