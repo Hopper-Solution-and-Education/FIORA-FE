@@ -1,8 +1,8 @@
 import { CustomBarItem } from '@/components/common/stacked-bar-chart/type';
 import { COLORS, STACK_TYPE } from '@/shared/constants/chart';
 import { Currency } from '@/shared/types';
-import { BudgetGetDataResponse } from '../domain/entities/Budget';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { BudgetGetDataResponse } from '../domain/entities/Budget';
 
 export const mapBudgetToData = (
   budget: BudgetGetDataResponse,
@@ -44,8 +44,8 @@ export const mapBudgetToData = (
   // Calculate profit using the converted values
   const convertedActProfit = convertedActIncome - convertedActExpense;
   // Ensure Top/Bot profit is not negative after conversion if income is less than expense
-  const convertedTopProfit = Math.max(convertedTopIncome - convertedTopExpense, 0);
-  const convertedBotProfit = Math.max(convertedBotIncome - convertedBotExpense, 0);
+  const convertedTopProfit = convertedTopIncome - convertedTopExpense;
+  const convertedBotProfit = convertedBotIncome - convertedBotExpense;
 
   return [
     {
