@@ -1,37 +1,26 @@
 'use client';
 
-import React from 'react';
+import { ChartLegend, IconDisplay, PositiveAndNegativeV2BarLabel } from '@/components/common/atoms';
+import StackYAxisTick from '@/components/common/atoms/StackYAxisTick';
+import { COLORS, DEFAULT_BUDGET_ICON, DEFAULT_CURRENCY, STACK_KEY } from '@/shared/constants/chart';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
+import { formatter } from '@/shared/lib/charts';
+import { cn, formatCurrency } from '@/shared/utils';
+import { useWindowSize } from '@/shared/utils/device';
 import {
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  LabelList,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Cell,
-  ResponsiveContainer,
-  LabelList,
 } from 'recharts';
-import { cn, formatCurrency } from '@/shared/utils';
-import {
-  BarLabel,
-  ChartLegend,
-  IconDisplay,
-  PositiveAndNegativeV2BarLabel,
-} from '@/components/common/atoms';
-import StackYAxisTick from '@/components/common/atoms/StackYAxisTick';
-import { useWindowSize } from '@/shared/utils/device';
-import { useIsMobile } from '@/shared/hooks/useIsMobile';
-import {
-  COLORS,
-  DEFAULT_BUDGET_ICON,
-  DEFAULT_CURRENCY,
-  STACK_TYPE,
-} from '@/shared/constants/chart';
+import { StackBarDisplay, TooltipProps } from '../stacked-bar-chart/type';
 import { PositiveNegativeStackBarChartProps } from './type';
 import { processChartData } from './utils';
-import { StackBarDisplay, TooltipProps } from '../stacked-bar-chart/type';
-import { formatter } from '@/shared/lib/charts';
 
 const PositiveNegativeStackBarChart = ({
   data = [],
@@ -43,8 +32,6 @@ const PositiveNegativeStackBarChart = ({
   xAxisFormatter = (value) => formatCurrency(value, currency),
   tutorialText,
   legendItems,
-  showButton,
-  onClickButton,
   onClickTitle,
 }: PositiveNegativeStackBarChartProps) => {
   const { width } = useWindowSize();
@@ -60,26 +47,11 @@ const PositiveNegativeStackBarChart = ({
     chartHeight,
     negativeChartMargins,
     positiveChartMargins,
+    calculateRValue,
   } = processChartData(data, width, isMobile);
-  console.log('DATA: ', data);
 
-  const calculateRValue = (item: StackBarDisplay): number => {
-    let R: number = 0;
-    switch (item.type) {
-      case STACK_TYPE.EXPENSE:
-        R = item.BOriginalValue - item.AOriginalValue;
-        break;
-      case STACK_TYPE.INCOME:
-        R = item.AOriginalValue - item.BOriginalValue;
-        break;
-      case STACK_TYPE.PROFIT:
-        R = item.AOriginalValue - item.BOriginalValue;
-        break;
-      default:
-        break;
-    }
-    return R;
-  };
+  console.log(`Budget Chart ${title} positiveData`, positiveData);
+  console.log(`Budget Chart ${title}: Min ${minNegative} - Max ${maxPositive}`);
 
   const renderTooltipContent = (props: TooltipProps) => {
     const { active, payload, label } = props;
@@ -146,7 +118,8 @@ const PositiveNegativeStackBarChart = ({
           fontSize={12}
           fontWeight={600}
         >
-          R: {formatCurrency(R, currency)}
+          R: {R > 0 && '+'}
+          {formatCurrency(R, currency)}
         </text>
       </g>
     );
@@ -188,20 +161,17 @@ const PositiveNegativeStackBarChart = ({
                   className="text-sm text-gray-600"
                 />
                 <Tooltip content={renderTooltipContent} />
-                {['A', 'T', 'B'].map((key) => (
+                {[STACK_KEY.A, STACK_KEY.T, STACK_KEY.B].map((key) => (
                   <Bar
                     key={key}
                     dataKey={key}
                     stackId="a"
-                    label={(props) => {
-                      console.log('PROPS: ', props);
-                      return (
-                        <PositiveAndNegativeV2BarLabel
-                          {...props}
-                          formatter={formatter(key, props.value, currency)}
-                        />
-                      );
-                    }}
+                    label={(props) => (
+                      <PositiveAndNegativeV2BarLabel
+                        {...props}
+                        formatter={formatter(key, props.value, currency)}
+                      />
+                    )}
                     onClick={(props) => callback && callback(props.payload)}
                   >
                     {negativeData.map((entry, index) => (
@@ -231,7 +201,7 @@ const PositiveNegativeStackBarChart = ({
                   className="text-sm text-gray-600"
                 />
                 <Tooltip content={renderTooltipContent} />
-                {['A', 'T', 'B'].map((key) => (
+                {[STACK_KEY.A, STACK_KEY.T, STACK_KEY.B].map((key) => (
                   <Bar
                     key={key}
                     dataKey={key}
@@ -278,7 +248,7 @@ const PositiveNegativeStackBarChart = ({
               className="text-sm text-gray-600"
             />
             <Tooltip content={renderTooltipContent} />
-            {['A', 'T', 'B'].map((key) => (
+            {[STACK_KEY.A, STACK_KEY.T, STACK_KEY.B].map((key) => (
               <Bar
                 key={key}
                 dataKey={key}
@@ -304,7 +274,7 @@ const PositiveNegativeStackBarChart = ({
           </BarChart>
         </ResponsiveContainer>
       )}
-      {legendItems && <ChartLegend items={legendItems} />}
+      <ChartLegend items={legendItems || []} />
     </div>
   );
 };

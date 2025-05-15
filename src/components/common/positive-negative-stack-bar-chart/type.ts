@@ -9,6 +9,7 @@ export interface ChartDataConfig {
   chartHeight: number;
   negativeChartMargins: object;
   positiveChartMargins: object;
+  calculateRValue: (item: StackBarDisplay) => number;
 }
 
 export interface PositiveNegativeStackBarChartProps {

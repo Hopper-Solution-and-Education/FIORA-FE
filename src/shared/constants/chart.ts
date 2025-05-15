@@ -45,3 +45,9 @@ export enum STACK_TYPE {
   INCOME = 'INCOME',
   PROFIT = 'PROFIT',
 }
+
+export const STACK_KEY = {
+  A: 'A',
+  T: 'T',
+  B: 'B',
+};
