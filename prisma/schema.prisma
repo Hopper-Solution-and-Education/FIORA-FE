@@ -169,6 +169,7 @@ model Transaction {
   partnerId        String?              @db.Uuid
   remark           String?              @db.VarChar(255)
   isDeleted        Boolean              @default(false)
+  isMarked         Boolean              @default(false)
   deletedAt        DateTime?            @db.Timestamptz(0)
   createdAt        DateTime             @default(now()) @db.Timestamptz(0)
   updatedAt        DateTime             @updatedAt @db.Timestamptz(0)
@@ -296,7 +297,7 @@ model Category {
 model BudgetsTable {
   id           String          @id @default(uuid()) @db.Uuid
   userId       String          @db.Uuid
-  fiscalYear   Int             @db.SmallInt
+  fiscalYear   String          @db.VarChar(4)
   type         BudgetType      @default(Top)
   total_exp    Decimal         @default(0) @db.Decimal(13, 2)
   total_inc    Decimal         @default(0) @db.Decimal(13, 2)

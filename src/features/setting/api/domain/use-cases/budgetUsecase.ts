@@ -6,12 +6,12 @@ import {
   BudgetAllocation,
   BudgetCreationParams,
   BudgetTypeData,
+  BudgetUpdateParams,
   FetchTransactionResponse,
 } from '@/shared/types/budget.types';
 import { buildWhereClause } from '@/shared/utils';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import {
-  BudgetDetailType,
   BudgetsTable,
   BudgetType,
   Currency,
@@ -43,6 +43,104 @@ class BudgetUseCase {
     this.budgetRepository = budgetRepository;
     this.budgetDetailRepository = budgetDetailRepository;
     this.transactionRepository = transactionRepository;
+  }
+
+  private async calculateActTotals(
+    userId: string,
+    fiscalYear: number,
+    currency: Currency,
+    now: Date,
+  ): Promise<{ totalExpense: number; totalIncome: number }> {
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+    let targetMonthEnd: Date;
+
+    const yearStart = new Date(`${fiscalYear}-01-01`);
+
+    if (fiscalYear === currentYear) {
+      const targetMonth = currentMonth - 2;
+      if (targetMonth < 1) {
+        targetMonthEnd = yearStart;
+      } else {
+        targetMonthEnd = new Date(fiscalYear, targetMonth, 0);
+      }
+    } else {
+      targetMonthEnd = new Date(`${fiscalYear}-12-31`);
+    }
+
+    const effectiveEndDate = targetMonthEnd < thirtyDaysAgo ? targetMonthEnd : thirtyDaysAgo;
+
+    const transactions = await this.transactionRepository.findManyTransactions(
+      {
+        userId,
+        date: { gte: yearStart, lte: effectiveEndDate },
+        isDeleted: false,
+        type: { in: [TransactionType.Expense, TransactionType.Income] },
+      },
+      { select: { type: true, amount: true, currency: true } },
+    );
+
+    const totalExpense = transactions
+      .filter((t) => t.type === TransactionType.Expense)
+      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+
+    const totalIncome = transactions
+      .filter((t) => t.type === TransactionType.Income)
+      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+
+    return { totalExpense, totalIncome };
+  }
+
+  // =============== CREATE BUDGET VERSION 2 WITH TRANSACTION ==============
+  private async createSingleBudget(
+    prisma: Prisma.TransactionClient,
+    userId: string,
+    fiscalYear: number,
+    { type, totalExpense, totalIncome }: BudgetTypeData,
+    { description, icon, currency, isSystemGenerated }: Partial<BudgetCreationParams>,
+  ): Promise<BudgetsTable> {
+    const { monthFields, quarterFields, halfYearFields } = this.calculateBudgetAllocation(
+      totalExpense,
+      totalIncome,
+    );
+
+    const newBudget = await prisma.budgetsTable.create({
+      data: {
+        userId,
+        icon,
+        fiscalYear: fiscalYear.toString(),
+        type,
+        total_exp: totalExpense,
+        total_inc: totalIncome,
+        ...halfYearFields,
+        ...quarterFields,
+        ...monthFields,
+        createdBy: !isSystemGenerated ? userId : undefined,
+        description,
+        currency,
+      },
+    });
+
+    if (!newBudget || !newBudget.id) {
+      throw new Error(Messages.BUDGET_CREATE_FAILED);
+    }
+
+    return newBudget;
+  }
+
+  private calculateActualTotals(
+    transactions: FetchTransactionResponse[] | [],
+    currency: Currency,
+  ): { totalExpenseAct: number; totalIncomeAct: number } {
+    const totalExpenseAct = transactions
+      .filter((t) => t.type === TransactionType.Expense)
+      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+
+    const totalIncomeAct = transactions
+      .filter((t) => t.type === TransactionType.Income)
+      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+    return { totalExpenseAct, totalIncomeAct };
   }
 
   private calculateTransactionRange(fiscalYear: number): {
@@ -81,31 +179,19 @@ class BudgetUseCase {
           gte: yearStart,
           lte: effectiveEndDate,
         },
+        isMarked: false,
         isDeleted: false,
         type: {
           in: [TransactionType.Expense, TransactionType.Income],
         },
       },
       select: {
+        id: true,
         type: true,
         amount: true,
         currency: true,
       },
     });
-  }
-
-  private calculateActualTotals(
-    transactions: FetchTransactionResponse[] | [],
-    currency: Currency,
-  ): { totalExpenseAct: number; totalIncomeAct: number } {
-    const totalExpenseAct = transactions
-      .filter((t) => t.type === TransactionType.Expense)
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
-
-    const totalIncomeAct = transactions
-      .filter((t) => t.type === TransactionType.Income)
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
-    return { totalExpenseAct, totalIncomeAct };
   }
 
   private calculateBudgetAllocation(totalExpense: number, totalIncome: number): BudgetAllocation {
@@ -155,70 +241,6 @@ class BudgetUseCase {
     };
   }
 
-  private async createSingleBudget(
-    prisma: Prisma.TransactionClient,
-    userId: string,
-    fiscalYear: number,
-    { type, totalExpense, totalIncome }: BudgetTypeData,
-    { description, icon, currency, isSystemGenerated }: Partial<BudgetCreationParams>,
-  ): Promise<BudgetsTable> {
-    const { monthFields, quarterFields, halfYearFields, monthlyExpense, monthlyIncome } =
-      this.calculateBudgetAllocation(totalExpense, totalIncome);
-
-    const newBudget = await prisma.budgetsTable.create({
-      data: {
-        userId,
-        icon,
-        fiscalYear,
-        type,
-        total_exp: totalExpense,
-        total_inc: totalIncome,
-        ...halfYearFields,
-        ...quarterFields,
-        ...monthFields,
-        createdBy: !isSystemGenerated ? userId : undefined,
-        description,
-        currency,
-      },
-    });
-
-    if (!newBudget || !newBudget.id) {
-      throw new Error(Messages.BUDGET_CREATE_FAILED);
-    }
-
-    const months = Array.from({ length: 12 }, (_, i) => i + 1);
-
-    const detailData = months.flatMap((month) => [
-      {
-        userId,
-        budgetId: newBudget.id,
-        type: BudgetDetailType.Expense,
-        amount: monthlyExpense,
-        month,
-        createdBy: userId,
-      },
-      {
-        userId,
-        budgetId: newBudget.id,
-        type: BudgetDetailType.Income,
-        amount: monthlyIncome,
-        month,
-        createdBy: userId,
-      },
-    ]) as Prisma.BudgetDetailsCreateManyInput[];
-
-    const createdBudgetDetailRes = await prisma.budgetDetails.createManyAndReturn({
-      data: detailData,
-      skipDuplicates: true,
-    });
-
-    if (!createdBudgetDetailRes) {
-      throw new Error(Messages.BUDGET_DETAILS_CREATE_FAILED);
-    }
-
-    return newBudget;
-  }
-
   // =============== CREATE BUDGET VERSION 2 WITH TRANSACTION ==============
 
   async createBudgetTransaction(params: BudgetCreationParams): Promise<BudgetsTable[]> {
@@ -232,6 +254,12 @@ class BudgetUseCase {
       currency,
       isSystemGenerated = false,
     } = params;
+
+    // checked whether fiscalYear was in the past or not
+    const currentYear = new Date().getFullYear();
+    if (fiscalYear < currentYear) {
+      throw new Error(Messages.BUDGET_PAST_YEAR_NOT_ALLOWED);
+    }
 
     return await prisma.$transaction(async (prisma) => {
       const { yearStart, effectiveEndDate } = this.calculateTransactionRange(fiscalYear);
@@ -250,7 +278,7 @@ class BudgetUseCase {
 
       const budgetTypesData: BudgetTypeData[] = [
         { type: 'Top', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
-        { type: 'Bot', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
+        { type: 'Bot', totalExpense: 0, totalIncome: 0 },
         { type: 'Act', totalExpense: totalExpenseAct, totalIncome: totalIncomeAct },
       ];
 
@@ -266,8 +294,148 @@ class BudgetUseCase {
         createdBudgets.push(budget);
       }
 
+      const transactionIds = transactions.map((t) => t.id);
+      if (transactionIds.length > 0) {
+        await prisma.transaction.updateMany({
+          where: {
+            id: { in: transactionIds },
+          },
+          data: {
+            isMarked: true,
+          },
+        });
+      }
+
       return createdBudgets;
     });
+  }
+
+  // =============== UPDATE BUDGET VERSION 2 WITH TRANSACTION ==============
+  // update budget top bot
+  async updateBudgetTransaction(params: BudgetUpdateParams): Promise<BudgetsTable[]> {
+    const {
+      budgetId,
+      userId,
+      fiscalYear,
+      description,
+      estimatedTotalExpense,
+      estimatedTotalIncome,
+      icon,
+      currency,
+      type,
+    } = params;
+
+    if (type === 'Act') {
+      throw new Error('Act budget is not allowed to be update manually');
+    }
+
+    const budgetTypeData: BudgetTypeData[] = [
+      { type: 'Top', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
+      // { type: 'Act', totalExpense: totalExpenseAct, totalIncome: totalIncomeAct },
+    ];
+
+    // update budget
+
+    const updatedBudgets = await Promise.all(
+      budgetTypeData.map((budgetTypeData) =>
+        this.updateSingleBudget(prisma, userId, fiscalYear, budgetId, budgetTypeData, {
+          description,
+          icon,
+          currency,
+        }),
+      ),
+    );
+    // return budget
+    return updatedBudgets;
+    // update budget top bot
+    // return await prisma.$transaction(async (prisma) => {
+    //   // calculate transaction range
+    //   const { yearStart, effectiveEndDate } = this.calculateTransactionRange(fiscalYear);
+
+    //   // fetch transactions
+    //   const transactions = await this.fetchTransactionsTx(
+    //     userId,
+    //     yearStart,
+    //     effectiveEndDate,
+    //     prisma,
+    //   );
+
+    //   // calculate actual totals
+    //   const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
+    //     transactions || [],
+    //     currency,
+    //   );
+
+    //   // calculate budget type data
+    //   const budgetTypeData: BudgetTypeData[] = [
+    //     { type: 'Top', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
+    //     // { type: 'Act', totalExpense: totalExpenseAct, totalIncome: totalIncomeAct },
+    //   ];
+
+    //   // update budget
+
+    //   const updatedBudgets = await Promise.all(
+    //     budgetTypeData.map((budgetTypeData) =>
+    //       this.updateSingleBudget(prisma, userId, fiscalYear, budgetId, budgetTypeData, {
+    //         description,
+    //         icon,
+    //         currency,
+    //       }),
+    //     ),
+    //   );
+    //   // return budget
+    //   return updatedBudgets;
+    // });
+  }
+
+  private async updateSingleBudget(
+    prisma: Prisma.TransactionClient,
+    userId: string,
+    fiscalYear: number,
+    budgetId: string,
+    { type, totalExpense, totalIncome }: BudgetTypeData,
+    { description, icon, currency }: Partial<BudgetCreationParams>,
+  ) {
+    // Check if budget exists
+    const existingBudget = await prisma.budgetsTable.findUnique({
+      where: {
+        id: budgetId,
+        type: type as BudgetType,
+      },
+    });
+
+    if (!existingBudget) {
+      throw new Error(Messages.BUDGET_NOT_FOUND);
+    }
+
+    const { monthFields, quarterFields, halfYearFields } = this.calculateBudgetAllocation(
+      totalExpense,
+      totalIncome,
+    );
+
+    const updatedBudget = await prisma.budgetsTable.update({
+      where: {
+        id: budgetId,
+        type: type as BudgetType,
+      },
+      data: {
+        total_exp: totalExpense,
+        total_inc: totalIncome,
+        ...halfYearFields,
+        ...quarterFields,
+        ...monthFields,
+        description,
+        icon,
+        currency,
+        updatedBy: userId,
+      },
+    });
+
+    if (!updatedBudget) {
+      throw new Error(Messages.BUDGET_UPDATE_FAILED);
+    }
+
+    return updatedBudget;
   }
 
   // ======================= CREATE BUDGET VERSION 1 =======================
@@ -281,177 +449,105 @@ class BudgetUseCase {
       icon,
       currency,
       isSystemGenerated = false,
+      type,
+      skipActCalculation = false,
     } = params;
 
     const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // Cách hiện tại 30 ngày
 
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1; // 1-12
-    let targetMonthEnd: Date;
-
-    const yearStart = new Date(`${fiscalYear}-01-01`);
-
-    if (fiscalYear === currentYear) {
-      const targetMonth = currentMonth - 2; // Đồng bộ với updateActBudget: lấy đến tháng cách đó 2 tháng
-      if (targetMonth < 1) {
-        // Nếu targetMonth < 1 (tháng 1, 2), không tính giao dịch
-        targetMonthEnd = yearStart;
-      } else {
-        targetMonthEnd = new Date(fiscalYear, targetMonth, 0); // Ngày cuối của tháng target
-      }
-    } else {
-      // Năm quá khứ: Lấy toàn bộ năm
-      targetMonthEnd = new Date(`${fiscalYear}-12-31`);
-    }
-
-    // Áp dụng điều kiện "locked"
-    const effectiveEndDate = targetMonthEnd < thirtyDaysAgo ? targetMonthEnd : thirtyDaysAgo;
-
-    const transactions = await this.transactionRepository.findManyTransactions(
-      {
-        userId,
-        date: {
-          gte: yearStart,
-          lte: effectiveEndDate, // Giới hạn bởi targetMonthEnd và thirtyDaysAgo
-        },
-        isDeleted: false,
-        type: {
-          in: [TransactionType.Expense, TransactionType.Income],
-        },
-      },
-      {
-        select: {
-          type: true,
-          amount: true,
-          currency: true,
-        },
-      },
-    );
-
-    // Calculate total income and expense for 'Act' budget with currency conversion
-    const totalExpenseAct = transactions
-      .filter((t) => t.type === TransactionType.Expense)
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
-
-    const totalIncomeAct = transactions
-      .filter((t) => t.type === TransactionType.Income)
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
-
-    // Step 2: Define budget data for all three types
-    const budgetTypesData: {
-      type: BudgetsTable['type'];
-      totalExpense: number;
-      totalIncome: number;
-    }[] = [
-      { type: 'Top', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
-      { type: 'Bot', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
-      { type: 'Act', totalExpense: totalExpenseAct, totalIncome: totalIncomeAct },
-    ];
-
-    // Create budget details for each month
-    const months = Array.from({ length: 12 }, (_, i) => i + 1);
-
-    // Quarterly fields
-    const quarters = {
-      q1: [1, 2, 3],
-      q2: [4, 5, 6],
-      q3: [7, 8, 9],
-      q4: [10, 11, 12],
-    };
+    const budgetTypes = type ? [type] : (['Top', 'Bot', 'Act'] as BudgetsTable['type'][]);
 
     const createdBudgets: BudgetsTable[] = [];
 
-    // Step 3: Create budgets for each type
-    for (const { type, totalExpense, totalIncome } of budgetTypesData) {
-      const monthlyExpense = _.round(totalExpense / 12, 2); // calculate with 2 decimal places
-      const monthlyIncome = _.round(totalIncome / 12, 2); // calculate with 2 decimal places
-
-      // Monthly fields split into 12 months
-      const monthFields = months.reduce<Record<string, number>>((acc, m) => {
-        acc[`m${m}_exp`] = monthlyExpense;
-        acc[`m${m}_inc`] = monthlyIncome;
-        return acc;
-      }, {});
-
-      // Quarterly fields
-      const quarterFields = Object.entries(quarters).reduce<Record<string, number>>(
-        (acc, [q, ms]) => {
-          acc[`${q}_exp`] = _.round(ms.length * monthlyExpense, 2); // by multiplying by 3 months with monthlyExpense
-          acc[`${q}_inc`] = _.round(ms.length * monthlyIncome, 2); // by multiplying by 3 months with monthlyIncome
-          return acc;
+    return await prisma.$transaction(async (prisma) => {
+      // checked budget already existed or not
+      const foundBudget = await prisma.budgetsTable.findFirst({
+        where: {
+          userId,
+          fiscalYear: fiscalYear.toString(),
+          type: { in: budgetTypes },
         },
-        {},
-      );
-
-      // Half-year totals
-      const h1_exp = _.round(monthlyExpense * 6, 2); // 6 months in half-year
-      const h2_exp = _.round(monthlyExpense * 6, 2); // 6 months in half-year
-      const h1_inc = _.round(monthlyIncome * 6, 2); // 6 months in half-year
-      const h2_inc = _.round(monthlyIncome * 6, 2); // 6 months in half-year
-
-      // Create Budget
-      const newBudget = await this.budgetRepository.createBudget({
-        userId,
-        icon,
-        fiscalYear,
-        type,
-        total_exp: totalExpense,
-        total_inc: totalIncome,
-        h1_exp,
-        h2_exp,
-        h1_inc,
-        h2_inc,
-        ...quarterFields,
-        ...monthFields,
-        createdBy: !isSystemGenerated ? userId : undefined,
-        description,
-        currency,
       });
 
-      if (!newBudget) {
-        throw new Error(Messages.BUDGET_CREATE_FAILED);
+      if (foundBudget) {
+        throw new Error(Messages.DUPLICATED_BUDGET_FISCAL_YEAR);
       }
 
-      // Create BudgetDetails (24 rows)
-      const detailData = months.flatMap((month) => [
-        {
-          userId,
-          budgetId: newBudget.id,
-          type: BudgetDetailType.Expense,
-          amount: monthlyExpense,
-          month,
-          createdBy: userId,
-        },
-        {
-          userId,
-          budgetId: newBudget.id,
-          type: BudgetDetailType.Income,
-          amount: monthlyIncome,
-          month,
-          createdBy: userId,
-        },
-      ]) as Prisma.BudgetDetailsCreateManyInput[];
+      for (const budgetType of budgetTypes) {
+        let totalExpense = estimatedTotalExpense;
+        let totalIncome = estimatedTotalIncome;
 
-      const createdBudgetDetailRes =
-        await this.budgetDetailRepository.createManyBudgetDetails(detailData);
+        if (budgetType === BudgetType.Act && !skipActCalculation) {
+          const { totalExpense: actExpense, totalIncome: actIncome } =
+            await this.calculateActTotals(userId, Number(fiscalYear), currency, now);
+          totalExpense = actExpense;
+          totalIncome = actIncome;
+        }
 
-      if (!createdBudgetDetailRes) {
-        throw new Error(Messages.BUDGET_DETAILS_CREATE_FAILED);
+        const { monthFields, quarterFields, halfYearFields } = this.calculateBudgetAllocation(
+          totalExpense,
+          totalIncome,
+        );
+
+        const { h1_exp, h2_exp, h1_inc, h2_inc } = halfYearFields;
+
+        const newBudget = await prisma.budgetsTable.create({
+          data: {
+            userId,
+            icon,
+            fiscalYear: fiscalYear.toString(),
+            type: budgetType, // Sử dụng budgetType thay vì type để tránh lỗi
+            total_exp: totalExpense,
+            total_inc: totalIncome,
+            h1_exp,
+            h2_exp,
+            h1_inc,
+            h2_inc,
+            ...quarterFields,
+            ...monthFields,
+            createdBy: !isSystemGenerated ? userId : undefined,
+            description,
+            currency,
+          },
+        });
+
+        if (!newBudget) {
+          throw new Error(Messages.BUDGET_CREATE_FAILED);
+        }
+
+        createdBudgets.push(newBudget);
       }
-      createdBudgets.push(newBudget);
-    }
 
-    return createdBudgets;
+      return createdBudgets;
+    });
+  }
+
+  private async fetchTransactions(
+    userId: string,
+    yearStart: Date,
+    effectiveEndDate: Date,
+    additionalWhere: Prisma.TransactionWhereInput = {},
+  ) {
+    return await this.transactionRepository.findManyTransactions(
+      {
+        userId,
+        date: { gte: yearStart, lte: effectiveEndDate },
+        isDeleted: false,
+        type: { in: [TransactionType.Income, TransactionType.Expense] },
+        ...additionalWhere,
+      },
+      {
+        select: { id: true, date: true, type: true, amount: true, currency: true },
+      },
+    );
   }
 
   async getAnnualBudgetByYears(params: BudgetGetAnnualYearParams) {
     const { userId, cursor = null, take, currency, search, filters } = params;
-    // filter format is like ['2023', '2024'] => search by fiscalYear in range
 
-    const currentYear = new Date().getFullYear(); // 2025
-
+    const currentYear = new Date().getFullYear();
     const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     let where = {
       userId,
@@ -462,113 +558,219 @@ class BudgetUseCase {
       where = { ...where, ...whereClause };
     }
 
+    // Adjust the fiscalYear filter to allow past and future years
     where.fiscalYear = {
-      lte: currentYear,
-      ...(cursor && { lt: cursor }),
+      ...(cursor && { lt: cursor.toString() }),
       ...(where.fiscalYear && typeof where.fiscalYear === 'object' ? where.fiscalYear : {}),
     };
 
     if (search) {
-      where.fiscalYear = {
-        equals: Number(search),
-      };
+      if (search.length === 2 && /^\d{2}$/.test(search)) {
+        // If user enters 2 digits, search for years ending with those digits (e.g., 19 => 1919, 2019, etc.)
+        where.fiscalYear = {
+          endsWith: search,
+        };
+      } else {
+        where.fiscalYear = {
+          equals: search,
+        };
+      }
     }
 
-    // ------------------------IMPORTANT
     // Step 1.1: Check if budgets exist for the current year
     const currentYearBudgets = await this.budgetRepository.findManyBudgetData(
-      {
-        userId: userId,
-        fiscalYear: currentYear,
-      },
-      {
-        select: {
-          fiscalYear: true,
-          type: true,
-        },
-      },
+      { userId, fiscalYear: currentYear.toString() },
+      { select: { fiscalYear: true, type: true } },
     );
 
     // Step 2.1: If no budgets for the current year, create them
     if (currentYearBudgets.length === 0) {
       // Find the least recent past year's budgets (if current year is 2025 => get 2024 )
       const defaultIcon = 'banknote';
+      const defaultDescription = 'Auto-generated budget';
 
-      const latestPastBudgets = await this.budgetRepository.findManyBudgetData(
-        {
-          userId: userId,
-          fiscalYear: {
-            lte: currentYear, // Allow up to next year,
-          },
-        },
-        {
-          select: {
-            fiscalYear: true,
-            type: true,
-            total_inc: true,
-            total_exp: true,
-            description: true,
-            currency: true,
-          },
-          orderBy: { fiscalYear: 'desc' },
-          take: 3, // Get budgets for the most recent year (Top, Bot, Act)
-        },
+      let actEstimatedTotalExpense = 0;
+      let actEstimatedTotalIncome = 0;
+
+      let budgetCurrency = currency;
+      let budgetDescription = defaultDescription;
+      let budgetIcon = defaultIcon;
+
+      // Tìm năm nhỏ nhất có ngân sách hoặc giao dịch
+      const minBudgetYear = await this.budgetRepository.findBudgetData(
+        { userId, type: BudgetType.Act },
+        { select: { fiscalYear: true }, orderBy: { fiscalYear: 'asc' } },
       );
 
-      if (latestPastBudgets.length > 0) {
-        const topBudget = latestPastBudgets.find((b) => b.type === BudgetType.Top);
-        const currency = topBudget?.currency || Currency.VND; // Default to VND if not found
-        const description = topBudget?.description || 'Auto-generated bud get';
+      const minTransactionYear = await this.transactionRepository.findFirstTransaction(
+        { userId, isDeleted: false, isMarked: false },
+        { select: { date: true }, orderBy: { date: 'asc' } },
+      );
 
-        // Create budgets for the current year using the most recent past year's data
-        // For Act, createBudget will fetch current year's transactions
-        await this.createBudget({
-          userId: userId,
-          fiscalYear: currentYear, // Use current year
-          estimatedTotalExpense: topBudget!.total_exp.toNumber() || 0,
-          estimatedTotalIncome: topBudget!.total_inc.toNumber() || 0,
-          description: description,
-          currency: currency, // Use the currency from the latest past budget
-          icon: topBudget?.icon ?? defaultIcon,
-          isSystemGenerated: true,
-        });
-      } else {
-        const defaultDescription = 'Auto-generated budget';
+      // Xác định năm nhỏ nhất có dữ liệu
+      const minBudgetYearValue = minBudgetYear ? Number(minBudgetYear.fiscalYear) : null;
+      const minTransactionYearValue = minTransactionYear
+        ? minTransactionYear.date.getFullYear()
+        : null;
 
-        const defaultEstimatedTotalExpense = 0;
-        const defaultEstimatedTotalIncome = 0;
+      let minYear: number | null = null;
 
-        await this.createBudget({
-          userId: userId,
-          fiscalYear: currentYear, // Use current year
-          estimatedTotalExpense: defaultEstimatedTotalExpense,
-          estimatedTotalIncome: defaultEstimatedTotalIncome,
-          description: defaultDescription,
-          currency: currency, // Use the currency from the user preference
-          icon: defaultIcon,
-          isSystemGenerated: true,
+      if (minBudgetYearValue && minTransactionYearValue) {
+        minYear = Math.min(minBudgetYearValue, minTransactionYearValue);
+      } else if (minBudgetYearValue) {
+        minYear = minBudgetYearValue;
+      } else if (minTransactionYearValue) {
+        minYear = minTransactionYearValue;
+      }
+
+      // Nếu không có dữ liệu, đặt minYear là 10 năm trước (giới hạn hợp lý)
+      minYear = minYear || currentYear - 10;
+
+      // Lặp qua các năm trước đó để tìm dữ liệu
+      let yearToCheck = currentYear - 1; // Bắt đầu từ năm ngoái (2024)
+      let foundData = false;
+
+      while (!foundData && yearToCheck >= minYear) {
+        // Kiểm tra ngân sách Act của năm hiện tại
+        const latestActBudget = await this.budgetRepository.findBudgetData(
+          { userId, type: BudgetType.Act, fiscalYear: yearToCheck.toString() },
+          {
+            select: {
+              fiscalYear: true,
+              total_inc: true,
+              total_exp: true,
+              currency: true,
+              description: true,
+              icon: true,
+            },
+          },
+        );
+
+        if (latestActBudget) {
+          // Copy dữ liệu từ Act năm gần nhất
+          actEstimatedTotalExpense = latestActBudget.total_exp.toNumber();
+          actEstimatedTotalIncome = latestActBudget.total_inc.toNumber();
+          budgetCurrency = latestActBudget.currency;
+          budgetDescription = latestActBudget.description || defaultDescription;
+          budgetIcon = latestActBudget.icon || defaultIcon;
+          foundData = true;
+        } else {
+          // Nếu không có ngân sách, lấy giao dịch của năm đó
+          const yearStart = new Date(yearToCheck, 0, 1);
+          const yearEnd = new Date(yearToCheck, 11, 31);
+          const transactions = await this.fetchTransactions(userId, yearStart, yearEnd, {
+            isMarked: false,
+          });
+
+          if (transactions.length > 0) {
+            const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
+              transactions,
+              budgetCurrency,
+            );
+            actEstimatedTotalExpense = totalExpenseAct;
+            actEstimatedTotalIncome = totalIncomeAct;
+
+            // Đánh dấu giao dịch đã được tính
+            const transactionIds = transactions.map((t) => t.id);
+            if (transactionIds.length > 0) {
+              await prisma.transaction.updateMany({
+                where: { id: { in: transactionIds } },
+                data: { isMarked: true },
+              });
+            }
+            foundData = true;
+          }
+        }
+        yearToCheck--; // Chuyển sang năm trước đó
+      }
+
+      // Thêm giao dịch của năm 2025 (chỉ từ cách 2 tháng)
+      const currentMonth = now.getMonth() + 1; // 5 (Tháng 5)
+      const targetMonth = currentMonth - 2; // 3 (Tháng 3)
+      const currentYearStart = new Date(currentYear, targetMonth - 1, 1); // 01/03/2025
+      const currentYearEnd = new Date(currentYear, 11, 31); // 31/12/2025
+      const currentYearTransactions = await this.transactionRepository.findManyTransactions(
+        {
+          userId,
+          isDeleted: false,
+          date: { gte: currentYearStart, lte: currentYearEnd },
+          isMarked: false,
+          type: { in: [TransactionType.Income, TransactionType.Expense] },
+        },
+        { select: { id: true, date: true, type: true, amount: true, currency: true } },
+      );
+
+      const currentYearTotals = this.calculateActualTotals(currentYearTransactions, budgetCurrency);
+
+      actEstimatedTotalExpense += currentYearTotals.totalExpenseAct;
+      actEstimatedTotalIncome += currentYearTotals.totalIncomeAct;
+
+      // Đánh dấu giao dịch năm 2025 đã được tính
+      const currentYearTransactionIds = currentYearTransactions.map((t) => t.id);
+      if (currentYearTransactionIds.length > 0) {
+        await prisma.transaction.updateMany({
+          where: { id: { in: currentYearTransactionIds } },
+          data: { isMarked: true },
         });
       }
+
+      // Tạo ngân sách Act cho năm 2025
+      await this.createBudget({
+        userId,
+        fiscalYear: currentYear.toString(),
+        estimatedTotalExpense: actEstimatedTotalExpense,
+        estimatedTotalIncome: actEstimatedTotalIncome,
+        description: budgetDescription,
+        currency: budgetCurrency,
+        icon: budgetIcon,
+        isSystemGenerated: true,
+        type: BudgetType.Act,
+        skipActCalculation: true,
+      });
+
+      // Tạo ngân sách Top và Bot với giá trị mặc định 0
+      await this.createBudget({
+        userId,
+        fiscalYear: currentYear.toString(),
+        estimatedTotalExpense: 0,
+        estimatedTotalIncome: 0,
+        description: defaultDescription,
+        currency: budgetCurrency,
+        icon: defaultIcon,
+        isSystemGenerated: true,
+        type: BudgetType.Top,
+        skipActCalculation: true,
+      });
+
+      await this.createBudget({
+        userId,
+        fiscalYear: currentYear.toString(),
+        estimatedTotalExpense: 0,
+        estimatedTotalIncome: 0,
+        description: defaultDescription,
+        currency: budgetCurrency,
+        icon: defaultIcon,
+        isSystemGenerated: true,
+        type: BudgetType.Bot,
+        skipActCalculation: true,
+      });
     }
 
     // Step 3: Fetch distinct years with budgets, sorted descending
     const distinctYears = await this.budgetRepository.findManyBudgetData(where, {
-      select: {
-        fiscalYear: true,
-      },
-      distinct: ['fiscalYear'], // Get unique years
-      orderBy: {
-        fiscalYear: 'desc',
-      },
-      take: take, // Take 3 distinct years
+      select: { fiscalYear: true },
+      distinct: ['fiscalYear'],
+      orderBy: { fiscalYear: 'desc' },
+      take,
     });
 
     const years = distinctYears.map((d) => d.fiscalYear);
 
-    // Step 4: Fetch budgets for the user with pagination, from current year and earlier
+    // Step 4: Fetch budgets for the user
     const budgets = await this.budgetRepository.findManyBudgetData(where, {
       select: {
         id: true,
+        icon: true,
         fiscalYear: true,
         total_inc: true,
         total_exp: true,
@@ -577,33 +779,20 @@ class BudgetUseCase {
         type: true,
       },
       orderBy: {
-        fiscalYear: 'desc', // Sort by year in descending order
+        fiscalYear: 'desc',
       },
     });
 
-    const currentMonth = now.getMonth() + 1; // 1-12
-    const previousMonth = currentMonth - 1; // Tháng trước
-    const previousMonthStart = new Date(now.getFullYear(), previousMonth - 1, 1); // Ngày 1 của tháng trước
-
-    // Step 5 : Calculate the total of tentative actual transactions
+    // Step 5: Tính tentative actual transactions (chỉ lấy giao dịch "locked" và chưa được tính)
     const tentativeTransactions = await this.transactionRepository.findManyTransactions(
       {
-        userId: userId,
+        userId,
         isDeleted: false,
-        date: {
-          gte: previousMonthStart, // Từ ngày 1 của tháng trước
-          lte: now, // Đến hiện tại
-        },
+        date: { lte: thirtyDaysAgo },
+        isMarked: false,
         type: { in: [TransactionType.Income, TransactionType.Expense] },
       },
-      {
-        select: {
-          date: true,
-          type: true,
-          amount: true,
-          currency: true,
-        },
-      },
+      { select: { id: true, date: true, type: true, amount: true, currency: true } },
     );
 
     // Step 6: Process transactions to calculate tentative income/expense per year
@@ -635,10 +824,13 @@ class BudgetUseCase {
       {},
     );
 
-    // Step 7: Group budgets by year and extract Top, Bot, Act
+    // Step 5: Group budgets by year and extract Top, Bot, Act
     const budgetsByYear = budgets.reduce(
       (
-        acc: Record<number, Record<string, { total_inc: any; total_exp: any; currency: string }>>,
+        acc: Record<
+          string,
+          Record<string, { total_inc: any; total_exp: any; currency: string; icon: string }>
+        >,
         budget,
       ) => {
         if (!acc[budget.fiscalYear]) {
@@ -648,19 +840,21 @@ class BudgetUseCase {
           total_inc: budget.total_inc,
           total_exp: budget.total_exp,
           currency: budget.currency,
+          icon: budget.icon || '',
         };
         return acc;
       },
       {},
     );
 
-    // Step 8: Filter out budgets that are not in the distinct years
+    // Step 6: Prepare response data
     const response = years.map((year) => {
       const budgetData = budgetsByYear[year] || {};
       const topData = budgetData[BudgetType.Top] || {
         total_inc: 0,
         total_exp: 0,
         currency: Currency.VND,
+        icon: budgetsByYear[year].icon || '',
       };
       const botData = budgetData[BudgetType.Bot] || {
         total_inc: 0,
@@ -689,7 +883,8 @@ class BudgetUseCase {
         tentativeTotals.total_exp;
 
       return {
-        year: year,
+        icon: topData.icon,
+        year,
         budgetTopIncome: convertCurrency(topData.total_inc, topData.currency as Currency, currency),
         budgetTopExpense: convertCurrency(
           topData.total_exp,
@@ -704,14 +899,9 @@ class BudgetUseCase {
         ),
         budgetActIncome: combinedActIncome,
         budgetActExpense: combinedActExpense,
-        // actualIncome: convertCurrency(actData.total_inc, actData.currency as Currency, currency),
-        // actualExpense: convertCurrency(actData.total_exp, actData.currency as Currency, currency),
-        // tentativeTotalsIncome: tentativeTotals.total_inc,
-        // tentativeTotalsExpense: tentativeTotals.total_exp,
       };
     });
-
-    // Step 9: Include the next cursor in the response
+    // Step 7: Include the next cursor in the response
     const nextCursor = response.length === take ? response[response.length - 1].year : null;
 
     return {
@@ -721,237 +911,10 @@ class BudgetUseCase {
     } as const;
   }
 
-  async updateActBudget(
-    userId: string,
-    fiscalYear: number,
-    currency: Currency,
-    targetMonth?: number,
-  ) {
-    const now = new Date();
-    const currentMonth = targetMonth || now.getMonth() + 1; // Sử dụng targetMonth nếu được cung cấp, nếu không lấy từ now
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // Cách hiện tại 30 ngày
-
-    // Bước 1: Nếu là tháng 1 hoặc 2, actual sum-up = 0
-    if (currentMonth <= 2) {
-      await prisma.budgetsTable.upsert({
-        where: {
-          fiscalYear_type_userId: {
-            userId: userId,
-            fiscalYear: fiscalYear,
-            type: 'Act',
-          },
-        },
-        update: {
-          total_exp: 0,
-          total_inc: 0,
-          h1_exp: 0,
-          h2_exp: 0,
-          h1_inc: 0,
-          h2_inc: 0,
-          q1_exp: 0,
-          q2_exp: 0,
-          q3_exp: 0,
-          q4_exp: 0,
-          q1_inc: 0,
-          q2_inc: 0,
-          q3_inc: 0,
-          q4_inc: 0,
-          m1_exp: 0,
-          m1_inc: 0,
-          m2_exp: 0,
-          m2_inc: 0,
-          m3_exp: 0,
-          m3_inc: 0,
-          m4_exp: 0,
-          m4_inc: 0,
-          m5_exp: 0,
-          m5_inc: 0,
-          m6_exp: 0,
-          m6_inc: 0,
-          m7_exp: 0,
-          m7_inc: 0,
-          m8_exp: 0,
-          m8_inc: 0,
-          m9_exp: 0,
-          m9_inc: 0,
-          m10_exp: 0,
-          m10_inc: 0,
-          m11_exp: 0,
-          m11_inc: 0,
-          m12_exp: 0,
-          m12_inc: 0,
-          updatedAt: now,
-          updatedBy: userId,
-        },
-        create: {
-          userId: userId,
-          fiscalYear: fiscalYear,
-          type: 'Act',
-          total_exp: 0,
-          total_inc: 0,
-          h1_exp: 0,
-          h2_exp: 0,
-          h1_inc: 0,
-          h2_inc: 0,
-          q1_exp: 0,
-          q2_exp: 0,
-          q3_exp: 0,
-          q4_exp: 0,
-          q1_inc: 0,
-          q2_inc: 0,
-          q3_inc: 0,
-          q4_inc: 0,
-          m1_exp: 0,
-          m1_inc: 0,
-          m2_exp: 0,
-          m2_inc: 0,
-          m3_exp: 0,
-          m3_inc: 0,
-          m4_exp: 0,
-          m4_inc: 0,
-          m5_exp: 0,
-          m5_inc: 0,
-          m6_exp: 0,
-          m6_inc: 0,
-          m7_exp: 0,
-          m7_inc: 0,
-          m8_exp: 0,
-          m8_inc: 0,
-          m9_exp: 0,
-          m9_inc: 0,
-          m10_exp: 0,
-          m10_inc: 0,
-          m11_exp: 0,
-          m11_inc: 0,
-          m12_exp: 0,
-          m12_inc: 0,
-          currency: currency,
-          createdBy: userId,
-          description: 'Auto-generated Act budget',
-        },
-      });
-      return;
-    }
-
-    // Bước 2: Tính toán giao dịch từ tháng 1 đến tháng trước (currentMonth - 1)
-    let totalExpense = 0;
-    let totalIncome = 0;
-
-    // Lặp qua các tháng từ tháng 1 đến tháng trước (currentMonth - 1)
-    for (let month = 1; month <= currentMonth - 1; month++) {
-      const monthStart = new Date(fiscalYear, month - 1, 1); // Ngày 1 của tháng
-      const monthEnd = new Date(fiscalYear, month, 0); // Ngày cuối của tháng
-
-      const transactions = await prisma.transaction.findMany({
-        where: {
-          userId: userId,
-          isDeleted: false,
-          date: {
-            gte: monthStart,
-            lte: monthEnd,
-          },
-          createdAt: {
-            lte: thirtyDaysAgo, // Chỉ lấy giao dịch đã locked
-          },
-          type: { in: ['Income', 'Expense'] },
-          currency: currency,
-        },
-        select: {
-          type: true,
-          amount: true,
-        },
-      });
-
-      const monthExpense = transactions
-        .filter((t) => t.type === 'Expense')
-        .reduce((sum, t) => sum + t.amount.toNumber(), 0);
-
-      const monthIncome = transactions
-        .filter((t) => t.type === 'Income')
-        .reduce((sum, t) => sum + t.amount.toNumber(), 0);
-
-      totalExpense += monthExpense;
-      totalIncome += monthIncome;
-    }
-
-    // Bước 3: Phân bổ giá trị cho các trường tháng, quý, nửa năm
-    const monthlyExpense = Number((totalExpense / 12).toFixed(2));
-    const monthlyIncome = Number((totalIncome / 12).toFixed(2));
-
-    const monthFields = Array.from({ length: 12 }, (_, i) => i + 1).reduce<Record<string, number>>(
-      (acc, m) => {
-        acc[`m${m}_exp`] = monthlyExpense;
-        acc[`m${m}_inc`] = monthlyIncome;
-        return acc;
-      },
-      {},
-    );
-
-    const quarterFields = {
-      q1_exp: monthlyExpense * 3,
-      q2_exp: monthlyExpense * 3,
-      q3_exp: monthlyExpense * 3,
-      q4_exp: monthlyExpense * 3,
-      q1_inc: monthlyIncome * 3,
-      q2_inc: monthlyIncome * 3,
-      q3_inc: monthlyIncome * 3,
-      q4_inc: monthlyIncome * 3,
-    };
-
-    const h1_exp = monthlyExpense * 6;
-    const h2_exp = monthlyExpense * 6;
-    const h1_inc = monthlyIncome * 6;
-    const h2_inc = monthlyIncome * 6;
-
-    // Bước 4: Cập nhật hoặc tạo ngân sách Act
-    await prisma.budgetsTable.upsert({
-      where: {
-        fiscalYear_type_userId: {
-          userId: userId,
-          fiscalYear: fiscalYear,
-          type: 'Act',
-        },
-      },
-      update: {
-        total_exp: totalExpense,
-        total_inc: totalIncome,
-        h1_exp,
-        h2_exp,
-        h1_inc,
-        h2_inc,
-        ...quarterFields,
-        ...monthFields,
-        updatedAt: now,
-        updatedBy: userId,
-      },
-      create: {
-        userId: userId,
-        fiscalYear: fiscalYear,
-        type: 'Act',
-        total_exp: totalExpense,
-        total_inc: totalIncome,
-        h1_exp,
-        h2_exp,
-        h1_inc,
-        h2_inc,
-        ...quarterFields,
-        ...monthFields,
-        currency: currency,
-        createdBy: userId,
-        description: 'Auto-generated Act budget',
-      },
-    });
-  }
-
   async updateActBudgetTotalYears(userId: string, currency: Currency) {
     const now = new Date();
     const currentYear = now.getFullYear();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // Cách hiện tại 30 ngày
-
-    // // Chỉ cập nhật vào ngày 1 của tháng
-    // if (now.getDate() !== 1) {
-    //   return; // Không thực hiện nếu không phải ngày 1
-    // }
 
     // Bước 1: Lấy danh sách các năm có giao dịch
     const yearsWithTransactions = await prisma.transaction.findMany({
@@ -981,7 +944,7 @@ class BudgetUseCase {
       const existingBudget = await this.budgetRepository.findBudgetData(
         {
           userId,
-          fiscalYear,
+          fiscalYear: fiscalYear.toString(),
           type: BudgetType.Act,
         },
         {
@@ -990,6 +953,7 @@ class BudgetUseCase {
             total_exp: true,
             total_inc: true,
             currency: true,
+            fiscalYear: true,
           },
         },
       );
@@ -1003,16 +967,10 @@ class BudgetUseCase {
       const yearStart = new Date(fiscalYear, 0, 1); // Ngày 1/1 của năm
       const targetMonthEnd = new Date(fiscalYear, targetMonth, 0); // Ngày cuối của tháng target (hoặc cuối năm)
 
-      // ----------------------- UPDATE ACT BUDGET AT MONTH -----------------------
-      // Xác định phạm vi của tháng target (tháng cách đó 2 tháng)
-      // const targetMonthStart = new Date(fiscalYear, targetMonth - 1, 1); // Ngày 1 của tháng target
-      // const targetMonthEnd = new Date(fiscalYear, targetMonth, 0); // Ngày cuối của tháng target
-
-      // Lấy ngày nhỏ hơn giữa targetMonthEnd và thirtyDaysAgo
       const effectiveEndDate = targetMonthEnd < thirtyDaysAgo ? targetMonthEnd : thirtyDaysAgo;
 
       // Lấy giao dịch của tháng trước đã "locked"
-      const transactions = await this.transactionRepository.findManyTransactions(
+      const newTransactions = await this.transactionRepository.findManyTransactions(
         {
           userId,
           date: {
@@ -1020,32 +978,31 @@ class BudgetUseCase {
             lte: effectiveEndDate, // Đảm bảo date nằm trong tháng trước và đã "locked"
           },
           isDeleted: false,
+          isMarked: false,
           type: {
             in: [TransactionType.Expense, TransactionType.Income],
           },
         },
-        {
-          select: {
-            date: true,
-            type: true,
-            amount: true,
-            currency: true,
-          },
-        },
+        { select: { date: true, type: true, amount: true, currency: true, id: true } },
       );
 
-      // Tính tổng giao dịch của tháng target
-      let monthExpense = 0;
-      let monthIncome = 0;
+      if (newTransactions.length === 0) {
+        continue; // Không có giao dịch mới để cập nhật
+      }
 
-      transactions.forEach((t) => {
-        const amount = convertCurrency(t.amount, t.currency as Currency, currency);
-        if (t.type === TransactionType.Expense) {
-          monthExpense += amount;
-        } else if (t.type === TransactionType.Income) {
-          monthIncome += amount;
-        }
+      // Tính tổng giao dịch mới
+      let newExpense = 0;
+      let newIncome = 0;
+
+      newTransactions.forEach((t) => {
+        const amount = convertCurrency(t.amount, t.currency as Currency, existingBudget.currency);
+        if (t.type === TransactionType.Expense) newExpense += amount;
+        else if (t.type === TransactionType.Income) newIncome += amount;
       });
+
+      // Tính tổng mới dựa trên ngân sách cũ + giao dịch mới
+      const totalExpense = existingBudget.total_exp.toNumber() + newExpense;
+      const totalIncome = existingBudget.total_inc.toNumber() + newIncome;
 
       // Tính quý và nửa năm dựa trên phân bổ 12 tháng
       const quarters = {
@@ -1055,8 +1012,9 @@ class BudgetUseCase {
         q4: [10, 11, 12],
       };
 
-      const monthlyExpense = _.round(monthExpense / 12, 2); // calculate with 2 decimal places
-      const monthlyIncome = _.round(monthIncome / 12, 2); // calculate with 2 decimal places
+      const monthlyExpense = _.round(totalExpense / 12, 2); // calculate with 2 decimal places
+
+      const monthlyIncome = _.round(totalIncome / 12, 2); // calculate with 2 decimal places
 
       // Create budget details for each month
       const months = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -1079,22 +1037,32 @@ class BudgetUseCase {
 
       // Half-year totals
       const h1_exp = _.round(monthlyExpense * 6, 2); // 6 months in half-year
-      const h2_exp = _.round(monthlyExpense * 6, 2); // 6 months in half-year
       const h1_inc = _.round(monthlyIncome * 6, 2); // 6 months in half-year
+      const h2_exp = _.round(monthlyExpense * 6, 2); // 6 months in half-year
       const h2_inc = _.round(monthlyIncome * 6, 2); // 6 months in half-year
+
+      // Đánh dấu giao dịch mới
+      const newTransactionIds = newTransactions.map((t) => t.id);
+
+      if (newTransactionIds.length > 0) {
+        await prisma.transaction.updateMany({
+          where: { id: { in: newTransactionIds } },
+          data: { isMarked: true },
+        });
+      }
 
       // Step 3: Chỉ cập nhật ngân sách đã có
       const updatedBudget = await this.budgetRepository.updateBudget(
         {
           fiscalYear_type_userId: {
             userId,
-            fiscalYear,
+            fiscalYear: fiscalYear.toString(),
             type: BudgetType.Act,
           },
         },
         {
-          total_exp: monthExpense,
-          total_inc: monthIncome,
+          total_exp: totalExpense,
+          total_inc: totalIncome,
           h1_exp,
           h2_exp,
           h1_inc,
@@ -1161,7 +1129,7 @@ class BudgetUseCase {
 
     await prisma.budgetsTable.update({
       where: {
-        fiscalYear_type_userId: { userId, fiscalYear, type: BudgetType.Act },
+        fiscalYear_type_userId: { userId, fiscalYear: fiscalYear.toString(), type: BudgetType.Act },
       },
       data: {
         total_exp: totalExpense,
@@ -1216,7 +1184,7 @@ class BudgetUseCase {
   async checkedDuplicated(userId: string, fiscalYear: number): Promise<boolean> {
     const foundBudget = await this.budgetRepository.findBudgetData({
       userId,
-      fiscalYear,
+      fiscalYear: fiscalYear.toString(),
     });
     if (foundBudget) {
       return true;

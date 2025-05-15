@@ -1,91 +1,34 @@
-import { uploadToFirebase } from '@/shared/lib';
-import { useAppDispatch } from '@/store';
-import { Currency } from '@prisma/client';
-import { useRouter } from 'next/navigation';
+import { Loading } from '@/components/common/atoms';
+import { useParams } from 'next/navigation';
+import React, { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { FIREBASE_ICON_BUDGETS_PATH } from '../../constants';
-import { createBudgetAsyncThunk } from '../../slices/actions';
+import { useBudgetCreationLogic } from '../hooks';
 import { BudgetFieldForm } from '../molecules';
 import { BudgetCreationFormValues } from '../schema';
-import { resetGetBudgetState } from '../../slices';
-import { getBudgetAsyncThunk } from '../../slices/actions/getBudgetAsyncThunk';
 
 type Props = {
   methods: UseFormReturn<BudgetCreationFormValues>;
 };
+
 const BudgetCreation = ({ methods }: Props) => {
-  const dispatch = useAppDispatch();
-  const router = useRouter();
+  const { year: budgetYear } = useParams() as { year: string };
+  const { handleSubmit } = methods;
+  const { handleGetBudgetByYearAndType, isLoadingGetBudgetById, onSubmit } =
+    useBudgetCreationLogic();
 
-  const { handleSubmit, setError } = methods;
-
-  const onSubmit = async (data: BudgetCreationFormValues) => {
-    let formattedData = {
-      ...data,
-      fiscalYear: Number(data.fiscalYear),
-    };
-
-    if (data.estimatedTotalExpense.toString().length > 11) {
-      setError('estimatedTotalExpense', {
-        message: 'Total expense must be less than 11 digits',
-        type: 'validate',
-      });
-      return;
+  useEffect(() => {
+    if (budgetYear) {
+      handleGetBudgetByYearAndType();
     }
+  }, [budgetYear]);
 
-    if (data.estimatedTotalIncome.toString().length > 11) {
-      setError('estimatedTotalIncome', {
-        message: 'Total income must be less than 11 digits',
-        type: 'validate',
-      });
-      return;
-    }
-
-    if (formattedData.icon && formattedData.icon.startsWith('blob:')) {
-      const response = await fetch(formattedData.icon);
-      const blob = await response.blob();
-      const fileName = `${formattedData.fiscalYear.toString().replace(/\s+/g, '_').toLowerCase()}_${Date.now()}`;
-      const file = new File([blob], fileName, { type: blob.type });
-
-      const firebaseUrl = await uploadToFirebase({
-        file,
-        path: FIREBASE_ICON_BUDGETS_PATH,
-        fileName,
-      });
-
-      formattedData = { ...formattedData, icon: firebaseUrl };
-    }
-
-    await dispatch(
-      createBudgetAsyncThunk({
-        data: {
-          icon: data.icon,
-          fiscalYear: data.fiscalYear,
-          estimatedTotalExpense: data.estimatedTotalExpense,
-          estimatedTotalIncome: data.estimatedTotalIncome,
-          description: data.description ?? '',
-          currency: data.currency as Currency,
-        },
-        setError: setError,
-      }),
-    )
-      .unwrap()
-      .then(() => {
-        dispatch(resetGetBudgetState());
-        dispatch(
-          getBudgetAsyncThunk({
-            cursor: null,
-            search: '',
-            take: 3,
-          }),
-        );
-        router.replace('/budgets');
-      });
-  };
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <BudgetFieldForm />
-    </form>
+    <React.Fragment>
+      {isLoadingGetBudgetById && <Loading />}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <BudgetFieldForm />
+      </form>
+    </React.Fragment>
   );
 };
 

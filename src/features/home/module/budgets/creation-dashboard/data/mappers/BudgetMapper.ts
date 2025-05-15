@@ -1,11 +1,27 @@
 import {
   BudgetCreateRequest,
   BudgetCreateResponse,
+  BudgetDeleteRequest,
+  BudgetDeleteResponse,
+  BudgetGetByYearAndTypeRequest,
+  BudgetGetByYearAndTypeResponse,
   BudgetGetRequest,
   BudgetGetResponse,
+  BudgetUpdateRequest,
+  BudgetUpdateResponse,
 } from '../../domain/entities/Budget';
+import {
+  BudgetDeleteRequestDTO,
+  BudgetGetByYearAndTypeRequestDTO,
+  BudgetUpdateRequestDTO,
+} from '../dto/request';
 import { BudgetCreateRequestDTO } from '../dto/request/BudgetCreateRequestDTO';
 import { BudgetGetRequestDTO } from '../dto/request/BudgetGetRequestDTO';
+import {
+  BudgetDeleteResponseDTO,
+  BudgetGetByYearAndTypeResponseDTO,
+  BudgetUpdateResponseDTO,
+} from '../dto/response';
 import { BudgetCreateResponseDTO } from '../dto/response/BudgetCreateResponseDTO';
 import { BudgetGetResponseDTO } from '../dto/response/BudgetGetResponseDTO';
 
@@ -84,6 +100,66 @@ class BudgetMapper {
       currency: apiResponse.data.currency,
       data: apiResponse.data.data,
       nextCursor: apiResponse.data.nextCursor,
+    };
+  }
+
+  static toGetBudgetByYearAndTypeRequestDTO(
+    requestDTO: BudgetGetByYearAndTypeRequest,
+  ): BudgetGetByYearAndTypeRequestDTO {
+    return {
+      fiscalYear: requestDTO.fiscalYear,
+      type: requestDTO.type,
+    };
+  }
+
+  static toGetBudgetByYearAndTypeResponse(
+    apiResponse: BudgetGetByYearAndTypeResponseDTO,
+  ): BudgetGetByYearAndTypeResponse {
+    return {
+      id: apiResponse.data.id,
+      icon: apiResponse.data.icon,
+      fiscalYear: apiResponse.data.fiscalYear,
+      estimatedTotalExpense: apiResponse.data.estimatedTotalExpense,
+      estimatedTotalIncome: apiResponse.data.estimatedTotalIncome,
+      description: apiResponse.data.description,
+      currency: apiResponse.data.currency,
+    };
+  }
+
+  static toDeleteBudgetRequestDTO(requestDTO: BudgetDeleteRequest): BudgetDeleteRequestDTO {
+    return {
+      budgetYear: requestDTO.budgetYear,
+    };
+  }
+
+  static toDeleteBudgetResponse(apiResponse: BudgetDeleteResponseDTO): BudgetDeleteResponse {
+    return {
+      message: apiResponse.message,
+    };
+  }
+
+  static toUpdateBudgetRequestDTO(requestDTO: BudgetUpdateRequest): BudgetUpdateRequestDTO {
+    return {
+      budgetYear: requestDTO.budgetYear,
+      icon: requestDTO.icon,
+      fiscalYear: requestDTO.fiscalYear,
+      estimatedTotalExpense: requestDTO.estimatedTotalExpense,
+      estimatedTotalIncome: requestDTO.estimatedTotalIncome,
+      description: requestDTO.description,
+      currency: requestDTO.currency,
+      type: requestDTO.type,
+    };
+  }
+
+  static toUpdateBudgetResponse(apiResponse: BudgetUpdateResponseDTO): BudgetUpdateResponse {
+    return {
+      icon: apiResponse.data.icon,
+      fiscalYear: apiResponse.data.fiscalYear,
+      estimatedTotalExpense: apiResponse.data.estimatedTotalExpense,
+      estimatedTotalIncome: apiResponse.data.estimatedTotalIncome,
+      description: apiResponse.data.description,
+      currency: apiResponse.data.currency,
+      type: apiResponse.data.type,
     };
   }
 }

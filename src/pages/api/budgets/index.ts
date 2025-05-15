@@ -98,18 +98,13 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { fiscalYear } = req.body; // Cursor will be a year (e.g., 2023)
     const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
-    let updatedBudget;
-    if (fiscalYear) {
-      updatedBudget = await budgetUseCase.updateActBudget(userId, fiscalYear, currency);
-    } else {
-      updatedBudget = await budgetUseCase.updateActBudgetTotalYears(userId, currency);
-    }
+
+    const updatedRes = await budgetUseCase.updateActBudgetTotalYears(userId, currency);
 
     return res
       .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, Messages.UPDATE_BUDGET_SUCCESS, updatedBudget));
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.UPDATE_BUDGET_SUCCESS, updatedRes));
   } catch (error: any) {
     return res
       .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)

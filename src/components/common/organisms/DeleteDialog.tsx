@@ -14,6 +14,7 @@ type DeleteDialogProps = {
   description?: string;
   confirmText?: string;
   cancelText?: string;
+  isLoading?: boolean;
 };
 
 export const DeleteDialog = ({
@@ -24,6 +25,7 @@ export const DeleteDialog = ({
   confirmText,
   onCancel,
   description,
+  isLoading,
 }: DeleteDialogProps) => {
   const defaultDescription = itemName
     ? `Are you sure you want to delete "${itemName}"? This action cannot be undone.`
@@ -33,6 +35,7 @@ export const DeleteDialog = ({
     <Button
       variant="outline"
       type="button"
+      disabled={isLoading}
       onClick={() => (onCancel ? onCancel() : onOpenChange(false))}
       className="w-28 h-10 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
     >
@@ -43,11 +46,16 @@ export const DeleteDialog = ({
   const renderRightButton = () => {
     return (
       <Button
+        disabled={isLoading}
         type="submit"
         onClick={onConfirm}
         className="w-28 h-10 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white disabled:bg-red-400 disabled:cursor-not-allowed transition-colors duration-200"
       >
-        <Icons.check className="h-5 w-5" />
+        {isLoading ? (
+          <Icons.spinner className="h-5 w-5 animate-spin" />
+        ) : (
+          <Icons.check className="h-5 w-5" />
+        )}
       </Button>
     );
   };
@@ -63,6 +71,7 @@ export const DeleteDialog = ({
       customRightButton={renderRightButton()}
       iconConfirm={<Trash2 />}
       variant="danger"
+      isLoading={isLoading}
     />
   );
 };

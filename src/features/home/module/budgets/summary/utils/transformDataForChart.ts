@@ -42,9 +42,9 @@ export const transformDataForChart = ({
     const topInc = getBudgetValue(topBudget.budget, incField);
     const botInc = getBudgetValue(botBudget.budget, incField);
 
-    const actProfit = Math.max(actInc - actExp, 0);
-    const topProfit = Math.max(topInc - topExp, 0);
-    const botProfit = Math.max(botInc - botExp, 0);
+    const actProfit = actInc - actExp;
+    const topProfit = topInc - topExp;
+    const botProfit = botInc - botExp;
 
     return [
       {

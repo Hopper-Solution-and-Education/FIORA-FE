@@ -17,7 +17,7 @@ const BudgetCreationPage = () => {
 
   return (
     <FormProvider {...methods}>
-      <div className={cn('w-full', isMobile ? 'px-4' : 'px-16 md:px-32 lg:px-52')}>
+      <div className={cn('w-full', isMobile ? 'px-4' : 'px-16 pb-8 md:px-32 lg:px-52')}>
         <BudgetCreationHeader />
         <BudgetCreation methods={methods} />
       </div>

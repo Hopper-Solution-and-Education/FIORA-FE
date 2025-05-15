@@ -71,56 +71,130 @@ const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
       let dateFrom: Date | undefined;
       let dateTo: Date | undefined;
 
+      // Handle date range at the top level regardless of structure
+      if (filters?.date) {
+        if (typeof filters.date === 'string') {
+          // Handle case where date is a direct string value (single date)
+          const dateValue = new Date(filters.date);
+          dateFrom = dateValue;
+          dateTo = dateValue;
+        } else {
+          // Handle standard date range object with gte/lte
+          dateFrom = filters.date.gte ? new Date(filters.date.gte) : undefined;
+          dateTo = filters.date.lte ? new Date(filters.date.lte) : undefined;
+        }
+      }
+
       // Handle AND array structure
       if (Array.isArray(filters?.AND)) {
         filters.AND.forEach((condition: any) => {
-          // Direct type conditions
+          // Process direct conditions (uncommon but possible)
           if (condition.type && typeof condition.type === 'string') {
             types.add(condition.type);
           }
 
-          // Direct partner conditions
           if (condition.partner?.name) {
             partners.add(condition.partner.name);
           }
 
-          // Direct account/category conditions
-          if (condition.fromAccount?.name) categories.add(condition.fromAccount.name);
           if (condition.fromCategory?.name) categories.add(condition.fromCategory.name);
+          if (condition.toCategory?.name) categories.add(condition.toCategory.name);
+          if (condition.fromAccount?.name) accounts.add(condition.fromAccount.name);
           if (condition.toAccount?.name) accounts.add(condition.toAccount.name);
-          if (condition.toCategory?.name) accounts.add(condition.toCategory.name);
 
-          // Handle OR conditions within AND
-          if (Array.isArray(condition.OR)) {
+          // Handle amount conditions
+          if (condition.amount) {
+            if (condition.amount.gte !== undefined) currentAmountMin = condition.amount.gte;
+            if (condition.amount.lte !== undefined) currentAmountMax = condition.amount.lte;
+          }
+
+          // Handle date range in AND conditions (though less common)
+          if (condition.date) {
+            if (typeof condition.date === 'string') {
+              // Single date value
+              const dateValue = new Date(condition.date);
+              dateFrom = dateValue;
+              dateTo = dateValue;
+            } else {
+              // Date range object
+              dateFrom = condition.date.gte ? new Date(condition.date.gte) : dateFrom;
+              dateTo = condition.date.lte ? new Date(condition.date.lte) : dateTo;
+            }
+          }
+
+          // Handle OR conditions for types
+          if (Array.isArray(condition.OR) && condition.OR.some((c: any) => c.type !== undefined)) {
             condition.OR.forEach((orCondition: any) => {
-              // OR type conditions
               if (orCondition.type && typeof orCondition.type === 'string') {
                 types.add(orCondition.type);
               }
+            });
+          }
 
-              // OR partner conditions
+          // Handle OR conditions for partners
+          if (
+            Array.isArray(condition.OR) &&
+            condition.OR.some((c: any) => c.partner?.name !== undefined)
+          ) {
+            condition.OR.forEach((orCondition: any) => {
               if (orCondition.partner?.name) {
                 partners.add(orCondition.partner.name);
               }
+            });
+          }
 
-              // OR account/category conditions
-              if (orCondition.fromAccount?.name) categories.add(orCondition.fromAccount.name);
-              if (orCondition.fromCategory?.name) categories.add(orCondition.fromCategory.name);
-              if (orCondition.toAccount?.name) accounts.add(orCondition.toAccount.name);
-              if (orCondition.toCategory?.name) accounts.add(orCondition.toCategory.name);
+          // Handle OR conditions for accounts with special nested structure
+          if (
+            Array.isArray(condition.OR) &&
+            condition.OR.some(
+              (c: any) =>
+                Array.isArray(c.OR) &&
+                c.OR.some(
+                  (n: any) => n.toAccount?.name !== undefined || n.fromAccount?.name !== undefined,
+                ),
+            )
+          ) {
+            condition.OR.forEach((orGroup: any) => {
+              if (Array.isArray(orGroup.OR)) {
+                orGroup.OR.forEach((nestedOrCondition: any) => {
+                  if (nestedOrCondition.toAccount?.name)
+                    accounts.add(nestedOrCondition.toAccount.name);
+                  if (nestedOrCondition.fromAccount?.name)
+                    accounts.add(nestedOrCondition.fromAccount.name);
+                });
+              }
+            });
+          }
+
+          // Handle OR conditions for categories with special nested structure
+          if (
+            Array.isArray(condition.OR) &&
+            condition.OR.some(
+              (c: any) =>
+                Array.isArray(c.OR) &&
+                c.OR.some(
+                  (n: any) =>
+                    n.toCategory?.name !== undefined || n.fromCategory?.name !== undefined,
+                ),
+            )
+          ) {
+            condition.OR.forEach((orGroup: any) => {
+              if (Array.isArray(orGroup.OR)) {
+                orGroup.OR.forEach((nestedOrCondition: any) => {
+                  if (nestedOrCondition.toCategory?.name)
+                    categories.add(nestedOrCondition.toCategory.name);
+                  if (nestedOrCondition.fromCategory?.name)
+                    categories.add(nestedOrCondition.fromCategory.name);
+                });
+              }
             });
           }
         });
       }
 
-      // Process flat filter structure
+      // Process flat filter structure for other properties
       if (!Array.isArray(filters?.AND) && typeof filters === 'object' && filters) {
         const flatFilters = filters;
-        // Handle date range
-        if (flatFilters.date) {
-          dateFrom = flatFilters.date.gte ? new Date(flatFilters.date.gte) : undefined;
-          dateTo = flatFilters.date.lte ? new Date(flatFilters.date.lte) : undefined;
-        }
 
         // Process amount range
         if (flatFilters.amount) {
@@ -302,23 +376,14 @@ const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
         order: 2,
       },
     ];
-  }, [
-    filterParams,
-    categoryOptions,
-    accountOptions,
-    partnerOptions,
-    amountMin,
-    amountMax,
-    isLoading,
-    handleEditFilter,
-  ]);
+  }, [filterParams, categoryOptions, accountOptions, partnerOptions, isLoading, handleEditFilter]);
 
   // Creates the filter structure from the UI state
   const createFilterStructure = useCallback((params: FilterParams): Record<string, any> => {
     const updatedFilters: Record<string, any> = {};
     const andConditions: any[] = [];
 
-    // Handle date range
+    // Handle date range - always place at top level
     if (params.dateRange?.from || params.dateRange?.to) {
       updatedFilters.date = {
         gte: params.dateRange?.from ? params.dateRange.from.toISOString() : null,
@@ -343,15 +408,17 @@ const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
     // Categories OR group
     if (params.categories?.length) {
       andConditions.push({
-        OR: params.categories.map((from) => ({ fromCategory: { name: from } })),
+        OR: params.categories.map((category) => ({
+          OR: [{ toCategory: { name: category } }, { fromCategory: { name: category } }],
+        })),
       });
     }
 
     // Accounts OR group
     if (params.accounts?.length) {
       andConditions.push({
-        OR: params.accounts.map((to) => ({
-          OR: [{ toAccount: { name: to } }, { toCategory: { name: to } }],
+        OR: params.accounts.map((account) => ({
+          OR: [{ toAccount: { name: account } }, { fromAccount: { name: account } }],
         })),
       });
     }
