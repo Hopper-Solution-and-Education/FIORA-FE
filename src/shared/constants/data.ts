@@ -48,6 +48,10 @@ export const notSignInNavItems: GlobalNavItem[] = [
 
 export const iconOptions: IconsOptions[] = [
   {
+    label: 'None',
+    options: [{ value: '', label: 'None', icon: Icons.none }],
+  },
+  {
     // Hành động/Điều hướng / Action/Navigation
     label: 'Action/Navigation',
     options: [
