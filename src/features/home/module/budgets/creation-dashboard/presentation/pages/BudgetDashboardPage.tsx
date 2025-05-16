@@ -29,7 +29,7 @@ const BudgetDashboardPage = () => {
     handleGetBudgetData(null);
   }, [pathname]);
 
-  const handleGetBudgetData = useCallback((cursor: number | null, handleNext?: () => void) => {
+  const handleGetBudgetData = useCallback((cursor: string | null, handleNext?: () => void) => {
     if (isLoading || budgets.length > 0) return;
     dispatch(resetGetBudgetState());
     dispatch(
@@ -39,8 +39,8 @@ const BudgetDashboardPage = () => {
         take: 3,
         filters: {
           fiscalYear: {
-            lte: Number(getValues('toYear') ?? 9999),
-            gte: Number(getValues('fromYear') ?? 0),
+            lte: String(getValues('toYear') ?? 9999),
+            gte: String(getValues('fromYear') ?? 0),
           },
         },
         currency,

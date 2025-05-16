@@ -7,7 +7,7 @@ interface BudgetControlState {
 
   getBudget: {
     isLoading: boolean;
-    nextCursor: number | null;
+    nextCursor: string | null;
     budgets: BudgetGetDataResponse[];
     isLast: boolean;
     currency: Currency;
