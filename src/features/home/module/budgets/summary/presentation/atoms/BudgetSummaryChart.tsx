@@ -1,6 +1,6 @@
 'use client';
 
-import StackedBarChart from '@/components/common/stacked-bar-chart';
+import PositiveNegativeStackBarChart from '@/components/common/positive-negative-stack-bar-chart';
 import { COLORS } from '@/shared/constants/chart';
 import { formatCurrency } from '@/shared/utils';
 
@@ -12,7 +12,7 @@ interface BudgetChartProps {
 
 const BudgetChart = ({ data, title, currency }: BudgetChartProps) => {
   return (
-    <StackedBarChart
+    <PositiveNegativeStackBarChart
       data={data}
       title={title}
       currency={currency || 'USD'}

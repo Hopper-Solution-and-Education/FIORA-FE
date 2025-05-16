@@ -1,4 +1,4 @@
-import { BarItem } from '@/components/common/positive-negative-bar-chart';
+import { BarItem } from '@/components/common/positive-negative-bar-chart/type';
 import { Account } from '@/features/home/module/account/slices/types';
 import { generateColor } from '@/shared/lib/charts';
 import { convertVNDToUSD } from '@/shared/utils';

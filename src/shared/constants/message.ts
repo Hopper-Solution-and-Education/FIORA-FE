@@ -50,6 +50,7 @@ export enum Messages {
   BUDGET_DELETE_SUCCESS = 'Budget deleted successfully',
   BUDGET_GET_BY_ID_SUCCESS = 'Get budget by id successfully',
   BUDGET_UPDATE_SUCCESS = 'Update budget successfully !',
+
   // Budget Service Failed
   BUDGET_ID_MISSING = 'Budget id is missing',
   INVALID_BUDGET_TYPE = 'Invalid budget type. Budget type must be Act, Bot, or Top',
@@ -60,7 +61,7 @@ export enum Messages {
   BUDGET_DETAILS_NOT_FOUND = 'Budget details not found',
   BUDGET_UPDATE_FAILED = 'Failed to update budget',
   BUDGET_DELETE_FAILED = 'Failed to delete budget',
-
+  BUDGET_FISCAL_YEAR_ALREADY_EXISTS = 'Budget fiscal year already exists',
   // Category-Product Success
   CREATE_CATEGORY_PRODUCT_SUCCESS = 'Create category product successfully',
   UPDATE_CATEGORY_PRODUCT_SUCCESS = 'Update category product successfully',

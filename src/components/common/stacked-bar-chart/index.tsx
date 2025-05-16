@@ -34,6 +34,7 @@ import {
   YAxis,
 } from 'recharts';
 import { CustomBarItem, StackBarDisplay, StackedBarProps, TooltipProps } from './type';
+import { formatter } from '@/shared/lib/charts';
 
 const largestKey = (item: CustomBarItem): string => {
   const largestValue = Math.max(item.A, item.B, item.T);
@@ -79,10 +80,6 @@ const StackedBarChart = ({
   const isMobile = useIsMobile();
 
   const processedData = useMemo(() => calculateDisplayValues(data), [data]);
-
-  const formatter = (key: string, value: number): string => {
-    return `${key}: ${formatCurrency(value, currency)}`;
-  };
 
   const calculateRValue = (item: StackBarDisplay): number => {
     let R: number = 0;
@@ -236,7 +233,11 @@ const StackedBarChart = ({
               dataKey={key}
               stackId="a"
               label={(props) => (
-                <BarLabel {...props} fontSize="text-xs" renderValue={formatter(key, props.value)} />
+                <BarLabel
+                  {...props}
+                  fontSize="text-xs"
+                  renderValue={formatter(key, props.value, currency)}
+                />
               )}
               onClick={(props) => callback && callback(props.payload)}
             >
