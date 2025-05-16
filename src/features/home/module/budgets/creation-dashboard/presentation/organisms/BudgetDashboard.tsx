@@ -1,7 +1,7 @@
 'use client';
 
 import { StackedBarChartSkeleton } from '@/components/common/organisms';
-import StackedBarChart from '@/components/common/stacked-bar-chart';
+import PositiveNegativeStackBarChart from '@/components/common/positive-negative-stack-bar-chart';
 import { useAppSelector } from '@/store';
 import { legendItems, mapBudgetToData } from '../../utils';
 import { useBudgetDashboardLogic } from '../hooks';
@@ -43,14 +43,14 @@ const BudgetDashboard = () => {
                 className="cursor-pointer"
                 onClick={() => handleOnClickItem(budgetItem.year)}
               >
-                <StackedBarChart
+                <PositiveNegativeStackBarChart
                   data={data}
                   title={`${budgetItem.year}`}
                   currency={currency}
                   tutorialText="Click on a bar to view details."
                   className="my-4"
                   legendItems={legendItems}
-                  onClickTitle={() => handleOnClickItem(budgetItem.year)}
+                  callback={() => handleOnClickItem(budgetItem.year)}
                 />
               </div>
             );
