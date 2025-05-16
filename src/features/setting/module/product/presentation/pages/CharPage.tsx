@@ -61,6 +61,11 @@ const ChartPage = () => {
     <div>
       {isLoading ? (
         <ChartSkeleton />
+      ) : data.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-[300px] my-16 text-center">
+          <p className="text-lg font-medium text-gray-500">No products found.</p>
+          <p className="text-sm text-gray-400">Please create a new product to get started.</p>
+        </div>
       ) : (
         <PositiveAndNegativeBarChartV2
           data={chartData}
