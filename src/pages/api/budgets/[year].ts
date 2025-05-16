@@ -54,6 +54,17 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
         .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
     }
 
+    if (!budgetYear || typeof budgetYear !== 'string') {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(
+          createErrorResponse(
+            RESPONSE_CODE.BAD_REQUEST,
+            Messages.MISSING_PARAMS_INPUT + ' budget year',
+          ),
+        );
+    }
+
     // check if fiscal year is duplicated
     if (fiscalYear !== Number(budgetYear)) {
       const isDuplicated = await budgetUseCase.checkedDuplicated(userId, fiscalYear);
@@ -70,7 +81,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
     const budgetToUpdate = await prisma.budgetsTable.findUnique({
       where: {
         fiscalYear_type_userId: {
-          fiscalYear: Number(budgetYear),
+          fiscalYear: budgetYear.toString(),
           type: type as BudgetType,
           userId,
         },
@@ -107,11 +118,18 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
   try {
     const { year: budgetId, type: budgetType } = req.query;
 
+    // check if budgetId is valid
+    if (!budgetId || typeof budgetId !== 'string') {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.BUDGET_ID_MISSING, null));
+    }
+
     // check if budget is found
     const budget = await prisma.budgetsTable.findUnique({
       where: {
         fiscalYear_type_userId: {
-          fiscalYear: Number(budgetId),
+          fiscalYear: budgetId.toString(),
           type: budgetType as BudgetType,
           userId,
         },
@@ -197,7 +215,7 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
         await prisma.budgetsTable.update({
           where: {
             fiscalYear_type_userId: {
-              fiscalYear: Number(budgetYear),
+              fiscalYear: budgetYear.toString(),
               type: type as BudgetType,
               userId,
             },

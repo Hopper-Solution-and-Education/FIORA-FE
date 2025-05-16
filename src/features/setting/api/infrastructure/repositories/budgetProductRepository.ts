@@ -71,7 +71,7 @@ class BudgetRepository implements IBudgetRepository {
 
   async findBudgetsByUserIdAndFiscalYear(
     userId: string,
-    fiscalYear: number,
+    fiscalYear: string,
   ): Promise<BudgetsTable[]> {
     return prisma.budgetsTable.findMany({
       where: {

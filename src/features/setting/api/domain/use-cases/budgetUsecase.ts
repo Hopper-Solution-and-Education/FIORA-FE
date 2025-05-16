@@ -109,7 +109,7 @@ class BudgetUseCase {
       data: {
         userId,
         icon,
-        fiscalYear,
+        fiscalYear: fiscalYear.toString(),
         type,
         total_exp: totalExpense,
         total_inc: totalIncome,
@@ -459,52 +459,67 @@ class BudgetUseCase {
 
     const createdBudgets: BudgetsTable[] = [];
 
-    for (const budgetType of budgetTypes) {
-      let totalExpense = estimatedTotalExpense;
-      let totalIncome = estimatedTotalIncome;
-
-      if (budgetType === BudgetType.Act && !skipActCalculation) {
-        const { totalExpense: actExpense, totalIncome: actIncome } = await this.calculateActTotals(
+    return await prisma.$transaction(async (prisma) => {
+      // checked budget already existed or not
+      const foundBudget = await prisma.budgetsTable.findFirst({
+        where: {
           userId,
-          fiscalYear,
-          currency,
-          now,
-        );
-        totalExpense = actExpense;
-        totalIncome = actIncome;
-      }
-
-      const { monthFields, quarterFields, halfYearFields } = this.calculateBudgetAllocation(
-        totalExpense,
-        totalIncome,
-      );
-
-      const { h1_exp, h2_exp, h1_inc, h2_inc } = halfYearFields;
-
-      const newBudget = await this.budgetRepository.createBudget({
-        userId,
-        icon,
-        fiscalYear,
-        type,
-        total_exp: totalExpense,
-        total_inc: totalIncome,
-        h1_exp,
-        h2_exp,
-        h1_inc,
-        h2_inc,
-        ...quarterFields,
-        ...monthFields,
-        createdBy: !isSystemGenerated ? userId : undefined,
-        description,
-        currency,
+          fiscalYear: fiscalYear.toString(),
+          type: { in: budgetTypes },
+        },
       });
 
-      if (!newBudget) {
-        throw new Error(Messages.BUDGET_CREATE_FAILED);
+      if (foundBudget) {
+        throw new Error(Messages.DUPLICATED_BUDGET_FISCAL_YEAR);
       }
-    }
 
-    return createdBudgets;
+      for (const budgetType of budgetTypes) {
+        let totalExpense = estimatedTotalExpense;
+        let totalIncome = estimatedTotalIncome;
+
+        if (budgetType === BudgetType.Act && !skipActCalculation) {
+          const { totalExpense: actExpense, totalIncome: actIncome } =
+            await this.calculateActTotals(userId, Number(fiscalYear), currency, now);
+          totalExpense = actExpense;
+          totalIncome = actIncome;
+        }
+
+        const { monthFields, quarterFields, halfYearFields } = this.calculateBudgetAllocation(
+          totalExpense,
+          totalIncome,
+        );
+
+        const { h1_exp, h2_exp, h1_inc, h2_inc } = halfYearFields;
+
+        const newBudget = await prisma.budgetsTable.create({
+          data: {
+            userId,
+            icon,
+            fiscalYear: fiscalYear.toString(),
+            type: budgetType, // Sử dụng budgetType thay vì type để tránh lỗi
+            total_exp: totalExpense,
+            total_inc: totalIncome,
+            h1_exp,
+            h2_exp,
+            h1_inc,
+            h2_inc,
+            ...quarterFields,
+            ...monthFields,
+            createdBy: !isSystemGenerated ? userId : undefined,
+            description,
+            currency,
+          },
+        });
+
+        if (!newBudget) {
+          throw new Error(Messages.BUDGET_CREATE_FAILED);
+        }
+
+        createdBudgets.push(newBudget);
+      }
+
+      return createdBudgets;
+    });
   }
 
   private async fetchTransactions(
@@ -545,19 +560,26 @@ class BudgetUseCase {
 
     // Adjust the fiscalYear filter to allow past and future years
     where.fiscalYear = {
-      ...(cursor && { lt: cursor }),
+      ...(cursor && { lt: cursor.toString() }),
       ...(where.fiscalYear && typeof where.fiscalYear === 'object' ? where.fiscalYear : {}),
     };
 
     if (search) {
-      where.fiscalYear = {
-        equals: Number(search),
-      };
+      if (search.length === 2 && /^\d{2}$/.test(search)) {
+        // If user enters 2 digits, search for years ending with those digits (e.g., 19 => 1919, 2019, etc.)
+        where.fiscalYear = {
+          endsWith: search,
+        };
+      } else {
+        where.fiscalYear = {
+          equals: search,
+        };
+      }
     }
 
     // Step 1.1: Check if budgets exist for the current year
     const currentYearBudgets = await this.budgetRepository.findManyBudgetData(
-      { userId, fiscalYear: currentYear },
+      { userId, fiscalYear: currentYear.toString() },
       { select: { fiscalYear: true, type: true } },
     );
 
@@ -586,7 +608,7 @@ class BudgetUseCase {
       );
 
       // Xác định năm nhỏ nhất có dữ liệu
-      const minBudgetYearValue = minBudgetYear ? minBudgetYear.fiscalYear : null;
+      const minBudgetYearValue = minBudgetYear ? Number(minBudgetYear.fiscalYear) : null;
       const minTransactionYearValue = minTransactionYear
         ? minTransactionYear.date.getFullYear()
         : null;
@@ -611,7 +633,7 @@ class BudgetUseCase {
       while (!foundData && yearToCheck >= minYear) {
         // Kiểm tra ngân sách Act của năm hiện tại
         const latestActBudget = await this.budgetRepository.findBudgetData(
-          { userId, type: BudgetType.Act, fiscalYear: yearToCheck },
+          { userId, type: BudgetType.Act, fiscalYear: yearToCheck.toString() },
           {
             select: {
               fiscalYear: true,
@@ -695,7 +717,7 @@ class BudgetUseCase {
       // Tạo ngân sách Act cho năm 2025
       await this.createBudget({
         userId,
-        fiscalYear: currentYear,
+        fiscalYear: currentYear.toString(),
         estimatedTotalExpense: actEstimatedTotalExpense,
         estimatedTotalIncome: actEstimatedTotalIncome,
         description: budgetDescription,
@@ -709,7 +731,7 @@ class BudgetUseCase {
       // Tạo ngân sách Top và Bot với giá trị mặc định 0
       await this.createBudget({
         userId,
-        fiscalYear: currentYear,
+        fiscalYear: currentYear.toString(),
         estimatedTotalExpense: 0,
         estimatedTotalIncome: 0,
         description: defaultDescription,
@@ -722,7 +744,7 @@ class BudgetUseCase {
 
       await this.createBudget({
         userId,
-        fiscalYear: currentYear,
+        fiscalYear: currentYear.toString(),
         estimatedTotalExpense: 0,
         estimatedTotalIncome: 0,
         description: defaultDescription,
@@ -748,6 +770,7 @@ class BudgetUseCase {
     const budgets = await this.budgetRepository.findManyBudgetData(where, {
       select: {
         id: true,
+        icon: true,
         fiscalYear: true,
         total_inc: true,
         total_exp: true,
@@ -804,7 +827,10 @@ class BudgetUseCase {
     // Step 5: Group budgets by year and extract Top, Bot, Act
     const budgetsByYear = budgets.reduce(
       (
-        acc: Record<number, Record<string, { total_inc: any; total_exp: any; currency: string }>>,
+        acc: Record<
+          string,
+          Record<string, { total_inc: any; total_exp: any; currency: string; icon: string }>
+        >,
         budget,
       ) => {
         if (!acc[budget.fiscalYear]) {
@@ -814,6 +840,7 @@ class BudgetUseCase {
           total_inc: budget.total_inc,
           total_exp: budget.total_exp,
           currency: budget.currency,
+          icon: budget.icon || '',
         };
         return acc;
       },
@@ -827,6 +854,7 @@ class BudgetUseCase {
         total_inc: 0,
         total_exp: 0,
         currency: Currency.VND,
+        icon: budgetsByYear[year].icon || '',
       };
       const botData = budgetData[BudgetType.Bot] || {
         total_inc: 0,
@@ -855,6 +883,7 @@ class BudgetUseCase {
         tentativeTotals.total_exp;
 
       return {
+        icon: topData.icon,
         year,
         budgetTopIncome: convertCurrency(topData.total_inc, topData.currency as Currency, currency),
         budgetTopExpense: convertCurrency(
@@ -915,7 +944,7 @@ class BudgetUseCase {
       const existingBudget = await this.budgetRepository.findBudgetData(
         {
           userId,
-          fiscalYear,
+          fiscalYear: fiscalYear.toString(),
           type: BudgetType.Act,
         },
         {
@@ -1027,7 +1056,7 @@ class BudgetUseCase {
         {
           fiscalYear_type_userId: {
             userId,
-            fiscalYear,
+            fiscalYear: fiscalYear.toString(),
             type: BudgetType.Act,
           },
         },
@@ -1100,7 +1129,7 @@ class BudgetUseCase {
 
     await prisma.budgetsTable.update({
       where: {
-        fiscalYear_type_userId: { userId, fiscalYear, type: BudgetType.Act },
+        fiscalYear_type_userId: { userId, fiscalYear: fiscalYear.toString(), type: BudgetType.Act },
       },
       data: {
         total_exp: totalExpense,
@@ -1155,7 +1184,7 @@ class BudgetUseCase {
   async checkedDuplicated(userId: string, fiscalYear: number): Promise<boolean> {
     const foundBudget = await this.budgetRepository.findBudgetData({
       userId,
-      fiscalYear,
+      fiscalYear: fiscalYear.toString(),
     });
     if (foundBudget) {
       return true;

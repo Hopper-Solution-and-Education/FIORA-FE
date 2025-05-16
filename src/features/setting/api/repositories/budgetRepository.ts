@@ -33,11 +33,11 @@ export interface IBudgetRepository {
     where: Prisma.BudgetsTableWhereUniqueInput,
     options?: Prisma.BudgetsTableDeleteArgs,
   ): Promise<BudgetsTable>;
-  findBudgetsByUserIdAndFiscalYear(userId: string, fiscalYear: number): Promise<BudgetsTable[]>;
+  findBudgetsByUserIdAndFiscalYear(userId: string, fiscalYear: string): Promise<BudgetsTable[]>;
 }
 
 export interface BudgetCreation {
-  fiscalYear: number;
+  fiscalYear: string;
   icon?: string;
   estimatedTotalExpense: number;
   estimatedTotalIncome: number;

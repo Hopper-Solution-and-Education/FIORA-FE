@@ -5,7 +5,6 @@ import {
   BASE_BAR_HEIGHT,
   DEFAULT_CURRENCY,
   DEFAULT_LOCALE,
-  DEFAULT_MAX_BAR_RATIO,
   MIN_CHART_HEIGHT,
 } from '@/shared/constants/chart';
 import { getChartMargins, useWindowSize } from '@/shared/utils/device';
@@ -39,7 +38,6 @@ const NestedBarChart = ({
   title,
   currency = DEFAULT_CURRENCY,
   locale = DEFAULT_LOCALE,
-  maxBarRatio = DEFAULT_MAX_BAR_RATIO,
   xAxisFormatter = (value) => value.toString(),
   tooltipContent,
   legendItems,
@@ -177,14 +175,14 @@ const NestedBarChart = ({
     return Math.max(...allValues);
   }, [preparedData]);
 
-  const domain = useMemo(() => {
-    if (maxAbsValue === 0) return [0, 1];
-    const maxX = maxAbsValue / maxBarRatio;
-    return [0, maxX];
-  }, [maxAbsValue, maxBarRatio]);
-
   // Responsive Margins
-  const chartMargins = useMemo(() => getChartMargins(width), [width]);
+  const chartMargins = useMemo(
+    () => ({
+      ...getChartMargins(width),
+      right: 0,
+    }),
+    [width],
+  );
 
   // Custom Tooltip
   const customTooltipWithConfig = useCallback(
@@ -264,7 +262,7 @@ const NestedBarChart = ({
               />
               <XAxis
                 type="number"
-                domain={domain}
+                domain={[0, maxAbsValue]}
                 tickFormatter={xAxisFormatter}
                 className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
               />

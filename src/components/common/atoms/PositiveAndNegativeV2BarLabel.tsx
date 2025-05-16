@@ -1,7 +1,34 @@
+import { formatCurrency } from '@/shared/utils';
 import { memo } from 'react';
 
-const PositiveAndNegativeV2BarLabel = ({ x, y, width, height, value, formatter }: any) => {
-  if (Math.abs(width) < 100) return null;
+interface PositiveAndNegativeV2BarLabelBarLabelProps {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  value: number;
+  renderValue?: string;
+  className?: string;
+  textColor?: string;
+  fontSize?: string;
+  showShadow?: boolean;
+  minWidth?: number;
+}
+
+const PositiveAndNegativeV2BarLabel = ({
+  x,
+  y,
+  width,
+  height,
+  value,
+  renderValue,
+  className = '',
+  textColor = 'white',
+  fontSize = 'text-sm',
+  showShadow = true,
+  minWidth = 100,
+}: PositiveAndNegativeV2BarLabelBarLabelProps) => {
+  if (Math.abs(width) < minWidth) return null;
 
   return (
     <text
@@ -9,13 +36,13 @@ const PositiveAndNegativeV2BarLabel = ({ x, y, width, height, value, formatter }
       y={y + height / 2}
       textAnchor="middle"
       dominantBaseline="middle"
-      className={`font-medium text-sm fill-white dark:fill-white`}
+      className={`font-medium ${fontSize} fill-${textColor} dark:fill-${textColor} ${className}`}
       style={{
-        filter: 'drop-shadow(0px 1px 1px rgba(0,0,0,0.3))',
+        filter: showShadow ? 'drop-shadow(0px 1px 1px rgba(0,0,0,0.3))' : 'none',
         pointerEvents: 'none',
       }}
     >
-      {formatter(value)}
+      {renderValue ? renderValue : formatCurrency(value)}
     </text>
   );
 };

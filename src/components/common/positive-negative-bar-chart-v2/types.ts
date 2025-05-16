@@ -1,5 +1,5 @@
-import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { ContentType } from 'recharts/types/component/Tooltip';
+import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 
 export type TwoSideBarItem = {
   id?: string;
