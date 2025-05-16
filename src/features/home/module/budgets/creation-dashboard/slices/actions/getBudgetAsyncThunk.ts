@@ -11,7 +11,6 @@ export const getBudgetAsyncThunk = createAsyncThunk<
 >('budgets/get', async (data, { rejectWithValue }) => {
   try {
     const getBudgetUseCase = budgetDIContainer.get<IGetBudgetUseCase>(TYPES.IGetBudgetUseCase);
-
     const response = await getBudgetUseCase.execute(data);
     return response;
   } catch (error: any) {

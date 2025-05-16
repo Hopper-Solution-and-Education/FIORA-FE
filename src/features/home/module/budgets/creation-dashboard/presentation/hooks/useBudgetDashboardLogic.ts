@@ -20,7 +20,7 @@ export const useBudgetDashboardLogic = () => {
 
   // Handle call get budget
   const handleCallGetBudget = useCallback(
-    (cursor: number | null) => {
+    (cursor: string | null) => {
       if (isLast || isLoading) return;
       const scrollPosition = scrollRef.current?.scrollTop || window.scrollY;
 
@@ -31,8 +31,8 @@ export const useBudgetDashboardLogic = () => {
           take: 3,
           filters: {
             fiscalYear: {
-              lte: Number(watch('toYear') ?? 9999),
-              gte: Number(watch('fromYear') ?? 0),
+              lte: String(watch('toYear') ?? 9999),
+              gte: String(watch('fromYear') ?? 0),
             },
           },
           currency,

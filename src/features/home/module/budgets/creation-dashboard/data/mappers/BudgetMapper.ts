@@ -82,17 +82,22 @@ class BudgetMapper {
   }
 
   static toGetBudgetRequestDTO(requestDTO: BudgetGetRequest): BudgetGetRequestDTO {
-    return {
+    const result: BudgetGetRequestDTO = {
       cursor: requestDTO.cursor,
       take: requestDTO.take,
       search: requestDTO.search,
-      filters: {
-        fiscalYear: {
-          gte: requestDTO.filters?.fiscalYear?.gte ?? 0,
-          lte: requestDTO.filters?.fiscalYear?.lte ?? 9999,
-        },
-      },
     };
+
+    if (requestDTO.filters?.fiscalYear?.gte && requestDTO.filters?.fiscalYear?.lte) {
+      result.filters = {
+        fiscalYear: {
+          gte: requestDTO.filters.fiscalYear.gte,
+          lte: requestDTO.filters.fiscalYear.lte,
+        },
+      };
+    }
+
+    return result;
   }
 
   static toGetBudgetResponse(apiResponse: BudgetGetResponseDTO): BudgetGetResponse {

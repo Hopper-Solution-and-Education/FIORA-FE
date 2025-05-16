@@ -150,13 +150,13 @@ export class Budget {
 }
 
 export type BudgetGetRequest = {
-  cursor: number | null;
+  cursor: string | null;
   take: number;
   search: string;
   filters?: {
     fiscalYear: {
-      gte: number;
-      lte: number;
+      gte: string;
+      lte: string;
     };
   };
   currency?: Currency;
@@ -165,7 +165,7 @@ export type BudgetGetRequest = {
 export type BudgetGetResponse = {
   currency: Currency;
   data: BudgetGetDataResponse[];
-  nextCursor: number;
+  nextCursor: string;
 };
 
 export type BudgetGetDataResponse = {

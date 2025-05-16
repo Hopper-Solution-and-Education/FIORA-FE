@@ -39,6 +39,7 @@ export class BudgetRepository implements IBudgetRepository {
 
   async getBudget(request: BudgetGetRequest): Promise<BudgetGetResponse> {
     const requestAPI = BudgetMapper.toGetBudgetRequestDTO(request);
+
     const response = await this.budgetAPI.getBudget(requestAPI);
     return BudgetMapper.toGetBudgetResponse(response);
   }

@@ -45,18 +45,11 @@ const BudgetDashboardHeader = () => {
     // Attempt to parse the trimmed input as an integer
     const yearNumber = parseInt(trimmedInput, 10); // Use radix 10
 
-    // Define a reasonable range for years (adjust as needed)
-    const currentYear = new Date().getFullYear();
-    const minYear = 1900;
-    const maxYear = currentYear + 10;
-
     // --- Validation Logic for a Year ---
     const isValidYear =
       !isNaN(yearNumber) && // Check if parsing resulted in a valid number
       Number.isInteger(yearNumber) && // Check if it's an integer
-      String(yearNumber) === trimmedInput && // Strict check: original string matches parsed number string (handles "01", "2024a" etc.)
-      yearNumber >= minYear && // Check minimum year
-      yearNumber <= maxYear; // Check maximum year
+      String(yearNumber) === trimmedInput; // Strict check: original string matches parsed number string (handles "01", "2024a" etc.)
     // --- End Validation Logic ---
 
     if (isValidYear) {
@@ -67,14 +60,14 @@ const BudgetDashboardHeader = () => {
       dispatch(
         getBudgetAsyncThunk({
           cursor: null,
-          search: String(yearNumber), // Pass the valid year number to the thunk
+          search: trimmedInput,
           take: 3,
         }),
       );
     } else {
       // Input is NOT a valid year
       setError('search', {
-        message: 'Please enter a valid four-digit fiscal year ',
+        message: 'Please enter a valid fiscal year ',
         type: 'manual',
       });
     }
