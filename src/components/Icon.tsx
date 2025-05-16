@@ -2,9 +2,11 @@ import {
   AlertCircle,
   AlertTriangle,
   ArrowRight,
+  Ban,
   Banknote,
   BanknoteArrowDown,
   BellRing,
+  Calendar,
   Car,
   ChartBar,
   Check,
@@ -15,6 +17,7 @@ import {
   CircleArrowLeft,
   CircleArrowRight,
   CircleChevronDown,
+  CircleChevronLeft,
   CircleChevronUp,
   CircuitBoardIcon,
   ClipboardList,
@@ -26,6 +29,7 @@ import {
   Eye,
   File,
   FileText,
+  HandCoins,
   Handshake,
   HelpCircle,
   Home,
@@ -67,9 +71,6 @@ import {
   UtensilsCrossed,
   Wallet,
   X,
-  HandCoins,
-  Calendar,
-  CircleChevronLeft,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -161,4 +162,5 @@ export const Icons = {
   handCoins: HandCoins,
   calendar: Calendar,
   circleChevronLeft: CircleChevronLeft,
+  none: Ban,
 };
