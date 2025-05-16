@@ -70,7 +70,7 @@ const useProductFormConfig = () => {
       key="price"
       name="price"
       label="Price"
-      currency={watch('currency') ?? 'vnd'}
+      currency={watch('currency') || 'VND'}
       required
       disabled={isSubmitting}
     />,

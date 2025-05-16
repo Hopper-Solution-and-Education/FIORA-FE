@@ -20,7 +20,7 @@ const AccountBalanceField: React.FC<AccountBalanceFieldProps> = ({
   ...props
 }) => {
   const { watch, setValue } = useFormContext();
-  const currencyType = watch('currency');
+  const currencyType = watch('currency') || 'VND';
   const type = watch('type');
 
   if (type === ACCOUNT_TYPES.CREDIT_CARD || type === ACCOUNT_TYPES.DEBT) {

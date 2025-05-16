@@ -66,31 +66,37 @@ const SelectField: React.FC<SelectFieldProps> = ({
   ...props
 }) => {
   const [open, setOpen] = useState(false);
-  const [internalOptions, setInternalOptions] = useState<Option[]>(options);
+  const [internalOptions, setInternalOptions] = useState<Option[]>([
+    { value: '', label: 'None' },
+    ...options,
+  ]);
   const inputRef = useRef<HTMLInputElement>(null);
-  const selectedLabel = internalOptions.find((opt) => opt.value === value)?.label;
-  const selectedIcon = internalOptions.find((opt) => opt.value === value)?.icon;
+  const selectedOption = internalOptions.find((opt) => opt.value === value);
+  const selectedLabel = value && selectedOption ? selectedOption.label : null;
+  const selectedIcon = value && selectedOption ? selectedOption.icon : null;
 
-  // Auto-load options if provided
+  // Auto-load options nếu có loadOptions, thêm tùy chọn "None" vào đầu
   useEffect(() => {
     if (loadOptions) {
-      loadOptions().then((data) => setInternalOptions(data));
+      loadOptions().then((data) => {
+        setInternalOptions([{ value: '', label: 'None' }, ...data]);
+      });
     } else {
-      setInternalOptions(options);
+      setInternalOptions([{ value: '', label: 'None' }, ...options]);
     }
   }, [loadOptions, options]);
 
-  // Auto-focus CommandInput when Popover opens
+  // Auto-focus CommandInput khi Popover mở
   useEffect(() => {
     if (open && inputRef.current) {
       inputRef.current.focus();
     }
   }, [open]);
 
-  // Render icon or image based on the icon value
+  // Render icon hoặc image dựa trên icon value
   const renderIconOrImage = (iconValue?: string) => {
     if (!iconValue) {
-      return <></>; // if icon is not provided, return empty
+      return <></>;
     }
 
     if (isImageUrl(iconValue)) {
@@ -152,10 +158,9 @@ const SelectField: React.FC<SelectFieldProps> = ({
                 !selectedLabel && 'text-muted-foreground',
               )}
             >
-              {value && renderIconOrImage(selectedIcon)}
+              {selectedIcon && renderIconOrImage(selectedIcon)}
               {selectedLabel || placeholder}
             </span>
-
             <Icons.chevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -175,13 +180,13 @@ const SelectField: React.FC<SelectFieldProps> = ({
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="animate-spin w-4 h-4 text-muted-foreground" />
                 </div>
-              ) : internalOptions.length === 0 ? (
+              ) : internalOptions.length === 1 ? (
                 customRenderEmpty || <CommandEmpty>No option found.</CommandEmpty>
               ) : (
                 <CommandGroup>
                   {internalOptions.map((option) => (
                     <CommandItem
-                      key={option.value}
+                      key={option.value || 'none'}
                       value={`${option.label} ${option.value}`}
                       onSelect={() => {
                         onChange(option.value);
