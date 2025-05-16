@@ -6,6 +6,7 @@ import { useFeatureFlagGuard } from '@/shared/hooks/useFeatureFlagGuard';
 import AccountDashboard from '../account/AccountDashboard';
 import RecentTransactions from './components/RecentTransactions';
 import Recommendations from './components/Recommendations';
+import ComposedChartExample from '@/components/common/composed-chart/example';
 
 export default function HomePage() {
   const { isFeatureOn } = useFeatureFlagGuard(FeatureFlags.ACCOUNT_FEATURE, MODULE.HOME);
@@ -24,6 +25,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-10">
             {/* Left Section: Financial & Account Overview */}
             <div className="col-span-1 md:col-span-2 lg:col-span-7 space-y-4">
+              <ComposedChartExample />
               {isFeatureOn && <AccountDashboard module={MODULE.HOME} />}
             </div>
 

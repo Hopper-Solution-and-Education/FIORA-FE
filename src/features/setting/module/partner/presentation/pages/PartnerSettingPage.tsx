@@ -19,7 +19,6 @@ const PartnerSettingPage = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // Always fetch partners when component mounts to ensure fresh data
     dispatch(fetchPartners({ page: 1, pageSize: 100 }));
   }, [dispatch]);
 
@@ -61,6 +60,11 @@ const PartnerSettingPage = () => {
       <TabActionHeader buttonLabel="" redirectPath="/setting/partner/create" />
       {isLoading ? (
         <ChartSkeleton />
+      ) : partners.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-[300px] my-16 text-center">
+          <p className="text-lg font-medium text-gray-500">No partners found.</p>
+          <p className="text-sm text-gray-400">Please create a new partner to get started.</p>
+        </div>
       ) : (
         <PositiveAndNegativeBarChartV2
           data={barData}
