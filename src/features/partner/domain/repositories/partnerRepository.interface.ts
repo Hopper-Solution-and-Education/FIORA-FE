@@ -13,4 +13,8 @@ export interface IPartnerRepository {
   // deletePartner(id: string, userId: string): Promise<Partner>;
   findByName(name: string, userId: string): Promise<Partner | null>;
   deletePartner(id: string): Promise<void>;
+  findManyPartner(
+    where: Prisma.PartnerWhereInput,
+    options?: Prisma.PartnerFindManyArgs,
+  ): Promise<Partner[]>;
 }

@@ -1,4 +1,4 @@
-import { type Prisma, type Partner } from '@prisma/client';
+import { type Prisma, type Partner, Transaction } from '@prisma/client';
 import { IPartnerRepository } from '../../domain/repositories/partnerRepository.interface';
 import { Messages } from '@/shared/constants/message';
 import { partnerRepository } from '../../infrastructure/repositories/partnerRepository';
@@ -7,6 +7,10 @@ import { transactionRepository } from '@/features/transaction/infrastructure/rep
 import { prisma } from '@/config';
 import { validatePartnerData } from '../../exception/partnerExceptionHandler';
 import { PartnerValidationData } from '../../exception/partnerException.type';
+import { globalFilters } from '@/shared/types';
+import { buildWhereClause } from '@/shared/utils';
+import { safeString } from '@/shared/utils/ExStringUtils';
+import { BooleanUtils } from '@/shared/lib';
 
 class PartnerUseCase {
   constructor(
@@ -24,6 +28,83 @@ class PartnerUseCase {
       throw new Error(Messages.PARTNER_NOT_FOUND);
     }
     return partner;
+  }
+
+  async filterPartnerOptions(params: globalFilters, userId: string) {
+    const searchParams = safeString(params.search);
+    const filters = params.filters || {};
+
+    let where = buildWhereClause(filters) as Prisma.PartnerWhereInput;
+
+    if (BooleanUtils.isTrue(searchParams)) {
+      const typeSearchParams = searchParams.toLowerCase();
+
+      where = {
+        AND: [
+          where,
+          {
+            OR: [
+              { name: { contains: typeSearchParams, mode: 'insensitive' } },
+              { identify: { contains: typeSearchParams, mode: 'insensitive' } },
+              { taxNo: { contains: typeSearchParams, mode: 'insensitive' } },
+              { phone: { contains: typeSearchParams, mode: 'insensitive' } },
+              { email: { contains: typeSearchParams, mode: 'insensitive' } },
+              { address: { contains: typeSearchParams, mode: 'insensitive' } },
+            ],
+          },
+        ],
+      };
+    }
+
+    const partners = await this.partnerRepository.findManyPartner(
+      {
+        ...where,
+        userId,
+      },
+      {
+        include: {
+          transactions: true,
+          children: true,
+          parent: true,
+        },
+        orderBy: { transactions: { _count: 'desc' } },
+      },
+    );
+
+    const filteredPartners = this.filterByTransactionRange(partners, filters);
+    return filteredPartners;
+  }
+
+  async filterByTransactionRange(
+    partners: Array<any>,
+    filters: {
+      totalIncomeMin?: number;
+      totalIncomeMax?: number;
+      totalExpenseMin?: number;
+      totalExpenseMax?: number;
+    },
+  ) {
+    const {
+      totalIncomeMin = 0,
+      totalIncomeMax = Number.MAX_SAFE_INTEGER,
+      totalExpenseMin = 0,
+      totalExpenseMax = Number.MAX_SAFE_INTEGER,
+    } = filters;
+
+    return partners.filter((partner) => {
+      const totalExpense = partner.transactions
+        .filter((t: Transaction) => t.type === 'Expense')
+        .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
+
+      const totalIncome = partner.transactions
+        .filter((t: Transaction) => t.type === 'Income')
+        .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
+
+      const isValidExpense = totalExpense >= totalExpenseMin && totalExpense <= totalExpenseMax;
+      const isValidIncome = totalIncome >= totalIncomeMin && totalIncome <= totalIncomeMax;
+
+      return isValidExpense || isValidIncome;
+    });
   }
 
   async deletePartner(id: string, userId: string, newId?: string): Promise<void> {

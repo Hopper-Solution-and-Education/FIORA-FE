@@ -87,6 +87,47 @@ export class AccountUseCase {
     }
   }
 
+  async filterAccountOptions(params: globalFilters, userId: string) {
+    const searchParams = safeString(params.search);
+    let where = buildWhereClause(params.filters) as Prisma.AccountWhereInput;
+
+    if (BooleanUtils.isTrue(searchParams)) {
+      const typeSearchParams = searchParams.toLowerCase();
+
+      where = {
+        AND: [
+          where,
+          {
+            OR: [
+              { name: { contains: typeSearchParams, mode: 'insensitive' } },
+              { type: { equals: typeSearchParams as AccountType } },
+            ],
+          },
+        ],
+      };
+    }
+
+    const accountFiltered = await this.accountRepository.findManyWithCondition(
+      {
+        ...where,
+        userId: userId,
+      },
+      {
+        include: {
+          children: true,
+          toTransactions: true,
+          fromTransactions: true,
+        },
+        orderBy: [
+          {
+            balance: 'desc',
+          },
+        ],
+      },
+    );
+    return accountFiltered;
+  }
+
   async validateParentAccount(parentId: string, type: AccountType): Promise<void> {
     const parentAccount = await this.accountRepository.findById(parentId);
 

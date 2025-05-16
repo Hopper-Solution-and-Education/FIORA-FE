@@ -1,9 +1,13 @@
 import { prisma } from '@/config';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { BooleanUtils } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { globalFilters } from '@/shared/types';
+import { buildWhereClause } from '@/shared/utils';
+import { safeString } from '@/shared/utils/ExStringUtils';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { Currency } from '@prisma/client';
+import { Currency, Prisma } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req, res, userId) => {
@@ -22,6 +26,26 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
     const { page = 1, pageSize = 20 } = req.query;
     const skip = (Number(page) - 1) * Number(pageSize);
     const take = Number(pageSize);
+    const params = req.body as globalFilters;
+
+    const searchParams = safeString(params.search);
+    let where = buildWhereClause(params.filters) as Prisma.ProductWhereInput;
+
+    if (BooleanUtils.isTrue(searchParams)) {
+      const typeSearchParams = searchParams.toLowerCase();
+
+      where = {
+        AND: [
+          where,
+          {
+            OR: [
+              { name: { contains: typeSearchParams, mode: 'insensitive' } },
+              { items: { some: { name: { contains: typeSearchParams, mode: 'insensitive' } } } },
+            ],
+          },
+        ],
+      };
+    }
 
     // Bước 1: Lấy danh sách CategoryProducts phân trang và đếm tổng số
     const [categories, count] = await Promise.all([
@@ -55,6 +79,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
       where: {
         catId: { in: catIds },
         userId, // Đảm bảo sản phẩm thuộc về user
+        ...where,
       },
       select: {
         id: true,
@@ -193,25 +218,31 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
     );
 
     // Bước 7: Tạo dữ liệu trả về (Sử dụng map lookup cho người dùng)
-    const transformedData = categories.map((category) => {
-      const createdBy = category.createdBy ? userMap[category.createdBy] || null : null;
-      const updatedBy = category.updatedBy ? userMap[category.updatedBy] || null : null;
+    const transformedData = categories
+      .map((category) => {
+        const createdBy = category.createdBy ? userMap[category.createdBy] || null : null;
+        const updatedBy = category.updatedBy ? userMap[category.updatedBy] || null : null;
+        const categoryProducts = productsByCategory[category.id] || [];
 
-      return {
-        category: {
-          id: category.id,
-          name: category.name,
-          description: category.description,
-          icon: category.icon,
-          tax_rate: category.tax_rate?.toNumber() || 0, // Convert Decimal to Number
-          createdAt: category.createdAt,
-          updatedAt: category.updatedAt,
-          createdBy: createdBy, // Lấy từ map
-          updatedBy: updatedBy, // Lấy từ map
-        },
-        products: productsByCategory[category.id] || [],
-      };
-    });
+        // Nếu danh mục không có sản phẩm sau filter, loại khỏi kết quả trả về (tuỳ bạn)
+        if (categoryProducts.length === 0) return null;
+
+        return {
+          category: {
+            id: category.id,
+            name: category.name,
+            description: category.description,
+            icon: category.icon,
+            tax_rate: category.tax_rate?.toNumber() || 0,
+            createdAt: category.createdAt,
+            updatedAt: category.updatedAt,
+            createdBy,
+            updatedBy,
+          },
+          products: categoryProducts,
+        };
+      })
+      .filter((item) => item !== null);
 
     // Bước 8: Tính tổng số trang
     const totalPage = Math.ceil(count / take);

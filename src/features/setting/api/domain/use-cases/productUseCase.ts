@@ -1,9 +1,9 @@
 import { Messages } from '@/shared/constants/message';
 
 import { prisma } from '@/config';
-import { PaginationResponse, ProductItem } from '@/shared/types';
+import { globalFilters, PaginationResponse, ProductItem } from '@/shared/types';
 import { convertCurrency } from '@/shared/utils/exchangeRate';
-import { Currency, Product, ProductType } from '@prisma/client';
+import { Currency, Prisma, Product, ProductType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
@@ -14,6 +14,9 @@ import {
   ProductCreation,
   ProductUpdate,
 } from '../../repositories/productRepository.interface';
+import { safeString } from '@/shared/utils/ExStringUtils';
+import { buildWhereClause } from '@/shared/utils';
+import { BooleanUtils } from '@/shared/lib';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
@@ -228,6 +231,49 @@ class ProductUseCase {
     } catch (error: any) {
       throw new Error(error.message || Messages.CREATE_PRODUCT_FAILED);
     }
+  }
+
+  async filterProductOptions(params: globalFilters, userId: string) {
+    const searchParams = safeString(params.search);
+    let where = buildWhereClause(params.filters) as Prisma.ProductWhereInput;
+
+    if (BooleanUtils.isTrue(searchParams)) {
+      const typeSearchParams = searchParams.toLowerCase();
+
+      where = {
+        AND: [
+          where,
+          {
+            OR: [
+              { name: { contains: typeSearchParams, mode: 'insensitive' } },
+              { items: { some: { name: { contains: typeSearchParams, mode: 'insensitive' } } } },
+            ],
+          },
+        ],
+      };
+    }
+
+    const productFiltered = await this.productRepository.findManyProducts(
+      {
+        ...where,
+        userId: userId,
+      },
+      {
+        include: {
+          transactions: true,
+          items: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              icon: true,
+            },
+          },
+        },
+        orderBy: { transactions: { _count: 'desc' } },
+      },
+    );
+    return productFiltered;
   }
 
   async updateProduct(params: ProductUpdate & { id: string }) {
