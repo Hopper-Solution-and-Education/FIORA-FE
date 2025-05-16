@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useCallback } from 'react';
 import {
   Bar,
   CartesianGrid,
@@ -17,6 +17,12 @@ import { cn, formatCurrency } from '@/shared/utils';
 import { getChartMargins, useWindowSize } from '@/shared/utils/device';
 import { ChartSkeleton } from '@/components/common/organisms';
 import { DEFAULT_CURRENCY } from '@/shared/constants/chart';
+import { Payload } from 'recharts/types/component/DefaultTooltipContent';
+import {
+  DEFAULT_COMPOSED_CHART_FONT_SIZE,
+  DEFAULT_COMPOSED_CHART_HEIGHT,
+  DEFAULT_COMPOSED_CHART_TICK_COUNT,
+} from './constant';
 
 const ComposedChartComponent = ({
   data = [],
@@ -28,16 +34,11 @@ const ComposedChartComponent = ({
   xAxisFormatter = (value: number) => value.toString(),
   yAxisFormatter = (value: number) => formatCurrency(value, currency),
   columns,
-  lines = [{ key: 'line', name: 'Line', color: '#2471A3' }],
+  lines,
   showLegend = true,
-  height = 550,
-  fontSize = {
-    title: 16,
-    axis: 12,
-    tooltip: 14,
-    legend: 12,
-  },
-  tickCount = 6,
+  height = DEFAULT_COMPOSED_CHART_HEIGHT,
+  fontSize = DEFAULT_COMPOSED_CHART_FONT_SIZE,
+  tickCount = DEFAULT_COMPOSED_CHART_TICK_COUNT,
 }: ComposedChartProps) => {
   const { width } = useWindowSize();
   const chartMargins = useMemo(() => getChartMargins(width), [width]);
@@ -55,13 +56,16 @@ const ComposedChartComponent = ({
           {label}
         </p>
 
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry: Payload<number, string>, index: number) => (
           <div
             key={index}
             className="flex items-center text-gray-600 dark:text-gray-400 mt-1"
             style={{ fontSize: (fontSize.tooltip as number) - 2 }}
           >
-            <div className="w-3 h-3 mr-2 rounded-sm" style={{ backgroundColor: entry.color }} />
+            <div
+              className="w-3 h-3 mr-2 rounded-sm"
+              style={{ backgroundColor: entry.color || '#cccccc' }}
+            />
             <span>{entry.name}:</span>
             <span className="font-bold ml-1">{yAxisFormatter(entry.value as number)}</span>
           </div>
@@ -69,6 +73,32 @@ const ComposedChartComponent = ({
       </div>
     );
   };
+
+  const renderCustomLegend = () => (
+    <div className="flex justify-center items-center gap-4 mt-4">
+      {columns.map((column, index) => (
+        <div key={`legend-column-${index}`} className="flex items-center">
+          <div className="w-3 h-3 mr-2 rounded-sm" style={{ backgroundColor: column.color }} />
+          <span className="text-sm text-gray-600 dark:text-gray-400">{column.name}</span>
+        </div>
+      ))}
+      {lines.map((line, index) => (
+        <div key={`legend-line-${index}`} className="flex items-center">
+          <div className="w-3 h-3 mr-2 rounded-sm" style={{ backgroundColor: line.color }} />
+          <span className="text-sm text-gray-600 dark:text-gray-400">{line.name}</span>
+        </div>
+      ))}
+    </div>
+  );
+
+  const handleChartClick = useCallback(
+    (data: any) => {
+      if (callback && data && data.activePayload) {
+        callback(data.activePayload[0].payload);
+      }
+    },
+    [callback],
+  );
 
   if (isLoading) {
     return <ChartSkeleton />;
@@ -88,15 +118,7 @@ const ComposedChartComponent = ({
       )}
 
       <ResponsiveContainer width="100%" height={height}>
-        <ComposedChart
-          data={data}
-          margin={chartMargins}
-          onClick={(data) => {
-            if (callback && data && data.activePayload) {
-              callback(data.activePayload[0].payload);
-            }
-          }}
-        >
+        <ComposedChart data={data} margin={chartMargins} onClick={handleChartClick}>
           <CartesianGrid
             strokeDasharray="3 3"
             vertical={false}
@@ -138,7 +160,14 @@ const ComposedChartComponent = ({
               radius={[4, 4, 0, 0]}
               animationDuration={400}
               animationEasing="ease-out"
-              activeBar={{ fill: column.color, stroke: '#ffffff', strokeWidth: 1 }}
+              activeBar={{
+                fill: column.color,
+                stroke: '#ffffff',
+                strokeWidth: 2,
+                filter: 'drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.3))',
+                cursor: 'pointer',
+                strokeOpacity: 0.8,
+              }}
             />
           ))}
 
@@ -150,29 +179,20 @@ const ComposedChartComponent = ({
               name={line.name}
               stroke={line.color}
               strokeWidth={2}
-              dot={{ r: 5, fill: line.color }}
-              activeDot={{ r: 8 }}
+              dot={{ r: 5, fill: line.color, strokeWidth: 1, stroke: '#ffffff' }}
+              activeDot={{
+                r: 8,
+                stroke: '#ffffff',
+                strokeWidth: 2,
+                fill: line.color,
+                filter: 'drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.3))',
+              }}
             />
           ))}
         </ComposedChart>
       </ResponsiveContainer>
 
-      {!showLegend && (
-        <div className="flex justify-center items-center gap-4 mt-4">
-          {columns.map((column, index) => (
-            <div key={`legend-column-${index}`} className="flex items-center">
-              <div className="w-3 h-3 mr-2 rounded-sm" style={{ backgroundColor: column.color }} />
-              <span className="text-sm text-gray-600 dark:text-gray-400">{column.name}</span>
-            </div>
-          ))}
-          {lines.map((line, index) => (
-            <div key={`legend-line-${index}`} className="flex items-center">
-              <div className="w-3 h-3 mr-2 rounded-sm" style={{ backgroundColor: line.color }} />
-              <span className="text-sm text-gray-600 dark:text-gray-400">{line.name}</span>
-            </div>
-          ))}
-        </div>
-      )}
+      {!showLegend && renderCustomLegend()}
     </div>
   );
 };

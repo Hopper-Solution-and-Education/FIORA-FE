@@ -2,7 +2,7 @@ import { TooltipProps as RechartsTooltipProps } from 'recharts';
 
 export type ComposedChartDataItem = {
   name: string | number;
-  [key: string]: any; // Cho phép các trường động
+  [key: string]: string | number | undefined;
 };
 
 export type ColumnConfig = {
@@ -27,8 +27,8 @@ export type ComposedChartProps = {
   className?: string;
   xAxisFormatter?: (value: any) => string;
   yAxisFormatter?: (value: number) => string;
-  columns: ColumnConfig[]; // Mảng cấu hình cho các cột
-  lines?: LineConfig[]; // Mảng cấu hình cho các đường
+  columns: ColumnConfig[];
+  lines: LineConfig[];
   showLegend?: boolean;
   height?: number;
   fontSize?: {
