@@ -7,7 +7,7 @@ import { transactionRepository } from '@/features/transaction/infrastructure/rep
 import { prisma } from '@/config';
 import { validatePartnerData } from '../../exception/partnerExceptionHandler';
 import { PartnerValidationData } from '../../exception/partnerException.type';
-import { globalFilters } from '@/shared/types';
+import { GlobalFilters } from '@/shared/types';
 import { buildWhereClause } from '@/shared/utils';
 import { safeString } from '@/shared/utils/ExStringUtils';
 import { BooleanUtils } from '@/shared/lib';
@@ -30,7 +30,7 @@ class PartnerUseCase {
     return partner;
   }
 
-  async filterPartnerOptions(params: globalFilters, userId: string) {
+  async filterPartnerOptions(params: GlobalFilters, userId: string) {
     const searchParams = safeString(params.search);
     const filters = params.filters || {};
 

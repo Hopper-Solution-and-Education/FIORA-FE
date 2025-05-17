@@ -3,7 +3,7 @@ import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { BooleanUtils } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
-import { globalFilters } from '@/shared/types';
+import { GlobalFilters } from '@/shared/types';
 import { buildWhereClause } from '@/shared/utils';
 import { safeString } from '@/shared/utils/ExStringUtils';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
@@ -59,7 +59,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
     const { page = 1, pageSize = DEFAULT_PAGE_SIZE } = req.query;
     const skip = (Number(page) - 1) * Number(pageSize);
     const take = Number(pageSize);
-    const params = req.body as globalFilters;
+    const params = req.body as GlobalFilters;
 
     const searchParams = safeString(params.search);
     let where = buildWhereClause(params.filters) as Prisma.ProductWhereInput;

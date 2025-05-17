@@ -5,6 +5,10 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { IAccountRepository } from '../../domain/repositories/accountRepository.interface';
 import { accountRepository } from '../../infrastructure/repositories/accountRepository';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { GlobalFilters } from '@/shared/types';
+import { buildWhereClause } from '@/shared/utils';
+import { safeString } from '@/shared/utils/ExStringUtils';
+import { BooleanUtils } from '@/shared/lib';
 
 const descriptions = {
   ['Payment']:
@@ -87,7 +91,7 @@ export class AccountUseCase {
     }
   }
 
-  async filterAccountOptions(params: globalFilters, userId: string) {
+  async filterAccountOptions(params: GlobalFilters, userId: string) {
     const searchParams = safeString(params.search);
     let where = buildWhereClause(params.filters) as Prisma.AccountWhereInput;
 

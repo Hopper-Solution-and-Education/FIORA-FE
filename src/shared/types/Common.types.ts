@@ -13,7 +13,7 @@ export interface IconsOptions {
   options: Option[];
 }
 
-export interface globalFilters {
+export interface GlobalFilters {
   search?: string;
   sort?: string;
   filters: any;

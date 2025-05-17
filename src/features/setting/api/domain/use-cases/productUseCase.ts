@@ -1,7 +1,7 @@
 import { Messages } from '@/shared/constants/message';
 
 import { prisma } from '@/config';
-import { globalFilters, PaginationResponse, ProductItem } from '@/shared/types';
+import { GlobalFilters, PaginationResponse, ProductItem } from '@/shared/types';
 import { convertCurrency } from '@/shared/utils/exchangeRate';
 import { Currency, Prisma, Product, ProductType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
@@ -233,7 +233,7 @@ class ProductUseCase {
     }
   }
 
-  async filterProductOptions(params: globalFilters, userId: string) {
+  async filterProductOptions(params: GlobalFilters, userId: string) {
     const searchParams = safeString(params.search);
     let where = buildWhereClause(params.filters) as Prisma.ProductWhereInput;
 
