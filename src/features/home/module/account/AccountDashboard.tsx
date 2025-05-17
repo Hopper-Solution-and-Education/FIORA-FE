@@ -1,6 +1,6 @@
 'use client';
 
-import PositiveAndNegativeBarChart from '@/components/common/positive-negative-bar-chart';
+import PositiveAndNegativeBarChart from '@/components/common/charts/positive-negative-bar-chart';
 import { Icons } from '@/components/Icon';
 import { fetchAccounts, fetchParents } from '@/features/home/module/account/slices/actions';
 import { COLORS } from '@/shared/constants/chart';
@@ -14,7 +14,7 @@ import NavigateToAccountDialog from '@/features/home/module/account/components/N
 import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import { MODULE } from '@/shared/constants';
 import { mapAccountsToBarItems } from '@/features/home/module/account/utils';
-import { BarItem } from '@/components/common/positive-negative-bar-chart/type';
+import { BarItem } from '@/components/common/charts/positive-negative-bar-chart/type';
 
 const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefined }) => {
   const dispatch = useAppDispatch();

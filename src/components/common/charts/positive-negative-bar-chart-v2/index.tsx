@@ -45,7 +45,7 @@ import {
   calculateMainBarCount,
   calculateChartVisibility,
 } from './utils';
-import { PositiveAndNegativeBarChartV2Props } from '@/components/common/positive-negative-bar-chart-v2/types';
+import { PositiveAndNegativeBarChartV2Props } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
 
 const PositiveAndNegativeBarChartV2 = ({
   data,

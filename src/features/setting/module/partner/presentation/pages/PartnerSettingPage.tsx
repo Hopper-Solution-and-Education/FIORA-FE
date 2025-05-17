@@ -1,8 +1,8 @@
 'use client';
 
 import { ChartSkeleton } from '@/components/common/organisms';
-import PositiveAndNegativeBarChartV2 from '@/components/common/positive-negative-bar-chart-v2';
-import { TwoSideBarItem } from '@/components/common/positive-negative-bar-chart-v2/types';
+import PositiveAndNegativeBarChartV2 from '@/components/common/charts/positive-negative-bar-chart-v2';
+import { TwoSideBarItem } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
 import { mapPartnersToTwoSideBarItems } from '@/features/setting/module/partner/presentation/utils';
 import { fetchPartners } from '@/features/setting/module/partner/slices/actions/fetchPartnersAsyncThunk';
 import { COLORS } from '@/shared/constants/chart';

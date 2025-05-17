@@ -27,16 +27,13 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
   const [botBudget, setBotBudget] = useState<BudgetSummaryByType | null>(null);
   const [actBudget, setActBudget] = useState<BudgetSummaryByType | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const router = useRouter();
+
   const { currency } = useAppSelector((state) => state.settings);
+  const router = useRouter();
 
   const budgetSummaryUseCase = budgetSummaryDIContainer.get<IBudgetSummaryUseCase>(
     TYPES.IBudgetSummaryUseCase,
   );
-
-  const handleEditBudget = () => {
-    router.push(`/budgets/update/${selectedYear}`);
-  };
 
   const fetchAllBudgetData = async () => {
     setIsLoading(true);
@@ -84,6 +81,10 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
       setChartData(addLevelToItems(transformedData));
     }
   }, [topBudget, botBudget, actBudget, currency, selectedYear]);
+
+  const handleEditBudget = () => {
+    router.push(`/budgets/update/${selectedYear}`);
+  };
 
   return (
     <div className="p-4">
