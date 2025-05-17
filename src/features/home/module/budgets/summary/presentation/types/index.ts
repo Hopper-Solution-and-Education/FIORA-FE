@@ -1,4 +1,4 @@
-import { CustomBarItem } from '@/components/common/stacked-bar-chart/type';
+import { CustomBarItem } from '@/components/common/charts/stacked-bar-chart/type';
 import { STACK_TYPE } from '@/shared/constants/chart';
 
 export interface ChartLayer {

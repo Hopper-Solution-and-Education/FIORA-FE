@@ -1,7 +1,7 @@
 'use client';
 
 import { StackedBarChartSkeleton } from '@/components/common/organisms';
-import PositiveNegativeStackBarChart from '@/components/common/positive-negative-stack-bar-chart';
+import PositiveNegativeStackBarChart from '@/components/common/charts/positive-negative-stack-bar-chart';
 import { useAppSelector } from '@/store';
 import { legendItems, mapBudgetToData } from '../../utils';
 import { useBudgetDashboardLogic } from '../hooks';
