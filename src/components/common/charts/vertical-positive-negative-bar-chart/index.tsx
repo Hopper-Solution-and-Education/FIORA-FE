@@ -34,16 +34,15 @@ import { renderCustomLegend } from './components/VerticalPositiveNegativeBarChar
 const VerticalPositiveNegativeBarChart = ({
   data = [],
   title,
-  currency = DEFAULT_CURRENCY,
-  xAxisFormatter = (value: any) => value.toString(),
-  yAxisFormatter = (value: number) => formatCurrency(value, currency),
   tooltipContent,
   columns,
-  isLoading = false,
   showLegend = true,
+  isLoading = false,
+  xAxisFormatter = (value: number) => value.toString(),
+  yAxisFormatter = (value: number) => formatCurrency(value, currency),
+  currency = DEFAULT_CURRENCY,
   height = DEFAULT_VERTICAL_BAR_CHART_HEIGHT,
   fontSize = DEFAULT_CHART_FONT_SIZE,
-  callback,
   tickCount = DEFAULT_CHART_TICK_COUNT,
 }: VerticalPositiveNegativeBarChartProps) => {
   const { width } = useWindowSize();
@@ -90,15 +89,6 @@ const VerticalPositiveNegativeBarChart = ({
     [tooltipContent, yAxisFormatter, fontSize],
   );
 
-  const handleChartClick = useCallback(
-    (data: any) => {
-      if (callback && data && data.activePayload) {
-        callback(data.activePayload[0].payload);
-      }
-    },
-    [callback],
-  );
-
   const barCategoryGap = useMemo(
     () =>
       buildResponsiveBarCategoryGap(data, {
@@ -130,7 +120,6 @@ const VerticalPositiveNegativeBarChart = ({
         <BarChart
           data={data}
           margin={chartMargins}
-          onClick={handleChartClick}
           barGap={2}
           barCategoryGap={barCategoryGap}
           maxBarSize={DEFAULT_VERTICAL_BAR_CHART_ITEM_WIDTH}
