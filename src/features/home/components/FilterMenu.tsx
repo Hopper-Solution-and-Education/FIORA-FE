@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { getProductTransactionAsyncThunk } from '@/features/setting/module/product/slices/actions';
 import { useSession } from 'next-auth/react';
 import { DropdownOption } from '../module/transaction/types';
-import { DEFAULT_DASHBOARD_FILTER_CRITERIA, FilterParams } from '../constants';
+import { DEFAULT_DASHBOARD_FILTER_CRITERIA } from '../constants';
 
 // Define constants for magic numbers
 const DEFAULT_MAX_EXPENSE = 100000;
@@ -19,6 +19,13 @@ const DEFAULT_LARGE_MAX_VALUE = 1000000;
 const DEFAULT_SLIDER_STEP = 1000;
 const DEFAULT_PAGE_SIZE = 10;
 
+// Fixed type options
+const TYPE_OPTIONS: DropdownOption[] = [
+  { value: 'Product', label: 'Product' },
+  { value: 'Service', label: 'Service' },
+  { value: 'Edu', label: 'Edu' },
+];
+
 interface RangeCondition {
   gte?: number;
   lte?: number;
@@ -28,6 +35,7 @@ interface ProductCondition {
   name?: string;
   id?: string;
 }
+
 interface FilterStructure {
   AND?: FilterCondition[];
 }
@@ -40,7 +48,22 @@ interface FilterCondition {
   OR?: ProductCondition[];
 }
 
-const filterParamsInitState: FilterParams = {
+// Local FilterParams interface to extend the imported one with 'types'
+interface ExtendedFilterParams {
+  types: string[];
+  products?: string[];
+  expenseMin: number;
+  expenseMax: number;
+  priceMin: number;
+  priceMax: number;
+  taxRateMin: number;
+  taxRateMax: number;
+  incomeMin: number;
+  incomeMax: number;
+}
+
+const filterParamsInitState: ExtendedFilterParams = {
+  types: [],
   products: [],
   expenseMin: 0,
   expenseMax: DEFAULT_MAX_EXPENSE,
@@ -55,10 +78,9 @@ const filterParamsInitState: FilterParams = {
 interface FilterMenuProps {
   onFilterChange: (newFilter: FilterCriteria) => void;
   filterCriteria: FilterCriteria;
-  productOptions?: DropdownOption[];
 }
 
-const FilterMenu = ({ onFilterChange, filterCriteria, productOptions = [] }: FilterMenuProps) => {
+const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
   // Get min/max values from Redux state
   const productTransaction = useAppSelector((state) => state.productManagement.productTransaction);
   const { data: session } = useSession();
@@ -66,7 +88,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria, productOptions = [] }: Fil
   const dispatch = useAppDispatch();
 
   // State for filter parameters
-  const [filterParams, setFilterParams] = useState<FilterParams>(filterParamsInitState);
+  const [filterParams, setFilterParams] = useState<ExtendedFilterParams>(filterParamsInitState);
 
   // Initialize filter params with values from Redux when they change
   useEffect(() => {
@@ -88,7 +110,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria, productOptions = [] }: Fil
   // Extract filter data from filters object
   const extractFilterData = useCallback(
     (filters: FilterStructure) => {
-      const products: string[] = [];
+      const types: string[] = [];
       let currentPriceMin = productTransaction.minPrice || 0;
       let currentPriceMax = productTransaction.maxPrice || DEFAULT_MAX_PRICE;
       let currentTaxRateMin = productTransaction.minTaxRate || DEFAULT_MIN_TAX_RATE;
@@ -101,14 +123,14 @@ const FilterMenu = ({ onFilterChange, filterCriteria, productOptions = [] }: Fil
       // Handle AND array structure
       if (Array.isArray(filters?.AND)) {
         filters.AND.forEach((condition: FilterCondition) => {
-          // Handle product ids in OR conditions
+          // Handle type ids in OR conditions
           if (Array.isArray(condition.OR)) {
             condition.OR.forEach((orCondition: ProductCondition) => {
               if (orCondition.id) {
-                products.push(orCondition.id);
+                types.push(orCondition.id);
               } else if (orCondition.name) {
                 // For backward compatibility
-                products.push(orCondition.name);
+                types.push(orCondition.name);
               }
             });
           }
@@ -140,7 +162,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria, productOptions = [] }: Fil
       }
 
       return {
-        products,
+        types,
         priceMin: currentPriceMin,
         priceMax: currentPriceMax,
         taxRateMin: currentTaxRateMin,
@@ -164,7 +186,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria, productOptions = [] }: Fil
   }, [filterCriteria, extractFilterData]);
 
   // Handler for filter edits
-  const handleEditFilter = (target: keyof FilterParams, value: string[] | number) => {
+  const handleEditFilter = (target: keyof ExtendedFilterParams, value: string[] | number) => {
     setFilterParams((prev) => ({
       ...prev,
       [target]: value,
@@ -173,17 +195,14 @@ const FilterMenu = ({ onFilterChange, filterCriteria, productOptions = [] }: Fil
 
   // Create filter components
   const filterComponents = useMemo(() => {
-    // Use provided product options from props or fallback to empty array
-    const defaultProductOptions = productOptions.length > 0 ? productOptions : [];
-
-    // Product multi-select filter
-    const productFilterComponent = (
+    // Type multi-select filter with fixed options
+    const typeFilterComponent = (
       <MultiSelectFilter
-        options={defaultProductOptions}
-        selectedValues={filterParams.products}
-        onChange={(values) => handleEditFilter('products', values)}
-        label="Products"
-        placeholder={productOptions.length > 0 ? 'Select products' : 'Loading products...'}
+        options={TYPE_OPTIONS}
+        selectedValues={filterParams.types}
+        onChange={(values) => handleEditFilter('types', values)}
+        label="Type"
+        placeholder="Select types"
       />
     );
 
@@ -265,8 +284,8 @@ const FilterMenu = ({ onFilterChange, filterCriteria, productOptions = [] }: Fil
 
     return [
       {
-        key: 'productFilter',
-        component: productFilterComponent,
+        key: 'typeFilter',
+        component: typeFilterComponent,
         column: FilterColumn.LEFT,
         order: 0,
       },
@@ -295,71 +314,71 @@ const FilterMenu = ({ onFilterChange, filterCriteria, productOptions = [] }: Fil
         order: 1,
       },
     ];
-  }, [filterParams, productOptions, productTransaction]);
+  }, [filterParams, productTransaction]);
 
   // Build filter structure from the current parameters
   const buildFilters = () => {
     const filters = createFilterStructure(filterParams);
     const filterCriteriaObj: FilterCriteria = {
       userId,
-      filters,
+      filters, // FilterCriteria expects filters as Record<string, unknown>
     };
     return filterCriteriaObj;
   };
 
   // Create filter structure from UI state
-  const createFilterStructure = useCallback((params: FilterParams): Record<string, unknown> => {
-    const updatedFilters: Record<string, unknown> = {};
-    const andConditions: FilterCondition[] = [];
+  const createFilterStructure = useCallback(
+    (params: ExtendedFilterParams): Record<string, unknown> => {
+      const updatedFilters: Record<string, unknown> = {};
 
-    // Add product filter if selected
-    if (params.products.length > 0) {
-      andConditions.push({
-        OR: params.products.map((productId) => ({
-          id: productId,
-        })),
-      });
-    }
+      // Add type filter if selected
+      if (params.types.length > 0) {
+        // Use just the first selected type if multiple are selected
+        updatedFilters.type = params.types[0];
+      }
 
-    // Add expense range filter
-    andConditions.push({
-      expense: {
-        gte: params.expenseMin,
-        lte: params.expenseMax,
-      },
-    });
-
-    // Add price range filter
-    andConditions.push({
-      price: {
+      // Add price range filter
+      updatedFilters.price = {
         gte: params.priceMin,
         lte: params.priceMax,
-      },
-    });
+      };
 
-    // Add tax rate filter
-    andConditions.push({
-      taxRate: {
-        gte: params.taxRateMin,
-        lte: params.taxRateMax,
-      },
-    });
+      // Add tax rate filter
+      updatedFilters.taxRate = {
+        gte: params.taxRateMin / 100, // Convert from percentage to decimal
+        lte: params.taxRateMax / 100, // Convert from percentage to decimal
+      };
 
-    // Add income filter
-    andConditions.push({
-      income: {
-        gte: params.incomeMin,
-        lte: params.incomeMax,
-      },
-    });
+      // Add transactions filter for expense and income
+      updatedFilters.transactions = {
+        some: {
+          OR: [
+            {
+              transaction: {
+                type: 'Expense',
+                amount: {
+                  gte: params.expenseMin,
+                  lte: params.expenseMax,
+                },
+              },
+            },
+            {
+              transaction: {
+                type: 'Income',
+                amount: {
+                  gte: params.incomeMin,
+                  lte: params.incomeMax,
+                },
+              },
+            },
+          ],
+        },
+      };
 
-    // Add AND conditions
-    if (andConditions.length > 0) {
-      updatedFilters.AND = andConditions;
-    }
-
-    return updatedFilters;
-  }, []);
+      return updatedFilters;
+    },
+    [],
+  );
 
   // Handler to fetch filtered data
   const handleFilterChange = useCallback(
@@ -384,14 +403,16 @@ const FilterMenu = ({ onFilterChange, filterCriteria, productOptions = [] }: Fil
 
   return (
     <GlobalFilter
-      filterParams={filterParams}
+      filterParams={filterParams as unknown as Record<string, unknown>}
       filterComponents={filterComponents}
       onFilterChange={() => {
         const filterCriteriaObj = buildFilters();
         handleFilterChange(filterCriteriaObj);
       }}
       defaultFilterCriteria={DEFAULT_DASHBOARD_FILTER_CRITERIA}
-      structureCreator={createFilterStructure}
+      structureCreator={(params: Record<string, unknown>) =>
+        createFilterStructure(params as unknown as ExtendedFilterParams)
+      }
     />
   );
 };
