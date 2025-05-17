@@ -62,8 +62,11 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
     const params = req.body as GlobalFilters;
 
     const searchParams = safeString(params.search);
-    let where = buildWhereClause(params.filters) as Prisma.ProductWhereInput;
+    let where: Prisma.ProductWhereInput = {};
 
+    if (params.filters && Object.keys(params.filters).length > 0) {
+      where = buildWhereClause(params.filters) as Prisma.ProductWhereInput;
+    }
     if (BooleanUtils.isTrue(searchParams)) {
       const typeSearchParams = searchParams.toLowerCase();
 
