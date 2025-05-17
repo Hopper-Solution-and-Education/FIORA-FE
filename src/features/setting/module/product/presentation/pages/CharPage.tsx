@@ -1,7 +1,7 @@
 'use client';
 
 import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
-import PositiveAndNegativeBarChartV2 from '@/components/common/positive-negative-bar-chart-v2';
+import PositiveAndNegativeBarChartV2 from '@/components/common/charts/positive-negative-bar-chart-v2';
 import { COLORS } from '@/shared/constants/chart';
 import { formatCurrency } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
