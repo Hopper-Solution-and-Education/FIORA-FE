@@ -32,7 +32,7 @@ const ProductPage = () => {
         getProductTransactionAsyncThunk({
           page: pageTransaction,
           pageSize,
-          filters: { ...filterCriteria },
+          filters: { ...filterCriteria.filters },
           userId: data.user.id,
         }),
       );

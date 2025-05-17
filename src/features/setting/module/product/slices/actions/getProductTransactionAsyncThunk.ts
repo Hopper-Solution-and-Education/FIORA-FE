@@ -3,11 +3,10 @@ import { productDIContainer } from '../../di/productDIContainer';
 import { TYPES } from '../../di/productDIContainer.type';
 import { ProductGetTransactionResponse } from '../../domain/entities';
 import { IGetProductTransactionUseCase } from '../../domain/usecases';
-import { FilterCriteria } from '@/shared/types';
 
 export const getProductTransactionAsyncThunk = createAsyncThunk<
   ProductGetTransactionResponse,
-  { page: number; pageSize: number; filters: FilterCriteria; userId: string },
+  { page: number; pageSize: number; filters?: any; userId: string },
   { rejectValue: string }
 >(
   'product/getProductTransaction',

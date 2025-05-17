@@ -333,8 +333,8 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
 
       // Add type filter if selected
       if (params.types.length > 0) {
-        // Use just the first selected type if multiple are selected
-        updatedFilters.type = params.types[0];
+        // Use the full array of selected types
+        updatedFilters.type = params.types;
       }
 
       // Add price range filter
@@ -390,9 +390,9 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
       if (userId) {
         dispatch(
           getProductTransactionAsyncThunk({
-            page: 1, // Reset to first page when filtering
+            page: 1,
             pageSize: productTransaction.pageSize || DEFAULT_PAGE_SIZE,
-            filters: newFilter, // Pass the complete FilterCriteria object
+            filters: newFilter.filters,
             userId,
           }),
         );

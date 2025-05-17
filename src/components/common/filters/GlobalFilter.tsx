@@ -33,16 +33,16 @@ export interface RangeValue {
 }
 
 // Enhanced props type for more flexibility
-export interface GlobalFilterProps<T extends Record<string, unknown>> {
-  filterParams: T;
+export interface GlobalFilterProps {
+  filterParams: any;
   filterComponents: FilterComponentConfig[];
   onFilterChange: (newFilter: FilterCriteria) => void;
-  fieldMappings?: FilterFieldMapping<T>[];
+  fieldMappings?: FilterFieldMapping<any>[];
   defaultFilterCriteria?: FilterCriteria;
-  structureCreator?: (params: T) => Record<string, unknown>;
+  structureCreator?: (params: any) => Record<string, unknown>;
 }
 
-const GlobalFilter = <T extends Record<string, unknown>>(props: GlobalFilterProps<T>) => {
+const GlobalFilter = (props: GlobalFilterProps) => {
   const {
     filterParams,
     filterComponents,
@@ -60,7 +60,7 @@ const GlobalFilter = <T extends Record<string, unknown>>(props: GlobalFilterProp
   };
 
   // Creates the filter structure from the UI state based on field mappings or custom creator
-  const createFilterStructure = (params: T): Record<string, unknown> => {
+  const createFilterStructure = (params: any): Record<string, unknown> => {
     // If custom structure creator is provided, use it
     if (structureCreator) {
       return structureCreator(params);

@@ -21,15 +21,6 @@ export const DashboardHeading: React.FC = () => {
     [filterCriteria],
   );
 
-  // useEffect(() => {
-  //     if (fetchData) {
-  //       mutate('/api/transactions', displayData, {
-  //         revalidate: true,
-  //       });
-  //     }
-  //     // eslint-disable-next-line react-hooks/exhaustive-deps
-  //   }, [paginationParams.currentPage, filterCriteria]);
-
   const handleFilterChange = (newFilter: FilterCriteria) => {
     dispatch(updateProductFilterCriteria(newFilter));
   };

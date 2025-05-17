@@ -122,7 +122,6 @@ const ProductCategoryForm = ({ setValue }: productCategoryFormType) => {
                   page: 1,
                   pageSize: 100,
                   userId: userData?.user.id ?? '',
-                  filters: { userId: userData?.user.id ?? '', filters: {} },
                 }),
               );
             });
