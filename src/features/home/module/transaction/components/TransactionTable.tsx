@@ -35,7 +35,7 @@ import {
 import DeleteTransactionDialog from './DeleteTransactionDialog';
 import FilterMenu from './FilterMenu';
 import SettingsMenu from './SettingMenu';
-import { handleEditFilter } from '@/components/common/filters';
+import { editFilter } from '@/components/common/filters';
 
 type PaginationParams = {
   currentPage: number;
@@ -438,7 +438,7 @@ const TransactionTable = () => {
                             key={columnKey}
                             className="underline cursor-pointer"
                             onClick={() =>
-                              handleEditFilter({
+                              editFilter({
                                 currentFilter: filterCriteria,
                                 callBack: handleFilterChange,
                                 target: 'date',
@@ -456,7 +456,7 @@ const TransactionTable = () => {
                             key={columnKey}
                             className={`underline cursor-pointer font-bold`}
                             onClick={() =>
-                              handleEditFilter({
+                              editFilter({
                                 currentFilter: filterCriteria,
                                 callBack: handleFilterChange,
                                 target: 'type',
@@ -488,7 +488,7 @@ const TransactionTable = () => {
                                 : 'text-gray-500',
                             )}
                             onClick={() =>
-                              handleEditFilter({
+                              editFilter({
                                 currentFilter: filterCriteria,
                                 callBack: handleFilterChange,
                                 target:
@@ -518,7 +518,7 @@ const TransactionTable = () => {
                                 : 'text-gray-500',
                             )}
                             onClick={() =>
-                              handleEditFilter({
+                              editFilter({
                                 currentFilter: filterCriteria,
                                 callBack: handleFilterChange,
                                 target: transRecord.type === 'Expense' ? 'toCategory' : 'toAccount',
@@ -545,7 +545,7 @@ const TransactionTable = () => {
                               transRecord.partnerId ? 'underline cursor-pointer' : 'text-gray-500',
                             )}
                             onClick={() =>
-                              handleEditFilter({
+                              editFilter({
                                 currentFilter: filterCriteria,
                                 callBack: handleFilterChange,
                                 target: 'partner',

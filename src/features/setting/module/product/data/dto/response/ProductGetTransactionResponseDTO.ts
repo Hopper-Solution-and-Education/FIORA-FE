@@ -3,9 +3,20 @@ import { CategoryType, ProductType } from '@prisma/client';
 import { HttpResponse } from '../../../model';
 import { ProductItem } from '../../../presentation/schema/addProduct.schema';
 
-export type ProductGetTransactionResponseDTO = HttpResponse<
-  PaginationResponse<ProductTransactionCategoryResponse>
->;
+// Extended pagination response with filter properties
+export type ProductTransactionPaginationResponse =
+  PaginationResponse<ProductTransactionCategoryResponse> & {
+    minPrice?: number;
+    maxPrice?: number;
+    minTaxRate?: number;
+    maxTaxRate?: number;
+    minExpense?: number;
+    maxExpense?: number;
+    minIncome?: number;
+    maxIncome?: number;
+  };
+
+export type ProductGetTransactionResponseDTO = HttpResponse<ProductTransactionPaginationResponse>;
 
 type ProductTransactionCategoryResponse = {
   category: {

@@ -2,7 +2,8 @@ import { PaginationResponse } from '@/shared/types/Common.types';
 import { CategoryType, ProductType } from '@prisma/client';
 import { ProductFormValues, ProductItem } from '../../presentation/schema/addProduct.schema';
 import { Transaction } from './Transaction';
-import { CreatedBy, UpdatedBy } from '@/shared/types';
+import { CreatedBy, FilterCriteria, UpdatedBy } from '@/shared/types';
+import { ProductFilterResponse } from '../../slices/types';
 export class Product {
   id: string;
   name: string;
@@ -82,12 +83,14 @@ export type ProductTransferDeleteResponse = {
 };
 
 export type ProductGetTransactionRequest = {
-  userId: string;
   page: number;
   pageSize: number;
+  filters: FilterCriteria;
+  userId: string;
 };
 
-export type ProductGetTransactionResponse = PaginationResponse<ProductTransactionCategoryResponse>;
+export type ProductGetTransactionResponse = PaginationResponse<ProductTransactionCategoryResponse> &
+  ProductFilterResponse;
 
 export type ProductTransactionCategoryResponse = {
   category: {

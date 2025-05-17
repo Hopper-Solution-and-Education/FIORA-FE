@@ -18,6 +18,7 @@ const ProductPage = () => {
   const { page: pageTransaction, pageSize } = useAppSelector(
     (state) => state.productManagement.productTransaction,
   );
+  const { filterCriteria } = useAppSelector((state) => state.productManagement);
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
@@ -28,7 +29,12 @@ const ProductPage = () => {
     // dispatch(getProductsAsyncThunk({ page: productPage, pageSize: productPageSize }));
     if (data?.user) {
       dispatch(
-        getProductTransactionAsyncThunk({ page: pageTransaction, pageSize, userId: data?.user.id }),
+        getProductTransactionAsyncThunk({
+          page: pageTransaction,
+          pageSize,
+          filters: { ...filterCriteria },
+          userId: data.user.id,
+        }),
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -53,6 +59,7 @@ const ProductPage = () => {
 
   const handleClickButtonCreation = useCallback(() => {
     router.push('/setting/product/create');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

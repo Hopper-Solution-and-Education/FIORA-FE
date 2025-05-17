@@ -10,6 +10,80 @@ import { DateRange } from 'react-day-picker';
 import { TransactionFilterOptionResponse } from '../types';
 import { DEFAULT_TRANSACTION_FILTER_CRITERIA } from '../utils/constants';
 
+// Define constants for magic numbers
+const DEFAULT_MAX_AMOUNT = 10000;
+
+// Define types for filter structures
+interface DateCondition {
+  gte?: string;
+  lte?: string;
+}
+
+interface AmountCondition {
+  gte?: number;
+  lte?: number;
+}
+
+interface PartnerCondition {
+  partner?: {
+    name?: string;
+  };
+}
+
+interface AccountCondition {
+  toAccount?: {
+    name?: string;
+  };
+  fromAccount?: {
+    name?: string;
+  };
+}
+
+interface CategoryCondition {
+  toCategory?: {
+    name?: string;
+  };
+  fromCategory?: {
+    name?: string;
+  };
+}
+
+interface TypeCondition {
+  type?: string;
+}
+
+interface NestedOrCondition {
+  OR?: (AccountCondition | CategoryCondition)[];
+}
+
+interface FilterAndCondition {
+  type?: string;
+  partner?: {
+    name?: string;
+  };
+  fromCategory?: {
+    name?: string;
+  };
+  toCategory?: {
+    name?: string;
+  };
+  fromAccount?: {
+    name?: string;
+  };
+  toAccount?: {
+    name?: string;
+  };
+  amount?: AmountCondition;
+  date?: string | DateCondition;
+  OR?: (TypeCondition | PartnerCondition | NestedOrCondition)[];
+}
+
+interface FilterStructure {
+  AND?: FilterAndCondition[];
+  date?: string | DateCondition;
+  amount?: AmountCondition;
+}
+
 type FilterParams = {
   dateRange?: DateRange;
   types: string[];
@@ -27,7 +101,7 @@ const filterParamsInitState: FilterParams = {
   categories: [],
   accounts: [],
   amountMin: 0,
-  amountMax: 10000,
+  amountMax: DEFAULT_MAX_AMOUNT,
 };
 
 type FilterMenuProps<T> = {
@@ -42,7 +116,7 @@ const options = [
   { value: 'Transfer', label: 'Transfer' },
 ];
 
-const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
+const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>) => {
   const { callBack, components } = props;
   const { amountMin, amountMax, filterCriteria } = useAppSelector((state) => state.transaction);
 
@@ -50,7 +124,7 @@ const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
   const [filterParams, setFilterParams] = useState<FilterParams>({
     ...filterParamsInitState,
     amountMin: amountMin || 0,
-    amountMax: amountMax || 10000,
+    amountMax: amountMax || DEFAULT_MAX_AMOUNT,
   });
 
   // Fetch filter options
@@ -61,7 +135,7 @@ const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
 
   // Extract filter data from complex filter structure
   const extractFilterData = useCallback(
-    (filters: any) => {
+    (filters: FilterStructure) => {
       const types: Set<string> = new Set();
       const partners: Set<string> = new Set();
       const categories: Set<string> = new Set();
@@ -87,7 +161,7 @@ const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
 
       // Handle AND array structure
       if (Array.isArray(filters?.AND)) {
-        filters.AND.forEach((condition: any) => {
+        filters.AND.forEach((condition: FilterAndCondition) => {
           // Process direct conditions (uncommon but possible)
           if (condition.type && typeof condition.type === 'string') {
             types.add(condition.type);
@@ -123,9 +197,16 @@ const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
           }
 
           // Handle OR conditions for types
-          if (Array.isArray(condition.OR) && condition.OR.some((c: any) => c.type !== undefined)) {
-            condition.OR.forEach((orCondition: any) => {
-              if (orCondition.type && typeof orCondition.type === 'string') {
+          if (
+            Array.isArray(condition.OR) &&
+            condition.OR.some((c) => 'type' in c && c.type !== undefined)
+          ) {
+            condition.OR.forEach((orCondition) => {
+              if (
+                'type' in orCondition &&
+                orCondition.type &&
+                typeof orCondition.type === 'string'
+              ) {
                 types.add(orCondition.type);
               }
             });
@@ -134,10 +215,10 @@ const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
           // Handle OR conditions for partners
           if (
             Array.isArray(condition.OR) &&
-            condition.OR.some((c: any) => c.partner?.name !== undefined)
+            condition.OR.some((c) => 'partner' in c && c.partner?.name !== undefined)
           ) {
-            condition.OR.forEach((orCondition: any) => {
-              if (orCondition.partner?.name) {
+            condition.OR.forEach((orCondition) => {
+              if ('partner' in orCondition && orCondition.partner?.name) {
                 partners.add(orCondition.partner.name);
               }
             });
@@ -147,19 +228,22 @@ const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
           if (
             Array.isArray(condition.OR) &&
             condition.OR.some(
-              (c: any) =>
+              (c) =>
+                'OR' in c &&
                 Array.isArray(c.OR) &&
                 c.OR.some(
-                  (n: any) => n.toAccount?.name !== undefined || n.fromAccount?.name !== undefined,
+                  (n) =>
+                    ('toAccount' in n && n.toAccount?.name !== undefined) ||
+                    ('fromAccount' in n && n.fromAccount?.name !== undefined),
                 ),
             )
           ) {
-            condition.OR.forEach((orGroup: any) => {
-              if (Array.isArray(orGroup.OR)) {
-                orGroup.OR.forEach((nestedOrCondition: any) => {
-                  if (nestedOrCondition.toAccount?.name)
+            condition.OR.forEach((orGroup) => {
+              if ('OR' in orGroup && Array.isArray(orGroup.OR)) {
+                orGroup.OR.forEach((nestedOrCondition) => {
+                  if ('toAccount' in nestedOrCondition && nestedOrCondition.toAccount?.name)
                     accounts.add(nestedOrCondition.toAccount.name);
-                  if (nestedOrCondition.fromAccount?.name)
+                  if ('fromAccount' in nestedOrCondition && nestedOrCondition.fromAccount?.name)
                     accounts.add(nestedOrCondition.fromAccount.name);
                 });
               }
@@ -170,20 +254,22 @@ const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
           if (
             Array.isArray(condition.OR) &&
             condition.OR.some(
-              (c: any) =>
+              (c) =>
+                'OR' in c &&
                 Array.isArray(c.OR) &&
                 c.OR.some(
-                  (n: any) =>
-                    n.toCategory?.name !== undefined || n.fromCategory?.name !== undefined,
+                  (n) =>
+                    ('toCategory' in n && n.toCategory?.name !== undefined) ||
+                    ('fromCategory' in n && n.fromCategory?.name !== undefined),
                 ),
             )
           ) {
-            condition.OR.forEach((orGroup: any) => {
-              if (Array.isArray(orGroup.OR)) {
-                orGroup.OR.forEach((nestedOrCondition: any) => {
-                  if (nestedOrCondition.toCategory?.name)
+            condition.OR.forEach((orGroup) => {
+              if ('OR' in orGroup && Array.isArray(orGroup.OR)) {
+                orGroup.OR.forEach((nestedOrCondition) => {
+                  if ('toCategory' in nestedOrCondition && nestedOrCondition.toCategory?.name)
                     categories.add(nestedOrCondition.toCategory.name);
-                  if (nestedOrCondition.fromCategory?.name)
+                  if ('fromCategory' in nestedOrCondition && nestedOrCondition.fromCategory?.name)
                     categories.add(nestedOrCondition.fromCategory.name);
                 });
               }
@@ -220,11 +306,11 @@ const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
 
   // Sync filter params when filter criteria changes
   useEffect(() => {
-    const extractedData = extractFilterData(filterCriteria.filters);
+    const extractedData = extractFilterData(filterCriteria.filters as FilterStructure);
     setFilterParams(extractedData);
   }, [filterCriteria, extractFilterData]);
 
-  const handleEditFilter = useCallback((target: keyof FilterParams, value: any) => {
+  const handleEditFilter = useCallback((target: keyof FilterParams, value: unknown) => {
     setFilterParams((prevParams) => ({
       ...prevParams,
       [target]: value,
@@ -379,8 +465,11 @@ const FilterMenu = <T = any,>(props: FilterMenuProps<T>) => {
   }, [filterParams, categoryOptions, accountOptions, partnerOptions, isLoading, handleEditFilter]);
 
   // Creates the filter structure from the UI state
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createFilterStructure = useCallback((params: FilterParams): Record<string, any> => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updatedFilters: Record<string, any> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const andConditions: any[] = [];
 
     // Handle date range - always place at top level

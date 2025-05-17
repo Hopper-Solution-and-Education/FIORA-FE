@@ -10,10 +10,43 @@ import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { Currency, Prisma } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
+// Define a constant for the default page size
+const DEFAULT_PAGE_SIZE = 20;
+
+// Define interfaces for the product and transaction structures
+
+interface ProductItem {
+  id: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+}
+
+interface ProductType {
+  id: string;
+  price: number;
+  name: string;
+  type: string;
+  description: string | null;
+  items: ProductItem[];
+  taxRate: number;
+  catId: string | null;
+  icon: string | null;
+  currency: Currency;
+}
+
+interface TransactionType {
+  id: string;
+  userId: string | null;
+  type: string;
+  amount: number;
+  currency: Currency;
+}
+
 export default sessionWrapper(async (req, res, userId) => {
   switch (req.method) {
-    case 'GET':
-      return GET(req, res, userId);
+    case 'POST':
+      return POST(req, res, userId);
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -21,9 +54,9 @@ export default sessionWrapper(async (req, res, userId) => {
   }
 });
 
-async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { page = 1, pageSize = 20 } = req.query;
+    const { page = 1, pageSize = DEFAULT_PAGE_SIZE } = req.query;
     const skip = (Number(page) - 1) * Number(pageSize);
     const take = Number(pageSize);
     const params = req.body as globalFilters;
@@ -79,7 +112,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
       where: {
         catId: { in: catIds },
         userId, // Đảm bảo sản phẩm thuộc về user
-        ...where,
+        ...(where.AND ? { AND: where.AND } : {}),
       },
       select: {
         id: true,
@@ -214,7 +247,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
         }
         return acc;
       },
-      {} as Record<string, Array<{ product: any; transactions: any | null }>>, // Bạn nên định nghĩa type chi tiết hơn cho product và transactions ở đây
+      {} as Record<string, Array<{ product: ProductType; transactions: TransactionType[] }>>,
     );
 
     // Bước 7: Tạo dữ liệu trả về (Sử dụng map lookup cho người dùng)
@@ -247,6 +280,55 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
     // Bước 8: Tính tổng số trang
     const totalPage = Math.ceil(count / take);
 
+    // Bước 9: Tính toán các trường thống kê bổ sung
+    // Khởi tạo các biến với giá trị mặc định
+    let minPrice = Number.MAX_VALUE;
+    let maxPrice = 0;
+    let minTaxRate = Number.MAX_VALUE;
+    let maxTaxRate = 0;
+    let minExpense = Number.MAX_VALUE;
+    let maxExpense = 0;
+    let minIncome = Number.MAX_VALUE;
+    let maxIncome = 0;
+
+    // Tìm min/max cho price và taxRate từ sản phẩm
+    for (const category of transformedData) {
+      if (!category) continue;
+
+      for (const item of category.products) {
+        const product = item.product;
+        const price = product.price;
+        const taxRate = product.taxRate;
+
+        // Cập nhật giá trị min/max cho price
+        if (price < minPrice) minPrice = price;
+        if (price > maxPrice) maxPrice = price;
+
+        // Cập nhật giá trị min/max cho taxRate
+        if (taxRate < minTaxRate) minTaxRate = taxRate;
+        if (taxRate > maxTaxRate) maxTaxRate = taxRate;
+
+        // Tìm min/max cho Expense và Income từ các giao dịch
+        for (const transaction of item.transactions) {
+          const amount = transaction.amount;
+
+          if (transaction.type === 'Expense') {
+            if (amount < minExpense) minExpense = amount;
+            if (amount > maxExpense) maxExpense = amount;
+          } else if (transaction.type === 'Income') {
+            if (amount < minIncome) minIncome = amount;
+            if (amount > maxIncome) maxIncome = amount;
+          }
+        }
+      }
+    }
+
+    // Điều chỉnh giá trị min nếu không có dữ liệu
+    if (minPrice === Number.MAX_VALUE) minPrice = 0;
+    if (minTaxRate === Number.MAX_VALUE) minTaxRate = 0;
+    if (minExpense === Number.MAX_VALUE) minExpense = 0;
+    if (minIncome === Number.MAX_VALUE) minIncome = 0;
+
     // Trả về phản hồi
     return res.status(RESPONSE_CODE.OK).json(
       createResponse(RESPONSE_CODE.OK, 'Fetched product categories successfully', {
@@ -255,17 +337,21 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
         pageSize: Number(pageSize),
         totalPage,
         totalCount: count, // Thường thêm totalCount vào response
+        minPrice,
+        maxPrice,
+        minTaxRate,
+        maxTaxRate,
+        minExpense,
+        maxExpense,
+        minIncome,
+        maxIncome,
       }),
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching product categories:', error); // Log lỗi chi tiết hơn
+    const errorMessage = error instanceof Error ? error.message : Messages.INTERNAL_ERROR;
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createResponse(
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        ),
-      );
+      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, errorMessage));
   }
 }

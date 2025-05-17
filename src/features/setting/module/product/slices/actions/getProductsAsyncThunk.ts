@@ -14,7 +14,15 @@ export const getProductsAsyncThunk = createAsyncThunk<
 
     const response = await getProductUseCase.execute(page, pageSize);
     return response;
-  } catch (error: any) {
-    return rejectWithValue(error || 'Failed to get product');
+  } catch (error: unknown) {
+    let errorMessage = 'Failed to get product';
+
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
+
+    return rejectWithValue(errorMessage);
   }
 });

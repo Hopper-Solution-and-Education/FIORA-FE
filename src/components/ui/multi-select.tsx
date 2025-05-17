@@ -1,18 +1,14 @@
 'use client';
 
+import { DropdownOption } from '@/features/home/module/transaction/types';
 import { cn } from '@/shared/utils';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { Check, ChevronDown, X } from 'lucide-react';
 import * as React from 'react';
-
-interface Option {
-  label: string;
-  value: string;
-  disabled?: boolean;
-}
+import { IconDisplay } from '@/components/common/atoms/IconDisplay';
 
 interface MultiSelectProps {
-  options: Option[];
+  options: DropdownOption[];
   selected: string[];
   onChange: (selected: string[]) => void;
   placeholder?: string;
@@ -119,6 +115,13 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                           className="inline-flex items-center gap-1 rounded-sm bg-secondary px-1.5 py-0.5 text-sm w-full max-w-[70%] justify-between overflow-hidden"
                           onClick={(e) => e.stopPropagation()}
                         >
+                          {option?.icon !== undefined && (
+                            <IconDisplay
+                              icon={option.icon}
+                              className="h-4 w-4 max-w-4 max-h-4 aspect-square mr-1"
+                              iconClassName="h-3 w-3 aspect-square"
+                            />
+                          )}
                           <span className="truncate">{option?.label || visibleTags[0]}</span>
                           <X
                             className="h-3 w-3 cursor-pointer flex-shrink-0"
@@ -160,10 +163,18 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                 )}
                 onClick={() => !option.disabled && handleSelect(option.value)}
               >
+                {option.icon && (
+                  <IconDisplay
+                    icon={option.icon}
+                    className="h-5 w-5 max-w-5 max-h-5 aspect-square mr-2"
+                    iconClassName="h-3.5 w-3.5 aspect-square"
+                    isHovered={selected.includes(option.value)}
+                  />
+                )}
+                <p className="max-w-[80%]">{option.label}</p>
                 <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
                   {selected.includes(option.value) && <Check className="h-4 w-4" />}
                 </span>
-                {option.label}
               </div>
             ))}
           </div>

@@ -36,11 +36,22 @@ interface CategoryState {
     page: number;
     pageSize: number;
     total: number;
-    hasMore: boolean;
-  };
+  } & ProductFilterResponse;
   productDetail: Product | null;
   filterCriteria: FilterCriteria;
 }
+
+export type ProductFilterResponse = {
+  minPrice: number;
+  maxPrice: number;
+  minTaxRate: number;
+  maxTaxRate: number;
+  minExpense: number;
+  maxExpense: number;
+  minIncome: number;
+  maxIncome: number;
+  hasMore: boolean;
+};
 
 export const initialProductState: CategoryState = {
   categories: {
@@ -65,6 +76,14 @@ export const initialProductState: CategoryState = {
     page: 1,
     pageSize: 10,
     total: 0,
+    minPrice: 0,
+    maxPrice: 10000,
+    minTaxRate: 0,
+    maxTaxRate: 100,
+    minExpense: 0,
+    maxExpense: 10000,
+    minIncome: 0,
+    maxIncome: 10000,
     hasMore: true,
   },
   isCreatingProduct: false,
@@ -78,5 +97,5 @@ export const initialProductState: CategoryState = {
   ProductCategoryToEdit: null,
   ProductIdToTransfer: '',
   productDetail: null,
-  filterCriteria: DEFAULT_FILTER_CRITERIA,
+  filterCriteria: { ...DEFAULT_FILTER_CRITERIA },
 };

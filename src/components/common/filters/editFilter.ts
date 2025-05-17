@@ -15,7 +15,7 @@ export type FilterEditorProps<T = any> = {
  * Utility function to edit filter criteria
  * @param props Filter editing props
  */
-export const handleEditFilter = <T = any>(props: FilterEditorProps<T>) => {
+export const editFilter = <T = any>(props: FilterEditorProps<T>) => {
   const { currentFilter, callBack, target, value, comparator, subTarget, operator } = props;
 
   let newFilterCriteria: T | any = { ...currentFilter };

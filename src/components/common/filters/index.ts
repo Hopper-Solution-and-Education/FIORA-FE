@@ -1,1 +1,1 @@
-export { handleEditFilter, type FilterEditorProps } from './handleEditFilter';
+export { editFilter, type FilterEditorProps } from './editFilter';

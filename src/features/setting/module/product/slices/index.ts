@@ -19,6 +19,9 @@ import {
 import { initialProductState } from './types';
 import { FilterCriteria } from '@/shared/types/filter.types';
 
+// Define a constant for the not found index
+const NOT_FOUND_INDEX = -1;
+
 const productManagementSlice = createSlice({
   name: 'productManagement',
   initialState: initialProductState,
@@ -167,6 +170,14 @@ const productManagementSlice = createSlice({
       state.productTransaction.total = action.payload.totalPage;
       state.productTransaction.page = action.payload.page;
       state.productTransaction.hasMore = action.payload.page < action.payload.totalPage;
+      state.productTransaction.minPrice = action.payload.minPrice;
+      state.productTransaction.maxPrice = action.payload.maxPrice;
+      state.productTransaction.minTaxRate = action.payload.minTaxRate;
+      state.productTransaction.maxTaxRate = action.payload.maxTaxRate;
+      state.productTransaction.minExpense = action.payload.minExpense;
+      state.productTransaction.maxExpense = action.payload.maxExpense;
+      state.productTransaction.minIncome = action.payload.minIncome;
+      state.productTransaction.maxIncome = action.payload.maxIncome;
     });
 
     builder.addCase(getProductTransactionAsyncThunk.rejected, (state) => {
@@ -211,7 +222,7 @@ const productManagementSlice = createSlice({
         const updatedCategory = action.payload;
         const index = state.categories.data.findIndex((item) => item.id === updatedCategory.id);
 
-        if (index !== -1) {
+        if (index !== NOT_FOUND_INDEX) {
           state.categories.data[index] = updatedCategory;
         }
         toast.success('Success', {

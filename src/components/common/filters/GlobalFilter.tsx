@@ -22,17 +22,27 @@ export const DEFAULT_FILTER_CRITERIA: FilterCriteria = {
   filters: {},
 };
 
-// Enhanced props type for more flexibility
-export interface GlobalFilterProps<T = any> {
-  filterParams: T;
-  filterComponents: FilterComponentConfig[];
-  onFilterChange: (newFilter: any) => void;
-  fieldMappings?: FilterFieldMapping<T>[];
-  defaultFilterCriteria?: FilterCriteria;
-  structureCreator?: (params: T) => Record<string, any>;
+// Define additional types for filter values
+export type FilterValue = string | number | boolean | string[] | number[] | RangeValue;
+
+export interface RangeValue {
+  from?: number;
+  to?: number;
+  min?: number;
+  max?: number;
 }
 
-const GlobalFilter = <T = any,>(props: GlobalFilterProps<T>) => {
+// Enhanced props type for more flexibility
+export interface GlobalFilterProps<T extends Record<string, unknown>> {
+  filterParams: T;
+  filterComponents: FilterComponentConfig[];
+  onFilterChange: (newFilter: FilterCriteria) => void;
+  fieldMappings?: FilterFieldMapping<T>[];
+  defaultFilterCriteria?: FilterCriteria;
+  structureCreator?: (params: T) => Record<string, unknown>;
+}
+
+const GlobalFilter = <T extends Record<string, unknown>>(props: GlobalFilterProps<T>) => {
   const {
     filterParams,
     filterComponents,
@@ -50,19 +60,19 @@ const GlobalFilter = <T = any,>(props: GlobalFilterProps<T>) => {
   };
 
   // Creates the filter structure from the UI state based on field mappings or custom creator
-  const createFilterStructure = (params: T): Record<string, any> => {
+  const createFilterStructure = (params: T): Record<string, unknown> => {
     // If custom structure creator is provided, use it
     if (structureCreator) {
       return structureCreator(params);
     }
 
-    const updatedFilters: Record<string, any> = {};
-    const andConditions: any[] = [];
-    const orConditions: any[] = [];
+    const updatedFilters: Record<string, unknown> = {};
+    const andConditions: Record<string, unknown>[] = [];
+    const orConditions: Record<string, unknown>[] = [];
 
     // Process each field according to its mapping
     fieldMappings.forEach((mapping) => {
-      const value: any = params[mapping.key];
+      const value = params[mapping.key];
 
       // Skip if value should be excluded based on condition
       if (mapping.condition && !mapping.condition(value)) {
@@ -111,17 +121,20 @@ const GlobalFilter = <T = any,>(props: GlobalFilterProps<T>) => {
         } else if (value !== undefined && value !== null) {
           // Handle range values (like date ranges or numeric ranges)
           if (typeof value === 'object' && !Array.isArray(value)) {
-            const rangeValue: Record<string, any> = {};
+            const rangeValue: Record<string, unknown> = {};
+            const typedValue = value as RangeValue;
 
-            if ('from' in value || 'min' in value) {
+            if ('from' in typedValue || 'min' in typedValue) {
               const minVal = transform
-                ? transform(value.from || value.min)
-                : value.from || value.min;
+                ? transform(typedValue.from || typedValue.min)
+                : typedValue.from || typedValue.min;
               rangeValue.gte = minVal;
             }
 
-            if ('to' in value || 'max' in value) {
-              const maxVal = transform ? transform(value.to || value.max) : value.to || value.max;
+            if ('to' in typedValue || 'max' in typedValue) {
+              const maxVal = transform
+                ? transform(typedValue.to || typedValue.max)
+                : typedValue.to || typedValue.max;
               rangeValue.lte = maxVal;
             }
 
@@ -254,11 +267,10 @@ const GlobalFilter = <T = any,>(props: GlobalFilterProps<T>) => {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Clear Filter</p>
+                <p>Reset all filters</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -267,7 +279,7 @@ const GlobalFilter = <T = any,>(props: GlobalFilterProps<T>) => {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Apply</p>
+                <p>Apply filters</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

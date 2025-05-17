@@ -1,16 +1,22 @@
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { updateProductFilterCriteria } from '@/features/setting/module/product/slices';
+import { getProductsAsyncThunk } from '@/features/setting/module/product/slices/actions/getProductsAsyncThunk';
 import { FilterCriteria } from '@/shared/types/filter.types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import debounce from 'lodash/debounce';
 import { Search } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import FilterMenu from './FilterMenu';
 
 export const DashboardHeading: React.FC = () => {
-  const { filterCriteria } = useAppSelector((state) => state.productManagement);
+  const { filterCriteria, products } = useAppSelector((state) => state.productManagement);
   const dispatch = useAppDispatch();
+
+  // Fetch products when component mounts
+  useEffect(() => {
+    dispatch(getProductsAsyncThunk({ page: 1, pageSize: 100 }));
+  }, [dispatch]);
 
   const debouncedFilterHandler = useMemo(
     () =>
@@ -34,12 +40,14 @@ export const DashboardHeading: React.FC = () => {
     dispatch(updateProductFilterCriteria(newFilter));
   };
 
-  // Mock product options - in a real app, this would come from an API
-  const productOptions = [
-    { value: 'Product A', label: 'Product A' },
-    { value: 'Product B', label: 'Product B' },
-    { value: 'Product C', label: 'Product C' },
-  ];
+  // Create product options from fetched products
+  const productOptions = useMemo(() => {
+    return products.items.map((product) => ({
+      value: product.id,
+      label: product.name,
+      icon: product.icon,
+    }));
+  }, [products.items]);
 
   return (
     <div className="flex gap-4">
