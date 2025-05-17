@@ -6,6 +6,16 @@ export const DEFAULT_MAX_BAR_RATIO = 1; // 90% of chart width for largest bar
 export const CHART_MARGINS = { top: 10, right: 30, left: 100, bottom: 30 };
 export const BASE_BAR_HEIGHT = 70; // Minimum height per bar in pixels
 export const MIN_CHART_HEIGHT = 150; // Minimum height in pixels
+
+export const DEFAULT_CHART_FONT_SIZE = {
+  title: 18,
+  axis: 14,
+  tooltip: 14,
+  legend: 14,
+};
+
+export const DEFAULT_CHART_TICK_COUNT = 8;
+
 export const COLORS = {
   DEPS_DANGER: {
     LEVEL_1: '#ff0000',

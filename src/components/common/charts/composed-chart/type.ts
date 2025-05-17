@@ -1,20 +1,8 @@
-import { TooltipProps as RechartsTooltipProps } from 'recharts';
+import { ColumnConfig, LineConfig } from '@/shared/types/chart.type';
 
 export type ComposedChartDataItem = {
   name: string | number;
   [key: string]: string | number | undefined;
-};
-
-export type ColumnConfig = {
-  key: string;
-  name: string;
-  color: string;
-};
-
-export type LineConfig = {
-  key: string;
-  name: string;
-  color: string;
 };
 
 export type ComposedChartProps = {
@@ -39,5 +27,3 @@ export type ComposedChartProps = {
   };
   tickCount?: number;
 };
-
-export type TooltipProps = RechartsTooltipProps<number, string>;
