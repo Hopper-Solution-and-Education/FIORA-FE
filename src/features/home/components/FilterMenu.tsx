@@ -31,23 +31,6 @@ interface RangeCondition {
   lte?: number;
 }
 
-interface ProductCondition {
-  name?: string;
-  id?: string;
-}
-
-interface FilterStructure {
-  AND?: FilterCondition[];
-}
-
-interface FilterCondition {
-  price?: RangeCondition;
-  taxRate?: RangeCondition;
-  expense?: RangeCondition;
-  income?: RangeCondition;
-  OR?: ProductCondition[];
-}
-
 // Local FilterParams interface to extend the imported one with 'types'
 interface ExtendedFilterParams {
   types: string[];
@@ -109,56 +92,53 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
 
   // Extract filter data from filters object
   const extractFilterData = useCallback(
-    (filters: FilterStructure) => {
-      const types: string[] = [];
+    (filters: Record<string, unknown>) => {
+      const types: string[] = Array.isArray(filters.type) ? (filters.type as string[]) : [];
+
+      // Extract price range
       let currentPriceMin = productTransaction.minPrice || 0;
       let currentPriceMax = productTransaction.maxPrice || DEFAULT_MAX_PRICE;
+      if (filters.price && typeof filters.price === 'object') {
+        const priceFilter = filters.price as RangeCondition;
+        if (priceFilter.gte !== undefined) currentPriceMin = priceFilter.gte;
+        if (priceFilter.lte !== undefined) currentPriceMax = priceFilter.lte;
+      }
+
+      // Extract tax rate
       let currentTaxRateMin = productTransaction.minTaxRate || DEFAULT_MIN_TAX_RATE;
       let currentTaxRateMax = productTransaction.maxTaxRate || DEFAULT_MAX_TAX_RATE;
+      if (filters.taxRate && typeof filters.taxRate === 'object') {
+        const taxRateFilter = filters.taxRate as RangeCondition;
+        // Convert from decimal to percentage for display
+        if (taxRateFilter.gte !== undefined) currentTaxRateMin = taxRateFilter.gte * 100;
+        if (taxRateFilter.lte !== undefined) currentTaxRateMax = taxRateFilter.lte * 100;
+      }
+
+      // Extract expense and income from transactions
       let currentExpenseMin = productTransaction.minExpense || 0;
       let currentExpenseMax = productTransaction.maxExpense || DEFAULT_MAX_EXPENSE;
       let currentIncomeMin = productTransaction.minIncome || 0;
       let currentIncomeMax = productTransaction.maxIncome || DEFAULT_MAX_INCOME;
 
-      // Handle AND array structure
-      if (Array.isArray(filters?.AND)) {
-        filters.AND.forEach((condition: FilterCondition) => {
-          // Handle type ids in OR conditions
-          if (Array.isArray(condition.OR)) {
-            condition.OR.forEach((orCondition: ProductCondition) => {
-              if (orCondition.id) {
-                types.push(orCondition.id);
-              } else if (orCondition.name) {
-                // For backward compatibility
-                types.push(orCondition.name);
+      if (filters.transactions && typeof filters.transactions === 'object') {
+        const transactionsFilter = filters.transactions as { some?: { OR?: any[] } };
+        if (transactionsFilter.some?.OR) {
+          // Process each transaction type
+          transactionsFilter.some.OR.forEach((orCondition) => {
+            if (orCondition.transaction) {
+              if (orCondition.transaction.type === 'Expense' && orCondition.transaction.amount) {
+                const amount = orCondition.transaction.amount as RangeCondition;
+                if (amount.gte !== undefined) currentExpenseMin = amount.gte;
+                if (amount.lte !== undefined) currentExpenseMax = amount.lte;
               }
-            });
-          }
-
-          // Handle price conditions
-          if (condition.price) {
-            if (condition.price.gte !== undefined) currentPriceMin = condition.price.gte;
-            if (condition.price.lte !== undefined) currentPriceMax = condition.price.lte;
-          }
-
-          // Handle tax rate conditions
-          if (condition.taxRate) {
-            if (condition.taxRate.gte !== undefined) currentTaxRateMin = condition.taxRate.gte;
-            if (condition.taxRate.lte !== undefined) currentTaxRateMax = condition.taxRate.lte;
-          }
-
-          // Handle expense conditions
-          if (condition.expense) {
-            if (condition.expense.gte !== undefined) currentExpenseMin = condition.expense.gte;
-            if (condition.expense.lte !== undefined) currentExpenseMax = condition.expense.lte;
-          }
-
-          // Handle income conditions
-          if (condition.income) {
-            if (condition.income.gte !== undefined) currentIncomeMin = condition.income.gte;
-            if (condition.income.lte !== undefined) currentIncomeMax = condition.income.lte;
-          }
-        });
+              if (orCondition.transaction.type === 'Income' && orCondition.transaction.amount) {
+                const amount = orCondition.transaction.amount as RangeCondition;
+                if (amount.gte !== undefined) currentIncomeMin = amount.gte;
+                if (amount.lte !== undefined) currentIncomeMax = amount.lte;
+              }
+            }
+          });
+        }
       }
 
       return {
@@ -178,7 +158,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
 
   // Sync filter params when filter criteria changes
   useEffect(() => {
-    const extractedData = extractFilterData(filterCriteria.filters as FilterStructure);
+    const extractedData = extractFilterData(filterCriteria.filters as Record<string, unknown>);
     setFilterParams((prev) => ({
       ...prev,
       ...extractedData,
@@ -316,16 +296,6 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
     ];
   }, [filterParams, productTransaction]);
 
-  // Build filter structure from the current parameters
-  const buildFilters = () => {
-    const filters = createFilterStructure(filterParams);
-    const filterCriteriaObj: FilterCriteria = {
-      userId,
-      filters, // FilterCriteria expects filters as Record<string, unknown>
-    };
-    return filterCriteriaObj;
-  };
-
   // Create filter structure from UI state
   const createFilterStructure = useCallback(
     (params: ExtendedFilterParams): Record<string, unknown> => {
@@ -337,47 +307,82 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         updatedFilters.type = params.types;
       }
 
-      // Add price range filter
-      updatedFilters.price = {
-        gte: params.priceMin,
-        lte: params.priceMax,
-      };
+      // Add price range filter only if different from default values
+      const isPriceDefault =
+        params.priceMin === (productTransaction.minPrice || 0) &&
+        params.priceMax === (productTransaction.maxPrice || DEFAULT_MAX_PRICE);
 
-      // Add tax rate filter
-      updatedFilters.taxRate = {
-        gte: params.taxRateMin / 100, // Convert from percentage to decimal
-        lte: params.taxRateMax / 100, // Convert from percentage to decimal
-      };
+      if (!isPriceDefault) {
+        updatedFilters.price = {
+          gte: params.priceMin,
+          lte: params.priceMax,
+        };
+      }
 
-      // Add transactions filter for expense and income
-      updatedFilters.transactions = {
-        some: {
-          OR: [
-            {
-              transaction: {
-                type: 'Expense',
-                amount: {
-                  gte: params.expenseMin,
-                  lte: params.expenseMax,
-                },
+      // Add tax rate filter only if different from default values
+      const isTaxRateDefault =
+        params.taxRateMin === (productTransaction.minTaxRate || DEFAULT_MIN_TAX_RATE) &&
+        params.taxRateMax === (productTransaction.maxTaxRate || DEFAULT_MAX_TAX_RATE);
+
+      if (!isTaxRateDefault) {
+        updatedFilters.taxRate = {
+          gte: params.taxRateMin / 100, // Convert from percentage to decimal
+          lte: params.taxRateMax / 100, // Convert from percentage to decimal
+        };
+      }
+
+      // Check if expense and income values differ from defaults
+      const isExpenseDefault =
+        params.expenseMin === (productTransaction.minExpense || 0) &&
+        params.expenseMax === (productTransaction.maxExpense || DEFAULT_MAX_EXPENSE);
+
+      const isIncomeDefault =
+        params.incomeMin === (productTransaction.minIncome || 0) &&
+        params.incomeMax === (productTransaction.maxIncome || DEFAULT_MAX_INCOME);
+
+      // Only add transactions filter if either expense or income ranges differ from defaults
+      if (!isExpenseDefault || !isIncomeDefault) {
+        const transactionConditions = [];
+
+        // Add expense filter if different from default
+        if (!isExpenseDefault) {
+          transactionConditions.push({
+            transaction: {
+              type: 'Expense',
+              amount: {
+                gte: params.expenseMin,
+                lte: params.expenseMax,
               },
             },
-            {
-              transaction: {
-                type: 'Income',
-                amount: {
-                  gte: params.incomeMin,
-                  lte: params.incomeMax,
-                },
+          });
+        }
+
+        // Add income filter if different from default
+        if (!isIncomeDefault) {
+          transactionConditions.push({
+            transaction: {
+              type: 'Income',
+              amount: {
+                gte: params.incomeMin,
+                lte: params.incomeMax,
               },
             },
-          ],
-        },
-      };
+          });
+        }
+
+        // Only add transactions filter if we have conditions to apply
+        if (transactionConditions.length > 0) {
+          updatedFilters.transactions = {
+            some: {
+              OR: transactionConditions,
+            },
+          };
+        }
+      }
 
       return updatedFilters;
     },
-    [],
+    [productTransaction],
   );
 
   // Handler to fetch filtered data
@@ -405,9 +410,8 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
     <GlobalFilter
       filterParams={filterParams as unknown as Record<string, unknown>}
       filterComponents={filterComponents}
-      onFilterChange={() => {
-        const filterCriteriaObj = buildFilters();
-        handleFilterChange(filterCriteriaObj);
+      onFilterChange={(newFilter) => {
+        handleFilterChange(newFilter);
       }}
       defaultFilterCriteria={DEFAULT_DASHBOARD_FILTER_CRITERIA}
       structureCreator={(params: Record<string, unknown>) =>

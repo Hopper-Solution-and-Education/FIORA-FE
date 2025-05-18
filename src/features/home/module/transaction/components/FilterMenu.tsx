@@ -529,7 +529,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
   }, []);
 
   return (
-    <GlobalFilter<FilterParams>
+    <GlobalFilter
       filterParams={filterParams}
       filterComponents={components || filterComponents}
       onFilterChange={(newFilter) => {
