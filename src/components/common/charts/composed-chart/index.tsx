@@ -11,6 +11,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  ReferenceLine,
 } from 'recharts';
 import { ComposedChartProps } from './type';
 import { cn, formatCurrency } from '@/shared/utils';
@@ -148,7 +149,8 @@ const ComposedChartComponent = ({
             domain={[minValue, maxValue]}
             tickCount={tickCount}
           />
-          <Tooltip content={renderTooltipContent} />
+          <ReferenceLine y={0} stroke="#E5E7EB" className="dark:stroke-gray-600" />
+          <Tooltip cursor content={renderTooltipContent} />
           {showLegend && (
             <Legend
               verticalAlign="bottom"
@@ -179,24 +181,25 @@ const ComposedChartComponent = ({
             />
           ))}
 
-          {lines.map((line: LineConfig, index: number) => (
-            <Line
-              key={`line-${index}`}
-              type="monotone"
-              dataKey={line.key}
-              name={line.name}
-              stroke={line.color}
-              strokeWidth={2}
-              dot={{ r: 5, fill: line.color, strokeWidth: 1, stroke: '#ffffff' }}
-              activeDot={{
-                r: 8,
-                stroke: '#ffffff',
-                strokeWidth: 2,
-                fill: line.color,
-                filter: 'drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.3))',
-              }}
-            />
-          ))}
+          {lines &&
+            lines.map((line: LineConfig, index: number) => (
+              <Line
+                key={`line-${index}`}
+                type="monotone"
+                dataKey={line.key}
+                name={line.name}
+                stroke={line.color}
+                strokeWidth={2}
+                dot={{ r: 5, fill: line.color, strokeWidth: 1, stroke: '#ffffff' }}
+                activeDot={{
+                  r: 8,
+                  stroke: '#ffffff',
+                  strokeWidth: 2,
+                  fill: line.color,
+                  filter: 'drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.3))',
+                }}
+              />
+            ))}
         </ComposedChart>
       </ResponsiveContainer>
 
