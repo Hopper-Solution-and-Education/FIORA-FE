@@ -1,4 +1,4 @@
-import { TwoSideBarItem } from '@/components/common/positive-negative-bar-chart-v2/types';
+import { TwoSideBarItem } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
 import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
 import { generateColor } from '@/shared/lib/charts';
 import { TransactionType } from '@prisma/client';

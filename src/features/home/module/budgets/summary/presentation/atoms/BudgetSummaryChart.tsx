@@ -1,6 +1,6 @@
 'use client';
 
-import PositiveNegativeStackBarChart from '@/components/common/positive-negative-stack-bar-chart';
+import PositiveNegativeStackBarChart from '@/components/common/charts/positive-negative-stack-bar-chart';
 import { COLORS } from '@/shared/constants/chart';
 import { formatCurrency } from '@/shared/utils';
 

@@ -12,36 +12,61 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { ComposedChartProps, TooltipProps, ColumnConfig, LineConfig } from './type';
+import { ComposedChartProps } from './type';
 import { cn, formatCurrency } from '@/shared/utils';
+import { findMaxMinValues } from '@/shared/utils/chart';
 import { getChartMargins, useWindowSize } from '@/shared/utils/device';
 import { ChartSkeleton } from '@/components/common/organisms';
-import { DEFAULT_CURRENCY } from '@/shared/constants/chart';
-import { Payload } from 'recharts/types/component/DefaultTooltipContent';
 import {
-  DEFAULT_COMPOSED_CHART_FONT_SIZE,
-  DEFAULT_COMPOSED_CHART_HEIGHT,
-  DEFAULT_COMPOSED_CHART_TICK_COUNT,
-} from './constant';
+  DEFAULT_CHART_FONT_SIZE,
+  DEFAULT_CHART_TICK_COUNT,
+  DEFAULT_CURRENCY,
+} from '@/shared/constants/chart';
+import { Payload } from 'recharts/types/component/DefaultTooltipContent';
+import { DEFAULT_COMPOSED_CHART_HEIGHT, DEFAULT_COMPOSED_CHART_ITEM_WIDTH } from './constant';
+import { ColumnConfig, LineConfig, TooltipProps } from '@/shared/types/chart.type';
+import { renderCustomLegend } from './components/ComposedChartLegend';
 
 const ComposedChartComponent = ({
   data = [],
   title,
-  currency = DEFAULT_CURRENCY,
-  isLoading = false,
   callback,
   className,
-  xAxisFormatter = (value: number) => value.toString(),
-  yAxisFormatter = (value: number) => formatCurrency(value, currency),
   columns,
   lines,
+  xAxisFormatter = (value: number) => value.toString(),
+  yAxisFormatter = (value: number) => formatCurrency(value, currency),
+  isLoading = false,
   showLegend = true,
+  currency = DEFAULT_CURRENCY,
   height = DEFAULT_COMPOSED_CHART_HEIGHT,
-  fontSize = DEFAULT_COMPOSED_CHART_FONT_SIZE,
-  tickCount = DEFAULT_COMPOSED_CHART_TICK_COUNT,
+  fontSize = DEFAULT_CHART_FONT_SIZE,
+  tickCount = DEFAULT_CHART_TICK_COUNT,
 }: ComposedChartProps) => {
   const { width } = useWindowSize();
   const chartMargins = useMemo(() => getChartMargins(width), [width]);
+
+  const { maxValue, minValue } = useMemo(() => {
+    const columnsMaxMin = findMaxMinValues(data, columns);
+
+    let linesMax = 0;
+    let linesMin = 0;
+
+    if (lines && lines.length > 0) {
+      data.forEach((item) => {
+        lines.forEach((line) => {
+          const value = item[line.key] as number;
+          if (value > 0 && value > linesMax) linesMax = value;
+          if (value < 0 && value < linesMin) linesMin = value;
+        });
+      });
+    }
+
+    const finalMax = Math.max(columnsMaxMin.maxValue, linesMax);
+    const finalMin = Math.min(columnsMaxMin.minValue, linesMin);
+
+    return { maxValue: finalMax, minValue: finalMin };
+  }, [data, columns, lines]);
 
   const renderTooltipContent = (props: TooltipProps) => {
     const { active, payload, label } = props;
@@ -73,23 +98,6 @@ const ComposedChartComponent = ({
       </div>
     );
   };
-
-  const renderCustomLegend = () => (
-    <div className="flex justify-center items-center gap-4 mt-4">
-      {columns.map((column, index) => (
-        <div key={`legend-column-${index}`} className="flex items-center">
-          <div className="w-3 h-3 mr-2 rounded-sm" style={{ backgroundColor: column.color }} />
-          <span className="text-sm text-gray-600 dark:text-gray-400">{column.name}</span>
-        </div>
-      ))}
-      {lines.map((line, index) => (
-        <div key={`legend-line-${index}`} className="flex items-center">
-          <div className="w-3 h-3 mr-2 rounded-sm" style={{ backgroundColor: line.color }} />
-          <span className="text-sm text-gray-600 dark:text-gray-400">{line.name}</span>
-        </div>
-      ))}
-    </div>
-  );
 
   const handleChartClick = useCallback(
     (data: any) => {
@@ -137,8 +145,7 @@ const ComposedChartComponent = ({
             tick={{ fill: 'gray', fontSize: fontSize.axis }}
             axisLine={{ stroke: '#E5E7EB' }}
             tickLine={false}
-            domain={['auto', 'auto']}
-            padding={{ top: 40 }}
+            domain={[minValue, maxValue]}
             tickCount={tickCount}
           />
           <Tooltip content={renderTooltipContent} />
@@ -168,6 +175,7 @@ const ComposedChartComponent = ({
                 cursor: 'pointer',
                 strokeOpacity: 0.8,
               }}
+              maxBarSize={DEFAULT_COMPOSED_CHART_ITEM_WIDTH}
             />
           ))}
 
@@ -192,7 +200,7 @@ const ComposedChartComponent = ({
         </ComposedChart>
       </ResponsiveContainer>
 
-      {!showLegend && renderCustomLegend()}
+      {!showLegend && renderCustomLegend({ columns, lines })}
     </div>
   );
 };

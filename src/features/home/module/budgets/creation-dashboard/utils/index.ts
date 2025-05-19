@@ -1,4 +1,4 @@
-import { CustomBarItem } from '@/components/common/stacked-bar-chart/type';
+import { CustomBarItem } from '@/components/common/charts/stacked-bar-chart/type';
 import { COLORS, STACK_TYPE } from '@/shared/constants/chart';
 import { Currency } from '@/shared/types';
 import { convertCurrency } from '@/shared/utils/convertCurrency';

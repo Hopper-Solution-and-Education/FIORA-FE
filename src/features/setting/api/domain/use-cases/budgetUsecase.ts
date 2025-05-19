@@ -565,10 +565,10 @@ class BudgetUseCase {
     };
 
     if (search) {
-      if (search.length === 2 && /^\d{2}$/.test(search)) {
-        // If user enters 2 digits, search for years ending with those digits (e.g., 19 => 1919, 2019, etc.)
+      if (search.length < 4 && /^\d+$/.test(search)) {
+        // If user enters 4 digits, search for years ending with those digits (e.g., 19 => 1919, 2019, etc.)
         where.fiscalYear = {
-          endsWith: search,
+          contains: search,
         };
       } else {
         where.fiscalYear = {
