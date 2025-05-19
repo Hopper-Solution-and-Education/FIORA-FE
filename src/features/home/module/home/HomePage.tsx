@@ -6,6 +6,7 @@ import { useFeatureFlagGuard } from '@/shared/hooks/useFeatureFlagGuard';
 import AccountDashboard from '../account/AccountDashboard';
 import RecentTransactions from './components/RecentTransactions';
 import Recommendations from './components/Recommendations';
+import FinancialTable from './components/FinancialTable';
 
 export default function HomePage() {
   const { isFeatureOn } = useFeatureFlagGuard(FeatureFlags.ACCOUNT_FEATURE, MODULE.HOME);
@@ -25,6 +26,7 @@ export default function HomePage() {
             {/* Left Section: Financial & Account Overview */}
             <div className="col-span-1 md:col-span-2 lg:col-span-7 space-y-4">
               {isFeatureOn && <AccountDashboard module={MODULE.HOME} />}
+              <FinancialTable />
             </div>
 
             {/* Right Section: Transactions & Recommendations */}
