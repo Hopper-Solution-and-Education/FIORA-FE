@@ -172,11 +172,13 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                 >
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
-                      <SidebarMenuButton tooltip={item.title} isActive={isActive}>
-                        {item.icon && <Icon size={ICON_SIZE.MD} />}
-                        <span>{item.title}</span>
-                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                      </SidebarMenuButton>
+                      <Link href={item.url}>
+                        <SidebarMenuButton tooltip={item.title} isActive={isActive}>
+                          {item.icon && <Icon size={ICON_SIZE.MD} />}
+                          <span>{item.title}</span>
+                          <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                        </SidebarMenuButton>
+                      </Link>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <SidebarMenuSub>

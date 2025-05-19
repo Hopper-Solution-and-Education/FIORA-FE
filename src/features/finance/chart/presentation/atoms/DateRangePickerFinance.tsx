@@ -1,34 +1,42 @@
 'use client';
 
-import { useState, forwardRef, useEffect } from 'react';
-import { useFormContext } from 'react-hook-form';
-import GlobalLabel from '../../atoms/GlobalLabel';
-import { cn } from '@/shared/lib/utils';
+import { GlobalLabel } from '@/components/common/atoms';
+import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
+import { cn } from '@/shared/lib/utils';
+import {
+  addDays,
+  endOfMonth,
+  endOfYear,
+  format,
+  startOfMonth,
+  startOfYear,
+  subDays,
+  subMonths,
+  subYears,
+} from 'date-fns';
 import { CalendarIcon, CircleX } from 'lucide-react';
-import { format, addDays, subDays } from 'date-fns';
-import { endOfMonth, endOfYear, startOfMonth, startOfYear, subMonths, subYears } from 'date-fns';
+import { forwardRef, useEffect, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 
 interface CustomDateRangePickerProps {
-  name: string;
+  name?: string;
   label?: string;
   placeholder?: string;
   required?: boolean;
   dateFormat?: string;
   className?: string;
-  error?: any;
-  pastDaysLimit?: number; // Limit for past days (default 90 days)
-  futureDaysLimit?: number; // Limit for future days (default 90 days)
-  disablePast?: boolean; // Disable all past dates
-  disableFuture?: boolean; // Disable all future dates
+  error?: { message: string } | null;
+  pastDaysLimit?: number;
+  futureDaysLimit?: number;
+  disablePast?: boolean;
+  disableFuture?: boolean;
   value?: DateRange | undefined;
   onChange?: (value: DateRange | undefined) => void;
 }
 
-const CustomDateRangePicker = forwardRef<HTMLInputElement, CustomDateRangePickerProps>(
+const DateRangePickerFinance = forwardRef<HTMLInputElement, CustomDateRangePickerProps>(
   (
     {
       name,
@@ -37,66 +45,38 @@ const CustomDateRangePicker = forwardRef<HTMLInputElement, CustomDateRangePicker
       required = false,
       dateFormat = 'dd/MM/yyyy',
       className,
-      error,
+      error = null,
       pastDaysLimit = 90,
       futureDaysLimit = 90,
       disablePast = false,
       disableFuture = false,
-      onChange,
       value,
+      onChange,
     },
     ref,
   ) => {
-    const { register, setValue, watch } = useFormContext();
-    const selectedRange = watch(name);
-
     const today = new Date();
 
-    // Initialize with default range (last 7 days)
+    // Initialize with default range (last 7 days) or provided value
     const defaultRange = {
       from: subDays(today, 6),
       to: today,
     };
 
-    const [date, setDate] = useState<DateRange | undefined>(
-      value || selectedRange
-        ? {
-            from: new Date((value || selectedRange).from),
-            to: new Date((value || selectedRange).to),
-          }
-        : defaultRange,
-    );
+    const [date, setDate] = useState<DateRange | undefined>(value || defaultRange);
     const [month, setMonth] = useState<Date>(date?.to || today);
 
     // Preset date ranges
-    const yesterday = {
-      from: subDays(today, 1),
-      to: subDays(today, 1),
-    };
-    const last7Days = {
-      from: subDays(today, 6),
-      to: today,
-    };
-    const last30Days = {
-      from: subDays(today, 29),
-      to: today,
-    };
-    const monthToDate = {
-      from: startOfMonth(today),
-      to: today,
-    };
+    const yesterday = { from: subDays(today, 1), to: subDays(today, 1) };
+    const last7Days = { from: subDays(today, 6), to: today };
+    const last30Days = { from: subDays(today, 29), to: today };
+    const monthToDate = { from: startOfMonth(today), to: today };
     const lastMonth = {
       from: startOfMonth(subMonths(today, 1)),
       to: endOfMonth(subMonths(today, 1)),
     };
-    const yearToDate = {
-      from: startOfYear(today),
-      to: today,
-    };
-    const lastYear = {
-      from: startOfYear(subYears(today, 1)),
-      to: endOfYear(subYears(today, 1)),
-    };
+    const yearToDate = { from: startOfYear(today), to: today };
+    const lastYear = { from: startOfYear(subYears(today, 1)), to: endOfYear(subYears(today, 1)) };
 
     // Calculate disabled dates based on limits
     const pastLimit = subDays(today, pastDaysLimit);
@@ -107,18 +87,18 @@ const CustomDateRangePicker = forwardRef<HTMLInputElement, CustomDateRangePicker
       ...(disableFuture || futureDaysLimit ? [{ after: disableFuture ? today : futureLimit }] : []),
     ];
 
+    // Sync internal state with external value prop
     useEffect(() => {
-      if (date) {
-        setValue(name, date, { shouldValidate: true, shouldDirty: true });
-      }
-      onChange?.(date);
-    }, [date, name, setValue, onChange]);
-
-    useEffect(() => {
-      if (value) {
+      if (value !== undefined && value !== date) {
         setDate(value);
+        setMonth(value?.to || today);
       }
-    }, [value]);
+    }, [value, today]);
+
+    // Call onChange when date changes
+    useEffect(() => {
+      onChange?.(date);
+    }, [date, onChange]);
 
     const formatDateRange = (range?: DateRange) => {
       if (!range?.from) return placeholder;
@@ -137,13 +117,14 @@ const CustomDateRangePicker = forwardRef<HTMLInputElement, CustomDateRangePicker
                 'relative w-full justify-start text-left font-normal',
                 !date && 'text-muted-foreground',
                 className,
+                error && 'border-red-500 ring-red-500',
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4 opacity-60" />
               {formatDateRange(date)}
               {date !== undefined && (
                 <Button
-                  variant={'ghost'}
+                  variant="ghost"
                   onClick={() => setDate(undefined)}
                   className="absolute right-0 top-[50%] -translate-y-1/2 opacity-80"
                 >
@@ -162,11 +143,7 @@ const CustomDateRangePicker = forwardRef<HTMLInputElement, CustomDateRangePicker
                       size="sm"
                       className="w-full justify-start"
                       onClick={() => {
-                        const newDate = {
-                          from: today,
-                          to: today,
-                        };
-                        setDate(newDate);
+                        setDate({ from: today, to: today });
                         setMonth(today);
                       }}
                     >
@@ -298,7 +275,6 @@ const CustomDateRangePicker = forwardRef<HTMLInputElement, CustomDateRangePicker
                     'bg-primary/30 text-foreground hover:bg-primary/40 hover:text-foreground rounded-none',
                 }}
                 onDayMouseEnter={(day) => {
-                  // Enable drag selection
                   if (date?.from && !date.to) {
                     const newRange = { ...date, to: day };
                     setDate(newRange);
@@ -308,13 +284,13 @@ const CustomDateRangePicker = forwardRef<HTMLInputElement, CustomDateRangePicker
             </div>
           </PopoverContent>
         </Popover>
-        <input type="hidden" {...register(name)} ref={ref} />
+        {name && <input type="hidden" name={name} ref={ref} value={JSON.stringify(date)} />}
         {error && <p className="text-sm text-red-500 mt-1">{error.message}</p>}
       </div>
     );
   },
 );
 
-CustomDateRangePicker.displayName = 'CustomDateRangePicker';
+DateRangePickerFinance.displayName = 'CustomDateRangePicker';
 
-export default CustomDateRangePicker;
+export default DateRangePickerFinance;
