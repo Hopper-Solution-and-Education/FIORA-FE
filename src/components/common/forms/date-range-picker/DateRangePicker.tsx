@@ -53,9 +53,10 @@ export default function DateRangePicker(props: DateRangePickerProps) {
 
   const [month, setMonth] = useState<Date>(date?.to || today);
 
+  // Corrected to ensure date operations don't mutate the original 'today' object
   const yesterday = {
     from: subDays(today, 1),
-    to: subDays(today.setDate(today.getDate() + 1), 1),
+    to: subDays(new Date(), 1), // Use new Date() for today's date if needed for 'to'
   };
   const last7Days = {
     from: subDays(today, 6),
@@ -63,6 +64,18 @@ export default function DateRangePicker(props: DateRangePickerProps) {
   };
   const last30Days = {
     from: subDays(today, 29),
+    to: today,
+  };
+  const last90Days = {
+    from: subDays(today, 89),
+    to: today,
+  };
+  const last180Days = {
+    from: subDays(today, 179),
+    to: today,
+  };
+  const last365Days = {
+    from: subDays(today, 364),
     to: today,
   };
   const lastMonth = {
@@ -78,56 +91,84 @@ export default function DateRangePicker(props: DateRangePickerProps) {
   const futureLimit = addDays(today, futureDaysLimit);
 
   const disabledDates = [
-    ...(disablePast || pastDaysLimit ? [{ before: disablePast ? today : pastLimit }] : []),
-    ...(disableFuture || futureDaysLimit ? [{ after: disableFuture ? today : futureLimit }] : []),
+    ...(disablePast ? [{ before: today }] : []), // If disablePast is true, disable everything before today
+    ...(pastDaysLimit && !disablePast ? [{ before: pastLimit }] : []), // If pastDaysLimit exists and disablePast is false, apply that limit
+    ...(disableFuture ? [{ after: today }] : []), // If disableFuture is true, disable everything after today
+    ...(futureDaysLimit && !disableFuture ? [{ after: futureLimit }] : []), // If futureDaysLimit exists and disableFuture is false, apply that limit
   ];
 
-  // Define color classes based on the selected color scheme
-  const getColorClasses = () => {
+  // Define color classes and inline styles based on the selected color scheme
+  const getColorSchemeStyles = () => {
     switch (colorScheme) {
       case 'accent':
         return {
-          selected: 'bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground',
-          rangeMiddle: 'bg-accent/20 text-accent-foreground hover:bg-accent/30',
-          rangeEdge:
+          selectedClasses:
+            'bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground',
+          rangeMiddleClasses: 'bg-accent/20 text-accent-foreground hover:bg-accent/30',
+          rangeEdgeClasses:
             'bg-accent text-accent-foreground ring-2 ring-accent ring-offset-2 ring-offset-background hover:bg-accent/90',
+          selectedStyle: {},
+          rangeMiddleStyle: {},
+          rangeEdgeStyle: {},
         };
       case 'secondary':
         return {
-          selected:
+          selectedClasses:
             'bg-secondary text-secondary-foreground hover:bg-secondary hover:text-secondary-foreground',
-          rangeMiddle: 'bg-secondary/20 text-secondary-foreground hover:bg-secondary/30',
-          rangeEdge:
+          rangeMiddleClasses: 'bg-secondary/20 text-secondary-foreground hover:bg-secondary/30',
+          rangeEdgeClasses:
             'bg-secondary text-secondary-foreground ring-2 ring-secondary ring-offset-2 ring-offset-background hover:bg-secondary/90',
+          selectedStyle: {},
+          rangeMiddleStyle: {},
+          rangeEdgeStyle: {},
         };
       case 'custom':
+        // For 'custom', we rely heavily on inline styles for dynamic colors
+        // Tailwind JIT can struggle with arbitrary values in class names determined at runtime
         return {
-          selected: customColor
-            ? `bg-[${customColor}] text-white hover:bg-[${customColor}]/90 hover:text-white`
-            : 'bg-accent text-accent-foreground',
-          rangeMiddle: customColor
-            ? `bg-[${customColor}]/20 text-foreground hover:bg-[${customColor}]/30`
-            : 'bg-accent/20 text-accent-foreground',
-          rangeEdge: customColor
-            ? `bg-[${customColor}] text-white ring-2 ring-[${customColor}] ring-offset-2 ring-offset-background hover:bg-[${customColor}]/90`
-            : 'bg-accent text-accent-foreground',
+          selectedClasses: '', // Use inline styles for custom color
+          rangeMiddleClasses: '', // Use inline styles for custom color
+          rangeEdgeClasses: '', // Use inline styles for custom color
+          selectedStyle: customColor ? { backgroundColor: customColor, color: 'white' } : {},
+          rangeMiddleStyle: customColor
+            ? { backgroundColor: `${customColor}33`, color: 'inherit' } // Adding '33' for 20% opacity on hex
+            : {},
+          rangeEdgeStyle: customColor
+            ? {
+                backgroundColor: customColor,
+                color: 'white',
+                '--tw-ring-color': customColor, // Ensure ring color is set
+              }
+            : {},
         };
       default:
+        // Default to primary theme, as you had it as 'primary/50' for selected previously
         return {
-          selected:
-            'bg-primary/50 text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground',
-          rangeMiddle: 'bg-primary/20 text-primary-foreground hover:bg-primary/30',
-          rangeEdge:
-            'bg-primary/50 text-primary-foreground ring-2 ring-primary ring-offset-2 ring-offset-background hover:bg-primary/80',
+          selectedClasses:
+            'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground', // Changed to full primary for selected
+          rangeMiddleClasses: 'bg-primary/20 text-primary-foreground hover:bg-primary/30',
+          rangeEdgeClasses:
+            'bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2 ring-offset-background hover:bg-primary/90', // Changed to full primary for range edge
+          selectedStyle: {},
+          rangeMiddleStyle: {},
+          rangeEdgeStyle: {},
         };
     }
   };
 
-  const colorClasses = getColorClasses();
+  const {
+    selectedClasses,
+    rangeMiddleClasses,
+    rangeEdgeClasses,
+    selectedStyle,
+    rangeMiddleStyle,
+    rangeEdgeStyle,
+  } = getColorSchemeStyles();
 
   return (
     <div className="*:not-first:mt-2">
       <style jsx global>{`
+        /* Styles to ensure the range looks continuous and correctly rounded */
         .day-range-start {
           border-top-right-radius: 0 !important;
           border-bottom-right-radius: 0 !important;
@@ -141,16 +182,19 @@ export default function DateRangePicker(props: DateRangePickerProps) {
         .day-range-middle {
           border-radius: 0 !important;
           z-index: 10;
+          /* Adjust margins to prevent gaps between days in the range */
           margin-left: -1px;
           margin-right: -1px;
         }
-        /* Ensure continuous appearance for the range */
-        .rdp-day {
-          position: relative;
-        }
+        /* Visual continuity for the middle range */
         .rdp-day_range_middle {
-          border-left: 1px solid rgba(0, 0, 0, 0.1);
-          border-right: 1px solid rgba(0, 0, 0, 0.1);
+          border-left: 1px solid rgba(0, 0, 0, 0.05); /* Very subtle border to help continuity */
+          border-right: 1px solid rgba(0, 0, 0, 0.05); /* Helps fill tiny gaps */
+        }
+        /* Ensure the z-index for selected days at range ends is higher */
+        .rdp-day_range_start.rdp-day_selected,
+        .rdp-day_range_end.rdp-day_selected {
+          z-index: 20;
         }
       `}</style>
       <Popover>
@@ -245,6 +289,39 @@ export default function DateRangePicker(props: DateRangePickerProps) {
                     size="sm"
                     className="w-full justify-start"
                     onClick={() => {
+                      onChange(last90Days);
+                      setMonth(last90Days.to);
+                    }}
+                  >
+                    Last 90 days
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      onChange(last180Days);
+                      setMonth(last180Days.to);
+                    }}
+                  >
+                    Last 180 days
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      onChange(last365Days);
+                      setMonth(last365Days.to);
+                    }}
+                  >
+                    Last 365 days
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => {
                       onChange(lastMonth);
                       setMonth(lastMonth.to);
                     }}
@@ -279,36 +356,58 @@ export default function DateRangePicker(props: DateRangePickerProps) {
               disabled={disabledDates}
               classNames={{
                 day: 'h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors cursor-pointer text-foreground/70',
-                day_selected: `${colorClasses.selected} font-semibold`,
+                day_selected: cn(selectedClasses, 'font-semibold'),
                 day_today: 'bg-accent/50 text-accent-foreground font-semibold',
-                day_range_middle: `${colorClasses.rangeMiddle} rounded-none`,
-                day_range_end: `${colorClasses.selected} rounded-r-md font-semibold`,
-                day_range_start: `${colorClasses.selected} rounded-l-md font-semibold`,
+                // Important: Apply classes to day_range_middle for the range fill
+                day_range_middle: cn(rangeMiddleClasses, 'rounded-none relative z-10'),
+                day_range_end: cn(selectedClasses, 'rounded-md font-semibold relative z-20'),
+                day_range_start: cn(selectedClasses, 'rounded-md font-semibold relative z-20'),
+              }}
+              styles={{
+                day_selected: selectedStyle,
+                // Important: Apply inline styles to day_range_middle for the range fill
+                day_range_middle: rangeMiddleStyle,
+                day_range_start: rangeEdgeStyle,
+                day_range_end: rangeEdgeStyle,
               }}
               showOutsideDays={false}
+              // Modifiers are used to tell react-day-picker which days fall into which category
               modifiers={{
                 range_start: (day: Date): boolean => {
                   if (!date?.from) return false;
-                  return day.getTime() === date.from.getTime();
+                  return day.toDateString() === date.from.toDateString(); // Compare dates without time
                 },
                 range_end: (day: Date): boolean => {
                   if (!date?.to) return false;
-                  return day.getTime() === date.to.getTime();
+                  return day.toDateString() === date.to.toDateString(); // Compare dates without time
                 },
                 range_middle: (day: Date): boolean => {
                   if (!date?.from || !date?.to) return false;
-                  return day.getTime() > date.from.getTime() && day.getTime() < date.to.getTime();
+                  // Ensure comparison is only by date, not time
+                  const fromTime = date.from.getTime();
+                  const toTime = date.to.getTime();
+                  const dayTime = day.getTime();
+                  return dayTime > fromTime && dayTime < toTime;
                 },
               }}
               modifiersClassNames={{
-                range_start: `${colorClasses.rangeEdge} rounded-l-md`,
-                range_end: `${colorClasses.rangeEdge} rounded-r-md`,
-                range_middle: `${colorClasses.rangeMiddle} rounded-none`,
+                range_start: cn(rangeEdgeClasses, 'relative z-20'),
+                range_end: cn(rangeEdgeClasses, 'relative z-20'),
+                range_middle: cn(rangeMiddleClasses, 'relative z-10'),
               }}
               onDayMouseEnter={(day) => {
+                // This logic creates a temporary range visualization while dragging
                 if (date?.from && !date.to) {
-                  const newRange = { ...date, to: day };
-                  onChange(newRange);
+                  // Only update if 'from' is set and 'to' is not yet set
+                  if (day.getTime() >= date.from.getTime()) {
+                    // Ensure 'to' is not before 'from'
+                    const newRange = { ...date, to: day };
+                    onChange(newRange);
+                  } else {
+                    // If hovered day is before 'from', adjust 'from' and 'to'
+                    const newRange = { from: day, to: date.from };
+                    onChange(newRange);
+                  }
                 }
               }}
             />

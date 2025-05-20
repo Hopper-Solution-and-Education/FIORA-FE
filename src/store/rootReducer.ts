@@ -11,8 +11,8 @@ import { combineReducers } from '@reduxjs/toolkit';
 import dialogSlices from './slices/dialog.slice';
 import moduleReducer from './slices/moduleSlice';
 import settingSlices from './slices/setting.slice';
-import { budgetSummarySlice } from '@/features/home/module/budgets/summary-detail';
-
+import { budgetSummarySlice } from '@/features/home/module/budgets/summary';
+import financeControlSlice from '@/features/finance/chart/slices';
 const reducer = {
   settings: settingSlices,
   dialog: dialogSlices,
@@ -26,6 +26,7 @@ const reducer = {
   partner: partnerManagementSlice,
   transaction: transactionSlice,
   module: moduleReducer,
+  financeControl: financeControlSlice,
 };
 
 const rootReducer = combineReducers(reducer);
