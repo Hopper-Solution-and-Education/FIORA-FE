@@ -51,6 +51,10 @@ export enum Messages {
   BUDGET_GET_BY_ID_SUCCESS = 'Get budget by id successfully',
   BUDGET_UPDATE_SUCCESS = 'Update budget successfully !',
 
+  TO_DATE_BEFORE_FROM_DATE = 'To date must be after from date',
+  INVALID_DATE_FORMAT = 'Invalid date format',
+  INVALID_DATE_RANGE_INPUT = 'Invalid date range input',
+
   // Budget Service Failed
   BUDGET_ID_MISSING = 'Budget id is missing',
   INVALID_BUDGET_TYPE = 'Invalid budget type. Budget type must be Act, Bot, or Top',

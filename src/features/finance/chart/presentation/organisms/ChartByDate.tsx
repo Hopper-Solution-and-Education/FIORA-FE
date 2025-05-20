@@ -1,23 +1,21 @@
-import { ComposedChart, ComposedChartDataItem } from '@/components/common/charts';
+import { ComposedChart } from '@/components/common/charts';
 import { COLORS } from '@/shared/constants/chart';
+import { useAppSelector } from '@/store';
 
 const ChartByDate = () => {
-  const sampleData: ComposedChartDataItem[] = [
-    { name: 2022, column1: 120000, column2: 145000, line: 12000 },
-    { name: 2023, column1: 120000, column2: 145000, line: 30000 },
-    { name: 2024, column1: 120000, column2: 145000, line: 60000 },
-    { name: 2025, column1: 35000, column2: 400000, line: 150000 },
-    { name: 2026, column1: 35000, column2: 400000, line: 150000 },
-    { name: 2027, column1: 35000, column2: 400000, line: 150000 },
-    { name: 2028, column1: 35000, column2: 400000, line: 150000 },
-    { name: 2029, column1: 35000, column2: 400000, line: 150000 },
-    { name: 2030, column1: 35000, column2: 400000, line: 150000 },
-  ];
+  const financeByDate = useAppSelector((state) => state.financeControl.financeByDate);
+
+  const data = financeByDate.map((item) => ({
+    name: item.period,
+    column1: item.totalExpense,
+    column2: item.totalIncome,
+    line: item.totalIncome - item.totalExpense,
+  }));
 
   return (
     <div className="space-y-8">
       <ComposedChart
-        data={sampleData}
+        data={data}
         title="Chart by Date"
         columns={[
           { key: 'column1', name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_2 },

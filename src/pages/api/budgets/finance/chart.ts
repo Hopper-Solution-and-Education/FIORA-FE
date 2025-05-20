@@ -1,17 +1,17 @@
-import { budgetUseCase } from '@/features/setting/api/domain/use-cases/budgetUsecase';
+import { prisma } from '@/config';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { Currency } from '@prisma/client';
+import { TransactionType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {
     switch (req.method) {
-      case 'GET':
-        return GET(req, res, userId);
+      case 'POST':
+        return POST(req, res, userId);
       default:
         return res
           .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -22,25 +22,187 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
   }
 });
 
-export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  try {
-    const { cursor, take, search } = req.query; // Cursor will be a year (e.g., 2023)
-    // take default take when its not given
-    const takeValue = take ? Number(take) : 3; // Default to 10 if not provided
-    const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
+const MONTH = 30;
+const YEAR = 360;
 
-    const budgets = await budgetUseCase.getAnnualBudgetByYears({
-      userId,
-      cursor: cursor ? Number(cursor) : undefined,
-      take: takeValue,
-      currency,
-      search: search ? String(search) : undefined,
+export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  try {
+    const { from, to } = req.body;
+
+    // If from and to are not provided, get all transactions from current date to past
+    let fromDate: Date;
+    let toDate: Date;
+
+    if (!from || !to) {
+      toDate = new Date();
+      // Get the earliest transaction date for this user
+      const earliestTransaction = await prisma.transaction.findFirst({
+        where: {
+          userId,
+          isDeleted: false,
+        },
+        orderBy: {
+          date: 'asc',
+        },
+      });
+
+      fromDate = earliestTransaction ? new Date(earliestTransaction.date) : new Date();
+    } else {
+      fromDate = new Date(from);
+      toDate = new Date(to);
+
+      // Basic validation for valid dates
+      if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+        return res
+          .status(RESPONSE_CODE.BAD_REQUEST)
+          .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_DATE_FORMAT));
+      }
+
+      // Ensure 'to' date is not before 'from' date
+      if (toDate.getTime() < fromDate.getTime()) {
+        return res
+          .status(RESPONSE_CODE.BAD_REQUEST)
+          .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.TO_DATE_BEFORE_FROM_DATE));
+      }
+    }
+
+    // Calculate the difference in days
+    const diffTime = Math.abs(toDate.getTime() - fromDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // Fetch transactions for the date range
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        userId,
+        date: {
+          gte: fromDate,
+          lte: toDate,
+        },
+        isDeleted: false,
+      },
+      select: {
+        id: true,
+        date: true,
+        type: true,
+        amount: true,
+        currency: true,
+        createdAt: true,
+        updatedAt: true,
+        createdBy: true,
+        updatedBy: true,
+        isDeleted: true,
+        isMarked: true,
+        deletedAt: true,
+      },
+      orderBy: {
+        date: 'asc',
+      },
     });
+
+    let groupedTransactions: any[] = [];
+
+    if (diffDays <= MONTH) {
+      // Group by weeks
+      const weeks = [];
+      const currentDate = new Date(fromDate);
+
+      while (currentDate <= toDate) {
+        const weekStart = new Date(currentDate);
+        const weekEnd = new Date(currentDate);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+
+        const weekTransactions = transactions.filter((t) => {
+          const transDate = new Date(t.date);
+          return transDate >= weekStart && transDate <= weekEnd;
+        });
+
+        weeks.push({
+          period: `Week ${weeks.length + 1} (${weekStart.getMonth() + 1}/${weekStart.getFullYear()})`,
+          startDate: weekStart,
+          endDate: weekEnd,
+          totalIncome: weekTransactions
+            .filter((t) => t.type === TransactionType.Income)
+            .reduce((sum, t) => sum + Number(t.amount), 0),
+          totalExpense: weekTransactions
+            .filter((t) => t.type === TransactionType.Expense)
+            .reduce((sum, t) => sum + Number(t.amount), 0),
+        });
+
+        currentDate.setDate(currentDate.getDate() + 7);
+      }
+      groupedTransactions = weeks;
+    } else if (diffDays <= YEAR) {
+      // Group by months
+      const months = [];
+      const startMonth = fromDate.getMonth();
+      const endMonth = toDate.getMonth();
+      const startYear = fromDate.getFullYear();
+      const endYear = toDate.getFullYear();
+
+      for (let year = startYear; year <= endYear; year++) {
+        const startM = year === startYear ? startMonth : 0;
+        const endM = year === endYear ? endMonth : 11;
+
+        for (let m = startM; m <= endM; m++) {
+          const monthStart = new Date(year, m, 1);
+          const monthEnd = new Date(year, m + 1, 0);
+
+          const monthTransactions = transactions.filter((t) => {
+            const transDate = new Date(t.date);
+            return transDate >= monthStart && transDate <= monthEnd;
+          });
+
+          months.push({
+            period: `${m + 1}/${year}`,
+            startDate: monthStart,
+            endDate: monthEnd,
+            totalIncome: monthTransactions
+              .filter((t) => t.type === TransactionType.Income)
+              .reduce((sum, t) => sum + Number(t.amount), 0),
+            totalExpense: monthTransactions
+              .filter((t) => t.type === TransactionType.Expense)
+              .reduce((sum, t) => sum + Number(t.amount), 0),
+          });
+        }
+      }
+      groupedTransactions = months;
+    } else {
+      // Group by years
+      const years = [];
+      const startYear = fromDate.getFullYear();
+      const endYear = toDate.getFullYear();
+
+      for (let year = startYear; year <= endYear; year++) {
+        const yearStart = new Date(year, 0, 1);
+        const yearEnd = new Date(year, 11, 31);
+
+        const yearTransactions = transactions.filter((t) => {
+          const transDate = new Date(t.date);
+          return transDate >= yearStart && transDate <= yearEnd;
+        });
+
+        years.push({
+          period: year.toString(),
+          startDate: yearStart,
+          endDate: yearEnd,
+          totalIncome: yearTransactions
+            .filter((t) => t.type === TransactionType.Income)
+            .reduce((sum, t) => sum + Number(t.amount), 0),
+          totalExpense: yearTransactions
+            .filter((t) => t.type === TransactionType.Expense)
+            .reduce((sum, t) => sum + Number(t.amount), 0),
+        });
+      }
+      groupedTransactions = years;
+    }
 
     return res
       .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_BUDGET_ITEM_SUCCESS, budgets));
+      .json(
+        createResponse(RESPONSE_CODE.OK, Messages.GET_BUDGET_ITEM_SUCCESS, groupedTransactions),
+      );
   } catch (error: any) {
+    console.error('Error in POST:', error);
     return res
       .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
       .json(createErrorResponse(error.status, error.message, error));
