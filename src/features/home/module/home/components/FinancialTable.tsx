@@ -1,10 +1,11 @@
 // pages/index.tsx
-import Table from '@/components/common/tables/report-table-v2';
+import { CustomTable } from '@/components/common/tables/report-table-v2';
 import {
   DataSourceProps,
   ColumnProps,
   PAGINATION_POSITION,
 } from '@/components/common/tables/report-table-v2/types';
+import { Icons } from '@/components/Icon';
 import React from 'react';
 
 const columns: ColumnProps[] = [
@@ -12,7 +13,7 @@ const columns: ColumnProps[] = [
     title: 'Category',
     dataIndex: 'category',
     key: 'category',
-    align: 'left',
+    align: 'center',
   },
   { title: 'JAN', dataIndex: 'jan', key: 'jan', align: 'center' },
   { title: 'FEB', dataIndex: 'feb', key: 'feb', align: 'center' },
@@ -25,12 +26,16 @@ const columns: ColumnProps[] = [
     dataIndex: 'status',
     key: 'status',
     align: 'center',
-    render: (value) =>
-      value === 'valid' ? (
-        <span className="text-green-500">✓</span>
-      ) : (
-        <span className="text-red-500">X</span>
-      ),
+    render: () => (
+      <div className="grid grid-flow-col">
+        <span className="text-red-500 cursor-pointer hover:text-red-700">
+          <Icons.close size={15} />
+        </span>
+        <span className="text-green-500 cursor-pointer hover:text-green-700">
+          <Icons.check size={15} />
+        </span>
+      </div>
+    ),
   },
 ];
 
@@ -70,7 +75,7 @@ const dataSource: DataSourceProps[] = [
 const FinancialTable: React.FC = () => {
   return (
     <div className="p-4">
-      <Table
+      <CustomTable
         columns={columns}
         dataSource={dataSource}
         bordered

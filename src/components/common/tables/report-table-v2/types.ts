@@ -2,6 +2,7 @@ import type React from 'react';
 import type { ReactNode } from 'react';
 
 import { CheckboxProps } from '@radix-ui/react-checkbox';
+import { ColumnDef } from '@tanstack/react-table';
 
 export interface TablePaginationProps {
   position?: PaginationPositionProps;
@@ -31,8 +32,8 @@ export type PaginationPositionProps =
   | PAGINATION_POSITION.BOTTOM_RIGHT;
 
 export enum SORT_ORDER {
-  ASCEND = 'ascend',
-  DESCEND = 'descend',
+  ASCEND = 'asc',
+  DESCEND = 'desc',
 }
 
 export type SortOrderProps = SORT_ORDER.ASCEND | SORT_ORDER.DESCEND | null;
@@ -42,7 +43,7 @@ export interface SortOrderStateProps {
 }
 
 export interface ColumnProps {
-  title?: React.ReactNode;
+  title?: React.ReactNode | string;
   dataIndex?: string;
   key: string;
   align?: 'left' | 'center' | 'right' | string;
@@ -69,7 +70,31 @@ export interface ColumnProps {
   };
   children?: ColumnProps[];
   helpContent?: string | ReactNode;
+  getIsSorted?: SortOrderProps;
+  getCanSort?: boolean;
+  getToggleSortingHandler?: () => Promise<void | boolean> | void | boolean;
 }
+
+export interface CustomColumnMeta {
+  align?: 'left' | 'center' | 'right' | string;
+  width?: string | number;
+  fixed?: 'left' | 'right' | string;
+  className?: string;
+  ellipsis?: boolean;
+  colSpan?: number;
+  onCell?: (
+    record: any,
+    rowIndex: number,
+  ) => {
+    rowSpan?: number;
+    colSpan?: number;
+  };
+}
+
+// Then modify the column definition to use this type
+export type CustomColumnDef<T> = ColumnDef<T> & {
+  meta?: CustomColumnMeta;
+};
 
 export interface ScrollProps {
   x?: number | string;

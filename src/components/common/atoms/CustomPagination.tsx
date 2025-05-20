@@ -5,9 +5,10 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui/paginationV3';
+  PaginationEllipsis,
+} from '@/components/ui/custom-pagination';
 
-export interface CustomPaginationProps {
+interface CustomPaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -15,20 +16,21 @@ export interface CustomPaginationProps {
 
 const CustomPagination = ({ currentPage, totalPages, onPageChange }: CustomPaginationProps) => {
   const handlePrevious = () => {
-    if (currentPage > 1) onPageChange(currentPage - 1);
+    if (currentPage > 1) {
+      onPageChange(currentPage - 1);
+    }
   };
 
   const handleNext = () => {
-    if (currentPage < totalPages) onPageChange(currentPage + 1);
+    if (currentPage < totalPages) {
+      onPageChange(currentPage + 1);
+    }
   };
 
   return (
-    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange}>
+    <Pagination>
       <PaginationContent>
-        <PaginationPrevious
-          onClick={handlePrevious}
-          className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-        />
+        <PaginationPrevious onClick={handlePrevious} />
         {Array.from({ length: totalPages }, (_, i) => (
           <PaginationItem key={i}>
             <PaginationLink isActive={i + 1 === currentPage} onClick={() => onPageChange(i + 1)}>
@@ -36,11 +38,19 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }: CustomPagin
             </PaginationLink>
           </PaginationItem>
         ))}
-        <PaginationNext
-          onClick={handleNext}
-          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-        />
+        <PaginationNext onClick={handleNext} />
       </PaginationContent>
     </Pagination>
   );
+};
+
+export {
+  Pagination,
+  PaginationContent,
+  PaginationLink,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationEllipsis,
+  CustomPagination,
 };

@@ -1,18 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import {
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  Updater,
-  useReactTable,
-  type ColumnDef,
-  type SortingState,
-} from '@tanstack/react-table';
-import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
+import { CustomPagination } from '@/components/common/atoms/CustomPagination';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Pagination } from '@/components/ui/pagination';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table as ShadcnTable,
   TableBody,
@@ -22,15 +12,29 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/shared/utils';
 import {
-  type ColumnProps,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  Updater,
+  useReactTable,
+  type ColumnDef,
+  type SortingState,
+  type Column,
+  Cell,
+} from '@tanstack/react-table';
+import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  CustomColumnDef,
+  CustomColumnMeta,
   PAGINATION_POSITION,
   SORT_ORDER,
+  type ColumnProps,
   type SortOrderStateProps,
   type TableProps,
 } from './types';
-import { cn } from '@/shared/utils';
 
 export function CustomTable({
   columns = [],
@@ -56,8 +60,8 @@ export function CustomTable({
   idBody,
   isResetSelection = false,
   indexSelected,
-  showPagination = true, // Added default
-  paginationEnabled = true, // Added default
+  showPagination = true,
+  paginationEnabled = true,
   className,
   ...rest
 }: TableProps) {
@@ -85,92 +89,100 @@ export function CustomTable({
 
   // Transform columns to TanStack format
   const tableColumns = useMemo(() => {
-    const transformColumns = (cols: ColumnProps[]): ColumnDef<any>[] => {
-      return cols.map((col) => {
-        if (col.children) {
-          return {
-            id: col.key,
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            header: ({ column }) => col.title || col.key,
-            columns: transformColumns(col.children),
-          };
-        } else {
-          return {
-            id: col.key,
-            accessorKey: col.dataIndex,
-            header: ({ column }) => {
-              const isSorted = column.getIsSorted();
-              const canSort = column.getCanSort();
+    const transformColumns = (cols: ColumnProps[]): CustomColumnDef<any>[] => {
+      const columns = cols
+        .map((col: ColumnProps) => {
+          if (!col) return null;
 
-              return (
-                <button
-                  onClick={canSort ? column.getToggleSortingHandler() : undefined}
-                  className={cn(
-                    'flex items-center gap-1 w-full',
-                    col.headerAlign ? `justify-${col.headerAlign}` : 'justify-start',
-                    canSort && 'cursor-pointer select-none',
-                  )}
-                >
-                  {col.title}
-                  {col.helpContent && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>{col.helpContent}</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                  {col.sorter && (
-                    <div className="flex flex-col ml-1">
-                      <ChevronUp
-                        className={cn(
-                          'h-3 w-3',
-                          isSorted === 'asc' ? 'text-primary' : 'text-muted-foreground',
-                        )}
-                      />
-                      <ChevronDown
-                        className={cn(
-                          'h-3 w-3',
-                          isSorted === 'desc' ? 'text-primary' : 'text-muted-foreground',
-                        )}
-                      />
-                    </div>
-                  )}
-                </button>
-              );
-            },
-            cell: ({ row, getValue }) => {
-              const value: any = getValue();
-              if (col.render) {
-                return col.render(value, row.original, row.index);
-              }
-              return (
-                <div
-                  className={cn(
-                    col.align ? `text-${col.align}` : 'text-left',
-                    col.ellipsis && 'truncate',
-                    col.className,
-                  )}
-                >
-                  {value}
-                </div>
-              );
-            },
-            enableSorting: !!col.sorter,
-            meta: {
-              align: col.align,
-              width: col.width,
-              fixed: col.fixed,
-              className: col.className,
-              ellipsis: col.ellipsis,
-              colSpan: col.colSpan,
-              onCell: col.onCell,
-            },
-          };
-        }
-      });
+          if (col.children) {
+            return {
+              id: col.key,
+              header: (col: ColumnProps) => col.title || col.key,
+              columns: transformColumns(col.children),
+            };
+          } else {
+            return {
+              id: col.key,
+              accessorKey: col.dataIndex,
+              header: ({ column }: { column: Column<any> }) => {
+                if (!column) return null;
+                const isSorted = column.getIsSorted();
+                const canSort = column.getCanSort();
+
+                return (
+                  <button
+                    onClick={canSort ? column.getToggleSortingHandler() : undefined}
+                    className={cn(
+                      'flex items-center gap-1 w-full',
+                      col.headerAlign ? `justify-${col.headerAlign}` : 'justify-start',
+                      canSort && 'cursor-pointer select-none',
+                    )}
+                  >
+                    {col.title}
+                    {col.helpContent && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>{col.helpContent}</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                    {col.sorter && (
+                      <div className="flex flex-col ml-1">
+                        <ChevronUp
+                          className={cn(
+                            'h-3 w-3',
+                            isSorted === 'asc' ? 'text-primary' : 'text-muted-foreground',
+                          )}
+                        />
+                        <ChevronDown
+                          className={cn(
+                            'h-3 w-3',
+                            isSorted === 'desc' ? 'text-primary' : 'text-muted-foreground',
+                          )}
+                        />
+                      </div>
+                    )}
+                  </button>
+                );
+              },
+              cell: ({ row, getValue }: { row: any; getValue: () => any }) => {
+                if (!row || !getValue) return null;
+
+                const value: any = getValue();
+                if (col.render) {
+                  return col.render(value, row.original, row.index);
+                }
+                return (
+                  <div
+                    className={cn(
+                      col.align ? `text-${col.align}` : 'text-left',
+                      col.ellipsis && 'truncate',
+                      col.className,
+                    )}
+                  >
+                    {value}
+                  </div>
+                );
+              },
+              enableSorting: !!col.sorter,
+              meta: {
+                align: col.align,
+                width: col.width,
+                fixed: col.fixed,
+                className: col.className,
+                ellipsis: col.ellipsis,
+                colSpan: col.colSpan,
+                onCell: col.onCell,
+              },
+            };
+          }
+        })
+        .filter(Boolean);
+
+      return columns as unknown as ColumnDef<any>[];
     };
 
     // Add selection column if rowSelection is provided
@@ -179,6 +191,7 @@ export function CustomTable({
       result.push({
         id: 'selection',
         header: ({ table }) => {
+          if (!table) return null;
           if (rowSelection.hideSelectAll) return null;
           return (
             <Checkbox
@@ -203,6 +216,8 @@ export function CustomTable({
           );
         },
         cell: ({ row }) => {
+          if (!row) return null;
+
           const checkboxProps = rowSelection.getCheckboxProps
             ? rowSelection.getCheckboxProps(row.original)
             : {};
@@ -346,17 +361,26 @@ export function CustomTable({
     if (!showPagination || !pagination || pagination === true || !paginationEnabled) {
       return null;
     }
+
+    let paginationClassName = '';
+    switch (pagination.position) {
+      case PAGINATION_POSITION.TOP_LEFT:
+        paginationClassName += 'justify-start mb-4';
+        break;
+      case PAGINATION_POSITION.TOP_RIGHT:
+        paginationClassName += 'justify-end mb-4';
+        break;
+      case PAGINATION_POSITION.BOTTOM_LEFT:
+        paginationClassName += 'justify-start';
+        break;
+      case PAGINATION_POSITION.BOTTOM_RIGHT:
+        paginationClassName += 'justify-end';
+        break;
+    }
+
     return (
-      <div
-        className={cn(
-          'flex mt-4',
-          pagination.position === PAGINATION_POSITION.BOTTOM_RIGHT && 'justify-end',
-          pagination.position === PAGINATION_POSITION.BOTTOM_LEFT && 'justify-start',
-          pagination.position === PAGINATION_POSITION.TOP_RIGHT && 'justify-end mb-4',
-          pagination.position === PAGINATION_POSITION.TOP_LEFT && 'justify-start mb-4',
-        )}
-      >
-        <Pagination
+      <div className={cn('flex mt-4', paginationClassName)}>
+        <CustomPagination
           currentPage={pagination.current || 1}
           totalPages={Math.ceil((pagination.total || 0) / (pagination.pageSize || 10))}
           onPageChange={handlePageChange}
@@ -435,23 +459,32 @@ export function CustomTable({
                 className={cn(rowHover && 'hover:bg-muted/50', rowCursor && 'cursor-pointer')}
                 onClick={() => onRowClick && onRowClick(row.original)}
               >
-                {row.getVisibleCells().map((cell) => {
+                {row.getVisibleCells().map((cell: Cell<any, any>) => {
                   const cellProps =
-                    (cell.column.columnDef.meta as any)?.onCell?.(row.original, row.index) || {};
+                    (cell.column.columnDef.meta as CustomColumnMeta)?.onCell?.(
+                      row.original,
+                      row.index,
+                    ) || {};
                   return (
                     <TableCell
                       key={cell.id}
                       className={cn(
-                        (cell.column.columnDef.meta as any)?.className,
-                        (cell.column.columnDef.meta as any)?.align === 'center' && 'text-center',
-                        (cell.column.columnDef.meta as any)?.align === 'right' && 'text-right',
-                        (cell.column.columnDef.meta as any)?.ellipsis && 'max-w-[200px] truncate',
-                        (cell.column.columnDef.meta as any)?.fixed === 'left' &&
+                        (cell.column.columnDef.meta as CustomColumnMeta)?.className,
+                        (cell.column.columnDef.meta as CustomColumnMeta)?.align === 'center' &&
+                          'text-center',
+                        (cell.column.columnDef.meta as CustomColumnMeta)?.align === 'right' &&
+                          'text-right',
+                        (cell.column.columnDef.meta as CustomColumnMeta)?.ellipsis &&
+                          'max-w-[200px] truncate',
+                        (cell.column.columnDef.meta as CustomColumnMeta)?.fixed === 'left' &&
                           'sticky left-0 z-10 bg-background',
-                        (cell.column.columnDef.meta as any)?.fixed === 'right' &&
+                        (cell.column.columnDef.meta as CustomColumnMeta)?.fixed === 'right' &&
                           'sticky right-0 z-10 bg-background',
                       )}
-                      colSpan={cellProps.colSpan || (cell.column.columnDef.meta as any)?.colSpan}
+                      colSpan={
+                        cellProps.colSpan ||
+                        (cell.column.columnDef.meta as CustomColumnMeta)?.colSpan
+                      }
                       rowSpan={cellProps.rowSpan}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
