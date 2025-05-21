@@ -17,18 +17,18 @@ import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
-  Updater,
+  type Updater,
   useReactTable,
   type ColumnDef,
   type SortingState,
   type Column,
-  Cell,
+  type Cell,
 } from '@tanstack/react-table';
 import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import {
-  CustomColumnDef,
-  CustomColumnMeta,
+  type CustomColumnDef,
+  type CustomColumnMeta,
   PAGINATION_POSITION,
   SORT_ORDER,
   type ColumnProps,
@@ -108,24 +108,32 @@ export function CustomTable({
                 if (!column) return null;
                 const isSorted = column.getIsSorted();
                 const canSort = column.getCanSort();
+                const headerAlignClass = col.headerAlign
+                  ? `justify-${col.headerAlign}`
+                  : 'justify-start';
+                const width = col.width ? `w-[${col.width}px]` : 'w-full';
 
                 return (
                   <button
                     onClick={canSort ? column.getToggleSortingHandler() : undefined}
                     className={cn(
-                      'flex items-center gap-1 w-full',
-                      col.headerAlign ? `justify-${col.headerAlign}` : 'justify-start',
+                      'flex items-center gap-1',
+                      width,
+                      headerAlignClass,
                       canSort && 'cursor-pointer select-none',
+                      'transition-colors duration-200',
                     )}
                   >
-                    {col.title}
+                    <span className="font-medium">{col.title}</span>
                     {col.helpContent && (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                            <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
                           </TooltipTrigger>
-                          <TooltipContent>{col.helpContent}</TooltipContent>
+                          <TooltipContent className="max-w-xs text-sm">
+                            {col.helpContent}
+                          </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     )}
@@ -133,14 +141,14 @@ export function CustomTable({
                       <div className="flex flex-col ml-1">
                         <ChevronUp
                           className={cn(
-                            'h-3 w-3',
-                            isSorted === 'asc' ? 'text-primary' : 'text-muted-foreground',
+                            'h-3 w-3 transition-colors',
+                            isSorted === 'asc' ? 'text-primary' : 'text-muted-foreground/50',
                           )}
                         />
                         <ChevronDown
                           className={cn(
-                            'h-3 w-3',
-                            isSorted === 'desc' ? 'text-primary' : 'text-muted-foreground',
+                            'h-3 w-3 transition-colors',
+                            isSorted === 'desc' ? 'text-primary' : 'text-muted-foreground/50',
                           )}
                         />
                       </div>
@@ -194,25 +202,28 @@ export function CustomTable({
           if (!table) return null;
           if (rowSelection.hideSelectAll) return null;
           return (
-            <Checkbox
-              checked={
-                table.getIsAllRowsSelected() || (table.getIsSomeRowsSelected() && 'indeterminate')
-              }
-              onCheckedChange={(value) => {
-                table.toggleAllRowsSelected(!!value);
-                if (value) {
-                  const selectedRows = dataSource;
-                  const selectedKeys = selectedRows.map((row) => row[rowKey] as string | number);
-                  rowSelection.onSelectAll?.(true, selectedRows);
-                  rowSelection.onChange?.(selectedKeys, selectedRows);
-                } else {
-                  rowSelection.onSelectNone?.();
-                  rowSelection.onSelectAll?.(false, []);
-                  rowSelection.onChange?.([], []);
+            <div className="flex justify-center">
+              <Checkbox
+                checked={
+                  table.getIsAllRowsSelected() || (table.getIsSomeRowsSelected() && 'indeterminate')
                 }
-              }}
-              aria-label="Select all"
-            />
+                onCheckedChange={(value) => {
+                  table.toggleAllRowsSelected(!!value);
+                  if (value) {
+                    const selectedRows = dataSource;
+                    const selectedKeys = selectedRows.map((row) => row[rowKey] as string | number);
+                    rowSelection.onSelectAll?.(true, selectedRows);
+                    rowSelection.onChange?.(selectedKeys, selectedRows);
+                  } else {
+                    rowSelection.onSelectNone?.();
+                    rowSelection.onSelectAll?.(false, []);
+                    rowSelection.onChange?.([], []);
+                  }
+                }}
+                aria-label="Select all"
+                className="transition-all duration-200"
+              />
+            </div>
           );
         },
         cell: ({ row }) => {
@@ -222,23 +233,26 @@ export function CustomTable({
             ? rowSelection.getCheckboxProps(row.original)
             : {};
           return (
-            <Checkbox
-              checked={row.getIsSelected()}
-              onCheckedChange={(value) => {
-                row.toggleSelected(!!value);
-                const selectedRows = value
-                  ? [...table.getSelectedRowModel().rows.map((r) => r.original)]
-                  : table
-                      .getSelectedRowModel()
-                      .rows.filter((r) => r.id !== row.id)
-                      .map((r) => r.original);
-                const selectedKeys = selectedRows.map((row) => row[rowKey] as string | number);
-                rowSelection.onSelect?.(row.original, !!value, selectedRows);
-                rowSelection.onChange?.(selectedKeys, selectedRows);
-              }}
-              aria-label="Select row"
-              {...checkboxProps}
-            />
+            <div className="flex justify-center">
+              <Checkbox
+                checked={row.getIsSelected()}
+                onCheckedChange={(value) => {
+                  row.toggleSelected(!!value);
+                  const selectedRows = value
+                    ? [...table.getSelectedRowModel().rows.map((r) => r.original)]
+                    : table
+                        .getSelectedRowModel()
+                        .rows.filter((r) => r.id !== row.id)
+                        .map((r) => r.original);
+                  const selectedKeys = selectedRows.map((row) => row[rowKey] as string | number);
+                  rowSelection.onSelect?.(row.original, !!value, selectedRows);
+                  rowSelection.onChange?.(selectedKeys, selectedRows);
+                }}
+                aria-label="Select row"
+                className="transition-all duration-200"
+                {...checkboxProps}
+              />
+            </div>
           );
         },
         enableSorting: false,
@@ -289,14 +303,30 @@ export function CustomTable({
   if (loading) {
     return (
       <div className={cn('w-full', className)} {...rest}>
-        <div className={cn('rounded-md', layoutBorder && 'border')}>
-          <ShadcnTable className={cn(bordered && 'border-collapse [&_td]:border [&_th]:border')}>
+        <div
+          className={cn(
+            'rounded-md overflow-hidden',
+            layoutBorder && 'border border-border shadow-sm',
+            'transition-all duration-300',
+          )}
+        >
+          <ShadcnTable
+            className={cn(
+              bordered &&
+                'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
+              'w-full',
+            )}
+          >
             {showHeader && (
-              <TableHeader>
+              <TableHeader className="bg-muted/30">
                 <TableRow>
                   {tableColumns.map((column, index) => (
-                    <TableHead key={index} style={{ width: (column.meta as any)?.width }}>
-                      <Skeleton className="h-6 w-full" />
+                    <TableHead
+                      key={index}
+                      style={{ width: (column.meta as any)?.width }}
+                      className="h-10 px-4 text-muted-foreground"
+                    >
+                      <Skeleton className="h-5 w-full rounded-md" />
                     </TableHead>
                   ))}
                 </TableRow>
@@ -304,10 +334,10 @@ export function CustomTable({
             )}
             <TableBody>
               {Array.from({ length: 5 }).map((_, rowIndex) => (
-                <TableRow key={rowIndex}>
+                <TableRow key={rowIndex} className="border-b border-border">
                   {tableColumns.map((column, colIndex) => (
-                    <TableCell key={colIndex}>
-                      <Skeleton className="h-6 w-full" />
+                    <TableCell key={colIndex} className="p-3">
+                      <Skeleton className="h-5 w-full rounded-md" />
                     </TableCell>
                   ))}
                 </TableRow>
@@ -323,16 +353,29 @@ export function CustomTable({
   if (dataSource.length === 0) {
     return (
       <div className={cn('w-full', className)} {...rest}>
-        <div className={cn('rounded-md', layoutBorder && 'border')}>
-          <ShadcnTable className={cn(bordered && 'border-collapse [&_td]:border [&_th]:border')}>
+        <div
+          className={cn(
+            'rounded-md overflow-hidden',
+            layoutBorder && 'border border-border shadow-sm',
+            'transition-all duration-300',
+          )}
+        >
+          <ShadcnTable
+            className={cn(
+              bordered &&
+                'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
+              'w-full',
+            )}
+          >
             {showHeader && (
-              <TableHeader>
+              <TableHeader className="bg-muted/30">
                 <TableRow>
                   {tableColumns.map((column, index) => (
                     <TableHead
                       key={index}
                       style={{ width: (column.meta as any)?.width }}
                       className={cn(
+                        'h-10 px-4 text-muted-foreground font-medium',
                         (column.meta as any)?.align === 'center' && 'text-center',
                         (column.meta as any)?.align === 'right' && 'text-right',
                       )}
@@ -345,7 +388,10 @@ export function CustomTable({
             )}
             <TableBody>
               <TableRow>
-                <TableCell colSpan={tableColumns.length} className="text-center py-6">
+                <TableCell
+                  colSpan={tableColumns.length}
+                  className="text-center py-12 text-muted-foreground"
+                >
                   {emptyText}
                 </TableCell>
               </TableRow>
@@ -401,9 +447,10 @@ export function CustomTable({
       <div
         className={cn(
           'rounded-md overflow-auto',
-          layoutBorder && 'border',
+          layoutBorder && 'border border-border shadow-sm',
           scroll?.x && 'max-w-full',
           scroll?.y && `max-h-[${scroll.y}px]`,
+          'transition-all duration-300',
         )}
         style={{
           maxWidth: scroll?.x
@@ -421,25 +468,28 @@ export function CustomTable({
       >
         <ShadcnTable
           className={cn(
-            bordered && 'border-collapse [&_td]:border [&_th]:border',
+            bordered &&
+              'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
             size === 'small' && 'p-2',
+            'w-full',
           )}
         >
           {showHeader && (
-            <TableHeader>
+            <TableHeader className="bg-muted/30">
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
+                <TableRow key={headerGroup.id} className="border-b border-border">
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
                       style={{ width: (header.column.columnDef.meta as any)?.width }}
                       className={cn(
+                        'h-10 px-4 text-muted-foreground font-medium',
                         (header.column.columnDef.meta as any)?.align === 'center' && 'text-center',
                         (header.column.columnDef.meta as any)?.align === 'right' && 'text-right',
                         (header.column.columnDef.meta as any)?.fixed === 'left' &&
-                          'sticky left-0 z-10 bg-background',
+                          'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border',
                         (header.column.columnDef.meta as any)?.fixed === 'right' &&
-                          'sticky right-0 z-10 bg-background',
+                          'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border',
                       )}
                     >
                       {header.isPlaceholder
@@ -456,7 +506,12 @@ export function CustomTable({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && 'selected'}
-                className={cn(rowHover && 'hover:bg-muted/50', rowCursor && 'cursor-pointer')}
+                className={cn(
+                  'border-b border-border transition-colors',
+                  rowHover && 'hover:bg-muted/50',
+                  rowCursor && 'cursor-pointer',
+                  row.getIsSelected() && 'bg-primary/5 hover:bg-primary/10',
+                )}
                 onClick={() => onRowClick && onRowClick(row.original)}
               >
                 {row.getVisibleCells().map((cell: Cell<any, any>) => {
@@ -477,9 +532,9 @@ export function CustomTable({
                         (cell.column.columnDef.meta as CustomColumnMeta)?.ellipsis &&
                           'max-w-[200px] truncate',
                         (cell.column.columnDef.meta as CustomColumnMeta)?.fixed === 'left' &&
-                          'sticky left-0 z-10 bg-background',
+                          'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border',
                         (cell.column.columnDef.meta as CustomColumnMeta)?.fixed === 'right' &&
-                          'sticky right-0 z-10 bg-background',
+                          'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border',
                       )}
                       colSpan={
                         cellProps.colSpan ||

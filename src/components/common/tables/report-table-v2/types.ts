@@ -4,18 +4,6 @@ import type { ReactNode } from 'react';
 import { CheckboxProps } from '@radix-ui/react-checkbox';
 import { ColumnDef } from '@tanstack/react-table';
 
-export interface TablePaginationProps {
-  position?: PaginationPositionProps;
-  current?: number;
-  pageSize?: number;
-  total?: number;
-  onChange?: (page: number, pageSize: number) => void;
-}
-
-export type DataSourceProps = {
-  [x: string | number | symbol]: string | number | unknown;
-};
-
 export enum PAGINATION_POSITION {
   TOP_LEFT = 'topLeft',
   TOP_RIGHT = 'topRight',
@@ -25,16 +13,43 @@ export enum PAGINATION_POSITION {
 
 export type TableSizeProps = 'small' | 'middle';
 
+export enum SORT_ORDER {
+  ASCEND = 'asc',
+  DESCEND = 'desc',
+}
+
+export enum ALIGNMENT {
+  LEFT = 'left',
+  CENTER = 'center',
+  RIGHT = 'right',
+}
+
+export enum FIXED {
+  LEFT = 'left',
+  RIGHT = 'right',
+}
+
+export type DataSourceProps = {
+  [x: string | number | symbol]: string | number | unknown;
+};
+
+export interface TablePaginationProps {
+  position?: PaginationPositionProps;
+  current?: number;
+  pageSize?: number;
+  total?: number;
+  onChange?: (page: number, pageSize: number) => void;
+}
+
 export type PaginationPositionProps =
   | PAGINATION_POSITION.TOP_LEFT
   | PAGINATION_POSITION.TOP_RIGHT
   | PAGINATION_POSITION.BOTTOM_LEFT
   | PAGINATION_POSITION.BOTTOM_RIGHT;
 
-export enum SORT_ORDER {
-  ASCEND = 'asc',
-  DESCEND = 'desc',
-}
+export type Align = ALIGNMENT.LEFT | ALIGNMENT.CENTER | ALIGNMENT.RIGHT | string;
+
+export type Fixed = FIXED.LEFT | FIXED.RIGHT | string;
 
 export type SortOrderProps = SORT_ORDER.ASCEND | SORT_ORDER.DESCEND | null;
 
@@ -46,11 +61,11 @@ export interface ColumnProps {
   title?: React.ReactNode | string;
   dataIndex?: string;
   key: string;
-  align?: 'left' | 'center' | 'right' | string;
-  headerAlign?: 'left' | 'center' | 'right' | string;
+  align?: Align;
+  headerAlign?: Align;
   width?: string | number;
   render?: (text: any, record: any, index: number) => React.ReactNode;
-  fixed?: 'left' | 'right' | string;
+  fixed?: Fixed;
   sorter?: ((a: any, b: any) => number) | boolean;
   onSorterClick?: (
     column: Pick<ColumnProps, 'key' | 'dataIndex'> & {
@@ -76,9 +91,9 @@ export interface ColumnProps {
 }
 
 export interface CustomColumnMeta {
-  align?: 'left' | 'center' | 'right' | string;
+  align?: Align;
   width?: string | number;
-  fixed?: 'left' | 'right' | string;
+  fixed?: Fixed;
   className?: string;
   ellipsis?: boolean;
   colSpan?: number;
