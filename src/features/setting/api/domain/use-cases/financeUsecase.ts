@@ -17,6 +17,8 @@ import { categoryRepository } from '../../infrastructure/repositories/categoryRe
 import { productRepository } from '../../infrastructure/repositories/productRepository';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
 import { IProductRepository } from '../../repositories/productRepository.interface';
+import { Messages } from '@/shared/constants/message';
+import { formatMessage } from '@/shared/utils/messageUtils';
 
 export class FinanceUseCase {
   constructor(
@@ -38,7 +40,7 @@ export class FinanceUseCase {
       case FinanceReportEnum.PRODUCT:
         return this.getProductReport(userId);
       default:
-        throw new Error(`Unsupported report type: ${type}`);
+        throw new Error(formatMessage(Messages.INVALID_FINANCE_REPORT_TYPE, { type }));
     }
   }
 

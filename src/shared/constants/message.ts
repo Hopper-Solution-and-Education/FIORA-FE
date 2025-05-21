@@ -161,6 +161,13 @@ export enum Messages {
   CREATE_PARTNER_FAILED = 'Failed to create partner.',
   UPDATE_PARTNER_FAILED = 'Failed to update partner.',
 
+  // FINANCE REPORT
+  GET_FINANCE_REPORT_SUCCESS = 'Get finance report successfully.',
+  GET_FINANCE_REPORT_FAILED = 'Failed to get finance report.',
+  INVALID_FINANCE_REPORT_TYPE = 'Invalid finance report type for {{type}}.',
+  INVALID_FINANCE_REPORT_FILTER = 'Invalid finance report filter.',
+  INVALID_FINANCE_REPORT_FILTER_TYPE = 'Invalid finance report filter type.',
+
   INVALID_USER = 'Invalid user.',
   USER_EMAIL_EXISTED = 'Email already existed',
   NOT_FOUND_EMAIL = 'User email not found',
