@@ -1,4 +1,4 @@
-import { BudgetsTable, BudgetType, Currency, Prisma } from '@prisma/client';
+import { BudgetsTable, Prisma } from '@prisma/client';
 
 export interface IBudgetRepository {
   createBudget(
@@ -35,33 +35,3 @@ export interface IBudgetRepository {
   ): Promise<BudgetsTable>;
   findBudgetsByUserIdAndFiscalYear(userId: string, fiscalYear: string): Promise<BudgetsTable[]>;
 }
-
-export interface BudgetCreation {
-  fiscalYear: string;
-  icon?: string;
-  estimatedTotalExpense: number;
-  estimatedTotalIncome: number;
-  description?: string;
-  userId: string;
-  currency: Currency;
-  isSystemGenerated?: boolean;
-  type?: BudgetType;
-  skipActCalculation?: boolean;
-}
-
-export interface BudgetGetAnnualYearParams {
-  userId: string;
-  cursor?: number;
-  take: number;
-  currency: Currency;
-  search?: string;
-  filters?: any;
-}
-
-export type BudgetYearSummary = {
-  year: number;
-  budgetIncome: number;
-  budgetExpense: number;
-  actualIncome: number;
-  actualExpense: number;
-};

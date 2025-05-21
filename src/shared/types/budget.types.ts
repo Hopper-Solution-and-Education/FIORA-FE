@@ -33,6 +33,12 @@ export interface BudgetAllocation {
   monthlyIncome: number;
 }
 
+export interface SumUpAllocation {
+  monthFields: Record<string, number>;
+  quarterFields: Record<string, number>;
+  halfYearFields: { h1_exp?: number; h2_exp?: number; h1_inc?: number; h2_inc?: number };
+}
+
 export interface BudgetTypeData {
   type: BudgetsTable['type'];
   totalExpense: number;
@@ -47,3 +53,33 @@ export type FetchTransactionResponse = Prisma.TransactionGetPayload<{
     currency: true;
   };
 }>;
+
+export interface BudgetGetAnnualYearParams {
+  userId: string;
+  cursor?: number;
+  take: number;
+  currency: Currency;
+  search?: string;
+  filters?: any;
+}
+
+export type BudgetYearSummary = {
+  year: number;
+  budgetIncome: number;
+  budgetExpense: number;
+  actualIncome: number;
+  actualExpense: number;
+};
+
+export type BudgetSummaryByYear = Record<
+  string,
+  Record<
+    string,
+    {
+      total_inc: Prisma.Decimal;
+      total_exp: Prisma.Decimal;
+      currency: Currency;
+      icon: string;
+    }
+  >
+>;

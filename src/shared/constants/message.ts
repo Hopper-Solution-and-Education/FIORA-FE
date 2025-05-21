@@ -50,6 +50,7 @@ export enum Messages {
   BUDGET_DELETE_SUCCESS = 'Budget deleted successfully',
   BUDGET_GET_BY_ID_SUCCESS = 'Get budget by id successfully',
   BUDGET_UPDATE_SUCCESS = 'Update budget successfully !',
+  BUDGET_DETAIL_CREATE_SUCCESS = 'Create budget details successfully',
 
   // Budget Service Failed
   BUDGET_ID_MISSING = 'Budget id is missing',
@@ -62,6 +63,12 @@ export enum Messages {
   BUDGET_UPDATE_FAILED = 'Failed to update budget',
   BUDGET_DELETE_FAILED = 'Failed to delete budget',
   BUDGET_FISCAL_YEAR_ALREADY_EXISTS = 'Budget fiscal year already exists',
+
+  // Budget Details Service Failed
+  BUDGET_DETAIL_UPDATE_FAILED = 'Failed to update budget details',
+  BUDGET_DETAIL_DELETE_FAILED = 'Failed to delete budget details',
+  DUPLICATED_CATEGORY_BUDGET_DETAILS = 'Category already exists in budget details',
+
   // Category-Product Success
   CREATE_CATEGORY_PRODUCT_SUCCESS = 'Create category product successfully',
   UPDATE_CATEGORY_PRODUCT_SUCCESS = 'Update category product successfully',

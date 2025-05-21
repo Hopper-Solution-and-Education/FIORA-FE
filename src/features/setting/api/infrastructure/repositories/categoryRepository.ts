@@ -1,4 +1,4 @@
-import { Category, CategoryType } from '@prisma/client';
+import { Category, CategoryType, Prisma } from '@prisma/client';
 import { prisma } from '@/config';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
 
@@ -80,6 +80,26 @@ class CategoryRepository implements ICategoryRepository {
         toTransactions: { select: { amount: true, isDeleted: true } },
       },
       orderBy: [{ toTransactions: { _count: 'desc' } }, { fromTransactions: { _count: 'desc' } }],
+    });
+  }
+
+  async findManyCategory(
+    where: Prisma.CategoryWhereInput,
+    options?: Prisma.CategoryFindManyArgs,
+  ): Promise<Category[]> {
+    return prisma.category.findMany({
+      where,
+      ...options,
+    });
+  }
+
+  async findFirstCategory(
+    where: Prisma.CategoryWhereInput,
+    options?: Prisma.CategoryFindFirstArgs,
+  ): Promise<Category | null> {
+    return prisma.category.findFirst({
+      where,
+      ...options,
     });
   }
 }
