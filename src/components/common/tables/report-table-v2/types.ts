@@ -18,20 +18,16 @@ export enum SORT_ORDER {
   DESCEND = 'desc',
 }
 
-export enum ALIGNMENT {
-  LEFT = 'left',
-  CENTER = 'center',
-  RIGHT = 'right',
-}
-
 export enum FIXED {
   LEFT = 'left',
   RIGHT = 'right',
 }
 
-export type DataSourceProps = {
-  [x: string | number | symbol]: string | number | unknown;
-};
+export interface DataSourceProps {
+  [key: string]: any;
+  children?: DataSourceProps[];
+  rowSpan?: number;
+}
 
 export interface TablePaginationProps {
   position?: PaginationPositionProps;
@@ -47,8 +43,6 @@ export type PaginationPositionProps =
   | PAGINATION_POSITION.BOTTOM_LEFT
   | PAGINATION_POSITION.BOTTOM_RIGHT;
 
-export type Align = ALIGNMENT.LEFT | ALIGNMENT.CENTER | ALIGNMENT.RIGHT | string;
-
 export type Fixed = FIXED.LEFT | FIXED.RIGHT | string;
 
 export type SortOrderProps = SORT_ORDER.ASCEND | SORT_ORDER.DESCEND | null;
@@ -61,8 +55,8 @@ export interface ColumnProps {
   title?: React.ReactNode | string;
   dataIndex?: string;
   key: string;
-  align?: Align;
-  headerAlign?: Align;
+  align?: CanvasTextAlign;
+  headerAlign?: CanvasTextAlign;
   width?: string | number;
   render?: (text: any, record: any, index: number) => React.ReactNode;
   fixed?: Fixed;
@@ -91,7 +85,8 @@ export interface ColumnProps {
 }
 
 export interface CustomColumnMeta {
-  align?: Align;
+  headerAlign?: CanvasTextAlign;
+  align?: CanvasTextAlign;
   width?: string | number;
   fixed?: Fixed;
   className?: string;

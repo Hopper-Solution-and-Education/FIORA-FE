@@ -94,101 +94,98 @@ export function CustomTable({
         .map((col: ColumnProps) => {
           if (!col) return null;
 
-          if (col.children) {
+          if (col.children?.length) {
             return {
               id: col.key,
-              header: (col: ColumnProps) => col.title || col.key,
+              header: col.title || col.key,
               columns: transformColumns(col.children),
-            };
-          } else {
-            return {
-              id: col.key,
-              accessorKey: col.dataIndex,
-              header: ({ column }: { column: Column<any> }) => {
-                if (!column) return null;
-                const isSorted = column.getIsSorted();
-                const canSort = column.getCanSort();
-                const headerAlignClass = col.headerAlign
-                  ? `justify-${col.headerAlign}`
-                  : 'justify-start';
-                const width = col.width ? `w-[${col.width}px]` : 'w-full';
-
-                return (
-                  <button
-                    onClick={canSort ? column.getToggleSortingHandler() : undefined}
-                    className={cn(
-                      'flex items-center gap-1',
-                      width,
-                      headerAlignClass,
-                      canSort && 'cursor-pointer select-none',
-                      'transition-colors duration-200',
-                    )}
-                  >
-                    <span className="font-medium">{col.title}</span>
-                    {col.helpContent && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-xs text-sm">
-                            {col.helpContent}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
-                    {col.sorter && (
-                      <div className="flex flex-col ml-1">
-                        <ChevronUp
-                          className={cn(
-                            'h-3 w-3 transition-colors',
-                            isSorted === 'asc' ? 'text-primary' : 'text-muted-foreground/50',
-                          )}
-                        />
-                        <ChevronDown
-                          className={cn(
-                            'h-3 w-3 transition-colors',
-                            isSorted === 'desc' ? 'text-primary' : 'text-muted-foreground/50',
-                          )}
-                        />
-                      </div>
-                    )}
-                  </button>
-                );
-              },
-              cell: ({ row, getValue }: { row: any; getValue: () => any }) => {
-                if (!row || !getValue) return null;
-
-                const value: any = getValue();
-                if (col.render) {
-                  return col.render(value, row.original, row.index);
-                }
-                return (
-                  <div
-                    className={cn(
-                      col.align ? `text-${col.align}` : 'text-left',
-                      col.ellipsis && 'truncate',
-                      col.className,
-                    )}
-                  >
-                    {value}
-                  </div>
-                );
-              },
-              enableSorting: !!col.sorter,
               meta: {
                 align: col.align,
-                width: col.width,
-                fixed: col.fixed,
                 className: col.className,
-                ellipsis: col.ellipsis,
                 colSpan: col.colSpan,
-                onCell: col.onCell,
               },
-            };
+            } as CustomColumnDef<any>;
           }
+
+          return {
+            id: col.key,
+            accessorKey: col.dataIndex,
+            header: ({ column }: { column: Column<any> }) => {
+              if (!column) return null;
+              const isSorted = column.getIsSorted();
+              const canSort = column.getCanSort();
+              const headerAlignClass = col.headerAlign
+                ? `justify-${col.headerAlign}`
+                : 'justify-start';
+              const width = col.width ? `w-[${col.width}px]` : 'w-full';
+
+              return (
+                <button
+                  onClick={canSort ? column.getToggleSortingHandler() : undefined}
+                  className={cn(
+                    'flex items-center gap-1',
+                    width,
+                    headerAlignClass,
+                    canSort && 'cursor-pointer select-none',
+                    'transition-colors duration-200',
+                  )}
+                >
+                  <span className="font-medium">{col.title}</span>
+                  {col.helpContent && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs text-sm">
+                          {col.helpContent}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  {col.sorter && (
+                    <div className="flex flex-col ml-1">
+                      <ChevronUp
+                        className={cn(
+                          'h-3 w-3 transition-colors',
+                          isSorted === 'asc' ? 'text-primary' : 'text-muted-foreground/50',
+                        )}
+                      />
+                      <ChevronDown
+                        className={cn(
+                          'h-3 w-3 transition-colors',
+                          isSorted === 'desc' ? 'text-primary' : 'text-muted-foreground/50',
+                        )}
+                      />
+                    </div>
+                  )}
+                </button>
+              );
+            },
+            cell: ({ row, getValue }: { row: any; getValue: () => any }) => {
+              if (!row || !getValue) return null;
+
+              const value: any = getValue();
+              if (col.render) {
+                return col.render(value, row.original, row.index);
+              }
+              return (
+                <div
+                  className={cn(
+                    col.align ? `text-${col.align}` : 'text-left',
+                    col.ellipsis && 'truncate',
+                    col.className,
+                  )}
+                >
+                  {value}
+                </div>
+              );
+            },
+            enableSorting: !!col.sorter,
+            meta: { ...col },
+          };
         })
-        .filter(Boolean);
+        .filter(Boolean) as CustomColumnDef<any>[];
 
       return columns as unknown as ColumnDef<any>[];
     };
@@ -319,17 +316,30 @@ export function CustomTable({
           >
             {showHeader && (
               <TableHeader className="bg-muted/30">
-                <TableRow>
-                  {tableColumns.map((column, index) => (
-                    <TableHead
-                      key={index}
-                      style={{ width: (column.meta as any)?.width }}
-                      className="h-10 px-4 text-muted-foreground"
-                    >
-                      <Skeleton className="h-5 w-full rounded-md" />
-                    </TableHead>
-                  ))}
-                </TableRow>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id} className="border-b border-border">
+                    {headerGroup.headers.map((header) => (
+                      <TableHead
+                        key={header.id}
+                        colSpan={header.colSpan}
+                        style={{
+                          width: (header.column.columnDef.meta as CustomColumnMeta)?.width,
+                          textAlign: (header.column.columnDef.meta as CustomColumnMeta)
+                            ?.headerAlign,
+                        }}
+                        className={cn(
+                          'h-10 px-4 font-medium',
+                          (header.column.columnDef.meta as CustomColumnMeta)?.fixed === 'left' &&
+                            'sticky-left',
+                          (header.column.columnDef.meta as CustomColumnMeta)?.fixed === 'right' &&
+                            'sticky-right',
+                        )}
+                      >
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
               </TableHeader>
             )}
             <TableBody>
