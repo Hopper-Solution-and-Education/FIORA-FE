@@ -27,7 +27,14 @@ export default withAuthorization({
 
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const request: GetFinanceReportRequest = await GetFinanceReportSchema.validate(req.query);
+    const queryParams = {
+      type: req.query.type as string,
+      filter: req.query.filter as string,
+    };
+
+    const request: GetFinanceReportRequest = await GetFinanceReportSchema.validate(queryParams);
+
+    console.log('Validated request:', request); // Thêm log để debug
 
     const data = await financeUseCase.getReport({ request, userId });
 

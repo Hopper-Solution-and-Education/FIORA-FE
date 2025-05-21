@@ -1,4 +1,5 @@
-import { Account, Partner, Product } from '@prisma/client';
+import { CategoryExtras } from '@/shared/types/category.types';
+import { Account, Currency, Partner, Product } from '@prisma/client';
 import { FinanceReportEnum } from '../../constant/FinanceReportEnum';
 
 export interface GetFinanceReportResponse<T> {
@@ -7,16 +8,25 @@ export interface GetFinanceReportResponse<T> {
 }
 
 export interface AccountFinanceReportResponse extends Account {
-  totalAmount: number;
-  itemType: 'Expense' | 'Income';
+  totalIncome: number;
+  totalExpense: number;
+  currency: Currency;
 }
 
 export interface PartnerFinanceReportResponse extends Partner {
-  totalAmount: number;
-  itemType: 'Expense' | 'Income';
+  totalIncome: number;
+  totalExpense: number;
+  currency: Currency;
 }
 
 export interface ProductFinanceReportResponse extends Product {
-  totalAmount: number;
-  itemType: 'Expense' | 'Income';
+  totalIncome: number;
+  totalExpense: number;
+  currency: Currency;
+}
+
+export interface CategoryFinanceReportResponse extends CategoryExtras {
+  totalIncome: number;
+  totalExpense: number;
+  currency: Currency;
 }
