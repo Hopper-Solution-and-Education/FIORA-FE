@@ -704,15 +704,12 @@ class BudgetUseCase {
     });
   }
 
-  async getTentativeBudget(userId: string, fiscalYear: number, currency: Currency, now: Date) {
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
+  async getTentativeBudget(userId: string, currency: Currency) {
     // Step 5: Tính tentative actual transactions (chỉ lấy giao dịch "locked" và chưa được tính)
     const tentativeTransactions = await this.transactionRepository.findManyTransactions(
       {
         userId,
         isDeleted: false,
-        date: { lte: thirtyDaysAgo },
         isMarked: false,
         type: { in: [TransactionType.Income, TransactionType.Expense] },
       },
@@ -779,6 +776,8 @@ class BudgetUseCase {
       take,
     });
 
+    const tentativeTotalsByYear = await this.getTentativeBudget(userId, currency);
+
     const years = distinctYears.map((d) => d.fiscalYear);
 
     // Step 4: Fetch budgets for the user
@@ -811,8 +810,6 @@ class BudgetUseCase {
       };
       return acc;
     }, {});
-
-    const tentativeTotalsByYear = await this.getTentativeBudget(userId, currentYear, currency, now);
 
     // Step 6: Prepare response data
     const response = years.map((year) => {
@@ -1113,6 +1110,7 @@ class BudgetUseCase {
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth() + 1;
+
     const isCurrentYear = fiscalYear === currentYear;
     const targetMonth = isCurrentYear ? currentMonth - 2 : 12;
 
@@ -1121,19 +1119,28 @@ class BudgetUseCase {
     }
 
     const { yearStart, effectiveEndDate } = this.calculateTransactionRange(fiscalYear);
-    const transactions = await this.fetchTransactionsTx(
+    const newTransactions = await this.fetchTransactionsTx(
       userId,
       yearStart,
       effectiveEndDate,
       prisma,
     );
 
-    if (!transactions || transactions.length === 0) {
+    if (!newTransactions || newTransactions.length === 0) {
       return; // Không có giao dịch nào để cập nhật
     }
 
+    // Đánh dấu giao dịch mới
+    const newTransactionIds = newTransactions.map((t) => t.id);
+
+    if (newTransactionIds.length > 0) {
+      await prisma.transaction.updateMany({
+        where: { id: { in: newTransactionIds } },
+        data: { isMarked: true },
+      });
+    }
     const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
-      transactions || [],
+      newTransactions,
       currency,
     );
 
