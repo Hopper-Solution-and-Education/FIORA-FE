@@ -33,10 +33,16 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 
     return res
       .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_PARTNER_SUCCESS, data));
+      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_FINANCE_REPORT_SUCCESS, data));
   } catch (error: any) {
     return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createError(res, RESPONSE_CODE.BAD_REQUEST, error.message));
+      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createError(
+          res,
+          RESPONSE_CODE.BAD_REQUEST,
+          error.message || Messages.GET_FINANCE_REPORT_FAILED,
+        ),
+      );
   }
 }
