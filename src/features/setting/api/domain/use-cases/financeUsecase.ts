@@ -3,16 +3,18 @@ import { accountRepository } from '@/features/auth/infrastructure/repositories/a
 import { IPartnerRepository } from '@/features/partner/domain/repositories/partnerRepository.interface';
 import { partnerRepository } from '@/features/partner/infrastructure/repositories/partnerRepository';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
+import { FinanceReportFilterEnum } from '@/features/setting/data/module/finance/constant/FinanceReportFilterEnum';
 import { GetFinanceReportRequest } from '@/features/setting/data/module/finance/dto/request/GetFinanceReportRequest';
 import {
   AccountFinanceReportResponse,
+  CategoryFinanceReportResponse,
   GetFinanceReportResponse,
   PartnerFinanceReportResponse,
   ProductFinanceReportResponse,
 } from '@/features/setting/data/module/finance/dto/response/GetFinanceReportResponse';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
-import { TransactionType } from '@prisma/client';
+import { CategoryType, Currency, TransactionType } from '@prisma/client';
 import { categoryRepository } from '../../infrastructure/repositories/categoryRepository';
 import { productRepository } from '../../infrastructure/repositories/productRepository';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
@@ -30,15 +32,17 @@ export class FinanceUseCase {
   ) {}
 
   async getReport({ request, userId }: { request: GetFinanceReportRequest; userId: string }) {
-    const { type } = request;
+    const { type, filter = FinanceReportFilterEnum.ALL } = request;
 
     switch (type) {
       case FinanceReportEnum.ACCOUNT:
-        return this.getAccountReport(userId);
+        return this.getAccountReport(userId, filter);
       case FinanceReportEnum.PARTNER:
-        return this.getPartnerReport(userId);
+        return this.getPartnerReport(userId, filter);
       case FinanceReportEnum.PRODUCT:
-        return this.getProductReport(userId);
+        return this.getProductReport(userId, filter);
+      case FinanceReportEnum.CATEGORY:
+        return this.getCategoryReport(userId, filter);
       default:
         throw new Error(formatMessage(Messages.INVALID_FINANCE_REPORT_TYPE, { type }));
     }
@@ -46,34 +50,71 @@ export class FinanceUseCase {
 
   private async getAccountReport(
     userId: string,
+    filter: FinanceReportFilterEnum = FinanceReportFilterEnum.ALL,
   ): Promise<GetFinanceReportResponse<AccountFinanceReportResponse>> {
     const allAccounts = await this._accountRepository.findMany({ userId }, {});
 
-    const mainAccounts = allAccounts.filter((account) => !account.parentId);
-
-    const accountTotalMap = new Map<string, number>();
-
-    mainAccounts.forEach((account) => {
-      accountTotalMap.set(account.id, Number(account.balance || 0));
+    const accountIds = allAccounts.map((account) => account.id);
+    const transactions = await this._transactionRepository.findManyTransactions({
+      userId,
+      OR: [{ fromAccountId: { in: accountIds } }, { toAccountId: { in: accountIds } }],
+      isDeleted: false,
     });
 
-    allAccounts
-      .filter((account) => account.parentId)
-      .forEach((subAccount) => {
-        if (subAccount.parentId) {
-          const currentTotal = accountTotalMap.get(subAccount.parentId) || 0;
-          accountTotalMap.set(subAccount.parentId, currentTotal + Number(subAccount.balance || 0));
-        }
-      });
+    const accountTotalMap = new Map<string, { expense: number; income: number }>();
 
-    const result: AccountFinanceReportResponse[] = mainAccounts.map((account) => {
-      const totalAmount = accountTotalMap.get(account.id) || 0;
+    allAccounts.forEach((account) => {
+      accountTotalMap.set(account.id, { expense: 0, income: 0 });
+    });
+
+    transactions.forEach((transaction) => {
+      const amount = Number(transaction.amount);
+
+      if (transaction.type === TransactionType.Expense && transaction.fromAccountId) {
+        const totals = accountTotalMap.get(transaction.fromAccountId);
+        if (totals) {
+          totals.expense += amount;
+        }
+      } else if (transaction.type === TransactionType.Income && transaction.toAccountId) {
+        const totals = accountTotalMap.get(transaction.toAccountId);
+        if (totals) {
+          totals.income += amount;
+        }
+      } else if (transaction.type === TransactionType.Transfer) {
+        if (transaction.fromAccountId) {
+          const fromTotals = accountTotalMap.get(transaction.fromAccountId);
+          if (fromTotals) {
+            fromTotals.expense += amount;
+          }
+        }
+        if (transaction.toAccountId) {
+          const toTotals = accountTotalMap.get(transaction.toAccountId);
+          if (toTotals) {
+            toTotals.income += amount;
+          }
+        }
+      }
+    });
+
+    let result: AccountFinanceReportResponse[] = allAccounts.map((account) => {
+      const totals = accountTotalMap.get(account.id) || { expense: 0, income: 0 };
+      const totalProfit = totals.income - totals.expense;
+
       return {
         ...account,
-        totalAmount,
-        itemType: totalAmount >= 0 ? 'Income' : 'Expense',
+        totalIncome: totals.income,
+        totalExpense: totals.expense,
+        totalProfit,
+        currency: account.currency,
       };
     });
+
+    // Áp dụng bộ lọc
+    if (filter === FinanceReportFilterEnum.INCOME) {
+      result = result.filter((account) => account.totalIncome > 0);
+    } else if (filter === FinanceReportFilterEnum.EXPENSE) {
+      result = result.filter((account) => account.totalExpense > 0);
+    }
 
     return {
       reportType: FinanceReportEnum.ACCOUNT,
@@ -83,10 +124,14 @@ export class FinanceUseCase {
 
   private async getPartnerReport(
     userId: string,
+    filter: FinanceReportFilterEnum = FinanceReportFilterEnum.ALL,
   ): Promise<GetFinanceReportResponse<PartnerFinanceReportResponse>> {
-    const allPartners = await this._partnerRepository.getPartnersByUserId(userId);
-
-    const mainPartners = allPartners.filter((partner) => !partner.parentId);
+    const allPartners = await this._partnerRepository.getPartnersByUserId(userId, {
+      transactions: false,
+      children: false,
+      parent: false,
+      user: false,
+    });
 
     const transactions = await this._transactionRepository.findManyTransactions({
       userId,
@@ -96,24 +141,14 @@ export class FinanceUseCase {
 
     const partnerTotalMap = new Map<string, { expense: number; income: number }>();
 
-    mainPartners.forEach((partner) => {
+    allPartners.forEach((partner) => {
       partnerTotalMap.set(partner.id, { expense: 0, income: 0 });
     });
 
     transactions.forEach((transaction) => {
-      if (!transaction.partnerId) return;
+      if (!transaction.partnerId || !partnerTotalMap.has(transaction.partnerId)) return;
 
-      let currentPartnerId = transaction.partnerId;
-      let currentPartner = allPartners.find((p) => p.id === currentPartnerId);
-
-      while (currentPartner?.parentId) {
-        currentPartnerId = currentPartner.parentId;
-        currentPartner = allPartners.find((p) => p.id === currentPartnerId);
-      }
-
-      if (!partnerTotalMap.has(currentPartnerId)) return;
-
-      const totals = partnerTotalMap.get(currentPartnerId)!;
+      const totals = partnerTotalMap.get(transaction.partnerId)!;
       const amount = Number(transaction.amount);
 
       if (transaction.type === TransactionType.Expense) {
@@ -123,16 +158,25 @@ export class FinanceUseCase {
       }
     });
 
-    const result: PartnerFinanceReportResponse[] = mainPartners.map((partner) => {
+    let result: PartnerFinanceReportResponse[] = allPartners.map((partner) => {
       const totals = partnerTotalMap.get(partner.id) || { expense: 0, income: 0 };
-      const totalAmount = totals.income - totals.expense;
+      const totalProfit = totals.income - totals.expense;
 
       return {
         ...partner,
-        totalAmount,
-        itemType: totalAmount >= 0 ? 'Income' : 'Expense',
+        totalIncome: totals.income,
+        totalExpense: totals.expense,
+        totalProfit,
+        currency: Currency.VND,
       };
     });
+
+    // Áp dụng bộ lọc
+    if (filter === FinanceReportFilterEnum.INCOME) {
+      result = result.filter((partner) => partner.totalIncome > 0);
+    } else if (filter === FinanceReportFilterEnum.EXPENSE) {
+      result = result.filter((partner) => partner.totalExpense > 0);
+    }
 
     return {
       reportType: FinanceReportEnum.PARTNER,
@@ -142,6 +186,7 @@ export class FinanceUseCase {
 
   private async getProductReport(
     userId: string,
+    filter: FinanceReportFilterEnum = FinanceReportFilterEnum.ALL,
   ): Promise<GetFinanceReportResponse<ProductFinanceReportResponse>> {
     const allProducts = await this._productRepository.findManyProducts({ userId });
 
@@ -168,19 +213,84 @@ export class FinanceUseCase {
       });
     });
 
-    const result: ProductFinanceReportResponse[] = allProducts.map((product) => {
+    let result: ProductFinanceReportResponse[] = allProducts.map((product) => {
       const totals = productTotalMap.get(product.id) || { expense: 0, income: 0 };
-      const totalAmount = totals.income - totals.expense;
+      const totalProfit = totals.income - totals.expense;
 
       return {
         ...product,
-        totalAmount,
-        itemType: totalAmount >= 0 ? 'Income' : 'Expense',
+        totalIncome: totals.income,
+        totalExpense: totals.expense,
+        totalProfit,
+        currency: product.currency,
       };
     });
 
+    // Áp dụng bộ lọc
+    if (filter === FinanceReportFilterEnum.INCOME) {
+      result = result.filter((product) => product.totalIncome > 0);
+    } else if (filter === FinanceReportFilterEnum.EXPENSE) {
+      result = result.filter((product) => product.totalExpense > 0);
+    }
+
     return {
       reportType: FinanceReportEnum.PRODUCT,
+      result,
+    };
+  }
+
+  private async getCategoryReport(
+    userId: string,
+    filter: FinanceReportFilterEnum = FinanceReportFilterEnum.ALL,
+  ): Promise<GetFinanceReportResponse<CategoryFinanceReportResponse>> {
+    const allCategories = await this._categoryRepository.findCategoriesWithTransactions(userId);
+
+    const categoryTotalMap = new Map<string, { expense: number; income: number }>();
+
+    allCategories.forEach((category) => {
+      categoryTotalMap.set(category.id, { expense: 0, income: 0 });
+    });
+
+    allCategories.forEach((category) => {
+      const totals = categoryTotalMap.get(category.id)!;
+
+      if (category.type === CategoryType.Expense) {
+        const expenseAmount = (category.toTransactions || []).reduce(
+          (sum, tx) => sum + Number(tx.amount),
+          0,
+        );
+        totals.expense += expenseAmount;
+      } else if (category.type === CategoryType.Income) {
+        const incomeAmount = (category.fromTransactions || []).reduce(
+          (sum, tx) => sum + Number(tx.amount),
+          0,
+        );
+        totals.income += incomeAmount;
+      }
+    });
+
+    let result: CategoryFinanceReportResponse[] = allCategories.map((category) => {
+      const totals = categoryTotalMap.get(category.id) || { expense: 0, income: 0 };
+      const totalProfit = totals.income - totals.expense;
+
+      return {
+        ...category,
+        totalIncome: totals.income,
+        totalExpense: totals.expense,
+        totalProfit,
+        currency: Currency.VND,
+      };
+    });
+
+    // Áp dụng bộ lọc
+    if (filter === FinanceReportFilterEnum.INCOME) {
+      result = result.filter((category) => category.totalIncome > 0);
+    } else if (filter === FinanceReportFilterEnum.EXPENSE) {
+      result = result.filter((category) => category.totalExpense > 0);
+    }
+
+    return {
+      reportType: FinanceReportEnum.CATEGORY,
       result,
     };
   }

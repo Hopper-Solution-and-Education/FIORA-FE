@@ -1,5 +1,5 @@
 export enum FinanceReportEnum {
-  CATEOGRY = 'CATEGORY',
+  CATEGORY = 'CATEGORY',
   PRODUCT = 'PRODUCT',
   ACCOUNT = 'ACCOUNT',
   PARTNER = 'PARTNER',
