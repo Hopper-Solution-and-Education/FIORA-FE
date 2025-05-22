@@ -1,10 +1,14 @@
-import { Category, CategoryType } from '@prisma/client';
+import { Category, CategoryType, Prisma } from '@prisma/client';
 import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
 import { CategoryExtras } from '@/shared/types/category.types';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { Messages } from '@/shared/constants/message';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
+import { safeString } from '@/shared/utils/ExStringUtils';
+import { GlobalFilters } from '@/shared/types';
+import { buildWhereClause } from '@/shared/utils';
+import { BooleanUtils } from '@/shared/lib';
 
 class CategoryUseCase {
   private categoryRepository: ICategoryRepository;
@@ -71,8 +75,28 @@ class CategoryUseCase {
     await this.categoryRepository.deleteCategory(id);
   }
 
-  async getCategories(userId: string): Promise<any[]> {
-    const categories = await this.categoryRepository.findCategoriesWithTransactions(userId);
+  async getCategories(userId: string, params: GlobalFilters): Promise<any[]> {
+    const searchParams = safeString(params.search);
+    let where: Prisma.CategoryWhereInput = {};
+
+    if (params.filters && Object.keys(params.filters).length > 0) {
+      where = buildWhereClause(params.filters) as Prisma.CategoryWhereInput;
+    }
+
+    if (BooleanUtils.isTrue(searchParams)) {
+      const typeSearchParams = searchParams.toLowerCase();
+
+      where = {
+        AND: [
+          where,
+          {
+            OR: [{ name: { contains: typeSearchParams, mode: 'insensitive' } }],
+          },
+        ],
+      };
+    }
+
+    const categories = await this.categoryRepository.findCategoriesWithTransactions(userId, where);
 
     const calculateBalance = (category: CategoryExtras): number => {
       if (category.type === CategoryType.Expense.valueOf()) {
