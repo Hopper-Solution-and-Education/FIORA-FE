@@ -115,7 +115,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
       where: {
         catId: { in: catIds },
         userId, // Đảm bảo sản phẩm thuộc về user
-        ...(where.AND ? { AND: where.AND } : {}),
+        ...where,
       },
       select: {
         id: true,

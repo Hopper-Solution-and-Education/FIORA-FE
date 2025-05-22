@@ -175,17 +175,57 @@ export class AccountUseCase {
     return masterAccount ? true : false;
   }
 
-  async getAllParentAccount(userId: string): Promise<Account[] | []> {
+  async getAllParentAccount(userId: string, params: GlobalFilters): Promise<Account[] | []> {
+    const searchParams = safeString(params.search);
+    let where: Prisma.AccountWhereInput = {};
+
+    if (params.filters && Object.keys(params.filters).length > 0) {
+      where = buildWhereClause(params.filters) as Prisma.AccountWhereInput;
+    }
+
+    if (BooleanUtils.isTrue(searchParams)) {
+      const typeSearchParams = searchParams.toLowerCase();
+
+      where = {
+        AND: [
+          where,
+          {
+            OR: [{ name: { contains: typeSearchParams, mode: 'insensitive' } }],
+          },
+        ],
+      };
+    }
     return this.accountRepository.findManyWithCondition({
       userId,
       parentId: null,
+      ...where,
     });
   }
 
-  async getAllAccountByUserId(userId: string, currency: Currency) {
+  async getAllAccountByUserId(userId: string, currency: Currency, params: GlobalFilters) {
+    const searchParams = safeString(params.search);
+    let where: Prisma.AccountWhereInput = {};
+
+    if (params.filters && Object.keys(params.filters).length > 0) {
+      where = buildWhereClause(params.filters) as Prisma.AccountWhereInput;
+    }
+
+    if (BooleanUtils.isTrue(searchParams)) {
+      const typeSearchParams = searchParams.toLowerCase();
+
+      where = {
+        AND: [
+          where,
+          {
+            OR: [{ name: { contains: typeSearchParams, mode: 'insensitive' } }],
+          },
+        ],
+      };
+    }
     const accountRes = (await this.accountRepository.findManyWithCondition(
       {
         userId,
+        ...where,
       },
       {
         include: {
