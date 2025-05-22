@@ -36,11 +36,11 @@ export class FinanceUseCase {
 
     switch (type) {
       case FinanceReportEnum.ACCOUNT:
-        return this.getAccountReport(userId, filter);
+        return this.getAccountReport(userId);
       case FinanceReportEnum.PARTNER:
-        return this.getPartnerReport(userId, filter);
+        return this.getPartnerReport(userId);
       case FinanceReportEnum.PRODUCT:
-        return this.getProductReport(userId, filter);
+        return this.getProductReport(userId);
       case FinanceReportEnum.CATEGORY:
         return this.getCategoryReport(userId, filter);
       default:
@@ -50,7 +50,6 @@ export class FinanceUseCase {
 
   private async getAccountReport(
     userId: string,
-    filter: FinanceReportFilterEnum = FinanceReportFilterEnum.ALL,
   ): Promise<GetFinanceReportResponse<AccountFinanceReportResponse>> {
     const allAccounts = await this._accountRepository.findMany({ userId }, {});
 
@@ -96,7 +95,7 @@ export class FinanceUseCase {
       }
     });
 
-    let result: AccountFinanceReportResponse[] = allAccounts.map((account) => {
+    const result: AccountFinanceReportResponse[] = allAccounts.map((account) => {
       const totals = accountTotalMap.get(account.id) || { expense: 0, income: 0 };
       const totalProfit = totals.income - totals.expense;
 
@@ -109,13 +108,6 @@ export class FinanceUseCase {
       };
     });
 
-    // Áp dụng bộ lọc
-    if (filter === FinanceReportFilterEnum.INCOME) {
-      result = result.filter((account) => account.totalIncome > 0);
-    } else if (filter === FinanceReportFilterEnum.EXPENSE) {
-      result = result.filter((account) => account.totalExpense > 0);
-    }
-
     return {
       reportType: FinanceReportEnum.ACCOUNT,
       result,
@@ -124,7 +116,6 @@ export class FinanceUseCase {
 
   private async getPartnerReport(
     userId: string,
-    filter: FinanceReportFilterEnum = FinanceReportFilterEnum.ALL,
   ): Promise<GetFinanceReportResponse<PartnerFinanceReportResponse>> {
     const allPartners = await this._partnerRepository.getPartnersByUserId(userId, {
       transactions: false,
@@ -158,7 +149,7 @@ export class FinanceUseCase {
       }
     });
 
-    let result: PartnerFinanceReportResponse[] = allPartners.map((partner) => {
+    const result: PartnerFinanceReportResponse[] = allPartners.map((partner) => {
       const totals = partnerTotalMap.get(partner.id) || { expense: 0, income: 0 };
       const totalProfit = totals.income - totals.expense;
 
@@ -171,13 +162,6 @@ export class FinanceUseCase {
       };
     });
 
-    // Áp dụng bộ lọc
-    if (filter === FinanceReportFilterEnum.INCOME) {
-      result = result.filter((partner) => partner.totalIncome > 0);
-    } else if (filter === FinanceReportFilterEnum.EXPENSE) {
-      result = result.filter((partner) => partner.totalExpense > 0);
-    }
-
     return {
       reportType: FinanceReportEnum.PARTNER,
       result,
@@ -186,7 +170,6 @@ export class FinanceUseCase {
 
   private async getProductReport(
     userId: string,
-    filter: FinanceReportFilterEnum = FinanceReportFilterEnum.ALL,
   ): Promise<GetFinanceReportResponse<ProductFinanceReportResponse>> {
     const allProducts = await this._productRepository.findManyProducts({ userId });
 
@@ -213,7 +196,7 @@ export class FinanceUseCase {
       });
     });
 
-    let result: ProductFinanceReportResponse[] = allProducts.map((product) => {
+    const result: ProductFinanceReportResponse[] = allProducts.map((product) => {
       const totals = productTotalMap.get(product.id) || { expense: 0, income: 0 };
       const totalProfit = totals.income - totals.expense;
 
@@ -225,13 +208,6 @@ export class FinanceUseCase {
         currency: product.currency,
       };
     });
-
-    // Áp dụng bộ lọc
-    if (filter === FinanceReportFilterEnum.INCOME) {
-      result = result.filter((product) => product.totalIncome > 0);
-    } else if (filter === FinanceReportFilterEnum.EXPENSE) {
-      result = result.filter((product) => product.totalExpense > 0);
-    }
 
     return {
       reportType: FinanceReportEnum.PRODUCT,
@@ -282,7 +258,6 @@ export class FinanceUseCase {
       };
     });
 
-    // Áp dụng bộ lọc
     if (filter === FinanceReportFilterEnum.INCOME) {
       result = result.filter((category) => category.totalIncome > 0);
     } else if (filter === FinanceReportFilterEnum.EXPENSE) {

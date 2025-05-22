@@ -7,26 +7,17 @@ export interface GetFinanceReportResponse<T> {
   result: T[];
 }
 
-export interface AccountFinanceReportResponse extends Account {
+export interface BaseFinanceReportResponse {
   totalIncome: number;
   totalExpense: number;
+  totalProfit: number;
   currency: Currency;
 }
 
-export interface PartnerFinanceReportResponse extends Partner {
-  totalIncome: number;
-  totalExpense: number;
-  currency: Currency;
-}
+export interface AccountFinanceReportResponse extends Account, BaseFinanceReportResponse {}
 
-export interface ProductFinanceReportResponse extends Product {
-  totalIncome: number;
-  totalExpense: number;
-  currency: Currency;
-}
+export interface PartnerFinanceReportResponse extends Partner, BaseFinanceReportResponse {}
 
-export interface CategoryFinanceReportResponse extends CategoryExtras {
-  totalIncome: number;
-  totalExpense: number;
-  currency: Currency;
-}
+export interface ProductFinanceReportResponse extends Product, BaseFinanceReportResponse {}
+
+export interface CategoryFinanceReportResponse extends CategoryExtras, BaseFinanceReportResponse {}
