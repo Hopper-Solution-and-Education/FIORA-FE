@@ -7,6 +7,7 @@ class PartnerRepository implements IPartnerRepository {
   async getPartnersByUserId(
     userId: string,
     include?: Prisma.PartnerInclude | string,
+    where?: Prisma.PartnerWhereInput,
   ): Promise<PartnerExtras[]> {
     let includeObj: Prisma.PartnerInclude = {
       transactions: true,
@@ -30,6 +31,7 @@ class PartnerRepository implements IPartnerRepository {
     return (await prisma.partner.findMany({
       where: {
         userId: userId,
+        ...where,
       },
       include: includeObj,
       orderBy: { transactions: { _count: 'desc' } },
