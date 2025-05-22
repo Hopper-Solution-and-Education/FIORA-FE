@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { toast } from 'sonner';
-import { initialFinanceControlState } from './types';
+import { getFinanceByCategoryAsyncThunk } from './actions/getFinanceByCategoryAsyncThunk';
 import { getFinanceByDateAsyncThunk } from './actions/getFinanceByDateAsyncThunk';
+import { initialFinanceControlState } from './types';
 
 const financeControlSlice = createSlice({
   name: 'financeControl',
@@ -17,10 +17,19 @@ const financeControlSlice = createSlice({
       .addCase(getFinanceByDateAsyncThunk.fulfilled, (state, action) => {
         state.isLoadingGetFinance = false;
         state.financeByDate = action.payload;
-        toast.success('Get finance by date successfully!');
       })
       .addCase(getFinanceByDateAsyncThunk.rejected, (state) => {
         state.isLoadingGetFinance = false;
+      })
+      .addCase(getFinanceByCategoryAsyncThunk.pending, (state) => {
+        state.isLoadingGetFinanceByCategory = true;
+      })
+      .addCase(getFinanceByCategoryAsyncThunk.fulfilled, (state, action) => {
+        state.isLoadingGetFinanceByCategory = false;
+        state.financeByCategory = action.payload.data.result;
+      })
+      .addCase(getFinanceByCategoryAsyncThunk.rejected, (state) => {
+        state.isLoadingGetFinanceByCategory = false;
       });
   },
 });

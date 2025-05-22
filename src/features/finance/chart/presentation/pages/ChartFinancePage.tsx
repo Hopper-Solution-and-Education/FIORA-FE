@@ -16,6 +16,8 @@ type ViewBy = 'date' | 'category' | 'account';
 
 const ChartFinancePage = () => {
   const [viewBy, setViewBy] = useState<ViewBy>('date');
+  const [viewByCategory, setViewByCategory] = useState<'income' | 'expense'>('income');
+
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: undefined,
     to: undefined,
@@ -31,6 +33,29 @@ const ChartFinancePage = () => {
       }),
     );
   }, [dispatch, dateRange]);
+
+  const renderViewByCategorySelect = () => {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="text-sm font-medium">Sort By</div>
+        <div className="w-32">
+          <Select
+            value={viewByCategory}
+            onValueChange={(value) => setViewByCategory(value as 'income' | 'expense')}
+            defaultValue="income"
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select a view" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="income">Income</SelectItem>
+              <SelectItem value="expense">Expense</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4 p-4">
@@ -62,9 +87,10 @@ const ChartFinancePage = () => {
             />
           </div>
         )}
+        {viewBy === 'category' && renderViewByCategorySelect()}
       </div>
       {viewBy === 'date' && <ChartByDate />}
-      {viewBy === 'category' && <ChartByCategory />}
+      {viewBy === 'category' && <ChartByCategory viewBy={viewByCategory} />}
       {viewBy === 'account' && <ChartByAccount />}
     </div>
   );
