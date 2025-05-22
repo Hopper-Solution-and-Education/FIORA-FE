@@ -27,6 +27,10 @@ export interface DataSourceProps {
   [key: string]: any;
   children?: DataSourceProps[];
   rowSpan?: number;
+  colSpan?: number;
+  parent?: DataSourceProps;
+  isParent?: boolean;
+  isChild?: boolean;
 }
 
 export interface TablePaginationProps {
@@ -92,6 +96,7 @@ export interface CustomColumnMeta {
   className?: string;
   ellipsis?: boolean;
   colSpan?: number;
+  render?: (text: any, record: any, index: number) => React.ReactNode;
   onCell?: (
     record: any,
     rowIndex: number,
@@ -103,7 +108,9 @@ export interface CustomColumnMeta {
 
 // Then modify the column definition to use this type
 export type CustomColumnDef<T> = ColumnDef<T> & {
+  accessorKey?: string;
   meta?: CustomColumnMeta;
+  render?: (text: any, record: T, index: number) => React.ReactNode;
 };
 
 export interface ScrollProps {

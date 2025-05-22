@@ -3,6 +3,7 @@ import { Category } from '@/features/home/module/category/slices/types';
 import SelectField from '@/components/common/forms/select/SelectField';
 
 interface CategorySelectProps {
+  side?: 'top' | 'bottom' | 'left' | 'right';
   name: string;
   value?: string;
   onChange?: (value: string) => void;
@@ -11,6 +12,7 @@ interface CategorySelectProps {
 }
 
 const CategorySelect: React.FC<CategorySelectProps> = ({
+  side,
   name,
   value = '',
   onChange = () => {},
@@ -25,6 +27,7 @@ const CategorySelect: React.FC<CategorySelectProps> = ({
 
   return (
     <SelectField
+      side={side}
       name={name}
       value={value}
       onChange={onChange}

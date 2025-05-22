@@ -5,6 +5,7 @@ import { FieldError } from 'react-hook-form';
 import { formatCurrency, formatSuggestionValue } from './utils';
 import { Button } from '@/components/ui/button';
 import { Currency } from '@/shared/types';
+import { cn } from '@/shared/utils';
 
 interface InputCurrencyProps {
   value?: number;
@@ -20,6 +21,7 @@ interface InputCurrencyProps {
   maxLength?: number;
   showSuggestion?: boolean;
   mode?: 'onBlur' | 'onChange';
+  classContainer?: string;
   [key: string]: any;
 }
 
@@ -36,6 +38,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   maxLength,
   showSuggestion = false,
   mode = 'onBlur',
+  classContainer,
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -82,7 +85,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   };
 
   return (
-    <div className="mb-4">
+    <div className={cn('mb-4', classContainer)}>
       {label &&
         (typeof label === 'string' ? (
           <GlobalLabel text={label} htmlFor={id} required={required} />

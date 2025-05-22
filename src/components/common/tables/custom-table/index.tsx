@@ -14,24 +14,27 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/shared/utils';
 import {
+  Cell,
+  CellContext,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
-  type Updater,
+  Row,
   useReactTable,
-  type ColumnDef,
-  type SortingState,
   type Column,
-  type Cell,
+  type SortingState,
+  type Updater,
 } from '@tanstack/react-table';
 import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import {
-  type CustomColumnDef,
-  type CustomColumnMeta,
+  DataSourceProps,
+  FIXED,
   PAGINATION_POSITION,
   SORT_ORDER,
   type ColumnProps,
+  type CustomColumnDef,
+  type CustomColumnMeta,
   type SortOrderStateProps,
   type TableProps,
 } from './types';
@@ -87,6 +90,33 @@ export function CustomTable({
     }
   }, [indexSelected, dataSource, rowKey]);
 
+  const createRowContext = (data: any, index: number, table: any) => {
+    return {
+      original: data,
+      index,
+      id: data[rowKey] as string,
+      getValue: (columnId: string) => data[columnId],
+      _getAllCellsByColumnId: () => ({}),
+      _uniqueValuesCache: new Map(),
+      _valuesCache: new Map(),
+      depth: 0,
+      subRows: [],
+      getVisibleCells: () => [],
+      getAllCells: () => [],
+      // Các property khác của Row
+      getIsSelected: () => false,
+      getIsAllSubRowsSelected: () => false,
+      getCanSelect: () => false,
+      getCanSelectSubRows: () => false,
+      getCanMultiSelect: () => false,
+      getCanExpand: () => false,
+      getIsExpanded: () => false,
+      getToggleExpandedHandler: () => () => {},
+      getLeafRows: () => [],
+      table,
+    } as unknown as Row<any>; // Ép kiểu an toàn
+  };
+
   // Transform columns to TanStack format
   const tableColumns = useMemo(() => {
     const transformColumns = (cols: ColumnProps[]): CustomColumnDef<any>[] => {
@@ -100,14 +130,15 @@ export function CustomTable({
               header: col.title || col.key,
               columns: transformColumns(col.children),
               meta: {
-                align: col.align,
-                className: col.className,
-                colSpan: col.colSpan,
+                ...col,
+                fixed: col.fixed as FIXED,
+                align: col.align as CanvasTextAlign,
+                headerAlign: col.headerAlign as CanvasTextAlign,
               },
             } as CustomColumnDef<any>;
           }
 
-          return {
+          const columnDef: CustomColumnDef<any> = {
             id: col.key,
             accessorKey: col.dataIndex,
             header: ({ column }: { column: Column<any> }) => {
@@ -182,16 +213,26 @@ export function CustomTable({
               );
             },
             enableSorting: !!col.sorter,
-            meta: { ...col },
+            meta: {
+              ...col,
+              fixed: col.fixed as FIXED,
+              align: col.align as CanvasTextAlign,
+              headerAlign: col.headerAlign as CanvasTextAlign,
+              onCell: (record: DataSourceProps) => ({
+                rowSpan: record.rowSpan,
+                colSpan: record.colSpan,
+              }),
+            },
           };
+          return columnDef;
         })
         .filter(Boolean) as CustomColumnDef<any>[];
 
-      return columns as unknown as ColumnDef<any>[];
+      return columns;
     };
 
     // Add selection column if rowSelection is provided
-    const result: ColumnDef<any>[] = [];
+    const result: CustomColumnDef<any>[] = [];
     if (rowSelection) {
       result.push({
         id: 'selection',
@@ -383,11 +424,11 @@ export function CustomTable({
                   {tableColumns.map((column, index) => (
                     <TableHead
                       key={index}
-                      style={{ width: (column.meta as any)?.width }}
+                      style={{ width: (column.meta as CustomColumnMeta)?.width }}
                       className={cn(
                         'h-10 px-4 text-muted-foreground font-medium',
-                        (column.meta as any)?.align === 'center' && 'text-center',
-                        (column.meta as any)?.align === 'right' && 'text-right',
+                        (column.meta as CustomColumnMeta)?.align === 'center' && 'text-center',
+                        (column.meta as CustomColumnMeta)?.align === 'right' && 'text-right',
                       )}
                     >
                       {flexRender(column.header, {} as any)}
@@ -512,52 +553,145 @@ export function CustomTable({
             </TableHeader>
           )}
           <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && 'selected'}
-                className={cn(
-                  'border-b border-border transition-colors',
-                  rowHover && 'hover:bg-muted/50',
-                  rowCursor && 'cursor-pointer',
-                  row.getIsSelected() && 'bg-primary/5 hover:bg-primary/10',
-                )}
-                onClick={() => onRowClick && onRowClick(row.original)}
-              >
-                {row.getVisibleCells().map((cell: Cell<any, any>) => {
-                  const cellProps =
-                    (cell.column.columnDef.meta as CustomColumnMeta)?.onCell?.(
-                      row.original,
-                      row.index,
-                    ) || {};
+            {dataSource.flatMap((parentRow) => {
+              const parentRowWithChildren = parentRow as DataSourceProps;
+              const parentRowContext = createRowContext(parentRowWithChildren, -1, table);
+
+              const parentElement = (
+                <TableRow
+                  key={parentRowWithChildren[rowKey] as string}
+                  className={cn(
+                    'border-b border-border transition-colors bg-muted/10',
+                    rowHover && 'hover:bg-muted/20',
+                    rowCursor && 'cursor-pointer',
+                  )}
+                  onClick={() =>
+                    onRowClick?.({
+                      ...parentRowWithChildren,
+                      isParent: true,
+                    })
+                  }
+                >
+                  {table.getHeaderGroups()[0].headers.map((header) => {
+                    const columnMeta = header.column.columnDef.meta as CustomColumnMeta;
+                    const cellValue = parentRowWithChildren[header.column.id];
+
+                    const cellContext = {
+                      getValue: () => cellValue,
+                      row: parentRowContext,
+                      column: header.column,
+                      cell: {
+                        id: `${parentRowWithChildren[rowKey]}-${header.id}`,
+                        getValue: () => cellValue,
+                        renderValue: () => cellValue,
+                        row: parentRowContext,
+                        column: header.column,
+                      } as Cell<any, unknown>,
+                    };
+
+                    const cellProps = columnMeta?.onCell?.(parentRowWithChildren, -1) || {};
+
+                    return (
+                      <TableCell
+                        key={`${parentRowWithChildren[rowKey]}-${header.id}`}
+                        colSpan={cellProps.colSpan}
+                        rowSpan={cellProps.rowSpan}
+                        className={cn(
+                          columnMeta?.className,
+                          columnMeta?.align === 'center' && 'text-center',
+                          columnMeta?.align === 'right' && 'text-right',
+                          columnMeta?.fixed === FIXED.LEFT &&
+                            'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border',
+                          columnMeta?.fixed === FIXED.RIGHT &&
+                            'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border',
+                        )}
+                        style={{
+                          width: columnMeta?.width,
+                          minWidth: columnMeta?.width,
+                        }}
+                      >
+                        {flexRender(
+                          header.column.columnDef.cell,
+                          cellContext as CellContext<any, unknown>,
+                        )}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              );
+
+              const childElements =
+                parentRowWithChildren.children?.map((child, childIndex) => {
+                  const childRowContext = createRowContext(child, childIndex, table);
+
                   return (
-                    <TableCell
-                      key={cell.id}
+                    <TableRow
+                      key={`${parentRowWithChildren[rowKey]}-child-${childIndex}`}
                       className={cn(
-                        (cell.column.columnDef.meta as CustomColumnMeta)?.className,
-                        (cell.column.columnDef.meta as CustomColumnMeta)?.align === 'center' &&
-                          'text-center',
-                        (cell.column.columnDef.meta as CustomColumnMeta)?.align === 'right' &&
-                          'text-right',
-                        (cell.column.columnDef.meta as CustomColumnMeta)?.ellipsis &&
-                          'max-w-[200px] truncate',
-                        (cell.column.columnDef.meta as CustomColumnMeta)?.fixed === 'left' &&
-                          'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border',
-                        (cell.column.columnDef.meta as CustomColumnMeta)?.fixed === 'right' &&
-                          'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border',
+                        'border-b border-border transition-colors',
+                        rowHover && 'hover:bg-muted/10',
+                        rowCursor && 'cursor-pointer',
                       )}
-                      colSpan={
-                        cellProps.colSpan ||
-                        (cell.column.columnDef.meta as CustomColumnMeta)?.colSpan
+                      onClick={() =>
+                        onRowClick?.({
+                          ...child,
+                          parent: parentRowWithChildren,
+                          isChild: true,
+                        })
                       }
-                      rowSpan={cellProps.rowSpan}
                     >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
+                      {table.getHeaderGroups()[0].headers.map((header) => {
+                        const columnMeta = header.column.columnDef.meta as CustomColumnMeta;
+                        const cellValue = child[header.column.id];
+
+                        const cellContext = {
+                          getValue: () => cellValue,
+                          row: childRowContext,
+                          column: header.column,
+                          cell: {
+                            id: `${child[rowKey]}-${header.id}`,
+                            getValue: () => cellValue,
+                            renderValue: () => cellValue,
+                            row: childRowContext,
+                            column: header.column,
+                          } as Cell<any, unknown>,
+                        };
+
+                        const cellProps = columnMeta?.onCell?.(child, childIndex) || {};
+
+                        return (
+                          <TableCell
+                            key={`${child[rowKey]}-${header.id}`}
+                            colSpan={cellProps.colSpan}
+                            rowSpan={cellProps.rowSpan}
+                            className={cn(
+                              columnMeta?.className,
+                              columnMeta?.align === 'center' && 'text-center',
+                              columnMeta?.align === 'right' && 'text-right',
+                              'bg-background',
+                              columnMeta?.fixed === FIXED.LEFT &&
+                                'sticky left-0 z-1 bg-background shadow-[1px_0_0_0] shadow-border',
+                              columnMeta?.fixed === FIXED.RIGHT &&
+                                'sticky right-0 z-1 bg-background shadow-[-1px_0_0_0] shadow-border',
+                            )}
+                            style={{
+                              width: columnMeta?.width,
+                              minWidth: columnMeta?.width,
+                            }}
+                          >
+                            {flexRender(
+                              header.column.columnDef.cell,
+                              cellContext as CellContext<any, unknown>,
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
                   );
-                })}
-              </TableRow>
-            ))}
+                }) || [];
+
+              return [parentElement, ...childElements];
+            })}
           </TableBody>
         </ShadcnTable>
       </div>
