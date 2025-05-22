@@ -269,6 +269,206 @@ export class FinanceUseCase {
       result,
     };
   }
+
+  async getReportByIds({
+    ids,
+    type,
+    userId,
+  }: {
+    ids: string[];
+    type: FinanceReportEnum;
+    userId: string;
+  }) {
+    switch (type) {
+      case FinanceReportEnum.ACCOUNT:
+        return this.getAccountReportByIds(userId, ids);
+      case FinanceReportEnum.PARTNER:
+        return this.getPartnerReportByIds(userId, ids);
+      case FinanceReportEnum.PRODUCT:
+        return this.getProductReportByIds(userId, ids);
+      default:
+        throw new Error(formatMessage(Messages.INVALID_FINANCE_REPORT_TYPE, { type }));
+    }
+  }
+
+  private async getAccountReportByIds(
+    userId: string,
+    accountIds: string[],
+  ): Promise<GetFinanceReportResponse<AccountFinanceReportResponse>> {
+    const allAccounts = await this._accountRepository.findMany(
+      { userId, id: { in: accountIds } },
+      {},
+    );
+
+    const transactions = await this._transactionRepository.findManyTransactions({
+      userId,
+      OR: [{ fromAccountId: { in: accountIds } }, { toAccountId: { in: accountIds } }],
+      isDeleted: false,
+    });
+
+    const accountTotalMap = new Map<string, { expense: number; income: number }>();
+
+    allAccounts.forEach((account) => {
+      accountTotalMap.set(account.id, { expense: 0, income: 0 });
+    });
+
+    transactions.forEach((transaction) => {
+      const amount = Number(transaction.amount);
+
+      if (transaction.type === TransactionType.Expense && transaction.fromAccountId) {
+        const totals = accountTotalMap.get(transaction.fromAccountId);
+        if (totals) {
+          totals.expense += amount;
+        }
+      } else if (transaction.type === TransactionType.Income && transaction.toAccountId) {
+        const totals = accountTotalMap.get(transaction.toAccountId);
+        if (totals) {
+          totals.income += amount;
+        }
+      } else if (transaction.type === TransactionType.Transfer) {
+        if (transaction.fromAccountId) {
+          const fromTotals = accountTotalMap.get(transaction.fromAccountId);
+          if (fromTotals) {
+            fromTotals.expense += amount;
+          }
+        }
+        if (transaction.toAccountId) {
+          const toTotals = accountTotalMap.get(transaction.toAccountId);
+          if (toTotals) {
+            toTotals.income += amount;
+          }
+        }
+      }
+    });
+
+    const result: AccountFinanceReportResponse[] = allAccounts.map((account) => {
+      const totals = accountTotalMap.get(account.id) || { expense: 0, income: 0 };
+      const totalProfit = totals.income - totals.expense;
+
+      return {
+        ...account,
+        totalIncome: totals.income,
+        totalExpense: totals.expense,
+        totalProfit,
+        currency: account.currency,
+      };
+    });
+
+    return {
+      reportType: FinanceReportEnum.ACCOUNT,
+      result,
+    };
+  }
+
+  private async getPartnerReportByIds(
+    userId: string,
+    partnerIds: string[],
+  ): Promise<GetFinanceReportResponse<PartnerFinanceReportResponse>> {
+    const allPartners = await this._partnerRepository.getPartnersByUserId(
+      userId,
+      {
+        transactions: false,
+        children: false,
+        parent: false,
+        user: false,
+      },
+      { id: { in: partnerIds } },
+    );
+
+    const transactions = await this._transactionRepository.findManyTransactions({
+      userId,
+      partnerId: { in: partnerIds },
+      isDeleted: false,
+    });
+
+    const partnerTotalMap = new Map<string, { expense: number; income: number }>();
+
+    allPartners.forEach((partner) => {
+      partnerTotalMap.set(partner.id, { expense: 0, income: 0 });
+    });
+
+    transactions.forEach((transaction) => {
+      if (!transaction.partnerId || !partnerTotalMap.has(transaction.partnerId)) return;
+
+      const totals = partnerTotalMap.get(transaction.partnerId)!;
+      const amount = Number(transaction.amount);
+
+      if (transaction.type === TransactionType.Expense) {
+        totals.expense += amount;
+      } else if (transaction.type === TransactionType.Income) {
+        totals.income += amount;
+      }
+    });
+
+    const result: PartnerFinanceReportResponse[] = allPartners.map((partner) => {
+      const totals = partnerTotalMap.get(partner.id) || { expense: 0, income: 0 };
+      const totalProfit = totals.income - totals.expense;
+
+      return {
+        ...partner,
+        totalIncome: totals.income,
+        totalExpense: totals.expense,
+        totalProfit,
+        currency: Currency.VND,
+      };
+    });
+
+    return {
+      reportType: FinanceReportEnum.PARTNER,
+      result,
+    };
+  }
+
+  private async getProductReportByIds(
+    userId: string,
+    productIds: string[],
+  ): Promise<GetFinanceReportResponse<ProductFinanceReportResponse>> {
+    const allProducts = await this._productRepository.findManyProducts({
+      userId,
+      id: { in: productIds },
+    });
+
+    const productTransactions = await this._transactionRepository.findProductTransactions(userId);
+
+    const productTotalMap = new Map<string, { expense: number; income: number }>();
+
+    allProducts.forEach((product) => {
+      productTotalMap.set(product.id, { expense: 0, income: 0 });
+    });
+
+    productTransactions.forEach((pt) => {
+      pt.productsRelation.forEach((relation) => {
+        if (!productTotalMap.has(relation.productId)) return;
+
+        const totals = productTotalMap.get(relation.productId)!;
+        const amount = Number(pt.amount);
+
+        if (pt.type === TransactionType.Expense) {
+          totals.expense += amount;
+        } else if (pt.type === TransactionType.Income) {
+          totals.income += amount;
+        }
+      });
+    });
+
+    const result: ProductFinanceReportResponse[] = allProducts.map((product) => {
+      const totals = productTotalMap.get(product.id) || { expense: 0, income: 0 };
+      const totalProfit = totals.income - totals.expense;
+
+      return {
+        ...product,
+        totalIncome: totals.income,
+        totalExpense: totals.expense,
+        totalProfit,
+        currency: product.currency,
+      };
+    });
+
+    return {
+      reportType: FinanceReportEnum.PRODUCT,
+      result,
+    };
+  }
 }
 
 export const financeUseCase = new FinanceUseCase();

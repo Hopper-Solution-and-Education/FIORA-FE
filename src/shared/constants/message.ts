@@ -171,6 +171,7 @@ export enum Messages {
   INVALID_FINANCE_REPORT_TYPE = 'Invalid finance report type for {{type}}.',
   INVALID_FINANCE_REPORT_FILTER = 'Invalid finance report filter.',
   INVALID_FINANCE_REPORT_FILTER_TYPE = 'Invalid finance report filter type.',
+  INVALID_FINANCE_REPORT_IDS = 'IDs must be a non-empty array',
 
   INVALID_USER = 'Invalid user.',
   USER_EMAIL_EXISTED = 'Email already existed',

@@ -5,6 +5,7 @@ export interface IPartnerRepository {
   getPartnersByUserId(
     userId: string,
     include?: Prisma.PartnerInclude | string,
+    where?: Prisma.PartnerWhereInput,
   ): Promise<PartnerExtras[]>;
   getPartnerById(id: string, userId: string): Promise<Partner | null>;
   createPartner(data: Prisma.PartnerUncheckedCreateInput): Promise<Partner>;
