@@ -1,10 +1,16 @@
 import { decorate, injectable } from 'inversify';
 import { IFinanceAPI } from '../api/financeApi';
 import { FinanceMapper } from '../mapper';
-import { GetFinanceByDateRequest, GetFinanceByDateResponse } from '../../domain/entities';
+import {
+  GetFinanceByCategoryRequest,
+  GetFinanceByCategoryResponse,
+  GetFinanceByDateRequest,
+  GetFinanceByDateResponse,
+} from '../../domain/entities';
 
 export interface IFinanceRepository {
   getFinanceByDate(request: GetFinanceByDateRequest): Promise<GetFinanceByDateResponse>;
+  getFinanceByCategory(request: GetFinanceByCategoryRequest): Promise<GetFinanceByCategoryResponse>;
 }
 
 export class FinanceRepository implements IFinanceRepository {
@@ -18,6 +24,14 @@ export class FinanceRepository implements IFinanceRepository {
     const requestAPI = FinanceMapper.toGetFinanceByDateRequestDTO(request);
     const response = await this.financeAPI.getFinanceByDate(requestAPI);
     return FinanceMapper.toGetFinanceByDateResponse(response);
+  }
+
+  async getFinanceByCategory(
+    request: GetFinanceByCategoryRequest,
+  ): Promise<GetFinanceByCategoryResponse> {
+    const requestAPI = FinanceMapper.toGetFinanceByCategoryRequest(request);
+    const response = await this.financeAPI.getFinanceByCategory(requestAPI);
+    return FinanceMapper.toGetFinanceByCategoryResponse(response);
   }
 }
 

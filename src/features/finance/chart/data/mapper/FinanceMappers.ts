@@ -1,5 +1,15 @@
-import { GetFinanceByDateRequest, GetFinanceByDateResponse } from '../../domain/entities';
-import { GetFinanceByDateRequestDTO, GetFinanceByDateResponseDTO } from '../dto';
+import {
+  GetFinanceByCategoryRequest,
+  GetFinanceByCategoryResponse,
+  GetFinanceByDateRequest,
+  GetFinanceByDateResponse,
+} from '../../domain/entities';
+import {
+  GetFinanceByCategoryRequestDTO,
+  GetFinanceByCategoryResponseDTO,
+  GetFinanceByDateRequestDTO,
+  GetFinanceByDateResponseDTO,
+} from '../dto';
 
 class FinanceMapper {
   static toGetFinanceByDateRequestDTO(
@@ -20,6 +30,21 @@ class FinanceMapper {
       totalIncome: item.totalIncome,
       totalExpense: item.totalExpense,
     }));
+  }
+
+  static toGetFinanceByCategoryResponse(
+    response: GetFinanceByCategoryResponseDTO,
+  ): GetFinanceByCategoryResponse {
+    return response;
+  }
+
+  static toGetFinanceByCategoryRequest(
+    request: GetFinanceByCategoryRequest,
+  ): GetFinanceByCategoryRequestDTO {
+    return {
+      type: request.type,
+      filter: request.filter,
+    };
   }
 }
 
