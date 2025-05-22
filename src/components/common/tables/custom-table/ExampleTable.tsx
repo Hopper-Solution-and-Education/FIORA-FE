@@ -11,7 +11,7 @@ import { fetchCategories } from '@/features/home/module/category/slices/actions'
 import { cn, formatCurrency } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import React, { useEffect } from 'react';
-import CategorySelect from '../../category/components/CategorySelect';
+import CategorySelect from '../../../../features/home/module/category/components/CategorySelect';
 
 const columns: ColumnProps[] = [
   {
@@ -306,7 +306,7 @@ const columns: ColumnProps[] = [
   },
 ];
 
-const FinancialTable: React.FC = () => {
+const ExampleTable: React.FC = () => {
   const dispatch = useAppDispatch();
   const { categories } = useAppSelector((state) => state.category);
 
@@ -1096,4 +1096,4 @@ const FinancialTable: React.FC = () => {
   );
 };
 
-export default FinancialTable;
+export default ExampleTable;
