@@ -170,6 +170,18 @@ class BudgetSummaryUseCase {
   }): Promise<BudgetsTable> {
     const { userId, fiscalYear, type, updateTopBudget, currency } = params;
 
+    const suffix = type === BudgetDetailType.Expense ? '_exp' : '_inc';
+
+    // Validate keys in bottomUpPlan (and actualSumUpPlan if provided)
+    const invalidKeys = [...Object.keys(updateTopBudget)].filter(
+      (k) => !/^m([1-9]|1[0-2])$/.test(k.replace(suffix, '')) || !k.endsWith(suffix),
+    );
+
+    if (invalidKeys.length) {
+      throw new Error(
+        `Invalid keys in budget plan: ${invalidKeys.join(', ').slice(0, 20)}..., invalid keys mapping with given type: ${type}`,
+      );
+    }
     const now = new Date();
     const isExpense = type === BudgetDetailType.Expense;
 

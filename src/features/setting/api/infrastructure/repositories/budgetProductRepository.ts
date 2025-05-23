@@ -1,6 +1,7 @@
 import { prisma } from '@/config';
 import { IBudgetRepository } from '../../repositories/budgetRepository';
-import { BudgetsTable, Prisma } from '@prisma/client';
+import { BudgetsTable, Prisma, TransactionType } from '@prisma/client';
+import { FetchTransactionResponse } from '@/shared/types/budget.types';
 
 class BudgetRepository implements IBudgetRepository {
   async createBudget(
@@ -80,6 +81,39 @@ class BudgetRepository implements IBudgetRepository {
       },
       orderBy: {
         type: 'asc',
+      },
+    });
+  }
+
+  async fetchTransactionsTx(
+    userId: string,
+    yearStart: Date,
+    effectiveEndDate: Date,
+    prisma: Prisma.TransactionClient,
+  ): Promise<FetchTransactionResponse[] | []> {
+    return await prisma.transaction.findMany({
+      where: {
+        userId,
+        date: { gte: yearStart, lte: effectiveEndDate },
+        isMarked: false,
+        isDeleted: false,
+        type: { in: [TransactionType.Expense, TransactionType.Income] },
+      },
+      select: {
+        id: true,
+        type: true,
+        amount: true,
+        currency: true,
+        date: true,
+      },
+    });
+  }
+
+  async copyBudget(budget: Omit<BudgetsTable, 'id'>): Promise<BudgetsTable> {
+    const { ...budgetData } = budget;
+    return prisma.budgetsTable.create({
+      data: {
+        ...budgetData,
       },
     });
   }

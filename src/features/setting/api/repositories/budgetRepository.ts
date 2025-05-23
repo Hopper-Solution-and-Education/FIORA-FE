@@ -1,3 +1,4 @@
+import { FetchTransactionResponse } from '@/shared/types/budget.types';
 import { BudgetsTable, Prisma } from '@prisma/client';
 
 export interface IBudgetRepository {
@@ -34,4 +35,13 @@ export interface IBudgetRepository {
     options?: Prisma.BudgetsTableDeleteArgs,
   ): Promise<BudgetsTable>;
   findBudgetsByUserIdAndFiscalYear(userId: string, fiscalYear: string): Promise<BudgetsTable[]>;
+
+  fetchTransactionsTx(
+    userId: string,
+    yearStart: Date,
+    effectiveEndDate: Date,
+    prisma: Prisma.TransactionClient,
+  ): Promise<FetchTransactionResponse[] | []>;
+
+  copyBudget(budget: Omit<BudgetsTable, 'id'>): Promise<BudgetsTable>;
 }

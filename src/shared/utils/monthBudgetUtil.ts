@@ -1,6 +1,6 @@
+import { Category, CategoryType, Currency, Transaction, TransactionType } from '@prisma/client';
 import _ from 'lodash';
-import { BudgetAllocation } from '../types/budget.types';
-import { Currency } from '@prisma/client';
+import { BudgetAllocation, FetchTransactionResponse, SumUpAllocation } from '../types/budget.types';
 import { convertCurrency } from './convertCurrency';
 
 export function getMonthlyValues(fields: Record<string, any>, type: 'exp' | 'inc'): any[] {
@@ -118,4 +118,148 @@ export function calculateBudgetAllocation(
     monthlyExpense,
     monthlyIncome,
   };
+}
+
+export function calculateSumUpAllocationByType(
+  transactions: Transaction[],
+  year: number,
+  foundCategory: Category,
+  currency: Currency,
+): SumUpAllocation {
+  const { type } = foundCategory;
+
+  const suffix = type === CategoryType.Expense ? 'exp' : 'inc';
+
+  const months = Array.from({ length: 12 }, (_, i) => i + 1);
+
+  const quarters = {
+    q1: [1, 2, 3],
+    q2: [4, 5, 6],
+    q3: [7, 8, 9],
+    q4: [10, 11, 12],
+  };
+
+  const monthFields: Record<string, number> = {};
+
+  months.forEach((month) => {
+    const monthTransactions = transactions.filter((t) => {
+      const transactionMonth = new Date(t.date).getMonth() + 1; // 0-based to 1-based
+      return transactionMonth === month && new Date(t.date).getFullYear() === year;
+    });
+    const total = monthTransactions.reduce((sum, t) => {
+      const amountInCurrency = convertCurrency(t.amount, t.currency, currency);
+      return sum + amountInCurrency;
+    }, 0);
+
+    monthFields[`m${month}_${suffix}`] = Number(total.toFixed(2));
+  });
+
+  const quarterFields: Record<string, number> = {};
+  Object.entries(quarters).forEach(([q, ms]) => {
+    const quarterTotalExp = ms.reduce((sum, m) => sum + (monthFields[`m${m}_${suffix}`] || 0), 0);
+    quarterFields[`${q}_${suffix}`] = Number(quarterTotalExp.toFixed(2));
+  });
+
+  const half_year_first = Number(
+    [1, 2, 3, 4, 5, 6]
+      .reduce((sum, m) => sum + (monthFields[`m${m}_${suffix}`] || 0), 0)
+      .toFixed(2),
+  );
+  const half_year_second = Number(
+    [7, 8, 9, 10, 11, 12]
+      .reduce((sum, m) => sum + (monthFields[`m${m}_${suffix}`] || 0), 0)
+      .toFixed(2),
+  );
+
+  return {
+    monthFields: monthFields,
+    quarterFields: quarterFields,
+    halfYearFields: {
+      [`h1_${suffix}`]: half_year_first,
+      [`h2_${suffix}`]: half_year_second,
+    },
+  };
+}
+
+export function calculateSumUpAllocation(
+  transactions: FetchTransactionResponse[],
+  currency: Currency,
+): SumUpAllocation {
+  const months = Array.from({ length: 12 }, (_, i) => i + 1);
+
+  const quarters = {
+    q1: [1, 2, 3],
+    q2: [4, 5, 6],
+    q3: [7, 8, 9],
+    q4: [10, 11, 12],
+  };
+
+  const monthFields: Record<string, number> = {};
+
+  months.forEach((month) => {
+    const monthTransactions = transactions.filter((t) => {
+      const transactionMonth = new Date(t.date).getMonth() + 1; // 0-based to 1-based
+      return transactionMonth === month;
+    });
+
+    monthTransactions.forEach((t) => {
+      const suffix = t.type === TransactionType.Expense ? 'exp' : 'inc';
+      const monthKey = `m${month}_${suffix}`;
+      const amountInCurrency = convertCurrency(t.amount, t.currency, currency);
+
+      monthFields[monthKey] = (monthFields[monthKey] || 0) + amountInCurrency;
+    });
+  });
+
+  const quarterFields: Record<string, number> = {};
+
+  Object.entries(quarters).forEach(([q, ms]) => {
+    const quarterTotalExp = ms.reduce((sum, m) => sum + (monthFields[`m${m}_exp`] || 0), 0);
+    const quarterTotalInc = ms.reduce((sum, m) => sum + (monthFields[`m${m}_inc`] || 0), 0);
+
+    quarterFields[`${q}_exp`] = Number(quarterTotalExp.toFixed(2));
+    quarterFields[`${q}_inc`] = Number(quarterTotalInc.toFixed(2));
+  });
+
+  const h1_exp = Number(
+    [1, 2, 3, 4, 5, 6].reduce((sum, m) => sum + (monthFields[`m${m}_exp`] || 0), 0).toFixed(2),
+  );
+  const h2_exp = Number(
+    [7, 8, 9, 10, 11, 12].reduce((sum, m) => sum + (monthFields[`m${m}_exp`] || 0), 0).toFixed(2),
+  );
+  const h1_inc = Number(
+    [1, 2, 3, 4, 5, 6].reduce((sum, m) => sum + (monthFields[`m${m}_inc`] || 0), 0).toFixed(2),
+  );
+  const h2_inc = Number(
+    [7, 8, 9, 10, 11, 12].reduce((sum, m) => sum + (monthFields[`m${m}_inc`] || 0), 0).toFixed(2),
+  );
+
+  return {
+    monthFields: monthFields,
+    quarterFields: quarterFields,
+    halfYearFields: { h1_exp, h2_exp, h1_inc, h2_inc },
+  };
+}
+
+export function calculateTransactionRange(fiscalYear: number): {
+  yearStart: Date;
+  effectiveEndDate: Date;
+} {
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+
+  const yearStart = new Date(`${fiscalYear}-01-01`);
+  let targetMonthEnd: Date;
+
+  if (fiscalYear === currentYear) {
+    const targetMonth = currentMonth - 2;
+    targetMonthEnd = targetMonth < 1 ? yearStart : new Date(fiscalYear, targetMonth, 0);
+  } else {
+    targetMonthEnd = new Date(`${fiscalYear}-12-31`);
+  }
+
+  const effectiveEndDate = targetMonthEnd < thirtyDaysAgo ? targetMonthEnd : thirtyDaysAgo;
+  return { yearStart, effectiveEndDate };
 }

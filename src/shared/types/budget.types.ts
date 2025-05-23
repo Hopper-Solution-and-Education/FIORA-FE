@@ -11,6 +11,8 @@ export interface BudgetCreationParams {
   isSystemGenerated?: boolean;
   type?: BudgetsTable['type'];
   skipActCalculation?: boolean;
+  transactions?: FetchTransactionResponse[];
+  transactionIds?: string[];
 }
 
 export interface BudgetUpdateParams {
@@ -51,6 +53,7 @@ export type FetchTransactionResponse = Prisma.TransactionGetPayload<{
     type: true;
     amount: true;
     currency: true;
+    date: true;
   };
 }>;
 
