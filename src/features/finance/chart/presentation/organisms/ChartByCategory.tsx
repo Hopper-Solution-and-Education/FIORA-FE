@@ -16,16 +16,16 @@ const ChartByCategory = ({ viewBy }: Props) => {
   const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinanceByCategory);
   const dispatch = useAppDispatch();
 
-  console.log(financeByCategory);
-
   useEffect(() => {
-    dispatch(
-      getFinanceByCategoryAsyncThunk({
-        type: FinanceReportEnum.CATEGORY,
-        filter:
-          viewBy === 'income' ? FinanceReportFilterEnum.INCOME : FinanceReportFilterEnum.EXPENSE,
-      }),
-    );
+    if (!isLoading) {
+      dispatch(
+        getFinanceByCategoryAsyncThunk({
+          type: FinanceReportEnum.CATEGORY,
+          filter:
+            viewBy === 'income' ? FinanceReportFilterEnum.INCOME : FinanceReportFilterEnum.EXPENSE,
+        }),
+      );
+    }
   }, [dispatch, viewBy]);
 
   // data showing when income and data showing when expense
