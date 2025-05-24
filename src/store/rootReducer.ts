@@ -11,7 +11,7 @@ import { combineReducers } from '@reduxjs/toolkit';
 import dialogSlices from './slices/dialog.slice';
 import moduleReducer from './slices/moduleSlice';
 import settingSlices from './slices/setting.slice';
-import { budgetSummarySlice } from '@/features/home/module/budgets/summary';
+import { budgetSummarySlice } from '@/features/home/module/budgets/summary-detail';
 
 const reducer = {
   settings: settingSlices,
