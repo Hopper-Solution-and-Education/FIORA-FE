@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 
+import { editFilter } from '@/components/common/filters';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
@@ -35,7 +36,6 @@ import {
 import DeleteTransactionDialog from './DeleteTransactionDialog';
 import FilterMenu from './FilterMenu';
 import SettingsMenu from './SettingMenu';
-import { editFilter } from '@/components/common/filters';
 
 type PaginationParams = {
   currentPage: number;

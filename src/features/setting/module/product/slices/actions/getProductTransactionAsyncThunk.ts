@@ -6,17 +6,23 @@ import { IGetProductTransactionUseCase } from '../../domain/usecases';
 
 export const getProductTransactionAsyncThunk = createAsyncThunk<
   ProductGetTransactionResponse,
-  { page: number; pageSize: number; filters?: any; userId: string },
+  { page: number; pageSize: number; filters?: any; userId: string; search?: string },
   { rejectValue: string }
 >(
   'product/getProductTransaction',
-  async ({ page, pageSize, filters, userId }, { rejectWithValue }) => {
+  async ({ page, pageSize, filters, userId, search }, { rejectWithValue }) => {
     try {
       const getProductTransactionUseCase = productDIContainer.get<IGetProductTransactionUseCase>(
         TYPES.IGetProductTransactionUseCase,
       );
 
-      const response = await getProductTransactionUseCase.execute(page, pageSize, filters, userId);
+      const response = await getProductTransactionUseCase.execute(
+        page,
+        pageSize,
+        filters,
+        userId,
+        search,
+      );
       return response;
     } catch (error: unknown) {
       let errorMessage = 'Failed to get product transaction';

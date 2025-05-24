@@ -88,6 +88,7 @@ export class ProductMapper {
       page: request.page,
       pageSize: request.pageSize,
       filters: request.filters as unknown as Record<string, unknown>,
+      search: request.search,
       userId: request.userId,
     };
   }

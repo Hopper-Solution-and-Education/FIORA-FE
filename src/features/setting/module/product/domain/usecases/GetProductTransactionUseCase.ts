@@ -9,6 +9,7 @@ export interface IGetProductTransactionUseCase {
     pageSize: number,
     filters: FilterCriteria,
     userId: string,
+    search?: string,
   ): Promise<ProductGetTransactionResponse>;
 }
 
@@ -19,12 +20,19 @@ export class GetProductTransactionUseCase implements IGetProductTransactionUseCa
     this.productRepository = productRepository;
   }
 
-  async execute(page: number, pageSize: number, filters: FilterCriteria, userId: string) {
+  async execute(
+    page: number,
+    pageSize: number,
+    filters: FilterCriteria,
+    userId: string,
+    search?: string,
+  ) {
     const response = await this.productRepository.getProductTransaction({
       page,
       pageSize,
       filters,
       userId,
+      search,
     });
     return this.transformResponse(response);
   }

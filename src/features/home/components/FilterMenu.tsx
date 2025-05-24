@@ -1,13 +1,14 @@
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
-import { FilterColumn, FilterCriteria } from '@/shared/types/filter.types';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '@/store';
 import { getProductTransactionAsyncThunk } from '@/features/setting/module/product/slices/actions';
+import { formatCurrency } from '@/shared/lib';
+import { FilterColumn, FilterCriteria } from '@/shared/types/filter.types';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
-import { DropdownOption } from '../module/transaction/types';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DEFAULT_DASHBOARD_FILTER_CRITERIA } from '../constants';
+import { DropdownOption } from '../module/transaction/types';
 
 // Define constants for magic numbers
 const DEFAULT_MAX_EXPENSE = 100000;
@@ -93,7 +94,18 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
   // Extract filter data from filters object
   const extractFilterData = useCallback(
     (filters: Record<string, unknown>) => {
-      const types: string[] = Array.isArray(filters.type) ? (filters.type as string[]) : [];
+      // Extract types handling both single type string and 'in' operator format
+      let types: string[] = [];
+      if (filters.type) {
+        if (typeof filters.type === 'string') {
+          // Handle single type string format
+          types = [filters.type];
+        } else if (typeof filters.type === 'object') {
+          // Handle 'in' operator format
+          const typeFilter = filters.type as { in?: string[] };
+          types = typeFilter.in || [];
+        }
+      }
 
       // Extract price range
       let currentPriceMin = productTransaction.minPrice || 0;
@@ -199,8 +211,8 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         label="Expense Range"
         minLabel="Min Expense"
         maxLabel="Max Expense"
-        formatValue={(value, isEditing) => (isEditing ? value : value.toLocaleString())}
-        tooltipFormat={(value) => `$${value.toLocaleString()}`}
+        formatValue={(value, isEditing) => (isEditing ? value : formatCurrency(value))}
+        tooltipFormat={(value) => formatCurrency(value)}
         step={DEFAULT_SLIDER_STEP}
       />
     );
@@ -218,8 +230,8 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         label="Price Range"
         minLabel="Min Price"
         maxLabel="Max Price"
-        formatValue={(value, isEditing) => (isEditing ? value : value.toLocaleString())}
-        tooltipFormat={(value) => `$${value.toLocaleString()}`}
+        formatValue={(value, isEditing) => (isEditing ? value : formatCurrency(value))}
+        tooltipFormat={(value) => formatCurrency(value)}
         step={DEFAULT_SLIDER_STEP}
       />
     );
@@ -256,8 +268,8 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         label="Income Range"
         minLabel="Min Income"
         maxLabel="Max Income"
-        formatValue={(value, isEditing) => (isEditing ? value : value.toLocaleString())}
-        tooltipFormat={(value) => `$${value.toLocaleString()}`}
+        formatValue={(value, isEditing) => (isEditing ? value : formatCurrency(value))}
+        tooltipFormat={(value) => formatCurrency(value)}
         step={DEFAULT_SLIDER_STEP}
       />
     );
@@ -301,10 +313,13 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
     (params: ExtendedFilterParams): Record<string, unknown> => {
       const updatedFilters: Record<string, unknown> = {};
 
-      // Add type filter if selected
-      if (params.types.length > 0) {
-        // Use the full array of selected types
-        updatedFilters.type = params.types;
+      // Add type filter if selected using the new 'in' operator format
+      if (params.types.length > 1) {
+        updatedFilters.type = {
+          in: params.types,
+        };
+      } else if (params.types.length === 1) {
+        updatedFilters.type = params.types[0];
       }
 
       // Add price range filter only if different from default values

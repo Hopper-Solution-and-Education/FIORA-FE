@@ -87,6 +87,7 @@ export type ProductGetTransactionRequest = {
   pageSize: number;
   filters: FilterCriteria;
   userId: string;
+  search?: string;
 };
 
 export type ProductGetTransactionResponse = PaginationResponse<ProductTransactionCategoryResponse> &
