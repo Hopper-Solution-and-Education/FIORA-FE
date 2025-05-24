@@ -4,7 +4,7 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 
 const BudgetSumaryRender = dynamic(
-  () => import('@/features/home/module/budgets/summary/presentation/pages/BudgetSumary'),
+  () => import('@/features/home/module/budgets/summary-detail/presentation/pages/BudgetSumary'),
   {
     loading: () => <Loading />,
   },
