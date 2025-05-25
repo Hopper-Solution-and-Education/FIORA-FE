@@ -1,5 +1,5 @@
 import { CategoryExtras } from '@/shared/types';
-import { Category, CategoryType } from '@prisma/client';
+import { Category, CategoryType, Prisma } from '@prisma/client';
 
 export interface ICategoryRepository {
   createCategory(data: {
@@ -22,5 +22,8 @@ export interface ICategoryRepository {
    */
   updateCategory(id: string, data: Partial<Category>): Promise<Category>;
   deleteCategory(id: string): Promise<void>;
-  findCategoriesWithTransactions(userId: string): Promise<CategoryExtras[]>;
+  findCategoriesWithTransactions(
+    userId: string,
+    where: Prisma.CategoryWhereInput,
+  ): Promise<CategoryExtras[]>;
 }

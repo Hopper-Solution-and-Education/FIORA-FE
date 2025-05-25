@@ -1,4 +1,4 @@
-import { Category, CategoryType } from '@prisma/client';
+import { Category, CategoryType, Prisma } from '@prisma/client';
 import { prisma } from '@/config';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
 
@@ -70,10 +70,14 @@ class CategoryRepository implements ICategoryRepository {
     await prisma.category.delete({ where: { id } });
   }
 
-  async findCategoriesWithTransactions(userId: string): Promise<any[]> {
+  async findCategoriesWithTransactions(
+    userId: string,
+    where: Prisma.CategoryWhereInput,
+  ): Promise<any[]> {
     return prisma.category.findMany({
       where: {
         userId,
+        ...where,
       },
       include: {
         fromTransactions: { select: { amount: true, isDeleted: true } },
