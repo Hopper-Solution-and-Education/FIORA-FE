@@ -8,11 +8,17 @@ import {
 } from '@/components/ui/select';
 import { useEffect, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
-import { ChartByAccount, ChartByCategory, ChartByDate } from '../organisms';
+import {
+  ChartByAccount,
+  ChartByCategory,
+  ChartByDate,
+  ChartByPartner,
+  ChartByProduct,
+} from '../organisms';
 import { useAppDispatch } from '@/store';
 import { getFinanceByDateAsyncThunk } from '../../slices/actions/getFinanceByDateAsyncThunk';
 
-type ViewBy = 'date' | 'category' | 'account';
+type ViewBy = 'date' | 'category' | 'account' | 'product' | 'partner';
 
 const ChartFinancePage = () => {
   const [viewBy, setViewBy] = useState<ViewBy>('date');
@@ -75,6 +81,8 @@ const ChartFinancePage = () => {
                 <SelectItem value="date">Date</SelectItem>
                 <SelectItem value="category">Category</SelectItem>
                 <SelectItem value="account">Account</SelectItem>
+                <SelectItem value="product">Product</SelectItem>
+                <SelectItem value="partner">Partner</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -92,6 +100,8 @@ const ChartFinancePage = () => {
       {viewBy === 'date' && <ChartByDate />}
       {viewBy === 'category' && <ChartByCategory viewBy={viewByCategory} />}
       {viewBy === 'account' && <ChartByAccount />}
+      {viewBy === 'product' && <ChartByProduct />}
+      {viewBy === 'partner' && <ChartByPartner />}
     </div>
   );
 };

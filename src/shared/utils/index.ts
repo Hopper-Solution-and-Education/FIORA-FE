@@ -4,6 +4,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { OrderByFields } from '../types/Common.types';
 import { Prisma } from '@prisma/client';
+import { CURRENCY } from '../constants';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -21,7 +22,7 @@ export const useGetIconLabel = (icon: string): string => {
   );
 };
 
-export const formatCurrency = (value: number, currency: string = 'VND') => {
+export const formatCurrency = (value: number, currency: string = CURRENCY.VND) => {
   try {
     // Handle compact notation for large numbers
     let formattedValue = value;
@@ -39,16 +40,16 @@ export const formatCurrency = (value: number, currency: string = 'VND') => {
 
     // Determine the locale and currency format
     const formatter =
-      currency === 'USD'
+      currency === CURRENCY.USD
         ? new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: 'USD',
+            currency: CURRENCY.USD,
             minimumFractionDigits: suffix ? 2 : 0, // Use 2 decimals for compact notation
             maximumFractionDigits: suffix ? 2 : 0, // Limit decimals for compact notation
           })
         : new Intl.NumberFormat('vi-VN', {
             style: 'currency',
-            currency: 'VND',
+            currency: CURRENCY.VND,
             minimumFractionDigits: suffix ? 2 : 0, // Use 2 decimals for compact notation
             maximumFractionDigits: suffix ? 2 : 0, // Limit decimals for compact notation
           });
@@ -56,7 +57,7 @@ export const formatCurrency = (value: number, currency: string = 'VND') => {
     // Format the number and insert suffix before the currency symbol
     const formatted = formatter.format(formattedValue);
     if (suffix) {
-      if (currency === 'USD') {
+      if (currency === CURRENCY.USD) {
         // For USD, move the suffix after the number but keep $ at the start
         const numericPart = formatted.replace('$', '').trim();
         return `$${numericPart}${suffix}`;
