@@ -102,33 +102,80 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     let groupedTransactions: any[] = [];
 
     if (diffDays <= MONTH) {
-      // Group by weeks
+      // Nhóm dữ liệu theo tuần (mỗi tháng có đúng 4 tuần)
       const weeks = [];
-      const currentDate = new Date(fromDate);
+      let currentDate = new Date(fromDate);
+
+      /**
+       * Tính số tuần trong tháng (1-4)
+       * - Tuần 1: Ngày 1-7
+       * - Tuần 2: Ngày 8-14
+       * - Tuần 3: Ngày 15-21 (hiển thị tháng hiện tại/tháng tiếp theo)
+       * - Tuần 4: Ngày 22-cuối tháng (hiển thị tháng hiện tại/tháng tiếp theo)
+       */
+      const getWeekNumberInMonth = (date: Date) => {
+        const start = new Date(date.getFullYear(), date.getMonth(), 1);
+        const diff = date.getTime() - start.getTime();
+        const oneDay = 1000 * 60 * 60 * 24;
+        const dayOfMonth = Math.floor(diff / oneDay);
+        return Math.floor(dayOfMonth / 7) + 1;
+      };
+
+      // Lấy tên tháng để hiển thị (vd: March, April,...)
+      const getMonthName = (date: Date) => {
+        return date.toLocaleString('default', { month: 'long' });
+      };
 
       while (currentDate <= toDate) {
+        // Tính ngày bắt đầu và kết thúc của tuần hiện tại
         const weekStart = new Date(currentDate);
         const weekEnd = new Date(currentDate);
         weekEnd.setDate(weekEnd.getDate() + 6);
 
+        const weekNumber = getWeekNumberInMonth(currentDate);
+        let periodLabel;
+
+        // Đối với tuần 3 và 4, hiển thị cả tháng hiện tại và tháng tiếp theo
+        // Ví dụ: "Week 3 (March/April)" hoặc "Week 4 (March/April)"
+        if (weekNumber >= 3) {
+          const nextMonth = new Date(currentDate);
+          nextMonth.setMonth(nextMonth.getMonth() + 1);
+          periodLabel = `Week ${weekNumber} (${getMonthName(currentDate)}/${getMonthName(nextMonth)})`;
+        } else {
+          // Tuần 1 và 2 chỉ hiển thị tháng hiện tại
+          // Ví dụ: "Week 1 (March)" hoặc "Week 2 (March)"
+          periodLabel = `Week ${weekNumber} (${getMonthName(currentDate)})`;
+        }
+
+        // Lọc các giao dịch trong khoảng thời gian của tuần hiện tại
         const weekTransactions = transactions.filter((t) => {
           const transDate = new Date(t.date);
           return transDate >= weekStart && transDate <= weekEnd;
         });
 
+        // Thêm dữ liệu tuần vào mảng kết quả
         weeks.push({
-          period: `Week ${weeks.length + 1} (${weekStart.getMonth() + 1}/${weekStart.getFullYear()})`,
+          period: periodLabel,
           startDate: weekStart,
           endDate: weekEnd,
+          // Tính tổng thu nhập trong tuần
           totalIncome: weekTransactions
             .filter((t) => t.type === TransactionType.Income)
             .reduce((sum, t) => sum + Number(t.amount), 0),
+          // Tính tổng chi tiêu trong tuần
           totalExpense: weekTransactions
             .filter((t) => t.type === TransactionType.Expense)
             .reduce((sum, t) => sum + Number(t.amount), 0),
         });
 
+        // Di chuyển đến tuần tiếp theo
         currentDate.setDate(currentDate.getDate() + 7);
+
+        // Sau khi xử lý đủ 4 tuần, chuyển sang tháng tiếp theo
+        // Đảm bảo mỗi tháng luôn có đúng 4 tuần
+        if (weeks.length % 4 === 0) {
+          currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+        }
       }
       groupedTransactions = weeks;
     } else if (diffDays <= YEAR) {

@@ -29,7 +29,6 @@ const ChartByAccount = () => {
         name: item.name,
         column1: item.totalExpense,
         column2: item.totalIncome,
-        line: item.totalProfit,
       }))
     : [];
 
@@ -43,7 +42,7 @@ const ChartByAccount = () => {
         <React.Fragment>
           <ComposedChart
             data={data}
-            title="Chart by Category"
+            title="Chart by Account"
             columns={[
               { key: 'column1', name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_2 },
               { key: 'column2', name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_2 },
