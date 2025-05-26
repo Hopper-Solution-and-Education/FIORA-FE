@@ -1,5 +1,5 @@
 import { FetchTransactionResponse } from '@/shared/types/budget.types';
-import { BudgetsTable, Prisma } from '@prisma/client';
+import { BudgetDetails, BudgetsTable, Prisma } from '@prisma/client';
 
 export interface IBudgetRepository {
   createBudget(
@@ -17,23 +17,23 @@ export interface IBudgetRepository {
     options?: Prisma.BudgetsTableFindManyArgs,
   ): Promise<BudgetsTable[]>;
 
-  upsertBudget(
-    where: Prisma.BudgetsTableWhereUniqueInput,
-    update: Prisma.BudgetsTableUpdateInput,
-    create: Prisma.BudgetsTableUncheckedCreateInput,
-    options?: Prisma.BudgetsTableUpsertArgs,
-  ): Promise<BudgetsTable>;
-
   updateBudget(
     where: Prisma.BudgetsTableWhereUniqueInput,
     data: Prisma.BudgetsTableUpdateInput,
     options?: Prisma.BudgetsTableUpdateArgs,
   ): Promise<BudgetsTable>;
 
+  updateBudgetTx(
+    where: Prisma.BudgetsTableWhereUniqueInput,
+    data: Prisma.BudgetsTableUpdateInput,
+    prismaTransaction?: Prisma.TransactionClient,
+  ): Promise<BudgetsTable>;
+
   deleteBudget(
     where: Prisma.BudgetsTableWhereUniqueInput,
     options?: Prisma.BudgetsTableDeleteArgs,
   ): Promise<BudgetsTable>;
+
   findBudgetsByUserIdAndFiscalYear(userId: string, fiscalYear: string): Promise<BudgetsTable[]>;
 
   fetchTransactionsTx(
@@ -42,6 +42,13 @@ export interface IBudgetRepository {
     effectiveEndDate: Date,
     prisma: Prisma.TransactionClient,
   ): Promise<FetchTransactionResponse[] | []>;
+
+  upsertBudgetDetailsProduct(
+    where: Prisma.BudgetDetailsWhereUniqueInput,
+    update: Prisma.BudgetDetailsUpdateInput,
+    create: Prisma.BudgetDetailsUncheckedCreateInput,
+    prismaTransaction?: Prisma.TransactionClient,
+  ): Promise<BudgetDetails>;
 
   copyBudget(budget: Omit<BudgetsTable, 'id'>): Promise<BudgetsTable>;
 }

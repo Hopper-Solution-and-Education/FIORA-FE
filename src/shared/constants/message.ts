@@ -64,6 +64,11 @@ export enum Messages {
   BUDGET_DELETE_FAILED = 'Failed to delete budget',
   BUDGET_FISCAL_YEAR_ALREADY_EXISTS = 'Budget fiscal year already exists',
 
+  // Budget Details Service Success
+  BUDGET_DETAIL_CREATED_SUCCESS = 'Budget details created successfully',
+  BUDGET_DETAIL_UPDATED_SUCCESS = 'Budget details updated successfully',
+  BUDGET_DETAIL_DELETED_SUCCESS = 'Budget details deleted successfully',
+
   // Budget Details Service Failed
   BUDGET_DETAIL_UPDATE_FAILED = 'Failed to update budget details',
   BUDGET_DETAIL_DELETE_FAILED = 'Failed to delete budget details',

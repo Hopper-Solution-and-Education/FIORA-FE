@@ -4,10 +4,11 @@ import { OPERAND } from '@/shared/types';
 import {
   BudgetDetailCategoryCreationParams,
   BudgetDetailCategoryDeleteParams,
+  MonthlyBudgetDetailValues,
 } from '@/shared/types/budgetDetail.types';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { applyUpdates, MONTH_MAPPING } from '@/shared/utils/monthBudgetUtil';
-import { BudgetDetailType, BudgetsTable, BudgetType, Currency, Prisma } from '@prisma/client';
+import { BudgetDetails, BudgetDetailType, BudgetsTable, BudgetType, Currency, Prisma } from '@prisma/client';
 import { ITransactionRepository } from '../../../../transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '../../../../transaction/infrastructure/repositories/transactionRepository';
 import { budgetRepository } from '../../infrastructure/repositories/budgetProductRepository';
@@ -28,7 +29,7 @@ class BudgetSummaryUseCase {
     private _budgetRepository: IBudgetRepository = budgetRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
     private _categoryRepository: ICategoryRepository = categoryRepository,
-  ) {}
+  ) { }
 
   async getBudgetsByUserIdAndFiscalYear(
     userId: string,
@@ -318,10 +319,10 @@ class BudgetSummaryUseCase {
           const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
           const value = oldDetail
             ? convertCurrency(
-                Number(oldDetail.amount),
-                oldDetail.currency || targetCurrency,
-                targetCurrency,
-              )
+              Number(oldDetail.amount),
+              oldDetail.currency || targetCurrency,
+              targetCurrency,
+            )
             : 0;
           return { amount: new Prisma.Decimal(value), month: i + 1, currency: targetCurrency };
         });
@@ -362,7 +363,63 @@ class BudgetSummaryUseCase {
     });
   }
 
-  async upsertBudgetDetailsCategory(params: BudgetDetailCategoryCreationParams) {
+  async upsertBudgetCategoryDetailsByType(
+    monthlyBudgetDetailValues: MonthlyBudgetDetailValues,
+    userId: string,
+    budgetId: string,
+    categoryId: string,
+    type: BudgetDetailType,
+    currency: Currency,
+    prisma: Prisma.TransactionClient,
+  ): Promise<BudgetDetails[]> {
+    const upsertPromises = monthlyBudgetDetailValues.map((v, index) => {
+      const amount = type === BudgetDetailType.Act ? v.actual : v.bottomUp;
+
+      const where: Prisma.BudgetDetailsWhereUniqueInput = {
+        month_categoryId_type_budgetId_userId: {
+          userId,
+          budgetId,
+          categoryId,
+          month: index + 1,
+          type,
+        }
+      }
+
+      const createData: Prisma.BudgetDetailsUncheckedCreateInput = {
+        userId,
+        budgetId,
+        categoryId,
+        type,
+        amount,
+        month: index + 1,
+        createdBy: userId,
+        currency,
+      }
+
+      const updateData: Prisma.BudgetDetailsUpdateInput = {
+        amount,
+        updatedBy: userId,
+        currency,
+      }
+
+      return this._budgetRepository.upsertBudgetDetailsProduct(
+        where,
+        updateData,
+        createData,
+        prisma,
+      )
+    });
+
+    const updatedBudgetDetails = await Promise.all(upsertPromises);
+
+    if (updatedBudgetDetails.length !== 12) {
+      throw new Error('Failed to upsert all 12 months');
+    }
+
+    return updatedBudgetDetails;
+  }
+
+  async upsertBudgetCategoryDetailsCategory(params: BudgetDetailCategoryCreationParams) {
     const { userId, fiscalYear, categoryId, type, bottomUpPlan, actualSumUpPlan, currency } =
       params;
 
@@ -412,12 +469,12 @@ class BudgetSummaryUseCase {
           ),
           actual: actualSumUpPlan
             ? convertCurrency(
-                Number(actualSumUpPlan[`m${i + 1}${suffix}`]) || 0,
-                currency,
-                targetCurrency,
-              )
+              Number(actualSumUpPlan[`m${i + 1}${suffix}`]) || 0,
+              currency,
+              targetCurrency,
+            )
             : 0,
-        }));
+        })) as MonthlyBudgetDetailValues;
 
       if (monthlyBudgetDetailValues.length !== 12)
         throw new Error('All 12 months must be provided');
@@ -430,11 +487,7 @@ class BudgetSummaryUseCase {
           categoryId,
           type,
         },
-        select: {
-          month: true,
-          amount: true,
-          currency: true,
-        },
+        select: { month: true, amount: true, currency: true, },
       });
 
       // 2. Calculate deltas (new value - old value, 0 if no old value)
@@ -442,91 +495,47 @@ class BudgetSummaryUseCase {
         .fill(0)
         .map((_, i) => {
           const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
+
           const oldValue = oldDetail
             ? convertCurrency(
-                Number(oldDetail.amount),
-                oldDetail.currency || targetCurrency,
-                targetCurrency,
-              )
-            : 0;
+              Number(oldDetail.amount),
+              oldDetail.currency || targetCurrency,
+              targetCurrency,
+            ) : 0;
+
           const newValue = monthlyBudgetDetailValues[i].bottomUp;
+          const convertAmountDecimal = new Prisma.Decimal(newValue - oldValue)
+
           return {
-            amount: new Prisma.Decimal(newValue - oldValue),
+            amount: convertAmountDecimal,
             month: i + 1,
             currency: targetCurrency,
           };
         });
 
       // 3. Upsert BudgetDetails for Expense/Income
-      const upsertPromises = monthlyBudgetDetailValues.map((v, index) =>
-        prisma.budgetDetails.upsert({
-          where: {
-            month_categoryId_type_budgetId_userId: {
-              userId,
-              budgetId: extractBudgetTypesByYear.id,
-              categoryId,
-              month: index + 1,
-              type,
-            },
-          },
-          create: {
-            userId,
-            budgetId: extractBudgetTypesByYear.id,
-            categoryId,
-            type,
-            amount: v.bottomUp,
-            month: index + 1,
-            createdBy: userId,
-            currency,
-          },
-          update: {
-            amount: v.bottomUp,
-            updatedBy: userId,
-            currency,
-          },
-        }),
+      const updatedBudgetDetails = await this.upsertBudgetCategoryDetailsByType(
+        monthlyBudgetDetailValues,
+        userId,
+        extractBudgetTypesByYear.id,
+        categoryId,
+        type,
+        currency,
+        prisma,
       );
 
-      const updatedBudgetDetails = await Promise.all(upsertPromises);
-
-      if (updatedBudgetDetails.length !== 12) {
-        throw new Error('Failed to upsert all 12 months');
-      }
-
       // 4. Optionally create Act entries if actualSumUpPlan is provided
-      let actBudgetDetails: Prisma.PromiseReturnType<typeof prisma.budgetDetails.upsert>[] = [];
+      let actBudgetDetails: BudgetDetails[] = [];
       if (actualSumUpPlan) {
-        const actPromises = monthlyBudgetDetailValues.map((v, index) =>
-          prisma.budgetDetails.upsert({
-            where: {
-              month_categoryId_type_budgetId_userId: {
-                userId,
-                budgetId: extractBudgetTypesByYear.id,
-                categoryId,
-                month: index + 1,
-                type: BudgetDetailType.Act,
-              },
-            },
-            create: {
-              userId,
-              budgetId: extractBudgetTypesByYear.id,
-              categoryId,
-              type: BudgetDetailType.Act,
-              amount: v.actual,
-              month: index + 1,
-              createdBy: userId,
-              currency,
-              updatedBy: userId,
-            },
-            update: {
-              amount: v.actual,
-              updatedBy: userId,
-              currency,
-            },
-          }),
-        );
-
-        actBudgetDetails = await Promise.all(actPromises);
+        actBudgetDetails = await this.upsertBudgetCategoryDetailsByType(
+          monthlyBudgetDetailValues,
+          userId,
+          extractBudgetTypesByYear.id,
+          categoryId,
+          BudgetDetailType.Act,
+          currency,
+          prisma,
+        )
       }
 
       // 5. Update BudgetsTable with deltas (or new values if creating)
@@ -537,10 +546,11 @@ class BudgetSummaryUseCase {
         suffix,
       );
 
-      const updated = await prisma.budgetsTable.update({
-        where: { id: extractBudgetTypesByYear.id },
-        data: updateData,
-      });
+      const updated = await this._budgetRepository.updateBudgetTx(
+        { id: extractBudgetTypesByYear.id },
+        updateData,
+        prisma,
+      );
 
       if (!updated) {
         throw new Error(Messages.BUDGET_UPDATE_FAILED);
@@ -579,9 +589,11 @@ class BudgetSummaryUseCase {
 
     // Calculate new totals
     const total = monthlyDeltas.reduce((sum, v) => sum + Number(v), 0);
+
     const quarterTotals = [0, 0, 0, 0].map((_, i) =>
       monthlyDeltas.slice(i * 3, i * 3 + 3).reduce((sum, v) => sum + Number(v), 0),
     );
+
     const halfYearTotals = [
       monthlyDeltas.slice(0, 6).reduce((sum, v) => sum + Number(v), 0),
       monthlyDeltas.slice(6).reduce((sum, v) => sum + Number(v), 0),

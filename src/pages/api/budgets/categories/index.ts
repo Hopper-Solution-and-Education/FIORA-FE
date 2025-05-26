@@ -48,7 +48,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       if (!Object.values(BudgetDetailType).includes(budgetType as BudgetDetailType)) {
         return res.status(RESPONSE_CODE.BAD_REQUEST).json(
           createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, {
-            type: 'Invalid budget category type',
+            type: 'Invalid budget category type (Expense or Income)',
           }),
         );
       }
@@ -61,7 +61,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
         .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
     }
 
-    const budgetRes = await budgetSummaryUseCase.upsertBudgetDetailsCategory({
+    const budgetRes = await budgetSummaryUseCase.upsertBudgetCategoryDetailsCategory({
       userId,
       fiscalYear,
       categoryId,
@@ -73,7 +73,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
 
     return res
       .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_BUDGET_SUCCESS, budgetRes));
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.BUDGET_DETAIL_UPDATED_SUCCESS, budgetRes));
   } catch (error: any) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       return res
@@ -116,15 +116,8 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
 
     return res
       .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_BUDGET_SUCCESS, budgetRes));
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.BUDGET_DETAIL_DELETED_SUCCESS, budgetRes));
   } catch (error: any) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      return res
-        .status(RESPONSE_CODE.CONFLICT)
-        .json(
-          createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.DUPLICATED_CATEGORY_BUDGET_DETAILS),
-        );
-    }
     return res
       .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
       .json(createErrorResponse(error.status, error.message, error));

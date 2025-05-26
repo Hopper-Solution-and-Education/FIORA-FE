@@ -19,3 +19,5 @@ export type BudgetDetailCategoryDeleteParams = Pick<
   BudgetDetailCategoryUpdateParams,
   'userId' | 'categoryId' | 'fiscalYear' | 'type'
 >;
+
+export type MonthlyBudgetDetailValues = { bottomUp: number, actual: number }[];

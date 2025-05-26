@@ -1,7 +1,7 @@
 import { prisma } from '@/config';
-import { IBudgetRepository } from '../../repositories/budgetRepository';
-import { BudgetsTable, Prisma, TransactionType } from '@prisma/client';
 import { FetchTransactionResponse } from '@/shared/types/budget.types';
+import { BudgetDetails, BudgetsTable, Prisma, TransactionType } from '@prisma/client';
+import { IBudgetRepository } from '../../repositories/budgetRepository';
 
 class BudgetRepository implements IBudgetRepository {
   async createBudget(
@@ -57,6 +57,19 @@ class BudgetRepository implements IBudgetRepository {
       where,
       data,
       ...options,
+    });
+  }
+
+  async updateBudgetTx(
+    where: Prisma.BudgetsTableWhereUniqueInput,
+    data: Prisma.BudgetsTableUpdateInput,
+    prismaTransaction?: Prisma.TransactionClient,
+  ): Promise<BudgetsTable> {
+    let prismaTx = prismaTransaction || prisma;
+
+    return await prismaTx.budgetsTable.update({
+      where,
+      data,
     });
   }
 
@@ -117,6 +130,23 @@ class BudgetRepository implements IBudgetRepository {
       },
     });
   }
+
+  async upsertBudgetDetailsProduct(
+    where: Prisma.BudgetDetailsWhereUniqueInput,
+    update: Prisma.BudgetDetailsUpdateInput,
+    create: Prisma.BudgetDetailsUncheckedCreateInput,
+    prismaTransaction?: Prisma.TransactionClient,
+  ): Promise<BudgetDetails> {
+    let prismaTx = prismaTransaction || prisma;
+
+    return await prismaTx.budgetDetails.upsert({
+      where,
+      update,
+      create,
+    });
+  }
+
+
 }
 
 // Export a single instance
