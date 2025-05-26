@@ -115,11 +115,13 @@ export const calculateMainBarCount = (dataLength: number, showAll: boolean): num
 
 export const calculateChartVisibility = (
   visibleData: TwoSideBarItem[],
-): { showPositiveChart: boolean; showNegativeChart: boolean } => {
+): { showPositiveChart: boolean; showNegativeChart: boolean; isBothEmpty: boolean } => {
   const allPositiveZero = visibleData.every((item) => (item.positiveValue || 0) === 0);
   const allNegativeZero = visibleData.every((item) => (item.negativeValue || 0) === 0);
+  const isBothEmpty = allPositiveZero && allNegativeZero;
   return {
     showPositiveChart: !allPositiveZero,
     showNegativeChart: !allNegativeZero,
+    isBothEmpty: isBothEmpty,
   };
 };
