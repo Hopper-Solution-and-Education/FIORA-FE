@@ -53,56 +53,16 @@ export class FinanceUseCase {
   ): Promise<GetFinanceReportResponse<AccountFinanceReportResponse>> {
     const allAccounts = await this._accountRepository.findMany({ userId }, {});
 
-    const accountIds = allAccounts.map((account) => account.id);
-    const transactions = await this._transactionRepository.findManyTransactions({
-      userId,
-      OR: [{ fromAccountId: { in: accountIds } }, { toAccountId: { in: accountIds } }],
-      isDeleted: false,
-    });
-
-    const accountTotalMap = new Map<string, { expense: number; income: number }>();
-
-    allAccounts.forEach((account) => {
-      accountTotalMap.set(account.id, { expense: 0, income: 0 });
-    });
-
-    transactions.forEach((transaction) => {
-      const amount = Number(transaction.amount);
-
-      if (transaction.type === TransactionType.Expense && transaction.fromAccountId) {
-        const totals = accountTotalMap.get(transaction.fromAccountId);
-        if (totals) {
-          totals.expense += amount;
-        }
-      } else if (transaction.type === TransactionType.Income && transaction.toAccountId) {
-        const totals = accountTotalMap.get(transaction.toAccountId);
-        if (totals) {
-          totals.income += amount;
-        }
-      } else if (transaction.type === TransactionType.Transfer) {
-        if (transaction.fromAccountId) {
-          const fromTotals = accountTotalMap.get(transaction.fromAccountId);
-          if (fromTotals) {
-            fromTotals.expense += amount;
-          }
-        }
-        if (transaction.toAccountId) {
-          const toTotals = accountTotalMap.get(transaction.toAccountId);
-          if (toTotals) {
-            toTotals.income += amount;
-          }
-        }
-      }
-    });
-
     const result: AccountFinanceReportResponse[] = allAccounts.map((account) => {
-      const totals = accountTotalMap.get(account.id) || { expense: 0, income: 0 };
-      const totalProfit = totals.income - totals.expense;
+      const balance = Number(account.balance || 0);
+      const totalIncome = balance > 0 ? balance : 0;
+      const totalExpense = balance < 0 ? -balance : 0;
+      const totalProfit = 0;
 
       return {
         ...account,
-        totalIncome: totals.income,
-        totalExpense: totals.expense,
+        totalIncome,
+        totalExpense,
         totalProfit,
         currency: account.currency,
       };
@@ -300,55 +260,16 @@ export class FinanceUseCase {
       {},
     );
 
-    const transactions = await this._transactionRepository.findManyTransactions({
-      userId,
-      OR: [{ fromAccountId: { in: accountIds } }, { toAccountId: { in: accountIds } }],
-      isDeleted: false,
-    });
-
-    const accountTotalMap = new Map<string, { expense: number; income: number }>();
-
-    allAccounts.forEach((account) => {
-      accountTotalMap.set(account.id, { expense: 0, income: 0 });
-    });
-
-    transactions.forEach((transaction) => {
-      const amount = Number(transaction.amount);
-
-      if (transaction.type === TransactionType.Expense && transaction.fromAccountId) {
-        const totals = accountTotalMap.get(transaction.fromAccountId);
-        if (totals) {
-          totals.expense += amount;
-        }
-      } else if (transaction.type === TransactionType.Income && transaction.toAccountId) {
-        const totals = accountTotalMap.get(transaction.toAccountId);
-        if (totals) {
-          totals.income += amount;
-        }
-      } else if (transaction.type === TransactionType.Transfer) {
-        if (transaction.fromAccountId) {
-          const fromTotals = accountTotalMap.get(transaction.fromAccountId);
-          if (fromTotals) {
-            fromTotals.expense += amount;
-          }
-        }
-        if (transaction.toAccountId) {
-          const toTotals = accountTotalMap.get(transaction.toAccountId);
-          if (toTotals) {
-            toTotals.income += amount;
-          }
-        }
-      }
-    });
-
     const result: AccountFinanceReportResponse[] = allAccounts.map((account) => {
-      const totals = accountTotalMap.get(account.id) || { expense: 0, income: 0 };
-      const totalProfit = totals.income - totals.expense;
+      const balance = Number(account.balance || 0);
+      const totalIncome = balance > 0 ? balance : 0;
+      const totalExpense = balance < 0 ? -balance : 0;
+      const totalProfit = 0;
 
       return {
         ...account,
-        totalIncome: totals.income,
-        totalExpense: totals.expense,
+        totalIncome,
+        totalExpense,
         totalProfit,
         currency: account.currency,
       };
