@@ -120,7 +120,7 @@ const PositiveAndNegativeBarChartV2 = ({
     [visibleData],
   );
 
-  const { showPositiveChart, showNegativeChart } = useMemo(
+  const { showPositiveChart, showNegativeChart, isBothEmpty } = useMemo(
     () => calculateChartVisibility(visibleData),
     [visibleData],
   );
@@ -222,7 +222,7 @@ const PositiveAndNegativeBarChartV2 = ({
           renderSkeleton()
         ) : (
           <>
-            {showNegativeChart && (
+            {(isBothEmpty || showNegativeChart) && (
               <ResponsiveContainer
                 width="100%"
                 height={chartHeight}
@@ -291,7 +291,7 @@ const PositiveAndNegativeBarChartV2 = ({
                 </BarChart>
               </ResponsiveContainer>
             )}
-            {showPositiveChart && (
+            {(isBothEmpty || showPositiveChart) && (
               <ResponsiveContainer
                 width="100%"
                 height={chartHeight}
