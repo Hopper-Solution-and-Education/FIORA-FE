@@ -27,6 +27,7 @@ export interface Option {
 }
 
 interface SelectFieldProps {
+  side?: 'top' | 'bottom' | 'left' | 'right';
   value?: string;
   onChange?: (value: string) => void;
   onBlur?: () => void;
@@ -47,6 +48,7 @@ interface SelectFieldProps {
 }
 
 const SelectField: React.FC<SelectFieldProps> = ({
+  side,
   value = '',
   onChange = () => {},
   onBlur,
@@ -167,7 +169,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
 
         <PopoverContent
           align="start"
-          side="bottom"
+          side={side || 'bottom'}
           sideOffset={5}
           avoidCollisions={true}
           collisionPadding={10}

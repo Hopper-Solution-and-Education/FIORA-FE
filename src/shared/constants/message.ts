@@ -51,6 +51,10 @@ export enum Messages {
   BUDGET_GET_BY_ID_SUCCESS = 'Get budget by id successfully',
   BUDGET_UPDATE_SUCCESS = 'Update budget successfully !',
 
+  TO_DATE_BEFORE_FROM_DATE = 'To date must be after from date',
+  INVALID_DATE_FORMAT = 'Invalid date format',
+  INVALID_DATE_RANGE_INPUT = 'Invalid date range input',
+
   // Budget Service Failed
   BUDGET_ID_MISSING = 'Budget id is missing',
   INVALID_BUDGET_TYPE = 'Invalid budget type. Budget type must be Act, Bot, or Top',
@@ -160,6 +164,14 @@ export enum Messages {
   DELETE_PARTNER_SUCCESS = 'Delete partner successfully.',
   CREATE_PARTNER_FAILED = 'Failed to create partner.',
   UPDATE_PARTNER_FAILED = 'Failed to update partner.',
+
+  // FINANCE REPORT
+  GET_FINANCE_REPORT_SUCCESS = 'Get finance report successfully.',
+  GET_FINANCE_REPORT_FAILED = 'Failed to get finance report.',
+  INVALID_FINANCE_REPORT_TYPE = 'Invalid finance report type for {{type}}.',
+  INVALID_FINANCE_REPORT_FILTER = 'Invalid finance report filter.',
+  INVALID_FINANCE_REPORT_FILTER_TYPE = 'Invalid finance report filter type.',
+  INVALID_FINANCE_REPORT_IDS = 'IDs must be a non-empty array',
 
   INVALID_USER = 'Invalid user.',
   USER_EMAIL_EXISTED = 'Email already existed',
