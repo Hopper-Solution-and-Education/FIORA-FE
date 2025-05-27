@@ -1,4 +1,4 @@
-import { type Prisma, type Partner, Transaction } from '@prisma/client';
+import { type Prisma, type Partner, Transaction, TransactionType } from '@prisma/client';
 import { IPartnerRepository } from '../../domain/repositories/partnerRepository.interface';
 import { Messages } from '@/shared/constants/message';
 import { partnerRepository } from '../../infrastructure/repositories/partnerRepository';
@@ -11,6 +11,8 @@ import { GlobalFilters } from '@/shared/types';
 import { buildWhereClause } from '@/shared/utils';
 import { safeString } from '@/shared/utils/ExStringUtils';
 import { BooleanUtils } from '@/shared/lib';
+import { PartnerRangeFilter } from '@/shared/types/partner.types';
+import { sanitizeDateFilters } from '@/shared/utils/common';
 
 class PartnerUseCase {
   constructor(
@@ -30,10 +32,25 @@ class PartnerUseCase {
     return partner;
   }
 
+  private determinePartnerType(transactions: Transaction[]): string {
+    const hasIncomeType = transactions.some((t) => t.type === TransactionType.Income);
+    const hasExpenseType = transactions.some((t) => t.type === TransactionType.Expense);
+
+    if (hasIncomeType) {
+      return 'Supplier';
+    } else if (hasExpenseType) {
+      return 'Customer';
+    } else {
+      return 'Unknown';
+    }
+  }
+
   async filterPartnerOptions(params: GlobalFilters, userId: string) {
     const searchParams = safeString(params.search);
-    const filters = params.filters || {};
+    let filters = params.filters || {};
+    const typesFilter = params.types || [];
 
+    filters = sanitizeDateFilters(params.filters || {});
     let where = buildWhereClause(filters) as Prisma.PartnerWhereInput;
 
     if (BooleanUtils.isTrue(searchParams)) {
@@ -56,6 +73,8 @@ class PartnerUseCase {
       };
     }
 
+    const transactionRangeFilters = this.extractTransactionRangeFilters(filters);
+
     const partners = await this.partnerRepository.findManyPartner(
       {
         ...where,
@@ -71,19 +90,20 @@ class PartnerUseCase {
       },
     );
 
-    const filteredPartners = this.filterByTransactionRange(partners, filters);
-    return filteredPartners;
+    const filteredPartners = await this.filterByTransactionRange(partners, transactionRangeFilters);
+
+    const finalFilteredPartners =
+      typesFilter.length > 0
+        ? filteredPartners.filter((partner: any) => {
+            const type = this.determinePartnerType(partner.transactions || []);
+            return typesFilter.includes(type);
+          })
+        : filteredPartners;
+
+    return finalFilteredPartners;
   }
 
-  async filterByTransactionRange(
-    partners: Array<any>,
-    filters: {
-      totalIncomeMin?: number;
-      totalIncomeMax?: number;
-      totalExpenseMin?: number;
-      totalExpenseMax?: number;
-    },
-  ) {
+  async filterByTransactionRange(partners: Array<any>, filters: PartnerRangeFilter) {
     const {
       totalIncomeMin = 0,
       totalIncomeMax = Number.MAX_SAFE_INTEGER,
@@ -105,6 +125,39 @@ class PartnerUseCase {
 
       return isValidExpense || isValidIncome;
     });
+  }
+
+  private extractTransactionRangeFilters(filters: any): PartnerRangeFilter {
+    const transactionFilters = filters.transactions?.some?.OR || [];
+
+    const rangeFilters = {
+      totalIncomeMin: 0,
+      totalIncomeMax: Number.MAX_SAFE_INTEGER,
+      totalExpenseMin: 0,
+      totalExpenseMax: Number.MAX_SAFE_INTEGER,
+    };
+
+    for (const condition of transactionFilters) {
+      if (condition.type === 'Income' && condition.amount) {
+        if (condition.amount.gte !== undefined) {
+          rangeFilters.totalIncomeMin = condition.amount.gte;
+        }
+        if (condition.amount.lte !== undefined) {
+          rangeFilters.totalIncomeMax = condition.amount.lte;
+        }
+      }
+
+      if (condition.type === 'Expense' && condition.amount) {
+        if (condition.amount.gte !== undefined) {
+          rangeFilters.totalExpenseMin = condition.amount.gte;
+        }
+        if (condition.amount.lte !== undefined) {
+          rangeFilters.totalExpenseMax = condition.amount.lte;
+        }
+      }
+    }
+
+    return rangeFilters;
   }
 
   async deletePartner(id: string, userId: string, newId?: string): Promise<void> {

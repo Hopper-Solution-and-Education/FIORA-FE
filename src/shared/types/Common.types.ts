@@ -14,6 +14,7 @@ export interface IconsOptions {
 }
 
 export interface GlobalFilters {
+  types?: string[];
   search?: string;
   sort?: string;
   filters: any;

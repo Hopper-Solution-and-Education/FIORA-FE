@@ -77,6 +77,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
             OR: [
               { name: { contains: typeSearchParams, mode: 'insensitive' } },
               { items: { some: { name: { contains: typeSearchParams, mode: 'insensitive' } } } },
+              { category: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
             ],
           },
         ],
