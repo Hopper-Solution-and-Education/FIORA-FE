@@ -14,8 +14,9 @@ export interface ChartItem extends CustomBarItem {
 export interface HierarchicalBarItem {
   id: string;
   name: string;
+  value?: number;
+  level?: number; // 0: year, 1: half-year, 2: quarter, 3: month
   children?: HierarchicalBarItem[];
   data?: ChartItem[];
-  level?: number;
   type: STACK_TYPE;
 }

@@ -1,6 +1,6 @@
 import { COLORS, STACK_TYPE } from '@/shared/constants/chart';
 import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
-import { ChartItem, HierarchicalBarItem } from '../presentation/types';
+import { ChartItem, HierarchicalBarItem } from '../presentation/types/chart.type';
 import { Budget } from '../domain/entities/Budget';
 import { Currency } from '@/shared/types';
 import { convertVNDToUSD } from '@/shared/utils';
@@ -32,7 +32,6 @@ export const transformDataForChart = ({
     return parseFloat(budget?.[field as keyof typeof budget] as string) || 0;
   };
 
-  // Helper function to map budget data for a given time period
   const mapBudgetForPeriod = (period: string, expField: string, incField: string): ChartItem[] => {
     const actExp = getBudgetValue(actBudget.budget, expField);
     const topExp = getBudgetValue(topBudget.budget, expField);
@@ -150,13 +149,13 @@ export const transformDataForChart = ({
   const halfYearData: HierarchicalBarItem[] = [
     {
       id: 'half-year-1',
-      name: 'First Half Year',
+      name: 'Half Year 1',
       type: STACK_TYPE.EXPENSE,
       data: mapBudgetForPeriod('half-year-1', 'h1Exp', 'h1Inc'),
     },
     {
       id: 'half-year-2',
-      name: 'Second Half Year',
+      name: 'Half Year 2',
       type: STACK_TYPE.EXPENSE,
       data: mapBudgetForPeriod('half-year-2', 'h2Exp', 'h2Inc'),
     },

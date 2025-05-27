@@ -1,4 +1,4 @@
-import type { Prisma, Transaction, TransactionType } from '@prisma/client'; // Sử dụng Transaction từ Prisma Client
+import type { Prisma, Product, Transaction, TransactionType } from '@prisma/client'; // Sử dụng Transaction từ Prisma Client
 
 export interface ITransactionRepository {
   getTransactionsByUserId(userId: string): Promise<Transaction[]>;
@@ -27,4 +27,14 @@ export interface ITransactionRepository {
     where: Prisma.TransactionWhereInput,
     options?: Prisma.TransactionFindFirstArgs,
   ): Promise<Transaction | null>;
+
+  // *PRODUCT ZONE
+  findProductTransactions(userId: string): Promise<TransactionWithProducts[]>;
+}
+
+export interface TransactionWithProducts extends Transaction {
+  productsRelation: {
+    productId: string;
+    product: Product;
+  }[];
 }

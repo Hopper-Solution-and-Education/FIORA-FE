@@ -15,7 +15,7 @@ import { BudgetSummaryByType } from '../../domain/entities/BudgetSummaryByType';
 import { BudgetType } from '../../domain/entities/BudgetType';
 import { transformDataForChart } from '../../utils/transformDataForChart';
 import BudgetTreeView from '../molecules/BudgetSummaryTreeView';
-import { HierarchicalBarItem } from '../types';
+import { HierarchicalBarItem } from '../types/chart.type';
 
 interface BudgetSummaryProps {
   year: number;
@@ -103,7 +103,11 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
       {isLoading ? (
         <ChartSkeleton />
       ) : (
-        <BudgetTreeView data={chartData} currency={currency || 'USD'} />
+        <BudgetTreeView
+          data={chartData}
+          currency={currency || 'USD'}
+          year={selectedYear.toString()}
+        />
       )}
     </div>
   );
