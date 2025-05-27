@@ -5,6 +5,8 @@ import { Currency } from '@/shared/types';
 import { convertVNDToUSD } from '@/shared/utils';
 import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
 import { BudgetDetailType, TableData } from '../presentation/types/table.type';
+import CategorySelect from '../../../category/components/CategorySelect';
+import { cn } from '@/shared/utils';
 
 const PERIOD_CONFIG = {
   months: Array.from({ length: 12 }, (_, i) => ({
@@ -93,7 +95,13 @@ export const getTableDataByPeriod = (
   ];
 };
 
-export const getColumnsByPeriod = (period: string, periodId: string, currency: Currency) => {
+export const getColumnsByPeriod = (
+  period: string,
+  periodId: string,
+  currency: Currency,
+  categories: any[] = [],
+  onCategoryChange?: (categoryId: string) => void,
+) => {
   const createColumn = (
     key: string,
     title: string,
@@ -115,7 +123,27 @@ export const getColumnsByPeriod = (period: string, periodId: string, currency: C
   };
 
   const defaultColumns = [
-    createColumn('type', 'Type', { width: 200, align: 'left', fixed: 'left' }),
+    createColumn('type', 'Type', {
+      width: 200,
+      align: 'left',
+      fixed: 'left',
+      render: (text: string, record: TableData) => {
+        if (record.isParent && !text) {
+          return (
+            <div className={cn('w-full h-full flex items-center gap-2')}>
+              <CategorySelect
+                className="w-full h-full m-0"
+                name="category"
+                categories={categories}
+                side="right"
+                onChange={(value) => onCategoryChange?.(value)}
+              />
+            </div>
+          );
+        }
+        return text;
+      },
+    }),
   ];
 
   const actionColumn = createColumn('action', 'ACTION', {

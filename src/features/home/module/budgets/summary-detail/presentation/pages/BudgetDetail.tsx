@@ -13,10 +13,11 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEnpointEnum';
 import { routeConfig } from '@/shared/utils/route';
-import { useAppSelector } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { fetchCategories } from '../../../../category/slices/actions';
 import { BudgetDetailFilterEnum, PERIOD_OPTIONS } from '../../data/constants';
 import { budgetSummaryDIContainer } from '../../di/budgetSummaryDIContainer';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
@@ -42,11 +43,15 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     BudgetDetailFilterEnum.EXPENSE,
   );
   const [columns, setColumns] = useState<ColumnProps[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const { currency } = useAppSelector((state) => state.settings);
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { categories } = useAppSelector((state) => state.category);
 
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+
+  const searchParams = useSearchParams();
   const period = (searchParams?.get('period') || BudgetDetailType.YEAR) as BudgetPeriodType;
   const periodId = (searchParams?.get('periodId') || 'year') as BudgetPeriodIdType;
 
@@ -54,6 +59,48 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     () => budgetSummaryDIContainer.get<IBudgetSummaryUseCase>(TYPES.IBudgetSummaryUseCase),
     [],
   );
+
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  const handleCategoryChange = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+
+    // Update table data with selected category
+    setTableData((prevData) => {
+      const newData = [...prevData];
+      const categoryIndex = newData.findIndex((item) => item.key === 'new-category');
+
+      if (categoryIndex !== -1) {
+        const selectedCategoryData = categories.data?.find((cat) => cat.id === categoryId);
+        if (selectedCategoryData) {
+          newData[categoryIndex] = {
+            ...newData[categoryIndex],
+            type: selectedCategoryData.name || '',
+            children: [
+              {
+                key: `${categoryId}-bottom-up`,
+                type: 'Bottom-up Plan',
+                isChild: true,
+                action: true,
+                isEditable: true,
+              },
+              {
+                key: `${categoryId}-actual`,
+                type: 'Actual sum-up',
+                isChild: true,
+                action: true,
+                isEditable: false,
+              },
+            ],
+          };
+        }
+      }
+
+      return newData;
+    });
+  };
 
   useEffect(() => {
     const fetchBudgetData = async () => {
@@ -71,8 +118,44 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
           budgetSummaryUseCase.getBudgetByType(initialYear, BudgetType.Act),
         ]);
 
-        setTableData(getTableDataByPeriod(top, bot, act, activeTab));
-        setColumns(getColumnsByPeriod(period, periodId, currency));
+        const mainData = getTableDataByPeriod(top, bot, act, activeTab);
+
+        const dataWithCategory: TableData[] = [
+          ...mainData,
+          {
+            key: 'new-category',
+            type: '', // Empty string will trigger CategorySelect in column render
+            isParent: true,
+            action: true,
+            children: [
+              {
+                key: 'bottom-up-plan',
+                type: 'Bottom-up Plan',
+                isChild: true,
+                action: true,
+                isEditable: true,
+              },
+              {
+                key: 'actual-sum-up',
+                type: 'Actual sum-up',
+                isChild: true,
+                action: true,
+                isEditable: false,
+              },
+            ],
+          },
+        ];
+
+        setTableData(dataWithCategory);
+        setColumns(
+          getColumnsByPeriod(
+            period,
+            periodId,
+            currency,
+            categories.data || [],
+            handleCategoryChange,
+          ),
+        );
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Failed to fetch budget data');
         router.push(routeConfig(ApiEndpointEnum.Budgets));
@@ -82,7 +165,16 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     };
 
     fetchBudgetData();
-  }, [initialYear, period, periodId, currency, activeTab, budgetSummaryUseCase, router]);
+  }, [
+    initialYear,
+    period,
+    periodId,
+    currency,
+    activeTab,
+    budgetSummaryUseCase,
+    router,
+    categories.data,
+  ]);
 
   const handlePeriodChange = (value: string) => {
     const option = PERIOD_OPTIONS.find((opt) => opt.value === value);
@@ -98,6 +190,8 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   };
 
   const handleFilterChange = (value: string) => setActiveTab(value as BudgetDetailFilterType);
+
+  console.log('Select Category: {}', selectedCategory);
 
   return (
     <div className="p-4">
