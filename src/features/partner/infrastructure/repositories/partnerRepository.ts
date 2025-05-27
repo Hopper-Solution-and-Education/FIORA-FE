@@ -4,18 +4,38 @@ import { IPartnerRepository } from '../../domain/repositories/partnerRepository.
 import { PartnerExtras } from '@/shared/types/partner.types';
 
 class PartnerRepository implements IPartnerRepository {
-  async getPartnersByUserId(userId: string): Promise<PartnerExtras[]> {
-    return await prisma.partner.findMany({
+  async getPartnersByUserId(
+    userId: string,
+    include?: Prisma.PartnerInclude | string,
+    where?: Prisma.PartnerWhereInput,
+  ): Promise<PartnerExtras[]> {
+    let includeObj: Prisma.PartnerInclude = {
+      transactions: true,
+      children: true,
+      parent: true,
+    };
+
+    if (include) {
+      if (typeof include === 'string') {
+        try {
+          const parsedInclude = JSON.parse(include) as Prisma.PartnerInclude;
+          includeObj = parsedInclude;
+        } catch (error) {
+          console.error('Invalid include JSON:', error);
+        }
+      } else {
+        includeObj = include;
+      }
+    }
+
+    return (await prisma.partner.findMany({
       where: {
         userId: userId,
+        ...where,
       },
-      include: {
-        transactions: true,
-        children: true,
-        parent: true,
-      },
+      include: includeObj,
       orderBy: { transactions: { _count: 'desc' } },
-    });
+    })) as unknown as PartnerExtras[];
   }
 
   async findManyPartner(where: Prisma.PartnerWhereInput, options?: Prisma.PartnerFindManyArgs) {
