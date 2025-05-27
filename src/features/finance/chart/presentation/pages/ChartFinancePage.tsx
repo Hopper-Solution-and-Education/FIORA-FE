@@ -1,4 +1,3 @@
-import DateRangePicker from '@/components/common/forms/date-range-picker/DateRangePicker';
 import {
   Select,
   SelectContent,
@@ -6,8 +5,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useAppDispatch } from '@/store';
 import { useEffect, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
+import { getFinanceByDateAsyncThunk } from '../../slices/actions/getFinanceByDateAsyncThunk';
+import { DateRangePickerFinance, MultiSelectPickerFinance } from '../atoms';
 import {
   ChartByAccount,
   ChartByCategory,
@@ -15,8 +17,6 @@ import {
   ChartByPartner,
   ChartByProduct,
 } from '../organisms';
-import { useAppDispatch } from '@/store';
-import { getFinanceByDateAsyncThunk } from '../../slices/actions/getFinanceByDateAsyncThunk';
 
 type ViewBy = 'date' | 'category' | 'account' | 'product' | 'partner';
 
@@ -88,14 +88,43 @@ const ChartFinancePage = () => {
           </div>
         </div>
         {viewBy === 'date' && (
-          <div>
-            <DateRangePicker
-              date={dateRange}
+          <div className="ml-2">
+            <DateRangePickerFinance
+              label="Select Date Range"
+              dateRange={dateRange}
               onChange={(value: DateRange | undefined) => setDateRange(value)}
+              labelPosition="horizontal"
             />
           </div>
         )}
         {viewBy === 'category' && renderViewByCategorySelect()}
+        {viewBy === 'account' && (
+          <MultiSelectPickerFinance
+            options={[]}
+            selectedValues={[]}
+            onChange={() => {}}
+            label=""
+            placeholder="Select accounts"
+          />
+        )}
+        {viewBy === 'product' && (
+          <MultiSelectPickerFinance
+            options={[]}
+            selectedValues={[]}
+            onChange={() => {}}
+            label=""
+            placeholder="Select products"
+          />
+        )}
+        {viewBy === 'partner' && (
+          <MultiSelectPickerFinance
+            options={[]}
+            selectedValues={[]}
+            onChange={() => {}}
+            label=""
+            placeholder="Select partners"
+          />
+        )}
       </div>
       {viewBy === 'date' && <ChartByDate />}
       {viewBy === 'category' && <ChartByCategory viewBy={viewByCategory} />}
