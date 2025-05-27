@@ -1,6 +1,5 @@
 import { Loading } from '@/components/common/atoms';
 import dynamic from 'next/dynamic';
-import React from 'react';
 import { notFound } from 'next/navigation';
 
 const BudgetSumaryRender = dynamic(
