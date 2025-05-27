@@ -97,15 +97,26 @@ export class AccountUseCase {
 
     if (BooleanUtils.isTrue(searchParams)) {
       const typeSearchParams = searchParams.toLowerCase();
+      const enumValues = Object.values(AccountType).map((v) => v.toLowerCase());
+      const matchedType = enumValues.includes(typeSearchParams)
+        ? (Object.values(AccountType).find(
+            (v) => v.toLowerCase() === typeSearchParams,
+          ) as AccountType)
+        : null;
+
+      const orConditions: Prisma.AccountWhereInput[] = [
+        { name: { contains: typeSearchParams, mode: 'insensitive' } },
+      ];
+
+      if (matchedType) {
+        orConditions.push({ type: { equals: matchedType } });
+      }
 
       where = {
         AND: [
           where,
           {
-            OR: [
-              { name: { contains: typeSearchParams, mode: 'insensitive' } },
-              { type: { equals: typeSearchParams as AccountType } },
-            ],
+            OR: orConditions,
           },
         ],
       };
@@ -177,24 +188,35 @@ export class AccountUseCase {
 
   async getAllParentAccount(userId: string, params: GlobalFilters): Promise<Account[] | []> {
     const searchParams = safeString(params.search);
-    let where: Prisma.AccountWhereInput = {};
-
-    if (params.filters && Object.keys(params.filters).length > 0) {
-      where = buildWhereClause(params.filters) as Prisma.AccountWhereInput;
-    }
+    let where = buildWhereClause(params.filters) as Prisma.AccountWhereInput;
 
     if (BooleanUtils.isTrue(searchParams)) {
       const typeSearchParams = searchParams.toLowerCase();
+      const enumValues = Object.values(AccountType).map((v) => v.toLowerCase());
+      const matchedType = enumValues.includes(typeSearchParams)
+        ? (Object.values(AccountType).find(
+            (v) => v.toLowerCase() === typeSearchParams,
+          ) as AccountType)
+        : null;
+
+      const orConditions: Prisma.AccountWhereInput[] = [
+        { name: { contains: typeSearchParams, mode: 'insensitive' } },
+      ];
+
+      if (matchedType) {
+        orConditions.push({ type: { equals: matchedType } });
+      }
 
       where = {
         AND: [
           where,
           {
-            OR: [{ name: { contains: typeSearchParams, mode: 'insensitive' } }],
+            OR: orConditions,
           },
         ],
       };
     }
+
     return this.accountRepository.findManyWithCondition({
       userId,
       parentId: null,
@@ -204,24 +226,35 @@ export class AccountUseCase {
 
   async getAllAccountByUserId(userId: string, currency: Currency, params: GlobalFilters) {
     const searchParams = safeString(params.search);
-    let where: Prisma.AccountWhereInput = {};
-
-    if (params.filters && Object.keys(params.filters).length > 0) {
-      where = buildWhereClause(params.filters) as Prisma.AccountWhereInput;
-    }
+    let where = buildWhereClause(params.filters) as Prisma.AccountWhereInput;
 
     if (BooleanUtils.isTrue(searchParams)) {
       const typeSearchParams = searchParams.toLowerCase();
+      const enumValues = Object.values(AccountType).map((v) => v.toLowerCase());
+      const matchedType = enumValues.includes(typeSearchParams)
+        ? (Object.values(AccountType).find(
+            (v) => v.toLowerCase() === typeSearchParams,
+          ) as AccountType)
+        : null;
+
+      const orConditions: Prisma.AccountWhereInput[] = [
+        { name: { contains: typeSearchParams, mode: 'insensitive' } },
+      ];
+
+      if (matchedType) {
+        orConditions.push({ type: { equals: matchedType } });
+      }
 
       where = {
         AND: [
           where,
           {
-            OR: [{ name: { contains: typeSearchParams, mode: 'insensitive' } }],
+            OR: orConditions,
           },
         ],
       };
     }
+
     const accountRes = (await this.accountRepository.findManyWithCondition(
       {
         userId,
