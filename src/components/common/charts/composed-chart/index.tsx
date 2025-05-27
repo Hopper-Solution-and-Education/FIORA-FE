@@ -5,7 +5,6 @@ import {
   Bar,
   CartesianGrid,
   ComposedChart,
-  Legend,
   Line,
   ResponsiveContainer,
   Tooltip,
@@ -18,6 +17,7 @@ import { cn, formatCurrency } from '@/shared/utils';
 import { findMaxMinValues } from '@/shared/utils/chart';
 import { getChartMargins, useWindowSize } from '@/shared/utils/device';
 import { ChartSkeleton } from '@/components/common/organisms';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import {
   DEFAULT_CHART_FONT_SIZE,
   DEFAULT_CHART_TICK_COUNT,
@@ -26,7 +26,7 @@ import {
 import { Payload } from 'recharts/types/component/DefaultTooltipContent';
 import { DEFAULT_COMPOSED_CHART_HEIGHT, DEFAULT_COMPOSED_CHART_ITEM_WIDTH } from './constant';
 import { ColumnConfig, LineConfig, TooltipProps } from '@/shared/types/chart.type';
-import { renderCustomLegend } from './components/ComposedChartLegend';
+import { ChartLegend } from '@/components/common/atoms';
 
 const ComposedChartComponent = ({
   data = [],
@@ -45,7 +45,22 @@ const ComposedChartComponent = ({
   tickCount = DEFAULT_CHART_TICK_COUNT,
 }: ComposedChartProps) => {
   const { width } = useWindowSize();
+  const isMobile = useIsMobile();
   const chartMargins = useMemo(() => getChartMargins(width), [width]);
+
+  const legendItems = useMemo(() => {
+    const items = [
+      ...columns.map((col) => ({
+        name: col.name,
+        color: col.color,
+      })),
+      ...(lines?.map((line) => ({
+        name: line.name,
+        color: line.color,
+      })) || []),
+    ];
+    return items;
+  }, [columns, lines]);
 
   const { maxValue, minValue } = useMemo(() => {
     const columnsMaxMin = findMaxMinValues(data, columns);
@@ -126,8 +141,10 @@ const ComposedChartComponent = ({
         </div>
       )}
 
+      {isMobile && showLegend && <ChartLegend items={legendItems} />}
+
       <ResponsiveContainer width="100%" height={height}>
-        <ComposedChart data={data} margin={chartMargins} onClick={handleChartClick}>
+        <ComposedChart data={data} margin={{ ...chartMargins, top: 20 }} onClick={handleChartClick}>
           <CartesianGrid
             strokeDasharray="3 3"
             vertical={false}
@@ -150,14 +167,14 @@ const ComposedChartComponent = ({
             tickCount={tickCount}
           />
           <ReferenceLine y={0} stroke="#E5E7EB" className="dark:stroke-gray-600" />
-          <Tooltip cursor content={renderTooltipContent} />
-          {showLegend && (
-            <Legend
-              verticalAlign="bottom"
-              align="center"
-              wrapperStyle={{ paddingTop: '20px', fontSize: fontSize.legend }}
-            />
-          )}
+          <Tooltip
+            cursor={{
+              strokeWidth: 1,
+              strokeDasharray: '4 4',
+              className: 'dark:fill-gray-100 dark:stroke-gray-600 transition-all duration-300',
+            }}
+            content={renderTooltipContent}
+          />
 
           {columns.map((column: ColumnConfig, index: number) => (
             <Bar
@@ -170,12 +187,11 @@ const ComposedChartComponent = ({
               animationDuration={400}
               animationEasing="ease-out"
               activeBar={{
-                fill: column.color,
+                fill: `${column.color}`,
                 stroke: '#ffffff',
                 strokeWidth: 2,
-                filter: 'drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.3))',
+                filter: 'brightness(1.1) drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.25))',
                 cursor: 'pointer',
-                strokeOpacity: 0.8,
               }}
               maxBarSize={DEFAULT_COMPOSED_CHART_ITEM_WIDTH}
             />
@@ -190,20 +206,25 @@ const ComposedChartComponent = ({
                 name={line.name}
                 stroke={line.color}
                 strokeWidth={2}
-                dot={{ r: 5, fill: line.color, strokeWidth: 1, stroke: '#ffffff' }}
+                dot={{
+                  r: 4,
+                  fill: line.color,
+                  strokeWidth: 1,
+                  stroke: '#ffffff',
+                }}
                 activeDot={{
-                  r: 8,
+                  r: 6,
                   stroke: '#ffffff',
                   strokeWidth: 2,
                   fill: line.color,
-                  filter: 'drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.3))',
+                  filter: 'drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.25))',
                 }}
               />
             ))}
         </ComposedChart>
       </ResponsiveContainer>
 
-      {!showLegend && renderCustomLegend({ columns, lines })}
+      {!isMobile && showLegend && <ChartLegend items={legendItems} />}
     </div>
   );
 };
