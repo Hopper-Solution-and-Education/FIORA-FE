@@ -35,7 +35,6 @@ const ComposedChartComponent = ({
   className,
   columns,
   lines,
-  xAxisFormatter = (value: number) => value.toString(),
   yAxisFormatter = (value: number) => formatCurrency(value, currency),
   isLoading = false,
   showLegend = true,
@@ -47,6 +46,16 @@ const ComposedChartComponent = ({
   const { width } = useWindowSize();
   const isMobile = useIsMobile();
   const chartMargins = useMemo(() => getChartMargins(width), [width]);
+
+  const labelsDistance = useMemo(() => {
+    const availableWidth = width - (chartMargins.left + chartMargins.right);
+    const averageWidth = availableWidth / data.length;
+    return {
+      shouldRotateLabels: averageWidth < 250,
+      shouldTruncate: averageWidth < 300,
+      averageWidth,
+    };
+  }, [width, chartMargins, data.length]);
 
   const legendItems = useMemo(() => {
     const items = [
@@ -153,10 +162,27 @@ const ComposedChartComponent = ({
           />
           <XAxis
             dataKey="name"
-            tickFormatter={xAxisFormatter}
-            tick={{ fill: 'gray', fontSize: fontSize.axis }}
+            tickFormatter={(value) => {
+              if (labelsDistance.shouldRotateLabels) {
+                return value.length > 12 ? value.substring(0, 12) + '...' : value;
+              }
+
+              if (value.length > 25 || labelsDistance.shouldTruncate) {
+                return value.length > 15 ? value.substring(0, 15) + '...' : value;
+              }
+
+              return value;
+            }}
+            tick={{
+              fill: 'gray',
+              fontSize: fontSize.axis,
+              textAnchor: labelsDistance.shouldRotateLabels ? 'end' : 'middle',
+            }}
+            angle={labelsDistance.shouldRotateLabels ? -40 : 0}
+            height={labelsDistance.shouldRotateLabels ? 60 : 30}
             axisLine={{ stroke: '#E5E7EB' }}
             tickLine={false}
+            interval={0}
           />
           <YAxis
             tickFormatter={yAxisFormatter}
