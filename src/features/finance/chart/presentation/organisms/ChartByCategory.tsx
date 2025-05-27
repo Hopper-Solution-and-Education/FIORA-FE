@@ -29,17 +29,10 @@ const ChartByCategory = ({ viewBy }: Props) => {
   }, [dispatch, viewBy]);
 
   // data showing when income and data showing when expense
-  const expenseData = Array.isArray(financeByCategory)
+  const data = Array.isArray(financeByCategory)
     ? financeByCategory.map((item) => ({
         name: item.name,
-        column1: item.totalExpense,
-      }))
-    : [];
-
-  const incomeData = Array.isArray(financeByCategory)
-    ? financeByCategory.map((item) => ({
-        name: item.name,
-        column2: item.totalIncome,
+        column: viewBy === 'income' ? item.totalIncome : item.totalExpense,
       }))
     : [];
 
@@ -52,13 +45,16 @@ const ChartByCategory = ({ viewBy }: Props) => {
       ) : (
         <React.Fragment>
           <ComposedChart
-            data={viewBy === 'income' ? incomeData : expenseData}
+            data={data}
             title="Chart by Category"
             columns={[
-              { key: 'column1', name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_2 },
-              { key: 'column2', name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_2 },
+              {
+                key: 'column',
+                name: viewBy === 'income' ? 'Income' : 'Expense',
+                color:
+                  viewBy === 'income' ? COLORS.DEPS_SUCCESS.LEVEL_2 : COLORS.DEPS_DANGER.LEVEL_2,
+              },
             ]}
-            lines={[{ key: 'line', name: 'Profit', color: COLORS.DEPS_INFO.LEVEL_2 }]}
             currency="VNĐ"
           />
         </React.Fragment>
