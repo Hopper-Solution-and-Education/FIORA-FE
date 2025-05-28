@@ -2,18 +2,18 @@ import { Loading } from '@/components/common/atoms';
 import dynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
-const BudgetSumaryRender = dynamic(
-  () => import('@/features/home/module/budgets/summary-detail/presentation/pages/BudgetSumary'),
+const BudgetDetailRender = dynamic(
+  () => import('@/features/home/module/budgets/summary-detail/presentation/pages/BudgetDetail'),
   {
     loading: () => <Loading />,
   },
 );
 
-interface BudgetSummaryPageProps {
+interface BudgetDetailPageProps {
   params: Promise<{ year: string }>;
 }
 
-export default async function BudgetSummaryPage({ params }: BudgetSummaryPageProps) {
+export default async function BudgetDetailPage({ params }: BudgetDetailPageProps) {
   const { year } = await params;
 
   const isValidYear = year.length === 4 && !isNaN(Number(year));
@@ -22,5 +22,5 @@ export default async function BudgetSummaryPage({ params }: BudgetSummaryPagePro
     notFound();
   }
 
-  return <BudgetSumaryRender year={parseInt(year)} />;
+  return <BudgetDetailRender year={parseInt(year)} />;
 }
