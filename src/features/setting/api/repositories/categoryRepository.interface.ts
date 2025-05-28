@@ -1,4 +1,4 @@
-import { CategoryExtras } from '@/shared/types';
+import { CategoryExtras, CategoryWithBudgetDetails } from '@/shared/types';
 import { Category, CategoryType, Prisma } from '@prisma/client';
 
 export interface ICategoryRepository {
@@ -27,6 +27,10 @@ export interface ICategoryRepository {
     where: Prisma.CategoryWhereInput,
     options?: Prisma.CategoryFindManyArgs,
   ): Promise<Category[]>;
+  findManyCategoryWithBudgetDetails(
+    where: Prisma.CategoryWhereInput,
+    options?: Prisma.CategoryFindManyArgs,
+  ): Promise<CategoryWithBudgetDetails[]>;
   findFirstCategory(
     where: Prisma.CategoryWhereInput,
     options?: Prisma.CategoryFindFirstArgs,

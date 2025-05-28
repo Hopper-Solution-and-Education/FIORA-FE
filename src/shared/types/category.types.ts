@@ -13,3 +13,19 @@ export type CategoryExtras = Prisma.CategoryGetPayload<{
     subCategories: true;
   };
 }>;
+
+export type CategoryWithBudgetDetails = Prisma.CategoryGetPayload<{
+  select: {
+    id: true,
+    name: true,
+    icon: true,
+    type: true,
+    budgetDetails: {
+      select: {
+        month: true,
+        amount: true,
+        currency: true,
+      }
+    },
+  },
+}>

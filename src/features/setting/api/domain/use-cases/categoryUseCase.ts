@@ -3,7 +3,7 @@ import { ITransactionRepository } from '@/features/transaction/domain/repositori
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { Messages } from '@/shared/constants/message';
 import { FetchTransactionResponse } from '@/shared/types/budget.types';
-import { CategoryExtras } from '@/shared/types/category.types';
+import { CategoryExtras, CategoryWithBudgetDetails } from '@/shared/types/category.types';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { calculateSumUpAllocationByType } from '@/shared/utils/monthBudgetUtil';
 import { Category, CategoryType, Currency, TransactionType } from '@prisma/client';
@@ -127,7 +127,10 @@ class CategoryUseCase {
     currency: Currency,
   ) {
     // checked if categoryId is valid
-    const foundCategory = await this.categoryRepository.findCategoryById(categoryId);
+    const foundCategory = await this.categoryRepository.findFirstCategory({
+      id: categoryId,
+      userId,
+    });
 
     if (!foundCategory) {
       throw new Error(Messages.CATEGORY_NOT_FOUND);
@@ -172,12 +175,12 @@ class CategoryUseCase {
     };
   }
 
-  async getListCategoryByType(userId: string, type: CategoryType): Promise<Category[] | []> {
+  async getListCategoryByType(userId: string, type: CategoryType) {
     if (!Object.values(CategoryType).includes(type)) {
       throw new Error(Messages.INVALID_CATEGORY_TYPE);
     }
 
-    const categoryFound = this.categoryRepository.findManyCategory(
+    const categoryFound = await this.categoryRepository.findManyCategoryWithBudgetDetails(
       {
         userId,
         type,
@@ -188,11 +191,48 @@ class CategoryUseCase {
           name: true,
           icon: true,
           type: true,
+          budgetDetails: {
+            where: {
+              type: type,
+            },
+            select: {
+              month: true,
+              amount: true,
+              currency: true,
+            }
+          },
         },
       },
     );
 
-    return categoryFound ?? [];
+
+    const transferCategoryFound = categoryFound.map((category: CategoryWithBudgetDetails) => {
+      const suffix = category.type === CategoryType.Expense ? 'exp' : 'inc';
+      const bottomUpPlan: Record<string, number> = {};
+
+      // Initialize all months with 0
+      for (let i = 1; i <= 12; i++) {
+        bottomUpPlan[`m${i}_${suffix}`] = 0;
+      }
+
+      // Map budgetDetails to corresponding months
+      category.budgetDetails.forEach((detail) => {
+        const monthKey = `m${detail.month}_${suffix}`;
+        // Convert amount from string to number and apply currency conversion if needed
+        const amount = Number(detail.amount);
+        bottomUpPlan[monthKey] = amount; // Assuming no currency conversion for now; adjust if needed
+      });
+
+      const { budgetDetails, ...categoryWithoutBudgetDetails } = category;
+
+      return {
+        ...categoryWithoutBudgetDetails,
+        bottomUpPlan,
+      };
+    })
+
+    // mapping budgetDetails by month by format m1_suffix, suffix is expense or income
+    return transferCategoryFound ?? [];
   }
 }
 

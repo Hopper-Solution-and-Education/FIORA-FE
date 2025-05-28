@@ -1,6 +1,7 @@
 import { Category, CategoryType, Prisma } from '@prisma/client';
 import { prisma } from '@/config';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
+import { CategoryWithBudgetDetails } from '@/shared/types/category.types';
 
 class CategoryRepository implements ICategoryRepository {
   async createCategory(data: {
@@ -91,6 +92,30 @@ class CategoryRepository implements ICategoryRepository {
       where,
       ...options,
     });
+  }
+
+  async findManyCategoryWithBudgetDetails(
+    where: Prisma.CategoryWhereInput,
+    options?: Prisma.CategoryFindManyArgs,
+  ): Promise<CategoryWithBudgetDetails[]> {
+    const result = await prisma.category.findMany({
+      where,
+      ...options,
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        icon: true,
+        budgetDetails: {
+          select: {
+            month: true,
+            amount: true,
+            currency: true,
+          }
+        }
+      }
+    });
+    return result as CategoryWithBudgetDetails[];
   }
 
   async findFirstCategory(
