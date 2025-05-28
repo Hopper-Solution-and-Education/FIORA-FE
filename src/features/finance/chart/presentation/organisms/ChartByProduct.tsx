@@ -29,6 +29,7 @@ const ChartByProduct = () => {
         name: item.name,
         column1: item.totalExpense,
         column2: item.totalIncome,
+        column3: item.totalProfit,
       }))
     : [];
 
@@ -43,8 +44,8 @@ const ChartByProduct = () => {
           columns={[
             { key: 'column1', name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_2 },
             { key: 'column2', name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_2 },
+            { key: 'column3', name: 'Profit', color: COLORS.DEPS_INFO.LEVEL_2 },
           ]}
-          lines={[{ key: 'line', name: 'Profit', color: COLORS.DEPS_INFO.LEVEL_2 }]}
           currency="VNĐ"
         />
       )}

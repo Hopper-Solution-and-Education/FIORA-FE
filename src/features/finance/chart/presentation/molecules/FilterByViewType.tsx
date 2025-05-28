@@ -1,4 +1,5 @@
 import { Icons } from '@/components/Icon';
+import { DateRangePicker } from '@/components/modern-ui/date-picker';
 import {
   Select,
   SelectContent,
@@ -11,7 +12,7 @@ import { DateRange } from 'react-day-picker';
 import { setSelectedAccounts, setSelectedPartners, setSelectedProducts } from '../../slices';
 import { ViewBy } from '../../slices/types';
 import { chartComponents } from '../../utils';
-import { DateRangePickerFinance, MultiSelectPickerFinance, ViewByCategorySelect } from '../atoms';
+import { MultiSelectPickerFinance, ViewByCategorySelect } from '../atoms';
 
 const viewByIcons: Record<ViewBy, keyof typeof Icons> = {
   date: 'calendar',
@@ -87,11 +88,11 @@ const FilterByViewType = ({
         </div>
       </div>
       {viewBy === 'date' && (
-        <DateRangePickerFinance
-          label="Select Date Range"
+        <DateRangePicker
           dateRange={dateRange}
-          onChange={setDateRange}
-          labelPosition="horizontal"
+          setDateRange={setDateRange}
+          placeholder="Select date range"
+          numberOfMonths={2}
         />
       )}
       {viewBy === 'category' && <ViewByCategorySelect />}
