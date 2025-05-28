@@ -29,7 +29,7 @@ export const navItems: NavItem[] = [
       {
         title: 'Categories',
         url: '/category',
-        icon: 'package',
+        icon: 'kanban',
         shortcut: ['m', 'm'],
         featureFlags: FeatureFlags.CATEGORY_FEATURE,
       },

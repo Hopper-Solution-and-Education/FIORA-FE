@@ -6,11 +6,14 @@ import {
   GetFinanceByCategoryResponse,
   GetFinanceByDateRequest,
   GetFinanceByDateResponse,
+  GetFinanceWithFilterRequest,
+  GetFinanceWithFilterResponse,
 } from '../../domain/entities';
 
 export interface IFinanceRepository {
   getFinanceByDate(request: GetFinanceByDateRequest): Promise<GetFinanceByDateResponse>;
   getFinanceByCategory(request: GetFinanceByCategoryRequest): Promise<GetFinanceByCategoryResponse>;
+  getFinanceWithFilter(request: GetFinanceWithFilterRequest): Promise<GetFinanceWithFilterResponse>;
 }
 
 export class FinanceRepository implements IFinanceRepository {
@@ -32,6 +35,14 @@ export class FinanceRepository implements IFinanceRepository {
     const requestAPI = FinanceMapper.toGetFinanceByCategoryRequest(request);
     const response = await this.financeAPI.getFinanceByCategory(requestAPI);
     return FinanceMapper.toGetFinanceByCategoryResponse(response);
+  }
+
+  async getFinanceWithFilter(
+    request: GetFinanceWithFilterRequest,
+  ): Promise<GetFinanceWithFilterResponse> {
+    const requestAPI = FinanceMapper.toGetFinanceWithFilterRequest(request);
+    const response = await this.financeAPI.getFinanceWithFilter(requestAPI);
+    return FinanceMapper.toGetFinanceWithFilterResponse(response);
   }
 }
 

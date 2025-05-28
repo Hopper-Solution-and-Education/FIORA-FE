@@ -4,8 +4,26 @@ import { ComposedChartDataItem } from './type';
 
 export const ComposedChartExample = () => {
   const data: ComposedChartDataItem[] = [
-    { name: 'Tháng 1', expense: 4000, income: 24400, profit: 1600 },
-    { name: 'Tháng 7', expense: 3490, income: -23000, profit: -1190 },
+    { name: 'Tháng 1sdafffffffffffffffffffffffffffff', expense: 4000, income: 24400, profit: 1600 },
+    { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    // { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    // { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    // { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
+    // { name: 'Tháng 7adsssssssssssssssssssssssssss', expense: 3490, income: -23000, profit: -1190 },
   ];
 
   return (

@@ -1,107 +1,83 @@
-import DateRangePicker from '@/components/common/forms/date-range-picker/DateRangePicker';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
-import {
-  ChartByAccount,
-  ChartByCategory,
-  ChartByDate,
-  ChartByPartner,
-  ChartByProduct,
-} from '../organisms';
-import { useAppDispatch } from '@/store';
+import { setViewBy } from '../../slices';
+import { getAllPartnerAsyncThunk } from '../../slices/actions';
+import { getAllAccountAsyncThunk } from '../../slices/actions/getAllAccountAsyncThunk';
+import { getAllProductAsyncThunk } from '../../slices/actions/getAllProductAsyncThunk';
 import { getFinanceByDateAsyncThunk } from '../../slices/actions/getFinanceByDateAsyncThunk';
-
-type ViewBy = 'date' | 'category' | 'account' | 'product' | 'partner';
+import { ViewBy } from '../../slices/types';
+import { chartComponents } from '../../utils';
+import { FilterByViewType } from '../molecules';
 
 const ChartFinancePage = () => {
-  const [viewBy, setViewBy] = useState<ViewBy>('date');
-  const [viewByCategory, setViewByCategory] = useState<'income' | 'expense'>('income');
-
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: undefined,
-    to: undefined,
-  });
-
+  const viewBy = useAppSelector((state) => state.financeControl.viewBy);
   const dispatch = useAppDispatch();
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+
+  const handleViewByChange = (value: ViewBy) => {
+    dispatch(setViewBy(value));
+  };
 
   useEffect(() => {
-    dispatch(
-      getFinanceByDateAsyncThunk({
-        from: dateRange?.from ? dateRange.from.toISOString() : '',
-        to: dateRange?.to ? dateRange.to.toISOString() : '',
-      }),
-    );
-  }, [dispatch, dateRange]);
+    if (viewBy === 'date') {
+      if (dateRange?.from && dateRange?.to) {
+        // Nếu dateRange đã được chọn, sử dụng range đó
+        dispatch(
+          getFinanceByDateAsyncThunk({
+            from: dateRange.from.toISOString(),
+            to: dateRange.to.toISOString(),
+          }),
+        );
+      } else {
+        // Mặc định lấy dữ liệu 10 năm gần nhất
+        const now = new Date();
+        const tenYearsAgo = new Date(now.getFullYear() - 10, now.getMonth(), now.getDate()); // 10 năm trước từ ngày hiện tại
 
-  const renderViewByCategorySelect = () => {
-    return (
-      <div className="flex items-center gap-2">
-        <div className="text-sm font-medium">Sort By</div>
-        <div className="w-32">
-          <Select
-            value={viewByCategory}
-            onValueChange={(value) => setViewByCategory(value as 'income' | 'expense')}
-            defaultValue="income"
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select a view" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="income">Income</SelectItem>
-              <SelectItem value="expense">Expense</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-    );
-  };
+        dispatch(
+          getFinanceByDateAsyncThunk({
+            from: tenYearsAgo.toISOString(),
+            to: now.toISOString(), // Đến ngày hiện tại
+          }),
+        );
+      }
+    } else if (viewBy === 'account') {
+      dispatch(
+        getAllAccountAsyncThunk({
+          page: 1,
+          pageSize: 50,
+          search: '',
+        }),
+      );
+    } else if (viewBy === 'product') {
+      dispatch(
+        getAllProductAsyncThunk({
+          page: 1,
+          pageSize: 50,
+        }),
+      );
+    } else if (viewBy === 'partner') {
+      dispatch(
+        getAllPartnerAsyncThunk({
+          page: 1,
+          pageSize: 50,
+        }),
+      );
+    }
+  }, [dispatch, dateRange, viewBy]);
+
+  const ChartComponent = chartComponents[viewBy];
 
   return (
     <div className="space-y-4 p-4">
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2">
-          <div className="text-sm font-medium">View By</div>
-          <div className="w-32">
-            <Select
-              value={viewBy}
-              onValueChange={(value) => setViewBy(value as ViewBy)}
-              defaultValue="date"
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a view" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="date">Date</SelectItem>
-                <SelectItem value="category">Category</SelectItem>
-                <SelectItem value="account">Account</SelectItem>
-                <SelectItem value="product">Product</SelectItem>
-                <SelectItem value="partner">Partner</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        {viewBy === 'date' && (
-          <div>
-            <DateRangePicker
-              date={dateRange}
-              onChange={(value: DateRange | undefined) => setDateRange(value)}
-            />
-          </div>
-        )}
-        {viewBy === 'category' && renderViewByCategorySelect()}
-      </div>
-      {viewBy === 'date' && <ChartByDate />}
-      {viewBy === 'category' && <ChartByCategory viewBy={viewByCategory} />}
-      {viewBy === 'account' && <ChartByAccount />}
-      {viewBy === 'product' && <ChartByProduct />}
-      {viewBy === 'partner' && <ChartByPartner />}
+      <FilterByViewType
+        viewBy={viewBy}
+        dateRange={dateRange}
+        setDateRange={setDateRange}
+        onViewByChange={handleViewByChange}
+      />
+
+      <ChartComponent />
     </div>
   );
 };

@@ -1,21 +1,44 @@
-import { ColumnConfig } from '@/shared/types/chart.type';
+import { ColumnConfig, LineConfig } from '@/shared/types/chart.type';
 
 export const findMaxMinValues = <T extends Record<string, any>>(
   data: T[],
   columns: ColumnConfig[],
+  lines?: LineConfig[],
 ): { maxValue: number; minValue: number } => {
-  let max = 0;
-  let min = 0;
+  let columnsMax = 0;
+  let columnsMin = 0;
 
+  // Find max/min for columns
   data.forEach((item) => {
     columns.forEach((column) => {
       const value = item[column.key] as number;
-      if (value > 0 && value > max) max = value;
-      if (value < 0 && value < min) min = value;
+      if (value > 0 && value > columnsMax) columnsMax = value;
+      if (value < 0 && value < columnsMin) columnsMin = value;
     });
   });
 
-  return { maxValue: max, minValue: min };
+  // Find max/min for lines if provided
+  let linesMax = 0;
+  let linesMin = 0;
+
+  if (lines && lines.length > 0) {
+    data.forEach((item) => {
+      lines.forEach((line) => {
+        const value = item[line.key] as number;
+        if (value > 0 && value > linesMax) linesMax = value;
+        if (value < 0 && value < linesMin) linesMin = value;
+      });
+    });
+  }
+
+  // Get final max and min values
+  const finalMax = Math.max(columnsMax, linesMax);
+  const finalMin = Math.min(columnsMin, linesMin);
+
+  return {
+    maxValue: finalMax,
+    minValue: finalMin,
+  };
 };
 
 export const buildResponsiveBarCategoryGap = <T extends Record<string, any>>(

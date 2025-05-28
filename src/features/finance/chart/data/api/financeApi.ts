@@ -5,6 +5,8 @@ import {
   GetFinanceByCategoryResponseDTO,
   GetFinanceByDateRequestDTO,
   GetFinanceByDateResponseDTO,
+  GetFinanceWithFilterRequestDTO,
+  GetFinanceWithFilterResponseDTO,
 } from '../dto';
 
 export interface IFinanceAPI {
@@ -12,6 +14,9 @@ export interface IFinanceAPI {
   getFinanceByCategory(
     request: GetFinanceByCategoryRequestDTO,
   ): Promise<GetFinanceByCategoryResponseDTO>;
+  getFinanceWithFilter(
+    request: GetFinanceWithFilterRequestDTO,
+  ): Promise<GetFinanceWithFilterResponseDTO>;
 }
 
 class FinanceAPI implements IFinanceAPI {
@@ -25,6 +30,15 @@ class FinanceAPI implements IFinanceAPI {
     request: GetFinanceByCategoryRequestDTO,
   ): Promise<GetFinanceByCategoryResponseDTO> {
     return await httpClient.get(`/api/finances?type=${request.type}&filter=${request.filter}`);
+  }
+
+  async getFinanceWithFilter(
+    request: GetFinanceWithFilterRequestDTO,
+  ): Promise<GetFinanceWithFilterResponseDTO> {
+    return await httpClient.post(`/api/finances`, {
+      type: request.type,
+      ids: request.ids,
+    });
   }
 }
 
