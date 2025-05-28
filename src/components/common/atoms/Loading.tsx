@@ -1,3 +1,5 @@
+'use client';
+
 import { cn } from '@/shared/utils';
 import { AnimatePresence, motion } from 'framer-motion'; // Optional for animations
 import { Loader2, RotateCw } from 'lucide-react';
