@@ -8,6 +8,7 @@ import { BudgetSummaryMapper } from '../mappers/BudgetSummaryMapper';
 import { IBudgetSummaryRepository } from './IBudgetSummaryRepository';
 import { Budget } from '../../domain/entities/Budget';
 import { BudgetType } from '../../domain/entities/BudgetType';
+import { Category, CategoryPlanning } from '../dto/response/CategoryResponseDTO';
 
 @injectable()
 export class BudgetSummaryRepository implements IBudgetSummaryRepository {
@@ -41,5 +42,15 @@ export class BudgetSummaryRepository implements IBudgetSummaryRepository {
       console.error('Error fetching budgets by user ID and fiscal year:', error);
       throw error;
     }
+  }
+
+  async getCategoriesByType(type: 'Income' | 'Expense'): Promise<Category[]> {
+    const response = await this.budgetSummaryAPI.getCategoriesByType(type);
+    return response.data;
+  }
+
+  async getActualPlanningByCategory(categoryId: string, year: number): Promise<CategoryPlanning> {
+    const response = await this.budgetSummaryAPI.getActualPlanningByCategory(categoryId, year);
+    return response.data;
   }
 }

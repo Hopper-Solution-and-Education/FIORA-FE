@@ -13,12 +13,12 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEnpointEnum';
 import { routeConfig } from '@/shared/utils/route';
-import { useAppDispatch, useAppSelector } from '@/store';
+import { useAppSelector } from '@/store';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { fetchCategories } from '../../../../category/slices/actions';
 import { BudgetDetailFilterEnum, PERIOD_OPTIONS } from '../../data/constants';
+import { Category } from '../../data/dto/response/CategoryResponseDTO';
 import { budgetSummaryDIContainer } from '../../di/budgetSummaryDIContainer';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
 import { BudgetType } from '../../domain/entities/BudgetType';
@@ -44,11 +44,10 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   );
   const [columns, setColumns] = useState<ColumnProps[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [categoryList, setCategoryList] = useState<Category[]>([]);
 
   const { currency } = useAppSelector((state) => state.settings);
-  const { categories } = useAppSelector((state) => state.category);
 
-  const dispatch = useAppDispatch();
   const router = useRouter();
 
   const searchParams = useSearchParams();
@@ -60,46 +59,68 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     [],
   );
 
+  // Fetch categories based on active tab
   useEffect(() => {
-    dispatch(fetchCategories());
-  }, [dispatch]);
-
-  const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-
-    // Update table data with selected category
-    setTableData((prevData) => {
-      const newData = [...prevData];
-      const categoryIndex = newData.findIndex((item) => item.key === 'new-category');
-
-      if (categoryIndex !== -1) {
-        const selectedCategoryData = categories.data?.find((cat) => cat.id === categoryId);
-        if (selectedCategoryData) {
-          newData[categoryIndex] = {
-            ...newData[categoryIndex],
-            type: selectedCategoryData.name || '',
-            children: [
-              {
-                key: `${categoryId}-bottom-up`,
-                type: 'Bottom-up Plan',
-                isChild: true,
-                action: true,
-                isEditable: true,
-              },
-              {
-                key: `${categoryId}-actual`,
-                type: 'Actual sum-up',
-                isChild: true,
-                action: true,
-                isEditable: false,
-              },
-            ],
-          };
-        }
+    const fetchCategories = async () => {
+      try {
+        const type = activeTab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income';
+        const categories = await budgetSummaryUseCase.getCategoriesByType(type);
+        setCategoryList(categories);
+      } catch (err: any) {
+        toast.error(err?.message || 'Failed to fetch categories');
       }
+    };
 
-      return newData;
-    });
+    fetchCategories();
+  }, [activeTab, budgetSummaryUseCase]);
+
+  const handleCategoryChange = async (categoryId: string) => {
+    const selectedCategoryData = categoryList.find((cat) => cat.id === categoryId);
+    if (!selectedCategoryData) return;
+
+    setSelectedCategory(categoryId);
+    setIsLoading(true);
+
+    try {
+      const planning = await budgetSummaryUseCase.getActualPlanningByCategory(
+        categoryId,
+        initialYear,
+      );
+
+      setTableData((prevData) => {
+        return prevData.map((item) => {
+          if (item.key === 'new-category') {
+            return {
+              ...item,
+              type: selectedCategoryData.name,
+              children: [
+                {
+                  key: `${categoryId}-bottom-up`,
+                  type: 'Bottom-up Plan',
+                  isChild: true,
+                  action: true,
+                  isEditable: true,
+                  ...planning.bottomUp,
+                },
+                {
+                  key: `${categoryId}-actual`,
+                  type: 'Actual sum-up',
+                  isChild: true,
+                  action: true,
+                  isEditable: false,
+                  ...planning.actual,
+                },
+              ],
+            };
+          }
+          return item;
+        });
+      });
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to fetch category planning data');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -124,7 +145,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
           ...mainData,
           {
             key: 'new-category',
-            type: '', // Empty string will trigger CategorySelect in column render
+            type: '',
             isParent: true,
             action: true,
             children: [
@@ -148,13 +169,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
 
         setTableData(dataWithCategory);
         setColumns(
-          getColumnsByPeriod(
-            period,
-            periodId,
-            currency,
-            categories.data || [],
-            handleCategoryChange,
-          ),
+          getColumnsByPeriod(period, periodId, currency, categoryList, handleCategoryChange),
         );
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Failed to fetch budget data');
@@ -173,7 +188,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     activeTab,
     budgetSummaryUseCase,
     router,
-    categories.data,
+    categoryList,
   ]);
 
   const handlePeriodChange = (value: string) => {

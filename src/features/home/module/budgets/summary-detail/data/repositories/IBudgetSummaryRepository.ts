@@ -8,4 +8,6 @@ export interface IBudgetSummaryRepository {
   getBudgetSummary(params: BudgetSummaryRequestDTO): Promise<BudgetSummary>;
   getBudgetByType(fiscalYear: number, type: BudgetType): Promise<BudgetSummaryByType>;
   getBudgetsByUserIdAndFiscalYear(userId: string, fiscalYear: number): Promise<Budget[]>;
+  getCategoriesByType(type: 'Income' | 'Expense'): Promise<any[]>;
+  getActualPlanningByCategory(categoryId: string, year: number): Promise<any>;
 }

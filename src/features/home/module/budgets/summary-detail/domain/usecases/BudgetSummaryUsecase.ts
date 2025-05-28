@@ -5,11 +5,12 @@ import type { IBudgetSummaryRepository } from '../../data/repositories/IBudgetSu
 import { IBudgetSummaryUseCase } from './IBudgetSummaryUseCase';
 import { BudgetSummaryByType } from '../entities/BudgetSummaryByType';
 import { BudgetSummaryResponseDTO } from '../../data/dto/response/BudgetSummaryResponseDTO';
+
 @injectable()
 export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
   constructor(
     @inject(TYPES.IBudgetSummaryRepository)
-    private budgetSummaryRepository: IBudgetSummaryRepository,
+    private readonly budgetSummaryRepository: IBudgetSummaryRepository,
   ) {}
 
   async getBudgetsByUserIdAndFiscalYear(
@@ -33,8 +34,15 @@ export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
     };
   }
 
-  async getBudgetByType(fiscalYear: number, type: BudgetType): Promise<BudgetSummaryByType> {
-    const budget = await this.budgetSummaryRepository.getBudgetByType(fiscalYear, type);
-    return budget;
+  async getBudgetByType(year: number, type: BudgetType): Promise<BudgetSummaryByType> {
+    return this.budgetSummaryRepository.getBudgetByType(year, type);
+  }
+
+  async getCategoriesByType(type: 'Income' | 'Expense'): Promise<any[]> {
+    return this.budgetSummaryRepository.getCategoriesByType(type);
+  }
+
+  async getActualPlanningByCategory(categoryId: string, year: number): Promise<any> {
+    return this.budgetSummaryRepository.getActualPlanningByCategory(categoryId, year);
   }
 }

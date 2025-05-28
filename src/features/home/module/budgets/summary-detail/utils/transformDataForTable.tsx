@@ -128,7 +128,7 @@ export const getColumnsByPeriod = (
       align: 'left',
       fixed: 'left',
       render: (text: string, record: TableData) => {
-        if (record.isParent && !text) {
+        if (record.isParent) {
           return (
             <div className={cn('w-full h-full flex items-center gap-2')}>
               <CategorySelect
@@ -137,6 +137,8 @@ export const getColumnsByPeriod = (
                 categories={categories}
                 side="right"
                 onChange={(value) => onCategoryChange?.(value)}
+                value={text ? categories.find((cat) => cat.name === text)?.id : undefined}
+                placeholder="Select a category"
               />
             </div>
           );
