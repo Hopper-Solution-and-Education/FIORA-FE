@@ -1,3 +1,4 @@
+import { FilterCriteria } from '@/shared/types';
 import { Partner } from '../../domain/entities/Partner';
 
 export interface PartnerState {
@@ -16,4 +17,5 @@ export const initialPartnerState = {
   isUpdatingPartner: false,
   isDeletingPartner: false, // Add this line
   error: null as string | null,
+  filterCriteria: { userId: '', filters: {} } as FilterCriteria,
 };

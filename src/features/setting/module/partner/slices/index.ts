@@ -4,7 +4,9 @@ import { Partner } from '../domain/entities/Partner';
 import { fetchPartners } from './actions/fetchPartnersAsyncThunk';
 import { updatePartner } from './actions/updatePartnerAsyncThunk';
 import { deletePartner } from './actions/deletePartnerAsyncThunk'; // Import the delete thunk
+import { searchPartners } from './actions/searchPartnersAsyncThunk'; // Import the search thunk
 import { initialPartnerState } from './types';
+import { FilterCriteria } from '@/shared/types/filter.types';
 
 const partnerManagementSlice = createSlice({
   name: 'partnerManagement',
@@ -37,6 +39,9 @@ const partnerManagementSlice = createSlice({
     setDeleteConfirmOpen(state, action: PayloadAction<boolean>) {
       // Add this reducer
       state.isDeleteConfirmOpen = action.payload;
+    },
+    updatePartnerFilterCriteria(state, action: PayloadAction<FilterCriteria>) {
+      state.filterCriteria = action.payload;
     },
     triggerRefresh(state) {
       state.refresh = !state.refresh;
@@ -95,6 +100,21 @@ const partnerManagementSlice = createSlice({
         state.error = action.payload || 'Failed to delete partner';
         toast.error(action.payload || 'Failed to delete partner');
       });
+
+    // Search Partners
+    builder
+      .addCase(searchPartners.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(searchPartners.fulfilled, (state, action: PayloadAction<Partner[]>) => {
+        state.isLoading = false;
+        state.partners = action.payload;
+      })
+      .addCase(searchPartners.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || 'Failed to search partners';
+      });
   },
 });
 
@@ -104,6 +124,7 @@ export const {
   setAddPartnerDialogOpen,
   setUpdatePartnerDialogOpen,
   setDeleteConfirmOpen, // Export the new action
+  updatePartnerFilterCriteria,
   triggerRefresh,
 } = partnerManagementSlice.actions;
 
