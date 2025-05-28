@@ -1,6 +1,6 @@
 import { SelectOption } from '@/components/common/filters/SelectFilter';
+import MultiSelectField from '@/components/common/forms/select/MultiSelectField';
 import { Label } from '@/components/ui/label';
-import { MultiSelect } from '@/components/ui/multi-select';
 
 interface MultiSelectFilterProps {
   options: SelectOption[];
@@ -32,9 +32,9 @@ const MultiSelectPickerFinance = ({
       {label && (
         <Label className={labelPosition === 'horizontal' ? 'min-w-[100px]' : ''}>{label}</Label>
       )}
-      <div className="w-48">
-        <MultiSelect
-          className={`px-4 py-[7px] ${className}`}
+      <div className="w-full">
+        <MultiSelectField
+          className={`${className}`}
           options={options}
           selected={selectedValues}
           onChange={onChange}

@@ -5,10 +5,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { DateRange } from 'react-day-picker';
+import { setSelectedAccounts } from '../../slices';
 import { ViewBy } from '../../slices/types';
-import { chartComponents, multiSelectConfig } from '../../utils';
+import { chartComponents } from '../../utils';
 import { DateRangePickerFinance, MultiSelectPickerFinance, ViewByCategorySelect } from '../atoms';
+import { Icons } from '@/components/Icon';
+
+const viewByIcons: Record<ViewBy, keyof typeof Icons> = {
+  date: 'calendar',
+  category: 'kanban',
+  account: 'banknote',
+  product: 'package',
+  partner: 'handShake',
+};
 
 const FilterByViewType = ({
   viewBy,
@@ -20,38 +31,72 @@ const FilterByViewType = ({
   dateRange: DateRange | undefined;
   setDateRange: (range: DateRange | undefined) => void;
   onViewByChange: (value: ViewBy) => void;
-}) => (
-  <div className="flex items-center gap-4">
-    <div className="flex items-center gap-2">
-      <span className="text-sm font-medium">View By</span>
-      <div className="w-32">
-        <Select value={viewBy} onValueChange={(value) => onViewByChange(value as ViewBy)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a view" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.keys(chartComponents).map((key) => (
-              <SelectItem key={key} value={key}>
-                {key.charAt(0).toUpperCase() + key.slice(1)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+}) => {
+  const accounts = useAppSelector((state) => state.financeControl.accounts.data);
+  const selectedAccounts = useAppSelector((state) => state.financeControl.selectedAccounts);
+  const dispatch = useAppDispatch();
+  const handleChangeAccounts = (values: string[]) => {
+    dispatch(setSelectedAccounts(values));
+  };
+
+  const renderIcon = (type: ViewBy) => {
+    const IconComponent = Icons[viewByIcons[type]];
+    return IconComponent ? <IconComponent className="w-4 h-4" /> : null;
+  };
+
+  return (
+    <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 shrink-0">
+        <span className="text-sm font-medium whitespace-nowrap">View By</span>
+        <div className="w-32">
+          <Select value={viewBy} onValueChange={(value) => onViewByChange(value as ViewBy)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a view">
+                {viewBy && (
+                  <div className="flex items-center gap-2">
+                    {renderIcon(viewBy)}
+                    <span>{viewBy.charAt(0).toUpperCase() + viewBy.slice(1)}</span>
+                  </div>
+                )}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {Object.keys(chartComponents).map((key) => (
+                <SelectItem key={key} value={key}>
+                  <div className="flex items-center gap-2">
+                    {renderIcon(key as ViewBy)}
+                    <span>{key.charAt(0).toUpperCase() + key.slice(1)}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
+      {viewBy === 'date' && (
+        <DateRangePickerFinance
+          label="Select Date Range"
+          dateRange={dateRange}
+          onChange={setDateRange}
+          labelPosition="horizontal"
+        />
+      )}
+      {viewBy === 'category' && <ViewByCategorySelect />}
+      {viewBy === 'account' && (
+        <MultiSelectPickerFinance
+          label=""
+          placeholder="Select accounts"
+          options={accounts.map((account) => ({
+            label: account.name,
+            value: account.id,
+            icon: account.icon,
+          }))}
+          selectedValues={selectedAccounts}
+          onChange={handleChangeAccounts}
+        />
+      )}
     </div>
-    {viewBy === 'date' && (
-      <DateRangePickerFinance
-        label="Select Date Range"
-        dateRange={dateRange}
-        onChange={setDateRange}
-        labelPosition="horizontal"
-      />
-    )}
-    {viewBy === 'category' && <ViewByCategorySelect />}
-    {multiSelectConfig[viewBy] && (
-      <MultiSelectPickerFinance label="" {...multiSelectConfig[viewBy]!} />
-    )}
-  </div>
-);
+  );
+};
 
 export default FilterByViewType;

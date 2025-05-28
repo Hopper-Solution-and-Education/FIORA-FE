@@ -2,6 +2,7 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { setViewBy } from '../../slices';
+import { getAllAccountAsyncThunk } from '../../slices/actions/getAllAccountAsyncThunk';
 import { getFinanceByDateAsyncThunk } from '../../slices/actions/getFinanceByDateAsyncThunk';
 import { ViewBy } from '../../slices/types';
 import { chartComponents } from '../../utils';
@@ -17,11 +18,33 @@ const ChartFinancePage = () => {
   };
 
   useEffect(() => {
-    if (viewBy === 'date' && dateRange?.from && dateRange?.to) {
+    if (viewBy === 'date') {
+      if (dateRange?.from && dateRange?.to) {
+        // Nếu dateRange đã được chọn, sử dụng range đó
+        dispatch(
+          getFinanceByDateAsyncThunk({
+            from: dateRange.from.toISOString(),
+            to: dateRange.to.toISOString(),
+          }),
+        );
+      } else {
+        // Mặc định lấy dữ liệu 10 năm gần nhất
+        const now = new Date();
+        const tenYearsAgo = new Date(now.getFullYear() - 10, now.getMonth(), now.getDate()); // 10 năm trước từ ngày hiện tại
+
+        dispatch(
+          getFinanceByDateAsyncThunk({
+            from: tenYearsAgo.toISOString(),
+            to: now.toISOString(), // Đến ngày hiện tại
+          }),
+        );
+      }
+    } else if (viewBy === 'account') {
       dispatch(
-        getFinanceByDateAsyncThunk({
-          from: dateRange.from.toISOString(),
-          to: dateRange.to.toISOString(),
+        getAllAccountAsyncThunk({
+          page: 1,
+          pageSize: 50,
+          search: '',
         }),
       );
     }
@@ -37,6 +60,7 @@ const ChartFinancePage = () => {
         setDateRange={setDateRange}
         onViewByChange={handleViewByChange}
       />
+
       <ChartComponent />
     </div>
   );

@@ -1,8 +1,9 @@
+import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { getAllAccountAsyncThunk } from './actions/getAllAccountAsyncThunk';
 import { getFinanceByCategoryAsyncThunk } from './actions/getFinanceByCategoryAsyncThunk';
 import { getFinanceByDateAsyncThunk } from './actions/getFinanceByDateAsyncThunk';
 import { initialFinanceControlState, ViewBy, ViewChartByCategory } from './types';
-import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 
 const financeControlSlice = createSlice({
   name: 'financeControl',
@@ -14,6 +15,9 @@ const financeControlSlice = createSlice({
     },
     setViewChartByCategory: (state, action: PayloadAction<ViewChartByCategory>) => {
       state.viewChartByCategory = action.payload;
+    },
+    setSelectedAccounts: (state, action: PayloadAction<string[]>) => {
+      state.selectedAccounts = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -51,10 +55,21 @@ const financeControlSlice = createSlice({
       .addCase(getFinanceByCategoryAsyncThunk.rejected, (state) => {
         state.isLoadingGetFinance = false;
       });
+    builder
+      .addCase(getAllAccountAsyncThunk.pending, (state) => {
+        state.accounts.isLoadingGetAccounts = true;
+      })
+      .addCase(getAllAccountAsyncThunk.fulfilled, (state, action) => {
+        state.accounts.isLoadingGetAccounts = false;
+        state.accounts.data = action.payload.accounts;
+      })
+      .addCase(getAllAccountAsyncThunk.rejected, (state) => {
+        state.accounts.isLoadingGetAccounts = false;
+      });
   },
 });
 
 export * from './types';
-export const { resetFinanceControlState, setViewBy, setViewChartByCategory } =
+export const { resetFinanceControlState, setViewBy, setViewChartByCategory, setSelectedAccounts } =
   financeControlSlice.actions;
 export default financeControlSlice.reducer;

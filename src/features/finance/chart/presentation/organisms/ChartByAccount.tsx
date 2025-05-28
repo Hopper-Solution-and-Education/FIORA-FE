@@ -8,7 +8,7 @@ import React, { useEffect } from 'react';
 import { getFinanceByCategoryAsyncThunk } from '../../slices/actions/getFinanceByCategoryAsyncThunk';
 
 const ChartByAccount = () => {
-  const financeByCategory = useAppSelector((state) => state.financeControl.financeByCategory);
+  const financeByCategory = useAppSelector((state) => state.financeControl.financeByAccount);
   const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinance);
   const dispatch = useAppDispatch();
 

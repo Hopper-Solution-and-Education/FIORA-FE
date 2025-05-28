@@ -166,6 +166,10 @@ export class AccountRepository implements IAccountRepository {
       },
     });
   }
+
+  async count(where: Prisma.AccountWhereInput): Promise<number> {
+    return prisma.account.count({ where });
+  }
 }
 
 export const accountRepository = new AccountRepository();
