@@ -127,7 +127,10 @@ class CategoryUseCase {
     currency: Currency,
   ) {
     // checked if categoryId is valid
-    const foundCategory = await this.categoryRepository.findCategoryById(categoryId);
+    const foundCategory = await this.categoryRepository.findFirstCategory({
+      id: categoryId,
+      userId,
+    });
 
     if (!foundCategory) {
       throw new Error(Messages.CATEGORY_NOT_FOUND);
