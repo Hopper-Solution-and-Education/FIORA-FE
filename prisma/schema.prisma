@@ -349,6 +349,7 @@ model BudgetsTable {
   @@unique([fiscalYear, type, userId])
   @@index([userId])
   @@index([fiscalYear])
+  @@index([fiscalYear, type, userId])
 }
 
 model BudgetDetails {
@@ -356,6 +357,7 @@ model BudgetDetails {
   userId     String           @db.Uuid
   budgetId   String           @db.Uuid
   type       BudgetDetailType
+  currency   Currency         @default(VND)
   categoryId String?          @db.Uuid
   amount     Decimal          @default(0) @db.Decimal(13, 2)
   month      Int              @db.SmallInt
@@ -367,6 +369,7 @@ model BudgetDetails {
   category   Category?        @relation(fields: [categoryId], references: [id])
   user       User             @relation(fields: [userId], references: [id])
 
+  @@unique([month, categoryId, type, budgetId, userId])
   @@index([userId])
   @@index([budgetId])
   @@index([categoryId])

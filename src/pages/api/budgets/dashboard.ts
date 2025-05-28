@@ -30,6 +30,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
 
     await budgetUseCase.updateActBudgetTransaction(userId, currency);
+
     const budgets = await budgetUseCase.getAnnualBudgetByYears({
       userId,
       cursor: cursor ? Number(cursor) : undefined,

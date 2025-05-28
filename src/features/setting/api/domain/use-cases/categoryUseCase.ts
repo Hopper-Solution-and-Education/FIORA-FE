@@ -1,9 +1,12 @@
-import { Category, CategoryType } from '@prisma/client';
 import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
-import { CategoryExtras } from '@/shared/types/category.types';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { Messages } from '@/shared/constants/message';
+import { FetchTransactionResponse } from '@/shared/types/budget.types';
+import { CategoryExtras } from '@/shared/types/category.types';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { calculateSumUpAllocationByType } from '@/shared/utils/monthBudgetUtil';
+import { Category, CategoryType, Currency, TransactionType } from '@prisma/client';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
 
 class CategoryUseCase {
@@ -71,7 +74,7 @@ class CategoryUseCase {
     await this.categoryRepository.deleteCategory(id);
   }
 
-  async getCategories(userId: string): Promise<any[]> {
+  async getCategories(userId: string) {
     const categories = await this.categoryRepository.findCategoriesWithTransactions(userId);
 
     const calculateBalance = (category: CategoryExtras): number => {
@@ -101,6 +104,95 @@ class CategoryUseCase {
     });
 
     return Array.from(categoryMap.values());
+  }
+
+  private calculateActualTotals(
+    transactions: FetchTransactionResponse[] | [],
+    currency: Currency,
+  ): { totalExpenseAct: number; totalIncomeAct: number } {
+    const totalExpenseAct = transactions
+      .filter((t) => t.type === TransactionType.Expense)
+      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+
+    const totalIncomeAct = transactions
+      .filter((t) => t.type === TransactionType.Income)
+      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+    return { totalExpenseAct, totalIncomeAct };
+  }
+
+  async getTransactionsByCategoryIdAndYear(
+    categoryId: string,
+    year: number,
+    userId: string,
+    currency: Currency,
+  ) {
+    // checked if categoryId is valid
+    const foundCategory = await this.categoryRepository.findCategoryById(categoryId);
+
+    if (!foundCategory) {
+      throw new Error(Messages.CATEGORY_NOT_FOUND);
+    }
+
+    const suffix = foundCategory.type === CategoryType.Expense ? 'exp' : 'inc';
+
+    const foundTransactions = await this.transactionRepository.findManyTransactions({
+      userId,
+      isDeleted: false,
+      date: {
+        gte: new Date(`${year}-01-01`),
+        lte: new Date(`${year}-12-31`),
+      },
+      ...(foundCategory.type === CategoryType.Expense
+        ? { toCategoryId: foundCategory.id }
+        : { fromCategoryId: foundCategory.id }),
+    });
+
+    const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
+      foundTransactions,
+      currency,
+    );
+
+    const { monthFields, quarterFields, halfYearFields } = calculateSumUpAllocationByType(
+      foundTransactions,
+      year,
+      foundCategory,
+      currency,
+    );
+
+    const totalMapping =
+      foundCategory.type === CategoryType.Expense ? totalExpenseAct : totalIncomeAct;
+
+    return {
+      ...monthFields,
+      ...quarterFields,
+      ...halfYearFields,
+      [`total_${suffix}`]: totalMapping,
+      currency,
+      type: foundCategory.type,
+    };
+  }
+
+  async getListCategoryByType(userId: string, type: CategoryType): Promise<Category[] | []> {
+    if (!Object.values(CategoryType).includes(type)) {
+      throw new Error(Messages.INVALID_CATEGORY_TYPE);
+    }
+
+    const categoryFound = this.categoryRepository.findManyCategory(
+      {
+        userId,
+        type,
+      },
+      {
+        select: {
+          id: true,
+          name: true,
+          icon: true,
+          type: true,
+        },
+      },
+    );
+
+    return categoryFound ?? [];
   }
 }
 
