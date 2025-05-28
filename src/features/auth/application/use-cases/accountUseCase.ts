@@ -140,7 +140,20 @@ export class AccountUseCase {
         ],
       },
     );
-    return accountFiltered;
+
+    const balances = accountFiltered.map((a) => Number(a.balance ?? 0));
+    let minBalance = balances.length > 0 ? Math.min(...balances) : 0;
+    const maxBalance = balances.length > 0 ? Math.max(...balances) : 0;
+
+    if (minBalance === maxBalance) {
+      minBalance = 0;
+    }
+
+    return {
+      data: [...accountFiltered],
+      minBalance,
+      maxBalance,
+    };
   }
 
   async validateParentAccount(parentId: string, type: AccountType): Promise<void> {

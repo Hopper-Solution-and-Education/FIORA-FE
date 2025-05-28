@@ -45,10 +45,50 @@ class PartnerUseCase {
     }
   }
 
+  private calculateTransactionStats(partners: Array<any>) {
+    let minIncome = Number.MAX_SAFE_INTEGER;
+    let maxIncome = 0;
+    let minExpense = Number.MAX_SAFE_INTEGER;
+    let maxExpense = 0;
+
+    for (const partner of partners) {
+      const incomeTransactions =
+        partner.transactions?.filter((t: Transaction) => t.type === 'Income') ?? [];
+      const expenseTransactions =
+        partner.transactions?.filter((t: Transaction) => t.type === 'Expense') ?? [];
+
+      if (incomeTransactions.length > 0) {
+        const partnerMinIncome = Math.min(...incomeTransactions.map((t: any) => Number(t.amount)));
+        const partnerMaxIncome = Math.max(...incomeTransactions.map((t: any) => Number(t.amount)));
+        minIncome = Math.min(minIncome, partnerMinIncome);
+        maxIncome = Math.max(maxIncome, partnerMaxIncome);
+      }
+
+      if (expenseTransactions.length > 0) {
+        const partnerMinExpense = Math.min(
+          ...expenseTransactions.map((t: any) => Number(t.amount)),
+        );
+        const partnerMaxExpense = Math.max(
+          ...expenseTransactions.map((t: any) => Number(t.amount)),
+        );
+        minExpense = Math.min(minExpense, partnerMinExpense);
+        maxExpense = Math.max(maxExpense, partnerMaxExpense);
+      }
+    }
+
+    return {
+      minIncome: minIncome === Number.MAX_SAFE_INTEGER ? 0 : minIncome,
+      maxIncome,
+      minExpense: minExpense === Number.MAX_SAFE_INTEGER ? 0 : minExpense,
+      maxExpense,
+    };
+  }
+
   async filterPartnerOptions(params: GlobalFilters, userId: string) {
     const searchParams = safeString(params.search);
     let filters = params.filters || {};
     const typesFilter = params.types || [];
+    delete params.filters?.transactions;
 
     filters = sanitizeDateFilters(params.filters || {});
     let where = buildWhereClause(filters) as Prisma.PartnerWhereInput;
@@ -100,7 +140,16 @@ class PartnerUseCase {
           })
         : filteredPartners;
 
-    return finalFilteredPartners;
+    const { minIncome, maxIncome, minExpense, maxExpense } =
+      this.calculateTransactionStats(finalFilteredPartners);
+
+    return {
+      data: finalFilteredPartners,
+      minIncome,
+      maxIncome,
+      minExpense,
+      maxExpense,
+    };
   }
 
   async filterByTransactionRange(partners: Array<any>, filters: PartnerRangeFilter) {

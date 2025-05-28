@@ -7,7 +7,6 @@ import { Messages } from '@/shared/constants/message';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
 import { safeString } from '@/shared/utils/ExStringUtils';
 import { GlobalFilters } from '@/shared/types';
-import { buildWhereClause } from '@/shared/utils';
 import { BooleanUtils } from '@/shared/lib';
 
 class CategoryUseCase {
@@ -75,13 +74,99 @@ class CategoryUseCase {
     await this.categoryRepository.deleteCategory(id);
   }
 
-  async getCategories(userId: string, params: GlobalFilters): Promise<any[]> {
+  private extractTransactionRangeFilters(filters: any): {
+    totalIncomeMin?: number;
+    totalIncomeMax?: number;
+    totalExpenseMin?: number;
+    totalExpenseMax?: number;
+  } {
+    const result: any = {};
+
+    const transactionsFilter = filters?.transactions?.some?.OR ?? [];
+    transactionsFilter.forEach((condition: any) => {
+      if (condition.type === 'Income') {
+        result.totalIncomeMin = condition.amount?.gte ?? 0;
+        result.totalIncomeMax = condition.amount?.lte ?? Number.MAX_SAFE_INTEGER;
+      } else if (condition.type === 'Expense') {
+        result.totalExpenseMin = condition.amount?.gte ?? 0;
+        result.totalExpenseMax = condition.amount?.lte ?? Number.MAX_SAFE_INTEGER;
+      }
+    });
+
+    return result;
+  }
+
+  private filterCategoriesByTransactionRange(categories: any[], filters: any): any[] {
+    const {
+      totalIncomeMin = 0,
+      totalIncomeMax = Number.MAX_SAFE_INTEGER,
+      totalExpenseMin = 0,
+      totalExpenseMax = Number.MAX_SAFE_INTEGER,
+    } = filters;
+
+    return categories.filter((category) => {
+      const fromTransactions = category.fromTransactions ?? [];
+      const toTransactions = category.toTransactions ?? [];
+
+      const totalIncome = fromTransactions.reduce(
+        (sum: number, tx: any) => sum + Number(tx.amount),
+        0,
+      );
+
+      const totalExpense = toTransactions.reduce(
+        (sum: number, tx: any) => sum + Number(tx.amount),
+        0,
+      );
+
+      const isValidIncome =
+        category.type === 'Income' &&
+        totalIncome >= totalIncomeMin &&
+        totalIncome <= totalIncomeMax;
+
+      const isValidExpense =
+        category.type === 'Expense' &&
+        totalExpense >= totalExpenseMin &&
+        totalExpense <= totalExpenseMax;
+
+      return isValidIncome || isValidExpense;
+    });
+  }
+
+  private calculateMinMaxTotalAmount(categories: CategoryExtras[]): {
+    minAmount: number;
+    maxAmount: number;
+  } {
+    const totalAmounts = categories.map((category) => {
+      const fromSum = (category.fromTransactions ?? []).reduce(
+        (sum, tx) => sum + Number(tx.amount),
+        0,
+      );
+      const toSum = (category.toTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+      return fromSum + toSum;
+    });
+
+    const individualAmounts = categories.flatMap((category) =>
+      [...(category.fromTransactions ?? []), ...(category.toTransactions ?? [])].map((tx) =>
+        Number(tx.amount),
+      ),
+    );
+
+    const maxAmount = totalAmounts.length > 0 ? Math.max(...totalAmounts) : 0;
+    const minAmount = individualAmounts.length > 0 ? Math.min(...individualAmounts) : 0;
+
+    return { minAmount, maxAmount };
+  }
+
+  async getCategories(
+    userId: string,
+    params: GlobalFilters,
+  ): Promise<{
+    data: any[];
+    minAmount: number;
+    maxAmount: number;
+  }> {
     const searchParams = safeString(params.search);
     let where: Prisma.CategoryWhereInput = {};
-
-    if (params.filters && Object.keys(params.filters).length > 0) {
-      where = buildWhereClause(params.filters) as Prisma.CategoryWhereInput;
-    }
 
     if (BooleanUtils.isTrue(searchParams)) {
       const typeSearchParams = searchParams.toLowerCase();
@@ -96,7 +181,9 @@ class CategoryUseCase {
       };
     }
 
-    const categories = await this.categoryRepository.findCategoriesWithTransactions(userId, where);
+    let categories = await this.categoryRepository.findCategoriesWithTransactions(userId, where);
+    const transactionRangeFilters = this.extractTransactionRangeFilters(params.filters);
+    categories = this.filterCategoriesByTransactionRange(categories, transactionRangeFilters);
 
     const calculateBalance = (category: CategoryExtras): number => {
       if (category.type === CategoryType.Expense.valueOf()) {
@@ -123,8 +210,14 @@ class CategoryUseCase {
         }
       }
     });
+    const categoriesWithBalance = Array.from(categoryMap.values());
+    const { minAmount, maxAmount } = this.calculateMinMaxTotalAmount(categoriesWithBalance);
 
-    return Array.from(categoryMap.values());
+    return {
+      data: categoriesWithBalance,
+      minAmount,
+      maxAmount,
+    };
   }
 }
 
