@@ -10,6 +10,11 @@ import { convertVNDToUSD } from '@/shared/utils';
  * @returns Restructured array with proper parent-child relationships
  */
 const organizePartnerHierarchy = (partners: Partner[]): Partner[] => {
+  // Guard clause: return empty array if partners is not a valid array
+  if (!partners || !Array.isArray(partners) || partners.length === 0) {
+    return [];
+  }
+
   // Create a map for quick partner lookup by ID
   const partnerMap = new Map<string, Partner>();
 
@@ -107,6 +112,11 @@ export const mapPartnersToTwoSideBarItems = (
   data: Partner[],
   currency: string,
 ): TwoSideBarItem[] => {
+  // Guard clause: return empty array if data is not a valid array
+  if (!data || !Array.isArray(data)) {
+    return [];
+  }
+
   // Organize partners into proper hierarchy first
   const rootPartners = organizePartnerHierarchy(data);
 

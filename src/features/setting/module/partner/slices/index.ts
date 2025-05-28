@@ -1,3 +1,4 @@
+import { Response } from '@/shared/types/Common.types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 import { Partner } from '../domain/entities/Partner';
@@ -5,7 +6,7 @@ import { fetchPartners } from './actions/fetchPartnersAsyncThunk';
 import { updatePartner } from './actions/updatePartnerAsyncThunk';
 import { deletePartner } from './actions/deletePartnerAsyncThunk'; // Import the delete thunk
 import { searchPartners } from './actions/searchPartnersAsyncThunk'; // Import the search thunk
-import { initialPartnerState } from './types';
+import { initialPartnerState, PartnerResponse } from './types';
 import { FilterCriteria } from '@/shared/types/filter.types';
 
 const partnerManagementSlice = createSlice({
@@ -54,10 +55,17 @@ const partnerManagementSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchPartners.fulfilled, (state, action: PayloadAction<Partner[]>) => {
-        state.isLoading = false;
-        state.partners = action.payload;
-      })
+      .addCase(
+        fetchPartners.fulfilled,
+        (state, action: PayloadAction<Response<PartnerResponse>>) => {
+          state.isLoading = false;
+          state.partners = action.payload.data.data;
+          state.minIncome = action.payload.data.minIncome;
+          state.maxIncome = action.payload.data.maxIncome;
+          state.minExpense = action.payload.data.minExpense;
+          state.maxExpense = action.payload.data.maxExpense;
+        },
+      )
       .addCase(fetchPartners.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload || 'Failed to fetch partners';
@@ -107,10 +115,17 @@ const partnerManagementSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(searchPartners.fulfilled, (state, action: PayloadAction<Partner[]>) => {
-        state.isLoading = false;
-        state.partners = action.payload;
-      })
+      .addCase(
+        searchPartners.fulfilled,
+        (state, action: PayloadAction<Response<PartnerResponse>>) => {
+          state.isLoading = false;
+          state.partners = action.payload.data.data;
+          state.minIncome = action.payload.data.minIncome;
+          state.maxIncome = action.payload.data.maxIncome;
+          state.minExpense = action.payload.data.minExpense;
+          state.maxExpense = action.payload.data.maxExpense;
+        },
+      )
       .addCase(searchPartners.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload || 'Failed to search partners';

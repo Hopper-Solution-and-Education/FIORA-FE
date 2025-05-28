@@ -64,8 +64,8 @@ interface FilterMenuProps {
 }
 
 const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
-  // Get partner data from Redux state
-  const partners = useAppSelector((state) => state.partner.partners);
+  // Get min/max values from Redux state (calculated by the API)
+  const { minIncome, maxIncome, minExpense, maxExpense } = useAppSelector((state) => state.partner);
   const { data: session } = useSession();
   const userId = session?.user?.id || '';
   const dispatch = useAppDispatch();
@@ -76,42 +76,14 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
 
   // Calculate min/max values from partner data
   const partnerStatistics = useMemo(() => {
-    if (!partners || partners.length === 0) {
-      return {
-        minExpense: 0,
-        maxExpense: DEFAULT_MAX_EXPENSE,
-        minIncome: 0,
-        maxIncome: DEFAULT_MAX_INCOME,
-      };
-    }
-
-    const minExpense = 0;
-    let maxExpense = 0;
-    const minIncome = 0;
-    let maxIncome = 0;
-
-    partners.forEach((partner) => {
-      if (partner.transactions && partner.transactions.length > 0) {
-        const expenses = partner.transactions
-          .filter((t) => t.type === 'Expense')
-          .reduce((sum, t) => sum + Number(t.amount), 0);
-
-        const income = partner.transactions
-          .filter((t) => t.type === 'Income')
-          .reduce((sum, t) => sum + Number(t.amount), 0);
-
-        maxExpense = Math.max(maxExpense, expenses);
-        maxIncome = Math.max(maxIncome, income);
-      }
-    });
-
+    // Use the min/max values from the Redux state (calculated by the API)
     return {
-      minExpense,
+      minExpense: minExpense || 0,
       maxExpense: maxExpense || DEFAULT_MAX_EXPENSE,
-      minIncome,
+      minIncome: minIncome || 0,
       maxIncome: maxIncome || DEFAULT_MAX_INCOME,
     };
-  }, [partners]);
+  }, [minIncome, maxIncome, minExpense, maxExpense]);
 
   // Extract filter data from filters object
   const extractFilterData = useCallback(
