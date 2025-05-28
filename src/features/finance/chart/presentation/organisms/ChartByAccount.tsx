@@ -9,7 +9,7 @@ import { getFinanceByCategoryAsyncThunk } from '../../slices/actions/getFinanceB
 
 const ChartByAccount = () => {
   const financeByCategory = useAppSelector((state) => state.financeControl.financeByCategory);
-  const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinanceByCategory);
+  const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinance);
   const dispatch = useAppDispatch();
 
   useEffect(() => {

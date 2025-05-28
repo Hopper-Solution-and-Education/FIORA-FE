@@ -7,13 +7,10 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import React, { useEffect } from 'react';
 import { getFinanceByCategoryAsyncThunk } from '../../slices/actions/getFinanceByCategoryAsyncThunk';
 
-type Props = {
-  viewBy: 'income' | 'expense';
-};
-
-const ChartByCategory = ({ viewBy }: Props) => {
+const ChartByCategory = () => {
   const financeByCategory = useAppSelector((state) => state.financeControl.financeByCategory);
-  const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinanceByCategory);
+  const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinance);
+  const viewChartByCategory = useAppSelector((state) => state.financeControl.viewChartByCategory);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -22,17 +19,19 @@ const ChartByCategory = ({ viewBy }: Props) => {
         getFinanceByCategoryAsyncThunk({
           type: FinanceReportEnum.CATEGORY,
           filter:
-            viewBy === 'income' ? FinanceReportFilterEnum.INCOME : FinanceReportFilterEnum.EXPENSE,
+            viewChartByCategory === 'income'
+              ? FinanceReportFilterEnum.INCOME
+              : FinanceReportFilterEnum.EXPENSE,
         }),
       );
     }
-  }, [dispatch, viewBy]);
+  }, [dispatch, viewChartByCategory]);
 
   // data showing when income and data showing when expense
   const data = Array.isArray(financeByCategory)
     ? financeByCategory.map((item) => ({
         name: item.name,
-        column: viewBy === 'income' ? item.totalIncome : item.totalExpense,
+        column: viewChartByCategory === 'income' ? item.totalIncome : item.totalExpense,
       }))
     : [];
 
@@ -50,9 +49,11 @@ const ChartByCategory = ({ viewBy }: Props) => {
             columns={[
               {
                 key: 'column',
-                name: viewBy === 'income' ? 'Income' : 'Expense',
+                name: viewChartByCategory === 'income' ? 'Income' : 'Expense',
                 color:
-                  viewBy === 'income' ? COLORS.DEPS_SUCCESS.LEVEL_2 : COLORS.DEPS_DANGER.LEVEL_2,
+                  viewChartByCategory === 'income'
+                    ? COLORS.DEPS_SUCCESS.LEVEL_2
+                    : COLORS.DEPS_DANGER.LEVEL_2,
               },
             ]}
             currency="VNĐ"

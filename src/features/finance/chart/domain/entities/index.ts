@@ -26,10 +26,10 @@ export type GetFinanceByCategoryResponse = HttpResponse<FinanceByCategory>;
 
 export type FinanceByCategory = {
   reportType: FinanceReportEnum;
-  result: FinanceByCategoryResult[];
+  result: FinanceResult[];
 };
 
-export type FinanceByCategoryResult = {
+export type FinanceResult = {
   name: string;
   totalIncome: number;
   totalExpense: number;

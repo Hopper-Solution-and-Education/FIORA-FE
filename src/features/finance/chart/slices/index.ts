@@ -1,13 +1,20 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { getFinanceByCategoryAsyncThunk } from './actions/getFinanceByCategoryAsyncThunk';
 import { getFinanceByDateAsyncThunk } from './actions/getFinanceByDateAsyncThunk';
-import { initialFinanceControlState } from './types';
+import { initialFinanceControlState, ViewBy, ViewChartByCategory } from './types';
+import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 
 const financeControlSlice = createSlice({
   name: 'financeControl',
   initialState: initialFinanceControlState,
   reducers: {
     resetFinanceControlState: () => initialFinanceControlState,
+    setViewBy: (state, action: PayloadAction<ViewBy>) => {
+      state.viewBy = action.payload;
+    },
+    setViewChartByCategory: (state, action: PayloadAction<ViewChartByCategory>) => {
+      state.viewChartByCategory = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -22,18 +29,32 @@ const financeControlSlice = createSlice({
         state.isLoadingGetFinance = false;
       })
       .addCase(getFinanceByCategoryAsyncThunk.pending, (state) => {
-        state.isLoadingGetFinanceByCategory = true;
+        state.isLoadingGetFinance = true;
       })
       .addCase(getFinanceByCategoryAsyncThunk.fulfilled, (state, action) => {
-        state.isLoadingGetFinanceByCategory = false;
-        state.financeByCategory = action.payload.data.result;
+        state.isLoadingGetFinance = false;
+        switch (action.payload.data.reportType) {
+          case FinanceReportEnum.CATEGORY:
+            state.financeByCategory = action.payload.data.result;
+            break;
+          case FinanceReportEnum.ACCOUNT:
+            state.financeByAccount = action.payload.data.result;
+            break;
+          case FinanceReportEnum.PRODUCT:
+            state.financeByProduct = action.payload.data.result;
+            break;
+          case FinanceReportEnum.PARTNER:
+            state.financeByPartner = action.payload.data.result;
+            break;
+        }
       })
       .addCase(getFinanceByCategoryAsyncThunk.rejected, (state) => {
-        state.isLoadingGetFinanceByCategory = false;
+        state.isLoadingGetFinance = false;
       });
   },
 });
 
 export * from './types';
-export const { resetFinanceControlState } = financeControlSlice.actions;
+export const { resetFinanceControlState, setViewBy, setViewChartByCategory } =
+  financeControlSlice.actions;
 export default financeControlSlice.reducer;
