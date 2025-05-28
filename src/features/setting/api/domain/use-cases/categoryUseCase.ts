@@ -7,7 +7,6 @@ import { Messages } from '@/shared/constants/message';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
 import { safeString } from '@/shared/utils/ExStringUtils';
 import { GlobalFilters } from '@/shared/types';
-import { buildWhereClause } from '@/shared/utils';
 import { BooleanUtils } from '@/shared/lib';
 
 class CategoryUseCase {
@@ -106,24 +105,68 @@ class CategoryUseCase {
     } = filters;
 
     return categories.filter((category) => {
-      const balance = category.balance ?? 0;
-      if (category.type === 'Income') {
-        return balance >= totalIncomeMin && balance <= totalIncomeMax;
-      } else if (category.type === 'Expense') {
-        return balance >= totalExpenseMin && balance <= totalExpenseMax;
-      }
-      return true;
+      const fromTransactions = category.fromTransactions ?? [];
+      const toTransactions = category.toTransactions ?? [];
+
+      const totalIncome = fromTransactions.reduce(
+        (sum: number, tx: any) => sum + Number(tx.amount),
+        0,
+      );
+
+      const totalExpense = toTransactions.reduce(
+        (sum: number, tx: any) => sum + Number(tx.amount),
+        0,
+      );
+
+      const isValidIncome =
+        category.type === 'Income' &&
+        totalIncome >= totalIncomeMin &&
+        totalIncome <= totalIncomeMax;
+
+      const isValidExpense =
+        category.type === 'Expense' &&
+        totalExpense >= totalExpenseMin &&
+        totalExpense <= totalExpenseMax;
+
+      return isValidIncome || isValidExpense;
     });
   }
 
-  async getCategories(userId: string, params: GlobalFilters): Promise<any[]> {
+  private calculateMinMaxTotalAmount(categories: CategoryExtras[]): {
+    minAmount: number;
+    maxAmount: number;
+  } {
+    const totalAmounts = categories.map((category) => {
+      const fromSum = (category.fromTransactions ?? []).reduce(
+        (sum, tx) => sum + Number(tx.amount),
+        0,
+      );
+      const toSum = (category.toTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+      return fromSum + toSum;
+    });
+
+    const individualAmounts = categories.flatMap((category) =>
+      [...(category.fromTransactions ?? []), ...(category.toTransactions ?? [])].map((tx) =>
+        Number(tx.amount),
+      ),
+    );
+
+    const maxAmount = totalAmounts.length > 0 ? Math.max(...totalAmounts) : 0;
+    const minAmount = individualAmounts.length > 0 ? Math.min(...individualAmounts) : 0;
+
+    return { minAmount, maxAmount };
+  }
+
+  async getCategories(
+    userId: string,
+    params: GlobalFilters,
+  ): Promise<{
+    data: any[];
+    minAmount: number;
+    maxAmount: number;
+  }> {
     const searchParams = safeString(params.search);
     let where: Prisma.CategoryWhereInput = {};
-    delete params.filters?.transactions;
-
-    if (params.filters && Object.keys(params.filters).length > 0) {
-      where = buildWhereClause(params.filters) as Prisma.CategoryWhereInput;
-    }
 
     if (BooleanUtils.isTrue(searchParams)) {
       const typeSearchParams = searchParams.toLowerCase();
@@ -167,8 +210,14 @@ class CategoryUseCase {
         }
       }
     });
+    const categoriesWithBalance = Array.from(categoryMap.values());
+    const { minAmount, maxAmount } = this.calculateMinMaxTotalAmount(categoriesWithBalance);
 
-    return Array.from(categoryMap.values());
+    return {
+      data: categoriesWithBalance,
+      minAmount,
+      maxAmount,
+    };
   }
 }
 
