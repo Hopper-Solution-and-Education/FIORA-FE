@@ -1,3 +1,5 @@
+import { Pagination, PaginationResponse } from '@/shared/types/Common.types';
+
 enum ProductType {
   Edu = 'Edu',
   Product = 'Product',
@@ -40,3 +42,6 @@ export class Product {
     this.updatedAt = updatedAt;
   }
 }
+
+export type GetListProductResponse = PaginationResponse<Product>;
+export type GetListProductRequest = Pagination;

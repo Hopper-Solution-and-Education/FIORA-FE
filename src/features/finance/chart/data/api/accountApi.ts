@@ -1,6 +1,6 @@
 import { httpClient } from '@/config/http-client/HttpClient';
 import { decorate, injectable } from 'inversify';
-import { GetListAccountRequestDTO, GetListAccountResponseDTO } from '../dto/getListAccountDTO';
+import { GetListAccountRequestDTO, GetListAccountResponseDTO } from '../dto';
 
 export interface IAccountAPI {
   getListAccount(request: GetListAccountRequestDTO): Promise<GetListAccountResponseDTO>;

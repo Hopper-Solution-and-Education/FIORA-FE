@@ -1,4 +1,4 @@
-import { Account, FinanceByDate, FinanceResult } from '../../domain/entities';
+import { Account, FinanceByDate, FinanceResult, Partner, Product } from '../../domain/entities';
 
 export type ViewBy = 'date' | 'category' | 'account' | 'product' | 'partner';
 export type ViewChartByCategory = 'income' | 'expense';
@@ -15,7 +15,17 @@ interface FinanceControlState {
     isLoadingGetAccounts: boolean;
     data: Account[];
   };
+  products: {
+    isLoadingGetProducts: boolean;
+    data: Product[];
+  };
+  partners: {
+    isLoadingGetPartners: boolean;
+    data: Partner[];
+  };
   selectedAccounts: string[];
+  selectedProducts: string[];
+  selectedPartners: string[];
 }
 
 export const initialFinanceControlState: FinanceControlState = {
@@ -31,5 +41,15 @@ export const initialFinanceControlState: FinanceControlState = {
     isLoadingGetAccounts: false,
     data: [],
   },
+  products: {
+    isLoadingGetProducts: false,
+    data: [],
+  },
+  partners: {
+    isLoadingGetPartners: false,
+    data: [],
+  },
   selectedAccounts: [],
+  selectedProducts: [],
+  selectedPartners: [],
 };

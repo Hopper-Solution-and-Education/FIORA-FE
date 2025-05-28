@@ -1,8 +1,12 @@
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { getAllAccountAsyncThunk } from './actions/getAllAccountAsyncThunk';
-import { getFinanceByCategoryAsyncThunk } from './actions/getFinanceByCategoryAsyncThunk';
-import { getFinanceByDateAsyncThunk } from './actions/getFinanceByDateAsyncThunk';
+import {
+  getAllAccountAsyncThunk,
+  getAllPartnerAsyncThunk,
+  getAllProductAsyncThunk,
+  getFinanceByCategoryAsyncThunk,
+  getFinanceByDateAsyncThunk,
+} from './actions';
 import { initialFinanceControlState, ViewBy, ViewChartByCategory } from './types';
 
 const financeControlSlice = createSlice({
@@ -18,6 +22,12 @@ const financeControlSlice = createSlice({
     },
     setSelectedAccounts: (state, action: PayloadAction<string[]>) => {
       state.selectedAccounts = action.payload;
+    },
+    setSelectedProducts: (state, action: PayloadAction<string[]>) => {
+      state.selectedProducts = action.payload;
+    },
+    setSelectedPartners: (state, action: PayloadAction<string[]>) => {
+      state.selectedPartners = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -66,10 +76,38 @@ const financeControlSlice = createSlice({
       .addCase(getAllAccountAsyncThunk.rejected, (state) => {
         state.accounts.isLoadingGetAccounts = false;
       });
+    builder
+      .addCase(getAllProductAsyncThunk.pending, (state) => {
+        state.products.isLoadingGetProducts = true;
+      })
+      .addCase(getAllProductAsyncThunk.fulfilled, (state, action) => {
+        state.products.isLoadingGetProducts = false;
+        state.products.data = action.payload.data;
+      })
+      .addCase(getAllProductAsyncThunk.rejected, (state) => {
+        state.products.isLoadingGetProducts = false;
+      });
+    builder
+      .addCase(getAllPartnerAsyncThunk.pending, (state) => {
+        state.partners.isLoadingGetPartners = true;
+      })
+      .addCase(getAllPartnerAsyncThunk.fulfilled, (state, action) => {
+        state.partners.isLoadingGetPartners = false;
+        state.partners.data = action.payload.data;
+      })
+      .addCase(getAllPartnerAsyncThunk.rejected, (state) => {
+        state.partners.isLoadingGetPartners = false;
+      });
   },
 });
 
 export * from './types';
-export const { resetFinanceControlState, setViewBy, setViewChartByCategory, setSelectedAccounts } =
-  financeControlSlice.actions;
+export const {
+  resetFinanceControlState,
+  setViewBy,
+  setViewChartByCategory,
+  setSelectedAccounts,
+  setSelectedProducts,
+  setSelectedPartners,
+} = financeControlSlice.actions;
 export default financeControlSlice.reducer;

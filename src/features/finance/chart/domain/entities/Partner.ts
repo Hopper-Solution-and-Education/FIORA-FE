@@ -67,3 +67,12 @@ export class Partner {
     this.icon = icon;
   }
 }
+
+export interface GetListPartnerRequest {
+  page: number;
+  pageSize: number;
+}
+
+export interface GetListPartnerResponse {
+  data: Partner[];
+}

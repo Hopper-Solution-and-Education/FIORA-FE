@@ -2,7 +2,9 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { setViewBy } from '../../slices';
+import { getAllPartnerAsyncThunk } from '../../slices/actions';
 import { getAllAccountAsyncThunk } from '../../slices/actions/getAllAccountAsyncThunk';
+import { getAllProductAsyncThunk } from '../../slices/actions/getAllProductAsyncThunk';
 import { getFinanceByDateAsyncThunk } from '../../slices/actions/getFinanceByDateAsyncThunk';
 import { ViewBy } from '../../slices/types';
 import { chartComponents } from '../../utils';
@@ -45,6 +47,20 @@ const ChartFinancePage = () => {
           page: 1,
           pageSize: 50,
           search: '',
+        }),
+      );
+    } else if (viewBy === 'product') {
+      dispatch(
+        getAllProductAsyncThunk({
+          page: 1,
+          pageSize: 50,
+        }),
+      );
+    } else if (viewBy === 'partner') {
+      dispatch(
+        getAllPartnerAsyncThunk({
+          page: 1,
+          pageSize: 50,
         }),
       );
     }
