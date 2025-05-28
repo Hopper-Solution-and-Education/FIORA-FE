@@ -3,3 +3,4 @@ export * from './getFinanceByCategoryDTO';
 export * from './getListProductsDTO';
 export * from './getListAccountDTO';
 export * from './getListPartnerDTO';
+export * from './getFinanceWithFilterDTO';

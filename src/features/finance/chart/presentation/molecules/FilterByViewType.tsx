@@ -7,9 +7,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { DateRange } from 'react-day-picker';
 import { setSelectedAccounts, setSelectedPartners, setSelectedProducts } from '../../slices';
+import { getFinanceWithFilterAsyncThunk } from '../../slices/actions';
 import { ViewBy } from '../../slices/types';
 import { chartComponents } from '../../utils';
 import { MultiSelectPickerFinance, ViewByCategorySelect } from '../atoms';
@@ -107,6 +109,16 @@ const FilterByViewType = ({
           }))}
           selectedValues={selectedAccounts}
           onChange={handleChangeAccounts}
+          onBlur={() => {
+            if (selectedAccounts.length > 0) {
+              dispatch(
+                getFinanceWithFilterAsyncThunk({
+                  type: FinanceReportEnum.ACCOUNT,
+                  ids: selectedAccounts,
+                }),
+              );
+            }
+          }}
         />
       )}
       {viewBy === 'product' && (
@@ -120,6 +132,16 @@ const FilterByViewType = ({
           }))}
           selectedValues={selectedProducts}
           onChange={handleChangeProducts}
+          onBlur={() => {
+            if (selectedProducts.length > 0) {
+              dispatch(
+                getFinanceWithFilterAsyncThunk({
+                  type: FinanceReportEnum.PRODUCT,
+                  ids: selectedProducts,
+                }),
+              );
+            }
+          }}
         />
       )}
       {viewBy === 'partner' && (
@@ -133,6 +155,16 @@ const FilterByViewType = ({
           }))}
           selectedValues={selectedPartners}
           onChange={handleChangePartners}
+          onBlur={() => {
+            if (selectedPartners.length > 0) {
+              dispatch(
+                getFinanceWithFilterAsyncThunk({
+                  type: FinanceReportEnum.PARTNER,
+                  ids: selectedPartners,
+                }),
+              );
+            }
+          }}
         />
       )}
     </div>

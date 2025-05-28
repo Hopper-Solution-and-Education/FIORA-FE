@@ -5,23 +5,26 @@ import { FinanceReportFilterEnum } from '@/features/setting/data/module/finance/
 import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
 import React, { useEffect } from 'react';
-import { getFinanceByCategoryAsyncThunk } from '../../slices/actions/getFinanceByCategoryAsyncThunk';
+import { getFinanceByCategoryAsyncThunk } from '../../slices/actions';
 
 const ChartByAccount = () => {
   const financeByCategory = useAppSelector((state) => state.financeControl.financeByAccount);
   const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinance);
+  const selectedIds = useAppSelector((state) => state.financeControl.selectedAccounts);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (!isLoading) {
-      dispatch(
-        getFinanceByCategoryAsyncThunk({
-          type: FinanceReportEnum.ACCOUNT,
-          filter: FinanceReportFilterEnum.ALL,
-        }),
-      );
+      if (selectedIds.length === 0) {
+        dispatch(
+          getFinanceByCategoryAsyncThunk({
+            type: FinanceReportEnum.ACCOUNT,
+            filter: FinanceReportFilterEnum.ALL,
+          }),
+        );
+      }
     }
-  }, [dispatch]);
+  }, [dispatch, selectedIds]);
 
   // data showing when income and data showing when expense
   const data = Array.isArray(financeByCategory)
@@ -47,7 +50,6 @@ const ChartByAccount = () => {
               { key: 'column1', name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_2 },
               { key: 'column2', name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_2 },
             ]}
-            lines={[{ key: 'line', name: 'Profit', color: COLORS.DEPS_INFO.LEVEL_2 }]}
             currency="VNĐ"
           />
         </React.Fragment>

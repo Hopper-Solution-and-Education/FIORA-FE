@@ -10,18 +10,21 @@ import { getFinanceByCategoryAsyncThunk } from '../../slices/actions/getFinanceB
 const ChartByProduct = () => {
   const financeByProduct = useAppSelector((state) => state.financeControl.financeByProduct);
   const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinance);
+  const selectedIds = useAppSelector((state) => state.financeControl.selectedProducts);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (!isLoading) {
-      dispatch(
-        getFinanceByCategoryAsyncThunk({
-          type: FinanceReportEnum.PRODUCT,
-          filter: FinanceReportFilterEnum.ALL,
-        }),
-      );
+      if (selectedIds.length === 0) {
+        dispatch(
+          getFinanceByCategoryAsyncThunk({
+            type: FinanceReportEnum.PRODUCT,
+            filter: FinanceReportFilterEnum.ALL,
+          }),
+        );
+      }
     }
-  }, [dispatch]);
+  }, [dispatch, selectedIds]);
 
   // data showing when income and data showing when expense
   const data = Array.isArray(financeByProduct)

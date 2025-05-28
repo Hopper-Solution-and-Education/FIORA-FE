@@ -1,12 +1,12 @@
 'use client';
 
 import { Input } from '@/components/ui/input';
+import LucieIcon from '@/features/home/module/category/components/LucieIcon';
 import { cn, isImageUrl } from '@/shared/utils';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { Check, ChevronDown, Search, X } from 'lucide-react';
 import Image from 'next/image';
 import * as React from 'react';
-import LucieIcon from '@/features/home/module/category/components/LucieIcon';
 
 interface Option {
   label: string;
@@ -23,6 +23,7 @@ interface MultiSelectProps {
   className?: string;
   disabled?: boolean;
   searchPlaceholder?: string;
+  onBlur?: () => void;
 }
 
 const CustomMultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
@@ -35,6 +36,7 @@ const CustomMultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
       className,
       disabled = false,
       searchPlaceholder = 'Search...',
+      onBlur,
     },
     ref,
   ) => {
@@ -42,6 +44,13 @@ const CustomMultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
     const containerRef = React.useRef<HTMLDivElement>(null);
     const [visibleTags, setVisibleTags] = React.useState<string[]>([]);
     const [searchQuery, setSearchQuery] = React.useState('');
+
+    const handleOpenChange = (open: boolean) => {
+      setOpen(open);
+      if (!open) {
+        onBlur?.();
+      }
+    };
 
     const handleSelect = (value: string) => {
       onChange(
@@ -146,7 +155,7 @@ const CustomMultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
     );
 
     return (
-      <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
+      <PopoverPrimitive.Root open={open} onOpenChange={handleOpenChange}>
         <PopoverPrimitive.Trigger
           ref={ref}
           className={cn(
@@ -218,7 +227,7 @@ const CustomMultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
               />
             </div>
           </div>
-          <div className="p-1">
+          <div className="p-1 pb-0">
             {filteredOptions.length === 0 ? (
               <div className="py-2 px-2 text-sm text-muted-foreground">No options found.</div>
             ) : (
@@ -243,6 +252,16 @@ const CustomMultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
               ))
             )}
           </div>
+          {selected.length > 0 && (
+            <div className="sticky bottom-0 z-10 bg-popover border-t p-1 backdrop-blur-sm">
+              <button
+                className="w-full text-left px-2 py-1.5 text-sm text-destructive hover:bg-accent hover:text-destructive-foreground rounded-sm"
+                onClick={() => onChange([])}
+              >
+                Clear options
+              </button>
+            </div>
+          )}
         </PopoverPrimitive.Content>
       </PopoverPrimitive.Root>
     );

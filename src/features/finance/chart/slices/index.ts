@@ -6,6 +6,7 @@ import {
   getAllProductAsyncThunk,
   getFinanceByCategoryAsyncThunk,
   getFinanceByDateAsyncThunk,
+  getFinanceWithFilterAsyncThunk,
 } from './actions';
 import { initialFinanceControlState, ViewBy, ViewChartByCategory } from './types';
 
@@ -63,6 +64,29 @@ const financeControlSlice = createSlice({
         }
       })
       .addCase(getFinanceByCategoryAsyncThunk.rejected, (state) => {
+        state.isLoadingGetFinance = false;
+      })
+      .addCase(getFinanceWithFilterAsyncThunk.pending, (state) => {
+        state.isLoadingGetFinance = true;
+      })
+      .addCase(getFinanceWithFilterAsyncThunk.fulfilled, (state, action) => {
+        state.isLoadingGetFinance = false;
+        switch (action.payload.data.reportType) {
+          case FinanceReportEnum.CATEGORY:
+            state.financeByCategory = action.payload.data.result;
+            break;
+          case FinanceReportEnum.ACCOUNT:
+            state.financeByAccount = action.payload.data.result;
+            break;
+          case FinanceReportEnum.PRODUCT:
+            state.financeByProduct = action.payload.data.result;
+            break;
+          case FinanceReportEnum.PARTNER:
+            state.financeByPartner = action.payload.data.result;
+            break;
+        }
+      })
+      .addCase(getFinanceWithFilterAsyncThunk.rejected, (state) => {
         state.isLoadingGetFinance = false;
       });
     builder

@@ -10,18 +10,21 @@ import { ChartSkeleton } from '@/components/common/organisms';
 const ChartByPartner = () => {
   const financeByPartner = useAppSelector((state) => state.financeControl.financeByPartner);
   const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinance);
+  const selectedIds = useAppSelector((state) => state.financeControl.selectedPartners);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (!isLoading) {
-      dispatch(
-        getFinanceByCategoryAsyncThunk({
-          type: FinanceReportEnum.PARTNER,
-          filter: FinanceReportFilterEnum.ALL,
-        }),
-      );
+      if (selectedIds.length === 0) {
+        dispatch(
+          getFinanceByCategoryAsyncThunk({
+            type: FinanceReportEnum.PARTNER,
+            filter: FinanceReportFilterEnum.ALL,
+          }),
+        );
+      }
     }
-  }, []);
+  }, [dispatch, selectedIds]);
 
   // data showing when income and data showing when expense
   const data = Array.isArray(financeByPartner)
@@ -29,6 +32,7 @@ const ChartByPartner = () => {
         name: item.name,
         column1: item.totalExpense,
         column2: item.totalIncome,
+        column3: item.totalProfit,
       }))
     : [];
 
@@ -43,8 +47,8 @@ const ChartByPartner = () => {
           columns={[
             { key: 'column1', name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_2 },
             { key: 'column2', name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_2 },
+            { key: 'column3', name: 'Profit', color: COLORS.DEPS_INFO.LEVEL_2 },
           ]}
-          lines={[{ key: 'line', name: 'Profit', color: COLORS.DEPS_INFO.LEVEL_2 }]}
           currency="VNĐ"
         />
       )}

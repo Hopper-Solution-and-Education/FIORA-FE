@@ -13,6 +13,7 @@ interface MultiSelectFilterProps {
   disabled?: boolean;
   className?: string;
   labelPosition?: 'horizontal' | 'vertical';
+  onBlur?: () => void;
 }
 
 const MultiSelectPickerFinance = ({
@@ -24,6 +25,7 @@ const MultiSelectPickerFinance = ({
   disabled = false,
   className,
   labelPosition = 'vertical',
+  onBlur,
 }: MultiSelectFilterProps) => {
   return (
     <div
@@ -34,6 +36,7 @@ const MultiSelectPickerFinance = ({
       )}
       <div className="w-full">
         <MultiSelectField
+          onBlur={onBlur}
           className={`${className}`}
           options={options}
           selected={selectedValues}

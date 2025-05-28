@@ -14,11 +14,13 @@ import {
   createGetAllProductsUseCase,
   createGetFinanceByCategoryUseCase,
   createGetFinanceByDateUseCase,
+  createGetFinanceWithFiltersUseCase,
   IGetAllAccountUseCase,
   IGetAllPartnerUseCase,
   IGetAllProductUseCase,
   IGetFinanceByCategoryUseCase,
   IGetFinanceByDateUseCase,
+  IGetFinanceWithFiltersUseCase,
 } from '../domain/usecases';
 
 const financeDIContainer = new Container();
@@ -31,6 +33,7 @@ export const TYPES = {
   IGetAllAccountUseCase: Symbol('IGetAllAccountUseCase'),
   IGetAllProductUseCase: Symbol('IGetAllProductUseCase'),
   IGetAllPartnerUseCase: Symbol('IGetAllPartnerUseCase'),
+  IGetFinanceWithFiltersUseCase: Symbol('IGetFinanceWithFiltersUseCase'),
 };
 
 // Create API instances
@@ -51,6 +54,7 @@ const getFinanceByCategoryUseCase = createGetFinanceByCategoryUseCase(financeRep
 const getAllAccountUseCase = createGetAllAccountsUseCase(accountRepository);
 const getAllProductUseCase = createGetAllProductsUseCase(productRepository);
 const getAllPartnerUseCase = createGetAllPartnersUseCase(partnerRepository);
+const getFinanceWithFiltersUseCase = createGetFinanceWithFiltersUseCase(financeRepository);
 
 // Bind all instances
 financeDIContainer.bind<IFinanceAPI>(TYPES.IFinanceAPI).toConstantValue(financeAPI);
@@ -72,5 +76,8 @@ financeDIContainer
 financeDIContainer
   .bind<IGetAllPartnerUseCase>(TYPES.IGetAllPartnerUseCase)
   .toConstantValue(getAllPartnerUseCase);
+financeDIContainer
+  .bind<IGetFinanceWithFiltersUseCase>(TYPES.IGetFinanceWithFiltersUseCase)
+  .toConstantValue(getFinanceWithFiltersUseCase);
 
 export { financeDIContainer };

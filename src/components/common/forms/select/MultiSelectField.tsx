@@ -40,6 +40,7 @@ interface MultiSelectFieldProps {
 const MultiSelectField: React.FC<MultiSelectFieldProps> = ({
   value = [],
   onChange = () => {},
+  onBlur,
   error,
   label,
   placeholder = 'Select options...',
@@ -78,6 +79,7 @@ const MultiSelectField: React.FC<MultiSelectFieldProps> = ({
         ))}
       <div className="relative">
         <CustomMultiSelect
+          onBlur={onBlur}
           options={internalOptions}
           selected={value}
           onChange={onChange}

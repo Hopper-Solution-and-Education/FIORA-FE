@@ -26,6 +26,13 @@ export type GetFinanceByCategoryRequest = {
   filter: FinanceReportFilterEnum;
 };
 
+export type GetFinanceWithFilterRequest = {
+  type: FinanceReportEnum;
+  ids: string[];
+};
+
+export type GetFinanceWithFilterResponse = HttpResponse<FinanceByCategory>;
+
 export type GetFinanceByCategoryResponse = HttpResponse<FinanceByCategory>;
 
 export type FinanceByCategory = {

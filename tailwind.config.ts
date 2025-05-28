@@ -3,7 +3,6 @@ import animatePlugin from 'tailwindcss-animate';
 import { PluginAPI } from 'tailwindcss/types/config';
 
 export default {
-  darkMode: ["class"],
   darkMode: ['class'],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
