@@ -7,13 +7,10 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import React, { useEffect } from 'react';
 import { getFinanceByCategoryAsyncThunk } from '../../slices/actions/getFinanceByCategoryAsyncThunk';
 
-type Props = {
-  viewBy: 'income' | 'expense';
-};
-
-const ChartByCategory = ({ viewBy }: Props) => {
+const ChartByCategory = () => {
   const financeByCategory = useAppSelector((state) => state.financeControl.financeByCategory);
-  const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinanceByCategory);
+  const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinance);
+  const viewChartByCategory = useAppSelector((state) => state.financeControl.viewChartByCategory);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -22,24 +19,19 @@ const ChartByCategory = ({ viewBy }: Props) => {
         getFinanceByCategoryAsyncThunk({
           type: FinanceReportEnum.CATEGORY,
           filter:
-            viewBy === 'income' ? FinanceReportFilterEnum.INCOME : FinanceReportFilterEnum.EXPENSE,
+            viewChartByCategory === 'income'
+              ? FinanceReportFilterEnum.INCOME
+              : FinanceReportFilterEnum.EXPENSE,
         }),
       );
     }
-  }, [dispatch, viewBy]);
+  }, [dispatch, viewChartByCategory]);
 
   // data showing when income and data showing when expense
-  const expenseData = Array.isArray(financeByCategory)
+  const data = Array.isArray(financeByCategory)
     ? financeByCategory.map((item) => ({
         name: item.name,
-        column1: item.totalExpense,
-      }))
-    : [];
-
-  const incomeData = Array.isArray(financeByCategory)
-    ? financeByCategory.map((item) => ({
-        name: item.name,
-        column2: item.totalIncome,
+        column: viewChartByCategory === 'income' ? item.totalIncome : item.totalExpense,
       }))
     : [];
 
@@ -52,13 +44,18 @@ const ChartByCategory = ({ viewBy }: Props) => {
       ) : (
         <React.Fragment>
           <ComposedChart
-            data={viewBy === 'income' ? incomeData : expenseData}
+            data={data}
             title="Chart by Category"
             columns={[
-              { key: 'column1', name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_2 },
-              { key: 'column2', name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_2 },
+              {
+                key: 'column',
+                name: viewChartByCategory === 'income' ? 'Income' : 'Expense',
+                color:
+                  viewChartByCategory === 'income'
+                    ? COLORS.DEPS_SUCCESS.LEVEL_2
+                    : COLORS.DEPS_DANGER.LEVEL_2,
+              },
             ]}
-            lines={[{ key: 'line', name: 'Profit', color: COLORS.DEPS_INFO.LEVEL_2 }]}
             currency="VNĐ"
           />
         </React.Fragment>

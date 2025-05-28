@@ -3,12 +3,16 @@ import {
   GetFinanceByCategoryResponse,
   GetFinanceByDateRequest,
   GetFinanceByDateResponse,
+  GetFinanceWithFilterRequest,
+  GetFinanceWithFilterResponse,
 } from '../../domain/entities';
 import {
   GetFinanceByCategoryRequestDTO,
   GetFinanceByCategoryResponseDTO,
   GetFinanceByDateRequestDTO,
   GetFinanceByDateResponseDTO,
+  GetFinanceWithFilterRequestDTO,
+  GetFinanceWithFilterResponseDTO,
 } from '../dto';
 
 class FinanceMapper {
@@ -45,6 +49,21 @@ class FinanceMapper {
       type: request.type,
       filter: request.filter,
     };
+  }
+
+  static toGetFinanceWithFilterRequest(
+    request: GetFinanceWithFilterRequest,
+  ): GetFinanceWithFilterRequestDTO {
+    return {
+      type: request.type,
+      ids: request.ids,
+    };
+  }
+
+  static toGetFinanceWithFilterResponse(
+    response: GetFinanceWithFilterResponseDTO,
+  ): GetFinanceWithFilterResponse {
+    return response;
   }
 }
 

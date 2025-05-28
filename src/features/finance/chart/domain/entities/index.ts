@@ -2,6 +2,10 @@ import { FinanceReportEnum } from '@/features/setting/data/module/finance/consta
 import { FinanceReportFilterEnum } from '@/features/setting/data/module/finance/constant/FinanceReportFilterEnum';
 import { HttpResponse } from '@/shared/types';
 
+export * from './Account';
+export * from './Partner';
+export * from './Product';
+
 export type GetFinanceByDateRequest = {
   from: string;
   to: string;
@@ -22,14 +26,21 @@ export type GetFinanceByCategoryRequest = {
   filter: FinanceReportFilterEnum;
 };
 
+export type GetFinanceWithFilterRequest = {
+  type: FinanceReportEnum;
+  ids: string[];
+};
+
+export type GetFinanceWithFilterResponse = HttpResponse<FinanceByCategory>;
+
 export type GetFinanceByCategoryResponse = HttpResponse<FinanceByCategory>;
 
 export type FinanceByCategory = {
   reportType: FinanceReportEnum;
-  result: FinanceByCategoryResult[];
+  result: FinanceResult[];
 };
 
-export type FinanceByCategoryResult = {
+export type FinanceResult = {
   name: string;
   totalIncome: number;
   totalExpense: number;
