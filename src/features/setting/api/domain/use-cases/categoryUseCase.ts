@@ -75,9 +75,51 @@ class CategoryUseCase {
     await this.categoryRepository.deleteCategory(id);
   }
 
+  private extractTransactionRangeFilters(filters: any): {
+    totalIncomeMin?: number;
+    totalIncomeMax?: number;
+    totalExpenseMin?: number;
+    totalExpenseMax?: number;
+  } {
+    const result: any = {};
+
+    const transactionsFilter = filters?.transactions?.some?.OR ?? [];
+    transactionsFilter.forEach((condition: any) => {
+      if (condition.type === 'Income') {
+        result.totalIncomeMin = condition.amount?.gte ?? 0;
+        result.totalIncomeMax = condition.amount?.lte ?? Number.MAX_SAFE_INTEGER;
+      } else if (condition.type === 'Expense') {
+        result.totalExpenseMin = condition.amount?.gte ?? 0;
+        result.totalExpenseMax = condition.amount?.lte ?? Number.MAX_SAFE_INTEGER;
+      }
+    });
+
+    return result;
+  }
+
+  private filterCategoriesByTransactionRange(categories: any[], filters: any): any[] {
+    const {
+      totalIncomeMin = 0,
+      totalIncomeMax = Number.MAX_SAFE_INTEGER,
+      totalExpenseMin = 0,
+      totalExpenseMax = Number.MAX_SAFE_INTEGER,
+    } = filters;
+
+    return categories.filter((category) => {
+      const balance = category.balance ?? 0;
+      if (category.type === 'Income') {
+        return balance >= totalIncomeMin && balance <= totalIncomeMax;
+      } else if (category.type === 'Expense') {
+        return balance >= totalExpenseMin && balance <= totalExpenseMax;
+      }
+      return true;
+    });
+  }
+
   async getCategories(userId: string, params: GlobalFilters): Promise<any[]> {
     const searchParams = safeString(params.search);
     let where: Prisma.CategoryWhereInput = {};
+    delete params.filters?.transactions;
 
     if (params.filters && Object.keys(params.filters).length > 0) {
       where = buildWhereClause(params.filters) as Prisma.CategoryWhereInput;
@@ -96,7 +138,9 @@ class CategoryUseCase {
       };
     }
 
-    const categories = await this.categoryRepository.findCategoriesWithTransactions(userId, where);
+    let categories = await this.categoryRepository.findCategoriesWithTransactions(userId, where);
+    const transactionRangeFilters = this.extractTransactionRangeFilters(params.filters);
+    categories = this.filterCategoriesByTransactionRange(categories, transactionRangeFilters);
 
     const calculateBalance = (category: CategoryExtras): number => {
       if (category.type === CategoryType.Expense.valueOf()) {

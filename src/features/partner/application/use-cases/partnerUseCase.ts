@@ -49,6 +49,7 @@ class PartnerUseCase {
     const searchParams = safeString(params.search);
     let filters = params.filters || {};
     const typesFilter = params.types || [];
+    delete params.filters?.transactions;
 
     filters = sanitizeDateFilters(params.filters || {});
     let where = buildWhereClause(filters) as Prisma.PartnerWhereInput;
