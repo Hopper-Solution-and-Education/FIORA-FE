@@ -30,6 +30,9 @@ const financeControlSlice = createSlice({
     setSelectedPartners: (state, action: PayloadAction<string[]>) => {
       state.selectedPartners = action.payload;
     },
+    setViewMode: (state, action: PayloadAction<'table' | 'chart'>) => {
+      state.viewMode = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -133,5 +136,6 @@ export const {
   setSelectedAccounts,
   setSelectedProducts,
   setSelectedPartners,
+  setViewMode,
 } = financeControlSlice.actions;
 export default financeControlSlice.reducer;
