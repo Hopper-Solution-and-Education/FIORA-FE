@@ -8,6 +8,10 @@ import {
   CategoryResponseDTO,
   CategoryPlanningResponseDTO,
 } from '../dto/response/CategoryResponseDTO';
+import {
+  TopDownUpdateRequestDTO,
+  CategoryPlanningUpdateRequestDTO,
+} from '../dto/request/BudgetUpdateRequestDTO';
 
 export interface IBudgetSummaryAPI {
   /**
@@ -42,4 +46,14 @@ export interface IBudgetSummaryAPI {
     categoryId: string,
     year: number,
   ): Promise<CategoryPlanningResponseDTO>;
+
+  /**
+   * Update top-down budget planning
+   */
+  updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<void>;
+
+  /**
+   * Update category bottom-up planning
+   */
+  updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO): Promise<void>;
 }

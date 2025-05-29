@@ -110,10 +110,9 @@ class CategoryRepository implements ICategoryRepository {
           select: {
             month: true,
             amount: true,
-            currency: true,
-          }
-        }
-      }
+          },
+        },
+      },
     });
     return result as CategoryWithBudgetDetails[];
   }

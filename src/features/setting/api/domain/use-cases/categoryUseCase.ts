@@ -198,13 +198,11 @@ class CategoryUseCase {
             select: {
               month: true,
               amount: true,
-              currency: true,
-            }
+            },
           },
         },
       },
     );
-
 
     const transferCategoryFound = categoryFound.map((category: CategoryWithBudgetDetails) => {
       const suffix = category.type === CategoryType.Expense ? 'exp' : 'inc';
@@ -225,11 +223,13 @@ class CategoryUseCase {
 
       const { budgetDetails, ...categoryWithoutBudgetDetails } = category;
 
+      console.log(budgetDetails);
+
       return {
         ...categoryWithoutBudgetDetails,
         bottomUpPlan,
       };
-    })
+    });
 
     // mapping budgetDetails by month by format m1_suffix, suffix is expense or income
     return transferCategoryFound ?? [];
