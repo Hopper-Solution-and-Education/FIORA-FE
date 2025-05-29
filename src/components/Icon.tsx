@@ -9,6 +9,7 @@ import {
   Calendar,
   Car,
   ChartBar,
+  ChartColumn,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -59,6 +60,7 @@ import {
   ShoppingCart,
   Shrink,
   SunMedium,
+  Table,
   Trash,
   Trello,
   TrendingUp,
@@ -163,4 +165,6 @@ export const Icons = {
   calendar: Calendar,
   circleChevronLeft: CircleChevronLeft,
   none: Ban,
+  table: Table,
+  chartColumn: ChartColumn,
 };

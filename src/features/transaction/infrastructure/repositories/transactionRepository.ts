@@ -1,6 +1,9 @@
 import { prisma } from '@/config';
 import { Prisma, Transaction, TransactionType, Partner } from '@prisma/client';
-import { ITransactionRepository } from '../../domain/repositories/transactionRepository.interface';
+import {
+  ITransactionRepository,
+  TransactionWithProducts,
+} from '../../domain/repositories/transactionRepository.interface';
 
 // Interface for enhanced partner with type information
 interface EnhancedPartner extends Partner {
@@ -326,6 +329,32 @@ class TransactionRepository implements ITransactionRepository {
       where: { partnerId: oldPartnerId },
       data: { partnerId: newPartnerId },
     });
+  }
+
+  // *PRODUCT ZONE
+  async findProductTransactions(userId: string): Promise<TransactionWithProducts[]> {
+    return (await prisma.transaction.findMany({
+      where: {
+        userId,
+        isDeleted: false,
+        productsRelation: {
+          some: {},
+        },
+      },
+      include: {
+        productsRelation: {
+          include: {
+            product: true,
+          },
+        },
+        partner: true,
+        fromAccount: true,
+        toAccount: true,
+        fromCategory: true,
+        toCategory: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    })) as unknown as TransactionWithProducts[];
   }
 }
 

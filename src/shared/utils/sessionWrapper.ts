@@ -1,8 +1,8 @@
-import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import { NextApiHandler, NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth';
 import RESPONSE_CODE from '../constants/RESPONSE_CODE';
 import { Messages } from '../constants/message';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/pages/api/auth/[...nextauth]';
 
 type HandlerWithUser = (req: NextApiRequest, res: NextApiResponse, userId: string) => Promise<void>;
 
@@ -15,6 +15,10 @@ export function sessionWrapper(handler: HandlerWithUser): NextApiHandler {
     }
 
     const userId = session.user.id;
+
+    // const userId = 'd64dd156-37f3-4cdf-a502-0482db4997de';
+
+    // const userId = 'd64dd156-37f3-4cdf-a502-0482db4997de';
 
     try {
       return await handler(req, res, userId);

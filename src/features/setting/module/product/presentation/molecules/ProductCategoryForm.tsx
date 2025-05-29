@@ -12,7 +12,11 @@ import { useSession } from 'next-auth/react';
 import { memo, useCallback, useState } from 'react';
 import { useFormContext, UseFormSetValue } from 'react-hook-form';
 import { toast } from 'sonner';
-import { CategoryProductCreateRequest, CategoryProductUpdateRequest } from '../../domain/entities';
+import {
+  CategoryProductCreateRequest,
+  CategoryProductCreateResponse,
+  CategoryProductUpdateRequest,
+} from '../../domain/entities';
 import { setIsOpenDialogAddCategory, setProductCategoryFormState } from '../../slices';
 import {
   createCategoryProductAsyncThunk,
@@ -92,7 +96,7 @@ const ProductCategoryForm = ({ setValue }: productCategoryFormType) => {
 
           dispatch(createCategoryProductAsyncThunk(requestParams))
             .unwrap()
-            .then((response) => {
+            .then((response: CategoryProductCreateResponse) => {
               // set value vào category product sau khi tạo xong
               if (typeof setValue === 'function') {
                 setValue('catId', response.id);

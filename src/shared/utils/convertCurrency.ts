@@ -32,3 +32,19 @@ export const convertCurrency = (
 export const isValidCurrency = (currency: string): currency is Currency => {
   return Object.values(Currency).includes(currency as Currency);
 };
+
+/**
+ * Format a number to currency string.
+ * @param value - The numeric value to format.
+ * @param currency - The ISO 4217 currency code (e.g. 'USD', 'VND', 'EUR').
+ * @param locale - Optional locale (default: 'en-US').
+ * @returns A formatted currency string.
+ */
+export function formatCurrency(value: number, currency: string, locale = 'vi-VN'): string {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value);
+}

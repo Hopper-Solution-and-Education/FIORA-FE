@@ -12,3 +12,8 @@ export const MODULE = {
   BUDGET: 'BUDGET',
   ADMIN: 'ADMIN',
 } as const;
+
+export const CURRENCY = {
+  USD: 'USD',
+  VND: 'VND',
+} as const;

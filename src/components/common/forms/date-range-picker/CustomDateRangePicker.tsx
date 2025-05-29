@@ -24,6 +24,8 @@ interface CustomDateRangePickerProps {
   futureDaysLimit?: number; // Limit for future days (default 90 days)
   disablePast?: boolean; // Disable all past dates
   disableFuture?: boolean; // Disable all future dates
+  value?: DateRange | undefined;
+  onChange?: (value: DateRange | undefined) => void;
 }
 
 const CustomDateRangePicker = forwardRef<HTMLInputElement, CustomDateRangePickerProps>(
@@ -40,6 +42,8 @@ const CustomDateRangePicker = forwardRef<HTMLInputElement, CustomDateRangePicker
       futureDaysLimit = 90,
       disablePast = false,
       disableFuture = false,
+      onChange,
+      value,
     },
     ref,
   ) => {
@@ -55,8 +59,11 @@ const CustomDateRangePicker = forwardRef<HTMLInputElement, CustomDateRangePicker
     };
 
     const [date, setDate] = useState<DateRange | undefined>(
-      selectedRange
-        ? { from: new Date(selectedRange.from), to: new Date(selectedRange.to) }
+      value || selectedRange
+        ? {
+            from: new Date((value || selectedRange).from),
+            to: new Date((value || selectedRange).to),
+          }
         : defaultRange,
     );
     const [month, setMonth] = useState<Date>(date?.to || today);
@@ -104,7 +111,14 @@ const CustomDateRangePicker = forwardRef<HTMLInputElement, CustomDateRangePicker
       if (date) {
         setValue(name, date, { shouldValidate: true, shouldDirty: true });
       }
-    }, [date, name, setValue]);
+      onChange?.(date);
+    }, [date, name, setValue, onChange]);
+
+    useEffect(() => {
+      if (value) {
+        setDate(value);
+      }
+    }, [value]);
 
     const formatDateRange = (range?: DateRange) => {
       if (!range?.from) return placeholder;
