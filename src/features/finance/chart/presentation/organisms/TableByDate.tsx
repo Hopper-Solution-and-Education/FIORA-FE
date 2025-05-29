@@ -14,6 +14,9 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowUpDown } from 'lucide-react';
 import { COLORS } from '@/shared/constants/chart';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { formatCurrency } from '@/shared/utils/convertCurrency';
+import { Currency } from '@/shared/types';
 
 type SortConfig = {
   key: 'totalIncome' | 'totalExpense' | 'profit';
@@ -27,7 +30,7 @@ const TableByDate = () => {
     key: 'totalIncome',
     direction: 'asc',
   });
-
+  const currency = useAppSelector((state) => state.settings.currency);
   const handleSort = (key: SortConfig['key']) => {
     setSortConfig((current) => ({
       key,
@@ -103,10 +106,16 @@ const TableByDate = () => {
               <TableRow key={index}>
                 <TableCell className="font-medium">{item.period}</TableCell>
                 <TableCell className="text-center" style={{ color: COLORS.DEPS_DANGER.LEVEL_2 }}>
-                  {item.totalExpense.toLocaleString('vi-VN')} VNĐ
+                  {formatCurrency(
+                    convertCurrency(item.totalExpense, item.currency as Currency, currency),
+                    currency,
+                  )}
                 </TableCell>
                 <TableCell className="text-center" style={{ color: COLORS.DEPS_SUCCESS.LEVEL_2 }}>
-                  {item.totalIncome.toLocaleString('vi-VN')} VNĐ
+                  {formatCurrency(
+                    convertCurrency(item.totalIncome, item.currency as Currency, currency),
+                    currency,
+                  )}
                 </TableCell>
                 <TableCell className="text-center">
                   <span

@@ -99,8 +99,9 @@ const FilterByViewType = ({
         </div>
 
         {viewBy === 'date' && (
-          <div className="w-full md:w-auto">
+          <div className="w-full max-w-lg">
             <DateRangePicker
+              className="w-full"
               dateRange={dateRange}
               setDateRange={setDateRange}
               placeholder="Select date range"

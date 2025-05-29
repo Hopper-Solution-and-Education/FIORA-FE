@@ -12,5 +12,6 @@ export type GetFinanceByDateResponseDTO = HttpResponse<
     endDate: string;
     totalIncome: number;
     totalExpense: number;
+    currency: string;
   }[]
 >;

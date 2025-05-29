@@ -18,6 +18,9 @@ import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icon';
 import { ICON_SIZE } from '@/shared/constants/size';
 import { COLORS } from '@/shared/constants/chart';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { formatCurrency } from '@/shared/utils/convertCurrency';
+import { Currency } from '@/shared/types';
 
 type SortConfig = {
   key: 'name' | 'totalIncome' | 'totalExpense' | 'totalProfit';
@@ -30,7 +33,7 @@ const TableByProduct = () => {
   const selectedIds = useAppSelector((state) => state.financeControl.selectedProducts);
   const dispatch = useAppDispatch();
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'asc' });
-
+  const currency = useAppSelector((state) => state.settings.currency);
   useEffect(() => {
     if (!isLoading) {
       if (selectedIds.length === 0) {
@@ -131,10 +134,16 @@ const TableByProduct = () => {
                   </div>
                 </TableCell>
                 <TableCell className="text-center" style={{ color: COLORS.DEPS_DANGER.LEVEL_2 }}>
-                  {item.totalExpense.toLocaleString('vi-VN')} VNĐ
+                  {formatCurrency(
+                    convertCurrency(item.totalExpense, item.currency as Currency, currency),
+                    currency,
+                  )}
                 </TableCell>
                 <TableCell className="text-center" style={{ color: COLORS.DEPS_SUCCESS.LEVEL_2 }}>
-                  {item.totalIncome.toLocaleString('vi-VN')} VNĐ
+                  {formatCurrency(
+                    convertCurrency(item.totalIncome, item.currency as Currency, currency),
+                    currency,
+                  )}
                 </TableCell>
                 <TableCell className="text-center">
                   <span
@@ -145,7 +154,10 @@ const TableByProduct = () => {
                           : COLORS.DEPS_DANGER.LEVEL_2,
                     }}
                   >
-                    {item.totalProfit.toLocaleString('vi-VN')} VNĐ
+                    {formatCurrency(
+                      convertCurrency(item.totalProfit, item.currency as Currency, currency),
+                      currency,
+                    )}
                   </span>
                 </TableCell>
               </TableRow>

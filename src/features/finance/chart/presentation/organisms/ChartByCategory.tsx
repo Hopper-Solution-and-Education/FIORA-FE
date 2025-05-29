@@ -3,6 +3,8 @@ import { ChartSkeleton } from '@/components/common/organisms';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { FinanceReportFilterEnum } from '@/features/setting/data/module/finance/constant/FinanceReportFilterEnum';
 import { COLORS } from '@/shared/constants/chart';
+import { Currency } from '@/shared/types';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { useAppDispatch, useAppSelector } from '@/store';
 import React, { useEffect } from 'react';
 import { getFinanceByCategoryAsyncThunk } from '../../slices/actions/getFinanceByCategoryAsyncThunk';
@@ -12,6 +14,7 @@ const ChartByCategory = () => {
   const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinance);
   const viewChartByCategory = useAppSelector((state) => state.financeControl.viewChartByCategory);
   const dispatch = useAppDispatch();
+  const currency = useAppSelector((state) => state.settings.currency);
 
   useEffect(() => {
     if (!isLoading) {
@@ -31,7 +34,11 @@ const ChartByCategory = () => {
   const data = Array.isArray(financeByCategory)
     ? financeByCategory.map((item) => ({
         name: item.name,
-        column: viewChartByCategory === 'income' ? item.totalIncome : item.totalExpense,
+        column: convertCurrency(
+          viewChartByCategory === 'income' ? item.totalIncome : item.totalExpense,
+          item.currency as Currency,
+          currency,
+        ),
       }))
     : [];
 
@@ -56,7 +63,7 @@ const ChartByCategory = () => {
                     : COLORS.DEPS_DANGER.LEVEL_2,
               },
             ]}
-            currency="VNĐ"
+            currency={currency}
           />
         </React.Fragment>
       )}

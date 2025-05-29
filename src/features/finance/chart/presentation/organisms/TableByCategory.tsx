@@ -18,6 +18,9 @@ import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icon';
 import { ICON_SIZE } from '@/shared/constants/size';
 import { COLORS } from '@/shared/constants/chart';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { formatCurrency } from '@/shared/utils/convertCurrency';
+import { Currency } from '@/shared/types';
 
 type SortConfig = {
   key: 'name' | 'totalIncome' | 'totalExpense';
@@ -30,7 +33,7 @@ const TableByCategory = () => {
   const viewChartByCategory = useAppSelector((state) => state.financeControl.viewChartByCategory);
   const dispatch = useAppDispatch();
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'asc' });
-
+  const currency = useAppSelector((state) => state.settings.currency);
   useEffect(() => {
     if (!isLoading) {
       dispatch(
@@ -116,9 +119,14 @@ const TableByCategory = () => {
                   }}
                 >
                   {viewChartByCategory === 'income'
-                    ? item.totalIncome.toLocaleString('vi-VN')
-                    : item.totalExpense.toLocaleString('vi-VN')}
-                  VNĐ
+                    ? formatCurrency(
+                        convertCurrency(item.totalIncome, item.currency as Currency, currency),
+                        currency,
+                      )
+                    : formatCurrency(
+                        convertCurrency(item.totalExpense, item.currency as Currency, currency),
+                        currency,
+                      )}
                 </TableCell>
               </TableRow>
             ))}

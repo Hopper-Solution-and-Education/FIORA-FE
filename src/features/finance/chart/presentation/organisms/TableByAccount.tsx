@@ -18,6 +18,9 @@ import { ICON_SIZE } from '@/shared/constants/size';
 import { ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { COLORS } from '@/shared/constants/chart';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { formatCurrency } from '@/shared/utils/convertCurrency';
+import { Currency } from '@/shared/types';
 
 type SortConfig = {
   key: 'name' | 'totalIncome' | 'totalExpense';
@@ -30,7 +33,7 @@ const TableByAccount = () => {
   const selectedIds = useAppSelector((state) => state.financeControl.selectedAccounts);
   const dispatch = useAppDispatch();
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'asc' });
-
+  const currency = useAppSelector((state) => state.settings.currency);
   useEffect(() => {
     if (!isLoading) {
       if (selectedIds.length === 0) {
@@ -116,11 +119,17 @@ const TableByAccount = () => {
                 </TableCell>
 
                 <TableCell className="text-center " style={{ color: COLORS.DEPS_SUCCESS.LEVEL_2 }}>
-                  {item.totalIncome.toLocaleString('vi-VN')} VNĐ
+                  {formatCurrency(
+                    convertCurrency(item.totalIncome, item.currency as Currency, currency),
+                    currency,
+                  )}
                 </TableCell>
 
                 <TableCell className="text-center " style={{ color: COLORS.DEPS_DANGER.LEVEL_2 }}>
-                  {item.totalExpense.toLocaleString('vi-VN')} VNĐ
+                  {formatCurrency(
+                    convertCurrency(item.totalExpense, item.currency as Currency, currency),
+                    currency,
+                  )}
                 </TableCell>
               </TableRow>
             ))}
