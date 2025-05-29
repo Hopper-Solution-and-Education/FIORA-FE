@@ -42,6 +42,9 @@ export type FinanceByCategory = {
 
 export type FinanceResult = {
   name: string;
+  icon?: string;
+  currency: string;
+  logo?: string;
   totalIncome: number;
   totalExpense: number;
   totalProfit: number;

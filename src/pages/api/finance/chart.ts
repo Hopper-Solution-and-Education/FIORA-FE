@@ -23,7 +23,7 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
 });
 
 const MONTH = 30;
-const YEAR = 360;
+const TWO_YEARS = 730; // 2 years in days
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
@@ -178,7 +178,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
         }
       }
       groupedTransactions = weeks;
-    } else if (diffDays <= YEAR) {
+    } else if (diffDays <= TWO_YEARS) {
       // Group by months
       const months = [];
       const startMonth = fromDate.getMonth();
