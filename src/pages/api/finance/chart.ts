@@ -22,8 +22,9 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
   }
 });
 
-const MONTH = 30;
-const TWO_YEARS = 730; // 2 years in days
+const DAYS_30 = 30;
+const DAYS_180 = 180;
+const DAYS_365 = 365;
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
@@ -101,84 +102,73 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
 
     let groupedTransactions: any[] = [];
 
-    if (diffDays <= MONTH) {
-      // Nhóm dữ liệu theo tuần (mỗi tháng có đúng 4 tuần)
-      const weeks = [];
-      let currentDate = new Date(fromDate);
-
-      /**
-       * Tính số tuần trong tháng (1-4)
-       * - Tuần 1: Ngày 1-7
-       * - Tuần 2: Ngày 8-14
-       * - Tuần 3: Ngày 15-21 (hiển thị tháng hiện tại/tháng tiếp theo)
-       * - Tuần 4: Ngày 22-cuối tháng (hiển thị tháng hiện tại/tháng tiếp theo)
-       */
-      const getWeekNumberInMonth = (date: Date) => {
-        const start = new Date(date.getFullYear(), date.getMonth(), 1);
-        const diff = date.getTime() - start.getTime();
-        const oneDay = 1000 * 60 * 60 * 24;
-        const dayOfMonth = Math.floor(diff / oneDay);
-        return Math.floor(dayOfMonth / 7) + 1;
-      };
-
-      // Lấy tên tháng để hiển thị (vd: March, April,...)
-      const getMonthName = (date: Date) => {
-        return date.toLocaleString('default', { month: 'long' });
-      };
+    if (diffDays <= DAYS_30) {
+      // Group by days
+      const days = [];
+      const currentDate = new Date(fromDate);
 
       while (currentDate <= toDate) {
-        // Tính ngày bắt đầu và kết thúc của tuần hiện tại
+        const dayStart = new Date(currentDate);
+        const dayEnd = new Date(currentDate);
+        dayEnd.setHours(23, 59, 59, 999);
+
+        const dayTransactions = transactions.filter((t) => {
+          const transDate = new Date(t.date);
+          return transDate >= dayStart && transDate <= dayEnd;
+        });
+
+        days.push({
+          period: currentDate.toLocaleDateString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          }),
+          startDate: dayStart,
+          endDate: dayEnd,
+          totalIncome: dayTransactions
+            .filter((t) => t.type === TransactionType.Income)
+            .reduce((sum, t) => sum + Number(t.amount), 0),
+          totalExpense: dayTransactions
+            .filter((t) => t.type === TransactionType.Expense)
+            .reduce((sum, t) => sum + Number(t.amount), 0),
+          currency: dayTransactions[0]?.currency || 'VND',
+        });
+
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      groupedTransactions = days;
+    } else if (diffDays <= DAYS_180) {
+      // Group by weeks
+      const weeks = [];
+      const currentDate = new Date(fromDate);
+
+      while (currentDate <= toDate) {
         const weekStart = new Date(currentDate);
         const weekEnd = new Date(currentDate);
         weekEnd.setDate(weekEnd.getDate() + 6);
 
-        const weekNumber = getWeekNumberInMonth(currentDate);
-        let periodLabel;
-
-        // Đối với tuần 3 và 4, hiển thị cả tháng hiện tại và tháng tiếp theo
-        // Ví dụ: "Week 3 (March/April)" hoặc "Week 4 (March/April)"
-        if (weekNumber >= 3) {
-          const nextMonth = new Date(currentDate);
-          nextMonth.setMonth(nextMonth.getMonth() + 1);
-          periodLabel = `Week ${weekNumber} (${getMonthName(currentDate)}/${getMonthName(nextMonth)})`;
-        } else {
-          // Tuần 1 và 2 chỉ hiển thị tháng hiện tại
-          // Ví dụ: "Week 1 (March)" hoặc "Week 2 (March)"
-          periodLabel = `Week ${weekNumber} (${getMonthName(currentDate)})`;
-        }
-
-        // Lọc các giao dịch trong khoảng thời gian của tuần hiện tại
         const weekTransactions = transactions.filter((t) => {
           const transDate = new Date(t.date);
           return transDate >= weekStart && transDate <= weekEnd;
         });
 
-        // Thêm dữ liệu tuần vào mảng kết quả
         weeks.push({
-          period: periodLabel,
+          period: `Week ${Math.ceil((currentDate.getDate() + currentDate.getDay()) / 7)} (${weekStart.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - ${weekEnd.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })})`,
           startDate: weekStart,
           endDate: weekEnd,
-          // Tính tổng thu nhập trong tuần
           totalIncome: weekTransactions
             .filter((t) => t.type === TransactionType.Income)
             .reduce((sum, t) => sum + Number(t.amount), 0),
-          // Tính tổng chi tiêu trong tuần
           totalExpense: weekTransactions
             .filter((t) => t.type === TransactionType.Expense)
             .reduce((sum, t) => sum + Number(t.amount), 0),
+          currency: weekTransactions[0]?.currency || 'VND',
         });
 
-        // Di chuyển đến tuần tiếp theo
         currentDate.setDate(currentDate.getDate() + 7);
-
-        // Sau khi xử lý đủ 4 tuần, chuyển sang tháng tiếp theo
-        // Đảm bảo mỗi tháng luôn có đúng 4 tuần
-        if (weeks.length % 4 === 0) {
-          currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-        }
       }
       groupedTransactions = weeks;
-    } else if (diffDays <= TWO_YEARS) {
+    } else if (diffDays <= DAYS_365) {
       // Group by months
       const months = [];
       const startMonth = fromDate.getMonth();
@@ -209,6 +199,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
             totalExpense: monthTransactions
               .filter((t) => t.type === TransactionType.Expense)
               .reduce((sum, t) => sum + Number(t.amount), 0),
+            currency: monthTransactions[0]?.currency || 'VND',
           });
         }
       }
@@ -238,6 +229,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
           totalExpense: yearTransactions
             .filter((t) => t.type === TransactionType.Expense)
             .reduce((sum, t) => sum + Number(t.amount), 0),
+          currency: yearTransactions[0]?.currency || 'VND',
         });
       }
       groupedTransactions = years;

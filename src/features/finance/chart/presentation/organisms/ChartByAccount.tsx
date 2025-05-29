@@ -3,6 +3,8 @@ import { ChartSkeleton } from '@/components/common/organisms';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { FinanceReportFilterEnum } from '@/features/setting/data/module/finance/constant/FinanceReportFilterEnum';
 import { COLORS } from '@/shared/constants/chart';
+import { Currency } from '@/shared/types';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { useAppDispatch, useAppSelector } from '@/store';
 import React, { useEffect } from 'react';
 import { getFinanceByCategoryAsyncThunk } from '../../slices/actions';
@@ -11,6 +13,7 @@ const ChartByAccount = () => {
   const financeByCategory = useAppSelector((state) => state.financeControl.financeByAccount);
   const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinance);
   const selectedIds = useAppSelector((state) => state.financeControl.selectedAccounts);
+  const currency = useAppSelector((state) => state.settings.currency);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -30,8 +33,8 @@ const ChartByAccount = () => {
   const data = Array.isArray(financeByCategory)
     ? financeByCategory.map((item) => ({
         name: item.name,
-        column1: item.totalExpense,
-        column2: item.totalIncome,
+        column1: convertCurrency(item.totalExpense, item.currency as Currency, currency),
+        column2: convertCurrency(item.totalIncome, item.currency as Currency, currency),
       }))
     : [];
 
@@ -50,7 +53,7 @@ const ChartByAccount = () => {
               { key: 'column1', name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_2 },
               { key: 'column2', name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_2 },
             ]}
-            currency="VNĐ"
+            currency={currency}
           />
         </React.Fragment>
       )}

@@ -14,7 +14,14 @@ const ChartFinancePage = () => {
   const viewBy = useAppSelector((state) => state.financeControl.viewBy);
   const viewMode = useAppSelector((state) => state.financeControl.viewMode);
   const dispatch = useAppDispatch();
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    const today = new Date();
+    const startOfYear = new Date(today.getFullYear(), 0, 1);
+    return {
+      from: startOfYear,
+      to: today,
+    };
+  });
 
   const handleViewByChange = (value: ViewBy) => {
     dispatch(setViewBy(value));
@@ -24,10 +31,9 @@ const ChartFinancePage = () => {
     if (viewBy === 'date') {
       const today = new Date();
       const startOfYear = new Date(today.getFullYear(), 0, 1);
-      const maxDate = today;
 
+      const to = dateRange?.to ?? today;
       const from = dateRange?.from ?? startOfYear;
-      const to = dateRange?.to && dateRange.to < maxDate ? dateRange.to : maxDate;
 
       dispatch(
         getFinanceByDateAsyncThunk({

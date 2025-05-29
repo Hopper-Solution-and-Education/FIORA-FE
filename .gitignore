@@ -45,7 +45,6 @@ next-env.d.ts
 .env.sentry-build-plugin
 
 
-package-lock.json
 pnpm-lock.yaml
 bun.lock
 yarn.lock

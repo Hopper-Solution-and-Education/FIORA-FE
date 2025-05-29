@@ -19,6 +19,7 @@ export type FinanceByDate = {
   endDate: string;
   totalIncome: number;
   totalExpense: number;
+  currency: string;
 };
 
 export type GetFinanceByCategoryRequest = {
