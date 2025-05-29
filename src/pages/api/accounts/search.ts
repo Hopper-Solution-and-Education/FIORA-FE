@@ -1,9 +1,10 @@
-import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
-import { Messages } from '@/shared/constants/message';
+import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
+import { GlobalFilters } from '@/shared/types';
+import { Currency } from '@prisma/client';
 
 export default withAuthorization({
   POST: ['User', 'Admin', 'CS'],
@@ -22,26 +23,29 @@ export default withAuthorization({
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const account = await AccountUseCaseInstance.filterAccountOptions(req.body, userId);
-
-    if (!account) {
-      return res
-        .status(RESPONSE_CODE.OK)
-        .json(createResponse(RESPONSE_CODE.OK, Messages.GET_ACCOUNT_FILTERED_SUCCESS, []));
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    return res
-      .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_ACCOUNT_FILTERED_SUCCESS, account));
-  } catch (error: any) {
-    return res
-      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createError(
-          res,
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        ),
+    const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
+    const params = req.body as GlobalFilters;
+    const { isParent } = req.query;
+    if (isParent) {
+      const accounts = await AccountUseCaseInstance.getAllParentAccountFilter(userId, params);
+      return res
+        .status(200)
+        .json(createResponse(RESPONSE_CODE.OK, 'Lấy danh sách tài khoản thành công', accounts));
+    } else {
+      const accounts = await AccountUseCaseInstance.getAllAccountByUserIdFilter(
+        userId,
+        currency,
+        params,
       );
+      return res
+        .status(200)
+        .json(createResponse(RESPONSE_CODE.OK, 'Lấy danh sách tài khoản thành công', accounts));
+    }
+  } catch (error: any) {
+    res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
 }

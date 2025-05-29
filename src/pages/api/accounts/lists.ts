@@ -4,7 +4,6 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Currency } from '@prisma/client';
-import { GlobalFilters } from '@/shared/types';
 
 // Define the expected session structure
 
@@ -14,7 +13,7 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
   try {
     switch (req.method) {
       case 'POST':
-        return POST(req, res, userId);
+        return GET(req, res, userId);
       default:
         return res
           .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -25,22 +24,21 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
   }
 });
 
-export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    if (req.method !== 'POST') {
+    if (req.method !== 'GET') {
       return res.status(405).json({ error: 'Method not allowed' });
     }
-
     const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
-    const params = req.body as GlobalFilters;
+
     const { isParent } = req.query;
     if (isParent) {
-      const accounts = await AccountUseCaseInstance.getAllParentAccount(userId, params);
+      const accounts = await AccountUseCaseInstance.getAllParentAccount(userId);
       return res
         .status(200)
         .json(createResponse(RESPONSE_CODE.OK, 'Lấy danh sách tài khoản thành công', accounts));
     } else {
-      const accounts = await AccountUseCaseInstance.getAllAccountByUserId(userId, currency, params);
+      const accounts = await AccountUseCaseInstance.getAllAccountByUserId(userId, currency);
       return res
         .status(200)
         .json(createResponse(RESPONSE_CODE.OK, 'Lấy danh sách tài khoản thành công', accounts));

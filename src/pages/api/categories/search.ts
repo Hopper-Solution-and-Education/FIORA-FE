@@ -21,7 +21,7 @@ export default sessionWrapper(async (req, res, userId) => {
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const params = req.body as GlobalFilters;
-    const categories = await categoryUseCase.getCategories(userId, params);
+    const categories = await categoryUseCase.getCategoriesFilter(userId, params);
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.GET_CATEGORY_SUCCESS, categories));

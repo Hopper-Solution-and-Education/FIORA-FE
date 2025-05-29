@@ -91,71 +91,6 @@ export class AccountUseCase {
     }
   }
 
-  async filterAccountOptions(params: GlobalFilters, userId: string) {
-    const searchParams = safeString(params.search);
-    let where = buildWhereClause(params.filters) as Prisma.AccountWhereInput;
-
-    if (BooleanUtils.isTrue(searchParams)) {
-      const typeSearchParams = searchParams.toLowerCase();
-      const enumValues = Object.values(AccountType).map((v) => v.toLowerCase());
-      const matchedType = enumValues.includes(typeSearchParams)
-        ? (Object.values(AccountType).find(
-            (v) => v.toLowerCase() === typeSearchParams,
-          ) as AccountType)
-        : null;
-
-      const orConditions: Prisma.AccountWhereInput[] = [
-        { name: { contains: typeSearchParams, mode: 'insensitive' } },
-      ];
-
-      if (matchedType) {
-        orConditions.push({ type: { equals: matchedType } });
-      }
-
-      where = {
-        AND: [
-          where,
-          {
-            OR: orConditions,
-          },
-        ],
-      };
-    }
-
-    const accountFiltered = await this.accountRepository.findManyWithCondition(
-      {
-        ...where,
-        userId: userId,
-      },
-      {
-        include: {
-          children: true,
-          toTransactions: true,
-          fromTransactions: true,
-        },
-        orderBy: [
-          {
-            balance: 'desc',
-          },
-        ],
-      },
-    );
-
-    const balances = accountFiltered.map((a) => Number(a.balance ?? 0));
-    let minBalance = balances.length > 0 ? Math.min(...balances) : 0;
-    const maxBalance = balances.length > 0 ? Math.max(...balances) : 0;
-
-    if (minBalance === maxBalance) {
-      minBalance = 0;
-    }
-
-    return {
-      data: [...accountFiltered],
-      minBalance,
-      maxBalance,
-    };
-  }
-
   async validateParentAccount(parentId: string, type: AccountType): Promise<void> {
     const parentAccount = await this.accountRepository.findById(parentId);
 
@@ -199,7 +134,14 @@ export class AccountUseCase {
     return masterAccount ? true : false;
   }
 
-  async getAllParentAccount(userId: string, params: GlobalFilters): Promise<Account[] | []> {
+  async getAllParentAccount(userId: string): Promise<Account[] | []> {
+    return this.accountRepository.findManyWithCondition({
+      userId,
+      parentId: null,
+    });
+  }
+
+  async getAllParentAccountFilter(userId: string, params: GlobalFilters) {
     const searchParams = safeString(params.search);
     let where = buildWhereClause(params.filters) as Prisma.AccountWhereInput;
 
@@ -230,14 +172,28 @@ export class AccountUseCase {
       };
     }
 
-    return this.accountRepository.findManyWithCondition({
+    const accountFiltered = await this.accountRepository.findManyWithCondition({
       userId,
       parentId: null,
       ...where,
     });
+
+    const balances = accountFiltered.map((a) => Number(a.balance ?? 0));
+    let minBalance = balances.length > 0 ? Math.min(...balances) : 0;
+    const maxBalance = balances.length > 0 ? Math.max(...balances) : 0;
+
+    if (minBalance === maxBalance) {
+      minBalance = 0;
+    }
+
+    return {
+      data: accountFiltered,
+      minBalance,
+      maxBalance,
+    };
   }
 
-  async getAllAccountByUserId(userId: string, currency: Currency, params: GlobalFilters) {
+  async getAllAccountByUserIdFilter(userId: string, currency: Currency, params: GlobalFilters) {
     const searchParams = safeString(params.search);
     let where = buildWhereClause(params.filters) as Prisma.AccountWhereInput;
 
@@ -272,6 +228,102 @@ export class AccountUseCase {
       {
         userId,
         ...where,
+      },
+      {
+        include: {
+          children: true,
+          toTransactions: true,
+          fromTransactions: true,
+        },
+        orderBy: [
+          {
+            balance: 'desc',
+          },
+        ],
+      },
+    )) as Prisma.AccountGetPayload<{
+      include: {
+        children: true;
+        toTransactions: true;
+        fromTransactions: true;
+      };
+    }>[];
+
+    const accountWithConvertedBalance = accountRes.map((acc: any) => {
+      const convertedBalance = convertCurrency(
+        acc.balance?.toNumber() || 0,
+        acc.currency,
+        currency,
+      );
+
+      return {
+        ...acc,
+        balance: convertedBalance.toString(),
+        currency: currency,
+        ...(acc.children && {
+          children: acc.children.map((child: Account) => {
+            const childConvertedBalance = convertCurrency(
+              child.balance?.toNumber() || 0,
+              child.currency,
+              currency,
+            );
+            return {
+              ...child,
+              balance: childConvertedBalance.toString(),
+              currency: currency,
+            };
+          }),
+        }),
+        ...(acc.toTransactions && {
+          toTransactions: acc.toTransactions.map((tx: Transaction) => {
+            const txConvertedBalance = convertCurrency(
+              tx.amount?.toNumber() || 0,
+              tx.currency,
+              currency,
+            );
+            return {
+              ...tx,
+              amount: txConvertedBalance.toString(),
+              currency: currency,
+            };
+          }),
+        }),
+        ...(acc.fromTransactions && {
+          fromTransactions: acc.fromTransactions.map((tx: Transaction) => {
+            const txConvertedBalance = convertCurrency(
+              tx.amount?.toNumber() || 0,
+              tx.currency,
+              currency,
+            );
+            return {
+              ...tx,
+              amount: txConvertedBalance.toString(),
+              currency: currency,
+            };
+          }),
+        }),
+      };
+    });
+
+    const balances = accountWithConvertedBalance.map((a) => Number(a.balance ?? 0));
+    let minBalance = balances.length > 0 ? Math.min(...balances) : 0;
+    const maxBalance = balances.length > 0 ? Math.max(...balances) : 0;
+
+    if (minBalance === maxBalance) {
+      minBalance = 0;
+    }
+
+    return {
+      data: accountWithConvertedBalance,
+      minBalance,
+      maxBalance,
+    };
+  }
+
+  async getAllAccountByUserId(userId: string, currency: Currency) {
+    const accountRes = (await this.accountRepository.findManyWithCondition(
+      {
+        userId,
       },
       {
         include: {

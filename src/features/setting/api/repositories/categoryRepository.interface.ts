@@ -22,8 +22,10 @@ export interface ICategoryRepository {
    */
   updateCategory(id: string, data: Partial<Category>): Promise<Category>;
   deleteCategory(id: string): Promise<void>;
-  findCategoriesWithTransactions(
+  findCategoriesWithTransactionsFilter(
     userId: string,
     where: Prisma.CategoryWhereInput,
   ): Promise<CategoryExtras[]>;
+
+  findCategoriesWithTransactions(userId: string): Promise<CategoryExtras[]>;
 }
