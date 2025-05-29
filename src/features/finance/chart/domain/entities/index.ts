@@ -19,6 +19,7 @@ export type FinanceByDate = {
   endDate: string;
   totalIncome: number;
   totalExpense: number;
+  currency: string;
 };
 
 export type GetFinanceByCategoryRequest = {
@@ -42,6 +43,9 @@ export type FinanceByCategory = {
 
 export type FinanceResult = {
   name: string;
+  icon?: string;
+  currency: string;
+  logo?: string;
   totalIncome: number;
   totalExpense: number;
   totalProfit: number;

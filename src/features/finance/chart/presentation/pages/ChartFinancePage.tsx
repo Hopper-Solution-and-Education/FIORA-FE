@@ -7,13 +7,21 @@ import { getAllAccountAsyncThunk } from '../../slices/actions/getAllAccountAsync
 import { getAllProductAsyncThunk } from '../../slices/actions/getAllProductAsyncThunk';
 import { getFinanceByDateAsyncThunk } from '../../slices/actions/getFinanceByDateAsyncThunk';
 import { ViewBy } from '../../slices/types';
-import { chartComponents } from '../../utils';
+import { chartComponents, tableComponents } from '../../utils';
 import { FilterByViewType } from '../molecules';
 
 const ChartFinancePage = () => {
   const viewBy = useAppSelector((state) => state.financeControl.viewBy);
+  const viewMode = useAppSelector((state) => state.financeControl.viewMode);
   const dispatch = useAppDispatch();
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    const today = new Date();
+    const startOfYear = new Date(today.getFullYear(), 0, 1);
+    return {
+      from: startOfYear,
+      to: today,
+    };
+  });
 
   const handleViewByChange = (value: ViewBy) => {
     dispatch(setViewBy(value));
@@ -21,26 +29,18 @@ const ChartFinancePage = () => {
 
   useEffect(() => {
     if (viewBy === 'date') {
-      if (dateRange?.from && dateRange?.to) {
-        // Nếu dateRange đã được chọn, sử dụng range đó
-        dispatch(
-          getFinanceByDateAsyncThunk({
-            from: dateRange.from.toISOString(),
-            to: dateRange.to.toISOString(),
-          }),
-        );
-      } else {
-        // Mặc định lấy dữ liệu 10 năm gần nhất
-        const now = new Date();
-        const tenYearsAgo = new Date(now.getFullYear() - 10, now.getMonth(), now.getDate()); // 10 năm trước từ ngày hiện tại
+      const today = new Date();
+      const startOfYear = new Date(today.getFullYear(), 0, 1);
 
-        dispatch(
-          getFinanceByDateAsyncThunk({
-            from: tenYearsAgo.toISOString(),
-            to: now.toISOString(), // Đến ngày hiện tại
-          }),
-        );
-      }
+      const to = dateRange?.to ?? today;
+      const from = dateRange?.from ?? startOfYear;
+
+      dispatch(
+        getFinanceByDateAsyncThunk({
+          from: from.toISOString(),
+          to: to.toISOString(),
+        }),
+      );
     } else if (viewBy === 'account') {
       dispatch(
         getAllAccountAsyncThunk({
@@ -67,6 +67,7 @@ const ChartFinancePage = () => {
   }, [dispatch, dateRange, viewBy]);
 
   const ChartComponent = chartComponents[viewBy];
+  const TableComponent = tableComponents[viewBy];
 
   return (
     <div className="space-y-4 p-4">
@@ -77,7 +78,7 @@ const ChartFinancePage = () => {
         onViewByChange={handleViewByChange}
       />
 
-      <ChartComponent />
+      {viewMode === 'chart' ? <ChartComponent /> : <TableComponent />}
     </div>
   );
 };

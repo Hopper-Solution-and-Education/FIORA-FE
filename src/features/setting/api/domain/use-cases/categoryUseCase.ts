@@ -132,6 +132,38 @@ class CategoryUseCase {
     });
   }
 
+  async getCategories(userId: string): Promise<any[]> {
+    const categories = await this.categoryRepository.findCategoriesWithTransactions(userId);
+
+    const calculateBalance = (category: CategoryExtras): number => {
+      if (category.type === CategoryType.Expense.valueOf()) {
+        return (category.toTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+      } else if (category.type === CategoryType.Income.valueOf()) {
+        return (category.fromTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+      }
+      return 0;
+    };
+
+    const categoryMap = new Map<string, any>();
+    categories.forEach((category) => {
+      categoryMap.set(category.id, {
+        ...category,
+        balance: calculateBalance(category),
+      });
+    });
+
+    categories.forEach((category) => {
+      if (category.parentId) {
+        const parent = categoryMap.get(category.parentId);
+        if (parent) {
+          parent.balance += categoryMap.get(category.id).balance;
+        }
+      }
+    });
+
+    return Array.from(categoryMap.values());
+  }
+
   private calculateMinMaxTotalAmount(categories: CategoryExtras[]): {
     minAmount: number;
     maxAmount: number;
@@ -157,7 +189,7 @@ class CategoryUseCase {
     return { minAmount, maxAmount };
   }
 
-  async getCategories(
+  async getCategoriesFilter(
     userId: string,
     params: GlobalFilters,
   ): Promise<{
@@ -181,7 +213,10 @@ class CategoryUseCase {
       };
     }
 
-    let categories = await this.categoryRepository.findCategoriesWithTransactions(userId, where);
+    let categories = await this.categoryRepository.findCategoriesWithTransactionsFilter(
+      userId,
+      where,
+    );
     const transactionRangeFilters = this.extractTransactionRangeFilters(params.filters);
     categories = this.filterCategoriesByTransactionRange(categories, transactionRangeFilters);
 

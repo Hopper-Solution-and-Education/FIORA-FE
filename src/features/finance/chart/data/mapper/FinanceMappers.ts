@@ -33,6 +33,7 @@ class FinanceMapper {
       endDate: item.endDate,
       totalIncome: item.totalIncome,
       totalExpense: item.totalExpense,
+      currency: item.currency,
     }));
   }
 

@@ -26,6 +26,7 @@ interface FinanceControlState {
   selectedAccounts: string[];
   selectedProducts: string[];
   selectedPartners: string[];
+  viewMode: 'table' | 'chart';
 }
 
 export const initialFinanceControlState: FinanceControlState = {
@@ -52,4 +53,5 @@ export const initialFinanceControlState: FinanceControlState = {
   selectedAccounts: [],
   selectedProducts: [],
   selectedPartners: [],
+  viewMode: 'chart',
 };

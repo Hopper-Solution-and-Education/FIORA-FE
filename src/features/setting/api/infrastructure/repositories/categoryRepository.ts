@@ -70,7 +70,20 @@ class CategoryRepository implements ICategoryRepository {
     await prisma.category.delete({ where: { id } });
   }
 
-  async findCategoriesWithTransactions(
+  async findCategoriesWithTransactions(userId: string): Promise<any[]> {
+    return prisma.category.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        fromTransactions: { select: { amount: true, isDeleted: true } },
+        toTransactions: { select: { amount: true, isDeleted: true } },
+      },
+      orderBy: [{ toTransactions: { _count: 'desc' } }, { fromTransactions: { _count: 'desc' } }],
+    });
+  }
+
+  async findCategoriesWithTransactionsFilter(
     userId: string,
     where: Prisma.CategoryWhereInput,
   ): Promise<any[]> {

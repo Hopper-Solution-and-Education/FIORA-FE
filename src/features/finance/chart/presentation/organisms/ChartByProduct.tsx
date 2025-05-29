@@ -6,11 +6,14 @@ import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect } from 'react';
 import { getFinanceByCategoryAsyncThunk } from '../../slices/actions/getFinanceByCategoryAsyncThunk';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { Currency } from '@/shared/types';
 
 const ChartByProduct = () => {
   const financeByProduct = useAppSelector((state) => state.financeControl.financeByProduct);
   const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinance);
   const selectedIds = useAppSelector((state) => state.financeControl.selectedProducts);
+  const currency = useAppSelector((state) => state.settings.currency);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -30,9 +33,9 @@ const ChartByProduct = () => {
   const data = Array.isArray(financeByProduct)
     ? financeByProduct.map((item) => ({
         name: item.name,
-        column1: item.totalExpense,
-        column2: item.totalIncome,
-        column3: item.totalProfit,
+        column1: convertCurrency(item.totalExpense, item.currency as Currency, currency),
+        column2: convertCurrency(item.totalIncome, item.currency as Currency, currency),
+        column3: convertCurrency(item.totalProfit, item.currency as Currency, currency),
       }))
     : [];
 
@@ -49,7 +52,7 @@ const ChartByProduct = () => {
             { key: 'column2', name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_2 },
             { key: 'column3', name: 'Profit', color: COLORS.DEPS_INFO.LEVEL_2 },
           ]}
-          currency="VNĐ"
+          currency={currency}
         />
       )}
     </div>
