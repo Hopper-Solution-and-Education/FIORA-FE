@@ -10,6 +10,7 @@ import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { searchPartners } from '../../slices/actions/searchPartnersAsyncThunk';
+import { toast } from 'sonner';
 
 // Define constants for magic numbers
 const DEFAULT_MAX_EXPENSE = 100000;
@@ -99,7 +100,6 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
 
         // Validate input
         if (!filterCriteria || typeof filterCriteria !== 'object') {
-          console.warn('FilterMenu: Invalid filter criteria provided for extraction');
           return {
             partnerTypes,
             expenseMin: currentExpenseMin,
@@ -117,7 +117,6 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
               typeof type === 'string' &&
               PARTNER_TYPE_OPTIONS.some((option) => option.value === type),
           ) as string[];
-          console.log('FilterMenu: Extracted partner types:', partnerTypes);
         }
 
         // Get the nested filters object
@@ -131,7 +130,6 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
               from: dobFilter.gte ? new Date(dobFilter.gte) : undefined,
               to: dobFilter.lte ? new Date(dobFilter.lte) : undefined,
             };
-            console.log('FilterMenu: Extracted DOB range:', dobRange);
           }
         }
 
@@ -145,19 +143,11 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
                   const amount = orCondition.amount as RangeCondition;
                   if (typeof amount.gte === 'number') currentExpenseMin = amount.gte;
                   if (typeof amount.lte === 'number') currentExpenseMax = amount.lte;
-                  console.log('FilterMenu: Extracted expense range:', {
-                    min: currentExpenseMin,
-                    max: currentExpenseMax,
-                  });
                 }
                 if (orCondition.type === 'Income' && orCondition.amount) {
                   const amount = orCondition.amount as RangeCondition;
                   if (typeof amount.gte === 'number') currentIncomeMin = amount.gte;
                   if (typeof amount.lte === 'number') currentIncomeMax = amount.lte;
-                  console.log('FilterMenu: Extracted income range:', {
-                    min: currentIncomeMin,
-                    max: currentIncomeMax,
-                  });
                 }
               }
             });
@@ -173,11 +163,9 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
           dobRange,
         };
 
-        console.log('FilterMenu: Successfully extracted filter data:', result);
         return result;
       } catch (error) {
-        console.error('FilterMenu: Error extracting filter data:', error);
-        // Return default values on error
+        toast.error('Error extracting filter data:' + JSON.stringify(error));
         return {
           partnerTypes: [],
           expenseMin: partnerStatistics.minExpense,
@@ -192,40 +180,10 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
   );
 
   // Debug function to validate and log filter criteria structure
-  const debugFilterCriteria = useCallback((criteria: any, context: string) => {
-    console.group(`FilterMenu Debug - ${context}`);
-    console.log('Raw filter criteria:', criteria);
-
+  const debugFilterCriteria = useCallback((criteria: any) => {
     if (!criteria) {
-      console.warn('No filter criteria provided');
-      console.groupEnd();
+      toast.error('No filter criteria provided');
       return false;
-    }
-
-    console.log('Types field:', criteria.types);
-    console.log('Filters field:', criteria.filters);
-
-    // Validate types field
-    if (criteria.types) {
-      if (Array.isArray(criteria.types)) {
-        console.log('Valid types array found with length:', criteria.types.length);
-      } else {
-        console.warn('Types field is not an array:', typeof criteria.types);
-      }
-    }
-
-    // Validate filters field
-    if (criteria.filters && typeof criteria.filters === 'object') {
-      const filterKeys = Object.keys(criteria.filters);
-      console.log('Filter keys found:', filterKeys);
-
-      if (criteria.filters.dob) {
-        console.log('DOB filter:', criteria.filters.dob);
-      }
-
-      if (criteria.filters.transactions) {
-        console.log('Transactions filter:', criteria.filters.transactions);
-      }
     }
 
     const hasData = Boolean(
@@ -233,21 +191,16 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         (criteria.filters && Object.keys(criteria.filters).length > 0),
     );
 
-    console.log('Has filter data:', hasData);
-    console.groupEnd();
     return hasData;
   }, []);
 
   // Initialize filter params with calculated values and existing filter criteria
   useEffect(() => {
     if (!isInitialized && partnerStatistics) {
-      console.log('FilterMenu: Initializing filter parameters...');
-
       // Check if there are existing filter criteria to read
-      const hasExistingCriteria = debugFilterCriteria(filterCriteria, 'Initialization Check');
+      const hasExistingCriteria = debugFilterCriteria(filterCriteria);
 
       if (hasExistingCriteria) {
-        console.log('FilterMenu: Found existing filter criteria, extracting data...');
         // Extract data from existing filter criteria
         const extractedData = extractFilterData(
           filterCriteria as unknown as Record<string, unknown>,
@@ -262,12 +215,8 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
           incomeMax: extractedData.incomeMax ?? partnerStatistics.maxIncome,
         };
 
-        console.log('FilterMenu: Setting filter params from existing criteria:', finalParams);
         setFilterParams(finalParams);
       } else {
-        console.log(
-          'FilterMenu: No existing criteria found, using defaults with calculated statistics',
-        );
         // No existing criteria, use default values with calculated statistics
         const defaultParams = {
           ...filterParamsInitState,
@@ -277,12 +226,10 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
           incomeMax: partnerStatistics.maxIncome,
         };
 
-        console.log('FilterMenu: Setting default filter params:', defaultParams);
         setFilterParams(defaultParams);
       }
 
       setIsInitialized(true);
-      console.log('FilterMenu: Initialization complete');
     }
   }, [partnerStatistics, filterCriteria, extractFilterData, isInitialized, debugFilterCriteria]);
 
@@ -496,8 +443,6 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
       } else {
         flattenedFilter.filters = {};
       }
-
-      console.log('FilterMenu: Flattened filter structure:', flattenedFilter);
 
       // Update filter criteria with flattened structure
       onFilterChange(flattenedFilter);

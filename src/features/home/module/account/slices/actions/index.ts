@@ -1,14 +1,15 @@
 import accountServices from '@/features/home/services/accountServices';
 import { Response } from '@/shared/types/Common.types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { Account } from '../types';
+import { Account, AccountFilterResponse } from '../types';
 import { NewAccountDefaultValues } from '@/features/home/module/account/slices/types/formSchema';
+import { FilterCriteria } from '@/shared/types';
 
 export const fetchAccounts = createAsyncThunk(
   'account/fetchAccounts',
-  async (_, { rejectWithValue }) => {
+  async (data: FilterCriteria, { rejectWithValue }) => {
     try {
-      const response: Response<Account[]> = await accountServices.fetchAccounts();
+      const response: Response<AccountFilterResponse> = await accountServices.fetchAccounts(data);
       return response;
     } catch (error: any) {
       return rejectWithValue({
@@ -18,11 +19,25 @@ export const fetchAccounts = createAsyncThunk(
   },
 );
 
+export const searchAccounts = createAsyncThunk(
+  'account/searchAccounts',
+  async (data: FilterCriteria, { rejectWithValue }) => {
+    try {
+      const response: Response<AccountFilterResponse> = await accountServices.fetchAccounts(data);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.message || 'Failed to search accounts! Please try again!',
+      });
+    }
+  },
+);
+
 export const fetchParents = createAsyncThunk(
   'account/fetchParents',
-  async (_, { rejectWithValue }) => {
+  async (data: FilterCriteria, { rejectWithValue }) => {
     try {
-      const response: Response<Account[]> = await accountServices.fetchParents();
+      const response: Response<AccountFilterResponse> = await accountServices.fetchParents(data);
       return response;
     } catch (error: any) {
       return rejectWithValue({

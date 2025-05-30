@@ -1,0 +1,345 @@
+import React from 'react';
+import GlobalFilter from '@/components/common/filters/GlobalFilter';
+import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
+import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
+import { formatCurrency } from '@/shared/lib';
+import { FilterColumn, FilterCriteria } from '@/shared/types/filter.types';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { useSession } from 'next-auth/react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { searchAccounts } from '../slices/actions';
+import { toast } from 'sonner';
+
+/**
+ * FilterMenu Component for Account Module
+ *
+ * This component provides filtering capabilities for accounts with:
+ * - Account type multi-select (Payment, Saving, CreditCard, Debt, Lending, Invest)
+ * - Balance range slider with currency formatting (min: 0, max: 1,000,000)
+ * - Integration with Redux state for filter criteria management
+ * - Automatic API calls to search accounts based on filter criteria
+ *
+ * Usage:
+ * <FilterMenu
+ *   onFilterChange={(newFilter) => handleFilterChange(newFilter)}
+ *   filterCriteria={currentFilterCriteria}
+ * />
+ */
+
+// Define constants for magic numbers
+const DEFAULT_MIN_BALANCE = 0;
+const DEFAULT_MAX_BALANCE = 1000000;
+const DEFAULT_SLIDER_STEP = 1000;
+
+// Fixed account type options
+const ACCOUNT_TYPE_OPTIONS = [
+  { value: 'Payment', label: 'Payment' },
+  { value: 'Saving', label: 'Saving' },
+  { value: 'CreditCard', label: 'Credit Card' },
+  { value: 'Debt', label: 'Debt' },
+  { value: 'Lending', label: 'Lending' },
+  { value: 'Invest', label: 'Invest' },
+];
+
+// Default filter criteria for account module
+const DEFAULT_ACCOUNT_FILTER_CRITERIA: FilterCriteria = {
+  userId: '',
+  filters: {},
+};
+
+interface RangeCondition {
+  gte?: number;
+  lte?: number;
+}
+
+// Local FilterParams interface for account filtering
+interface AccountFilterParams {
+  accountTypes: string[];
+  balanceMin: number;
+  balanceMax: number;
+}
+
+const filterParamsInitState: AccountFilterParams = {
+  accountTypes: [],
+  balanceMin: DEFAULT_MIN_BALANCE,
+  balanceMax: DEFAULT_MAX_BALANCE,
+};
+
+interface FilterMenuProps {
+  onFilterChange: (newFilter: FilterCriteria) => void;
+  filterCriteria: FilterCriteria;
+}
+
+const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
+  // Get min/max balance values from Redux state (calculated by the API)
+  const { minBalance, maxBalance } = useAppSelector((state) => state.account);
+  const { data: session } = useSession();
+  const userId = session?.user?.id || '';
+  const dispatch = useAppDispatch();
+
+  // State for filter parameters
+  const [filterParams, setFilterParams] = useState<AccountFilterParams>(filterParamsInitState);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Calculate min/max balance values from Redux state or use defaults
+  const accountStatistics = useMemo(() => {
+    return {
+      minBalance: minBalance ?? DEFAULT_MIN_BALANCE,
+      maxBalance: maxBalance ?? DEFAULT_MAX_BALANCE,
+    };
+  }, [minBalance, maxBalance]);
+
+  // Extract filter data from filters object
+  const extractFilterData = useCallback(
+    (filterCriteria: Record<string, unknown>) => {
+      try {
+        // Initialize with default values
+        let accountTypes: string[] = [];
+        let currentBalanceMin = accountStatistics.minBalance;
+        let currentBalanceMax = accountStatistics.maxBalance;
+
+        // Validate input
+        if (!filterCriteria || typeof filterCriteria !== 'object') {
+          return {
+            accountTypes,
+            balanceMin: currentBalanceMin,
+            balanceMax: currentBalanceMax,
+          };
+        }
+
+        // Extract account types from top level "types" field
+        if (filterCriteria.types && Array.isArray(filterCriteria.types)) {
+          accountTypes = filterCriteria.types.filter(
+            (type) =>
+              typeof type === 'string' &&
+              ACCOUNT_TYPE_OPTIONS.some((option) => option.value === type),
+          ) as string[];
+        }
+
+        // Get the nested filters object
+        const filters = (filterCriteria.filters as Record<string, unknown>) || {};
+
+        // Extract balance range
+        if (filters.balance && typeof filters.balance === 'object') {
+          const balanceFilter = filters.balance as RangeCondition;
+          if (typeof balanceFilter.gte === 'number') currentBalanceMin = balanceFilter.gte;
+          if (typeof balanceFilter.lte === 'number') currentBalanceMax = balanceFilter.lte;
+        }
+
+        const result = {
+          accountTypes,
+          balanceMin: currentBalanceMin,
+          balanceMax: currentBalanceMax,
+        };
+
+        return result;
+      } catch (error) {
+        toast.error('Error extracting filter data: ' + JSON.stringify(error));
+        return {
+          accountTypes: [],
+          balanceMin: accountStatistics.minBalance,
+          balanceMax: accountStatistics.maxBalance,
+        };
+      }
+    },
+    [accountStatistics],
+  );
+
+  // Debug function to validate and log filter criteria structure
+  const debugFilterCriteria = useCallback((criteria: any) => {
+    if (!criteria) {
+      toast.error('No filter criteria provided');
+      return false;
+    }
+
+    const hasData = Boolean(
+      (criteria.types && criteria.types.length > 0) ||
+        (criteria.filters && Object.keys(criteria.filters).length > 0),
+    );
+
+    return hasData;
+  }, []);
+
+  // Initialize filter params with calculated values and existing filter criteria
+  useEffect(() => {
+    if (!isInitialized && accountStatistics) {
+      // Check if there are existing filter criteria to read
+      const hasExistingCriteria = debugFilterCriteria(filterCriteria);
+
+      if (hasExistingCriteria) {
+        // Extract data from existing filter criteria
+        const extractedData = extractFilterData(
+          filterCriteria as unknown as Record<string, unknown>,
+        );
+
+        const finalParams = {
+          ...extractedData,
+          // Ensure min/max values are set to calculated values if not present in criteria
+          balanceMin: extractedData.balanceMin ?? accountStatistics.minBalance,
+          balanceMax: extractedData.balanceMax ?? accountStatistics.maxBalance,
+        };
+
+        setFilterParams(finalParams);
+      } else {
+        // No existing criteria, use default values with calculated statistics
+        const defaultParams = {
+          ...filterParamsInitState,
+          balanceMin: accountStatistics.minBalance,
+          balanceMax: accountStatistics.maxBalance,
+        };
+
+        setFilterParams(defaultParams);
+      }
+
+      setIsInitialized(true);
+    }
+  }, [accountStatistics, filterCriteria, extractFilterData, isInitialized, debugFilterCriteria]);
+
+  // Reset initialization flag when filter criteria changes externally
+  useEffect(() => {
+    setIsInitialized(false);
+  }, [filterCriteria]);
+
+  // Handler for filter edits
+  const handleEditFilter = (target: keyof AccountFilterParams, value: string[] | number) => {
+    setFilterParams((prev) => ({
+      ...prev,
+      [target]: value,
+    }));
+  };
+
+  // Create filter components
+  const filterComponents = useMemo(() => {
+    // Account type multi-select filter
+    const accountTypeFilterComponent = (
+      <MultiSelectFilter
+        options={ACCOUNT_TYPE_OPTIONS}
+        selectedValues={filterParams.accountTypes}
+        onChange={(values) => handleEditFilter('accountTypes', values)}
+        label="Account Type"
+        placeholder="Select account types"
+      />
+    );
+
+    // Balance range filter with currency formatting
+    const balanceFilterComponent = (
+      <NumberRangeFilter
+        minValue={filterParams.balanceMin}
+        maxValue={filterParams.balanceMax}
+        minRange={accountStatistics.minBalance}
+        maxRange={accountStatistics.maxBalance}
+        onValueChange={(target, value) =>
+          handleEditFilter(target === 'minValue' ? 'balanceMin' : 'balanceMax', value)
+        }
+        label="Balance Range"
+        minLabel="Min Balance"
+        maxLabel="Max Balance"
+        formatValue={(value, isEditing) => (isEditing ? value : formatCurrency(value))}
+        tooltipFormat={(value) => formatCurrency(value)}
+        step={DEFAULT_SLIDER_STEP}
+      />
+    );
+
+    return [
+      {
+        key: 'accountTypeFilter',
+        component: accountTypeFilterComponent,
+        column: FilterColumn.LEFT,
+        order: 0,
+      },
+      {
+        key: 'balanceFilter',
+        component: balanceFilterComponent,
+        column: FilterColumn.LEFT,
+        order: 0,
+      },
+    ];
+  }, [filterParams, accountStatistics]);
+
+  // Create filter structure from UI state
+  const createFilterStructure = useCallback(
+    (params: AccountFilterParams): Record<string, unknown> => {
+      const result: Record<string, unknown> = {};
+
+      // Add account type filter at top level as "types" - only if types are selected
+      if (params.accountTypes.length > 0) {
+        result.types = params.accountTypes;
+      }
+
+      // Check if balance values differ from defaults
+      const isBalanceDefault =
+        params.balanceMin === accountStatistics.minBalance &&
+        params.balanceMax === accountStatistics.maxBalance;
+
+      // Only add balance filter if different from default
+      if (!isBalanceDefault) {
+        result.balance = {
+          gte: params.balanceMin,
+          lte: params.balanceMax,
+        };
+      }
+
+      // Return the flat structure - GlobalFilter will wrap it in filters
+      return result;
+    },
+    [accountStatistics],
+  );
+
+  // Handler to fetch filtered data
+  const handleFilterChange = useCallback(
+    (newFilter: FilterCriteria) => {
+      // Extract types from the nested structure and create flat structure
+      const flattenedFilter: any = {
+        userId: newFilter.userId || userId,
+      };
+
+      // Check if filters exist and extract types from them
+      if (newFilter.filters && typeof newFilter.filters === 'object') {
+        const filters = newFilter.filters as Record<string, unknown>;
+
+        // Extract types from filters and place at top level
+        if (filters.types && Array.isArray(filters.types)) {
+          flattenedFilter.types = filters.types;
+        }
+
+        // Create new filters object without the types field
+        const otherFilters = { ...filters };
+        delete otherFilters.types;
+
+        // Only add filters object if there are other filters besides types
+        if (Object.keys(otherFilters).length > 0) {
+          flattenedFilter.filters = otherFilters;
+        } else {
+          flattenedFilter.filters = {};
+        }
+      } else {
+        flattenedFilter.filters = {};
+      }
+
+      // Update filter criteria with flattened structure
+      onFilterChange(flattenedFilter);
+
+      // Fetch filtered data with the flattened structure
+      if (userId) {
+        dispatch(searchAccounts(flattenedFilter));
+      }
+    },
+    [dispatch, onFilterChange, userId],
+  );
+
+  return (
+    <GlobalFilter
+      filterParams={filterParams as unknown as Record<string, unknown>}
+      filterComponents={filterComponents}
+      onFilterChange={(newFilter) => {
+        handleFilterChange(newFilter);
+      }}
+      defaultFilterCriteria={DEFAULT_ACCOUNT_FILTER_CRITERIA}
+      structureCreator={(params: Record<string, unknown>) =>
+        createFilterStructure(params as unknown as AccountFilterParams)
+      }
+    />
+  );
+};
+
+export default FilterMenu;
