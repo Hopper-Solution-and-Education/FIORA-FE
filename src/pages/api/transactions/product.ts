@@ -286,52 +286,36 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
 
     // Bước 9: Tính toán các trường thống kê bổ sung
     // Khởi tạo các biến với giá trị mặc định
-    let minPrice = Number.MAX_VALUE;
-    let maxPrice = 0;
-    let minTaxRate = Number.MAX_VALUE;
-    let maxTaxRate = 0;
-    let minExpense = Number.MAX_VALUE;
-    let maxExpense = 0;
-    let minIncome = Number.MAX_VALUE;
-    let maxIncome = 0;
+    const priceList: number[] = [];
+    const taxRateList: number[] = [];
+    const incomeTotals: number[] = [];
+    const expenseTotals: number[] = [];
 
-    // Tìm min/max cho price và taxRate từ sản phẩm
     for (const category of transformedData) {
       if (!category) continue;
 
       for (const item of category.products) {
-        const product = item.product;
-        const price = product.price;
-        const taxRate = product.taxRate;
+        const { price, taxRate } = item.product;
+        priceList.push(price);
+        taxRateList.push(taxRate);
 
-        // Cập nhật giá trị min/max cho price
-        if (price < minPrice) minPrice = price;
-        if (price > maxPrice) maxPrice = price;
+        const transactions = item.transactions;
+        const totalIncome = transactions
+          .filter((tx) => tx.type === 'Income')
+          .reduce((sum, tx) => sum + tx.amount, 0);
+        const totalExpense = transactions
+          .filter((tx) => tx.type === 'Expense')
+          .reduce((sum, tx) => sum + tx.amount, 0);
 
-        // Cập nhật giá trị min/max cho taxRate
-        if (taxRate < minTaxRate) minTaxRate = taxRate;
-        if (taxRate > maxTaxRate) maxTaxRate = taxRate;
-
-        // Tìm min/max cho Expense và Income từ các giao dịch
-        for (const transaction of item.transactions) {
-          const amount = transaction.amount;
-
-          if (transaction.type === 'Expense') {
-            if (amount < minExpense) minExpense = amount;
-            if (amount > maxExpense) maxExpense = amount;
-          } else if (transaction.type === 'Income') {
-            if (amount < minIncome) minIncome = amount;
-            if (amount > maxIncome) maxIncome = amount;
-          }
-        }
+        incomeTotals.push(totalIncome);
+        expenseTotals.push(totalExpense);
       }
     }
 
-    // Điều chỉnh giá trị min nếu không có dữ liệu
-    if (minPrice === Number.MAX_VALUE) minPrice = 0;
-    if (minTaxRate === Number.MAX_VALUE) minTaxRate = 0;
-    if (minExpense === Number.MAX_VALUE) minExpense = 0;
-    if (minIncome === Number.MAX_VALUE) minIncome = 0;
+    const [minPrice, maxPrice] = computeMinMax(priceList);
+    const [minTaxRate, maxTaxRate] = computeMinMax(taxRateList);
+    const [minIncome, maxIncome] = computeMinMax(incomeTotals);
+    const [minExpense, maxExpense] = computeMinMax(expenseTotals);
 
     // Trả về phản hồi
     return res.status(RESPONSE_CODE.OK).json(
@@ -357,5 +341,12 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
       .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, errorMessage));
+  }
+
+  function computeMinMax(arr: number[]): [number, number] {
+    if (arr.length === 0) return [0, 0];
+    const min = Math.min(...arr);
+    const max = Math.max(...arr);
+    return min === max ? [0, max] : [min, max];
   }
 }
