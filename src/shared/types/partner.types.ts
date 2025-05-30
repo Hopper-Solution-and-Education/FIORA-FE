@@ -7,3 +7,10 @@ export type PartnerExtras = Prisma.PartnerGetPayload<{
     parent: true;
   };
 }>;
+
+export interface PartnerRangeFilter {
+  totalIncomeMin: number;
+  totalIncomeMax: number;
+  totalExpenseMin: number;
+  totalExpenseMax: number;
+}

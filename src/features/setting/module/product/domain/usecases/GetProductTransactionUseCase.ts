@@ -1,9 +1,16 @@
 import { decorate, injectable } from 'inversify';
 import type { IProductRepository } from '../../data/repositories/ProductRepository';
 import { ProductGetTransactionResponse } from '../entities/Product';
+import { FilterCriteria } from '@/shared/types';
 
 export interface IGetProductTransactionUseCase {
-  execute(page: number, pageSize: number, userId: string): Promise<ProductGetTransactionResponse>;
+  execute(
+    page: number,
+    pageSize: number,
+    filters: FilterCriteria,
+    userId: string,
+    search?: string,
+  ): Promise<ProductGetTransactionResponse>;
 }
 
 export class GetProductTransactionUseCase implements IGetProductTransactionUseCase {
@@ -13,8 +20,20 @@ export class GetProductTransactionUseCase implements IGetProductTransactionUseCa
     this.productRepository = productRepository;
   }
 
-  async execute(page: number, pageSize: number, userId: string) {
-    const response = await this.productRepository.getProductTransaction({ page, pageSize, userId });
+  async execute(
+    page: number,
+    pageSize: number,
+    filters: FilterCriteria,
+    userId: string,
+    search?: string,
+  ) {
+    const response = await this.productRepository.getProductTransaction({
+      page,
+      pageSize,
+      filters,
+      userId,
+      search,
+    });
     return this.transformResponse(response);
   }
 

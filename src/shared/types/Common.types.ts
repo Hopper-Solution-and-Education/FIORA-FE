@@ -13,6 +13,13 @@ export interface IconsOptions {
   options: Option[];
 }
 
+export interface GlobalFilters {
+  types?: string[];
+  search?: string;
+  sort?: string;
+  filters: any;
+}
+
 export interface Option {
   value: string;
   label: string;

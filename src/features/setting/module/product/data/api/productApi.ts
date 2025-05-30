@@ -72,8 +72,9 @@ class ProductAPI implements IProductAPI {
   }
 
   async getProductTransaction(data: ProductGetTransactionRequestDTO) {
-    return await httpClient.get<ProductGetTransactionResponseDTO>(
-      `/api/transactions/product?userId=${data.userId}&page=${data.page}&pageSize=${data.pageSize}`,
+    return await httpClient.post<ProductGetTransactionResponseDTO>(
+      `/api/transactions/product`,
+      data,
     );
   }
 

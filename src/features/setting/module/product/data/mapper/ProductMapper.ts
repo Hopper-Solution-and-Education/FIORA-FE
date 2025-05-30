@@ -33,6 +33,12 @@ import {
   ProductUpdateResponseDTO,
 } from '../dto/response';
 
+// Define constants for default values
+const DEFAULT_MAX_PRICE = 10000;
+const DEFAULT_MAX_TAX_RATE = 100;
+const DEFAULT_MAX_EXPENSE = 10000;
+const DEFAULT_MAX_INCOME = 10000;
+
 export class ProductMapper {
   static toGetSingleProductAPIRequest(id: string): ProductGetSingleRequestDTO {
     return {
@@ -82,9 +88,11 @@ export class ProductMapper {
     request: ProductGetTransactionRequest,
   ): ProductGetTransactionRequestDTO {
     return {
-      userId: request.userId,
       page: request.page,
       pageSize: request.pageSize,
+      filters: request.filters as unknown as Record<string, unknown>,
+      search: request.search,
+      userId: request.userId,
     };
   }
 
@@ -125,6 +133,15 @@ export class ProductMapper {
       page: response.data.page,
       pageSize: response.data.pageSize,
       totalPage: response.data.totalPage,
+      minPrice: response.data.minPrice ?? 0,
+      maxPrice: response.data.maxPrice ?? DEFAULT_MAX_PRICE,
+      minTaxRate: response.data.minTaxRate ?? 0,
+      maxTaxRate: response.data.maxTaxRate ?? DEFAULT_MAX_TAX_RATE,
+      minExpense: response.data.minExpense ?? 0,
+      maxExpense: response.data.maxExpense ?? DEFAULT_MAX_EXPENSE,
+      minIncome: response.data.minIncome ?? 0,
+      maxIncome: response.data.maxIncome ?? DEFAULT_MAX_INCOME,
+      hasMore: response.data.page < response.data.totalPage,
     };
   }
 

@@ -38,6 +38,13 @@ class PartnerRepository implements IPartnerRepository {
     })) as unknown as PartnerExtras[];
   }
 
+  async findManyPartner(where: Prisma.PartnerWhereInput, options?: Prisma.PartnerFindManyArgs) {
+    return await prisma.partner.findMany({
+      where,
+      ...options,
+    });
+  }
+
   async getPartnerById(id: string, userId: string): Promise<Partner | null> {
     return await prisma.partner.findFirst({
       where: { id, userId },

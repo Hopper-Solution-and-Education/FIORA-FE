@@ -1,9 +1,9 @@
 import { Label } from '@/components/ui/label';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { SelectOption } from './SelectFilter';
+import { DropdownOption } from '@/features/home/module/transaction/types';
 
 interface MultiSelectFilterProps {
-  options: SelectOption[];
+  options: DropdownOption[];
   selectedValues: string[];
   onChange: (values: string[]) => void;
   label?: string;

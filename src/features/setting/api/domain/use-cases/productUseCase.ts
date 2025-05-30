@@ -1,9 +1,9 @@
 import { Messages } from '@/shared/constants/message';
 
 import { prisma } from '@/config';
-import { PaginationResponse, ProductItem } from '@/shared/types';
+import { GlobalFilters, PaginationResponse, ProductItem } from '@/shared/types';
 import { convertCurrency } from '@/shared/utils/exchangeRate';
-import { Currency, Product, ProductType } from '@prisma/client';
+import { Currency, Prisma, Product, ProductType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
@@ -16,6 +16,9 @@ import {
 } from '../../repositories/productRepository.interface';
 import { IProductItemsRepository } from '../../repositories/productItemRepository.interface';
 import { productItemsRepository } from '../../infrastructure/repositories/productRepositoryItem';
+import { safeString } from '@/shared/utils/ExStringUtils';
+import { buildWhereClause } from '@/shared/utils';
+import { BooleanUtils } from '@/shared/lib';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
@@ -139,15 +142,15 @@ class ProductUseCase {
       const [createdBy, updatedBy] = await Promise.all([
         product.createdBy
           ? prisma.user.findFirst({
-            where: { id: product.createdBy },
-            select: { id: true, name: true, email: true, image: true },
-          })
+              where: { id: product.createdBy },
+              select: { id: true, name: true, email: true, image: true },
+            })
           : null,
         product.updatedBy
           ? prisma.user.findFirst({
-            where: { id: product.updatedBy },
-            select: { id: true, name: true, email: true, image: true },
-          })
+              where: { id: product.updatedBy },
+              select: { id: true, name: true, email: true, image: true },
+            })
           : null,
       ]);
 
@@ -193,9 +196,9 @@ class ProductUseCase {
               userId,
               name,
               catId: category_id,
-            }
-          }
-        })
+            },
+          },
+        });
 
         if (foundTenantProduct) {
           throw new Error(Messages.DUPLICATE_PRODUCT_TENANT_ERROR);
@@ -245,6 +248,49 @@ class ProductUseCase {
     } catch (error: any) {
       throw new Error(error.message || Messages.CREATE_PRODUCT_FAILED);
     }
+  }
+
+  async filterProductOptions(params: GlobalFilters, userId: string) {
+    const searchParams = safeString(params.search);
+    let where = buildWhereClause(params.filters) as Prisma.ProductWhereInput;
+
+    if (BooleanUtils.isTrue(searchParams)) {
+      const typeSearchParams = searchParams.toLowerCase();
+
+      where = {
+        AND: [
+          where,
+          {
+            OR: [
+              { name: { contains: typeSearchParams, mode: 'insensitive' } },
+              { items: { some: { name: { contains: typeSearchParams, mode: 'insensitive' } } } },
+            ],
+          },
+        ],
+      };
+    }
+
+    const productFiltered = await this.productRepository.findManyProducts(
+      {
+        ...where,
+        userId: userId,
+      },
+      {
+        include: {
+          transactions: true,
+          items: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              icon: true,
+            },
+          },
+        },
+        orderBy: { transactions: { _count: 'desc' } },
+      },
+    );
+    return productFiltered;
   }
 
   async updateProduct(params: ProductUpdate & { id: string }) {
@@ -317,7 +363,8 @@ class ProductUseCase {
               name: item.name,
               description: item.description,
               updatedBy: userId,
-            });
+            },
+          );
         } else {
           await this.productItemsRepository.createProductItems({
             icon: item.icon,
@@ -442,4 +489,8 @@ class ProductUseCase {
 }
 
 // Export a single instance using the exported productRepository
-export const productUseCase = new ProductUseCase(productRepository, productItemsRepository, categoryProductRepository);
+export const productUseCase = new ProductUseCase(
+  productRepository,
+  productItemsRepository,
+  categoryProductRepository,
+);

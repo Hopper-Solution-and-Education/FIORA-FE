@@ -4,10 +4,12 @@ import { PartnerMapper } from '../mapper/PartnerMapper';
 import { GetPartnerAPIRequestDTO } from '../dto/request/GetPartnerAPIRequestDTO';
 import { CreatePartnerAPIRequestDTO } from '../dto/request/CreatePartnerAPIRequestDTO';
 import { UpdatePartnerAPIRequestDTO } from '../dto/request/UpdatePartnerAPIRequestDTO';
+import { Response } from '@/shared/types/Common.types';
+import { PartnerResponse } from '../../slices/types';
 
 // In the IPartnerRepository interface
 export interface IPartnerRepository {
-  getPartners(data: GetPartnerAPIRequestDTO): Promise<Partner[]>;
+  getPartners(data: GetPartnerAPIRequestDTO): Promise<Response<PartnerResponse>>;
   getPartnerById(id: string): Promise<Partner>;
   createPartner(data: CreatePartnerAPIRequestDTO): Promise<Partner>;
   updatePartner(data: UpdatePartnerAPIRequestDTO): Promise<Partner>;
@@ -16,9 +18,19 @@ export interface IPartnerRepository {
 
 // In the implementation
 export const createPartnerRepository = (api: IPartnerAPI): IPartnerRepository => ({
-  async getPartners(data: GetPartnerAPIRequestDTO): Promise<Partner[]> {
+  async getPartners(data: GetPartnerAPIRequestDTO): Promise<Response<PartnerResponse>> {
     const response = await api.getPartners(data);
-    return PartnerMapper.toEntityListFromGet(response);
+    return {
+      status: response.status,
+      message: response.message,
+      data: {
+        data: PartnerMapper.toEntityListFromGet(response),
+        minIncome: response.data.minIncome,
+        maxIncome: response.data.maxIncome,
+        minExpense: response.data.minExpense,
+        maxExpense: response.data.maxExpense,
+      },
+    };
   },
 
   async getPartnerById(id: string): Promise<Partner> {
