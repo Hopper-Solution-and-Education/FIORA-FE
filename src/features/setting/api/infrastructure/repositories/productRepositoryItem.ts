@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { Prisma, Product, ProductItems } from '@prisma/client';
+import { Prisma, ProductItems } from '@prisma/client';
 import { IProductItemsRepository } from '../../repositories/productItemRepository.interface';
 
 class ProductItemsRepository implements IProductItemsRepository {

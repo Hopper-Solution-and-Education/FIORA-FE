@@ -1,8 +1,8 @@
+import { CreatedBy, UpdatedBy } from '@/shared/types';
 import { PaginationResponse } from '@/shared/types/Common.types';
 import { CategoryType, ProductType } from '@prisma/client';
-import { ProductFormValues, ProductItem } from '../../presentation/schema/addProduct.schema';
+import { ProductFormValues } from '../../presentation/schema/addProduct.schema';
 import { Transaction } from './Transaction';
-import { CreatedBy, UpdatedBy } from '@/shared/types';
 export class Product {
   id: string;
   name: string;
@@ -55,13 +55,29 @@ export class Product {
   }
 }
 
+export class ProductItem {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+
+  constructor(id: string, name: string, icon: string, description: string) {
+    this.id = id;
+    this.name = name;
+    this.icon = icon;
+    this.description = description;
+  }
+}
+
 export class ProductCreateResponse {}
 
 export type ProductsGetResponse = PaginationResponse<Product>;
 
 export type ProductGetSingleResponse = Product;
 
-export type ProductUpdateRequest = ProductFormValues;
+export type ProductUpdateRequest = ProductFormValues & {
+  deletedItemsId?: string[];
+};
 export type ProductUpdateResponse = Product;
 
 export type ProductDeleteRequest = {

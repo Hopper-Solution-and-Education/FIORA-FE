@@ -1,5 +1,5 @@
 import { ProductType } from '@prisma/client';
-import { ProductItem } from '../../../presentation/schema/addProduct.schema';
+import { ProductItem } from '../../../domain/entities';
 
 export type ProductCreateRequestDTO = {
   icon: string;

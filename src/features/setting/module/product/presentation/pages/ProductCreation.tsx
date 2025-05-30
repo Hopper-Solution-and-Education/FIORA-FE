@@ -17,7 +17,7 @@ import { Product } from '../../domain/entities';
 import { GetSingleProductUseCase } from '../../domain/usecases';
 
 import { removeFromFirebase, uploadToFirebase } from '@/shared/lib';
-import { setProductDetail } from '../../slices';
+import { setDeletedItems, setProductDetail } from '../../slices';
 import {
   createProduct,
   deleteProductAsyncThunk,
@@ -53,7 +53,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
   const productIdToTransfer = useAppSelector(
     (state) => state.productManagement.ProductIdToTransfer,
   );
-
+  const deletedItems = useAppSelector((state) => state.productManagement.deletedItems);
   const method = useForm<ProductFormValues>({
     resolver: yupResolver(productSchema),
     defaultValues: defaultProductFormValue,
@@ -87,7 +87,15 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
               taxRate: product.taxRate ?? 0,
               type: product.type ?? '',
               catId: product.catId || '',
-              items: product.items || [],
+              items:
+                product.items.map((item) => {
+                  return {
+                    itemId: item.id,
+                    name: item.name,
+                    icon: item.icon,
+                    description: item.description,
+                  };
+                }) || [],
               currency: product.currency ?? '',
             });
           }
@@ -103,6 +111,10 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
     };
 
     handleGetProduct();
+
+    return () => {
+      dispatch(setDeletedItems([]));
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId]);
 
@@ -177,7 +189,12 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
       }
 
       if (productId) {
-        await dispatch(updateProductAsyncThunk(formattedData))
+        await dispatch(
+          updateProductAsyncThunk({
+            ...formattedData,
+            deletedItemsId: deletedItems,
+          }),
+        )
           .unwrap()
           .then(() => {
             router.replace('/setting/product');
