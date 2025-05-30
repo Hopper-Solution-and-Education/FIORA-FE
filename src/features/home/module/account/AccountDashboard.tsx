@@ -1,32 +1,31 @@
 'use client';
 
 import PositiveAndNegativeBarChart from '@/components/common/charts/positive-negative-bar-chart';
-import { Icons } from '@/components/Icon';
-import { fetchAccounts, fetchParents } from '@/features/home/module/account/slices/actions';
-import { COLORS } from '@/shared/constants/chart';
-import { useAppDispatch, useAppSelector } from '@/store';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { formatCurrency } from '@/shared/utils';
+import { BarItem } from '@/components/common/charts/positive-negative-bar-chart/type';
+import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import DeleteAccountDialog from '@/features/home/module/account/components/DeleteAccountDialog';
 import NavigateToAccountDialog from '@/features/home/module/account/components/NavigateToAccountDialog';
-import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
-import { MODULE } from '@/shared/constants';
+import { fetchAccounts, fetchParents } from '@/features/home/module/account/slices/actions';
 import { mapAccountsToBarItems } from '@/features/home/module/account/utils';
-import { BarItem } from '@/components/common/charts/positive-negative-bar-chart/type';
+import { MODULE } from '@/shared/constants';
+import { COLORS } from '@/shared/constants/chart';
+import { formatCurrency } from '@/shared/utils';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import DashboardHeader from './components/DashboardHeader';
 
 const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefined }) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const chartRef = useRef<HTMLDivElement>(null);
   const [showNavigateDialog, setShowNavigateDialog] = useState(false);
-  const { accounts, refresh } = useAppSelector((state) => state.account);
+  const { accounts, refresh, filterCriteria } = useAppSelector((state) => state.account);
   const { currency } = useAppSelector((state) => state.settings);
 
   useEffect(() => {
-    dispatch(fetchAccounts());
-    dispatch(fetchParents());
+    dispatch(fetchAccounts(filterCriteria));
+    dispatch(fetchParents(filterCriteria));
   }, [dispatch, refresh]);
 
   const chartData: BarItem[] = useMemo(() => {
@@ -75,15 +74,7 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
 
   return (
     <>
-      {module === MODULE.ACCOUNT && (
-        <div className="flex justify-end">
-          <Link href="/account/create">
-            <button className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white">
-              <Icons.add className="h-6 w-6" />
-            </button>
-          </Link>
-        </div>
-      )}
+      {module === MODULE.ACCOUNT && <DashboardHeader />}
       {accounts.isLoading ? (
         <ChartSkeleton />
       ) : (

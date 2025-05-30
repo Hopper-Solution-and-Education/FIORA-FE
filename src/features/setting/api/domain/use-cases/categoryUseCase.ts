@@ -1,10 +1,13 @@
-import { Category, CategoryType } from '@prisma/client';
+import { Category, CategoryType, Prisma } from '@prisma/client';
 import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
 import { CategoryExtras } from '@/shared/types/category.types';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { Messages } from '@/shared/constants/message';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
+import { safeString } from '@/shared/utils/ExStringUtils';
+import { GlobalFilters } from '@/shared/types';
+import { BooleanUtils } from '@/shared/lib';
 
 class CategoryUseCase {
   private categoryRepository: ICategoryRepository;
@@ -71,6 +74,64 @@ class CategoryUseCase {
     await this.categoryRepository.deleteCategory(id);
   }
 
+  private extractTransactionRangeFilters(filters: any): {
+    totalIncomeMin?: number;
+    totalIncomeMax?: number;
+    totalExpenseMin?: number;
+    totalExpenseMax?: number;
+  } {
+    const result: any = {};
+
+    const transactionsFilter = filters?.transactions?.some?.OR ?? [];
+    transactionsFilter.forEach((condition: any) => {
+      if (condition.type === 'Income') {
+        result.totalIncomeMin = condition.amount?.gte ?? 0;
+        result.totalIncomeMax = condition.amount?.lte ?? Number.MAX_SAFE_INTEGER;
+      } else if (condition.type === 'Expense') {
+        result.totalExpenseMin = condition.amount?.gte ?? 0;
+        result.totalExpenseMax = condition.amount?.lte ?? Number.MAX_SAFE_INTEGER;
+      }
+    });
+
+    return result;
+  }
+
+  private filterCategoriesByTransactionRange(categories: any[], filters: any): any[] {
+    const {
+      totalIncomeMin = 0,
+      totalIncomeMax = Number.MAX_SAFE_INTEGER,
+      totalExpenseMin = 0,
+      totalExpenseMax = Number.MAX_SAFE_INTEGER,
+    } = filters;
+
+    return categories.filter((category) => {
+      const fromTransactions = category.fromTransactions ?? [];
+      const toTransactions = category.toTransactions ?? [];
+
+      const totalIncome = fromTransactions.reduce(
+        (sum: number, tx: any) => sum + Number(tx.amount),
+        0,
+      );
+
+      const totalExpense = toTransactions.reduce(
+        (sum: number, tx: any) => sum + Number(tx.amount),
+        0,
+      );
+
+      const isValidIncome =
+        category.type === 'Income' &&
+        totalIncome >= totalIncomeMin &&
+        totalIncome <= totalIncomeMax;
+
+      const isValidExpense =
+        category.type === 'Expense' &&
+        totalExpense >= totalExpenseMin &&
+        totalExpense <= totalExpenseMax;
+
+      return isValidIncome || isValidExpense;
+    });
+  }
+
   async getCategories(userId: string): Promise<any[]> {
     const categories = await this.categoryRepository.findCategoriesWithTransactions(userId);
 
@@ -101,6 +162,97 @@ class CategoryUseCase {
     });
 
     return Array.from(categoryMap.values());
+  }
+
+  private calculateMinMaxTotalAmount(categories: CategoryExtras[]): {
+    minAmount: number;
+    maxAmount: number;
+  } {
+    const totalAmounts = categories.map((category) => {
+      const fromSum = (category.fromTransactions ?? []).reduce(
+        (sum, tx) => sum + Number(tx.amount),
+        0,
+      );
+      const toSum = (category.toTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+      return fromSum + toSum;
+    });
+
+    const individualAmounts = categories.flatMap((category) =>
+      [...(category.fromTransactions ?? []), ...(category.toTransactions ?? [])].map((tx) =>
+        Number(tx.amount),
+      ),
+    );
+
+    const maxAmount = totalAmounts.length > 0 ? Math.max(...totalAmounts) : 0;
+    const minAmount = individualAmounts.length > 0 ? Math.min(...individualAmounts) : 0;
+
+    return { minAmount, maxAmount };
+  }
+
+  async getCategoriesFilter(
+    userId: string,
+    params: GlobalFilters,
+  ): Promise<{
+    data: any[];
+    minAmount: number;
+    maxAmount: number;
+  }> {
+    const searchParams = safeString(params.search);
+    let where: Prisma.CategoryWhereInput = {};
+
+    if (BooleanUtils.isTrue(searchParams)) {
+      const typeSearchParams = searchParams.toLowerCase();
+
+      where = {
+        AND: [
+          where,
+          {
+            OR: [{ name: { contains: typeSearchParams, mode: 'insensitive' } }],
+          },
+        ],
+      };
+    }
+
+    let categories = await this.categoryRepository.findCategoriesWithTransactionsFilter(
+      userId,
+      where,
+    );
+    const transactionRangeFilters = this.extractTransactionRangeFilters(params.filters);
+    categories = this.filterCategoriesByTransactionRange(categories, transactionRangeFilters);
+
+    const calculateBalance = (category: CategoryExtras): number => {
+      if (category.type === CategoryType.Expense.valueOf()) {
+        return (category.toTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+      } else if (category.type === CategoryType.Income.valueOf()) {
+        return (category.fromTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+      }
+      return 0;
+    };
+
+    const categoryMap = new Map<string, any>();
+    categories.forEach((category) => {
+      categoryMap.set(category.id, {
+        ...category,
+        balance: calculateBalance(category),
+      });
+    });
+
+    categories.forEach((category) => {
+      if (category.parentId) {
+        const parent = categoryMap.get(category.parentId);
+        if (parent) {
+          parent.balance += categoryMap.get(category.id).balance;
+        }
+      }
+    });
+    const categoriesWithBalance = Array.from(categoryMap.values());
+    const { minAmount, maxAmount } = this.calculateMinMaxTotalAmount(categoriesWithBalance);
+
+    return {
+      data: categoriesWithBalance,
+      minAmount,
+      maxAmount,
+    };
   }
 }
 

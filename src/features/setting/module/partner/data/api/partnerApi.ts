@@ -4,10 +4,10 @@ import { CreatePartnerAPIRequestDTO } from '../dto/request/CreatePartnerAPIReque
 import { GetPartnerAPIRequestDTO } from '../dto/request/GetPartnerAPIRequestDTO';
 import { UpdatePartnerAPIRequestDTO } from '../dto/request/UpdatePartnerAPIRequestDTO';
 import { CreatePartnerAPIResponseDTO } from '../dto/response/CreatePartnerAPIResponseDTO';
+import { DeletePartnerAPIResponseDTO } from '../dto/response/DeletePartnerAPIResponseDTO';
 import { GetPartnerAPIResponseDTO } from '../dto/response/GetPartnerAPIResponseDTO';
 import { GetPartnerByIdAPIResponseDTO } from '../dto/response/GetPartnerByIdAPIResponseDTO';
 import { UpdatePartnerAPIResponseDTO } from '../dto/response/UpdatePartnerAPIResponseDTO';
-import { DeletePartnerAPIResponseDTO } from '../dto/response/DeletePartnerAPIResponseDTO';
 
 interface IPartnerAPI {
   createPartner(data: CreatePartnerAPIRequestDTO): Promise<CreatePartnerAPIResponseDTO>;
@@ -24,9 +24,7 @@ class PartnerAPI implements IPartnerAPI {
   }
 
   async getPartners(data: GetPartnerAPIRequestDTO) {
-    return await httpClient.get<GetPartnerAPIResponseDTO>(
-      `/api/partners?page=${data.page}&pageSize=${data.pageSize}`,
-    );
+    return await httpClient.post<GetPartnerAPIResponseDTO>('/api/partners/search', data);
   }
 
   async getPartnerById(id: string) {

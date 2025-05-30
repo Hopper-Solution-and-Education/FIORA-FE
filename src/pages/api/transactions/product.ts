@@ -1,15 +1,52 @@
 import { prisma } from '@/config';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { BooleanUtils } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { GlobalFilters } from '@/shared/types';
+import { buildWhereClause } from '@/shared/utils';
+import { safeString } from '@/shared/utils/ExStringUtils';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { Currency } from '@prisma/client';
+import { Currency, Prisma } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
+
+// Define a constant for the default page size
+const DEFAULT_PAGE_SIZE = 20;
+
+// Define interfaces for the product and transaction structures
+
+interface ProductItem {
+  id: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+}
+
+interface ProductType {
+  id: string;
+  price: number;
+  name: string;
+  type: string;
+  description: string | null;
+  items: ProductItem[];
+  taxRate: number;
+  catId: string | null;
+  icon: string | null;
+  currency: Currency;
+}
+
+interface TransactionType {
+  id: string;
+  userId: string | null;
+  type: string;
+  amount: number;
+  currency: Currency;
+}
 
 export default sessionWrapper(async (req, res, userId) => {
   switch (req.method) {
-    case 'GET':
-      return GET(req, res, userId);
+    case 'POST':
+      return POST(req, res, userId);
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -17,11 +54,35 @@ export default sessionWrapper(async (req, res, userId) => {
   }
 });
 
-async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { page = 1, pageSize = 20 } = req.query;
+    const { page = 1, pageSize = DEFAULT_PAGE_SIZE } = req.query;
     const skip = (Number(page) - 1) * Number(pageSize);
     const take = Number(pageSize);
+    const params = req.body as GlobalFilters;
+
+    const searchParams = safeString(params.search);
+    let where: Prisma.ProductWhereInput = {};
+
+    if (params.filters && Object.keys(params.filters).length > 0) {
+      where = buildWhereClause(params.filters) as Prisma.ProductWhereInput;
+    }
+    if (BooleanUtils.isTrue(searchParams)) {
+      const typeSearchParams = searchParams.toLowerCase();
+
+      where = {
+        AND: [
+          where,
+          {
+            OR: [
+              { name: { contains: typeSearchParams, mode: 'insensitive' } },
+              { items: { some: { name: { contains: typeSearchParams, mode: 'insensitive' } } } },
+              { category: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+            ],
+          },
+        ],
+      };
+    }
 
     // Bước 1: Lấy danh sách CategoryProducts phân trang và đếm tổng số
     const [categories, count] = await Promise.all([
@@ -55,6 +116,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
       where: {
         catId: { in: catIds },
         userId, // Đảm bảo sản phẩm thuộc về user
+        ...where,
       },
       select: {
         id: true,
@@ -189,32 +251,71 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
         }
         return acc;
       },
-      {} as Record<string, Array<{ product: any; transactions: any | null }>>, // Bạn nên định nghĩa type chi tiết hơn cho product và transactions ở đây
+      {} as Record<string, Array<{ product: ProductType; transactions: TransactionType[] }>>,
     );
 
     // Bước 7: Tạo dữ liệu trả về (Sử dụng map lookup cho người dùng)
-    const transformedData = categories.map((category) => {
-      const createdBy = category.createdBy ? userMap[category.createdBy] || null : null;
-      const updatedBy = category.updatedBy ? userMap[category.updatedBy] || null : null;
+    const transformedData = categories
+      .map((category) => {
+        const createdBy = category.createdBy ? userMap[category.createdBy] || null : null;
+        const updatedBy = category.updatedBy ? userMap[category.updatedBy] || null : null;
+        const categoryProducts = productsByCategory[category.id] || [];
 
-      return {
-        category: {
-          id: category.id,
-          name: category.name,
-          description: category.description,
-          icon: category.icon,
-          tax_rate: category.tax_rate?.toNumber() || 0, // Convert Decimal to Number
-          createdAt: category.createdAt,
-          updatedAt: category.updatedAt,
-          createdBy: createdBy, // Lấy từ map
-          updatedBy: updatedBy, // Lấy từ map
-        },
-        products: productsByCategory[category.id] || [],
-      };
-    });
+        // Nếu danh mục không có sản phẩm sau filter, loại khỏi kết quả trả về (tuỳ bạn)
+        if (categoryProducts.length === 0) return null;
+
+        return {
+          category: {
+            id: category.id,
+            name: category.name,
+            description: category.description,
+            icon: category.icon,
+            tax_rate: category.tax_rate?.toNumber() || 0,
+            createdAt: category.createdAt,
+            updatedAt: category.updatedAt,
+            createdBy,
+            updatedBy,
+          },
+          products: categoryProducts,
+        };
+      })
+      .filter((item) => item !== null);
 
     // Bước 8: Tính tổng số trang
     const totalPage = Math.ceil(count / take);
+
+    // Bước 9: Tính toán các trường thống kê bổ sung
+    // Khởi tạo các biến với giá trị mặc định
+    const priceList: number[] = [];
+    const taxRateList: number[] = [];
+    const incomeTotals: number[] = [];
+    const expenseTotals: number[] = [];
+
+    for (const category of transformedData) {
+      if (!category) continue;
+
+      for (const item of category.products) {
+        const { price, taxRate } = item.product;
+        priceList.push(price);
+        taxRateList.push(taxRate);
+
+        const transactions = item.transactions;
+        const totalIncome = transactions
+          .filter((tx) => tx.type === 'Income')
+          .reduce((sum, tx) => sum + tx.amount, 0);
+        const totalExpense = transactions
+          .filter((tx) => tx.type === 'Expense')
+          .reduce((sum, tx) => sum + tx.amount, 0);
+
+        incomeTotals.push(totalIncome);
+        expenseTotals.push(totalExpense);
+      }
+    }
+
+    const [minPrice, maxPrice] = computeMinMax(priceList);
+    const [minTaxRate, maxTaxRate] = computeMinMax(taxRateList);
+    const [minIncome, maxIncome] = computeMinMax(incomeTotals);
+    const [minExpense, maxExpense] = computeMinMax(expenseTotals);
 
     // Trả về phản hồi
     return res.status(RESPONSE_CODE.OK).json(
@@ -224,17 +325,28 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
         pageSize: Number(pageSize),
         totalPage,
         totalCount: count, // Thường thêm totalCount vào response
+        minPrice,
+        maxPrice,
+        minTaxRate,
+        maxTaxRate,
+        minExpense,
+        maxExpense,
+        minIncome,
+        maxIncome,
       }),
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching product categories:', error); // Log lỗi chi tiết hơn
+    const errorMessage = error instanceof Error ? error.message : Messages.INTERNAL_ERROR;
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createResponse(
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        ),
-      );
+      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, errorMessage));
+  }
+
+  function computeMinMax(arr: number[]): [number, number] {
+    if (arr.length === 0) return [0, 0];
+    const min = Math.min(...arr);
+    const max = Math.max(...arr);
+    return min === max ? [0, max] : [min, max];
   }
 }

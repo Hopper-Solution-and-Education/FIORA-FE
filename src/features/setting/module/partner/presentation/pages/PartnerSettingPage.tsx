@@ -9,23 +9,35 @@ import { COLORS } from '@/shared/constants/chart';
 import { formatCurrency } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useEffect, useMemo } from 'react';
 import { TabActionHeader } from '../components/TabActionHeader';
 
 const PartnerSettingPage = () => {
   const dispatch = useAppDispatch();
+  const { data: session } = useSession();
   const { partners, isLoading } = useAppSelector((state) => state.partner);
   const { currency } = useAppSelector((state) => state.settings);
   const router = useRouter();
 
   useEffect(() => {
-    dispatch(fetchPartners({ page: 1, pageSize: 100 }));
-  }, [dispatch]);
+    if (session?.user?.id) {
+      dispatch(
+        fetchPartners({
+          page: 1,
+          pageSize: 100,
+          userId: session.user.id,
+          filters: {},
+        }),
+      );
+    }
+  }, [dispatch, session?.user?.id]);
 
-  const barData = useMemo(
-    () => mapPartnersToTwoSideBarItems(partners, currency),
-    [partners, currency],
-  );
+  const barData = useMemo(() => {
+    // Ensure partners is an array before processing
+    const partnersArray = Array.isArray(partners) ? partners : [];
+    return mapPartnersToTwoSideBarItems(partnersArray, currency);
+  }, [partners, currency]);
 
   const handleNavigateToUpdate = (item: TwoSideBarItem) => {
     if (item.name === levelConfig.totalName || !item.id) {
@@ -60,7 +72,7 @@ const PartnerSettingPage = () => {
       <TabActionHeader buttonLabel="" redirectPath="/setting/partner/create" />
       {isLoading ? (
         <ChartSkeleton />
-      ) : partners.length === 0 ? (
+      ) : !partners || !Array.isArray(partners) || partners.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-[300px] my-16 text-center">
           <p className="text-lg font-medium text-gray-500">No partners found.</p>
           <p className="text-sm text-gray-400">Please create a new partner to get started.</p>

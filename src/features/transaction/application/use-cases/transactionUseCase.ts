@@ -242,7 +242,6 @@ class TransactionUseCase {
   }
 
   async getTransactionById(id: string, userId: string): Promise<Transaction | null> {
-    console.log('getTransactionById', id, userId);
     const transaction = await this.transactionRepository.getTransactionById(id, userId);
     if (!transaction) {
       throw new Error(Messages.TRANSACTION_NOT_FOUND);

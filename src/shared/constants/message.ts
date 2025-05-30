@@ -22,6 +22,7 @@ export enum Messages {
   DELETE_PRODUCT_SUCCESS = 'Delete product successfully',
   DUPLICATE_PRODUCT_TENANT_ERROR = 'Product with the same name and category already exists',
   GET_PRODUCT_BY_ID_SUCCESS = 'Get product by id successfully',
+  GET_PRODUCT_FILTERS = 'Get product filtered successfully.',
 
   // Product Failed
   CREATE_PRODUCT_FAILED = 'Failed to create product',
@@ -86,6 +87,7 @@ export enum Messages {
   // Account
   CREATE_ACCOUNT_FAILED = 'Failed to create account',
   CREATE_ACCOUNT_SUCCESS = 'Account created successfully',
+  GET_ACCOUNT_FILTERED_SUCCESS = 'Get account filtered successfully.',
   UPDATE_ACCOUNT_SUCCESS = 'Account updated successfully',
   DELETE_ACCOUNT_SUCCESS = 'Account deleted successfully',
   GET_ACCOUNT_SUCCESS = 'Get account list successfully',
@@ -160,6 +162,7 @@ export enum Messages {
   PARTNER_IDENTIFY_EXISTS = 'Identifier already exists',
 
   GET_PARTNER_SUCCESS = 'Get partner list successfully.',
+  GET_PARTNER_FILTERED_SUCCESS = 'Get partner filtered successfully.',
   CREATE_PARTNER_SUCCESS = 'Create partner successfully.',
   UPDATE_PARTNER_SUCCESS = 'Update partner successfully.',
   DELETE_PARTNER_SUCCESS = 'Delete partner successfully.',

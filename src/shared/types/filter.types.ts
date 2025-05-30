@@ -36,7 +36,7 @@ export interface FilterComponentConfig {
  * Basic filter criteria structure
  */
 export interface FilterCriteria {
-  filters: Record<string, any>;
+  filters: Record<string, unknown>;
   sortBy?: {
     [key: string]: OrderType;
   };
@@ -47,13 +47,13 @@ export interface FilterCriteria {
 /**
  * Interface for field mappings to create complex filter structures
  */
-export interface FilterFieldMapping<T = any> {
+export interface FilterFieldMapping<T = Record<string, unknown>> {
   key: keyof T;
   comparator?: 'AND' | 'OR';
   mapping?: {
     field: string;
     nestedField?: string;
-    transform?: (value: any) => any;
+    transform?: (value: unknown) => unknown;
   };
-  condition?: (value: any) => boolean;
+  condition?: (value: unknown) => boolean;
 }

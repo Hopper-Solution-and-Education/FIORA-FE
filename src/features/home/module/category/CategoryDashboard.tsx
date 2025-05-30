@@ -1,23 +1,22 @@
 'use client';
 import NestedBarChart from '@/components/common/charts/nested-bar-chart';
-import { Icons } from '@/components/Icon';
-import { formatCurrency, convertVNDToUSD } from '@/shared/utils';
+import { BarItem } from '@/components/common/charts/nested-bar-chart/type';
+import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import DeleteDialog from '@/features/home/module/category/components/DeleteDialog';
 import { fetchCategories } from '@/features/home/module/category/slices/actions';
 import { Category } from '@/features/home/module/category/slices/types';
 import { COLORS } from '@/shared/constants/chart';
+import { convertVNDToUSD, formatCurrency } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { CategoryType } from '@prisma/client';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo } from 'react';
-import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
-import { BarItem } from '@/components/common/charts/nested-bar-chart/type';
+import DashboardHeading from './components/DashboardHeading';
 
 const CategoryDashboard = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { categories } = useAppSelector((state) => state.category);
+  const { categories, filterCriteria } = useAppSelector((state) => state.category);
   const { currency } = useAppSelector((state) => state.settings);
 
   // * INITIALIZATION CHART DATA ZONE
@@ -79,7 +78,7 @@ const CategoryDashboard = () => {
 
   // * USE EFFECT ZONE
   useEffect(() => {
-    dispatch(fetchCategories());
+    dispatch(fetchCategories(filterCriteria));
   }, [dispatch]);
 
   if (categories.error)
@@ -87,13 +86,7 @@ const CategoryDashboard = () => {
 
   return (
     <div className="p-4 md:px-6">
-      <div className="flex justify-end">
-        <Link href="/category/create">
-          <button className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white">
-            <Icons.add className="h-6 w-6" />
-          </button>
-        </Link>
-      </div>
+      <DashboardHeading />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {categories.isLoading ? (
           <>

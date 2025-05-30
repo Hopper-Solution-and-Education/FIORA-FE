@@ -8,10 +8,10 @@ import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req, res, userId) => {
   switch (req.method) {
-    case 'POST':
-      return POST(req, res, userId);
     case 'GET':
       return GET(req, res, userId);
+    case 'POST':
+      return POST(req, res, userId);
     case 'PUT':
       return PUT(req, res, userId);
     case 'DELETE':

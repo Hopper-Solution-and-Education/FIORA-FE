@@ -8,14 +8,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-export interface SelectOption {
-  value: string;
-  label: string;
-}
+import { DropdownOption } from '@/features/home/module/transaction/types';
 
 interface SelectFilterProps {
-  options: SelectOption[];
+  options: DropdownOption[];
   value?: string;
   onChange: (value: string) => void;
   label?: string;

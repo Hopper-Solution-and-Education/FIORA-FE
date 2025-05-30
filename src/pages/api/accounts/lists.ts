@@ -12,7 +12,7 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
 
   try {
     switch (req.method) {
-      case 'GET':
+      case 'POST':
         return GET(req, res, userId);
       default:
         return res
@@ -29,7 +29,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     if (req.method !== 'GET') {
       return res.status(405).json({ error: 'Method not allowed' });
     }
-
     const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
 
     const { isParent } = req.query;

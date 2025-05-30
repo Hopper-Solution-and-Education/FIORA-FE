@@ -69,6 +69,12 @@ const mapAccountToBarItem = (account: Account, currency: string): BarItem => {
  * @returns Array of BarItem objects representing the account hierarchy
  */
 export const mapAccountsToBarItems = (accounts: Account[], currency: string): BarItem[] => {
+  // Add defensive check to ensure accounts is an array
+  if (!Array.isArray(accounts)) {
+    console.warn('mapAccountsToBarItems: accounts is not an array, returning empty array');
+    return [];
+  }
+
   // Build hierarchy from flat list
   const hierarchicalAccounts = buildAccountHierarchy(accounts);
   // Map top-level accounts to BarItems, including their children

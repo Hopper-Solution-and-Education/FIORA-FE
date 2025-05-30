@@ -54,12 +54,19 @@ export function useCreatePartner({ redirectPath }: Props) {
 
   const fetchPartners = useCallback(async () => {
     try {
-      const response = await getPartnerUseCase.execute({ page: 1, pageSize: 100 });
-      setPartners(response.filter((partner) => partner.parentId === null));
+      if (!session?.user?.id) return;
+
+      const response = await getPartnerUseCase.execute({
+        page: 1,
+        pageSize: 100,
+        userId: session.user.id,
+        filters: {},
+      });
+      setPartners(response.data.data.filter((partner) => partner.parentId === null));
     } catch (error: unknown) {
       console.error('Error fetching partners:', error);
     }
-  }, [getPartnerUseCase]);
+  }, [getPartnerUseCase, session?.user?.id]);
 
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.id) {

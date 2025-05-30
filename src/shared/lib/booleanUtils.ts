@@ -5,7 +5,7 @@ export class BooleanUtils {
 
   static chooseByMap<T, K extends string | number>(
     key: K,
-    map: Partial<Record<K, () => T>>, // Sử dụng Partial để không bắt buộc đủ keys
+    map: Partial<Record<K, () => T>>,
     defaultFn?: () => T,
   ): T {
     return map[key]
@@ -15,5 +15,17 @@ export class BooleanUtils {
         : (() => {
             throw new Error(`No handler for key: ${key}`);
           })();
+  }
+
+  static isTrue(value: unknown): boolean {
+    return Boolean(value) === true;
+  }
+
+  static isFalse(value: unknown): boolean {
+    return Boolean(value) === false;
+  }
+
+  static not(value: unknown): boolean {
+    return !value;
   }
 }

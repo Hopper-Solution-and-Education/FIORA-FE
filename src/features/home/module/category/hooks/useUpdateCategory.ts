@@ -7,11 +7,11 @@ import { toast } from 'sonner';
 
 export function useUpdateCategory(id: string) {
   const dispatch = useAppDispatch();
-  const { categories } = useAppSelector((state) => state.category);
+  const { categories, filterCriteria } = useAppSelector((state) => state.category);
 
   useEffect(() => {
     if (!categories.data && !categories.isLoading) {
-      dispatch(fetchCategories());
+      dispatch(fetchCategories(filterCriteria));
     }
   }, [categories.data, categories.isLoading, dispatch]);
 

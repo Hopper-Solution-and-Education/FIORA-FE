@@ -30,11 +30,11 @@ export class PartnerMapper {
   }
 
   static toEntityListFromGet(dto: GetPartnerAPIResponseDTO): Partner[] {
-    if (!dto?.data || !Array.isArray(dto.data)) {
+    if (!dto?.data?.data || !Array.isArray(dto.data.data)) {
       console.error('Invalid API response:', dto);
       return [];
     }
-    return dto.data.map(
+    return dto.data.data.map(
       (item) =>
         new Partner(
           item.id,

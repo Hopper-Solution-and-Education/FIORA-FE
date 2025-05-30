@@ -1,5 +1,7 @@
+import { DEFAULT_FILTER_CRITERIA } from '@/components/common/filters/GlobalFilter';
 import { CategoryProduct } from '../../domain/entities/Category';
 import { Product, ProductTransactionCategoryResponse } from '../../domain/entities/Product';
+import { FilterCriteria } from '@/shared/types';
 
 interface CategoryState {
   categories: {
@@ -35,10 +37,22 @@ interface CategoryState {
     page: number;
     pageSize: number;
     total: number;
-    hasMore: boolean;
-  };
+  } & ProductFilterResponse;
   productDetail: Product | null;
+  filterCriteria: FilterCriteria;
 }
+
+export type ProductFilterResponse = {
+  minPrice: number;
+  maxPrice: number;
+  minTaxRate: number;
+  maxTaxRate: number;
+  minExpense: number;
+  maxExpense: number;
+  minIncome: number;
+  maxIncome: number;
+  hasMore: boolean;
+};
 
 export const initialProductState: CategoryState = {
   categories: {
@@ -63,6 +77,14 @@ export const initialProductState: CategoryState = {
     page: 1,
     pageSize: 10,
     total: 0,
+    minPrice: 0,
+    maxPrice: 0,
+    minTaxRate: 0,
+    maxTaxRate: 0,
+    minExpense: 0,
+    maxExpense: 0,
+    minIncome: 0,
+    maxIncome: 0,
     hasMore: true,
   },
   isCreatingProduct: false,
@@ -77,4 +99,5 @@ export const initialProductState: CategoryState = {
   ProductIdToTransfer: '',
   productDetail: null,
   deletedItems: [],
+  filterCriteria: { ...DEFAULT_FILTER_CRITERIA },
 };

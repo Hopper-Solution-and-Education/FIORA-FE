@@ -1,7 +1,14 @@
 import { Response } from '@/shared/types/Common.types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createAccount, fetchAccounts, fetchParents, updateAccount } from './actions';
+import {
+  createAccount,
+  fetchAccounts,
+  fetchParents,
+  updateAccount,
+  searchAccounts,
+} from './actions';
 import { Account, initialAccountState } from './types';
+import { FilterCriteria } from '@/shared/types/filter.types';
 
 const accountSlice = createSlice({
   name: 'account',
@@ -27,6 +34,9 @@ const accountSlice = createSlice({
     setRefresh(state, action: PayloadAction<boolean>) {
       state.refresh = action.payload;
     },
+    setFilterCriteria(state, action: PayloadAction<FilterCriteria>) {
+      state.filterCriteria = action.payload;
+    },
     reset: () => initialAccountState,
   },
   extraReducers: (builder) => {
@@ -37,9 +47,30 @@ const accountSlice = createSlice({
       })
       .addCase(fetchAccounts.fulfilled, (state, action) => {
         state.accounts.isLoading = false;
-        state.accounts.data = action.payload.data;
+        state.accounts.data = action.payload.data.data;
+        if (state.minBalance === 0 && state.maxBalance === 0) {
+          state.minBalance = action.payload.data.minBalance;
+          state.maxBalance = action.payload.data.maxBalance;
+        }
       })
       .addCase(fetchAccounts.rejected, (state, action) => {
+        state.accounts.isLoading = false;
+        state.accounts.error = (action.payload as { message: string })?.message || 'Unknown error';
+      })
+
+      // Search accounts
+      .addCase(searchAccounts.pending, (state) => {
+        state.accounts.isLoading = true;
+      })
+      .addCase(searchAccounts.fulfilled, (state, action) => {
+        state.accounts.isLoading = false;
+        state.accounts.data = action.payload.data.data;
+        if (state.minBalance === 0 && state.maxBalance === 0) {
+          state.minBalance = action.payload.data.minBalance;
+          state.maxBalance = action.payload.data.maxBalance;
+        }
+      })
+      .addCase(searchAccounts.rejected, (state, action) => {
         state.accounts.isLoading = false;
         state.accounts.error = (action.payload as { message: string })?.message || 'Unknown error';
       })
@@ -50,7 +81,14 @@ const accountSlice = createSlice({
       })
       .addCase(fetchParents.fulfilled, (state, action) => {
         state.parentAccounts.isLoading = false;
-        state.parentAccounts.data = action.payload.data;
+        state.parentAccounts.data = action.payload.data.data;
+        // Update min/max balance for parent accounts as well
+        if (action.payload.data.minBalance !== undefined) {
+          state.minBalance = action.payload.data.minBalance;
+        }
+        if (action.payload.data.maxBalance !== undefined) {
+          state.maxBalance = action.payload.data.maxBalance;
+        }
       })
       .addCase(fetchParents.rejected, (state, action) => {
         state.parentAccounts.isLoading = false;
@@ -97,6 +135,7 @@ export const {
   setSelectedAccount,
   setAccounts,
   setRefresh,
+  setFilterCriteria,
   reset,
 } = accountSlice.actions;
 export default accountSlice.reducer;
