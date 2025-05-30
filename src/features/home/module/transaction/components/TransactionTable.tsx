@@ -244,7 +244,7 @@ const TransactionTable = () => {
           // Revalidate data
           mutate('/api/transactions');
         } else {
-          throw new Error(responseData.message || 'Failed to delete transaction');
+          toast.error(responseData.message || 'Failed to delete transaction');
         }
       })
       .catch((error) => {

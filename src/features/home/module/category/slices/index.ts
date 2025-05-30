@@ -39,8 +39,9 @@ const categorySlice = createSlice({
       .addCase(fetchCategories.fulfilled, (state, action) => {
         state.categories.isLoading = false;
         state.categories.data = action.payload.data.data;
-        state.minBalance = action.payload.data.minAmount || 0;
-        state.maxBalance = action.payload.data.maxAmount || 0;
+        if (state.maxBalance === 0) {
+          state.maxBalance = action.payload.data.maxAmount || 0;
+        }
       })
       .addCase(fetchCategories.rejected, (state, action) => {
         state.categories.isLoading = false;
@@ -53,8 +54,9 @@ const categorySlice = createSlice({
       .addCase(searchCategories.fulfilled, (state, action) => {
         state.categories.isLoading = false;
         state.categories.data = action.payload.data.data;
-        state.minBalance = action.payload.data.minAmount || 0;
-        state.maxBalance = action.payload.data.maxAmount || 0;
+        if (state.maxBalance === 0) {
+          state.maxBalance = action.payload.data.maxAmount || 0;
+        }
       })
       .addCase(searchCategories.rejected, (state, action) => {
         state.categories.isLoading = false;

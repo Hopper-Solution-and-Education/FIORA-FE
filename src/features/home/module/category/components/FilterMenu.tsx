@@ -86,15 +86,16 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         if (filters.transactions && typeof filters.transactions === 'object') {
           const transactionsFilter = filters.transactions as { some?: { OR?: any[] } };
           if (transactionsFilter.some?.OR && Array.isArray(transactionsFilter.some.OR)) {
-            transactionsFilter.some.OR.forEach((orCondition) => {
-              if (orCondition && typeof orCondition === 'object') {
-                if (orCondition.amount) {
-                  const amount = orCondition.amount as RangeCondition;
-                  if (typeof amount.gte === 'number') currentAmountMin = amount.gte;
-                  if (typeof amount.lte === 'number') currentAmountMax = amount.lte;
-                }
-              }
+            // Look for the first OR condition that has an amount (both Income and Expense should have the same range)
+            const firstConditionWithAmount = transactionsFilter.some.OR.find((orCondition) => {
+              return orCondition && typeof orCondition === 'object' && orCondition.amount;
             });
+
+            if (firstConditionWithAmount && firstConditionWithAmount.amount) {
+              const amount = firstConditionWithAmount.amount as RangeCondition;
+              if (typeof amount.gte === 'number') currentAmountMin = amount.gte;
+              if (typeof amount.lte === 'number') currentAmountMax = amount.lte;
+            }
           }
         }
 
@@ -255,26 +256,28 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
     (params: CategoryFilterParams): Record<string, unknown> => {
       const result: Record<string, unknown> = {};
 
-      // Check if amount values differ from defaults
-      const isAmountDefault =
-        params.amountMin === categoryStatistics.minAmount &&
-        params.amountMax === categoryStatistics.maxAmount;
-
-      // Only add transactions filter if amount range differs from defaults
-      if (!isAmountDefault) {
-        result.transactions = {
-          some: {
-            OR: [
-              {
-                amount: {
-                  gte: params.amountMin,
-                  lte: params.amountMax,
-                },
+      // Always add transactions filter with both Income and Expense types
+      // Apply the same amount range to both types
+      result.transactions = {
+        some: {
+          OR: [
+            {
+              type: 'Expense',
+              amount: {
+                gte: params.amountMin,
+                lte: params.amountMax,
               },
-            ],
-          },
-        };
-      }
+            },
+            {
+              type: 'Income',
+              amount: {
+                gte: params.amountMin,
+                lte: params.amountMax,
+              },
+            },
+          ],
+        },
+      };
 
       // Return the flat structure - GlobalFilter will wrap it in filters
       return result;
@@ -287,7 +290,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
     (newFilter: FilterCriteria) => {
       // Create the GlobalFilters structure that the API expects
       const globalFilters: GlobalFilters = {
-        search: '', // No search functionality in this filter
+        search: 'Expense', // Set search term to "Expense" as required
         filters: newFilter.filters || {},
       };
 

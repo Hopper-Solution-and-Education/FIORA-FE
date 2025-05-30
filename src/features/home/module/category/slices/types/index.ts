@@ -76,5 +76,5 @@ export const initialCategoryState: CategoryState = {
     filters: {},
   },
   minBalance: 0,
-  maxBalance: 100000,
+  maxBalance: 0,
 };
