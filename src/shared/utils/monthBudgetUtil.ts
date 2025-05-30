@@ -1,4 +1,4 @@
-import { Category, CategoryType, Currency, Transaction, TransactionType } from '@prisma/client';
+import { BudgetsTable, Category, CategoryType, Currency, Prisma, Transaction, TransactionType } from '@prisma/client';
 import _ from 'lodash';
 import { BudgetAllocation, FetchTransactionResponse, SumUpAllocation } from '../types/budget.types';
 import { convertCurrency } from './convertCurrency';
@@ -184,6 +184,7 @@ export function calculateSumUpAllocationByType(
 export function calculateSumUpAllocation(
   transactions: FetchTransactionResponse[],
   currency: Currency,
+  budget?: BudgetsTable,
 ): SumUpAllocation {
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
@@ -202,13 +203,32 @@ export function calculateSumUpAllocation(
       return transactionMonth === month;
     });
 
-    monthTransactions.forEach((t) => {
-      const suffix = t.type === TransactionType.Expense ? 'exp' : 'inc';
-      const monthKey = `m${month}_${suffix}`;
-      const amountInCurrency = convertCurrency(t.amount, t.currency, currency);
+    // if there are transactions in the month, then calculate the amount
+    if (monthTransactions.length > 0) {
+      monthTransactions.forEach((t) => {
+        const suffix = t.type === TransactionType.Expense ? 'exp' : 'inc';
+        const monthKey = `m${month}_${suffix}`;
+        const amountInCurrency = convertCurrency(t.amount, t.currency, currency);
 
-      monthFields[monthKey] = (monthFields[monthKey] || 0) + amountInCurrency;
-    });
+        if (budget) {
+          const accumulatedAmount = budget[monthKey as keyof BudgetsTable] || 0;
+          const convertedAmount = convertCurrency(Number(accumulatedAmount), budget?.currency, currency);
+
+          monthFields[monthKey] = Number(convertedAmount) + amountInCurrency;
+        } else {
+          monthFields[monthKey] = amountInCurrency || 0;
+        }
+      });
+    }
+
+    // if there are no transactions in the month, then set the amount to 0
+    if (budget) {
+      const monthKeyInc = `m${month}_inc`;
+      const monthKeyExp = `m${month}_exp`;
+
+      monthFields[monthKeyInc] = Number(budget[monthKeyInc as keyof BudgetsTable] || 0);
+      monthFields[monthKeyExp] = Number(budget[monthKeyExp as keyof BudgetsTable] || 0);
+    }
   });
 
   const quarterFields: Record<string, number> = {};
