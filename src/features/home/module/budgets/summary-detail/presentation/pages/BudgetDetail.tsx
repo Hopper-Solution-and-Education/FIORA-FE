@@ -19,7 +19,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { BudgetDetailFilterEnum, PERIOD_OPTIONS } from '../../data/constants';
 import { MonthlyPlanningData } from '../../data/dto/request/BudgetUpdateRequestDTO';
-import { Category, CategoryPlanningData } from '../../data/dto/response/CategoryResponseDTO';
+import { Category } from '../../data/dto/response/CategoryResponseDTO';
 import { budgetSummaryDIContainer } from '../../di/budgetSummaryDIContainer';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
 import { BudgetType } from '../../domain/entities/BudgetType';
@@ -48,7 +48,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   const [categoryList, setCategoryList] = useState<Category[]>([]);
   const [editedData, setEditedData] = useState<{ [key: string]: any }>({});
 
-  console.log(editedData);
+  console.log(editedData, selectedCategory);
 
   const { currency } = useAppSelector((state) => state.settings);
 
@@ -78,6 +78,39 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     fetchCategories();
   }, [activeTab, budgetSummaryUseCase]);
 
+  const transformMonthlyDataToTableFormat = (data: MonthlyPlanningData) => {
+    console.log('Transforming data to table format:', data);
+    const monthMap = {
+      m1: 'jan',
+      m2: 'feb',
+      m3: 'mar',
+      m4: 'apr',
+      m5: 'may',
+      m6: 'jun',
+      m7: 'jul',
+      m8: 'aug',
+      m9: 'sep',
+      m10: 'oct',
+      m11: 'nov',
+      m12: 'dec',
+    };
+
+    const result: { [key: string]: number } = {};
+    Object.entries(data).forEach(([key, value]) => {
+      // key format: m1_exp, m2_exp, etc.
+      const monthNumber = key.match(/m(\d+)_/)?.[1];
+      if (monthNumber) {
+        const monthKey = monthMap[`m${monthNumber}` as keyof typeof monthMap];
+        if (monthKey) {
+          result[monthKey] = value;
+        }
+      }
+    });
+
+    console.log('Transformed table format:', result);
+    return result;
+  };
+
   const handleCategoryChange = async (categoryId: string) => {
     const selectedCategoryData = categoryList.find((cat) => cat.id === categoryId);
     if (!selectedCategoryData) return;
@@ -90,63 +123,38 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
         categoryId,
         initialYear,
       );
+      console.log('API Response for actual data:', actualResponse);
+
+      const suffix = activeTab === BudgetDetailFilterEnum.EXPENSE ? '_exp' : '_inc';
 
       // Transform budgetDetails into the format we need
       const bottomUpData =
         selectedCategoryData.budgetDetails?.reduce((acc, detail) => {
           if (detail.month) {
-            const suffix = activeTab === BudgetDetailFilterEnum.EXPENSE ? '_exp' : '_inc';
             acc[`m${detail.month}${suffix}`] = detail.amount || 0;
           }
           return acc;
-        }, {} as CategoryPlanningData) || {};
+        }, {} as MonthlyPlanningData) || {};
 
-      // Transform actual data
-      const monthMap = {
-        m1: 'jan',
-        m2: 'feb',
-        m3: 'mar',
-        m4: 'apr',
-        m5: 'may',
-        m6: 'jun',
-        m7: 'jul',
-        m8: 'aug',
-        m9: 'sep',
-        m10: 'oct',
-        m11: 'nov',
-        m12: 'dec',
+      // Transform actual data directly from API response
+      const actualData: MonthlyPlanningData = {
+        [`m1${suffix}`]: actualResponse[`m1${suffix}`] || 0,
+        [`m2${suffix}`]: actualResponse[`m2${suffix}`] || 0,
+        [`m3${suffix}`]: actualResponse[`m3${suffix}`] || 0,
+        [`m4${suffix}`]: actualResponse[`m4${suffix}`] || 0,
+        [`m5${suffix}`]: actualResponse[`m5${suffix}`] || 0,
+        [`m6${suffix}`]: actualResponse[`m6${suffix}`] || 0,
+        [`m7${suffix}`]: actualResponse[`m7${suffix}`] || 0,
+        [`m8${suffix}`]: actualResponse[`m8${suffix}`] || 0,
+        [`m9${suffix}`]: actualResponse[`m9${suffix}`] || 0,
+        [`m10${suffix}`]: actualResponse[`m10${suffix}`] || 0,
+        [`m11${suffix}`]: actualResponse[`m11${suffix}`] || 0,
+        [`m12${suffix}`]: actualResponse[`m12${suffix}`] || 0,
       };
+      console.log('Transformed actual data:', actualData);
 
-      const transformedActualData = Object.entries(actualResponse).reduce(
-        (acc, [key, value]) => {
-          // Xử lý cho tháng (m1 -> jan, m2 -> feb, etc)
-          if (key.match(/^m\d+_(exp|inc)$/)) {
-            const monthKey = key.split('_')[0]; // m1, m2, etc
-            const newKey = monthMap[monthKey as keyof typeof monthMap];
-            if (newKey) {
-              acc[newKey] = value as number;
-            }
-          }
-          // Xử lý cho quý (q1 -> q1, etc)
-          else if (key.match(/^q\d+_(exp|inc)$/)) {
-            const quarterKey = key.split('_')[0]; // q1, q2, etc
-            acc[quarterKey] = value as number;
-          }
-          // Xử lý cho nửa năm (h1 -> h1, etc)
-          else if (key.match(/^h\d+_(exp|inc)$/)) {
-            const halfKey = key.split('_')[0]; // h1, h2
-            acc[halfKey] = value as number;
-          }
-          // Xử lý cho tổng năm
-          else if (key.startsWith('total_')) {
-            acc['fullYear'] = value as number;
-          }
-          return acc;
-        },
-        {} as { [key: string]: number },
-      );
-
-      console.log('Final transformed data:', transformedActualData);
+      const tableActualData = transformMonthlyDataToTableFormat(actualData);
+      console.log('Table format actual data:', tableActualData);
 
       setTableData((prevData) => {
         return prevData.map((item) => {
@@ -161,7 +169,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
                   isChild: true,
                   action: true,
                   isEditable: true,
-                  ...transformPlanningToTableData(bottomUpData),
+                  ...transformMonthlyDataToTableFormat(bottomUpData),
                 },
                 {
                   key: `${categoryId}-actual`,
@@ -169,7 +177,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
                   isChild: true,
                   action: true,
                   isEditable: false,
-                  ...transformedActualData,
+                  ...tableActualData,
                 },
               ],
             };
@@ -182,17 +190,6 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const transformPlanningToTableData = (planning: { [key: string]: number | string }) => {
-    const result: { [key: string]: number } = {};
-    Object.entries(planning).forEach(([key, value]) => {
-      if (key.endsWith('_exp')) {
-        const monthKey = key.replace('_exp', '');
-        result[monthKey] = typeof value === 'string' ? parseFloat(value) : value;
-      }
-    });
-    return result;
   };
 
   const fetchBudgetData = async () => {
@@ -321,35 +318,136 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     );
   };
 
+  // Add transformMonthlyData function back
+  const transformMonthlyData = (data: TableData): MonthlyPlanningData => {
+    const suffix = activeTab === BudgetDetailFilterEnum.EXPENSE ? '_exp' : '_inc';
+    const monthMap = {
+      jan: 1,
+      feb: 2,
+      mar: 3,
+      apr: 4,
+      may: 5,
+      jun: 6,
+      jul: 7,
+      aug: 8,
+      sep: 9,
+      oct: 10,
+      nov: 11,
+      dec: 12,
+    };
+
+    // Initialize with all months set to 0
+    const result: MonthlyPlanningData = {};
+    for (let i = 1; i <= 12; i++) {
+      result[`m${i}${suffix}`] = 0;
+    }
+
+    // Update values from data
+    Object.entries(data).forEach(([key, value]) => {
+      const month = Object.keys(monthMap).find((m) => key === m);
+      if (month) {
+        const monthNumber = monthMap[month as keyof typeof monthMap];
+        const numericValue = typeof value === 'string' ? parseFloat(value) : value;
+        if (!isNaN(numericValue)) {
+          result[`m${monthNumber}${suffix}`] = numericValue;
+        }
+      }
+    });
+
+    return result;
+  };
+
   const handleValidateClick = async (record: TableData) => {
+    console.log('Validate clicked for record:', record);
     setIsLoading(true);
     try {
-      // Transform edited data into monthly planning format
-      const monthlyData = Object.entries(record)
-        .filter(([key]) => key.startsWith('m') && !isNaN(parseInt(key.charAt(1))))
-        .reduce((acc, [key, value]) => {
-          const monthKey = `m${parseInt(key.charAt(1))}_exp` as const;
-          acc[monthKey] = typeof value === 'string' ? parseFloat(value) : value;
-          return acc;
-        }, {} as MonthlyPlanningData);
+      const suffix = activeTab === BudgetDetailFilterEnum.EXPENSE ? '_exp' : '_inc';
 
       if (record.key === 'top-down') {
-        // Update top-down planning
+        const monthlyData = transformMonthlyData(record);
         await budgetSummaryUseCase.updateTopDownPlanning({
           fiscalYear: initialYear.toString(),
           type: activeTab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income',
           updateTopBudget: monthlyData,
         });
         toast.success('Top-down planning updated successfully');
-      } else if (record.key.includes('-bottom-up') && selectedCategory) {
-        // Update category bottom-up planning
+      } else if (record.key.includes('-bottom-up')) {
+        console.log('Updating bottom-up plan');
         const [categoryId] = record.key.split('-bottom-up');
+        console.log('Category ID:', categoryId);
+
+        if (!categoryId) {
+          toast.error('Invalid category ID');
+          return;
+        }
+
+        const bottomUpData = transformMonthlyData(record);
+        console.log('Bottom-up data:', bottomUpData);
+
+        // Tìm actual data từ tableData
+        console.log('Current tableData:', tableData);
+        const newCategoryRow = tableData.find((item) => item.key === 'new-category');
+        console.log('Found new-category row:', newCategoryRow);
+
+        // Log tất cả children của new-category để kiểm tra
+        console.log('Children of new-category:', newCategoryRow?.children);
+
+        // Tìm actual record và log chi tiết
+        const actualRecord = newCategoryRow?.children?.find((child: TableData) => {
+          console.log('Checking child:', child);
+          console.log('Expected key:', `actual-sum-up`);
+          console.log('Child key:', child.key);
+          return child.key === 'actual-sum-up';
+        });
+
+        console.log('Found actual record:', actualRecord);
+
+        // Khởi tạo actualData với tất cả các tháng
+        const actualData: MonthlyPlanningData = {};
+        for (let i = 1; i <= 12; i++) {
+          const monthKey = `m${i}${suffix}` as keyof MonthlyPlanningData;
+          actualData[monthKey] = 0; // Khởi tạo mặc định là 0
+        }
+
+        // Nếu có actual record, cập nhật giá trị từ record
+        if (actualRecord) {
+          console.log('Updating actual data from record:', actualRecord);
+          // Lấy giá trị từ các trường tháng (jan, feb, etc.)
+          const monthMap = {
+            jan: 1,
+            feb: 2,
+            mar: 3,
+            apr: 4,
+            may: 5,
+            jun: 6,
+            jul: 7,
+            aug: 8,
+            sep: 9,
+            oct: 10,
+            nov: 11,
+            dec: 12,
+          };
+
+          Object.entries(monthMap).forEach(([month, num]) => {
+            console.log(`Checking month ${month}:`, actualRecord[month]);
+            const value = actualRecord[month];
+            console.log('Value type:', typeof value);
+            if (typeof value === 'number') {
+              const monthKey = `m${num}${suffix}` as keyof MonthlyPlanningData;
+              console.log(`Setting ${monthKey} to:`, value);
+              actualData[monthKey] = value;
+            }
+          });
+        }
+
+        console.log('Final actual data for API:', actualData);
+
         await budgetSummaryUseCase.updateCategoryPlanning({
           fiscalYear: initialYear.toString(),
           type: activeTab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income',
           categoryId,
-          bottomUpPlan: monthlyData,
-          actualSumUpPlan: {}, // Actual data is read-only
+          bottomUpPlan: bottomUpData,
+          actualSumUpPlan: actualData,
         });
         toast.success('Bottom-up planning updated successfully');
       }
@@ -358,6 +456,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
       await fetchBudgetData();
       setEditedData({}); // Reset edited data after successful update
     } catch (err: any) {
+      console.error('Update failed:', err);
       toast.error(err?.message || 'Failed to update planning');
     } finally {
       setIsLoading(false);

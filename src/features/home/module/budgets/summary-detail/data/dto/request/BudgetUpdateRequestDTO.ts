@@ -1,5 +1,5 @@
 export interface MonthlyPlanningData {
-  [key: `m${number}_exp`]: number;
+  [key: `m${number}_${'exp' | 'inc'}`]: number;
 }
 
 export interface TopDownUpdateRequestDTO {
