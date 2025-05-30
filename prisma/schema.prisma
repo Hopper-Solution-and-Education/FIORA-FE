@@ -118,6 +118,7 @@ model Product {
   items        ProductItems[]
   transactions ProductTransaction[] @relation("ProductTransactions")
 
+  @@unique([userId, name, catId])
   @@index([userId])
   @@index([catId])
   @@index([userId, catId])

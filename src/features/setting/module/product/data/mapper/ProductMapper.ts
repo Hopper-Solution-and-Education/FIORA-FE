@@ -8,6 +8,7 @@ import {
   ProductGetSingleResponse,
   ProductGetTransactionRequest,
   ProductGetTransactionResponse,
+  ProductItem,
   ProductsGetResponse,
   ProductTransferDeleteRequest,
   ProductTransferDeleteResponse,
@@ -55,8 +56,10 @@ export class ProductMapper {
       name: item.name,
       type: item.type,
       description: item.description ?? '',
-      // items: ProductMapper.parseServerItemToList(item.items),
-      items: item.items ?? [],
+      items:
+        item.items?.map(
+          (item) => new ProductItem(item.id, item.name, item.icon, item.description ?? ''),
+        ) ?? [],
       taxRate: Number(item.taxRate),
       catId: item.catId ?? '',
       icon: item.icon,
@@ -114,8 +117,10 @@ export class ProductMapper {
             name: productItem.product.name,
             type: productItem.product.type,
             description: productItem.product.description ?? '',
-            // items: ProductMapper.parseServerItemToList(productItem.product.items),
-            items: productItem.product.items ?? [],
+            items:
+              productItem.product.items?.map(
+                (item) => new ProductItem(item.id, item.name, item.icon, item.description),
+              ) ?? null,
             taxRate: productItem.product.taxRate ? Number(productItem.product.taxRate) : 0,
             catId: productItem.product.catId ?? '',
             icon: productItem.product.icon,
@@ -149,7 +154,9 @@ export class ProductMapper {
       price: request.price,
       type: request.type,
       category_id: request.catId,
-      items: request.items,
+      items: request.items?.map(
+        (item) => new ProductItem(item.itemId ?? '', item.name, item.icon, item.description ?? ''),
+      ),
       currency: request.currency,
     };
   }
@@ -164,8 +171,11 @@ export class ProductMapper {
       price: request.price,
       type: request.type,
       category_id: request.catId,
-      items: request.items,
+      items: request.items?.map(
+        (item) => new ProductItem(item.itemId ?? '', item.name, item.icon, item.description ?? ''),
+      ),
       currency: request.currency,
+      deleteItemsId: request.deletedItemsId,
     };
   }
 

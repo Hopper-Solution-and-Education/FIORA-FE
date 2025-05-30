@@ -27,6 +27,7 @@ export interface ArrayFieldConfig<T extends FieldValues> {
   className?: string;
   required?: boolean;
   id?: string;
+  handleDelete?: (item: any) => void;
 }
 
 const ArrayField = <T extends FieldValues>({
@@ -38,6 +39,7 @@ const ArrayField = <T extends FieldValues>({
   fields,
   addButtonText = 'Add Item',
   getItemTitle,
+  handleDelete,
 }: ArrayFieldConfig<T>) => {
   const { control } = useFormContext<T>();
   const { fields: items, append, remove } = useFieldArray({ control, name });
@@ -74,7 +76,9 @@ const ArrayField = <T extends FieldValues>({
               <Button
                 variant="ghost"
                 type="button"
-                onClick={() => setDeleteIndex(index)}
+                onClick={() => {
+                  setDeleteIndex(index);
+                }}
                 className="absolute top-4 right-4 text-destructive hover:bg-destructive/10 rounded-full transition"
               >
                 <Trash2 size={ICON_SIZE.SM} />
@@ -132,6 +136,7 @@ const ArrayField = <T extends FieldValues>({
         description="Are you sure you want to delete this item? This action cannot be undone."
         onConfirm={() => {
           if (deleteIndex !== null) remove(deleteIndex);
+          handleDelete?.(items[deleteIndex ?? 0]);
           setDeleteIndex(null);
         }}
         onCancel={() => setDeleteIndex(null)}

@@ -11,8 +11,10 @@ import {
 import IconSelectUpload from '@/components/common/forms/select/IconSelectUpload';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { Currency, ProductType } from '@prisma/client';
+import { useCallback } from 'react';
 import { useFormContext } from 'react-hook-form';
 import {
+  setDeletedItems,
   setIsOpenDialogAddCategory,
   setProductCategoryFormState,
   setProductCategoryToEdit,
@@ -25,6 +27,7 @@ const useProductFormConfig = () => {
   } = useFormContext();
 
   const { data } = useAppSelector((state) => state.productManagement.categories);
+  const deletedItems = useAppSelector((state) => state.productManagement.deletedItems);
   const dispatch = useAppDispatch();
 
   const handleOpenDialog = () => {
@@ -32,6 +35,13 @@ const useProductFormConfig = () => {
     dispatch(setProductCategoryFormState('add'));
     dispatch(setProductCategoryToEdit(null));
   };
+
+  const handleDelete = useCallback(
+    (item: any) => {
+      dispatch(setDeletedItems([...deletedItems, item.itemId]));
+    },
+    [deletedItems],
+  );
 
   const fields = [
     <IconSelectUpload key="icon" name="icon" required disabled={isSubmitting} />,
@@ -98,6 +108,7 @@ const useProductFormConfig = () => {
       key="items"
       name="items"
       emptyItem={{ name: '', description: '', icon: '' }}
+      handleDelete={handleDelete}
       fields={[
         <GlobalIconSelect
           name="icon"

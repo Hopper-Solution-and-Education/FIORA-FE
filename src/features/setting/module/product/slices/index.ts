@@ -44,6 +44,9 @@ const productManagementSlice = createSlice({
     setProductIdToTransfer: (state, action) => {
       state.ProductIdToTransfer = action.payload;
     },
+    setDeletedItems: (state, action) => {
+      state.deletedItems = action.payload;
+    },
     resetProductManagementState: () => initialProductState,
 
     updateProductFilterCriteria(state, action: PayloadAction<FilterCriteria>) {
@@ -266,6 +269,7 @@ export const {
   setProductCategoryToEdit,
   setProductIdToTransfer,
   setProductDetail,
+  setDeletedItems,
   updateProductFilterCriteria,
 } = productManagementSlice.actions;
 export default productManagementSlice.reducer;

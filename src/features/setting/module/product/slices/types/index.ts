@@ -22,6 +22,7 @@ interface CategoryState {
   ProductCategoryFormState: 'add' | 'edit';
   ProductCategoryToEdit: CategoryProduct | null;
   ProductIdToTransfer: string;
+  deletedItems: string[];
   products: {
     isLoading: boolean;
     items: Product[];
@@ -97,5 +98,6 @@ export const initialProductState: CategoryState = {
   ProductCategoryToEdit: null,
   ProductIdToTransfer: '',
   productDetail: null,
+  deletedItems: [],
   filterCriteria: { ...DEFAULT_FILTER_CRITERIA },
 };

@@ -14,19 +14,24 @@ import {
   ProductCreation,
   ProductUpdate,
 } from '../../repositories/productRepository.interface';
+import { IProductItemsRepository } from '../../repositories/productItemRepository.interface';
+import { productItemsRepository } from '../../infrastructure/repositories/productRepositoryItem';
 import { safeString } from '@/shared/utils/ExStringUtils';
 import { buildWhereClause } from '@/shared/utils';
 import { BooleanUtils } from '@/shared/lib';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
+  private productItemsRepository: IProductItemsRepository;
   private categoryProductRepository: ICategoryProductRepository;
 
   constructor(
     productRepository: IProductRepository,
+    productItemsRepository: IProductItemsRepository,
     categoryProductRepository: ICategoryProductRepository,
   ) {
     this.productRepository = productRepository;
+    this.productItemsRepository = productItemsRepository;
     this.categoryProductRepository = categoryProductRepository;
   }
 
@@ -114,10 +119,7 @@ class ProductUseCase {
     const { userId, id } = params;
     try {
       const product = await this.productRepository.findProductById(
-        {
-          id,
-          userId,
-        },
+        { id, userId },
         {
           include: {
             items: {
@@ -187,6 +189,21 @@ class ProductUseCase {
       }
 
       const result = await prisma.$transaction(async (tx) => {
+        // checked if the product tenant of user already exists
+        const foundTenantProduct = await tx.product.findUnique({
+          where: {
+            userId_name_catId: {
+              userId,
+              name,
+              catId: category_id,
+            },
+          },
+        });
+
+        if (foundTenantProduct) {
+          throw new Error(Messages.DUPLICATE_PRODUCT_TENANT_ERROR);
+        }
+
         // Create the product
         const product = await tx.product.create({
           data: {
@@ -288,6 +305,7 @@ class ProductUseCase {
       type,
       category_id,
       items,
+      deleteItemsId = [],
       currency = Currency.VND,
     } = params;
 
@@ -338,28 +356,31 @@ class ProductUseCase {
     if (items && Array.isArray(items)) {
       for await (const item of items) {
         if (item.id) {
-          await prisma.productItems.update({
-            where: { id: item.id },
-            data: {
+          await this.productItemsRepository.updateProductItems(
+            { id: item.id, userId },
+            {
               icon: item.icon,
               name: item.name,
               description: item.description,
-              userId,
-              productId: updatedProduct.id,
               updatedBy: userId,
             },
-          });
+          );
         } else {
-          await prisma.productItems.create({
-            data: {
-              icon: item.icon,
-              name: item.name,
-              description: item.description,
-              userId,
-              productId: updatedProduct.id,
-              createdBy: userId,
-            },
+          await this.productItemsRepository.createProductItems({
+            icon: item.icon,
+            name: item.name,
+            description: item.description,
+            userId,
+            productId: updatedProduct.id,
+            createdBy: userId,
           });
+        }
+      }
+
+      // delete product items
+      if (deleteItemsId && Array.isArray(deleteItemsId)) {
+        for await (const itemId of deleteItemsId) {
+          await this.productItemsRepository.deleteProductItems({ id: itemId, userId });
         }
       }
     }
@@ -468,4 +489,8 @@ class ProductUseCase {
 }
 
 // Export a single instance using the exported productRepository
-export const productUseCase = new ProductUseCase(productRepository, categoryProductRepository);
+export const productUseCase = new ProductUseCase(
+  productRepository,
+  productItemsRepository,
+  categoryProductRepository,
+);

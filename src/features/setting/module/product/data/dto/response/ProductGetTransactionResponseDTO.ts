@@ -1,7 +1,7 @@
 import { PaginationResponse } from '@/shared/types/Common.types';
 import { CategoryType, ProductType } from '@prisma/client';
+import { ProductItem } from '../../../domain/entities';
 import { HttpResponse } from '../../../model';
-import { ProductItem } from '../../../presentation/schema/addProduct.schema';
 
 // Extended pagination response with filter properties
 export type ProductTransactionPaginationResponse =
