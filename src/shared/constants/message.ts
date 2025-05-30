@@ -13,6 +13,7 @@ export enum Messages {
   UPDATE_CATEGORY_SUCCESS = 'Update category successfully',
   DELETE_CATEGORY_SUCCESS = 'Delete category successfully',
   GET_CATEGORY_SUCCESS = 'Get category successfully',
+  CATEGORY_TYPE_MISMATCH = 'Category type is invalid. Ensure the category type matches the given type.',
   // Category type is invalid. It must be Expense or Income
 
   // Product

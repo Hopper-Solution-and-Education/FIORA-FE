@@ -30,7 +30,7 @@ export interface ICategoryRepository {
   findManyCategoryWithBudgetDetails(
     where: Prisma.CategoryWhereInput,
     options?: Prisma.CategoryFindManyArgs,
-  ): Promise<CategoryWithBudgetDetails[]>;
+  ): Promise<Category[]>;
   findFirstCategory(
     where: Prisma.CategoryWhereInput,
     options?: Prisma.CategoryFindFirstArgs,

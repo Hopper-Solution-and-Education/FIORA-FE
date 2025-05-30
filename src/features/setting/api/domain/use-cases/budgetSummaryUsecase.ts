@@ -428,8 +428,13 @@ class BudgetSummaryUseCase {
       id: categoryId,
       userId,
     });
+
     if (!foundCategory) {
       throw new Error(Messages.CATEGORY_NOT_FOUND);
+    }
+
+    if (foundCategory.type !== type) {
+      throw new Error(Messages.CATEGORY_TYPE_MISMATCH);
     }
 
     const suffix = type === BudgetDetailType.Expense ? '_exp' : '_inc';

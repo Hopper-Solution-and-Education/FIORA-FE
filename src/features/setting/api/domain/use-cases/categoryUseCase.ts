@@ -180,7 +180,7 @@ class CategoryUseCase {
       throw new Error(Messages.INVALID_CATEGORY_TYPE);
     }
 
-    const categoryFound = await this.categoryRepository.findManyCategoryWithBudgetDetails(
+    const categoryFound = await (this.categoryRepository.findManyCategoryWithBudgetDetails(
       {
         userId,
         type,
@@ -198,11 +198,12 @@ class CategoryUseCase {
             select: {
               month: true,
               amount: true,
+              currency: true,
             },
           },
         },
       },
-    );
+    ) as unknown) as CategoryWithBudgetDetails[];
 
     const transferCategoryFound = categoryFound.map((category: CategoryWithBudgetDetails) => {
       const suffix = category.type === CategoryType.Expense ? 'exp' : 'inc';
@@ -222,8 +223,6 @@ class CategoryUseCase {
       });
 
       const { budgetDetails, ...categoryWithoutBudgetDetails } = category;
-
-      console.log(budgetDetails);
 
       return {
         ...categoryWithoutBudgetDetails,
