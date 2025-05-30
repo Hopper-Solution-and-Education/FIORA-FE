@@ -464,7 +464,6 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
     ];
   }, [filterParams, categoryOptions, accountOptions, partnerOptions, isLoading, handleEditFilter]);
 
-  // Creates the filter structure from the UI state
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createFilterStructure = useCallback((params: FilterParams): Record<string, any> => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

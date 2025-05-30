@@ -8,23 +8,8 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { searchAccounts } from '../slices/actions';
+import { setFilterCriteria } from '../slices';
 import { toast } from 'sonner';
-
-/**
- * FilterMenu Component for Account Module
- *
- * This component provides filtering capabilities for accounts with:
- * - Account type multi-select (Payment, Saving, CreditCard, Debt, Lending, Invest)
- * - Balance range slider with currency formatting (min: 0, max: 1,000,000)
- * - Integration with Redux state for filter criteria management
- * - Automatic API calls to search accounts based on filter criteria
- *
- * Usage:
- * <FilterMenu
- *   onFilterChange={(newFilter) => handleFilterChange(newFilter)}
- *   filterCriteria={currentFilterCriteria}
- * />
- */
 
 // Define constants for magic numbers
 const DEFAULT_MIN_BALANCE = 0;
@@ -107,7 +92,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
           };
         }
 
-        // Extract account types from top level "types" field
+        // Extract account types from top level "types" field or from filters
         if (filterCriteria.types && Array.isArray(filterCriteria.types)) {
           accountTypes = filterCriteria.types.filter(
             (type) =>
@@ -118,6 +103,15 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
 
         // Get the nested filters object
         const filters = (filterCriteria.filters as Record<string, unknown>) || {};
+
+        // Also check for types within the filters object (fallback)
+        if (accountTypes.length === 0 && filters.types && Array.isArray(filters.types)) {
+          accountTypes = filters.types.filter(
+            (type) =>
+              typeof type === 'string' &&
+              ACCOUNT_TYPE_OPTIONS.some((option) => option.value === type),
+          ) as string[];
+        }
 
         // Extract balance range
         if (filters.balance && typeof filters.balance === 'object') {
@@ -160,28 +154,30 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
     return hasData;
   }, []);
 
+  // Check if filter criteria is reset to default (empty filters)
+  const isFilterCriteriaReset = useCallback((criteria: FilterCriteria) => {
+    if (!criteria.filters || Object.keys(criteria.filters).length === 0) {
+      return true;
+    }
+
+    // Check if any meaningful filters exist
+    const filters = criteria.filters as Record<string, unknown>;
+    const hasTypes = filters.types && Array.isArray(filters.types) && filters.types.length > 0;
+    const hasOtherFilters = Object.keys(filters).some(
+      (key) => key !== 'types' && filters[key] !== undefined,
+    );
+
+    return !hasTypes && !hasOtherFilters;
+  }, []);
+
   // Initialize filter params with calculated values and existing filter criteria
   useEffect(() => {
     if (!isInitialized && accountStatistics) {
-      // Check if there are existing filter criteria to read
-      const hasExistingCriteria = debugFilterCriteria(filterCriteria);
+      // Check if filter criteria has been reset to default
+      const isReset = isFilterCriteriaReset(filterCriteria);
 
-      if (hasExistingCriteria) {
-        // Extract data from existing filter criteria
-        const extractedData = extractFilterData(
-          filterCriteria as unknown as Record<string, unknown>,
-        );
-
-        const finalParams = {
-          ...extractedData,
-          // Ensure min/max values are set to calculated values if not present in criteria
-          balanceMin: extractedData.balanceMin ?? accountStatistics.minBalance,
-          balanceMax: extractedData.balanceMax ?? accountStatistics.maxBalance,
-        };
-
-        setFilterParams(finalParams);
-      } else {
-        // No existing criteria, use default values with calculated statistics
+      if (isReset) {
+        // Reset to default values with calculated statistics
         const defaultParams = {
           ...filterParamsInitState,
           balanceMin: accountStatistics.minBalance,
@@ -189,11 +185,46 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         };
 
         setFilterParams(defaultParams);
+      } else {
+        // Check if there are existing filter criteria to read
+        const hasExistingCriteria = debugFilterCriteria(filterCriteria);
+
+        if (hasExistingCriteria) {
+          // Extract data from existing filter criteria
+          const extractedData = extractFilterData(
+            filterCriteria as unknown as Record<string, unknown>,
+          );
+
+          const finalParams = {
+            ...extractedData,
+            // Ensure min/max values are set to calculated values if not present in criteria
+            balanceMin: extractedData.balanceMin ?? accountStatistics.minBalance,
+            balanceMax: extractedData.balanceMax ?? accountStatistics.maxBalance,
+          };
+
+          setFilterParams(finalParams);
+        } else {
+          // No existing criteria, use default values with calculated statistics
+          const defaultParams = {
+            ...filterParamsInitState,
+            balanceMin: accountStatistics.minBalance,
+            balanceMax: accountStatistics.maxBalance,
+          };
+
+          setFilterParams(defaultParams);
+        }
       }
 
       setIsInitialized(true);
     }
-  }, [accountStatistics, filterCriteria, extractFilterData, isInitialized, debugFilterCriteria]);
+  }, [
+    accountStatistics,
+    filterCriteria,
+    extractFilterData,
+    isInitialized,
+    debugFilterCriteria,
+    isFilterCriteriaReset,
+  ]);
 
   // Reset initialization flag when filter criteria changes externally
   useEffect(() => {
@@ -315,6 +346,9 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
       } else {
         flattenedFilter.filters = {};
       }
+
+      // Save filter criteria to Redux state
+      dispatch(setFilterCriteria(flattenedFilter));
 
       // Update filter criteria with flattened structure
       onFilterChange(flattenedFilter);

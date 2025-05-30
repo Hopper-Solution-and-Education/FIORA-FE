@@ -16,8 +16,8 @@ import {
   updateProductAsyncThunk,
 } from './actions';
 
-import { initialProductState } from './types';
 import { FilterCriteria } from '@/shared/types/filter.types';
+import { initialProductState } from './types';
 
 // Define a constant for the not found index
 const NOT_FOUND_INDEX = -1;

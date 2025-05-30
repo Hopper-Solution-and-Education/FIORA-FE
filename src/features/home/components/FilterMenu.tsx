@@ -10,13 +10,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DEFAULT_DASHBOARD_FILTER_CRITERIA } from '../constants';
 import { DropdownOption } from '../module/transaction/types';
 
-// Define constants for magic numbers
-const DEFAULT_MAX_EXPENSE = 100000;
-const DEFAULT_MAX_PRICE = 100000;
-const DEFAULT_MIN_TAX_RATE = 1;
-const DEFAULT_MAX_TAX_RATE = 100;
-const DEFAULT_MAX_INCOME = 100000;
-const DEFAULT_LARGE_MAX_VALUE = 1000000;
 const DEFAULT_SLIDER_STEP = 1000;
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -50,13 +43,13 @@ const filterParamsInitState: ExtendedFilterParams = {
   types: [],
   products: [],
   expenseMin: 0,
-  expenseMax: DEFAULT_MAX_EXPENSE,
+  expenseMax: 0,
   priceMin: 0,
-  priceMax: DEFAULT_MAX_PRICE,
-  taxRateMin: DEFAULT_MIN_TAX_RATE,
-  taxRateMax: DEFAULT_MAX_TAX_RATE,
+  priceMax: 0,
+  taxRateMin: 0,
+  taxRateMax: 0,
   incomeMin: 0,
-  incomeMax: DEFAULT_MAX_INCOME,
+  incomeMax: 0,
 };
 
 interface FilterMenuProps {
@@ -80,13 +73,13 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
       setFilterParams((prev) => ({
         ...prev,
         priceMin: productTransaction.minPrice || 0,
-        priceMax: productTransaction.maxPrice || DEFAULT_MAX_PRICE,
-        taxRateMin: productTransaction.minTaxRate || DEFAULT_MIN_TAX_RATE,
-        taxRateMax: productTransaction.maxTaxRate || DEFAULT_MAX_TAX_RATE,
+        priceMax: productTransaction.maxPrice || 0,
+        taxRateMin: productTransaction.minTaxRate || 0,
+        taxRateMax: productTransaction.maxTaxRate || 0,
         expenseMin: productTransaction.minExpense || 0,
-        expenseMax: productTransaction.maxExpense || DEFAULT_MAX_EXPENSE,
+        expenseMax: productTransaction.maxExpense || 0,
         incomeMin: productTransaction.minIncome || 0,
-        incomeMax: productTransaction.maxIncome || DEFAULT_MAX_INCOME,
+        incomeMax: productTransaction.maxIncome || 0,
       }));
     }
   }, [productTransaction]);
@@ -109,7 +102,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
 
       // Extract price range
       let currentPriceMin = productTransaction.minPrice || 0;
-      let currentPriceMax = productTransaction.maxPrice || DEFAULT_MAX_PRICE;
+      let currentPriceMax = productTransaction.maxPrice || 0;
       if (filters.price && typeof filters.price === 'object') {
         const priceFilter = filters.price as RangeCondition;
         if (priceFilter.gte !== undefined) currentPriceMin = priceFilter.gte;
@@ -117,8 +110,8 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
       }
 
       // Extract tax rate
-      let currentTaxRateMin = productTransaction.minTaxRate || DEFAULT_MIN_TAX_RATE;
-      let currentTaxRateMax = productTransaction.maxTaxRate || DEFAULT_MAX_TAX_RATE;
+      let currentTaxRateMin = productTransaction.minTaxRate || 0;
+      let currentTaxRateMax = productTransaction.maxTaxRate || 0;
       if (filters.taxRate && typeof filters.taxRate === 'object') {
         const taxRateFilter = filters.taxRate as RangeCondition;
         // Convert from decimal to percentage for display
@@ -128,9 +121,9 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
 
       // Extract expense and income from transactions
       let currentExpenseMin = productTransaction.minExpense || 0;
-      let currentExpenseMax = productTransaction.maxExpense || DEFAULT_MAX_EXPENSE;
+      let currentExpenseMax = productTransaction.maxExpense || 0;
       let currentIncomeMin = productTransaction.minIncome || 0;
-      let currentIncomeMax = productTransaction.maxIncome || DEFAULT_MAX_INCOME;
+      let currentIncomeMax = productTransaction.maxIncome || 0;
 
       if (filters.transactions && typeof filters.transactions === 'object') {
         const transactionsFilter = filters.transactions as { some?: { OR?: any[] } };
@@ -204,7 +197,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         minValue={filterParams.expenseMin}
         maxValue={filterParams.expenseMax}
         minRange={productTransaction.minExpense || 0}
-        maxRange={productTransaction.maxExpense || DEFAULT_LARGE_MAX_VALUE}
+        maxRange={productTransaction.maxExpense || 0}
         onValueChange={(target, value) =>
           handleEditFilter(target === 'minValue' ? 'expenseMin' : 'expenseMax', value)
         }
@@ -223,7 +216,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         minValue={filterParams.priceMin}
         maxValue={filterParams.priceMax}
         minRange={productTransaction.minPrice || 0}
-        maxRange={productTransaction.maxPrice || DEFAULT_LARGE_MAX_VALUE}
+        maxRange={productTransaction.maxPrice || 0}
         onValueChange={(target, value) =>
           handleEditFilter(target === 'minValue' ? 'priceMin' : 'priceMax', value)
         }
@@ -241,8 +234,8 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
       <NumberRangeFilter
         minValue={filterParams.taxRateMin}
         maxValue={filterParams.taxRateMax}
-        minRange={productTransaction.minTaxRate || DEFAULT_MIN_TAX_RATE}
-        maxRange={productTransaction.maxTaxRate || DEFAULT_MAX_TAX_RATE}
+        minRange={productTransaction.minTaxRate || 0}
+        maxRange={productTransaction.maxTaxRate || 0}
         onValueChange={(target, value) =>
           handleEditFilter(target === 'minValue' ? 'taxRateMin' : 'taxRateMax', value)
         }
@@ -261,7 +254,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         minValue={filterParams.incomeMin}
         maxValue={filterParams.incomeMax}
         minRange={productTransaction.minIncome || 0}
-        maxRange={productTransaction.maxIncome || DEFAULT_LARGE_MAX_VALUE}
+        maxRange={productTransaction.maxIncome || 0}
         onValueChange={(target, value) =>
           handleEditFilter(target === 'minValue' ? 'incomeMin' : 'incomeMax', value)
         }
@@ -325,7 +318,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
       // Add price range filter only if different from default values
       const isPriceDefault =
         params.priceMin === (productTransaction.minPrice || 0) &&
-        params.priceMax === (productTransaction.maxPrice || DEFAULT_MAX_PRICE);
+        params.priceMax === (productTransaction.maxPrice || 0);
 
       if (!isPriceDefault) {
         updatedFilters.price = {
@@ -336,8 +329,8 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
 
       // Add tax rate filter only if different from default values
       const isTaxRateDefault =
-        params.taxRateMin === (productTransaction.minTaxRate || DEFAULT_MIN_TAX_RATE) &&
-        params.taxRateMax === (productTransaction.maxTaxRate || DEFAULT_MAX_TAX_RATE);
+        params.taxRateMin === (productTransaction.minTaxRate || 0) &&
+        params.taxRateMax === (productTransaction.maxTaxRate || 0);
 
       if (!isTaxRateDefault) {
         updatedFilters.taxRate = {
@@ -349,11 +342,11 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
       // Check if expense and income values differ from defaults
       const isExpenseDefault =
         params.expenseMin === (productTransaction.minExpense || 0) &&
-        params.expenseMax === (productTransaction.maxExpense || DEFAULT_MAX_EXPENSE);
+        params.expenseMax === (productTransaction.maxExpense || 0);
 
       const isIncomeDefault =
         params.incomeMin === (productTransaction.minIncome || 0) &&
-        params.incomeMax === (productTransaction.maxIncome || DEFAULT_MAX_INCOME);
+        params.incomeMax === (productTransaction.maxIncome || 0);
 
       // Only add transactions filter if either expense or income ranges differ from defaults
       if (!isExpenseDefault || !isIncomeDefault) {

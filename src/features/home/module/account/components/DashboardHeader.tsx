@@ -9,6 +9,7 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { fetchAccounts } from '../slices/actions';
+import { setFilterCriteria } from '../slices';
 import FilterMenu from './FilterMenu';
 
 const DashboardHeader = () => {
@@ -21,13 +22,15 @@ const DashboardHeader = () => {
     () =>
       debounce((value: string) => {
         if (userId) {
-          dispatch(
-            fetchAccounts({
-              filters: filterCriteria.filters,
-              search: value as string,
-              userId,
-            }),
-          );
+          const updatedFilter = {
+            filters: filterCriteria.filters,
+            search: value as string,
+            userId,
+          };
+          // Save updated filter criteria to Redux state
+          dispatch(setFilterCriteria(updatedFilter));
+          // Fetch accounts with updated filter
+          dispatch(fetchAccounts(updatedFilter));
         }
       }, 1000),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -35,6 +38,9 @@ const DashboardHeader = () => {
   );
 
   const handleFilterChange = (newFilter: FilterCriteria) => {
+    // Save filter criteria to Redux state
+    dispatch(setFilterCriteria(newFilter));
+    // Fetch accounts with new filter
     dispatch(fetchAccounts(newFilter));
   };
 

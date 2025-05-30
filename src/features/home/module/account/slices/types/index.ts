@@ -36,8 +36,8 @@ export interface AccountState {
     error: string | null;
     message?: string;
   };
-  minBalance: number | null;
-  maxBalance: number | null;
+  minBalance: number;
+  maxBalance: number;
   refresh: boolean;
   selectedAccount: Account | null;
   accountCreateDialog: boolean;
@@ -57,8 +57,8 @@ export const initialAccountState: AccountState = {
     data: undefined,
     error: null,
   },
-  minBalance: null,
-  maxBalance: null,
+  minBalance: 0,
+  maxBalance: 0,
   refresh: false,
   selectedAccount: null,
   accountCreateDialog: false,

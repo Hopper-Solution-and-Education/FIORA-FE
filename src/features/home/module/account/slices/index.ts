@@ -48,8 +48,10 @@ const accountSlice = createSlice({
       .addCase(fetchAccounts.fulfilled, (state, action) => {
         state.accounts.isLoading = false;
         state.accounts.data = action.payload.data.data;
-        state.minBalance = action.payload.data.minBalance;
-        state.maxBalance = action.payload.data.maxBalance;
+        if (state.minBalance === 0 && state.maxBalance === 0) {
+          state.minBalance = action.payload.data.minBalance;
+          state.maxBalance = action.payload.data.maxBalance;
+        }
       })
       .addCase(fetchAccounts.rejected, (state, action) => {
         state.accounts.isLoading = false;
@@ -63,8 +65,10 @@ const accountSlice = createSlice({
       .addCase(searchAccounts.fulfilled, (state, action) => {
         state.accounts.isLoading = false;
         state.accounts.data = action.payload.data.data;
-        state.minBalance = action.payload.data.minBalance;
-        state.maxBalance = action.payload.data.maxBalance;
+        if (state.minBalance === 0 && state.maxBalance === 0) {
+          state.minBalance = action.payload.data.minBalance;
+          state.maxBalance = action.payload.data.maxBalance;
+        }
       })
       .addCase(searchAccounts.rejected, (state, action) => {
         state.accounts.isLoading = false;

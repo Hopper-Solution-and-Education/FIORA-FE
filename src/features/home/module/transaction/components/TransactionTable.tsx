@@ -328,6 +328,7 @@ const TransactionTable = () => {
                         className="absolute top-[50%] right-2 -translate-y-[50%] opacity-50"
                       />
                     </div>
+
                     <FilterMenu callBack={handleFilterChange} />
                   </div>
                   <Label className="text-gray-600 dark:text-gray-400">
