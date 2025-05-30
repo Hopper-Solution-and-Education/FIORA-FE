@@ -308,10 +308,10 @@ const columns: ColumnProps[] = [
 
 const ExampleTable: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { categories } = useAppSelector((state) => state.category);
+  const { categories, filterCriteria } = useAppSelector((state) => state.category);
 
   useEffect(() => {
-    dispatch(fetchCategories());
+    dispatch(fetchCategories(filterCriteria));
   }, [dispatch]);
 
   const dataSource: DataSourceProps[] = [

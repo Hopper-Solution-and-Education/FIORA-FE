@@ -9,11 +9,11 @@ import { useEffect } from 'react';
 
 export default function CreateAccount() {
   const dispatch = useAppDispatch();
-  const { parentAccounts } = useAppSelector((state) => state.account);
+  const { parentAccounts, filterCriteria } = useAppSelector((state) => state.account);
 
   useEffect(() => {
     if (!parentAccounts.data && !parentAccounts.isLoading) {
-      dispatch(fetchParents());
+      dispatch(fetchParents(filterCriteria));
     }
   }, [parentAccounts.data, parentAccounts.isLoading, dispatch]);
 
