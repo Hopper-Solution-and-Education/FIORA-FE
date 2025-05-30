@@ -150,6 +150,29 @@ class BudgetUseCase {
     return { totalExpenseAct, totalIncomeAct };
   }
 
+  private calculateActualBudgetAccumulatedTotals(
+    transactions: FetchTransactionResponse[] | [],
+    currency: Currency,
+    budget: BudgetsTable,
+  ): { totalExpenseAct: number; totalIncomeAct: number } {
+    const totalExpenseActAppend = transactions
+      .filter((t) => t.type === TransactionType.Expense)
+      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+
+    const totalIncomeActAppend = transactions
+      .filter((t) => t.type === TransactionType.Income)
+      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+
+    const totalExpenseActAccumulated = convertCurrency(budget.total_exp, budget.currency as Currency, currency);
+    const totalIncomeActAccumulated = convertCurrency(budget.total_inc, budget.currency as Currency, currency);
+
+    const totalExpenseAct = totalExpenseActAccumulated + totalExpenseActAppend;
+    const totalIncomeAct = totalIncomeActAccumulated + totalIncomeActAppend;
+
+    return { totalExpenseAct, totalIncomeAct };
+  }
+
+
   // =============== CREATE BUDGET VERSION 2 WITH TRANSACTION ==============
 
   async createBudgetTransaction(params: BudgetCreationParams): Promise<BudgetsTable[]> {
@@ -374,18 +397,6 @@ class BudgetUseCase {
     } = params;
 
     return await prisma.$transaction(async (prisma) => {
-      // checked budget already existed or not
-      const foundBudget = await prisma.budgetsTable.findFirst({
-        where: {
-          userId,
-          fiscalYear: fiscalYear.toString(),
-          type,
-        },
-      });
-
-      if (foundBudget) {
-        throw new Error(Messages.DUPLICATED_BUDGET_FISCAL_YEAR);
-      }
 
       const totalExpense = estimatedTotalExpense;
       const totalIncome = estimatedTotalIncome;
@@ -395,14 +406,26 @@ class BudgetUseCase {
           ? calculateSumUpAllocation(transactions || [], currency!)
           : calculateBudgetAllocation(totalExpense, totalIncome);
 
-      const newBudget = await prisma.budgetsTable.create({
-        data: {
+      const newBudget = await prisma.budgetsTable.upsert({
+        where: {
+          fiscalYear_type_userId: { userId, fiscalYear: fiscalYear.toString(), type: type as BudgetType },
+        },
+        update: {
+          total_exp: totalExpense,
+          total_inc: totalIncome,
+          ...halfYearFields,
+          ...quarterFields,
+          ...monthFields,
+          currency,
+          updatedBy: !isSystemGenerated ? userId : undefined,
+        },
+        create: {
           userId,
           icon,
           fiscalYear: fiscalYear.toString(),
-          type: type, // Sử dụng budgetType thay vì type để tránh lỗi
-          total_exp: totalExpense,
+          type: type as BudgetType,
           total_inc: totalIncome,
+          total_exp: totalExpense,
           ...halfYearFields,
           ...quarterFields,
           ...monthFields,
@@ -411,10 +434,6 @@ class BudgetUseCase {
           currency,
         },
       });
-
-      if (!newBudget) {
-        throw new Error(Messages.BUDGET_CREATE_FAILED);
-      }
 
       if (transactionIds.length > 0) {
         await prisma.transaction.updateMany({
@@ -437,9 +456,9 @@ class BudgetUseCase {
       {
         userId,
         date: { gte: yearStart, lte: effectiveEndDate },
-        isDeleted: false,
         isMarked: false,
-        type: { in: [TransactionType.Income, TransactionType.Expense] },
+        isDeleted: false,
+        type: { in: [TransactionType.Expense, TransactionType.Income] },
         ...additionalWhere,
       },
       {
@@ -620,6 +639,8 @@ class BudgetUseCase {
         effectiveEndDate,
       );
 
+      console.log('currentYearTransactions', currentYearTransactions);
+
       const currentYearTotals = this.calculateActualTotals(
         currentYearTransactions,
         budgetCopyCurrency,
@@ -707,13 +728,13 @@ class BudgetUseCase {
     const currentYear = new Date().getFullYear();
 
     // Step 1.1: Check if budgets exist for the current year
-    const currentYearBudgets = await this.budgetRepository.findManyBudgetData(
+    const currentYearBudgets = await this.budgetRepository.findBudgetData(
       { userId, fiscalYear: currentYear.toString() },
       { select: { fiscalYear: true, type: true } },
     );
 
     // Step 2.1: If no budgets for the current year, create them
-    if (currentYearBudgets.length === 0) {
+    if (!currentYearBudgets) {
       // Find the least recent past year's budgets (if current year is 2025 => get 2024 )
       await this.upsertBudget(currency, userId);
     }
@@ -1023,11 +1044,32 @@ class BudgetUseCase {
     userId: string,
     fiscalYear: number,
     currency: Currency,
-    { totalExpense, totalIncome }: { totalExpense: number; totalIncome: number },
+    transactions: FetchTransactionResponse[],
   ): Promise<void> {
-    const { monthFields, quarterFields, halfYearFields } = calculateBudgetAllocation(
-      totalExpense,
-      totalIncome,
+    const foundBudget = await prisma.budgetsTable.findUnique({
+      where: {
+        fiscalYear_type_userId: {
+          userId,
+          fiscalYear: fiscalYear.toString(),
+          type: BudgetType.Act,
+        },
+      },
+    });
+
+    if (!foundBudget) {
+      return;
+    }
+
+    const { monthFields, quarterFields, halfYearFields } = calculateSumUpAllocation(
+      transactions,
+      currency,
+      foundBudget,
+    );
+
+    const { totalExpenseAct, totalIncomeAct } = this.calculateActualBudgetAccumulatedTotals(
+      transactions,
+      currency,
+      foundBudget,
     );
 
     await prisma.budgetsTable.update({
@@ -1035,14 +1077,24 @@ class BudgetUseCase {
         fiscalYear_type_userId: { userId, fiscalYear: fiscalYear.toString(), type: BudgetType.Act },
       },
       data: {
-        total_exp: totalExpense,
-        total_inc: totalIncome,
+        total_exp: totalExpenseAct,
+        total_inc: totalIncomeAct,
         ...halfYearFields,
         ...quarterFields,
         ...monthFields,
         currency,
       },
     });
+
+    // Đánh dấu giao dịch mới
+    const newTransactionIds = transactions.map((t) => t.id);
+
+    if (newTransactionIds.length > 0) {
+      await prisma.transaction.updateMany({
+        where: { id: { in: newTransactionIds } },
+        data: { isMarked: true },
+      });
+    }
   }
 
   private async updateBudgetForYear(
@@ -1074,24 +1126,7 @@ class BudgetUseCase {
       return; // Không có giao dịch nào để cập nhật
     }
 
-    // Đánh dấu giao dịch mới
-    const newTransactionIds = newTransactions.map((t) => t.id);
-
-    if (newTransactionIds.length > 0) {
-      await prisma.transaction.updateMany({
-        where: { id: { in: newTransactionIds } },
-        data: { isMarked: true },
-      });
-    }
-    const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
-      newTransactions,
-      currency,
-    );
-
-    await this.updateBudget(prisma, userId, fiscalYear, currency, {
-      totalExpense: totalExpenseAct,
-      totalIncome: totalIncomeAct,
-    });
+    await this.updateBudget(prisma, userId, fiscalYear, currency, newTransactions);
   }
 
   async checkedDuplicated(userId: string, fiscalYear: number): Promise<boolean> {
