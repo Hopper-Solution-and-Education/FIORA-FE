@@ -86,15 +86,67 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     setIsLoading(true);
 
     try {
+      const actualResponse = await budgetSummaryUseCase.getActualPlanningByCategory(
+        categoryId,
+        initialYear,
+      );
+
       // Transform budgetDetails into the format we need
       const bottomUpData =
         selectedCategoryData.budgetDetails?.reduce((acc, detail) => {
           if (detail.month) {
-            // Convert month number to m{number}_exp format
-            acc[`m${detail.month}_exp`] = detail.amount || 0;
+            const suffix = activeTab === BudgetDetailFilterEnum.EXPENSE ? '_exp' : '_inc';
+            acc[`m${detail.month}${suffix}`] = detail.amount || 0;
           }
           return acc;
         }, {} as CategoryPlanningData) || {};
+
+      // Transform actual data
+      const monthMap = {
+        m1: 'jan',
+        m2: 'feb',
+        m3: 'mar',
+        m4: 'apr',
+        m5: 'may',
+        m6: 'jun',
+        m7: 'jul',
+        m8: 'aug',
+        m9: 'sep',
+        m10: 'oct',
+        m11: 'nov',
+        m12: 'dec',
+      };
+
+      const transformedActualData = Object.entries(actualResponse).reduce(
+        (acc, [key, value]) => {
+          // Xử lý cho tháng (m1 -> jan, m2 -> feb, etc)
+          if (key.match(/^m\d+_(exp|inc)$/)) {
+            const monthKey = key.split('_')[0]; // m1, m2, etc
+            const newKey = monthMap[monthKey as keyof typeof monthMap];
+            if (newKey) {
+              acc[newKey] = value as number;
+            }
+          }
+          // Xử lý cho quý (q1 -> q1, etc)
+          else if (key.match(/^q\d+_(exp|inc)$/)) {
+            const quarterKey = key.split('_')[0]; // q1, q2, etc
+            acc[quarterKey] = value as number;
+          }
+          // Xử lý cho nửa năm (h1 -> h1, etc)
+          else if (key.match(/^h\d+_(exp|inc)$/)) {
+            const halfKey = key.split('_')[0]; // h1, h2
+            acc[halfKey] = value as number;
+          }
+          // Xử lý cho tổng năm
+          else if (key.startsWith('total_')) {
+            acc['fullYear'] = value as number;
+          }
+          return acc;
+        },
+        {} as { [key: string]: number },
+      );
+
+      console.log('Final transformed data:', transformedActualData);
 
       setTableData((prevData) => {
         return prevData.map((item) => {
@@ -117,7 +169,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
                   isChild: true,
                   action: true,
                   isEditable: false,
-                  ...transformPlanningToTableData({}), // Empty for now as we don't have actual data
+                  ...transformedActualData,
                 },
               ],
             };
@@ -340,7 +392,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
         </div>
       </div>
 
-      <div className="w-[55rem]">
+      <div className="w-[50rem] min-w-full">
         <div className="w-full">
           <CustomTable
             columns={columns}

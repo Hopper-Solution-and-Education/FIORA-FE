@@ -34,12 +34,31 @@ export interface CategoryPlanningData {
 }
 
 export interface CategoryPlanning {
-  bottomUp: CategoryPlanningData;
-  actual: CategoryPlanningData;
+  m1_inc: number;
+  m2_inc: number;
+  m3_inc: number;
+  m4_inc: number;
+  m5_inc: number;
+  m6_inc: number;
+  m7_inc: number;
+  m8_inc: number;
+  m9_inc: number;
+  m10_inc: number;
+  m11_inc: number;
+  m12_inc: number;
+  q1_inc: number;
+  q2_inc: number;
+  q3_inc: number;
+  q4_inc: number;
+  h1_inc: number;
+  h2_inc: number;
+  total_inc: number;
+  currency: string;
+  type: 'Income' | 'Expense';
 }
 
 export interface CategoryPlanningResponseDTO {
-  code: number;
+  status: number;
   message: string;
   data: CategoryPlanning;
 }

@@ -55,6 +55,8 @@ export class BudgetSummaryRepository implements IBudgetSummaryRepository {
 
   async getActualPlanningByCategory(categoryId: string, year: number): Promise<CategoryPlanning> {
     const response = await this.budgetSummaryAPI.getActualPlanningByCategory(categoryId, year);
+
+    console.log('Response: {}', response);
     return response.data;
   }
 

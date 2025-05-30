@@ -44,7 +44,7 @@ export class BudgetSummaryAPI implements IBudgetSummaryAPI {
     year: number,
   ): Promise<CategoryPlanningResponseDTO> {
     return httpClient.get<CategoryPlanningResponseDTO>(
-      `/api/budgets/categories/${categoryId}/planning?year=${year}`,
+      `/api/categories/sum-up/${categoryId}?year=${year}`,
     );
   }
 
