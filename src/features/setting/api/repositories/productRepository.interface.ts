@@ -48,6 +48,7 @@ export interface ProductUpdate {
   category_id?: string;
   items?: Items[] | null;
   currency?: Currency;
+  deleteItemsId?: string[];
 }
 
 export type Items = {

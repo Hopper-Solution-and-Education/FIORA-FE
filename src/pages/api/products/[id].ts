@@ -59,6 +59,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       type,
       category_id,
       items = [],
+      deleteItemsId = [],
       currency,
     } = req.body;
 
@@ -83,7 +84,8 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       tax_rate,
       price,
       category_id,
-      items,
+      items,  
+      deleteItemsId,
       id: id as string,
       currency,
     });
