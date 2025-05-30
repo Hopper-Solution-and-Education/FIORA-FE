@@ -2,7 +2,7 @@ import { Currency, ProductType } from '@prisma/client';
 import * as yup from 'yup';
 
 const itemSchema = yup.object().shape({
-  id: yup.string(),
+  itemId: yup.string(),
   name: yup.string().required('Item name is required').max(50, 'Maximum 50 characters'),
   icon: yup.string().required('Item icon is required'),
   description: yup.string().max(500, 'Maximum 500 characters'),
@@ -43,7 +43,7 @@ export const defaultProductFormValue: any = {
 
 // Define the form values type
 type ProductFormValues = yup.InferType<typeof productSchema>;
-type ProductItem = yup.InferType<typeof itemSchema>;
+type ProductItemSchema = yup.InferType<typeof itemSchema>;
 
 export { productSchema };
-export type { ProductFormValues, ProductItem };
+export type { ProductFormValues, ProductItemSchema };

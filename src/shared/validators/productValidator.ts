@@ -86,4 +86,8 @@ export const productUpdateBodySchema = Joi.object({
     'array.base': 'Items must be an array',
     'array.items': 'Each item must be a valid product item',
   }),
+  deleteItemsId: Joi.array().items(Joi.string()).optional().messages({
+    'array.base': 'Delete items id must be an array',
+    'array.items': 'Each item must be a valid product item',
+  }),
 });

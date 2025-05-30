@@ -20,6 +20,7 @@ export enum Messages {
   CREATE_PRODUCT_SUCCESS = 'Create product successfully',
   UPDATE_PRODUCT_SUCCESS = 'Update product successfully',
   DELETE_PRODUCT_SUCCESS = 'Delete product successfully',
+  DUPLICATE_PRODUCT_TENANT_ERROR = 'Product with the same name and category already exists',
   GET_PRODUCT_BY_ID_SUCCESS = 'Get product by id successfully',
 
   // Product Failed

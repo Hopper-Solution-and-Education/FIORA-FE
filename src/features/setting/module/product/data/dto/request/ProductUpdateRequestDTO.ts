@@ -1,5 +1,5 @@
 import { ProductType } from '@prisma/client';
-import { ProductItem } from '../../../presentation/schema/addProduct.schema';
+import { ProductItem } from '../../../domain/entities';
 
 export type ProductUpdateRequestDTO = {
   id: string;
@@ -11,5 +11,6 @@ export type ProductUpdateRequestDTO = {
   type: ProductType;
   category_id: string;
   items?: ProductItem[];
+  deleteItemsId?: string[];
   currency: string;
 };
