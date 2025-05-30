@@ -1,3 +1,4 @@
+import { FilterCriteria } from '@/shared/types';
 import { CategoryType } from '@prisma/client';
 
 export interface RawCategory {
@@ -16,6 +17,14 @@ export interface RawCategory {
   createdBy?: string;
   updatedBy?: string;
 }
+
+export type CategoryFilterResponse = {
+  data: RawCategory[];
+  minBalance?: number;
+  maxBalance?: number;
+  minAmount?: number;
+  maxAmount?: number;
+};
 
 export interface Category {
   id: string;
@@ -47,6 +56,9 @@ export interface CategoryState {
   dialogOpen: boolean;
   updateDialogOpen: boolean;
   deleteConfirmOpen: boolean;
+  filterCriteria: FilterCriteria;
+  minBalance: number;
+  maxBalance: number;
 }
 
 export const initialCategoryState: CategoryState = {
@@ -59,4 +71,10 @@ export const initialCategoryState: CategoryState = {
   dialogOpen: false,
   updateDialogOpen: false,
   deleteConfirmOpen: false,
+  filterCriteria: {
+    userId: '',
+    filters: {},
+  },
+  minBalance: 0,
+  maxBalance: 100000,
 };

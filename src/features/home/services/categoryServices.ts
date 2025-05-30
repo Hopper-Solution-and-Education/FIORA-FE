@@ -1,14 +1,18 @@
 import { httpClient } from '@/config/http-client/HttpClient';
-import { Response } from '@/shared/types/Common.types';
+import { Category, CategoryFilterResponse } from '@/features/home/module/category/slices/types';
 import {
   NewCategoryDefaultValues,
   UpdateCategoryDefaultValues,
 } from '@/features/home/module/category/slices/utils/formSchema';
-import { Category, RawCategory } from '@/features/home/module/category/slices/types';
+import { FilterCriteria, GlobalFilters } from '@/shared/types';
+import { Response } from '@/shared/types/Common.types';
 
 const categoryServices = {
-  getCategories: async (): Promise<Response<RawCategory[]>> => {
-    return httpClient.get<Response<RawCategory[]>>('/api/categories/expense-income');
+  getCategories: async (data: FilterCriteria): Promise<Response<CategoryFilterResponse>> => {
+    return httpClient.post<Response<CategoryFilterResponse>>('/api/categories/search', data);
+  },
+  searchCategories: async (data: GlobalFilters): Promise<Response<CategoryFilterResponse>> => {
+    return httpClient.post<Response<CategoryFilterResponse>>('/api/categories/search', data);
   },
   createCategory: async (category: NewCategoryDefaultValues): Promise<Response<Category>> => {
     return httpClient.post<Response<Category>>('/api/categories/expense-income', category);

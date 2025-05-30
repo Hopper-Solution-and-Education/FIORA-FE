@@ -1,8 +1,15 @@
 // src/features/home/module/category/slices/index.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Response } from '@/shared/types/Common.types';
-import { fetchCategories, createCategory, deleteCategory, updateCategory } from './actions';
+import {
+  fetchCategories,
+  searchCategories,
+  createCategory,
+  deleteCategory,
+  updateCategory,
+} from './actions';
 import { Category, initialCategoryState } from './types';
+import { FilterCriteria } from '@/shared/types';
 
 const categorySlice = createSlice({
   name: 'category',
@@ -19,6 +26,9 @@ const categorySlice = createSlice({
       state.categories.isLoading = false;
       state.categories.error = null;
     },
+    setFilterCriteria(state, action: PayloadAction<FilterCriteria>) {
+      state.filterCriteria = action.payload;
+    },
     reset: () => initialCategoryState,
   },
   extraReducers: (builder) => {
@@ -28,9 +38,25 @@ const categorySlice = createSlice({
       })
       .addCase(fetchCategories.fulfilled, (state, action) => {
         state.categories.isLoading = false;
-        state.categories.data = action.payload.data;
+        state.categories.data = action.payload.data.data;
+        state.minBalance = action.payload.data.minAmount || 0;
+        state.maxBalance = action.payload.data.maxAmount || 0;
       })
       .addCase(fetchCategories.rejected, (state, action) => {
+        state.categories.isLoading = false;
+        state.categories.error =
+          (action.payload as { message: string })?.message || 'Unknown error';
+      })
+      .addCase(searchCategories.pending, (state) => {
+        state.categories.isLoading = true;
+      })
+      .addCase(searchCategories.fulfilled, (state, action) => {
+        state.categories.isLoading = false;
+        state.categories.data = action.payload.data.data;
+        state.minBalance = action.payload.data.minAmount || 0;
+        state.maxBalance = action.payload.data.maxAmount || 0;
+      })
+      .addCase(searchCategories.rejected, (state, action) => {
         state.categories.isLoading = false;
         state.categories.error =
           (action.payload as { message: string })?.message || 'Unknown error';
@@ -76,6 +102,11 @@ const categorySlice = createSlice({
   },
 });
 
-export const { setDeleteConfirmOpen, setSelectedCategory, setCategories, reset } =
-  categorySlice.actions;
+export const {
+  setDeleteConfirmOpen,
+  setSelectedCategory,
+  setCategories,
+  setFilterCriteria,
+  reset,
+} = categorySlice.actions;
 export default categorySlice.reducer;

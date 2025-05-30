@@ -60,10 +60,14 @@ const partnerManagementSlice = createSlice({
         (state, action: PayloadAction<Response<PartnerResponse>>) => {
           state.isLoading = false;
           state.partners = action.payload.data.data;
-          state.minIncome = action.payload.data.minIncome;
-          state.maxIncome = action.payload.data.maxIncome;
-          state.minExpense = action.payload.data.minExpense;
-          state.maxExpense = action.payload.data.maxExpense;
+          if (state.minIncome === 0 && state.maxIncome === 0) {
+            state.minIncome = action.payload.data.minIncome;
+            state.maxIncome = action.payload.data.maxIncome;
+          }
+          if (state.minExpense === 0 && state.maxExpense === 0) {
+            state.minExpense = action.payload.data.minExpense;
+            state.maxExpense = action.payload.data.maxExpense;
+          }
         },
       )
       .addCase(fetchPartners.rejected, (state, action) => {

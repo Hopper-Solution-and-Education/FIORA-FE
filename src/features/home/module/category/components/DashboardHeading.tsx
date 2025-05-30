@@ -1,28 +1,32 @@
-import { Icons } from '@/components/Icon';
 import { Input } from '@/components/ui/input';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { FilterCriteria } from '@/shared/types';
-import { useAppDispatch, useAppSelector } from '@/store';
+import { Tooltip, TooltipTrigger } from '@/components/ui/tooltip';
+import { useAppDispatch } from '@/store';
+import { useAppSelector } from '@/store';
 import debounce from 'lodash/debounce';
 import { Search } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import Link from 'next/link';
 import { useMemo } from 'react';
-import { fetchAccounts } from '../slices/actions';
+import { fetchCategories } from '../slices/actions';
+import { TooltipContent } from '@/components/ui/tooltip';
+import { FilterCriteria } from '@/shared/types';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import FilterMenu from './FilterMenu';
+import { ButtonCreation } from '@/components/common/atoms';
+import { useRouter } from 'next/navigation';
 
-const DashboardHeader = () => {
-  const { filterCriteria } = useAppSelector((state) => state.account);
+const DashboardHeading = () => {
+  const { filterCriteria } = useAppSelector((state) => state.category);
   const dispatch = useAppDispatch();
   const { data: userData } = useSession();
   const userId = userData?.user?.id;
+  const router = useRouter();
 
   const debouncedFilterHandler = useMemo(
     () =>
       debounce((value: string) => {
         if (userId) {
           dispatch(
-            fetchAccounts({
+            fetchCategories({
               filters: filterCriteria.filters,
               search: value as string,
               userId,
@@ -35,7 +39,11 @@ const DashboardHeader = () => {
   );
 
   const handleFilterChange = (newFilter: FilterCriteria) => {
-    dispatch(fetchAccounts(newFilter));
+    dispatch(fetchCategories(newFilter));
+  };
+
+  const handleCreateCategory = () => {
+    router.push('/category/create');
   };
 
   return (
@@ -70,13 +78,16 @@ const DashboardHeader = () => {
           </Tooltip>
         </TooltipProvider>
       </div>
-      <Link href="/account/create">
-        <button className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white">
-          <Icons.add className="h-6 w-6" />
-        </button>
-      </Link>
+      <ButtonCreation
+        action={handleCreateCategory}
+        toolTip="Create New Category"
+        variant="primary"
+        size="icon"
+        icon="add"
+        ariaLabel="Create new category"
+      />
     </div>
   );
 };
 
-export default DashboardHeader;
+export default DashboardHeading;

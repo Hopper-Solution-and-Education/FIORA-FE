@@ -1,20 +1,38 @@
 import categoryServices from '@/features/home/services/categoryServices';
+import { FilterCriteria, GlobalFilters } from '@/shared/types';
 import { Response } from '@/shared/types/Common.types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { RawCategory } from '../types';
+import { CategoryFilterResponse } from '../types';
 import { transformCategories } from '../utils';
 import { NewCategoryDefaultValues, UpdateCategoryDefaultValues } from '../utils/formSchema';
 
 export const fetchCategories = createAsyncThunk(
   'category/fetchCategories',
-  async (_, { rejectWithValue }) => {
+  async (filterCriteria: FilterCriteria, { rejectWithValue }) => {
     try {
-      const response: Response<RawCategory[]> = await categoryServices.getCategories();
-      const transformedData = transformCategories(response.data);
-      return { ...response, data: transformedData };
+      const response: Response<CategoryFilterResponse> =
+        await categoryServices.getCategories(filterCriteria);
+      const transformedData = transformCategories(response.data.data);
+      return { ...response, data: { ...response.data, data: transformedData } };
     } catch (error: any) {
       return rejectWithValue({
         message: error.message || 'Failed to fetch categories! Please try again!',
+      });
+    }
+  },
+);
+
+export const searchCategories = createAsyncThunk(
+  'category/searchCategories',
+  async (globalFilters: GlobalFilters, { rejectWithValue }) => {
+    try {
+      const response: Response<CategoryFilterResponse> =
+        await categoryServices.searchCategories(globalFilters);
+      const transformedData = transformCategories(response.data.data);
+      return { ...response, data: { ...response.data, data: transformedData } };
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.message || 'Failed to search categories! Please try again!',
       });
     }
   },
