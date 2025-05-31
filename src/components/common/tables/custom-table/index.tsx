@@ -1,10 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { CustomPagination } from '@/components/common/atoms/CustomPagination';
+import './style.css';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Table as ShadcnTable,
+  Table,
   TableBody,
   TableCell,
   TableHead,
@@ -12,7 +14,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/shared/utils';
 import {
   Cell,
   CellContext,
@@ -26,20 +27,23 @@ import {
   type Updater,
 } from '@tanstack/react-table';
 import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   DataSourceProps,
   FIXED,
   PAGINATION_POSITION,
   SORT_ORDER,
+  TableV2Meta,
   type ColumnProps,
   type CustomColumnDef,
-  type CustomColumnMeta,
   type SortOrderStateProps,
   type TableProps,
 } from './types';
+import { PaginationV2 } from '@/components/ui/pagination-v2';
+import { cn } from '@/shared/utils';
+import { ImgEmpty } from '@/shared/icons';
 
-export function CustomTable({
+export function TableV2({
   columns = [],
   dataSource = [],
   bordered = false,
@@ -68,6 +72,10 @@ export function CustomTable({
   className,
   ...rest
 }: TableProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<HTMLTableElement>(null);
+
+  // SORTING AND SELECTION STATES
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelectedState, setRowSelectedState] = useState<Record<string, boolean>>({});
   const [sortOrderState, setSortOrderState] = useState<SortOrderStateProps>({});
@@ -103,7 +111,6 @@ export function CustomTable({
       subRows: [],
       getVisibleCells: () => [],
       getAllCells: () => [],
-      // Các property khác của Row
       getIsSelected: () => false,
       getIsAllSubRowsSelected: () => false,
       getCanSelect: () => false,
@@ -114,7 +121,7 @@ export function CustomTable({
       getToggleExpandedHandler: () => () => {},
       getLeafRows: () => [],
       table,
-    } as unknown as Row<any>; // Ép kiểu an toàn
+    } as unknown as Row<any>;
   };
 
   // Transform columns to TanStack format
@@ -131,9 +138,10 @@ export function CustomTable({
               columns: transformColumns(col.children),
               meta: {
                 ...col,
-                fixed: col.fixed as FIXED,
+                fixed: col.fixed,
                 align: col.align as CanvasTextAlign,
                 headerAlign: col.headerAlign as CanvasTextAlign,
+                bgColor: col.bgColorClassName,
               },
             } as CustomColumnDef<any>;
           }
@@ -205,6 +213,7 @@ export function CustomTable({
                   className={cn(
                     col.align ? `text-${col.align}` : 'text-left',
                     col.ellipsis && 'truncate',
+                    col.bgColorClassName && `${col.bgColorClassName}`,
                     col.className,
                   )}
                 >
@@ -311,7 +320,11 @@ export function CustomTable({
       if (column && column.onSorterClick) {
         const sortOrder = desc ? SORT_ORDER.DESCEND : SORT_ORDER.ASCEND;
         setSortOrderState({ ...sortOrderState, [id]: sortOrder });
-        column.onSorterClick({ key: column.key, dataIndex: column.dataIndex, sortOrder });
+        column.onSorterClick({
+          key: column.key,
+          dataIndex: column.dataIndex,
+          sortOrder,
+        });
       }
     }
   };
@@ -327,7 +340,7 @@ export function CustomTable({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     manualSorting: true,
-    getRowId: (row) => row[rowKey] as string, // Use custom row keys
+    getRowId: (row) => row[rowKey] as string,
   });
 
   // Handle pagination
@@ -339,6 +352,10 @@ export function CustomTable({
 
   // Render loading skeleton
   if (loading) {
+    // Calculate number of skeleton rows based on pagination or default to 5
+    const skeletonRowCount =
+      (pagination && typeof pagination !== 'boolean' && pagination.pageSize) || 5;
+
     return (
       <div className={cn('w-full', className)} {...rest}>
         <div
@@ -348,53 +365,144 @@ export function CustomTable({
             'transition-all duration-300',
           )}
         >
-          <ShadcnTable
+          {/* Add a subtle loading indicator at the top */}
+          <div className="w-full h-1 bg-muted overflow-hidden">
+            <div className="h-full bg-primary/30 animate-progress"></div>
+          </div>
+
+          <div
             className={cn(
-              bordered &&
-                'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
-              'w-full',
+              'overflow-auto',
+              scroll?.x && 'max-w-full',
+              scroll?.y && `max-h-[${scroll.y}px]`,
             )}
+            style={{
+              maxWidth: scroll?.x
+                ? typeof scroll.x === 'number'
+                  ? `${scroll.x}px`
+                  : scroll.x
+                : undefined,
+              maxHeight: scroll?.y
+                ? typeof scroll.y === 'number'
+                  ? `${scroll.y}px`
+                  : scroll.y
+                : undefined,
+            }}
           >
-            {showHeader && (
-              <TableHeader className="bg-muted/30">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id} className="border-b border-border">
-                    {headerGroup.headers.map((header) => (
-                      <TableHead
-                        key={header.id}
-                        colSpan={header.colSpan}
-                        style={{
-                          width: (header.column.columnDef.meta as CustomColumnMeta)?.width,
-                          textAlign: (header.column.columnDef.meta as CustomColumnMeta)
-                            ?.headerAlign,
-                        }}
-                        className={cn(
-                          'h-10 px-4 font-medium',
-                          (header.column.columnDef.meta as CustomColumnMeta)?.fixed === 'left' &&
-                            'sticky-left',
-                          (header.column.columnDef.meta as CustomColumnMeta)?.fixed === 'right' &&
-                            'sticky-right',
-                        )}
-                      >
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                      </TableHead>
-                    ))}
+            <Table
+              className={cn(
+                bordered &&
+                  'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
+                size === 'small' ? 'text-sm' : '',
+                'w-full',
+              )}
+            >
+              {showHeader && (
+                <TableHeader className="bg-muted/30">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id} className="border-b border-border">
+                      {headerGroup.headers.map((header) => {
+                        const meta = header.column.columnDef.meta as TableV2Meta;
+                        return (
+                          <TableHead
+                            key={header.id}
+                            colSpan={header.colSpan}
+                            style={{
+                              width: meta?.width,
+                              textAlign: meta?.headerAlign,
+                            }}
+                            className={cn(
+                              size === 'small' ? 'h-8 px-2' : 'h-10 px-4',
+                              'font-medium',
+                              meta?.fixed === 'left' &&
+                                'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border',
+                              meta?.fixed === 'right' &&
+                                'sticky right-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border',
+                            )}
+                          >
+                            {flexRender(header.column.columnDef.header, header.getContext())}
+                          </TableHead>
+                        );
+                      })}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+              )}
+              <TableBody>
+                {Array.from({ length: skeletonRowCount }).map((_, rowIndex) => (
+                  <TableRow
+                    key={rowIndex}
+                    className={cn(
+                      'border-b border-border',
+                      rowHover ? 'hover:bg-muted/10' : '',
+                      'animate-in fade-in duration-300 ease-in-out',
+                      rowIndex % 2 === 0 ? 'bg-muted/5' : '',
+                    )}
+                  >
+                    {tableColumns.map((column, colIndex) => {
+                      const meta = column.meta as TableV2Meta;
+                      const isSelectionColumn = column.id === 'selection';
+
+                      return (
+                        <TableCell
+                          key={colIndex}
+                          className={cn(
+                            size === 'small' ? 'p-2' : 'p-3',
+                            meta?.align === 'center' && 'text-center',
+                            meta?.align === 'right' && 'text-right',
+                            meta?.fixed === 'left' &&
+                              'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border',
+                            meta?.fixed === 'right' &&
+                              'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border',
+                          )}
+                          style={{
+                            width: meta?.width,
+                            minWidth: meta?.width,
+                          }}
+                        >
+                          {isSelectionColumn ? (
+                            <div className="flex justify-center">
+                              <div className="h-4 w-4 rounded-sm bg-muted animate-pulse" />
+                            </div>
+                          ) : (
+                            <Skeleton
+                              className={cn(
+                                'h-5 rounded-md animate-pulse',
+                                meta?.width ? 'w-full' : 'w-[85%]',
+                                // Vary widths slightly for more natural appearance
+                                !meta?.width && rowIndex % 3 === 0 ? 'w-[75%]' : '',
+                                !meta?.width && rowIndex % 3 === 1 ? 'w-[90%]' : '',
+                              )}
+                            />
+                          )}
+                        </TableCell>
+                      );
+                    })}
                   </TableRow>
                 ))}
-              </TableHeader>
-            )}
-            <TableBody>
-              {Array.from({ length: 5 }).map((_, rowIndex) => (
-                <TableRow key={rowIndex} className="border-b border-border">
-                  {tableColumns.map((column, colIndex) => (
-                    <TableCell key={colIndex} className="p-3">
-                      <Skeleton className="h-5 w-full rounded-md" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </ShadcnTable>
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Add skeleton pagination if needed */}
+          {showPagination && pagination && typeof pagination !== 'boolean' && (
+            <div
+              className={cn(
+                'flex mt-4',
+                pagination.position === PAGINATION_POSITION.BOTTOM_LEFT
+                  ? 'justify-start'
+                  : 'justify-end',
+              )}
+            >
+              <div className="flex gap-1 items-center">
+                <Skeleton className="h-8 w-8 rounded-md" />
+                <Skeleton className="h-8 w-8 rounded-md" />
+                <Skeleton className="h-8 w-20 rounded-md" />
+                <Skeleton className="h-8 w-8 rounded-md" />
+                <Skeleton className="h-8 w-8 rounded-md" />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -411,43 +519,81 @@ export function CustomTable({
             'transition-all duration-300',
           )}
         >
-          <ShadcnTable
+          <div
             className={cn(
-              bordered &&
-                'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
-              'w-full',
+              'overflow-auto',
+              scroll?.x && 'max-w-full',
+              scroll?.y && `max-h-[${scroll.y}px]`,
             )}
+            style={{
+              maxWidth: scroll?.x
+                ? typeof scroll.x === 'number'
+                  ? `${scroll.x}px`
+                  : scroll.x
+                : undefined,
+              maxHeight: scroll?.y
+                ? typeof scroll.y === 'number'
+                  ? `${scroll.y}px`
+                  : scroll.y
+                : undefined,
+            }}
           >
-            {showHeader && (
-              <TableHeader className="bg-muted/30">
+            <Table
+              className={cn(
+                bordered &&
+                  'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
+                size === 'small' ? 'text-sm' : '',
+                'w-full',
+              )}
+            >
+              {showHeader && (
+                <TableHeader className="bg-muted/30">
+                  <TableRow>
+                    {tableColumns.map((column, index) => {
+                      const meta = column.meta as TableV2Meta;
+                      return (
+                        <TableHead
+                          key={index}
+                          style={{
+                            width: meta?.width,
+                          }}
+                          className={cn(
+                            size === 'small' ? 'h-8 px-2' : 'h-10 px-4',
+                            'text-muted-foreground font-medium',
+                            meta?.align === 'center' && 'text-center',
+                            meta?.align === 'right' && 'text-right',
+                            meta?.fixed === 'left' &&
+                              'sticky left-0 z-10 bg-muted/30 shadow-[1px_0_0_0] shadow-border',
+                            meta?.fixed === 'right' &&
+                              'sticky right-0 z-10 bg-muted/30 shadow-[-1px_0_0_0] shadow-border',
+                          )}
+                        >
+                          {flexRender(column.header, {} as any)}
+                        </TableHead>
+                      );
+                    })}
+                  </TableRow>
+                </TableHeader>
+              )}
+              <TableBody>
                 <TableRow>
-                  {tableColumns.map((column, index) => (
-                    <TableHead
-                      key={index}
-                      style={{ width: (column.meta as CustomColumnMeta)?.width }}
-                      className={cn(
-                        'h-10 px-4 text-muted-foreground font-medium',
-                        (column.meta as CustomColumnMeta)?.align === 'center' && 'text-center',
-                        (column.meta as CustomColumnMeta)?.align === 'right' && 'text-right',
-                      )}
-                    >
-                      {flexRender(column.header, {} as any)}
-                    </TableHead>
-                  ))}
+                  <TableCell colSpan={tableColumns.length} className="p-0 border-none">
+                    <div className="flex flex-col items-center justify-center py-16 px-4 animate-in fade-in duration-300">
+                      <div className="relative mb-4 text-muted-foreground/50">
+                        <ImgEmpty />
+                      </div>
+
+                      <div className="text-center space-y-1 max-w-md">
+                        <p className="text-base font-medium text-foreground">
+                          {typeof emptyText === 'string' ? 'No Data Available' : emptyText}
+                        </p>
+                      </div>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-            )}
-            <TableBody>
-              <TableRow>
-                <TableCell
-                  colSpan={tableColumns.length}
-                  className="text-center py-12 text-muted-foreground"
-                >
-                  {emptyText}
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </ShadcnTable>
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
     );
@@ -477,7 +623,7 @@ export function CustomTable({
 
     return (
       <div className={cn('flex mt-4', paginationClassName)}>
-        <CustomPagination
+        <PaginationV2
           currentPage={pagination.current || 1}
           totalPages={Math.ceil((pagination.total || 0) / (pagination.pageSize || 10))}
           onPageChange={handlePageChange}
@@ -496,6 +642,7 @@ export function CustomTable({
     <div className={cn('w-full', className)} {...rest}>
       {isTopPagination && renderPagination()}
       <div
+        ref={containerRef}
         className={cn(
           'rounded-md overflow-auto',
           layoutBorder && 'border border-border shadow-sm',
@@ -517,7 +664,8 @@ export function CustomTable({
         }}
         id={idBody}
       >
-        <ShadcnTable
+        <Table
+          ref={tableRef}
           className={cn(
             bordered &&
               'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
@@ -532,14 +680,22 @@ export function CustomTable({
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      style={{ width: (header.column.columnDef.meta as any)?.width }}
+                      style={{
+                        width: (header.column.columnDef.meta as TableV2Meta)?.width,
+                      }}
                       className={cn(
-                        'h-10 px-4 text-muted-foreground font-medium',
-                        (header.column.columnDef.meta as any)?.align === 'center' && 'text-center',
-                        (header.column.columnDef.meta as any)?.align === 'right' && 'text-right',
-                        (header.column.columnDef.meta as any)?.fixed === 'left' &&
+                        `h-10 px-4 text-muted-foreground font-medium ${
+                          (header.column.columnDef.meta as TableV2Meta)?.bgColorClassName
+                        }`,
+                        (header.column.columnDef.meta as TableV2Meta)?.headerAlign === 'center' &&
+                          'text-center' &&
+                          'justify-items-center',
+                        (header.column.columnDef.meta as TableV2Meta)?.headerAlign === 'right' &&
+                          'text-right' &&
+                          'justify-items-end',
+                        (header.column.columnDef.meta as TableV2Meta)?.fixed === 'left' &&
                           'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border',
-                        (header.column.columnDef.meta as any)?.fixed === 'right' &&
+                        (header.column.columnDef.meta as TableV2Meta)?.fixed === 'right' &&
                           'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border',
                       )}
                     >
@@ -573,7 +729,7 @@ export function CustomTable({
                   }
                 >
                   {table.getHeaderGroups()[0].headers.map((header) => {
-                    const columnMeta = header.column.columnDef.meta as CustomColumnMeta;
+                    const columnMeta = header.column.columnDef.meta as TableV2Meta;
                     const cellValue = parentRowWithChildren[header.column.id];
 
                     const cellContext = {
@@ -598,11 +754,12 @@ export function CustomTable({
                         rowSpan={cellProps.rowSpan}
                         className={cn(
                           columnMeta?.className,
+                          (header.column.columnDef.meta as TableV2Meta)?.bgColorClassName,
                           columnMeta?.align === 'center' && 'text-center',
                           columnMeta?.align === 'right' && 'text-right',
-                          columnMeta?.fixed === FIXED.LEFT &&
+                          columnMeta?.fixed === 'left' &&
                             'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border',
-                          columnMeta?.fixed === FIXED.RIGHT &&
+                          columnMeta?.fixed === 'right' &&
                             'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border',
                         )}
                         style={{
@@ -641,7 +798,7 @@ export function CustomTable({
                       }
                     >
                       {table.getHeaderGroups()[0].headers.map((header) => {
-                        const columnMeta = header.column.columnDef.meta as CustomColumnMeta;
+                        const columnMeta = header.column.columnDef.meta as TableV2Meta;
                         const cellValue = child[header.column.id];
 
                         const cellContext = {
@@ -668,11 +825,12 @@ export function CustomTable({
                               columnMeta?.className,
                               columnMeta?.align === 'center' && 'text-center',
                               columnMeta?.align === 'right' && 'text-right',
-                              'bg-background',
-                              columnMeta?.fixed === FIXED.LEFT &&
-                                'sticky left-0 z-1 bg-background shadow-[1px_0_0_0] shadow-border',
-                              columnMeta?.fixed === FIXED.RIGHT &&
-                                'sticky right-0 z-1 bg-background shadow-[-1px_0_0_0] shadow-border',
+                              columnMeta?.bgColorClassName,
+                              columnMeta?.fixed === 'left' &&
+                                'sticky left-0 z-1 bg-white dark:bg-gray-900 shadow-[1px_0_0_0] shadow-border dark:shadow-gray-700',
+                              columnMeta?.fixed === 'right' &&
+                                'sticky right-0 z-1 bg-white dark:bg-gray-900 shadow-[-1px_0_0_0] shadow-border dark:shadow-gray-700',
+                              'text-gray-700 dark:text-gray-300',
                             )}
                             style={{
                               width: columnMeta?.width,
@@ -693,7 +851,7 @@ export function CustomTable({
               return [parentElement, ...childElements];
             })}
           </TableBody>
-        </ShadcnTable>
+        </Table>
       </div>
       {!isTopPagination && renderPagination()}
     </div>

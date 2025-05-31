@@ -189,23 +189,32 @@ export const getColumnsByPeriod = (
       ) : null,
   });
 
-  const createPeriodColumns = (config: typeof PERIOD_CONFIG.months) =>
+  const createPeriodColumns = (
+    config: typeof PERIOD_CONFIG.months,
+    additionalProps?: Partial<ColumnProps>,
+  ) =>
     config.map(({ key, title }) =>
       createColumn(key, title, {
         dataIndex: key,
         render: (text: any, record: TableData, index: number) =>
           renderEditableCell(text, record, index, { key }),
+        ...additionalProps,
       }),
     );
 
   const monthColumns = createPeriodColumns(PERIOD_CONFIG.months);
-  const quarterColumns = createPeriodColumns(PERIOD_CONFIG.quarters);
-  const halfYearColumns = createPeriodColumns(PERIOD_CONFIG.halfYears);
+  const quarterColumns = createPeriodColumns(PERIOD_CONFIG.quarters, {
+    bgColorClassName: 'bg-muted',
+  });
+  const halfYearColumns = createPeriodColumns(PERIOD_CONFIG.halfYears, {
+    bgColorClassName: 'bg-muted',
+  });
   const fullYearColumn = [
     createColumn('fullYear', 'Full Year', {
       dataIndex: 'fullYear',
       render: (text: any, record: TableData, index: number) =>
         renderEditableCell(text, record, index, { key: 'fullYear' }),
+      bgColorClassName: 'bg-muted',
     }),
   ];
 
