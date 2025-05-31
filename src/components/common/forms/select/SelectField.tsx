@@ -44,6 +44,7 @@ interface SelectFieldProps {
   onCustomAction?: () => void;
   customActionLabel?: string;
   className?: string;
+  noneValue?: boolean;
   [key: string]: any;
 }
 
@@ -65,6 +66,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
   onCustomAction,
   customActionLabel,
   className,
+  noneValue = true,
   ...props
 }) => {
   const [open, setOpen] = useState(false);
@@ -81,12 +83,12 @@ const SelectField: React.FC<SelectFieldProps> = ({
   useEffect(() => {
     if (loadOptions) {
       loadOptions().then((data) => {
-        setInternalOptions([{ value: '', label: 'None' }, ...data]);
+        setInternalOptions(noneValue ? [{ value: '', label: 'None' }, ...data] : data);
       });
     } else {
-      setInternalOptions([{ value: '', label: 'None' }, ...options]);
+      setInternalOptions(noneValue ? [{ value: '', label: 'None' }, ...options] : options);
     }
-  }, [loadOptions, options]);
+  }, [loadOptions, options, noneValue]);
 
   // Auto-focus CommandInput khi Popover mở
   useEffect(() => {

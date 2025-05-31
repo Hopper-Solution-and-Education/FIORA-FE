@@ -59,10 +59,14 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Only allow up to 11 digits
+    const newValue = e.target.value.replace(/[^\d.]/g, '');
+    if (newValue.length > 11) return;
+
     // Update local value as the user types
-    setLocalValue(e.target.value);
+    setLocalValue(newValue);
     if (mode === 'onChange') {
-      const parsedValue = parseFloat(e.target.value);
+      const parsedValue = parseFloat(newValue);
       onChange(isNaN(parsedValue) ? 0 : parsedValue);
     }
     if (value > 0) {

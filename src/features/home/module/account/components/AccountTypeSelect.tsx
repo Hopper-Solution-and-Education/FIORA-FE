@@ -30,8 +30,9 @@ const AccountTypeSelect: React.FC<AccountTypeSelectProps> = ({
       value={value}
       onChange={onChange}
       options={options}
+      noneValue={false}
       placeholder="Select type"
-      disabled={isSelectParentId}
+      disabled={isSelectParentId || options.every((option) => option.disabled)}
       error={error}
       {...props}
     />

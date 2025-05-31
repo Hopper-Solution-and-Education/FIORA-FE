@@ -30,7 +30,6 @@ const ParentAccountSelect: React.FC<ParentAccountSelectProps> = ({
   const selectOptions = disabled
     ? [{ value: currentParentId || 'null', label: currentParentName || 'Parent locked' }]
     : [
-        { value: 'null', label: 'None' },
         ...options.map((option) => ({
           value: option.value,
           label: option.label,
@@ -63,6 +62,7 @@ const ParentAccountSelect: React.FC<ParentAccountSelectProps> = ({
       name={name}
       value={value || currentParentId || 'null'}
       options={selectOptions}
+      noneValue={false}
       placeholder="Select parent"
       disabled={disabled}
       error={error}
