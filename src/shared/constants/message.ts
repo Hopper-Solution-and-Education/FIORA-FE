@@ -13,6 +13,7 @@ export enum Messages {
   UPDATE_CATEGORY_SUCCESS = 'Update category successfully',
   DELETE_CATEGORY_SUCCESS = 'Delete category successfully',
   GET_CATEGORY_SUCCESS = 'Get category successfully',
+  CATEGORY_TYPE_MISMATCH = 'Category type is invalid. Ensure the category type matches the given type.',
   // Category type is invalid. It must be Expense or Income
 
   // Product
@@ -52,6 +53,7 @@ export enum Messages {
   BUDGET_DELETE_SUCCESS = 'Budget deleted successfully',
   BUDGET_GET_BY_ID_SUCCESS = 'Get budget by id successfully',
   BUDGET_UPDATE_SUCCESS = 'Update budget successfully !',
+  BUDGET_DETAIL_CREATE_SUCCESS = 'Create budget details successfully',
 
   TO_DATE_BEFORE_FROM_DATE = 'To date must be after from date',
   INVALID_DATE_FORMAT = 'Invalid date format',
@@ -68,6 +70,17 @@ export enum Messages {
   BUDGET_UPDATE_FAILED = 'Failed to update budget',
   BUDGET_DELETE_FAILED = 'Failed to delete budget',
   BUDGET_FISCAL_YEAR_ALREADY_EXISTS = 'Budget fiscal year already exists',
+
+  // Budget Details Service Success
+  BUDGET_DETAIL_CREATED_SUCCESS = 'Budget details created successfully',
+  BUDGET_DETAIL_UPDATED_SUCCESS = 'Budget details updated successfully',
+  BUDGET_DETAIL_DELETED_SUCCESS = 'Budget details deleted successfully',
+
+  // Budget Details Service Failed
+  BUDGET_DETAIL_UPDATE_FAILED = 'Failed to update budget details',
+  BUDGET_DETAIL_DELETE_FAILED = 'Failed to delete budget details',
+  DUPLICATED_CATEGORY_BUDGET_DETAILS = 'Category already exists in budget details',
+
   // Category-Product Success
   CREATE_CATEGORY_PRODUCT_SUCCESS = 'Create category product successfully',
   UPDATE_CATEGORY_PRODUCT_SUCCESS = 'Update category product successfully',

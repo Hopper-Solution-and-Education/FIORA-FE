@@ -1,6 +1,7 @@
 import { prisma } from '@/config';
+import { FetchTransactionResponse } from '@/shared/types/budget.types';
+import { BudgetDetails, BudgetsTable, Prisma, TransactionType } from '@prisma/client';
 import { IBudgetRepository } from '../../repositories/budgetRepository';
-import { BudgetsTable, Prisma } from '@prisma/client';
 
 class BudgetRepository implements IBudgetRepository {
   async createBudget(
@@ -59,6 +60,19 @@ class BudgetRepository implements IBudgetRepository {
     });
   }
 
+  async updateBudgetTx(
+    where: Prisma.BudgetsTableWhereUniqueInput,
+    data: Prisma.BudgetsTableUpdateInput,
+    prismaTransaction?: Prisma.TransactionClient,
+  ): Promise<BudgetsTable> {
+    const prismaTx = prismaTransaction || prisma;
+
+    return await prismaTx.budgetsTable.update({
+      where,
+      data,
+    });
+  }
+
   async deleteBudget(
     where: Prisma.BudgetsTableWhereUniqueInput,
     options?: Prisma.BudgetsTableDeleteArgs,
@@ -81,6 +95,54 @@ class BudgetRepository implements IBudgetRepository {
       orderBy: {
         type: 'asc',
       },
+    });
+  }
+
+  async fetchTransactionsTx(
+    userId: string,
+    yearStart: Date,
+    effectiveEndDate: Date,
+    prisma: Prisma.TransactionClient,
+  ): Promise<FetchTransactionResponse[] | []> {
+    return await prisma.transaction.findMany({
+      where: {
+        userId,
+        date: { gte: yearStart, lte: effectiveEndDate },
+        isMarked: false,
+        isDeleted: false,
+        type: { in: [TransactionType.Expense, TransactionType.Income] },
+      },
+      select: {
+        id: true,
+        type: true,
+        amount: true,
+        currency: true,
+        date: true,
+      },
+    });
+  }
+
+  async copyBudget(budget: Omit<BudgetsTable, 'id'>): Promise<BudgetsTable> {
+    const { ...budgetData } = budget;
+    return prisma.budgetsTable.create({
+      data: {
+        ...budgetData,
+      },
+    });
+  }
+
+  async upsertBudgetDetailsProduct(
+    where: Prisma.BudgetDetailsWhereUniqueInput,
+    update: Prisma.BudgetDetailsUpdateInput,
+    create: Prisma.BudgetDetailsUncheckedCreateInput,
+    prismaTransaction?: Prisma.TransactionClient,
+  ): Promise<BudgetDetails> {
+    const prismaTx = prismaTransaction || prisma;
+
+    return await prismaTx.budgetDetails.upsert({
+      where,
+      update,
+      create,
     });
   }
 }

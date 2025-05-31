@@ -1,11 +1,22 @@
-import { BudgetSummary } from '../../domain/entities/BudgetSummary';
 import { BudgetSummaryByType } from '../../domain/entities/BudgetSummaryByType';
 import { BudgetSummaryRequestDTO } from '../dto/request/BudgetSummaryRequestDTO';
-import { Budget } from '../../domain/entities/Budget';
 import { BudgetType } from '../../domain/entities/BudgetType';
+import { BudgetSummaryResponseDTO } from '../dto/response/BudgetSummaryResponseDTO';
+import { Category, CategoryPlanning } from '../dto/response/CategoryResponseDTO';
+import {
+  TopDownUpdateRequestDTO,
+  CategoryPlanningUpdateRequestDTO,
+} from '../dto/request/BudgetUpdateRequestDTO';
 
 export interface IBudgetSummaryRepository {
-  getBudgetSummary(params: BudgetSummaryRequestDTO): Promise<BudgetSummary>;
-  getBudgetByType(fiscalYear: number, type: BudgetType): Promise<BudgetSummaryByType>;
-  getBudgetsByUserIdAndFiscalYear(userId: string, fiscalYear: number): Promise<Budget[]>;
+  getBudgetSummary(params: BudgetSummaryRequestDTO): Promise<BudgetSummaryResponseDTO>;
+  getBudgetByType(fiscalYear: number, type: BudgetType): Promise<BudgetSummaryByType | null>;
+  getBudgetsByUserIdAndFiscalYear(
+    userId: string,
+    fiscalYear: number,
+  ): Promise<BudgetSummaryResponseDTO>;
+  getCategoriesByType(type: 'Income' | 'Expense'): Promise<Category[]>;
+  getActualPlanningByCategory(categoryId: string, year: number): Promise<CategoryPlanning>;
+  updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<void>;
+  updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO): Promise<void>;
 }

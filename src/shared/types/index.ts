@@ -22,3 +22,10 @@ export type UpdatedBy = {
   email: string;
   image: string | null;
 };
+
+export enum OPERAND {
+  ADD = '+',
+  SUBTRACT = '-',
+  MULTIPLY = '*',
+  DIVIDE = '/',
+}

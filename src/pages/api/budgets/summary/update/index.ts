@@ -4,14 +4,16 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { BudgetType } from '@prisma/client';
+import { validateBody } from '@/shared/utils/validate';
+import { budgeDashboardUpdateBody } from '@/shared/validators/budgetValidator';
+import { Currency } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {
     switch (req.method) {
-      case 'GET':
-        return GET(req, res, userId);
+      case 'PUT':
+        return PUT(req, res, userId);
       default:
         return res
           .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -22,9 +24,10 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
   }
 });
 
-export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { fiscalYear, type } = req.query;
+    const { updateTopBudget, type, fiscalYear } = req.body;
+    const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
 
     if (!fiscalYear) {
       return res.status(RESPONSE_CODE.BAD_REQUEST).json(
@@ -34,35 +37,25 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       );
     }
 
-    if (type) {
-      const budgetType = type as string;
-      if (!Object.values(BudgetType).includes(budgetType as BudgetType)) {
-        return res.status(RESPONSE_CODE.BAD_REQUEST).json(
-          createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, {
-            type: 'Invalid budget type',
-          }),
-        );
-      }
+    const { error } = validateBody(budgeDashboardUpdateBody, req.body);
 
-      const budget = await budgetSummaryUseCase.getBudgetByType(
-        userId,
-        Number(fiscalYear),
-        budgetType as BudgetType,
-      );
-
+    if (error) {
       return res
-        .status(RESPONSE_CODE.OK)
-        .json(createResponse(RESPONSE_CODE.OK, 'Get budget by type successfully', budget));
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
     }
 
-    const budgetSummary = await budgetSummaryUseCase.getBudgetsByUserIdAndFiscalYear(
+    const updateBudget = await budgetSummaryUseCase.updateBudgetDetails({
       userId,
-      Number(fiscalYear),
-    );
+      fiscalYear,
+      type,
+      updateTopBudget,
+      currency,
+    });
 
     return res
-      .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, 'Get budget summary successfully', budgetSummary));
+      .status(RESPONSE_CODE.CREATED)
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.UPDATE_BUDGET_SUCCESS, updateBudget));
   } catch (error: any) {
     return res
       .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)

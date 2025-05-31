@@ -4,6 +4,12 @@ import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import { ButtonProps, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/shared/utils';
 
+export interface PaginationV2Props {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
 const Pagination = ({ className, ...props }: React.ComponentProps<'nav'>) => (
   <nav
     role="navigation"
@@ -87,6 +93,36 @@ const PaginationEllipsis = ({ className, ...props }: React.ComponentProps<'span'
 );
 PaginationEllipsis.displayName = 'PaginationEllipsis';
 
+const PaginationV2 = ({ currentPage, totalPages, onPageChange }: PaginationV2Props) => {
+  const handlePrevious = () => {
+    if (currentPage > 1) {
+      onPageChange(currentPage - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentPage < totalPages) {
+      onPageChange(currentPage + 1);
+    }
+  };
+
+  return (
+    <Pagination>
+      <PaginationContent>
+        <PaginationPrevious onClick={handlePrevious} />
+        {Array.from({ length: totalPages }, (_, i) => (
+          <PaginationItem key={i}>
+            <PaginationLink isActive={i + 1 === currentPage} onClick={() => onPageChange(i + 1)}>
+              {i + 1}
+            </PaginationLink>
+          </PaginationItem>
+        ))}
+        <PaginationNext onClick={handleNext} />
+      </PaginationContent>
+    </Pagination>
+  );
+};
+
 export {
   Pagination,
   PaginationContent,
@@ -95,4 +131,5 @@ export {
   PaginationPrevious,
   PaginationNext,
   PaginationEllipsis,
+  PaginationV2,
 };

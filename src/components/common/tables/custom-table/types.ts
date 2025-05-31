@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type React from 'react';
 import type { ReactNode } from 'react';
 
@@ -24,7 +25,7 @@ export enum FIXED {
 }
 
 export interface DataSourceProps {
-  [key: string]: any;
+  [key: string]: React.ReactNode | string | number | any;
   children?: DataSourceProps[];
   rowSpan?: number;
   colSpan?: number;
@@ -63,17 +64,23 @@ export interface ColumnProps {
   headerAlign?: CanvasTextAlign;
   width?: string | number;
   render?: (text: any, record: any, index: number) => React.ReactNode;
+  ellipsis?: boolean;
+  bgColorClassName?: string;
+  className?: string;
   fixed?: Fixed;
   sorter?: ((a: any, b: any) => number) | boolean;
+  sortOrder?: SortOrderProps[];
+  colSpan?: number;
+  children?: ColumnProps[];
+  helpContent?: string | ReactNode;
+  getIsSorted?: SortOrderProps;
+  getCanSort?: boolean;
+  getToggleSortingHandler?: () => Promise<void | boolean> | void | boolean;
   onSorterClick?: (
     column: Pick<ColumnProps, 'key' | 'dataIndex'> & {
       sortOrder: SortOrderProps;
     },
   ) => Promise<void | boolean> | void | boolean;
-  sortOrder?: SortOrderProps[];
-  className?: string;
-  ellipsis?: boolean;
-  colSpan?: number;
   onCell?: (
     record: any,
     rowIndex: number,
@@ -81,18 +88,14 @@ export interface ColumnProps {
     rowSpan?: number;
     colSpan?: number;
   };
-  children?: ColumnProps[];
-  helpContent?: string | ReactNode;
-  getIsSorted?: SortOrderProps;
-  getCanSort?: boolean;
-  getToggleSortingHandler?: () => Promise<void | boolean> | void | boolean;
 }
 
-export interface CustomColumnMeta {
+export interface TableV2Meta {
   headerAlign?: CanvasTextAlign;
   align?: CanvasTextAlign;
   width?: string | number;
   fixed?: Fixed;
+  bgColorClassName?: string;
   className?: string;
   ellipsis?: boolean;
   colSpan?: number;
@@ -109,7 +112,7 @@ export interface CustomColumnMeta {
 // Then modify the column definition to use this type
 export type CustomColumnDef<T> = ColumnDef<T> & {
   accessorKey?: string;
-  meta?: CustomColumnMeta;
+  meta?: TableV2Meta;
   render?: (text: any, record: T, index: number) => React.ReactNode;
 };
 
