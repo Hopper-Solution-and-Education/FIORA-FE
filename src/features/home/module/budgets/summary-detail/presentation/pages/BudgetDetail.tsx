@@ -1,6 +1,6 @@
 'use client';
 
-import { CustomTable } from '@/components/common/tables/custom-table';
+import { TableV2 } from '@/components/common/tables/custom-table';
 import { ColumnProps } from '@/components/common/tables/custom-table/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -493,7 +493,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
 
       <div className="w-[50rem] min-w-full">
         <div className="w-full">
-          <CustomTable
+          <TableV2
             columns={columns}
             dataSource={tableData}
             loading={isLoading}
