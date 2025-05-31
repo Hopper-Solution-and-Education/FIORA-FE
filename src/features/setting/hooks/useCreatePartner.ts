@@ -103,7 +103,6 @@ export function useCreatePartner({ redirectPath }: Props) {
       const formattedPartnerData = convertNullToUndefined(partnerData);
 
       await createPartnerUseCase.execute(formattedPartnerData as CreatePartnerAPIRequestDTO);
-
       // form.reset();
       await fetchPartners();
       router.push(redirectPath);

@@ -58,6 +58,7 @@ export default function CreateCategoryForm({ initialData }: CreateCategoryFormPr
       const payload: NewCategoryDefaultValues = {
         ...defaultNewCategoryValues,
         ...data,
+        parentId: data.parentId === '' ? null : data.parentId,
       };
       await dispatch(createCategory(payload))
         .unwrap()

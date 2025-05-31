@@ -6,6 +6,7 @@ import { CreatePartnerAPIRequestDTO } from '../dto/request/CreatePartnerAPIReque
 import { UpdatePartnerAPIRequestDTO } from '../dto/request/UpdatePartnerAPIRequestDTO';
 import { Response } from '@/shared/types/Common.types';
 import { PartnerResponse } from '../../slices/types';
+import { toast } from 'sonner';
 
 // In the IPartnerRepository interface
 export interface IPartnerRepository {
@@ -40,6 +41,9 @@ export const createPartnerRepository = (api: IPartnerAPI): IPartnerRepository =>
 
   async createPartner(data: CreatePartnerAPIRequestDTO): Promise<Partner> {
     const response = await api.createPartner(data);
+    if (response.status === 201) {
+      toast.success('You have create new Partner successfully!');
+    }
 
     return PartnerMapper.toEntityFromCreate(response);
   },

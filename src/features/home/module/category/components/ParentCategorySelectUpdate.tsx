@@ -47,10 +47,7 @@ const ParentCategorySelectUpdate: React.FC<ParentCategorySelectUpdateProps> = ({
 
   const selectOptions = disabled
     ? [{ value: currentParentId, label: currentParentName || 'Parent locked' }]
-    : [
-        { value: 'null', label: 'None' },
-        ...options.map((option) => ({ value: option.value, label: option.label })),
-      ];
+    : [...options.map((option) => ({ value: option.value, label: option.label }))];
 
   return (
     <SelectField

@@ -126,7 +126,14 @@ const TableByDate = () => {
                           : COLORS.DEPS_WARNING.LEVEL_2,
                     }}
                   >
-                    {(item.totalIncome - item.totalExpense).toLocaleString('vi-VN')} VNĐ
+                    {formatCurrency(
+                      convertCurrency(
+                        item.totalIncome - item.totalExpense,
+                        item.currency as Currency,
+                        currency,
+                      ),
+                      currency,
+                    )}
                   </span>
                 </TableCell>
               </TableRow>

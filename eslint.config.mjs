@@ -65,15 +65,15 @@ const config = [
       'prettier/prettier': 'warn',
       '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-magic-numbers': [
-        'warn',
-        {
-          ignore: [0, 1, 2],
-          ignoreArrayIndexes: true,
-          enforceConst: true,
-          detectObjects: false,
-        },
-      ],
+      // '@typescript-eslint/no-magic-numbers': [
+      //   'warn',
+      //   {
+      //     ignore: [0, 1, 2],
+      //     ignoreArrayIndexes: true,
+      //     enforceConst: true,
+      //     detectObjects: false,
+      //   },
+      // ],
     },
   },
 ];
