@@ -82,13 +82,6 @@ const accountSlice = createSlice({
       .addCase(fetchParents.fulfilled, (state, action) => {
         state.parentAccounts.isLoading = false;
         state.parentAccounts.data = action.payload.data.data;
-        // Update min/max balance for parent accounts as well
-        if (action.payload.data.minBalance !== undefined) {
-          state.minBalance = action.payload.data.minBalance;
-        }
-        if (action.payload.data.maxBalance !== undefined) {
-          state.maxBalance = action.payload.data.maxBalance;
-        }
       })
       .addCase(fetchParents.rejected, (state, action) => {
         state.parentAccounts.isLoading = false;
