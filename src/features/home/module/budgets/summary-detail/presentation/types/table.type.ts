@@ -1,13 +1,16 @@
 import { BudgetDetailFilterEnum } from '../../data/constants';
 
-export const BudgetDetailType = {
-  MONTH: 'month',
-  QUARTER: 'quarter',
-  HALF_YEAR: 'half-year',
-  YEAR: 'year',
-} as const;
+export type BudgetDetailFilterType =
+  (typeof BudgetDetailFilterEnum)[keyof typeof BudgetDetailFilterEnum];
 
-export type BudgetPeriodType = (typeof BudgetDetailType)[keyof typeof BudgetDetailType];
+export enum BudgetDetailType {
+  MONTH = 'month',
+  QUARTER = 'quarter',
+  HALF_YEAR = 'half-year',
+  YEAR = 'year',
+}
+
+export type BudgetPeriodType = 'month' | 'quarter' | 'half-year' | 'year';
 
 export interface BudgetPeriodId {
   month: `month-${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12}`;
@@ -16,36 +19,14 @@ export interface BudgetPeriodId {
   year: 'year';
 }
 
-export type BudgetPeriodIdType = BudgetPeriodId[BudgetPeriodType];
+export type BudgetPeriodIdType = string;
 
 export interface TableData {
   key: string;
   type: string;
-  jan?: number;
-  feb?: number;
-  mar?: number;
-  q1?: number;
-  apr?: number;
-  may?: number;
-  jun?: number;
-  q2?: number;
-  h1?: number;
-  jul?: number;
-  aug?: number;
-  sep?: number;
-  q3?: number;
-  oct?: number;
-  nov?: number;
-  dec?: number;
-  q4?: number;
-  h2?: number;
-  fullYear?: number;
-  action?: boolean;
-  children?: TableData[];
   isParent?: boolean;
   isChild?: boolean;
+  action?: boolean;
   isEditable?: boolean;
+  [key: string]: any; // Allow dynamic month keys (m1, m2, etc.)
 }
-
-export type BudgetDetailFilterType =
-  (typeof BudgetDetailFilterEnum)[keyof typeof BudgetDetailFilterEnum];

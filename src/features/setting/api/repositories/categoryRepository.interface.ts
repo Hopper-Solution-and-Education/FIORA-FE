@@ -28,4 +28,16 @@ export interface ICategoryRepository {
   ): Promise<CategoryExtras[]>;
 
   findCategoriesWithTransactions(userId: string): Promise<CategoryExtras[]>;
+  findManyCategory(
+    where: Prisma.CategoryWhereInput,
+    options?: Prisma.CategoryFindManyArgs,
+  ): Promise<Category[]>;
+  findManyCategoryWithBudgetDetails(
+    where: Prisma.CategoryWhereInput,
+    options?: Prisma.CategoryFindManyArgs,
+  ): Promise<Category[]>;
+  findFirstCategory(
+    where: Prisma.CategoryWhereInput,
+    options?: Prisma.CategoryFindFirstArgs,
+  ): Promise<Category | null>;
 }

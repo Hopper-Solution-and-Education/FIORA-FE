@@ -1,13 +1,16 @@
-import { Category, CategoryType, Prisma } from '@prisma/client';
 import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
-import { CategoryExtras } from '@/shared/types/category.types';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { Messages } from '@/shared/constants/message';
-import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
-import { safeString } from '@/shared/utils/ExStringUtils';
-import { GlobalFilters } from '@/shared/types';
 import { BooleanUtils } from '@/shared/lib';
+import { GlobalFilters } from '@/shared/types';
+import { FetchTransactionResponse } from '@/shared/types/budget.types';
+import { CategoryExtras, CategoryWithBudgetDetails } from '@/shared/types/category.types';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { safeString } from '@/shared/utils/ExStringUtils';
+import { calculateSumUpAllocationByType } from '@/shared/utils/monthBudgetUtil';
+import { Category, CategoryType, Currency, Prisma, TransactionType } from '@prisma/client';
+import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
 
 class CategoryUseCase {
   private categoryRepository: ICategoryRepository;
@@ -74,65 +77,7 @@ class CategoryUseCase {
     await this.categoryRepository.deleteCategory(id);
   }
 
-  private extractTransactionRangeFilters(filters: any): {
-    totalIncomeMin?: number;
-    totalIncomeMax?: number;
-    totalExpenseMin?: number;
-    totalExpenseMax?: number;
-  } {
-    const result: any = {};
-
-    const transactionsFilter = filters?.transactions?.some?.OR ?? [];
-    transactionsFilter.forEach((condition: any) => {
-      if (condition.type === 'Income') {
-        result.totalIncomeMin = condition.amount?.gte ?? 0;
-        result.totalIncomeMax = condition.amount?.lte ?? Number.MAX_SAFE_INTEGER;
-      } else if (condition.type === 'Expense') {
-        result.totalExpenseMin = condition.amount?.gte ?? 0;
-        result.totalExpenseMax = condition.amount?.lte ?? Number.MAX_SAFE_INTEGER;
-      }
-    });
-
-    return result;
-  }
-
-  private filterCategoriesByTransactionRange(categories: any[], filters: any): any[] {
-    const {
-      totalIncomeMin = 0,
-      totalIncomeMax = Number.MAX_SAFE_INTEGER,
-      totalExpenseMin = 0,
-      totalExpenseMax = Number.MAX_SAFE_INTEGER,
-    } = filters;
-
-    return categories.filter((category) => {
-      const fromTransactions = category.fromTransactions ?? [];
-      const toTransactions = category.toTransactions ?? [];
-
-      const totalIncome = fromTransactions.reduce(
-        (sum: number, tx: any) => sum + Number(tx.amount),
-        0,
-      );
-
-      const totalExpense = toTransactions.reduce(
-        (sum: number, tx: any) => sum + Number(tx.amount),
-        0,
-      );
-
-      const isValidIncome =
-        category.type === 'Income' &&
-        totalIncome >= totalIncomeMin &&
-        totalIncome <= totalIncomeMax;
-
-      const isValidExpense =
-        category.type === 'Expense' &&
-        totalExpense >= totalExpenseMin &&
-        totalExpense <= totalExpenseMax;
-
-      return isValidIncome || isValidExpense;
-    });
-  }
-
-  async getCategories(userId: string): Promise<any[]> {
+  async getCategories(userId: string) {
     const categories = await this.categoryRepository.findCategoriesWithTransactions(userId);
 
     const calculateBalance = (category: CategoryExtras): number => {
@@ -162,31 +107,6 @@ class CategoryUseCase {
     });
 
     return Array.from(categoryMap.values());
-  }
-
-  private calculateMinMaxTotalAmount(categories: CategoryExtras[]): {
-    minAmount: number;
-    maxAmount: number;
-  } {
-    const totalAmounts = categories.map((category) => {
-      const fromSum = (category.fromTransactions ?? []).reduce(
-        (sum, tx) => sum + Number(tx.amount),
-        0,
-      );
-      const toSum = (category.toTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
-      return fromSum + toSum;
-    });
-
-    const individualAmounts = categories.flatMap((category) =>
-      [...(category.fromTransactions ?? []), ...(category.toTransactions ?? [])].map((tx) =>
-        Number(tx.amount),
-      ),
-    );
-
-    const maxAmount = totalAmounts.length > 0 ? Math.max(...totalAmounts) : 0;
-    const minAmount = individualAmounts.length > 0 ? Math.min(...individualAmounts) : 0;
-
-    return { minAmount, maxAmount };
   }
 
   async getCategoriesFilter(
@@ -253,6 +173,219 @@ class CategoryUseCase {
       minAmount,
       maxAmount,
     };
+  }
+
+  private filterCategoriesByTransactionRange(categories: any[], filters: any): any[] {
+    const {
+      totalIncomeMin = 0,
+      totalIncomeMax = Number.MAX_SAFE_INTEGER,
+      totalExpenseMin = 0,
+      totalExpenseMax = Number.MAX_SAFE_INTEGER,
+    } = filters;
+
+    return categories.filter((category) => {
+      const fromTransactions = category.fromTransactions ?? [];
+      const toTransactions = category.toTransactions ?? [];
+
+      const totalIncome = fromTransactions.reduce(
+        (sum: number, tx: any) => sum + Number(tx.amount),
+        0,
+      );
+
+      const totalExpense = toTransactions.reduce(
+        (sum: number, tx: any) => sum + Number(tx.amount),
+        0,
+      );
+
+      const isValidIncome =
+        category.type === 'Income' &&
+        totalIncome >= totalIncomeMin &&
+        totalIncome <= totalIncomeMax;
+
+      const isValidExpense =
+        category.type === 'Expense' &&
+        totalExpense >= totalExpenseMin &&
+        totalExpense <= totalExpenseMax;
+
+      return isValidIncome || isValidExpense;
+    });
+  }
+
+  private extractTransactionRangeFilters(filters: any): {
+    totalIncomeMin?: number;
+    totalIncomeMax?: number;
+    totalExpenseMin?: number;
+    totalExpenseMax?: number;
+  } {
+    const result: any = {};
+
+    const transactionsFilter = filters?.transactions?.some?.OR ?? [];
+    transactionsFilter.forEach((condition: any) => {
+      if (condition.type === 'Income') {
+        result.totalIncomeMin = condition.amount?.gte ?? 0;
+        result.totalIncomeMax = condition.amount?.lte ?? Number.MAX_SAFE_INTEGER;
+      } else if (condition.type === 'Expense') {
+        result.totalExpenseMin = condition.amount?.gte ?? 0;
+        result.totalExpenseMax = condition.amount?.lte ?? Number.MAX_SAFE_INTEGER;
+      }
+    });
+
+    return result;
+  }
+
+  private calculateMinMaxTotalAmount(categories: CategoryExtras[]): {
+    minAmount: number;
+    maxAmount: number;
+  } {
+    const totalAmounts = categories.map((category) => {
+      const fromSum = (category.fromTransactions ?? []).reduce(
+        (sum, tx) => sum + Number(tx.amount),
+        0,
+      );
+      const toSum = (category.toTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+      return fromSum + toSum;
+    });
+
+    const individualAmounts = categories.flatMap((category) =>
+      [...(category.fromTransactions ?? []), ...(category.toTransactions ?? [])].map((tx) =>
+        Number(tx.amount),
+      ),
+    );
+
+    const maxAmount = totalAmounts.length > 0 ? Math.max(...totalAmounts) : 0;
+    const minAmount = individualAmounts.length > 0 ? Math.min(...individualAmounts) : 0;
+
+    return { minAmount, maxAmount };
+  }
+
+  private calculateActualTotals(
+    transactions: FetchTransactionResponse[] | [],
+    currency: Currency,
+  ): { totalExpenseAct: number; totalIncomeAct: number } {
+    const totalExpenseAct = transactions
+      .filter((t) => t.type === TransactionType.Expense)
+      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+
+    const totalIncomeAct = transactions
+      .filter((t) => t.type === TransactionType.Income)
+      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+    return { totalExpenseAct, totalIncomeAct };
+  }
+
+  async getTransactionsByCategoryIdAndYear(
+    categoryId: string,
+    year: number,
+    userId: string,
+    currency: Currency,
+  ) {
+    // checked if categoryId is valid
+    const foundCategory = await this.categoryRepository.findFirstCategory({
+      id: categoryId,
+      userId,
+    });
+
+    if (!foundCategory) {
+      throw new Error(Messages.CATEGORY_NOT_FOUND);
+    }
+
+    const suffix = foundCategory.type === CategoryType.Expense ? 'exp' : 'inc';
+
+    const foundTransactions = await this.transactionRepository.findManyTransactions({
+      userId,
+      isDeleted: false,
+      date: {
+        gte: new Date(`${year}-01-01`),
+        lte: new Date(`${year}-12-31`),
+      },
+      ...(foundCategory.type === CategoryType.Expense
+        ? { toCategoryId: foundCategory.id }
+        : { fromCategoryId: foundCategory.id }),
+    });
+
+    const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
+      foundTransactions,
+      currency,
+    );
+
+    const { monthFields, quarterFields, halfYearFields } = calculateSumUpAllocationByType(
+      foundTransactions,
+      year,
+      foundCategory,
+      currency,
+    );
+
+    const totalMapping =
+      foundCategory.type === CategoryType.Expense ? totalExpenseAct : totalIncomeAct;
+
+    return {
+      ...monthFields,
+      ...quarterFields,
+      ...halfYearFields,
+      [`total_${suffix}`]: totalMapping,
+      currency,
+      type: foundCategory.type,
+    };
+  }
+
+  async getListCategoryByType(userId: string, type: CategoryType) {
+    if (!Object.values(CategoryType).includes(type)) {
+      throw new Error(Messages.INVALID_CATEGORY_TYPE);
+    }
+
+    const categoryFound = (await (this.categoryRepository.findManyCategoryWithBudgetDetails(
+      {
+        userId,
+        type,
+      },
+      {
+        select: {
+          id: true,
+          name: true,
+          icon: true,
+          type: true,
+          budgetDetails: {
+            where: {
+              type: type,
+            },
+            select: {
+              month: true,
+              amount: true,
+              currency: true,
+            },
+          },
+        },
+      },
+    ) as unknown)) as CategoryWithBudgetDetails[];
+
+    const transferCategoryFound = categoryFound.map((category: CategoryWithBudgetDetails) => {
+      const suffix = category.type === CategoryType.Expense ? 'exp' : 'inc';
+      const bottomUpPlan: Record<string, number> = {};
+
+      // Initialize all months with 0
+      for (let i = 1; i <= 12; i++) {
+        bottomUpPlan[`m${i}_${suffix}`] = 0;
+      }
+
+      // Map budgetDetails to corresponding months
+      category.budgetDetails.forEach((detail) => {
+        const monthKey = `m${detail.month}_${suffix}`;
+        // Convert amount from string to number and apply currency conversion if needed
+        const amount = Number(detail.amount);
+        bottomUpPlan[monthKey] = amount; // Assuming no currency conversion for now; adjust if needed
+      });
+
+      const { budgetDetails, ...categoryWithoutBudgetDetails } = category;
+
+      console.log(budgetDetails);
+
+      return {
+        ...categoryWithoutBudgetDetails,
+        bottomUpPlan,
+      };
+    });
+
+    // mapping budgetDetails by month by format m1_suffix, suffix is expense or income
+    return transferCategoryFound ?? [];
   }
 }
 

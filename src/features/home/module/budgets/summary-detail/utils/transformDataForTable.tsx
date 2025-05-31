@@ -7,6 +7,7 @@ import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
 import { BudgetDetailType, TableData } from '../presentation/types/table.type';
 import CategorySelect from '../../../category/components/CategorySelect';
 import { cn } from '@/shared/utils';
+import { Category as BudgetCategory } from '../data/dto/response/CategoryResponseDTO';
 
 const PERIOD_CONFIG = {
   months: Array.from({ length: 12 }, (_, i) => ({
@@ -26,8 +27,13 @@ const PERIOD_CONFIG = {
   })),
 } as const;
 
-export const formatCurrencyValue = (value: number, currency: Currency): string => {
-  const formattedValue = currency === 'USD' ? convertVNDToUSD(value) : value;
+export const formatCurrencyValue = (
+  value: number | string | undefined,
+  currency: Currency,
+): string => {
+  if (value === undefined || value === '') return '0';
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  const formattedValue = currency === 'USD' ? convertVNDToUSD(numValue) : numValue;
   return formattedValue?.toLocaleString();
 };
 
@@ -99,9 +105,30 @@ export const getColumnsByPeriod = (
   period: string,
   periodId: string,
   currency: Currency,
-  categories: any[] = [],
+  categories: BudgetCategory[] = [],
   onCategoryChange?: (categoryId: string) => void,
+  onValidateClick?: (record: TableData) => void,
+  onValueChange?: (record: TableData, columnKey: string, value: number) => void,
 ) => {
+  const renderEditableCell = (text: any, record: TableData, index: number, column: ColumnProps) => {
+    if (record.isEditable) {
+      return (
+        <InputCurrency
+          name={`value_${record.key}_${column.key}`}
+          value={text || 0}
+          currency={currency}
+          classContainer="m-0"
+          onChange={(newValue) => {
+            if (onValueChange && record) {
+              onValueChange(record, column.key, newValue);
+            }
+          }}
+        />
+      );
+    }
+    return formatCurrencyValue(text, currency);
+  };
+
   const createColumn = (
     key: string,
     title: string,
@@ -112,15 +139,10 @@ export const getColumnsByPeriod = (
     title,
     width: 120,
     align: 'center',
+    render: (text: any, record: TableData, index: number) =>
+      renderEditableCell(text, record, index, { key, ...options }),
     ...options,
   });
-
-  const renderEditableCell = (value: number, record: TableData) => {
-    if (record.isEditable) {
-      return <InputCurrency name="value" value={value} currency={currency} classContainer="m-0" />;
-    }
-    return formatCurrencyValue(value, currency);
-  };
 
   const defaultColumns = [
     createColumn('type', 'Type', {
@@ -128,15 +150,17 @@ export const getColumnsByPeriod = (
       align: 'left',
       fixed: 'left',
       render: (text: string, record: TableData) => {
-        if (record.isParent && !text) {
+        if (record.isParent) {
           return (
             <div className={cn('w-full h-full flex items-center gap-2')}>
               <CategorySelect
                 className="w-full h-full m-0"
                 name="category"
-                categories={categories}
+                categories={categories as any[]}
                 side="right"
                 onChange={(value) => onCategoryChange?.(value)}
+                value={text ? categories.find((cat) => cat.name === text)?.id : undefined}
+                placeholder="Select a category"
               />
             </div>
           );
@@ -154,20 +178,45 @@ export const getColumnsByPeriod = (
           <span className="text-red-500 hover:text-red-700 cursor-pointer" title="Invalid">
             <Icons.close size={15} />
           </span>
-          <span className="text-green-500 hover:text-green-700 cursor-pointer" title="Valid">
+          <span
+            className="text-green-500 hover:text-green-700 cursor-pointer"
+            title="Valid"
+            onClick={() => onValidateClick?.(record)}
+          >
             <Icons.check size={15} />
           </span>
         </div>
       ) : null,
   });
 
-  const createPeriodColumns = (config: typeof PERIOD_CONFIG.months) =>
-    config.map(({ key, title }) => createColumn(key, title, { render: renderEditableCell }));
+  const createPeriodColumns = (
+    config: typeof PERIOD_CONFIG.months,
+    additionalProps?: Partial<ColumnProps>,
+  ) =>
+    config.map(({ key, title }) =>
+      createColumn(key, title, {
+        dataIndex: key,
+        render: (text: any, record: TableData, index: number) =>
+          renderEditableCell(text, record, index, { key }),
+        ...additionalProps,
+      }),
+    );
 
   const monthColumns = createPeriodColumns(PERIOD_CONFIG.months);
-  const quarterColumns = createPeriodColumns(PERIOD_CONFIG.quarters);
-  const halfYearColumns = createPeriodColumns(PERIOD_CONFIG.halfYears);
-  const fullYearColumn = [createColumn('fullYear', 'Full Year', { render: renderEditableCell })];
+  const quarterColumns = createPeriodColumns(PERIOD_CONFIG.quarters, {
+    bgColorClassName: 'bg-muted',
+  });
+  const halfYearColumns = createPeriodColumns(PERIOD_CONFIG.halfYears, {
+    bgColorClassName: 'bg-muted',
+  });
+  const fullYearColumn = [
+    createColumn('fullYear', 'Full Year', {
+      dataIndex: 'fullYear',
+      render: (text: any, record: TableData, index: number) =>
+        renderEditableCell(text, record, index, { key: 'fullYear' }),
+      bgColorClassName: 'bg-muted',
+    }),
+  ];
 
   let periodColumns: ColumnProps[] = [];
 
