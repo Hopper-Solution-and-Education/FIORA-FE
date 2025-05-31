@@ -44,44 +44,44 @@ jobs:
           fi
 
   # Stage 2: Lint and Check
-  # lint:
-  #   name: Lint and Check
-  #   needs: setup
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+  lint:
+    name: Lint and Check
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - name: Set up Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '20'
-  #         cache: 'npm'
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
 
-  #     - name: Install dependencies
-  #       run: |
-  #         # Set CI environment variable to skip husky installation
-  #         export CI=true
-  #         npm ci --ignore-scripts
-  #         # Run prepare script manually without husky
-  #         echo "Skipping husky in CI environment"
+      - name: Install dependencies
+        run: |
+          # Set CI environment variable to skip husky installation
+          export CI=true
+          npm ci --ignore-scripts
+          # Run prepare script manually without husky
+          echo "Skipping husky in CI environment"
 
-  #     - name: Check for Prisma schema changes
-  #       id: check-prisma
-  #       run: |
-  #         if git diff --name-only HEAD^ HEAD | grep -q 'prisma/schema.prisma'; then
-  #           echo "PRISMA_CHANGED=true" >> $GITHUB_ENV
-  #           echo "Prisma schema changed"
-  #         else
-  #           echo "PRISMA_CHANGED=false" >> $GITHUB_ENV
-  #           echo "No changes in Prisma schema"
-  #         fi
+      - name: Check for Prisma schema changes
+        id: check-prisma
+        run: |
+          if git diff --name-only HEAD^ HEAD | grep -q 'prisma/schema.prisma'; then
+            echo "PRISMA_CHANGED=true" >> $GITHUB_ENV
+            echo "Prisma schema changed"
+          else
+            echo "PRISMA_CHANGED=false" >> $GITHUB_ENV
+            echo "No changes in Prisma schema"
+          fi
 
-  #     - name: Run Prisma generate
-  #       run: npx prisma generate
+      - name: Run Prisma generate
+        run: npx prisma generate
 
-  #     - name: Run linting
-  #       run: npm run lint
+      - name: Run linting
+        run: npm run lint
 
   # Stage 3: Deploy to Vercel
   deploy:
