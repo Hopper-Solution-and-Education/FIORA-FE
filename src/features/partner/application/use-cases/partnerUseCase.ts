@@ -82,7 +82,9 @@ class PartnerUseCase {
       },
       {
         include: {
-          transactions: true,
+          transactions: {
+            where: { isDeleted: false },
+          },
           children: true,
           parent: true,
         },
