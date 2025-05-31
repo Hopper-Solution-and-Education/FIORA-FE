@@ -7,14 +7,14 @@ import { toast } from 'sonner';
 
 export function useUpdateAccount(id: string) {
   const dispatch = useAppDispatch();
-  const { accounts, parentAccounts } = useAppSelector((state) => state.account);
+  const { accounts, parentAccounts, filterCriteria } = useAppSelector((state) => state.account);
 
   useEffect(() => {
     if (!accounts.data && !accounts.isLoading) {
-      dispatch(fetchAccounts());
+      dispatch(fetchAccounts(filterCriteria));
     }
     if (!parentAccounts.data && !parentAccounts.isLoading) {
-      dispatch(fetchParents());
+      dispatch(fetchParents(filterCriteria));
     }
   }, [accounts.data, accounts.isLoading, dispatch, parentAccounts.data, parentAccounts.isLoading]);
 
