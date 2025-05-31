@@ -116,6 +116,8 @@ export type TransactionFilterOptionResponse = {
   accounts: string[];
   categories: string[];
   partners: string[];
+  amountMin: number;
+  amountMax: number;
 };
 
 export type PaginationProps = {

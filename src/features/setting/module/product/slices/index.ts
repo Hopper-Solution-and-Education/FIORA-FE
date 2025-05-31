@@ -173,14 +173,18 @@ const productManagementSlice = createSlice({
       state.productTransaction.total = action.payload.totalPage;
       state.productTransaction.page = action.payload.page;
       state.productTransaction.hasMore = action.payload.page < action.payload.totalPage;
-      state.productTransaction.minPrice = action.payload.minPrice;
-      state.productTransaction.maxPrice = action.payload.maxPrice;
-      state.productTransaction.minTaxRate = action.payload.minTaxRate;
-      state.productTransaction.maxTaxRate = action.payload.maxTaxRate;
-      state.productTransaction.minExpense = action.payload.minExpense;
-      state.productTransaction.maxExpense = action.payload.maxExpense;
-      state.productTransaction.minIncome = action.payload.minIncome;
-      state.productTransaction.maxIncome = action.payload.maxIncome;
+      if (state.productTransaction.maxPrice === 0) {
+        state.productTransaction.maxPrice = action.payload.maxPrice;
+      }
+      if (state.productTransaction.maxTaxRate === 0) {
+        state.productTransaction.maxTaxRate = action.payload.maxTaxRate;
+      }
+      if (state.productTransaction.maxExpense === 0) {
+        state.productTransaction.maxExpense = action.payload.maxExpense;
+      }
+      if (state.productTransaction.maxIncome === 0) {
+        state.productTransaction.maxIncome = action.payload.maxIncome;
+      }
     });
 
     builder.addCase(getProductTransactionAsyncThunk.rejected, (state) => {
