@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { DropdownOption } from '@/features/home/module/transaction/types';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { DateRange } from 'react-day-picker';
@@ -164,11 +165,14 @@ const FilterByViewType = ({
           <MultiSelectPickerFinance
             label=""
             placeholder="Select partners"
-            options={partners.map((partner) => ({
-              label: partner.name,
-              value: partner.id,
-              icon: partner.logo,
-            }))}
+            options={partners.map(
+              (partner) =>
+                ({
+                  label: partner.name,
+                  value: partner.id,
+                  icon: partner.logo,
+                }) as DropdownOption,
+            )}
             selectedValues={selectedPartners}
             onChange={handleChangePartners}
             onBlur={() => {

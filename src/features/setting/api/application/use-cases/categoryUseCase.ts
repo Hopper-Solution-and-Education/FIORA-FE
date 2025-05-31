@@ -79,7 +79,10 @@ class CategoryUseCase {
     if (params.filters && Object.keys(params.filters).length > 0) {
       where = buildWhereClause(params.filters) as Prisma.CategoryWhereInput;
     }
-    const categories = await this.categoryRepository.findCategoriesWithTransactions(userId, where);
+    const categories = await this.categoryRepository.findCategoriesWithTransactionsFilter(
+      userId,
+      where,
+    );
 
     const calculateBalance = (category: CategoryExtras): number => {
       if (category.type === CategoryType.Expense.valueOf()) {
