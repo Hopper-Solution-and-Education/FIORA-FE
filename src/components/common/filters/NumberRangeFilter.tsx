@@ -34,6 +34,8 @@ const NumberRangeFilter = ({
 }: NumberRangeFilterProps) => {
   const [isMinEditing, setIsMinEditing] = useState(false);
   const [isMaxEditing, setIsMaxEditing] = useState(false);
+  const [tempMinValue, setTempMinValue] = useState('');
+  const [tempMaxValue, setTempMaxValue] = useState('');
 
   // Calculate an appropriate step based on the range size if not provided
   const calculatedStep =
@@ -55,18 +57,91 @@ const NumberRangeFilter = ({
     return value.toLocaleString();
   };
 
-  const handleInputChange = (target: 'minValue' | 'maxValue', value: string) => {
+  const validateAndUpdateValue = (target: 'minValue' | 'maxValue', inputValue: string) => {
     // Remove commas and other formatting characters
-    const rawValue = value.replace(/[^\d.-]/g, '');
+    const rawValue = inputValue.replace(/[^\d.-]/g, '');
     const numericValue = Number(rawValue);
 
-    if (!isNaN(numericValue)) {
-      const bounded =
-        target === 'minValue'
-          ? Math.max(minRange, Math.min(maxValue, numericValue))
-          : Math.max(minValue, Math.min(maxRange, numericValue));
+    if (isNaN(numericValue)) {
+      return; // Don't update if invalid number
+    }
 
-      onValueChange(target, bounded);
+    let validatedValue = numericValue;
+
+    // Apply range bounds first
+    validatedValue = Math.max(minRange, Math.min(maxRange, validatedValue));
+
+    // Apply cross-validation between min and max
+    if (target === 'minValue') {
+      // If setting minValue, ensure it doesn't exceed maxValue
+      if (validatedValue > maxValue) {
+        validatedValue = maxValue;
+      }
+    } else {
+      // If setting maxValue, ensure it's not less than minValue
+      if (validatedValue < minValue) {
+        validatedValue = minValue + 1; // Set to minValue + 1 to maintain valid range
+      }
+    }
+
+    onValueChange(target, validatedValue);
+  };
+
+  const handleInputChange = (target: 'minValue' | 'maxValue', value: string) => {
+    // Allow free typing - store in temporary state
+    if (target === 'minValue') {
+      setTempMinValue(value);
+    } else {
+      setTempMaxValue(value);
+    }
+  };
+
+  const handleInputFocus = (target: 'minValue' | 'maxValue') => {
+    if (target === 'minValue') {
+      setIsMinEditing(true);
+      setTempMinValue(minValue.toString());
+    } else {
+      setIsMaxEditing(true);
+      setTempMaxValue(maxValue.toString());
+    }
+  };
+
+  const handleInputBlur = (target: 'minValue' | 'maxValue') => {
+    const tempValue = target === 'minValue' ? tempMinValue : tempMaxValue;
+    validateAndUpdateValue(target, tempValue);
+
+    if (target === 'minValue') {
+      setIsMinEditing(false);
+      setTempMinValue('');
+    } else {
+      setIsMaxEditing(false);
+      setTempMaxValue('');
+    }
+  };
+
+  const handleKeyPress = (target: 'minValue' | 'maxValue', e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      const tempValue = target === 'minValue' ? tempMinValue : tempMaxValue;
+      validateAndUpdateValue(target, tempValue);
+
+      if (target === 'minValue') {
+        setIsMinEditing(false);
+        setTempMinValue('');
+      } else {
+        setIsMaxEditing(false);
+        setTempMaxValue('');
+      }
+
+      // Remove focus from input
+      (e.target as HTMLInputElement).blur();
+    }
+  };
+
+  const getInputValue = (target: 'minValue' | 'maxValue') => {
+    if (target === 'minValue') {
+      return isMinEditing ? tempMinValue : getFormattedValue(minValue, false);
+    } else {
+      return isMaxEditing ? tempMaxValue : getFormattedValue(maxValue, false);
     }
   };
 
@@ -78,14 +153,12 @@ const NumberRangeFilter = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <Input
-                value={getFormattedValue(minValue, isMinEditing)}
+                value={getInputValue('minValue')}
                 min={minRange}
                 max={maxRange}
-                onFocus={(e) => {
-                  setIsMinEditing(true);
-                  e.target.select();
-                }}
-                onBlur={() => setIsMinEditing(false)}
+                onFocus={() => handleInputFocus('minValue')}
+                onBlur={() => handleInputBlur('minValue')}
+                onKeyPress={(e) => handleKeyPress('minValue', e)}
                 placeholder={minLabel}
                 onChange={(e) => handleInputChange('minValue', e.target.value)}
                 required
@@ -104,15 +177,13 @@ const NumberRangeFilter = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <Input
-                value={getFormattedValue(maxValue, isMaxEditing)}
+                value={getInputValue('maxValue')}
                 min={minRange}
                 max={maxRange}
                 placeholder={maxLabel}
-                onFocus={(e) => {
-                  setIsMaxEditing(true);
-                  e.target.select();
-                }}
-                onBlur={() => setIsMaxEditing(false)}
+                onFocus={() => handleInputFocus('maxValue')}
+                onBlur={() => handleInputBlur('maxValue')}
+                onKeyPress={(e) => handleKeyPress('maxValue', e)}
                 onChange={(e) => handleInputChange('maxValue', e.target.value)}
                 required
                 className={cn('w-[45%]')}

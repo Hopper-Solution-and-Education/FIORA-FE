@@ -91,8 +91,12 @@ export const renderRangeSlider = ({
   };
 
   // Calculate positions as percentages for CSS positioning
-  const minValuePosition = ((minValue - minRange) / (maxRange - minRange)) * 100;
-  const maxValuePosition = ((maxValue - minRange) / (maxRange - minRange)) * 100;
+  // Ensure values are within bounds to prevent overflow
+  const clampedMinValue = Math.max(minRange, Math.min(maxRange, minValue));
+  const clampedMaxValue = Math.max(minRange, Math.min(maxRange, maxValue));
+
+  const minValuePosition = ((clampedMinValue - minRange) / (maxRange - minRange)) * 100;
+  const maxValuePosition = ((clampedMaxValue - minRange) / (maxRange - minRange)) * 100;
 
   return (
     <div className="w-[94%] mt-1">
@@ -155,10 +159,10 @@ export const renderRangeSlider = ({
 
       <div className="flex items-center justify-between mt-1">
         <span className="text-xs text-gray-500">
-          {formatValue ? formatValue(minValue) : minValue}
+          {formatValue ? formatValue(clampedMinValue) : clampedMinValue}
         </span>
         <span className="text-xs text-gray-500">
-          {formatValue ? formatValue(maxValue) : maxValue}
+          {formatValue ? formatValue(clampedMaxValue) : clampedMaxValue}
         </span>
       </div>
     </div>

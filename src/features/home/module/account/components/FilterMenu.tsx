@@ -37,6 +37,10 @@ interface RangeCondition {
   lte?: number;
 }
 
+interface TypeCondition {
+  in?: string[];
+}
+
 // Local FilterParams interface for account filtering
 interface AccountFilterParams {
   accountTypes: string[];
@@ -92,21 +96,28 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
           };
         }
 
-        // Extract account types from top level "types" field or from filters
-        if (filterCriteria.types && Array.isArray(filterCriteria.types)) {
-          accountTypes = filterCriteria.types.filter(
-            (type) =>
-              typeof type === 'string' &&
-              ACCOUNT_TYPE_OPTIONS.some((option) => option.value === type),
-          ) as string[];
-        }
-
         // Get the nested filters object
         const filters = (filterCriteria.filters as Record<string, unknown>) || {};
 
-        // Also check for types within the filters object (fallback)
-        if (accountTypes.length === 0 && filters.types && Array.isArray(filters.types)) {
-          accountTypes = filters.types.filter(
+        // Extract account types from filters.type.in
+        if (filters.type && typeof filters.type === 'object') {
+          const typeFilter = filters.type as TypeCondition;
+          if (typeFilter.in && Array.isArray(typeFilter.in)) {
+            accountTypes = typeFilter.in.filter(
+              (type) =>
+                typeof type === 'string' &&
+                ACCOUNT_TYPE_OPTIONS.some((option) => option.value === type),
+            ) as string[];
+          }
+        }
+
+        // Fallback: Extract account types from top level "types" field (for backward compatibility)
+        if (
+          accountTypes.length === 0 &&
+          filterCriteria.types &&
+          Array.isArray(filterCriteria.types)
+        ) {
+          accountTypes = filterCriteria.types.filter(
             (type) =>
               typeof type === 'string' &&
               ACCOUNT_TYPE_OPTIONS.some((option) => option.value === type),
@@ -162,9 +173,15 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
 
     // Check if any meaningful filters exist
     const filters = criteria.filters as Record<string, unknown>;
-    const hasTypes = filters.types && Array.isArray(filters.types) && filters.types.length > 0;
+    const hasTypes =
+      filters.type &&
+      typeof filters.type === 'object' &&
+      (filters.type as TypeCondition).in &&
+      Array.isArray((filters.type as TypeCondition).in) &&
+      ((filters.type as TypeCondition).in as string[]).length > 0;
+
     const hasOtherFilters = Object.keys(filters).some(
-      (key) => key !== 'types' && filters[key] !== undefined,
+      (key) => key !== 'type' && filters[key] !== undefined,
     );
 
     return !hasTypes && !hasOtherFilters;
@@ -292,9 +309,11 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
     (params: AccountFilterParams): Record<string, unknown> => {
       const result: Record<string, unknown> = {};
 
-      // Add account type filter at top level as "types" - only if types are selected
+      // Add account type filter as filters.type.in - only if types are selected
       if (params.accountTypes.length > 0) {
-        result.types = params.accountTypes;
+        result.type = {
+          in: params.accountTypes,
+        };
       }
 
       // Check if balance values differ from defaults
@@ -319,43 +338,21 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
   // Handler to fetch filtered data
   const handleFilterChange = useCallback(
     (newFilter: FilterCriteria) => {
-      // Extract types from the nested structure and create flat structure
-      const flattenedFilter: any = {
+      // Create the filter structure that matches the new format
+      const structuredFilter: any = {
         userId: newFilter.userId || userId,
+        filters: newFilter.filters || {},
       };
 
-      // Check if filters exist and extract types from them
-      if (newFilter.filters && typeof newFilter.filters === 'object') {
-        const filters = newFilter.filters as Record<string, unknown>;
-
-        // Extract types from filters and place at top level
-        if (filters.types && Array.isArray(filters.types)) {
-          flattenedFilter.types = filters.types;
-        }
-
-        // Create new filters object without the types field
-        const otherFilters = { ...filters };
-        delete otherFilters.types;
-
-        // Only add filters object if there are other filters besides types
-        if (Object.keys(otherFilters).length > 0) {
-          flattenedFilter.filters = otherFilters;
-        } else {
-          flattenedFilter.filters = {};
-        }
-      } else {
-        flattenedFilter.filters = {};
-      }
-
       // Save filter criteria to Redux state
-      dispatch(setFilterCriteria(flattenedFilter));
+      dispatch(setFilterCriteria(structuredFilter));
 
-      // Update filter criteria with flattened structure
-      onFilterChange(flattenedFilter);
+      // Update filter criteria with structured format
+      onFilterChange(structuredFilter);
 
-      // Fetch filtered data with the flattened structure
+      // Fetch filtered data with the structured format
       if (userId) {
-        dispatch(searchAccounts(flattenedFilter));
+        dispatch(searchAccounts(structuredFilter));
       }
     },
     [dispatch, onFilterChange, userId],
