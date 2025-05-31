@@ -1,0 +1,22 @@
+#storybook-root {
+  width: -webkit-fill-available;
+  width: stretch;
+  width: 100%;
+}
+
+@keyframes progress {
+  0% {
+    transform: translateX(-100%);
+    background-color: #3b82f6;
+  }
+
+  100% {
+    transform: translateX(100%);
+    background-color: #3b82f6;
+  }
+}
+
+.animate-progress {
+  animation: progress 1.5s ease-in-out infinite;
+  background-color: #3b82f6;
+}

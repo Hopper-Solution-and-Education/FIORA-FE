@@ -94,14 +94,14 @@ class CategoryUseCase {
     };
 
     const categoryMap = new Map<string, any>();
-    categories.forEach((category) => {
+    categories.forEach((category: any) => {
       categoryMap.set(category.id, {
         ...category,
         balance: calculateBalance(category),
       });
     });
 
-    categories.forEach((category) => {
+    categories.forEach((category: any) => {
       if (category.parentId) {
         const parent = categoryMap.get(category.parentId);
         if (parent) {

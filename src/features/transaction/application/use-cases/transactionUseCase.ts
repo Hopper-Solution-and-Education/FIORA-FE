@@ -305,11 +305,17 @@ class TransactionUseCase {
     await tx.productTransaction.deleteMany({ where: { transactionId: transaction.id } });
   }
   async getTransactionFilterOptions(userId: string) {
-    const filterOptions = await this.transactionRepository.getFilterOptions(userId);
+    const [filterOptions, amountRange] = await Promise.all([
+      this.transactionRepository.getFilterOptions(userId),
+      this.fetchMinMaxTransactionAmount(userId),
+    ]);
+
     return {
       accounts: filterOptions.accounts ?? [],
       categories: filterOptions.categories ?? [],
       partners: filterOptions.partners ?? [],
+      amountMin: amountRange.min,
+      amountMax: amountRange.max,
     };
   }
 

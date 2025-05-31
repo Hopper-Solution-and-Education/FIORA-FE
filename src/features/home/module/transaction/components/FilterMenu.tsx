@@ -133,6 +133,17 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
     method: 'GET',
   });
 
+  // Update filter params when server data is loaded
+  useEffect(() => {
+    if (data?.data?.amountMin !== undefined && data?.data?.amountMax !== undefined) {
+      setFilterParams((prev) => ({
+        ...prev,
+        amountMin: Math.max(prev.amountMin, data.data.amountMin),
+        amountMax: Math.min(prev.amountMax, data.data.amountMax),
+      }));
+    }
+  }, [data]);
+
   // Extract filter data from complex filter structure
   const extractFilterData = useCallback(
     (filters: FilterStructure) => {
@@ -381,7 +392,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         minValue={filterParams.amountMin}
         maxValue={filterParams.amountMax}
         minRange={0}
-        maxRange={150000000}
+        maxRange={data?.data?.amountMax ?? 0}
         onValueChange={(target, value) =>
           handleEditFilter(target === 'minValue' ? 'amountMin' : 'amountMax', value)
         }

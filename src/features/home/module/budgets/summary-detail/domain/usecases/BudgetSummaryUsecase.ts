@@ -5,36 +5,43 @@ import type { IBudgetSummaryRepository } from '../../data/repositories/IBudgetSu
 import { IBudgetSummaryUseCase } from './IBudgetSummaryUseCase';
 import { BudgetSummaryByType } from '../entities/BudgetSummaryByType';
 import { BudgetSummaryResponseDTO } from '../../data/dto/response/BudgetSummaryResponseDTO';
+import { Category, CategoryPlanning } from '../../data/dto/response/CategoryResponseDTO';
+import {
+  TopDownUpdateRequestDTO,
+  CategoryPlanningUpdateRequestDTO,
+} from '../../data/dto/request/BudgetUpdateRequestDTO';
+
 @injectable()
 export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
   constructor(
     @inject(TYPES.IBudgetSummaryRepository)
-    private budgetSummaryRepository: IBudgetSummaryRepository,
+    private readonly budgetSummaryRepository: IBudgetSummaryRepository,
   ) {}
 
   async getBudgetsByUserIdAndFiscalYear(
     userId: string,
     fiscalYear: number,
   ): Promise<BudgetSummaryResponseDTO> {
-    const budgets = await this.budgetSummaryRepository.getBudgetsByUserIdAndFiscalYear(
-      userId,
-      fiscalYear,
-    );
-
-    const topBudget = budgets.find((budget: any) => budget.type === BudgetType.Top) || null;
-    const botBudget = budgets.find((budget: any) => budget.type === BudgetType.Bot) || null;
-    const actBudget = budgets.find((budget: any) => budget.type === BudgetType.Act) || null;
-
-    return {
-      topBudget,
-      botBudget,
-      actBudget,
-      allBudgets: budgets,
-    };
+    return this.budgetSummaryRepository.getBudgetsByUserIdAndFiscalYear(userId, fiscalYear);
   }
 
-  async getBudgetByType(fiscalYear: number, type: BudgetType): Promise<BudgetSummaryByType> {
-    const budget = await this.budgetSummaryRepository.getBudgetByType(fiscalYear, type);
-    return budget;
+  async getBudgetByType(fiscalYear: number, type: BudgetType): Promise<BudgetSummaryByType | null> {
+    return this.budgetSummaryRepository.getBudgetByType(fiscalYear, type);
+  }
+
+  async getCategoriesByType(type: 'Income' | 'Expense'): Promise<Category[]> {
+    return this.budgetSummaryRepository.getCategoriesByType(type);
+  }
+
+  async getActualPlanningByCategory(categoryId: string, year: number): Promise<CategoryPlanning> {
+    return this.budgetSummaryRepository.getActualPlanningByCategory(categoryId, year);
+  }
+
+  async updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<void> {
+    return this.budgetSummaryRepository.updateTopDownPlanning(data);
+  }
+
+  async updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO): Promise<void> {
+    return this.budgetSummaryRepository.updateCategoryPlanning(data);
   }
 }
