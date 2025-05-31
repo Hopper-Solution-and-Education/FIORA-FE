@@ -46,7 +46,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const { currency } = useAppSelector((state) => state.settings);
-  const { categories } = useAppSelector((state) => state.category);
+  const { categories, filterCriteria } = useAppSelector((state) => state.category);
 
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -61,7 +61,8 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   );
 
   useEffect(() => {
-    dispatch(fetchCategories());
+    dispatch(fetchCategories(filterCriteria));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);
 
   const handleCategoryChange = (categoryId: string) => {
