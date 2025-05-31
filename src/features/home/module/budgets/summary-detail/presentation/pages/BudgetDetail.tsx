@@ -32,6 +32,7 @@ import {
   BudgetPeriodType,
   TableData,
 } from '../types/table.type';
+import { Plus, X } from 'lucide-react';
 
 interface BudgetDetailProps {
   year: number;
@@ -47,6 +48,8 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [categoryList, setCategoryList] = useState<Category[]>([]);
   const [editedData, setEditedData] = useState<{ [key: string]: any }>({});
+  const [categoryRows, setCategoryRows] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
 
   console.log(editedData, selectedCategory);
 
@@ -95,9 +98,21 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
       m12: 'dec',
     };
 
+    const quarterMap = {
+      q1: 'q1',
+      q2: 'q2',
+      q3: 'q3',
+      q4: 'q4',
+    };
+
+    const halfYearMap = {
+      h1: 'h1',
+      h2: 'h2',
+    };
+
     const result: { [key: string]: number } = {};
     Object.entries(data).forEach(([key, value]) => {
-      // key format: m1_exp, m2_exp, etc.
+      // Process monthly data (m1_exp, m2_exp, etc.)
       const monthNumber = key.match(/m(\d+)_/)?.[1];
       if (monthNumber) {
         const monthKey = monthMap[`m${monthNumber}` as keyof typeof monthMap];
@@ -105,13 +120,99 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
           result[monthKey] = value;
         }
       }
+
+      // Process quarterly data (q1_exp, q2_exp, etc.)
+      const quarterNumber = key.match(/q(\d+)_/)?.[1];
+      if (quarterNumber) {
+        const quarterKey = quarterMap[`q${quarterNumber}` as keyof typeof quarterMap];
+        if (quarterKey) {
+          result[quarterKey] = value;
+        }
+      }
+
+      // Process half-yearly data (h1_exp, h2_exp, etc.)
+      const halfYearNumber = key.match(/h(\d+)_/)?.[1];
+      if (halfYearNumber) {
+        const halfYearKey = halfYearMap[`h${halfYearNumber}` as keyof typeof halfYearMap];
+        if (halfYearKey) {
+          result[halfYearKey] = value;
+        }
+      }
+
+      // Process yearly total (total_exp, total_inc)
+      if (key.startsWith('total_')) {
+        result['fullYear'] = value;
+      }
     });
 
     console.log('Transformed table format:', result);
     return result;
   };
 
-  const handleCategoryChange = async (categoryId: string) => {
+  // Thêm useEffect để theo dõi các category đã được chọn từ tableData
+  useEffect(() => {
+    const selectedCategoryIds = new Set<string>();
+    tableData.forEach((item) => {
+      if (item.categoryId) {
+        selectedCategoryIds.add(item.categoryId);
+      }
+    });
+    setSelectedCategories(selectedCategoryIds);
+  }, [tableData]);
+
+  const handleAddCategory = () => {
+    // Add a new empty category row
+    const newCategoryId = `new-category-${Date.now()}`;
+    setCategoryRows((prev) => [...prev, newCategoryId]);
+
+    setTableData((prevData) => [
+      ...prevData,
+      {
+        key: newCategoryId,
+        type: '',
+        categoryId: '', // Add this to track selected category
+        isParent: true,
+        action: true,
+        children: [
+          {
+            key: `${newCategoryId}-bottom-up`,
+            type: 'Bottom-up Plan',
+            isChild: true,
+            action: true,
+            isEditable: true,
+          },
+          {
+            key: `${newCategoryId}-actual`,
+            type: 'Actual sum-up',
+            isChild: true,
+            action: true,
+            isEditable: false,
+          },
+        ],
+      },
+    ]);
+  };
+
+  const handleRemoveCategory = (categoryId: string) => {
+    // Remove from categoryRows
+    setCategoryRows((prev) => prev.filter((id) => id !== categoryId));
+
+    // Get the actual category ID from tableData
+    const rowData = tableData.find((item) => item.key === categoryId);
+    if (rowData?.categoryId) {
+      // Remove from selected categories
+      setSelectedCategories((prev) => {
+        const next = new Set(prev);
+        next.delete(rowData.categoryId);
+        return next;
+      });
+    }
+
+    // Remove from tableData
+    setTableData((prevData) => prevData.filter((item) => item.key !== categoryId));
+  };
+
+  const handleCategoryChange = async (categoryId: string, parentKey?: string) => {
     const selectedCategoryData = categoryList.find((cat) => cat.id === categoryId);
     if (!selectedCategoryData) return;
 
@@ -151,17 +252,16 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
         [`m11${suffix}`]: actualResponse[`m11${suffix}`] || 0,
         [`m12${suffix}`]: actualResponse[`m12${suffix}`] || 0,
       };
-      console.log('Transformed actual data:', actualData);
 
       const tableActualData = transformMonthlyDataToTableFormat(actualData);
-      console.log('Table format actual data:', tableActualData);
 
       setTableData((prevData) => {
         return prevData.map((item) => {
-          if (item.key === 'new-category') {
+          if (item.key === parentKey) {
             return {
               ...item,
               type: selectedCategoryData.name,
+              categoryId: categoryId,
               children: [
                 {
                   key: `${categoryId}-bottom-up`,
@@ -209,33 +309,10 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
 
       const mainData = getTableDataByPeriod(top, bot, act, activeTab);
 
-      const dataWithCategory: TableData[] = [
-        ...mainData,
-        {
-          key: 'new-category',
-          type: '',
-          isParent: true,
-          action: true,
-          children: [
-            {
-              key: 'bottom-up-plan',
-              type: 'Bottom-up Plan',
-              isChild: true,
-              action: true,
-              isEditable: true,
-            },
-            {
-              key: 'actual-sum-up',
-              type: 'Actual sum-up',
-              isChild: true,
-              action: true,
-              isEditable: false,
-            },
-          ],
-        },
-      ];
+      // Remove default new-category row
+      const dataWithoutCategory = mainData.filter((item) => item.key !== 'new-category');
 
-      setTableData(dataWithCategory);
+      setTableData(dataWithoutCategory);
       setColumns(
         getColumnsByPeriod(
           period,
@@ -463,6 +540,103 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     }
   };
 
+  // Modify getColumnsByPeriod to include category selection
+  useEffect(() => {
+    const updatedColumns = getColumnsByPeriod(
+      period,
+      periodId,
+      currency,
+      categoryList,
+      handleCategoryChange,
+      handleValidateClick,
+      handleValueChange,
+    );
+
+    // Add category selection column for dynamic rows
+    const columnsWithCategorySelect = [
+      {
+        title: 'Category',
+        dataIndex: 'type',
+        key: 'type',
+        width: 200,
+        render: (value: string, record: TableData) => {
+          if (categoryRows.includes(record.key)) {
+            // Filter out already selected categories
+            const availableCategories = categoryList.filter(
+              (category) =>
+                !selectedCategories.has(category.id) || category.id === record.categoryId,
+            );
+
+            return (
+              <div className="flex items-center gap-2">
+                <Select
+                  value={record.categoryId || undefined}
+                  onValueChange={(selectedValue) => {
+                    const category = categoryList.find((cat) => cat.id === selectedValue);
+                    if (category) {
+                      // Update selected categories
+                      setSelectedCategories((prev) => {
+                        const next = new Set(prev);
+                        if (record.categoryId) {
+                          next.delete(record.categoryId);
+                        }
+                        next.add(selectedValue);
+                        return next;
+                      });
+
+                      // Update tableData with new categoryId
+                      setTableData((prevData) =>
+                        prevData.map((item) => {
+                          if (item.key === record.key) {
+                            return {
+                              ...item,
+                              categoryId: selectedValue,
+                            };
+                          }
+                          return item;
+                        }),
+                      );
+
+                      handleCategoryChange(selectedValue, record.key);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableCategories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            );
+          }
+          return (
+            <div className="flex items-center justify-between">
+              <span>{value}</span>
+              {record.isParent && record.categoryId && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleRemoveCategory(record.key)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          );
+        },
+      },
+      ...updatedColumns.slice(1), // Keep all other columns
+    ];
+
+    setColumns(columnsWithCategorySelect);
+  }, [period, periodId, currency, categoryList, activeTab, categoryRows, selectedCategories]);
+
   return (
     <div className="p-4">
       <div className="flex flex-wrap gap-4 mb-6">
@@ -488,6 +662,11 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
               <TabsTrigger value="income">Income</TabsTrigger>
             </TabsList>
           </Tabs>
+
+          <Button variant="outline" onClick={handleAddCategory}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Category
+          </Button>
         </div>
       </div>
 
