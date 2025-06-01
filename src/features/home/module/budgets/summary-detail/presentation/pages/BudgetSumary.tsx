@@ -16,6 +16,9 @@ import { BudgetType } from '../../domain/entities/BudgetType';
 import { transformDataForChart } from '../../utils/transformDataForChart';
 import BudgetTreeView from '../molecules/BudgetSummaryTreeView';
 import { HierarchicalBarItem } from '../types/chart.type';
+import { routeConfig } from '@/shared/utils/route';
+import { RouteEnum } from '@/shared/constants/RouteEnum';
+import BudgetSummaryYearSelect from '../atoms/BudgetSummaryYearSelect';
 
 interface BudgetSummaryProps {
   year: number;
@@ -29,7 +32,10 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { currency } = useAppSelector((state) => state.settings);
+  const { budgets } = useAppSelector((state) => state.budgetControl.getBudget);
   const router = useRouter();
+
+  console.log(budgets);
 
   const budgetSummaryUseCase = budgetSummaryDIContainer.get<IBudgetSummaryUseCase>(
     TYPES.IBudgetSummaryUseCase,
@@ -83,13 +89,13 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
   }, [topBudget, botBudget, actBudget, currency, selectedYear]);
 
   const handleEditBudget = () => {
-    router.push(`/budgets/update/${selectedYear}`);
+    router.push(routeConfig(RouteEnum.BudgetUpdate, { year: selectedYear.toString() }));
   };
 
   return (
     <div className="p-4">
       <div className="flex justify-between mb-4">
-        <h1 className="text-2xl font-bold">Budget Summary</h1>
+        <BudgetSummaryYearSelect selectedYear={selectedYear} route={RouteEnum.BudgetSummary} />
 
         <div className="flex items-center gap-x-3 mr-2">
           <Edit
@@ -100,6 +106,7 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
           />
         </div>
       </div>
+
       {isLoading ? (
         <ChartSkeleton />
       ) : (

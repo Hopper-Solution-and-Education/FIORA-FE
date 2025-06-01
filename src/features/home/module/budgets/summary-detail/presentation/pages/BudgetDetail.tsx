@@ -11,9 +11,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ApiEndpointEnum } from '@/shared/constants/ApiEnpointEnum';
+import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { routeConfig } from '@/shared/utils/route';
 import { useAppSelector } from '@/store';
+import { X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -22,9 +23,11 @@ import { MonthlyPlanningData } from '../../data/dto/request/BudgetUpdateRequestD
 import { Category } from '../../data/dto/response/CategoryResponseDTO';
 import { budgetSummaryDIContainer } from '../../di/budgetSummaryDIContainer';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
-import { BudgetType } from '../../domain/entities/BudgetType';
 import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
-import { getColumnsByPeriod, getTableDataByPeriod } from '../../utils/transformDataForTable';
+import { getColumnsByPeriod } from '../../utils/transformDataForTable';
+import BudgetSummaryYearSelect from '../atoms/BudgetSummaryYearSelect';
+import { useBudgetData } from '../hooks/useBudgetData';
+import { useCategoryManagement } from '../hooks/useCategoryManagement';
 import {
   BudgetDetailFilterType,
   BudgetDetailType,
@@ -32,7 +35,7 @@ import {
   BudgetPeriodType,
   TableData,
 } from '../types/table.type';
-import { Plus, X } from 'lucide-react';
+import ActionButton from '@/components/common/UIKit/Button/ActionButton';
 
 interface BudgetDetailProps {
   year: number;
@@ -40,23 +43,15 @@ interface BudgetDetailProps {
 
 const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   const [tableData, setTableData] = useState<TableData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<BudgetDetailFilterType>(
     BudgetDetailFilterEnum.EXPENSE,
   );
   const [columns, setColumns] = useState<ColumnProps[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [categoryList, setCategoryList] = useState<Category[]>([]);
-  const [editedData, setEditedData] = useState<{ [key: string]: any }>({});
-  const [categoryRows, setCategoryRows] = useState<string[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
-
-  console.log(editedData, selectedCategory);
 
   const { currency } = useAppSelector((state) => state.settings);
 
   const router = useRouter();
-
   const searchParams = useSearchParams();
   const period = (searchParams?.get('period') || BudgetDetailType.YEAR) as BudgetPeriodType;
   const periodId = (searchParams?.get('periodId') || 'year') as BudgetPeriodIdType;
@@ -66,7 +61,16 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     [],
   );
 
-  // Fetch categories based on active tab
+  const { isLoading, fetchBudgetData } = useBudgetData(budgetSummaryUseCase);
+  const {
+    categoryRows,
+    selectedCategories,
+    setSelectedCategories,
+    handleAddCategory,
+    handleCategorySelected,
+    handleRemoveCategory,
+  } = useCategoryManagement();
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -82,7 +86,6 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   }, [activeTab, budgetSummaryUseCase]);
 
   const transformMonthlyDataToTableFormat = (data: MonthlyPlanningData) => {
-    console.log('Transforming data to table format:', data);
     const monthMap = {
       m1: 'jan',
       m2: 'feb',
@@ -112,7 +115,6 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
 
     const result: { [key: string]: number } = {};
     Object.entries(data).forEach(([key, value]) => {
-      // Process monthly data (m1_exp, m2_exp, etc.)
       const monthNumber = key.match(/m(\d+)_/)?.[1];
       if (monthNumber) {
         const monthKey = monthMap[`m${monthNumber}` as keyof typeof monthMap];
@@ -121,7 +123,6 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
         }
       }
 
-      // Process quarterly data (q1_exp, q2_exp, etc.)
       const quarterNumber = key.match(/q(\d+)_/)?.[1];
       if (quarterNumber) {
         const quarterKey = quarterMap[`q${quarterNumber}` as keyof typeof quarterMap];
@@ -130,7 +131,6 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
         }
       }
 
-      // Process half-yearly data (h1_exp, h2_exp, etc.)
       const halfYearNumber = key.match(/h(\d+)_/)?.[1];
       if (halfYearNumber) {
         const halfYearKey = halfYearMap[`h${halfYearNumber}` as keyof typeof halfYearMap];
@@ -139,17 +139,14 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
         }
       }
 
-      // Process yearly total (total_exp, total_inc)
       if (key.startsWith('total_')) {
         result['fullYear'] = value;
       }
     });
 
-    console.log('Transformed table format:', result);
     return result;
   };
 
-  // Thêm useEffect để theo dõi các category đã được chọn từ tableData
   useEffect(() => {
     const selectedCategoryIds = new Set<string>();
     tableData.forEach((item) => {
@@ -160,75 +157,18 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     setSelectedCategories(selectedCategoryIds);
   }, [tableData]);
 
-  const handleAddCategory = () => {
-    // Add a new empty category row
-    const newCategoryId = `new-category-${Date.now()}`;
-    setCategoryRows((prev) => [...prev, newCategoryId]);
-
-    setTableData((prevData) => [
-      ...prevData,
-      {
-        key: newCategoryId,
-        type: '',
-        categoryId: '', // Add this to track selected category
-        isParent: true,
-        action: true,
-        children: [
-          {
-            key: `${newCategoryId}-bottom-up`,
-            type: 'Bottom-up Plan',
-            isChild: true,
-            action: true,
-            isEditable: true,
-          },
-          {
-            key: `${newCategoryId}-actual`,
-            type: 'Actual sum-up',
-            isChild: true,
-            action: true,
-            isEditable: false,
-          },
-        ],
-      },
-    ]);
-  };
-
-  const handleRemoveCategory = (categoryId: string) => {
-    // Remove from categoryRows
-    setCategoryRows((prev) => prev.filter((id) => id !== categoryId));
-
-    // Get the actual category ID from tableData
-    const rowData = tableData.find((item) => item.key === categoryId);
-    if (rowData?.categoryId) {
-      // Remove from selected categories
-      setSelectedCategories((prev) => {
-        const next = new Set(prev);
-        next.delete(rowData.categoryId);
-        return next;
-      });
-    }
-
-    // Remove from tableData
-    setTableData((prevData) => prevData.filter((item) => item.key !== categoryId));
-  };
-
   const handleCategoryChange = async (categoryId: string, parentKey?: string) => {
     const selectedCategoryData = categoryList.find((cat) => cat.id === categoryId);
     if (!selectedCategoryData) return;
-
-    setSelectedCategory(categoryId);
-    setIsLoading(true);
 
     try {
       const actualResponse = await budgetSummaryUseCase.getActualPlanningByCategory(
         categoryId,
         initialYear,
       );
-      console.log('API Response for actual data:', actualResponse);
 
       const suffix = activeTab === BudgetDetailFilterEnum.EXPENSE ? '_exp' : '_inc';
 
-      // Transform budgetDetails into the format we need
       const bottomUpData =
         selectedCategoryData.budgetDetails?.reduce((acc, detail) => {
           if (detail.month) {
@@ -237,7 +177,6 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
           return acc;
         }, {} as MonthlyPlanningData) || {};
 
-      // Transform actual data directly from API response
       const actualData: MonthlyPlanningData = {
         [`m1${suffix}`]: actualResponse[`m1${suffix}`] || 0,
         [`m2${suffix}`]: actualResponse[`m2${suffix}`] || 0,
@@ -287,53 +226,21 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
       });
     } catch (err: any) {
       toast.error(err?.message || 'Failed to fetch category planning data');
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const fetchBudgetData = async () => {
-    if (!initialYear) {
-      toast.error('Invalid parameters');
-      router.push(routeConfig(ApiEndpointEnum.Budgets));
-      return;
-    }
-
-    setIsLoading(true);
+  const loadData = async () => {
     try {
-      const [top, bot, act] = await Promise.all([
-        budgetSummaryUseCase.getBudgetByType(initialYear, BudgetType.Top),
-        budgetSummaryUseCase.getBudgetByType(initialYear, BudgetType.Bot),
-        budgetSummaryUseCase.getBudgetByType(initialYear, BudgetType.Act),
-      ]);
-
-      const mainData = getTableDataByPeriod(top, bot, act, activeTab);
-
-      // Remove default new-category row
-      const dataWithoutCategory = mainData.filter((item) => item.key !== 'new-category');
-
-      setTableData(dataWithoutCategory);
-      setColumns(
-        getColumnsByPeriod(
-          period,
-          periodId,
-          currency,
-          categoryList,
-          handleCategoryChange,
-          handleValidateClick,
-          handleValueChange,
-        ),
-      );
+      const data = await fetchBudgetData(initialYear, activeTab);
+      setTableData(data);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to fetch budget data');
-      router.push(routeConfig(ApiEndpointEnum.Budgets));
-    } finally {
-      setIsLoading(false);
+      router.push(routeConfig(RouteEnum.Budgets));
     }
   };
 
   useEffect(() => {
-    fetchBudgetData();
+    loadData();
   }, [
     initialYear,
     period,
@@ -350,7 +257,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     if (option) {
       router.push(
         routeConfig(
-          ApiEndpointEnum.BudgetDetail,
+          RouteEnum.BudgetDetail,
           { year: initialYear },
           { period: option.period, periodId: value },
         ),
@@ -361,14 +268,6 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   const handleFilterChange = (value: string) => setActiveTab(value as BudgetDetailFilterType);
 
   const handleValueChange = (record: TableData, columnKey: string, value: number) => {
-    setEditedData((prev) => ({
-      ...prev,
-      [record.key]: {
-        ...(prev[record.key] || {}),
-        [columnKey]: value,
-      },
-    }));
-
     setTableData((prevData) =>
       prevData.map((item) => {
         if (item.key === record.key) {
@@ -435,8 +334,6 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   };
 
   const handleValidateClick = async (record: TableData) => {
-    console.log('Validate clicked for record:', record);
-    setIsLoading(true);
     try {
       const suffix = activeTab === BudgetDetailFilterEnum.EXPENSE ? '_exp' : '_inc';
 
@@ -449,9 +346,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
         });
         toast.success('Top-down planning updated successfully');
       } else if (record.key.includes('-bottom-up')) {
-        console.log('Updating bottom-up plan');
         const [categoryId] = record.key.split('-bottom-up');
-        console.log('Category ID:', categoryId);
 
         if (!categoryId) {
           toast.error('Invalid category ID');
@@ -459,37 +354,20 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
         }
 
         const bottomUpData = transformMonthlyData(record);
-        console.log('Bottom-up data:', bottomUpData);
 
-        // Tìm actual data từ tableData
-        console.log('Current tableData:', tableData);
         const newCategoryRow = tableData.find((item) => item.key === 'new-category');
-        console.log('Found new-category row:', newCategoryRow);
 
-        // Log tất cả children của new-category để kiểm tra
-        console.log('Children of new-category:', newCategoryRow?.children);
-
-        // Tìm actual record và log chi tiết
         const actualRecord = newCategoryRow?.children?.find((child: TableData) => {
-          console.log('Checking child:', child);
-          console.log('Expected key:', `actual-sum-up`);
-          console.log('Child key:', child.key);
           return child.key === 'actual-sum-up';
         });
 
-        console.log('Found actual record:', actualRecord);
-
-        // Khởi tạo actualData với tất cả các tháng
         const actualData: MonthlyPlanningData = {};
         for (let i = 1; i <= 12; i++) {
           const monthKey = `m${i}${suffix}` as keyof MonthlyPlanningData;
-          actualData[monthKey] = 0; // Khởi tạo mặc định là 0
+          actualData[monthKey] = 0;
         }
 
-        // Nếu có actual record, cập nhật giá trị từ record
         if (actualRecord) {
-          console.log('Updating actual data from record:', actualRecord);
-          // Lấy giá trị từ các trường tháng (jan, feb, etc.)
           const monthMap = {
             jan: 1,
             feb: 2,
@@ -506,18 +384,13 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
           };
 
           Object.entries(monthMap).forEach(([month, num]) => {
-            console.log(`Checking month ${month}:`, actualRecord[month]);
             const value = actualRecord[month];
-            console.log('Value type:', typeof value);
             if (typeof value === 'number') {
               const monthKey = `m${num}${suffix}` as keyof MonthlyPlanningData;
-              console.log(`Setting ${monthKey} to:`, value);
               actualData[monthKey] = value;
             }
           });
         }
-
-        console.log('Final actual data for API:', actualData);
 
         await budgetSummaryUseCase.updateCategoryPlanning({
           fiscalYear: initialYear.toString(),
@@ -530,17 +403,12 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
       }
 
       // Refresh data
-      await fetchBudgetData();
-      setEditedData({}); // Reset edited data after successful update
+      // await fetchBudgetData(initialYear, activeTab);
     } catch (err: any) {
-      console.error('Update failed:', err);
       toast.error(err?.message || 'Failed to update planning');
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  // Modify getColumnsByPeriod to include category selection
   useEffect(() => {
     const updatedColumns = getColumnsByPeriod(
       period,
@@ -552,16 +420,14 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
       handleValueChange,
     );
 
-    // Add category selection column for dynamic rows
     const columnsWithCategorySelect = [
       {
-        title: 'Category',
+        title: 'CATEGORY',
         dataIndex: 'type',
         key: 'type',
         width: 200,
         render: (value: string, record: TableData) => {
           if (categoryRows.includes(record.key)) {
-            // Filter out already selected categories
             const availableCategories = categoryList.filter(
               (category) =>
                 !selectedCategories.has(category.id) || category.id === record.categoryId,
@@ -584,19 +450,15 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
                         return next;
                       });
 
-                      // Update tableData with new categoryId
-                      setTableData((prevData) =>
-                        prevData.map((item) => {
-                          if (item.key === record.key) {
-                            return {
-                              ...item,
-                              categoryId: selectedValue,
-                            };
-                          }
-                          return item;
-                        }),
+                      // Sử dụng hàm handleCategorySelected mới
+                      handleCategorySelected(
+                        record.key,
+                        selectedValue,
+                        setTableData,
+                        category.name,
                       );
 
+                      // Sau đó gọi handleCategoryChange để lấy dữ liệu
                       handleCategoryChange(selectedValue, record.key);
                     }
                   }}
@@ -622,7 +484,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleRemoveCategory(record.key)}
+                  onClick={() => handleRemoveCategory(record.key, setTableData, tableData)}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -631,7 +493,15 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
           );
         },
       },
-      ...updatedColumns.slice(1), // Keep all other columns
+      ...updatedColumns.slice(1).map((column) => ({
+        ...column,
+        render: (value: any, record: TableData) => {
+          if (categoryRows.includes(record.key)) {
+            return null;
+          }
+          return column.render ? column.render(value, record, 2) : value;
+        },
+      })),
     ];
 
     setColumns(columnsWithCategorySelect);
@@ -641,7 +511,10 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     <div className="p-4">
       <div className="flex flex-wrap gap-4 mb-6">
         <div className="flex items-center gap-4">
-          <Button variant="outline">{initialYear}</Button>
+          <BudgetSummaryYearSelect
+            selectedYear={initialYear}
+            route={routeConfig(RouteEnum.BudgetDetail, {}, { period, periodId })}
+          />
 
           <Select onValueChange={handlePeriodChange} value={periodId}>
             <SelectTrigger className="w-[200px]">
@@ -663,10 +536,13 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
             </TabsList>
           </Tabs>
 
-          <Button variant="outline" onClick={handleAddCategory}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Category
-          </Button>
+          <div className="ml-auto">
+            <ActionButton
+              tooltipContent="Add New Category"
+              showIcon={true}
+              onClick={() => handleAddCategory(setTableData)}
+            />
+          </div>
         </div>
       </div>
 
@@ -683,7 +559,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
             rowHover
             pagination={false}
             scroll={{ x: 1400 }}
-            className="w-full"
+            className="w-full scrollbar-thin"
           />
         </div>
       </div>
