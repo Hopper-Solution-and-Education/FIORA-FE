@@ -43,7 +43,7 @@ jobs:
             echo "Using development environment for develop branch"
           fi
 
-  Stage 2: Lint and Check
+  # Stage 2: Lint and Check
   lint:
     name: Lint and Check
     needs: setup
