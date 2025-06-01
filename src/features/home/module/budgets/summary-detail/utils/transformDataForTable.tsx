@@ -34,7 +34,13 @@ export const formatCurrencyValue = (
   if (value === undefined || value === '') return '0';
   const numValue = typeof value === 'string' ? parseFloat(value) : value;
   const formattedValue = currency === 'USD' ? convertVNDToUSD(numValue) : numValue;
-  return formattedValue?.toLocaleString();
+
+  return new Intl.NumberFormat(currency === 'USD' ? 'en-US' : 'vi-VN', {
+    style: 'currency',
+    currency: currency,
+    minimumFractionDigits: currency === 'USD' ? 2 : 0,
+    maximumFractionDigits: currency === 'USD' ? 2 : 0,
+  }).format(formattedValue);
 };
 
 export const getBudgetValue = (
@@ -118,6 +124,7 @@ export const getColumnsByPeriod = (
           value={text || 0}
           currency={currency}
           classContainer="m-0"
+          className="text-right"
           onChange={(newValue) => {
             if (onValueChange && record) {
               onValueChange(record, column.key, newValue);
@@ -139,6 +146,7 @@ export const getColumnsByPeriod = (
     title,
     width: 120,
     align: 'center',
+    className: 'uppercase',
     render: (text: any, record: TableData, index: number) =>
       renderEditableCell(text, record, index, { key, ...options }),
     ...options,
@@ -147,8 +155,8 @@ export const getColumnsByPeriod = (
   const defaultColumns = [
     createColumn('type', 'Type', {
       width: 200,
-      align: 'left',
-      fixed: 'left',
+      align: 'right',
+      fixed: 'right',
       render: (text: string, record: TableData) => {
         if (record.isParent) {
           return (
@@ -172,6 +180,9 @@ export const getColumnsByPeriod = (
 
   const actionColumn = createColumn('action', 'ACTION', {
     fixed: 'right',
+    align: 'center',
+    width: 60,
+    headerAlign: 'center',
     render: (_: number, record: TableData) =>
       record.isEditable ? (
         <div className="grid grid-flow-col place-items-center gap-2">
@@ -194,8 +205,10 @@ export const getColumnsByPeriod = (
     additionalProps?: Partial<ColumnProps>,
   ) =>
     config.map(({ key, title }) =>
-      createColumn(key, title, {
+      createColumn(key, title.toUpperCase(), {
         dataIndex: key,
+        headerAlign: 'center',
+        align: 'right',
         render: (text: any, record: TableData, index: number) =>
           renderEditableCell(text, record, index, { key }),
         ...additionalProps,
@@ -210,8 +223,9 @@ export const getColumnsByPeriod = (
     bgColorClassName: 'bg-muted',
   });
   const fullYearColumn = [
-    createColumn('fullYear', 'Full Year', {
+    createColumn('fullYear', 'FULL YEAR', {
       dataIndex: 'fullYear',
+      align: 'right',
       render: (text: any, record: TableData, index: number) =>
         renderEditableCell(text, record, index, { key: 'fullYear' }),
       bgColorClassName: 'bg-muted',
@@ -256,8 +270,29 @@ export const getColumnsByPeriod = (
     }
 
     case BudgetDetailType.YEAR:
-    default:
-      periodColumns = [...monthColumns, ...quarterColumns, ...halfYearColumns, ...fullYearColumn];
+    default: {
+      // Create interleaved columns
+      const interleaved: ColumnProps[] = [];
+
+      // First 3 months + Q1
+      interleaved.push(...monthColumns.slice(0, 3), quarterColumns[0]);
+
+      // Next 3 months + Q2 + H1
+      interleaved.push(...monthColumns.slice(3, 6), quarterColumns[1], halfYearColumns[0]);
+
+      // Next 3 months + Q3
+      interleaved.push(...monthColumns.slice(6, 9), quarterColumns[2]);
+
+      // Last 3 months + Q4 + H2 + Full Year
+      interleaved.push(
+        ...monthColumns.slice(9, 12),
+        quarterColumns[3],
+        halfYearColumns[1],
+        ...fullYearColumn,
+      );
+
+      periodColumns = interleaved;
+    }
   }
 
   return [...defaultColumns, ...periodColumns, actionColumn];

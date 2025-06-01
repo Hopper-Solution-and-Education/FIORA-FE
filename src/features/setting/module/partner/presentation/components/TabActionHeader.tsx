@@ -1,20 +1,19 @@
 'use client';
 
-import { Icons } from '@/components/Icon';
+import ActionButton from '@/components/common/UIKit/Button/ActionButton';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/shared/utils';
-import { useAppDispatch, useAppSelector } from '@/store';
 import { FilterCriteria } from '@/shared/types/filter.types';
+import { useAppDispatch, useAppSelector } from '@/store';
 import debounce from 'lodash/debounce';
 import { Search } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import { TabActionHeaderProps } from '../../../../presentation/types';
-import { searchPartners } from '../../slices/actions/searchPartnersAsyncThunk';
 import { updatePartnerFilterCriteria } from '../../slices';
+import { searchPartners } from '../../slices/actions/searchPartnersAsyncThunk';
 import FilterMenu from './FilterMenu';
 
 export const TabActionHeader = ({ buttonLabel, redirectPath }: TabActionHeaderProps) => {
@@ -42,27 +41,6 @@ export const TabActionHeader = ({ buttonLabel, redirectPath }: TabActionHeaderPr
   const handleFilterChange = (newFilter: FilterCriteria) => {
     dispatch(updatePartnerFilterCriteria(newFilter));
   };
-
-  const buttonContent = (
-    <>
-      <Icons.add className="h-6 w-6" />
-      {buttonLabel && <span className="ml-2">{buttonLabel}</span>}
-    </>
-  );
-
-  const button = (
-    <button
-      onClick={() => router.push(redirectPath)}
-      className={cn(
-        'inline-flex items-center justify-center font-medium transition-colors',
-        'bg-blue-500 hover:bg-blue-700 text-white',
-        'p-2 text-base rounded-full',
-      )}
-      aria-label={buttonLabel || 'Add new'}
-    >
-      {buttonContent}
-    </button>
-  );
 
   return (
     <div className="space-y-4">
@@ -102,14 +80,12 @@ export const TabActionHeader = ({ buttonLabel, redirectPath }: TabActionHeaderPr
         </div>
 
         {buttonLabel ? (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>{button}</TooltipTrigger>
-              <TooltipContent side="top">{buttonLabel}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <ActionButton
+            tooltipContent={buttonLabel}
+            onClick={() => redirectPath && router.push(redirectPath)}
+          />
         ) : (
-          button
+          <ActionButton />
         )}
       </div>
 

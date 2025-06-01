@@ -8,6 +8,8 @@ import { BUDGET_SUMMARY_TREE_INCRESEMENT_LENGTH_PER_LEVEL } from '../../data/con
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { BudgetDetailType } from '../types/table.type';
+import { routeConfig } from '@/shared/utils/route';
+import { RouteEnum } from '@/shared/constants/RouteEnum';
 
 interface BudgetTreeViewProps {
   data: HierarchicalBarItem[];
@@ -110,7 +112,7 @@ const BudgetTreeView = ({ data, currency, year }: BudgetTreeViewProps) => {
       periodId = 'year';
     }
 
-    router.push(`/budgets/detail/${year}?period=${period}&periodId=${periodId}`);
+    router.push(routeConfig(RouteEnum.BudgetDetail, { year }, { period, periodId }));
   };
 
   const renderChart = (item: HierarchicalBarItem) => (

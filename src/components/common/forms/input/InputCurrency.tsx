@@ -22,6 +22,7 @@ interface InputCurrencyProps {
   showSuggestion?: boolean;
   mode?: 'onBlur' | 'onChange';
   classContainer?: string;
+  className?: string;
   [key: string]: any;
 }
 
@@ -39,6 +40,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   showSuggestion = false,
   mode = 'onBlur',
   classContainer,
+  className,
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -104,7 +106,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
         placeholder={placeholder}
         maxLength={maxLength}
         id={id}
-        className={error ? 'border-red-500' : ''}
+        className={error ? 'border-red-500' : `${className}`}
         {...props}
       />
       {error && <p className="mt-1 text-sm text-red-500">{error.message}</p>}
