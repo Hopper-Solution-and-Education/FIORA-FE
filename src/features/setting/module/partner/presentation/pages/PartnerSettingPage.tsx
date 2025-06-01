@@ -69,7 +69,7 @@ const PartnerSettingPage = () => {
 
   return (
     <div className="space-y-6">
-      <TabActionHeader buttonLabel="" redirectPath="/setting/partner/create" />
+      <TabActionHeader buttonLabel="Create New Partner" redirectPath="/setting/partner/create" />
       {isLoading ? (
         <ChartSkeleton />
       ) : !partners || !Array.isArray(partners) || partners.length === 0 ? (
