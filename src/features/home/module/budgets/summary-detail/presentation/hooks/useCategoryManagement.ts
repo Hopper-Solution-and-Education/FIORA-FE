@@ -10,7 +10,7 @@ export const useCategoryManagement = () => {
     setCategoryRows((prev) => [...prev, newCategoryId]);
 
     setTableData((prev) => [
-      ...prev,
+      ...prev.slice(0, 3),
       {
         key: newCategoryId,
         type: '',
@@ -18,6 +18,7 @@ export const useCategoryManagement = () => {
         isParent: true,
         action: true,
       },
+      ...prev.slice(3),
     ]);
   };
 

@@ -43,7 +43,7 @@ const defaultConfig: BreadcrumbConfig = {
     summary: 'Summary',
   },
   displaySegments: undefined,
-  skipUuidAfter: ['update', 'details', 'summary'],
+  skipUuidAfter: ['update', 'details', 'summary', 'detail'],
 };
 
 /**
@@ -123,6 +123,12 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Home', link: '/' },
     { title: 'Budgets', link: '/budgets' },
     { title: 'Summary', link: '/budgets/summary' },
+  ],
+  '/budgets/summary/detail': [
+    { title: 'Home', link: '/' },
+    { title: 'Budgets', link: '/budgets' },
+    { title: 'Summary', link: '/budgets/summary/[year]' },
+    { title: 'Detail', link: '/budgets/summary/detail' },
   ],
 };
 

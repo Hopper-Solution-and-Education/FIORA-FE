@@ -30,3 +30,18 @@ export interface TableData {
   isEditable?: boolean;
   [key: string]: any; // Allow dynamic month keys (m1, m2, etc.)
 }
+
+export const MONTHS = [
+  'jan',
+  'feb',
+  'mar',
+  'apr',
+  'may',
+  'jun',
+  'jul',
+  'aug',
+  'sep',
+  'oct',
+  'nov',
+  'dec',
+] as const;
