@@ -47,6 +47,7 @@ export enum Messages {
 
   // Budget Service
   GET_BUDGET_ITEM_SUCCESS = 'Get budget item successfully',
+  GET_BUDGET_LIST_FISCAL_YEAR_SUCCESS = 'Get budget list fiscal year successfully',
   CREATE_BUDGET_SUCCESS = 'Create budget successfully',
   UPDATE_BUDGET_SUCCESS = 'Update budget successfully',
   BUDGET_PAST_YEAR_NOT_ALLOWED = 'Fiscal year cannot be in the past',

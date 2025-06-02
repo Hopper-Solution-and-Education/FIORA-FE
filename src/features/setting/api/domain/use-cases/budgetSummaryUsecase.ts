@@ -36,7 +36,7 @@ class BudgetSummaryUseCase {
     private _budgetRepository: IBudgetRepository = budgetRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
     private _categoryRepository: ICategoryRepository = categoryRepository,
-  ) {}
+  ) { }
 
   async getBudgetsByUserIdAndFiscalYear(
     userId: string,
@@ -246,6 +246,7 @@ class BudgetSummaryUseCase {
 
       // Update the affected fields in the map
       const affectedFields = new Map<string, boolean>();
+
       monthlyValues = applyUpdates(
         monthlyValues,
         updateTopBudget,
@@ -326,10 +327,10 @@ class BudgetSummaryUseCase {
           const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
           const value = oldDetail
             ? convertCurrency(
-                Number(oldDetail.amount),
-                oldDetail.currency || targetCurrency,
-                targetCurrency,
-              )
+              Number(oldDetail.amount),
+              oldDetail.currency || targetCurrency,
+              targetCurrency,
+            )
             : 0;
           return { amount: new Prisma.Decimal(value), month: i + 1, currency: targetCurrency };
         });
@@ -379,51 +380,56 @@ class BudgetSummaryUseCase {
     currency: Currency,
     prisma: Prisma.TransactionClient,
   ): Promise<BudgetDetails[]> {
-    const upsertPromises = monthlyBudgetDetailValues.map((v, index) => {
-      const amount = type === BudgetDetailType.Act ? v.actual : v.bottomUp;
+    try {
+      const upsertPromises = monthlyBudgetDetailValues.map((v, index) => {
+        const amount = type === BudgetDetailType.Act ? v.actual : v.bottomUp;
 
-      const where: Prisma.BudgetDetailsWhereUniqueInput = {
-        month_categoryId_type_budgetId_userId: {
+        const where: Prisma.BudgetDetailsWhereUniqueInput = {
+          month_categoryId_type_budgetId_userId: {
+            userId,
+            budgetId,
+            categoryId,
+            month: index + 1,
+            type,
+          },
+        };
+
+        const createData: Prisma.BudgetDetailsUncheckedCreateInput = {
           userId,
           budgetId,
           categoryId,
-          month: index + 1,
           type,
-        },
-      };
+          amount,
+          month: index + 1,
+          createdBy: userId,
+          currency,
+        };
 
-      const createData: Prisma.BudgetDetailsUncheckedCreateInput = {
-        userId,
-        budgetId,
-        categoryId,
-        type,
-        amount,
-        month: index + 1,
-        createdBy: userId,
-        currency,
-      };
+        const updateData: Prisma.BudgetDetailsUpdateInput = {
+          amount,
+          updatedBy: userId,
+          currency,
+        };
 
-      const updateData: Prisma.BudgetDetailsUpdateInput = {
-        amount,
-        updatedBy: userId,
-        currency,
-      };
+        return this._budgetRepository.upsertBudgetDetailsProduct(
+          where,
+          updateData,
+          createData,
+          prisma,
+        );
+      });
 
-      return this._budgetRepository.upsertBudgetDetailsProduct(
-        where,
-        updateData,
-        createData,
-        prisma,
-      );
-    });
+      const updatedBudgetDetails = await Promise.all(upsertPromises);
 
-    const updatedBudgetDetails = await Promise.all(upsertPromises);
+      if (updatedBudgetDetails.length !== 12) {
+        throw new Error('Failed to upsert all 12 months');
+      }
 
-    if (updatedBudgetDetails.length !== 12) {
-      throw new Error('Failed to upsert all 12 months');
+      return updatedBudgetDetails;
+    } catch (error) {
+      console.log("error", error)
+      throw error;
     }
-
-    return updatedBudgetDetails;
   }
 
   async upsertBudgetCategoryDetailsCategory(params: BudgetDetailCategoryCreationParams) {
@@ -484,12 +490,11 @@ class BudgetSummaryUseCase {
           ),
           actual: actualSumUpPlan
             ? convertCurrency(
-                Number(actualSumUpPlan[`m${i + 1}${suffix}`]) || 0,
-                currency,
-                targetCurrency,
-              )
-            : 0,
-        })) as MonthlyBudgetDetailValues;
+              Number(actualSumUpPlan[`m${i + 1}${suffix}`]) || 0,
+              currency,
+              targetCurrency,
+            ) : 0
+        }));
 
       if (monthlyBudgetDetailValues.length !== 12)
         throw new Error('All 12 months must be provided');
@@ -513,17 +518,16 @@ class BudgetSummaryUseCase {
 
           const oldValue = oldDetail
             ? convertCurrency(
-                Number(oldDetail.amount),
-                oldDetail.currency || targetCurrency,
-                targetCurrency,
-              )
-            : 0;
+              Number(oldDetail.amount),
+              oldDetail.currency,
+              targetCurrency,
+            ) : 0;
 
-          const newValue = monthlyBudgetDetailValues[i].bottomUp;
+          const newValue = monthlyBudgetDetailValues[i].bottomUp ?? 0;
           const convertAmountDecimal = new Prisma.Decimal(newValue - oldValue);
 
           return {
-            amount: convertAmountDecimal,
+            amount: convertAmountDecimal ?? 0,
             month: i + 1,
             currency: targetCurrency,
           };

@@ -376,8 +376,6 @@ class CategoryUseCase {
 
       const { budgetDetails, ...categoryWithoutBudgetDetails } = category;
 
-      console.log(budgetDetails);
-
       return {
         ...categoryWithoutBudgetDetails,
         bottomUpPlan,
