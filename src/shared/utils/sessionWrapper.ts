@@ -1,4 +1,6 @@
+import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import { NextApiHandler, NextApiRequest, NextApiResponse } from 'next';
+import { getServerSession } from 'next-auth';
 import RESPONSE_CODE from '../constants/RESPONSE_CODE';
 import { Messages } from '../constants/message';
 
@@ -6,19 +8,13 @@ type HandlerWithUser = (req: NextApiRequest, res: NextApiResponse, userId: strin
 
 export function sessionWrapper(handler: HandlerWithUser): NextApiHandler {
   return async (req: NextApiRequest, res: NextApiResponse) => {
-    // const session = await getServerSession(req, res, authOptions);
+    const session = await getServerSession(req, res, authOptions);
 
-    // if (!session || !session.user?.id) {
-    //   return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
-    // }
+    if (!session || !session.user?.id) {
+      return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
+    }
 
-    // const userId = session.user.id;
-
-    const userId = 'd64dd156-37f3-4cdf-a502-0482db4997de';
-
-    // const userId = 'd64dd156-37f3-4cdf-a502-0482db4997de';
-
-    // const userId = 'd64dd156-37f3-4cdf-a502-0482db4997de';
+    const userId = session.user.id;
 
     try {
       return await handler(req, res, userId);
