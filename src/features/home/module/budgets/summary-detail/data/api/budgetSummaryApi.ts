@@ -4,6 +4,7 @@ import { BudgetSummaryRequestDTO } from '../dto/request/BudgetSummaryRequestDTO'
 import {
   BudgetSummaryResponseDTO,
   BudgetByTypeResponseDTO,
+  BudgetYearsResponseDTO,
 } from '../dto/response/BudgetSummaryResponseDTO';
 import {
   CategoryResponseDTO,
@@ -15,6 +16,7 @@ import {
 } from '../dto/request/BudgetUpdateRequestDTO';
 import { httpClient } from '@/config/http-client/HttpClient';
 import { BudgetType } from '../../domain/entities/BudgetType';
+import { HttpResponse } from '@/shared/types';
 
 @injectable()
 export class BudgetSummaryAPI implements IBudgetSummaryAPI {
@@ -54,6 +56,10 @@ export class BudgetSummaryAPI implements IBudgetSummaryAPI {
 
   async updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO): Promise<void> {
     await httpClient.put<void>('/api/budgets/categories', data);
+  }
+
+  async getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>> {
+    return httpClient.get<HttpResponse<BudgetYearsResponseDTO>>('/api/budgets/dashboard');
   }
 }
 

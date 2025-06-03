@@ -4,26 +4,50 @@ import { BudgetDetailFilterType, MONTHS, TableData } from '../presentation/types
 
 export const transformMonthlyDataToTableFormat = (data: MonthlyPlanningData) => {
   const result: { [key: string]: number } = {};
+  const monthlyTotals: number[] = new Array(12).fill(0);
+  let fullYear = 0;
 
   Object.entries(data).forEach(([key, value]) => {
+    const numValue = typeof value === 'number' ? value : 0;
     const match = key.match(/(m|q|h)(\d+)_|total_/);
+
     if (match) {
       if (match[0].startsWith('total_')) {
-        result['fullYear'] = value;
+        result['fullYear'] = numValue;
+        fullYear = numValue;
       } else {
         const type = match[1];
-        const number = parseInt(match[2], 10);
+        const number = parseInt(match[2], 10) - 1;
 
-        if (type === 'm' && number >= 1 && number <= 12) {
-          result[MONTHS[number - 1]] = value;
-        } else if (type === 'q' && number >= 1 && number <= 4) {
-          result[`q${number}`] = value;
-        } else if (type === 'h' && number >= 1 && number <= 2) {
-          result[`h${number}`] = value;
+        switch (type) {
+          case 'm':
+            if (number >= 0 && number < 12) {
+              result[MONTHS[number]] = numValue;
+              monthlyTotals[number] = numValue;
+            }
+            break;
+          case 'q':
+            if (number >= 0 && number < 4) {
+              result[`q${number + 1}`] = numValue;
+            }
+            break;
+          case 'h':
+            if (number >= 0 && number < 2) {
+              result[`h${number + 1}`] = numValue;
+            }
+            break;
         }
       }
     }
   });
+
+  result['q1'] = monthlyTotals.slice(0, 3).reduce((sum, val) => sum + val, 0);
+  result['q2'] = monthlyTotals.slice(3, 6).reduce((sum, val) => sum + val, 0);
+  result['q3'] = monthlyTotals.slice(6, 9).reduce((sum, val) => sum + val, 0);
+  result['q4'] = monthlyTotals.slice(9, 12).reduce((sum, val) => sum + val, 0);
+  result['h1'] = monthlyTotals.slice(0, 6).reduce((sum, val) => sum + val, 0);
+  result['h2'] = monthlyTotals.slice(6, 12).reduce((sum, val) => sum + val, 0);
+  result['fullYear'] = fullYear || monthlyTotals.reduce((sum, val) => sum + val, 0);
 
   return result;
 };
@@ -33,20 +57,16 @@ export const transformMonthlyData = (
   activeTab: BudgetDetailFilterType,
 ): MonthlyPlanningData => {
   const suffix = activeTab === BudgetDetailFilterEnum.EXPENSE ? '_exp' : '_inc';
-  const result: MonthlyPlanningData = {};
-  for (let i = 1; i <= 12; i++) {
-    result[`m${i}${suffix}`] = 0;
-  }
+  const result: MonthlyPlanningData = Object.fromEntries(
+    Array.from({ length: 12 }, (_, i) => [`m${i + 1}${suffix}`, 0]),
+  );
 
   Object.entries(data).forEach(([key, value]) => {
-    if (MONTHS.includes(key as (typeof MONTHS)[number])) {
-      // Ép kiểu key thành literal type
-      const monthIndex = MONTHS.indexOf(key as (typeof MONTHS)[number]);
-      if (monthIndex !== -1) {
-        const numericValue = typeof value === 'string' ? parseFloat(value) : value;
-        if (!isNaN(numericValue)) {
-          result[`m${monthIndex + 1}${suffix}`] = numericValue;
-        }
+    const monthIndex = MONTHS.indexOf(key as (typeof MONTHS)[number]);
+    if (monthIndex !== -1) {
+      const numericValue = typeof value === 'string' ? parseFloat(value) : (value ?? 0);
+      if (!isNaN(numericValue)) {
+        result[`m${monthIndex + 1}${suffix}`] = numericValue;
       }
     }
   });

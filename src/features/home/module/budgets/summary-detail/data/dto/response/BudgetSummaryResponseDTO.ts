@@ -1,5 +1,6 @@
 import { Budget } from '../../../domain/entities/Budget';
 import { BudgetType } from '../../../domain/entities/BudgetType';
+import { HttpResponse } from '@/features/setting/module/product/model';
 
 export interface BudgetDTO {
   id: string;
@@ -62,3 +63,5 @@ export interface BudgetByTypeResponseDTO {
   message: string;
   data: BudgetDTO;
 }
+
+export type BudgetYearsResponseDTO = string[];

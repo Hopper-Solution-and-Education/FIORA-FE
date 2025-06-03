@@ -4,28 +4,17 @@ import { Icons } from '@/components/Icon';
 import { Currency } from '@/shared/types';
 import { convertVNDToUSD } from '@/shared/utils';
 import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
-import { BudgetDetailType, TableData } from '../presentation/types/table.type';
+import {
+  BudgetDetailFilterType,
+  BudgetDetailType,
+  TableData,
+} from '../presentation/types/table.type';
 import CategorySelect from '../../../category/components/CategorySelect';
 import { cn } from '@/shared/utils';
 import { Category as BudgetCategory } from '../data/dto/response/CategoryResponseDTO';
-
-const PERIOD_CONFIG = {
-  months: Array.from({ length: 12 }, (_, i) => ({
-    key: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'][i],
-    dataKey: `m${i + 1}`,
-    title: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
-  })),
-  quarters: Array.from({ length: 4 }, (_, i) => ({
-    key: `q${i + 1}`,
-    dataKey: `q${i + 1}`,
-    title: `Q${i + 1}`,
-  })),
-  halfYears: Array.from({ length: 2 }, (_, i) => ({
-    key: `h${i + 1}`,
-    dataKey: `h${i + 1}`,
-    title: `H${i + 1}`,
-  })),
-} as const;
+import { COLORS } from '@/shared/constants/chart';
+import { BudgetDetailFilterEnum, BUDGETR_FILTER_KEY, PERIOD_CONFIG } from '../data/constants';
+import { formatters } from '@/shared/lib';
 
 export const formatCurrencyValue = (
   value: number | string | undefined,
@@ -34,13 +23,7 @@ export const formatCurrencyValue = (
   if (value === undefined || value === '') return '0';
   const numValue = typeof value === 'string' ? parseFloat(value) : value;
   const formattedValue = currency === 'USD' ? convertVNDToUSD(numValue) : numValue;
-
-  return new Intl.NumberFormat(currency === 'USD' ? 'en-US' : 'vi-VN', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: currency === 'USD' ? 2 : 0,
-    maximumFractionDigits: currency === 'USD' ? 2 : 0,
-  }).format(formattedValue);
+  return formatters[currency].format(formattedValue);
 };
 
 export const getBudgetValue = (
@@ -115,8 +98,20 @@ export const getColumnsByPeriod = (
   onCategoryChange?: (categoryId: string) => void,
   onValidateClick?: (record: TableData) => void,
   onValueChange?: (record: TableData, columnKey: string, value: number) => void,
+  activeTab?: BudgetDetailFilterType,
 ) => {
   const renderEditableCell = (text: any, record: TableData, index: number, column: ColumnProps) => {
+    let color = '#000';
+
+    if (
+      activeTab &&
+      BUDGETR_FILTER_KEY.recordType.includes(record.type) &&
+      BUDGETR_FILTER_KEY.columnKey.includes(column.key)
+    ) {
+      if (activeTab === BudgetDetailFilterEnum.EXPENSE) color = COLORS.DEPS_DANGER.LEVEL_1;
+      else color = COLORS.DEPS_SUCCESS.LEVEL_1;
+    }
+
     if (record.isEditable) {
       return (
         <InputCurrency
@@ -133,7 +128,8 @@ export const getColumnsByPeriod = (
         />
       );
     }
-    return formatCurrencyValue(text, currency);
+
+    return <span style={{ color }}>{formatCurrencyValue(text, currency)}</span>;
   };
 
   const createColumn = (

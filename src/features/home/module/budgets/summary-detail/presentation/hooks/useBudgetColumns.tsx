@@ -73,6 +73,7 @@ export function useBudgetColumns({
       handleCategoryChange,
       handleValidateClick,
       handleValueChange,
+      activeTab,
     );
 
     const columnsWithCategorySelect: ColumnProps[] = [

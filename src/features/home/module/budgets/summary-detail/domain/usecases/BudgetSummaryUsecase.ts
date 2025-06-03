@@ -4,12 +4,16 @@ import { TYPES } from '../../di/budgetSummaryDIContainer.type';
 import type { IBudgetSummaryRepository } from '../../data/repositories/IBudgetSummaryRepository';
 import { IBudgetSummaryUseCase } from './IBudgetSummaryUseCase';
 import { BudgetSummaryByType } from '../entities/BudgetSummaryByType';
-import { BudgetSummaryResponseDTO } from '../../data/dto/response/BudgetSummaryResponseDTO';
+import {
+  BudgetSummaryResponseDTO,
+  BudgetYearsResponseDTO,
+} from '../../data/dto/response/BudgetSummaryResponseDTO';
 import { Category, CategoryPlanning } from '../../data/dto/response/CategoryResponseDTO';
 import {
   TopDownUpdateRequestDTO,
   CategoryPlanningUpdateRequestDTO,
 } from '../../data/dto/request/BudgetUpdateRequestDTO';
+import { HttpResponse } from '@/shared/types';
 
 @injectable()
 export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
@@ -43,5 +47,9 @@ export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
 
   async updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO): Promise<void> {
     return this.budgetSummaryRepository.updateCategoryPlanning(data);
+  }
+
+  async getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>> {
+    return this.budgetSummaryRepository.getBudgetYears();
   }
 }

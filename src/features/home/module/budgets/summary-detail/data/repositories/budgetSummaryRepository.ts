@@ -8,10 +8,14 @@ import {
   CategoryPlanningUpdateRequestDTO,
   TopDownUpdateRequestDTO,
 } from '../dto/request/BudgetUpdateRequestDTO';
-import { BudgetSummaryResponseDTO } from '../dto/response/BudgetSummaryResponseDTO';
+import {
+  BudgetSummaryResponseDTO,
+  BudgetYearsResponseDTO,
+} from '../dto/response/BudgetSummaryResponseDTO';
 import { Category, CategoryPlanning } from '../dto/response/CategoryResponseDTO';
 import { BudgetSummaryMapper } from '../mappers/BudgetSummaryMapper';
 import { IBudgetSummaryRepository } from './IBudgetSummaryRepository';
+import { HttpResponse } from '@/shared/types';
 
 @injectable()
 export class BudgetSummaryRepository implements IBudgetSummaryRepository {
@@ -66,5 +70,14 @@ export class BudgetSummaryRepository implements IBudgetSummaryRepository {
 
   async updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO): Promise<void> {
     await this.budgetSummaryAPI.updateCategoryPlanning(data);
+  }
+
+  async getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>> {
+    try {
+      return await this.budgetSummaryAPI.getBudgetYears();
+    } catch (error) {
+      console.error('Error fetching budget years:', error);
+      throw error;
+    }
   }
 }

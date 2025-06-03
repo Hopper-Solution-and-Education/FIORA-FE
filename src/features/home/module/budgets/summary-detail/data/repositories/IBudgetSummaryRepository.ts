@@ -1,12 +1,16 @@
 import { BudgetSummaryByType } from '../../domain/entities/BudgetSummaryByType';
 import { BudgetSummaryRequestDTO } from '../dto/request/BudgetSummaryRequestDTO';
 import { BudgetType } from '../../domain/entities/BudgetType';
-import { BudgetSummaryResponseDTO } from '../dto/response/BudgetSummaryResponseDTO';
+import {
+  BudgetSummaryResponseDTO,
+  BudgetYearsResponseDTO,
+} from '../dto/response/BudgetSummaryResponseDTO';
 import { Category, CategoryPlanning } from '../dto/response/CategoryResponseDTO';
 import {
   TopDownUpdateRequestDTO,
   CategoryPlanningUpdateRequestDTO,
 } from '../dto/request/BudgetUpdateRequestDTO';
+import { HttpResponse } from '@/shared/types';
 
 export interface IBudgetSummaryRepository {
   getBudgetSummary(params: BudgetSummaryRequestDTO): Promise<BudgetSummaryResponseDTO>;
@@ -19,4 +23,5 @@ export interface IBudgetSummaryRepository {
   getActualPlanningByCategory(categoryId: string, year: number): Promise<CategoryPlanning>;
   updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<void>;
   updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO): Promise<void>;
+  getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>>;
 }

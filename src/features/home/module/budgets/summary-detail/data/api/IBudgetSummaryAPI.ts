@@ -3,6 +3,7 @@ import { BudgetSummaryRequestDTO } from '../dto/request/BudgetSummaryRequestDTO'
 import {
   BudgetSummaryResponseDTO,
   BudgetByTypeResponseDTO,
+  BudgetYearsResponseDTO,
 } from '../dto/response/BudgetSummaryResponseDTO';
 import {
   CategoryResponseDTO,
@@ -12,6 +13,7 @@ import {
   TopDownUpdateRequestDTO,
   CategoryPlanningUpdateRequestDTO,
 } from '../dto/request/BudgetUpdateRequestDTO';
+import { HttpResponse } from '@/shared/types';
 
 export interface IBudgetSummaryAPI {
   /**
@@ -56,4 +58,10 @@ export interface IBudgetSummaryAPI {
    * Update category bottom-up planning
    */
   updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO): Promise<void>;
+
+  /**
+   * Lấy danh sách năm tài chính đã có ngân sách
+   * @returns Promise chứa dữ liệu phản hồi
+   */
+  getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>>;
 }

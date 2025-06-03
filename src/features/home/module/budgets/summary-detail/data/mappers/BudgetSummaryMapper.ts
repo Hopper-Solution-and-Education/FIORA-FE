@@ -1,8 +1,12 @@
 import { BudgetSummary } from '../../domain/entities/BudgetSummary';
 import { BudgetSummaryByType } from '../../domain/entities/BudgetSummaryByType';
 import { BudgetSummaryResponseDTO } from '../dto/response/BudgetSummaryResponseDTO';
-import { BudgetByTypeResponseDTO } from '../dto/response/BudgetSummaryResponseDTO';
+import {
+  BudgetByTypeResponseDTO,
+  BudgetYearsResponseDTO,
+} from '../dto/response/BudgetSummaryResponseDTO';
 import { BudgetType } from '../../domain/entities/BudgetType';
+import { HttpResponse } from '@/features/setting/module/product/model';
 
 export class BudgetSummaryMapper {
   static toBudgetSummary(dto: BudgetSummaryResponseDTO): BudgetSummary {
@@ -65,5 +69,9 @@ export class BudgetSummaryMapper {
         updatedBy: dto.data.updated_by || '',
       },
     };
+  }
+
+  static toBudgetYears(dto: HttpResponse<BudgetYearsResponseDTO>): string[] {
+    return dto.data;
   }
 }

@@ -16,7 +16,7 @@ import { COLORS } from '@/shared/constants/chart';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { routeConfig } from '@/shared/utils/route';
 import { useAppSelector } from '@/store';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { PERIOD_OPTIONS } from '../../data/constants';
 import { budgetSummaryDIContainer } from '../../di/budgetSummaryDIContainer';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
@@ -87,6 +87,12 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     tableData,
   });
 
+  useEffect(() => {
+    if (tableData.length === 3) {
+      handleAddCategory(setTableData);
+    }
+  }, [tableData.length]);
+
   return (
     <div className="p-4 w-full flex flex-col">
       <div className="flex gap-4 mb-6 justify-between">
@@ -132,7 +138,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
         </div>
       </div>
 
-      <div className="w-[50rem] min-w-full">
+      <div className="w-[50rem] md:w-[20rem] sm:w-[10rem] xs min-w-full">
         <div className="w-full">
           <TableV2
             columns={columns}
