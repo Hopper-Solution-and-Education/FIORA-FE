@@ -42,6 +42,7 @@ const ComposedChartComponent = ({
   height = DEFAULT_COMPOSED_CHART_HEIGHT,
   fontSize = DEFAULT_CHART_FONT_SIZE,
   tickCount = DEFAULT_CHART_TICK_COUNT,
+  tooltipFormatter,
 }: ComposedChartProps) => {
   const { width } = useWindowSize();
   const isMobile = useIsMobile();
@@ -97,6 +98,9 @@ const ComposedChartComponent = ({
     const { active, payload, label } = props;
     if (!active || !payload || !payload.length) return null;
 
+    const customContent = tooltipFormatter?.(payload[0].payload);
+    if (customContent) return customContent;
+
     return (
       <div className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm">
         <p
@@ -105,7 +109,6 @@ const ComposedChartComponent = ({
         >
           {label}
         </p>
-
         {payload.map((entry: Payload<number, string>, index: number) => (
           <div
             key={index}

@@ -8,4 +8,5 @@ export type ComposedChartDataItem = {
 export interface ComposedChartProps extends BaseChartProps<ComposedChartDataItem> {
   columns: ColumnConfig[];
   lines?: LineConfig[];
+  tooltipFormatter?: (data: any) => React.ReactNode;
 }
