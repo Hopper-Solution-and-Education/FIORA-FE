@@ -52,7 +52,6 @@ const ChartByCategory = () => {
         <React.Fragment>
           <ComposedChart
             data={data}
-            title="Chart by Category"
             columns={[
               {
                 key: 'column',
