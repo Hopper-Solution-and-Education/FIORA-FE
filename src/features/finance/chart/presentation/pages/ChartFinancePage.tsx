@@ -9,6 +9,7 @@ import { getFinanceByDateAsyncThunk } from '../../slices/actions/getFinanceByDat
 import { ViewBy } from '../../slices/types';
 import { chartComponents, tableComponents } from '../../utils';
 import { FilterByViewType } from '../molecules';
+import MetricCards from '../molecules/MetricCards';
 
 const ChartFinancePage = () => {
   const viewBy = useAppSelector((state) => state.financeControl.viewBy);
@@ -77,6 +78,8 @@ const ChartFinancePage = () => {
         setDateRange={setDateRange}
         onViewByChange={handleViewByChange}
       />
+
+      <MetricCards />
 
       {viewMode === 'chart' ? <ChartComponent /> : <TableComponent />}
     </div>
