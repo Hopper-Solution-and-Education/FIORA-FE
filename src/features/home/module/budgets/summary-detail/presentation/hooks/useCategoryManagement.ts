@@ -77,40 +77,29 @@ export const useCategoryManagement = ({
   };
 
   const handleRemoveCategory = (categoryId: string) => {
-    console.log('handleRemoveCategory called with categoryId:', categoryId);
-
-    console.log('tableData before remove:', tableData);
-
     setCategoryRows((prev) => {
       return prev.filter((id) => id !== categoryId);
     });
 
-    const rowData = tableData.find((item) => item.key === categoryId);
-    console.log('rowData:', rowData);
+    const rowData = tableData.find((item) => item?.categoryId === categoryId);
+
     if (rowData?.categoryId) {
       setSelectedCategories((prev) => {
-        console.log('selectedCategories before remove:', prev);
         const next = new Set(prev);
         next.delete(rowData.categoryId);
-        console.log('selectedCategories after remove:', next);
         return next;
       });
     }
 
     setTableData((prev) => {
-      console.log('tableData before remove:', prev);
-      const newTableData = prev.filter((item) => item.key !== categoryId);
-      console.log('tableData after remove:', newTableData);
+      const newTableData = prev.filter((item) => item?.categoryId !== categoryId);
       return newTableData;
     });
   };
 
   const handleDeleteCategory = async (categoryId: string) => {
     try {
-      const type =
-        activeTab === BudgetDetailFilterEnum.EXPENSE
-          ? BudgetDetailFilterEnum.EXPENSE
-          : BudgetDetailFilterEnum.INCOME;
+      const type = activeTab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income';
 
       const deleteData: DeleteCategoryRequestDTO = {
         fiscalYear: initialYear.toString(),
@@ -119,6 +108,8 @@ export const useCategoryManagement = ({
       };
 
       await budgetSummaryUseCase.deleteCategory(deleteData);
+
+      toast.success('Category deleted successfully');
     } catch (error: any) {
       toast.error(`Failed to delete category: ${error.message}`);
     }

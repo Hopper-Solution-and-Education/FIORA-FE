@@ -191,6 +191,7 @@ export const getColumnsByPeriod = (
             title="Invalid"
             onClick={() => {
               onRemoveCategory?.(categoryId);
+              onDeleteCategory?.(categoryId);
             }}
           >
             <Icons.close size={15} />
