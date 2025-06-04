@@ -12,6 +12,7 @@ const ChartByDate = () => {
 
   const data = financeByDate.map((item) => ({
     name: item.period,
+    icon: 'calendar',
     column1: convertCurrency(item.totalExpense, item.currency as Currency, currency),
     column2: convertCurrency(item.totalIncome, item.currency as Currency, currency),
     line: convertCurrency(

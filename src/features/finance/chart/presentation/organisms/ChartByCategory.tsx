@@ -39,6 +39,7 @@ const ChartByCategory = () => {
           item.currency as Currency,
           currency,
         ),
+        icon: item.icon ?? 'wallet',
       }))
     : [];
 

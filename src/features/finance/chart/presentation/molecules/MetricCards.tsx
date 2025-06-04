@@ -1,7 +1,7 @@
 import { MetricCard } from '@/components/common/metric';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Currency } from '@/shared/types';
-import { convertCurrency, formatCurrency } from '@/shared/utils/convertCurrency';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { useAppSelector } from '@/store';
 import { ArrowDownIcon, ArrowUpIcon, TrendingUpIcon } from 'lucide-react';
 import { FinanceByDate, FinanceResult } from '../../domain/entities';
@@ -85,21 +85,24 @@ const MetricCards = () => {
         <>
           <MetricCard
             title="Total Income"
-            value={formatCurrency(totals.income, currency)}
+            value={totals.income}
+            currency={currency}
             type="income"
             icon={<ArrowUpIcon className="h-4 w-4 text-green-500" />}
             description="Total income for the selected period"
           />
           <MetricCard
             title="Total Expense"
-            value={formatCurrency(totals.expense, currency)}
+            value={totals.expense}
+            currency={currency}
             type="expense"
             icon={<ArrowDownIcon className="h-4 w-4 text-red-500" />}
             description="Total expenses for the selected period"
           />
           <MetricCard
             title="Net Total"
-            value={formatCurrency(totals.total, currency)}
+            value={totals.total}
+            currency={currency}
             type="total"
             icon={
               <TrendingUpIcon
@@ -122,7 +125,8 @@ const MetricCards = () => {
       return (
         <MetricCard
           title="Total Income"
-          value={formatCurrency(totals.income, currency)}
+          value={totals.income}
+          currency={currency}
           type="income"
           icon={<ArrowUpIcon className="h-4 w-4 text-green-500" />}
           description="Total income by category"
@@ -132,7 +136,8 @@ const MetricCards = () => {
     return (
       <MetricCard
         title="Total Expense"
-        value={formatCurrency(totals.expense, currency)}
+        value={totals.expense}
+        currency={currency}
         type="expense"
         icon={<ArrowDownIcon className="h-4 w-4 text-red-500" />}
         description="Total expenses by category"
@@ -152,21 +157,24 @@ const MetricCards = () => {
         <>
           <MetricCard
             title="Total Income"
-            value={formatCurrency(totals.income, currency)}
+            value={totals.income}
+            currency={currency}
             type="income"
             icon={<ArrowUpIcon className="h-4 w-4 text-green-500" />}
             description="Total income by account"
           />
           <MetricCard
             title="Total Expense"
-            value={formatCurrency(totals.expense, currency)}
+            value={totals.expense}
+            currency={currency}
             type="expense"
             icon={<ArrowDownIcon className="h-4 w-4 text-red-500" />}
             description="Total expenses by account"
           />
           <MetricCard
             title="Net Total"
-            value={formatCurrency(totals.total, currency)}
+            value={totals.total}
+            currency={currency}
             type="total"
             icon={
               <TrendingUpIcon
@@ -192,21 +200,24 @@ const MetricCards = () => {
         <>
           <MetricCard
             title="Total Income"
-            value={formatCurrency(totals.income, currency)}
+            value={totals.income}
+            currency={currency}
             type="income"
             icon={<ArrowUpIcon className="h-4 w-4 text-green-500" />}
             description="Total income by product"
           />
           <MetricCard
             title="Total Expense"
-            value={formatCurrency(totals.expense, currency)}
+            value={totals.expense}
+            currency={currency}
             type="expense"
             icon={<ArrowDownIcon className="h-4 w-4 text-red-500" />}
             description="Total expenses by product"
           />
           <MetricCard
             title="Net Total"
-            value={formatCurrency(totals.total, currency)}
+            value={totals.total}
+            currency={currency}
             type="total"
             icon={
               <TrendingUpIcon
@@ -232,21 +243,24 @@ const MetricCards = () => {
         <>
           <MetricCard
             title="Total Income"
-            value={formatCurrency(totals.income, currency)}
+            value={totals.income}
+            currency={currency}
             type="income"
             icon={<ArrowUpIcon className="h-4 w-4 text-green-500" />}
             description="Total income by partner"
           />
           <MetricCard
             title="Total Expense"
-            value={formatCurrency(totals.expense, currency)}
+            value={totals.expense}
+            currency={currency}
             type="expense"
             icon={<ArrowDownIcon className="h-4 w-4 text-red-500" />}
             description="Total expenses by partner"
           />
           <MetricCard
             title="Net Total"
-            value={formatCurrency(totals.total, currency)}
+            value={totals.total}
+            currency={currency}
             type="total"
             icon={
               <TrendingUpIcon

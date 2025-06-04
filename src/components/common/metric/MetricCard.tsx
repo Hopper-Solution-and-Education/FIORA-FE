@@ -1,17 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import LucieIcon from '@/features/home/module/category/components/LucieIcon';
 import { cn } from '@/lib/utils';
-import { isImageUrl } from '@/shared/utils';
+import { formatCurrency, isImageUrl } from '@/shared/utils';
 import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
 import Image from 'next/image';
 
 interface MetricCardProps {
   title: string;
-  value: string;
+  value: number;
   type: 'income' | 'expense' | 'total';
   description?: string;
   icon?: string | React.ReactNode;
   className?: string;
+  currency?: 'VND' | 'USD';
   trend?: {
     value: string;
     isPositive: boolean;
@@ -26,6 +27,7 @@ const MetricCard = ({
   icon,
   className,
   trend,
+  currency,
 }: MetricCardProps) => {
   const getCardColor = () => {
     switch (type) {
@@ -36,8 +38,9 @@ const MetricCard = ({
       case 'total':
         if (Number(value) >= 0) {
           return 'text-blue-600 dark:text-blue-400';
+        } else {
+          return 'text-yellow-600 dark:text-yellow-400';
         }
-        return 'text-yellow-600 dark:text-yellow-400';
       default:
         return 'text-gray-600 dark:text-gray-400';
     }
@@ -102,7 +105,9 @@ const MetricCard = ({
         {renderIconOrImage(icon)}
       </CardHeader>
       <CardContent>
-        <div className={cn('text-xl sm:text-2xl font-bold', getCardColor())}>{value}</div>
+        <div className={cn('text-xl sm:text-2xl font-bold', getCardColor())}>
+          {formatCurrency(value, currency)}
+        </div>
         {(description || trend) && (
           <div className="mt-1 flex items-center text-[10px] sm:text-xs">
             {description && <p className="text-muted-foreground">{description}</p>}

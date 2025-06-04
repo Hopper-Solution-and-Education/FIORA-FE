@@ -2,6 +2,12 @@
 
 import { ChartLegend } from '@/components/common/atoms';
 import { ChartSkeleton } from '@/components/common/organisms';
+import {
+  Tooltip as ShadcnTooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import LucieIcon from '@/features/home/module/category/components/LucieIcon';
 import {
   DEFAULT_CHART_FONT_SIZE,
@@ -218,31 +224,23 @@ const ComposedChartComponent = ({
                   dataKey="name"
                   tick={({ x, y, payload }) => {
                     const item = data.find((d) => d.name === String(payload.value));
-                    const formattedLabel = (() => {
-                      if (labelsDistance.shouldRotateLabels) {
-                        return payload.value.length > 10
-                          ? payload.value.substring(0, 10) + '...'
-                          : payload.value;
-                      }
-                      if (payload.value.length > 20 || labelsDistance.shouldTruncate) {
-                        return payload.value.length > 12
-                          ? payload.value.substring(0, 12) + '...'
-                          : payload.value;
-                      }
-                      return payload.value;
-                    })();
 
                     return (
                       <g transform={`translate(${x},${y})`}>
-                        {item?.icon ? (
-                          <foreignObject x={-15} y={0} width={30} height={30}>
-                            <div className="w-full h-full rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                              {renderIconOrImage(item.icon)}
-                            </div>
-                          </foreignObject>
-                        ) : (
-                          formattedLabel
-                        )}
+                        <foreignObject x={-20} y={5} width={35} height={35}>
+                          <TooltipProvider>
+                            <ShadcnTooltip>
+                              <TooltipTrigger asChild>
+                                <div className="w-full h-full rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 ">
+                                  {renderIconOrImage(item?.icon ?? 'user')}
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{item?.name}</p>
+                              </TooltipContent>
+                            </ShadcnTooltip>
+                          </TooltipProvider>
+                        </foreignObject>
                       </g>
                     );
                   }}
@@ -298,6 +296,22 @@ const ComposedChartComponent = ({
                   className: 'dark:fill-gray-100 dark:stroke-gray-600 transition-all duration-300',
                 }}
                 content={renderTooltipContent}
+              />
+              <Tooltip
+                cursor={false}
+                content={({ active, payload }) => {
+                  if (!active || !payload || !payload.length) return null;
+                  const item = payload[0].payload;
+                  if (!item?.icon) return null;
+
+                  return (
+                    <div className="p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm">
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                        {item.name}
+                      </p>
+                    </div>
+                  );
+                }}
               />
 
               {columns.map((column: ColumnConfig, index: number) => (

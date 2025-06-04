@@ -33,6 +33,7 @@ const ChartByProduct = () => {
   const data = Array.isArray(financeByProduct)
     ? financeByProduct.map((item) => ({
         name: item.name,
+        icon: item.icon,
         column1: convertCurrency(item.totalExpense, item.currency as Currency, currency),
         column2: convertCurrency(item.totalIncome, item.currency as Currency, currency),
         column3: convertCurrency(item.totalProfit, item.currency as Currency, currency),
