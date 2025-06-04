@@ -26,7 +26,7 @@ export const convertCurrency = (
   const convertedAmount =
     toCurrency === Currency.USD ? amountInUSD : amountInUSD * EXCHANGE_RATES_TO_USD[toCurrency];
 
-  return Number(convertedAmount.toFixed(2)) ?? 0;
+  return Number(convertedAmount.toFixed(2));
 };
 
 export const isValidCurrency = (currency: string): currency is Currency => {
