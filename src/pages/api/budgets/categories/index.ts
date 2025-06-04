@@ -17,8 +17,8 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
     switch (req.method) {
       case 'PUT':
         return PUT(req, res, userId);
-      case 'DELETE':
-        return DELETE(req, res, userId);
+      case 'POST':
+        return POST(req, res, userId);
       default:
         return res
           .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -90,7 +90,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   }
 }
 
-export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { categoryId, fiscalYear, type } = req.body;
 
