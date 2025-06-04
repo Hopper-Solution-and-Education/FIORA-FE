@@ -49,13 +49,7 @@ export function useBudgetCategories({
 
       const suffix = activeTab === BudgetDetailFilterEnum.EXPENSE ? '_exp' : '_inc';
 
-      const bottomUpData =
-        selectedCategoryData.budgetDetails?.reduce((acc, detail) => {
-          if (detail.month) {
-            acc[`m${detail.month}${suffix}`] = detail.amount || 0;
-          }
-          return acc;
-        }, {} as MonthlyPlanningData) || {};
+      const bottomUpData = selectedCategoryData.bottomUpPlan as MonthlyPlanningData;
 
       const actualData: MonthlyPlanningData = {
         [`m1${suffix}`]: actualResponse[`m1${suffix}`] || 0,
@@ -71,8 +65,6 @@ export function useBudgetCategories({
         [`m11${suffix}`]: actualResponse[`m11${suffix}`] || 0,
         [`m12${suffix}`]: actualResponse[`m12${suffix}`] || 0,
       };
-
-      const tableActualData = transformMonthlyDataToTableFormat(actualData);
 
       setTableData((prevData) =>
         prevData.map((item) => {
@@ -96,7 +88,7 @@ export function useBudgetCategories({
                   isChild: true,
                   action: true,
                   isEditable: false,
-                  ...tableActualData,
+                  ...transformMonthlyDataToTableFormat(actualData),
                 },
               ],
             };

@@ -98,6 +98,8 @@ export const getColumnsByPeriod = (
   onCategoryChange?: (categoryId: string) => void,
   onValidateClick?: (record: TableData) => void,
   onValueChange?: (record: TableData, columnKey: string, value: number) => void,
+  onDeleteCategory?: (categoryId: string) => void,
+  onRemoveCategory?: (categoryId: string) => void,
   activeTab?: BudgetDetailFilterType,
 ) => {
   const renderEditableCell = (text: any, record: TableData, index: number, column: ColumnProps) => {
@@ -179,10 +181,18 @@ export const getColumnsByPeriod = (
     align: 'center',
     width: 60,
     headerAlign: 'center',
-    render: (_: number, record: TableData) =>
-      record.isEditable ? (
+    render: (_: number, record: TableData) => {
+      const [categoryId] = record.key.split('-bottom-up');
+
+      return record.isEditable ? (
         <div className="grid grid-flow-col place-items-center gap-2">
-          <span className="text-red-500 hover:text-red-700 cursor-pointer" title="Invalid">
+          <span
+            className="text-red-500 hover:text-red-700 cursor-pointer"
+            title="Invalid"
+            onClick={() => {
+              onRemoveCategory?.(categoryId);
+            }}
+          >
             <Icons.close size={15} />
           </span>
           <span
@@ -193,7 +203,8 @@ export const getColumnsByPeriod = (
             <Icons.check size={15} />
           </span>
         </div>
-      ) : null,
+      ) : null;
+    },
   });
 
   const createPeriodColumns = (

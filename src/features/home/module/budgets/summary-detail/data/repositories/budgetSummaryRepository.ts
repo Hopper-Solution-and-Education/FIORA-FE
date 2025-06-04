@@ -6,6 +6,7 @@ import type { IBudgetSummaryAPI } from '../api/IBudgetSummaryAPI';
 import { BudgetSummaryRequestDTO } from '../dto/request/BudgetSummaryRequestDTO';
 import {
   CategoryPlanningUpdateRequestDTO,
+  DeleteCategoryRequestDTO,
   TopDownUpdateRequestDTO,
 } from '../dto/request/BudgetUpdateRequestDTO';
 import {
@@ -60,7 +61,6 @@ export class BudgetSummaryRepository implements IBudgetSummaryRepository {
   async getActualPlanningByCategory(categoryId: string, year: number): Promise<CategoryPlanning> {
     const response = await this.budgetSummaryAPI.getActualPlanningByCategory(categoryId, year);
 
-    console.log('Response: {}', response);
     return response.data;
   }
 
@@ -79,5 +79,9 @@ export class BudgetSummaryRepository implements IBudgetSummaryRepository {
       console.error('Error fetching budget years:', error);
       throw error;
     }
+  }
+
+  async deleteCategory(data: DeleteCategoryRequestDTO): Promise<void> {
+    await this.budgetSummaryAPI.deleteCategory(data);
   }
 }

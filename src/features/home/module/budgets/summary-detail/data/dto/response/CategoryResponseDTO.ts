@@ -12,15 +12,39 @@ export interface BudgetDetail {
   updatedAt?: string;
 }
 
+export interface BottomUpPlan {
+  m1_exp?: number;
+  m2_exp?: number;
+  m3_exp?: number;
+  m4_exp?: number;
+  m5_exp?: number;
+  m6_exp?: number;
+  m7_exp?: number;
+  m8_exp?: number;
+  m9_exp?: number;
+  m10_exp?: number;
+  m11_exp?: number;
+  m12_exp?: number;
+  m1_inc?: number;
+  m2_inc?: number;
+  m3_inc?: number;
+  m4_inc?: number;
+  m5_inc?: number;
+  m6_inc?: number;
+  m7_inc?: number;
+  m8_inc?: number;
+  m9_inc?: number;
+  m10_inc?: number;
+  m11_inc?: number;
+  m12_inc?: number;
+}
+
 export interface Category {
   id: string;
   name: string;
   type: string;
   icon: string;
-  description?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  budgetDetails?: BudgetDetail[];
+  bottomUpPlan: BottomUpPlan;
 }
 
 export interface CategoryResponseDTO {

@@ -12,6 +12,7 @@ import {
 import {
   TopDownUpdateRequestDTO,
   CategoryPlanningUpdateRequestDTO,
+  DeleteCategoryRequestDTO,
 } from '../dto/request/BudgetUpdateRequestDTO';
 import { HttpResponse } from '@/shared/types';
 
@@ -29,7 +30,7 @@ export interface IBudgetSummaryAPI {
    * @param type Loại ngân sách
    * @returns Promise chứa dữ liệu phản hồi
    */
-  getBudgetByType(year: number, type: BudgetType): Promise<BudgetByTypeResponseDTO>;
+  getBudgetByType(fiscalYear: number, type: BudgetType): Promise<BudgetByTypeResponseDTO>;
 
   /**
    * Lấy danh sách categories theo loại
@@ -64,4 +65,6 @@ export interface IBudgetSummaryAPI {
    * @returns Promise chứa dữ liệu phản hồi
    */
   getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>>;
+
+  deleteCategory(data: DeleteCategoryRequestDTO): Promise<void>;
 }

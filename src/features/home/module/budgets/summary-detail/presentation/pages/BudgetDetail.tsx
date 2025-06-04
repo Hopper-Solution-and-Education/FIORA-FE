@@ -16,7 +16,7 @@ import { COLORS } from '@/shared/constants/chart';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { routeConfig } from '@/shared/utils/route';
 import { useAppSelector } from '@/store';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { PERIOD_OPTIONS } from '../../data/constants';
 import { budgetSummaryDIContainer } from '../../di/budgetSummaryDIContainer';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
@@ -27,12 +27,14 @@ import { useBudgetColumns } from '../hooks/useBudgetColumns';
 import { useBudgetNavigation } from '../hooks/useBudgetNavigation';
 import { useBudgetTableData } from '../hooks/useBudgetTableData';
 import { useCategoryManagement } from '../hooks/useCategoryManagement';
+import { TableData } from '../types/table.type';
 
 interface BudgetDetailProps {
   year: number;
 }
 
 const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
+  const [tableData, setTableData] = useState<TableData[]>([]);
   const { currency } = useAppSelector((state) => state.settings);
 
   const budgetSummaryUseCase = useMemo(
@@ -50,18 +52,26 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     handleAddCategory,
     handleCategorySelected,
     handleRemoveCategory,
-  } = useCategoryManagement();
+    handleDeleteCategory,
+  } = useCategoryManagement({
+    budgetSummaryUseCase,
+    setTableData,
+    initialYear,
+    activeTab,
+    tableData,
+  });
 
-  const { tableData, setTableData, isLoading, handleValueChange, handleValidateClick } =
-    useBudgetTableData({
-      initialYear,
-      activeTab,
-      period,
-      periodId,
-      currency: currency,
-      budgetSummaryUseCase,
-      setSelectedCategories,
-    });
+  const { isLoading, handleValueChange, handleValidateClick } = useBudgetTableData({
+    initialYear,
+    activeTab,
+    period,
+    periodId,
+    currency: currency,
+    budgetSummaryUseCase,
+    tableData,
+    setTableData,
+    setSelectedCategories,
+  });
 
   const { categoryList, handleCategoryChange } = useBudgetCategories({
     activeTab,
@@ -82,9 +92,11 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     handleValidateClick,
     handleValueChange,
     handleCategorySelected,
+    handleDeleteCategory,
     handleRemoveCategory,
     setTableData,
     tableData,
+    initialYear,
   });
 
   useEffect(() => {

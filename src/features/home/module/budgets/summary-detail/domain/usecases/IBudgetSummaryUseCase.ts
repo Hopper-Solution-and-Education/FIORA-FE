@@ -8,6 +8,7 @@ import { Category, CategoryPlanning } from '../../data/dto/response/CategoryResp
 import {
   TopDownUpdateRequestDTO,
   CategoryPlanningUpdateRequestDTO,
+  DeleteCategoryRequestDTO,
 } from '../../data/dto/request/BudgetUpdateRequestDTO';
 import { HttpResponse } from '@/shared/types';
 
@@ -22,4 +23,5 @@ export interface IBudgetSummaryUseCase {
   updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<void>;
   updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO): Promise<void>;
   getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>>;
+  deleteCategory(data: DeleteCategoryRequestDTO): Promise<void>;
 }

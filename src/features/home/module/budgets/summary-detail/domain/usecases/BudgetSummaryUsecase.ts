@@ -12,6 +12,7 @@ import { Category, CategoryPlanning } from '../../data/dto/response/CategoryResp
 import {
   TopDownUpdateRequestDTO,
   CategoryPlanningUpdateRequestDTO,
+  DeleteCategoryRequestDTO,
 } from '../../data/dto/request/BudgetUpdateRequestDTO';
 import { HttpResponse } from '@/shared/types';
 
@@ -51,5 +52,9 @@ export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
 
   async getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>> {
     return this.budgetSummaryRepository.getBudgetYears();
+  }
+
+  async deleteCategory(data: DeleteCategoryRequestDTO): Promise<void> {
+    await this.budgetSummaryRepository.deleteCategory(data);
   }
 }

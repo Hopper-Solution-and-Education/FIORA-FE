@@ -37,13 +37,11 @@ interface UseBudgetColumnsProps {
     setTableData: React.Dispatch<React.SetStateAction<TableData[]>>,
     categoryName: string,
   ) => void;
-  handleRemoveCategory: (
-    key: string,
-    setTableData: React.Dispatch<React.SetStateAction<TableData[]>>,
-    tableData: TableData[],
-  ) => void;
+  handleRemoveCategory: (categoryId: string) => void;
   setTableData: React.Dispatch<React.SetStateAction<TableData[]>>;
   tableData: TableData[];
+  handleDeleteCategory: (categoryId: string) => void;
+  initialYear: number;
 }
 
 export function useBudgetColumns({
@@ -59,6 +57,7 @@ export function useBudgetColumns({
   handleValueChange,
   handleCategorySelected,
   handleRemoveCategory,
+  handleDeleteCategory,
   setTableData,
   tableData,
 }: UseBudgetColumnsProps) {
@@ -73,6 +72,8 @@ export function useBudgetColumns({
       handleCategoryChange,
       handleValidateClick,
       handleValueChange,
+      handleDeleteCategory,
+      handleRemoveCategory,
       activeTab,
     );
 
@@ -120,6 +121,7 @@ export function useBudgetColumns({
               </div>
             );
           }
+
           return (
             <div className="flex items-center justify-between">
               <span>{value}</span>
@@ -127,7 +129,10 @@ export function useBudgetColumns({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleRemoveCategory(record.key, setTableData, tableData)}
+                  onClick={() => {
+                    handleRemoveCategory(record.key);
+                    // handleDeleteCategory(record.categoryId, activeTab, initialYear);
+                  }}
                 >
                   <X className="h-4 w-4" />
                 </Button>

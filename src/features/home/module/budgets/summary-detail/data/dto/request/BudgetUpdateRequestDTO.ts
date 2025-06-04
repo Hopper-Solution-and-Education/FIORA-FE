@@ -15,3 +15,9 @@ export interface CategoryPlanningUpdateRequestDTO {
   bottomUpPlan: MonthlyPlanningData;
   actualSumUpPlan: MonthlyPlanningData;
 }
+
+export interface DeleteCategoryRequestDTO {
+  fiscalYear: string;
+  type: string;
+  categoryId: string;
+}

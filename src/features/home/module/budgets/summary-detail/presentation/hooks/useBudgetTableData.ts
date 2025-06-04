@@ -24,6 +24,8 @@ interface UseBudgetTableDataProps {
   periodId: BudgetPeriodIdType;
   currency: string;
   budgetSummaryUseCase: IBudgetSummaryUseCase;
+  tableData: TableData[];
+  setTableData: React.Dispatch<React.SetStateAction<TableData[]>>;
   setSelectedCategories: (categories: Set<string>) => void;
 }
 
@@ -34,9 +36,10 @@ export function useBudgetTableData({
   periodId,
   currency,
   budgetSummaryUseCase,
+  tableData,
+  setTableData,
   setSelectedCategories,
 }: UseBudgetTableDataProps) {
-  const [tableData, setTableData] = useState<TableData[]>([]);
   const router = useRouter();
   const { isLoading, fetchBudgetData } = useBudgetData(budgetSummaryUseCase);
 
@@ -102,6 +105,7 @@ export function useBudgetTableData({
           type: activeTab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income',
           updateTopBudget: monthlyData,
         });
+
         toast.success('Top-down planning updated successfully');
       } else if (record.key.includes('-bottom-up')) {
         const [categoryId] = record.key.split('-bottom-up');
@@ -142,6 +146,7 @@ export function useBudgetTableData({
           bottomUpPlan: bottomUpData,
           actualSumUpPlan: actualData,
         });
+
         toast.success('Bottom-up planning updated successfully');
       }
     } catch (err: any) {
