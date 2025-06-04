@@ -189,11 +189,12 @@ const ComposedChartComponent = ({
           />
           <YAxis
             tickFormatter={yAxisFormatter}
-            tick={{ fill: 'gray', fontSize: fontSize.axis }}
             axisLine={{ stroke: '#E5E7EB' }}
             tickLine={false}
             domain={[minValue, maxValue]}
             tickCount={tickCount}
+            width={80}
+            tick={{ fill: 'gray', fontSize: fontSize.axis, width: 80 }}
           />
           <ReferenceLine y={0} stroke="#E5E7EB" className="dark:stroke-gray-600" />
           <Tooltip
