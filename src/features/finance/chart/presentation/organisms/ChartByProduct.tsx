@@ -33,6 +33,7 @@ const ChartByProduct = () => {
   const data = Array.isArray(financeByProduct)
     ? financeByProduct.map((item) => ({
         name: item.name,
+        icon: item.icon,
         column1: convertCurrency(item.totalExpense, item.currency as Currency, currency),
         column2: convertCurrency(item.totalIncome, item.currency as Currency, currency),
         column3: convertCurrency(item.totalProfit, item.currency as Currency, currency),
@@ -46,7 +47,6 @@ const ChartByProduct = () => {
       ) : (
         <ComposedChart
           data={data}
-          title="Chart by Product"
           columns={[
             { key: 'column1', name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_2 },
             { key: 'column2', name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_2 },

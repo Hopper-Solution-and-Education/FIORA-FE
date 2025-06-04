@@ -39,6 +39,7 @@ const ChartByCategory = () => {
           item.currency as Currency,
           currency,
         ),
+        icon: item.icon ?? 'wallet',
       }))
     : [];
 
@@ -52,7 +53,6 @@ const ChartByCategory = () => {
         <React.Fragment>
           <ComposedChart
             data={data}
-            title="Chart by Category"
             columns={[
               {
                 key: 'column',

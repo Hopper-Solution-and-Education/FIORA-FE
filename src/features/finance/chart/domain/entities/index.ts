@@ -49,4 +49,5 @@ export type FinanceResult = {
   totalIncome: number;
   totalExpense: number;
   totalProfit: number;
+  balance?: number;
 };

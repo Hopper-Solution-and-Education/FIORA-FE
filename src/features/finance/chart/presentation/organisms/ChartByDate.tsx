@@ -12,6 +12,7 @@ const ChartByDate = () => {
 
   const data = financeByDate.map((item) => ({
     name: item.period,
+    icon: 'calendar',
     column1: convertCurrency(item.totalExpense, item.currency as Currency, currency),
     column2: convertCurrency(item.totalIncome, item.currency as Currency, currency),
     line: convertCurrency(
@@ -21,8 +22,6 @@ const ChartByDate = () => {
     ),
   }));
 
-  console.log(data);
-
   return (
     <div className="space-y-8">
       {isLoading ? (
@@ -30,7 +29,6 @@ const ChartByDate = () => {
       ) : (
         <ComposedChart
           data={data}
-          title="Chart by Date"
           columns={[
             { key: 'column1', name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_2 },
             { key: 'column2', name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_2 },
