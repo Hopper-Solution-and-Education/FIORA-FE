@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/tooltip';
 import LucieIcon from '@/features/home/module/category/components/LucieIcon';
 import {
+  COLORS,
   DEFAULT_CHART_FONT_SIZE,
   DEFAULT_CHART_TICK_COUNT,
   DEFAULT_CURRENCY,
@@ -224,6 +225,8 @@ const ComposedChartComponent = ({
                   dataKey="name"
                   tick={({ x, y, payload }) => {
                     const item = data.find((d) => d.name === String(payload.value));
+                    const balance = typeof item?.balance === 'number' ? item.balance : 0;
+                    const isNegative = balance < 0;
 
                     return (
                       <g transform={`translate(${x},${y})`}>
@@ -231,8 +234,24 @@ const ComposedChartComponent = ({
                           <TooltipProvider>
                             <ShadcnTooltip>
                               <TooltipTrigger asChild>
-                                <div className="w-full h-full rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 ">
-                                  {renderIconOrImage(item?.icon ?? 'user')}
+                                <div
+                                  className={cn(
+                                    'w-full h-full rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105',
+                                    isNegative
+                                      ? 'bg-warning/10 dark:bg-warning/20'
+                                      : 'bg-gray-100 dark:bg-gray-800',
+                                  )}
+                                >
+                                  <div
+                                    className={cn(
+                                      'w-5 h-5',
+                                      isNegative
+                                        ? 'text-warning'
+                                        : 'text-gray-600 dark:text-gray-400',
+                                    )}
+                                  >
+                                    {renderIconOrImage(item?.icon ?? 'user')}
+                                  </div>
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent>
@@ -326,7 +345,6 @@ const ComposedChartComponent = ({
                   stackId={column.stackId}
                   animationEasing="ease-out"
                   activeBar={{
-                    fill: column.color,
                     stroke: '#ffffff',
                     strokeWidth: 2,
                     filter: 'brightness(1.1) drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.25))',
@@ -334,9 +352,13 @@ const ComposedChartComponent = ({
                   }}
                   maxBarSize={DEFAULT_COMPOSED_CHART_ITEM_WIDTH}
                 >
-                  {data.map((entry, i) => (
-                    <Cell key={`cell-${i}`} fill={entry.color || column.color || '#cccccc'} />
-                  ))}
+                  {data.map((entry, i) => {
+                    const value = entry[column.key];
+                    const numericValue = typeof value === 'number' ? value : 0;
+                    const isNegative = numericValue < 0;
+                    const baseColor = isNegative ? COLORS.DEPS_WARNING.LEVEL_2 : column.color;
+                    return <Cell key={`cell-${i}`} fill={baseColor} />;
+                  })}
                 </Bar>
               ))}
 
