@@ -24,6 +24,8 @@ export type ColumnConfig = {
   key: string;
   name: string;
   color: string;
+  icon?: string;
+  stackId?: string;
 };
 
 export type LineConfig = {
