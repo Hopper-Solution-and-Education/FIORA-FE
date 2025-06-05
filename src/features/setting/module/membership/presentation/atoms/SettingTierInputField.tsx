@@ -26,13 +26,14 @@ const SettingTierInputField = ({
   return (
     <div className="grid grid-cols-[1fr_80px_100px] items-center gap-7">
       <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{label}</span>
-      <div className="w-18">
+      <div className="w-18 flex justify-center">
         <InputField
           value={value}
           onChange={onChange}
           error={error}
           options={options}
           placeholder="0"
+          className="text-center"
         />
       </div>
       {suffix && (

@@ -1,13 +1,16 @@
 import { ComposedChart } from '@/components/common/charts';
+import { renderIconOrImage } from '@/components/common/charts/composed-chart';
 import { ChartSkeleton } from '@/components/common/organisms';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { FinanceReportFilterEnum } from '@/features/setting/data/module/finance/constant/FinanceReportFilterEnum';
+import { CURRENCY } from '@/shared/constants';
 import { COLORS } from '@/shared/constants/chart';
+import { Currency } from '@/shared/types';
+import { convertCurrency, formatCurrency } from '@/shared/utils/convertCurrency';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect } from 'react';
+import { Cell } from 'recharts';
 import { getFinanceByCategoryAsyncThunk } from '../../slices/actions/getFinanceByCategoryAsyncThunk';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
-import { Currency } from '@/shared/types';
 
 const ChartByProduct = () => {
   const financeByProduct = useAppSelector((state) => state.financeControl.financeByProduct);
@@ -29,15 +32,29 @@ const ChartByProduct = () => {
     }
   }, [dispatch, selectedIds]);
 
+  console.log('====================================');
+  console.log(convertCurrency(1000000, CURRENCY.VND, CURRENCY.USD));
+  console.log('====================================');
+
   // data showing when income and data showing when expense
   const data = Array.isArray(financeByProduct)
-    ? financeByProduct.map((item) => ({
-        name: item.name,
-        icon: item.icon,
-        column1: convertCurrency(item.totalExpense, item.currency as Currency, currency),
-        column2: convertCurrency(item.totalIncome, item.currency as Currency, currency),
-        column3: convertCurrency(item.totalProfit, item.currency as Currency, currency),
-      }))
+    ? financeByProduct.map((item) => {
+        const profit = convertCurrency(item.totalProfit, item.currency as Currency, currency);
+        console.log('Original profit:', item.totalProfit);
+        console.log('Converted profit:', profit);
+        console.log('Currency:', item.currency);
+        console.log('Target currency:', currency);
+        return {
+          name: item.name,
+          icon: item.icon,
+          column1: convertCurrency(item.totalExpense, item.currency as Currency, currency),
+          column2: convertCurrency(item.totalIncome, item.currency as Currency, currency),
+          column3: Math.abs(profit),
+          profitStatus: profit < 0 ? 'negative' : 'positive',
+          originalProfit: profit,
+          currency: currency,
+        };
+      })
     : [];
 
   return (
@@ -50,8 +67,64 @@ const ChartByProduct = () => {
           columns={[
             { key: 'column1', name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_2 },
             { key: 'column2', name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_2 },
-            { key: 'column3', name: 'Profit', color: COLORS.DEPS_INFO.LEVEL_2 },
+            {
+              key: 'column3',
+              name: 'Profit',
+              color: COLORS.DEPS_INFO.LEVEL_2,
+              customCell: (entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={entry.profitStatus === 'negative' ? '#FFB800' : COLORS.DEPS_INFO.LEVEL_2}
+                />
+              ),
+            },
           ]}
+          tooltipFormatter={(data) => {
+            console.log('Tooltip data:', data);
+            const profit = data.originalProfit;
+            console.log('Profit in tooltip:', profit);
+            console.log('Currency in tooltip:', data.currency);
+            return (
+              <div className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm">
+                <div className="flex items-center gap-2">
+                  {data.icon && renderIconOrImage(data.icon)}
+                </div>
+                <p className="text-sm text-gray-800 dark:text-gray-200">{data.name}</p>
+                <div className="flex items-center text-gray-600 dark:text-gray-400 mt-1">
+                  <div
+                    className="w-3 h-3 mr-2 rounded-sm"
+                    style={{ backgroundColor: COLORS.DEPS_DANGER.LEVEL_2 }}
+                  />
+                  <span className="text-sm">Expense:</span>
+                  <span className="font-bold ml-1 text-sm">
+                    {formatCurrency(Number(data.column1), data.currency as Currency, currency)}
+                  </span>
+                </div>
+                <div className="flex items-center text-gray-600 dark:text-gray-400 mt-1">
+                  <div
+                    className="w-3 h-3 mr-2 rounded-sm"
+                    style={{ backgroundColor: COLORS.DEPS_SUCCESS.LEVEL_2 }}
+                  />
+                  <span className="text-sm">Income:</span>
+                  <span className="font-bold ml-1 text-sm">
+                    {formatCurrency(Number(data.column2), data.currency as Currency, currency)}
+                  </span>
+                </div>
+                <div className="flex items-center text-gray-600 dark:text-gray-400 mt-1">
+                  <div
+                    className="w-3 h-3 mr-2 rounded-sm"
+                    style={{
+                      backgroundColor: profit < 0 ? '#FFB800' : COLORS.DEPS_INFO.LEVEL_2,
+                    }}
+                  />
+                  <span className="text-sm">Profit:</span>
+                  <span className="font-bold ml-1 text-sm">
+                    {formatCurrency(Number(profit), data.currency as Currency, currency)}
+                  </span>
+                </div>
+              </div>
+            );
+          }}
           currency={currency}
         />
       )}
