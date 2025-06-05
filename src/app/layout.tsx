@@ -46,13 +46,13 @@ export default function RootLayout({
                     <GrowthBookProvider growthbook={growthbook}>
                       <ThemeProvider
                         attribute="class"
-                        defaultTheme="system"
+                        defaultTheme="light"
                         enableSystem
                         disableTransitionOnChange
                       >
                         <SessionProvider>
                           <Toaster
-                            theme="light"
+                            theme="dark"
                             position="top-right"
                             richColors
                             duration={3000}
