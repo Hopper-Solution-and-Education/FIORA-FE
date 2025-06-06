@@ -5,13 +5,18 @@ import { Currency } from '@/shared/types';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { useAppSelector } from '@/store';
 
-const ChartByDate = () => {
+type ChartByDateProps = {
+  title?: string;
+};
+
+const ChartByDate = ({ title }: ChartByDateProps) => {
   const financeByDate = useAppSelector((state) => state.financeControl.financeByDate);
   const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinance);
   const currency = useAppSelector((state) => state.settings.currency);
 
   const data = financeByDate.map((item) => ({
     name: item.period,
+    // icon: 'calendar',
     column1: convertCurrency(item.totalExpense, item.currency as Currency, currency),
     column2: convertCurrency(item.totalIncome, item.currency as Currency, currency),
     line: convertCurrency(
@@ -21,8 +26,6 @@ const ChartByDate = () => {
     ),
   }));
 
-  console.log(data);
-
   return (
     <div className="space-y-8">
       {isLoading ? (
@@ -30,7 +33,7 @@ const ChartByDate = () => {
       ) : (
         <ComposedChart
           data={data}
-          title="Chart by Date"
+          title={title}
           columns={[
             { key: 'column1', name: 'Expense', color: COLORS.DEPS_DANGER.LEVEL_2 },
             { key: 'column2', name: 'Income', color: COLORS.DEPS_SUCCESS.LEVEL_2 },

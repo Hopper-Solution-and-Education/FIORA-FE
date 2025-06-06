@@ -5,18 +5,22 @@ import { Session, useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
-const BannerPage = dynamic(() => import('@/features/setting/module/landing/presentation/Page'), {
+const LandingPage = dynamic(() => import('@/features/setting/module/landing/presentation/Page'), {
   loading: () => <Loading />,
 });
 
 const Page = () => {
-  const { data: session } = useSession() as { data: Session | null };
+  const { data: session, status } = useSession() as { data: Session | null; status: string };
+
+  if (status === 'loading') {
+    return <Loading />;
+  }
 
   if (!session?.user?.role || session.user.role !== 'Admin') {
     notFound();
   }
 
-  return <BannerPage />;
+  return <LandingPage />;
 };
 
 export default Page;

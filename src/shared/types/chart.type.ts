@@ -24,6 +24,9 @@ export type ColumnConfig = {
   key: string;
   name: string;
   color: string;
+  icon?: string;
+  stackId?: string;
+  customCell?: (entry: any, index: number) => React.ReactNode;
 };
 
 export type LineConfig = {

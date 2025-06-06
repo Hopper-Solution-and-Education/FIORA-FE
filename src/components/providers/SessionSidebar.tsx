@@ -3,6 +3,7 @@
 import Header from '@/components/layouts/dashboard-header/DashboardHeader';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { navItems as HomeNavItems } from '@/features/home/constants/data';
+import { NavItem } from '@/features/home/types/Nav.types';
 import { Session } from 'next-auth/core/types';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
@@ -13,9 +14,16 @@ const SIDEBAR_STATE_KEY = 'sidebar-open-state';
 interface SessionSidebarProps {
   children: React.ReactNode;
   defaultOpen?: boolean;
+  navItems?: NavItem[];
+  appLabel?: string;
 }
 
-const SessionSidebar = ({ children, defaultOpen = true }: SessionSidebarProps) => {
+const SessionSidebar = ({
+  children,
+  defaultOpen = true,
+  navItems = HomeNavItems,
+  appLabel = 'Overview',
+}: SessionSidebarProps) => {
   const { data: session } = useSession() as { data: Session | null };
   const [open, setOpen] = useState(() => {
     // Check if we're in browser environment
@@ -41,7 +49,7 @@ const SessionSidebar = ({ children, defaultOpen = true }: SessionSidebarProps) =
 
   return (
     <SidebarProvider defaultOpen={open} open={open} onOpenChange={setOpen}>
-      <AppSidebar appLabel="Overview" navItems={HomeNavItems} />
+      <AppSidebar appLabel={appLabel} navItems={navItems} />
       <SidebarInset>
         <Header />
         {children}

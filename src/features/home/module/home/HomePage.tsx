@@ -1,14 +1,32 @@
 'use client';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { ChartByDate } from '@/features/finance/chart/presentation/organisms';
+import { getFinanceByDateAsyncThunk } from '@/features/finance/chart/slices/actions';
 import { MODULE } from '@/shared/constants';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { useFeatureFlagGuard } from '@/shared/hooks/useFeatureFlagGuard';
+import { useAppDispatch } from '@/store';
+import { useEffect } from 'react';
 import AccountDashboard from '../account/AccountDashboard';
 import RecentTransactions from './components/RecentTransactions';
 import Recommendations from './components/Recommendations';
 
 export default function HomePage() {
   const { isFeatureOn } = useFeatureFlagGuard(FeatureFlags.ACCOUNT_FEATURE, MODULE.HOME);
+  const dispatch = useAppDispatch();
+
+  // get nearly five years data
+  useEffect(() => {
+    const today = new Date();
+    const startOfYear = new Date(today.getFullYear() - 5, 0, 1);
+
+    dispatch(
+      getFinanceByDateAsyncThunk({
+        from: startOfYear.toISOString(),
+        to: today.toISOString(),
+      }),
+    );
+  }, []);
 
   if (!isFeatureOn) {
     return null;
@@ -25,6 +43,7 @@ export default function HomePage() {
             {/* Left Section: Financial & Account Overview */}
             <div className="col-span-1 md:col-span-2 lg:col-span-7 space-y-4">
               {isFeatureOn && <AccountDashboard module={MODULE.HOME} />}
+              {isFeatureOn && <ChartByDate title="Finance Chart" />}
             </div>
 
             {/* Right Section: Transactions & Recommendations */}

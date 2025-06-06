@@ -17,40 +17,26 @@ export type BreadcrumbItem = {
  */
 export const routeMapping: Record<string, BreadcrumbItem[]> = {
   '/': [{ title: 'Home', link: '/' }],
-  '/account': [
-    { title: 'Home', link: '/' },
-    { title: 'Account', link: '/account' },
-  ],
+  '/account': [{ title: 'Account', link: '/account' }],
   '/account/update': [
-    { title: 'Home', link: '/' },
     { title: 'Account', link: '/account' },
     { title: 'Update', link: '/account/update' },
   ],
   '/account/create': [
-    { title: 'Home', link: '/' },
     { title: 'Account', link: '/account' },
     { title: 'Create', link: '/account/create' },
   ],
-  '/transaction': [
-    { title: 'Home', link: '/' },
-    { title: 'Transaction', link: '/transaction' },
-  ],
+  '/transaction': [{ title: 'Transaction', link: '/transaction' }],
   '/transaction/details': [
-    { title: 'Home', link: '/' },
     { title: 'Transaction', link: '/transaction' },
     { title: 'Details', link: '/transaction/details' },
   ],
-  '/category': [
-    { title: 'Home', link: '/' },
-    { title: 'Category', link: '/category' },
-  ],
+  '/category': [{ title: 'Category', link: '/category' }],
   '/category/create': [
-    { title: 'Home', link: '/' },
     { title: 'Category', link: '/category' },
     { title: 'Create', link: '/category/create' },
   ],
   '/category/update': [
-    { title: 'Home', link: '/' },
     { title: 'Category', link: '/category' },
     { title: 'Update', link: '/category/update' },
   ],
@@ -62,22 +48,17 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Product', link: '/setting/product' },
     { title: 'Create', link: '/setting/product/create' },
   ],
-  '/budgets': [
-    { title: 'Home', link: '/' },
-    { title: 'Budgets', link: '/budgets' },
-  ],
+  '/budgets': [{ title: 'Budgets', link: '/budgets' }],
+  '/finance/chart': [{ title: 'Finance Chart', link: '/finance/chart' }],
   '/budgets/create': [
-    { title: 'Home', link: '/' },
     { title: 'Budgets', link: '/budgets' },
     { title: 'Create', link: '/budgets/create' },
   ],
   '/budgets/update/[id]': [
-    { title: 'Home', link: '/' },
     { title: 'Budgets', link: '/budgets' },
     { title: 'Update', link: '/budgets/update/[id]' },
   ],
   '/budgets/summary': [
-    { title: 'Home', link: '/' },
     { title: 'Budgets', link: '/budgets' },
     { title: 'Summary', link: '/budgets/summary' },
   ],
@@ -87,6 +68,9 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Summary', link: '/budgets/summary/[year]' },
     { title: 'Detail', link: '/budgets/summary/detail/[year]' },
   ],
+  '/setting/landing': [{ title: 'Landing Setting', link: '/setting/landing' }],
+  '/setting/exchange-rate': [{ title: 'Exchange Rate Setting', link: '/setting/exchange-rate' }],
+  '/setting/membership': [{ title: 'Membership Setting', link: '/setting/membership' }],
 };
 
 /**
