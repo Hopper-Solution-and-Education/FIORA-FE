@@ -15,6 +15,7 @@ interface EnhancedTransaction extends Transaction {
   partner: EnhancedPartner | null;
   createdBy: any | null;
   updatedBy: any | null;
+  products: any; // Override the JsonValue type with any for flexibility
 }
 
 class TransactionRepository implements ITransactionRepository {
@@ -49,6 +50,11 @@ class TransactionRepository implements ITransactionRepository {
         toAccount: true,
         fromCategory: true,
         toCategory: true,
+        productsRelation: {
+          include: {
+            product: true,
+          },
+        },
       },
     });
 
@@ -70,12 +76,23 @@ class TransactionRepository implements ITransactionRepository {
         : null,
     ]);
 
+    // Map products from productsRelation
+    const products =
+      transaction.productsRelation?.map((relation: any) => ({
+        id: relation.product.id,
+        name: relation.product.name,
+        price: relation.product.price,
+        description: relation.product.description,
+        // Add any other product fields you need
+      })) || [];
+
     // Create enhanced transaction object
     const enhancedTransaction: EnhancedTransaction = {
       ...transaction,
       createdBy,
       updatedBy,
       partner: transaction.partner ? { ...transaction.partner } : null,
+      products: products as any, // Override the products field with the mapped data
     };
 
     // Determine partner type if partner exists

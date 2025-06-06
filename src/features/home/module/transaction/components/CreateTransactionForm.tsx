@@ -66,8 +66,8 @@ const CreateTransactionForm = () => {
   const fields = [
     <DateSelectField key="date" name="date" required />,
     <TypeSelectField key="type" name="type" required />,
-    <AmountInputField key="amount" name="amount" placeholder="Amount" required />,
     <CurrencySelectField key="currency" name="currency" required />,
+    <AmountInputField key="amount" name="amount" placeholder="Amount" required />,
     <FromSelectField key="fromId" name="fromId" required />,
     <ToSelectField key="toId" name="toId" required />,
     <PartnerSelectField key="partnerId" name="partnerId" />,

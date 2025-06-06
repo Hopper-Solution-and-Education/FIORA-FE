@@ -57,7 +57,7 @@ type TransactionDetailsProps = {
 
 const TransactionDetails = ({ data }: TransactionDetailsProps) => {
   // Format the date to a readable format
-  const formattedDate = data.date ? format(new Date(data.date), 'Ppp') : 'N/A';
+  const formattedDate = data.date ? format(new Date(data.date), 'Ppp') : 'Unknown';
   const router = useRouter();
 
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
@@ -160,234 +160,263 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                 <h3 className="font-medium text-md">Basic Information</h3>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="text-sm text-muted-foreground">Date</div>
-                  <div className=" text-right">{formattedDate}</div>
+                  <div className={`text-right ${!data.date ? 'text-gray-500 italic' : ''}`}>
+                    {formattedDate}
+                  </div>
 
                   <div className="text-sm text-muted-foreground">Type</div>
                   <div className="flex justify-end">
                     <Badge
                       className={`${getTypeColor()} text-white cursor-default hover:${getTypeColor()}`}
                     >
-                      {data.type}
+                      {data.type || 'Unknown'}
                     </Badge>
                   </div>
 
                   <div className="text-sm text-muted-foreground">Amount</div>
                   <div className="font-medium text-right">{formattedAmount}</div>
 
-                  {data.remark && (
-                    <>
-                      <div className="text-sm text-muted-foreground">Remark</div>
-                      <div className=" text-right">{data.remark}</div>
-                    </>
-                  )}
+                  <div className="text-sm text-muted-foreground">Remark</div>
+                  <div className={`text-right ${!data.remark ? 'text-gray-500 italic' : ''}`}>
+                    {data.remark || 'Unknown'}
+                  </div>
                 </div>
               </div>
 
               <Separator />
 
               {/* From Account/Category */}
-              {(data.fromAccount || data.fromCategory) && (
-                <div className="space-y-2">
-                  <h3 className="font-medium text-md">From</h3>
+              <div className="space-y-2">
+                <h3 className="font-medium text-md">From</h3>
+                {data.fromAccount && (
                   <div className="w-full flex justify-between items-center">
-                    {data.fromAccount && (
-                      <>
-                        <div className="text-sm text-muted-foreground">Account</div>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                                {data.fromAccount.icon && (
-                                  <LucieIcon
-                                    icon={data.fromAccount.icon}
-                                    className="w-4 h-4 border-1 border-gray-500"
-                                  />
-                                )}
-
-                                <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                                  {data.fromAccount.name}
-                                </h3>
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{data.fromAccount.name}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </>
-                    )}
-
-                    {data.fromCategory && (
-                      <>
-                        <div className="text-sm text-muted-foreground">Category</div>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                                {data.fromCategory.icon && (
-                                  <LucieIcon
-                                    icon={data.fromCategory.icon}
-                                    className="w-4 h-4 border-1 border-gray-500"
-                                  />
-                                )}
-
-                                <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                                  {data.fromCategory.name}
-                                </h3>
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{data.fromCategory.name}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <Separator />
-
-              {/* To Account/Category */}
-              {(data.toAccount || data.toCategory) && (
-                <div className="space-y-2">
-                  <h3 className="font-medium text-lg">To</h3>
-                  <div className="flex justify-between items-center">
-                    {data.toAccount && (
-                      <>
-                        <div className="text-sm text-muted-foreground">Account</div>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                                {data.toAccount.icon && (
-                                  <LucieIcon
-                                    icon={data.toAccount.icon}
-                                    className="w-4 h-4 border-1 border-gray-500"
-                                  />
-                                )}
-
-                                <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                                  {data.toAccount.name}
-                                </h3>
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{data.toAccount.name}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </>
-                    )}
-
-                    {data.toCategory && (
-                      <>
-                        <div className="text-sm text-muted-foreground">Category</div>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                                {data.toCategory.icon && (
-                                  <LucieIcon
-                                    icon={data.toCategory.icon}
-                                    className="w-4 h-4 border-1 border-gray-500"
-                                  />
-                                )}
-
-                                <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                                  {data.toCategory.name}
-                                </h3>
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p> {data.toCategory.name}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <Separator />
-
-              {/* Partner Information */}
-              {data.partner && (
-                <div className="space-y-2">
-                  <h3 className="font-medium text-md">Partner</h3>
-                  <div className="relative w-full flex justify-between items-center">
-                    <div className="text-sm text-muted-foreground">Name</div>
+                    <div className="text-sm text-muted-foreground">Account</div>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                            {data.partner.logo && (
-                              <Image
-                                src={data.partner.logo}
-                                alt={data.partner.name}
-                                width={30}
-                                height={30}
-                                className="rounded-full"
+                            {data.fromAccount.icon && (
+                              <LucieIcon
+                                icon={data.fromAccount.icon}
+                                className="w-4 h-4 border-1 border-gray-500"
                               />
                             )}
+
                             <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                              {data.partner.name}
+                              {data.fromAccount.name}
                             </h3>
                           </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>{data.partner.name}</p>
+                          <p>{data.fromAccount.name}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
-                  {data.partner.type && (
-                    <div className="relative w-full flex justify-between items-center">
-                      <div className="text-sm text-muted-foreground">Type</div>
-                      <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                        {data.partner.type}
-                      </h3>
-                    </div>
-                  )}
+                )}
+
+                {data.fromCategory && (
+                  <div className="w-full flex justify-between items-center">
+                    <div className="text-sm text-muted-foreground">Category</div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                            {data.fromCategory.icon && (
+                              <LucieIcon
+                                icon={data.fromCategory.icon}
+                                className="w-4 h-4 border-1 border-gray-500"
+                              />
+                            )}
+
+                            <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                              {data.fromCategory.name}
+                            </h3>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{data.fromCategory.name}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                )}
+
+                {!data.fromAccount && !data.fromCategory && (
+                  <div className="w-full flex justify-between items-center">
+                    <div className="text-sm text-muted-foreground">Source</div>
+                    <div className="text-gray-500 italic">Unknown</div>
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* To Account/Category */}
+              <div className="space-y-2">
+                <h3 className="font-medium text-lg">To</h3>
+                {data.toAccount && (
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-muted-foreground">Account</div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                            {data.toAccount.icon && (
+                              <LucieIcon
+                                icon={data.toAccount.icon}
+                                className="w-4 h-4 border-1 border-gray-500"
+                              />
+                            )}
+
+                            <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                              {data.toAccount.name}
+                            </h3>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{data.toAccount.name}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                )}
+
+                {data.toCategory && (
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-muted-foreground">Category</div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                            {data.toCategory.icon && (
+                              <LucieIcon
+                                icon={data.toCategory.icon}
+                                className="w-4 h-4 border-1 border-gray-500"
+                              />
+                            )}
+
+                            <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                              {data.toCategory.name}
+                            </h3>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{data.toCategory.name}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                )}
+
+                {!data.toAccount && !data.toCategory && (
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-muted-foreground">Destination</div>
+                    <div className="text-gray-500 italic">Unknown</div>
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Partner Information */}
+              <div className="space-y-2">
+                <h3 className="font-medium text-md">Partner</h3>
+                <div className="relative w-full flex justify-between items-center">
+                  <div className="text-sm text-muted-foreground">Name</div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                          {data.partner?.logo && (
+                            <Image
+                              src={data.partner.logo}
+                              alt={data.partner?.name || 'Unknown'}
+                              width={30}
+                              height={30}
+                              className="rounded-full"
+                            />
+                          )}
+                          <h3
+                            className={`w-fit overflow-hidden whitespace-nowrap text-ellipsis ${!data.partner?.name ? 'text-gray-500 italic' : ''}`}
+                          >
+                            {data.partner?.name || 'Unknown'}
+                          </h3>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{data.partner?.name || 'Unknown'}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
-              )}
+                <div className="relative w-full flex justify-between items-center">
+                  <div className="text-sm text-muted-foreground">Type</div>
+                  <h3
+                    className={`w-fit overflow-hidden whitespace-nowrap text-ellipsis ${!data.partner?.type ? 'text-gray-500 italic' : ''}`}
+                  >
+                    {data.partner?.type || 'Unknown'}
+                  </h3>
+                </div>
+              </div>
+
+              <Separator />
 
               {/* Products Information */}
-              {data.products && Array.isArray(data.products) && data.products.length > 0 && (
-                <div className="space-y-2">
-                  <h3 className="font-medium text-lg">Products</h3>
-                  <div className="grid grid-cols-1 gap-2">
-                    {data.products.map((product: any, index: number) => (
-                      <div
-                        key={index}
-                        className="flex justify-between py-1 border-b border-gray-100"
-                      >
-                        <span>{product.name}</span>
+              <div className="relative space-y-2">
+                <h3 className="font-medium text-lg">Products</h3>
+                <div className="grid grid-cols-1 gap-2">
+                  {data.products && Array.isArray(data.products) && data.products.length > 0 ? (
+                    data.products.map((product: any, index: number) => (
+                      <div key={index} className="flex justify-between py-1">
+                        <span className={!product?.name ? 'text-gray-500 italic' : ''}>
+                          {product?.name || 'Unknown'}
+                        </span>
                         <span>
-                          {formatCurrency(
-                            Number(product.price),
-                            (data.currency as TransactionCurrency) || TransactionCurrency.VND,
+                          {product?.price ? (
+                            formatCurrency(
+                              Number(product.price),
+                              (data.currency as TransactionCurrency) || TransactionCurrency.VND,
+                            )
+                          ) : (
+                            <span className="text-gray-500 italic">Unknown</span>
                           )}
                         </span>
                       </div>
-                    ))}
-                  </div>
+                    ))
+                  ) : (
+                    <div className="text-gray-500 italic text-end py-2">Unknown</div>
+                  )}
                 </div>
-              )}
+              </div>
 
               {/* Meta Information */}
               <div className="py-4 border-t border-gray-200">
                 <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
                   <div>
-                    Created: {data.createdAt ? format(new Date(data.createdAt), 'Ppp') : 'N/A'}
+                    Created:{' '}
+                    <span className={!data.createdAt ? 'text-gray-500 italic' : ''}>
+                      {data.createdAt ? format(new Date(data.createdAt), 'Ppp') : 'Unknown'}
+                    </span>
                   </div>
-                  <div>Created By: {data.createdBy.email || 'N/A'}</div>
                   <div>
-                    Updated: {data.updatedAt ? format(new Date(data.updatedAt), 'Ppp') : 'N/A'}
+                    Created By:{' '}
+                    <span className={!data.createdBy?.email ? 'text-gray-500 italic' : ''}>
+                      {data.createdBy?.email || 'Unknown'}
+                    </span>
                   </div>
-                  <div>Updated By: {data.updatedBy.email || 'N/A'}</div>
+                  <div>
+                    Updated:{' '}
+                    <span className={!data.updatedAt ? 'text-gray-500 italic' : ''}>
+                      {data.updatedAt ? format(new Date(data.updatedAt), 'Ppp') : 'Unknown'}
+                    </span>
+                  </div>
+                  <div>
+                    Updated By:{' '}
+                    <span className={!data.updatedBy?.email ? 'text-gray-500 italic' : ''}>
+                      {data.updatedBy?.email || 'Unknown'}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
