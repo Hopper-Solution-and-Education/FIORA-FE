@@ -283,7 +283,10 @@ class BudgetSummaryUseCase {
     const suffix = type === BudgetDetailType.Expense ? '_exp' : '_inc';
 
     // Validate existence of categoryId
-    const foundCategory = await this._categoryRepository.findCategoryById(categoryId);
+    const foundCategory = await this._categoryRepository.findFirstCategory({
+      id: categoryId,
+      userId,
+    });
 
     if (!foundCategory) {
       throw new Error(Messages.CATEGORY_NOT_FOUND);
