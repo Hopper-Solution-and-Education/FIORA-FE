@@ -43,17 +43,17 @@ export function useBudgetTableData({
   const router = useRouter();
   const { isLoading, fetchBudgetData } = useBudgetData(budgetSummaryUseCase);
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const data = await fetchBudgetData(initialYear, activeTab);
-        setTableData(data || []);
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Failed to fetch budget data');
-        router.push(routeConfig(RouteEnum.Budgets));
-      }
-    };
+  const loadData = async () => {
+    try {
+      const data = await fetchBudgetData(initialYear, activeTab);
+      setTableData(data || []);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to fetch budget data');
+      router.push(routeConfig(RouteEnum.Budgets));
+    }
+  };
 
+  useEffect(() => {
     loadData();
   }, [initialYear, period, periodId, currency, activeTab]);
 

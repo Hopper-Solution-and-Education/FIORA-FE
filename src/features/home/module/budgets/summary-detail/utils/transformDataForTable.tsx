@@ -21,8 +21,10 @@ export const formatCurrencyValue = (
   currency: Currency,
 ): string => {
   if (value === undefined || value === '') return '0';
+
   const numValue = typeof value === 'string' ? parseFloat(value) : value;
   const formattedValue = currency === 'USD' ? convertVNDToUSD(numValue) : numValue;
+
   return formatters[currency].format(formattedValue);
 };
 
@@ -32,9 +34,11 @@ export const getBudgetValue = (
   type: 'expense' | 'income',
 ): number => {
   if (!budget?.budget) return 0;
+
   const suffix = type === 'expense' ? 'Exp' : 'Inc';
   const key = `${field}${suffix}` as keyof typeof budget.budget;
   const value = parseFloat(budget.budget[key] as string);
+
   return isNaN(value) ? 0 : value;
 };
 
