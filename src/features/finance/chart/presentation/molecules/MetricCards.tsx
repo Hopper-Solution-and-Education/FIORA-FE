@@ -13,7 +13,6 @@ const MetricCards = () => {
   const financeByAccount = useAppSelector((state) => state.financeControl.financeByAccount);
   const financeByProduct = useAppSelector((state) => state.financeControl.financeByProduct);
   const financeByPartner = useAppSelector((state) => state.financeControl.financeByPartner);
-  const categoryType = useAppSelector((state) => state.financeControl.viewChartByCategory);
   const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinance);
   const currency = useAppSelector((state) => state.settings.currency);
 
@@ -118,30 +117,42 @@ const MetricCards = () => {
 
   const renderCategoryMetrics = () => {
     if (isLoading) {
-      return <LoadingCard />;
+      return (
+        <>
+          <LoadingCard />
+          <LoadingCard />
+          <LoadingCard />
+        </>
+      );
     }
 
-    if (categoryType === 'income') {
-      return (
+    return (
+      <>
         <MetricCard
           title="Total Income"
           value={totals.income}
           currency={currency}
           type="income"
           icon={<ArrowUpIcon className="h-4 w-4 text-green-500" />}
-          description="Total income by category"
+          description="Total expenses by category"
         />
-      );
-    }
-    return (
-      <MetricCard
-        title="Total Expense"
-        value={totals.expense}
-        currency={currency}
-        type="expense"
-        icon={<ArrowDownIcon className="h-4 w-4 text-red-500" />}
-        description="Total expenses by category"
-      />
+        <MetricCard
+          title="Total Expense"
+          value={totals.expense}
+          currency={currency}
+          type="expense"
+          icon={<ArrowDownIcon className="h-4 w-4 text-red-500" />}
+          description="Total expenses by category"
+        />
+        <MetricCard
+          title="Total Profit"
+          value={totals.total}
+          currency={currency}
+          type="total"
+          icon={<ArrowDownIcon className="h-4 w-4 text-red-500" />}
+          description="Total expenses by category"
+        />
+      </>
     );
   };
 

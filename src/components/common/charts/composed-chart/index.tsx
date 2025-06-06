@@ -244,7 +244,7 @@ const ComposedChartComponent = ({
                                 >
                                   <div
                                     className={cn(
-                                      'w-5 h-5',
+                                      'w-5 h-5 flex items-center justify-center',
                                       isNegative
                                         ? 'text-warning'
                                         : 'text-gray-600 dark:text-gray-400',
@@ -353,6 +353,9 @@ const ComposedChartComponent = ({
                   maxBarSize={DEFAULT_COMPOSED_CHART_ITEM_WIDTH}
                 >
                   {data.map((entry, i) => {
+                    if (column.customCell) {
+                      return column.customCell(entry, i);
+                    }
                     const value = entry[column.key];
                     const numericValue = typeof value === 'number' ? value : 0;
                     const isNegative = numericValue < 0;

@@ -21,26 +21,30 @@ const ChartByCategory = () => {
       dispatch(
         getFinanceByCategoryAsyncThunk({
           type: FinanceReportEnum.CATEGORY,
-          filter:
-            viewChartByCategory === 'income'
-              ? FinanceReportFilterEnum.INCOME
-              : FinanceReportFilterEnum.EXPENSE,
+          filter: FinanceReportFilterEnum.ALL,
         }),
       );
     }
-  }, [dispatch, viewChartByCategory]);
+  }, [dispatch]);
 
   // data showing when income and data showing when expense
   const data = Array.isArray(financeByCategory)
-    ? financeByCategory.map((item) => ({
-        name: item.name,
-        column: convertCurrency(
-          viewChartByCategory === 'income' ? item.totalIncome : item.totalExpense,
-          item.currency as Currency,
-          currency,
-        ),
-        icon: item.icon ?? 'wallet',
-      }))
+    ? financeByCategory
+        .filter((item) => {
+          if (viewChartByCategory === 'income') {
+            return item.totalIncome > 0;
+          }
+          return item.totalExpense > 0;
+        })
+        .map((item) => ({
+          name: item.name,
+          column: convertCurrency(
+            viewChartByCategory === 'income' ? item.totalIncome : item.totalExpense,
+            item.currency as Currency,
+            currency,
+          ),
+          icon: item.icon ?? 'wallet',
+        }))
     : [];
 
   return (
