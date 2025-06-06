@@ -7,6 +7,10 @@ import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { Currency } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
+export const config = {
+  maxDuration: 15,
+}
+
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {
     switch (req.method) {

@@ -10,30 +10,31 @@ datasource db {
 }
 
 model User {
-  id               String              @id @default(uuid()) @db.Uuid
-  name             String?
-  email            String              @unique
-  password         String?
-  emailVerified    Boolean?            @default(false)
-  image            String?
-  isDeleted        Boolean             @default(false)
-  deletedAt        DateTime?           @db.Timestamptz(0)
-  createdAt        DateTime            @default(now()) @db.Timestamptz(0)
-  updatedAt        DateTime            @updatedAt @db.Timestamptz(0)
-  createdBy        String?             @db.Uuid
-  updatedBy        String?             @db.Uuid
-  role             UserRole            @default(User)
-  accounts         Account[]           @relation("UserAccounts")
-  budgetDetails    BudgetDetails[]
-  budgetControl    BudgetsTable[]
-  categories       Category[]          @relation("UserCategories")
-  categoryProducts CategoryProducts[]
-  partners         Partner[]           @relation("UserPartners")
-  products         Product[]           @relation("UserProducts")
-  productItems     ProductItems[]
-  sessions         Session[]
-  transactions     Transaction[]       @relation("UserTransactions")
-  authentication   UserAuthentication?
+  id                  String                @id @default(uuid()) @db.Uuid
+  name                String?
+  email               String                @unique
+  password            String?
+  emailVerified       Boolean?              @default(false)
+  image               String?
+  isDeleted           Boolean               @default(false)
+  deletedAt           DateTime?             @db.Timestamptz(0)
+  createdAt           DateTime              @default(now()) @db.Timestamptz(0)
+  updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
+  createdBy           String?               @db.Uuid
+  updatedBy           String?               @db.Uuid
+  role                UserRole              @default(User)
+  accounts            Account[]             @relation("UserAccounts")
+  budgetDetails       BudgetDetails[]
+  budgetControl       BudgetsTable[]
+  categories          Category[]            @relation("UserCategories")
+  categoryProducts    CategoryProducts[]
+  partners            Partner[]             @relation("UserPartners")
+  products            Product[]             @relation("UserProducts")
+  productItems        ProductItems[]
+  sessions            Session[]
+  transactions        Transaction[]         @relation("UserTransactions")
+  authentication      UserAuthentication?
+  exchangeRateSetting ExchangeRateSetting[]
 
   @@index([isDeleted])
 }
@@ -374,6 +375,26 @@ model BudgetDetails {
   @@index([userId])
   @@index([budgetId])
   @@index([categoryId])
+}
+
+model ExchangeRateSetting {
+  id           String   @id @default(uuid()) @db.Uuid
+  authorId     String   @db.Uuid
+  fromCurrency String   @db.VarChar(100)
+  fromSymbol   String   @db.VarChar(100)
+  fromValue    Decimal  @default(0) @db.Decimal(13, 2)
+  toValue      Decimal  @default(0) @db.Decimal(13, 2)
+  toCurrency   String   @db.VarChar(100)
+  toSymbol     String   @db.VarChar(100)
+  createdAt    DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(0)
+  createdBy    String?  @db.Uuid
+  updatedBy    String?  @db.Uuid
+  user         User     @relation(fields: [authorId], references: [id])
+
+  @@unique([fromCurrency, toCurrency])
+  @@index([authorId])
+  @@index([fromCurrency, toCurrency])
 }
 
 enum BudgetType {

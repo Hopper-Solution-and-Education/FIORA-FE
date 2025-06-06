@@ -2,7 +2,7 @@ import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/ac
 import { UserUSeCaseInstance } from '@/features/auth/application/use-cases/userUseCase';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { validateAccount } from '@/shared/validation/accountValidation';
+import { validateAccount } from '@/shared/validators/accountValidation';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req, res) => {
