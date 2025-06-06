@@ -199,6 +199,7 @@ export enum Messages {
   // WALLET
   GET_WALLET_SUCCESS = 'Get wallet successfully.',
   INVALID_WALLET_TYPE = 'Invalid wallet type.',
+
   // EXCHANGE RATE SUCCESS
   CREATE_EXCHANGE_RATE_SUCCESS = 'Create exchange rate successfully.',
   UPDATE_EXCHANGE_RATE_SUCCESS = 'Update exchange rate successfully.',
