@@ -379,6 +379,7 @@ class CategoryUseCase {
       return {
         ...categoryWithoutBudgetDetails,
         bottomUpPlan,
+        isCreated: category.budgetDetails.length > 0,
       };
     });
 
