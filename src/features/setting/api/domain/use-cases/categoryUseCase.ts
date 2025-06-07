@@ -7,10 +7,11 @@ import { GlobalFilters } from '@/shared/types';
 import { FetchTransactionResponse } from '@/shared/types/budget.types';
 import { CategoryExtras, CategoryWithBudgetDetails } from '@/shared/types/category.types';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
-import { safeString } from '@/shared/utils/ExStringUtils';
+import { normalizeVietnamese, safeString } from '@/shared/utils/ExStringUtils';
 import { calculateSumUpAllocationByType } from '@/shared/utils/monthBudgetUtil';
 import { Category, CategoryType, Currency, Prisma, TransactionType } from '@prisma/client';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
+import { prisma } from '@/config';
 
 class CategoryUseCase {
   private categoryRepository: ICategoryRepository;
@@ -82,9 +83,15 @@ class CategoryUseCase {
 
     const calculateBalance = (category: CategoryExtras): number => {
       if (category.type === CategoryType.Expense.valueOf()) {
-        return (category.toTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+        return (category.toTransactions ?? []).reduce(
+          (sum: any, tx: any) => sum + Number(tx.amount),
+          0,
+        );
       } else if (category.type === CategoryType.Income.valueOf()) {
-        return (category.fromTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+        return (category.fromTransactions ?? []).reduce(
+          (sum: any, tx: any) => sum + Number(tx.amount),
+          0,
+        );
       }
       return 0;
     };
@@ -118,33 +125,63 @@ class CategoryUseCase {
     maxAmount: number;
   }> {
     const searchParams = safeString(params.search);
-    let where: Prisma.CategoryWhereInput = {};
-
-    if (BooleanUtils.isTrue(searchParams)) {
-      const typeSearchParams = searchParams.toLowerCase();
-
-      where = {
-        AND: [
-          where,
-          {
-            OR: [{ name: { contains: typeSearchParams, mode: 'insensitive' } }],
-          },
-        ],
-      };
-    }
+    const where: Prisma.CategoryWhereInput = {};
 
     let categories = await this.categoryRepository.findCategoriesWithTransactionsFilter(
       userId,
       where,
     );
+
+    if (categories.length === 0 && BooleanUtils.isTrue(searchParams)) {
+      try {
+        categories = await this.categoryRepository.findCategoriesWithTransactionsFilter(userId, {
+          name: { contains: searchParams, mode: 'insensitive' },
+        });
+
+        const normalizedSearch = normalizeVietnamese(searchParams);
+
+        if (categories.length === 0) {
+          const rawCategories = (await prisma.$queryRaw`
+          SELECT c.* FROM "Category" c
+          WHERE 
+            c."userId"::text = ${userId}::text
+            AND unaccent(c."name") ILIKE unaccent('%' || ${normalizedSearch.toLowerCase()} || '%')
+        `) as any;
+
+          categories = await Promise.all(
+            rawCategories.map(async (category: any) => {
+              const [toTransactions, fromTransactions] = await Promise.all([
+                prisma.transaction.findMany({
+                  where: { toCategoryId: category.id },
+                }),
+                prisma.transaction.findMany({
+                  where: { fromCategoryId: category.id },
+                }),
+              ]);
+              return { ...category, toTransactions, fromTransactions };
+            }),
+          );
+        }
+      } catch (error) {
+        console.error('Search failed:', error);
+        categories = [];
+      }
+    }
+
     const transactionRangeFilters = this.extractTransactionRangeFilters(params.filters);
     categories = this.filterCategoriesByTransactionRange(categories, transactionRangeFilters);
 
     const calculateBalance = (category: CategoryExtras): number => {
       if (category.type === CategoryType.Expense.valueOf()) {
-        return (category.toTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+        return (category.toTransactions ?? []).reduce(
+          (sum: any, tx: any) => sum + Number(tx.amount),
+          0,
+        );
       } else if (category.type === CategoryType.Income.valueOf()) {
-        return (category.fromTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+        return (category.fromTransactions ?? []).reduce(
+          (sum: any, tx: any) => sum + Number(tx.amount),
+          0,
+        );
       }
       return 0;
     };
@@ -239,10 +276,13 @@ class CategoryUseCase {
   } {
     const totalAmounts = categories.map((category) => {
       const fromSum = (category.fromTransactions ?? []).reduce(
-        (sum, tx) => sum + Number(tx.amount),
+        (sum: any, tx: any) => sum + Number(tx.amount),
         0,
       );
-      const toSum = (category.toTransactions ?? []).reduce((sum, tx) => sum + Number(tx.amount), 0);
+      const toSum = (category.toTransactions ?? []).reduce(
+        (sum: any, tx: any) => sum + Number(tx.amount),
+        0,
+      );
       return fromSum + toSum;
     });
 
@@ -368,7 +408,7 @@ class CategoryUseCase {
       }
 
       // Map budgetDetails to corresponding months
-      category.budgetDetails.forEach((detail) => {
+      category.budgetDetails.forEach((detail: any) => {
         const monthKey = `m${detail.month}_${suffix}`;
         // Convert amount from string to number and apply currency conversion if needed
         const amount = Number(detail.amount);

@@ -3,8 +3,7 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
-import { GlobalFilters } from '@/shared/types';
-import { Currency } from '@prisma/client';
+import { Currency, GlobalFilters } from '@/shared/types';
 
 export default withAuthorization({
   POST: ['User', 'Admin', 'CS'],
@@ -27,7 +26,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
+    const currency = (req.headers['x-user-currency'] as string as Currency) ?? 'VND';
     const params = req.body as GlobalFilters;
     const { isParent } = req.query;
     if (isParent) {
