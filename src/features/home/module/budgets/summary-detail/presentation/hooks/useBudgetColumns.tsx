@@ -1,5 +1,4 @@
 // src/presentation/hooks/useBudgetColumns.ts
-import { useEffect, useState } from 'react';
 import { ColumnProps } from '@/components/common/tables/custom-table/types';
 import {
   Select,
@@ -8,17 +7,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { Currency } from '@/shared/types';
+import { useEffect, useState } from 'react';
+import { Category } from '../../data/dto/response/CategoryResponseDTO';
+import { getColumnsByPeriod } from '../../utils/transformDataForTable';
 import {
   BudgetDetailFilterType,
   BudgetPeriodIdType,
   BudgetPeriodType,
   TableData,
 } from '../types/table.type';
-import { Category } from '../../data/dto/response/CategoryResponseDTO';
-import { getColumnsByPeriod } from '../../utils/transformDataForTable';
-import { Currency } from '@/shared/types';
 
 interface UseBudgetColumnsProps {
   period: BudgetPeriodType;
