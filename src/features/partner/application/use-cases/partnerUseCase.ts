@@ -13,6 +13,7 @@ import { safeString } from '@/shared/utils/ExStringUtils';
 import { BooleanUtils } from '@/shared/lib';
 import { PartnerRangeFilter } from '@/shared/types/partner.types';
 import { sanitizeDateFilters } from '@/shared/utils/common';
+import { searchWithUnaccentFallback } from '@/shared/utils/unaccent-search.util';
 
 class PartnerUseCase {
   constructor(
@@ -51,47 +52,58 @@ class PartnerUseCase {
     const typesFilter = params.types || [];
 
     filters = sanitizeDateFilters(params.filters || {});
-    let where = buildWhereClause(filters) as Prisma.PartnerWhereInput;
-
+    const where = buildWhereClause(filters) as Prisma.PartnerWhereInput;
+    let partners;
     if (BooleanUtils.isTrue(searchParams)) {
-      const typeSearchParams = searchParams.toLowerCase();
+      try {
+        const rawPartners = await searchWithUnaccentFallback('Partner', userId, searchParams, [
+          'name',
+          'identify',
+          'taxNo',
+          'phone',
+          'email',
+          'address',
+        ]);
 
-      where = {
-        AND: [
-          where,
-          {
-            OR: [
-              { name: { contains: typeSearchParams, mode: 'insensitive' } },
-              { identify: { contains: typeSearchParams, mode: 'insensitive' } },
-              { taxNo: { contains: typeSearchParams, mode: 'insensitive' } },
-              { phone: { contains: typeSearchParams, mode: 'insensitive' } },
-              { email: { contains: typeSearchParams, mode: 'insensitive' } },
-              { address: { contains: typeSearchParams, mode: 'insensitive' } },
-            ],
+        partners = await Promise.all(
+          rawPartners.map(async (partner: any) => {
+            const [transactions, children, parent] = await Promise.all([
+              prisma.transaction.findMany({
+                where: {
+                  isDeleted: false,
+                  OR: [{ partnerId: partner.id }],
+                },
+              }),
+              prisma.partner.findMany({ where: { parentId: partner.parentId } }),
+              prisma.partner.findFirst({ where: { id: partner.id } }),
+            ]);
+            return { ...partner, transactions, children, parent };
+          }),
+        );
+      } catch (error) {
+        console.error('Unaccent search for Partner failed:', error);
+        partners = [];
+      }
+    } else {
+      partners = await this.partnerRepository.findManyPartner(
+        {
+          ...where,
+          userId,
+        },
+        {
+          include: {
+            transactions: {
+              where: { isDeleted: false },
+            },
+            children: true,
+            parent: true,
           },
-        ],
-      };
+          orderBy: { transactions: { _count: 'desc' } },
+        },
+      );
     }
 
     const transactionRangeFilters = this.extractTransactionRangeFilters(filters);
-
-    const partners = await this.partnerRepository.findManyPartner(
-      {
-        ...where,
-        userId,
-      },
-      {
-        include: {
-          transactions: {
-            where: { isDeleted: false },
-          },
-          children: true,
-          parent: true,
-        },
-        orderBy: { transactions: { _count: 'desc' } },
-      },
-    );
-
     const filteredPartners = await this.filterByTransactionRange(partners, transactionRangeFilters);
 
     const finalFilteredPartners =
