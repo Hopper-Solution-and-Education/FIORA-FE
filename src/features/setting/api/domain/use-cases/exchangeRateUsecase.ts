@@ -1,7 +1,7 @@
-import { IExchangeRateInclude, IExchangeRateRepository, IUpsertExchangeRateSetting } from "../../repositories/exchangeRateRepository.interface";
-import { exchangeRateRepository } from "../../infrastructure/repositories/exchangeRateRepository";
-import { ExchangeRateSetting, Prisma } from "@prisma/client";
 import { Messages } from "@/shared/constants/message";
+import { ExchangeRateSetting, Prisma } from "@prisma/client";
+import { exchangeRateRepository } from "../../infrastructure/repositories/exchangeRateRepository";
+import { IExchangeRateInclude, IExchangeRateRepository, IUpsertExchangeRateSetting } from "../../repositories/exchangeRateRepository.interface";
 
 class ExchangeRateUseCase {
   private exchangeRateRepository: IExchangeRateRepository;

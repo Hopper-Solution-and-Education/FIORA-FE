@@ -702,7 +702,7 @@ model ExchangeRateSetting {
   updatedBy    String?  @db.Uuid
   user         User     @relation(fields: [authorId], references: [id])
 
-  @@unique([fromCurrency, toCurrency])
+  @@unique([fromCurrency, toCurrency, authorId])
   @@index([authorId])
   @@index([fromCurrency, toCurrency])
 }
