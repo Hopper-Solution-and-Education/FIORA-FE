@@ -9,6 +9,7 @@ import { GlobalFilters } from '@/shared/types';
 import { buildWhereClause } from '@/shared/utils';
 import { safeString } from '@/shared/utils/ExStringUtils';
 import { BooleanUtils } from '@/shared/lib';
+import { prisma } from '@/config';
 
 const descriptions = {
   ['Payment']:
@@ -147,16 +148,14 @@ export class AccountUseCase {
 
     if (BooleanUtils.isTrue(searchParams)) {
       const typeSearchParams = searchParams.toLowerCase();
-      const enumValues = Object.values(AccountType).map((v) => v.toLowerCase());
+      const enumValues = Object.values(AccountType).map((v: any) => v.toLowerCase());
       const matchedType = enumValues.includes(typeSearchParams)
         ? (Object.values(AccountType).find(
-            (v) => v.toLowerCase() === typeSearchParams,
+            (v: any) => v.toLowerCase() === typeSearchParams,
           ) as AccountType)
         : null;
 
-      const orConditions: Prisma.AccountWhereInput[] = [
-        { name: { contains: typeSearchParams, mode: 'insensitive' } },
-      ];
+      const orConditions: any = [{ name: { contains: typeSearchParams, mode: 'insensitive' } }];
 
       if (matchedType) {
         orConditions.push({ type: { equals: matchedType } });
@@ -172,12 +171,20 @@ export class AccountUseCase {
       };
     }
 
-    const accountFiltered = await this.accountRepository.findManyWithCondition({
+    let accountFiltered = await this.accountRepository.findManyWithCondition({
       userId,
       parentId: null,
       ...where,
     });
 
+    if (accountFiltered.length === 0 && BooleanUtils.isTrue(searchParams)) {
+      accountFiltered = await prisma.$queryRaw`
+    SELECT * FROM "Account" 
+    WHERE 
+      "userId"::text = ${userId}::text
+      AND unaccent("name") ILIKE unaccent('%' || ${searchParams.toLowerCase()} || '%')
+  `;
+    }
     const balances = accountFiltered.map((a) => Number(a.balance ?? 0));
     let minBalance = balances.length > 0 ? Math.min(...balances) : 0;
     const maxBalance = balances.length > 0 ? Math.max(...balances) : 0;
@@ -199,10 +206,10 @@ export class AccountUseCase {
 
     if (BooleanUtils.isTrue(searchParams)) {
       const typeSearchParams = searchParams.toLowerCase();
-      const enumValues = Object.values(AccountType).map((v) => v.toLowerCase());
+      const enumValues = Object.values(AccountType).map((v: any) => v.toLowerCase());
       const matchedType = enumValues.includes(typeSearchParams)
         ? (Object.values(AccountType).find(
-            (v) => v.toLowerCase() === typeSearchParams,
+            (v: any) => v.toLowerCase() === typeSearchParams,
           ) as AccountType)
         : null;
 
@@ -224,7 +231,7 @@ export class AccountUseCase {
       };
     }
 
-    const accountRes = (await this.accountRepository.findManyWithCondition(
+    let accountRes = (await this.accountRepository.findManyWithCondition(
       {
         userId,
         ...where,
@@ -248,6 +255,15 @@ export class AccountUseCase {
         fromTransactions: true;
       };
     }>[];
+
+    if (accountRes.length === 0 && BooleanUtils.isTrue(searchParams)) {
+      accountRes = await prisma.$queryRaw`
+    SELECT * FROM "Account" 
+    WHERE 
+      "userId"::text = ${userId}::text
+      AND unaccent("name") ILIKE unaccent('%' || ${searchParams.toLowerCase()} || '%')
+  `;
+    }
 
     const accountWithConvertedBalance = accountRes.map((acc: any) => {
       const convertedBalance = convertCurrency(
