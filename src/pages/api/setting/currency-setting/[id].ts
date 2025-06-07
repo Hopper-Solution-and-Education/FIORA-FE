@@ -18,8 +18,8 @@ export default withAuthorization({
     switch (req.method) {
         case 'GET':
             return GET(req, res, userId);
-        case 'PUT':
-            return PUT(req, res, userId);
+        case 'DELETE':
+            return DELETE(req, res, userId);
         default:
             return res
                 .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -28,11 +28,13 @@ export default withAuthorization({
 });
 
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+    const { id } = req.query;
+
     try {
-        const exchangeRates = await exchangeRateUseCase.getAllExchangeRate(userId);
+        const exchangeRate = await exchangeRateUseCase.getExchangeRateById(id as string, userId);
         return res
             .status(RESPONSE_CODE.OK)
-            .json(createResponse(RESPONSE_CODE.OK, Messages.GET_EXCHANGE_RATE_SUCCESS, exchangeRates));
+            .json(createResponse(RESPONSE_CODE.OK, Messages.GET_EXCHANGE_RATE_SUCCESS, exchangeRate));
     } catch (error: any) {
         return res
             .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
@@ -40,19 +42,19 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     }
 }
 
-export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: string) {
     try {
-        const { error } = validateBody(exchangeRateUpsert, req.body);
+        const { id } = req.query;
 
-        if (error) {
-            return res.status(RESPONSE_CODE.BAD_REQUEST).json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
+        if (!id) {
+            return res.status(RESPONSE_CODE.BAD_REQUEST).json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_PARAMS_INPUT, { id: 'id' }));
         }
 
-        const newExchangeRate = await exchangeRateUseCase.upsertExchangeRate(req.body, userId);
+        await exchangeRateUseCase.deleteExchangeRate(id as string, userId);
 
         return res
-            .status(RESPONSE_CODE.CREATED)
-            .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_EXCHANGE_RATE_SUCCESS, newExchangeRate));
+            .status(RESPONSE_CODE.OK)
+            .json(createResponse(RESPONSE_CODE.CREATED, Messages.DELETE_EXCHANGE_RATE_SUCCESS, null));
     } catch (error: any) {
         return res
             .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)

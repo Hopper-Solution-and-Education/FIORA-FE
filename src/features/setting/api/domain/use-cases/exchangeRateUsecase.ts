@@ -2,6 +2,9 @@ import { IExchangeRateRepository } from "../../repositories/exchangeRateReposito
 import { exchangeRateRepository } from "../../infrastructure/repositories/exchangeRateRepository";
 import { ExchangeRateSetting, Prisma } from "@prisma/client";
 import { Messages } from "@/shared/constants/message";
+import { prisma } from "@/config";
+import { ExchangeRateUpsertParams } from "@/shared/types/exchangeRate";
+import { BadRequestError } from "@/shared/lib";
 
 class ExchangeRateUseCase {
     private exchangeRateRepository: IExchangeRateRepository;
@@ -44,12 +47,12 @@ class ExchangeRateUseCase {
         }
     }
 
-    async getExchangeRate(authorId: string): Promise<ExchangeRateSetting[]> {
-        try {
-            return await this.exchangeRateRepository.findManyExchangeRate({ authorId });
-        } catch (error) {
-            throw new Error(Messages.GET_EXCHANGE_RATE_FAILED);
+    async getExchangeRateById(id: string, authorId: string): Promise<ExchangeRateSetting> {
+        const exchangeRate = await this.exchangeRateRepository.findFirstExchangeRate({ id, authorId });
+        if (!exchangeRate) {
+            throw new BadRequestError(Messages.EXCHANGE_RATE_NOT_FOUND);
         }
+        return exchangeRate;
     }
 
     async getAllExchangeRate(authorId: string): Promise<ExchangeRateSetting[]> {
@@ -60,22 +63,35 @@ class ExchangeRateUseCase {
         }
     }
 
-    async updateExchangeRate(id: string, data: Prisma.ExchangeRateSettingUncheckedUpdateInput, authorId: string): Promise<ExchangeRateSetting> {
+    async upsertExchangeRate(data: ExchangeRateUpsertParams, authorId: string): Promise<ExchangeRateSetting> {
+        const { fromCurrency, toCurrency } = data;
         try {
+            return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+                const upsertExchangeRate = await tx.exchangeRateSetting.upsert({
+                    where: {
+                        fromCurrency_toCurrency_authorId: {
+                            fromCurrency,
+                            toCurrency,
+                            authorId,
+                        },
+                    },
+                    update: {
+                        ...data,
+                        fromValue: new Prisma.Decimal(data.fromValue),
+                        toValue: new Prisma.Decimal(data.toValue),
+                        updatedBy: authorId,
+                    },
+                    create: {
+                        ...data,
+                        fromValue: new Prisma.Decimal(data.fromValue),
+                        toValue: new Prisma.Decimal(data.toValue),
+                        authorId,
+                        createdBy: authorId,
+                    },
+                });
 
-            const foundExchangeRate = await this.exchangeRateRepository.findFirstExchangeRate({
-                id,
-                authorId,
-            });
-
-            if (!foundExchangeRate) {
-                throw new Error(Messages.EXCHANGE_RATE_NOT_FOUND);
-            }
-
-            return await this.exchangeRateRepository.updateExchangeRate(id, {
-                ...data,
-                updatedBy: authorId,
-            });
+                return upsertExchangeRate;
+            })
         } catch (error) {
             throw new Error(Messages.UPDATE_EXCHANGE_RATE_FAILED);
         }
