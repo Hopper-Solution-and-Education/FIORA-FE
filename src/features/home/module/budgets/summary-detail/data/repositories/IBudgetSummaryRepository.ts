@@ -11,7 +11,7 @@ import {
   CategoryPlanningUpdateRequestDTO,
   DeleteCategoryRequestDTO,
 } from '../dto/request/BudgetUpdateRequestDTO';
-import { HttpResponse } from '@/shared/types';
+import { Currency, HttpResponse } from '@/shared/types';
 
 export interface IBudgetSummaryRepository {
   getBudgetSummary(params: BudgetSummaryRequestDTO): Promise<BudgetSummaryResponseDTO>;
@@ -23,7 +23,7 @@ export interface IBudgetSummaryRepository {
   getCategoriesByType(type: 'Income' | 'Expense'): Promise<Category[]>;
   getActualPlanningByCategory(categoryId: string, year: number): Promise<CategoryPlanning>;
   updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<void>;
-  updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO): Promise<void>;
+  updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO, currency: Currency): Promise<void>;
   getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>>;
   deleteCategory(data: DeleteCategoryRequestDTO): Promise<void>;
 }

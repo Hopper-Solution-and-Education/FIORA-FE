@@ -17,7 +17,7 @@ import {
 } from '../dto/request/BudgetUpdateRequestDTO';
 import { httpClient } from '@/config/http-client/HttpClient';
 import { BudgetType } from '../../domain/entities/BudgetType';
-import { HttpResponse } from '@/shared/types';
+import { Currency, HttpResponse } from '@/shared/types';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import { routeConfig } from '@/shared/utils/route';
 
@@ -54,8 +54,13 @@ export class BudgetSummaryAPI implements IBudgetSummaryAPI {
     await httpClient.put<void>(ApiEndpointEnum.BudgetTopDownUpdate, data);
   }
 
-  async updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO): Promise<void> {
-    await httpClient.put<void>(ApiEndpointEnum.BudgetCategories, data);
+  async updateCategoryPlanning(
+    data: CategoryPlanningUpdateRequestDTO,
+    currency: Currency,
+  ): Promise<void> {
+    await httpClient.put<void>(ApiEndpointEnum.BudgetCategories, data, {
+      'x-user-currency': currency,
+    });
   }
 
   async deleteCategory(data: DeleteCategoryRequestDTO): Promise<void> {

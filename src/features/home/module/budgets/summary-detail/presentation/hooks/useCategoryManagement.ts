@@ -4,6 +4,7 @@ import { BudgetDetailFilterEnum } from '../../data/constants';
 import { DeleteCategoryRequestDTO } from '../../data/dto/request/BudgetUpdateRequestDTO';
 import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 interface UseCategoryManagementProps {
   budgetSummaryUseCase: IBudgetSummaryUseCase;
@@ -22,8 +23,18 @@ export const useCategoryManagement = ({
 }: UseCategoryManagementProps) => {
   const [categoryRows, setCategoryRows] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  const router = useRouter();
 
   const handleAddCategory = (setTableData: React.Dispatch<React.SetStateAction<TableData[]>>) => {
+    const hasUnselectedCategory = tableData.some(
+      (item) => categoryRows.includes(item.key) && !item.categoryId,
+    );
+
+    if (hasUnselectedCategory) {
+      toast.error('Please select a category before adding a new one.');
+      return;
+    }
+
     const newCategoryId = `new-category-${Date.now()}`;
     setCategoryRows((prev) => [...prev, newCategoryId]);
 
@@ -97,7 +108,7 @@ export const useCategoryManagement = ({
     });
   };
 
-  const handleDeleteCategory = async (categoryId: string) => {
+  const handleDeleteCategory = async (categoryId: string, isTruncate: boolean = true) => {
     try {
       const type = activeTab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income';
 
@@ -105,11 +116,18 @@ export const useCategoryManagement = ({
         fiscalYear: initialYear.toString(),
         type: type,
         categoryId: categoryId,
+        isTruncate,
       };
 
       await budgetSummaryUseCase.deleteCategory(deleteData);
 
-      toast.success('Category deleted successfully');
+      if (isTruncate) {
+        toast.success('Category reseted successfully');
+
+        router.refresh();
+      } else {
+        toast.success('Category deleted successfully');
+      }
     } catch (error: any) {
       toast.error(`Failed to delete category: ${error.message}`);
     }

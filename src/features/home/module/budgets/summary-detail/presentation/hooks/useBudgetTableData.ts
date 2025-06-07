@@ -16,13 +16,14 @@ import {
   TableData,
 } from '../types/table.type';
 import { useBudgetData } from './useBudgetData';
+import { Currency } from '@/shared/types';
 
 interface UseBudgetTableDataProps {
   initialYear: number;
   activeTab: BudgetDetailFilterType;
   period: BudgetPeriodType;
   periodId: BudgetPeriodIdType;
-  currency: string;
+  currency: Currency;
   budgetSummaryUseCase: IBudgetSummaryUseCase;
   tableData: TableData[];
   setTableData: React.Dispatch<React.SetStateAction<TableData[]>>;
@@ -55,7 +56,7 @@ export function useBudgetTableData({
 
   useEffect(() => {
     loadData();
-  }, [initialYear, period, periodId, currency, activeTab]);
+  }, [initialYear, period, periodId, currency, activeTab, router]);
 
   useEffect(() => {
     const selectedCategoryIds = new Set<string>();
@@ -139,13 +140,16 @@ export function useBudgetTableData({
           });
         }
 
-        await budgetSummaryUseCase.updateCategoryPlanning({
-          fiscalYear: initialYear.toString(),
-          type: activeTab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income',
-          categoryId,
-          bottomUpPlan: bottomUpData,
-          actualSumUpPlan: actualData,
-        });
+        await budgetSummaryUseCase.updateCategoryPlanning(
+          {
+            fiscalYear: initialYear.toString(),
+            type: activeTab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income',
+            categoryId,
+            bottomUpPlan: bottomUpData,
+            actualSumUpPlan: actualData,
+          },
+          currency,
+        );
 
         toast.success('Bottom-up planning updated successfully');
       }

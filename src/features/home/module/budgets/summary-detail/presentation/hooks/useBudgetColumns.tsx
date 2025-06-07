@@ -83,7 +83,7 @@ export function useBudgetColumns({
         key: 'type',
         width: 200,
         render: (value: string, record: TableData) => {
-          if (categoryRows.includes(record.key)) {
+          if (categoryRows.includes(record.key) || record.isCreated) {
             const availableCategories = categoryList.filter(
               (category) =>
                 !selectedCategories.has(category.id) || category.id === record.categoryId,
@@ -124,18 +124,6 @@ export function useBudgetColumns({
           return (
             <div className="flex items-center justify-between">
               <span>{value}</span>
-              {record.isParent && record.categoryId && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    handleRemoveCategory(record.key);
-                    // handleDeleteCategory(record.categoryId, activeTab, initialYear);
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
             </div>
           );
         },
@@ -146,6 +134,7 @@ export function useBudgetColumns({
           if (categoryRows.includes(record.key)) {
             return null;
           }
+
           return column.render ? column.render(value, record, 2) : value;
         },
       })),

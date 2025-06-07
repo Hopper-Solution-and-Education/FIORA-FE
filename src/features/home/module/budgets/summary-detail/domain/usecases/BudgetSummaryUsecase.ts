@@ -14,7 +14,7 @@ import {
   CategoryPlanningUpdateRequestDTO,
   DeleteCategoryRequestDTO,
 } from '../../data/dto/request/BudgetUpdateRequestDTO';
-import { HttpResponse } from '@/shared/types';
+import { Currency, HttpResponse } from '@/shared/types';
 
 @injectable()
 export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
@@ -46,8 +46,11 @@ export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
     return this.budgetSummaryRepository.updateTopDownPlanning(data);
   }
 
-  async updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO): Promise<void> {
-    return this.budgetSummaryRepository.updateCategoryPlanning(data);
+  async updateCategoryPlanning(
+    data: CategoryPlanningUpdateRequestDTO,
+    currency: Currency,
+  ): Promise<void> {
+    return this.budgetSummaryRepository.updateCategoryPlanning(data, currency);
   }
 
   async getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>> {

@@ -15,12 +15,13 @@ import { Category as BudgetCategory } from '../data/dto/response/CategoryRespons
 import { COLORS } from '@/shared/constants/chart';
 import { BudgetDetailFilterEnum, BUDGETR_FILTER_KEY, PERIOD_CONFIG } from '../data/constants';
 import { formatters } from '@/shared/lib';
+import { validate as isUUID } from 'uuid';
 
 export const formatCurrencyValue = (
   value: number | string | undefined,
   currency: Currency,
 ): string => {
-  if (value === undefined || value === '') return '0';
+  if (value === undefined || value === '') return '';
 
   const numValue = typeof value === 'string' ? parseFloat(value) : value;
   const formattedValue = currency === 'USD' ? convertVNDToUSD(numValue) : numValue;
@@ -102,7 +103,7 @@ export const getColumnsByPeriod = (
   onCategoryChange?: (categoryId: string) => void,
   onValidateClick?: (record: TableData) => void,
   onValueChange?: (record: TableData, columnKey: string, value: number) => void,
-  onDeleteCategory?: (categoryId: string) => void,
+  onDeleteCategory?: (categoryId: string, isTruncate?: boolean) => void,
   onRemoveCategory?: (categoryId: string) => void,
   activeTab?: BudgetDetailFilterType,
 ) => {
@@ -180,35 +181,57 @@ export const getColumnsByPeriod = (
     }),
   ];
 
-  const actionColumn = createColumn('action', 'ACTION', {
+  const actionColumn: ColumnProps = createColumn('action', 'Action', {
     fixed: 'right',
     align: 'center',
     width: 60,
     headerAlign: 'center',
-    render: (_: number, record: TableData) => {
+    render: (_, record: TableData) => {
       const [categoryId] = record.key.split('-bottom-up');
+      const isCategoryTitleRow = isUUID(record.key);
 
-      return record.isEditable ? (
-        <div className="grid grid-flow-col place-items-center gap-2">
-          <span
-            className="text-red-500 hover:text-red-700 cursor-pointer"
-            title="Invalid"
-            onClick={() => {
-              onRemoveCategory?.(categoryId);
-              onDeleteCategory?.(categoryId);
-            }}
-          >
-            <Icons.close size={15} />
-          </span>
-          <span
-            className="text-green-500 hover:text-green-700 cursor-pointer"
-            title="Valid"
-            onClick={() => onValidateClick?.(record)}
-          >
-            <Icons.check size={15} />
-          </span>
-        </div>
-      ) : null;
+      if (isCategoryTitleRow) {
+        return (
+          <div className="grid grid-flow-col place-items-center gap-2">
+            <span
+              className="text-red-500 hover:text-red-700 cursor-pointer"
+              title="Delete"
+              onClick={() => {
+                onRemoveCategory?.(categoryId);
+                onDeleteCategory?.(categoryId, false);
+              }}
+            >
+              <Icons.trash size={15} />
+            </span>
+          </div>
+        );
+      }
+
+      if (record.isEditable) {
+        return (
+          <div className="grid grid-flow-col place-items-center gap-2">
+            <span
+              className="text-red-500 hover:text-red-700 cursor-pointer"
+              title="Invalid"
+              onClick={() => {
+                // onRemoveCategory?.(categoryId);
+                onDeleteCategory?.(categoryId);
+              }}
+            >
+              <Icons.close size={15} />
+            </span>
+            <span
+              className="text-green-500 hover:text-green-700 cursor-pointer"
+              title="Valid"
+              onClick={() => onValidateClick?.(record)}
+            >
+              <Icons.check size={15} />
+            </span>
+          </div>
+        );
+      }
+
+      return null;
     },
   });
 

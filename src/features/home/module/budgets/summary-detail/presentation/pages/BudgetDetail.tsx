@@ -1,4 +1,3 @@
-// src/presentation/BudgetDetail.tsx
 'use client';
 
 import { TableV2 } from '@/components/common/tables/custom-table';
@@ -37,9 +36,8 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   const [tableData, setTableData] = useState<TableData[]>([]);
   const { currency } = useAppSelector((state) => state.settings);
 
-  const budgetSummaryUseCase = useMemo(
-    () => budgetSummaryDIContainer.get<IBudgetSummaryUseCase>(TYPES.IBudgetSummaryUseCase),
-    [],
+  const budgetSummaryUseCase = budgetSummaryDIContainer.get<IBudgetSummaryUseCase>(
+    TYPES.IBudgetSummaryUseCase,
   );
 
   const { period, periodId, activeTab, handlePeriodChange, handleFilterChange } =
@@ -66,7 +64,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     activeTab,
     period,
     periodId,
-    currency: currency,
+    currency,
     budgetSummaryUseCase,
     tableData,
     setTableData,
@@ -78,14 +76,14 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     budgetSummaryUseCase,
     setTableData,
     initialYear,
-    period, // Add these props
-    periodId, // Add these props
+    period,
+    periodId,
   });
 
   const { columns } = useBudgetColumns({
     period,
     periodId,
-    currency: currency,
+    currency,
     categoryList,
     activeTab,
     categoryRows,

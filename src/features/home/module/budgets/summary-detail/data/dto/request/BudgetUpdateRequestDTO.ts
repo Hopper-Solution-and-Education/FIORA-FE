@@ -20,4 +20,5 @@ export interface DeleteCategoryRequestDTO {
   fiscalYear: string;
   type: string;
   categoryId: string;
+  isTruncate?: boolean;
 }

@@ -14,7 +14,7 @@ import {
   CategoryPlanningUpdateRequestDTO,
   DeleteCategoryRequestDTO,
 } from '../dto/request/BudgetUpdateRequestDTO';
-import { HttpResponse } from '@/shared/types';
+import { Currency, HttpResponse } from '@/shared/types';
 
 export interface IBudgetSummaryAPI {
   /**
@@ -58,7 +58,7 @@ export interface IBudgetSummaryAPI {
   /**
    * Update category bottom-up planning
    */
-  updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO): Promise<void>;
+  updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO, currency: Currency): Promise<void>;
 
   /**
    * Lấy danh sách năm tài chính đã có ngân sách

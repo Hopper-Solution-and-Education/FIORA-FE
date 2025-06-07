@@ -16,7 +16,7 @@ import {
 import { Category, CategoryPlanning } from '../dto/response/CategoryResponseDTO';
 import { BudgetSummaryMapper } from '../mappers/BudgetSummaryMapper';
 import { IBudgetSummaryRepository } from './IBudgetSummaryRepository';
-import { HttpResponse } from '@/shared/types';
+import { Currency, HttpResponse } from '@/shared/types';
 
 @injectable()
 export class BudgetSummaryRepository implements IBudgetSummaryRepository {
@@ -68,8 +68,11 @@ export class BudgetSummaryRepository implements IBudgetSummaryRepository {
     await this.budgetSummaryAPI.updateTopDownPlanning(data);
   }
 
-  async updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO): Promise<void> {
-    await this.budgetSummaryAPI.updateCategoryPlanning(data);
+  async updateCategoryPlanning(
+    data: CategoryPlanningUpdateRequestDTO,
+    currency: Currency,
+  ): Promise<void> {
+    await this.budgetSummaryAPI.updateCategoryPlanning(data, currency);
   }
 
   async getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>> {
