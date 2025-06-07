@@ -376,12 +376,10 @@ class CategoryUseCase {
 
       const { budgetDetails, ...categoryWithoutBudgetDetails } = category;
 
-      console.log(budgetDetails);
-
       return {
         ...categoryWithoutBudgetDetails,
         bottomUpPlan,
-        isCreated: category.budgetDetails.length > 0,
+        isCreated: budgetDetails.length > 0,
       };
     });
 
