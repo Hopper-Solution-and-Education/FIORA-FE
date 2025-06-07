@@ -201,7 +201,7 @@ export enum Messages {
   GET_EXCHANGE_RATE_FAILED = 'Failed to get exchange rate.',
   INVALID_EXCHANGE_RATE_DATA = 'Invalid exchange rate data.',
   EXCHANGE_RATE_ALREADY_EXISTS = 'Exchange rate already exists.',
-  EXCHANGE_RATE_DUPLICATED_FIELDS = 'Exchange rate already exists.',
+  EXCHANGE_RATE_DUPLICATED_FIELDS = 'Exchange rate duplicated fields.',
   UPDATE_EXCHANGE_RATE_FAILED = 'Failed to update exchange rate.',
   EXCHANGE_RATE_NOT_FOUND = 'Exchange rate not found.',
   DELETE_EXCHANGE_RATE_FAILED = 'Failed to delete exchange rate.',

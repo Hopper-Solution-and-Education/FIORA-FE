@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/shared/utils';
-import { validateOtp } from '@/shared/validation/signUpValidation';
+import { validateOtp } from '@/shared/validators/signUpValidation';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 

@@ -10,7 +10,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 // This function can run for a maximum of 15 seconds
 export const config = {
   maxDuration: 15,
-}
+};
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {
