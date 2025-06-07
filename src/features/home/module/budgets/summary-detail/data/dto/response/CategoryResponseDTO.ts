@@ -45,6 +45,7 @@ export interface Category {
   type: string;
   icon: string;
   bottomUpPlan: BottomUpPlan;
+  isCreated: boolean;
 }
 
 export interface CategoryResponseDTO {

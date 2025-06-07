@@ -16,7 +16,7 @@ import { COLORS } from '@/shared/constants/chart';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { routeConfig } from '@/shared/utils/route';
 import { useAppSelector } from '@/store';
-import { useEffect, useMemo, useState } from 'react';
+import { useLayoutEffect, useMemo, useState } from 'react';
 import { PERIOD_OPTIONS } from '../../data/constants';
 import { budgetSummaryDIContainer } from '../../di/budgetSummaryDIContainer';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
@@ -78,6 +78,8 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     budgetSummaryUseCase,
     setTableData,
     initialYear,
+    period, // Add these props
+    periodId, // Add these props
   });
 
   const { columns } = useBudgetColumns({
@@ -99,10 +101,12 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     initialYear,
   });
 
-  useEffect(() => {
-    if (tableData.length === 3) {
-      handleAddCategory(setTableData);
-    }
+  useLayoutEffect(() => {
+    setTimeout(() => {
+      if (tableData.length === 3) {
+        handleAddCategory(setTableData);
+      }
+    }, 500);
   }, [tableData.length]);
 
   return (

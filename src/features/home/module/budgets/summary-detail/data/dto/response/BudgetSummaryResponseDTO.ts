@@ -1,3 +1,4 @@
+import { Currency } from '@/shared/types';
 import { Budget } from '../../../domain/entities/Budget';
 import { BudgetType } from '../../../domain/entities/BudgetType';
 
@@ -48,6 +49,7 @@ export interface BudgetDTO {
   updated_at: string;
   created_by?: string;
   updated_by?: string;
+  currency: Currency;
 }
 
 export interface BudgetSummaryResponseDTO {

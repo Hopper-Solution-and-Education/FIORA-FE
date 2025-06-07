@@ -59,7 +59,6 @@ export function useBudgetColumns({
   handleRemoveCategory,
   handleDeleteCategory,
   setTableData,
-  tableData,
 }: UseBudgetColumnsProps) {
   const [columns, setColumns] = useState<ColumnProps[]>([]);
 
