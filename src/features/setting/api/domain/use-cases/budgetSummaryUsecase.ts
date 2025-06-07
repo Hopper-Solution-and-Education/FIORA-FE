@@ -608,17 +608,22 @@ class BudgetSummaryUseCase {
         suffix,
       );
 
-      const updated = await this._budgetRepository.updateBudgetTx(
+      const bottomUpBudget = await this._budgetRepository.updateBudgetTx(
         { id: extractBudgetTypesByYear.id },
         updateData,
         prisma,
       );
 
-      if (!updated) {
+      if (!bottomUpBudget) {
         throw new Error(Messages.BUDGET_UPDATE_FAILED);
       }
 
-      return [updatedBudgetDetails, actBudgetDetails.length ? actBudgetDetails : null, updated];
+      return {
+        updatedBudgetDetails,
+        actBudgetDetails: actBudgetDetails.length ? actBudgetDetails : null,
+        bottomUpBudget,
+        currency: targetCurrency,
+      };
     });
   }
 
