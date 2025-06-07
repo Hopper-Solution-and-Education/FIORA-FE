@@ -34,7 +34,7 @@ const MembershipSettingPage = () => {
   return (
     <div className="min-h-screen p-6 ">
       {/* Main container with two rows */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
         {/* Left Section: Balance Graph col-3 */}
         <MembershipRankChart />
 

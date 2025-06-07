@@ -81,7 +81,7 @@ const spentTiers = [
 
 // Combined tier icons mapping with onClick handlers
 
-const MembershipRankChart = () => {
+const ExampleScatterRankChart = () => {
   const [selectedItem, setSelectedItem] = useState<{ balance: number; spent: number } | null>({
     balance: 0,
     spent: 0,
@@ -270,4 +270,4 @@ const MembershipRankChart = () => {
   );
 };
 
-export default MembershipRankChart;
+export default ExampleScatterRankChart;
