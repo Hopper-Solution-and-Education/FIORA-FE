@@ -5,7 +5,7 @@ import { BooleanUtils } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { GlobalFilters } from '@/shared/types';
 import { buildWhereClause } from '@/shared/utils';
-import { safeString } from '@/shared/utils/ExStringUtils';
+import { normalizeVietnamese, safeString } from '@/shared/utils/ExStringUtils';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { Currency, Prisma } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -60,29 +60,14 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
     const skip = (Number(page) - 1) * Number(pageSize);
     const take = Number(pageSize);
     const params = req.body as GlobalFilters;
-
+    let products;
     const searchParams = safeString(params.search);
     let where: Prisma.ProductWhereInput = {};
 
     if (params.filters && Object.keys(params.filters).length > 0) {
       where = buildWhereClause(params.filters) as Prisma.ProductWhereInput;
     }
-    if (BooleanUtils.isTrue(searchParams)) {
-      const typeSearchParams = searchParams.toLowerCase();
-
-      where = {
-        AND: [
-          where,
-          {
-            OR: [
-              { name: { contains: typeSearchParams, mode: 'insensitive' } },
-              { items: { some: { name: { contains: typeSearchParams, mode: 'insensitive' } } } },
-              { category: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
-            ],
-          },
-        ],
-      };
-    }
+    let rawUnaccentProducts: any[] = [];
 
     // Bước 1: Lấy danh sách CategoryProducts phân trang và đếm tổng số
     const [categories, count] = await Promise.all([
@@ -112,7 +97,44 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
     const catIds = categories.map((cat) => cat.id);
 
     // Bước 3: Lấy tất cả sản phẩm thuộc các danh mục này
-    const products = await prisma.product.findMany({
+    if (BooleanUtils.isTrue(searchParams)) {
+      try {
+        const typeSearchParams = searchParams.toLowerCase();
+        where = {
+          AND: [
+            where,
+            {
+              OR: [
+                { name: { contains: typeSearchParams, mode: 'insensitive' } },
+                { items: { some: { name: { contains: typeSearchParams, mode: 'insensitive' } } } },
+                { category: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+              ],
+            },
+          ],
+        };
+
+        // Nếu không có kết quả từ Prisma hoặc bạn muốn fallback luôn:
+        const normalized = normalizeVietnamese(typeSearchParams);
+        const rawQuery = `
+      SELECT p.*
+      FROM "Product" p
+      LEFT JOIN "ProductItems" i ON i."productId" = p."id"
+      LEFT JOIN "CategoryProducts" cp ON cp."id" = p."catId"
+      WHERE p."userId"::text = $1
+        AND (
+          unaccent(p."name") ILIKE unaccent('%' || $2 || '%')
+          OR unaccent(i."name") ILIKE unaccent('%' || $2 || '%')
+          OR unaccent(cp."name") ILIKE unaccent('%' || $2 || '%')
+        )
+      GROUP BY p.id
+    `;
+
+        rawUnaccentProducts = await prisma.$queryRawUnsafe(rawQuery, userId, normalized);
+      } catch (err) {
+        console.error('Fallback search with unaccent failed', err);
+      }
+    }
+    products = await prisma.product.findMany({
       where: {
         catId: { in: catIds },
         userId, // Đảm bảo sản phẩm thuộc về user
@@ -139,8 +161,63 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
       },
     });
 
+    if (rawUnaccentProducts.length > 0) {
+      const rawIds = rawUnaccentProducts.map((p) => p.id);
+      products = await prisma.product.findMany({
+        where: {
+          id: { in: rawIds },
+        },
+        select: {
+          id: true,
+          price: true,
+          name: true,
+          type: true,
+          description: true,
+          taxRate: true,
+          catId: true,
+          icon: true,
+          currency: true,
+          items: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              icon: true,
+            },
+          },
+        },
+      });
+    } else {
+      products = await prisma.product.findMany({
+        where: {
+          catId: { in: catIds },
+          userId,
+          ...where,
+        },
+        select: {
+          id: true,
+          price: true,
+          name: true,
+          type: true,
+          description: true,
+          taxRate: true,
+          catId: true,
+          icon: true,
+          currency: true,
+          items: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              icon: true,
+            },
+          },
+        },
+      });
+    }
+
     // Bước 4: Lấy tất cả ProductTransaction liên quan đến các sản phẩm
-    const productIds = products.map((product) => product.id);
+    const productIds = products!.map((product) => product.id);
     // Chỉ truy vấn nếu có sản phẩm để tránh lỗi với mảng productIds rỗng
     const productTransactions =
       productIds.length > 0
@@ -224,7 +301,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
     );
 
     // Gộp sản phẩm theo danh mục
-    const productsByCategory = products.reduce(
+    const productsByCategory = products!.reduce(
       (acc, product) => {
         const catId = product.catId;
         if (catId) {
