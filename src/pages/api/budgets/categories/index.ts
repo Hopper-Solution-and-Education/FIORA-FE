@@ -92,7 +92,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { categoryId, fiscalYear, type } = req.body;
+    const { categoryId, fiscalYear, type, isTruncate } = req.body;
 
     if (!fiscalYear) {
       return res.status(RESPONSE_CODE.BAD_REQUEST).json(
@@ -114,6 +114,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       fiscalYear,
       categoryId,
       type,
+      isTruncate
     });
 
     return res

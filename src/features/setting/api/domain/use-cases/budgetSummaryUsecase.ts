@@ -278,7 +278,7 @@ class BudgetSummaryUseCase {
   }
 
   async deleteBudgetDetailsCategory(params: BudgetDetailCategoryDeleteParams) {
-    const { userId, categoryId, fiscalYear, type } = params;
+    const { userId, categoryId, fiscalYear, type, isTruncate = false } = params;
 
     const suffix = type === BudgetDetailType.Expense ? '_exp' : '_inc';
 
@@ -323,6 +323,10 @@ class BudgetSummaryUseCase {
         },
       });
 
+      if (oldBudgetDetails.length === 0) {
+        throw new Error(Messages.BUDGET_DETAILS_TO_DELETE_NOT_FOUND);
+      }
+
       // 2. Prepare data for subtraction (use old values as amounts to subtract)
       const amountsToSubtract = Array(12)
         .fill(0)
@@ -356,21 +360,57 @@ class BudgetSummaryUseCase {
         throw new Error(Messages.BUDGET_UPDATE_FAILED);
       }
 
-      // Delete budget details for the Bot budget
-      const deletedBudgetDetails = await prisma.budgetDetails.deleteMany({
-        where: {
-          userId,
-          budgetId: extractBudgetTypesByYear.id,
-          categoryId,
-          type,
-        },
-      });
+      if (!isTruncate) {
+        // Delete budget details for the Bot budget
+        const deletedBudgetDetailsMatchBudgetTypeAwait = prisma.budgetDetails.deleteMany({
+          where: {
+            userId,
+            budgetId: extractBudgetTypesByYear.id,
+            categoryId,
+            type,
+          },
+        });
 
-      if (deletedBudgetDetails.count === 0) {
-        throw new Error(Messages.BUDGET_DETAIL_DELETE_FAILED);
+        const deletedBudgetDetailsMatchActTypeAwait = prisma.budgetDetails.deleteMany({
+          where: {
+            userId,
+            budgetId: extractBudgetTypesByYear.id,
+            categoryId,
+            type: BudgetDetailType.Act,
+          },
+        });
+
+        const [deletedBudgetDetailsMatchBudgetType, deletedBudgetDetailsMatchActType] = await Promise.all([deletedBudgetDetailsMatchBudgetTypeAwait, deletedBudgetDetailsMatchActTypeAwait]);
+
+        if (deletedBudgetDetailsMatchBudgetType.count === 0 && deletedBudgetDetailsMatchActType.count === 0) {
+          throw new Error(Messages.BUDGET_DETAIL_DELETE_FAILED);
+        }
+
+        return {
+          deleteBudgetType: deletedBudgetDetailsMatchBudgetType.count,
+          deleteActType: deletedBudgetDetailsMatchActType.count,
+        };
+      } else {
+        const updatedBudgetDetails = await prisma.budgetDetails.updateMany({
+          where: {
+            userId,
+            budgetId: extractBudgetTypesByYear.id,
+            categoryId,
+            type,
+          },
+          data: {
+            amount: new Prisma.Decimal(0),
+          },
+        });
+
+        if (updatedBudgetDetails.count === 0) {
+          throw new Error(Messages.BUDGET_DETAIL_UPDATE_FAILED);
+        }
+
+        return {
+          updateBudgetType: updatedBudgetDetails.count,
+        };
       }
-
-      return deletedBudgetDetails;
     });
   }
 
@@ -411,7 +451,6 @@ class BudgetSummaryUseCase {
         const updateData: Prisma.BudgetDetailsUpdateInput = {
           amount,
           updatedBy: userId,
-          currency,
         };
 
         return this._budgetRepository.upsertBudgetDetailsProduct(

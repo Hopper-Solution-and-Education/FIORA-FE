@@ -23,6 +23,12 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
   try {
     const { type } = req.query as { type: CategoryType };
     const categories = await categoryUseCase.getListCategoryByType(userId, type);
+
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
+
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.GET_CATEGORY_SUCCESS, categories));
