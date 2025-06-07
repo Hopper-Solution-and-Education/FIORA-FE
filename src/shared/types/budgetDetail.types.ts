@@ -18,6 +18,6 @@ export type BudgetDetailCategoryUpdateParams = Omit<
 export type BudgetDetailCategoryDeleteParams = Pick<
   BudgetDetailCategoryUpdateParams,
   'userId' | 'categoryId' | 'fiscalYear' | 'type'
->;
+> & { isTruncate?: boolean };
 
 export type MonthlyBudgetDetailValues = { bottomUp: number; actual: number }[];
