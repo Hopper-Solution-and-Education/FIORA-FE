@@ -357,6 +357,7 @@ class CategoryUseCase {
       },
     ) as unknown)) as CategoryWithBudgetDetails[];
 
+
     const transferCategoryFound = categoryFound.map((category: CategoryWithBudgetDetails) => {
       const suffix = category.type === CategoryType.Expense ? 'exp' : 'inc';
       const bottomUpPlan: Record<string, number> = {};
@@ -374,12 +375,15 @@ class CategoryUseCase {
         bottomUpPlan[monthKey] = amount; // Assuming no currency conversion for now; adjust if needed
       });
 
+      const currency = category.budgetDetails[0]?.currency;
+
       const { budgetDetails, ...categoryWithoutBudgetDetails } = category;
 
       return {
         ...categoryWithoutBudgetDetails,
         bottomUpPlan,
         isCreated: budgetDetails.length > 0,
+        ...(currency && { currency }),
       };
     });
 

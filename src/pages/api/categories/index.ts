@@ -3,7 +3,7 @@ import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { CategoryType } from '@prisma/client';
+import { CategoryType, Currency } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req, res, userId) => {
@@ -22,6 +22,7 @@ export default sessionWrapper(async (req, res, userId) => {
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { type } = req.query as { type: CategoryType };
+
     const categories = await categoryUseCase.getListCategoryByType(userId, type);
 
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
