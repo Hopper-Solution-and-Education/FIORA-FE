@@ -5,7 +5,10 @@ import { BudgetDetailFilterType, TableData } from '../types/table.type';
 import { Category } from '../../data/dto/response/CategoryResponseDTO';
 import { MonthlyPlanningData } from '../../data/dto/request/BudgetUpdateRequestDTO';
 import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
-import { transformMonthlyDataToTableFormat } from '../../utils/dataTransformations';
+import {
+  createMonthlyData,
+  transformMonthlyDataToTableFormat,
+} from '../../utils/dataTransformations';
 import { BudgetDetailFilterEnum } from '../../data/constants';
 
 interface UseBudgetCategoriesProps {
@@ -55,20 +58,8 @@ export function useBudgetCategories({
               );
 
               const bottomUpData = cat.bottomUpPlan as MonthlyPlanningData;
-              const actualData: MonthlyPlanningData = {
-                [`m1${suffix}`]: actualResponse[`m1${suffix}`] || 0,
-                [`m2${suffix}`]: actualResponse[`m2${suffix}`] || 0,
-                [`m3${suffix}`]: actualResponse[`m3${suffix}`] || 0,
-                [`m4${suffix}`]: actualResponse[`m4${suffix}`] || 0,
-                [`m5${suffix}`]: actualResponse[`m5${suffix}`] || 0,
-                [`m6${suffix}`]: actualResponse[`m6${suffix}`] || 0,
-                [`m7${suffix}`]: actualResponse[`m7${suffix}`] || 0,
-                [`m8${suffix}`]: actualResponse[`m8${suffix}`] || 0,
-                [`m9${suffix}`]: actualResponse[`m9${suffix}`] || 0,
-                [`m10${suffix}`]: actualResponse[`m10${suffix}`] || 0,
-                [`m11${suffix}`]: actualResponse[`m11${suffix}`] || 0,
-                [`m12${suffix}`]: actualResponse[`m12${suffix}`] || 0,
-              };
+
+              const actualData: MonthlyPlanningData = createMonthlyData(actualResponse, suffix);
 
               return {
                 key: cat.id,
@@ -125,20 +116,7 @@ export function useBudgetCategories({
 
       const bottomUpData = selectedCategoryData.bottomUpPlan as MonthlyPlanningData;
 
-      const actualData: MonthlyPlanningData = {
-        [`m1${suffix}`]: actualResponse[`m1${suffix}`] || 0,
-        [`m2${suffix}`]: actualResponse[`m2${suffix}`] || 0,
-        [`m3${suffix}`]: actualResponse[`m3${suffix}`] || 0,
-        [`m4${suffix}`]: actualResponse[`m4${suffix}`] || 0,
-        [`m5${suffix}`]: actualResponse[`m5${suffix}`] || 0,
-        [`m6${suffix}`]: actualResponse[`m6${suffix}`] || 0,
-        [`m7${suffix}`]: actualResponse[`m7${suffix}`] || 0,
-        [`m8${suffix}`]: actualResponse[`m8${suffix}`] || 0,
-        [`m9${suffix}`]: actualResponse[`m9${suffix}`] || 0,
-        [`m10${suffix}`]: actualResponse[`m10${suffix}`] || 0,
-        [`m11${suffix}`]: actualResponse[`m11${suffix}`] || 0,
-        [`m12${suffix}`]: actualResponse[`m12${suffix}`] || 0,
-      };
+      const actualData: MonthlyPlanningData = createMonthlyData(actualResponse, suffix);
 
       setTableData((prevData) =>
         prevData.map((item) => {

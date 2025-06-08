@@ -73,3 +73,23 @@ export const transformMonthlyData = (
 
   return result;
 };
+
+/**
+ * Creates monthly data object dynamically
+ * @param response - Response object containing monthly data
+ * @param suffix - Suffix for the month keys (_exp or _inc)
+ * @param months - Number of months (default: 12)
+ */
+export const createMonthlyData = (
+  response: any,
+  suffix: string,
+  months: number = 12,
+): MonthlyPlanningData => {
+  return Array.from({ length: months }, (_, i) => i + 1).reduce(
+    (acc, month) => ({
+      ...acc,
+      [`m${month}${suffix}`]: response[`m${month}${suffix}`] || 0,
+    }),
+    {} as MonthlyPlanningData,
+  );
+};

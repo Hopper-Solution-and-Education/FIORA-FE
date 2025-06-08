@@ -15,7 +15,7 @@ import { COLORS } from '@/shared/constants/chart';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { routeConfig } from '@/shared/utils/route';
 import { useAppSelector } from '@/store';
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useMemo, useState } from 'react';
 import { PERIOD_OPTIONS } from '../../data/constants';
 import { budgetSummaryDIContainer } from '../../di/budgetSummaryDIContainer';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
@@ -27,6 +27,7 @@ import { useBudgetNavigation } from '../hooks/useBudgetNavigation';
 import { useBudgetTableData } from '../hooks/useBudgetTableData';
 import { useCategoryManagement } from '../hooks/useCategoryManagement';
 import { TableData } from '../types/table.type';
+import { useBudgetInit } from '../hooks/useBudgetInit';
 
 interface BudgetDetailProps {
   year: number;
@@ -36,12 +37,20 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   const [tableData, setTableData] = useState<TableData[]>([]);
   const { currency } = useAppSelector((state) => state.settings);
 
-  const budgetSummaryUseCase = budgetSummaryDIContainer.get<IBudgetSummaryUseCase>(
-    TYPES.IBudgetSummaryUseCase,
+  const budgetSummaryUseCase = useMemo(
+    () => budgetSummaryDIContainer.get<IBudgetSummaryUseCase>(TYPES.IBudgetSummaryUseCase),
+    [],
   );
 
   const { period, periodId, activeTab, handlePeriodChange, handleFilterChange } =
     useBudgetNavigation({ initialYear });
+
+  const { loadData, isLoading } = useBudgetInit({
+    initialYear,
+    activeTab,
+    budgetSummaryUseCase,
+    setTableData,
+  });
 
   const {
     categoryRows,
@@ -59,7 +68,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     tableData,
   });
 
-  const { isLoading, handleValueChange, handleValidateClick } = useBudgetTableData({
+  const { handleValueChange, handleValidateClick } = useBudgetTableData({
     initialYear,
     activeTab,
     period,
@@ -69,6 +78,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     tableData,
     setTableData,
     setSelectedCategories,
+    loadData,
   });
 
   const { categoryList, handleCategoryChange } = useBudgetCategories({
@@ -104,7 +114,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
       if (tableData.length === 3) {
         handleAddCategory(setTableData);
       }
-    }, 500);
+    }, 600);
   }, [tableData.length]);
 
   return (

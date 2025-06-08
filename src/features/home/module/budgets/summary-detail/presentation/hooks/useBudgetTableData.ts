@@ -28,6 +28,7 @@ interface UseBudgetTableDataProps {
   tableData: TableData[];
   setTableData: React.Dispatch<React.SetStateAction<TableData[]>>;
   setSelectedCategories: (categories: Set<string>) => void;
+  loadData: () => Promise<void>;
 }
 
 export function useBudgetTableData({
@@ -40,19 +41,9 @@ export function useBudgetTableData({
   tableData,
   setTableData,
   setSelectedCategories,
+  loadData,
 }: UseBudgetTableDataProps) {
   const router = useRouter();
-  const { isLoading, fetchBudgetData } = useBudgetData(budgetSummaryUseCase);
-
-  const loadData = async () => {
-    try {
-      const data = await fetchBudgetData(initialYear, activeTab);
-      setTableData(data || []);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to fetch budget data');
-      router.push(routeConfig(RouteEnum.Budgets));
-    }
-  };
 
   useEffect(() => {
     loadData();
@@ -107,6 +98,8 @@ export function useBudgetTableData({
           updateTopBudget: monthlyData,
         });
 
+        loadData();
+
         toast.success('Top-down planning updated successfully');
       } else if (record.key.includes('-bottom-up')) {
         const [categoryId] = record.key.split('-bottom-up');
@@ -151,6 +144,8 @@ export function useBudgetTableData({
           currency,
         );
 
+        loadData();
+
         toast.success('Bottom-up planning updated successfully');
       }
     } catch (err: any) {
@@ -159,10 +154,8 @@ export function useBudgetTableData({
   };
 
   return {
-    tableData,
-    setTableData,
-    isLoading,
     handleValueChange,
     handleValidateClick,
+    loadData,
   };
 }

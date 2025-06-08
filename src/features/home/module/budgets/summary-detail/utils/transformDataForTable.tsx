@@ -109,6 +109,7 @@ export const getColumnsByPeriod = (
 ) => {
   const renderEditableCell = (text: any, record: TableData, index: number, column: ColumnProps) => {
     let color = '#000';
+    const isDisableEdited = !PERIOD_CONFIG.months.some((item) => item.key === column.key);
 
     if (
       activeTab &&
@@ -127,8 +128,9 @@ export const getColumnsByPeriod = (
           currency={currency}
           classContainer="m-0"
           className="text-right"
+          disabled={isDisableEdited}
           onChange={(newValue) => {
-            if (onValueChange && record) {
+            if (onValueChange && record && !isDisableEdited) {
               onValueChange(record, column.key, newValue);
             }
           }}
