@@ -1,4 +1,3 @@
-// src/presentation/hooks/useBudgetColumns.ts
 import { ColumnProps } from '@/components/common/tables/custom-table/types';
 import {
   Select,
@@ -17,12 +16,14 @@ import {
   BudgetPeriodType,
   TableData,
 } from '../types/table.type';
+import { BudgetInit } from './useBudgetInit';
 
 interface UseBudgetColumnsProps {
   period: BudgetPeriodType;
   periodId: BudgetPeriodIdType;
+  table: BudgetInit<TableData>;
+  categories: BudgetInit<Category>;
   currency: Currency;
-  categoryList: Category[];
   activeTab: BudgetDetailFilterType;
   categoryRows: string[];
   selectedCategories: Set<string>;
@@ -36,8 +37,6 @@ interface UseBudgetColumnsProps {
     categoryName: string,
   ) => void;
   handleRemoveCategory: (categoryId: string) => void;
-  setTableData: React.Dispatch<React.SetStateAction<TableData[]>>;
-  tableData: TableData[];
   handleDeleteCategory: (categoryId: string) => void;
   initialYear: number;
 }
@@ -46,7 +45,6 @@ export function useBudgetColumns({
   period,
   periodId,
   currency,
-  categoryList,
   activeTab,
   categoryRows,
   selectedCategories,
@@ -56,7 +54,8 @@ export function useBudgetColumns({
   handleCategorySelected,
   handleRemoveCategory,
   handleDeleteCategory,
-  setTableData,
+  categories,
+  table,
 }: UseBudgetColumnsProps) {
   const [columns, setColumns] = useState<ColumnProps[]>([]);
 
@@ -65,7 +64,7 @@ export function useBudgetColumns({
       period,
       periodId,
       currency,
-      categoryList,
+      categories.data,
       handleCategoryChange,
       handleValidateClick,
       handleValueChange,
@@ -82,7 +81,7 @@ export function useBudgetColumns({
         width: 200,
         render: (value: string, record: TableData) => {
           if (categoryRows.includes(record.key) || record.isCreated) {
-            const availableCategories = categoryList.filter(
+            const availableCategories = categories.data.filter(
               (category) =>
                 !selectedCategories.has(category.id) || category.id === record.categoryId,
             );
@@ -92,14 +91,9 @@ export function useBudgetColumns({
                 <Select
                   value={record.categoryId || undefined}
                   onValueChange={(selectedValue) => {
-                    const category = categoryList.find((cat) => cat.id === selectedValue);
+                    const category = categories.data.find((cat) => cat.id === selectedValue);
                     if (category) {
-                      handleCategorySelected(
-                        record.key,
-                        selectedValue,
-                        setTableData,
-                        category.name,
-                      );
+                      handleCategorySelected(record.key, selectedValue, table.set, category.name);
                       handleCategoryChange(selectedValue, record.key);
                     }
                   }}
@@ -139,7 +133,7 @@ export function useBudgetColumns({
     ];
 
     setColumns(columnsWithCategorySelect);
-  }, [period, periodId, currency, categoryList, activeTab, categoryRows, selectedCategories]);
+  }, [period, periodId, currency, categories.data, activeTab, categoryRows, selectedCategories]);
 
   return { columns };
 }

@@ -15,7 +15,7 @@ import { COLORS } from '@/shared/constants/chart';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { routeConfig } from '@/shared/utils/route';
 import { useAppSelector } from '@/store';
-import { useLayoutEffect, useMemo, useState } from 'react';
+import { useLayoutEffect, useMemo } from 'react';
 import { PERIOD_OPTIONS } from '../../data/constants';
 import { budgetSummaryDIContainer } from '../../di/budgetSummaryDIContainer';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
@@ -23,18 +23,16 @@ import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCa
 import BudgetSummaryYearSelect from '../atoms/BudgetSummaryYearSelect';
 import { useBudgetCategories } from '../hooks/useBudgetCategories';
 import { useBudgetColumns } from '../hooks/useBudgetColumns';
+import { useBudgetInit } from '../hooks/useBudgetInit';
 import { useBudgetNavigation } from '../hooks/useBudgetNavigation';
 import { useBudgetTableData } from '../hooks/useBudgetTableData';
 import { useCategoryManagement } from '../hooks/useCategoryManagement';
-import { TableData } from '../types/table.type';
-import { useBudgetInit } from '../hooks/useBudgetInit';
 
 interface BudgetDetailProps {
   year: number;
 }
 
 const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
-  const [tableData, setTableData] = useState<TableData[]>([]);
   const { currency } = useAppSelector((state) => state.settings);
 
   const budgetSummaryUseCase = useMemo(
@@ -45,11 +43,10 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   const { period, periodId, activeTab, handlePeriodChange, handleFilterChange } =
     useBudgetNavigation({ initialYear });
 
-  const { loadData, isLoading } = useBudgetInit({
+  const { categories, table, isLoading } = useBudgetInit({
     initialYear,
     activeTab,
     budgetSummaryUseCase,
-    setTableData,
   });
 
   const {
@@ -62,10 +59,9 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     handleDeleteCategory,
   } = useCategoryManagement({
     budgetSummaryUseCase,
-    setTableData,
     initialYear,
     activeTab,
-    tableData,
+    table,
   });
 
   const { handleValueChange, handleValidateClick } = useBudgetTableData({
@@ -74,27 +70,27 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     period,
     periodId,
     currency,
-    budgetSummaryUseCase,
-    tableData,
-    setTableData,
     setSelectedCategories,
-    loadData,
+    table,
+    budgetSummaryUseCase,
   });
 
-  const { categoryList, handleCategoryChange } = useBudgetCategories({
+  const { handleCategoryChange } = useBudgetCategories({
     activeTab,
     budgetSummaryUseCase,
-    setTableData,
     initialYear,
     period,
     periodId,
+    table,
+    categories,
   });
 
   const { columns } = useBudgetColumns({
     period,
     periodId,
+    table,
+    categories,
     currency,
-    categoryList,
     activeTab,
     categoryRows,
     selectedCategories,
@@ -104,18 +100,14 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     handleCategorySelected,
     handleDeleteCategory,
     handleRemoveCategory,
-    setTableData,
-    tableData,
     initialYear,
   });
 
   useLayoutEffect(() => {
-    setTimeout(() => {
-      if (tableData.length === 3) {
-        handleAddCategory(setTableData);
-      }
-    }, 600);
-  }, [tableData.length]);
+    if (table.data.length === 3) {
+      handleAddCategory();
+    }
+  }, [table.data.length]);
 
   return (
     <div className="p-4 w-full flex flex-col">
@@ -157,7 +149,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
           <ActionButton
             tooltipContent="Add New Category"
             showIcon={true}
-            onClick={() => handleAddCategory(setTableData)}
+            onClick={() => handleAddCategory()}
           />
         </div>
       </div>
@@ -166,7 +158,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
         <div className="w-full">
           <TableV2
             columns={columns}
-            dataSource={tableData}
+            dataSource={table.data}
             loading={isLoading}
             rowKey="key"
             bordered

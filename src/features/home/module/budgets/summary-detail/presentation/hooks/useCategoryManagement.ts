@@ -1,32 +1,29 @@
 import { useState } from 'react';
-import { BudgetDetailFilterType, TableData } from '../types/table.type';
+import { toast } from 'sonner';
 import { BudgetDetailFilterEnum } from '../../data/constants';
 import { DeleteCategoryRequestDTO } from '../../data/dto/request/BudgetUpdateRequestDTO';
 import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import { BudgetDetailFilterType, TableData } from '../types/table.type';
+import { BudgetInit } from './useBudgetInit';
 
 interface UseCategoryManagementProps {
   budgetSummaryUseCase: IBudgetSummaryUseCase;
-  setTableData: React.Dispatch<React.SetStateAction<TableData[]>>;
-  tableData: TableData[];
   activeTab: BudgetDetailFilterType;
   initialYear: number;
+  table: BudgetInit<TableData>;
 }
 
 export const useCategoryManagement = ({
   budgetSummaryUseCase,
-  setTableData,
-  tableData,
   activeTab,
   initialYear,
+  table,
 }: UseCategoryManagementProps) => {
   const [categoryRows, setCategoryRows] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
-  const router = useRouter();
 
-  const handleAddCategory = (setTableData: React.Dispatch<React.SetStateAction<TableData[]>>) => {
-    const hasUnselectedCategory = tableData.some(
+  const handleAddCategory = () => {
+    const hasUnselectedCategory = table.data.some(
       (item) => categoryRows.includes(item.key) && !item.categoryId,
     );
 
@@ -38,7 +35,7 @@ export const useCategoryManagement = ({
     const newCategoryId = `new-category-${Date.now()}`;
     setCategoryRows((prev) => [...prev, newCategoryId]);
 
-    setTableData((prev) => [
+    table.set((prev) => [
       ...prev.slice(0, 3),
       {
         key: newCategoryId,
@@ -92,7 +89,7 @@ export const useCategoryManagement = ({
       return prev.filter((id) => id !== categoryId);
     });
 
-    const rowData = tableData.find((item) => item?.categoryId === categoryId);
+    const rowData = table.data.find((item) => item?.categoryId === categoryId);
 
     if (rowData?.categoryId) {
       setSelectedCategories((prev) => {
@@ -102,7 +99,7 @@ export const useCategoryManagement = ({
       });
     }
 
-    setTableData((prev) => {
+    table.set((prev) => {
       const newTableData = prev.filter((item) => item?.categoryId !== categoryId);
       return newTableData;
     });
@@ -123,11 +120,11 @@ export const useCategoryManagement = ({
 
       if (isTruncate) {
         toast.success('Category reseted successfully');
-
-        router.refresh();
       } else {
         toast.success('Category deleted successfully');
       }
+
+      table.fetch();
     } catch (error: any) {
       toast.error(`Failed to delete category: ${error.message}`);
     }

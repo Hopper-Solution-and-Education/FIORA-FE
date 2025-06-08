@@ -1,21 +1,23 @@
 // src/presentation/hooks/useBudgetCategories.ts
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
-import { BudgetDetailFilterType, TableData } from '../types/table.type';
-import { Category } from '../../data/dto/response/CategoryResponseDTO';
+import { BudgetDetailFilterEnum } from '../../data/constants';
 import { MonthlyPlanningData } from '../../data/dto/request/BudgetUpdateRequestDTO';
+import { Category } from '../../data/dto/response/CategoryResponseDTO';
 import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
 import {
   createMonthlyData,
   transformMonthlyDataToTableFormat,
 } from '../../utils/dataTransformations';
-import { BudgetDetailFilterEnum } from '../../data/constants';
+import { BudgetDetailFilterType, TableData } from '../types/table.type';
+import { BudgetInit } from './useBudgetInit';
 
 interface UseBudgetCategoriesProps {
   activeTab: BudgetDetailFilterType;
   budgetSummaryUseCase: IBudgetSummaryUseCase;
-  setTableData: React.Dispatch<React.SetStateAction<TableData[]>>;
   initialYear: number;
+  table: BudgetInit<TableData>;
+  categories: BudgetInit<Category>;
   period?: string;
   periodId?: string;
 }
@@ -23,29 +25,18 @@ interface UseBudgetCategoriesProps {
 export function useBudgetCategories({
   activeTab,
   budgetSummaryUseCase,
-  setTableData,
+  categories,
+  table,
   initialYear,
   periodId,
 }: UseBudgetCategoriesProps) {
-  const [categoryList, setCategoryList] = useState<Category[]>([]);
-
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const type = activeTab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income';
-        const response = await budgetSummaryUseCase.getCategoriesByType(type);
-        setCategoryList(response);
-      } catch (err: any) {
-        toast.error(err?.message || 'Failed to fetch categories');
-      }
-    };
-
-    fetchCategories();
-  }, [activeTab, budgetSummaryUseCase, setTableData, periodId]);
+    categories.fetch();
+  }, [activeTab, budgetSummaryUseCase, periodId]);
 
   useEffect(() => {
     const updateTableDataWithCreatedCategories = async () => {
-      const createdCategories = categoryList.filter((cat) => cat.isCreated === true);
+      const createdCategories = categories.data.filter((cat) => cat.isCreated === true);
       if (createdCategories.length > 0) {
         const suffix = activeTab === BudgetDetailFilterEnum.EXPENSE ? '_exp' : '_inc';
 
@@ -89,7 +80,7 @@ export function useBudgetCategories({
             }),
           );
 
-          setTableData((prevData) => {
+          table.set((prevData) => {
             const baseRows = prevData.slice(0, 3);
             return [...baseRows, ...categoriesWithData];
           });
@@ -100,10 +91,10 @@ export function useBudgetCategories({
     };
 
     updateTableDataWithCreatedCategories();
-  }, [categoryList]);
+  }, [categories.data]);
 
   const handleCategoryChange = async (categoryId: string, parentKey?: string) => {
-    const selectedCategoryData = categoryList.find((cat) => cat.id === categoryId);
+    const selectedCategoryData = categories.data.find((cat) => cat.id === categoryId);
     if (!selectedCategoryData) return;
 
     try {
@@ -118,7 +109,7 @@ export function useBudgetCategories({
 
       const actualData: MonthlyPlanningData = createMonthlyData(actualResponse, suffix);
 
-      setTableData((prevData) =>
+      table.set((prevData) =>
         prevData.map((item) => {
           if (item.key === parentKey) {
             return {
@@ -153,5 +144,5 @@ export function useBudgetCategories({
     }
   };
 
-  return { categoryList, handleCategoryChange };
+  return { handleCategoryChange };
 }

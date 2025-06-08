@@ -1,6 +1,4 @@
-// src/presentation/hooks/useBudgetTableData.ts
-import { RouteEnum } from '@/shared/constants/RouteEnum';
-import { routeConfig } from '@/shared/utils/route';
+import { Currency } from '@/shared/types';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
@@ -15,8 +13,7 @@ import {
   MONTHS,
   TableData,
 } from '../types/table.type';
-import { useBudgetData } from './useBudgetData';
-import { Currency } from '@/shared/types';
+import { BudgetInit } from './useBudgetInit';
 
 interface UseBudgetTableDataProps {
   initialYear: number;
@@ -24,11 +21,9 @@ interface UseBudgetTableDataProps {
   period: BudgetPeriodType;
   periodId: BudgetPeriodIdType;
   currency: Currency;
-  budgetSummaryUseCase: IBudgetSummaryUseCase;
-  tableData: TableData[];
-  setTableData: React.Dispatch<React.SetStateAction<TableData[]>>;
   setSelectedCategories: (categories: Set<string>) => void;
-  loadData: () => Promise<void>;
+  table: BudgetInit<TableData>;
+  budgetSummaryUseCase: IBudgetSummaryUseCase;
 }
 
 export function useBudgetTableData({
@@ -37,30 +32,28 @@ export function useBudgetTableData({
   period,
   periodId,
   currency,
-  budgetSummaryUseCase,
-  tableData,
-  setTableData,
   setSelectedCategories,
-  loadData,
+  table,
+  budgetSummaryUseCase,
 }: UseBudgetTableDataProps) {
   const router = useRouter();
 
   useEffect(() => {
-    loadData();
+    table.fetch();
   }, [initialYear, period, periodId, currency, activeTab, router]);
 
   useEffect(() => {
     const selectedCategoryIds = new Set<string>();
-    tableData.forEach((item) => {
+    table.data.forEach((item) => {
       if (item.categoryId) {
         selectedCategoryIds.add(item.categoryId);
       }
     });
     setSelectedCategories(selectedCategoryIds);
-  }, [tableData, setSelectedCategories]);
+  }, [table.data, setSelectedCategories]);
 
   const handleValueChange = (record: TableData, columnKey: string, value: number) => {
-    setTableData((prevData) =>
+    table.set((prevData) =>
       prevData.map((item) => {
         if (item.key === record.key) {
           return {
@@ -98,7 +91,7 @@ export function useBudgetTableData({
           updateTopBudget: monthlyData,
         });
 
-        loadData();
+        table.fetch();
 
         toast.success('Top-down planning updated successfully');
       } else if (record.key.includes('-bottom-up')) {
@@ -111,7 +104,7 @@ export function useBudgetTableData({
 
         const bottomUpData = transformMonthlyData(record, activeTab);
 
-        const newCategoryRow = tableData.find((item) => item.key === 'new-category');
+        const newCategoryRow = table.data.find((item) => item.key === 'new-category');
 
         const actualRecord = newCategoryRow?.children?.find((child: TableData) => {
           return child.key === 'actual-sum-up';
@@ -144,7 +137,7 @@ export function useBudgetTableData({
           currency,
         );
 
-        loadData();
+        table.fetch();
 
         toast.success('Bottom-up planning updated successfully');
       }
@@ -156,6 +149,5 @@ export function useBudgetTableData({
   return {
     handleValueChange,
     handleValidateClick,
-    loadData,
   };
 }

@@ -1,7 +1,10 @@
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { routeConfig } from '@/shared/utils/route';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { BudgetDetailFilterEnum } from '../../data/constants';
+import { Category } from '../../data/dto/response/CategoryResponseDTO';
 import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
 import { BudgetDetailFilterType, TableData } from '../types/table.type';
 import { useBudgetData } from './useBudgetData';
@@ -10,15 +13,22 @@ interface UseBudgetInitProps {
   initialYear: number;
   activeTab: BudgetDetailFilterType;
   budgetSummaryUseCase: IBudgetSummaryUseCase;
-  setTableData: React.Dispatch<React.SetStateAction<TableData[]>>;
+}
+
+export interface BudgetInit<T> {
+  data: T[];
+  set: React.Dispatch<React.SetStateAction<T[]>>;
+  fetch: () => Promise<void>;
 }
 
 export function useBudgetInit({
   initialYear,
   activeTab,
   budgetSummaryUseCase,
-  setTableData,
 }: UseBudgetInitProps) {
+  const [tableData, setTableData] = useState<TableData[]>([]);
+  const [categoryList, setCategoryList] = useState<Category[]>([]);
+
   const router = useRouter();
   const { isLoading, fetchBudgetData } = useBudgetData(budgetSummaryUseCase);
 
@@ -42,8 +52,28 @@ export function useBudgetInit({
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const type = activeTab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income';
+
+      const response = await budgetSummaryUseCase.getCategoriesByType(type);
+      setCategoryList(response);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to fetch categories');
+    }
+  };
+
   return {
     isLoading,
-    loadData,
+    table: {
+      data: tableData,
+      set: setTableData,
+      fetch: fetchCategories,
+    } as BudgetInit<TableData>,
+    categories: {
+      data: categoryList,
+      set: setCategoryList,
+      fetch: loadData,
+    } as BudgetInit<Category>,
   };
 }
