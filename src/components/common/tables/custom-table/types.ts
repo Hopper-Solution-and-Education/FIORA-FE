@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type React from 'react';
 import type { ReactNode } from 'react';
 
@@ -24,14 +23,29 @@ export enum FIXED {
   RIGHT = 'right',
 }
 
+export interface DataSourceItemProps {
+  [key: string]: any;
+  value: string | number;
+  render?: React.ReactNode;
+}
+
 export interface DataSourceProps {
-  [key: string]: React.ReactNode | string | number | any;
+  key: string;
   children?: DataSourceProps[];
   rowSpan?: number;
   colSpan?: number;
-  parent?: DataSourceProps;
+  parent?: DataSourceProps[];
   isParent?: boolean;
   isChild?: boolean;
+  parentName?: string;
+  onClick?: () => void;
+  [key: string]:
+    | DataSourceItemProps
+    | React.ReactNode
+    | DataSourceProps[]
+    | Record<string, DataSourceItemProps | React.ReactNode>
+    | (() => void)
+    | undefined;
 }
 
 export interface TablePaginationProps {

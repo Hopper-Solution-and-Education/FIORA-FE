@@ -30,16 +30,7 @@ export function useBudgetInit({
     try {
       const data = await fetchBudgetData(initialYear, activeTab);
 
-      if (data && data.length > 0) {
-        setTableData((prevData) => {
-          const firstThreeRows = data.slice(0, 3);
-          const remainingRows = prevData.slice(3);
-
-          return [...firstThreeRows, ...remainingRows];
-        });
-      } else {
-        setTableData([]);
-      }
+      setTableData(data || []);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to fetch budget data');
       router.push(routeConfig(RouteEnum.Budgets));
@@ -49,8 +40,8 @@ export function useBudgetInit({
   const fetchCategories = async () => {
     try {
       const type = activeTab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income';
-
       const response = await budgetSummaryUseCase.getCategoriesByType(type);
+
       setCategoryList(response);
     } catch (err: any) {
       toast.error(err?.message || 'Failed to fetch categories');
@@ -62,12 +53,12 @@ export function useBudgetInit({
     table: {
       data: tableData,
       set: setTableData,
-      fetch: fetchCategories,
+      fetch: loadData,
     } as BudgetInit<TableData>,
     categories: {
       data: categoryList,
       set: setCategoryList,
-      fetch: loadData,
+      fetch: fetchCategories,
     } as BudgetInit<Category>,
   };
 }

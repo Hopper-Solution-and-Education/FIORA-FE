@@ -1,21 +1,17 @@
 import { InputCurrency } from '@/components/common/forms';
-import { ColumnProps } from '@/components/common/tables/custom-table/types';
+import { ColumnProps, DataSourceItemProps } from '@/components/common/tables/custom-table/types';
 import { Icons } from '@/components/Icon';
-import { Currency } from '@/shared/types';
-import { convertVNDToUSD } from '@/shared/utils';
-import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
-import {
-  BudgetDetailFilterType,
-  BudgetDetailType,
-  TableData,
-} from '../presentation/types/table.type';
-import CategorySelect from '../../../category/components/CategorySelect';
-import { cn } from '@/shared/utils';
-import { Category as BudgetCategory } from '../data/dto/response/CategoryResponseDTO';
-import { COLORS } from '@/shared/constants/chart';
-import { BudgetDetailFilterEnum, BUDGETR_FILTER_KEY, PERIOD_CONFIG } from '../data/constants';
 import { formatters } from '@/shared/lib';
+import { Currency } from '@/shared/types';
+import { ComparisonProps } from '@/shared/types/chart.type';
+import { cn, convertVNDToUSD } from '@/shared/utils';
 import { validate as isUUID } from 'uuid';
+import CategorySelect from '../../../category/components/CategorySelect';
+import { BUDGETR_FILTER_KEY, COMPARISON_TYPES, PERIOD_CONFIG } from '../data/constants';
+import { Category as BudgetCategory } from '../data/dto/response/CategoryResponseDTO';
+import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
+import { BudgetDetailType, TableData } from '../presentation/types/table.type';
+import { createGeneralComparisonMapper } from './compareDataForTable';
 
 export const formatCurrencyValue = (
   value: number | string | undefined,
@@ -46,26 +42,34 @@ export const getBudgetValue = (
 export const aggregateForPeriod = (
   budget: BudgetSummaryByType | null,
   type: 'expense' | 'income',
-): { [key: string]: number } => {
-  const data: { [key: string]: number } = {};
+): { [key: string]: DataSourceItemProps } => {
+  const data: { [key: string]: DataSourceItemProps } = {};
 
   // Aggregate months
   PERIOD_CONFIG.months.forEach(({ key, dataKey }) => {
-    data[key] = getBudgetValue(budget, dataKey, type);
+    data[key] = {
+      value: getBudgetValue(budget, dataKey, type),
+    };
   });
 
   // Aggregate quarters
   PERIOD_CONFIG.quarters.forEach(({ key, dataKey }) => {
-    data[key] = getBudgetValue(budget, dataKey, type);
+    data[key] = {
+      value: getBudgetValue(budget, dataKey, type),
+    };
   });
 
   // Aggregate half years
   PERIOD_CONFIG.halfYears.forEach(({ key, dataKey }) => {
-    data[key] = getBudgetValue(budget, dataKey, type);
+    data[key] = {
+      value: getBudgetValue(budget, dataKey, type),
+    };
   });
 
   // Add full year
-  data['fullYear'] = getBudgetValue(budget, 'total', type);
+  data['fullYear'] = {
+    value: getBudgetValue(budget, 'total', type),
+  };
 
   return data;
 };
@@ -79,7 +83,7 @@ export const getTableDataByPeriod = (
   const createTableRow = (
     key: string,
     type: string,
-    data: { [key: string]: number },
+    data: { [key: string]: DataSourceItemProps },
     isEditable: boolean,
   ): TableData => ({
     key,
@@ -105,32 +109,21 @@ export const getColumnsByPeriod = (
   onValueChange?: (record: TableData, columnKey: string, value: number) => void,
   onDeleteCategory?: (categoryId: string, isTruncate?: boolean) => void,
   onRemoveCategory?: (categoryId: string) => void,
-  activeTab?: BudgetDetailFilterType,
+  tableData: TableData[] = [],
 ) => {
   const renderEditableCell = (text: any, record: TableData, index: number, column: ColumnProps) => {
-    let color = '#000';
     const isDisableEdited = !PERIOD_CONFIG.months.some((item) => item.key === column.key);
 
-    if (
-      activeTab &&
-      BUDGETR_FILTER_KEY.recordType.includes(record.type) &&
-      BUDGETR_FILTER_KEY.columnKey.includes(column.key)
-    ) {
-      if (activeTab === BudgetDetailFilterEnum.EXPENSE) color = COLORS.DEPS_DANGER.LEVEL_1;
-      else color = COLORS.DEPS_SUCCESS.LEVEL_1;
-    }
-
-    if (record.isEditable) {
+    if (record.isEditable && !isDisableEdited) {
       return (
         <InputCurrency
           name={`value_${record.key}_${column.key}`}
-          value={text || 0}
+          value={text?.value ?? 0}
           currency={currency}
           classContainer="m-0"
-          className="text-right"
-          disabled={isDisableEdited}
+          className={cn('text-right', column.className)}
           onChange={(newValue) => {
-            if (onValueChange && record && !isDisableEdited) {
+            if (onValueChange && record) {
               onValueChange(record, column.key, newValue);
             }
           }}
@@ -138,8 +131,52 @@ export const getColumnsByPeriod = (
       );
     }
 
-    return <span style={{ color }}>{formatCurrencyValue(text, currency)}</span>;
+    return (
+      <span className={cn(column.className, isDisableEdited && 'opacity-90')}>
+        {formatCurrencyValue(text?.value, currency)}
+      </span>
+    );
   };
+
+  const generateKeyForCompare = (type: string, item: TableData): string | undefined => {
+    if (!item?.children?.length) return undefined;
+
+    if (type === COMPARISON_TYPES.KEY_TO_COMPARE) return item.children[1].key;
+    if (type === COMPARISON_TYPES.REFERENCE_KEY) return item.children[0].key;
+
+    return undefined;
+  };
+
+  const comparisonConfig: ComparisonProps[] = [
+    {
+      // Compare between Total Actual Sum-Up and Total Bottom-Up
+      keyToCompare: 'actual',
+      referenceKey: 'bottom-up',
+      columns: BUDGETR_FILTER_KEY.columnKey,
+      styleWhenGreater: 'text-red-500',
+      styleWhenLessOrEqual: 'text-blue-500',
+    },
+    ...tableData // Compare between Finance Category Items
+      .slice()
+      .filter((item: TableData) => item.isParent)
+      .map((item: TableData) => {
+        const keyToCompare = generateKeyForCompare(COMPARISON_TYPES.KEY_TO_COMPARE, item);
+        const referenceKey = generateKeyForCompare(COMPARISON_TYPES.REFERENCE_KEY, item);
+
+        if (!keyToCompare || !referenceKey) return null;
+
+        return {
+          keyToCompare,
+          referenceKey,
+          columns: BUDGETR_FILTER_KEY.columnKey,
+          styleWhenGreater: 'text-red-500',
+          styleWhenLessOrEqual: 'text-blue-500',
+        };
+      })
+      .filter((item): item is ComparisonProps => item !== null),
+  ];
+
+  const generalComparisonMapper = createGeneralComparisonMapper(tableData, comparisonConfig);
 
   const createColumn = (
     key: string,
@@ -183,7 +220,7 @@ export const getColumnsByPeriod = (
     }),
   ];
 
-  const actionColumn: ColumnProps = createColumn('action', 'Action', {
+  const actionColumn: ColumnProps = createColumn('action', 'ACTION', {
     fixed: 'right',
     align: 'center',
     width: 60,
@@ -196,7 +233,7 @@ export const getColumnsByPeriod = (
         return (
           <div className="grid grid-flow-col place-items-center gap-2">
             <span
-              className="text-red-500 hover:text-red-700 cursor-pointer"
+              className={cn('text-red-500 hover:text-red-700 cursor-pointer')}
               title="Delete"
               onClick={() => {
                 onRemoveCategory?.(categoryId);
@@ -213,11 +250,19 @@ export const getColumnsByPeriod = (
         return (
           <div className="grid grid-flow-col place-items-center gap-2">
             <span
-              className="text-red-500 hover:text-red-700 cursor-pointer"
+              className={cn(
+                'cursor-pointer',
+                record.isNew
+                  ? 'opacity-50 pointer-events-none text-gray-400'
+                  : 'text-red-500 hover:text-red-700',
+              )}
               title="Invalid"
               onClick={() => {
-                // onRemoveCategory?.(categoryId);
-                onDeleteCategory?.(categoryId);
+                record.isNew
+                  ? undefined
+                  : () => {
+                      onDeleteCategory?.(categoryId);
+                    };
               }}
             >
               <Icons.close size={15} />
@@ -239,6 +284,7 @@ export const getColumnsByPeriod = (
 
   const createPeriodColumns = (
     config: typeof PERIOD_CONFIG.months,
+    additionalCellProps?: Partial<ColumnProps>,
     additionalProps?: Partial<ColumnProps>,
   ) =>
     config.map(({ key, title }) =>
@@ -246,19 +292,29 @@ export const getColumnsByPeriod = (
         dataIndex: key,
         headerAlign: 'center',
         align: 'right',
-        render: (text: any, record: TableData, index: number) =>
-          renderEditableCell(text, record, index, { key }),
-        ...additionalProps,
+        ...additionalCellProps,
+        render: (text: any, record: TableData, index: number) => {
+          const mappedClass = generalComparisonMapper(record.key, key, text?.value ?? 0);
+
+          return renderEditableCell(text, record, index, {
+            key,
+            className: mappedClass,
+            ...additionalProps,
+          });
+        },
       }),
     );
 
   const monthColumns = createPeriodColumns(PERIOD_CONFIG.months);
+
   const quarterColumns = createPeriodColumns(PERIOD_CONFIG.quarters, {
     bgColorClassName: 'bg-muted',
   });
+
   const halfYearColumns = createPeriodColumns(PERIOD_CONFIG.halfYears, {
     bgColorClassName: 'bg-muted',
   });
+
   const fullYearColumn = [
     createColumn('fullYear', 'FULL YEAR', {
       dataIndex: 'fullYear',

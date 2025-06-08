@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { ComposedChart } from '@/components/common/charts';
 import { renderIconOrImage } from '@/components/common/charts/composed-chart';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';

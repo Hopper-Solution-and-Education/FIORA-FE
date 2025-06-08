@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { ComposedChart } from '@/components/common/charts';
 import { ChartSkeleton } from '@/components/common/organisms';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';

@@ -1,6 +1,14 @@
 import { ReactNode } from 'react';
 import { TooltipProps as RechartsTooltipProps } from 'recharts';
 
+export interface ComparisonProps {
+  keyToCompare: string;
+  referenceKey: string;
+  columns: string[];
+  styleWhenGreater: string;
+  styleWhenLessOrEqual: string;
+}
+
 export interface BaseChartProps<T> {
   data: T[];
   title?: string;

@@ -1,5 +1,7 @@
+import { DataSourceItemProps } from '@/components/common/tables/custom-table/types';
+
 export interface MonthlyPlanningData {
-  [key: `m${number}_${'exp' | 'inc'}`]: number;
+  [key: `m${number}_${'exp' | 'inc'}`]: DataSourceItemProps | number;
 }
 
 export interface TopDownUpdateRequestDTO {

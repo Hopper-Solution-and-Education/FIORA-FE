@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+// src/presentation/hooks/useBudgetColumns.ts
 import { ColumnProps } from '@/components/common/tables/custom-table/types';
 import {
   Select,
@@ -7,6 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Currency } from '@/shared/types';
+import { cn } from '@/shared/utils';
 import { useEffect, useState } from 'react';
 import { Category } from '../../data/dto/response/CategoryResponseDTO';
 import { getColumnsByPeriod } from '../../utils/transformDataForTable';
@@ -70,7 +73,7 @@ export function useBudgetColumns({
       handleValueChange,
       handleDeleteCategory,
       handleRemoveCategory,
-      activeTab,
+      table.data,
     );
 
     const columnsWithCategorySelect: ColumnProps[] = [
@@ -79,7 +82,7 @@ export function useBudgetColumns({
         dataIndex: 'type',
         key: 'type',
         width: 200,
-        render: (value: string, record: TableData) => {
+        render: (value: any, record: TableData) => {
           if (categoryRows.includes(record.key) || record.isCreated) {
             const availableCategories = categories.data.filter(
               (category) =>
@@ -89,7 +92,7 @@ export function useBudgetColumns({
             return (
               <div className="flex items-center gap-2">
                 <Select
-                  value={record.categoryId || undefined}
+                  value={(record.categoryId as string) || undefined}
                   onValueChange={(selectedValue) => {
                     const category = categories.data.find((cat) => cat.id === selectedValue);
                     if (category) {
@@ -111,18 +114,16 @@ export function useBudgetColumns({
                 </Select>
               </div>
             );
+          } else {
+            return (
+              <span className={cn('inline-flex items-center font-medium w-full')}>{value}</span>
+            );
           }
-
-          return (
-            <div className="flex items-center justify-between">
-              <span>{value}</span>
-            </div>
-          );
         },
       },
       ...updatedColumns.slice(1).map((column) => ({
         ...column,
-        render: (value: any, record: TableData) => {
+        render: (value: any, record: any) => {
           if (categoryRows.includes(record.key)) {
             return null;
           }

@@ -1,4 +1,4 @@
-// src/presentation/hooks/useBudgetCategories.ts
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { BudgetDetailFilterEnum } from '../../data/constants';
@@ -9,8 +9,7 @@ import {
   createMonthlyData,
   transformMonthlyDataToTableFormat,
 } from '../../utils/dataTransformations';
-import { BudgetDetailFilterType, TableData } from '../types/table.type';
-import { BudgetInit } from './useBudgetInit';
+import { BudgetDetailFilterType, BudgetInit, TableData } from '../types/table.type';
 
 interface UseBudgetCategoriesProps {
   activeTab: BudgetDetailFilterType;
@@ -32,11 +31,12 @@ export function useBudgetCategories({
 }: UseBudgetCategoriesProps) {
   useEffect(() => {
     categories.fetch();
-  }, [activeTab, budgetSummaryUseCase, periodId]);
+  }, [activeTab, periodId, initialYear]);
 
   useEffect(() => {
     const updateTableDataWithCreatedCategories = async () => {
       const createdCategories = categories.data.filter((cat) => cat.isCreated === true);
+
       if (createdCategories.length > 0) {
         const suffix = activeTab === BudgetDetailFilterEnum.EXPENSE ? '_exp' : '_inc';
 
@@ -61,7 +61,7 @@ export function useBudgetCategories({
                 children: [
                   {
                     key: `${cat.id}-bottom-up`,
-                    type: 'Bottom-up Plan',
+                    type: 'Bottom Up',
                     isChild: true,
                     action: true,
                     isEditable: true,
@@ -69,7 +69,7 @@ export function useBudgetCategories({
                   },
                   {
                     key: `${cat.id}-actual`,
-                    type: 'Actual sum-up',
+                    type: 'Actual Sum Up',
                     isChild: true,
                     action: true,
                     isEditable: false,
@@ -82,6 +82,7 @@ export function useBudgetCategories({
 
           table.set((prevData) => {
             const baseRows = prevData.slice(0, 3);
+
             return [...baseRows, ...categoriesWithData];
           });
         } catch (error: any) {
@@ -116,10 +117,16 @@ export function useBudgetCategories({
               ...item,
               type: selectedCategoryData.name,
               categoryId,
+              category: {
+                value: selectedCategoryData.name,
+              },
               children: [
                 {
                   key: `${categoryId}-bottom-up`,
-                  type: 'Bottom-up Plan',
+                  type: 'Bottom Up',
+                  category: {
+                    value: 'Bottom Up',
+                  },
                   isChild: true,
                   action: true,
                   isEditable: true,
@@ -127,7 +134,10 @@ export function useBudgetCategories({
                 },
                 {
                   key: `${categoryId}-actual`,
-                  type: 'Actual sum-up',
+                  type: 'Actual Sum Up',
+                  category: {
+                    value: 'Actual Sum Up',
+                  },
                   isChild: true,
                   action: true,
                   isEditable: false,

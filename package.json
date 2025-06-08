@@ -19,6 +19,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "eslint --fix",
     "migrate": "dotenv -e .env.development.local -- npx prisma migrate dev",
     "seed": "dotenv -e .env.development.local -- npx prisma db seed",
     "generate": "dotenv -e .env.development.local -- npx prisma generate",

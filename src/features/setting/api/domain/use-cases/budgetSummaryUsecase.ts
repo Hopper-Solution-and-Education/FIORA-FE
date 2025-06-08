@@ -36,7 +36,7 @@ class BudgetSummaryUseCase {
     private _budgetRepository: IBudgetRepository = budgetRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
     private _categoryRepository: ICategoryRepository = categoryRepository,
-  ) { }
+  ) {}
 
   async getBudgetsByUserIdAndFiscalYear(
     userId: string,
@@ -334,10 +334,10 @@ class BudgetSummaryUseCase {
           const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
           const value = oldDetail
             ? convertCurrency(
-              Number(oldDetail.amount),
-              oldDetail.currency || targetCurrency,
-              targetCurrency,
-            )
+                Number(oldDetail.amount),
+                oldDetail.currency || targetCurrency,
+                targetCurrency,
+              )
             : 0;
           return { amount: new Prisma.Decimal(value), month: i + 1, currency: targetCurrency };
         });
@@ -380,9 +380,16 @@ class BudgetSummaryUseCase {
           },
         });
 
-        const [deletedBudgetDetailsMatchBudgetType, deletedBudgetDetailsMatchActType] = await Promise.all([deletedBudgetDetailsMatchBudgetTypeAwait, deletedBudgetDetailsMatchActTypeAwait]);
+        const [deletedBudgetDetailsMatchBudgetType, deletedBudgetDetailsMatchActType] =
+          await Promise.all([
+            deletedBudgetDetailsMatchBudgetTypeAwait,
+            deletedBudgetDetailsMatchActTypeAwait,
+          ]);
 
-        if (deletedBudgetDetailsMatchBudgetType.count === 0 && deletedBudgetDetailsMatchActType.count === 0) {
+        if (
+          deletedBudgetDetailsMatchBudgetType.count === 0 &&
+          deletedBudgetDetailsMatchActType.count === 0
+        ) {
           throw new Error(Messages.BUDGET_DETAIL_DELETE_FAILED);
         }
 
@@ -469,7 +476,7 @@ class BudgetSummaryUseCase {
 
       return updatedBudgetDetails;
     } catch (error) {
-      console.log("error", error)
+      console.log('error', error);
       throw error;
     }
   }
@@ -532,10 +539,11 @@ class BudgetSummaryUseCase {
           ),
           actual: actualSumUpPlan
             ? convertCurrency(
-              Number(actualSumUpPlan[`m${i + 1}${suffix}`]) || 0,
-              currency,
-              targetCurrency,
-            ) : 0
+                Number(actualSumUpPlan[`m${i + 1}${suffix}`]) || 0,
+                currency,
+                targetCurrency,
+              )
+            : 0,
         }));
 
       if (monthlyBudgetDetailValues.length !== 12)
@@ -559,11 +567,8 @@ class BudgetSummaryUseCase {
           const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
 
           const oldValue = oldDetail
-            ? convertCurrency(
-              Number(oldDetail.amount),
-              oldDetail.currency,
-              targetCurrency,
-            ) : 0;
+            ? convertCurrency(Number(oldDetail.amount), oldDetail.currency, targetCurrency)
+            : 0;
 
           const newValue = monthlyBudgetDetailValues[i].bottomUp ?? 0;
           const convertAmountDecimal = new Prisma.Decimal(newValue - oldValue);

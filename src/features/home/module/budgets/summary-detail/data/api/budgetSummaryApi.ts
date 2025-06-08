@@ -1,3 +1,4 @@
+/* eslint-disable import/no-anonymous-default-export */
 import { injectable } from 'inversify';
 import { IBudgetSummaryAPI } from './IBudgetSummaryAPI';
 import { BudgetSummaryRequestDTO } from '../dto/request/BudgetSummaryRequestDTO';

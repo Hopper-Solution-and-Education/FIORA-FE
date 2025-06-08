@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 import {
   Dialog,
@@ -60,7 +61,6 @@ const ProductCatCreationDialog = ({ setValue }: ProductCatCreationDialogType) =>
     } else {
       reset(defaultCategoryProductValue);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productCategoryToEdit]);
 
   const isOpenProductCateDialog = useAppSelector(

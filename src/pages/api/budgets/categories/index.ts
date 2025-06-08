@@ -114,7 +114,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       fiscalYear,
       categoryId,
       type,
-      isTruncate
+      isTruncate,
     });
 
     return res

@@ -72,3 +72,8 @@ export const BUDGETR_FILTER_KEY = {
     'fullYear',
   ],
 };
+
+export const COMPARISON_TYPES = {
+  KEY_TO_COMPARE: 'keyToCompare',
+  REFERENCE_KEY: 'referenceKey',
+};

@@ -397,7 +397,6 @@ class CategoryUseCase {
       },
     ) as unknown)) as CategoryWithBudgetDetails[];
 
-
     const transferCategoryFound = categoryFound.map((category: CategoryWithBudgetDetails) => {
       const suffix = category.type === CategoryType.Expense ? 'exp' : 'inc';
       const bottomUpPlan: Record<string, number> = {};

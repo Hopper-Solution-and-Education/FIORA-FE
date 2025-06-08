@@ -40,6 +40,9 @@ export const useCategoryManagement = ({
         key: newCategoryId,
         type: '',
         categoryId: '',
+        category: {
+          value: '',
+        },
         isParent: true,
         action: true,
       },
@@ -60,17 +63,27 @@ export const useCategoryManagement = ({
             ...item,
             type: categoryName,
             categoryId: selectedCategoryId,
+            category: {
+              value: categoryName,
+            },
             children: [
               {
                 key: `${selectedCategoryId}-bottom-up`,
-                type: 'Bottom-up Plan',
+                type: 'Bottom Up',
+                category: {
+                  value: 'Bottom Up',
+                },
                 isChild: true,
                 action: true,
                 isEditable: true,
+                isNew: true,
               },
               {
                 key: `${selectedCategoryId}-actual`,
-                type: 'Actual sum-up',
+                type: 'Actual Sum Up',
+                category: {
+                  value: 'Actual Sum Up',
+                },
                 isChild: true,
                 action: true,
                 isEditable: false,
@@ -93,7 +106,7 @@ export const useCategoryManagement = ({
     if (rowData?.categoryId) {
       setSelectedCategories((prev) => {
         const next = new Set(prev);
-        next.delete(rowData.categoryId);
+        next.delete(rowData.categoryId as string);
         return next;
       });
     }

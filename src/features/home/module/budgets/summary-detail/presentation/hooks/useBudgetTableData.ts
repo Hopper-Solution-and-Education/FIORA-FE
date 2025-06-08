@@ -36,21 +36,21 @@ export function useBudgetTableData({
   table,
   budgetSummaryUseCase,
 }: UseBudgetTableDataProps) {
-  const router = useRouter();
-
   useEffect(() => {
     table.fetch();
-  }, [initialYear, period, periodId, currency, activeTab, router]);
+
+    console.log('run');
+  }, [initialYear, period, periodId, currency, activeTab]);
 
   useEffect(() => {
     const selectedCategoryIds = new Set<string>();
-    table.data.forEach((item: TableData) => {
+    table.data.forEach((item: any) => {
       if (item.categoryId) {
         selectedCategoryIds.add(item.categoryId);
       }
     });
     setSelectedCategories(selectedCategoryIds);
-  }, [table.data, setSelectedCategories]);
+  }, [table.data]);
 
   const handleValueChange = (record: TableData, columnKey: string, value: number) => {
     table.set((prevData) =>
@@ -59,6 +59,7 @@ export function useBudgetTableData({
           return {
             ...item,
             [columnKey]: value,
+            isNew: true,
           };
         } else if (item.children) {
           return {
@@ -68,6 +69,7 @@ export function useBudgetTableData({
                 return {
                   ...child,
                   [columnKey]: value,
+                  isNew: true,
                 };
               }
               return child;

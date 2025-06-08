@@ -844,17 +844,19 @@ class BudgetUseCase {
   }
 
   async getListOfAvailableBudget(userId: string) {
-    const budgets = await this.budgetRepository.findManyBudgetData({
-      userId,
-      type: BudgetType.Act,
-    }, {
-      select: {
-        fiscalYear: true,
+    const budgets = await this.budgetRepository.findManyBudgetData(
+      {
+        userId,
+        type: BudgetType.Act,
       },
-      orderBy: {
-        fiscalYear: 'desc',
+      {
+        select: {
+          fiscalYear: true,
+        },
+        orderBy: {
+          fiscalYear: 'desc',
+        },
       },
-    },
     );
 
     return _.flatMap(budgets, (b) => b.fiscalYear);

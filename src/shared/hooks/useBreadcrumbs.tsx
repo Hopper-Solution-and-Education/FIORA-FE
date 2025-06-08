@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { ReadonlyURLSearchParams, usePathname, useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 import { breadcrumbConfig, BreadcrumbConfig } from '@/shared/configs/breadcrumbConfig';
