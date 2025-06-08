@@ -3,8 +3,7 @@ import { toast } from 'sonner';
 import { BudgetDetailFilterEnum } from '../../data/constants';
 import { DeleteCategoryRequestDTO } from '../../data/dto/request/BudgetUpdateRequestDTO';
 import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
-import { BudgetDetailFilterType, TableData } from '../types/table.type';
-import { BudgetInit } from './useBudgetInit';
+import { BudgetDetailFilterType, BudgetInit, TableData } from '../types/table.type';
 
 interface UseCategoryManagementProps {
   budgetSummaryUseCase: IBudgetSummaryUseCase;

@@ -41,10 +41,7 @@ export class BudgetSummaryRepository implements IBudgetSummaryRepository {
     }
   }
 
-  async getBudgetsByUserIdAndFiscalYear(
-    userId: string,
-    fiscalYear: number,
-  ): Promise<BudgetSummaryResponseDTO> {
+  async getBudgetsByUserIdAndFiscalYear(fiscalYear: number): Promise<BudgetSummaryResponseDTO> {
     try {
       return await this.budgetSummaryAPI.getBudgetSummary({ fiscalYear });
     } catch (error) {

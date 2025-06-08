@@ -6,19 +6,13 @@ import { toast } from 'sonner';
 import { BudgetDetailFilterEnum } from '../../data/constants';
 import { Category } from '../../data/dto/response/CategoryResponseDTO';
 import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
-import { BudgetDetailFilterType, TableData } from '../types/table.type';
+import { BudgetDetailFilterType, BudgetInit, TableData } from '../types/table.type';
 import { useBudgetData } from './useBudgetData';
 
 interface UseBudgetInitProps {
   initialYear: number;
   activeTab: BudgetDetailFilterType;
   budgetSummaryUseCase: IBudgetSummaryUseCase;
-}
-
-export interface BudgetInit<T> {
-  data: T[];
-  set: React.Dispatch<React.SetStateAction<T[]>>;
-  fetch: () => Promise<void>;
 }
 
 export function useBudgetInit({

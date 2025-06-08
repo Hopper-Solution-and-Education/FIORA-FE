@@ -12,11 +12,11 @@ import { Category } from '../../data/dto/response/CategoryResponseDTO';
 import { getColumnsByPeriod } from '../../utils/transformDataForTable';
 import {
   BudgetDetailFilterType,
+  BudgetInit,
   BudgetPeriodIdType,
   BudgetPeriodType,
   TableData,
 } from '../types/table.type';
-import { BudgetInit } from './useBudgetInit';
 
 interface UseBudgetColumnsProps {
   period: BudgetPeriodType;

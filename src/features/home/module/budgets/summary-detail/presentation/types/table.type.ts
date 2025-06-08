@@ -45,3 +45,9 @@ export const MONTHS = [
   'nov',
   'dec',
 ] as const;
+
+export interface BudgetInit<T> {
+  data: T[];
+  set: React.Dispatch<React.SetStateAction<T[]>>;
+  fetch: () => Promise<void>;
+}

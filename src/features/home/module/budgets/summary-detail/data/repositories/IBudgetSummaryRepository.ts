@@ -16,10 +16,7 @@ import { Currency, HttpResponse } from '@/shared/types';
 export interface IBudgetSummaryRepository {
   getBudgetSummary(params: BudgetSummaryRequestDTO): Promise<BudgetSummaryResponseDTO>;
   getBudgetByType(fiscalYear: number, type: BudgetType): Promise<BudgetSummaryByType | null>;
-  getBudgetsByUserIdAndFiscalYear(
-    userId: string,
-    fiscalYear: number,
-  ): Promise<BudgetSummaryResponseDTO>;
+  getBudgetsByUserIdAndFiscalYear(fiscalYear: number): Promise<BudgetSummaryResponseDTO>;
   getCategoriesByType(type: 'Income' | 'Expense'): Promise<Category[]>;
   getActualPlanningByCategory(categoryId: string, year: number): Promise<CategoryPlanning>;
   updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<void>;

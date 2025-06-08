@@ -8,12 +8,12 @@ import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCa
 import { transformMonthlyData } from '../../utils/dataTransformations';
 import {
   BudgetDetailFilterType,
+  BudgetInit,
   BudgetPeriodIdType,
   BudgetPeriodType,
   MONTHS,
   TableData,
 } from '../types/table.type';
-import { BudgetInit } from './useBudgetInit';
 
 interface UseBudgetTableDataProps {
   initialYear: number;
@@ -44,7 +44,7 @@ export function useBudgetTableData({
 
   useEffect(() => {
     const selectedCategoryIds = new Set<string>();
-    table.data.forEach((item) => {
+    table.data.forEach((item: TableData) => {
       if (item.categoryId) {
         selectedCategoryIds.add(item.categoryId);
       }
@@ -104,7 +104,7 @@ export function useBudgetTableData({
 
         const bottomUpData = transformMonthlyData(record, activeTab);
 
-        const newCategoryRow = table.data.find((item) => item.key === 'new-category');
+        const newCategoryRow = table.data.find((item: TableData) => item.key === 'new-category');
 
         const actualRecord = newCategoryRow?.children?.find((child: TableData) => {
           return child.key === 'actual-sum-up';

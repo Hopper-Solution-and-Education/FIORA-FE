@@ -27,7 +27,7 @@ export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
     userId: string,
     fiscalYear: number,
   ): Promise<BudgetSummaryResponseDTO> {
-    return this.budgetSummaryRepository.getBudgetsByUserIdAndFiscalYear(userId, fiscalYear);
+    return this.budgetSummaryRepository.getBudgetsByUserIdAndFiscalYear(fiscalYear);
   }
 
   async getBudgetByType(fiscalYear: number, type: BudgetType): Promise<BudgetSummaryByType | null> {
