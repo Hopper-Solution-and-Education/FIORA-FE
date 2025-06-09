@@ -114,16 +114,24 @@ export const transformMonthlyPayload = (
     Array.from({ length: 12 }, (_, i) => [`m${i + 1}${suffix}`, 0]),
   );
 
+  // console.log('Input data:', data);
+
   Object.entries(data).forEach(([key, value]) => {
     const monthIndex = MONTHS.indexOf(key as (typeof MONTHS)[number]);
     if (monthIndex !== -1) {
-      const tempValue: any = value;
-      const numericValue = tempValue !== null ? Number(tempValue?.value) : Number(tempValue ?? 0);
+      let numericValue: any;
+      if (value && typeof value === 'object' && 'value' in value) {
+        numericValue = Number(value.value);
+      } else {
+        numericValue = typeof value === 'string' ? parseFloat(value) : (value ?? 0);
+      }
       if (!isNaN(numericValue)) {
         result[`m${monthIndex + 1}${suffix}`] = numericValue;
       }
     }
   });
+
+  // console.log('Output result:', result);
 
   return result;
 };

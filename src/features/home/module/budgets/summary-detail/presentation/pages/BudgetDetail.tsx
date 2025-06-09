@@ -63,6 +63,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     initialYear,
     activeTab,
     table,
+    categories,
   });
 
   const { handleValueChange, handleValidateClick } = useBudgetTableData({
@@ -73,6 +74,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     currency,
     setSelectedCategories,
     table,
+    categories,
     budgetSummaryUseCase,
   });
 

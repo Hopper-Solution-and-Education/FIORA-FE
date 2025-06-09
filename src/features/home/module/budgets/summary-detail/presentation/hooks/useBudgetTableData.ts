@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { BudgetDetailFilterEnum } from '../../data/constants';
 import { MonthlyPlanningData } from '../../data/dto/request/BudgetUpdateRequestDTO';
 import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
-import { transformMonthlyData } from '../../utils/dataTransformations';
+import { transformMonthlyData, transformMonthlyPayload } from '../../utils/dataTransformations';
 import {
   BudgetDetailFilterType,
   BudgetInit,
@@ -14,6 +14,7 @@ import {
   MONTHS,
   TableData,
 } from '../types/table.type';
+import { Category } from '../../data/dto/response/CategoryResponseDTO';
 
 interface UseBudgetTableDataProps {
   initialYear: number;
@@ -23,6 +24,7 @@ interface UseBudgetTableDataProps {
   currency: Currency;
   setSelectedCategories: (categories: Set<string>) => void;
   table: BudgetInit<TableData>;
+  categories: BudgetInit<Category>;
   budgetSummaryUseCase: IBudgetSummaryUseCase;
 }
 
@@ -34,6 +36,7 @@ export function useBudgetTableData({
   currency,
   setSelectedCategories,
   table,
+  categories,
   budgetSummaryUseCase,
 }: UseBudgetTableDataProps) {
   useEffect(() => {
@@ -55,11 +58,12 @@ export function useBudgetTableData({
   const handleValueChange = (record: TableData, columnKey: string, value: number) => {
     table.set((prevData) =>
       prevData.map((item) => {
+        console.log(item.key, columnKey);
+
         if (item.key === record.key) {
           return {
             ...item,
             [columnKey]: value,
-            isNew: true,
           };
         } else if (item.children) {
           return {
@@ -69,7 +73,6 @@ export function useBudgetTableData({
                 return {
                   ...child,
                   [columnKey]: value,
-                  isNew: true,
                 };
               }
               return child;
@@ -86,7 +89,7 @@ export function useBudgetTableData({
       const suffix = activeTab === BudgetDetailFilterEnum.EXPENSE ? '_exp' : '_inc';
 
       if (record.key === 'top-down') {
-        const monthlyData = transformMonthlyData(record, activeTab);
+        const monthlyData = transformMonthlyPayload(record, activeTab);
         await budgetSummaryUseCase.updateTopDownPlanning({
           fiscalYear: initialYear.toString(),
           type: activeTab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income',
@@ -104,7 +107,7 @@ export function useBudgetTableData({
           return;
         }
 
-        const bottomUpData = transformMonthlyData(record, activeTab);
+        const bottomUpData = transformMonthlyPayload(record, activeTab);
 
         const newCategoryRow = table.data.find((item: TableData) => item.key === 'new-category');
 
@@ -140,6 +143,7 @@ export function useBudgetTableData({
         );
 
         table.fetch();
+        categories.fetch();
 
         toast.success('Bottom-up planning updated successfully');
       }

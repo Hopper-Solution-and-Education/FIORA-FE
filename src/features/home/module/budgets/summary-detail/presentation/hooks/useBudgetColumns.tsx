@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-// src/presentation/hooks/useBudgetColumns.ts
 import { ColumnProps } from '@/components/common/tables/custom-table/types';
 import {
   Select,
@@ -116,7 +115,14 @@ export function useBudgetColumns({
             );
           } else {
             return (
-              <span className={cn('inline-flex items-center font-medium w-full')}>{value}</span>
+              <span
+                className={cn(
+                  'inline-flex items-center font-medium w-full',
+                  record.isChild && 'ml-5',
+                )}
+              >
+                {value}
+              </span>
             );
           }
         },

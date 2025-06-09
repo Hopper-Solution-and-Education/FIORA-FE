@@ -118,12 +118,12 @@ export const getColumnsByPeriod = (
       return (
         <InputCurrency
           name={`value_${record.key}_${column.key}`}
-          value={text?.value ?? 0}
+          value={typeof text === 'object' ? text.value : (text ?? 0)}
           currency={currency}
           classContainer="m-0"
           className={cn('text-right', column.className)}
           onChange={(newValue) => {
-            if (onValueChange && record) {
+            if (onValueChange) {
               onValueChange(record, column.key, newValue);
             }
           }}
@@ -132,7 +132,7 @@ export const getColumnsByPeriod = (
     }
 
     return (
-      <span className={cn(column.className, isDisableEdited && 'opacity-90')}>
+      <span className={cn(`${column.className}`, isDisableEdited && 'opacity-90')}>
         {formatCurrencyValue(text?.value, currency)}
       </span>
     );
@@ -250,19 +250,10 @@ export const getColumnsByPeriod = (
         return (
           <div className="grid grid-flow-col place-items-center gap-2">
             <span
-              className={cn(
-                'cursor-pointer',
-                record.isNew
-                  ? 'opacity-50 pointer-events-none text-gray-400'
-                  : 'text-red-500 hover:text-red-700',
-              )}
+              className={cn('cursor-pointer', 'text-red-500 hover:text-red-700')}
               title="Invalid"
               onClick={() => {
-                record.isNew
-                  ? undefined
-                  : () => {
-                      onDeleteCategory?.(categoryId);
-                    };
+                onDeleteCategory?.(categoryId);
               }}
             >
               <Icons.close size={15} />

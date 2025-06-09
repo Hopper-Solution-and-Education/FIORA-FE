@@ -4,12 +4,14 @@ import { BudgetDetailFilterEnum } from '../../data/constants';
 import { DeleteCategoryRequestDTO } from '../../data/dto/request/BudgetUpdateRequestDTO';
 import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
 import { BudgetDetailFilterType, BudgetInit, TableData } from '../types/table.type';
+import { Category } from '../../data/dto/response/CategoryResponseDTO';
 
 interface UseCategoryManagementProps {
   budgetSummaryUseCase: IBudgetSummaryUseCase;
   activeTab: BudgetDetailFilterType;
   initialYear: number;
   table: BudgetInit<TableData>;
+  categories: BudgetInit<Category>;
 }
 
 export const useCategoryManagement = ({
@@ -17,6 +19,7 @@ export const useCategoryManagement = ({
   activeTab,
   initialYear,
   table,
+  categories,
 }: UseCategoryManagementProps) => {
   const [categoryRows, setCategoryRows] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
@@ -137,6 +140,7 @@ export const useCategoryManagement = ({
       }
 
       table.fetch();
+      categories.fetch();
     } catch (error: any) {
       toast.error(`Failed to delete category: ${error.message}`);
     }
