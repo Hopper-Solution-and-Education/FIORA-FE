@@ -114,7 +114,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
 
   return (
     <div className="p-4 w-full flex flex-col">
-      <div className="border border-gray-300 rounded-lg shadow-md p-4">
+      <div className="border border-gray-300 dark:border-gray-600 rounded-lg shadow-md p-4">
         <div className="flex gap-4 mb-6 justify-between">
           <div className="flex gap-4">
             <BudgetSummaryYearSelect
