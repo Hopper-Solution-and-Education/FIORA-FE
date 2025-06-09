@@ -114,64 +114,66 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
 
   return (
     <div className="p-4 w-full flex flex-col">
-      <div className="flex gap-4 mb-6 justify-between">
-        <div className="flex gap-4">
-          <BudgetSummaryYearSelect
-            selectedYear={initialYear}
-            route={routeConfig(RouteEnum.BudgetDetail, {}, { period, periodId })}
-          />
+      <div className="border border-gray-300 rounded-lg shadow-md p-4">
+        <div className="flex gap-4 mb-6 justify-between">
+          <div className="flex gap-4">
+            <BudgetSummaryYearSelect
+              selectedYear={initialYear}
+              route={routeConfig(RouteEnum.BudgetDetail, {}, { period, periodId })}
+            />
 
-          <Select onValueChange={handlePeriodChange} value={periodId}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select period" />
-            </SelectTrigger>
-            <SelectContent>
-              {PERIOD_OPTIONS.map(({ value, label }) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <Select onValueChange={handlePeriodChange} value={periodId}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select period" />
+              </SelectTrigger>
+              <SelectContent>
+                {PERIOD_OPTIONS.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-          <Tabs defaultValue="expense" value={activeTab} onValueChange={handleFilterChange}>
-            <TabsList>
-              <TabsTrigger value="expense" className="flex items-center gap-2">
-                <Icons.trendindDown size={16} color={COLORS.DEPS_DANGER.LEVEL_1} />
-                Expense
-              </TabsTrigger>
-              <TabsTrigger value="income" className="flex items-center gap-2">
-                <Icons.trendingUp size={16} color={COLORS.DEPS_SUCCESS.LEVEL_1} />
-                Income
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+            <Tabs defaultValue="expense" value={activeTab} onValueChange={handleFilterChange}>
+              <TabsList>
+                <TabsTrigger value="expense" className="flex items-center gap-2">
+                  <Icons.trendindDown size={16} color={COLORS.DEPS_DANGER.LEVEL_1} />
+                  Expense
+                </TabsTrigger>
+                <TabsTrigger value="income" className="flex items-center gap-2">
+                  <Icons.trendingUp size={16} color={COLORS.DEPS_SUCCESS.LEVEL_1} />
+                  Income
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
+          <div>
+            <ActionButton
+              tooltipContent="Add New Category"
+              showIcon={true}
+              onClick={() => handleAddCategory()}
+            />
+          </div>
         </div>
 
-        <div>
-          <ActionButton
-            tooltipContent="Add New Category"
-            showIcon={true}
-            onClick={() => handleAddCategory()}
-          />
-        </div>
-      </div>
-
-      <div className="w-[50rem] md:w-[20rem] sm:w-[10rem] xs min-w-full">
-        <div className="w-full">
-          <TableV2
-            columns={columns}
-            dataSource={table.data}
-            loading={isLoading}
-            rowKey="key"
-            bordered
-            layoutBorder
-            showHeader
-            rowHover
-            pagination={false}
-            scroll={{ x: 2000 }}
-            className="w-full scrollbar-thin"
-          />
+        <div className="w-[50rem] md:w-[20rem] sm:w-[10rem] xs min-w-full">
+          <div className="w-full">
+            <TableV2
+              columns={columns}
+              dataSource={table.data}
+              loading={isLoading}
+              rowKey="key"
+              bordered
+              layoutBorder
+              showHeader
+              pagination={false}
+              rowHover
+              scroll={{ x: 2000 }}
+              className="w-full scrollbar-thin"
+            />
+          </div>
         </div>
       </div>
     </div>
