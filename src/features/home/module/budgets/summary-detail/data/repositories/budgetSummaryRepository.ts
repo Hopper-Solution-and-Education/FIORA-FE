@@ -1,3 +1,4 @@
+import { Currency, HttpResponse } from '@/shared/types';
 import { inject, injectable } from 'inversify';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
 import { BudgetSummaryByType } from '../../domain/entities/BudgetSummaryByType';
@@ -16,38 +17,22 @@ import {
 import { Category, CategoryPlanning } from '../dto/response/CategoryResponseDTO';
 import { BudgetSummaryMapper } from '../mappers/BudgetSummaryMapper';
 import { IBudgetSummaryRepository } from './IBudgetSummaryRepository';
-import { Currency, HttpResponse } from '@/shared/types';
 
 @injectable()
 export class BudgetSummaryRepository implements IBudgetSummaryRepository {
   constructor(@inject(TYPES.IBudgetSummaryAPI) private budgetSummaryAPI: IBudgetSummaryAPI) {}
 
   async getBudgetSummary(params: BudgetSummaryRequestDTO): Promise<BudgetSummaryResponseDTO> {
-    try {
-      return await this.budgetSummaryAPI.getBudgetSummary(params);
-    } catch (error) {
-      console.error('Error fetching budget summary:', error);
-      throw error;
-    }
+    return await this.budgetSummaryAPI.getBudgetSummary(params);
   }
 
   async getBudgetByType(fiscalYear: number, type: BudgetType): Promise<BudgetSummaryByType | null> {
-    try {
-      const data = await this.budgetSummaryAPI.getBudgetByType(fiscalYear, type);
-      return BudgetSummaryMapper.toBudgetByType(data);
-    } catch (error) {
-      console.error(`Error fetching budget by type ${type}:`, error);
-      throw error;
-    }
+    const data = await this.budgetSummaryAPI.getBudgetByType(fiscalYear, type);
+    return BudgetSummaryMapper.toBudgetByType(data);
   }
 
   async getBudgetsByUserIdAndFiscalYear(fiscalYear: number): Promise<BudgetSummaryResponseDTO> {
-    try {
-      return await this.budgetSummaryAPI.getBudgetSummary({ fiscalYear });
-    } catch (error) {
-      console.error('Error fetching budgets by user ID and fiscal year:', error);
-      throw error;
-    }
+    return await this.budgetSummaryAPI.getBudgetSummary({ fiscalYear });
   }
 
   async getCategoriesByType(type: 'Income' | 'Expense'): Promise<Category[]> {
@@ -73,15 +58,10 @@ export class BudgetSummaryRepository implements IBudgetSummaryRepository {
   }
 
   async getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>> {
-    try {
-      return await this.budgetSummaryAPI.getBudgetYears();
-    } catch (error) {
-      console.error('Error fetching budget years:', error);
-      throw error;
-    }
+    return await this.budgetSummaryAPI.getBudgetYears();
   }
 
-  async deleteCategory(data: DeleteCategoryRequestDTO): Promise<void> {
-    await this.budgetSummaryAPI.deleteCategory(data);
+  async deleteCategory(data: DeleteCategoryRequestDTO): Promise<string> {
+    return await this.budgetSummaryAPI.deleteCategory(data);
   }
 }

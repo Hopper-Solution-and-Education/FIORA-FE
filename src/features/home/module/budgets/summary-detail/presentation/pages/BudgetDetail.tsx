@@ -28,6 +28,8 @@ import { useBudgetInit } from '../hooks/useBudgetInit';
 import { useBudgetNavigation } from '../hooks/useBudgetNavigation';
 import { useBudgetTableData } from '../hooks/useBudgetTableData';
 import { useCategoryManagement } from '../hooks/useCategoryManagement';
+import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
+import { cn } from '@/shared/utils';
 
 interface BudgetDetailProps {
   year: number;
@@ -35,6 +37,7 @@ interface BudgetDetailProps {
 
 const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   const { currency } = useAppSelector((state) => state.settings);
+  const { isMobile } = useMatchBreakpoint();
 
   const budgetSummaryUseCase = useMemo(
     () => budgetSummaryDIContainer.get<IBudgetSummaryUseCase>(TYPES.IBudgetSummaryUseCase),
@@ -66,7 +69,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     categories,
   });
 
-  const { handleValueChange, handleValidateClick } = useBudgetTableData({
+  const { handleValueChange, handleValidateClick, handleClearTopDown } = useBudgetTableData({
     initialYear,
     activeTab,
     period,
@@ -103,6 +106,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     handleCategorySelected,
     handleDeleteCategory,
     handleRemoveCategory,
+    handleClearTopDown,
     initialYear,
   });
 
@@ -110,20 +114,30 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     if (table.data.length === 3) {
       handleAddCategory();
     }
-  }, [table.data.length]);
+  }, [table.data.length, handleAddCategory]);
 
   return (
-    <div className="p-4 w-full flex flex-col">
-      <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
-        <div className="flex gap-4 mb-6 justify-between">
-          <div className="flex gap-4">
-            <BudgetSummaryYearSelect
-              selectedYear={initialYear}
-              route={routeConfig(RouteEnum.BudgetDetail, {}, { period, periodId })}
-            />
+    <div className="p-4 w-full flex flex-col min-h-screen">
+      <div className="border border-gray-300 dark:border-gray-700 rounded-xl p-6 shadow-sm bg-white dark:bg-gray-800">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-6 justify-between">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center flex-wrap">
+            <div className={cn(isMobile && 'flex w-full justify-between')}>
+              <BudgetSummaryYearSelect
+                selectedYear={initialYear}
+                route={routeConfig(RouteEnum.BudgetDetail, {}, { period, periodId })}
+              />
 
+              {isMobile && (
+                <ActionButton
+                  tooltipContent="Add New Category"
+                  showIcon={true}
+                  onClick={handleAddCategory}
+                />
+              )}
+            </div>
             <Select onValueChange={handlePeriodChange} value={periodId}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-full sm:w-[150px] bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <SelectValue placeholder="Select period" />
               </SelectTrigger>
               <SelectContent>
@@ -135,13 +149,24 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
               </SelectContent>
             </Select>
 
-            <Tabs defaultValue="expense" value={activeTab} onValueChange={handleFilterChange}>
-              <TabsList>
-                <TabsTrigger value="expense" className="flex items-center gap-2">
+            <Tabs
+              defaultValue="expense"
+              value={activeTab}
+              onValueChange={handleFilterChange}
+              className="w-full sm:w-auto"
+            >
+              <TabsList className="grid grid-cols-2 sm:flex w-full sm:w-auto bg-gray-100 dark:bg-gray-700 rounded-lg">
+                <TabsTrigger
+                  value="expense"
+                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 rounded-lg transition-all"
+                >
                   <Icons.trendindDown size={16} color={COLORS.DEPS_DANGER.LEVEL_1} />
                   Expense
                 </TabsTrigger>
-                <TabsTrigger value="income" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="income"
+                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 rounded-lg transition-all"
+                >
                   <Icons.trendingUp size={16} color={COLORS.DEPS_SUCCESS.LEVEL_1} />
                   Income
                 </TabsTrigger>
@@ -149,31 +174,29 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
             </Tabs>
           </div>
 
-          <div>
+          {!isMobile && (
             <ActionButton
               tooltipContent="Add New Category"
               showIcon={true}
-              onClick={() => handleAddCategory()}
+              onClick={handleAddCategory}
             />
-          </div>
+          )}
         </div>
 
-        <div className="w-[50rem] md:w-[20rem] sm:w-[10rem] xs min-w-full">
-          <div className="w-full">
-            <TableV2
-              columns={columns}
-              dataSource={table.data}
-              loading={isLoading}
-              rowKey="key"
-              bordered
-              layoutBorder
-              showHeader
-              pagination={false}
-              rowHover
-              scroll={{ x: 2000 }}
-              className="w-full scrollbar-thin"
-            />
-          </div>
+        {/* Table Section - giữ nguyên */}
+        <div className="w-[5rem] md:w-[20rem] lg:w-[50rem] min-w-full">
+          <TableV2
+            columns={columns}
+            dataSource={table.data}
+            loading={isLoading}
+            rowKey="key"
+            bordered
+            layoutBorder
+            showHeader
+            pagination={false}
+            rowHover
+            className="w-full scrollbar-thin rounded-lg bg-white dark:bg-gray-800 shadow-sm"
+          />
         </div>
       </div>
     </div>

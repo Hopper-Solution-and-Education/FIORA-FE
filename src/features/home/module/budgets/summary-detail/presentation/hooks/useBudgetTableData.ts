@@ -1,11 +1,11 @@
 import { Currency } from '@/shared/types';
-import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { BudgetDetailFilterEnum } from '../../data/constants';
 import { MonthlyPlanningData } from '../../data/dto/request/BudgetUpdateRequestDTO';
+import { Category } from '../../data/dto/response/CategoryResponseDTO';
 import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
-import { transformMonthlyData, transformMonthlyPayload } from '../../utils/dataTransformations';
+import { transformMonthlyPayload } from '../../utils/dataTransformations';
 import {
   BudgetDetailFilterType,
   BudgetInit,
@@ -14,7 +14,6 @@ import {
   MONTHS,
   TableData,
 } from '../types/table.type';
-import { Category } from '../../data/dto/response/CategoryResponseDTO';
 
 interface UseBudgetTableDataProps {
   initialYear: number;
@@ -41,8 +40,6 @@ export function useBudgetTableData({
 }: UseBudgetTableDataProps) {
   useEffect(() => {
     table.fetch();
-
-    console.log('run');
   }, [initialYear, period, periodId, currency, activeTab]);
 
   useEffect(() => {
@@ -152,8 +149,50 @@ export function useBudgetTableData({
     }
   };
 
+  const handleClearTopDown = async () => {
+    try {
+      const clearedData = table.data.map((item) => {
+        if (item.key === 'top-down') {
+          const clearedItem = { ...item };
+          Object.keys(clearedItem).forEach((key) => {
+            if (key !== 'key' && key !== 'type' && key !== 'action' && key !== 'isEditable') {
+              clearedItem[key] = { value: 0 };
+            }
+          });
+          return clearedItem;
+        }
+        return item;
+      });
+
+      console.log(clearedData);
+
+      table.set(clearedData);
+
+      // Tạo payload với tất cả giá trị về 0
+      const suffix = activeTab === BudgetDetailFilterEnum.EXPENSE ? '_exp' : '_inc';
+      const monthlyData: MonthlyPlanningData = {};
+      for (let i = 1; i <= 12; i++) {
+        const monthKey = `m${i}${suffix}` as keyof MonthlyPlanningData;
+        monthlyData[monthKey] = { value: 0 };
+      }
+
+      await budgetSummaryUseCase.updateTopDownPlanning({
+        fiscalYear: initialYear.toString(),
+        type: activeTab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income',
+        updateTopBudget: monthlyData,
+      });
+
+      toast.success('Total Top Down cleared and synced successfully');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to clear and sync Total Top Down');
+      // Rollback nếu API thất bại (tùy chọn)
+      table.fetch();
+    }
+  };
+
   return {
     handleValueChange,
     handleValidateClick,
+    handleClearTopDown,
   };
 }

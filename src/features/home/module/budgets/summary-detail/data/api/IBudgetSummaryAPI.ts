@@ -66,5 +66,5 @@ export interface IBudgetSummaryAPI {
    */
   getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>>;
 
-  deleteCategory(data: DeleteCategoryRequestDTO): Promise<void>;
+  deleteCategory(data: DeleteCategoryRequestDTO): Promise<string>;
 }

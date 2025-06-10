@@ -1,7 +1,3 @@
-import {
-  DataSourceItemProps,
-  DataSourceProps,
-} from '@/components/common/tables/custom-table/types';
 import { ColumnConfig, LineConfig } from '@/shared/types/chart.type';
 
 export const findMaxMinValues = <T extends Record<string, any>>(

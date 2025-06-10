@@ -114,8 +114,6 @@ export const transformMonthlyPayload = (
     Array.from({ length: 12 }, (_, i) => [`m${i + 1}${suffix}`, 0]),
   );
 
-  // console.log('Input data:', data);
-
   Object.entries(data).forEach(([key, value]) => {
     const monthIndex = MONTHS.indexOf(key as (typeof MONTHS)[number]);
     if (monthIndex !== -1) {
@@ -130,8 +128,6 @@ export const transformMonthlyPayload = (
       }
     }
   });
-
-  // console.log('Output result:', result);
 
   return result;
 };

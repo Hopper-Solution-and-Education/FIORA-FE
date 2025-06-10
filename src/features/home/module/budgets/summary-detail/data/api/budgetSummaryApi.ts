@@ -64,8 +64,10 @@ export class BudgetSummaryAPI implements IBudgetSummaryAPI {
     });
   }
 
-  async deleteCategory(data: DeleteCategoryRequestDTO): Promise<void> {
-    await httpClient.post<void>(ApiEndpointEnum.BudgetCategories, data);
+  async deleteCategory(data: DeleteCategoryRequestDTO): Promise<string> {
+    const response: any = await httpClient.post<void>(ApiEndpointEnum.BudgetCategories, data);
+
+    return response?.data.code || '';
   }
 
   async getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>> {

@@ -131,7 +131,13 @@ export const useCategoryManagement = ({
         isTruncate,
       };
 
-      await budgetSummaryUseCase.deleteCategory(deleteData);
+      const response: any = await budgetSummaryUseCase.deleteCategory(deleteData);
+
+      if (response === 'Budget details to delete not found') {
+        toast.info('Oop! Budget details not found');
+
+        return;
+      }
 
       if (isTruncate) {
         toast.success('Category reseted successfully');

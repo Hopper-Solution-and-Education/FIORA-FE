@@ -23,5 +23,5 @@ export interface IBudgetSummaryUseCase {
   updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<void>;
   updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO, currency: Currency): Promise<void>;
   getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>>;
-  deleteCategory(data: DeleteCategoryRequestDTO): Promise<void>;
+  deleteCategory(data: DeleteCategoryRequestDTO): Promise<string>;
 }

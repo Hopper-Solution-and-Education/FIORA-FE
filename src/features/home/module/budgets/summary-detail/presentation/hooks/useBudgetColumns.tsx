@@ -40,6 +40,7 @@ interface UseBudgetColumnsProps {
   ) => void;
   handleRemoveCategory: (categoryId: string) => void;
   handleDeleteCategory: (categoryId: string) => void;
+  handleClearTopDown: () => void;
   initialYear: number;
 }
 
@@ -56,6 +57,7 @@ export function useBudgetColumns({
   handleCategorySelected,
   handleRemoveCategory,
   handleDeleteCategory,
+  handleClearTopDown,
   categories,
   table,
 }: UseBudgetColumnsProps) {
@@ -72,6 +74,7 @@ export function useBudgetColumns({
       handleValueChange,
       handleDeleteCategory,
       handleRemoveCategory,
+      handleClearTopDown,
       table.data,
     );
 

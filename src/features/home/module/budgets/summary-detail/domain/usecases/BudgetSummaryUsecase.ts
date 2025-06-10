@@ -57,7 +57,7 @@ export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
     return this.budgetSummaryRepository.getBudgetYears();
   }
 
-  async deleteCategory(data: DeleteCategoryRequestDTO): Promise<void> {
-    await this.budgetSummaryRepository.deleteCategory(data);
+  async deleteCategory(data: DeleteCategoryRequestDTO): Promise<string> {
+    return await this.budgetSummaryRepository.deleteCategory(data);
   }
 }

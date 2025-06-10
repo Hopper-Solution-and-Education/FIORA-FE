@@ -10,7 +10,11 @@ import CategorySelect from '../../../category/components/CategorySelect';
 import { BUDGETR_FILTER_KEY, COMPARISON_TYPES, PERIOD_CONFIG } from '../data/constants';
 import { Category as BudgetCategory } from '../data/dto/response/CategoryResponseDTO';
 import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
-import { BudgetDetailType, TableData } from '../presentation/types/table.type';
+import {
+  BudgetDetailFilterType,
+  BudgetDetailType,
+  TableData,
+} from '../presentation/types/table.type';
 import { createGeneralComparisonMapper } from './compareDataForTable';
 
 export const formatCurrencyValue = (
@@ -109,7 +113,9 @@ export const getColumnsByPeriod = (
   onValueChange?: (record: TableData, columnKey: string, value: number) => void,
   onDeleteCategory?: (categoryId: string, isTruncate?: boolean) => void,
   onRemoveCategory?: (categoryId: string) => void,
+  onClearTopDown?: () => void,
   tableData: TableData[] = [],
+  activeTab: BudgetDetailFilterType,
 ) => {
   const renderEditableCell = (text: any, record: TableData, index: number, column: ColumnProps) => {
     const isDisableEdited = !PERIOD_CONFIG.months.some((item) => item.key === column.key);
@@ -253,7 +259,8 @@ export const getColumnsByPeriod = (
               className={cn('cursor-pointer', 'text-red-500 hover:text-red-700')}
               title="Invalid"
               onClick={() => {
-                onDeleteCategory?.(categoryId);
+                // onDeleteCategory?.(categoryId);
+                onClearTopDown?.();
               }}
             >
               <Icons.close size={15} />
