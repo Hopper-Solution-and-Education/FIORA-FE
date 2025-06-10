@@ -1,9 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import './style.css';
 import { Checkbox } from '@/components/ui/checkbox';
+import { PaginationV2 } from '@/components/ui/pagination-v2';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -14,6 +13,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ImgEmpty } from '@/shared/icons';
+import { cn } from '@/shared/utils';
 import {
   Cell,
   CellContext,
@@ -39,9 +40,7 @@ import {
   type SortOrderStateProps,
   type TableProps,
 } from './types';
-import { PaginationV2 } from '@/components/ui/pagination-v2';
-import { cn } from '@/shared/utils';
-import { ImgEmpty } from '@/shared/icons';
+import './style.css';
 
 export function TableV2({
   columns = [],
@@ -53,6 +52,7 @@ export function TableV2({
   rowSelection,
   rowKey = 'key',
   loading = false,
+  loadingRowCount = 10,
   pagination = {
     position: PAGINATION_POSITION.BOTTOM_RIGHT,
     pageSize: 10,
@@ -205,9 +205,12 @@ export function TableV2({
               if (!row || !getValue) return null;
 
               const value: any = getValue();
+              const item = value as any;
+
               if (col.render) {
-                return col.render(value, row.original, row.index);
+                return col.render(item, row.original, row.index);
               }
+
               return (
                 <div
                   className={cn(
@@ -217,7 +220,7 @@ export function TableV2({
                     col.className,
                   )}
                 >
-                  {value}
+                  {item && item.render ? item.render : item ? item.value : value}
                 </div>
               );
             },
@@ -240,7 +243,6 @@ export function TableV2({
       return columns;
     };
 
-    // Add selection column if rowSelection is provided
     const result: CustomColumnDef<any>[] = [];
     if (rowSelection) {
       result.push({
@@ -329,7 +331,6 @@ export function TableV2({
     }
   };
 
-  // Initialize table with custom row IDs
   const table = useReactTable({
     data: dataSource,
     columns: tableColumns,
@@ -343,18 +344,15 @@ export function TableV2({
     getRowId: (row) => row[rowKey] as string,
   });
 
-  // Handle pagination
   const handlePageChange = (page: number) => {
     if (pagination && typeof pagination !== 'boolean' && pagination.onChange) {
       pagination.onChange(page, pagination.pageSize || 10);
     }
   };
 
-  // Render loading skeleton
   if (loading) {
-    // Calculate number of skeleton rows based on pagination or default to 5
     const skeletonRowCount =
-      (pagination && typeof pagination !== 'boolean' && pagination.pageSize) || 5;
+      (pagination && typeof pagination !== 'boolean' && pagination.pageSize) || loadingRowCount;
 
     return (
       <div className={cn('w-full', className)} {...rest}>
@@ -365,11 +363,9 @@ export function TableV2({
             'transition-all duration-300',
           )}
         >
-          {/* Add a subtle loading indicator at the top */}
           <div className="w-full h-1 bg-muted overflow-hidden">
             <div className="h-full bg-primary/30 animate-progress"></div>
           </div>
-
           <div
             className={cn(
               'overflow-auto',
@@ -469,7 +465,6 @@ export function TableV2({
                               className={cn(
                                 'h-5 rounded-md animate-pulse',
                                 meta?.width ? 'w-full' : 'w-[85%]',
-                                // Vary widths slightly for more natural appearance
                                 !meta?.width && rowIndex % 3 === 0 ? 'w-[75%]' : '',
                                 !meta?.width && rowIndex % 3 === 1 ? 'w-[90%]' : '',
                               )}
@@ -483,8 +478,6 @@ export function TableV2({
               </TableBody>
             </Table>
           </div>
-
-          {/* Add skeleton pagination if needed */}
           {showPagination && pagination && typeof pagination !== 'boolean' && (
             <div
               className={cn(
@@ -508,7 +501,6 @@ export function TableV2({
     );
   }
 
-  // Render empty state
   if (dataSource.length === 0) {
     return (
       <div className={cn('w-full', className)} {...rest}>
@@ -582,7 +574,6 @@ export function TableV2({
                       <div className="relative mb-4 text-muted-foreground/50">
                         <ImgEmpty />
                       </div>
-
                       <div className="text-center space-y-1 max-w-md">
                         <p className="text-base font-medium text-foreground">
                           {typeof emptyText === 'string' ? 'No Data Available' : emptyText}
@@ -599,7 +590,6 @@ export function TableV2({
     );
   }
 
-  // Render pagination
   const renderPagination = () => {
     if (!showPagination || !pagination || pagination === true || !paginationEnabled) {
       return null;
@@ -754,7 +744,7 @@ export function TableV2({
                         rowSpan={cellProps.rowSpan}
                         className={cn(
                           columnMeta?.className,
-                          (header.column.columnDef.meta as TableV2Meta)?.bgColorClassName,
+                          columnMeta?.bgColorClassName,
                           columnMeta?.align === 'center' && 'text-center',
                           columnMeta?.align === 'right' && 'text-right',
                           columnMeta?.fixed === 'left' &&

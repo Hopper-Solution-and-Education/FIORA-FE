@@ -1,3 +1,4 @@
+import { DataSourceProps } from '@/components/common/tables/custom-table/types';
 import { BudgetDetailFilterEnum } from '../../data/constants';
 
 export type BudgetDetailFilterType =
@@ -21,12 +22,31 @@ export interface BudgetPeriodId {
 
 export type BudgetPeriodIdType = string;
 
-export interface TableData {
-  key: string;
+export interface TableData extends DataSourceProps {
   type: string;
-  isParent?: boolean;
-  isChild?: boolean;
   action?: boolean;
   isEditable?: boolean;
-  [key: string]: any; // Allow dynamic month keys (m1, m2, etc.)
+  isNew?: boolean;
+  children?: TableData[];
+}
+
+export const MONTHS = [
+  'jan',
+  'feb',
+  'mar',
+  'apr',
+  'may',
+  'jun',
+  'jul',
+  'aug',
+  'sep',
+  'oct',
+  'nov',
+  'dec',
+] as const;
+
+export interface BudgetInit<T> {
+  data: T[];
+  set: React.Dispatch<React.SetStateAction<T[]>>;
+  fetch: () => Promise<void>;
 }

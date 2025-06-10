@@ -649,8 +649,6 @@ class BudgetUseCase {
         effectiveEndDate,
       );
 
-      console.log('currentYearTransactions', currentYearTransactions);
-
       const currentYearTotals = this.calculateActualTotals(
         currentYearTransactions,
         budgetCopyCurrency,
@@ -843,6 +841,25 @@ class BudgetUseCase {
       nextCursor,
       currency: currency,
     } as const;
+  }
+
+  async getListOfAvailableBudget(userId: string) {
+    const budgets = await this.budgetRepository.findManyBudgetData(
+      {
+        userId,
+        type: BudgetType.Act,
+      },
+      {
+        select: {
+          fiscalYear: true,
+        },
+        orderBy: {
+          fiscalYear: 'desc',
+        },
+      },
+    );
+
+    return _.flatMap(budgets, (b) => b.fiscalYear);
   }
 
   async updateActBudgetTotalYears(userId: string, currency: Currency) {

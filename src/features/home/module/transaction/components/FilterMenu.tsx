@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import DateRangeFilter from '@/components/common/filters/DateRangeFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
@@ -475,11 +476,9 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
     ];
   }, [filterParams, categoryOptions, accountOptions, partnerOptions, isLoading, handleEditFilter]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createFilterStructure = useCallback((params: FilterParams): Record<string, any> => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updatedFilters: Record<string, any> = {};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const andConditions: any[] = [];
 
     // Handle date range - always place at top level

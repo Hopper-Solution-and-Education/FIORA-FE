@@ -10,11 +10,13 @@ import { NextApiRequest, NextApiResponse } from 'next';
 // This function can run for a maximum of 15 seconds
 export const config = {
   maxDuration: 15,
-}
+};
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {
     switch (req.method) {
+      case 'GET':
+        return GET(req, res, userId);
       case 'POST':
         return POST(req, res, userId);
       default:
@@ -26,6 +28,22 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
     return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 });
+
+export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  try {
+    const budgets = await budgetUseCase.getListOfAvailableBudget(userId);
+
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(
+        createResponse(RESPONSE_CODE.OK, Messages.GET_BUDGET_LIST_FISCAL_YEAR_SUCCESS, budgets),
+      );
+  } catch (error: any) {
+    return res
+      .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(createErrorResponse(error.status, error.message, error));
+  }
+}
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {

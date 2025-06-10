@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { ChartByDate } from '@/features/finance/chart/presentation/organisms';

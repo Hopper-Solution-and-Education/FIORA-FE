@@ -48,6 +48,7 @@ export enum Messages {
 
   // Budget Service
   GET_BUDGET_ITEM_SUCCESS = 'Get budget item successfully',
+  GET_BUDGET_LIST_FISCAL_YEAR_SUCCESS = 'Get budget list fiscal year successfully',
   CREATE_BUDGET_SUCCESS = 'Create budget successfully',
   UPDATE_BUDGET_SUCCESS = 'Update budget successfully',
   BUDGET_PAST_YEAR_NOT_ALLOWED = 'Fiscal year cannot be in the past',
@@ -71,6 +72,8 @@ export enum Messages {
   BUDGET_UPDATE_FAILED = 'Failed to update budget',
   BUDGET_DELETE_FAILED = 'Failed to delete budget',
   BUDGET_FISCAL_YEAR_ALREADY_EXISTS = 'Budget fiscal year already exists',
+  BUDGET_DETAILS_TO_DELETE_NOT_FOUND = 'Budget details to delete not found',
+  BUDGET_DETAILS_TO_DELETE_NOT_FOUND_CODE = "BDNF",
 
   // Budget Details Service Success
   BUDGET_DETAIL_CREATED_SUCCESS = 'Budget details created successfully',
@@ -79,6 +82,7 @@ export enum Messages {
 
   // Budget Details Service Failed
   BUDGET_DETAIL_UPDATE_FAILED = 'Failed to update budget details',
+  BUDGET_DETAIL_UPDATE_MANY_FAILED = 'Failed to update many budget details',
   BUDGET_DETAIL_DELETE_FAILED = 'Failed to delete budget details',
   DUPLICATED_CATEGORY_BUDGET_DETAILS = 'Category already exists in budget details',
 

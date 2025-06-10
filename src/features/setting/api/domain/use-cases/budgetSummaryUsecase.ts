@@ -36,7 +36,7 @@ class BudgetSummaryUseCase {
     private _budgetRepository: IBudgetRepository = budgetRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
     private _categoryRepository: ICategoryRepository = categoryRepository,
-  ) {}
+  ) { }
 
   async getBudgetsByUserIdAndFiscalYear(
     userId: string,
@@ -246,6 +246,7 @@ class BudgetSummaryUseCase {
 
       // Update the affected fields in the map
       const affectedFields = new Map<string, boolean>();
+
       monthlyValues = applyUpdates(
         monthlyValues,
         updateTopBudget,
@@ -277,12 +278,15 @@ class BudgetSummaryUseCase {
   }
 
   async deleteBudgetDetailsCategory(params: BudgetDetailCategoryDeleteParams) {
-    const { userId, categoryId, fiscalYear, type } = params;
+    const { userId, categoryId, fiscalYear, type, isTruncate = false } = params;
 
     const suffix = type === BudgetDetailType.Expense ? '_exp' : '_inc';
 
     // Validate existence of categoryId
-    const foundCategory = await this._categoryRepository.findCategoryById(categoryId);
+    const foundCategory = await this._categoryRepository.findFirstCategory({
+      id: categoryId,
+      userId,
+    });
 
     if (!foundCategory) {
       throw new Error(Messages.CATEGORY_NOT_FOUND);
@@ -319,6 +323,12 @@ class BudgetSummaryUseCase {
         },
       });
 
+      if (oldBudgetDetails.length === 0) {
+        return {
+          code: Messages.BUDGET_DETAILS_TO_DELETE_NOT_FOUND,
+        };
+      }
+
       // 2. Prepare data for subtraction (use old values as amounts to subtract)
       const amountsToSubtract = Array(12)
         .fill(0)
@@ -326,10 +336,10 @@ class BudgetSummaryUseCase {
           const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
           const value = oldDetail
             ? convertCurrency(
-                Number(oldDetail.amount),
-                oldDetail.currency || targetCurrency,
-                targetCurrency,
-              )
+              Number(oldDetail.amount),
+              oldDetail.currency || targetCurrency,
+              targetCurrency,
+            )
             : 0;
           return { amount: new Prisma.Decimal(value), month: i + 1, currency: targetCurrency };
         });
@@ -352,21 +362,64 @@ class BudgetSummaryUseCase {
         throw new Error(Messages.BUDGET_UPDATE_FAILED);
       }
 
-      // Delete budget details for the Bot budget
-      const deletedBudgetDetails = await prisma.budgetDetails.deleteMany({
-        where: {
-          userId,
-          budgetId: extractBudgetTypesByYear.id,
-          categoryId,
-          type,
-        },
-      });
+      if (!isTruncate) {
+        // Delete budget details for the Bot budget
+        const deletedBudgetDetailsMatchBudgetTypeAwait = prisma.budgetDetails.deleteMany({
+          where: {
+            userId,
+            budgetId: extractBudgetTypesByYear.id,
+            categoryId,
+            type,
+          },
+        });
 
-      if (deletedBudgetDetails.count === 0) {
-        throw new Error(Messages.BUDGET_DETAIL_DELETE_FAILED);
+        const deletedBudgetDetailsMatchActTypeAwait = prisma.budgetDetails.deleteMany({
+          where: {
+            userId,
+            budgetId: extractBudgetTypesByYear.id,
+            categoryId,
+            type: BudgetDetailType.Act,
+          },
+        });
+
+        const [deletedBudgetDetailsMatchBudgetType, deletedBudgetDetailsMatchActType] =
+          await Promise.all([
+            deletedBudgetDetailsMatchBudgetTypeAwait,
+            deletedBudgetDetailsMatchActTypeAwait,
+          ]);
+
+        if (
+          deletedBudgetDetailsMatchBudgetType.count === 0 &&
+          deletedBudgetDetailsMatchActType.count === 0
+        ) {
+          throw new Error(Messages.BUDGET_DETAIL_DELETE_FAILED);
+        }
+
+        return {
+          deleteBudgetType: deletedBudgetDetailsMatchBudgetType.count,
+          deleteActType: deletedBudgetDetailsMatchActType.count,
+        };
+      } else {
+        const updatedBudgetDetails = await prisma.budgetDetails.updateMany({
+          where: {
+            userId,
+            budgetId: extractBudgetTypesByYear.id,
+            categoryId,
+            type,
+          },
+          data: {
+            amount: new Prisma.Decimal(0),
+          },
+        });
+
+        if (updatedBudgetDetails.count === 0) {
+          throw new Error(Messages.BUDGET_DETAIL_UPDATE_FAILED);
+        }
+
+        return {
+          updateBudgetType: updatedBudgetDetails.count,
+        };
       }
-
-      return deletedBudgetDetails;
     });
   }
 
@@ -379,51 +432,55 @@ class BudgetSummaryUseCase {
     currency: Currency,
     prisma: Prisma.TransactionClient,
   ): Promise<BudgetDetails[]> {
-    const upsertPromises = monthlyBudgetDetailValues.map((v, index) => {
-      const amount = type === BudgetDetailType.Act ? v.actual : v.bottomUp;
+    try {
+      const upsertPromises = monthlyBudgetDetailValues.map((v, index) => {
+        const amount = type === BudgetDetailType.Act ? v.actual : v.bottomUp;
 
-      const where: Prisma.BudgetDetailsWhereUniqueInput = {
-        month_categoryId_type_budgetId_userId: {
+        const where: Prisma.BudgetDetailsWhereUniqueInput = {
+          month_categoryId_type_budgetId_userId: {
+            userId,
+            budgetId,
+            categoryId,
+            month: index + 1,
+            type,
+          },
+        };
+
+        const createData: Prisma.BudgetDetailsUncheckedCreateInput = {
           userId,
           budgetId,
           categoryId,
-          month: index + 1,
           type,
-        },
-      };
+          amount,
+          month: index + 1,
+          createdBy: userId,
+          currency,
+        };
 
-      const createData: Prisma.BudgetDetailsUncheckedCreateInput = {
-        userId,
-        budgetId,
-        categoryId,
-        type,
-        amount,
-        month: index + 1,
-        createdBy: userId,
-        currency,
-      };
+        const updateData: Prisma.BudgetDetailsUpdateInput = {
+          amount,
+          updatedBy: userId,
+        };
 
-      const updateData: Prisma.BudgetDetailsUpdateInput = {
-        amount,
-        updatedBy: userId,
-        currency,
-      };
+        return this._budgetRepository.upsertBudgetDetailsProduct(
+          where,
+          updateData,
+          createData,
+          prisma,
+        );
+      });
 
-      return this._budgetRepository.upsertBudgetDetailsProduct(
-        where,
-        updateData,
-        createData,
-        prisma,
-      );
-    });
+      const updatedBudgetDetails = await Promise.all(upsertPromises);
 
-    const updatedBudgetDetails = await Promise.all(upsertPromises);
+      if (updatedBudgetDetails.length !== 12) {
+        throw new Error('Failed to upsert all 12 months');
+      }
 
-    if (updatedBudgetDetails.length !== 12) {
-      throw new Error('Failed to upsert all 12 months');
+      return updatedBudgetDetails;
+    } catch (error) {
+      console.log('error', error);
+      throw error;
     }
-
-    return updatedBudgetDetails;
   }
 
   async upsertBudgetCategoryDetailsCategory(params: BudgetDetailCategoryCreationParams) {
@@ -484,12 +541,12 @@ class BudgetSummaryUseCase {
           ),
           actual: actualSumUpPlan
             ? convertCurrency(
-                Number(actualSumUpPlan[`m${i + 1}${suffix}`]) || 0,
-                currency,
-                targetCurrency,
-              )
+              Number(actualSumUpPlan[`m${i + 1}${suffix}`]) || 0,
+              currency,
+              targetCurrency,
+            )
             : 0,
-        })) as MonthlyBudgetDetailValues;
+        }));
 
       if (monthlyBudgetDetailValues.length !== 12)
         throw new Error('All 12 months must be provided');
@@ -512,18 +569,14 @@ class BudgetSummaryUseCase {
           const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
 
           const oldValue = oldDetail
-            ? convertCurrency(
-                Number(oldDetail.amount),
-                oldDetail.currency || targetCurrency,
-                targetCurrency,
-              )
+            ? convertCurrency(Number(oldDetail.amount), oldDetail.currency, targetCurrency)
             : 0;
 
-          const newValue = monthlyBudgetDetailValues[i].bottomUp;
+          const newValue = monthlyBudgetDetailValues[i].bottomUp ?? 0;
           const convertAmountDecimal = new Prisma.Decimal(newValue - oldValue);
 
           return {
-            amount: convertAmountDecimal,
+            amount: convertAmountDecimal ?? 0,
             month: i + 1,
             currency: targetCurrency,
           };
@@ -562,17 +615,22 @@ class BudgetSummaryUseCase {
         suffix,
       );
 
-      const updated = await this._budgetRepository.updateBudgetTx(
+      const bottomUpBudget = await this._budgetRepository.updateBudgetTx(
         { id: extractBudgetTypesByYear.id },
         updateData,
         prisma,
       );
 
-      if (!updated) {
+      if (!bottomUpBudget) {
         throw new Error(Messages.BUDGET_UPDATE_FAILED);
       }
 
-      return [updatedBudgetDetails, actBudgetDetails.length ? actBudgetDetails : null, updated];
+      return {
+        updatedBudgetDetails,
+        actBudgetDetails: actBudgetDetails.length ? actBudgetDetails : null,
+        bottomUpBudget,
+        currency: targetCurrency,
+      };
     });
   }
 

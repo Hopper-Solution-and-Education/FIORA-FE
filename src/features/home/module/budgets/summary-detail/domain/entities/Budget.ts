@@ -1,3 +1,4 @@
+import { Currency } from '@/shared/types';
 import { BudgetDTO } from '../../data/dto/response/BudgetSummaryResponseDTO';
 import { BudgetType } from './BudgetType';
 
@@ -48,6 +49,7 @@ export class Budget {
   public createdBy?: string | undefined;
   public updatedAt: string | undefined;
   public updatedBy?: string | undefined;
+  public currency?: Currency | undefined;
 
   public constructor(builder: BudgetBuilder) {
     this.id = builder.id;
@@ -146,6 +148,7 @@ export class Budget {
       .setCreatedBy(dto.created_by)
       .setUpdatedAt(dto.updated_at)
       .setUpdatedBy(dto.updated_by)
+      .setCurrency(dto.currency)
       .build();
   }
 
@@ -201,6 +204,7 @@ export class BudgetBuilder {
   public createdBy?: string;
   public updatedAt?: string;
   public updatedBy?: string;
+  public currency?: string;
 
   public setId(id: string | undefined): BudgetBuilder {
     this.id = id;
@@ -429,6 +433,11 @@ export class BudgetBuilder {
 
   public setUpdatedBy(updatedBy: string | undefined): BudgetBuilder {
     this.updatedBy = updatedBy;
+    return this;
+  }
+
+  public setCurrency(currency: string | undefined): BudgetBuilder {
+    this.currency = currency;
     return this;
   }
 

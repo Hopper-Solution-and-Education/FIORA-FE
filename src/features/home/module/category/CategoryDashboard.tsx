@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 import NestedBarChart from '@/components/common/charts/nested-bar-chart';
 import { BarItem } from '@/components/common/charts/nested-bar-chart/type';
