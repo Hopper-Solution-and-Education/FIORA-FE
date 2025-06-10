@@ -259,8 +259,11 @@ export const getColumnsByPeriod = (
               className={cn('cursor-pointer', 'text-red-500 hover:text-red-700')}
               title="Invalid"
               onClick={() => {
-                // onDeleteCategory?.(categoryId);
-                onClearTopDown?.();
+                if (record.key === 'top-down') {
+                  onClearTopDown?.();
+                } else if (categoryId) {
+                  onDeleteCategory?.(categoryId);
+                }
               }}
             >
               <Icons.close size={15} />

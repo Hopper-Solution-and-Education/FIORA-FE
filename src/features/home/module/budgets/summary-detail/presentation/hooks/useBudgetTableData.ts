@@ -94,6 +94,7 @@ export function useBudgetTableData({
         });
 
         table.fetch();
+        categories.fetch();
 
         toast.success('Top-down planning updated successfully');
       } else if (record.key.includes('-bottom-up')) {
@@ -164,16 +165,13 @@ export function useBudgetTableData({
         return item;
       });
 
-      console.log(clearedData);
-
       table.set(clearedData);
 
-      // Tạo payload với tất cả giá trị về 0
       const suffix = activeTab === BudgetDetailFilterEnum.EXPENSE ? '_exp' : '_inc';
       const monthlyData: MonthlyPlanningData = {};
       for (let i = 1; i <= 12; i++) {
         const monthKey = `m${i}${suffix}` as keyof MonthlyPlanningData;
-        monthlyData[monthKey] = { value: 0 };
+        monthlyData[monthKey] = 0;
       }
 
       await budgetSummaryUseCase.updateTopDownPlanning({
@@ -187,6 +185,7 @@ export function useBudgetTableData({
       toast.error(err?.message || 'Failed to clear and sync Total Top Down');
       // Rollback nếu API thất bại (tùy chọn)
       table.fetch();
+      categories.fetch();
     }
   };
 

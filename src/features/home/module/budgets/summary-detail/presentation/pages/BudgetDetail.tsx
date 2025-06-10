@@ -189,6 +189,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
             columns={columns}
             dataSource={table.data}
             loading={isLoading}
+            loadingRowCount={8}
             rowKey="key"
             bordered
             layoutBorder

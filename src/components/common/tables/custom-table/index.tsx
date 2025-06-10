@@ -52,6 +52,7 @@ export function TableV2({
   rowSelection,
   rowKey = 'key',
   loading = false,
+  loadingRowCount = 10,
   pagination = {
     position: PAGINATION_POSITION.BOTTOM_RIGHT,
     pageSize: 10,
@@ -351,7 +352,7 @@ export function TableV2({
 
   if (loading) {
     const skeletonRowCount =
-      (pagination && typeof pagination !== 'boolean' && pagination.pageSize) || 5;
+      (pagination && typeof pagination !== 'boolean' && pagination.pageSize) || loadingRowCount;
 
     return (
       <div className={cn('w-full', className)} {...rest}>

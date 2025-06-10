@@ -155,6 +155,7 @@ export interface TableProps extends React.HTMLAttributes<HTMLDivElement> {
   rowSelection?: RowSelectionProps;
   rowKey?: string;
   loading?: boolean;
+  loadingRowCount?: number;
   pagination?: TablePaginationProps | boolean | null;
   size?: TableSizeProps;
   emptyText?: string;
