@@ -24,6 +24,7 @@ export enum Messages {
   DUPLICATE_PRODUCT_TENANT_ERROR = 'Product with the same name and category already exists',
   GET_PRODUCT_BY_ID_SUCCESS = 'Get product by id successfully',
   GET_PRODUCT_FILTERS = 'Get product filtered successfully.',
+  DUPLICATE_PRODUCT_NAME_ERROR = 'Product with the same name already exists',
 
   // Product Failed
   CREATE_PRODUCT_FAILED = 'Failed to create product',
