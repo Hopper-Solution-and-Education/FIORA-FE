@@ -7,7 +7,12 @@ import { ComparisonProps } from '@/shared/types/chart.type';
 import { cn, convertVNDToUSD } from '@/shared/utils';
 import { validate as isUUID } from 'uuid';
 import CategorySelect from '../../../category/components/CategorySelect';
-import { BUDGETR_FILTER_KEY, COMPARISON_TYPES, PERIOD_CONFIG } from '../data/constants';
+import {
+  BudgetDetailFilterEnum,
+  BUDGETR_FILTER_KEY,
+  COMPARISON_TYPES,
+  PERIOD_CONFIG,
+} from '../data/constants';
 import { Category as BudgetCategory } from '../data/dto/response/CategoryResponseDTO';
 import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
 import {
@@ -115,7 +120,7 @@ export const getColumnsByPeriod = (
   onRemoveCategory?: (categoryId: string) => void,
   onClearTopDown?: () => void,
   tableData: TableData[] = [],
-  activeTab: BudgetDetailFilterType,
+  activeTab: BudgetDetailFilterType = BudgetDetailFilterEnum.EXPENSE,
 ) => {
   const renderEditableCell = (text: any, record: TableData, index: number, column: ColumnProps) => {
     const isDisableEdited = !PERIOD_CONFIG.months.some((item) => item.key === column.key);
@@ -161,6 +166,8 @@ export const getColumnsByPeriod = (
       columns: BUDGETR_FILTER_KEY.columnKey,
       styleWhenGreater: 'text-red-500',
       styleWhenLessOrEqual: 'text-blue-500',
+      comparisonType:
+        activeTab === BudgetDetailFilterEnum.EXPENSE ? 'greaterOrEqual' : 'lessOrEqual',
     },
     ...tableData // Compare between Finance Category Items
       .slice()
@@ -177,7 +184,9 @@ export const getColumnsByPeriod = (
           columns: BUDGETR_FILTER_KEY.columnKey,
           styleWhenGreater: 'text-red-500',
           styleWhenLessOrEqual: 'text-blue-500',
-        };
+          comparisonType:
+            activeTab === BudgetDetailFilterEnum.EXPENSE ? 'greaterOrEqual' : 'lessOrEqual',
+        } as ComparisonProps;
       })
       .filter((item): item is ComparisonProps => item !== null),
   ];
@@ -292,7 +301,7 @@ export const getColumnsByPeriod = (
         align: 'right',
         ...additionalCellProps,
         render: (text: any, record: TableData, index: number) => {
-          const mappedClass = generalComparisonMapper(record.key, key, text?.value ?? 0);
+          const mappedClass = generalComparisonMapper?.(record.key, key, text?.value ?? 0) ?? null;
 
           return renderEditableCell(text, record, index, {
             key,

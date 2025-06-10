@@ -11,8 +11,12 @@ export function createGeneralComparisonMapper(
     columns: string[];
     styleWhenGreater: string;
     styleWhenLessOrEqual: string;
-  }>,
+    comparisonType?: 'greater' | 'less' | 'equal' | 'greaterOrEqual' | 'lessOrEqual';
+  }> | null,
 ) {
+  if (!dataSource || !comparisonConfig) {
+    return null;
+  }
   const mapper = (rowKey: string, columnId: string, value: any) => {
     // Tìm cấu hình so sánh cho hàng hiện tại
     const config = comparisonConfig.find((cfg) => cfg.keyToCompare === rowKey);
@@ -34,10 +38,33 @@ export function createGeneralComparisonMapper(
 
     // So sánh và áp dụng style
     if (typeof valueToCompare === 'number' && typeof referenceValue === 'number') {
-      if (valueToCompare > referenceValue) {
-        return config.styleWhenGreater;
-      } else {
-        return config.styleWhenLessOrEqual;
+      const comparisonType = config.comparisonType || 'greater';
+
+      switch (comparisonType) {
+        case 'greater':
+          return valueToCompare > referenceValue
+            ? config.styleWhenGreater
+            : config.styleWhenLessOrEqual;
+        case 'less':
+          return valueToCompare < referenceValue
+            ? config.styleWhenGreater
+            : config.styleWhenLessOrEqual;
+        case 'equal':
+          return valueToCompare === referenceValue
+            ? config.styleWhenGreater
+            : config.styleWhenLessOrEqual;
+        case 'greaterOrEqual':
+          return valueToCompare >= referenceValue
+            ? config.styleWhenGreater
+            : config.styleWhenLessOrEqual;
+        case 'lessOrEqual':
+          return valueToCompare <= referenceValue
+            ? config.styleWhenGreater
+            : config.styleWhenLessOrEqual;
+        default:
+          return valueToCompare > referenceValue
+            ? config.styleWhenGreater
+            : config.styleWhenLessOrEqual;
       }
     }
 
