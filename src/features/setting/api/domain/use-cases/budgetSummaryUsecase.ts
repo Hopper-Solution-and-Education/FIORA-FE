@@ -36,7 +36,7 @@ class BudgetSummaryUseCase {
     private _budgetRepository: IBudgetRepository = budgetRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
     private _categoryRepository: ICategoryRepository = categoryRepository,
-  ) {}
+  ) { }
 
   async getBudgetsByUserIdAndFiscalYear(
     userId: string,
@@ -324,7 +324,9 @@ class BudgetSummaryUseCase {
       });
 
       if (oldBudgetDetails.length === 0) {
-        throw new Error(Messages.BUDGET_DETAILS_TO_DELETE_NOT_FOUND);
+        return {
+          code: Messages.BUDGET_DETAILS_TO_DELETE_NOT_FOUND,
+        };
       }
 
       // 2. Prepare data for subtraction (use old values as amounts to subtract)
@@ -334,10 +336,10 @@ class BudgetSummaryUseCase {
           const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
           const value = oldDetail
             ? convertCurrency(
-                Number(oldDetail.amount),
-                oldDetail.currency || targetCurrency,
-                targetCurrency,
-              )
+              Number(oldDetail.amount),
+              oldDetail.currency || targetCurrency,
+              targetCurrency,
+            )
             : 0;
           return { amount: new Prisma.Decimal(value), month: i + 1, currency: targetCurrency };
         });
@@ -539,10 +541,10 @@ class BudgetSummaryUseCase {
           ),
           actual: actualSumUpPlan
             ? convertCurrency(
-                Number(actualSumUpPlan[`m${i + 1}${suffix}`]) || 0,
-                currency,
-                targetCurrency,
-              )
+              Number(actualSumUpPlan[`m${i + 1}${suffix}`]) || 0,
+              currency,
+              targetCurrency,
+            )
             : 0,
         }));
 
