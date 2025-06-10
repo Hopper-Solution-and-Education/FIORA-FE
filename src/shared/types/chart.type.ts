@@ -7,6 +7,7 @@ export interface ComparisonProps {
   columns: string[];
   styleWhenGreater: string;
   styleWhenLessOrEqual: string;
+  comparisonType?: 'greater' | 'less' | 'equal' | 'greaterOrEqual' | 'lessOrEqual';
 }
 
 export interface BaseChartProps<T> {
