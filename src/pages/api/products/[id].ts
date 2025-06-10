@@ -6,7 +6,7 @@ import { createError, createResponse } from '@/shared/lib/responseUtils/createRe
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { validateBody } from '@/shared/utils/validate';
 import { productUpdateBodySchema } from '@/shared/validators/productValidator';
-import { ProductType } from '@prisma/client';
+import { Prisma, ProductType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
@@ -94,6 +94,16 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       .status(RESPONSE_CODE.CREATED)
       .json(createResponse(RESPONSE_CODE.CREATED, 'update product successfully', newCategory));
   } catch (error: any) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        return res
+          .status(RESPONSE_CODE.BAD_REQUEST)
+          .json({ error: Messages.DUPLICATE_PRODUCT_NAME_ERROR });
+      }
+      if (error.code === 'P2025') {
+        return res.status(RESPONSE_CODE.BAD_REQUEST).json({ error: Messages.PRODUCT_NOT_FOUND });
+      }
+    }
     res.status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
 }

@@ -1,8 +1,8 @@
 import { PaginationResponse } from '@/shared/types/Common.types';
 
-import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
-import { CategoryProducts, Prisma } from '@prisma/client';
 import { Messages } from '@/shared/constants/message';
+import { CategoryProducts, Prisma } from '@prisma/client';
+import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
 import { productRepository } from '../../infrastructure/repositories/productRepository';
 import {
   CategoryProductCreation,
@@ -111,6 +111,7 @@ class CategoryProductsUseCase {
         {
           ...restData,
           ...(restData.tax_rate ? { tax_rate: new Prisma.Decimal(restData.tax_rate) } : {}),
+          updatedBy: userId,
         },
       );
     } catch (error: any) {

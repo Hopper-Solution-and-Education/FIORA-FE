@@ -6,19 +6,19 @@ import { convertCurrency } from '@/shared/utils/exchangeRate';
 import { Currency, Prisma, Product, ProductType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
+import { BooleanUtils } from '@/shared/lib';
+import { buildWhereClause } from '@/shared/utils';
+import { safeString } from '@/shared/utils/ExStringUtils';
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
 import { productRepository } from '../../infrastructure/repositories/productRepository';
+import { productItemsRepository } from '../../infrastructure/repositories/productRepositoryItem';
 import { ICategoryProductRepository } from '../../repositories/categoryProductRepository.interface';
+import { IProductItemsRepository } from '../../repositories/productItemRepository.interface';
 import {
   IProductRepository,
   ProductCreation,
   ProductUpdate,
 } from '../../repositories/productRepository.interface';
-import { IProductItemsRepository } from '../../repositories/productItemRepository.interface';
-import { productItemsRepository } from '../../infrastructure/repositories/productRepositoryItem';
-import { safeString } from '@/shared/utils/ExStringUtils';
-import { buildWhereClause } from '@/shared/utils';
-import { BooleanUtils } from '@/shared/lib';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
@@ -325,7 +325,7 @@ class ProductUseCase {
       throw new Error(Messages.MISSING_PARAMS_INPUT + ' id');
     }
 
-    const foundProduct = await this.productRepository.findProductById({ id });
+    const foundProduct = await this.productRepository.findProductById({ id, userId });
     if (!foundProduct) {
       throw new Error(Messages.PRODUCT_NOT_FOUND);
     }
