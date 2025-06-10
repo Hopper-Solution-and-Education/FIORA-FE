@@ -76,6 +76,7 @@ export function useBudgetColumns({
       handleRemoveCategory,
       handleClearTopDown,
       table.data,
+      activeTab,
     );
 
     const columnsWithCategorySelect: ColumnProps[] = [
