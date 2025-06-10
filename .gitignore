@@ -55,3 +55,6 @@ pnpm-lock.yaml
 
 # yarn
 yarn.lock
+
+# npm
+package-lock.json
