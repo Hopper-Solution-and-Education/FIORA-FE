@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import { ChartSkeleton } from '@/components/common/organisms';
@@ -32,10 +33,7 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { currency } = useAppSelector((state) => state.settings);
-  const { budgets } = useAppSelector((state) => state.budgetControl.getBudget);
   const router = useRouter();
-
-  console.log(budgets);
 
   const budgetSummaryUseCase = budgetSummaryDIContainer.get<IBudgetSummaryUseCase>(
     TYPES.IBudgetSummaryUseCase,

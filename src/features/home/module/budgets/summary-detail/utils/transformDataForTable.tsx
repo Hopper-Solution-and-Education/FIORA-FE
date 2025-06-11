@@ -1,46 +1,37 @@
 import { InputCurrency } from '@/components/common/forms';
-import { ColumnProps } from '@/components/common/tables/custom-table/types';
+import { ColumnProps, DataSourceItemProps } from '@/components/common/tables/custom-table/types';
 import { Icons } from '@/components/Icon';
+import { formatters } from '@/shared/lib';
 import { Currency } from '@/shared/types';
-import { convertVNDToUSD } from '@/shared/utils';
-import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
-import { BudgetDetailType, TableData } from '../presentation/types/table.type';
+import { ComparisonProps } from '@/shared/types/chart.type';
+import { cn, convertVNDToUSD } from '@/shared/utils';
+import { validate as isUUID } from 'uuid';
 import CategorySelect from '../../../category/components/CategorySelect';
-import { cn } from '@/shared/utils';
+import {
+  BudgetDetailFilterEnum,
+  BUDGETR_FILTER_KEY,
+  COMPARISON_TYPES,
+  PERIOD_CONFIG,
+} from '../data/constants';
 import { Category as BudgetCategory } from '../data/dto/response/CategoryResponseDTO';
-
-const PERIOD_CONFIG = {
-  months: Array.from({ length: 12 }, (_, i) => ({
-    key: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'][i],
-    dataKey: `m${i + 1}`,
-    title: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
-  })),
-  quarters: Array.from({ length: 4 }, (_, i) => ({
-    key: `q${i + 1}`,
-    dataKey: `q${i + 1}`,
-    title: `Q${i + 1}`,
-  })),
-  halfYears: Array.from({ length: 2 }, (_, i) => ({
-    key: `h${i + 1}`,
-    dataKey: `h${i + 1}`,
-    title: `H${i + 1}`,
-  })),
-} as const;
+import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
+import {
+  BudgetDetailFilterType,
+  BudgetDetailType,
+  TableData,
+} from '../presentation/types/table.type';
+import { createGeneralComparisonMapper } from './compareDataForTable';
 
 export const formatCurrencyValue = (
   value: number | string | undefined,
   currency: Currency,
 ): string => {
-  if (value === undefined || value === '') return '0';
+  if (value === undefined || value === '') return '';
+
   const numValue = typeof value === 'string' ? parseFloat(value) : value;
   const formattedValue = currency === 'USD' ? convertVNDToUSD(numValue) : numValue;
 
-  return new Intl.NumberFormat(currency === 'USD' ? 'en-US' : 'vi-VN', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: currency === 'USD' ? 2 : 0,
-    maximumFractionDigits: currency === 'USD' ? 2 : 0,
-  }).format(formattedValue);
+  return formatters[currency].format(formattedValue);
 };
 
 export const getBudgetValue = (
@@ -49,35 +40,45 @@ export const getBudgetValue = (
   type: 'expense' | 'income',
 ): number => {
   if (!budget?.budget) return 0;
+
   const suffix = type === 'expense' ? 'Exp' : 'Inc';
   const key = `${field}${suffix}` as keyof typeof budget.budget;
   const value = parseFloat(budget.budget[key] as string);
+
   return isNaN(value) ? 0 : value;
 };
 
 export const aggregateForPeriod = (
   budget: BudgetSummaryByType | null,
   type: 'expense' | 'income',
-): { [key: string]: number } => {
-  const data: { [key: string]: number } = {};
+): { [key: string]: DataSourceItemProps } => {
+  const data: { [key: string]: DataSourceItemProps } = {};
 
   // Aggregate months
   PERIOD_CONFIG.months.forEach(({ key, dataKey }) => {
-    data[key] = getBudgetValue(budget, dataKey, type);
+    data[key] = {
+      value: getBudgetValue(budget, dataKey, type),
+    };
   });
 
   // Aggregate quarters
   PERIOD_CONFIG.quarters.forEach(({ key, dataKey }) => {
-    data[key] = getBudgetValue(budget, dataKey, type);
+    data[key] = {
+      value: getBudgetValue(budget, dataKey, type),
+    };
   });
 
   // Aggregate half years
   PERIOD_CONFIG.halfYears.forEach(({ key, dataKey }) => {
-    data[key] = getBudgetValue(budget, dataKey, type);
+    data[key] = {
+      value: getBudgetValue(budget, dataKey, type),
+    };
   });
 
   // Add full year
-  data['fullYear'] = getBudgetValue(budget, 'total', type);
+  data['fullYear'] = {
+    value: getBudgetValue(budget, 'total', type),
+  };
 
   return data;
 };
@@ -91,7 +92,7 @@ export const getTableDataByPeriod = (
   const createTableRow = (
     key: string,
     type: string,
-    data: { [key: string]: number },
+    data: { [key: string]: DataSourceItemProps },
     isEditable: boolean,
   ): TableData => ({
     key,
@@ -115,26 +116,82 @@ export const getColumnsByPeriod = (
   onCategoryChange?: (categoryId: string) => void,
   onValidateClick?: (record: TableData) => void,
   onValueChange?: (record: TableData, columnKey: string, value: number) => void,
+  onDeleteCategory?: (categoryId: string, isTruncate?: boolean) => void,
+  onRemoveCategory?: (categoryId: string) => void,
+  onClearTopDown?: () => void,
+  tableData: TableData[] = [],
+  activeTab: BudgetDetailFilterType = BudgetDetailFilterEnum.EXPENSE,
 ) => {
   const renderEditableCell = (text: any, record: TableData, index: number, column: ColumnProps) => {
-    if (record.isEditable) {
+    const isDisableEdited = !PERIOD_CONFIG.months.some((item) => item.key === column.key);
+
+    if (record.isEditable && !isDisableEdited) {
       return (
         <InputCurrency
           name={`value_${record.key}_${column.key}`}
-          value={text || 0}
+          value={typeof text === 'object' ? text.value : (text ?? 0)}
           currency={currency}
           classContainer="m-0"
-          className="text-right"
+          className={cn('text-right', column.className)}
           onChange={(newValue) => {
-            if (onValueChange && record) {
+            if (onValueChange) {
               onValueChange(record, column.key, newValue);
             }
           }}
         />
       );
     }
-    return formatCurrencyValue(text, currency);
+
+    return (
+      <span className={cn(`${column.className}`, isDisableEdited && 'opacity-90')}>
+        {formatCurrencyValue(text?.value, currency)}
+      </span>
+    );
   };
+
+  const generateKeyForCompare = (type: string, item: TableData): string | undefined => {
+    if (!item?.children?.length) return undefined;
+
+    if (type === COMPARISON_TYPES.KEY_TO_COMPARE) return item.children[1].key;
+    if (type === COMPARISON_TYPES.REFERENCE_KEY) return item.children[0].key;
+
+    return undefined;
+  };
+
+  const comparisonConfig: ComparisonProps[] = [
+    {
+      // Compare between Total Actual Sum-Up and Total Bottom-Up
+      keyToCompare: 'actual',
+      referenceKey: 'bottom-up',
+      columns: BUDGETR_FILTER_KEY.columnKey,
+      styleWhenGreater: 'text-red-500',
+      styleWhenLessOrEqual: 'text-blue-500',
+      comparisonType:
+        activeTab === BudgetDetailFilterEnum.EXPENSE ? 'greaterOrEqual' : 'lessOrEqual',
+    },
+    ...tableData // Compare between Finance Category Items
+      .slice()
+      .filter((item: TableData) => item.isParent)
+      .map((item: TableData) => {
+        const keyToCompare = generateKeyForCompare(COMPARISON_TYPES.KEY_TO_COMPARE, item);
+        const referenceKey = generateKeyForCompare(COMPARISON_TYPES.REFERENCE_KEY, item);
+
+        if (!keyToCompare || !referenceKey) return null;
+
+        return {
+          keyToCompare,
+          referenceKey,
+          columns: BUDGETR_FILTER_KEY.columnKey,
+          styleWhenGreater: 'text-red-500',
+          styleWhenLessOrEqual: 'text-blue-500',
+          comparisonType:
+            activeTab === BudgetDetailFilterEnum.EXPENSE ? 'greaterOrEqual' : 'lessOrEqual',
+        } as ComparisonProps;
+      })
+      .filter((item): item is ComparisonProps => item !== null),
+  ];
+
+  const generalComparisonMapper = createGeneralComparisonMapper(tableData, comparisonConfig);
 
   const createColumn = (
     key: string,
@@ -178,30 +235,66 @@ export const getColumnsByPeriod = (
     }),
   ];
 
-  const actionColumn = createColumn('action', 'ACTION', {
+  const actionColumn: ColumnProps = createColumn('action', 'ACTION', {
     fixed: 'right',
     align: 'center',
     width: 60,
     headerAlign: 'center',
-    render: (_: number, record: TableData) =>
-      record.isEditable ? (
-        <div className="grid grid-flow-col place-items-center gap-2">
-          <span className="text-red-500 hover:text-red-700 cursor-pointer" title="Invalid">
-            <Icons.close size={15} />
-          </span>
-          <span
-            className="text-green-500 hover:text-green-700 cursor-pointer"
-            title="Valid"
-            onClick={() => onValidateClick?.(record)}
-          >
-            <Icons.check size={15} />
-          </span>
-        </div>
-      ) : null,
+    render: (_, record: TableData) => {
+      const [categoryId] = record.key.split('-bottom-up');
+      const isCategoryTitleRow = isUUID(record.key);
+
+      if (isCategoryTitleRow) {
+        return (
+          <div className="grid grid-flow-col place-items-center gap-2">
+            <span
+              className={cn('text-red-500 hover:text-red-700 cursor-pointer')}
+              title="Delete"
+              onClick={() => {
+                onRemoveCategory?.(categoryId);
+                onDeleteCategory?.(categoryId, false);
+              }}
+            >
+              <Icons.trash size={15} />
+            </span>
+          </div>
+        );
+      }
+
+      if (record.isEditable) {
+        return (
+          <div className="grid grid-flow-col place-items-center gap-2">
+            <span
+              className={cn('cursor-pointer', 'text-red-500 hover:text-red-700')}
+              title="Invalid"
+              onClick={() => {
+                if (record.key === 'top-down') {
+                  onClearTopDown?.();
+                } else if (categoryId) {
+                  onDeleteCategory?.(categoryId);
+                }
+              }}
+            >
+              <Icons.close size={15} />
+            </span>
+            <span
+              className="text-green-500 hover:text-green-700 cursor-pointer"
+              title="Valid"
+              onClick={() => onValidateClick?.(record)}
+            >
+              <Icons.check size={15} />
+            </span>
+          </div>
+        );
+      }
+
+      return null;
+    },
   });
 
   const createPeriodColumns = (
     config: typeof PERIOD_CONFIG.months,
+    additionalCellProps?: Partial<ColumnProps>,
     additionalProps?: Partial<ColumnProps>,
   ) =>
     config.map(({ key, title }) =>
@@ -209,19 +302,29 @@ export const getColumnsByPeriod = (
         dataIndex: key,
         headerAlign: 'center',
         align: 'right',
-        render: (text: any, record: TableData, index: number) =>
-          renderEditableCell(text, record, index, { key }),
-        ...additionalProps,
+        ...additionalCellProps,
+        render: (text: any, record: TableData, index: number) => {
+          const mappedClass = generalComparisonMapper?.(record.key, key, text?.value ?? 0) ?? null;
+
+          return renderEditableCell(text, record, index, {
+            key,
+            className: mappedClass,
+            ...additionalProps,
+          });
+        },
       }),
     );
 
   const monthColumns = createPeriodColumns(PERIOD_CONFIG.months);
+
   const quarterColumns = createPeriodColumns(PERIOD_CONFIG.quarters, {
     bgColorClassName: 'bg-muted',
   });
+
   const halfYearColumns = createPeriodColumns(PERIOD_CONFIG.halfYears, {
     bgColorClassName: 'bg-muted',
   });
+
   const fullYearColumn = [
     createColumn('fullYear', 'FULL YEAR', {
       dataIndex: 'fullYear',

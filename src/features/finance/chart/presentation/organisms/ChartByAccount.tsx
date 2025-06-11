@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { ComposedChart } from '@/components/common/charts';
 import { renderIconOrImage } from '@/components/common/charts/composed-chart';
 import { ChartSkeleton } from '@/components/common/organisms';

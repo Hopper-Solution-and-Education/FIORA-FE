@@ -1,14 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import { seedUser } from './seeds/user';
-import { seedAccount } from './seeds/account';
-import { seedCategory } from './seeds/category';
-import { seedProduct } from './seeds/product';
-import { seedPartners } from './seeds/partner';
-import { seedSection } from './seeds/section';
-import { seedMedia } from './seeds/media';
-import { seedTransaction } from './seeds/transaction';
-import { seedProductCategory } from './seeds/productCategory';
-import { seedProductTransaction } from './seeds/productTransaction';
 
 const prisma = new PrismaClient();
 

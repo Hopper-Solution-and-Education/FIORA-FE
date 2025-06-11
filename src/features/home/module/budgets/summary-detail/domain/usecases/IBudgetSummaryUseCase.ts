@@ -1,11 +1,16 @@
 import { BudgetType } from '../entities/BudgetType';
 import { BudgetSummaryByType } from '../entities/BudgetSummaryByType';
-import { BudgetSummaryResponseDTO } from '../../data/dto/response/BudgetSummaryResponseDTO';
+import {
+  BudgetSummaryResponseDTO,
+  BudgetYearsResponseDTO,
+} from '../../data/dto/response/BudgetSummaryResponseDTO';
 import { Category, CategoryPlanning } from '../../data/dto/response/CategoryResponseDTO';
 import {
   TopDownUpdateRequestDTO,
   CategoryPlanningUpdateRequestDTO,
+  DeleteCategoryRequestDTO,
 } from '../../data/dto/request/BudgetUpdateRequestDTO';
+import { Currency, HttpResponse } from '@/shared/types';
 
 export interface IBudgetSummaryUseCase {
   getBudgetsByUserIdAndFiscalYear(
@@ -16,5 +21,7 @@ export interface IBudgetSummaryUseCase {
   getCategoriesByType(type: 'Income' | 'Expense'): Promise<Category[]>;
   getActualPlanningByCategory(categoryId: string, year: number): Promise<CategoryPlanning>;
   updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<void>;
-  updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO): Promise<void>;
+  updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO, currency: Currency): Promise<void>;
+  getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>>;
+  deleteCategory(data: DeleteCategoryRequestDTO): Promise<string>;
 }

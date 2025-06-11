@@ -105,12 +105,23 @@ class HttpClient implements IHttpClient {
    */
   private async request<T>(url: string, options: RequestInit): Promise<T> {
     const fullUrl = `${this.baseURL}${url}`;
+
+    // Convert headers to plain object
+    const customHeaders =
+      options.headers instanceof Headers
+        ? Object.fromEntries(options.headers.entries())
+        : Array.isArray(options.headers)
+          ? Object.fromEntries(options.headers)
+          : options.headers || {};
+
     let config: RequestInit = {
       ...options,
-      headers: { ...this.defaultHeaders, ...options.headers },
+      headers: new Headers({
+        ...this.defaultHeaders,
+        ...customHeaders,
+      }),
     };
 
-    // Áp dụng Request Interceptor nếu có
     if (this.interceptors.request) {
       config = await this.interceptors.request(config);
     }

@@ -44,3 +44,36 @@ export enum BudgetDetailFilterEnum {
   EXPENSE = 'expense',
   INCOME = 'income',
 }
+
+export const PERIOD_CONFIG = {
+  months: Array.from({ length: 12 }, (_, i) => ({
+    key: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'][i],
+    dataKey: `m${i + 1}`,
+    title: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
+  })),
+  quarters: Array.from({ length: 4 }, (_, i) => ({
+    key: `q${i + 1}`,
+    dataKey: `q${i + 1}`,
+    title: `Q${i + 1}`,
+  })),
+  halfYears: Array.from({ length: 2 }, (_, i) => ({
+    key: `h${i + 1}`,
+    dataKey: `h${i + 1}`,
+    title: `H${i + 1}`,
+  })),
+} as const;
+
+export const BUDGETR_FILTER_KEY = {
+  recordType: ['actual', 'Total Actual Sum Up', 'Actual sum-up', 'Actual sum up'],
+  columnKey: [
+    ...PERIOD_CONFIG.months.map(({ key }) => key),
+    ...PERIOD_CONFIG.quarters.map(({ key }) => key),
+    ...PERIOD_CONFIG.halfYears.map(({ key }) => key),
+    'fullYear',
+  ],
+};
+
+export const COMPARISON_TYPES = {
+  KEY_TO_COMPARE: 'keyToCompare',
+  REFERENCE_KEY: 'referenceKey',
+};

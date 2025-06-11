@@ -1,9 +1,11 @@
+/* eslint-disable import/no-anonymous-default-export */
 import { injectable } from 'inversify';
 import { IBudgetSummaryAPI } from './IBudgetSummaryAPI';
 import { BudgetSummaryRequestDTO } from '../dto/request/BudgetSummaryRequestDTO';
 import {
   BudgetSummaryResponseDTO,
   BudgetByTypeResponseDTO,
+  BudgetYearsResponseDTO,
 } from '../dto/response/BudgetSummaryResponseDTO';
 import {
   CategoryResponseDTO,
@@ -12,31 +14,32 @@ import {
 import {
   TopDownUpdateRequestDTO,
   CategoryPlanningUpdateRequestDTO,
+  DeleteCategoryRequestDTO,
 } from '../dto/request/BudgetUpdateRequestDTO';
 import { httpClient } from '@/config/http-client/HttpClient';
 import { BudgetType } from '../../domain/entities/BudgetType';
+import { Currency, HttpResponse } from '@/shared/types';
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { routeConfig } from '@/shared/utils/route';
 
 @injectable()
 export class BudgetSummaryAPI implements IBudgetSummaryAPI {
   async getBudgetSummary(params: BudgetSummaryRequestDTO): Promise<BudgetSummaryResponseDTO> {
     return httpClient.get<BudgetSummaryResponseDTO>(
-      `/api/budgets/summary?fiscalYear=${params.fiscalYear}`,
+      routeConfig(ApiEndpointEnum.BudgetByType, {}, { fiscalYear: params.fiscalYear }),
     );
   }
 
-  async getBudgetByType(year: number, type: BudgetType): Promise<BudgetByTypeResponseDTO> {
-    try {
-      return await httpClient.get<BudgetByTypeResponseDTO>(
-        `/api/budgets/summary?fiscalYear=${year}&type=${type}`,
-      );
-    } catch (error) {
-      console.error(`Error in BudgetSummaryAPI.getBudgetByType for type ${type}:`, error);
-      throw error;
-    }
+  async getBudgetByType(fiscalYear: number, type: BudgetType): Promise<BudgetByTypeResponseDTO> {
+    return await httpClient.get<BudgetByTypeResponseDTO>(
+      routeConfig(ApiEndpointEnum.BudgetByType, {}, { fiscalYear, type }),
+    );
   }
 
   async getCategoriesByType(type: 'Income' | 'Expense'): Promise<CategoryResponseDTO> {
-    return httpClient.get<CategoryResponseDTO>(`/api/categories?type=${type}`);
+    return httpClient.get<CategoryResponseDTO>(
+      routeConfig(ApiEndpointEnum.CategoriesByType, {}, { type }),
+    );
   }
 
   async getActualPlanningByCategory(
@@ -44,16 +47,31 @@ export class BudgetSummaryAPI implements IBudgetSummaryAPI {
     year: number,
   ): Promise<CategoryPlanningResponseDTO> {
     return httpClient.get<CategoryPlanningResponseDTO>(
-      `/api/categories/sum-up/${categoryId}?year=${year}`,
+      routeConfig(ApiEndpointEnum.BudgetActualPlanningSumUp, { categoryId }, { year }),
     );
   }
 
   async updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<void> {
-    await httpClient.put<void>('/api/budgets/summary/update', data);
+    await httpClient.put<void>(ApiEndpointEnum.BudgetTopDownUpdate, data);
   }
 
-  async updateCategoryPlanning(data: CategoryPlanningUpdateRequestDTO): Promise<void> {
-    await httpClient.put<void>('/api/budgets/categories', data);
+  async updateCategoryPlanning(
+    data: CategoryPlanningUpdateRequestDTO,
+    currency: Currency,
+  ): Promise<void> {
+    await httpClient.put<void>(ApiEndpointEnum.BudgetCategories, data, {
+      'x-user-currency': currency,
+    });
+  }
+
+  async deleteCategory(data: DeleteCategoryRequestDTO): Promise<string> {
+    const response: any = await httpClient.post<void>(ApiEndpointEnum.BudgetCategories, data);
+
+    return response?.data.code || '';
+  }
+
+  async getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>> {
+    return httpClient.get<HttpResponse<BudgetYearsResponseDTO>>(ApiEndpointEnum.BudgetYears);
   }
 }
 

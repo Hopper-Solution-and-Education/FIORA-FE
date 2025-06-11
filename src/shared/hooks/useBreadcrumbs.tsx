@@ -1,13 +1,10 @@
-// breadcrumbUtils.ts
-
-import { usePathname } from 'next/navigation';
+/* eslint-disable react-hooks/exhaustive-deps */
+import { ReadonlyURLSearchParams, usePathname, useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
+import { breadcrumbConfig, BreadcrumbConfig } from '@/shared/configs/breadcrumbConfig';
 
 /**
  * Represents a single breadcrumb item with a title and a link.
- * @typedef {Object} BreadcrumbItem
- * @property {string} title - The display title of the breadcrumb item (e.g., "Home", "Category").
- * @property {string} link - The URL path for the breadcrumb item (e.g., "/", "/category").
  */
 export type BreadcrumbItem = {
   title: string;
@@ -15,48 +12,9 @@ export type BreadcrumbItem = {
 };
 
 /**
- * Configuration options for customizing breadcrumb behavior.
- * @typedef {Object} BreadcrumbConfig
- * @property {string[]} [excludeSegments] - Segments to exclude from the breadcrumb (e.g., ['setting']).
- * @property {Record<string, string>} [customTitles] - Custom titles for specific segments (e.g., { create: 'Create' }).
- * @property {string[]} [displaySegments] - Only display these segments in the breadcrumb (if provided).
- * @property {string[]} [skipUuidAfter] - Skip UUID segments that appear after these segments (e.g., ['update']).
- */
-export type BreadcrumbConfig = {
-  excludeSegments?: string[]; // Segments to exclude (e.g., UUIDs, specific segments)
-  customTitles?: Record<string, string>; // Custom titles for segments (e.g., { create: 'Create' })
-  displaySegments?: string[]; // Only display these segments (if provided)
-  skipUuidAfter?: string[]; // Skip UUID after these segments (e.g., ['update'])
-};
-
-/**
- * Default configuration for breadcrumb behavior.
- * @constant {BreadcrumbConfig}
- * @default
- */
-const defaultConfig: BreadcrumbConfig = {
-  excludeSegments: ['setting'], // Bỏ qua segment "setting" mặc định
-  customTitles: {
-    create: 'Create',
-    update: 'Update',
-    details: 'Details',
-    summary: 'Summary',
-  },
-  displaySegments: undefined,
-  skipUuidAfter: ['update', 'details', 'summary'],
-};
-
-/**
  * Static route mapping for predefined breadcrumb paths.
- * Maps a pathname to an array of breadcrumb items.
- * @constant {Record<string, BreadcrumbItem[]>}
- * @example
- * ```tsx
- * routeMapping['/category'] = [
- *   { title: 'Home', link: '/' },
- *   { title: 'Category', link: '/category' }
- * ];
- * ```
+ * Keys are exact or dynamic paths (e.g., '/budgets/summary/detail/[id]'),
+ * values are arrays of breadcrumb items.
  */
 export const routeMapping: Record<string, BreadcrumbItem[]> = {
   '/': [{ title: 'Home', link: '/' }],
@@ -105,53 +63,42 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Budgets', link: '/budgets' },
     { title: 'Summary', link: '/budgets/summary' },
   ],
+  '/budgets/summary/detail/[year]': [
+    { title: 'Home', link: '/' },
+    { title: 'Budgets', link: '/budgets' },
+    { title: 'Summary', link: '/budgets/summary/[year]' },
+    { title: 'Detail', link: '/budgets/summary/detail/[year]' },
+  ],
   '/setting/landing': [{ title: 'Landing Setting', link: '/setting/landing' }],
   '/setting/exchange-rate': [{ title: 'Exchange Rate Setting', link: '/setting/exchange-rate' }],
   '/setting/membership': [{ title: 'Membership Setting', link: '/setting/membership' }],
 };
 
 /**
- * Regular expression to match UUID format.
- * Used to identify segments that are UUIDs and skip them if necessary.
- * @constant {RegExp}
+ * Regular expression to match UUID format for skipping segments.
  */
 const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
 /**
- * Normalizes a segment into a display title.
- * Applies custom titles if provided, otherwise capitalizes the first letter.
- * @param {string} segment - The URL segment to normalize (e.g., "create").
- * @param {Record<string, string>} [customTitles] - Custom titles for segments (e.g., { create: 'Create' }).
- * @returns {string} The normalized title (e.g., "Create").
- * @example
- * ```tsx
- * normalizeSegment('create', { create: 'Create' }); // Returns "Create"
- * normalizeSegment('product'); // Returns "Product"
- * ```
+ * Normalizes a segment into a display title using custom titles or capitalization.
+ * @param segment - The URL segment to normalize (e.g., "create").
+ * @param customTitles - Optional custom titles for segments.
+ * @returns The normalized title (e.g., "Create").
  */
 export const normalizeSegment = (
   segment: string,
   customTitles?: Record<string, string>,
 ): string => {
-  if (customTitles && customTitles[segment]) {
-    return customTitles[segment];
-  }
-  return segment.charAt(0).toUpperCase() + segment.slice(1);
+  return customTitles?.[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
 };
 
 /**
- * Determines if a segment should be skipped in the breadcrumb.
- * @param {string} segment - The current segment to check (e.g., "setting").
- * @param {number} index - The index of the segment in the segments array.
- * @param {string[]} segments - The array of all segments in the pathname.
- * @param {BreadcrumbConfig} config - The configuration for breadcrumb behavior.
- * @returns {boolean} True if the segment should be skipped, false otherwise.
- * @example
- * ```tsx
- * const config = { excludeSegments: ['setting'] };
- * shouldSkipSegment('setting', 0, ['setting', 'product'], config); // Returns true
- * shouldSkipSegment('product', 1, ['setting', 'product'], config); // Returns false
- * ```
+ * Determines if a segment should be skipped based on configuration.
+ * @param segment - The current segment to check.
+ * @param index - The index of the segment in the segments array.
+ * @param segments - The array of all segments.
+ * @param config - The breadcrumb configuration.
+ * @returns True if the segment should be skipped.
  */
 export const shouldSkipSegment = (
   segment: string,
@@ -159,12 +106,8 @@ export const shouldSkipSegment = (
   segments: string[],
   config: BreadcrumbConfig,
 ): boolean => {
-  // Skip if segment is in excludeSegments
-  if (config.excludeSegments?.includes(segment)) {
-    return true;
-  }
+  if (config.excludeSegments?.includes(segment)) return true;
 
-  // Skip if segment is a UUID and the previous segment is in skipUuidAfter
   if (
     config.skipUuidAfter &&
     index > 0 &&
@@ -174,39 +117,18 @@ export const shouldSkipSegment = (
     return true;
   }
 
-  // // Skip if displaySegments is provided and segment is not in it
-  // if (config.displaySegments && !config.displaySegments.includes(segment)) {
-  //   return true;
-  // }
-
-  // Skip numeric segments (years, ids) after specific segments
-  if (index > 0 && /^\d+$/.test(segment)) {
-    const prevSegment = segments[index - 1];
-    const skipAfterSegments = ['summary', 'update', 'details', 'create'];
-    if (skipAfterSegments.includes(prevSegment)) {
-      return true;
-    }
+  if (index > 0 && /^\d+$/.test(segment) && config.skipUuidAfter?.includes(segments[index - 1])) {
+    return true;
   }
 
   return false;
 };
 
 /**
- * Builds breadcrumb items from URL segments.
- * @param {string[]} segments - The array of URL segments (e.g., ['setting', 'product', 'update']).
- * @param {BreadcrumbConfig} config - The configuration for breadcrumb behavior.
- * @returns {BreadcrumbItem[]} An array of breadcrumb items.
- * @example
- * ```tsx
- * const segments = ['setting', 'product', 'update'];
- * const config = { excludeSegments: ['setting'] };
- * buildBreadcrumbItems(segments, config);
- * // Returns:
- * // [
- * //   { title: 'Product', link: '/setting/product' },
- * //   { title: 'Update', link: '/setting/product/update' }
- * // ]
- * ```
+ * Builds breadcrumb items dynamically from URL segments.
+ * @param segments - The array of URL segments.
+ * @param config - The breadcrumb configuration.
+ * @returns Array of breadcrumb items.
  */
 export const buildBreadcrumbItems = (
   segments: string[],
@@ -219,76 +141,87 @@ export const buildBreadcrumbItems = (
     const segment = segments[i];
     currentPath += `/${segment}`;
 
-    // Skip segment if it matches the skip conditions
-    if (shouldSkipSegment(segment, i, segments, config)) {
-      continue;
-    }
+    if (shouldSkipSegment(segment, i, segments, config)) continue;
 
-    const title = normalizeSegment(segment, config.customTitles);
-    items.push({
-      title,
-      link: currentPath,
-    });
+    items.push({ title: normalizeSegment(segment, config.customTitles), link: currentPath });
   }
 
   return items;
 };
 
 /**
- * A React hook to generate breadcrumbs based on the current pathname.
- * @param {BreadcrumbConfig} [config=defaultConfig] - Configuration for customizing breadcrumb behavior.
- * @returns {BreadcrumbItem[]} An array of breadcrumb items representing the current path.
- * @example
- * ```tsx
- * // Basic usage with default config
- * const breadcrumbs = useBreadcrumbs();
- * // For pathname '/setting/product/create', returns:
- * // [
- * //   { title: 'Product', link: '/setting/product' },
- * //   { title: 'Create', link: '/setting/product/create' }
- * // ]
- *
- * // Custom config to include 'setting'
- * const customBreadcrumbs = useBreadcrumbs({ excludeSegments: [] });
- * // For pathname '/setting/product/create', returns:
- * // [
- * //   { title: 'Setting', link: '/setting' },
- * //   { title: 'Product', link: '/setting/product' },
- * //   { title: 'Create', link: '/setting/product/create' }
- * // ]
- * ```
+ * Replaces placeholders in a link with values based on configuration mappings.
+ * @param link - The link containing placeholders (e.g., '/budgets/summary/[year]').
+ * @param segments - The array of URL segments.
+ * @param searchParams - The URL search parameters.
+ * @param config - The breadcrumb configuration.
+ * @returns The link with placeholders replaced.
  */
-export function useBreadcrumbs(config: BreadcrumbConfig = defaultConfig): BreadcrumbItem[] {
+const replacePlaceholdersInLink = (
+  link: string,
+  segments: string[],
+  searchParams: ReadonlyURLSearchParams | null,
+  config: BreadcrumbConfig,
+): string => {
+  let updatedLink = link;
+  const placeholderRegex = /\[([^\]]+)\]/g;
+
+  for (const match of link.matchAll(placeholderRegex)) {
+    const placeholder = match[0];
+    const key = match[1];
+    const mapping = config.placeholderMappings?.[key];
+
+    if (mapping) {
+      const value = mapping(segments, searchParams);
+      if (value) updatedLink = updatedLink.replace(placeholder, value);
+    }
+  }
+
+  return updatedLink;
+};
+
+/**
+ * React hook to generate breadcrumbs based on the current pathname.
+ * @param customConfig - Optional custom configuration to override defaults.
+ * @returns Array of breadcrumb items for the current path.
+ */
+export function useBreadcrumbs(customConfig: Partial<BreadcrumbConfig> = {}): BreadcrumbItem[] {
   const pathname = usePathname() || '';
+  const searchParams = useSearchParams(); // Returns ReadonlyURLSearchParams | null
   const segments = pathname.split('/').filter(Boolean);
 
-  const breadcrumbs = useMemo(() => {
-    // Check for exact path mappings first
+  const config: BreadcrumbConfig = { ...breadcrumbConfig, ...customConfig };
+  const effectiveSearchParams = searchParams || new ReadonlyURLSearchParams(); // Default to empty if null
+
+  return useMemo(() => {
     if (routeMapping[pathname]) {
-      return routeMapping[pathname];
+      return routeMapping[pathname].map((item) => ({
+        ...item,
+        link: replacePlaceholdersInLink(item.link, segments, effectiveSearchParams, config),
+      }));
     }
 
-    // Check for dynamic routes
     const dynamicRoute = Object.keys(routeMapping).find((route) => {
-      const routePattern = route.replace(/\[.*?\]/g, '[^/]+');
-      const regex = new RegExp(`^${routePattern}$`);
-      return regex.test(pathname);
+      const routeSegments = route.split('/').filter(Boolean);
+      if (routeSegments.length !== segments.length) return false;
+
+      return routeSegments.every((routeSeg, i) =>
+        routeSeg.startsWith('[') && routeSeg.endsWith(']') ? true : routeSeg === segments[i],
+      );
     });
 
     if (dynamicRoute) {
-      return routeMapping[dynamicRoute];
+      return routeMapping[dynamicRoute].map((item) => ({
+        ...item,
+        link: replacePlaceholdersInLink(item.link, segments, effectiveSearchParams, config),
+      }));
     }
 
-    // Build breadcrumbs dynamically using segments
     const items = buildBreadcrumbItems(segments, config);
-
-    // Always add Home as the first item if it's not already there
     if (items.length > 0 && items[0].title !== 'Home') {
       items.unshift({ title: 'Home', link: '/' });
     }
 
     return items;
-  }, [pathname, segments, config]);
-
-  return breadcrumbs;
+  }, [pathname, effectiveSearchParams, config]);
 }

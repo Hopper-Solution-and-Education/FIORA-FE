@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React from 'react';
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';

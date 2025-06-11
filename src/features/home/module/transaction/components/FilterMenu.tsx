@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import DateRangeFilter from '@/components/common/filters/DateRangeFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';

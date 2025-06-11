@@ -414,13 +414,15 @@ class CategoryUseCase {
         bottomUpPlan[monthKey] = amount; // Assuming no currency conversion for now; adjust if needed
       });
 
-      const { budgetDetails, ...categoryWithoutBudgetDetails } = category;
+      const currency = category.budgetDetails[0]?.currency;
 
-      console.log(budgetDetails);
+      const { budgetDetails, ...categoryWithoutBudgetDetails } = category;
 
       return {
         ...categoryWithoutBudgetDetails,
         bottomUpPlan,
+        isCreated: budgetDetails.length > 0,
+        ...(currency && { currency }),
       };
     });
 

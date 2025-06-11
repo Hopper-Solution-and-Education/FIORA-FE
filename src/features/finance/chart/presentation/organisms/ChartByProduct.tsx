@@ -1,9 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { ComposedChart } from '@/components/common/charts';
 import { renderIconOrImage } from '@/components/common/charts/composed-chart';
 import { ChartSkeleton } from '@/components/common/organisms';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { FinanceReportFilterEnum } from '@/features/setting/data/module/finance/constant/FinanceReportFilterEnum';
-import { CURRENCY } from '@/shared/constants';
 import { COLORS } from '@/shared/constants/chart';
 import { Currency } from '@/shared/types';
 import { convertCurrency, formatCurrency } from '@/shared/utils/convertCurrency';
@@ -32,18 +32,10 @@ const ChartByProduct = () => {
     }
   }, [dispatch, selectedIds]);
 
-  console.log('====================================');
-  console.log(convertCurrency(1000000, CURRENCY.VND, CURRENCY.USD));
-  console.log('====================================');
-
   // data showing when income and data showing when expense
   const data = Array.isArray(financeByProduct)
     ? financeByProduct.map((item) => {
         const profit = convertCurrency(item.totalProfit, item.currency as Currency, currency);
-        console.log('Original profit:', item.totalProfit);
-        console.log('Converted profit:', profit);
-        console.log('Currency:', item.currency);
-        console.log('Target currency:', currency);
         return {
           name: item.name,
           icon: item.icon,

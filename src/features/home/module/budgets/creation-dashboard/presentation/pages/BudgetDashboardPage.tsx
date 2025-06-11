@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';

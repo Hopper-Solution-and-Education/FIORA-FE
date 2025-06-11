@@ -1,5 +1,7 @@
+import { DataSourceItemProps } from '@/components/common/tables/custom-table/types';
+
 export interface MonthlyPlanningData {
-  [key: `m${number}_${'exp' | 'inc'}`]: number;
+  [key: `m${number}_${'exp' | 'inc'}`]: DataSourceItemProps | number;
 }
 
 export interface TopDownUpdateRequestDTO {
@@ -14,4 +16,11 @@ export interface CategoryPlanningUpdateRequestDTO {
   categoryId: string;
   bottomUpPlan: MonthlyPlanningData;
   actualSumUpPlan: MonthlyPlanningData;
+}
+
+export interface DeleteCategoryRequestDTO {
+  fiscalYear: string;
+  type: string;
+  categoryId: string;
+  isTruncate?: boolean;
 }

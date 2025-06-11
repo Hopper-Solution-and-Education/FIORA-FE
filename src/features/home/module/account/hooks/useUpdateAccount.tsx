@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { setAccountDeleteDialog, setSelectedAccount } from '@/features/home/module/account/slices';
 import { fetchAccounts, fetchParents } from '@/features/home/module/account/slices/actions';
 import { findAccountById } from '@/features/home/module/account/slices/utils';
