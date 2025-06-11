@@ -8,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { DropdownOption } from '@/features/home/module/transaction/types';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { DateRange } from 'react-day-picker';
@@ -22,6 +21,7 @@ import { getFinanceWithFilterAsyncThunk } from '../../slices/actions';
 import { ViewBy } from '../../slices/types';
 import { chartComponents } from '../../utils';
 import { MultiSelectPickerFinance, ViewByCategorySelect } from '../atoms';
+import { DropdownOption } from '@/shared/types';
 
 const viewByIcons: Record<ViewBy, keyof typeof Icons> = {
   date: 'calendar',

@@ -549,6 +549,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
       }}
       defaultFilterCriteria={DEFAULT_TRANSACTION_FILTER_CRITERIA}
       structureCreator={createFilterStructure}
+      currentFilter={filterCriteria.filters}
     />
   );
 };

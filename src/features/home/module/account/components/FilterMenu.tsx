@@ -369,6 +369,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
       structureCreator={(params: Record<string, unknown>) =>
         createFilterStructure(params as unknown as AccountFilterParams)
       }
+      currentFilter={filterCriteria.filters}
     />
   );
 };

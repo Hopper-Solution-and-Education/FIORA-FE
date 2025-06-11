@@ -1,4 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import { Check, Funnel, FunnelPlus, FunnelX } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import {
+  FilterColumn,
+  FilterComponentConfig,
+  FilterCriteria,
+  FilterFieldMapping,
+} from '../../../shared/types/filter.types';
 import { Button } from '../../ui/button';
 import {
   DropdownMenu,
@@ -9,13 +16,6 @@ import {
   DropdownMenuTrigger,
 } from '../../ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../ui/tooltip';
-import {
-  FilterColumn,
-  FilterComponentConfig,
-  FilterCriteria,
-  FilterFieldMapping,
-} from '../../../shared/types/filter.types';
-import { Check, FunnelPlus, FunnelX } from 'lucide-react';
 
 export const DEFAULT_FILTER_CRITERIA: FilterCriteria = {
   userId: '',
@@ -40,6 +40,7 @@ export interface GlobalFilterProps {
   fieldMappings?: FilterFieldMapping<any>[];
   defaultFilterCriteria?: FilterCriteria;
   structureCreator?: (params: any) => Record<string, unknown>;
+  currentFilter: any;
 }
 
 const GlobalFilter = (props: GlobalFilterProps) => {
@@ -50,6 +51,7 @@ const GlobalFilter = (props: GlobalFilterProps) => {
     fieldMappings = [],
     defaultFilterCriteria = DEFAULT_FILTER_CRITERIA,
     structureCreator,
+    currentFilter,
   } = props;
 
   const [isOpen, setIsOpen] = useState(false);
@@ -205,8 +207,16 @@ const GlobalFilter = (props: GlobalFilterProps) => {
         <Tooltip>
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
-              <Button className="px-3 py-2" onClick={() => setIsOpen((prev) => !prev)}>
-                <FunnelPlus size={15} />
+              <Button
+                variant={Object.keys(currentFilter).length === 0 ? 'secondary' : 'default'}
+                className="px-3 py-2"
+                onClick={() => setIsOpen((prev) => !prev)}
+              >
+                {Object.keys(currentFilter).length === 0 ? (
+                  <FunnelPlus size={15} />
+                ) : (
+                  <Funnel size={15} />
+                )}
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>

@@ -1,8 +1,6 @@
 import { OrderType } from '@/shared/types';
 import { Transaction } from '@prisma/client';
 
-export type DropdownOption = { value: string; label: string; disabled?: boolean; icon?: string };
-
 export type TransactionPartner = {
   id: string;
   userId: string;

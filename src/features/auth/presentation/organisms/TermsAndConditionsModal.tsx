@@ -13,12 +13,6 @@ import {
 import { DialogClose } from '@radix-ui/react-dialog';
 import { useEffect, useRef, useState } from 'react';
 import { Check, CircleX, Loader2, TriangleAlert } from 'lucide-react';
-import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/Page/AnnotationLayer.css';
-import 'react-pdf/dist/Page/TextLayer.css';
-
-// Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 type TermsAndConditionModalProps = {
   isOpen: boolean;
@@ -54,52 +48,13 @@ const TermsAndConditionsModal = (props: TermsAndConditionModalProps) => {
     'https://firebasestorage.googleapis.com/v0/b/hopper-3d98d.firebasestorage.app/o/Terms%20%26%20Conditions%2Fsample-terms-conditions-agreement.pdf?alt=media&token=cbbcd191-6ee1-4099-ba65-73714f9cf83d';
 
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [isButtonActive, setIsButtonActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [numPages, setNumPages] = useState<number>(0);
-  const [pdfDocument, setPdfDocument] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch the PDF when the component mounts or when pdfUrl changes
-  useEffect(() => {
-    const fetchPdf = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        // Use provided URL or default
-        const urlToFetch = pdfUrl || defaultPdfUrl;
-
-        // Fetch the PDF
-        const response = await fetch(urlToFetch);
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch PDF. Status: ${response.status}`);
-        }
-
-        // Get the PDF data
-        const blob = await response.blob();
-        const objectUrl = URL.createObjectURL(blob);
-        setPdfDocument(objectUrl);
-        setIsLoading(false);
-      } catch (err) {
-        console.error('Error fetching PDF:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load document');
-        setIsLoading(false);
-      }
-    };
-
-    if (isOpen) {
-      fetchPdf();
-    }
-
-    return () => {
-      // Clean up any object URLs when the component unmounts
-      if (pdfDocument) {
-        URL.revokeObjectURL(pdfDocument);
-      }
-    };
-  }, [isOpen, pdfUrl]);
+  // Get the PDF URL to use
+  const pdfUrlToUse = pdfUrl || defaultPdfUrl;
 
   // Handle scroll event to check if user has reached the bottom
   const handleScroll = () => {
@@ -114,22 +69,24 @@ const TermsAndConditionsModal = (props: TermsAndConditionModalProps) => {
     }
   };
 
-  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-    setNumPages(numPages);
+  // Handle iframe load event
+  const handleIframeLoad = () => {
     setIsLoading(false);
-  }
+    setError(null);
+  };
 
-  function onDocumentLoadError(error: Error) {
-    console.error('Error loading PDF:', error);
-    setError(error.message);
+  // Handle iframe error event
+  const handleIframeError = () => {
     setIsLoading(false);
-  }
+    setError('Failed to load PDF document');
+  };
 
   useEffect(() => {
     // Reset states when modal opens
     if (isOpen) {
       setIsButtonActive(false);
       setError(null);
+      setIsLoading(true);
     }
   }, [isOpen]);
 
@@ -148,44 +105,28 @@ const TermsAndConditionsModal = (props: TermsAndConditionModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose} defaultOpen={false}>
-      <DialogContent className="w-[80%] max-w-[60vw]">
-        <DialogHeader>
+      <DialogContent className="w-[80%] max-w-[60vw] px-0 pb-3">
+        <DialogHeader className="w-full px-4">
           <DialogTitle>Terms and Conditions</DialogTitle>
           <DialogDescription>
             Please read the terms and conditions carefully. Scroll to the end to accept.
           </DialogDescription>
         </DialogHeader>
-        <div ref={containerRef} className="h-[70vh] overflow-y-scroll overflow-x-hidden">
-          {isLoading ? (
-            <Loading />
-          ) : error ? (
-            <ErrorLoading />
-          ) : (
-            <div className="flex flex-col items-center w-full">
-              <Document
-                file={pdfDocument}
-                onLoadSuccess={onDocumentLoadSuccess}
-                onLoadError={onDocumentLoadError}
-                loading={<Loading />}
-                error={<ErrorLoading />}
-              >
-                {Array.from(new Array(numPages), (_, index) => (
-                  <Page
-                    key={`page_${index + 1}`}
-                    pageNumber={index + 1}
-                    width={
-                      containerRef.current?.clientWidth
-                        ? containerRef.current.clientWidth - 30
-                        : undefined
-                    }
-                    renderTextLayer={true}
-                    renderAnnotationLayer={true}
-                    className="mb-4"
-                  />
-                ))}
-              </Document>
-            </div>
-          )}
+        <div ref={containerRef} className="h-[70vh] p-0 overflow-x-hidden relative">
+          {isLoading && <Loading />}
+          {error && <ErrorLoading />}
+          <iframe
+            ref={iframeRef}
+            src={pdfUrlToUse}
+            className="w-full h-full border-0"
+            title="Terms and Conditions"
+            onLoad={handleIframeLoad}
+            onError={handleIframeError}
+            style={{
+              display: isLoading || error ? 'none' : 'block',
+              minHeight: '100%',
+            }}
+          />
         </div>
 
         <DialogFooter className="w-full h-fit flex flex-row !justify-center items-center gap-5">
