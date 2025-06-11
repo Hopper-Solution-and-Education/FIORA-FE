@@ -31,3 +31,5 @@ export type TransactionGetPaginate = Prisma.TransactionGetPayload<{
     partner: true;
   };
 }>;
+
+export type DropdownOption = { value: string; label: string; disabled?: boolean; icon?: string };

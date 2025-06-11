@@ -475,11 +475,9 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
     ];
   }, [filterParams, categoryOptions, accountOptions, partnerOptions, isLoading, handleEditFilter]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createFilterStructure = useCallback((params: FilterParams): Record<string, any> => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updatedFilters: Record<string, any> = {};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const andConditions: any[] = [];
 
     // Handle date range - always place at top level
@@ -550,6 +548,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
       }}
       defaultFilterCriteria={DEFAULT_TRANSACTION_FILTER_CRITERIA}
       structureCreator={createFilterStructure}
+      currentFilter={filterCriteria.filters}
     />
   );
 };

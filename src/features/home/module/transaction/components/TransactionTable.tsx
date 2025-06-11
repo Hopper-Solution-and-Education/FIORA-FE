@@ -279,7 +279,7 @@ const TransactionTable = () => {
 
     // Calculate date 3 months ago from current date
     const threeMonthsAgo = new Date();
-    threeMonthsAgo.setMonth(currentDate.getMonth() - 3);
+    threeMonthsAgo.setMonth(currentDate.getMonth() - 1);
 
     // Return true if transaction date is before the 3-months-ago date
     return transactionDate < threeMonthsAgo;

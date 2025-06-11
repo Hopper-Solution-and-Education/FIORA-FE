@@ -1,6 +1,6 @@
 import { Label } from '@/components/ui/label';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { DropdownOption } from '@/features/home/module/transaction/types';
+import { DropdownOption } from '@/shared/types';
 
 interface MultiSelectFilterProps {
   options: DropdownOption[];

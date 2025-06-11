@@ -1,11 +1,11 @@
 import SelectField from '@/components/common/forms/select/SelectField';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import useDataFetcher from '@/shared/hooks/useDataFetcher';
+import { DropdownOption } from '@/shared/types';
 import { Partner } from '@prisma/client';
 import { Loader2 } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
-import { DropdownOption } from '../../types';
 
 interface PartnerSelectProps {
   name: string;
