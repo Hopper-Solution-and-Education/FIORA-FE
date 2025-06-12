@@ -121,6 +121,12 @@ const PositiveAndNegativeBarChart = ({
               radius={[0, 4, 4, 0]}
               dataKey="value"
               className="transition-all duration-300 cursor-pointer"
+              activeBar={{
+                stroke: '#ffffff',
+                strokeWidth: 2,
+                filter: 'brightness(1.1) drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.25))',
+                cursor: 'pointer',
+              }}
               label={(props) => (
                 <PositiveAndNegativeBarLabel {...props} formatter={xAxisFormatter} />
               )}

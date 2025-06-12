@@ -59,6 +59,7 @@ const RecurringSelectField: React.FC<RecurringSelectProps> = ({
               options={options}
               placeholder={'Select Type'}
               error={error}
+              noneValue={false}
               {...props}
             />
             <FormLabel className="w-[10%] text-right text-sm text-gray-700 dark:text-gray-300">

@@ -90,6 +90,7 @@ const ToSelectField: React.FC<ToSelectProps> = ({
               options={options}
               placeholder={transactionType === 'Expense' ? 'Select Category' : 'Select Account'}
               error={error}
+              noneValue={false}
               {...props}
             />
           </div>

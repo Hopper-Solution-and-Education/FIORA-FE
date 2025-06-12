@@ -162,10 +162,16 @@ const PositiveNegativeStackBarChart = ({
                 <Tooltip content={renderTooltipContent} />
                 {[STACK_KEY.A, STACK_KEY.T, STACK_KEY.B].map((key) => (
                   <Bar
-                    radius={[0, 4, 4, 0]}
+                    radius={[0, 0, 0, 0]}
                     key={key}
                     dataKey={key}
                     stackId="a"
+                    activeBar={{
+                      stroke: '#ffffff',
+                      strokeWidth: 2,
+                      filter: 'brightness(1.1) drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.25))',
+                      cursor: 'pointer',
+                    }}
                     label={(props) => (
                       <PositiveAndNegativeV2BarLabel
                         {...props}
@@ -206,10 +212,16 @@ const PositiveNegativeStackBarChart = ({
                 <Tooltip content={renderTooltipContent} />
                 {[STACK_KEY.A, STACK_KEY.T, STACK_KEY.B].map((key) => (
                   <Bar
-                    radius={[0, 4, 4, 0]}
+                    radius={[0, 0, 0, 0]}
                     key={key}
                     dataKey={key}
                     stackId="a"
+                    activeBar={{
+                      stroke: '#ffffff',
+                      strokeWidth: 2,
+                      filter: 'brightness(1.1) drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.25))',
+                      cursor: 'pointer',
+                    }}
                     label={(props) => (
                       <PositiveAndNegativeV2BarLabel
                         {...props}
@@ -257,10 +269,16 @@ const PositiveNegativeStackBarChart = ({
             <Tooltip content={renderTooltipContent} />
             {[STACK_KEY.A, STACK_KEY.T, STACK_KEY.B].map((key) => (
               <Bar
-                radius={[0, 4, 4, 0]}
+                radius={[0, 0, 0, 0]}
                 key={key}
                 dataKey={key}
                 stackId="a"
+                activeBar={{
+                  stroke: '#ffffff',
+                  strokeWidth: 2,
+                  filter: 'brightness(1.1) drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.25))',
+                  cursor: 'pointer',
+                }}
                 label={(props) => (
                   <PositiveAndNegativeV2BarLabel
                     {...props}

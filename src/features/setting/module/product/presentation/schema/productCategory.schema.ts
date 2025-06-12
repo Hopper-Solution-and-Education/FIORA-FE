@@ -3,8 +3,16 @@ import * as yup from 'yup';
 export const categoryProductsSchema = yup.object({
   id: yup.string().optional(),
   icon: yup.string().required('Icon is required'),
-  name: yup.string().max(50, 'Name must be at most 50 characters').required('Name is required'),
-  description: yup.string().max(1000, 'Description must be at most 1000 characters').nullable(),
+  name: yup
+    .string()
+    .trim()
+    .max(50, 'Name must be at most 50 characters')
+    .required('Name is required'),
+  description: yup
+    .string()
+    .trim()
+    .max(1000, 'Description must be at most 1000 characters')
+    .nullable(),
   tax_rate: yup
     .number()
     .min(0, 'Tax rate must be greater than 0')

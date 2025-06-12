@@ -46,6 +46,7 @@ const TypeSelectField: React.FC<TypeSelectProps> = ({
                 placeholder="Select currency"
                 disabled={isTypeDisabled}
                 error={error}
+                noneValue={false}
                 {...props}
               />
             </div>

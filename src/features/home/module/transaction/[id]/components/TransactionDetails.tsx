@@ -94,17 +94,19 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
     fetch(endpoint, {
       method: 'DELETE',
     })
-      .then((response) => {
+      .then(async (response) => {
+        const responseData = await response.json();
         if (response.ok) {
           // Close the delete modal
           setIsDeleteModalOpen(false);
 
           // Alert the user of successful deletion
           toast.success('Transaction deleted successfully');
+          router.push('/transaction');
 
           // Revalidate data
         } else {
-          throw new Error('Failed to delete transaction');
+          toast.error(responseData.message || 'Failed to delete transaction');
         }
       })
       .catch((error) => {
