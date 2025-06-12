@@ -260,6 +260,7 @@ const PositiveAndNegativeBarChartV2 = ({
                         expandedItems={expandedItems}
                         onToggleExpand={toggleExpand}
                         callback={callback}
+                        setShowAll={handleToggleShowAll}
                       />
                     )}
                   />
@@ -271,6 +272,12 @@ const PositiveAndNegativeBarChartV2 = ({
                   <Bar
                     radius={[0, 4, 4, 0]}
                     dataKey="negativeValue"
+                    activeBar={{
+                      stroke: '#ffffff',
+                      strokeWidth: 2,
+                      filter: 'brightness(1.1) drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.25))',
+                      cursor: 'pointer',
+                    }}
                     label={(props) => (
                       <PositiveAndNegativeV2BarLabel {...props} formatter={xAxisFormatter} />
                     )}
@@ -330,6 +337,7 @@ const PositiveAndNegativeBarChartV2 = ({
                         expandedItems={expandedItems}
                         onToggleExpand={toggleExpand}
                         callback={callback}
+                        setShowAll={handleToggleShowAll}
                       />
                     )}
                   />

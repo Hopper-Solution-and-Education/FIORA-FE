@@ -8,6 +8,7 @@ import Image from 'next/image';
 import type React from 'react';
 import { memo, useEffect, useRef, useState } from 'react';
 import type { FieldError } from 'react-hook-form';
+import { toast } from 'sonner';
 
 interface UploadFieldProps {
   name: string;
@@ -22,6 +23,7 @@ interface UploadFieldProps {
   required?: boolean;
   previewShape?: 'square' | 'circle';
   initialImageUrl?: string | null;
+  maxSize?: number; // Size in MB
   [key: string]: any;
 }
 
@@ -38,6 +40,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
   required = false,
   previewShape = 'square',
   initialImageUrl = null,
+  maxSize = 5, // Default to 5MB
   ...props
 }) => {
   const [preview, setPreview] = useState<string | null>(null);
@@ -62,6 +65,17 @@ const UploadField: React.FC<UploadFieldProps> = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
+    if (file && file.size > maxSize * 1024 * 1024) {
+      // Convert MB to bytes
+      toast.error('File size too large', {
+        description: `Please upload an image that is ${maxSize}MB or smaller.`,
+      });
+      onChange(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
     onChange(file);
   };
 
@@ -104,6 +118,16 @@ const UploadField: React.FC<UploadFieldProps> = ({
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
+
+      // Check file size
+      if (file.size > maxSize * 1024 * 1024) {
+        // Convert MB to bytes
+        toast.error('File size too large', {
+          description: `Please upload an image that is ${maxSize}MB or smaller.`,
+        });
+        return;
+      }
+
       if (accept) {
         const acceptTypes = accept.split(',').map((type) => type.trim());
         const fileType = file.type;

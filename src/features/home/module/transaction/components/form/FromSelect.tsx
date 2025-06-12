@@ -91,6 +91,7 @@ const FromSelectField: React.FC<FromSelectProps> = ({
               options={options}
               placeholder={transactionType === 'Income' ? 'Select Category' : 'Select Account'}
               error={error}
+              noneValue={false}
               {...props}
             />
           </div>
