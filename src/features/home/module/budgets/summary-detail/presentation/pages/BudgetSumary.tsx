@@ -15,11 +15,13 @@ import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCa
 import { BudgetSummaryByType } from '../../domain/entities/BudgetSummaryByType';
 import { BudgetType } from '../../domain/entities/BudgetType';
 import { transformDataForChart } from '../../utils/transformDataForChart';
+import { convertBudgetCurrency } from '../../utils/convertBudgetCurrency';
 import BudgetTreeView from '../molecules/BudgetSummaryTreeView';
 import { HierarchicalBarItem } from '../types/chart.type';
 import { routeConfig } from '@/shared/utils/route';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
 import BudgetSummaryYearSelect from '../atoms/BudgetSummaryYearSelect';
+import { Currency } from '@/shared/types';
 
 interface BudgetSummaryProps {
   year: number;
@@ -65,11 +67,27 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
   }, [selectedYear]);
 
   useEffect(() => {
-    if (topBudget?.budget && botBudget?.budget && actBudget?.budget) {
+    const convertedTop = convertBudgetCurrency(
+      topBudget,
+      topBudget?.budget.currency as Currency,
+      currency,
+    );
+    const convertedBot = convertBudgetCurrency(
+      botBudget,
+      botBudget?.budget.currency as Currency,
+      currency,
+    );
+    const convertedAct = convertBudgetCurrency(
+      actBudget,
+      actBudget?.budget.currency as Currency,
+      currency,
+    );
+
+    if (convertedTop?.budget && convertedBot?.budget && convertedAct?.budget) {
       const transformedData = transformDataForChart({
-        topBudget,
-        botBudget,
-        actBudget,
+        topBudget: convertedTop,
+        botBudget: convertedBot,
+        actBudget: convertedAct,
         selectedYear,
         currency,
       });
