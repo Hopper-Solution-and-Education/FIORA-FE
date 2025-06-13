@@ -19,6 +19,9 @@ export const DashboardHeading: React.FC = () => {
   const debouncedFilterHandler = useMemo(
     () =>
       debounce((value: string) => {
+        if (value.trim() === '') {
+          return;
+        }
         if (userId) {
           dispatch(
             getProductTransactionAsyncThunk({
@@ -46,6 +49,7 @@ export const DashboardHeading: React.FC = () => {
           title="Search"
           placeholder="Search"
           className="w-full"
+          maxLength={50}
           onChange={(e) => debouncedFilterHandler(e.target.value)}
           onBlur={() => debouncedFilterHandler.flush()}
           onKeyDown={(e) => {

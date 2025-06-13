@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { DropdownOption } from '@/features/home/module/transaction/types';
+import { DropdownOption } from '@/shared/types';
 
 interface SelectFilterProps {
   options: DropdownOption[];

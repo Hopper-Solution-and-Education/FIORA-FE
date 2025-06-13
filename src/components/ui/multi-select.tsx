@@ -1,11 +1,11 @@
 'use client';
 
-import { DropdownOption } from '@/features/home/module/transaction/types';
 import { cn } from '@/shared/utils';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { Check, ChevronDown, X } from 'lucide-react';
 import * as React from 'react';
 import { IconDisplay } from '@/components/common/atoms/IconDisplay';
+import { DropdownOption } from '@/shared/types';
 
 interface MultiSelectProps {
   options: DropdownOption[];

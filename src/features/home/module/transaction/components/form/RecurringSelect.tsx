@@ -3,9 +3,9 @@ import SelectField from '@/components/common/forms/select/SelectField';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { DropdownOption } from '@/shared/types';
 import React, { useEffect, useState } from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
-import { DropdownOption } from '../../types';
 import { TransactionRecurringType } from '../../utils/constants';
 
 interface RecurringSelectProps {
@@ -59,6 +59,7 @@ const RecurringSelectField: React.FC<RecurringSelectProps> = ({
               options={options}
               placeholder={'Select Type'}
               error={error}
+              noneValue={false}
               {...props}
             />
             <FormLabel className="w-[10%] text-right text-sm text-gray-700 dark:text-gray-300">

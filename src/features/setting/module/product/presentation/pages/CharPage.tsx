@@ -39,13 +39,14 @@ const ChartPage = () => {
     if (item.type !== 'category') {
       router.push(`/setting/product/update/${item.id}`);
     } else {
+      console.log('item', item);
       const categoryProduct: CategoryProduct = {
         id: item.id ?? '',
         userId: userData?.user.id ?? '',
         icon: item.icon ?? '',
         name: item.name,
         description: item.description,
-        taxRate: item.taxRate,
+        taxRate: item.taxRate ?? 0,
         createdAt: item.createdAt,
         updatedAt: item.updatedAt,
       };
@@ -57,6 +58,8 @@ const ChartPage = () => {
     () => mapTransactionsToTwoSideBarItems(data, currency),
     [currency, data],
   );
+
+  console.log('chartData', chartData);
 
   return (
     <div>

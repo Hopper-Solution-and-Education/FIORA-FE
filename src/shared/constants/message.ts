@@ -60,6 +60,7 @@ export enum Messages {
   TO_DATE_BEFORE_FROM_DATE = 'To date must be after from date',
   INVALID_DATE_FORMAT = 'Invalid date format',
   INVALID_DATE_RANGE_INPUT = 'Invalid date range input',
+  INVALID_DATE_RANGE_INPUT_30_DAYS = 'Invalid date range input. Date range must be within 30 days from now',
 
   // Budget Service Failed
   BUDGET_ID_MISSING = 'Budget id is missing',
@@ -73,7 +74,7 @@ export enum Messages {
   BUDGET_DELETE_FAILED = 'Failed to delete budget',
   BUDGET_FISCAL_YEAR_ALREADY_EXISTS = 'Budget fiscal year already exists',
   BUDGET_DETAILS_TO_DELETE_NOT_FOUND = 'Budget details to delete not found',
-  BUDGET_DETAILS_TO_DELETE_NOT_FOUND_CODE = "BDNF",
+  BUDGET_DETAILS_TO_DELETE_NOT_FOUND_CODE = 'BDNF',
 
   // Budget Details Service Success
   BUDGET_DETAIL_CREATED_SUCCESS = 'Budget details created successfully',
@@ -101,7 +102,7 @@ export enum Messages {
   UPDATE_CATEGORY_PRODUCT_MANY_FAILED = 'Failed to update many category product',
   DELETE_CATEGORY_PRODUCT_FAILED = 'Failed to delete category product',
   GET_CATEGORY_PRODUCT_FAILED = 'Failed to get category product',
-
+  CATEGORY_PRODUCT_NAME_EXIST = 'Category product name already exists',
   // Account
   CREATE_ACCOUNT_FAILED = 'Failed to create account',
   CREATE_ACCOUNT_SUCCESS = 'Account created successfully',

@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DEFAULT_DASHBOARD_FILTER_CRITERIA } from '../constants';
-import { DropdownOption } from '../module/transaction/types';
+import { DropdownOption } from '@/shared/types/transaction.types';
 
 const DEFAULT_SLIDER_STEP = 1000;
 const DEFAULT_PAGE_SIZE = 10;
@@ -425,6 +425,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
       structureCreator={(params: Record<string, unknown>) =>
         createFilterStructure(params as unknown as ExtendedFilterParams)
       }
+      currentFilter={filterCriteria.filters}
     />
   );
 };

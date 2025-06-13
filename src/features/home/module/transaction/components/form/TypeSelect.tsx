@@ -41,6 +41,7 @@ const TypeSelectField: React.FC<TypeSelectProps> = ({
               options={options}
               placeholder="Select transaction type"
               error={error}
+              noneValue={false}
               {...props}
             />
           </div>

@@ -10,10 +10,10 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import LucieIcon from '../../../category/components/LucieIcon';
 import DeleteTransactionDialog from '../../components/DeleteTransactionDialog';
 import { IRelationalTransaction } from '../../types';
 import { TransactionCurrency } from '../../utils/constants';
+import LucieIcon from '../../../category/components/LucieIcon';
 
 // Custom formatCurrency function
 const formatCurrency = (
@@ -94,17 +94,19 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
     fetch(endpoint, {
       method: 'DELETE',
     })
-      .then((response) => {
+      .then(async (response) => {
+        const responseData = await response.json();
         if (response.ok) {
           // Close the delete modal
           setIsDeleteModalOpen(false);
 
           // Alert the user of successful deletion
           toast.success('Transaction deleted successfully');
+          router.push('/transaction');
 
           // Revalidate data
         } else {
-          throw new Error('Failed to delete transaction');
+          toast.error(responseData.message || 'Failed to delete transaction');
         }
       })
       .catch((error) => {
