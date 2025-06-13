@@ -60,6 +60,7 @@ export enum Messages {
   TO_DATE_BEFORE_FROM_DATE = 'To date must be after from date',
   INVALID_DATE_FORMAT = 'Invalid date format',
   INVALID_DATE_RANGE_INPUT = 'Invalid date range input',
+  INVALID_DATE_RANGE_INPUT_30_DAYS = 'Invalid date range input. Date range must be within 30 days from now',
 
   // Budget Service Failed
   BUDGET_ID_MISSING = 'Budget id is missing',
