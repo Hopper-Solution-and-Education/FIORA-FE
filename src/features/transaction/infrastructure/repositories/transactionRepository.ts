@@ -173,68 +173,25 @@ class TransactionRepository implements ITransactionRepository {
   }
 
   async getFilterOptions(userId: string) {
-    const [fromAccounts, toAccounts, fromCategories, toCategories, partners] = await Promise.all([
-      prisma.transaction.findMany({
-        where: { userId, fromAccountId: { not: null } },
-        select: {
-          fromAccount: {
-            select: { name: true },
-          },
-        },
-        distinct: ['fromAccountId'],
+    const [accounts, categories, partners] = await Promise.all([
+      prisma.account.findMany({
+        where: { userId },
+        select: { name: true },
       }),
-      prisma.transaction.findMany({
-        where: { userId, toAccountId: { not: null } },
-        select: {
-          toAccount: {
-            select: { name: true },
-          },
-        },
-        distinct: ['toAccountId'],
+      prisma.category.findMany({
+        where: { userId },
+        select: { name: true },
       }),
-      prisma.transaction.findMany({
-        where: { userId, fromCategoryId: { not: null } },
-        select: {
-          fromCategory: {
-            select: { name: true },
-          },
-        },
-        distinct: ['fromCategoryId'],
+      prisma.partner.findMany({
+        where: { userId },
+        select: { name: true },
       }),
-      prisma.transaction.findMany({
-        where: { userId, toCategoryId: { not: null } },
-        select: {
-          toCategory: {
-            select: { name: true },
-          },
-        },
-        distinct: ['toCategoryId'],
-      }),
-      prisma.transaction.findMany({
-        where: { userId, partnerId: { not: null } },
-        select: {
-          partner: {
-            select: { name: true },
-          },
-        },
-        distinct: ['partnerId'],
-      }),
-    ]);
-
-    const accountsSet = new Set([
-      ...fromAccounts.map((t) => t.fromAccount?.name),
-      ...toAccounts.map((t) => t.toAccount?.name),
-    ]);
-
-    const categoriesSet = new Set([
-      ...fromCategories.map((t) => t.fromCategory?.name),
-      ...toCategories.map((t) => t.toCategory?.name),
     ]);
 
     return {
-      accounts: Array.from(accountsSet),
-      categories: Array.from(categoriesSet),
-      partners: partners.map((t) => t.partner?.name),
+      accounts: accounts.map((a) => a.name),
+      categories: categories.map((c) => c.name),
+      partners: partners.map((p) => p.name),
     };
   }
 
