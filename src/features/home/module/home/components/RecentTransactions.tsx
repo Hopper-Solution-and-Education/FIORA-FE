@@ -207,6 +207,10 @@ export default function RecentTransactions() {
     );
   }
 
+  const handleClickAllTransactions = () => {
+    redirect('/transaction');
+  };
+
   return (
     <>
       <div
@@ -217,6 +221,13 @@ export default function RecentTransactions() {
       >
         <div className="flex justify-between items-center mb-2">
           <div className="font-bold text-lg">Transactions</div>
+
+          <div
+            onClick={handleClickAllTransactions}
+            className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer mr-4"
+          >
+            All
+          </div>
         </div>
         <div
           className={cn(

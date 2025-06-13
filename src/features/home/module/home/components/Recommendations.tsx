@@ -92,6 +92,10 @@ export default function Recommendations() {
     );
   }
 
+  const handleClickAllRecommendations = () => {
+    redirect('/recommendations');
+  };
+
   return (
     <>
       <div
@@ -103,6 +107,13 @@ export default function Recommendations() {
       >
         <div className="flex justify-between items-center mb-2">
           <div className="font-bold text-lg p-3">Recommendations</div>
+
+          <div
+            onClick={handleClickAllRecommendations}
+            className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer mr-4"
+          >
+            All
+          </div>
         </div>
         <div
           className={cn(
