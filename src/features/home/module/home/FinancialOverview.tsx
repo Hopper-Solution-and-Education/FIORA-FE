@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import FinancialAccount from './FInancialAccount';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Account } from '../../types/FinalcialOverview.types';
+import { Account } from '../../types/FinancialOverview.types';
 import { cn, formatCurrency } from '@/shared/utils';
 
 interface AccountListProps {
