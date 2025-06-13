@@ -290,7 +290,7 @@ const TransactionTable = () => {
     const columns =
       Object.keys(visibleColumns).length > 0
         ? Object.keys(visibleColumns)?.reduce((acc, key) => {
-            if (visibleColumns[key as TransactionColumn].index > 0) {
+            if (visibleColumns[key as TransactionColumn].index >= 0) {
               acc[key as TransactionColumn] = visibleColumns[key as TransactionColumn];
             }
             return acc;
@@ -428,7 +428,7 @@ const TransactionTable = () => {
               >
                 {Object.entries(tableVisibleColumns)
                   .sort(([, a], [, b]) => a.index - b.index)
-                  .filter(([, col]) => col.index > 0)
+                  .filter(([, col]) => col.index >= 0)
                   .map(([columnKey]) => {
                     switch (columnKey) {
                       case 'No.':

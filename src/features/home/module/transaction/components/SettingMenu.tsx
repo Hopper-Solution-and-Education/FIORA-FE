@@ -132,13 +132,14 @@ const SettingsMenu = () => {
   // Handle column visibility toggling - separate from the dropdown menu item click
   const toggleVisibility = (col: TransactionColumn) => {
     const updatedColumns = { ...visibleColumns };
+    const isCurrentlyVisible = updatedColumns[col].index >= 0;
 
-    if (updatedColumns[col].index > -1) {
-      // Hide column: First set target column index to -1
+    if (isCurrentlyVisible) {
+      // Hide column: Set index to negative
       const targetIndex = updatedColumns[col].index;
       updatedColumns[col] = {
         ...updatedColumns[col],
-        index: -Math.abs(visibleColumns[col].index), // Ensure it's negative
+        index: -1, // Simplified to just -1
         sortedBy: 'none',
       };
 
@@ -152,14 +153,41 @@ const SettingsMenu = () => {
         }
       }
     } else {
-      // Show column: Set its index to be after the last visible column
-      let maxIndex = -1;
-      for (const key in updatedColumns) {
-        if (updatedColumns[key as TransactionColumn].index > maxIndex) {
-          maxIndex = updatedColumns[key as TransactionColumn].index;
+      // Show column: Check if all other columns are hidden
+      const allHidden = Object.keys(updatedColumns).every(
+        (key) => key === col || updatedColumns[key as TransactionColumn].index < 0,
+      );
+
+      if (allHidden) {
+        // If all columns are hidden, set this column's index to 0
+        updatedColumns[col] = { ...updatedColumns[col], index: 0 };
+      } else {
+        // Otherwise, find the last visible column's index and place after it
+        let maxIndex = -1;
+        for (const key in updatedColumns) {
+          if (updatedColumns[key as TransactionColumn].index > maxIndex) {
+            maxIndex = updatedColumns[key as TransactionColumn].index;
+          }
         }
+        updatedColumns[col] = { ...updatedColumns[col], index: maxIndex + 1 };
       }
-      updatedColumns[col] = { ...updatedColumns[col], index: maxIndex + 1 };
+
+      // Ensure indices are sequential
+      const visibleKeys = Object.keys(updatedColumns).filter(
+        (key) => updatedColumns[key as TransactionColumn].index >= 0,
+      );
+      visibleKeys.sort(
+        (a, b) =>
+          updatedColumns[a as TransactionColumn].index -
+          updatedColumns[b as TransactionColumn].index,
+      );
+
+      visibleKeys.forEach((key, idx) => {
+        updatedColumns[key as TransactionColumn] = {
+          ...updatedColumns[key as TransactionColumn],
+          index: idx,
+        };
+      });
     }
 
     dispatch(updateVisibleColumns(updatedColumns));
@@ -237,7 +265,7 @@ const SettingsMenu = () => {
         sideOffset={4}
       >
         <DropdownMenuLabel className="p-0 font-normal flex justify-between items-center">
-          <h2 className="font-semibold">Filter & Settings</h2>
+          <h2 className="font-semibold">Column Settings</h2>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -275,7 +303,7 @@ const SettingsMenu = () => {
                           <p className="w-full font-semibold">{key}</p>
                         </div>
                         <Switch
-                          checked={tableVisibleColumns[key as TransactionColumn].index > 0}
+                          checked={tableVisibleColumns[key as TransactionColumn].index >= 0}
                           onCheckedChange={() => toggleVisibility(key as TransactionColumn)}
                           className="z-10"
                         />
