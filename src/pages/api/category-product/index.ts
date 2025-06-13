@@ -1,9 +1,10 @@
-import { createResponse } from '@/shared/lib/responseUtils/createResponse';
-import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { NextApiRequest, NextApiResponse } from 'next';
-import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { Messages } from '@/shared/constants/message';
+import { prisma } from '@/config';
 import { categoryProductsUseCase } from '@/features/setting/api/domain/use-cases/categoryProductUsecase';
+import { Messages } from '@/shared/constants/message';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req, res, userId) => {
   switch (req.method) {
@@ -44,6 +45,26 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { icon, name, description, tax_rate } = req.body;
+
+    // check name no matter uppercase or lowercase
+    const normalizedName = name.toLowerCase();
+
+    const isExistName = await prisma.categoryProducts.findFirst({
+      where: {
+        name: {
+          mode: 'insensitive',
+          equals: normalizedName,
+        },
+      },
+    });
+
+    if (isExistName) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(
+          createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.CATEGORY_PRODUCT_NAME_EXIST, null),
+        );
+    }
 
     const newCategoryProduct = await categoryProductsUseCase.createCategoryProduct({
       userId,

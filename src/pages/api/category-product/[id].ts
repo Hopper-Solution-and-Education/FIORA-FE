@@ -4,6 +4,7 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { categoryProductsUseCase } from '@/features/setting/api/domain/use-cases/categoryProductUsecase';
+import { prisma } from '@/config';
 
 export default sessionWrapper(async (req, res, userId) => {
   switch (req.method) {
@@ -52,6 +53,26 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   try {
     const id = req.query.id as string;
     const { icon, name, description, tax_rate } = req.body;
+
+    // check name no matter uppercase or lowercase
+    const normalizedName = name.toLowerCase();
+
+    const isExistName = await prisma.categoryProducts.findFirst({
+      where: {
+        name: {
+          mode: 'insensitive',
+          equals: normalizedName,
+        },
+      },
+    });
+
+    if (isExistName && isExistName.id !== id) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(
+          createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.CATEGORY_PRODUCT_NAME_EXIST, null),
+        );
+    }
 
     const newCategoryProduct = await categoryProductsUseCase.updateCategoryProduct(id, {
       userId,
