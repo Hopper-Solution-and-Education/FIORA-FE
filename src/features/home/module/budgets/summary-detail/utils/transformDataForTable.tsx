@@ -1,10 +1,9 @@
 import { InputCurrency } from '@/components/common/forms';
 import { ColumnProps, DataSourceItemProps } from '@/components/common/tables/custom-table/types';
 import { Icons } from '@/components/Icon';
-import { formatters } from '@/shared/lib';
 import { Currency } from '@/shared/types';
 import { ComparisonProps } from '@/shared/types/chart.type';
-import { cn, convertVNDToUSD } from '@/shared/utils';
+import { cn } from '@/shared/utils';
 import { validate as isUUID } from 'uuid';
 import CategorySelect from '../../../category/components/CategorySelect';
 import {
@@ -21,18 +20,7 @@ import {
   TableData,
 } from '../presentation/types/table.type';
 import { createGeneralComparisonMapper } from './compareDataForTable';
-
-export const formatCurrencyValue = (
-  value: number | string | undefined,
-  currency: Currency,
-): string => {
-  if (value === undefined || value === '') return '';
-
-  const numValue = typeof value === 'string' ? parseFloat(value) : value;
-  const formattedValue = currency === 'USD' ? convertVNDToUSD(numValue) : numValue;
-
-  return formatters[currency].format(formattedValue);
-};
+import { formatCurrencyValue } from './convertTableDataCurrency';
 
 export const getBudgetValue = (
   budget: BudgetSummaryByType | null,
@@ -94,17 +82,39 @@ export const getTableDataByPeriod = (
     type: string,
     data: { [key: string]: DataSourceItemProps },
     isEditable: boolean,
+    currency?: Currency,
   ): TableData => ({
     key,
     type,
     ...data,
     isEditable,
+    currency: currency as Currency,
   });
 
+  const baseCurrency = top?.budget.currency;
+
   return [
-    createTableRow('top-down', 'Total Top Down', aggregateForPeriod(top, type), true),
-    createTableRow('bottom-up', 'Total Bottom Up', aggregateForPeriod(bot, type), false),
-    createTableRow('actual', 'Total Actual Sum Up', aggregateForPeriod(act, type), false),
+    createTableRow(
+      'top-down',
+      'Total Top Down',
+      aggregateForPeriod(top, type),
+      true,
+      top?.budget.currency ?? baseCurrency,
+    ),
+    createTableRow(
+      'bottom-up',
+      'Total Bottom Up',
+      aggregateForPeriod(bot, type),
+      false,
+      bot?.budget.currency ?? baseCurrency,
+    ),
+    createTableRow(
+      'actual',
+      'Total Actual Sum Up',
+      aggregateForPeriod(act, type),
+      false,
+      act?.budget.currency ?? baseCurrency,
+    ),
   ];
 };
 
