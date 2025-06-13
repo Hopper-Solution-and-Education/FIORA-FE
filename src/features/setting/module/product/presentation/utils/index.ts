@@ -61,6 +61,10 @@ export const mapTransactionsToTwoSideBarItems = (
       positiveValue: categoryPositive,
       negativeValue: categoryNegative,
       icon: categoryItem.category.icon,
+      taxRate: categoryItem.category.taxRate,
+      createdAt: categoryItem.category.createdAt,
+      updatedAt: categoryItem.category.updatedAt,
+      description: categoryItem.category.description,
       children,
       type: 'category',
       // Pass the aggregate values to generateColor
