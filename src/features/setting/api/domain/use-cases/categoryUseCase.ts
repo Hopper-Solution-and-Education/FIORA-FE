@@ -9,17 +9,21 @@ import { CategoryExtras, CategoryWithBudgetDetails } from '@/shared/types/catego
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { normalizeVietnamese, safeString } from '@/shared/utils/ExStringUtils';
 import { calculateSumUpAllocationByType } from '@/shared/utils/monthBudgetUtil';
-import { Category, CategoryType, Currency, Prisma, TransactionType } from '@prisma/client';
+import { BudgetType, Category, CategoryType, Currency, Prisma, TransactionType } from '@prisma/client';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
 import { prisma } from '@/config';
+import { budgetRepository } from '../../infrastructure/repositories/budgetProductRepository';
+import { IBudgetRepository } from '../../repositories/budgetRepository';
 
 class CategoryUseCase {
   private categoryRepository: ICategoryRepository;
   private transactionRepository: ITransactionRepository;
+  private budgetRepository: IBudgetRepository;
 
-  constructor(repository: ICategoryRepository, transactionRepository: ITransactionRepository) {
+  constructor(repository: ICategoryRepository, transactionRepository: ITransactionRepository, budgetRepository: IBudgetRepository) {
     this.categoryRepository = repository;
     this.transactionRepository = transactionRepository;
+    this.budgetRepository = budgetRepository;
   }
 
   async createCategory(params: {
@@ -367,15 +371,38 @@ class CategoryUseCase {
     };
   }
 
-  async getListCategoryByType(userId: string, type: CategoryType) {
+  async getListCategoryByType(userId: string, type: CategoryType, fiscalYear: string) {
     if (!Object.values(CategoryType).includes(type)) {
       throw new Error(Messages.INVALID_CATEGORY_TYPE);
     }
+
+    console.log(fiscalYear);
+    const foundBudgets = await this.budgetRepository.findUniqueBudgetData({
+      fiscalYear_type_userId: {
+        fiscalYear,
+        type: BudgetType.Bot,
+        userId,
+      },
+    });
 
     const categoryFound = (await (this.categoryRepository.findManyCategoryWithBudgetDetails(
       {
         userId,
         type,
+        OR: [
+          {
+            budgetDetails: {
+              some: {
+                budgetId: foundBudgets?.id,
+              },
+            },
+          },
+          {
+            budgetDetails: {
+              none: {},
+            },
+          },
+        ],
       },
       {
         select: {
@@ -385,7 +412,14 @@ class CategoryUseCase {
           type: true,
           budgetDetails: {
             where: {
-              type: type,
+              AND: [
+                {
+                  type: type,
+                },
+                {
+                  budgetId: foundBudgets?.id,
+                },
+              ]
             },
             select: {
               month: true,
@@ -396,6 +430,9 @@ class CategoryUseCase {
         },
       },
     ) as unknown)) as CategoryWithBudgetDetails[];
+
+
+    console.log(categoryFound);
 
     const transferCategoryFound = categoryFound.map((category: CategoryWithBudgetDetails) => {
       const suffix = category.type === CategoryType.Expense ? 'exp' : 'inc';
@@ -432,4 +469,4 @@ class CategoryUseCase {
 }
 
 // Export a single instance using the exported categoryRepository
-export const categoryUseCase = new CategoryUseCase(categoryRepository, transactionRepository);
+export const categoryUseCase = new CategoryUseCase(categoryRepository, transactionRepository, budgetRepository);
