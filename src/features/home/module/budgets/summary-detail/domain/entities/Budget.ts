@@ -49,7 +49,7 @@ export class Budget {
   public createdBy?: string | undefined;
   public updatedAt: string | undefined;
   public updatedBy?: string | undefined;
-  public currency?: Currency | undefined;
+  public currency?: Currency;
 
   public constructor(builder: BudgetBuilder) {
     this.id = builder.id;
