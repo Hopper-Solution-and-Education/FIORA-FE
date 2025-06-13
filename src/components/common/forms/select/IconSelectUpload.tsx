@@ -8,7 +8,7 @@ import IconSelect from './IconSelect';
 
 interface IconSelectUploadProps {
   value?: string;
-  onChange?: (value: string) => void;
+  onChange?: (value: string | null) => void;
   name: string;
   onBlur?: Noop;
   error?: FieldError;
@@ -40,10 +40,14 @@ const IconSelectUpload = ({
   );
 
   useEffect(() => {
+    if (!value) return;
+
     if (value) {
-      setSelectedTab(isUrl(value) || isImageFile(value) ? 'uploader' : 'dropdown');
-    } else {
-      setSelectedTab('dropdown');
+      if (isUrl(value) || isImageFile(value)) {
+        setSelectedTab('uploader');
+      } else {
+        setSelectedTab('dropdown');
+      }
     }
   }, [value]);
 
@@ -74,7 +78,7 @@ const IconSelectUpload = ({
                 : ''
             }
             onChange={(e) => {
-              onChange?.(e);
+              onChange?.(e || null);
             }}
             name={name}
             onBlur={onBlur}
@@ -110,7 +114,7 @@ export default memo(IconSelectUpload);
 
 interface UploadFieldAdapterProps {
   value: string;
-  onChange: (url: string) => void;
+  onChange: (url: string | null) => void;
   name: string;
   onBlur?: () => void;
   disabled?: boolean;
@@ -132,7 +136,7 @@ const UploadFieldAdapter = ({
 
   // Đảm bảo onChange luôn ổn định
   const stableOnChange = useCallback(
-    (url: string) => {
+    (url: string | null) => {
       onChange?.(url); // Truyền URL đến parent form
     },
     [onChange],
@@ -163,6 +167,10 @@ const UploadFieldAdapter = ({
       value={file}
       onChange={(newFile) => {
         setFile(newFile);
+        if (!newFile) {
+          setImageUrl(null);
+          stableOnChange(null);
+        }
       }}
       onBlur={onBlur}
       disabled={disabled}

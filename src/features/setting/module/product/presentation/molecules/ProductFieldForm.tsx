@@ -22,6 +22,7 @@ const ProductForm = () => {
 
   const isUpdatingProduct = useAppSelector((state) => state.productManagement.isUpdatingProduct);
   const isCreatingProduct = useAppSelector((state) => state.productManagement.isCreatingProduct);
+
   const fields = useProductFormConfig();
 
   const renderSubmitButtonDefault = () => (
