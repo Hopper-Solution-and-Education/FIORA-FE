@@ -332,31 +332,26 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
     );
 
     // Bước 7: Tạo dữ liệu trả về (Sử dụng map lookup cho người dùng)
-    const transformedData = categories
-      .map((category) => {
-        const createdBy = category.createdBy ? userMap[category.createdBy] || null : null;
-        const updatedBy = category.updatedBy ? userMap[category.updatedBy] || null : null;
-        const categoryProducts = productsByCategory[category.id] || [];
+    const transformedData = categories.map((category) => {
+      const createdBy = category.createdBy ? userMap[category.createdBy] || null : null;
+      const updatedBy = category.updatedBy ? userMap[category.updatedBy] || null : null;
+      const categoryProducts = productsByCategory[category.id] || [];
 
-        // Nếu danh mục không có sản phẩm sau filter, loại khỏi kết quả trả về (tuỳ bạn)
-        if (categoryProducts.length === 0) return null;
-
-        return {
-          category: {
-            id: category.id,
-            name: category.name,
-            description: category.description,
-            icon: category.icon,
-            tax_rate: category.tax_rate?.toNumber() || 0,
-            createdAt: category.createdAt,
-            updatedAt: category.updatedAt,
-            createdBy,
-            updatedBy,
-          },
-          products: categoryProducts,
-        };
-      })
-      .filter((item) => item !== null);
+      return {
+        category: {
+          id: category.id,
+          name: category.name,
+          description: category.description,
+          icon: category.icon,
+          tax_rate: category.tax_rate?.toNumber() || 0,
+          createdAt: category.createdAt,
+          updatedAt: category.updatedAt,
+          createdBy,
+          updatedBy,
+        },
+        products: categoryProducts,
+      };
+    });
 
     // Bước 8: Tính tổng số trang
     const totalPage = Math.ceil(count / take);
@@ -369,8 +364,6 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
     const expenseTotals: number[] = [];
 
     for (const category of transformedData) {
-      if (!category) continue;
-
       for (const item of category.products) {
         const { price, taxRate } = item.product;
         priceList.push(price);
