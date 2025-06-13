@@ -18,8 +18,8 @@ const productSchema = yup.object({
   taxRate: yup
     .number()
     .nullable()
-    .min(0, 'Tax rate must be greater than 0')
-    .max(100, 'Tax rate must be less than 100'),
+    .min(0, 'Tax rate must be greater or equal to 0')
+    .max(100, 'Tax rate must be less or equal to 100'),
   type: yup
     .mixed<ProductType>()
     .oneOf(Object.values(ProductType))

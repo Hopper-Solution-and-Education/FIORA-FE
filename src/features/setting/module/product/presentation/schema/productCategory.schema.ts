@@ -15,8 +15,8 @@ export const categoryProductsSchema = yup.object({
     .nullable(),
   tax_rate: yup
     .number()
-    .min(0, 'Tax rate must be greater than 0')
-    .max(100, 'Tax rate must be less than 100')
+    .min(0, 'Tax rate must be greater or equal to 0')
+    .max(100, 'Tax rate must be less or equal to 100')
     .required('Tax rate is required'),
   createdAt: yup.date().optional(),
   updatedAt: yup.date().optional(),
