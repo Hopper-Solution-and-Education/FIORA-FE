@@ -116,7 +116,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       type,
       isTruncate,
     });
- 
     return res
       .status(RESPONSE_CODE.CREATED)
       .json(

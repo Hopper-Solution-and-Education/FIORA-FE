@@ -19,7 +19,7 @@ class PartnerUseCase {
   constructor(
     private partnerRepository: IPartnerRepository,
     private transactionRepository: ITransactionRepository,
-  ) { }
+  ) {}
 
   async listPartners(userId: string): Promise<Partner[]> {
     return this.partnerRepository.getPartnersByUserId(userId);
@@ -109,9 +109,9 @@ class PartnerUseCase {
     const finalFilteredPartners =
       typesFilter.length > 0
         ? filteredPartners.filter((partner: any) => {
-          const type = this.determinePartnerType(partner.transactions || []);
-          return typesFilter.includes(type);
-        })
+            const type = this.determinePartnerType(partner.transactions || []);
+            return typesFilter.includes(type);
+          })
         : filteredPartners;
 
     const { minIncome, maxIncome, minExpense, maxExpense } =
@@ -383,15 +383,15 @@ class PartnerUseCase {
       const [createdBy, updatedBy] = await Promise.all([
         partner.createdBy
           ? prisma.user.findFirst({
-            where: { id: partner.createdBy },
-            select: { id: true, name: true, email: true, image: true },
-          })
+              where: { id: partner.createdBy },
+              select: { id: true, name: true, email: true, image: true },
+            })
           : null,
         partner.updatedBy
           ? prisma.user.findFirst({
-            where: { id: partner.updatedBy },
-            select: { id: true, name: true, email: true, image: true },
-          })
+              where: { id: partner.updatedBy },
+              select: { id: true, name: true, email: true, image: true },
+            })
           : null,
       ]);
 

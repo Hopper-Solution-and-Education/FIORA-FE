@@ -3,43 +3,34 @@ import Joi from 'joi';
 import { excludeEmojiPattern } from '../constants';
 
 export const productItemBodySchema = Joi.object({
-  icon: Joi.string()
-    .pattern(excludeEmojiPattern)
-    .required()
-    .messages({
-      'string.empty': 'Product item icon url is invalid',
-      'string.pattern.base': 'Product item icon url is invalid',
-      'any.required': 'Product item icon is required',
-    }),
-  name: Joi.string()
-    .pattern(excludeEmojiPattern)
-    .required()
-    .max(50)
-    .messages({
-      'string.empty': 'Product item name is invalid',
-      'string.pattern.base': 'Product item name is invalid',
-      'any.required': 'Product item name is required',
-      'string.max': 'Product item name must be less than 50 characters',
-    }),
+  icon: Joi.string().pattern(excludeEmojiPattern).required().messages({
+    'string.empty': 'Product item icon url is invalid',
+    'string.pattern.base': 'Product item icon url is invalid',
+    'any.required': 'Product item icon is required',
+  }),
+  name: Joi.string().pattern(excludeEmojiPattern).required().max(50).messages({
+    'string.empty': 'Product item name is invalid',
+    'string.pattern.base': 'Product item name is invalid',
+    'any.required': 'Product item name is required',
+    'string.max': 'Product item name must be less than 50 characters',
+  }),
   description: Joi.string().allow('').optional(),
 });
 
-
 export const productBodySchema = Joi.object({
-  icon: Joi.string().required().messages({
-    'string.empty': 'Product icon url is invalid',
-    'any.required': 'Product icon is required',
-  }).pattern(excludeEmojiPattern, 'Product icon url is invalid'),
-  name: Joi.string()
-    .pattern(excludeEmojiPattern)
+  icon: Joi.string()
     .required()
-    .max(50)
     .messages({
-      'string.empty': 'Product name is invalid',
-      'string.pattern.base': 'Product name is invalid',
-      'any.required': 'Product name is required',
-      'string.max': 'Product name must be less than 50 characters',
-    }),
+      'string.empty': 'Product icon url is invalid',
+      'any.required': 'Product icon is required',
+    })
+    .pattern(excludeEmojiPattern, 'Product icon url is invalid'),
+  name: Joi.string().pattern(excludeEmojiPattern).required().max(50).messages({
+    'string.empty': 'Product name is invalid',
+    'string.pattern.base': 'Product name is invalid',
+    'any.required': 'Product name is required',
+    'string.max': 'Product name must be less than 50 characters',
+  }),
   category_id: Joi.string().required().messages({
     'any.required': 'Product category id is required',
     'string.empty': 'Product category id is invalid',
@@ -73,22 +64,14 @@ export const productUpdateBodySchema = Joi.object({
     'string.empty': 'Product id is invalid',
     'any.required': 'Product id is required',
   }),
-  icon: Joi.string()
-    .pattern(excludeEmojiPattern)
-    .optional()
-    .allow('')
-    .messages({
-      'string.empty': 'Product icon url is invalid',
-      'string.pattern.base': 'Product icon url is invalid',
-    }),
-  name: Joi.string()
-    .pattern(excludeEmojiPattern)
-    .optional()
-    .allow('')
-    .messages({
-      'string.empty': 'Product name is invalid',
-      'string.pattern.base': 'Product name is invalid',
-    }),
+  icon: Joi.string().pattern(excludeEmojiPattern).optional().allow('').messages({
+    'string.empty': 'Product icon url is invalid',
+    'string.pattern.base': 'Product icon url is invalid',
+  }),
+  name: Joi.string().pattern(excludeEmojiPattern).optional().allow('').messages({
+    'string.empty': 'Product name is invalid',
+    'string.pattern.base': 'Product name is invalid',
+  }),
   category_id: Joi.string().optional().messages({
     'any.required': 'Product category id is required',
     'string.empty': 'Product category id is invalid',
