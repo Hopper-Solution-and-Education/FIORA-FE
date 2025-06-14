@@ -16,4 +16,9 @@ export interface IBudgetDetailRepository {
     where: Prisma.BudgetDetailsWhereInput,
     options?: Prisma.BudgetDetailsUpdateManyArgs,
   ): Promise<any>;
+
+  findManyBudgetDetails(
+    where: Prisma.BudgetDetailsWhereInput,
+    options?: Prisma.BudgetDetailsFindManyArgs,
+  ): Promise<BudgetDetails[]>;
 }

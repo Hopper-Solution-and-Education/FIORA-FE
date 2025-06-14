@@ -170,13 +170,14 @@ model Transaction {
   partnerId        String?              @db.Uuid
   remark           String?              @db.VarChar(255)
   isDeleted        Boolean              @default(false)
-  isMarked         Boolean              @default(false)
   deletedAt        DateTime?            @db.Timestamptz(0)
   createdAt        DateTime             @default(now()) @db.Timestamptz(0)
   updatedAt        DateTime             @updatedAt @db.Timestamptz(0)
   updatedBy        String?              @db.Uuid
   createdBy        String?              @db.Uuid
   currency         Currency             @default(VND)
+  isMarked         Boolean              @default(false)
+  isExpired        Boolean              @default(false)
   productsRelation ProductTransaction[] @relation("ProductTransactions")
   fromAccount      Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Restrict)
   fromCategory     Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
@@ -358,7 +359,6 @@ model BudgetDetails {
   userId     String           @db.Uuid
   budgetId   String           @db.Uuid
   type       BudgetDetailType
-  currency   Currency         @default(VND)
   categoryId String?          @db.Uuid
   amount     Decimal          @default(0) @db.Decimal(13, 2)
   month      Int              @db.SmallInt
@@ -366,11 +366,13 @@ model BudgetDetails {
   createdBy  String?          @db.Uuid
   updatedBy  String?          @db.Uuid
   updatedAt  DateTime         @updatedAt @db.Timestamptz(0)
+  currency   Currency         @default(VND)
   budget     BudgetsTable     @relation(fields: [budgetId], references: [id], onDelete: Cascade)
   category   Category?        @relation(fields: [categoryId], references: [id])
   user       User             @relation(fields: [userId], references: [id])
 
   @@unique([month, categoryId, type, budgetId, userId])
+  @@index([categoryId, type, budgetId, userId])
   @@index([userId])
   @@index([budgetId])
   @@index([categoryId])

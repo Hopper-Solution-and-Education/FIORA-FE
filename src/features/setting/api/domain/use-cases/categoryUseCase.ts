@@ -1,3 +1,4 @@
+import { prisma } from '@/config';
 import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
@@ -10,20 +11,19 @@ import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { normalizeVietnamese, safeString } from '@/shared/utils/ExStringUtils';
 import { calculateSumUpAllocationByType } from '@/shared/utils/monthBudgetUtil';
 import { BudgetType, Category, CategoryType, Currency, Prisma, TransactionType } from '@prisma/client';
+import { budgetDetailRepository } from '../../infrastructure/repositories/budgetDetailRepository';
+import { IBudgetDetailRepository } from '../../repositories/budgetDetailRepository';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
-import { prisma } from '@/config';
-import { budgetRepository } from '../../infrastructure/repositories/budgetProductRepository';
-import { IBudgetRepository } from '../../repositories/budgetRepository';
 
 class CategoryUseCase {
   private categoryRepository: ICategoryRepository;
   private transactionRepository: ITransactionRepository;
-  private budgetRepository: IBudgetRepository;
+  private budgetDetailRepository: IBudgetDetailRepository;
 
-  constructor(repository: ICategoryRepository, transactionRepository: ITransactionRepository, budgetRepository: IBudgetRepository) {
+  constructor(repository: ICategoryRepository, transactionRepository: ITransactionRepository, budgetDetailRepository: IBudgetDetailRepository) {
     this.categoryRepository = repository;
     this.transactionRepository = transactionRepository;
-    this.budgetRepository = budgetRepository;
+    this.budgetDetailRepository = budgetDetailRepository;
   }
 
   async createCategory(params: {
@@ -376,65 +376,53 @@ class CategoryUseCase {
       throw new Error(Messages.INVALID_CATEGORY_TYPE);
     }
 
-    console.log(fiscalYear);
-    const foundBudgets = await this.budgetRepository.findUniqueBudgetData({
-      fiscalYear_type_userId: {
-        fiscalYear,
-        type: BudgetType.Bot,
-        userId,
-      },
-    });
-
-    const categoryFound = (await (this.categoryRepository.findManyCategoryWithBudgetDetails(
+    // Find all categories mapping with userId and type
+    const categoryFound = (await (this.categoryRepository.findManyCategory(
       {
         userId,
         type,
-        OR: [
-          {
-            budgetDetails: {
-              some: {
-                budgetId: foundBudgets?.id,
-              },
-            },
-          },
-          {
-            budgetDetails: {
-              none: {},
-            },
-          },
-        ],
       },
       {
         select: {
           id: true,
           name: true,
           icon: true,
-          type: true,
-          budgetDetails: {
-            where: {
-              AND: [
-                {
-                  type: type,
-                },
-                {
-                  budgetId: foundBudgets?.id,
-                },
-              ]
-            },
-            select: {
-              month: true,
-              amount: true,
-              currency: true,
-            },
-          },
         },
       },
-    ) as unknown)) as CategoryWithBudgetDetails[];
+    )) as unknown) as Category[];
 
 
-    console.log(categoryFound);
+    let categoryFoundWithBudgetDetails = [];
 
-    const transferCategoryFound = categoryFound.map((category: CategoryWithBudgetDetails) => {
+    // find all budgetDetails mapping with userId & budgetId & categoryType ( Expense or Income )
+    const categoryFoundWithBudgetDetailsAwaited = categoryFound.map(async (category: Category) => {
+      const budgetDetailsFound = await this.budgetDetailRepository.findManyBudgetDetails({
+        userId,
+        budget: {
+          fiscalYear: {
+            equals: fiscalYear,
+          },
+          type: BudgetType.Bot,
+          userId: userId
+        },
+        categoryId: category.id,
+        type: type,
+      }, {
+        select: {
+          month: true,
+          amount: true,
+          currency: true,
+        }
+      });
+      return {
+        ...category,
+        budgetDetails: budgetDetailsFound,
+      };
+    });
+
+    categoryFoundWithBudgetDetails = await Promise.all(categoryFoundWithBudgetDetailsAwaited);
+
+    const transferCategoryFound = categoryFoundWithBudgetDetails.map((category: CategoryWithBudgetDetails) => {
       const suffix = category.type === CategoryType.Expense ? 'exp' : 'inc';
       const bottomUpPlan: Record<string, number> = {};
 
@@ -463,10 +451,9 @@ class CategoryUseCase {
       };
     });
 
-    // mapping budgetDetails by month by format m1_suffix, suffix is expense or income
     return transferCategoryFound ?? [];
   }
 }
 
 // Export a single instance using the exported categoryRepository
-export const categoryUseCase = new CategoryUseCase(categoryRepository, transactionRepository, budgetRepository);
+export const categoryUseCase = new CategoryUseCase(categoryRepository, transactionRepository, budgetDetailRepository);
