@@ -12,7 +12,7 @@ import dialogSlices from './slices/dialog.slice';
 import moduleReducer from './slices/moduleSlice';
 import settingSlices from './slices/setting.slice';
 import budgetSummarySlice from '@/features/home/module/budgets/creation-dashboard/slices';
-import financeControlSlice from '@/features/finance/chart/slices';
+import financeControlSlice from '@/features/finance/report/slices';
 const reducer = {
   settings: settingSlices,
   dialog: dialogSlices,

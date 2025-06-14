@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { ChartByDate } from '@/features/finance/chart/presentation/organisms';
-import { getFinanceByDateAsyncThunk } from '@/features/finance/chart/slices/actions';
+import { ChartByDate } from '@/features/finance/report/presentation/organisms';
+import { getFinanceByDateAsyncThunk } from '@/features/finance/report/slices/actions';
 import { MODULE } from '@/shared/constants';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { useFeatureFlagGuard } from '@/shared/hooks/useFeatureFlagGuard';
