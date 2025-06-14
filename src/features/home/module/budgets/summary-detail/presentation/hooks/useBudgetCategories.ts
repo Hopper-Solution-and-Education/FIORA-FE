@@ -27,12 +27,7 @@ export function useBudgetCategories({
   categories,
   table,
   initialYear,
-  periodId,
 }: UseBudgetCategoriesProps) {
-  useEffect(() => {
-    categories.fetch();
-  }, [activeTab, periodId, initialYear]);
-
   useEffect(() => {
     const updateTableDataWithCreatedCategories = async () => {
       const createdCategories = categories.data.filter((cat) => cat.isCreated === true);

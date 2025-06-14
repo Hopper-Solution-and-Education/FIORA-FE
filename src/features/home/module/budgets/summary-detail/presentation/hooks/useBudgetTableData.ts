@@ -30,7 +30,6 @@ interface UseBudgetTableDataProps {
 export function useBudgetTableData({
   initialYear,
   activeTab,
-  period,
   periodId,
   currency,
   setSelectedCategories,
@@ -40,7 +39,8 @@ export function useBudgetTableData({
 }: UseBudgetTableDataProps) {
   useEffect(() => {
     table.fetch();
-  }, [initialYear, period, periodId, currency, activeTab]);
+    categories.fetch();
+  }, [initialYear, periodId, currency, activeTab]);
 
   useEffect(() => {
     const selectedCategoryIds = new Set<string>();
@@ -49,6 +49,7 @@ export function useBudgetTableData({
         selectedCategoryIds.add(item.categoryId);
       }
     });
+
     setSelectedCategories(selectedCategoryIds);
   }, [table.data]);
 
