@@ -10,7 +10,14 @@ import { CategoryExtras, CategoryWithBudgetDetails } from '@/shared/types/catego
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { normalizeVietnamese, safeString } from '@/shared/utils/ExStringUtils';
 import { calculateSumUpAllocationByType } from '@/shared/utils/monthBudgetUtil';
-import { BudgetType, Category, CategoryType, Currency, Prisma, TransactionType } from '@prisma/client';
+import {
+  BudgetType,
+  Category,
+  CategoryType,
+  Currency,
+  Prisma,
+  TransactionType,
+} from '@prisma/client';
 import { budgetDetailRepository } from '../../infrastructure/repositories/budgetDetailRepository';
 import { IBudgetDetailRepository } from '../../repositories/budgetDetailRepository';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
@@ -20,7 +27,11 @@ class CategoryUseCase {
   private transactionRepository: ITransactionRepository;
   private budgetDetailRepository: IBudgetDetailRepository;
 
-  constructor(repository: ICategoryRepository, transactionRepository: ITransactionRepository, budgetDetailRepository: IBudgetDetailRepository) {
+  constructor(
+    repository: ICategoryRepository,
+    transactionRepository: ITransactionRepository,
+    budgetDetailRepository: IBudgetDetailRepository,
+  ) {
     this.categoryRepository = repository;
     this.transactionRepository = transactionRepository;
     this.budgetDetailRepository = budgetDetailRepository;
@@ -372,7 +383,7 @@ class CategoryUseCase {
     }
 
     // Find all categories mapping with userId and type
-    const categoryFound = (await (this.categoryRepository.findManyCategory(
+    const categoryFound = (await this.categoryRepository.findManyCategory(
       {
         userId,
         type,
@@ -384,31 +395,33 @@ class CategoryUseCase {
           icon: true,
         },
       },
-    )) as unknown) as Category[];
-
+    )) as unknown as Category[];
 
     let categoryFoundWithBudgetDetails = [];
 
     // find all budgetDetails mapping with userId & budgetId & categoryType ( Expense or Income )
     const categoryFoundWithBudgetDetailsAwaited = categoryFound.map(async (category: Category) => {
-      const budgetDetailsFound = await this.budgetDetailRepository.findManyBudgetDetails({
-        userId,
-        budget: {
-          fiscalYear: {
-            equals: fiscalYear,
+      const budgetDetailsFound = await this.budgetDetailRepository.findManyBudgetDetails(
+        {
+          userId,
+          budget: {
+            fiscalYear: {
+              equals: fiscalYear,
+            },
+            type: BudgetType.Bot,
+            userId: userId,
           },
-          type: BudgetType.Bot,
-          userId: userId
+          categoryId: category.id,
+          type: type,
         },
-        categoryId: category.id,
-        type: type,
-      }, {
-        select: {
-          month: true,
-          amount: true,
-          currency: true,
-        }
-      });
+        {
+          select: {
+            month: true,
+            amount: true,
+            currency: true,
+          },
+        },
+      );
       return {
         ...category,
         budgetDetails: budgetDetailsFound,
@@ -417,38 +430,44 @@ class CategoryUseCase {
 
     categoryFoundWithBudgetDetails = await Promise.all(categoryFoundWithBudgetDetailsAwaited);
 
-    const transferCategoryFound = categoryFoundWithBudgetDetails.map((category: CategoryWithBudgetDetails) => {
-      const suffix = category.type === CategoryType.Expense ? 'exp' : 'inc';
-      const bottomUpPlan: Record<string, number> = {};
+    const transferCategoryFound = categoryFoundWithBudgetDetails.map(
+      (category: CategoryWithBudgetDetails) => {
+        const suffix = category.type === CategoryType.Expense ? 'exp' : 'inc';
+        const bottomUpPlan: Record<string, number> = {};
 
-      // Initialize all months with 0
-      for (let i = 1; i <= 12; i++) {
-        bottomUpPlan[`m${i}_${suffix}`] = 0;
-      }
+        // Initialize all months with 0
+        for (let i = 1; i <= 12; i++) {
+          bottomUpPlan[`m${i}_${suffix}`] = 0;
+        }
 
-      // Map budgetDetails to corresponding months
-      category.budgetDetails.forEach((detail: any) => {
-        const monthKey = `m${detail.month}_${suffix}`;
-        // Convert amount from string to number and apply currency conversion if needed
-        const amount = Number(detail.amount);
-        bottomUpPlan[monthKey] = amount; // Assuming no currency conversion for now; adjust if needed
-      });
+        // Map budgetDetails to corresponding months
+        category.budgetDetails.forEach((detail: any) => {
+          const monthKey = `m${detail.month}_${suffix}`;
+          // Convert amount from string to number and apply currency conversion if needed
+          const amount = Number(detail.amount);
+          bottomUpPlan[monthKey] = amount; // Assuming no currency conversion for now; adjust if needed
+        });
 
-      const currency = category.budgetDetails[0]?.currency;
+        const currency = category.budgetDetails[0]?.currency;
 
-      const { budgetDetails, ...categoryWithoutBudgetDetails } = category;
+        const { budgetDetails, ...categoryWithoutBudgetDetails } = category;
 
-      return {
-        ...categoryWithoutBudgetDetails,
-        bottomUpPlan,
-        isCreated: budgetDetails.length > 0,
-        ...(currency && { currency }),
-      };
-    });
+        return {
+          ...categoryWithoutBudgetDetails,
+          bottomUpPlan,
+          isCreated: budgetDetails.length > 0,
+          ...(currency && { currency }),
+        };
+      },
+    );
 
     return transferCategoryFound ?? [];
   }
 }
 
 // Export a single instance using the exported categoryRepository
-export const categoryUseCase = new CategoryUseCase(categoryRepository, transactionRepository, budgetDetailRepository);
+export const categoryUseCase = new CategoryUseCase(
+  categoryRepository,
+  transactionRepository,
+  budgetDetailRepository,
+);
