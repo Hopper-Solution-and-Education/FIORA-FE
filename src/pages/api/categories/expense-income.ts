@@ -75,6 +75,13 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { id, type, icon, name, description, parentId } = req.body;
+
+    const { error } = validateBody(categoryBodySchema, req.body);
+    if (error) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
+    }
     const updatedCategory = await categoryUseCase.updateCategory(id, userId, {
       type: type as CategoryType,
       icon,

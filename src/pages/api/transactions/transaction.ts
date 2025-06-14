@@ -61,7 +61,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    if (date && new Date(date) < thirtyDaysAgo || new Date(date) > now) {
+    if ((date && new Date(date) < thirtyDaysAgo) || new Date(date) > now) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_DATE_RANGE_INPUT_30_DAYS);
     }
 
