@@ -1,4 +1,5 @@
 import { COLORS } from '@/shared/constants/chart';
+import { formatCurrency } from '@/shared/utils';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
@@ -16,12 +17,11 @@ export default function FinanceSummary() {
         return;
       } else {
         const { balance, dept } = data.data;
-        // const formatBalance = formatCurrency(balance);
-        // const formatDept = formatCurrency(dept);
+        const formatBalance = formatCurrency(balance);
+        const formatDept = formatCurrency(dept);
 
-        console.log(data);
-        setFBalance(`${balance ?? 0} FX`);
-        setFDebt(`${dept ?? 0} FX`);
+        setFBalance(formatBalance);
+        setFDebt(formatDept);
         setIsLoading(false);
       }
     } catch (error: any) {
