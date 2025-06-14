@@ -1,14 +1,14 @@
 import { Messages } from '@/shared/constants/message';
 
 import { prisma } from '@/config';
-import { GlobalFilters, PaginationResponse, ProductItem } from '@/shared/types';
+import { GlobalFilters, PaginationResponse, ProductItem, TransactionType } from '@/shared/types';
 import { convertCurrency } from '@/shared/utils/exchangeRate';
 import { Currency, Prisma, Product, ProductType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 import { BooleanUtils } from '@/shared/lib';
 import { buildWhereClause } from '@/shared/utils';
-import { safeString } from '@/shared/utils/ExStringUtils';
+import { normalizeVietnamese, safeString } from '@/shared/utils/ExStringUtils';
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
 import { productRepository } from '../../infrastructure/repositories/productRepository';
 import { productItemsRepository } from '../../infrastructure/repositories/productRepositoryItem';
@@ -19,6 +19,7 @@ import {
   ProductCreation,
   ProductUpdate,
 } from '../../repositories/productRepository.interface';
+import { NextApiRequest } from 'next';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
@@ -114,7 +115,6 @@ class ProductUseCase {
       throw new Error('Failed to get products by type', error.message);
     }
   }
-
   async getProductById(params: { userId: string; id: string }) {
     const { userId, id } = params;
     try {
@@ -485,6 +485,307 @@ class ProductUseCase {
     });
 
     return result;
+  }
+
+  async fetchProductCategories(req: NextApiRequest, userId: string) {
+    const { page = 1, pageSize = 20 } = req.query;
+    const skip = (Number(page) - 1) * Number(pageSize);
+    const take = Number(pageSize);
+    const params = req.body as GlobalFilters;
+    const searchParams = safeString(params.search);
+    let where: Prisma.ProductWhereInput = {};
+    let products: any[] = [];
+    let categories: any[] = [];
+    let count = 0;
+
+    if (params.filters && Object.keys(params.filters).length > 0) {
+      where = buildWhereClause(params.filters) as Prisma.ProductWhereInput;
+    }
+
+    let rawUnaccentProducts: any[] = [];
+
+    if (BooleanUtils.isTrue(searchParams)) {
+      try {
+        const typeSearchParams = searchParams.toLowerCase();
+        where = {
+          AND: [
+            where,
+            {
+              OR: [
+                { name: { contains: typeSearchParams, mode: 'insensitive' } },
+                { items: { some: { name: { contains: typeSearchParams, mode: 'insensitive' } } } },
+                { category: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+              ],
+            },
+          ],
+        };
+
+        const normalized = normalizeVietnamese(typeSearchParams);
+        const rawQuery = `
+        SELECT p.*
+        FROM "Product" p
+        LEFT JOIN "ProductItems" i ON i."productId" = p."id"
+        LEFT JOIN "CategoryProducts" cp ON cp."id" = p."catId"
+        WHERE p."userId"::text = $1
+          AND (
+            unaccent(p."name") ILIKE unaccent('%' || $2 || '%')
+            OR unaccent(i."name") ILIKE unaccent('%' || $2 || '%')
+            OR unaccent(cp."name") ILIKE unaccent('%' || $2 || '%')
+          )
+        GROUP BY p.id;
+      `;
+        rawUnaccentProducts = await prisma.$queryRawUnsafe(rawQuery, userId, normalized);
+      } catch (err) {
+        console.error('Fallback search with unaccent failed', err);
+      }
+    }
+
+    let matchedCatIds: string[] = [];
+
+    if (rawUnaccentProducts.length > 0) {
+      matchedCatIds = Array.from(new Set(rawUnaccentProducts.map((p) => p.catId).filter(Boolean)));
+    } else {
+      const filteredProducts = await prisma.product.findMany({
+        where: { userId, ...where },
+        select: { id: true, catId: true },
+      });
+
+      matchedCatIds = Array.from(
+        new Set(filteredProducts.map((p) => p.catId).filter((id): id is string => id !== null)),
+      );
+    }
+
+    if (matchedCatIds.length === 0) {
+      return {
+        data: [],
+        page: Number(page),
+        pageSize: Number(pageSize),
+        totalPage: 0,
+        totalCount: 0,
+        minPrice: 0,
+        maxPrice: 0,
+        minTaxRate: 0,
+        maxTaxRate: 0,
+        minExpense: 0,
+        maxExpense: 0,
+        minIncome: 0,
+        maxIncome: 0,
+      };
+    }
+
+    [categories, count] = await Promise.all([
+      prisma.categoryProducts.findMany({
+        where: { userId, id: { in: matchedCatIds } },
+        skip,
+        take,
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          icon: true,
+          tax_rate: true,
+          createdAt: true,
+          updatedAt: true,
+          createdBy: true,
+          updatedBy: true,
+        },
+        orderBy: { name: 'asc' },
+      }),
+      prisma.categoryProducts.count({
+        where: { userId, id: { in: matchedCatIds } },
+      }),
+    ]);
+
+    const paginatedCatIds = categories.map((cat) => cat.id);
+
+    products = await prisma.product.findMany({
+      where: {
+        catId: { in: paginatedCatIds },
+        userId,
+        ...where,
+      },
+      select: {
+        id: true,
+        price: true,
+        name: true,
+        type: true,
+        description: true,
+        taxRate: true,
+        catId: true,
+        icon: true,
+        currency: true,
+        items: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            icon: true,
+          },
+        },
+      },
+    });
+
+    const productIds = products.map((product) => product.id);
+    const productTransactions =
+      productIds.length > 0
+        ? await prisma.productTransaction.findMany({
+            where: {
+              productId: { in: productIds },
+              transaction: { userId },
+            },
+            select: {
+              productId: true,
+              transaction: {
+                select: {
+                  id: true,
+                  userId: true,
+                  type: true,
+                  amount: true,
+                  currency: true,
+                },
+              },
+            },
+          })
+        : [];
+
+    const creatorIds = categories.map((cat) => cat.createdBy).filter(Boolean) as string[];
+    const updatorIds = categories.map((cat) => cat.updatedBy).filter(Boolean) as string[];
+    const uniqueUserIds = Array.from(new Set([...creatorIds, ...updatorIds]));
+
+    const users =
+      uniqueUserIds.length > 0
+        ? await prisma.user.findMany({
+            where: { id: { in: uniqueUserIds } },
+            select: { id: true, name: true, email: true, image: true },
+          })
+        : [];
+
+    const userMap = users.reduce(
+      (acc, user) => {
+        acc[user.id] = user;
+        return acc;
+      },
+      {} as Record<
+        string,
+        { id: string; name: string | null; email: string | null; image: string | null }
+      >,
+    );
+
+    const productTransactionMap = productTransactions.reduce(
+      (acc, pt) => {
+        if (!acc[pt.productId]) acc[pt.productId] = [];
+        acc[pt.productId].push({
+          id: pt.transaction.id,
+          userId: pt.transaction.userId,
+          type: pt.transaction.type,
+          amount: pt.transaction.amount.toNumber(),
+          currency: pt.transaction.currency,
+        });
+        return acc;
+      },
+      {} as Record<string, TransactionType[]>,
+    );
+
+    const productsByCategory = products.reduce(
+      (acc, product) => {
+        const catId = product.catId;
+        if (catId) {
+          if (!acc[catId]) acc[catId] = [];
+          const transactions = productTransactionMap[product.id] || [];
+          acc[catId].push({
+            product: {
+              id: product.id,
+              price: product.price.toNumber(),
+              name: product.name,
+              type: product.type,
+              description: product.description,
+              items: product.items,
+              taxRate: product.taxRate?.toNumber() || 0,
+              catId: product.catId,
+              icon: product.icon,
+              currency: product.currency,
+            },
+            transactions,
+          });
+        }
+        return acc;
+      },
+      {} as Record<string, Array<{ product: ProductType; transactions: TransactionType[] }>>,
+    );
+
+    const transformedData = categories.map((category) => {
+      const createdBy = category.createdBy ? userMap[category.createdBy] || null : null;
+      const updatedBy = category.updatedBy ? userMap[category.updatedBy] || null : null;
+      const categoryProducts = productsByCategory[category.id] || [];
+      return {
+        category: {
+          id: category.id,
+          name: category.name,
+          description: category.description,
+          icon: category.icon,
+          tax_rate: category.tax_rate?.toNumber() || 0,
+          createdAt: category.createdAt,
+          updatedAt: category.updatedAt,
+          createdBy,
+          updatedBy,
+        },
+        products: categoryProducts,
+      };
+    });
+
+    const totalPage = Math.ceil(count / take);
+
+    const priceList: number[] = [];
+    const taxRateList: number[] = [];
+    const incomeTotals: number[] = [];
+    const expenseTotals: number[] = [];
+
+    for (const category of transformedData) {
+      for (const item of category.products) {
+        const { price, taxRate } = item.product;
+        priceList.push(price);
+        taxRateList.push(taxRate);
+
+        const transactions = item.transactions;
+        const totalIncome = transactions
+          .filter((tx: any) => tx.type === 'Income')
+          .reduce((sum: any, tx: any) => sum + tx.amount, 0);
+        const totalExpense = transactions
+          .filter((tx: any) => tx.type === 'Expense')
+          .reduce((sum: any, tx: any) => sum + tx.amount, 0);
+
+        incomeTotals.push(totalIncome);
+        expenseTotals.push(totalExpense);
+      }
+    }
+
+    const [minPrice, maxPrice] = this.computeMinMax(priceList);
+    const [minTaxRate, maxTaxRate] = this.computeMinMax(taxRateList);
+    const [minIncome, maxIncome] = this.computeMinMax(incomeTotals);
+    const [minExpense, maxExpense] = this.computeMinMax(expenseTotals);
+
+    return {
+      data: transformedData,
+      page: Number(page),
+      pageSize: Number(pageSize),
+      totalPage,
+      totalCount: count,
+      minPrice,
+      maxPrice,
+      minTaxRate,
+      maxTaxRate,
+      minExpense,
+      maxExpense,
+      minIncome,
+      maxIncome,
+    };
+  }
+
+  computeMinMax(arr: number[]): [number, number] {
+    if (arr.length === 0) return [0, 0];
+    const min = Math.min(...arr);
+    const max = Math.max(...arr);
+    return min === max ? [0, max] : [min, max];
   }
 }
 
