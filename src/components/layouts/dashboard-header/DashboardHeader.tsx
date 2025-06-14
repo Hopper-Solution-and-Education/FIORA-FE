@@ -8,7 +8,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ICON_SIZE } from '@/shared/constants/size';
-import { formatCurrency } from '@/shared/utils';
 import { Bell, Gift } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Breadcrumbs } from '../../Breadcrumbs';
@@ -16,48 +15,19 @@ import { Alert, AlertDescription } from '../../ui/alert';
 import { Separator } from '../../ui/separator';
 import { SidebarTrigger } from '../../ui/sidebar';
 import { UserNav } from '../user-nav/UserNav';
+import FinanceSummary from './FinanceSummary';
 import HelpCenter from './HelpCenter';
 import SettingCenter from './SettingCenter';
 
 const keyOpenAnnouncement = 'isOpenAnnouncement';
 
 export default function Header() {
-  // state
-  const [FBalance, setFBalance] = useState('0.0');
-  const [FDebt, setFDebt] = useState('0.0');
-  const [isLoading, setIsLoading] = useState(true);
   const [isOpenAnnouncement, setIsOpenAnnouncement] = useState(() => {
     // Get the stored state from localStorage, default to true if not found
     const storedState = localStorage.getItem(keyOpenAnnouncement);
     return storedState === null ? true : JSON.parse(storedState);
   });
 
-  const fetchUserBalance = async () => {
-    try {
-      const response = await fetch('/api/accounts/balance');
-      const data = await response.json();
-      if (data.status !== 200) {
-        // alert('Error fetching user balance:' + data.message);
-        return;
-      } else {
-        const { balance, dept } = data.data;
-        const formatBalance = formatCurrency(balance);
-        const formatDept = formatCurrency(dept);
-        setFBalance(formatBalance);
-        setFDebt(formatDept);
-        setIsLoading(false);
-      }
-    } catch (error: any) {
-      // alert('Error fetching user balance:' + error.message);
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    fetchUserBalance();
-  }, []);
-
-  // Update localStorage whenever isOpenAnnouncement changes
   useEffect(() => {
     localStorage.setItem(keyOpenAnnouncement, isOpenAnnouncement);
   }, [isOpenAnnouncement]);
@@ -84,21 +54,8 @@ export default function Header() {
       {/* FBalance, FDebt & Search */}
       <section className="flex h-14 shrink-0 items-center justify-between gap-4 px-4">
         {/* Tài chính */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-green-600">FBalance:</span>
-            <div className="w-100 text-right px-3 py-1 rounded">
-              {isLoading ? 'Loading...' : FBalance}
-            </div>
-          </div>
+        <FinanceSummary />
 
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-red-600">FDebt:</span>
-            <div className="w-100 text-right px-3 py-1 rounded">
-              {isLoading ? 'Loading...' : FDebt}
-            </div>
-          </div>
-        </div>
         {/* Icon Buttons + User */}
         <div className="hidden md:flex items-center gap-6">
           <DropdownMenu>
@@ -133,7 +90,7 @@ export default function Header() {
       </section>
 
       {/* Breadcrumbs dưới */}
-      <div className="flex items-center justify-between gap-2 px-4 pb-4">
+      <div className="flex items-center justify-between gap-2 p-4">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
