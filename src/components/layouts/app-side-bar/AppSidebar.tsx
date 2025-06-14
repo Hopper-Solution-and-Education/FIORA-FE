@@ -3,7 +3,6 @@ import growthbook from '@/config/growthbook/growthbook';
 import { NavItem } from '@/features/home/types/Nav.types';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import { ICON_SIZE } from '@/shared/constants/size';
-import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { cn } from '@/shared/lib/utils';
 import { SectionType } from '@prisma/client';
 import HopperLogo from '@public/images/logo.jpg';
@@ -41,6 +40,7 @@ import {
   useSidebar,
 } from '../../ui/sidebar';
 
+import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
 import { helpItems, menuSettingItems } from '../dashboard-header/utils';
 import { filterNavItems as filterNavItemsUtil, isItemActive as isItemActiveUtil } from './utils';
 
@@ -58,17 +58,19 @@ type AppSideBarProps = {
 export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   const gb = growthbook;
   const [newNavItem, setNewNavItem] = useState<NavItem[]>([]);
-  const { data: session } = useSession() as { data: Session | null };
+  const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
+
   const pathname = usePathname();
+  const router = useRouter();
+
+  const { data: session } = useSession() as { data: Session | null };
+  const { isTablet } = useMatchBreakpoint();
+  const { open } = useSidebar();
   const { section } = useGetSection(SectionType.HEADER, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
     revalidateIfStale: false,
   });
-  const isMobile = useIsMobile();
-  const { open } = useSidebar();
-  const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
-  const router = useRouter();
 
   const handleLogout = async () => {
     await signOut().catch(() => {
@@ -123,7 +125,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
           {/* Logo */}
           <div
             className={`flex aspect-square items-center justify-center rounded-lg bg-transparent text-sidebar-primary-foreground transition-all duration-300 ${
-              isMobile
+              isTablet
                 ? open
                   ? 'size-10 sm:size-12'
                   : 'size-6 sm:size-7'
@@ -226,7 +228,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-      {isMobile && (
+      {isTablet && (
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
