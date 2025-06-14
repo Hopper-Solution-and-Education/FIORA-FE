@@ -2,6 +2,7 @@ import { Currency } from '@/shared/types';
 import { TableData } from '../presentation/types/table.type';
 import { DataSourceItemProps } from '@/components/common/tables/custom-table/types';
 import { formatters } from '@/shared/lib';
+import { convertVNDToUSD } from '@/shared/utils';
 
 const EXCHANGE_RATE = 23000; // 1 USD = 23,000 VND
 
@@ -53,10 +54,10 @@ export const convertTableDataCurrency = (
         const dataItem = transformedItem[field] as DataSourceItemProps;
         let originalValue = Number(dataItem.value) || 0;
 
-        // Chỉ chuyển đổi nếu ô có thể edit và currency khác nhau
-        if (transformedItem.isEditable && baseCurrency !== userCurrency) {
+        // Convert currency if needed
+        if (baseCurrency !== userCurrency) {
           if (baseCurrency === 'VND' && userCurrency === 'USD') {
-            originalValue = originalValue / EXCHANGE_RATE;
+            originalValue = convertVNDToUSD(originalValue);
           } else if (baseCurrency === 'USD' && userCurrency === 'VND') {
             originalValue = originalValue * EXCHANGE_RATE;
           }
@@ -82,7 +83,7 @@ export const convertTableDataCurrency = (
 
   // Lấy baseCurrency từ dòng top-down
   const topDownItem = tableData.find((item) => item.key === 'top-down');
-  const baseCurrency = topDownItem?.currency || 'USD';
+  const baseCurrency = (topDownItem?.currency || 'USD') as Currency;
 
   return tableData.map((item) => transformItem(item, baseCurrency));
 };

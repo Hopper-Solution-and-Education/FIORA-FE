@@ -30,6 +30,7 @@ import { useBudgetTableData } from '../hooks/useBudgetTableData';
 import { useCategoryManagement } from '../hooks/useCategoryManagement';
 import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
 import { cn } from '@/shared/utils';
+import { convertTableDataCurrency } from '../../utils/convertTableDataCurrency';
 
 interface BudgetDetailProps {
   year: number;
@@ -91,10 +92,14 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     categories,
   });
 
+  const convertedTableData = useMemo(() => {
+    return convertTableDataCurrency(table.data, currency);
+  }, [table.data, currency]);
+
   const { columns } = useBudgetColumns({
     period,
     periodId,
-    table,
+    table: { ...table, data: convertedTableData },
     categories,
     currency,
     activeTab,
@@ -187,7 +192,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
         <div className="w-[5rem] md:w-[20rem] lg:w-[50rem] min-w-full">
           <TableV2
             columns={columns}
-            dataSource={table.data}
+            dataSource={convertedTableData}
             loading={isLoading}
             loadingRowCount={8}
             rowKey="key"

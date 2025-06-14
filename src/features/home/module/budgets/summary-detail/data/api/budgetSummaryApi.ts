@@ -36,9 +36,12 @@ export class BudgetSummaryAPI implements IBudgetSummaryAPI {
     );
   }
 
-  async getCategoriesByType(type: 'Income' | 'Expense'): Promise<CategoryResponseDTO> {
+  async getCategoriesByType(
+    type: 'Income' | 'Expense',
+    year: number,
+  ): Promise<CategoryResponseDTO> {
     return httpClient.get<CategoryResponseDTO>(
-      routeConfig(ApiEndpointEnum.CategoriesByType, {}, { type }),
+      routeConfig(ApiEndpointEnum.CategoriesByType, {}, { type, year }),
     );
   }
 

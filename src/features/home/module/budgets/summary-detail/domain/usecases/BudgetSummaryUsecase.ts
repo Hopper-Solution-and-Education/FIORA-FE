@@ -34,8 +34,8 @@ export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
     return this.budgetSummaryRepository.getBudgetByType(fiscalYear, type);
   }
 
-  async getCategoriesByType(type: 'Income' | 'Expense'): Promise<Category[]> {
-    return this.budgetSummaryRepository.getCategoriesByType(type);
+  async getCategoriesByType(type: 'Income' | 'Expense', year: number): Promise<Category[]> {
+    return this.budgetSummaryRepository.getCategoriesByType(type, year);
   }
 
   async getActualPlanningByCategory(categoryId: string, year: number): Promise<CategoryPlanning> {

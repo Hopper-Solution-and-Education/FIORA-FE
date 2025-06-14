@@ -35,8 +35,8 @@ export class BudgetSummaryRepository implements IBudgetSummaryRepository {
     return await this.budgetSummaryAPI.getBudgetSummary({ fiscalYear });
   }
 
-  async getCategoriesByType(type: 'Income' | 'Expense'): Promise<Category[]> {
-    const response = await this.budgetSummaryAPI.getCategoriesByType(type);
+  async getCategoriesByType(type: 'Income' | 'Expense', year: number): Promise<Category[]> {
+    const response = await this.budgetSummaryAPI.getCategoriesByType(type, year);
     return response.data;
   }
 
