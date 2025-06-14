@@ -24,13 +24,13 @@ export default sessionWrapper(async (req, res, userId) => {
 
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { type } = req.query as { type: CategoryType };
+    const { type, year } = req.query as { type: CategoryType; year: string };
 
-    const categories = await categoryUseCase.getListCategoryByType(userId, type);
+    const categories = await categoryUseCase.getListCategoryByType(userId, type, year);
 
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
+    res.setHeader('Expires', '0');  
     res.setHeader('Surrogate-Control', 'no-store');
 
     return res

@@ -40,7 +40,7 @@ export function useBudgetInit({
   const fetchCategories = async () => {
     try {
       const type = activeTab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income';
-      const response = await budgetSummaryUseCase.getCategoriesByType(type);
+      const response = await budgetSummaryUseCase.getCategoriesByType(type, initialYear);
 
       setCategoryList(response);
     } catch (err: any) {

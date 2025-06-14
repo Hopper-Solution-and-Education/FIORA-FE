@@ -145,6 +145,16 @@ class BudgetRepository implements IBudgetRepository {
       create,
     });
   }
+
+  async findUniqueBudgetData(
+    where: Prisma.BudgetsTableWhereUniqueInput,
+    options?: Prisma.BudgetsTableFindUniqueArgs,
+  ): Promise<BudgetsTable | null> {
+    return prisma.budgetsTable.findUnique({
+      where,
+      ...options,
+    });
+  }
 }
 
 // Export a single instance

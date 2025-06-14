@@ -37,7 +37,7 @@ export interface IBudgetSummaryAPI {
    * @param type Loại category (Income/Expense)
    * @returns Promise chứa dữ liệu phản hồi
    */
-  getCategoriesByType(type: 'Income' | 'Expense'): Promise<CategoryResponseDTO>;
+  getCategoriesByType(type: 'Income' | 'Expense', year: number): Promise<CategoryResponseDTO>;
 
   /**
    * Lấy thông tin actual planning của một category

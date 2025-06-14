@@ -30,6 +30,7 @@ import { useBudgetTableData } from '../hooks/useBudgetTableData';
 import { useCategoryManagement } from '../hooks/useCategoryManagement';
 import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
 import { cn } from '@/shared/utils';
+import { convertTableDataCurrency } from '../../utils/convertTableDataCurrency';
 
 interface BudgetDetailProps {
   year: number;
@@ -91,10 +92,14 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     categories,
   });
 
+  const convertedTableData = useMemo(() => {
+    return convertTableDataCurrency(table.data, currency);
+  }, [table.data, currency]);
+
   const { columns } = useBudgetColumns({
     period,
     periodId,
-    table,
+    table: { ...table, data: convertedTableData },
     categories,
     currency,
     activeTab,
@@ -118,7 +123,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
 
   return (
     <div className="p-4 w-full flex flex-col min-h-screen">
-      <div className="border border-gray-300 dark:border-gray-700 rounded-xl p-6 shadow-sm bg-white dark:bg-gray-800">
+      <div className="border border-gray-300 dark:border-gray-700 rounded-xl p-6 shadow-sm">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-6 justify-between">
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center flex-wrap">
@@ -137,7 +142,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
               )}
             </div>
             <Select onValueChange={handlePeriodChange} value={periodId}>
-              <SelectTrigger className="w-full sm:w-[150px] bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <SelectTrigger className="w-full sm:w-[150px] rounded-lg">
                 <SelectValue placeholder="Select period" />
               </SelectTrigger>
               <SelectContent>
@@ -155,17 +160,18 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
               onValueChange={handleFilterChange}
               className="w-full sm:w-auto"
             >
-              <TabsList className="grid grid-cols-2 sm:flex w-full sm:w-auto bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <TabsList className="grid grid-cols-2 sm:flex w-full sm:w-auto  rounded-lg">
                 <TabsTrigger
                   value="expense"
-                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 rounded-lg transition-all"
+                  className="flex items-center gap-2 rounded-lg transition-all"
                 >
                   <Icons.trendindDown size={16} color={COLORS.DEPS_DANGER.LEVEL_1} />
                   Expense
                 </TabsTrigger>
+
                 <TabsTrigger
                   value="income"
-                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 rounded-lg transition-all"
+                  className="flex items-center gap-2 rounded-lg transition-all"
                 >
                   <Icons.trendingUp size={16} color={COLORS.DEPS_SUCCESS.LEVEL_1} />
                   Income
@@ -183,11 +189,10 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
           )}
         </div>
 
-        {/* Table Section - giữ nguyên */}
         <div className="w-[5rem] md:w-[20rem] lg:w-[50rem] min-w-full">
           <TableV2
             columns={columns}
-            dataSource={table.data}
+            dataSource={convertedTableData}
             loading={isLoading}
             loadingRowCount={8}
             rowKey="key"
@@ -196,7 +201,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
             showHeader
             pagination={false}
             rowHover
-            className="w-full scrollbar-thin rounded-lg bg-white dark:bg-gray-800 shadow-sm"
+            className="w-full scrollbar-thin rounded-lg shadow-sm"
           />
         </div>
       </div>

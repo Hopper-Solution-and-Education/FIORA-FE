@@ -582,6 +582,7 @@ class BudgetSummaryUseCase {
           };
         });
 
+      const budgetTableCurrency = extractBudgetTypesByYear.currency;
       // 3. Upsert BudgetDetails for Expense/Income
       const updatedBudgetDetails = await this.upsertBudgetCategoryDetailsByType(
         monthlyBudgetDetailValues,
@@ -589,7 +590,7 @@ class BudgetSummaryUseCase {
         extractBudgetTypesByYear.id,
         categoryId,
         type,
-        currency,
+        budgetTableCurrency,
         prisma,
       );
 
@@ -602,7 +603,7 @@ class BudgetSummaryUseCase {
           extractBudgetTypesByYear.id,
           categoryId,
           BudgetDetailType.Act,
-          currency,
+          budgetTableCurrency,
           prisma,
         );
       }
