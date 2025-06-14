@@ -13,6 +13,12 @@ interface MultiSelectFilterProps {
   disabled?: boolean;
 }
 
+const DEFAULT_OPTION: DropdownOption = {
+  label: 'No option available',
+  value: '',
+  disabled: true,
+};
+
 const MultiSelectFilter = ({
   options,
   selectedValues = [],
@@ -26,7 +32,7 @@ const MultiSelectFilter = ({
       {label && <Label>{label}</Label>}
       <MultiSelect
         className="w-full px-4 py-[7px]"
-        options={options}
+        options={options.length > 0 ? options : [...options, DEFAULT_OPTION]}
         selected={selectedValues}
         onChange={onChange}
         placeholder={placeholder}
