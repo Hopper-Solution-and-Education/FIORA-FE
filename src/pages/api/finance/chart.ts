@@ -106,6 +106,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       // Group by days
       const days = [];
       const currentDate = new Date(fromDate);
+      currentDate.setHours(0, 0, 0, 0); // Set to start of day
 
       while (currentDate <= toDate) {
         const dayStart = new Date(currentDate);
@@ -114,7 +115,8 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
 
         const dayTransactions = transactions.filter((t) => {
           const transDate = new Date(t.date);
-          return transDate >= dayStart && transDate <= dayEnd;
+          transDate.setHours(0, 0, 0, 0); // Normalize transaction date
+          return transDate.getTime() === dayStart.getTime();
         });
 
         days.push({
@@ -153,7 +155,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
         });
 
         weeks.push({
-          period: `Week ${Math.ceil((currentDate.getDate() + currentDate.getDay()) / 7)} (${weekStart.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - ${weekEnd.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })})`,
+          period: `${weekStart.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - ${weekEnd.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`,
           startDate: weekStart,
           endDate: weekEnd,
           totalIncome: weekTransactions

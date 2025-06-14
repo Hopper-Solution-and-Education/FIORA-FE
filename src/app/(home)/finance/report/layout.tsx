@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'FIORA | Finance Chart',
-  description: 'FIORA - Finance Chart',
+  title: 'FIORA | Finance Report',
+  description: 'FIORA - Finance Chart Report',
 };
 
 export default async function FinanceChartLayout({ children }: { children: React.ReactNode }) {
