@@ -15,7 +15,7 @@ export const navItems: NavItem[] = [
   },
   {
     title: 'Finance',
-    url: '/finance/chart',
+    url: '/finance/report',
     icon: 'wallet',
     isActive: false,
     items: [
