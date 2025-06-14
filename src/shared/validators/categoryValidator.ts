@@ -1,27 +1,25 @@
 import Joi from 'joi';
+import { excludeEmojiPattern } from '../constants';
 
 export const categoryBodySchema = Joi.object({
     name: Joi.string()
-        .pattern(/^[a-zA-Z0-9 ]+$/)
+        .pattern(excludeEmojiPattern)
         .required()
-        .max(50)
+        .max(255)
         .messages({
             'string.empty': 'Category name is invalid',
             'string.pattern.base': 'Category name is invalid',
             'any.required': 'Category name is required',
         }),
     icon: Joi.string()
-        .pattern(/^[a-zA-Z0-9 ]+$/)
+        .pattern(excludeEmojiPattern)
         .optional()
-        .allow(null)
+        .allow('')
         .messages({
             'string.empty': 'Category icon is invalid',
             'string.pattern.base': 'Category icon is invalid',
         }),
-    description: Joi.string().optional().allow(null).messages({
+    description: Joi.string().optional().allow('').messages({
         'string.empty': 'Category description is invalid',
-    }),
-    parentId: Joi.string().optional().allow(null).messages({
-        'string.empty': 'Category parent id is invalid',
     }),
 });

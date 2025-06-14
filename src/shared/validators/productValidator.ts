@@ -1,9 +1,10 @@
 import { Currency } from '@prisma/client';
 import Joi from 'joi';
+import { excludeEmojiPattern } from '../constants';
 
 export const productItemBodySchema = Joi.object({
   icon: Joi.string()
-    .pattern(/^[a-zA-Z0-9 ]+$/)
+    .pattern(excludeEmojiPattern)
     .required()
     .messages({
       'string.empty': 'Product item icon url is invalid',
@@ -11,13 +12,14 @@ export const productItemBodySchema = Joi.object({
       'any.required': 'Product item icon is required',
     }),
   name: Joi.string()
-    .pattern(/^[a-zA-Z0-9 ]+$/)
+    .pattern(excludeEmojiPattern)
     .required()
     .max(50)
     .messages({
       'string.empty': 'Product item name is invalid',
       'string.pattern.base': 'Product item name is invalid',
       'any.required': 'Product item name is required',
+      'string.max': 'Product item name must be less than 50 characters',
     }),
   description: Joi.string().allow('').optional(),
 });
@@ -27,15 +29,16 @@ export const productBodySchema = Joi.object({
   icon: Joi.string().required().messages({
     'string.empty': 'Product icon url is invalid',
     'any.required': 'Product icon is required',
-  }).pattern(/^[a-zA-Z0-9 ]+$/, 'Product icon url is invalid'),
+  }).pattern(excludeEmojiPattern, 'Product icon url is invalid'),
   name: Joi.string()
-    .pattern(/^[a-zA-Z0-9 ]+$/)
+    .pattern(excludeEmojiPattern)
     .required()
     .max(50)
     .messages({
       'string.empty': 'Product name is invalid',
       'string.pattern.base': 'Product name is invalid',
       'any.required': 'Product name is required',
+      'string.max': 'Product name must be less than 50 characters',
     }),
   category_id: Joi.string().required().messages({
     'any.required': 'Product category id is required',
@@ -71,17 +74,17 @@ export const productUpdateBodySchema = Joi.object({
     'any.required': 'Product id is required',
   }),
   icon: Joi.string()
-    .pattern(/^[a-zA-Z0-9 ]+$/)
+    .pattern(excludeEmojiPattern)
     .optional()
-    .allow(null)
+    .allow('')
     .messages({
       'string.empty': 'Product icon url is invalid',
       'string.pattern.base': 'Product icon url is invalid',
     }),
   name: Joi.string()
-    .pattern(/^[a-zA-Z0-9 ]+$/)
+    .pattern(excludeEmojiPattern)
     .optional()
-    .allow(null)
+    .allow('')
     .messages({
       'string.empty': 'Product name is invalid',
       'string.pattern.base': 'Product name is invalid',
@@ -98,7 +101,7 @@ export const productUpdateBodySchema = Joi.object({
     'number.base': 'Price must be a number',
     'any.required': 'Price is required',
   }),
-  tax_rate: Joi.number().optional().allow(null).min(0).max(100).messages({
+  tax_rate: Joi.number().optional().allow('').min(0).max(100).messages({
     'number.base': 'Tax rate must be a number',
     'number.min': 'Tax rate must be greater than 0',
     'number.max': 'Tax rate must be smaller than or equal 100',

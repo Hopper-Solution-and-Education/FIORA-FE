@@ -1,8 +1,10 @@
-import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { partnerUseCase } from '@/features/partner/application/use-cases/partnerUseCase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
+import { validateBody } from '@/shared/utils/validate';
+import { partnerBodySchema } from '@/shared/validators/partnerValidator';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default withAuthorization({
@@ -56,6 +58,14 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   try {
     const { id } = req.query;
 
+    const { error } = validateBody(partnerBodySchema, req.body);
+    if (error) {
+      return res.status(RESPONSE_CODE.BAD_REQUEST).json({
+        status: RESPONSE_CODE.BAD_REQUEST,
+        message: Messages.VALIDATION_ERROR,
+        error: error,
+      });
+    }
     const updatedPartner = await partnerUseCase.editPartner(id as string, userId, req.body);
     return res
       .status(RESPONSE_CODE.OK)

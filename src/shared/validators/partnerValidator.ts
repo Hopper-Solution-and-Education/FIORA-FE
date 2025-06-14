@@ -1,25 +1,29 @@
 import Joi from 'joi';
+import { excludeEmojiPattern } from '../constants';
 
 export const partnerBodySchema = Joi.object({
     name: Joi.string()
-        .pattern(/^[a-zA-Z0-9 ]+$/)
+        .pattern(excludeEmojiPattern)
         .required()
-        .max(50)
+        .max(255)
         .messages({
-            'string.empty': 'Account name is invalid',
-            'string.pattern.base': 'Account name is invalid',
-            'any.required': 'Account name is required',
+            'string.empty': 'Partner name is invalid',
+            'string.pattern.base': 'Partner name cannot contain emoji icons like 😍',
+            'any.required': 'Partner name is required',
         }),
-    email: Joi.string().email().messages({
-        'string.empty': 'Account email is invalid',
-        'any.required': 'Account email is required',
-    }),
     logo: Joi.string()
-        .pattern(/^[a-zA-Z0-9 ]+$/)
+        .pattern(excludeEmojiPattern)
         .optional()
-        .allow(null)
+        .allow('')
         .messages({
-            'string.empty': 'Account logo is invalid',
-            'string.pattern.base': 'Account logo is invalid',
+            'string.empty': 'Partner logo is invalid',
+            'string.pattern.base': 'Partner logo cannot contain emoji icons like ��',
+        }),
+    description: Joi.string()
+        .pattern(excludeEmojiPattern)
+        .allow('')
+        .optional()
+        .messages({
+            'string.pattern.base': 'Partner description cannot contain emoji icons like 😍',
         }),
 });
