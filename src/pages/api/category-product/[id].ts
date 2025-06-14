@@ -1,10 +1,13 @@
-import { createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { prisma } from '@/config';
+import { categoryProductsUseCase } from '@/features/setting/api/domain/use-cases/categoryProductUsecase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { createErrorResponse } from '@/shared/lib';
+import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { validateBody } from '@/shared/utils/validate';
+import { categoryProductBodySchema } from '@/shared/validators/productCategoryValidator';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { categoryProductsUseCase } from '@/features/setting/api/domain/use-cases/categoryProductUsecase';
-import { prisma } from '@/config';
 
 export default sessionWrapper(async (req, res, userId) => {
   switch (req.method) {
@@ -54,6 +57,12 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
     const id = req.query.id as string;
     const { icon, name, description, tax_rate } = req.body;
 
+    const { error } = validateBody(categoryProductBodySchema, req.body);
+    if (error) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
+    }
     // check name no matter uppercase or lowercase
     const normalizedName = name.toLowerCase();
 

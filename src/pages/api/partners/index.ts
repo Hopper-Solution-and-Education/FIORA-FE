@@ -1,9 +1,12 @@
-import { NextApiRequest, NextApiResponse } from 'next';
 import { partnerUseCase } from '@/features/partner/application/use-cases/partnerUseCase';
-import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { Messages } from '@/shared/constants/message';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { createErrorResponse } from '@/shared/lib';
+import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
+import { validateBody } from '@/shared/utils/validate';
+import { partnerBodySchema } from '@/shared/validators/partnerValidator';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 export default withAuthorization({
   GET: ['User', 'Admin', 'CS'],
@@ -44,6 +47,12 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
+    const { error } = validateBody(partnerBodySchema, req.body);
+    if (error) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
+    }
     const newPartner = await partnerUseCase.createPartner({ ...req.body, userId });
     return res
       .status(RESPONSE_CODE.CREATED)

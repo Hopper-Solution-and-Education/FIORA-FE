@@ -2,26 +2,41 @@ import { Currency } from '@prisma/client';
 import Joi from 'joi';
 
 export const productItemBodySchema = Joi.object({
-  icon: Joi.string().required().messages({
-    'string.empty': 'Product item icon url is invalid',
-    'any.required': 'Product item icon is required',
-  }),
-  name: Joi.string().required().max(50).messages({
-    'string.empty': 'Product item name is invalid',
-    'any.required': 'Product item name is required',
-  }),
+  icon: Joi.string()
+    .pattern(/^[a-zA-Z0-9 ]+$/)
+    .required()
+    .messages({
+      'string.empty': 'Product item icon url is invalid',
+      'string.pattern.base': 'Product item icon url is invalid',
+      'any.required': 'Product item icon is required',
+    }),
+  name: Joi.string()
+    .pattern(/^[a-zA-Z0-9 ]+$/)
+    .required()
+    .max(50)
+    .messages({
+      'string.empty': 'Product item name is invalid',
+      'string.pattern.base': 'Product item name is invalid',
+      'any.required': 'Product item name is required',
+    }),
   description: Joi.string().allow('').optional(),
 });
+
 
 export const productBodySchema = Joi.object({
   icon: Joi.string().required().messages({
     'string.empty': 'Product icon url is invalid',
     'any.required': 'Product icon is required',
-  }),
-  name: Joi.string().required().messages({
-    'string.empty': 'Product name is invalid',
-    'any.required': 'Product name is required',
-  }),
+  }).pattern(/^[a-zA-Z0-9 ]+$/, 'Product icon url is invalid'),
+  name: Joi.string()
+    .pattern(/^[a-zA-Z0-9 ]+$/)
+    .required()
+    .max(50)
+    .messages({
+      'string.empty': 'Product name is invalid',
+      'string.pattern.base': 'Product name is invalid',
+      'any.required': 'Product name is required',
+    }),
   category_id: Joi.string().required().messages({
     'any.required': 'Product category id is required',
     'string.empty': 'Product category id is invalid',
@@ -55,14 +70,22 @@ export const productUpdateBodySchema = Joi.object({
     'string.empty': 'Product id is invalid',
     'any.required': 'Product id is required',
   }),
-  icon: Joi.string().optional().messages({
-    'string.empty': 'Product icon url is invalid',
-    'any.required': 'Product icon is required',
-  }),
-  name: Joi.string().optional().messages({
-    'string.empty': 'Product name is invalid',
-    'any.required': 'Product name is required',
-  }),
+  icon: Joi.string()
+    .pattern(/^[a-zA-Z0-9 ]+$/)
+    .optional()
+    .allow(null)
+    .messages({
+      'string.empty': 'Product icon url is invalid',
+      'string.pattern.base': 'Product icon url is invalid',
+    }),
+  name: Joi.string()
+    .pattern(/^[a-zA-Z0-9 ]+$/)
+    .optional()
+    .allow(null)
+    .messages({
+      'string.empty': 'Product name is invalid',
+      'string.pattern.base': 'Product name is invalid',
+    }),
   category_id: Joi.string().optional().messages({
     'any.required': 'Product category id is required',
     'string.empty': 'Product category id is invalid',

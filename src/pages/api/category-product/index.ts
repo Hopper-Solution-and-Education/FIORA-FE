@@ -2,8 +2,11 @@ import { prisma } from '@/config';
 import { categoryProductsUseCase } from '@/features/setting/api/domain/use-cases/categoryProductUsecase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { validateBody } from '@/shared/utils/validate';
+import { categoryProductBodySchema } from '@/shared/validators/productCategoryValidator';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req, res, userId) => {
@@ -45,7 +48,12 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { icon, name, description, tax_rate } = req.body;
-
+    const { error } = validateBody(categoryProductBodySchema, req.body);
+    if (error) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
+    }
     // check name no matter uppercase or lowercase
     const normalizedName = name.toLowerCase();
 
