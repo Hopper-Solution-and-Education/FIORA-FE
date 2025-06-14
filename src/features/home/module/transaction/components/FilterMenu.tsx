@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import DateRangeFilter from '@/components/common/filters/DateRangeFilter';
+import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
-import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import useDataFetcher from '@/shared/hooks/useDataFetcher';
 import { FilterColumn, FilterComponentConfig, FilterCriteria } from '@/shared/types/filter.types';
 import { useAppSelector } from '@/store';
@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { TransactionFilterOptionResponse } from '../types';
 import { DEFAULT_TRANSACTION_FILTER_CRITERIA } from '../utils/constants';
+import { formatCurrency } from '@/shared/utils';
 
 // Define constants for magic numbers
 const DEFAULT_MAX_AMOUNT = 10000;
@@ -393,7 +394,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         minValue={filterParams.amountMin}
         maxValue={filterParams.amountMax}
         minRange={0}
-        maxRange={data?.data?.amountMax ?? 0}
+        maxRange={amountMax}
         onValueChange={(target, value) =>
           handleEditFilter(target === 'minValue' ? 'amountMin' : 'amountMax', value)
         }
@@ -401,7 +402,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         minLabel="Min Amount"
         maxLabel="Max Amount"
         formatValue={(value, isEditing) => (isEditing ? value : value.toLocaleString())}
-        tooltipFormat={(value) => `${value.toLocaleString()} USD`}
+        tooltipFormat={(value) => formatCurrency(value)}
         step={1000}
       />
     );

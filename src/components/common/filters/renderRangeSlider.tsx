@@ -159,10 +159,10 @@ export const renderRangeSlider = ({
 
       <div className="flex items-center justify-between mt-1">
         <span className="text-xs text-gray-500">
-          {formatValue ? formatValue(clampedMinValue) : clampedMinValue}
+          {formatValue ? formatValue(minRange) : minRange}
         </span>
         <span className="text-xs text-gray-500">
-          {formatValue ? formatValue(clampedMaxValue) : clampedMaxValue}
+          {formatValue ? formatValue(maxRange) : maxRange}
         </span>
       </div>
     </div>
