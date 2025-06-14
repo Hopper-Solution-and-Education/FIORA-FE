@@ -1,25 +1,25 @@
-import { type Prisma, type Partner, Transaction, TransactionType } from '@prisma/client';
-import { IPartnerRepository } from '../../domain/repositories/partnerRepository.interface';
-import { Messages } from '@/shared/constants/message';
-import { partnerRepository } from '../../infrastructure/repositories/partnerRepository';
+import { prisma } from '@/config';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
-import { prisma } from '@/config';
-import { validatePartnerData } from '../../exception/partnerExceptionHandler';
-import { PartnerValidationData } from '../../exception/partnerException.type';
-import { GlobalFilters } from '@/shared/types';
-import { buildWhereClause } from '@/shared/utils';
-import { safeString } from '@/shared/utils/ExStringUtils';
+import { Messages } from '@/shared/constants/message';
 import { BooleanUtils } from '@/shared/lib';
+import { GlobalFilters } from '@/shared/types';
 import { PartnerRangeFilter } from '@/shared/types/partner.types';
+import { buildWhereClause } from '@/shared/utils';
 import { sanitizeDateFilters } from '@/shared/utils/common';
+import { safeString } from '@/shared/utils/ExStringUtils';
 import { searchWithUnaccentFallback } from '@/shared/utils/unaccent-search.util';
+import { type Partner, type Prisma, Transaction, TransactionType } from '@prisma/client';
+import { IPartnerRepository } from '../../domain/repositories/partnerRepository.interface';
+import { PartnerValidationData } from '../../exception/partnerException.type';
+import { validatePartnerData } from '../../exception/partnerExceptionHandler';
+import { partnerRepository } from '../../infrastructure/repositories/partnerRepository';
 
 class PartnerUseCase {
   constructor(
     private partnerRepository: IPartnerRepository,
     private transactionRepository: ITransactionRepository,
-  ) {}
+  ) { }
 
   async listPartners(userId: string): Promise<Partner[]> {
     return this.partnerRepository.getPartnersByUserId(userId);
@@ -109,9 +109,9 @@ class PartnerUseCase {
     const finalFilteredPartners =
       typesFilter.length > 0
         ? filteredPartners.filter((partner: any) => {
-            const type = this.determinePartnerType(partner.transactions || []);
-            return typesFilter.includes(type);
-          })
+          const type = this.determinePartnerType(partner.transactions || []);
+          return typesFilter.includes(type);
+        })
         : filteredPartners;
 
     const { minIncome, maxIncome, minExpense, maxExpense } =
@@ -383,15 +383,15 @@ class PartnerUseCase {
       const [createdBy, updatedBy] = await Promise.all([
         partner.createdBy
           ? prisma.user.findFirst({
-              where: { id: partner.createdBy },
-              select: { id: true, name: true, email: true, image: true },
-            })
+            where: { id: partner.createdBy },
+            select: { id: true, name: true, email: true, image: true },
+          })
           : null,
         partner.updatedBy
           ? prisma.user.findFirst({
-              where: { id: partner.updatedBy },
-              select: { id: true, name: true, email: true, image: true },
-            })
+            where: { id: partner.updatedBy },
+            select: { id: true, name: true, email: true, image: true },
+          })
           : null,
       ]);
 

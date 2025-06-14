@@ -63,7 +63,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       currency,
     } = req.body;
 
-    if (![ProductType.Product, ProductType.Service].includes(type)) {
+    if (![ProductType.Product, ProductType.Service, ProductType.Edu].includes(type)) {
       return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Invalid product type' });
     }
 

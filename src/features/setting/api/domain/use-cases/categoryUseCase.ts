@@ -130,46 +130,41 @@ class CategoryUseCase {
   }> {
     const searchParams = safeString(params.search);
     const where: Prisma.CategoryWhereInput = {};
+    let categories;
 
-    let categories = await this.categoryRepository.findCategoriesWithTransactionsFilter(
-      userId,
-      where,
-    );
-
-    if (categories.length === 0 && BooleanUtils.isTrue(searchParams)) {
+    if (BooleanUtils.isTrue(searchParams)) {
       try {
-        categories = await this.categoryRepository.findCategoriesWithTransactionsFilter(userId, {
-          name: { contains: searchParams, mode: 'insensitive' },
-        });
-
         const normalizedSearch = normalizeVietnamese(searchParams);
 
-        if (categories.length === 0) {
-          const rawCategories = (await prisma.$queryRaw`
+        const rawCategories = (await prisma.$queryRaw`
           SELECT c.* FROM "Category" c
           WHERE 
             c."userId"::text = ${userId}::text
             AND unaccent(c."name") ILIKE unaccent('%' || ${normalizedSearch.toLowerCase()} || '%')
         `) as any;
 
-          categories = await Promise.all(
-            rawCategories.map(async (category: any) => {
-              const [toTransactions, fromTransactions] = await Promise.all([
-                prisma.transaction.findMany({
-                  where: { toCategoryId: category.id },
-                }),
-                prisma.transaction.findMany({
-                  where: { fromCategoryId: category.id },
-                }),
-              ]);
-              return { ...category, toTransactions, fromTransactions };
-            }),
-          );
-        }
+        categories = await Promise.all(
+          rawCategories.map(async (category: any) => {
+            const [toTransactions, fromTransactions] = await Promise.all([
+              prisma.transaction.findMany({
+                where: { toCategoryId: category.id },
+              }),
+              prisma.transaction.findMany({
+                where: { fromCategoryId: category.id },
+              }),
+            ]);
+            return { ...category, toTransactions, fromTransactions };
+          }),
+        );
       } catch (error) {
         console.error('Search failed:', error);
         categories = [];
       }
+    } else {
+      categories = await this.categoryRepository.findCategoriesWithTransactionsFilter(
+        userId,
+        where,
+      );
     }
 
     const transactionRangeFilters = this.extractTransactionRangeFilters(params.filters);

@@ -67,6 +67,7 @@ export class BudgetSummaryMapper {
         updatedAt: dto.data.updated_at || '',
         createdBy: dto.data.created_by || '',
         updatedBy: dto.data.updated_by || '',
+        currency: dto.data.currency || 'VND',
       },
     };
   }

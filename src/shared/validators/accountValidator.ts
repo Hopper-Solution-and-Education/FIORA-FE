@@ -5,7 +5,7 @@ export const accountCreateBody = Joi.object({
   name: Joi.string().required().messages({
     'string.empty': 'Account name is invalid',
     'any.required': 'Account name is required',
-  }),
+  }).pattern(/^[a-zA-Z0-9 ]+$/, 'Account name is invalid'),
   type: Joi.string()
     .required()
     .valid(
@@ -40,8 +40,18 @@ export const accountCreateBody = Joi.object({
   icon: Joi.string().required().messages({
     'string.empty': 'Account icon url is invalid',
     'any.required': 'Account icon is required',
-  }),
+  }).pattern(/^[a-zA-Z0-9 ]+$/, 'Account icon url is invalid'),
   parentId: Joi.string().optional().allow(null).messages({
     'string.empty': 'Parent id is invalid',
   }),
+});
+
+
+export const accountUpdateBody = Joi.object({
+  name: Joi.string().optional().allow(null).messages({
+    'string.empty': 'Account name is invalid',
+  }).pattern(/^[a-zA-Z0-9 ]+$/, 'Account name is invalid'),
+  icon: Joi.string().optional().allow(null).messages({
+    'string.empty': 'Account icon url is invalid',
+  }).pattern(/^[a-zA-Z0-9 ]+$/, 'Account icon url is invalid'),
 });

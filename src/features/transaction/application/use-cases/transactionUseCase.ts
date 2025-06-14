@@ -304,6 +304,7 @@ class TransactionUseCase {
     await this.revertProductPrices(tx, transaction);
     await tx.productTransaction.deleteMany({ where: { transactionId: transaction.id } });
   }
+
   async getTransactionFilterOptions(userId: string) {
     const [filterOptions, amountRange] = await Promise.all([
       this.transactionRepository.getFilterOptions(userId),
@@ -474,7 +475,6 @@ class TransactionUseCase {
   }
 
   async fetchMinMaxTransactionAmount(userId: string): Promise<{ min: number; max: number }> {
-    // Fetch the maximum and minimum transaction amounts for a user
     const maxAmountAwaited = this.transactionRepository.aggregate({
       where: { userId },
       _max: { amount: true },
@@ -487,9 +487,18 @@ class TransactionUseCase {
 
     const [maxAmount, minAmount] = await Promise.all([maxAmountAwaited, minAmountAwaited]);
 
+    let max = Number(maxAmount['_max']?.amount) || 0;
+    const min = Number(minAmount['_min']?.amount) || 0;
+
+    max = BooleanUtils.choose(
+      max === 0,
+      () => 100000,
+      () => 0,
+    );
+
     return {
-      max: Number(maxAmount['_max']?.amount) || 0,
-      min: Number(minAmount['_min']?.amount) || 0,
+      min,
+      max,
     };
   }
 

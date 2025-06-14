@@ -3,7 +3,6 @@ import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
 import { ChartItem, HierarchicalBarItem } from '../presentation/types/chart.type';
 import { Budget } from '../domain/entities/Budget';
 import { Currency } from '@/shared/types';
-import { convertVNDToUSD } from '@/shared/utils';
 
 interface TransformDataParams {
   topBudget: BudgetSummaryByType | null;
@@ -18,15 +17,15 @@ export const transformDataForChart = ({
   botBudget,
   actBudget,
   selectedYear,
-  currency,
+  // currency,
 }: TransformDataParams): HierarchicalBarItem[] => {
   if (!topBudget?.budget || !botBudget?.budget || !actBudget?.budget) {
     return [];
   }
 
-  const formatCurrency = (value: number): number => {
-    return currency === 'USD' ? convertVNDToUSD(value) : value;
-  };
+  // const  = (value: number): number => {
+  //   return currency === 'USD' ? convertVNDToUSD(value) : value;
+  // };
 
   const getBudgetValue = (budget: Budget, field: string): number => {
     return parseFloat(budget?.[field as keyof typeof budget] as string) || 0;
@@ -50,9 +49,9 @@ export const transformDataForChart = ({
         name: 'Expense',
         type: STACK_TYPE.EXPENSE,
         icon: 'banknoteArrowDown',
-        A: formatCurrency(actExp),
-        T: formatCurrency(topExp),
-        B: formatCurrency(botExp),
+        A: actExp,
+        T: topExp,
+        B: botExp,
         colors: {
           A: COLORS.DEPS_DANGER.LEVEL_1,
           T: COLORS.DEPS_DANGER.LEVEL_3,
@@ -61,17 +60,17 @@ export const transformDataForChart = ({
         layers: [
           {
             id: 'A',
-            value: formatCurrency(actExp),
+            value: actExp,
             color: COLORS.DEPS_DANGER.LEVEL_1,
           },
           {
             id: 'T',
-            value: formatCurrency(topExp),
+            value: topExp,
             color: COLORS.DEPS_DANGER.LEVEL_3,
           },
           {
             id: 'B',
-            value: formatCurrency(botExp),
+            value: botExp,
             color: COLORS.DEPS_DANGER.LEVEL_5,
           },
         ],
@@ -80,9 +79,9 @@ export const transformDataForChart = ({
         name: 'Income',
         type: STACK_TYPE.INCOME,
         icon: 'banknote',
-        A: formatCurrency(actInc),
-        T: formatCurrency(topInc),
-        B: formatCurrency(botInc),
+        A: actInc,
+        T: topInc,
+        B: botInc,
         colors: {
           A: COLORS.DEPS_SUCCESS.LEVEL_1,
           T: COLORS.DEPS_SUCCESS.LEVEL_3,
@@ -91,17 +90,17 @@ export const transformDataForChart = ({
         layers: [
           {
             id: 'A',
-            value: formatCurrency(actInc),
+            value: actInc,
             color: COLORS.DEPS_SUCCESS.LEVEL_1,
           },
           {
             id: 'T',
-            value: formatCurrency(topInc),
+            value: topInc,
             color: COLORS.DEPS_SUCCESS.LEVEL_3,
           },
           {
             id: 'B',
-            value: formatCurrency(botInc),
+            value: botInc,
             color: COLORS.DEPS_SUCCESS.LEVEL_5,
           },
         ],
@@ -110,9 +109,9 @@ export const transformDataForChart = ({
         name: 'Profit',
         type: STACK_TYPE.PROFIT,
         icon: 'handCoins',
-        A: formatCurrency(actProfit),
-        T: formatCurrency(topProfit),
-        B: formatCurrency(botProfit),
+        A: actProfit,
+        T: topProfit,
+        B: botProfit,
         colors: {
           A: COLORS.DEPS_INFO.LEVEL_1,
           T: COLORS.DEPS_INFO.LEVEL_3,
@@ -121,17 +120,17 @@ export const transformDataForChart = ({
         layers: [
           {
             id: 'A',
-            value: formatCurrency(actProfit),
+            value: actProfit,
             color: COLORS.DEPS_INFO.LEVEL_1,
           },
           {
             id: 'T',
-            value: formatCurrency(topProfit),
+            value: topProfit,
             color: COLORS.DEPS_INFO.LEVEL_3,
           },
           {
             id: 'B',
-            value: formatCurrency(botProfit),
+            value: botProfit,
             color: COLORS.DEPS_INFO.LEVEL_5,
           },
         ],

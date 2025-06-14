@@ -376,6 +376,7 @@ model BudgetDetails {
   @@index([userId])
   @@index([budgetId])
   @@index([categoryId])
+  @@index([categoryId, type, budgetId, userId])
 }
 
 enum BudgetType {
