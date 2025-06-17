@@ -15,6 +15,7 @@ export interface DatePickerProps {
   setDate?: (date: Date | undefined) => void;
   className?: string;
   placeholder?: string;
+  disabledDate?: (date: Date) => boolean;
 }
 
 export default function DatePicker({
@@ -22,6 +23,7 @@ export default function DatePicker({
   setDate,
   className,
   placeholder = 'Pick a date',
+  disabledDate,
 }: DatePickerProps) {
   const [_date, _setDate] = React.useState<Date>();
   const selectedDate = date || _date;
@@ -54,6 +56,7 @@ export default function DatePicker({
           }}
           initialView="days"
           autoFocus
+          disabled={disabledDate}
         />
       </PopoverContent>
     </Popover>

@@ -1,3 +1,4 @@
+import DateRangeFromToPicker from '@/components/common/forms/date-range-from-to-picker';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/modern-ui/button';
 import { DateRangePicker } from '@/components/modern-ui/date-picker';
@@ -9,7 +10,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
+import { DropdownOption } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import {
   setSelectedAccounts,
@@ -21,7 +24,6 @@ import { getFinanceWithFilterAsyncThunk } from '../../slices/actions';
 import { ViewBy } from '../../slices/types';
 import { chartComponents } from '../../utils';
 import { MultiSelectPickerFinance, ViewByCategorySelect } from '../atoms';
-import { DropdownOption } from '@/shared/types';
 
 const viewByIcons: Record<ViewBy, keyof typeof Icons> = {
   date: 'calendar',
@@ -50,6 +52,8 @@ const FilterByViewType = ({
   const selectedPartners = useAppSelector((state) => state.financeControl.selectedPartners);
   const viewMode = useAppSelector((state) => state.financeControl.viewMode);
   const dispatch = useAppDispatch();
+
+  const [dateRangeFromTo, setDateRangeFromTo] = useState<DateRange | undefined>(dateRange);
 
   const handleChangeAccounts = (values: string[]) => {
     dispatch(setSelectedAccounts(values));
@@ -107,6 +111,22 @@ const FilterByViewType = ({
               setDateRange={setDateRange}
               placeholder="Select date range"
               numberOfMonths={2}
+            />
+            <DateRangeFromToPicker
+              from={dateRangeFromTo?.from ?? new Date()}
+              to={dateRangeFromTo?.to ?? new Date()}
+              setFrom={(date) =>
+                setDateRangeFromTo({
+                  from: date ?? new Date(),
+                  to: dateRangeFromTo?.to ?? new Date(),
+                })
+              }
+              setTo={(date) =>
+                setDateRangeFromTo({
+                  from: dateRangeFromTo?.from ?? new Date(),
+                  to: date ?? new Date(),
+                })
+              }
             />
           </div>
         )}
