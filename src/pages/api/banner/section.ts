@@ -201,14 +201,14 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
 }
 
 async function DELETE(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.body;
+  const { index } = req.body;
 
-  if (!id) {
+  if (!index) {
     return res.status(400).json({ error: 'Section ID is required' });
   }
 
   await prisma.section.delete({
-    where: { id },
+    where: { id: index },
   });
 
   return res.status(200).json({ message: 'Section deleted successfully' });
