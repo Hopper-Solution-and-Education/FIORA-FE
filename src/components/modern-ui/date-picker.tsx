@@ -16,6 +16,7 @@ export interface DatePickerProps {
   className?: string;
   placeholder?: string;
   disabledDate?: (date: Date) => boolean;
+  error?: string;
 }
 
 export default function DatePicker({
@@ -24,6 +25,7 @@ export default function DatePicker({
   className,
   placeholder = 'Pick a date',
   disabledDate,
+  error, // Destructure the error prop
 }: DatePickerProps) {
   const [_date, _setDate] = React.useState<Date>();
   const selectedDate = date || _date;
@@ -33,17 +35,22 @@ export default function DatePicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant={'outline'}
-          className={cn(
-            'w-[240px] justify-start text-left font-normal',
-            !selectedDate && 'text-muted-foreground',
-            className,
-          )}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {selectedDate ? format(selectedDate, 'PPP') : <span>{placeholder}</span>}
-        </Button>
+        {/* Wrap the Button and error message in a div */}
+        <div className="flex flex-col">
+          <Button
+            variant={'outline'}
+            className={cn(
+              'w-[240px] justify-start text-left font-normal',
+              !selectedDate && 'text-muted-foreground',
+              error && 'border-red-500 ring-red-500 focus-visible:ring-red-500', // Apply red border/ring on error
+              className,
+            )}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {selectedDate ? format(selectedDate, 'PPP') : <span>{placeholder}</span>}
+          </Button>
+          {/* We assume a separate error display area will be handled by the parent component (e.g., DateRangeFromToPicker) */}
+        </div>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar

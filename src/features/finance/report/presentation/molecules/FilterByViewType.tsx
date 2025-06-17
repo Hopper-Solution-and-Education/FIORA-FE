@@ -1,7 +1,5 @@
-import DateRangeFromToPicker from '@/components/common/forms/date-range-from-to-picker';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/modern-ui/button';
-import { DateRangePicker } from '@/components/modern-ui/date-picker';
 import {
   Select,
   SelectContent,
@@ -12,7 +10,6 @@ import {
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { DropdownOption } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import {
   setSelectedAccounts,
@@ -24,6 +21,7 @@ import { getFinanceWithFilterAsyncThunk } from '../../slices/actions';
 import { ViewBy } from '../../slices/types';
 import { chartComponents } from '../../utils';
 import { MultiSelectPickerFinance, ViewByCategorySelect } from '../atoms';
+import { DateRangeFromToPicker } from '@/components/common/forms';
 
 const viewByIcons: Record<ViewBy, keyof typeof Icons> = {
   date: 'calendar',
@@ -53,7 +51,9 @@ const FilterByViewType = ({
   const viewMode = useAppSelector((state) => state.financeControl.viewMode);
   const dispatch = useAppDispatch();
 
-  const [dateRangeFromTo, setDateRangeFromTo] = useState<DateRange | undefined>(dateRange);
+  // Initialize dateRange with a default if it's undefined initially
+  // This ensures DateRangeFromToPicker always receives a valid Date object for `data`
+  const initialDateRange = dateRange || { from: new Date(), to: new Date() };
 
   const handleChangeAccounts = (values: string[]) => {
     dispatch(setSelectedAccounts(values));
@@ -73,7 +73,7 @@ const FilterByViewType = ({
   };
 
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:gap-4">
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-sm font-medium whitespace-nowrap">View By</span>
@@ -105,28 +105,25 @@ const FilterByViewType = ({
 
         {viewBy === 'date' && (
           <div className="w-full max-w-lg">
-            <DateRangePicker
-              className="w-full"
-              dateRange={dateRange}
-              setDateRange={setDateRange}
-              placeholder="Select date range"
-              numberOfMonths={2}
-            />
             <DateRangeFromToPicker
-              from={dateRangeFromTo?.from ?? new Date()}
-              to={dateRangeFromTo?.to ?? new Date()}
-              setFrom={(date) =>
-                setDateRangeFromTo({
-                  from: date ?? new Date(),
-                  to: dateRangeFromTo?.to ?? new Date(),
-                })
-              }
-              setTo={(date) =>
-                setDateRangeFromTo({
-                  from: dateRangeFromTo?.from ?? new Date(),
-                  to: date ?? new Date(),
-                })
-              }
+              from={{
+                data: initialDateRange.from ?? new Date(),
+                setFrom: (date) =>
+                  setDateRange({
+                    from: date,
+                    to: initialDateRange.to,
+                  }),
+                disabledDate: (date) => (dateRange?.to ? date > dateRange.to : true),
+              }}
+              to={{
+                data: initialDateRange.to ?? new Date(),
+                setTo: (date) =>
+                  setDateRange({
+                    from: initialDateRange.from,
+                    to: date,
+                  }),
+                disabledDate: (date) => (dateRange?.from ? date < dateRange.from : true),
+              }}
             />
           </div>
         )}
