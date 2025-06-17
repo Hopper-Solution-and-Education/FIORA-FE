@@ -1,21 +1,29 @@
+import { FieldError } from 'react-hook-form';
+
 export type DateRangeFromToPickerProps = {
   from: {
+    name?: string;
     label?: string;
-    data: Date;
-    setFrom: (date: Date | undefined) => void;
+    value: Date;
+    onChange: (date: Date | undefined) => void;
     placeholder?: string;
     disabledDate?: (date: Date) => boolean;
     className?: string;
-    error?: string;
+    error?: FieldError;
+    onBlur?: () => void;
+    required?: boolean;
   };
   to: {
+    name?: string;
     label?: string;
-    data: Date;
-    setTo: (date: Date | undefined) => void;
+    value: Date;
+    onChange: (date: Date | undefined) => void;
     placeholder?: string;
     disabledDate?: (date: Date) => boolean;
     className?: string;
-    error?: string;
+    error?: FieldError;
+    onBlur?: string;
+    required?: boolean;
   };
   className?: string;
   modeLabel?: 'row' | 'column';

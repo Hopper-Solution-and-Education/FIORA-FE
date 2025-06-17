@@ -107,22 +107,24 @@ const FilterByViewType = ({
           <div className="w-full max-w-lg">
             <DateRangeFromToPicker
               from={{
-                data: initialDateRange.from ?? new Date(),
-                setFrom: (date) =>
+                value: initialDateRange.from ?? new Date(),
+                onChange: (date) =>
                   setDateRange({
                     from: date,
                     to: initialDateRange.to,
                   }),
                 disabledDate: (date) => (dateRange?.to ? date > dateRange.to : true),
+                required: true,
               }}
               to={{
-                data: initialDateRange.to ?? new Date(),
-                setTo: (date) =>
+                value: initialDateRange.to ?? new Date(),
+                onChange: (date) =>
                   setDateRange({
                     from: initialDateRange.from,
                     to: date,
                   }),
                 disabledDate: (date) => (dateRange?.from ? date < dateRange.from : true),
+                required: true,
               }}
             />
           </div>
