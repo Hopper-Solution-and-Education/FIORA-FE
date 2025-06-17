@@ -5,6 +5,8 @@ import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { validateAccount } from '@/shared/validation/accountValidation';
 import { NextApiRequest, NextApiResponse } from 'next';
 
+export const maxDuration = 30; // 30 seconds
+
 export default sessionWrapper(async (req, res) => {
   switch (req.method) {
     case 'POST':

@@ -10,6 +10,8 @@ import { productBodySchema } from '@/shared/validators/productValidator';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { PaginationResponse } from '@/shared/types';
 
+export const maxDuration = 30; // 30 seconds
+
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {
     switch (req.method) {

@@ -8,6 +8,8 @@ import { validateBody } from '@/shared/utils/validate';
 import { accountUpdateBody } from '@/shared/validators/accountValidator';
 import { NextApiRequest, NextApiResponse } from 'next';
 
+export const maxDuration = 30; // 30 seconds
+
 export default sessionWrapper(
   async (request: NextApiRequest, response: NextApiResponse, userId: string) => {
     switch (request.method) {

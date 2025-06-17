@@ -5,6 +5,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
 import { Currency, GlobalFilters } from '@/shared/types';
 
+export const maxDuration = 30; // 30 seconds
+
 export default withAuthorization({
   POST: ['User', 'Admin', 'CS'],
   GET: ['User', 'Admin', 'CS'],

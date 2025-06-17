@@ -8,9 +8,7 @@ import { Currency } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 // This function can run for a maximum of 15 seconds
-export const config = {
-  maxDuration: 15,
-};
+export const maxDuration = 30; // 30 seconds
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {
