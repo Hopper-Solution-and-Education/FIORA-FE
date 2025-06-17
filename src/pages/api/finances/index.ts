@@ -10,6 +10,8 @@ import {
 } from '@/features/setting/data/module/finance/dto/request/GetFinanceReportRequest';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 
+export const maxDuration = 30; // 30 seconds
+
 export default withAuthorization({
   GET: ['User', 'Admin', 'CS'],
   POST: ['User', 'Admin', 'CS'],

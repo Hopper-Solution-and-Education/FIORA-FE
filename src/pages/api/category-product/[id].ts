@@ -9,6 +9,8 @@ import { validateBody } from '@/shared/utils/validate';
 import { categoryProductBodySchema } from '@/shared/validators/productCategoryValidator';
 import { NextApiRequest, NextApiResponse } from 'next';
 
+export const maxDuration = 30; // 30 seconds
+
 export default sessionWrapper(async (req, res, userId) => {
   switch (req.method) {
     case 'PUT':

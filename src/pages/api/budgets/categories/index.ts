@@ -12,6 +12,8 @@ import {
 import { BudgetDetailType, Currency, Prisma } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
+export const maxDuration = 30; // 30 seconds
+
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {
     switch (req.method) {

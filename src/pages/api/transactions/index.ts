@@ -5,6 +5,8 @@ import { Messages } from '@/shared/constants/message';
 import { transactionUseCase } from '@/features/transaction/application/use-cases/transactionUseCase';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 
+export const maxDuration = 30; // 30 seconds
+
 export default sessionWrapper(async (req, res, userId) => {
   switch (req.method) {
     case 'POST':
