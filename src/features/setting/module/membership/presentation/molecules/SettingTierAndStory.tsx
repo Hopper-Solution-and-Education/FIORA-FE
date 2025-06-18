@@ -1,7 +1,6 @@
 'use client';
 
-import SettingTierInputFieldConfig from '../config/SettingTierInputFieldConfig';
-import StoryTierInputFieldConfig from '../config/StoryTierInputFieldConfig';
+import { SettingTierInputFieldConfig, StoryTierInputFieldConfig } from '../config';
 
 const SettingTierAndStory = () => {
   return (

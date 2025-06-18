@@ -2,14 +2,8 @@
 
 import SubmitButton from '@/components/common/atoms/SubmitButton';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import {
-  IconUploadItem,
-  IconUploadList,
-  MembershipRankChart,
-  SettingTierAndStory,
-} from '../molecules';
+import { IconUploadList, MembershipRankChart, SettingTierAndStory } from '../molecules';
 import {
   defaultEditMemberShipValue,
   EditMemberShipFormValues,
@@ -21,26 +15,6 @@ const MembershipSettingPage = () => {
     resolver: yupResolver(editMemberShipSchema),
     defaultValues: defaultEditMemberShipValue,
   });
-  const [iconItems, setIconItems] = useState<IconUploadItem[]>([
-    {
-      id: 'inactiveIcon',
-      name: 'Inactive Icon',
-      placeholder: 'Choose Inactive Icon',
-      value: null,
-    },
-    {
-      id: 'passedIcon',
-      name: 'Passed Icon',
-      placeholder: 'Choose Passed Icon',
-      value: null,
-    },
-    {
-      id: 'themeIcon',
-      name: 'Theme Icon',
-      placeholder: 'Choose Theme Icon',
-      value: null,
-    },
-  ]);
 
   return (
     <FormProvider {...methods}>
@@ -56,7 +30,7 @@ const MembershipSettingPage = () => {
 
         {/* Bottom Row: Icon Upload List */}
         <div className="mt-6">
-          <IconUploadList items={iconItems} onChange={setIconItems} />
+          <IconUploadList />
         </div>
 
         {/* Footer Button */}
