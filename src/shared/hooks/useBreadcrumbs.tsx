@@ -71,6 +71,7 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
   '/setting/landing': [{ title: 'Landing Setting', link: '/setting/landing' }],
   '/setting/exchange-rate': [{ title: 'Exchange Rate Setting', link: '/setting/exchange-rate' }],
   '/setting/membership': [{ title: 'Membership Setting', link: '/setting/membership' }],
+  '/wallet': [{ title: 'Wallet', link: '/wallet' }],
 };
 
 /**
