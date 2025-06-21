@@ -84,4 +84,5 @@ export interface ProgressBarChartProps {
   colors: any;
   getXAxisPosition: (value: number) => number;
   getYAxisPosition: (value: number) => number;
+  className?: string;
 }

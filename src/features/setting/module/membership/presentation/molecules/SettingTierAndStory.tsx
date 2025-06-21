@@ -1,6 +1,6 @@
 'use client';
 
-import { FormConfig, InputField } from '@/components/common/forms';
+import { FormConfig, InputField, UploadField } from '@/components/common/forms';
 import { useFormContext } from 'react-hook-form';
 import { SettingTierInputFieldConfig, StoryTierInputFieldConfig } from '../config';
 import { EditMemberShipFormValues } from '../schema/editMemberShip.schema';
@@ -11,9 +11,22 @@ const renderEmptySubmitButton = () => {
 
 const SettingTierAndStory = () => {
   const methods = useFormContext<EditMemberShipFormValues>();
+  const { watch } = methods;
+
+  const renderMainIcon = () => {
+    return (
+      <UploadField
+        value={watch('mainIcon')}
+        name="mainIcon"
+        label="Main Icon"
+        placeholder="Upload main icon"
+        accept="image/*"
+      />
+    );
+  };
 
   return (
-    <div className="space-y-6 col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-4 shadow rounded-lg">
+    <div className="space-y-6 col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-5 shadow rounded-lg">
       {/* Settings Panel */}
       <div className="p-4 ">
         <div className="flex justify-start items-start gap-4">
@@ -27,8 +40,18 @@ const SettingTierAndStory = () => {
           </div>
         </div>
 
-        <div className="max-w-2xl">
-          <SettingTierInputFieldConfig />
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-6">
+            <FormConfig
+              fields={[renderMainIcon()]}
+              methods={methods}
+              renderSubmitButton={renderEmptySubmitButton}
+            />
+          </div>
+
+          <div className="col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-6">
+            <SettingTierInputFieldConfig />
+          </div>
         </div>
       </div>
 

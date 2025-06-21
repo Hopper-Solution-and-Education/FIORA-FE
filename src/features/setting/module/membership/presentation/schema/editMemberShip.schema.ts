@@ -1,6 +1,7 @@
 import * as yup from 'yup';
 
 export const editMemberShipSchema = yup.object({
+  id: yup.string().optional(),
   tier: yup.string().required('Tier is required'),
   referralBonus: yup
     .number()
@@ -37,11 +38,12 @@ export const editMemberShipSchema = yup.object({
     .required('Referral kickback is required')
     .min(0, 'Referral kickback must be positive')
     .max(100, 'Referral kickback must be less than 100'),
-  bnplFee: yup.number().required('BNPL fee is required').positive('BNPL fee must be positive'),
+  bnplFee: yup.number().required('BNPL fee is required').min(0, 'BNPL fee must be positive'),
   story: yup.string().required('Story is required'),
   activeIcon: yup.string().required('Active icon is required'),
   inActiveIcon: yup.string().required('inActive Icon is required'),
   themeIcon: yup.string().required('Theme Icon is required'),
+  mainIcon: yup.string().required('Main Icon is required'),
 });
 
 export type EditMemberShipFormValues = yup.InferType<typeof editMemberShipSchema>;
@@ -60,4 +62,5 @@ export const defaultEditMemberShipValue: EditMemberShipFormValues = {
   activeIcon: '',
   inActiveIcon: '',
   themeIcon: '',
+  mainIcon: '',
 };

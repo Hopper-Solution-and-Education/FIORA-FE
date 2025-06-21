@@ -1,5 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { toast } from 'sonner';
 import { getListMembershipAsyncThunk } from './actions/getMemberShipAsyncThunk';
+import { upsertMembershipAsyncThunk } from './actions/upsertMembershipAsyncThunk';
 import { initialMembershipState } from './types';
 
 const membershipSlice = createSlice({
@@ -22,6 +24,23 @@ const membershipSlice = createSlice({
       })
       .addCase(getListMembershipAsyncThunk.rejected, (state) => {
         state.isLoadingGetMemberships = false;
+      })
+      .addCase(upsertMembershipAsyncThunk.pending, (state) => {
+        state.isLoadingUpsertMembership = true;
+      })
+      .addCase(upsertMembershipAsyncThunk.fulfilled, (state, action) => {
+        state.isLoadingUpsertMembership = false;
+        const index = state.memberships.findIndex((item) => item.id === action.payload.data.id);
+        if (index !== -1) {
+          state.memberships[index] = action.payload.data;
+        } else {
+          state.memberships.push(action.payload.data);
+        }
+        state.selectedMembership = action.payload.data;
+        toast.success(action.payload.message);
+      })
+      .addCase(upsertMembershipAsyncThunk.rejected, (state) => {
+        state.isLoadingUpsertMembership = false;
       });
   },
 });

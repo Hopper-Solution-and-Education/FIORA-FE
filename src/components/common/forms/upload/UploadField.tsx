@@ -8,7 +8,7 @@ import { AlertTriangle, Circle, Image as ImageIcon, Square, Upload, X } from 'lu
 import Image from 'next/image';
 import type React from 'react';
 import { memo, useEffect, useRef, useState } from 'react';
-import type { FieldError } from 'react-hook-form';
+import { useFormContext, type FieldError } from 'react-hook-form';
 import { toast } from 'sonner';
 
 interface UploadFieldProps {
@@ -25,6 +25,7 @@ interface UploadFieldProps {
   previewShape?: 'square' | 'circle';
   initialImageUrl?: string | null;
   maxSize?: number; // Size in MB
+  className?: string;
   [key: string]: any;
 }
 
@@ -42,6 +43,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
   previewShape = 'square',
   initialImageUrl = null,
   maxSize = 5, // Default to 5MB
+  className,
   ...props
 }) => {
   const [preview, setPreview] = useState<string | null>(null);
@@ -49,6 +51,8 @@ const UploadField: React.FC<UploadFieldProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropAreaRef = useRef<HTMLLabelElement>(null);
+
+  const methods = useFormContext();
 
   useEffect(() => {
     if (value instanceof File) {
@@ -94,6 +98,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    methods.setValue(name, null);
   };
 
   const toggleShape = () => {
@@ -159,9 +164,9 @@ const UploadField: React.FC<UploadFieldProps> = ({
   };
 
   return (
-    <div className="space-y-3">
+    <div className={cn('space-y-3', className)}>
       {label && <GlobalLabel text={label} required={required} htmlFor={id} />}
-      <div className="relative w-full h-48 overflow-hidden border-2 border-dashed rounded-lg">
+      <div className="relative w-full h-48 overflow-hidden border-2 border-dashed rounded-lg ">
         <label
           ref={dropAreaRef}
           htmlFor={id}

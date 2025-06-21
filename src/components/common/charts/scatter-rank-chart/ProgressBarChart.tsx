@@ -7,11 +7,12 @@ const ProgressBarChart: React.FC<ProgressBarChartProps> = ({
   colors,
   getXAxisPosition,
   getYAxisPosition,
+  className,
 }) => {
   const { balance = 0, spent = 0 } = currentTier;
 
   return (
-    <>
+    <div className={className}>
       {/* Progress bars for X-axis (Spent) */}
       <div className="absolute bottom-20 left-[110px] w-[calc(100%-130px)]">
         {/* Background bar */}
@@ -84,7 +85,7 @@ const ProgressBarChart: React.FC<ProgressBarChartProps> = ({
           }}
         />
       </div>
-    </>
+    </div>
   );
 };
 

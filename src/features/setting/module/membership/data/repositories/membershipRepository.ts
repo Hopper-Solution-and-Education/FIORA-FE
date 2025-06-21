@@ -1,10 +1,16 @@
 import { decorate, injectable } from 'inversify';
-import { GetListMembershipsRequest, GetListMembershipsResponse } from '../../domain/entities';
+import {
+  GetListMembershipsRequest,
+  GetListMembershipsResponse,
+  UpsertMembershipRequest,
+  UpsertMembershipResponse,
+} from '../../domain/entities';
 import { IMembershipAPI } from '../api';
 import { MemberMapper } from '../mapper';
 
 export interface IMembershipRepository {
   getListMemberships(request: GetListMembershipsRequest): Promise<GetListMembershipsResponse>;
+  upsertMembership(request: UpsertMembershipRequest): Promise<UpsertMembershipResponse>;
 }
 
 export class MembershipRepository implements IMembershipRepository {
@@ -16,6 +22,12 @@ export class MembershipRepository implements IMembershipRepository {
     const requestDTO = MemberMapper.toGetListMembershipsRequest(request);
     const response = await this.membershipAPI.getListMemberships(requestDTO);
     return MemberMapper.toGetListMembershipsResponse(response);
+  }
+
+  async upsertMembership(request: UpsertMembershipRequest): Promise<UpsertMembershipResponse> {
+    const requestDTO = MemberMapper.toUpsertMembershipRequest(request);
+    const response = await this.membershipAPI.upsertMembership(requestDTO);
+    return MemberMapper.toUpsertMembershipResponse(response);
   }
 }
 

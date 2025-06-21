@@ -4,7 +4,10 @@ import { IMembershipTierRepository } from '../../repositories/membershipTierRepo
 import { MembershipTierWithBenefit } from '../../repositories/membershipTierRepository';
 
 class MembershipTierRepository implements IMembershipTierRepository {
-  async upsertMembershipTier(data: Prisma.MembershipTierCreateInput, prismaTx?: Prisma.TransactionClient) {
+  async upsertMembershipTier(
+    data: Prisma.MembershipTierCreateInput,
+    prismaTx?: Prisma.TransactionClient,
+  ) {
     const prismaClient = prismaTx || prisma;
     return prismaClient.membershipTier.upsert({
       where: { id: data.id },
@@ -25,15 +28,27 @@ class MembershipTierRepository implements IMembershipTierRepository {
     await prisma.membershipTier.delete({ where: { id } });
   }
 
-  async findMembershipTiersDashboard(where?: Prisma.MembershipTierWhereInput, options?: Prisma.MembershipTierFindManyArgs): Promise<MembershipTierWithBenefit[]> {
-    return prisma.membershipTier.findMany({ where, ...options }) as unknown as MembershipTierWithBenefit[];
+  async findMembershipTiersDashboard(
+    where?: Prisma.MembershipTierWhereInput,
+    options?: Prisma.MembershipTierFindManyArgs,
+  ): Promise<MembershipTierWithBenefit[]> {
+    return prisma.membershipTier.findMany({
+      where,
+      ...options,
+    }) as unknown as MembershipTierWithBenefit[];
   }
 
-  async findFirstMembershipTier(where?: Prisma.MembershipTierWhereInput, options?: Prisma.MembershipTierFindFirstArgs) {
+  async findFirstMembershipTier(
+    where?: Prisma.MembershipTierWhereInput,
+    options?: Prisma.MembershipTierFindFirstArgs,
+  ) {
     return prisma.membershipTier.findFirst({ where, ...options });
   }
 
-  async createMembershipTier(data: Prisma.MembershipTierCreateInput, prismaTx?: Prisma.TransactionClient) {
+  async createMembershipTier(
+    data: Prisma.MembershipTierCreateInput,
+    prismaTx?: Prisma.TransactionClient,
+  ) {
     const prismaClient = prismaTx || prisma;
     return prismaClient.membershipTier.create({ data });
   }

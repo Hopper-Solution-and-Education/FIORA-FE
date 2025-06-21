@@ -2,12 +2,12 @@ import ScatterRankingChart from '@/components/common/charts/scatter-rank-chart';
 import { Tier } from '@/components/common/charts/scatter-rank-chart/types';
 import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { setSelectedMembership } from '../../slices';
 import { createCombinedTierIcons, transformToBalanceTiers, transformToSpentTiers } from '../utils';
 
 const MembershipRankChart = () => {
-  const { memberships, isLoadingGetMemberships } = useAppSelector(
+  const { memberships, isLoadingGetMemberships, selectedMembership } = useAppSelector(
     (state) => state.memberShipSettings,
   );
 
@@ -20,11 +20,6 @@ const MembershipRankChart = () => {
     },
     [dispatch],
   );
-
-  const [selectedItem, setSelectedItem] = useState<{ balance: number; spent: number } | null>({
-    balance: 0,
-    spent: 0,
-  });
 
   // Transform API data into balance tiers
   const balanceTiers = useMemo(() => {
@@ -41,8 +36,19 @@ const MembershipRankChart = () => {
     return createCombinedTierIcons(balanceTiers, spentTiers, memberships, handleTierClick);
   }, [balanceTiers, spentTiers, memberships, handleTierClick]);
 
+  useEffect(() => {
+    if (memberships.length > 0) {
+      dispatch(setSelectedMembership(memberships[0]));
+    }
+  }, [memberships, dispatch]);
+
+  const [selectedItem, setSelectedItem] = useState<{ balance: number; spent: number } | null>({
+    balance: selectedMembership?.balanceMinThreshold || 0,
+    spent: selectedMembership?.spentMinThreshold || 0,
+  });
+
   return (
-    <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-8 rounded-lg">
+    <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-7 rounded-lg">
       <ScatterRankingChart
         currentTier={selectedItem || { balance: 0, spent: 0 }}
         balanceTiers={balanceTiers}

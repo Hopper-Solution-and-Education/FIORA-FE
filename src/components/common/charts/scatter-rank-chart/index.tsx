@@ -5,6 +5,7 @@ import LegendYAxis from './LegendYAxis';
 import ProgressBarChart from './ProgressBarChart';
 import { defaultBarColors, ScatterChartProps } from './types';
 import { getBalanceRank, getSpentRank } from './utils';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 
 const ScatterRankingChart = ({
   currentTier,
@@ -23,6 +24,8 @@ const ScatterRankingChart = ({
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [chartDimensions, setChartDimensions] = useState({ width: 0, height: 0 });
   const [isChartReady, setIsChartReady] = useState(false);
+
+  const isMobile = useIsMobile();
 
   const balance = currentTier?.balance ?? 0;
   const spent = currentTier?.spent ?? 0;
@@ -171,12 +174,14 @@ const ScatterRankingChart = ({
               className={`transition-all duration-500 ${isChartReady ? 'opacity-100' : 'opacity-0'}`}
             >
               {/* Y-axis Legend (rotated, vertically centered, outside Y labels) */}
-              <div
-                className="absolute top-0 left-1 flex flex-col justify-center items-center"
-                style={{ height: 'calc(100% - 80px)', width: '40px', zIndex: 2, gap: '10px' }}
-              >
-                <LegendYAxis items={yLegend?.items || []} />
-              </div>
+              {!isMobile && (
+                <div
+                  className="absolute top-0 left-1 flex flex-col justify-center items-center"
+                  style={{ height: 'calc(100% - 80px)', width: '40px', zIndex: 2, gap: '10px' }}
+                >
+                  <LegendYAxis items={yLegend?.items || []} />
+                </div>
+              )}
 
               {/* Y-axis Labels at grid lines */}
               <div className="absolute left-5 top-0 w-20" style={{ height: 'calc(100% - 80px)' }}>
@@ -226,12 +231,14 @@ const ScatterRankingChart = ({
               </div>
 
               {/* X-axis Legend (centered below chart grid) */}
-              <div
-                className="absolute left-1/2"
-                style={{ transform: 'translateX(-50%)', bottom: '0px', zIndex: 2 }}
-              >
-                <LegendXAxis items={xLegend?.items || []} />
-              </div>
+              {!isMobile && (
+                <div
+                  className="absolute left-1/2"
+                  style={{ transform: 'translateX(-50%)', bottom: '0px', zIndex: 2 }}
+                >
+                  <LegendXAxis items={xLegend?.items || []} />
+                </div>
+              )}
 
               {/* Chart Grid Area */}
               <div

@@ -1,3 +1,5 @@
+import { EditMemberShipFormValues } from '../../presentation/schema/editMemberShip.schema';
+
 export class Membership {
   id: string;
   tierName: string;
@@ -55,6 +57,13 @@ export type GetListMembershipsRequest = {
 
 export type GetListMembershipsResponse = {
   data: Membership[];
+  message: string;
+};
+
+export type UpsertMembershipRequest = EditMemberShipFormValues;
+
+export type UpsertMembershipResponse = {
+  data: Membership;
   message: string;
 };
 

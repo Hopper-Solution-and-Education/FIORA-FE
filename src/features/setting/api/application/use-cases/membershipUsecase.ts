@@ -1,5 +1,9 @@
 import { MembershipTier, Prisma, TierBenefit } from '@prisma/client';
-import { IMembershipTierRepository, MembershipTierCreation, MembershipTierWithBenefit } from '../../repositories/membershipTierRepository';
+import {
+  IMembershipTierRepository,
+  MembershipTierCreation,
+  MembershipTierWithBenefit,
+} from '../../repositories/membershipTierRepository';
 import { membershipTierRepository } from '../../infrastructure/repositories/membershipTierRepository';
 import { Messages } from '@/shared/constants/message';
 import { prisma } from '@/config';
@@ -14,11 +18,20 @@ class MembershipSettingUseCase {
   async upsertMembershipTier(data: MembershipTierCreation, userId: string) {
     const {
       id,
-      tierName, spentMinThreshold, spentMaxThreshold,
-      balanceMinThreshold, balanceMaxThreshold, tierBenefits,
-      inactiveIconUrl, mainIconUrl, passedIconUrl, themeIconUrl, story } = data;
+      tierName,
+      spentMinThreshold,
+      spentMaxThreshold,
+      balanceMinThreshold,
+      balanceMaxThreshold,
+      tierBenefits,
+      inactiveIconUrl,
+      mainIconUrl,
+      passedIconUrl,
+      themeIconUrl,
+      story,
+    } = data;
 
-    let newTierBenefits: TierBenefit[] = [];
+    const newTierBenefits: TierBenefit[] = [];
 
     try {
       return await prisma.$transaction(async (tx) => {
@@ -35,11 +48,20 @@ class MembershipSettingUseCase {
           },
           create: {
             tierName,
-            createdBy: userId, userId,
-            spentMinThreshold: spentMinThreshold ? new Prisma.Decimal(Number(spentMinThreshold)) : new Prisma.Decimal(0),
-            spentMaxThreshold: spentMaxThreshold ? new Prisma.Decimal(Number(spentMaxThreshold)) : new Prisma.Decimal(0),
-            balanceMinThreshold: balanceMinThreshold ? new Prisma.Decimal(Number(balanceMinThreshold)) : new Prisma.Decimal(0),
-            balanceMaxThreshold: balanceMaxThreshold ? new Prisma.Decimal(Number(balanceMaxThreshold)) : new Prisma.Decimal(0),
+            createdBy: userId,
+            userId,
+            spentMinThreshold: spentMinThreshold
+              ? new Prisma.Decimal(Number(spentMinThreshold))
+              : new Prisma.Decimal(0),
+            spentMaxThreshold: spentMaxThreshold
+              ? new Prisma.Decimal(Number(spentMaxThreshold))
+              : new Prisma.Decimal(0),
+            balanceMinThreshold: balanceMinThreshold
+              ? new Prisma.Decimal(Number(balanceMinThreshold))
+              : new Prisma.Decimal(0),
+            balanceMaxThreshold: balanceMaxThreshold
+              ? new Prisma.Decimal(Number(balanceMaxThreshold))
+              : new Prisma.Decimal(0),
             ...(inactiveIconUrl && { inactiveIconUrl }),
             ...(mainIconUrl && { mainIconUrl }),
             ...(passedIconUrl && { passedIconUrl }),
@@ -57,7 +79,8 @@ class MembershipSettingUseCase {
           for await (const benefit of tierBenefits) {
             // find MembershipBenefit by slug
             const membershipBenefit = await tx.membershipBenefit.findUnique({
-              where: { slug: benefit.slug }, select: { id: true },
+              where: { slug: benefit.slug },
+              select: { id: true },
             });
 
             if (!membershipBenefit) {
@@ -75,11 +98,11 @@ class MembershipSettingUseCase {
               create: {
                 tierId: updatedMembershipTier.id,
                 benefitId: membershipBenefit.id,
-                value: new Prisma.Decimal(Number(benefit.value)) || 0,
+                value: new Prisma.Decimal(Number(benefit.value)),
                 createdBy: userId,
               },
               update: {
-                value: new Prisma.Decimal(Number(benefit.value)) || 0,
+                value: new Prisma.Decimal(Number(benefit.value)),
                 updatedBy: userId,
               },
             });
@@ -94,7 +117,7 @@ class MembershipSettingUseCase {
         };
       });
     } catch (error) {
-      console.log("error", error);
+      console.log('error', error);
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new Error(Messages.MEMBERSHIP_TIER_ALREADY_EXISTS);
@@ -108,34 +131,34 @@ class MembershipSettingUseCase {
 
   async getMembershipTiersDashboard() {
     try {
-      const memberShipList = await membershipTierRepository.findMembershipTiersDashboard({}, {
-        include: {
-          tierBenefits: {
-            select: {
-              value: true,
-              benefit: {
-                select: {
-                  slug: true,
-                  name: true,
-                  suffix: true,
-                  description: true,
+      const memberShipList = (await membershipTierRepository.findMembershipTiersDashboard(
+        {},
+        {
+          include: {
+            tierBenefits: {
+              select: {
+                value: true,
+                benefit: {
+                  select: {
+                    slug: true,
+                    name: true,
+                    suffix: true,
+                    description: true,
+                  },
                 },
               },
             },
           },
+          omit: {
+            userId: true,
+            createdAt: true,
+            updatedAt: true,
+            createdBy: true,
+            updatedBy: true,
+          },
+          orderBy: [{ balanceMinThreshold: 'asc' }, { spentMinThreshold: 'asc' }],
         },
-        omit: {
-          userId: true,
-          createdAt: true,
-          updatedAt: true,
-          createdBy: true,
-          updatedBy: true,
-        },
-        orderBy: [
-          { balanceMinThreshold: 'asc' },
-          { spentMinThreshold: 'asc' },
-        ],
-      }) as MembershipTierWithBenefit[];
+      )) as MembershipTierWithBenefit[];
 
       // flat-map the memberShipList to get the tierBenefits
       const memberShipListWithBenefit = memberShipList.map((memberShip) => {
@@ -176,7 +199,6 @@ class MembershipSettingUseCase {
 
   async getCurrentMembershipTier(userId: string) {
     try {
-
       const foundCurrentMemberShipProgress = await prisma.membershipProgress.findFirst({
         where: {
           userId,
@@ -241,10 +263,7 @@ class MembershipSettingUseCase {
             { balanceMaxThreshold: { gte: new Prisma.Decimal(currentBalance) } },
           ],
         },
-        orderBy: [
-          { spentMinThreshold: 'desc' },
-          { balanceMinThreshold: 'desc' },
-        ],
+        orderBy: [{ spentMinThreshold: 'desc' }, { balanceMinThreshold: 'desc' }],
         ...restOptions,
       });
 
@@ -257,9 +276,7 @@ class MembershipSettingUseCase {
             { balanceMaxThreshold: { gte: new Prisma.Decimal(currentBalance) } },
           ],
         },
-        orderBy: [
-          { spentMinThreshold: 'asc' },
-        ],
+        orderBy: [{ spentMinThreshold: 'asc' }],
         ...restOptions,
       });
 
@@ -272,9 +289,7 @@ class MembershipSettingUseCase {
             { spentMaxThreshold: { gte: new Prisma.Decimal(currentSpent) } },
           ],
         },
-        orderBy: [
-          { balanceMinThreshold: 'asc' },
-        ],
+        orderBy: [{ balanceMinThreshold: 'asc' }],
         ...restOptions,
       });
 
@@ -314,7 +329,6 @@ class MembershipSettingUseCase {
         nextSpendingTier: nextSpendingTierWithBenefit ?? [],
         nextBalanceTier: nextBalanceTierWithBenefit ?? [],
       };
-
     } catch (error) {
       throw new Error(error instanceof Error ? error.message : Messages.INTERNAL_ERROR);
     }
