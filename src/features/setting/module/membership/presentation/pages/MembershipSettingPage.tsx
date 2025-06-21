@@ -1,8 +1,11 @@
 'use client';
 
 import SubmitButton from '@/components/common/atoms/SubmitButton';
+import { useAppDispatch } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { getListMembershipAsyncThunk } from '../../slices/actions/getMemberShipAsyncThunk';
 import { IconUploadList, MembershipRankChart, SettingTierAndStory } from '../molecules';
 import {
   defaultEditMemberShipValue,
@@ -11,10 +14,15 @@ import {
 } from '../schema/editMemberShip.schema';
 
 const MembershipSettingPage = () => {
+  const dispatch = useAppDispatch();
   const methods = useForm<EditMemberShipFormValues>({
     resolver: yupResolver(editMemberShipSchema),
     defaultValues: defaultEditMemberShipValue,
   });
+
+  useEffect(() => {
+    dispatch(getListMembershipAsyncThunk({ page: 1, limit: 10 }));
+  }, []);
 
   return (
     <FormProvider {...methods}>

@@ -1,6 +1,7 @@
 import * as yup from 'yup';
 
 export const editMemberShipSchema = yup.object({
+  tier: yup.string().required('Tier is required'),
   referralBonus: yup
     .number()
     .required('Referral bonus is required')
@@ -36,6 +37,7 @@ export const editMemberShipSchema = yup.object({
 export type EditMemberShipFormValues = yup.InferType<typeof editMemberShipSchema>;
 
 export const defaultEditMemberShipValue: EditMemberShipFormValues = {
+  tier: '',
   referralBonus: 0,
   savingInterest: 0,
   stakingInterest: 0,
