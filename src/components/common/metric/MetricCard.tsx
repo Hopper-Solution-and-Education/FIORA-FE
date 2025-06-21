@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import LucieIcon from '@/features/home/module/category/components/LucieIcon';
 import { cn } from '@/lib/utils';
+import { Currency } from '@/shared/types';
 import { formatCurrency, isImageUrl } from '@/shared/utils';
 import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
 import Image from 'next/image';
@@ -12,7 +13,7 @@ interface MetricCardProps {
   description?: string;
   icon?: string | React.ReactNode;
   className?: string;
-  currency?: 'VND' | 'USD' | 'FX';
+  currency?: Currency;
   trend?: {
     value: string;
     isPositive: boolean;

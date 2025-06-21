@@ -59,8 +59,6 @@ const ChartPage = () => {
     [currency, data],
   );
 
-  console.log('chartData', chartData);
-
   return (
     <div>
       {isLoading ? (

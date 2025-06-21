@@ -1,51 +1,42 @@
+import { Currency } from '@/shared/types';
+import {
+  formatFIORACurrency,
+  getCurrencySymbol,
+  FIORANumberFormat,
+} from '@/config/FIORANumberFormat';
+
 /**
  * Formats a number into a currency string based on the currency code.
  * @param value - The numeric value to format
- * @param currency - The currency code (e.g., 'USD', 'VND')
+ * @param currency - The currency code (e.g., 'USD', 'VND', 'FX')
  * @returns Formatted currency string or empty string if invalid
  */
 export const formatCurrency = (value: number, currency: string): string => {
   if (typeof value !== 'number' || isNaN(value)) return '';
-  return new Intl.NumberFormat(currency === 'VND' ? 'vi-VN' : 'en-US', {
-    style: 'currency',
-    currency,
-    // For VND, typically no decimals; for USD, 2 decimals
-    minimumFractionDigits: currency === 'VND' ? 0 : 2,
-    maximumFractionDigits: currency === 'VND' ? 0 : 2,
-  }).format(value);
+  return formatFIORACurrency(value, currency as Currency);
 };
 
 export const formatSuggestionValue = (
   num: number,
-  currency: 'VND' | 'USD',
+  currency: 'VND' | 'USD' | 'FX',
   shouldShortened?: boolean,
 ): string => {
-  const locale = currency === 'VND' ? 'vi-VN' : 'en-US';
-  const currencySymbol = new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    currencyDisplay: 'symbol',
-  })
-    .format(0)
-    .replace(/[\d\s,.]/g, '');
+  const currencySymbol = getCurrencySymbol(currency as Currency);
 
   if (num >= 1000000 && shouldShortened) {
     const inMillions = num / 1000000;
-    const formatted = new Intl.NumberFormat(locale, {
+    // Use FIORANumberFormat for decimal formatting with consistent locale
+    const numberFormatter = new FIORANumberFormat(currency as Currency, {
       style: 'decimal',
       minimumFractionDigits: 0,
       maximumFractionDigits: 1,
-    }).format(inMillions);
+    });
+    const formatted = numberFormatter.format(inMillions);
 
     return currency === 'VND'
       ? `${formatted}M ${currencySymbol}`
       : `${currencySymbol} ${formatted}M`;
   }
 
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: currency === 'VND' ? 0 : 2,
-    maximumFractionDigits: currency === 'VND' ? 0 : 2,
-  }).format(num);
+  return formatFIORACurrency(num, currency as Currency);
 };

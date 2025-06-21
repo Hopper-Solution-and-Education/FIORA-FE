@@ -224,6 +224,9 @@ export enum Messages {
 
   // Membership Progress Success
   MEMBERSHIP_PROGRESS_OF_CURRENT_USER_SUCCESS = 'Membership progress of current user retrieved successfully',
+  // WALLET
+  GET_WALLET_SUCCESS = 'Get wallet successfully.',
+  INVALID_WALLET_TYPE = 'Invalid wallet type.',
 
   INVALID_USER = 'Invalid user.',
   USER_EMAIL_EXISTED = 'Email already existed',

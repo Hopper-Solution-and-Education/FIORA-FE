@@ -5,6 +5,7 @@ type ExchangeRates = Record<Currency, number>;
 const EXCHANGE_RATES_TO_USD: ExchangeRates = {
   [Currency.USD]: 1,
   [Currency.VND]: 25000,
+  [Currency.FX]: 1,
 };
 
 // Update convertCurrency to handle Prisma.Decimal

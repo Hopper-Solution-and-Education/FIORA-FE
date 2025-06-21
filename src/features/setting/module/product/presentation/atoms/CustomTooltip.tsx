@@ -1,10 +1,11 @@
-import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/shared/constants/chart';
+import { DEFAULT_CURRENCY } from '@/shared/constants/chart';
+import { formatFIORACurrency } from '@/config/FIORANumberFormat';
+import { Currency } from '@/shared/types';
 
 interface CustomTooltipProps {
   active?: boolean;
   payload?: any[];
   currency?: string;
-  locale?: string;
   tutorialText?: string;
 }
 
@@ -12,7 +13,6 @@ const CustomTooltip = ({
   active,
   payload,
   currency = DEFAULT_CURRENCY,
-  locale = DEFAULT_LOCALE,
   tutorialText,
 }: CustomTooltipProps) => {
   if (!active || !payload || !payload.length) return null;
@@ -24,15 +24,11 @@ const CustomTooltip = ({
       <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{item.name}</p>
       <p className="text-xs text-gray-600 dark:text-gray-400">
         Expense:{' '}
-        <span className="font-bold">
-          {new Intl.NumberFormat(locale, { style: 'currency', currency }).format(item.expense)}
-        </span>
+        <span className="font-bold">{formatFIORACurrency(item.expense, currency as Currency)}</span>
       </p>
       <p className="text-xs text-gray-600 dark:text-gray-400">
         Income:{' '}
-        <span className="font-bold">
-          {new Intl.NumberFormat(locale, { style: 'currency', currency }).format(item.income)}
-        </span>
+        <span className="font-bold">{formatFIORACurrency(item.income, currency as Currency)}</span>
       </p>
       {tutorialText && (
         <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 italic">{tutorialText}</p>

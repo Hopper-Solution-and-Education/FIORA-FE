@@ -20,6 +20,13 @@ export const navItems: NavItem[] = [
     isActive: false,
     items: [
       {
+        title: 'Wallet',
+        url: '/wallet',
+        icon: 'wallet',
+        shortcut: ['m', 'm'],
+        module: MODULE.ACCOUNT,
+      },
+      {
         title: 'Accounts',
         url: '/account',
         icon: 'banknote',

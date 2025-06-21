@@ -5,6 +5,8 @@ import { twMerge } from 'tailwind-merge';
 import { OrderByFields } from '../types/Common.types';
 import { Prisma } from '@prisma/client';
 import { CURRENCY } from '../constants';
+import { formatFIORACurrency, getCurrencySymbol } from '@/config/FIORANumberFormat';
+import { Currency } from '@/shared/types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -38,33 +40,24 @@ export const formatCurrency = (value: number, currency: string = CURRENCY.VND) =
       suffix = 'K';
     }
 
-    // Determine the locale and currency format
-    const formatter =
-      currency === CURRENCY.USD
-        ? new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: CURRENCY.USD,
-            minimumFractionDigits: suffix ? 2 : 0, // Use 2 decimals for compact notation
-            maximumFractionDigits: suffix ? 2 : 0, // Limit decimals for compact notation
-          })
-        : new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: CURRENCY.VND,
-            minimumFractionDigits: suffix ? 2 : 0, // Use 2 decimals for compact notation
-            maximumFractionDigits: suffix ? 2 : 0, // Limit decimals for compact notation
-          });
+    // Use FIORANumberFormat for currency formatting
+    const formatted = formatFIORACurrency(formattedValue, currency as Currency);
 
     // Format the number and insert suffix before the currency symbol
-    const formatted = formatter.format(formattedValue);
     if (suffix) {
+      const currencySymbol = getCurrencySymbol(currency as Currency);
       if (currency === CURRENCY.USD) {
         // For USD, move the suffix after the number but keep $ at the start
         const numericPart = formatted.replace('$', '').trim();
         return `$${numericPart}${suffix}`;
-      } else {
+      } else if (currency === CURRENCY.VND) {
         // For VND, split at ₫ and place suffix before the currency symbol
         const parts = formatted.split('₫').map((part) => part.trim());
         return `${parts[0]}${suffix} ₫${parts[1] || ''}`;
+      } else {
+        // For FX and other currencies, place suffix before the currency symbol
+        const parts = formatted.split(currencySymbol).map((part) => part.trim());
+        return `${parts[0]}${suffix} ${currencySymbol}${parts[1] || ''}`;
       }
     }
 

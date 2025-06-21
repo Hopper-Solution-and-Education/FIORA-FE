@@ -3,8 +3,7 @@ import { generateColor } from '@/shared/lib/charts';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { TransactionType } from '@prisma/client'; // Import Currency and Prisma
 import { ProductTransactionCategoryResponse } from '../../domain/entities/Product';
-
-type Currency = 'VND' | 'USD'; // This line might not be needed if imported from @prisma/client
+import { Currency } from '@/shared/types';
 
 export const mapTransactionsToTwoSideBarItems = (
   data: ProductTransactionCategoryResponse[],

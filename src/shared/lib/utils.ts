@@ -2,6 +2,7 @@ import { ResponseObject } from '@/store/types/responseObject.type';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { Currency } from '../types';
+import { FIORANumberFormat } from '@/config/FIORANumberFormat';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -45,17 +46,8 @@ export const isImageFile = (value: string) => {
   return /\.(png|jpe?g|svg|gif|webp)$/i.test(value);
 };
 
-export const formatters: Record<Currency, Intl.NumberFormat> = {
-  USD: new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }),
-  VND: new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }),
+export const formatters: Record<Currency, FIORANumberFormat> = {
+  USD: new FIORANumberFormat('USD'),
+  VND: new FIORANumberFormat('VND'),
+  FX: new FIORANumberFormat('FX'),
 };

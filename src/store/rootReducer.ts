@@ -1,10 +1,5 @@
 import accountSlice from '@/features/home/module/account/slices';
-
-import financeControlSlice from '@/features/finance/report/slices';
-import {
-  default as budgetControlSlice,
-  default as budgetSummarySlice,
-} from '@/features/home/module/budgets/creation-dashboard/slices';
+import budgetControlSlice from '@/features/home/module/budgets/creation-dashboard/slices';
 import categorySlice from '@/features/home/module/category/slices';
 import transactionSlice from '@/features/home/module/transaction/slices';
 import landingSlices from '@/features/landing/slices';
@@ -16,6 +11,9 @@ import { combineReducers } from '@reduxjs/toolkit';
 import dialogSlices from './slices/dialog.slice';
 import moduleReducer from './slices/moduleSlice';
 import settingSlices from './slices/setting.slice';
+import budgetSummarySlice from '@/features/home/module/budgets/creation-dashboard/slices';
+import financeControlSlice from '@/features/finance/report/slices';
+import walletSlice from '@/features/home/module/wallet/slices';
 
 const reducer = {
   settings: settingSlices,
@@ -32,6 +30,7 @@ const reducer = {
   module: moduleReducer,
   financeControl: financeControlSlice,
   memberShipSettings: memberShipSettingsSlice,
+  wallet: walletSlice,
 };
 
 const rootReducer = combineReducers(reducer);
