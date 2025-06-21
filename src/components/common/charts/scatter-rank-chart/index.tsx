@@ -112,7 +112,7 @@ const ScatterRankingChart = ({
           {/* Y-axis Legend (rotated, vertically centered, outside Y labels) */}
           <div
             className="absolute top-0 left-1 flex flex-col justify-center items-center"
-            style={{ height: 'calc(100% - 80px)', width: '40px', zIndex: 999, gap: '10px' }}
+            style={{ height: 'calc(100% - 80px)', width: '40px', zIndex: 2, gap: '10px' }}
           >
             <LegendYAxis items={yLegend?.items || []} />
           </div>
@@ -167,7 +167,7 @@ const ScatterRankingChart = ({
           {/* X-axis Legend (centered below chart grid) */}
           <div
             className="absolute left-1/2"
-            style={{ transform: 'translateX(-50%)', bottom: '8px', zIndex: 20 }}
+            style={{ transform: 'translateX(-50%)', bottom: '8px', zIndex: 2 }}
           >
             <LegendXAxis items={xLegend?.items || []} />
           </div>

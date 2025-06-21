@@ -15,4 +15,5 @@ export { default as TextareaField } from './text-area/TextareaField';
 export { default as UploadField } from './upload/UploadField';
 export { default as ArrayField } from './array-field/ArrayField';
 export { default as IconSelectUpload } from './select/IconSelectUpload';
-export { default as DateRangeFromToPicker } from './date-range-from-to-picker';
+export { default as DateRangeFromToPicker } from './date-range-from-to-picker/DateRangeFromToPicker';
+export { default as DateRangeFromToPickerField } from './date-range-from-to-picker/DateRangeFromToPickerField';

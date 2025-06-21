@@ -1,8 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
-import { Icons } from '@/components/Icon';
-import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { MediaType, SectionType } from '@prisma/client';
@@ -11,6 +9,10 @@ import { useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
+import { Icons } from '@/components/Icon';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { removeFromFirebase, uploadToFirebase } from '@/shared/lib';
 import {
   defaultValues,
   SectionDefaultValues,
@@ -21,7 +23,6 @@ import { fetchMediaBySection } from '../../slices/actions/fetchMediaBySection';
 import { updateMediaBySection } from '../../slices/actions/updateMediaBySection';
 import { ISection } from '../../slices/types';
 import SectionCard from './SectionCard';
-import { removeFromFirebase, uploadToFirebase } from '@/shared/lib';
 
 interface SectionManagerProps {
   sectionType: SectionType;
@@ -68,7 +69,7 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
   const dispatch = useAppDispatch();
   const { data: userData } = useSession();
 
-  const { handleSubmit, reset } = methods;
+  const { reset } = methods;
 
   useEffect(() => {
     if (!fetchedSections.includes(sectionType)) {
@@ -150,11 +151,6 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
           <h2 className="text-2xl font-bold">
             {sectionType === 'KPS' ? 'KSP' : sectionType.replace('_', ' ')} Section
           </h2>
-          <div className="flex space-x-2">
-            <Button onClick={handleSubmit((data) => onSubmit(data))} variant="default">
-              <Icons.saveAll /> <span>Save</span>
-            </Button>
-          </div>
         </div>
 
         <div className="space-y-4">
@@ -164,6 +160,32 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
             sectionType={sectionType}
           />
         </div>
+      </div>
+
+      <div className="flex justify-end space-x-2">
+        <TooltipProvider>
+          <div className="flex justify-between gap-4 mt-6">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  onClick={methods.handleSubmit(onSubmit)}
+                  disabled={methods.formState.isSubmitting || methods.formState.isValidating}
+                  className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  {methods.formState.isSubmitting ? (
+                    <Icons.spinner className="animate-spin h-5 w-5" />
+                  ) : (
+                    <Icons.check className="h-5 w-5" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{methods.formState.isSubmitting ? 'Submiting...' : 'Submit'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
       </div>
     </FormProvider>
   );

@@ -64,6 +64,8 @@ export type ItemRankChartProps = {
 
 export interface CombinedTierIcon {
   icon: string;
+  inActiveIcon?: string;
+  isActive?: boolean;
   onClick?: (balanceTier: Tier, spentTier: Tier) => void;
 }
 
