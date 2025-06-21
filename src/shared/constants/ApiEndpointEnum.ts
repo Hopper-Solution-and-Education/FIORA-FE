@@ -6,4 +6,7 @@ export enum ApiEndpointEnum {
   BudgetByType = '/api/budgets/summary',
 
   CategoriesByType = '/api/categories',
+
+  // Wallet
+  Wallet = '/api/wallet',
 }
