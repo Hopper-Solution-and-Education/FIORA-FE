@@ -18,9 +18,11 @@ const ScatterRankingChart = ({
   cellRenderer,
   combinedTierIcons,
   customTooltipContent,
+  isLoading = false,
 }: ScatterChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [chartDimensions, setChartDimensions] = useState({ width: 0, height: 0 });
+  const [isChartReady, setIsChartReady] = useState(false);
 
   const balance = currentTier?.balance ?? 0;
   const spent = currentTier?.spent ?? 0;
@@ -47,6 +49,18 @@ const ScatterRankingChart = ({
 
     return () => observer.disconnect();
   }, []);
+
+  // Add loading effect
+  useEffect(() => {
+    if (!isLoading && hasData) {
+      const timer = setTimeout(() => {
+        setIsChartReady(true);
+      }, 300); // Small delay for smooth transition
+      return () => clearTimeout(timer);
+    } else {
+      setIsChartReady(false);
+    }
+  }, [isLoading, hasData]);
 
   const userBalanceRank = getBalanceRank(balance, balanceTiers);
   const userSpentRank = getSpentRank(spent, spentTiers);
@@ -119,12 +133,30 @@ const ScatterRankingChart = ({
     return pos;
   };
 
+  // Loading skeleton component
+  const LoadingSkeleton = () => (
+    <div className="flex items-center justify-center h-full">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+        <div className="text-gray-500 text-lg font-medium mb-2">Loading chart data...</div>
+        <div className="text-gray-400 text-sm">
+          Please wait while we prepare your membership tiers
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className={`w-full rounded-lg p-2 ${className}`}>
       <div className="p-4 pb-7 font-bold text-lg">{title}</div>
       <div className="flex justify-end">
-        <div className="relative w-full h-[600px] overflow-hidden" ref={chartContainerRef}>
-          {!hasData ? (
+        <div
+          className="relative w-full min-h-[400px] md:min-h-[700px] overflow-hidden"
+          ref={chartContainerRef}
+        >
+          {isLoading ? (
+            <LoadingSkeleton />
+          ) : !hasData ? (
             // Show no data message
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
@@ -135,7 +167,9 @@ const ScatterRankingChart = ({
               </div>
             </div>
           ) : (
-            <>
+            <div
+              className={`transition-all duration-500 ${isChartReady ? 'opacity-100' : 'opacity-0'}`}
+            >
               {/* Y-axis Legend (rotated, vertically centered, outside Y labels) */}
               <div
                 className="absolute top-0 left-1 flex flex-col justify-center items-center"
@@ -194,7 +228,7 @@ const ScatterRankingChart = ({
               {/* X-axis Legend (centered below chart grid) */}
               <div
                 className="absolute left-1/2"
-                style={{ transform: 'translateX(-50%)', bottom: '8px', zIndex: 2 }}
+                style={{ transform: 'translateX(-50%)', bottom: '0px', zIndex: 2 }}
               >
                 <LegendXAxis items={xLegend?.items || []} />
               </div>
@@ -250,6 +284,7 @@ const ScatterRankingChart = ({
                           sIndex={sIndex}
                           combinedTierIcons={combinedTierIcons}
                           customTooltipContent={customTooltipContent}
+                          item={combinedTierIcons?.[`${bTier.label}-${sTier.label}`]?.item}
                         />
                       );
                     }),
@@ -266,7 +301,7 @@ const ScatterRankingChart = ({
                 getXAxisPosition={getXAxisPosition}
                 getYAxisPosition={getYAxisPosition}
               />
-            </>
+            </div>
           )}
         </div>
       </div>

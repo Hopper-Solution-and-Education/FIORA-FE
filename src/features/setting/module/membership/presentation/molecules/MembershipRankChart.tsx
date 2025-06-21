@@ -1,12 +1,26 @@
 import ScatterRankingChart from '@/components/common/charts/scatter-rank-chart';
 import { Tier } from '@/components/common/charts/scatter-rank-chart/types';
 import { COLORS } from '@/shared/constants/chart';
-import { useAppSelector } from '@/store';
-import { useMemo, useState } from 'react';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { useCallback, useMemo, useState } from 'react';
+import { setSelectedMembership } from '../../slices';
 import { createCombinedTierIcons, transformToBalanceTiers, transformToSpentTiers } from '../utils';
 
 const MembershipRankChart = () => {
-  const { memberships } = useAppSelector((state) => state.memberShipSettings);
+  const { memberships, isLoadingGetMemberships } = useAppSelector(
+    (state) => state.memberShipSettings,
+  );
+
+  const dispatch = useAppDispatch();
+
+  const handleTierClick = useCallback(
+    (balanceTier: Tier, spentTier: Tier, item?: any) => {
+      setSelectedItem({ balance: balanceTier.min, spent: spentTier.min });
+      dispatch(setSelectedMembership(item));
+    },
+    [dispatch],
+  );
+
   const [selectedItem, setSelectedItem] = useState<{ balance: number; spent: number } | null>({
     balance: 0,
     spent: 0,
@@ -24,12 +38,8 @@ const MembershipRankChart = () => {
 
   // Create combined tier icons mapping with onClick handlers
   const combinedTierIcons = useMemo(() => {
-    const handleTierClick = (balanceTier: Tier, spentTier: Tier) => {
-      setSelectedItem({ balance: balanceTier.min, spent: spentTier.min });
-    };
-
     return createCombinedTierIcons(balanceTiers, spentTiers, memberships, handleTierClick);
-  }, [balanceTiers, spentTiers, memberships]);
+  }, [balanceTiers, spentTiers, memberships, handleTierClick]);
 
   return (
     <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-8 rounded-lg">
@@ -56,6 +66,7 @@ const MembershipRankChart = () => {
           y: COLORS.DEPS_SUCCESS.LEVEL_1,
         }}
         combinedTierIcons={combinedTierIcons}
+        isLoading={isLoadingGetMemberships}
       />
     </div>
   );

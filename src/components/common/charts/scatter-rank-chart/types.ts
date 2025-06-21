@@ -30,6 +30,7 @@ export interface ScatterChartProps {
     handleClick?: () => void,
   ) => React.ReactNode;
   customTooltipContent?: (bTier: Tier, sTier: Tier) => React.ReactNode;
+  isLoading?: boolean;
 }
 
 export interface Tier {
@@ -38,6 +39,7 @@ export interface Tier {
   max: number;
   value: number;
   icon: string;
+  data?: any;
 }
 
 export const defaultBarColors = {
@@ -60,13 +62,15 @@ export type ItemRankChartProps = {
   sIndex: number;
   combinedTierIcons?: Record<string, CombinedTierIcon>;
   customTooltipContent?: (bTier: Tier, sTier: Tier) => React.ReactNode;
+  item: any;
 };
 
 export interface CombinedTierIcon {
   icon: string;
   inActiveIcon?: string;
   isActive?: boolean;
-  onClick?: (balanceTier: Tier, spentTier: Tier) => void;
+  onClick?: (balanceTier: Tier, spentTier: Tier, item?: any) => void;
+  item?: any;
 }
 
 export interface ProgressBarChartProps {

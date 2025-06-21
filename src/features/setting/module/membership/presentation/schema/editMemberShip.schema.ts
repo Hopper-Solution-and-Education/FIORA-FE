@@ -5,28 +5,38 @@ export const editMemberShipSchema = yup.object({
   referralBonus: yup
     .number()
     .required('Referral bonus is required')
-    .positive('Referral bonus must be positive'),
+    .min(0, 'Referral bonus must be positive')
+    .max(100, 'Referral bonus must be less than 100'),
   savingInterest: yup
     .number()
     .required('Saving interest is required')
-    .positive('Saving interest must be positive'),
+    .min(0, 'Saving interest must be positive')
+    .max(100, 'Saving interest must be less than 100'),
   stakingInterest: yup
     .number()
     .required('Staking interest is required')
-    .positive('Staking interest must be positive'),
+    .min(0, 'Staking interest must be positive')
+    .max(100, 'Staking interest must be less than 100'),
   investmentInterest: yup
     .number()
     .required('Investment interest is required')
-    .positive('Investment interest must be positive'),
+    .min(0, 'Investment interest must be positive')
+    .max(100, 'Investment interest must be less than 100'),
   loanInterest: yup
     .number()
     .required('Loan interest is required')
-    .positive('Loan interest must be positive'),
-  cashback: yup.number().required('Cashback is required').positive('Cashback must be positive'),
+    .min(0, 'Loan interest must be positive')
+    .max(100, 'Loan interest must be less than 100'),
+  cashback: yup
+    .number()
+    .required('Cashback is required')
+    .min(0, 'Cashback must be positive')
+    .max(100, 'Cashback must be less than 100'),
   referralKickback: yup
     .number()
     .required('Referral kickback is required')
-    .positive('Referral kickback must be positive'),
+    .min(0, 'Referral kickback must be positive')
+    .max(100, 'Referral kickback must be less than 100'),
   bnplFee: yup.number().required('BNPL fee is required').positive('BNPL fee must be positive'),
   story: yup.string().required('Story is required'),
   activeIcon: yup.string().required('Active icon is required'),

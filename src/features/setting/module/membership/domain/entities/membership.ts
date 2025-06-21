@@ -37,7 +37,7 @@ export class TierBenefit {
   name: string;
   suffix: string;
   description: string;
-  value: string;
+  value: number;
 
   constructor(data: TierBenefit) {
     this.slug = data.slug;

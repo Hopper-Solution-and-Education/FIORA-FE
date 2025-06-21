@@ -1,10 +1,10 @@
-import React from 'react';
+import { FormConfig, UploadField } from '@/components/common/forms';
 import { useFormContext } from 'react-hook-form';
 import { EditMemberShipFormValues } from '../schema/editMemberShip.schema';
-import { FormConfig, UploadField } from '@/components/common/forms';
 
 const ImageUploadListFieldConfig = () => {
   const methods = useFormContext<EditMemberShipFormValues>();
+  const { watch } = methods;
   const { setValue } = methods;
 
   const iconItems = [
@@ -54,6 +54,7 @@ const ImageUploadListFieldConfig = () => {
       key={item.id}
       name={item.id as keyof EditMemberShipFormValues}
       label={item.label}
+      value={watch(item.id as keyof EditMemberShipFormValues) as string | null}
       onChange={(file) => handleFileUpload(item.id as keyof EditMemberShipFormValues, file)}
       placeholder={item.placeholder}
       previewShape="square"

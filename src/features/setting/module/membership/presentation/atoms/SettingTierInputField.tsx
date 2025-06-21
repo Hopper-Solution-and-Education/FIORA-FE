@@ -1,6 +1,7 @@
 'use client';
 
 import InputField from '@/components/common/forms/input/InputField';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/shared/utils';
 import { FieldError } from 'react-hook-form';
 
@@ -61,23 +62,34 @@ const SettingTierInputField = ({
           flex justify-end
         "
       >
-        <InputField
-          name={name}
-          value={value.toString()}
-          onChange={(e) => onChange(Number(e))}
-          error={error}
-          options={options}
-          placeholder="0"
-          required={required}
-          onBlur={onBlur}
-          className={cn(
-            'text-center',
-            'w-[60px]',
-            'sm:w-[70px]',
-            'md:w-[80px]',
-            'text-xs sm:text-sm md:text-sm',
-          )}
-        />
+        <TooltipProvider>
+          <Tooltip open={!!error?.message}>
+            <TooltipTrigger asChild>
+              <InputField
+                name={name}
+                value={value.toString()}
+                onChange={(e) => onChange(Number(e))}
+                options={options}
+                placeholder="0"
+                required={required}
+                onBlur={onBlur}
+                className={cn(
+                  'text-center',
+                  'w-[60px]',
+                  'sm:w-[70px]',
+                  'md:w-[80px]',
+                  'text-xs sm:text-sm md:text-sm',
+                  error && 'border-red-500',
+                )}
+              />
+            </TooltipTrigger>
+            {error?.message && (
+              <TooltipContent>
+                <span className="text-red-500 text-xs">{error.message}</span>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       {/* Suffix */}

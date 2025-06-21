@@ -7,6 +7,9 @@ const membershipSlice = createSlice({
   initialState: initialMembershipState,
   reducers: {
     resetMembershipState: () => initialMembershipState,
+    setSelectedMembership: (state, action) => {
+      state.selectedMembership = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -24,5 +27,5 @@ const membershipSlice = createSlice({
 });
 
 export * from './types';
-export const { resetMembershipState } = membershipSlice.actions;
+export const { resetMembershipState, setSelectedMembership } = membershipSlice.actions;
 export default membershipSlice.reducer;

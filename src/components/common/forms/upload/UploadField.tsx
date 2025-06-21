@@ -3,6 +3,7 @@
 import GlobalLabel from '@/components/common/atoms/GlobalLabel';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/shared/lib/utils';
+import { isImageUrl } from '@/shared/utils';
 import { AlertTriangle, Circle, Image as ImageIcon, Square, Upload, X } from 'lucide-react';
 import Image from 'next/image';
 import type React from 'react';
@@ -12,7 +13,7 @@ import { toast } from 'sonner';
 
 interface UploadFieldProps {
   name: string;
-  value?: File | null;
+  value?: File | string | null;
   onChange?: (file: File | null) => void;
   onBlur?: () => void;
   error?: FieldError;
@@ -54,6 +55,14 @@ const UploadField: React.FC<UploadFieldProps> = ({
       const previewUrl = URL.createObjectURL(value);
       setPreview(previewUrl);
       return () => URL.revokeObjectURL(previewUrl);
+    }
+    if (typeof value === 'string' && isImageUrl(value)) {
+      setPreview(value);
+    } else {
+      setPreview(null);
+    }
+    if (value === null) {
+      setPreview(null);
     }
   }, [value]);
 

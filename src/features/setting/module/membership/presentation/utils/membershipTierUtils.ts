@@ -68,7 +68,7 @@ export const createCombinedTierIcons = (
   balanceTiers: Tier[],
   spentTiers: Tier[],
   memberships: Membership[],
-  onTierClick: (balanceTier: Tier, spentTier: Tier) => void,
+  onTierClick: (balanceTier: Tier, spentTier: Tier, membership?: Membership) => void,
 ): Record<string, any> => {
   const icons: Record<string, any> = {};
 
@@ -94,10 +94,15 @@ export const createCombinedTierIcons = (
           )
         : null;
 
+      const selectedMembership = matchingMembership || fallbackMembership;
+
       icons[key] = {
-        icon:
-          matchingMembership?.mainIconUrl || fallbackMembership?.mainIconUrl || balanceTier.icon,
+        icon: selectedMembership?.mainIconUrl || balanceTier.icon,
         onClick: onTierClick,
+        selectedMembership: selectedMembership || null,
+        balanceTier,
+        spentTier,
+        item: selectedMembership || null,
       };
     });
   });
