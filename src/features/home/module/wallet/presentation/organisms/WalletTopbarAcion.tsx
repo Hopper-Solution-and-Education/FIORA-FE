@@ -1,6 +1,6 @@
 import { WalletDepositButton } from '../atoms/WalletDepositButton';
 import { WalletFilterButton } from '../atoms/WalletFilterButton';
-import { WalletSearch } from '../atoms/WalletSearch';
+import { WalletSearch } from '../molecules/WalletSearch';
 
 export const WalletTopbarAction = () => {
   return (
