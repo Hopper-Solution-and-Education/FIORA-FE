@@ -23,18 +23,19 @@ class MembershipSettingUseCase {
     try {
       return await prisma.$transaction(async (tx) => {
         const updatedMembershipTier = await tx.membershipTier.upsert({
-          where: { id, userId },
+          where: { id },
           update: {
             updatedBy: userId,
             ...(inactiveIconUrl && { inactiveIconUrl }),
             ...(mainIconUrl && { mainIconUrl }),
             ...(passedIconUrl && { passedIconUrl }),
-          ...(themeIconUrl && { themeIconUrl }),
+            ...(themeIconUrl && { themeIconUrl }),
             ...(story && { story }),
             ...(tierName && { tierName }),
           },
           create: {
-            tierName, createdBy: userId, userId,
+            tierName,
+            createdBy: userId, userId,
             spentMinThreshold: spentMinThreshold ? new Prisma.Decimal(Number(spentMinThreshold)) : new Prisma.Decimal(0),
             spentMaxThreshold: spentMaxThreshold ? new Prisma.Decimal(Number(spentMaxThreshold)) : new Prisma.Decimal(0),
             balanceMinThreshold: balanceMinThreshold ? new Prisma.Decimal(Number(balanceMinThreshold)) : new Prisma.Decimal(0),
@@ -140,6 +141,10 @@ class MembershipSettingUseCase {
       const memberShipListWithBenefit = memberShipList.map((memberShip) => {
         return {
           ...memberShip,
+          balanceMaxThreshold: Number(memberShip.balanceMaxThreshold),
+          balanceMinThreshold: Number(memberShip.balanceMinThreshold),
+          spentMaxThreshold: Number(memberShip.spentMaxThreshold),
+          spentMinThreshold: Number(memberShip.spentMinThreshold),
           tierBenefits: memberShip.tierBenefits.map((tierBenefit) => ({
             ...tierBenefit.benefit,
             value: tierBenefit.value,
@@ -313,6 +318,17 @@ class MembershipSettingUseCase {
     } catch (error) {
       throw new Error(error instanceof Error ? error.message : Messages.INTERNAL_ERROR);
     }
+  }
+
+  async createNewMembershipProgress(userId: string) {
+    return prisma.membershipProgress.create({
+      data: {
+        userId,
+        currentSpent: new Prisma.Decimal(0),
+        currentBalance: new Prisma.Decimal(0),
+        createdBy: userId,
+      },
+    });
   }
 }
 

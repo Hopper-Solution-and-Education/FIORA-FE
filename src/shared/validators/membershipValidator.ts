@@ -17,7 +17,7 @@ const membershipKeyValSchema = Joi.object({
 });
 
 export const membershipTierSchema = Joi.object({
-    tierName: Joi.string().required().min(1).max(500).messages({
+    tierName: Joi.string().optional().allow('').min(1).max(500).messages({
         'string.empty': 'Membership tier name is required',
         'string.min': 'Membership tier name must be at least 1 character',
         'string.max': 'Membership tier name must be at most 500 characters',
