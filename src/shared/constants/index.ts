@@ -6,6 +6,7 @@ export const FIREBASE_GS_URL = 'gs://';
 
 export const MODULE = {
   HOME: 'HOME',
+  WALLET: 'WALLET',
   ACCOUNT: 'ACCOUNT',
   CATEGORY: 'CATEGORY',
   TRANSACTION: 'TRANSACTION',

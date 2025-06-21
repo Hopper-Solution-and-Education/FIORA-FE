@@ -1,7 +1,7 @@
 'use client';
 
 import Header from '@/features/landing/presentation/components/Header';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import Footer from './components/Footer';
 import { ScrollToTop } from './components/ScrollToTop';
 import { Banner } from './organisms/Banner';
@@ -35,7 +35,7 @@ const LandingPage = () => {
       </motion.div>
 
       <motion.div
-        variants={fadeIn}
+        variants={fadeIn as Variants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
@@ -44,7 +44,7 @@ const LandingPage = () => {
       </motion.div>
 
       <motion.div
-        variants={fadeIn}
+        variants={fadeIn as Variants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
@@ -53,7 +53,7 @@ const LandingPage = () => {
       </motion.div>
 
       <motion.div
-        variants={fadeIn}
+        variants={fadeIn as Variants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
@@ -62,7 +62,7 @@ const LandingPage = () => {
       </motion.div>
 
       <motion.div
-        variants={fadeIn}
+        variants={fadeIn as Variants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
@@ -71,7 +71,7 @@ const LandingPage = () => {
       </motion.div>
 
       <motion.div
-        variants={zoomIn}
+        variants={zoomIn as Variants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
@@ -80,7 +80,7 @@ const LandingPage = () => {
       </motion.div>
 
       <motion.div
-        variants={zoomIn}
+        variants={zoomIn as Variants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
