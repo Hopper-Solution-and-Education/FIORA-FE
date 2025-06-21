@@ -7,7 +7,7 @@ export * from './transaction.types';
 export * from './filter.types';
 export * from './httpResponse.types';
 
-export type Currency = 'VND' | 'USD';
+export type Currency = 'VND' | 'USD' | 'FX';
 
 export type CreatedBy = {
   id: string;

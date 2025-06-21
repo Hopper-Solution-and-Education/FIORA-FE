@@ -1,5 +1,5 @@
-export const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-  }).format(value);
+import { formatFIORACurrency } from '@/config/FIORANumberFormat';
+import { Currency } from '@/shared/types';
+
+export const formatCurrency = (value: number, currency: Currency = 'VND') =>
+  formatFIORACurrency(value, currency);

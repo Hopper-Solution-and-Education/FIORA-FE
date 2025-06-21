@@ -1,40 +1,6 @@
-import { Currency } from '@prisma/client';
-
-// Constants for easy customization
-export const FIORA_CURRENCY_CONFIG = {
-  FX: {
-    symbol: '₣', // FIORA currency symbol
-    name: 'FIORA',
-    locale: 'en-US',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-    position: 'before' as const, // 'before' | 'after'
-    thousandSeparator: ',',
-    decimalSeparator: '.',
-  },
-  USD: {
-    symbol: '$',
-    name: 'US Dollar',
-    locale: 'en-US',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-    position: 'before' as const,
-    thousandSeparator: ',',
-    decimalSeparator: '.',
-  },
-  VND: {
-    symbol: '₫',
-    name: 'Vietnamese Dong',
-    locale: 'vi-VN',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-    position: 'after' as const,
-    thousandSeparator: '.',
-    decimalSeparator: ',',
-  },
-} as const;
-
-export type FIORACurrencyConfig = typeof FIORA_CURRENCY_CONFIG;
+import { Currency } from '@/shared/types';
+import { FIORA_CURRENCY_CONFIG } from './config';
+import { SYMBOL_POSITION } from './constant';
 
 /**
  * FIORANumberFormat class that extends Intl.NumberFormat
@@ -42,26 +8,23 @@ export type FIORACurrencyConfig = typeof FIORA_CURRENCY_CONFIG;
  */
 export class FIORANumberFormat extends Intl.NumberFormat {
   private currency: Currency;
-  private config: typeof FIORA_CURRENCY_CONFIG[keyof typeof FIORA_CURRENCY_CONFIG];
+  private config: (typeof FIORA_CURRENCY_CONFIG)[keyof typeof FIORA_CURRENCY_CONFIG];
 
-  constructor(
-    currency: Currency,
-    options?: Intl.NumberFormatOptions,
-    locale?: string | string[]
-  ) {
+  constructor(currency: Currency, options?: Intl.NumberFormatOptions, locale?: string | string[]) {
     const config = FIORA_CURRENCY_CONFIG[currency];
-    
-    // Use custom config or fallback to standard Intl.NumberFormat
+    if (!config) {
+      throw new Error(`Unsupported currency: ${currency}`);
+    }
+
     const formatOptions: Intl.NumberFormatOptions = {
       style: 'currency',
-      currency: currency === 'FX' ? 'USD' : currency, // Use USD as base for FX
+      currency: currency === 'FX' ? 'USD' : currency,
       minimumFractionDigits: config.minimumFractionDigits,
       maximumFractionDigits: config.maximumFractionDigits,
       ...options,
     };
 
     super(locale || config.locale, formatOptions);
-    
     this.currency = currency;
     this.config = config;
   }
@@ -73,7 +36,7 @@ export class FIORANumberFormat extends Intl.NumberFormat {
     if (this.currency === 'FX') {
       return this.formatCustomCurrency(value);
     }
-    
+
     return super.format(value);
   }
 
@@ -82,17 +45,17 @@ export class FIORANumberFormat extends Intl.NumberFormat {
    */
   private formatCustomCurrency(value: number | bigint): string {
     const numericValue = typeof value === 'bigint' ? Number(value) : value;
-    
+
     // Format the number part
     const numberFormatter = new Intl.NumberFormat(this.config.locale, {
       minimumFractionDigits: this.config.minimumFractionDigits,
       maximumFractionDigits: this.config.maximumFractionDigits,
     });
-    
+
     const formattedNumber = numberFormatter.format(numericValue);
-    
+
     // Add currency symbol based on position
-    if (this.config.position === 'before') {
+    if (this.config.position === SYMBOL_POSITION.BEFORE) {
       return `${this.config.symbol}${formattedNumber}`;
     } else {
       return `${formattedNumber}${this.config.symbol}`;
@@ -141,7 +104,11 @@ export class FIORANumberFormat extends Intl.NumberFormat {
   /**
    * Static method to format value with specific currency
    */
-  static format(value: number | bigint, currency: Currency, options?: Intl.NumberFormatOptions): string {
+  static format(
+    value: number | bigint,
+    currency: Currency,
+    options?: Intl.NumberFormatOptions,
+  ): string {
     const formatter = new FIORANumberFormat(currency, options);
     return formatter.format(value);
   }
@@ -153,7 +120,7 @@ export class FIORANumberFormat extends Intl.NumberFormat {
 export const formatFIORACurrency = (
   value: number | bigint,
   currency: Currency,
-  options?: Intl.NumberFormatOptions
+  options?: Intl.NumberFormatOptions,
 ): string => {
   return FIORANumberFormat.format(value, currency, options);
 };
