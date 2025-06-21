@@ -227,6 +227,34 @@ export enum Messages {
   // WALLET
   GET_WALLET_SUCCESS = 'Get wallet successfully.',
   INVALID_WALLET_TYPE = 'Invalid wallet type.',
+  // Membership Tier Failed
+  MEMBERSHIP_TIER_ALREADY_EXISTS = 'Membership tier already exists',
+  MEMBERSHIP_TIER_CREATE_FAILED = 'Failed to create membership tier',
+  MEMBERSHIP_TIER_UPDATE_FAILED = 'Failed to update membership tier',
+  MEMBERSHIP_TIER_DELETE_FAILED = 'Failed to delete membership tier',
+  MEMBERSHIP_TIER_NOT_FOUND = 'Membership tier not found',
+  MEMBERSHIP_BENEFIT_SLUG_NAME_NOT_FOUND = 'Membership benefit slug-name not found',
+
+  // Membership Tier Dashboard
+  GET_MEMBERSHIP_TIERS_DASHBOARD_SUCCESS = 'Membership tiers dashboard retrieved successfully',
+
+  // Membership Tier Success
+  UPSERT_MEMBERSHIP_TIER_SUCCESS = 'Membership tier upserted successfully',
+  MEMBERSHIP_TIER_UPDATE_SUCCESS = 'Membership tier updated successfully',
+  MEMBERSHIP_TIER_CREATE_SUCCESS = 'Membership tier created successfully',
+  MEMBERSHIP_TIER_DELETE_SUCCESS = 'Membership tier deleted successfully',
+  MEMBERSHIP_TIER_GET_SUCCESS = 'Membership tier retrieved successfully',
+  MEMBERSHIP_TIER_GET_FAILED = 'Failed to retrieve membership tier',
+  MEMBERSHIP_TIER_GET_ALL_SUCCESS = 'Membership tiers retrieved successfully',
+
+  // Membership Tier Current
+  GET_CURRENT_MEMBERSHIP_TIER_SUCCESS = 'Current membership tier retrieved successfully',
+
+  // Membership Progress Failed
+  MEMBERSHIP_PROGRESS_OF_CURRENT_USER_NOT_FOUND = 'Membership progress of current user not found',
+
+  // Membership Progress Success
+  MEMBERSHIP_PROGRESS_OF_CURRENT_USER_SUCCESS = 'Membership progress of current user retrieved successfully',
 
   INVALID_USER = 'Invalid user.',
   USER_EMAIL_EXISTED = 'Email already existed',
