@@ -12,7 +12,7 @@ interface MetricCardProps {
   description?: string;
   icon?: string | React.ReactNode;
   className?: string;
-  currency?: 'VND' | 'USD';
+  currency?: 'VND' | 'USD' | 'FX';
   trend?: {
     value: string;
     isPositive: boolean;
