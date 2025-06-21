@@ -27,6 +27,8 @@ const productSchema = yup.object({
   catId: yup.string().required('Category is required'),
   currency: yup.string().required('Currency is required'),
   items: yup.array().of(itemSchema),
+  // startDate: yup.date().required('Start date is required'),
+  // endDate: yup.date().required('End date is required'),
 });
 
 export const defaultProductFormValue: any = {
@@ -39,6 +41,8 @@ export const defaultProductFormValue: any = {
   catId: '',
   items: [],
   currency: Currency.VND,
+  // startDate: new Date(),
+  // endDate: new Date(),
 };
 
 // Define the form values type

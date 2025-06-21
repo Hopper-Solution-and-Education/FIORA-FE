@@ -38,6 +38,7 @@ export default function DatePicker({
         {/* Wrap the Button and error message in a div */}
         <div className="flex flex-col">
           <Button
+            type="button"
             variant={'outline'}
             className={cn(
               'w-[240px] justify-start text-left font-normal',

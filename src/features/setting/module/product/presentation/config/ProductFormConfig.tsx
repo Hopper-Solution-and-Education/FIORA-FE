@@ -56,6 +56,16 @@ const useProductFormConfig = () => {
       customActionLabel="Add New"
       required
     />,
+    // <DateRangeFromToPickerField
+    //   key="dateRange"
+    //   name="dateRange"
+    //   nameFrom="startDate"
+    //   nameTo="endDate"
+    //   labelFrom="Start Date"
+    //   labelTo="End Date"
+    //   requiredFrom
+    //   requiredTo
+    // />,
     <InputField key="name" name="name" placeholder="Product Name" label="Name" required />,
     <SelectField
       options={Object.entries(ProductType).map(([key, value]) => ({
