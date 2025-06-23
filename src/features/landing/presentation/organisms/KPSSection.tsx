@@ -6,7 +6,7 @@ import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
 import { useGetSection } from '../../hooks/useGetSection';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 
 // Định nghĩa các giá trị responsive
 const containerWidthDesktop = 1400;
@@ -112,7 +112,7 @@ const KPSSection = () => {
                 className={`w-full h-[90%] rounded-lg shadow-md border relative ${
                   index % 2 === 0 ? 'mt-12 sm:mt-20' : ''
                 } overflow-hidden`}
-                variants={itemVariants(index)}
+                variants={itemVariants(index) as Variants}
                 animate="animate"
               >
                 <Image

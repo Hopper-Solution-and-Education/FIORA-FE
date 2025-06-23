@@ -50,7 +50,7 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Create', link: '/setting/product/create' },
   ],
   '/budgets': [{ title: 'Budgets', link: '/budgets' }],
-  '/finance/chart': [{ title: 'Finance Report', link: '/finance/report' }],
+  '/finance/report': [{ title: 'Finance Report', link: '/finance/report' }],
   '/budgets/create': [
     { title: 'Budgets', link: '/budgets' },
     { title: 'Create', link: '/budgets/create' },
@@ -71,6 +71,7 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
   '/setting/landing': [{ title: 'Landing Setting', link: '/setting/landing' }],
   '/setting/exchange-rate': [{ title: 'Exchange Rate Setting', link: '/setting/exchange-rate' }],
   '/setting/membership': [{ title: 'Membership Setting', link: '/setting/membership' }],
+  '/wallet': [{ title: 'Wallet', link: '/wallet' }],
 };
 
 /**

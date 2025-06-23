@@ -47,7 +47,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
         <CardHeader className="flex flex-row items-center justify-between py-3 px-4">
           <div className="flex items-center space-x-3">
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="p-0 hover:bg-transparent">
+              <Button type="button" variant="ghost" size="sm" className="p-0 hover:bg-transparent">
                 {isOpen ? (
                   <ChevronDown className="h-4 w-4" />
                 ) : (
@@ -86,18 +86,44 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
                   {(sectionType === SectionType.BANNER ||
                     sectionType === SectionType.KPS ||
                     sectionType === SectionType.PARTNER_LOGO ||
-                    sectionType === SectionType.HEADER ||
                     sectionType === SectionType.FOOTER ||
                     sectionType === SectionType.REVIEW ||
                     sectionType === SectionType.SYSTEM) && (
-                    <Button variant="outline" size="sm" onClick={() => addMedia(MediaType.IMAGE)}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addMedia(MediaType.IMAGE)}
+                    >
                       <PlusCircle className="h-3 w-3 mr-1" /> Image
                     </Button>
                   )}
 
-                  {(sectionType === SectionType.VISION_MISSION ||
-                    sectionType === SectionType.REVIEW) && (
+                  {sectionType === SectionType.HEADER && mediaFields.length === 0 && (
                     <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addMedia(MediaType.IMAGE)}
+                    >
+                      <PlusCircle className="h-3 w-3 mr-1" /> Image
+                    </Button>
+                  )}
+
+                  {sectionType === SectionType.REVIEW && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addMedia(MediaType.EMBEDDED)}
+                    >
+                      <PlusCircle className="h-3 w-3 mr-1" /> Embed
+                    </Button>
+                  )}
+
+                  {sectionType === SectionType.VISION_MISSION && mediaFields.length === 0 && (
+                    <Button
+                      type="button"
                       variant="outline"
                       size="sm"
                       onClick={() => addMedia(MediaType.EMBEDDED)}
@@ -111,7 +137,12 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
               {mediaFields.length === 0 ? (
                 <div className="text-center py-8 border border-dashed rounded-md">
                   <p className="text-muted-foreground mb-2">No media items yet</p>
-                  <Button variant="outline" size="sm" onClick={() => handleAddMedia(sectionType)}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddMedia(sectionType)}
+                  >
                     <PlusCircle className="h-4 w-4" /> Add Media
                   </Button>
                 </div>
@@ -147,10 +178,10 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={confirmRemoveMedia}>
+            <Button type="button" variant="destructive" onClick={confirmRemoveMedia}>
               <Trash2 className="h-4 w-4 mr-2" /> Delete
             </Button>
           </DialogFooter>

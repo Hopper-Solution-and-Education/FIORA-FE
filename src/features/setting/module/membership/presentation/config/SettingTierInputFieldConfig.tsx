@@ -1,0 +1,91 @@
+import { FormConfig } from '@/components/common/forms';
+import { useFormContext } from 'react-hook-form';
+import SettingTierInputField from '../atoms/SettingTierInputField';
+import { EditMemberShipFormValues } from '../schema/editMemberShip.schema';
+
+const SettingTierInputFieldConfig = () => {
+  const methods = useFormContext<EditMemberShipFormValues>();
+
+  const { setValue, watch } = methods;
+
+  const fields = [
+    <SettingTierInputField
+      key="referralBonus"
+      label="Referral Bonus"
+      name="referralBonus"
+      value={watch('referralBonus')}
+      onChange={(value) => setValue('referralBonus', value)}
+      suffix="FX"
+    />,
+    <SettingTierInputField
+      key="savingInterest"
+      label="Saving Interest"
+      name="savingInterest"
+      value={watch('savingInterest')}
+      onChange={(value) => setValue('savingInterest', value)}
+      suffix="%/year"
+      options={{ percent: true, maxPercent: 100 }}
+    />,
+    <SettingTierInputField
+      key="stakingInterest"
+      label="Staking Interest"
+      name="stakingInterest"
+      value={watch('stakingInterest')}
+      onChange={(value) => setValue('stakingInterest', value)}
+      suffix="%/year"
+      options={{ percent: true, maxPercent: 100 }}
+    />,
+    <SettingTierInputField
+      key="investmentInterest"
+      label="Investment Interest"
+      name="investmentInterest"
+      value={watch('investmentInterest')}
+      onChange={(value) => setValue('investmentInterest', value)}
+      suffix="%/year"
+      options={{ percent: true, maxPercent: 100 }}
+    />,
+    <SettingTierInputField
+      key="loanInterest"
+      label="Loan Interest"
+      name="loanInterest"
+      value={watch('loanInterest')}
+      onChange={(value) => setValue('loanInterest', value)}
+      suffix="%/year"
+      options={{ percent: true, maxPercent: 100 }}
+    />,
+    <SettingTierInputField
+      key="cashback"
+      label="Cashback"
+      name="cashback"
+      value={watch('cashback')}
+      onChange={(value) => setValue('cashback', value)}
+      suffix="% total spent"
+      options={{ percent: true, maxPercent: 100 }}
+    />,
+    <SettingTierInputField
+      key="referralKickback"
+      label="Referral Kickback"
+      name="referralKickback"
+      value={watch('referralKickback')}
+      onChange={(value) => setValue('referralKickback', value)}
+      suffix="% referral spent"
+      options={{ percent: true, maxPercent: 100 }}
+    />,
+    <SettingTierInputField
+      key="bnplFee"
+      label="BNPL Fee"
+      name="bnplFee"
+      value={watch('bnplFee')}
+      onChange={(value) => setValue('bnplFee', value)}
+      suffix="FX/day"
+    />,
+  ];
+
+  const renderSubmitButton = () => {
+    return <></>;
+  };
+
+  return <FormConfig fields={fields} methods={methods} renderSubmitButton={renderSubmitButton} />;
+};
+
+export default SettingTierInputFieldConfig;

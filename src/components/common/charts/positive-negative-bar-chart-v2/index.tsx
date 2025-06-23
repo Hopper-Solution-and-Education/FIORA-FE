@@ -46,14 +46,15 @@ import {
   calculateChartVisibility,
 } from './utils';
 import { PositiveAndNegativeBarChartV2Props } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
+import { formatFIORACurrency } from '@/config/FIORANumberFormat';
+import { Currency } from '@/shared/types';
 
 const PositiveAndNegativeBarChartV2 = ({
   data,
   title,
   currency = DEFAULT_CURRENCY,
   locale = DEFAULT_LOCALE,
-  xAxisFormatter = (value) =>
-    new Intl.NumberFormat(locale, { style: 'currency', currency }).format(value),
+  xAxisFormatter = (value) => formatFIORACurrency(value, currency as Currency),
   tooltipContent,
   legendItems,
   tutorialText,

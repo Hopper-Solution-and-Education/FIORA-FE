@@ -66,20 +66,37 @@ const ItemRankChart = ({
             {tierIcon && (
               <div className="w-full h-full p-1 flex items-center justify-center">
                 <div className="relative w-full h-full max-w-[85px] max-h-[85px] min-w-[40px] min-h-[40px]">
-                  <Image
-                    src={tierIcon.icon || bTier.icon}
-                    alt={combinedKey}
-                    fill
-                    sizes="(max-width: 85px) 100vw, 85px"
-                    className={`
+                  {tierIcon.isActive ? (
+                    <Image
+                      src={tierIcon.icon || bTier.icon}
+                      alt={combinedKey}
+                      fill
+                      sizes="(max-width: 85px) 100vw, 85px"
+                      className={`
                       object-contain transition-transform duration-200
                       ${isCurrent ? 'scale-110' : 'scale-100'}
                     `}
-                    onError={(e: any) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://placehold.co/60x60/cccccc/000000?text=Icon';
-                    }}
-                  />
+                      onError={(e: any) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://placehold.co/60x60/cccccc/000000?text=Icon';
+                      }}
+                    />
+                  ) : (
+                    <Image
+                      src={tierIcon.inActiveIcon || bTier.icon}
+                      alt={combinedKey}
+                      fill
+                      sizes="(max-width: 85px) 100vw, 85px"
+                      className={`
+                        object-contain transition-transform duration-200
+                        ${isCurrent ? 'scale-110' : 'scale-100'}
+                      `}
+                      onError={(e: any) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://placehold.co/60x60/cccccc/000000?text=Icon';
+                      }}
+                    />
+                  )}
                 </div>
               </div>
             )}
