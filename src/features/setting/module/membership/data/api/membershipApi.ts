@@ -23,10 +23,7 @@ class MembershipAPI implements IMembershipAPI {
   async upsertMembership(
     request: UpsertMembershipRequestDTO,
   ): Promise<UpsertMembershipResponseDTO> {
-    return await httpClient.put(`/api/memberships/${request.id}`, {
-      ...request,
-      id: undefined,
-    });
+    return await httpClient.put(`/api/memberships`, request);
   }
 }
 

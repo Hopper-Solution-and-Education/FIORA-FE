@@ -20,6 +20,7 @@ const ScatterRankingChart = ({
   combinedTierIcons,
   customTooltipContent,
   isLoading = false,
+  currentId,
 }: ScatterChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [chartDimensions, setChartDimensions] = useState({ width: 0, height: 0 });
@@ -275,15 +276,22 @@ const ScatterRankingChart = ({
                   .reverse()
                   .map((bTier, bIndex) =>
                     spentTiers.map((sTier, sIndex) => {
+                      // Lấy item hiện tại (nếu có)
+                      const cellKey = `${bTier.label}-${sTier.label}`;
+                      const cellItem = combinedTierIcons?.[cellKey]?.item;
+
+                      // Logic kiểm tra isCurrent: so sánh id hoặc key với currentId
                       const isCurrent =
-                        userBalanceRank === bTier.label && userSpentRank === sTier.label;
+                        currentId !== undefined
+                          ? cellItem && cellItem.id === currentId // hoặc so sánh theo logic bạn muốn
+                          : userBalanceRank === bTier.label && userSpentRank === sTier.label;
 
                       if (cellRenderer) {
                         return cellRenderer(bTier, sTier, isCurrent, bIndex, sIndex);
                       }
                       return (
                         <ItemRankChart
-                          key={`${bTier.label}-${sTier.label}`}
+                          key={cellKey}
                           bTier={bTier}
                           sTier={sTier}
                           isCurrent={isCurrent}
@@ -291,7 +299,7 @@ const ScatterRankingChart = ({
                           sIndex={sIndex}
                           combinedTierIcons={combinedTierIcons}
                           customTooltipContent={customTooltipContent}
-                          item={combinedTierIcons?.[`${bTier.label}-${sTier.label}`]?.item}
+                          item={cellItem}
                         />
                       );
                     }),

@@ -39,8 +39,10 @@ const SettingTierInputField = ({
         grid-cols-[1fr_auto_minmax(40px,_70px)]
         sm:grid-cols-[1fr_auto_minmax(60px,_90px)]
         md:grid-cols-[1fr_80px_100px]
-        
         items-center
+        overflow-hidden
+        text-ellipsis
+        whitespace-nowrap
       "
     >
       <span
@@ -50,9 +52,12 @@ const SettingTierInputField = ({
           md:text-sm
           lg:text-sm
           font-semibold text-gray-700 dark:text-gray-200
+          mb-4
+          gap-2
+          flex justify-start
         "
       >
-        {label}
+        {label} {required && <span className="text-red-500">*</span>}
       </span>
 
       {/* Input Field Container and InputField itself */}
@@ -97,10 +102,10 @@ const SettingTierInputField = ({
         <span
           className="
             text-xs
-            mb-4
             sm:text-xs
             md:text-sm
             lg:text-sm
+            mb-4
             text-gray-500 dark:text-gray-400
             overflow-hidden
             text-ellipsis

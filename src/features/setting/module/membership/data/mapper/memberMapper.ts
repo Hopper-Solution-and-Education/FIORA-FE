@@ -12,6 +12,17 @@ import {
   UpsertMembershipResponseDTO,
 } from '../dto';
 
+const TIER_BENEFIT_KEYS = {
+  bnplFee: 'bnpl-fee',
+  cashback: 'cashback',
+  investmentInterest: 'investment-interest',
+  loanInterest: 'loan-interest',
+  referralBonus: 'referral-bonus',
+  referralKickback: 'referral-kickback',
+  savingInterest: 'saving-interest',
+  stakingInterest: 'staking-interest',
+};
+
 export class MemberMapper {
   static toGetListMembershipsRequest(
     data: GetListMembershipsRequest,
@@ -48,10 +59,11 @@ export class MemberMapper {
             key !== 'activeIcon' &&
             key !== 'inActiveIcon' &&
             key !== 'themeIcon' &&
-            key !== 'mainIcon',
+            key !== 'mainIcon' &&
+            key !== 'id',
         )
         .map(([key, value]) => ({
-          slug: key.toLowerCase(),
+          slug: TIER_BENEFIT_KEYS[key as keyof typeof TIER_BENEFIT_KEYS],
           value: Number(value),
         })),
     };

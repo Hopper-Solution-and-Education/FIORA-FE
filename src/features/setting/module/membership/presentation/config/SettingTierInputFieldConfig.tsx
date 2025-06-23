@@ -16,6 +16,7 @@ const SettingTierInputFieldConfig = () => {
       value={watch('referralBonus')}
       onChange={(value) => setValue('referralBonus', value)}
       suffix="FX"
+      required
     />,
     <SettingTierInputField
       key="savingInterest"
@@ -25,6 +26,7 @@ const SettingTierInputFieldConfig = () => {
       onChange={(value) => setValue('savingInterest', value)}
       suffix="%/year"
       options={{ percent: true, maxPercent: 100 }}
+      required
     />,
     <SettingTierInputField
       key="stakingInterest"
@@ -34,6 +36,7 @@ const SettingTierInputFieldConfig = () => {
       onChange={(value) => setValue('stakingInterest', value)}
       suffix="%/year"
       options={{ percent: true, maxPercent: 100 }}
+      required
     />,
     <SettingTierInputField
       key="investmentInterest"
@@ -43,6 +46,7 @@ const SettingTierInputFieldConfig = () => {
       onChange={(value) => setValue('investmentInterest', value)}
       suffix="%/year"
       options={{ percent: true, maxPercent: 100 }}
+      required
     />,
     <SettingTierInputField
       key="loanInterest"
@@ -52,6 +56,7 @@ const SettingTierInputFieldConfig = () => {
       onChange={(value) => setValue('loanInterest', value)}
       suffix="%/year"
       options={{ percent: true, maxPercent: 100 }}
+      required
     />,
     <SettingTierInputField
       key="cashback"
@@ -61,6 +66,7 @@ const SettingTierInputFieldConfig = () => {
       onChange={(value) => setValue('cashback', value)}
       suffix="% total spent"
       options={{ percent: true, maxPercent: 100 }}
+      required
     />,
     <SettingTierInputField
       key="referralKickback"
@@ -70,6 +76,7 @@ const SettingTierInputFieldConfig = () => {
       onChange={(value) => setValue('referralKickback', value)}
       suffix="% referral spent"
       options={{ percent: true, maxPercent: 100 }}
+      required
     />,
     <SettingTierInputField
       key="bnplFee"
@@ -78,6 +85,7 @@ const SettingTierInputFieldConfig = () => {
       value={watch('bnplFee')}
       onChange={(value) => setValue('bnplFee', value)}
       suffix="FX/day"
+      required
     />,
   ];
 

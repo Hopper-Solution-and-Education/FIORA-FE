@@ -73,6 +73,7 @@ const MembershipRankChart = () => {
         }}
         combinedTierIcons={combinedTierIcons}
         isLoading={isLoadingGetMemberships}
+        currentId={selectedMembership?.id}
       />
     </div>
   );

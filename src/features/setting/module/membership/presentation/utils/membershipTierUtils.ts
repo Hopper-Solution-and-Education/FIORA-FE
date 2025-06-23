@@ -48,7 +48,7 @@ export const transformToSpentTiers = (memberships: Membership[]): Tier[] => {
         min: membership.spentMinThreshold,
         max: membership.spentMaxThreshold === 0 ? Infinity : membership.spentMaxThreshold,
         value: membership.spentMinThreshold,
-        icon: membership.mainIconUrl || 'https://placehold.co/60x60/808080/000000?text=Default',
+        icon: membership.mainIconUrl,
       });
     }
   });

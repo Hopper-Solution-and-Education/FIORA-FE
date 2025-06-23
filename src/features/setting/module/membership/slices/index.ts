@@ -1,5 +1,6 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
+import { Membership } from '../domain/entities';
 import { getListMembershipAsyncThunk } from './actions/getMemberShipAsyncThunk';
 import { upsertMembershipAsyncThunk } from './actions/upsertMembershipAsyncThunk';
 import { initialMembershipState } from './types';
@@ -9,7 +10,7 @@ const membershipSlice = createSlice({
   initialState: initialMembershipState,
   reducers: {
     resetMembershipState: () => initialMembershipState,
-    setSelectedMembership: (state, action) => {
+    setSelectedMembership: (state, action: PayloadAction<Membership>) => {
       state.selectedMembership = action.payload;
     },
   },
@@ -36,7 +37,6 @@ const membershipSlice = createSlice({
         } else {
           state.memberships.push(action.payload.data);
         }
-        state.selectedMembership = action.payload.data;
         toast.success(action.payload.message);
       })
       .addCase(upsertMembershipAsyncThunk.rejected, (state) => {

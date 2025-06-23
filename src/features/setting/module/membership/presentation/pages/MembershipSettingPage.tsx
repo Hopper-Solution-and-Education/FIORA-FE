@@ -43,11 +43,10 @@ const MembershipSettingPage = () => {
 
   useEffect(() => {
     if (selectedMembership) {
-      console.log(selectedMembership);
       setValue('id', selectedMembership.id);
       setValue('tier', selectedMembership.tierName);
       setValue('story', selectedMembership.story);
-      setValue('activeIcon', selectedMembership.mainIconUrl);
+      setValue('activeIcon', selectedMembership.passedIconUrl);
       setValue('inActiveIcon', selectedMembership.inactiveIconUrl);
       setValue('mainIcon', selectedMembership.mainIconUrl);
       setValue('themeIcon', selectedMembership.themeIconUrl);
@@ -101,35 +100,42 @@ const MembershipSettingPage = () => {
   }, [selectedMembership]);
 
   const handleSubmit = async (data: EditMemberShipFormValues) => {
+    // Keep track of uploaded URLs to rollback on failure
+    const uploadedUrls: string[] = [];
+
+    console.log(JSON.stringify(data, null, 2));
+
+    const uploadIconIfNeeded = async (iconUrl: string, tierName: string): Promise<string> => {
+      if (iconUrl && iconUrl.startsWith('blob:')) {
+        const response = await fetch(iconUrl);
+        const blob = await response.blob();
+
+        const fileName = `${tierName.replace(/\s+/g, '_').toLowerCase()}_${Date.now()}`;
+        const file = new File([blob], fileName, { type: blob.type });
+
+        const firebaseUrl = await uploadToFirebase({
+          file,
+          path: 'images/membership_icons',
+          fileName,
+        });
+
+        // Track uploaded file for rollback if needed
+        uploadedUrls.push(firebaseUrl);
+
+        return firebaseUrl;
+      }
+      return iconUrl;
+    };
+
     try {
-      // Helper function to handle icon upload
-      const uploadIconIfNeeded = async (iconUrl: string, tierName: string) => {
-        if (iconUrl && iconUrl.startsWith('blob:')) {
-          const response = await fetch(iconUrl);
-          const blob = await response.blob();
+      const [updatedActiveIcon, updatedInActiveIcon, updatedThemeIcon, updatedMainIcon] =
+        await Promise.all([
+          uploadIconIfNeeded(data.activeIcon, data.tier),
+          uploadIconIfNeeded(data.inActiveIcon, data.tier),
+          uploadIconIfNeeded(data.themeIcon, data.tier),
+          uploadIconIfNeeded(data.mainIcon, data.tier),
+        ]);
 
-          const fileName = `${tierName.replace(/\s+/g, '_').toLowerCase()}_${Date.now()}`;
-          const file = new File([blob], fileName, { type: blob.type });
-
-          const firebaseUrl = await uploadToFirebase({
-            file: file,
-            path: 'images/membership_icons',
-            fileName,
-          });
-
-          await removeFromFirebase(iconUrl);
-
-          return firebaseUrl;
-        }
-        return iconUrl; // Return original URL if not a new blob or not provided
-      };
-
-      // Process each icon field
-      const updatedActiveIcon = await uploadIconIfNeeded(data.activeIcon, data.tier);
-      const updatedInActiveIcon = await uploadIconIfNeeded(data.inActiveIcon, data.tier);
-      const updatedThemeIcon = await uploadIconIfNeeded(data.themeIcon, data.tier);
-      const updatedMainIcon = await uploadIconIfNeeded(data.mainIcon, data.tier);
-      // Create a new data object with updated icon URLs
       const updatedData = {
         ...data,
         activeIcon: updatedActiveIcon,
@@ -138,10 +144,19 @@ const MembershipSettingPage = () => {
         mainIcon: updatedMainIcon,
       };
 
-      await dispatch(upsertMembershipAsyncThunk(updatedData));
+      dispatch(upsertMembershipAsyncThunk(updatedData))
+        .unwrap()
+        .then(() => {
+          dispatch(getListMembershipAsyncThunk({ page: 1, limit: 10 }));
+        })
+        .catch(async (error) => {
+          await Promise.all(uploadedUrls.map((url) => removeFromFirebase(url)));
+          throw error;
+        });
     } catch (error: any) {
       toast.error('Failed to upsert membership', {
-        description: error.message,
+        description:
+          error.message || 'An image upload failed. All uploaded files have been removed.',
       });
     }
   };
@@ -151,7 +166,7 @@ const MembershipSettingPage = () => {
       <form id="edit-member-ship-form" onSubmit={methods.handleSubmit(handleSubmit)}>
         <div className="min-h-screen p-6 ">
           {/* Main container with two rows */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             {/* Left Section: Balance Graph col-3 */}
             <MembershipRankChart />
 
@@ -165,7 +180,7 @@ const MembershipSettingPage = () => {
           </div>
 
           {/* Footer Button */}
-          <div className="mt-6 flex justify-end">
+          <div className="flex justify-end">
             <SubmitButton
               formState={methods.formState}
               isLoading={methods.formState.isSubmitting}

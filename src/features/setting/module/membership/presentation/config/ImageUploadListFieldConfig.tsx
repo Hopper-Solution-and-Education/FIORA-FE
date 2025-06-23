@@ -1,11 +1,10 @@
-import { FormConfig, UploadField } from '@/components/common/forms';
+import { FormConfig } from '@/components/common/forms';
+import UploadImageField from '@/components/common/forms/upload/UploadImageField';
 import { useFormContext } from 'react-hook-form';
 import { EditMemberShipFormValues } from '../schema/editMemberShip.schema';
 
 const ImageUploadListFieldConfig = () => {
   const methods = useFormContext<EditMemberShipFormValues>();
-  const { watch } = methods;
-  const { setValue } = methods;
 
   const iconItems = [
     {
@@ -28,35 +27,14 @@ const ImageUploadListFieldConfig = () => {
     },
   ];
 
-  /**
-   * Handles file changes for image uploads, converting the file to a Base64 string.
-   * @param fieldName The name of the form field to update (e.g., 'inActiveIcon').
-   * @param file The File object or null.
-   */
-  const handleFileUpload = (fieldName: keyof EditMemberShipFormValues, file: File | null) => {
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        // Cast reader.result to string, as it will be a Data URL
-        setValue(fieldName, reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      // Set the value to an empty string if no file is selected
-      setValue(fieldName, '');
-    }
-  };
-
   const renderSubmitButton = () => <></>;
 
   const fields = iconItems.map((item) => (
-    <UploadField
+    <UploadImageField
       key={item.id}
       name={item.id as keyof EditMemberShipFormValues}
       label={item.label}
-      value={watch(item.id as keyof EditMemberShipFormValues) as string | null}
-      onChange={(file) => handleFileUpload(item.id as keyof EditMemberShipFormValues, file)}
-      placeholder={item.placeholder}
+      required
       previewShape="square"
     />
   ));
