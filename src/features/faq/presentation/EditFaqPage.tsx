@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Check } from 'lucide-react';
 
 import SessionSidebar from '@/components/providers/SessionSidebar';
-import MarkdownPreview from '@/features/faq/presentation/components/faqedit';
-import RichTextEditor from './RichTextEditor';
+import MarkdownPreview from '@/features/faq/presentation/components/faqedit/MarkdownPreview';
+import RichTextEditor from '@/features/faq/presentation/components/faqedit/RichTextEditor';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';

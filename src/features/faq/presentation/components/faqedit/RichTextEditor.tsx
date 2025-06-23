@@ -7,7 +7,7 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
-import TextStyle from '@tiptap/extension-text-style'; // Thêm dòng này
+import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
@@ -33,7 +33,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
-      TextStyle, // Thêm dòng này vào extensions
+      TextStyle,
       Color,
       Link,
       Image,
