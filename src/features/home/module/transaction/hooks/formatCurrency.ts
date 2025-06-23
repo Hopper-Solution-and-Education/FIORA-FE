@@ -1,36 +1,32 @@
 import { TransactionCurrency } from '../utils/constants';
+import {
+  formatFIORACurrency,
+  getCurrencySymbol,
+  FIORANumberFormat,
+} from '@/config/FIORANumberFormat';
+import { Currency } from '@/shared/types';
 
 export const formatCurrency = (
   num: number,
   currency: TransactionCurrency,
   shouldShortened?: boolean,
 ): string => {
-  const locale = currency === 'VND' ? 'vi-VN' : 'en-US';
-  const currencySymbol = new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    currencyDisplay: 'symbol',
-  })
-    .format(0)
-    .replace(/[\d\s,.]/g, '');
+  const currencySymbol = getCurrencySymbol(currency as Currency);
 
   if (num >= 1000000 && shouldShortened) {
     const inMillions = num / 1000000;
-    const formatted = new Intl.NumberFormat(locale, {
+    // Use FIORANumberFormat for decimal formatting with consistent locale
+    const numberFormatter = new FIORANumberFormat(currency as Currency, {
       style: 'decimal',
       minimumFractionDigits: 0,
       maximumFractionDigits: 1,
-    }).format(inMillions);
+    });
+    const formatted = numberFormatter.format(inMillions);
 
     return currency === 'VND'
       ? `${formatted}M ${currencySymbol}`
       : `${currencySymbol} ${formatted}M`;
   }
 
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: currency === 'VND' ? 0 : 2,
-    maximumFractionDigits: currency === 'VND' ? 0 : 2,
-  }).format(num);
+  return formatFIORACurrency(num, currency as Currency);
 };

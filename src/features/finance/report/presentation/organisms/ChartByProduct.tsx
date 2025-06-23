@@ -89,7 +89,7 @@ const ChartByProduct = () => {
                   />
                   <span className="text-sm">Expense:</span>
                   <span className="font-bold ml-1 text-sm">
-                    {formatCurrency(Number(data.column1), data.currency as Currency, currency)}
+                    {formatCurrency(Number(data.column1), data.currency as Currency)}
                   </span>
                 </div>
                 <div className="flex items-center text-gray-600 dark:text-gray-400 mt-1">
@@ -99,7 +99,7 @@ const ChartByProduct = () => {
                   />
                   <span className="text-sm">Income:</span>
                   <span className="font-bold ml-1 text-sm">
-                    {formatCurrency(Number(data.column2), data.currency as Currency, currency)}
+                    {formatCurrency(Number(data.column2), data.currency as Currency)}
                   </span>
                 </div>
                 <div className="flex items-center text-gray-600 dark:text-gray-400 mt-1">
@@ -111,7 +111,7 @@ const ChartByProduct = () => {
                   />
                   <span className="text-sm">Profit:</span>
                   <span className="font-bold ml-1 text-sm">
-                    {formatCurrency(Number(profit), data.currency as Currency, currency)}
+                    {formatCurrency(Number(profit), data.currency as Currency)}
                   </span>
                 </div>
               </div>

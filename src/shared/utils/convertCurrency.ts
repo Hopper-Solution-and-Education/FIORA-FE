@@ -1,10 +1,12 @@
 import { Currency, Prisma } from '@prisma/client'; // Import Prisma to use Decimal type
+import { formatFIORACurrency } from '@/config/FIORANumberFormat';
 
 type ExchangeRates = Record<Currency, number>;
 
 const EXCHANGE_RATES_TO_USD: ExchangeRates = {
   [Currency.USD]: 1,
   [Currency.VND]: 25000,
+  [Currency.FX]: 1, // FX has same rate as USD
 };
 
 // Update convertCurrency to handle Prisma.Decimal
@@ -36,15 +38,9 @@ export const isValidCurrency = (currency: string): currency is Currency => {
 /**
  * Format a number to currency string.
  * @param value - The numeric value to format.
- * @param currency - The ISO 4217 currency code (e.g. 'USD', 'VND', 'EUR').
- * @param locale - Optional locale (default: 'en-US').
+ * @param currency - The ISO 4217 currency code (e.g. 'USD', 'VND', 'FX').
  * @returns A formatted currency string.
  */
-export function formatCurrency(value: number, currency: string, locale = 'vi-VN'): string {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value);
+export function formatCurrency(value: number, currency: Currency): string {
+  return formatFIORACurrency(value, currency);
 }
