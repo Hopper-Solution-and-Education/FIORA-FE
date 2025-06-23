@@ -1,8 +1,7 @@
-import { WalletDepositButton } from '../atoms/WalletDepositButton';
-import { WalletFilterButton } from '../atoms/WalletFilterButton';
-import { WalletSearch } from '../molecules/WalletSearch';
+import { WalletDepositButton, WalletFilterButton } from '../atoms';
+import { WalletSearch } from '../molecules';
 
-export const WalletTopbarAction = () => {
+const WalletTopbarAction = () => {
   return (
     <div className="flex w-full items-center justify-between">
       <div className="flex items-center gap-2">
@@ -13,3 +12,5 @@ export const WalletTopbarAction = () => {
     </div>
   );
 };
+
+export default WalletTopbarAction;

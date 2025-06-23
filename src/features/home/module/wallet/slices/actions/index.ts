@@ -1,1 +1,2 @@
-export { getWalletAsyncThunk } from './GetWalletAsynThunk';
+export * from './GetWalletByTypeAsyncThunk';
+export * from './GetWalletsAsyncThunk';

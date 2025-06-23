@@ -3,12 +3,12 @@ import { FIORACurrencyConfig } from './type';
 
 export const FIORA_CURRENCY_CONFIG: FIORACurrencyConfig = {
   FX: {
-    symbol: '₣',
+    symbol: 'FX',
     name: 'FIORA',
     locale: 'en-US',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-    position: SYMBOL_POSITION.BEFORE,
+    position: SYMBOL_POSITION.AFTER,
     thousandSeparator: ',',
     decimalSeparator: '.',
   },

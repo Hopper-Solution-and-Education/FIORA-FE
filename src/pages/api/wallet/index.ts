@@ -29,14 +29,18 @@ export const WalletTypeSchema = z.nativeEnum(WalletType);
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { type } = req.query;
+    if (!type) {
+      // Get all wallets for the user
+      const wallets = await walletUseCase.getAllWalletsByUser(userId);
+      return res
+        .status(RESPONSE_CODE.OK)
+        .json(createResponse(RESPONSE_CODE.OK, Messages.GET_WALLET_SUCCESS, wallets));
+    }
     const parseResult = WalletTypeSchema.safeParse(type);
-
     if (!parseResult.success) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_WALLET_TYPE);
     }
-
     const wallet = await walletUseCase.getWalletByType(parseResult.data as WalletType, userId);
-
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.GET_WALLET_SUCCESS, wallet));
