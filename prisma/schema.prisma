@@ -485,75 +485,75 @@ model Attachment {
 }
 
 model MembershipBenefit {
-  id          String        @id @db.Uuid
+  id          String        @id @default(uuid()) @db.Uuid
   name        String        @db.VarChar(255)
   slug        String        @unique @db.VarChar(255)
   description String?       @db.VarChar(1000)
   suffix      String?       @db.VarChar(255)
   createdAt   DateTime      @default(now()) @db.Timestamptz(0)
-  updatedAt   DateTime      @db.Timestamptz(0)
+  updatedAt   DateTime      @updatedAt @db.Timestamptz(0)
   createdBy   String?       @db.Uuid
   updatedBy   String?       @db.Uuid
   userId      String        @db.Uuid
-  TierBenefit TierBenefit[]
+  tierBenefit TierBenefit[]
 
   @@index([slug])
   @@index([userId])
 }
 
 model MembershipProgress {
-  id             String          @id @db.Uuid
+  id             String          @id @default(uuid()) @db.Uuid
   userId         String          @db.Uuid
+  tierId         String?         @db.Uuid
   currentSpent   Decimal         @default(0) @db.Decimal(13, 2)
   currentBalance Decimal         @default(0) @db.Decimal(13, 2)
   createdBy      String?         @db.Uuid
   updatedBy      String?         @db.Uuid
   createdAt      DateTime        @default(now()) @db.Timestamptz(0)
-  updatedAt      DateTime        @db.Timestamptz(0)
-  tierId         String?         @db.Uuid
-  MembershipTier MembershipTier? @relation(fields: [tierId], references: [id])
-  User           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt      DateTime        @updatedAt @db.Timestamptz(0)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier           MembershipTier? @relation(fields: [tierId], references: [id])
 
   @@index([userId])
   @@index([tierId])
 }
 
 model MembershipTier {
-  id                  String               @id @db.Uuid
+  id                  String               @id @default(uuid()) @db.Uuid
   tierName            String?              @unique @db.VarChar(500)
-  mainIconUrl         String?
-  passedIconUrl       String?
-  inactiveIconUrl     String?
-  themeIconUrl        String?
+  mainIconUrl         String?              @db.Text
+  passedIconUrl       String?              @db.Text
+  inactiveIconUrl     String?              @db.Text
+  themeIconUrl        String?              @db.Text
   spentMinThreshold   Decimal              @db.Decimal(13, 2)
   spentMaxThreshold   Decimal              @db.Decimal(13, 2)
   balanceMinThreshold Decimal              @db.Decimal(13, 2)
   balanceMaxThreshold Decimal              @db.Decimal(13, 2)
-  story               String?
+  story               String?              @db.Text
   createdAt           DateTime             @default(now()) @db.Timestamptz(0)
-  updatedAt           DateTime             @db.Timestamptz(0)
+  updatedAt           DateTime             @updatedAt @db.Timestamptz(0)
   createdBy           String?              @db.Uuid
   updatedBy           String?              @db.Uuid
+  user                User                 @relation(fields: [userId], references: [id])
   userId              String               @db.Uuid
-  MembershipProgress  MembershipProgress[]
-  User                User                 @relation(fields: [userId], references: [id])
-  TierBenefit         TierBenefit[]
+  tierBenefits        TierBenefit[]
+  membershipProgress  MembershipProgress[]
 
   @@unique([spentMinThreshold, spentMaxThreshold, balanceMinThreshold, balanceMaxThreshold])
-  @@index([balanceMinThreshold, balanceMaxThreshold])
   @@index([spentMinThreshold, spentMaxThreshold])
+  @@index([balanceMinThreshold, balanceMaxThreshold])
 }
 
 model TierBenefit {
-  tierId            String            @db.Uuid
-  benefitId         String            @db.Uuid
-  value             Decimal           @db.Decimal(13, 2)
-  createdAt         DateTime          @default(now()) @db.Timestamptz(0)
-  updatedAt         DateTime          @db.Timestamptz(0)
-  createdBy         String?           @db.Uuid
-  updatedBy         String?           @db.Uuid
-  MembershipBenefit MembershipBenefit @relation(fields: [benefitId], references: [id], onDelete: Cascade)
-  MembershipTier    MembershipTier    @relation(fields: [tierId], references: [id], onDelete: Cascade)
+  tierId    String            @db.Uuid
+  benefitId String            @db.Uuid
+  value     Decimal           @db.Decimal(13, 2)
+  createdAt DateTime          @default(now()) @db.Timestamptz(0)
+  updatedAt DateTime          @updatedAt @db.Timestamptz(0)
+  createdBy String?           @db.Uuid
+  updatedBy String?           @db.Uuid
+  tier      MembershipTier    @relation(fields: [tierId], references: [id], onDelete: Cascade)
+  benefit   MembershipBenefit @relation(fields: [benefitId], references: [id], onDelete: Cascade)
 
   @@id([tierId, benefitId])
 }
