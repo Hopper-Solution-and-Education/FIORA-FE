@@ -5,6 +5,7 @@ export type Wallet = {
   userId: string;
   icon: string;
   type: WalletType;
+  name: string;
   frBalanceActive: number;
   frBalanceFrozen: number;
   creditLimit?: number;

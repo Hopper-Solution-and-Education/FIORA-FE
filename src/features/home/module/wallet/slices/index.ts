@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getWalletAsyncThunk } from './actions/GetWalletAsynThunk';
 import type { WalletState } from './types';
+import { getWalletByTypeAsyncThunk, getWalletsAsyncThunk } from './actions';
 
 const initialState: WalletState = {
   wallets: [],
@@ -25,18 +25,31 @@ const walletSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(getWalletAsyncThunk.pending, (state) => {
+      .addCase(getWalletByTypeAsyncThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getWalletAsyncThunk.fulfilled, (state, action) => {
+      .addCase(getWalletByTypeAsyncThunk.fulfilled, (state, action) => {
         state.loading = false;
         state.wallets = [action.payload];
         state.error = null;
       })
-      .addCase(getWalletAsyncThunk.rejected, (state, action) => {
+      .addCase(getWalletByTypeAsyncThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to fetch wallet';
+      })
+      .addCase(getWalletsAsyncThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getWalletsAsyncThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.wallets = action.payload;
+        state.error = null;
+      })
+      .addCase(getWalletsAsyncThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch wallets';
       });
   },
 });

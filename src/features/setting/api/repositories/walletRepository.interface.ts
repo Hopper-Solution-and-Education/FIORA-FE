@@ -10,4 +10,5 @@ export interface IWalletRepository {
   ): Promise<Wallet>;
   deleteWallet(where: Prisma.WalletWhereUniqueInput): Promise<Wallet>;
   findWalletByType(type: WalletType, userId: string): Promise<Wallet | null>;
+  findAllWalletsByUser(userId: string): Promise<Wallet[]>;
 }

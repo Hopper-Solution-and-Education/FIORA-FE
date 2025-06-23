@@ -386,6 +386,7 @@ model BudgetDetails {
 model Wallet {
   id              String     @id @default(uuid()) @db.Uuid
   userId          String     @db.Uuid
+  name            String?     @db.VarChar(50)
   icon            String
   type            WalletType
   frBalanceActive Decimal    @default(0) @db.Decimal(12, 2)
@@ -635,7 +636,6 @@ enum WalletType {
 }
 
 enum DepositRequestStatus {
-  Draft
   Requested
   Rejected
   Approved

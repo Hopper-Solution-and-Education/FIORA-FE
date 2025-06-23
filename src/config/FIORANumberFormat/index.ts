@@ -56,9 +56,9 @@ export class FIORANumberFormat extends Intl.NumberFormat {
 
     // Add currency symbol based on position
     if (this.config.position === SYMBOL_POSITION.BEFORE) {
-      return `${this.config.symbol}${formattedNumber}`;
+      return `${this.config.symbol} ${formattedNumber}`;
     } else {
-      return `${formattedNumber}${this.config.symbol}`;
+      return `${formattedNumber} ${this.config.symbol}`;
     }
   }
 
