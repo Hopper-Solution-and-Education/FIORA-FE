@@ -10,35 +10,39 @@ datasource db {
 }
 
 model User {
-  id                 String               @id @default(uuid()) @db.Uuid
-  name               String?
-  email              String               @unique
-  password           String?
-  emailVerified      Boolean?             @default(false)
-  image              String?
-  isDeleted          Boolean              @default(false)
-  deletedAt          DateTime?            @db.Timestamptz(0)
-  createdAt          DateTime             @default(now()) @db.Timestamptz(0)
-  updatedAt          DateTime             @updatedAt @db.Timestamptz(0)
-  createdBy          String?              @db.Uuid
-  updatedBy          String?              @db.Uuid
-  role               UserRole             @default(User)
-  accounts           Account[]            @relation("UserAccounts")
-  budgetDetails      BudgetDetails[]
-  budgetControl      BudgetsTable[]
-  categories         Category[]           @relation("UserCategories")
-  categoryProducts   CategoryProducts[]
-  depositRequests    DepositRequest[]     @relation("UserDepositRequest")
-  MembershipProgress MembershipProgress[]
-  MembershipTier     MembershipTier[]
-  partners           Partner[]            @relation("UserPartners")
-  products           Product[]            @relation("UserProducts")
-  productItems       ProductItems[]
-  sessions           Session[]
-  transactions       Transaction[]        @relation("UserTransactions")
-  authentication     UserAuthentication?
-  userNotifications  UserNotification[]   @relation("UserNotification")
-  wallet             Wallet[]             @relation("UserWallet")
+  id                  String                @id @default(uuid()) @db.Uuid
+  name                String?
+  email               String                @unique
+  password            String?
+  emailVerified       Boolean?              @default(false)
+  image               String?
+  isDeleted           Boolean               @default(false)
+  deletedAt           DateTime?             @db.Timestamptz(0)
+  createdAt           DateTime              @default(now()) @db.Timestamptz(0)
+  updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
+  createdBy           String?               @db.Uuid
+  updatedBy           String?               @db.Uuid
+  role                UserRole              @default(User)
+  accounts            Account[]             @relation("UserAccounts")
+  AttachmentRelations AttachmentRelations[]
+  budgetDetails       BudgetDetails[]
+  budgetControl       BudgetsTable[]
+  categories          Category[]            @relation("UserCategories")
+  categoryProducts    CategoryProducts[]
+  Comment             Comment[]
+  depositRequests     DepositRequest[]      @relation("UserDepositRequest")
+  MembershipProgress  MembershipProgress[]
+  MembershipTier      MembershipTier[]
+  partners            Partner[]             @relation("UserPartners")
+  Post                Post[]
+  products            Product[]             @relation("UserProducts")
+  productItems        ProductItems[]
+  Reaction            Reaction[]
+  sessions            Session[]
+  transactions        Transaction[]         @relation("UserTransactions")
+  authentication      UserAuthentication?
+  userNotifications   UserNotification[]    @relation("UserNotification")
+  wallet              Wallet[]              @relation("UserWallet")
 
   @@index([isDeleted])
 }
@@ -447,8 +451,6 @@ model Notification {
   updatedBy         String?            @db.Uuid
   attachment        Attachment?        @relation(fields: [attachmentId], references: [id])
   userNotifications UserNotification[]
-
-  @@index([attachmentId])
 }
 
 model UserNotification {
@@ -468,17 +470,18 @@ model UserNotification {
 }
 
 model Attachment {
-  id              String          @id @default(uuid()) @db.Uuid
-  type            String          @db.VarChar(10)
-  size            Decimal         @default(0)
-  url             String          @db.VarChar(255)
-  path            String          @db.VarChar(255)
-  createdAt       DateTime        @default(now()) @db.Timestamptz(0)
-  updatedAt       DateTime        @updatedAt @db.Timestamptz(0)
-  createdBy       String?         @db.Uuid
-  updatedBy       String?         @db.Uuid
-  depositRequests DepositRequest?
-  notifications   Notification?
+  id                  String                @id @default(uuid()) @db.Uuid
+  type                String                @db.VarChar(10)
+  size                Decimal               @default(0)
+  url                 String                @db.VarChar(255)
+  path                String                @db.VarChar(255)
+  createdAt           DateTime              @default(now()) @db.Timestamptz(0)
+  updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
+  createdBy           String?               @db.Uuid
+  updatedBy           String?               @db.Uuid
+  AttachmentRelations AttachmentRelations[]
+  depositRequests     DepositRequest?
+  notifications       Notification?
 
   @@index([url])
   @@index([path])
@@ -556,6 +559,95 @@ model TierBenefit {
   MembershipTier    MembershipTier    @relation(fields: [tierId], references: [id], onDelete: Cascade)
 
   @@id([tierId, benefitId])
+}
+
+model AttachmentRelations {
+  id           String     @id @db.Uuid
+  postId       String     @db.Uuid
+  commentId    String?    @db.Uuid
+  userId       String     @db.Uuid
+  createdAt    DateTime   @default(now()) @db.Timestamptz(0)
+  createdBy    String     @db.Uuid
+  updatedAt    DateTime?  @db.Timestamptz(0)
+  updatedBy    String?    @db.Uuid
+  attachmentId String     @db.Uuid
+  Attachment   Attachment @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
+  Comment      Comment?   @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  Post         Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  User         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([attachmentId])
+}
+
+model Comment {
+  id                  String                @id @db.Uuid
+  content             String
+  postId              String                @db.Uuid
+  userId              String                @db.Uuid
+  createdAt           DateTime              @default(now()) @db.Timestamptz(0)
+  createdBy           String                @db.Uuid
+  updatedAt           DateTime?             @db.Timestamptz(0)
+  updatedBy           String?               @db.Uuid
+  AttachmentRelations AttachmentRelations[]
+  Post                Post                  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  User                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([userId])
+}
+
+model Post {
+  id                  String                @id @db.Uuid
+  title               String                @db.VarChar(255)
+  description         String?               @db.VarChar(255)
+  content             String
+  views               Int                   @default(0)
+  userId              String                @db.Uuid
+  type                PostType
+  categoryId          String                @db.Uuid
+  createdAt           DateTime              @default(now()) @db.Timestamptz(0)
+  createdBy           String                @db.Uuid
+  updatedAt           DateTime?             @db.Timestamptz(0)
+  updatedBy           String?               @db.Uuid
+  AttachmentRelations AttachmentRelations[]
+  Comment             Comment[]
+  PostCategory        PostCategory          @relation(fields: [categoryId], references: [id])
+  User                User                  @relation(fields: [userId], references: [id])
+  Reaction            Reaction[]
+
+  @@index([categoryId])
+  @@index([type])
+  @@index([userId])
+}
+
+model PostCategory {
+  id          String    @id @db.Uuid
+  name        String    @db.VarChar(255)
+  description String?   @db.VarChar(255)
+  type        PostType
+  createdAt   DateTime  @default(now()) @db.Timestamptz(0)
+  createdBy   String    @db.Uuid
+  updatedAt   DateTime? @db.Timestamptz(0)
+  updatedBy   String?   @db.Uuid
+  Post        Post[]
+
+  @@index([name])
+}
+
+model Reaction {
+  id           String    @id @db.Uuid
+  postId       String    @db.Uuid
+  userId       String    @db.Uuid
+  reactionType String    @db.VarChar(10)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(0)
+  createdBy    String    @db.Uuid
+  updatedAt    DateTime? @db.Timestamptz(0)
+  updatedBy    String?   @db.Uuid
+  Post         Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  User         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([userId])
 }
 
 enum BudgetType {
@@ -647,4 +739,11 @@ enum NotificationToType {
   ADMIN
   CS
   PERSONAL
+}
+
+enum PostType {
+  FAQ
+  NEWS
+  TUTORIAL
+  INTRO
 }

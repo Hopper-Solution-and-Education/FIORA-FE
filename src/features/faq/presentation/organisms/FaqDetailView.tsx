@@ -8,15 +8,16 @@ import ConfirmExitDialog from './ConfirmExitDialog';
 
 export default function FIORAFAQ() {
   const [expanded, setExpanded] = useState(false);
-  const [feedback, setFeedback] = useState(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
   const toggleExpanded = () => setExpanded(!expanded);
-  const handleFeedback = (type) => setFeedback(type);
+  const handleFeedback = (type: string) => setFeedback(type);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
   const toggleMenu = (index: number) => {
     setOpenMenuIndex(openMenuIndex === index ? null : index);
   };
+
   return (
     <section className="max-w-4xl mx-auto px-4 py-10 text-gray-800">
       <div className="flex items-center justify-between mb-4">
