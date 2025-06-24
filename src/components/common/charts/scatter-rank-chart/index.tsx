@@ -2,7 +2,6 @@ import { memo, useEffect, useRef, useState } from 'react';
 import ItemRankChart from './ItemRankChart';
 import LegendXAxis from './LegendXAxis';
 import LegendYAxis from './LegendYAxis';
-import ProgressBarChart from './ProgressBarChart';
 import { defaultBarColors, ScatterChartProps } from './types';
 import { getBalanceRank, getSpentRank } from './utils';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
@@ -137,6 +136,36 @@ const ScatterRankingChart = ({
     }
     return pos;
   };
+
+  // X-axis (Spent)
+  let spentPos = getXAxisPosition(spent);
+  const lastSpentTier = spentTiers[spentTiers.length - 1];
+  let isSpentMax = false;
+  if (lastSpentTier && lastSpentTier.max === Infinity) {
+    if (spent >= lastSpentTier.min) {
+      const percent = Math.min((spent - lastSpentTier.min) / lastSpentTier.min, 1);
+      spentPos =
+        getXAxisPosition(lastSpentTier.min) +
+        percent * (chartDimensions.width - getXAxisPosition(lastSpentTier.min) - 50);
+      if (percent >= 1) isSpentMax = true;
+    }
+  }
+  spentPos = Math.min(spentPos, chartDimensions.width);
+
+  // Y-axis (Balance)
+  let balancePos = getYAxisPosition(balance);
+  const lastBalanceTier = balanceTiers[balanceTiers.length - 1];
+  let isBalanceMax = false;
+  if (lastBalanceTier && lastBalanceTier.max === Infinity) {
+    if (balance >= lastBalanceTier.min) {
+      const percent = Math.min((balance - lastBalanceTier.min) / lastBalanceTier.min, 1);
+      balancePos =
+        getYAxisPosition(lastBalanceTier.min) +
+        percent * (chartDimensions.height - getYAxisPosition(lastBalanceTier.min));
+      if (percent >= 1) isBalanceMax = true;
+    }
+    balancePos = Math.min(balancePos, chartDimensions.height);
+  }
 
   return (
     <div className={`w-full rounded-lg p-2 ${className}`}>
@@ -295,15 +324,68 @@ const ScatterRankingChart = ({
               </div>
 
               {/* Progress Bar Chart for XAxis and YAxis */}
-              <ProgressBarChart
-                currentTier={{ balance, spent }}
-                chartDimensions={chartDimensions}
-                balanceTiers={balanceTiers}
-                spentTiers={spentTiers}
-                colors={colors}
-                getXAxisPosition={getXAxisPosition}
-                getYAxisPosition={getYAxisPosition}
-              />
+              <div className="absolute bottom-20 left-[110px] w-[calc(100%-130px)]">
+                {/* Background bar */}
+                <div className="absolute left-0 flex items-center w-[calc(100%-10px)] z-10">
+                  <div className="w-full h-2.5" style={{ background: colors.xBg }} />
+                </div>
+                {/* Arrow head for X-axis */}
+                {chartDimensions.width && (
+                  <div
+                    className="absolute right-0 top-[5px] -translate-y-1/2 w-0 h-0 border-y-[5px] border-l-[10px] z-[11] border-y-transparent"
+                    style={{ borderLeftColor: isSpentMax ? '#22c55e' : colors.xBg }}
+                  />
+                )}
+                {/* Current value bar */}
+                <div
+                  className="h-2.5 absolute left-0 top-0 transition-all duration-700 z-[12]"
+                  style={{
+                    width: chartDimensions.width ? `${spentPos}px` : 0,
+                    background: colors.x,
+                  }}
+                />
+              </div>
+
+              <div
+                className={`
+                  absolute top-0 left-[110px] 
+                  h-[calc(100%-70px)]
+                  ${chartDimensions.height ? 'block' : 'hidden'}
+                `}
+              >
+                {/* Arrow head for Y-axis */}
+                {chartDimensions.height && (
+                  <div
+                    className={`
+                      absolute top-0 left-1/2 
+                      w-0 h-0 z-[11] 
+                      border-x-[5px] border-b-[10px] border-x-transparent
+                      ${chartDimensions.height ? 'block' : 'hidden'}
+                    `}
+                    style={{ borderBottomColor: isBalanceMax ? '#22c55e' : colors.yBg }}
+                  />
+                )}
+                {/* Background bar */}
+                <div
+                  className={`
+                    absolute flex items-end 
+                    w-[10px] z-[10] 
+                    top-[10px] 
+                    h-[calc(100%-12px)]
+                    ${chartDimensions.height ? 'block' : 'hidden'}
+                  `}
+                >
+                  <div className="h-full w-2.5" style={{ background: colors.yBg }} />
+                </div>
+                {/* Current value bar */}
+                <div
+                  className="w-2.5 absolute left-0 bottom-0 transition-all duration-700 z-[12]"
+                  style={{
+                    height: chartDimensions.height ? `${balancePos}px` : 0,
+                    background: colors.y,
+                  }}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -313,3 +395,5 @@ const ScatterRankingChart = ({
 };
 
 export default memo(ScatterRankingChart);
+
+export { default as ScatterRankingChartSkeleton } from './ScatterRankingChartSkeleton';
