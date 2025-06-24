@@ -18,6 +18,7 @@ export interface SettingTierInputProps {
     percent?: boolean;
     maxPercent?: number;
   };
+  disabled?: boolean;
 }
 
 const SettingTierInputField = ({
@@ -30,6 +31,7 @@ const SettingTierInputField = ({
   required,
   onBlur,
   options,
+  disabled,
 }: SettingTierInputProps) => {
   return (
     <div
@@ -65,6 +67,8 @@ const SettingTierInputField = ({
         className="
           w-full
           flex justify-end
+          m-2
+          pr-2
         "
       >
         <TooltipProvider>
@@ -77,7 +81,8 @@ const SettingTierInputField = ({
                 options={options}
                 placeholder="0"
                 required={required}
-                onBlur={onBlur}
+                onBlur={onBlur ? onBlur : undefined}
+                disabled={disabled}
                 className={cn(
                   'text-center',
                   'w-[60px]',

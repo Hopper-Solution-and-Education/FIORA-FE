@@ -2,9 +2,14 @@ import { FormConfig } from '@/components/common/forms';
 import UploadImageField from '@/components/common/forms/upload/UploadImageField';
 import { useFormContext } from 'react-hook-form';
 import { EditMemberShipFormValues } from '../schema/editMemberShip.schema';
+import { useAppSelector } from '@/store';
 
 const ImageUploadListFieldConfig = () => {
   const methods = useFormContext<EditMemberShipFormValues>();
+
+  const isLoadingUpsertMembership = useAppSelector(
+    (state) => state.memberShipSettings.isLoadingUpsertMembership,
+  );
 
   const iconItems = [
     {
@@ -36,6 +41,7 @@ const ImageUploadListFieldConfig = () => {
       label={item.label}
       required
       previewShape="square"
+      disabled={isLoadingUpsertMembership}
     />
   ));
 

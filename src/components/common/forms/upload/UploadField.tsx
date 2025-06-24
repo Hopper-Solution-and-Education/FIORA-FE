@@ -26,6 +26,7 @@ interface UploadFieldProps {
   initialImageUrl?: string | null;
   maxSize?: number; // Size in MB
   className?: string;
+  disabled?: boolean;
   [key: string]: any;
 }
 
@@ -44,6 +45,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
   initialImageUrl = null,
   maxSize = 5, // Default to 5MB
   className,
+  disabled,
   ...props
 }) => {
   const [preview, setPreview] = useState<string | null>(null);
@@ -180,6 +182,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
+          draggable={!disabled}
         >
           <Input
             id={id}
@@ -189,6 +192,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
             onBlur={onBlur}
             className="hidden"
             ref={fileInputRef}
+            disabled={disabled}
             {...props}
           />
           {preview ? (

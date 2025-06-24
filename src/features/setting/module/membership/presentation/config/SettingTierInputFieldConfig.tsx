@@ -2,9 +2,13 @@ import { FormConfig } from '@/components/common/forms';
 import { useFormContext } from 'react-hook-form';
 import SettingTierInputField from '../atoms/SettingTierInputField';
 import { EditMemberShipFormValues } from '../schema/editMemberShip.schema';
+import { useAppSelector } from '@/store';
 
 const SettingTierInputFieldConfig = () => {
   const methods = useFormContext<EditMemberShipFormValues>();
+  const isLoadingUpsertMembership = useAppSelector(
+    (state) => state.memberShipSettings.isLoadingUpsertMembership,
+  );
 
   const { setValue, watch } = methods;
 
@@ -17,6 +21,7 @@ const SettingTierInputFieldConfig = () => {
       onChange={(value) => setValue('referralBonus', value)}
       suffix="FX"
       required
+      disabled={isLoadingUpsertMembership}
     />,
     <SettingTierInputField
       key="savingInterest"
@@ -27,6 +32,7 @@ const SettingTierInputFieldConfig = () => {
       suffix="%/year"
       options={{ percent: true, maxPercent: 100 }}
       required
+      disabled={isLoadingUpsertMembership}
     />,
     <SettingTierInputField
       key="stakingInterest"
@@ -37,6 +43,7 @@ const SettingTierInputFieldConfig = () => {
       suffix="%/year"
       options={{ percent: true, maxPercent: 100 }}
       required
+      disabled={isLoadingUpsertMembership}
     />,
     <SettingTierInputField
       key="investmentInterest"
@@ -47,6 +54,7 @@ const SettingTierInputFieldConfig = () => {
       suffix="%/year"
       options={{ percent: true, maxPercent: 100 }}
       required
+      disabled={isLoadingUpsertMembership}
     />,
     <SettingTierInputField
       key="loanInterest"
@@ -57,6 +65,7 @@ const SettingTierInputFieldConfig = () => {
       suffix="%/year"
       options={{ percent: true, maxPercent: 100 }}
       required
+      disabled={isLoadingUpsertMembership}
     />,
     <SettingTierInputField
       key="cashback"
@@ -67,6 +76,7 @@ const SettingTierInputFieldConfig = () => {
       suffix="% total spent"
       options={{ percent: true, maxPercent: 100 }}
       required
+      disabled={isLoadingUpsertMembership}
     />,
     <SettingTierInputField
       key="referralKickback"
@@ -77,6 +87,7 @@ const SettingTierInputFieldConfig = () => {
       suffix="% referral spent"
       options={{ percent: true, maxPercent: 100 }}
       required
+      disabled={isLoadingUpsertMembership}
     />,
     <SettingTierInputField
       key="bnplFee"
@@ -86,6 +97,7 @@ const SettingTierInputFieldConfig = () => {
       onChange={(value) => setValue('bnplFee', value)}
       suffix="FX/day"
       required
+      disabled={isLoadingUpsertMembership}
     />,
   ];
 

@@ -6,6 +6,7 @@ import ProgressBarChart from './ProgressBarChart';
 import { defaultBarColors, ScatterChartProps } from './types';
 import { getBalanceRank, getSpentRank } from './utils';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
+import ScatterRankingChartSkeleton from './ScatterRankingChartSkeleton';
 
 const ScatterRankingChart = ({
   currentTier,
@@ -137,19 +138,6 @@ const ScatterRankingChart = ({
     return pos;
   };
 
-  // Loading skeleton component
-  const LoadingSkeleton = () => (
-    <div className="flex items-center justify-center h-full">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-        <div className="text-gray-500 text-lg font-medium mb-2">Loading chart data...</div>
-        <div className="text-gray-400 text-sm">
-          Please wait while we prepare your membership tiers
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className={`w-full rounded-lg p-2 ${className}`}>
       <div className="p-4 pb-7 font-bold text-lg">{title}</div>
@@ -159,7 +147,7 @@ const ScatterRankingChart = ({
           ref={chartContainerRef}
         >
           {isLoading ? (
-            <LoadingSkeleton />
+            <ScatterRankingChartSkeleton />
           ) : !hasData ? (
             // Show no data message
             <div className="flex items-center justify-center h-full">

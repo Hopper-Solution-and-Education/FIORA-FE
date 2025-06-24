@@ -7,9 +7,11 @@ import { setSelectedMembership } from '../../slices';
 import { createCombinedTierIcons, transformToBalanceTiers, transformToSpentTiers } from '../utils';
 
 const MembershipRankChart = () => {
-  const { memberships, isLoadingGetMemberships, selectedMembership } = useAppSelector(
-    (state) => state.memberShipSettings,
+  const memberships = useAppSelector((state) => state.memberShipSettings.memberships);
+  const isLoadingGetMemberships = useAppSelector(
+    (state) => state.memberShipSettings.isLoadingGetMemberships,
   );
+  const selectedMembership = useAppSelector((state) => state.memberShipSettings.selectedMembership);
 
   const dispatch = useAppDispatch();
 
@@ -34,18 +36,22 @@ const MembershipRankChart = () => {
   // Create combined tier icons mapping with onClick handlers
   const combinedTierIcons = useMemo(() => {
     return createCombinedTierIcons(balanceTiers, spentTiers, memberships, handleTierClick);
-  }, [balanceTiers, spentTiers, memberships, handleTierClick]);
+  }, [balanceTiers, spentTiers, memberships]);
+
+  const [selectedItem, setSelectedItem] = useState<{ balance: number; spent: number } | null>(
+    selectedMembership
+      ? {
+          balance: selectedMembership.balanceMinThreshold,
+          spent: selectedMembership.spentMinThreshold,
+        }
+      : null,
+  );
 
   useEffect(() => {
     if (memberships.length > 0) {
       dispatch(setSelectedMembership(memberships[0]));
     }
-  }, [memberships, dispatch]);
-
-  const [selectedItem, setSelectedItem] = useState<{ balance: number; spent: number } | null>({
-    balance: selectedMembership?.balanceMinThreshold || 0,
-    spent: selectedMembership?.spentMinThreshold || 0,
-  });
+  }, [memberships]);
 
   return (
     <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-7 rounded-lg">

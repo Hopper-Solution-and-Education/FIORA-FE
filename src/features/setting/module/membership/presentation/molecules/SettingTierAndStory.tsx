@@ -4,6 +4,7 @@ import { FormConfig, InputField, UploadImageField } from '@/components/common/fo
 import { useFormContext } from 'react-hook-form';
 import { SettingTierInputFieldConfig, StoryTierInputFieldConfig } from '../config';
 import { EditMemberShipFormValues } from '../schema/editMemberShip.schema';
+import { useAppSelector } from '@/store';
 
 const renderEmptySubmitButton = () => {
   return <></>;
@@ -12,8 +13,19 @@ const renderEmptySubmitButton = () => {
 const SettingTierAndStory = () => {
   const methods = useFormContext<EditMemberShipFormValues>();
 
+  const isLoadingUpsertMembership = useAppSelector(
+    (state) => state.memberShipSettings.isLoadingUpsertMembership,
+  );
+
   const renderMainIcon = () => {
-    return <UploadImageField name="mainIcon" label="Main Icon" required />;
+    return (
+      <UploadImageField
+        name="mainIcon"
+        label="Main Icon"
+        required
+        disabled={isLoadingUpsertMembership}
+      />
+    );
   };
 
   return (
