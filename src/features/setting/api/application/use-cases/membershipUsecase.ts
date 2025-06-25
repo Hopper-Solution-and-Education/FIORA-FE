@@ -1,4 +1,4 @@
-import { MembershipTier, Prisma, TierBenefit } from '@prisma/client';
+import { MembershipBenefit, MembershipTier, Prisma, TierBenefit } from '@prisma/client';
 import {
   IMembershipTierRepository,
   MembershipTierCreation,
@@ -105,9 +105,33 @@ class MembershipSettingUseCase {
                 value: new Prisma.Decimal(Number(benefit.value)),
                 updatedBy: userId,
               },
-            });
+              include: {
+                benefit: {
+                  select: {
+                    slug: true,
+                    name: true,
+                    suffix: true,
+                    description: true,
+                  },
+                },
+              },
+            }) as TierBenefit & {
+              benefit: {
+                slug: string;
+                name: string;
+                suffix: string;
+                description: string;
+              };
+            };
 
-            newTierBenefits.push(newTierBenefit);
+            const newTierBenefitWithBenefit = {
+              ...newTierBenefit,
+              slug: newTierBenefit.benefit.slug,
+            };
+
+            const { benefit: _, ...newTierBenefitWithoutBenefit } = newTierBenefitWithBenefit;
+
+            newTierBenefits.push(newTierBenefitWithoutBenefit);
           }
         }
 
