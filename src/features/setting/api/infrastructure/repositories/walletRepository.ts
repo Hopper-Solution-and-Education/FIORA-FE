@@ -36,6 +36,10 @@ class WalletRepository implements IWalletRepository {
       },
     });
   }
+
+  async findAllWalletsByUser(userId: string): Promise<Wallet[]> {
+    return this._prisma.wallet.findMany({ where: { userId } });
+  }
 }
 
 export const walletRepository = new WalletRepository();

@@ -1,1 +1,1 @@
-export * from './GetWalletUsecase';
+export * from './GetWalletByTypeUsecase';
