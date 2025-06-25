@@ -12,6 +12,10 @@ class WalletUseCase {
   async getWalletByType(type: WalletType, userId: string) {
     return this._walletRepository.findWalletByType(type, userId);
   }
+
+  async getAllWalletsByUser(userId: string) {
+    return this._walletRepository.findAllWalletsByUser(userId);
+  }
 }
 
 export const walletUseCase = new WalletUseCase();

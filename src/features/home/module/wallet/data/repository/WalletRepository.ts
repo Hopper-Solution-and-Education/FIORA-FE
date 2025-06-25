@@ -13,4 +13,8 @@ export class WalletRepository implements IWalletRepository {
   getWalletByType(type: WalletType): Promise<Wallet> {
     return this._walletApi.getWalletByType({ type }).then(WalletMapper.toWalletResponse);
   }
+
+  getAllWallets(): Promise<Wallet[]> {
+    return this._walletApi.getAllWallets().then(WalletMapper.toWalletsResponse);
+  }
 }
