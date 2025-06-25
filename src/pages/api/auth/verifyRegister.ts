@@ -1,19 +1,12 @@
 import { UserUSeCaseInstance } from '@/features/auth/application/use-cases/userUseCase';
 import { errorHandler, NotFoundError, ValidationError } from '@/shared/lib/responseUtils/errors';
-import redis from '@/config/redis/redis';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-  const { email, otp } = req.body;
-
-  const storedOTP = await redis.get(`otp:${email}`);
-
-  if (!storedOTP || storedOTP !== otp) {
-    throw new ValidationError('OTP không hợp lệ');
-  }
+  const { email } = req.body;
 
   const user = await UserUSeCaseInstance.verifyEmail(email);
   if (!user) {
@@ -25,7 +18,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   await UserUSeCaseInstance.verifyUser(email);
-  await redis.del(`otp:${email}`);
 
   res.status(200).json({ message: 'Tài khoản đã xác thực thành công ! Vui lòng đăng nhập' });
 }

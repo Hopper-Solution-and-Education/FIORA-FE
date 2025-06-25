@@ -1,3 +1,5 @@
+'use client';
+
 import GlobalLabel from '@/components/common/atoms/GlobalLabel';
 import { Input } from '@/components/ui/input';
 import React, { memo } from 'react';
@@ -120,16 +122,32 @@ const InputField: React.FC<InputFieldProps> = ({
           onBlur={handleBlur}
           placeholder={placeholder}
           id={id}
-          type={percent ? 'text' : props.type || 'text'} // Use text for percent to allow custom formatting
+          type={percent ? 'text' : props.type || 'text'}
           maxLength={maxLength}
-          className={`pr-8 ${error ? 'border-red-500' : ''}`} // Extra padding for % symbol
+          className={`pr-8 text-xs md:text-sm ${error ? 'border-red-500' : ''}`}
           {...props}
         />
         {percent && (
-          <span className="absolute inset-y-0 right-2 flex items-center text-gray-500">%</span>
+          <span
+            className={`
+              absolute inset-y-0 right-2 flex items-center text-gray-500
+              text-xs md:text-sm
+            `}
+          >
+            %
+          </span>
         )}
       </div>
-      {error && <p className="mt-1 text-sm text-red-500">{error.message}</p>}
+      {error && (
+        <p
+          className={`
+            mt-1 text-xs text-red-500
+            md:text-sm
+          `}
+        >
+          {error.message}
+        </p>
+      )}
     </div>
   );
 };
