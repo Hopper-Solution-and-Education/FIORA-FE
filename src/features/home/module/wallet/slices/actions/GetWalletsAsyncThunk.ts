@@ -16,15 +16,10 @@ export const getWalletsAsyncThunk = createAsyncThunk<
       WALLET_TYPES.IGetWalletsUseCase,
     );
 
-    console.log('run');
-
     const wallets = await getWalletsUsecase.execute();
-
-    console.log('Raw wallets', wallets);
 
     return wallets;
   } catch (error) {
-    console.log('error', error);
     const errorMessage = error instanceof Error ? error.message : 'Failed to fetch wallets';
     return rejectWithValue(errorMessage);
   }

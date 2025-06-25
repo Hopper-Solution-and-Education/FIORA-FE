@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 import { WALLET_TYPES } from '../../di/walletDIContainer.type';
 import type { IWalletRepository } from '../../data/repository/IWalletRepository';
-import type { WalletType } from '../entity/WalletType';
+import type { WalletType } from '../enum/WalletType';
 import { Wallet } from '../entity/Wallet';
 
 export interface IGetWalletByTypeUsecase {

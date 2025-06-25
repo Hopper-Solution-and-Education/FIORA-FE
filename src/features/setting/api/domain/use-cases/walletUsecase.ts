@@ -16,6 +16,17 @@ class WalletUseCase {
   async getAllWalletsByUser(userId: string) {
     return this._walletRepository.findAllWalletsByUser(userId);
   }
+
+  async getAllPackageFX() {
+    return this._walletRepository.findAllPackageFX();
+  }
+
+  async getDepositRequestsByType(
+    userId: string,
+    type: import('@prisma/client').DepositRequestStatus,
+  ) {
+    return this._walletRepository.findDepositRequestsByType(userId, type);
+  }
 }
 
 export const walletUseCase = new WalletUseCase();

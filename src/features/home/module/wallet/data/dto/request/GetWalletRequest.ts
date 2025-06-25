@@ -1,4 +1,4 @@
-import { WalletType } from '../../../domain/entity/WalletType';
+import { WalletType } from '../../../domain/enum';
 
 export type GetWalletByTypeRequest = {
   type: WalletType;
