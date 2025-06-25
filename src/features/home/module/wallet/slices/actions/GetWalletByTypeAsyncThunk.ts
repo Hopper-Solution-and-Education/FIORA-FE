@@ -2,7 +2,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { walletContainer } from '../../di/walletDIContainer';
 import { WALLET_TYPES } from '../../di/walletDIContainer.type';
 import type { IGetWalletByTypeUsecase } from '../../domain/usecase/GetWalletByTypeUsecase';
-import type { WalletType } from '../../domain/entity/WalletType';
+import type { WalletType } from '../../domain/enum';
 import type { Wallet } from '../../domain/entity/Wallet';
 
 export const getWalletByTypeAsyncThunk = createAsyncThunk<

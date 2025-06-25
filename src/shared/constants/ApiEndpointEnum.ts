@@ -9,4 +9,6 @@ export enum ApiEndpointEnum {
 
   // Wallet
   Wallet = '/api/wallet',
+  WalletPackage = '/api/wallet/package',
+  WalletDeposit = '/api/wallet/deposit',
 }

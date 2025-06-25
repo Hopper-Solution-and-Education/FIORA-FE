@@ -1,2 +1,3 @@
 export * from './Wallet';
-export * from './WalletType';
+export * from './PackageFX';
+export * from './DepositRequest';
