@@ -1,19 +1,15 @@
 'use client';
 
-import * as FaqPageModule from '@/features/faq/presentation/EditFaqPage';
+import FaqDetailView from '@/features/faq/FaqDetail';
 import SessionSidebar from '@/components/providers/SessionSidebar';
 
-console.log('FaqPageModule:', FaqPageModule);
-
-const EditFaqPage = FaqPageModule.default;
-
-export default function FaqEditRoute() {
+export default function FQLDetailLayout() {
   return (
     <SessionSidebar>
       <div>
         <div>
           <main>
-            <EditFaqPage />
+            <FaqDetailView />
           </main>
         </div>
       </div>
