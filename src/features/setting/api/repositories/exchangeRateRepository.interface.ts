@@ -1,10 +1,20 @@
-import { CurrencyExchange, ExchangeRateSetting, Prisma } from "@prisma/client";
+import { CurrencyExchange, ExchangeRateSetting, Prisma } from '@prisma/client';
 
 export interface IExchangeRateRepository {
-  createExchangeRate(data: Prisma.ExchangeRateSettingUncheckedCreateInput): Promise<ExchangeRateSetting>;
-  findFirstExchangeRate(where: Prisma.ExchangeRateSettingWhereInput): Promise<ExchangeRateSetting | null>;
-  findManyExchangeRate(where: Prisma.ExchangeRateSettingWhereInput, options?: Prisma.ExchangeRateSettingFindManyArgs): Promise<ExchangeRateSetting[]>;
-  updateExchangeRate(id: string, data: Prisma.ExchangeRateSettingUncheckedUpdateInput): Promise<ExchangeRateSetting>;
+  createExchangeRate(
+    data: Prisma.ExchangeRateSettingUncheckedCreateInput,
+  ): Promise<ExchangeRateSetting>;
+  findFirstExchangeRate(
+    where: Prisma.ExchangeRateSettingWhereInput,
+  ): Promise<ExchangeRateSetting | null>;
+  findManyExchangeRate(
+    where: Prisma.ExchangeRateSettingWhereInput,
+    options?: Prisma.ExchangeRateSettingFindManyArgs,
+  ): Promise<ExchangeRateSetting[]>;
+  updateExchangeRate(
+    id: string,
+    data: Prisma.ExchangeRateSettingUncheckedUpdateInput,
+  ): Promise<ExchangeRateSetting>;
   deleteExchangeRate(where: Prisma.ExchangeRateSettingWhereUniqueInput): Promise<void>;
   upsertExchangeRate(
     where: Prisma.ExchangeRateSettingWhereUniqueInput,

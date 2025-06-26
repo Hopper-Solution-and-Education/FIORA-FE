@@ -43,7 +43,6 @@ model User {
   Comment             Comment[]
   Post                Post[]
   Reaction            Reaction[]
-  ExchangeRateSetting ExchangeRateSetting[]
   exchangeRateSetting ExchangeRateSetting[]
 
   @@index([isDeleted])
@@ -685,26 +684,6 @@ model CurrencyExchange {
   updatedBy               String?               @db.Uuid
   fromExchangeRateSetting ExchangeRateSetting[] @relation("FromCurrency")
   toExchangeRateSetting   ExchangeRateSetting[] @relation("ToCurrency")
-}
-
-model ExchangeRateSetting {
-  id           String   @id @default(uuid()) @db.Uuid
-  authorId     String   @db.Uuid
-  fromCurrency String   @db.VarChar(100)
-  fromSymbol   String   @db.VarChar(100)
-  fromValue    Decimal  @default(0) @db.Decimal(13, 2)
-  toValue      Decimal  @default(0) @db.Decimal(13, 2)
-  toCurrency   String   @db.VarChar(100)
-  toSymbol     String   @db.VarChar(100)
-  createdAt    DateTime @default(now()) @db.Timestamptz(0)
-  updatedAt    DateTime @updatedAt @db.Timestamptz(0)
-  createdBy    String?  @db.Uuid
-  updatedBy    String?  @db.Uuid
-  user         User     @relation(fields: [authorId], references: [id])
-
-  @@unique([fromCurrency, toCurrency, authorId])
-  @@index([authorId])
-  @@index([fromCurrency, toCurrency])
 }
 
 enum BudgetType {

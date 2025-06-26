@@ -1,7 +1,11 @@
-import { Messages } from "@/shared/constants/message";
-import { ExchangeRateSetting, Prisma } from "@prisma/client";
-import { exchangeRateRepository } from "../../infrastructure/repositories/exchangeRateRepository";
-import { IExchangeRateInclude, IExchangeRateRepository, IUpsertExchangeRateSetting } from "../../repositories/exchangeRateRepository.interface";
+import { Messages } from '@/shared/constants/message';
+import { ExchangeRateSetting, Prisma } from '@prisma/client';
+import { exchangeRateRepository } from '../../infrastructure/repositories/exchangeRateRepository';
+import {
+  IExchangeRateInclude,
+  IExchangeRateRepository,
+  IUpsertExchangeRateSetting,
+} from '../../repositories/exchangeRateRepository.interface';
 
 class ExchangeRateUseCase {
   private exchangeRateRepository: IExchangeRateRepository;
@@ -10,34 +14,30 @@ class ExchangeRateUseCase {
     this.exchangeRateRepository = exchangeRateRepository;
   }
 
-  async getExchangeRate(authorId: string): Promise<ExchangeRateSetting[]> {
+  async getAllExchangeRate() {
     try {
-      return await this.exchangeRateRepository.findManyExchangeRate({ authorId });
-    } catch (error) {
-      throw new Error(Messages.GET_EXCHANGE_RATE_FAILED);
-    }
-  }
-
-  async getAllExchangeRate(authorId: string) {
-    try {
-      const exchangeRateList = await this.exchangeRateRepository.findManyExchangeRate({ authorId }, {
-        include: {
-          FromCurrency: {
-            select: {
-              id: true,
-              name: true,
-              symbol: true,
+      const exchangeRateList =
+        ((await this.exchangeRateRepository.findManyExchangeRate(
+          {},
+          {
+            include: {
+              FromCurrency: {
+                select: {
+                  id: true,
+                  name: true,
+                  symbol: true,
+                },
+              },
+              ToCurrency: {
+                select: {
+                  id: true,
+                  name: true,
+                  symbol: true,
+                },
+              },
             },
           },
-          ToCurrency: {
-            select: {
-              id: true,
-              name: true,
-              symbol: true,
-            },
-          },
-        },
-      }) as Prisma.ExchangeRateSettingGetPayload<{ include: IExchangeRateInclude }>[] || [];
+        )) as Prisma.ExchangeRateSettingGetPayload<{ include: IExchangeRateInclude }>[]) || [];
 
       return exchangeRateList.map((exchangeRate) => ({
         id: exchangeRate.id,
@@ -55,14 +55,16 @@ class ExchangeRateUseCase {
         fromSymbol: exchangeRate.FromCurrency.symbol,
         toSymbol: exchangeRate.ToCurrency.symbol,
       }));
-    } catch (error) {
-      throw new Error(Messages.GET_EXCHANGE_RATE_FAILED);
+    } catch (error: any) {
+      throw new Error(error.message || Messages.GET_EXCHANGE_RATE_FAILED);
     }
   }
 
-  async updateExchangeRate(data: Prisma.ExchangeRateSettingUncheckedUpdateInput, authorId: string): Promise<ExchangeRateSetting> {
+  async updateExchangeRate(
+    data: Prisma.ExchangeRateSettingUncheckedUpdateInput,
+    authorId: string,
+  ): Promise<ExchangeRateSetting> {
     try {
-
       const foundExchangeRate = await this.exchangeRateRepository.findFirstExchangeRate({
         fromCurrencyId: data.fromCurrencyId as string,
         toCurrencyId: data.toCurrencyId as string,
@@ -74,8 +76,8 @@ class ExchangeRateUseCase {
       }
 
       return await this.exchangeRateRepository.updateExchangeRate(foundExchangeRate.id, data);
-    } catch (error) {
-      throw new Error(Messages.UPDATE_EXCHANGE_RATE_FAILED);
+    } catch (error: any) {
+      throw new Error(error.message || Messages.UPDATE_EXCHANGE_RATE_FAILED);
     }
   }
 
@@ -97,15 +99,19 @@ class ExchangeRateUseCase {
           toCurrencyId: foundExchangeRate.toCurrencyId as string,
         },
       });
-    } catch (error) {
-      throw new Error(Messages.DELETE_EXCHANGE_RATE_FAILED);
+    } catch (error: any) {
+      throw new Error(error.message || Messages.DELETE_EXCHANGE_RATE_FAILED);
     }
   }
 
   async upsertExchangeRate(data: IUpsertExchangeRateSetting, authorId: string) {
     try {
-      let fromCurrency = await this.exchangeRateRepository.findFirstCurrency({ name: data.fromCurrency });
-      let toCurrency = await this.exchangeRateRepository.findFirstCurrency({ name: data.toCurrency });
+      let fromCurrency = await this.exchangeRateRepository.findFirstCurrency({
+        name: data.fromCurrency,
+      });
+      let toCurrency = await this.exchangeRateRepository.findFirstCurrency({
+        name: data.toCurrency,
+      });
 
       if (!fromCurrency) {
         fromCurrency = await this.exchangeRateRepository.createCurrency({
@@ -121,7 +127,7 @@ class ExchangeRateUseCase {
         });
       }
 
-      const exchangeRate = await this.exchangeRateRepository.upsertExchangeRate(
+      const exchangeRate = (await this.exchangeRateRepository.upsertExchangeRate(
         {
           fromCurrencyId_toCurrencyId: {
             fromCurrencyId: fromCurrency?.id as string,
@@ -156,23 +162,23 @@ class ExchangeRateUseCase {
               symbol: true,
             },
           },
-        }
-      ) as Prisma.ExchangeRateSettingGetPayload<{
+        },
+      )) as Prisma.ExchangeRateSettingGetPayload<{
         include: {
           FromCurrency: {
             select: {
-              id: true,
-              name: true,
-              symbol: true,
-            },
-          },
+              id: true;
+              name: true;
+              symbol: true;
+            };
+          };
           ToCurrency: {
             select: {
-              id: true,
-              name: true,
-              symbol: true,
-            },
-          },
+              id: true;
+              name: true;
+              symbol: true;
+            };
+          };
         };
       }>;
 
@@ -202,7 +208,6 @@ class ExchangeRateUseCase {
       throw new Error(Messages.UPDATE_EXCHANGE_RATE_FAILED);
     }
   }
-
 }
 
 export const exchangeRateUseCase = new ExchangeRateUseCase(exchangeRateRepository);

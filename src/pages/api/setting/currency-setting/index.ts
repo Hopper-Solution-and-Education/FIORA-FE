@@ -5,7 +5,10 @@ import { createErrorResponse } from '@/shared/lib';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { validateBody } from '@/shared/utils/validate';
-import { exchangeRateDelete, exchangeRateUpdate } from '@/shared/validators/exchangeRate.validation';
+import {
+  exchangeRateDelete,
+  exchangeRateUpdate,
+} from '@/shared/validators/exchangeRate.validation';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default withAuthorization({
@@ -16,11 +19,11 @@ export default withAuthorization({
 })(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   switch (req.method) {
     case 'GET':
-      return GET(req, res, userId);
+      return GET(req, res);
     case 'PUT':
       return PUT(req, res, userId);
     case 'DELETE':
-      return DELETE(req, res, userId);
+      return DELETE(req, res);
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -28,9 +31,9 @@ export default withAuthorization({
   }
 });
 
-export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function GET(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const exchangeRateList = await exchangeRateUseCase.getAllExchangeRate(userId);
+    const exchangeRateList = await exchangeRateUseCase.getAllExchangeRate();
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.GET_EXCHANGE_RATE_SUCCESS, exchangeRateList));
@@ -52,27 +55,39 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
     const { error } = validateBody(exchangeRateUpdate, req.body);
 
     if (error) {
-      return res.status(RESPONSE_CODE.BAD_REQUEST).json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
     }
 
     const newExchangeRate = await exchangeRateUseCase.upsertExchangeRate(req.body, userId);
 
     return res
       .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_EXCHANGE_RATE_SUCCESS, newExchangeRate));
+      .json(
+        createResponse(RESPONSE_CODE.OK, Messages.UPDATE_EXCHANGE_RATE_SUCCESS, newExchangeRate),
+      );
   } catch (error: any) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(createError(res, RESPONSE_CODE.INTERNAL_SERVER_ERROR, error.message || Messages.INTERNAL_ERROR));
+      .json(
+        createError(
+          res,
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
 }
 
-export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { error } = validateBody(exchangeRateDelete, req.body);
 
     if (error) {
-      return res.status(RESPONSE_CODE.BAD_REQUEST).json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
     }
 
     await exchangeRateUseCase.deleteExchangeRate(req.body);
@@ -83,6 +98,12 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
   } catch (error: any) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(createError(res, RESPONSE_CODE.INTERNAL_SERVER_ERROR, error.message || Messages.INTERNAL_ERROR));
+      .json(
+        createError(
+          res,
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
 }
