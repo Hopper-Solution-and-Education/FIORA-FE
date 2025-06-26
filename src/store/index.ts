@@ -5,6 +5,7 @@ import storage from 'redux-persist/lib/storage';
 import apiMiddleware from './middleware/apiMiddleware';
 import rootReducer from './rootReducer';
 import { persistStore } from 'redux-persist';
+import { faqsApi } from '@/features/faqs/store/api/faqsApi';
 
 // for redux persist - use it later
 const persistConfig: PersistConfig<ReturnType<typeof rootReducer>> = {
@@ -19,13 +20,19 @@ export const store = configureStore({
   reducer: persistedReducer,
   devTools: process.env.NODE_ENV !== 'production',
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({ serializableCheck: false }).concat(apiMiddleware),
+    getDefaultMiddleware({ serializableCheck: false })
+      .concat(apiMiddleware)
+      .concat(faqsApi.middleware),
 });
 
 export const setupStore = (preloadedState?: Partial<RootState>) => {
   return configureStore({
     reducer: rootReducer,
     preloadedState,
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware({ serializableCheck: false })
+        .concat(apiMiddleware)
+        .concat(faqsApi.middleware),
   });
 };
 
