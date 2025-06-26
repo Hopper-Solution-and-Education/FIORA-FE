@@ -46,6 +46,7 @@ import {
   useSidebar,
 } from '../../ui/sidebar';
 
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
 import { helpItems, menuSettingItems } from '../dashboard-header/utils';
 import { filterNavItems as filterNavItemsUtil, isItemActive as isItemActiveUtil } from './utils';
@@ -65,7 +66,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   const gb = growthbook;
   const [newNavItem, setNewNavItem] = useState<NavItem[]>([]);
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
-
+  const isMobile = useIsMobile();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -162,24 +163,26 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
             </div>
           </div>
 
-          <div
-            onClick={() => setOpen(!open)}
-            className="w-full flex items-center justify-end !hover:bg-transparent !hover:text-inherit cursor-pointer"
-          >
+          {!isMobile && (
             <div
-              className={cn(
-                'flex items-center justify-center rounded-lg p-2 transition-colors duration-200',
-                'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-                open ? 'size-10' : 'size-8',
-              )}
+              onClick={() => setOpen(!open)}
+              className="w-full flex items-center justify-end cursor-pointer"
             >
-              {open ? (
-                <PanelRightOpen size={ICON_SIZE.SM} />
-              ) : (
-                <PanelRightClose size={ICON_SIZE.SM} />
-              )}
+              <div
+                className={cn(
+                  'flex items-center justify-center rounded-lg p-2 transition-colors duration-200',
+                  'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                  open ? 'size-10' : 'size-8',
+                )}
+              >
+                {open ? (
+                  <PanelRightOpen size={ICON_SIZE.SM} />
+                ) : (
+                  <PanelRightClose size={ICON_SIZE.SM} />
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </SidebarHeader>
 
         <SidebarContent className="overflow-x-hidden">

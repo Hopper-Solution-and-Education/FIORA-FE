@@ -38,7 +38,7 @@ const TierDataItem = ({ label, value, suffix }: TierDataItemProps) => {
       <div
         className="
           flex-shrink-0
-          w-20
+          w-28
           text-left
           overflow-hidden
         "
@@ -47,10 +47,11 @@ const TierDataItem = ({ label, value, suffix }: TierDataItemProps) => {
           <span
             className="
               text-sm
-              md:text-base
+              md:text-sm
+              lg:text-md
               text-gray-800
               dark:text-gray-100
-              truncate
+              max-w-24
             "
             title={value}
           >
@@ -67,6 +68,7 @@ const TierDataItem = ({ label, value, suffix }: TierDataItemProps) => {
                 text-gray-500
                 dark:text-gray-400
                 flex-shrink-0
+                truncate
               "
             >
               {suffix}

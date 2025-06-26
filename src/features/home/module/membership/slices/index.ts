@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Membership } from '../domain/entities';
-import { getListMembershipAsyncThunk } from './actions/getMemberShipAsyncThunk';
+import { getCurrentTierAsyncThunk, getListMembershipAsyncThunk } from './actions';
 import { initialMembershipState } from './types';
 
 const membershipSlice = createSlice({
@@ -10,9 +10,6 @@ const membershipSlice = createSlice({
     resetMembershipState: () => initialMembershipState,
     setMemberships: (state, action: PayloadAction<Membership[]>) => {
       state.memberships = action.payload;
-    },
-    setSelectedMembership: (state, action: PayloadAction<Membership>) => {
-      state.selectedMembership = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -27,10 +24,20 @@ const membershipSlice = createSlice({
       .addCase(getListMembershipAsyncThunk.rejected, (state) => {
         state.isLoadingGetMemberships = false;
       });
+
+    builder.addCase(getCurrentTierAsyncThunk.pending, (state) => {
+      state.userTier.isLoading = true;
+    });
+    builder.addCase(getCurrentTierAsyncThunk.fulfilled, (state, action) => {
+      state.userTier.isLoading = false;
+      state.userTier.data = action.payload;
+    });
+    builder.addCase(getCurrentTierAsyncThunk.rejected, (state) => {
+      state.userTier.isLoading = false;
+    });
   },
 });
 
 export * from './types';
-export const { resetMembershipState, setSelectedMembership, setMemberships } =
-  membershipSlice.actions;
+export const { resetMembershipState, setMemberships } = membershipSlice.actions;
 export default membershipSlice.reducer;

@@ -14,6 +14,7 @@ import settingSlices from './slices/setting.slice';
 import budgetSummarySlice from '@/features/home/module/budgets/creation-dashboard/slices';
 import financeControlSlice from '@/features/finance/report/slices';
 import walletSlice from '@/features/home/module/wallet/slices';
+import membershipSlice from '@/features/home/module/membership/slices';
 
 const reducer = {
   settings: settingSlices,
@@ -30,6 +31,7 @@ const reducer = {
   module: moduleReducer,
   financeControl: financeControlSlice,
   memberShipSettings: memberShipSettingsSlice,
+  membership: membershipSlice,
   wallet: walletSlice,
 };
 

@@ -17,10 +17,13 @@ import { UserNav } from '../user-nav/UserNav';
 import FinanceSummary from './FinanceSummary';
 import HelpCenter from './HelpCenter';
 import SettingCenter from './SettingCenter';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 const keyOpenAnnouncement = 'isOpenAnnouncement';
 
 export default function Header() {
+  const isMobile = useIsMobile();
   const [isOpenAnnouncement, setIsOpenAnnouncement] = useState(() => {
     // Get the stored state from localStorage, default to true if not found
     const storedState = localStorage.getItem(keyOpenAnnouncement);
@@ -91,6 +94,7 @@ export default function Header() {
       {/* Breadcrumbs dưới */}
       <div className="flex items-center justify-between gap-2 p-4">
         <div className="flex items-center gap-4">
+          {isMobile && <SidebarTrigger />}
           <Separator orientation="vertical" className="mr-2 h-4" />
           <Breadcrumbs />
         </div>

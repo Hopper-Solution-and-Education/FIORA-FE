@@ -21,6 +21,7 @@ const ScatterRankingChart = ({
   customTooltipContent,
   isLoading = false,
   currentId,
+  isDisabled = false,
 }: ScatterChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [chartDimensions, setChartDimensions] = useState({ width: 0, height: 0 });
@@ -174,6 +175,7 @@ const ScatterRankingChart = ({
         <div
           className="relative w-full min-h-[400px] md:min-h-[650px] overflow-hidden"
           ref={chartContainerRef}
+          style={isDisabled ? { pointerEvents: 'none' } : {}}
         >
           {isLoading ? (
             <ScatterRankingChartSkeleton />

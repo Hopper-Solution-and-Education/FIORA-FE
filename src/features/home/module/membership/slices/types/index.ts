@@ -1,13 +1,19 @@
-import { Membership } from '../../domain/entities';
+import { GetCurrentTierResponse, Membership } from '../../domain/entities';
 
 interface MembershipState {
   isLoadingGetMemberships: boolean;
   memberships: Membership[];
-  selectedMembership: Membership | null;
+  userTier: {
+    data: GetCurrentTierResponse | null;
+    isLoading: boolean;
+  };
 }
 
 export const initialMembershipState: MembershipState = {
   isLoadingGetMemberships: false,
   memberships: [],
-  selectedMembership: null,
+  userTier: {
+    data: null,
+    isLoading: false,
+  },
 };

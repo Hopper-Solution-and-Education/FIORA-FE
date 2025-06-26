@@ -1,9 +1,14 @@
 import {
+  GetCurrentTierResponse,
   GetListMembershipsRequest,
   GetListMembershipsResponse,
   Membership,
 } from '../../domain/entities';
-import { GetListMembershipsRequestDTO, GetListMembershipsResponseDTO } from '../dto';
+import {
+  getCurrentTierResponseDTO,
+  GetListMembershipsRequestDTO,
+  GetListMembershipsResponseDTO,
+} from '../dto';
 
 export class MemberMapper {
   static toGetListMembershipsRequest(
@@ -21,6 +26,14 @@ export class MemberMapper {
     return {
       data: data.data.map((item) => new Membership(item)),
       message: data.message,
+    };
+  }
+
+  static toGetCurrentTierResponse(data: getCurrentTierResponseDTO): GetCurrentTierResponse {
+    return {
+      currentTier: new Membership(data.data.currentTier),
+      nextSpendingTier: new Membership(data.data.nextSpendingTier),
+      nextBalanceTier: new Membership(data.data.nextBalanceTier),
     };
   }
 }

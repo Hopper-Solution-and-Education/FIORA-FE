@@ -1,9 +1,7 @@
 import ScatterRankingChart from '@/components/common/charts/scatter-rank-chart';
-import { Tier } from '@/components/common/charts/scatter-rank-chart/types';
 import { COLORS } from '@/shared/constants/chart';
-import { useAppDispatch, useAppSelector } from '@/store';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { setSelectedMembership } from '../../slices';
+import { useAppSelector } from '@/store';
+import { useMemo } from 'react';
 import {
   createCombinedTierIcons,
   transformToBalanceTiers,
@@ -11,20 +9,9 @@ import {
 } from '../../utils';
 
 const MembershipRankChart = () => {
-  const memberships = useAppSelector((state) => state.memberShipSettings.memberships);
+  const memberships = useAppSelector((state) => state.membership.memberships);
   const isLoadingGetMemberships = useAppSelector(
-    (state) => state.memberShipSettings.isLoadingGetMemberships,
-  );
-  const selectedMembership = useAppSelector((state) => state.memberShipSettings.selectedMembership);
-
-  const dispatch = useAppDispatch();
-
-  const handleTierClick = useCallback(
-    (balanceTier: Tier, spentTier: Tier, item?: any) => {
-      setSelectedItem({ balance: balanceTier.min, spent: spentTier.min });
-      dispatch(setSelectedMembership(item));
-    },
-    [dispatch],
+    (state) => state.membership.isLoadingGetMemberships,
   );
 
   // Transform API data into balance tiers
@@ -39,28 +26,16 @@ const MembershipRankChart = () => {
 
   // Create combined tier icons mapping with onClick handlers
   const combinedTierIcons = useMemo(() => {
-    return createCombinedTierIcons(balanceTiers, spentTiers, memberships, handleTierClick);
+    return createCombinedTierIcons(balanceTiers, spentTiers, memberships, () => {});
   }, [balanceTiers, spentTiers, memberships]);
 
-  const [selectedItem, setSelectedItem] = useState<{ balance: number; spent: number } | null>(
-    selectedMembership
-      ? {
-          balance: selectedMembership.balanceMinThreshold,
-          spent: selectedMembership.spentMinThreshold,
-        }
-      : null,
-  );
-
-  useEffect(() => {
-    if (memberships.length > 0) {
-      dispatch(setSelectedMembership(memberships[0]));
-    }
-  }, [memberships]);
-
   return (
-    <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-8 rounded-lg p-2">
+    <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-8 rounded-lg p-2 dark:border dark:border-gray-700">
       <ScatterRankingChart
-        currentTier={selectedItem || { balance: 0, spent: 0 }}
+        currentTier={{
+          balance: 0,
+          spent: 0,
+        }}
         balanceTiers={balanceTiers}
         spentTiers={spentTiers}
         title=""
@@ -84,7 +59,7 @@ const MembershipRankChart = () => {
         }}
         combinedTierIcons={combinedTierIcons}
         isLoading={isLoadingGetMemberships}
-        currentId={selectedMembership?.id}
+        isDisabled={true}
       />
     </div>
   );

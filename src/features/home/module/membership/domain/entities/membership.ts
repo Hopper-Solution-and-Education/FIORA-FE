@@ -58,4 +58,10 @@ export type GetListMembershipsResponse = {
   message: string;
 };
 
+export type GetCurrentTierResponse = {
+  currentTier: Membership;
+  nextSpendingTier: Membership;
+  nextBalanceTier: Membership;
+};
+
 export default Membership;
