@@ -58,7 +58,7 @@ const MembershipRankChart = () => {
   }, [memberships]);
 
   return (
-    <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-8 rounded-lg">
+    <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-8 rounded-lg p-2">
       <ScatterRankingChart
         currentTier={selectedItem || { balance: 0, spent: 0 }}
         balanceTiers={balanceTiers}

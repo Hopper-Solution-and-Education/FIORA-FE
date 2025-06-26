@@ -1,7 +1,11 @@
 'use client';
 
+import { SegmentProgressBar } from '@/components/common/atoms';
 import { Icons } from '@/components/Icon';
+import { COLORS } from '@/shared/constants/chart';
 import { globalNavItems, notSignInNavItems } from '@/shared/constants/data';
+import { ICON_SIZE } from '@/shared/constants/size';
+import { LogOut } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -18,6 +22,21 @@ import {
 interface UserNavProps {
   handleSignOut?: () => void;
 }
+
+const switchProfile = [
+  {
+    title: 'User 1',
+    image: 'https://picsum.photos/200',
+  },
+  {
+    title: 'User 2',
+    image: 'https://picsum.photos/200',
+  },
+  {
+    title: 'User 3',
+    image: 'https://picsum.photos/200',
+  },
+];
 
 export function UserNav({ handleSignOut }: UserNavProps) {
   const router = useRouter();
@@ -37,6 +56,10 @@ export function UserNav({ handleSignOut }: UserNavProps) {
         </DropdownMenuShortcut>
       </DropdownMenuItem>
     );
+  };
+
+  const handleClickMembership = () => {
+    router.push('/membership');
   };
 
   return (
@@ -74,14 +97,62 @@ export function UserNav({ handleSignOut }: UserNavProps) {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         {session ? (
           <>
+            <DropdownMenuItem>
+              <div className="w-full space-y-2 cursor-pointer" onClick={handleClickMembership}>
+                <div className="text-sm">Membership</div>
+                <SegmentProgressBar
+                  leftLabel="Platinum"
+                  rightLabel="Diamond"
+                  progress={0.35}
+                  color={COLORS.DEPS_INFO.LEVEL_1}
+                  className="w-full"
+                />
+                <SegmentProgressBar
+                  leftLabel="Qili"
+                  rightLabel="Dragon"
+                  progress={0.65}
+                  color={COLORS.DEPS_SUCCESS.LEVEL_1}
+                  className="w-full"
+                />
+              </div>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>{globalNavItems.map(renderNavItem)}</DropdownMenuGroup>
             <DropdownMenuSeparator />
+            <div className="flex items-center gap-2 my-1 justify-between w-full px-2">
+              <div className="text-sm font-medium">Switch Profile</div>
+              <div className="text-xs cursor-pointer text-blue-400 underline hover:text-blue-500">
+                Other
+              </div>
+            </div>
+            <DropdownMenuGroup>
+              {switchProfile.map((item) => (
+                <DropdownMenuItem className="cursor-pointer " key={item.title}>
+                  <div className="flex items-center justify-center gap-2 w-full">
+                    <Image
+                      width={24}
+                      height={24}
+                      src={item.image}
+                      className="object-cover rounded-full"
+                      alt="avatar"
+                    />
+                    <div className="text-blue-400 underline hover:text-blue-500 w-full truncate whitespace-nowrap">
+                      {item.title}
+                    </div>
+                  </div>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+
             <DropdownMenuItem
               onClick={() => (handleSignOut ? handleSignOut() : signOut())}
               className="cursor-pointer"
             >
-              Log out
+              <div className="flex items-center gap-2 justify-between w-full">
+                <div>Log out</div>
+                <LogOut size={ICON_SIZE.SM} />
+              </div>
             </DropdownMenuItem>
           </>
         ) : (

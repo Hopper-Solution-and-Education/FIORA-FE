@@ -18,13 +18,75 @@ const MembershipPage = () => {
         <MembershipRankChart />
 
         {/* Right Section: Settings and Story col-2 */}
-        <CurrentTierMembership />
+        <CurrentTierMembership
+          tier="Qili - Platinum"
+          tierIcon="https://picsum.photos/200"
+          tierRanks={data}
+          showStory={true}
+        />
       </div>
 
-      {/* Bottom Row: Icon Upload List */}
-      <div className="mt-6"></div>
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div className="col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-6">
+          <CurrentTierMembership
+            tier="Qili - Diamond"
+            tierIcon="https://picsum.photos/200"
+            tierRanks={data}
+          />
+        </div>
+        <div className="col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-6">
+          <CurrentTierMembership
+            tier="Qili - Legend"
+            tierIcon="https://picsum.photos/200"
+            tierRanks={data}
+          />
+        </div>
+      </div>
     </div>
   );
 };
+
+const data = [
+  {
+    label: 'Referral Bonus',
+    value: '100',
+    suffix: '%',
+  },
+  {
+    label: 'Referral Kickback',
+    value: '100',
+    suffix: '%',
+  },
+  {
+    label: 'Saving Interest',
+    value: '100',
+    suffix: '%',
+  },
+  {
+    label: 'Staking Interest',
+    value: '100',
+    suffix: '%',
+  },
+  {
+    label: 'Loan Interest',
+    value: '100',
+    suffix: '%',
+  },
+  {
+    label: 'BNPL Fee',
+    value: '100',
+    suffix: '%',
+  },
+  {
+    label: 'Cashback',
+    value: '100',
+    suffix: '%',
+  },
+  {
+    label: 'Investment Interest',
+    value: '100',
+    suffix: '%',
+  },
+];
 
 export default MembershipPage;
