@@ -292,6 +292,17 @@ class MembershipSettingUseCase {
         ...restOptions,
       });
 
+      // fetch current membership progress
+      const currentMembershipProgressAwaited = prisma.membershipProgress.findFirst({
+        where: {
+          userId,
+        },
+        select: {
+          currentSpent: true,
+          currentBalance: true,
+        },
+      });
+
       // Notes: Next spending tier is the tier that has higher spentMinThreshold but same balance range as current tier
       const nextSpendingTierAwaited = prisma.membershipTier.findFirst({
         where: {
@@ -318,10 +329,11 @@ class MembershipSettingUseCase {
         ...restOptions,
       });
 
-      const [currentTier, nextSpendingTier, nextBalanceTier] = await Promise.all([
+      const [currentTier, nextSpendingTier, nextBalanceTier, currentMembershipProgress] = await Promise.all([
         currentTierAwaited,
         nextSpendingTierAwaited,
         nextBalanceTierAwaited,
+        currentMembershipProgressAwaited,
       ]);
 
       // flat-map the currentTier to get the tierBenefits
@@ -350,6 +362,8 @@ class MembershipSettingUseCase {
       };
 
       return {
+        currentSpent: currentMembershipProgress?.currentSpent.toNumber() ?? 0,
+        currentBalance: currentMembershipProgress?.currentBalance.toNumber() ?? 0,
         currentTier: currentTierWithBenefit ?? [],
         nextSpendingTier: nextSpendingTierWithBenefit ?? [],
         nextBalanceTier: nextBalanceTierWithBenefit ?? [],
