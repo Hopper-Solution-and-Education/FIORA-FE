@@ -1,5 +1,4 @@
 import accountSlice from '@/features/home/module/account/slices';
-
 import budgetControlSlice from '@/features/home/module/budgets/creation-dashboard/slices';
 import categorySlice from '@/features/home/module/category/slices';
 import transactionSlice from '@/features/home/module/transaction/slices';

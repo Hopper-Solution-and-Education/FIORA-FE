@@ -1,10 +1,11 @@
-import { WalletType } from './WalletType';
+import { WalletType } from '../enum/WalletType';
 
 export type Wallet = {
   id: string;
   userId: string;
   icon: string;
   type: WalletType;
+  name: string;
   frBalanceActive: number;
   frBalanceFrozen: number;
   creditLimit?: number;

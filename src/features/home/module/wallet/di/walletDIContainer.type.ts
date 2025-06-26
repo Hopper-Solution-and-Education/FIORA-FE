@@ -8,5 +8,7 @@ export const WALLET_TYPES = {
   IWalletRepository: Symbol.for('WalletRepository'),
 
   // UseCases
+  IGetWalletByTypeUseCase: Symbol.for('GetWalletByTypeUseCase'),
   IGetWalletsUseCase: Symbol.for('GetWalletsUseCase'),
+  IGetAllPackageFXUseCase: Symbol.for('GetAllPackageFXUseCase'),
 };

@@ -17,6 +17,7 @@ export const MODULE = {
 export const CURRENCY = {
   USD: 'USD',
   VND: 'VND',
+  FX: 'FX',
 } as const;
 
 export const excludeEmojiPattern =
