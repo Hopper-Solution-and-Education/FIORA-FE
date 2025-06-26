@@ -93,8 +93,8 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
     await exchangeRateUseCase.deleteExchangeRate(req.body);
 
     return res
-      .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, Messages.DELETE_EXCHANGE_RATE_SUCCESS, null));
+      .status(RESPONSE_CODE.CREATED)
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.DELETE_EXCHANGE_RATE_SUCCESS, null));
   } catch (error: any) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
