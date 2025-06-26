@@ -113,8 +113,8 @@ const IconSelectUpload = ({
 export default memo(IconSelectUpload);
 
 interface UploadFieldAdapterProps {
-  value: string;
-  onChange: (url: string | null) => void;
+  value?: string;
+  onChange?: (url: string | null) => void;
   name: string;
   onBlur?: () => void;
   disabled?: boolean;
@@ -122,7 +122,7 @@ interface UploadFieldAdapterProps {
   previewShape?: 'square' | 'circle';
 }
 
-const UploadFieldAdapter = ({
+export const UploadFieldAdapter = ({
   value, // `value` có thể là URL hoặc là file
   onChange,
   name,

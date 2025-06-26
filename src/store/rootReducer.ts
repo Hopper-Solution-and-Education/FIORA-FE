@@ -4,6 +4,7 @@ import categorySlice from '@/features/home/module/category/slices';
 import transactionSlice from '@/features/home/module/transaction/slices';
 import landingSlices from '@/features/landing/slices';
 import landingSettingSlice from '@/features/setting/module/landing/slices';
+import memberShipSettingsSlice from '@/features/setting/module/membership/slices';
 import partnerManagementSlice from '@/features/setting/module/partner/slices';
 import productManagementSlice from '@/features/setting/module/product/slices';
 import { combineReducers } from '@reduxjs/toolkit';
@@ -28,6 +29,7 @@ const reducer = {
   transaction: transactionSlice,
   module: moduleReducer,
   financeControl: financeControlSlice,
+  memberShipSettings: memberShipSettingsSlice,
   wallet: walletSlice,
 };
 
