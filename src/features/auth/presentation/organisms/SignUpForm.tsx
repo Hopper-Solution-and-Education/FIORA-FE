@@ -9,17 +9,13 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import TermCondition from '@/features/auth/presentation/common/TermCondition';
 import { cn } from '@/shared/utils';
-import {
-  validateConfirmPassword,
-  validateEmail,
-  validatePassword,
-} from '@/shared/validation/signUpValidation';
 import { Check, Eye, EyeOff } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import GoogleIcon from '../components/GoogleIcon';
+import { validateConfirmPassword, validateEmail, validatePassword } from '@/shared/validators/signUpValidation';
 
 const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
   const router = useRouter();
