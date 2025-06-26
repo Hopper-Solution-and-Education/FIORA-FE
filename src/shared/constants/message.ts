@@ -198,6 +198,7 @@ export enum Messages {
 
   // WALLET
   GET_WALLET_SUCCESS = 'Get wallet successfully.',
+  GET_PACKAGE_FX_SUCCESS = 'Get package FX successfully.',
   INVALID_WALLET_TYPE = 'Invalid wallet type.',
 
   // EXCHANGE RATE SUCCESS
@@ -221,6 +222,7 @@ export enum Messages {
   NOT_FOUND_EMAIL = 'User email not found',
   INVALID_PHONE = 'Invalid phone number.',
   INVALID_DOB = 'Invalid date of birth.',
+  INVALID_DEPOSIT_REQUEST_TYPE = 'Invalid deposit request type.',
 
   // COMMON ERRORS
   INVALID_CURRENCY = 'Invalid currency. Must be either VND or USD.',
