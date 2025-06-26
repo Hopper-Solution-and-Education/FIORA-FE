@@ -1,12 +1,12 @@
-import { MembershipBenefit, MembershipTier, Prisma, TierBenefit } from '@prisma/client';
+import { prisma } from '@/config';
+import { Messages } from '@/shared/constants/message';
+import { MembershipTier, Prisma, TierBenefit } from '@prisma/client';
+import { membershipTierRepository } from '../../infrastructure/repositories/membershipTierRepository';
 import {
   IMembershipTierRepository,
   MembershipTierCreation,
   MembershipTierWithBenefit,
 } from '../../repositories/membershipTierRepository';
-import { membershipTierRepository } from '../../infrastructure/repositories/membershipTierRepository';
-import { Messages } from '@/shared/constants/message';
-import { prisma } from '@/config';
 
 class MembershipSettingUseCase {
   private readonly membershipTierRepository: IMembershipTierRepository;
@@ -88,7 +88,7 @@ class MembershipSettingUseCase {
             }
 
             // upsert TierBenefit
-            const newTierBenefit = await tx.tierBenefit.upsert({
+            const newTierBenefit = (await tx.tierBenefit.upsert({
               where: {
                 tierId_benefitId: {
                   tierId: updatedMembershipTier.id,
@@ -115,7 +115,7 @@ class MembershipSettingUseCase {
                   },
                 },
               },
-            }) as TierBenefit & {
+            })) as TierBenefit & {
               benefit: {
                 slug: string;
                 name: string;
@@ -129,6 +129,7 @@ class MembershipSettingUseCase {
               slug: newTierBenefit.benefit.slug,
             };
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { benefit: _, ...newTierBenefitWithoutBenefit } = newTierBenefitWithBenefit;
 
             newTierBenefits.push(newTierBenefitWithoutBenefit);
