@@ -8,6 +8,7 @@ import { WalletRepository } from '../data/repository';
 // UseCase
 import { GetWalletByTypeUsecase } from '../domain/usecase/GetWalletByTypeUsecase';
 import { GetWalletsUsecase } from '../domain/usecase/GetWalletsUsecase';
+import { GetAllPackageFXUsecase } from '../domain/usecase/GetAllPackageFXUsecase';
 import { httpClient } from '@/config';
 
 const walletContainer = new Container();
@@ -25,5 +26,9 @@ walletContainer
   .inSingletonScope();
 
 walletContainer.bind(WALLET_TYPES.IGetWalletsUseCase).to(GetWalletsUsecase).inSingletonScope();
+walletContainer
+  .bind(WALLET_TYPES.IGetAllPackageFXUseCase)
+  .to(GetAllPackageFXUsecase)
+  .inSingletonScope();
 
 export { walletContainer };

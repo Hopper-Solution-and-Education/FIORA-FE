@@ -95,7 +95,7 @@ const MetricCard = ({
           </div>
         );
       }
-      return <LucieIcon icon={iconValue} className="w-4 h-4" />;
+      return <LucieIcon icon={iconValue} className={cn('w-4 h-4', getCardColor())} />;
     }
 
     return iconValue;

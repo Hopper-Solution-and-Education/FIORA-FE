@@ -1,4 +1,4 @@
-import { WalletType } from './WalletType';
+import { WalletType } from '../enum/WalletType';
 
 export type Wallet = {
   id: string;
