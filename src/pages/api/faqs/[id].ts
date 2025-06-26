@@ -38,18 +38,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'PUT') {
     const { title, description, content, categoryId } = req.body;
+
+    if (!title || !content || !categoryId) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
     await prisma.post.update({
       where: { id: id as string },
       data: {
         title,
         description,
         content,
+        categoryId,
         updatedBy: user.id,
-        PostCategory: {
-          connect: { id: categoryId },
-        },
       },
     });
+
     return res.status(200).json({ success: true });
   }
 
