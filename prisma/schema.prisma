@@ -391,7 +391,6 @@ model BudgetDetails {
 model Wallet {
   id              String     @id @default(uuid()) @db.Uuid
   userId          String     @db.Uuid
-  name            String?     @db.VarChar(50)
   icon            String
   type            WalletType
   frBalanceActive Decimal    @default(0) @db.Decimal(12, 2)
@@ -401,6 +400,7 @@ model Wallet {
   updatedAt       DateTime   @updatedAt @db.Timestamptz(0)
   createdBy       String?    @db.Uuid
   updatedBy       String?    @db.Uuid
+  name            String?    @db.VarChar(50)
   user            User       @relation("UserWallet", fields: [userId], references: [id])
 
   @@index([userId])
@@ -474,19 +474,18 @@ model UserNotification {
 }
 
 model Attachment {
-  id              String          @id @default(uuid()) @db.Uuid
-  type            String          @db.VarChar(10)
-  size            Decimal         @default(0)
-  url             String          @db.VarChar(255)
-  path            String          @db.VarChar(255)
-  createdAt       DateTime        @default(now()) @db.Timestamptz(0)
-  updatedAt       DateTime        @updatedAt @db.Timestamptz(0)
-  createdBy       String?         @db.Uuid
-  updatedBy       String?         @db.Uuid
-  depositRequests DepositRequest?
-  notifications   Notification?
+  id                  String                @id @default(uuid()) @db.Uuid
+  type                String                @db.VarChar(10)
+  size                Decimal               @default(0)
+  url                 String                @db.VarChar(255)
+  path                String                @db.VarChar(255)
+  createdAt           DateTime              @default(now()) @db.Timestamptz(0)
+  updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
+  createdBy           String?               @db.Uuid
+  updatedBy           String?               @db.Uuid
   AttachmentRelations AttachmentRelations[]
-
+  depositRequests     DepositRequest?
+  notifications       Notification?
 
   @@index([url])
   @@index([path])
