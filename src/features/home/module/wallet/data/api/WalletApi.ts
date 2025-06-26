@@ -32,4 +32,26 @@ export class WalletApi implements IWalletApi {
   getAllPackageFX(): Promise<PackageFXResponse> {
     return this.httpClient.get<PackageFXResponse>(routeConfig(ApiEndpointEnum.WalletPackage));
   }
+
+  createDepositRequest(data: {
+    packageFXId: string;
+    depositProofUrl: string;
+  }): Promise<DepositRequestResponse> {
+    return this.httpClient.post<DepositRequestResponse>(
+      routeConfig(ApiEndpointEnum.WalletDeposit),
+      data,
+    );
+  }
+
+  getFrozenDepositAmount(): Promise<{
+    status: number;
+    message: string;
+    data: { amount: number };
+  }> {
+    return this.httpClient.get<{
+      status: number;
+      message: string;
+      data: { amount: number };
+    }>(routeConfig(ApiEndpointEnum.WalletFrozenAmount));
+  }
 }
