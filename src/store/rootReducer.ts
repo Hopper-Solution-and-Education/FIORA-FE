@@ -14,6 +14,8 @@ import settingSlices from './slices/setting.slice';
 import budgetSummarySlice from '@/features/home/module/budgets/creation-dashboard/slices';
 import financeControlSlice from '@/features/finance/report/slices';
 import walletSlice from '@/features/home/module/wallet/slices';
+import faqsImportSlice from '../features/faqs/store/slices/faqsImportSlice';
+import { faqsApi } from '@/features/faqs/store/api/faqsApi';
 
 const reducer = {
   settings: settingSlices,
@@ -31,6 +33,10 @@ const reducer = {
   financeControl: financeControlSlice,
   memberShipSettings: memberShipSettingsSlice,
   wallet: walletSlice,
+  faqsImport: faqsImportSlice,
+
+  // RTK Query API slices
+  [faqsApi.reducerPath]: faqsApi.reducer,
 };
 
 const rootReducer = combineReducers(reducer);
