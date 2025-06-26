@@ -13,7 +13,6 @@ import { useEffect, useState } from 'react';
 import { Breadcrumbs } from '../../Breadcrumbs';
 import { Alert, AlertDescription } from '../../ui/alert';
 import { Separator } from '../../ui/separator';
-import { SidebarTrigger } from '../../ui/sidebar';
 import { UserNav } from '../user-nav/UserNav';
 import FinanceSummary from './FinanceSummary';
 import HelpCenter from './HelpCenter';
@@ -92,7 +91,6 @@ export default function Header() {
       {/* Breadcrumbs dưới */}
       <div className="flex items-center justify-between gap-2 p-4">
         <div className="flex items-center gap-4">
-          <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <Breadcrumbs />
         </div>

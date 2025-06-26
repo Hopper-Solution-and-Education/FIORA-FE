@@ -16,7 +16,7 @@ export const expandNavItems: NavItem[] = [
   {
     title: 'Finance',
     url: '/finance/report',
-    icon: 'wallet',
+    icon: 'chartColumn',
     isActive: false,
     items: [
       {
@@ -69,7 +69,7 @@ export const shrinkNavItems: NavItem[] = [
   {
     title: 'Finance',
     url: '/finance/report',
-    icon: 'wallet',
+    icon: 'chartColumn',
     isActive: false,
   },
   {

@@ -94,7 +94,7 @@ export function UserNav({ handleSignOut }: UserNavProps) {
         </div>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-80" align="end" forceMount>
         {session ? (
           <>
             <DropdownMenuItem>
