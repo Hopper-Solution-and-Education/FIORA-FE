@@ -1,3 +1,5 @@
+import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
+import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -7,10 +9,6 @@ export const metadata: Metadata = {
 
 export default async function layout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      {/* page main content */}
-      {children}
-      {/* page main content ends */}
-    </>
+    <ModuleAccessLayout featureFlag={FeatureFlags.BUDGET_CONTROL}>{children}</ModuleAccessLayout>
   );
 }

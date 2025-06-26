@@ -1,3 +1,5 @@
+import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
+import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -6,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
-  return <section className="p-4 md:px-6">{children}</section>;
+  return (
+    <ModuleAccessLayout featureFlag={FeatureFlags.ACCOUNT_FEATURE}>
+      <section className="p-4 md:px-6">{children}</section>
+    </ModuleAccessLayout>
+  );
 }
