@@ -3,4 +3,7 @@ export enum RouteEnum {
   BudgetSummary = '/budgets/summary/{year}',
   BudgetDetail = '/budgets/summary/detail/{year}',
   BudgetUpdate = '/budgets/update/{year}',
+
+  WalletDashboard = '/wallet',
+  WalletDeposit = '/wallet/deposit',
 }

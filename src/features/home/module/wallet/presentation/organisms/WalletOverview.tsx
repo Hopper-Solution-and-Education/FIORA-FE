@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
 import MetricCard from '@/components/common/metric/MetricCard';
-import { WalletType } from '../../domain/entity/WalletType';
+import { WalletType } from '../../domain/enum';
 import { Loading } from '@/components/common/atoms';
 import { useInitializeUserWallet } from '../hooks';
 
-const TOTAL_FROZEN_HARDCODED = 1000000;
+const TOTAL_FROZEN_HARDCODED = 0;
 
 const WalletOverview = () => {
   const { wallets, loading } = useInitializeUserWallet();
@@ -24,8 +24,6 @@ const WalletOverview = () => {
 
   const totalFrozen = TOTAL_FROZEN_HARDCODED;
 
-  console.log(wallets);
-
   if (loading) {
     return <Loading />;
   }
@@ -36,7 +34,7 @@ const WalletOverview = () => {
         title="Total Active"
         value={totalActive}
         type="income"
-        icon="wallet"
+        icon="arrowLeftRight"
         description="Total available FX for trading"
       />
 
@@ -44,7 +42,7 @@ const WalletOverview = () => {
         title="Total Frozen"
         value={totalFrozen}
         type="total"
-        icon="lock"
+        icon="snowflake"
         description="Total FX pending activation"
       />
 
@@ -52,7 +50,7 @@ const WalletOverview = () => {
         title="Total Debt"
         value={totalDebt}
         type="expense"
-        icon="credit-card"
+        icon="banknoteArrowDown"
         description="Total FX Debt"
       />
     </div>
