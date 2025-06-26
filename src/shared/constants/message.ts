@@ -204,6 +204,22 @@ export enum Messages {
   CREATE_DEPOSIT_REQUEST_SUCCESS = 'Create deposit request successfully.',
   INVALID_WALLET_TYPE = 'Invalid wallet type.',
 
+  // EXCHANGE RATE SUCCESS
+  CREATE_EXCHANGE_RATE_SUCCESS = 'Create exchange rate successfully.',
+  UPDATE_EXCHANGE_RATE_SUCCESS = 'Update exchange rate successfully.',
+  DELETE_EXCHANGE_RATE_SUCCESS = 'Delete exchange rate successfully.',
+  GET_EXCHANGE_RATE_SUCCESS = 'Get exchange rate successfully.',
+
+  // EXCHANGE RATE FAILED
+  CREATE_EXCHANGE_RATE_FAILED = 'Failed to create exchange rate.',
+  GET_EXCHANGE_RATE_FAILED = 'Failed to get exchange rate.',
+  INVALID_EXCHANGE_RATE_DATA = 'Invalid exchange rate data.',
+  EXCHANGE_RATE_ALREADY_EXISTS = 'Exchange rate already exists.',
+  EXCHANGE_RATE_DUPLICATED_FIELDS = 'Exchange rate duplicated fields.',
+  UPDATE_EXCHANGE_RATE_FAILED = 'Failed to update exchange rate.',
+  EXCHANGE_RATE_NOT_FOUND = 'Exchange rate not found.',
+  DELETE_EXCHANGE_RATE_FAILED = 'Failed to delete exchange rate.',
+
   INVALID_USER = 'Invalid user.',
   USER_EMAIL_EXISTED = 'Email already existed',
   NOT_FOUND_EMAIL = 'User email not found',
