@@ -12,6 +12,10 @@ export interface WalletState {
   minBalance: number | null;
   maxBalance: number | null;
   packageFX: PackageFX[] | null;
+  selectedPackageId: string | null;
+  depositProofUrl: string | null;
+  depositSearch: string | null;
+  frozenAmount: number | null;
 }
 
 export const initialWalletState: WalletState = {
@@ -23,6 +27,10 @@ export const initialWalletState: WalletState = {
   minBalance: null,
   maxBalance: null,
   packageFX: [],
+  selectedPackageId: null,
+  depositProofUrl: null,
+  depositSearch: null,
+  frozenAmount: null,
 };
 
 export interface GetWalletRequest {

@@ -199,6 +199,9 @@ export enum Messages {
   // WALLET
   GET_WALLET_SUCCESS = 'Get wallet successfully.',
   GET_PACKAGE_FX_SUCCESS = 'Get package FX successfully.',
+  GET_FROZEN_DEPOSIT_AMOUNT_SUCCESS = 'Get frozen deposit amount successfully.',
+  GET_DEPOSIT_REQUEST_SUCCESS = 'Get deposit requests successfully.',
+  CREATE_DEPOSIT_REQUEST_SUCCESS = 'Create deposit request successfully.',
   INVALID_WALLET_TYPE = 'Invalid wallet type.',
 
   // EXCHANGE RATE SUCCESS

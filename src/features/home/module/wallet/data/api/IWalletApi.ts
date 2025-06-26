@@ -8,4 +8,13 @@ export interface IWalletApi {
   getAllWallets(): Promise<WalletsResponse>;
   getDepositRequestsByType(type: string): Promise<DepositRequestResponse>;
   getAllPackageFX(): Promise<PackageFXResponse>;
+  createDepositRequest(data: {
+    packageFXId: string;
+    depositProofUrl: string;
+  }): Promise<DepositRequestResponse>;
+  getFrozenDepositAmount(): Promise<{
+    status: number;
+    message: string;
+    data: { amount: number };
+  }>;
 }

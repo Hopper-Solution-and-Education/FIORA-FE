@@ -9,6 +9,8 @@ import { WalletRepository } from '../data/repository';
 import { GetWalletByTypeUsecase } from '../domain/usecase/GetWalletByTypeUsecase';
 import { GetWalletsUsecase } from '../domain/usecase/GetWalletsUsecase';
 import { GetAllPackageFXUsecase } from '../domain/usecase/GetAllPackageFXUsecase';
+import { CreateDepositRequestUsecase } from '../domain/usecase/CreateDepositRequestUsecase';
+import { GetFrozenAmountUsecase } from '../domain/usecase/GetFrozenAmountUsecase';
 import { httpClient } from '@/config';
 
 const walletContainer = new Container();
@@ -29,6 +31,16 @@ walletContainer.bind(WALLET_TYPES.IGetWalletsUseCase).to(GetWalletsUsecase).inSi
 walletContainer
   .bind(WALLET_TYPES.IGetAllPackageFXUseCase)
   .to(GetAllPackageFXUsecase)
+  .inSingletonScope();
+
+walletContainer
+  .bind(WALLET_TYPES.ICreateDepositRequestUseCase)
+  .to(CreateDepositRequestUsecase)
+  .inSingletonScope();
+
+walletContainer
+  .bind(WALLET_TYPES.IGetFrozenAmountUseCase)
+  .to(GetFrozenAmountUsecase)
   .inSingletonScope();
 
 export { walletContainer };
