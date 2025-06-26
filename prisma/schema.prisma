@@ -10,39 +10,40 @@ datasource db {
 }
 
 model User {
-  id                 String               @id @default(uuid()) @db.Uuid
-  name               String?
-  email              String               @unique
-  password           String?
-  emailVerified      Boolean?             @default(false)
-  image              String?
-  isDeleted          Boolean              @default(false)
-  deletedAt          DateTime?            @db.Timestamptz(0)
-  createdAt          DateTime             @default(now()) @db.Timestamptz(0)
-  updatedAt          DateTime             @updatedAt @db.Timestamptz(0)
-  createdBy          String?              @db.Uuid
-  updatedBy          String?              @db.Uuid
-  role               UserRole             @default(User)
-  accounts           Account[]            @relation("UserAccounts")
-  budgetDetails      BudgetDetails[]
-  budgetControl      BudgetsTable[]
-  categories         Category[]           @relation("UserCategories")
-  categoryProducts   CategoryProducts[]
-  depositRequests    DepositRequest[]     @relation("UserDepositRequest")
-  MembershipProgress MembershipProgress[]
-  MembershipTier     MembershipTier[]
-  partners           Partner[]            @relation("UserPartners")
-  products           Product[]            @relation("UserProducts")
-  productItems       ProductItems[]
-  sessions           Session[]
-  transactions       Transaction[]        @relation("UserTransactions")
-  authentication     UserAuthentication?
-  userNotifications  UserNotification[]   @relation("UserNotification")
-  wallet             Wallet[]             @relation("UserWallet")
+  id                  String                @id @default(uuid()) @db.Uuid
+  name                String?
+  email               String                @unique
+  password            String?
+  emailVerified       Boolean?              @default(false)
+  image               String?
+  isDeleted           Boolean               @default(false)
+  deletedAt           DateTime?             @db.Timestamptz(0)
+  createdAt           DateTime              @default(now()) @db.Timestamptz(0)
+  updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
+  createdBy           String?               @db.Uuid
+  updatedBy           String?               @db.Uuid
+  role                UserRole              @default(User)
+  accounts            Account[]             @relation("UserAccounts")
+  budgetDetails       BudgetDetails[]
+  budgetControl       BudgetsTable[]
+  categories          Category[]            @relation("UserCategories")
+  categoryProducts    CategoryProducts[]
+  depositRequests     DepositRequest[]      @relation("UserDepositRequest")
+  MembershipProgress  MembershipProgress[]
+  MembershipTier      MembershipTier[]
+  partners            Partner[]             @relation("UserPartners")
+  products            Product[]             @relation("UserProducts")
+  productItems        ProductItems[]
+  sessions            Session[]
+  transactions        Transaction[]         @relation("UserTransactions")
+  authentication      UserAuthentication?
+  userNotifications   UserNotification[]    @relation("UserNotification")
+  wallet              Wallet[]              @relation("UserWallet")
   AttachmentRelations AttachmentRelations[]
   Comment             Comment[]
   Post                Post[]
   Reaction            Reaction[]
+  exchangeRateSetting ExchangeRateSetting[]
 
   @@index([isDeleted])
 }
@@ -390,7 +391,7 @@ model BudgetDetails {
 model Wallet {
   id              String     @id @default(uuid()) @db.Uuid
   userId          String     @db.Uuid
-  name            String?     @db.VarChar(50)
+  name            String?    @db.VarChar(50)
   icon            String
   type            WalletType
   frBalanceActive Decimal    @default(0) @db.Decimal(12, 2)
@@ -473,19 +474,18 @@ model UserNotification {
 }
 
 model Attachment {
-  id              String          @id @default(uuid()) @db.Uuid
-  type            String          @db.VarChar(10)
-  size            Decimal         @default(0)
-  url             String          @db.VarChar(255)
-  path            String          @db.VarChar(255)
-  createdAt       DateTime        @default(now()) @db.Timestamptz(0)
-  updatedAt       DateTime        @updatedAt @db.Timestamptz(0)
-  createdBy       String?         @db.Uuid
-  updatedBy       String?         @db.Uuid
-  depositRequests DepositRequest?
-  notifications   Notification?
+  id                  String                @id @default(uuid()) @db.Uuid
+  type                String                @db.VarChar(10)
+  size                Decimal               @default(0)
+  url                 String                @db.VarChar(255)
+  path                String                @db.VarChar(255)
+  createdAt           DateTime              @default(now()) @db.Timestamptz(0)
+  updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
+  createdBy           String?               @db.Uuid
+  updatedBy           String?               @db.Uuid
+  depositRequests     DepositRequest?
+  notifications       Notification?
   AttachmentRelations AttachmentRelations[]
-
 
   @@index([url])
   @@index([path])
@@ -652,6 +652,38 @@ model Reaction {
 
   @@index([postId])
   @@index([userId])
+}
+
+model ExchangeRateSetting {
+  id             String           @id @default(uuid()) @db.Uuid
+  authorId       String           @db.Uuid
+  fromCurrencyId String           @db.Uuid
+  fromValue      Decimal          @default(0) @db.Decimal(13, 2)
+  toCurrencyId   String           @db.Uuid
+  toValue        Decimal          @default(0) @db.Decimal(13, 2)
+  createdAt      DateTime         @default(now()) @db.Timestamptz(0)
+  updatedAt      DateTime         @updatedAt @db.Timestamptz(0)
+  createdBy      String?          @db.Uuid
+  updatedBy      String?          @db.Uuid
+  User           User             @relation(fields: [authorId], references: [id])
+  FromCurrency   CurrencyExchange @relation("FromCurrency", fields: [fromCurrencyId], references: [id])
+  ToCurrency     CurrencyExchange @relation("ToCurrency", fields: [toCurrencyId], references: [id])
+
+  @@unique([fromCurrencyId, toCurrencyId])
+  @@index([authorId])
+  @@index([fromCurrencyId, toCurrencyId])
+}
+
+model CurrencyExchange {
+  id                      String                @id @default(uuid()) @db.Uuid
+  name                    String                @unique @db.VarChar(100)
+  symbol                  String                @db.VarChar(100)
+  createdAt               DateTime              @default(now()) @db.Timestamptz(0)
+  updatedAt               DateTime              @updatedAt @db.Timestamptz(0)
+  createdBy               String?               @db.Uuid
+  updatedBy               String?               @db.Uuid
+  fromExchangeRateSetting ExchangeRateSetting[] @relation("FromCurrency")
+  toExchangeRateSetting   ExchangeRateSetting[] @relation("ToCurrency")
 }
 
 enum BudgetType {
