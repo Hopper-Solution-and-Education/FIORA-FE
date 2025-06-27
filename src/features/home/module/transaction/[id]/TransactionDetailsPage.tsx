@@ -1,14 +1,14 @@
 'use client';
 
-import useDataFetcher from '@/shared/hooks/useDataFetcher';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import useDataFetch from '@/shared/hooks/useDataFetcher';
+import { FileX } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { IRelationalTransaction } from '../types';
 import TransactionDetails from './components/TransactionDetails';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { FileX } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
 
 type TransactionDetailsPageProps = {
   id: string;
@@ -16,7 +16,7 @@ type TransactionDetailsPageProps = {
 
 const TransactionDetailsPage = ({ id }: TransactionDetailsPageProps) => {
   const router = useRouter();
-  const { data, error, isLoading } = useDataFetcher<any>({
+  const { data, error, isLoading } = useDataFetch<any>({
     endpoint: id ? `/api/transactions/${id}` : null,
     method: 'GET',
   });

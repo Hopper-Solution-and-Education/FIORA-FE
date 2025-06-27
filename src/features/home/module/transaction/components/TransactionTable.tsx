@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import useDataFetcher from '@/shared/hooks/useDataFetcher';
+import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { FilterCriteria, OrderType } from '@/shared/types';
 import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -100,7 +100,7 @@ const TransactionTable = () => {
     data: fetchData,
     isLoading,
     isValidating,
-  } = useDataFetcher<ITransactionPaginatedResponse>({
+  } = useDataFetch<ITransactionPaginatedResponse>({
     endpoint: '/api/transactions',
     method: 'POST',
     body: {

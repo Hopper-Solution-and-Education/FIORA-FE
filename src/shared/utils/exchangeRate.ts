@@ -1,7 +1,7 @@
+import { Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import dotenv from 'dotenv';
 import { BadRequestError } from '../lib';
-import { Decimal } from '@prisma/client/runtime/library';
-import { Prisma } from '@prisma/client';
 dotenv.config();
 
 const EXCHANGE_RATE_API_KEY = process.env.EXCHANGE_RATE_API_KEY || '';
