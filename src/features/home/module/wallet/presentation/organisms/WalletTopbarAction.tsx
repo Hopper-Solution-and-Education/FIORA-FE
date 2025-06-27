@@ -7,11 +7,13 @@ import { FilterCriteria } from '@/shared/types';
 interface WalletTopbarActionProps {
   enableDeposit?: boolean;
   enableFilter?: boolean;
+  searchType?: 'normal' | 'deposit';
 }
 
 const WalletTopbarAction = ({
   enableDeposit = true,
   enableFilter = true,
+  searchType = 'normal',
 }: WalletTopbarActionProps) => {
   const filterCriteria = useAppSelector((state) => state.wallet.filterCriteria);
   const minBalance = useAppSelector((state) => state.wallet.minBalance);
@@ -26,9 +28,8 @@ const WalletTopbarAction = ({
   return (
     <div className="flex w-full items-center justify-between">
       <div className="flex items-center gap-2">
-        <WalletSearch />
-
-        {enableFilter && (
+        <WalletSearch searchType={searchType} />
+        {enableFilter && searchType === 'normal' && (
           <WalletFilterMenu
             filterCriteria={filterCriteria}
             onFilterChange={handleFilterChange}

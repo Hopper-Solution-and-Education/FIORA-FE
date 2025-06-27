@@ -1,6 +1,16 @@
-import { Prisma, WalletType } from '@prisma/client';
+import { Prisma, WalletType, DepositRequestStatus } from '@prisma/client';
 import { walletRepository } from '../../infrastructure/repositories/walletRepository';
 import { IWalletRepository } from '../../repositories/walletRepository.interface';
+
+const DEFAULT_WALLET_FIELDS = {
+  frBalanceActive: 0,
+  frBalanceFrozen: 0,
+  creditLimit: null,
+  icon: null,
+  name: null,
+  createdBy: null,
+  updatedBy: null,
+};
 
 class WalletUseCase {
   constructor(private _walletRepository: IWalletRepository = walletRepository) {}
@@ -14,7 +24,23 @@ class WalletUseCase {
   }
 
   async getAllWalletsByUser(userId: string) {
-    return this._walletRepository.findAllWalletsByUser(userId);
+    const allTypes = Object.values(WalletType);
+    const wallets = await this._walletRepository.findAllWalletsByUser(userId);
+    const existingTypes = wallets.map((w) => w.type);
+
+    const missingTypes = allTypes.filter((type) => !existingTypes.includes(type));
+
+    const createdWallets = await Promise.all(
+      missingTypes.map((type) =>
+        this._walletRepository.createWallet({
+          userId,
+          type,
+          ...DEFAULT_WALLET_FIELDS,
+        }),
+      ),
+    );
+
+    return [...wallets, ...createdWallets];
   }
 
   async getAllPackageFX() {
@@ -26,6 +52,31 @@ class WalletUseCase {
     type: import('@prisma/client').DepositRequestStatus,
   ) {
     return this._walletRepository.findDepositRequestsByType(userId, type);
+  }
+
+  async createDepositRequest(userId: string, packageFXId: string, refCode: string) {
+    const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
+    if (!packageFX) {
+      throw new Error('PackageFX not found');
+    }
+    return this._walletRepository.createDepositRequest({
+      userId,
+      packageFXId,
+      refCode,
+      status: 'Requested',
+    });
+  }
+
+  async getTotalRequestedDepositAmount(userId: string) {
+    const requests = await this._walletRepository.findDepositRequestsByType(
+      userId,
+      DepositRequestStatus.Requested,
+    );
+    const packageFXIds = requests.map((r) => r.packageFXId);
+    if (packageFXIds.length === 0) return 0;
+    const packageFXs = await this._walletRepository.findManyPackageFXByIds(packageFXIds);
+
+    return packageFXs.reduce((sum, fx) => sum + Number(fx.fxAmount || 0), 0);
   }
 }
 

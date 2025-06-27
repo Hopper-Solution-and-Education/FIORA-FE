@@ -52,11 +52,29 @@ class WalletRepository implements IWalletRepository {
     return this._prisma.packageFX.findMany();
   }
 
+  async getPackageFXById(id: string): Promise<PackageFX | null> {
+    return this._prisma.packageFX.findUnique({ where: { id } });
+  }
+
+  async createDepositRequest(
+    data: Prisma.DepositRequestUncheckedCreateInput,
+  ): Promise<DepositRequest> {
+    return this._prisma.depositRequest.create({ data });
+  }
+
   async findDepositRequestsByType(
     userId: string,
     type: DepositRequestStatus,
   ): Promise<DepositRequest[]> {
     return this._prisma.depositRequest.findMany({ where: { userId, status: type } });
+  }
+
+  async findAllDepositRequestsByStatus(status: DepositRequestStatus): Promise<DepositRequest[]> {
+    return this._prisma.depositRequest.findMany({ where: { status } });
+  }
+
+  async findManyPackageFXByIds(ids: string[]): Promise<PackageFX[]> {
+    return this._prisma.packageFX.findMany({ where: { id: { in: ids } } });
   }
 }
 

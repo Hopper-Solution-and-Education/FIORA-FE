@@ -23,7 +23,7 @@ const WalletPackageList: React.FC<WalletPackageListProps> = ({ selectedId, setSe
       </CardHeader>
 
       <CardContent className="pb-4">
-        <div className="max-h-[400px] overflow-y-auto pr-1 flex flex-col gap-4">
+        <div className="overflow-y-auto pr-1 flex flex-col gap-4">
           <RadioGroup
             value={selectedId ?? ''}
             onValueChange={setSelectedId}
