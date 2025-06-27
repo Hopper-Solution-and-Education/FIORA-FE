@@ -27,14 +27,19 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Account', link: '/account' },
     { title: 'Update', link: '/account/update/[id]' },
   ],
-  '/account/create/[id]': [
+  '/account/create': [
     { title: 'Finance', link: '/finance/report' },
     { title: 'Account', link: '/account' },
-    { title: 'Create', link: '/account/create/[id]' },
+    { title: 'Create', link: '/account/create' },
   ],
   '/transaction': [
     { title: 'Finance', link: '/finance/report' },
     { title: 'Transaction', link: '/transaction' },
+  ],
+  '/transaction/create': [
+    { title: 'Finance', link: '/finance/report' },
+    { title: 'Transaction', link: '/transaction' },
+    { title: 'Create', link: '/transaction/create' },
   ],
   '/transaction/details/[id]': [
     { title: 'Finance', link: '/finance/report' },
@@ -45,10 +50,10 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Finance', link: '/finance/report' },
     { title: 'Category', link: '/category' },
   ],
-  '/category/create/[id]': [
+  '/category/create': [
     { title: 'Finance', link: '/finance/report' },
     { title: 'Category', link: '/category' },
-    { title: 'Create', link: '/category/create/[id]' },
+    { title: 'Create', link: '/category/create' },
   ],
   '/category/update/[id]': [
     { title: 'Finance', link: '/finance/report' },
@@ -95,9 +100,9 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
   '/setting/exchange-rate': [{ title: 'Exchange Rate Setting', link: '/setting/exchange-rate' }],
   '/setting/membership': [{ title: 'Membership Setting', link: '/setting/membership' }],
   '/setting/product': [{ title: 'Product', link: '/setting/product' }],
-  '/setting/product/update': [
+  '/setting/product/update/[id]': [
     { title: 'Product', link: '/setting/product' },
-    { title: 'Update', link: '/setting/product/update' },
+    { title: 'Update', link: '/setting/product/update/[id]' },
   ],
   '/setting/product/create': [
     { title: 'Product', link: '/setting/product' },
