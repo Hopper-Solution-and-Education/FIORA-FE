@@ -15,7 +15,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import GoogleIcon from '../components/GoogleIcon';
-import { validateConfirmPassword, validateEmail, validatePassword } from '@/shared/validators/signUpValidation';
+import {
+  validateConfirmPassword,
+  validateEmail,
+  validatePassword,
+} from '@/shared/validators/signUpValidation';
 
 const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
   const router = useRouter();

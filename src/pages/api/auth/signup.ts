@@ -4,6 +4,7 @@ import { UserUSeCaseInstance } from '@/features/auth/application/use-cases/userU
 import { createDefaultCategories } from '@/features/auth/application/use-cases/defaultCategories';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { membershipSettingUseCase } from '@/features/setting/api/application/use-cases/membershipUsecase';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
@@ -58,6 +59,8 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
       icon: '',
     });
 
+    // Create new membership progress
+    await membershipSettingUseCase.createNewMembershipProgress(userCreationRes.id);
     if (!accountCreate) {
       return res
         .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)

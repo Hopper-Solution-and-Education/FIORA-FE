@@ -28,7 +28,7 @@ export const menuSettingItems: MenuSettingItem[] = [
   },
   { label: 'Users', icon: Icons.users, url: '/users' },
   { label: 'Role & Permission', icon: Icons.clipboardList, url: '/setting' },
-  { label: 'Landing Page', icon: Icons.dashboard, url: '/setting/landing', role: 'Admin' },
+  { label: 'Landing Settings', icon: Icons.dashboard, url: '/setting/landing', role: 'Admin' },
 ];
 
 export const helpItems = [
