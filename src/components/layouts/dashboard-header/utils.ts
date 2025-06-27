@@ -13,7 +13,7 @@ export const menuSettingItems = [
 ];
 
 export const helpItems = [
-  { label: 'FAQs', icon: BookIcon, url: '/' },
+  { label: 'FAQs', icon: BookIcon, url: '/faqs' },
   { label: 'User Tutorials', icon: PlayCircleIcon, url: '/' },
   { label: 'About Us', icon: InfoIcon, url: '/' },
   { label: 'Contact Us', icon: MailIcon, url: '/' },
