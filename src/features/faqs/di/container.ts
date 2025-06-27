@@ -1,8 +1,9 @@
 import { FaqsImportUseCase } from '../application/use-cases/faqsImportUseCase';
-import { GetFaqsListUseCase, GetFaqCategoriesUseCase } from '../application/usecases';
+import { GetFaqsListUseCase } from '../application/use-cases/getFaqsListUseCase';
+import { GetFaqCategoriesUseCase } from '../application/use-cases/getFaqCategoriesUseCase';
 import { FaqsRepository } from '../infrastructure/repositories/FaqsRepository';
 import { FaqsValidationService } from '../domain/services/FaqsValidationService';
-import { importService } from '../../../shared/services/import/ImportService';
+import { importService } from '../domain/services/ImportService';
 
 // Initialize repositories
 const faqsRepository = new FaqsRepository();

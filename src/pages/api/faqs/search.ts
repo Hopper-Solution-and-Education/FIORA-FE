@@ -4,6 +4,7 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getFaqsListUseCase } from '@/features/faqs/di/container';
+import { FaqsGetListType, FaqsListQueryParams } from '@/features/faqs/domain/entities/models/faqs';
 
 export default withAuthorization({
   POST: ['User', 'Admin', 'CS'],
@@ -21,54 +22,17 @@ export default withAuthorization({
 });
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const { type, categoryId, limit, search, filters } = req.body;
-
   try {
     let faqsListResponse;
 
-    if (type === 'most-viewed') {
+    if (req.body.type === FaqsGetListType.LIST) {
       // Get most viewed FAQs
-      faqsListResponse = await getFaqsListUseCase.execute(
-        {
-          orderBy: 'views',
-          limit: limit || 8,
-          search,
-        },
-        userId,
-      );
-    } else if (type === 'by-categories') {
+      faqsListResponse = await getFaqsListUseCase.execute(req.body as FaqsListQueryParams, userId);
+    } else if (req.body.type === FaqsGetListType.CATEGORIES) {
       // Get all categories with their FAQs
       faqsListResponse = await getFaqsListUseCase.executeByCategories(
         {
-          limit: limit || 4,
-          search,
-        },
-        userId,
-      );
-    } else if (type === 'by-category' && categoryId) {
-      // Get all FAQs from a specific category
-      faqsListResponse = await getFaqsListUseCase.execute(
-        {
-          category: [categoryId],
-          search,
-        },
-        userId,
-      );
-    } else if (filters) {
-      // Legacy support: search with filters
-      faqsListResponse = await getFaqsListUseCase.execute(
-        {
-          category: filters?.categories,
-          type: filters?.type,
-          search: filters?.search,
-        },
-        userId,
-      );
-    } else {
-      // Default: get all FAQs
-      faqsListResponse = await getFaqsListUseCase.execute(
-        {
-          search,
+          limit: req.body.limit || 4,
         },
         userId,
       );

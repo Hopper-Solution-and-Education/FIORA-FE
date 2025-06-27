@@ -27,3 +27,8 @@ export const FAQ_IMPORT_CONSTANTS = {
 } as const;
 
 export type ValidationTab = (typeof FAQ_IMPORT_CONSTANTS.VALIDATION_TABS)[number];
+
+export const FAQ_LIST_CONSTANTS = {
+  FAQS_PER_CATEGORY: 4,
+  MOST_VIEWED_LIMIT: 8,
+};

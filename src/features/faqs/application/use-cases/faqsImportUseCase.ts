@@ -5,7 +5,7 @@ import {
 } from '../../domain/entities/models/faqs';
 import { IFaqsRepository } from '../../domain/repositories/IFaqsRepository';
 import { FaqsValidationService } from '../../domain/services/FaqsValidationService';
-import { FileParsingService } from '../../../../shared/services/import/FileParsingService';
+import { FileParsingService } from '../../domain/services/FileParsingService';
 
 interface ValidateFaqsImportFileParams {
   file: File;

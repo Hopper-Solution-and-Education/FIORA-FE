@@ -1,14 +1,14 @@
-import { FaqsListResponse } from '../../domain/entities/models/faqs';
 import {
-  FaqsQueryParams,
-  IFaqsRepository,
   FaqsListCategoriesResponse,
-} from '../../domain/repositories/IFaqsRepository';
+  FaqsListResponse,
+  FaqsListQueryParams,
+} from '../../domain/entities/models/faqs';
+import { IFaqsRepository } from '../../domain/repositories/IFaqsRepository';
 
 export class GetFaqsListUseCase {
   constructor(private faqsRepository: IFaqsRepository) {}
 
-  async execute(params: FaqsQueryParams, userId: string): Promise<FaqsListResponse> {
+  async execute(params: FaqsListQueryParams, userId: string): Promise<FaqsListResponse> {
     try {
       return await this.faqsRepository.getFaqsList(params, userId);
     } catch (error) {
@@ -18,7 +18,7 @@ export class GetFaqsListUseCase {
   }
 
   async executeByCategories(
-    params: FaqsQueryParams,
+    params: FaqsListQueryParams,
     userId: string,
   ): Promise<FaqsListCategoriesResponse> {
     try {

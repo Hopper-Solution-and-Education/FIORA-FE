@@ -9,7 +9,7 @@ import { Messages } from '@/shared/constants/message';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { faqsImportUseCase } from '@/features/faqs/di/container';
-import { FAQ_IMPORT_CONSTANTS } from '@/features/faqs/constants/import';
+import { FAQ_IMPORT_CONSTANTS } from '@/features/faqs/constants';
 
 export const config = {
   api: {

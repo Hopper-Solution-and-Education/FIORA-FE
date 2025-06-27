@@ -1,6 +1,6 @@
 'use client';
 
-import { FAQ_IMPORT_CONSTANTS } from '../../constants/import';
+import { FAQ_IMPORT_CONSTANTS } from '../../constants';
 
 interface EmptyStateProps {
   filter: string;

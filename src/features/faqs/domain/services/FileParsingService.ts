@@ -1,4 +1,8 @@
-import { findMissingColumns, isEmptyFile, parseFile } from '../../lib/import/fileParser';
+import {
+  findMissingColumns,
+  isEmptyFile,
+  parseFile,
+} from '../../../../shared/lib/import/fileParser';
 
 export interface FileParsingConfig {
   maxRecords: number;

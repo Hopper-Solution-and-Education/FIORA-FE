@@ -24,21 +24,26 @@ const DefaultSubmitButton = ({
   return (
     <TooltipProvider>
       <div className="flex justify-between gap-4 mt-6">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              type="button"
-              onClick={onBack ? onBack : () => {}}
-              className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
-            >
-              <Icons.circleArrowLeft className="h-5 w-5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{backTooltip || 'Cancel and go back'}</p>
-          </TooltipContent>
-        </Tooltip>
+        {onBack ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={onBack}
+                className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
+              >
+                <Icons.circleArrowLeft className="h-5 w-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{backTooltip || 'Cancel and go back'}</p>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <div className="w-32 h-12" />
+        )}
+
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

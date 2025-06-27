@@ -1,35 +1,11 @@
-import { FaqsRowRaw, FaqsImportResult, FaqsListResponse } from '../entities/models/faqs';
-
-export interface FaqsQueryParams {
-  page?: number;
-  pageSize?: number;
-  category?: string | string[];
-  type?: string;
-  search?: string;
-  orderBy?: 'views' | 'createdAt' | 'updatedAt';
-  limit?: number;
-  groupByCategory?: boolean;
-}
-
-export interface CategoryWithFaqs {
-  categoryId: string;
-  categoryName: string;
-  totalFaqs: number;
-  faqs: {
-    id: string;
-    title: string;
-    description: string;
-    content: string;
-    category: string;
-    type: any;
-    createdAt: Date;
-    updatedAt: Date;
-  }[];
-}
-
-export interface FaqsListCategoriesResponse {
-  categoriesData: CategoryWithFaqs[];
-}
+import {
+  FaqsRowRaw,
+  FaqsImportResult,
+  FaqsListResponse,
+  FaqsListCategoriesResponse,
+  FaqsCategoriesResponse,
+  FaqsListQueryParams,
+} from '../entities/models/faqs';
 
 export interface IFaqsRepository {
   /**
@@ -45,20 +21,20 @@ export interface IFaqsRepository {
   /**
    * Get list of FAQs with pagination and filtering
    */
-  getFaqsList(params: FaqsQueryParams, userId: string): Promise<FaqsListResponse>;
+  getFaqsList(params: FaqsListQueryParams, userId: string): Promise<FaqsListResponse>;
 
   /**
    * Get FAQ categories with their FAQs
    */
   getFaqsListByCategories(
-    params: FaqsQueryParams,
+    params: FaqsListQueryParams,
     userId: string,
   ): Promise<FaqsListCategoriesResponse>;
 
   /**
    * Get FAQ categories
    */
-  getFaqCategories(userId: string): Promise<string[]>;
+  getFaqCategories(userId: string): Promise<FaqsCategoriesResponse[]>;
 
   /**
    * Check if FAQ titles exist in the database

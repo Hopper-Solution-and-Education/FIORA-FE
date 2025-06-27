@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { ChevronRight } from 'lucide-react';
-import FaqsList from '../organisms/FaqsList';
-import { CategoryWithFaqs } from '@/features/faqs/domain/repositories/IFaqsRepository';
+import FaqsList from './FaqsList';
+import { CategoryWithFaqs } from '../../domain/entities/models/faqs';
 
 interface CategoryItemProps {
   categoryGroup: CategoryWithFaqs;
@@ -22,19 +22,18 @@ const CategoryItem = ({
 }: CategoryItemProps) => {
   return (
     <div className="border rounded-lg p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h4 className="text-lg font-medium">{categoryGroup.categoryName}</h4>
-        <span className="text-sm text-muted-foreground">{categoryGroup.totalFaqs} FAQs</span>
+      <div className="flex justify-between items-center mb-2">
+        <h4 className="text-lg font-bold">{categoryGroup.categoryName}</h4>
+        {/* <span className="text-sm text-muted-foreground">{categoryGroup.totalFaqs} FAQs</span> */}
       </div>
 
       <FaqsList faqs={faqsToShow} isLoading={false} error="" />
 
       {categoryGroup.totalFaqs > faqsPerCategory && (
-        <div className="mt-4 text-center">
+        <div className="mt-4 text-end">
           <Button
-            variant="ghost"
+            variant="outline"
             onClick={() => onShowMore(categoryGroup.categoryId)}
-            className="text-blue-600 hover:text-blue-800"
             disabled={isLoading}
           >
             {isExpanded ? (
@@ -44,7 +43,7 @@ const CategoryItem = ({
               </>
             ) : (
               <>
-                Show More ({categoryGroup.totalFaqs - faqsPerCategory} more)
+                Show more
                 <ChevronRight className="w-4 h-4 ml-1" />
               </>
             )}
