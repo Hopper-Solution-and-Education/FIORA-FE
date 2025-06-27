@@ -8,6 +8,7 @@ import type { IWalletApi } from './IWalletApi';
 import { WALLET_TYPES } from '../../di/walletDIContainer.type';
 import type { DepositRequestResponse } from '../dto/response/DepositRequestResponse';
 import type { PackageFXResponse } from '../dto/response/PackageFXResponse';
+import type { CreateDepositRequestDto } from '../dto/request/CreateDepositRequestDto';
 
 @injectable()
 export class WalletApi implements IWalletApi {
@@ -33,10 +34,7 @@ export class WalletApi implements IWalletApi {
     return this.httpClient.get<PackageFXResponse>(routeConfig(ApiEndpointEnum.WalletPackage));
   }
 
-  createDepositRequest(data: {
-    packageFXId: string;
-    depositProofUrl: string;
-  }): Promise<DepositRequestResponse> {
+  createDepositRequest(data: CreateDepositRequestDto): Promise<DepositRequestResponse> {
     return this.httpClient.post<DepositRequestResponse>(
       routeConfig(ApiEndpointEnum.WalletDeposit),
       data,
