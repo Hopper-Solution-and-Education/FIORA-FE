@@ -5,7 +5,7 @@ import {
 } from '@/components/common/charts/scatter-rank-chart/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Image from 'next/image';
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 
 const getCombinedIcon = (
   bTier: Tier,
@@ -21,14 +21,13 @@ const ItemRankChart = ({
   sTier,
   isCurrent,
   combinedTierIcons,
+  item,
   customTooltipContent,
 }: ItemRankChartProps) => {
   const renderToolTipContent = (bTier: Tier, sTier: Tier) => {
     return (
       <div className="flex flex-col text-xs">
-        <strong>
-          {bTier.label} - {sTier.label}
-        </strong>
+        <strong>{item?.tierName}</strong>
         <div>
           Balance: {bTier.min.toLocaleString()} -{' '}
           {bTier.max === Infinity ? '∞' : bTier.max.toLocaleString()} FX
@@ -44,11 +43,15 @@ const ItemRankChart = ({
   const combinedKey = `${bTier.label}-${sTier.label}`;
   const tierIcon = getCombinedIcon(bTier, sTier, combinedTierIcons || {});
 
-  const handleClick = () => {
-    if (tierIcon?.onClick) {
-      tierIcon.onClick(bTier, sTier);
-    }
-  };
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      e.stopPropagation();
+      if (tierIcon?.onClick) {
+        tierIcon.onClick(bTier, sTier, tierIcon.item);
+      }
+    },
+    [tierIcon, bTier, sTier],
+  );
 
   return (
     <TooltipProvider>
@@ -68,7 +71,7 @@ const ItemRankChart = ({
                 <div className="relative w-full h-full max-w-[85px] max-h-[85px] min-w-[40px] min-h-[40px]">
                   {tierIcon.isActive ? (
                     <Image
-                      src={tierIcon.icon || bTier.icon}
+                      src={tierIcon.icon || 'https://placehold.co/60x60/cccccc/000000?text=Icon'}
                       alt={combinedKey}
                       fill
                       sizes="(max-width: 85px) 100vw, 85px"
@@ -76,14 +79,10 @@ const ItemRankChart = ({
                       object-contain transition-transform duration-200
                       ${isCurrent ? 'scale-110' : 'scale-100'}
                     `}
-                      onError={(e: any) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://placehold.co/60x60/cccccc/000000?text=Icon';
-                      }}
                     />
                   ) : (
                     <Image
-                      src={tierIcon.inActiveIcon || bTier.icon}
+                      src={tierIcon.icon || 'https://placehold.co/60x60/cccccc/000000?text=Icon'}
                       alt={combinedKey}
                       fill
                       sizes="(max-width: 85px) 100vw, 85px"
@@ -91,10 +90,6 @@ const ItemRankChart = ({
                         object-contain transition-transform duration-200
                         ${isCurrent ? 'scale-110' : 'scale-100'}
                       `}
-                      onError={(e: any) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://placehold.co/60x60/cccccc/000000?text=Icon';
-                      }}
                     />
                   )}
                 </div>
