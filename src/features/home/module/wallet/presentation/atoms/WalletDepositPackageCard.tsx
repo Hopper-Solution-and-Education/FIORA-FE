@@ -6,8 +6,9 @@ import type { PackageFX } from '../../domain/entity/PackageFX';
 import { formatFIORACurrency } from '@/config/FIORANumberFormat';
 import { CURRENCY } from '@/shared/constants';
 import { Icons } from '@/components/Icon';
-
-const USD_RATE = 1;
+import { EXCHANGE_RATES_TO_USD } from '@/shared/utils/currencyExchange';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { useAppSelector } from '@/store';
 
 interface WalletDepositPackageCardProps {
   packageFX: PackageFX;
@@ -22,6 +23,11 @@ const WalletDepositPackageCard: React.FC<WalletDepositPackageCardProps> = ({
   onSelect,
   isPopular = false,
 }) => {
+  const currency = useAppSelector((state) => state.settings.currency);
+
+  // Calculate USD amount using proper exchange rate
+  const usdAmount = packageFX.fxAmount / EXCHANGE_RATES_TO_USD.FX;
+
   return (
     <Card
       className={`flex items-center gap-4 p-4 cursor-pointer border-2 transition-all ${
@@ -41,7 +47,7 @@ const WalletDepositPackageCard: React.FC<WalletDepositPackageCardProps> = ({
           )}
         </div>
         <div className="text-muted-foreground text-sm">
-          {formatFIORACurrency(packageFX.fxAmount * USD_RATE, CURRENCY.USD)}
+          {formatFIORACurrency(convertCurrency(usdAmount, CURRENCY.USD, currency), currency)}
         </div>
       </div>
 
