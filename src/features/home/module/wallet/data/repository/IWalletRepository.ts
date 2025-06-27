@@ -9,4 +9,6 @@ export interface IWalletRepository {
   getAllWallets(): Promise<Wallet[]>;
   getDepositRequestsByType(type: DepositRequestStatus): Promise<DepositRequest[]>;
   getAllPackageFX(): Promise<PackageFX[]>;
+  createDepositRequest(packageFXId: string, depositProofUrl: string): Promise<DepositRequest>;
+  getFrozenDepositAmount(): Promise<number>;
 }

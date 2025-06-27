@@ -32,6 +32,7 @@ export interface ScatterChartProps {
   customTooltipContent?: (bTier: Tier, sTier: Tier) => React.ReactNode;
   isLoading?: boolean;
   currentId?: string;
+  isDisabled?: boolean;
 }
 
 export interface Tier {

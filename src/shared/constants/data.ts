@@ -11,20 +11,14 @@ export const globalNavItems: GlobalNavItem[] = [
     isActive: false,
     shortcut: ['d', 'd'],
   },
-  // {
-  //   title: 'Billing',
-  //   url: '#billing',
-  //   icon: 'billing',
-  //   props: { size: 20, strokeWidth: 1 },
-  //   isActive: true,
-  // },
-  // {
-  //   title: 'Settings',
-  //   url: '/setting',
-  //   icon: 'settings',
-  //   props: { size: 20, strokeWidth: 1 },
-  //   isActive: true,
-  // },
+  {
+    title: 'Subscription',
+    url: '#subscription',
+    icon: 'billing',
+    props: { size: 20, strokeWidth: 1 },
+    isActive: false,
+    shortcut: ['d', 'd'],
+  },
 ];
 
 export const notSignInNavItems: GlobalNavItem[] = [

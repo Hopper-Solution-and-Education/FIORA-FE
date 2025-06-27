@@ -1,3 +1,4 @@
+import { TIER_BENEFIT_KEYS } from '@/features/setting/data/module/membership/tierBenefitKey';
 import {
   GetListMembershipsRequest,
   GetListMembershipsResponse,
@@ -11,17 +12,6 @@ import {
   UpsertMembershipRequestDTO,
   UpsertMembershipResponseDTO,
 } from '../dto';
-
-const TIER_BENEFIT_KEYS = {
-  bnplFee: 'bnpl-fee',
-  cashback: 'cashback',
-  investmentInterest: 'investment-interest',
-  loanInterest: 'loan-interest',
-  referralBonus: 'referral-bonus',
-  referralKickback: 'referral-kickback',
-  savingInterest: 'saving-interest',
-  stakingInterest: 'staking-interest',
-};
 
 export class MemberMapper {
   static toGetListMembershipsRequest(

@@ -68,8 +68,6 @@ const ImportCompletionStatus: React.FC<ImportCompletionStatusProps> = ({
               onRestart();
             }, 1000);
           }}
-          onBack={onRestart}
-          backTooltip="Import another file"
           submitTooltip="Go to Dashboard"
         />
       </CardContent>

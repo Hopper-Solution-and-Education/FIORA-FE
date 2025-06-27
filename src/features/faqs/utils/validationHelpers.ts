@@ -1,4 +1,4 @@
-import { FAQ_IMPORT_CONSTANTS } from '../constants/import';
+import { FAQ_IMPORT_CONSTANTS } from '../constants';
 import { FaqsRowValidated, ValidationError } from '../domain/entities/models/faqs';
 
 /**
