@@ -117,7 +117,6 @@ class WalletUseCase {
 
     const packageFXIds = requests.map((r) => r.packageFXId);
 
-    // Remove duplicates to get unique packageFX IDs
     const uniquePackageFXIds = [...new Set(packageFXIds)];
 
     if (uniquePackageFXIds.length === 0) return 0;

@@ -12,7 +12,6 @@ interface WalletSearchProps {
 
 const WalletSearch = ({ searchType = 'normal' }: WalletSearchProps) => {
   const dispatch = useAppDispatch();
-
   const search = useAppSelector((state) =>
     searchType === 'deposit'
       ? state.wallet.depositSearch || ''

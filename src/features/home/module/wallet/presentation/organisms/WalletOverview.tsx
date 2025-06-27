@@ -3,8 +3,8 @@ import MetricCard from '@/components/common/metric/MetricCard';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect, useMemo } from 'react';
 import { WalletType } from '../../domain/enum';
-import { fetchFrozenAmount } from '../../slices/actions';
 import { useInitializeUserWallet } from '../hooks';
+import { fetchFrozenAmount } from '../../slices/actions';
 
 const DEFAULT_FROZEN_AMOUNT = 0;
 

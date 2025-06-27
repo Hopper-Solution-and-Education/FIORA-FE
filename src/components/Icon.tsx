@@ -53,6 +53,8 @@ import {
   MoreVertical,
   MoveLeft,
   Package,
+  PanelLeftClose,
+  PanelRightOpen,
   Pencil,
   Phone,
   PiggyBank,
@@ -200,6 +202,8 @@ export const Icons = {
   ),
   arrowLeftRight: ArrowLeftRight,
   snowflake: Snowflake,
+  panelRightOpen: PanelRightOpen,
+  panelLeftClose: PanelLeftClose,
   walletPackageCard: ({ ...props }: LucideProps) => (
     <svg
       width="60"

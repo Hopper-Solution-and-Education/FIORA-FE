@@ -1,7 +1,9 @@
 'use client';
 
+import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
 import { useSettingTabFeatureFlags } from '@/features/setting/hooks/useSettingTabFeatureFlags';
-import { notFound } from 'next/navigation';
+import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { useRouter } from 'next/navigation';
 import { use, useEffect } from 'react';
 
 interface TabLayoutProps {
@@ -12,14 +14,17 @@ interface TabLayoutProps {
 export default function TabLayout({ children, params }: TabLayoutProps) {
   const unwrappedParams = use(params);
   const { checkTabAccess } = useSettingTabFeatureFlags();
+  const router = useRouter();
 
   useEffect(() => {
     try {
       checkTabAccess(unwrappedParams.tab);
     } catch {
-      notFound();
+      router.push('/not-found');
     }
   }, [unwrappedParams.tab, checkTabAccess]);
 
-  return <>{children}</>;
+  return (
+    <ModuleAccessLayout featureFlag={FeatureFlags.PARTNER_FEATURE}>{children}</ModuleAccessLayout>
+  );
 }
