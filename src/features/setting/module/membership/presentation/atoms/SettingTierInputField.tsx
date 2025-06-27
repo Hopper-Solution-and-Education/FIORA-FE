@@ -1,6 +1,7 @@
 'use client';
 
 import InputField from '@/components/common/forms/input/InputField';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/shared/utils';
 import { FieldError } from 'react-hook-form';
 
@@ -17,6 +18,7 @@ export interface SettingTierInputProps {
     percent?: boolean;
     maxPercent?: number;
   };
+  disabled?: boolean;
 }
 
 const SettingTierInputField = ({
@@ -29,6 +31,7 @@ const SettingTierInputField = ({
   required,
   onBlur,
   options,
+  disabled,
 }: SettingTierInputProps) => {
   return (
     <div
@@ -38,8 +41,10 @@ const SettingTierInputField = ({
         grid-cols-[1fr_auto_minmax(40px,_70px)]
         sm:grid-cols-[1fr_auto_minmax(60px,_90px)]
         md:grid-cols-[1fr_80px_100px]
-        
         items-center
+        overflow-hidden
+        text-ellipsis
+        whitespace-nowrap
       "
     >
       <span
@@ -49,9 +54,12 @@ const SettingTierInputField = ({
           md:text-sm
           lg:text-sm
           font-semibold text-gray-700 dark:text-gray-200
+          mb-4
+          gap-2
+          flex justify-start
         "
       >
-        {label}
+        {label} {required && <span className="text-red-500">*</span>}
       </span>
 
       {/* Input Field Container and InputField itself */}
@@ -59,25 +67,39 @@ const SettingTierInputField = ({
         className="
           w-full
           flex justify-end
+          m-2
+          pr-2
         "
       >
-        <InputField
-          name={name}
-          value={value.toString()}
-          onChange={(e) => onChange(Number(e))}
-          error={error}
-          options={options}
-          placeholder="0"
-          required={required}
-          onBlur={onBlur}
-          className={cn(
-            'text-center',
-            'w-[60px]',
-            'sm:w-[70px]',
-            'md:w-[80px]',
-            'text-xs sm:text-sm md:text-sm',
-          )}
-        />
+        <TooltipProvider>
+          <Tooltip open={!!error?.message}>
+            <TooltipTrigger asChild>
+              <InputField
+                name={name}
+                value={value.toString()}
+                onChange={(e) => onChange(Number(e))}
+                options={options}
+                placeholder="0"
+                required={required}
+                onBlur={onBlur ? onBlur : undefined}
+                disabled={disabled}
+                className={cn(
+                  'text-center',
+                  'w-[60px]',
+                  'sm:w-[70px]',
+                  'md:w-[80px]',
+                  'text-xs sm:text-sm md:text-sm',
+                  error && 'border-red-500',
+                )}
+              />
+            </TooltipTrigger>
+            {error?.message && (
+              <TooltipContent>
+                <span className="text-red-500 text-xs">{error.message}</span>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       {/* Suffix */}
@@ -85,10 +107,10 @@ const SettingTierInputField = ({
         <span
           className="
             text-xs
-            mb-4
             sm:text-xs
             md:text-sm
             lg:text-sm
+            mb-4
             text-gray-500 dark:text-gray-400
             overflow-hidden
             text-ellipsis

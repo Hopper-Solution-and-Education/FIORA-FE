@@ -41,6 +41,5 @@ export const removeFromFirebase = async (fileUrl: string): Promise<void> => {
     await deleteObject(storageRef);
   } catch (error) {
     console.error('Error removing from Firebase:', error);
-    throw error;
   }
 };
