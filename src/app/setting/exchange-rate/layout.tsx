@@ -3,13 +3,13 @@ import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'FIORA | Membership Settings',
-  description: 'FIORA - Membership Settings',
+  title: 'FIORA | Create Account',
+  description: 'FIORA - Create Account',
 };
 
 export default async function layout({ children }: { children: React.ReactNode }) {
   return (
-    <ModuleAccessLayout featureFlag={FeatureFlags.MEMBERSHIP_FEATURE} requiredRoles={['ADMIN']}>
+    <ModuleAccessLayout featureFlag={FeatureFlags.EXCHANGE_RATE_FEATURE} requiredRoles={['ADMIN']}>
       {children}
     </ModuleAccessLayout>
   );

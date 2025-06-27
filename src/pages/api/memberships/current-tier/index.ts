@@ -21,13 +21,17 @@ export default withAuthorization({
 // Fetch current membership tier
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-
     const currentMembershipTier = await membershipSettingUseCase.getCurrentMembershipTier(userId);
 
     return res
       .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_CURRENT_MEMBERSHIP_TIER_SUCCESS, currentMembershipTier));
-
+      .json(
+        createResponse(
+          RESPONSE_CODE.OK,
+          Messages.GET_CURRENT_MEMBERSHIP_TIER_SUCCESS,
+          currentMembershipTier,
+        ),
+      );
   } catch (error) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)

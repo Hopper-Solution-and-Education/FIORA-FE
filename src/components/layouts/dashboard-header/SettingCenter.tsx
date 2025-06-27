@@ -19,13 +19,16 @@ import { Session, useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect } from 'react';
-import { menuSettingItems } from './utils';
+import { useEffect, useState } from 'react';
+import { menuSettingItems, filterMenuItems, MenuSettingItem } from './utils';
+import growthbook from '@/config/growthbook/growthbook';
 
 export default function SettingCenter() {
   const { theme, setTheme } = useTheme();
   const { currency, language } = useAppSelector((state) => state.settings);
   const dispatch = useAppDispatch();
+  const gb = growthbook;
+  const [filteredMenuItems, setFilteredMenuItems] = useState<MenuSettingItem[]>([]);
 
   const { data: session } = useSession() as { data: Session | null };
 
@@ -48,9 +51,15 @@ export default function SettingCenter() {
     dispatch(toggleCurrency(currency === 'USD' ? 'VND' : 'USD'));
   };
 
-  const filteredMenuItems = menuSettingItems.filter(
-    (item) => !item.role || session?.user?.role === item.role,
-  );
+  useEffect(() => {
+    const handleCheckMenuItems = () => {
+      if (menuSettingItems && session?.user?.role) {
+        setFilteredMenuItems(filterMenuItems(menuSettingItems, gb, session.user.role));
+      }
+    };
+
+    handleCheckMenuItems();
+  }, [menuSettingItems, session?.user?.role, gb]);
 
   return (
     <TooltipProvider>

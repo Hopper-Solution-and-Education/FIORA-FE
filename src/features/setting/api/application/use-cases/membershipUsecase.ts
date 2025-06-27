@@ -329,12 +329,13 @@ class MembershipSettingUseCase {
         ...restOptions,
       });
 
-      const [currentTier, nextSpendingTier, nextBalanceTier, currentMembershipProgress] = await Promise.all([
-        currentTierAwaited,
-        nextSpendingTierAwaited,
-        nextBalanceTierAwaited,
-        currentMembershipProgressAwaited,
-      ]);
+      const [currentTier, nextSpendingTier, nextBalanceTier, currentMembershipProgress] =
+        await Promise.all([
+          currentTierAwaited,
+          nextSpendingTierAwaited,
+          nextBalanceTierAwaited,
+          currentMembershipProgressAwaited,
+        ]);
 
       // flat-map the currentTier to get the tierBenefits
       const currentTierWithBenefit = {
