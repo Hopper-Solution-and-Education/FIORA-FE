@@ -1,7 +1,7 @@
+import { membershipDIContainer, TYPES } from '@/features/home/module/membership/di';
+import { GetCurrentTierResponse } from '@/features/home/module/membership/domain/entities';
+import { IGetCurrentTierUseCase } from '@/features/home/module/membership/domain/usecases';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { membershipDIContainer, TYPES } from '../../di';
-import { GetCurrentTierResponse } from '../../domain/entities';
-import { IGetCurrentTierUseCase } from '../../domain/usecases/getCurrentTierUseCase';
 
 export const getCurrentTierAsyncThunk = createAsyncThunk<
   GetCurrentTierResponse,

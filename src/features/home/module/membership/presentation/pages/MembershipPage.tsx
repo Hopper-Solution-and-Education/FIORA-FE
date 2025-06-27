@@ -1,23 +1,31 @@
 'use client';
 
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { getCurrentTierAsyncThunk } from '@/store/actions';
 import { useEffect } from 'react';
-import { getCurrentTierAsyncThunk, getListMembershipAsyncThunk } from '../../slices/actions';
+import { getListMembershipAsyncThunk } from '../../slices/actions';
 import { mapTierBenefits } from '../../utils';
 import { CurrentTierMembership, MembershipRankChart } from '../organisms';
-import { useIsMobile } from '@/shared/hooks/useIsMobile';
 
 const MembershipPage = () => {
   const dispatch = useAppDispatch();
   const isMobile = useIsMobile();
-  useEffect(() => {
-    dispatch(getListMembershipAsyncThunk({ page: 1, limit: 10 }));
-    dispatch(getCurrentTierAsyncThunk());
-  }, []);
+  const isLoadingGetListMembership = useAppSelector(
+    (state) => state.membership.isLoadingGetMemberships,
+  );
 
   const { data: userTier, isLoading: isLoadingUserTier } = useAppSelector(
-    (state) => state.membership.userTier,
+    (state) => state.user.userTier,
   );
+
+  useEffect(() => {
+    if (!isLoadingGetListMembership) {
+      dispatch(getListMembershipAsyncThunk({ page: 1, limit: 10 }));
+    }
+
+    dispatch(getCurrentTierAsyncThunk());
+  }, []);
 
   const currentTierName = userTier?.currentTier?.tierName;
   const nextSpendingTierName = userTier?.nextSpendingTier?.tierName;

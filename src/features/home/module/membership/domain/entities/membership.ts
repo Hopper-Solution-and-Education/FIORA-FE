@@ -59,6 +59,8 @@ export type GetListMembershipsResponse = {
 };
 
 export type GetCurrentTierResponse = {
+  currentSpent: number;
+  currentBalance: number;
   currentTier: Membership;
   nextSpendingTier: Membership;
   nextBalanceTier: Membership;

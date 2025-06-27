@@ -31,6 +31,8 @@ export class MemberMapper {
 
   static toGetCurrentTierResponse(data: getCurrentTierResponseDTO): GetCurrentTierResponse {
     return {
+      currentSpent: data.data.currentSpent,
+      currentBalance: data.data.currentBalance,
       currentTier: new Membership(data.data.currentTier),
       nextSpendingTier: new Membership(data.data.nextSpendingTier),
       nextBalanceTier: new Membership(data.data.nextBalanceTier),

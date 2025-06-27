@@ -5,10 +5,13 @@ import { Icons } from '@/components/Icon';
 import { COLORS } from '@/shared/constants/chart';
 import { globalNavItems, notSignInNavItems } from '@/shared/constants/data';
 import { ICON_SIZE } from '@/shared/constants/size';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { getCurrentTierAsyncThunk } from '@/store/actions';
 import { LogOut } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +44,16 @@ const switchProfile = [
 export function UserNav({ handleSignOut }: UserNavProps) {
   const router = useRouter();
   const { data: session } = useSession();
+  const dispatch = useAppDispatch();
+  const { data: userTier, isLoading: isLoadingUserTier } = useAppSelector(
+    (state) => state.user.userTier,
+  );
+
+  useEffect(() => {
+    if (!isLoadingUserTier) {
+      dispatch(getCurrentTierAsyncThunk());
+    }
+  }, []);
 
   const renderNavItem = (item: (typeof globalNavItems)[0]) => {
     const Icon = item.icon ? Icons[item.icon] : Icons.logo;
@@ -101,18 +114,22 @@ export function UserNav({ handleSignOut }: UserNavProps) {
               <div className="w-full space-y-2 cursor-pointer" onClick={handleClickMembership}>
                 <div className="text-sm">Membership</div>
                 <SegmentProgressBar
-                  leftLabel="Platinum"
-                  rightLabel="Diamond"
-                  progress={0.35}
+                  leftLabel={userTier?.currentTier?.tierName || ''}
+                  rightLabel={userTier?.nextBalanceTier?.tierName || ''}
+                  progress={userTier?.currentBalance}
                   color={COLORS.DEPS_INFO.LEVEL_1}
                   className="w-full"
+                  min={userTier?.currentTier?.balanceMinThreshold}
+                  max={userTier?.currentTier?.balanceMaxThreshold}
                 />
                 <SegmentProgressBar
-                  leftLabel="Qili"
-                  rightLabel="Dragon"
-                  progress={0.65}
+                  leftLabel={userTier?.currentTier?.tierName || ''}
+                  rightLabel={userTier?.nextSpendingTier?.tierName || ''}
+                  progress={userTier?.currentSpent}
                   color={COLORS.DEPS_SUCCESS.LEVEL_1}
                   className="w-full"
+                  min={userTier?.currentTier?.spentMinThreshold}
+                  max={userTier?.currentTier?.spentMaxThreshold}
                 />
               </div>
             </DropdownMenuItem>
