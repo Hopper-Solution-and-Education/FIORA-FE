@@ -11,13 +11,10 @@ import { walletContainer } from '../../di/walletDIContainer';
 import { WALLET_TYPES } from '../../di/walletDIContainer.type';
 import { CreateDepositRequestUsecase } from '../../domain/usecase';
 import { setAttachmentData, setSelectedPackageId } from '../../slices';
-<<<<<<< HEAD
-import { fetchFrozenAmount } from '../../slices/actions';
-=======
->>>>>>> 8d50282f174e39e341c91a9ce37b30c3fa3f99c1
 import { WalletDialog } from '../atoms';
 import { WalletPaymentDetail, WalletTopbarAction } from '../organisms';
 import WalletPackageList from '../organisms/WalletPackageList';
+import { fetchFrozenAmount } from '../../slices/actions';
 
 const WalletDepositPage = () => {
   const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -79,11 +76,8 @@ const WalletDepositPage = () => {
       dispatch(setAttachmentData(null));
       dispatch(setSelectedPackageId(null));
 
-<<<<<<< HEAD
       await dispatch(fetchFrozenAmount());
 
-=======
->>>>>>> 8d50282f174e39e341c91a9ce37b30c3fa3f99c1
       router.push(RouteEnum.WalletDashboard);
     } catch (err: any) {
       toast.error(err.message || 'Deposit failed');
