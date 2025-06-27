@@ -40,19 +40,8 @@ model User {
   userNotifications   UserNotification[]    @relation("UserNotification")
   wallet              Wallet[]              @relation("UserWallet")
   AttachmentRelations AttachmentRelations[]
-  budgetDetails       BudgetDetails[]
-  budgetControl       BudgetsTable[]
-  categories          Category[]            @relation("UserCategories")
-  categoryProducts    CategoryProducts[]
   Comment             Comment[]
-  depositRequests     DepositRequest[]      @relation("UserDepositRequest")
-  ExchangeRateSetting ExchangeRateSetting[]
-  MembershipProgress  MembershipProgress[]
-  MembershipTier      MembershipTier[]
-  partners            Partner[]             @relation("UserPartners")
   Post                Post[]
-  products            Product[]             @relation("UserProducts")
-  productItems        ProductItems[]
   Reaction            Reaction[]
   exchangeRateSetting ExchangeRateSetting[]
 
@@ -412,7 +401,6 @@ model Wallet {
   updatedAt       DateTime   @updatedAt @db.Timestamptz(0)
   createdBy       String?    @db.Uuid
   updatedBy       String?    @db.Uuid
-  name            String?    @db.VarChar(50)
   user            User       @relation("UserWallet", fields: [userId], references: [id])
 
   @@index([userId])
