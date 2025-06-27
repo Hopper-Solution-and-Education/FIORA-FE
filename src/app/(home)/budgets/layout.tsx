@@ -9,6 +9,6 @@ export const metadata: Metadata = {
 
 export default async function layout({ children }: { children: React.ReactNode }) {
   return (
-    <ModuleAccessLayout featureFlag={FeatureFlags.BUDGET_CONTROL}>{children}</ModuleAccessLayout>
+    <ModuleAccessLayout featureFlag={FeatureFlags.BUDGET_FEATURE}>{children}</ModuleAccessLayout>
   );
 }

@@ -25,6 +25,7 @@ export const navItems: NavItem[] = [
         icon: 'wallet',
         shortcut: ['m', 'm'],
         module: MODULE.ACCOUNT,
+        featureFlags: FeatureFlags.WALLET_FEATURE,
       },
       {
         title: 'Accounts',
@@ -32,6 +33,7 @@ export const navItems: NavItem[] = [
         icon: 'banknote',
         shortcut: ['m', 'm'],
         module: MODULE.ACCOUNT,
+        featureFlags: FeatureFlags.ACCOUNT_FEATURE,
       },
       {
         title: 'Categories',
@@ -45,12 +47,14 @@ export const navItems: NavItem[] = [
         url: '/budgets',
         icon: 'chartBar',
         shortcut: ['m', 'm'],
+        featureFlags: FeatureFlags.BUDGET_FEATURE,
       },
       {
         title: 'Transaction',
         url: '/transaction',
         icon: 'shoppingCart',
         shortcut: ['m', 'm'],
+        featureFlags: FeatureFlags.TRANSACTION_FEATURE,
       },
     ],
   },

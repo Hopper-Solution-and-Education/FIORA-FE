@@ -5,15 +5,16 @@ import { ChartByDate } from '@/features/finance/report/presentation/organisms';
 import { getFinanceByDateAsyncThunk } from '@/features/finance/report/slices/actions';
 import { MODULE } from '@/shared/constants';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
-import { useFeatureFlagGuard } from '@/shared/hooks/useFeatureFlagGuard';
 import { useAppDispatch } from '@/store';
 import { useEffect } from 'react';
 import AccountDashboard from '../account/AccountDashboard';
 import RecentTransactions from './components/RecentTransactions';
 import Recommendations from './components/Recommendations';
+import { useFeatureIsOn } from '@growthbook/growthbook-react';
 
 export default function HomePage() {
-  const { isFeatureOn } = useFeatureFlagGuard(FeatureFlags.ACCOUNT_FEATURE, MODULE.HOME);
+  const isAccountFeatureOn = useFeatureIsOn(FeatureFlags.ACCOUNT_FEATURE as any);
+  const isFinanceFeatureOn = useFeatureIsOn(FeatureFlags.FINANCE_FEATURE as any);
   const dispatch = useAppDispatch();
 
   // get nearly five years data
@@ -29,9 +30,6 @@ export default function HomePage() {
     );
   }, []);
 
-  if (!isFeatureOn) {
-    return null;
-  }
   return (
     <div className="flex flex-1 flex-col space-y-4 p-4">
       <div className="flex items-center justify-between space-y-2">
@@ -43,8 +41,8 @@ export default function HomePage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-10">
             {/* Left Section: Financial & Account Overview */}
             <div className="col-span-1 md:col-span-2 lg:col-span-7 space-y-4">
-              {isFeatureOn && <AccountDashboard module={MODULE.HOME} />}
-              {isFeatureOn && <ChartByDate title="Finance Chart" />}
+              {isAccountFeatureOn && <AccountDashboard module={MODULE.HOME} />}
+              {isFinanceFeatureOn && <ChartByDate title="Finance Chart" />}
             </div>
 
             {/* Right Section: Transactions & Recommendations */}

@@ -9,6 +9,6 @@ export const metadata: Metadata = {
 
 export default async function FinanceChartLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ModuleAccessLayout featureFlag={FeatureFlags.FINANCE_REPORT}>{children}</ModuleAccessLayout>
+    <ModuleAccessLayout featureFlag={FeatureFlags.FINANCE_FEATURE}>{children}</ModuleAccessLayout>
   );
 }
