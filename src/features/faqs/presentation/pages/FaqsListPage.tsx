@@ -31,7 +31,7 @@ const FaqsListPage = () => {
 
   const { data: session } = useSession() as { data: Session | null };
 
-  const isUserRole = session?.user?.role === UserRole.USER;
+  const isAdminOrCs = session?.user?.role === UserRole.ADMIN || session?.user?.role === UserRole.CS;
 
   return (
     <div className="w-full px-4 space-y-8 mb-6">
@@ -41,7 +41,7 @@ const FaqsListPage = () => {
         activeFilters={activeFilters}
         onFilterChange={handleFilterChange}
         isLoading={isLoading}
-        isUserRole={isUserRole}
+        isAdminOrCs={isAdminOrCs}
       />
 
       {/* Main Content */}

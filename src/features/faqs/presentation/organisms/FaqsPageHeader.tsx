@@ -18,7 +18,7 @@ interface FaqsPageHeaderProps {
   activeFilters: FaqsFilterValues;
   onFilterChange: (filters: FaqsFilterValues) => void;
   isLoading: boolean;
-  isUserRole: boolean;
+  isAdminOrCs: boolean;
 }
 
 const FaqsPageHeader = ({
@@ -26,7 +26,7 @@ const FaqsPageHeader = ({
   activeFilters,
   onFilterChange,
   isLoading,
-  isUserRole,
+  isAdminOrCs,
 }: FaqsPageHeaderProps) => {
   const router = useRouter();
 
@@ -91,7 +91,7 @@ const FaqsPageHeader = ({
           </TooltipProvider>
         </div>
 
-        {!isUserRole && (
+        {isAdminOrCs && (
           <div className="flex gap-2">
             <TooltipProvider>
               <Tooltip>
