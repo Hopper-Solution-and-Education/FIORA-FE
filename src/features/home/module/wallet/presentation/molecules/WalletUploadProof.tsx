@@ -1,48 +1,74 @@
 import { Button } from '@/components/ui/button';
-import React, { useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { setDepositProofUrl } from '../../slices';
+import { Input } from '@/components/ui/input';
 import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
-
-const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
-const MAX_SIZE_MB = 5;
+import React, { useRef, useState } from 'react';
+import { FRONTEND_ATTACHMENT_CONSTANTS } from '../../data/constant';
+import { setAttachmentData } from '../../slices';
+import { ATTACHMENT_TYPES, AttachmentType } from '../types/attachment.type';
+import { useAppDispatch } from '@/store';
 
 const WalletUploadProof: React.FC = () => {
   const [fileName, setFileName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+
   const inputRef = useRef<HTMLInputElement>(null);
-  const dispatch = useDispatch();
+
+  const dispatch = useAppDispatch();
+
+  const getFileType = (fileType: string): AttachmentType => {
+    if (fileType.startsWith('image/')) {
+      return ATTACHMENT_TYPES.IMAGE;
+    }
+    if (fileType === 'application/pdf') {
+      return ATTACHMENT_TYPES.PDF;
+    }
+    return ATTACHMENT_TYPES.DEPOSIT_PROOF;
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!ACCEPTED_TYPES.includes(file.type)) {
-      setError('Invalid file type.');
+
+    if (!FRONTEND_ATTACHMENT_CONSTANTS.ACCEPTED_FILE_TYPES.includes(file.type as any)) {
+      setError(
+        `Invalid file type. Please upload ${FRONTEND_ATTACHMENT_CONSTANTS.SUPPORTED_FORMATS} files.`,
+      );
       setFileName(null);
-      dispatch(setDepositProofUrl(null));
+      dispatch(setAttachmentData(null));
       return;
     }
-    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      setError('File too large (max 5MB).');
+
+    if (file.size > FRONTEND_ATTACHMENT_CONSTANTS.MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setError(`File too large (max ${FRONTEND_ATTACHMENT_CONSTANTS.MAX_FILE_SIZE_MB}MB).`);
       setFileName(null);
-      dispatch(setDepositProofUrl(null));
+      dispatch(setAttachmentData(null));
       return;
     }
+
     setFileName(file.name);
     setError(null);
     setUploading(true);
+
     try {
       const url = await uploadToFirebase({
         file,
-        path: 'wallet/deposit-proof',
+        path: FRONTEND_ATTACHMENT_CONSTANTS.UPLOAD_PATH,
         fileName: file.name.replace(/\.[^/.]+$/, ''),
       });
-      dispatch(setDepositProofUrl(url));
+
+      const attachmentData = {
+        type: getFileType(file.type),
+        size: file.size,
+        url: url,
+        path: `${FRONTEND_ATTACHMENT_CONSTANTS.UPLOAD_PATH}/${file.name}`,
+      };
+
+      dispatch(setAttachmentData(attachmentData));
     } catch (err) {
-      console.error(err);
-      setError('Upload failed');
-      dispatch(setDepositProofUrl(null));
+      console.error('Upload failed:', err);
+      setError('Upload failed. Please try again.');
+      dispatch(setAttachmentData(null));
     } finally {
       setUploading(false);
     }
@@ -56,13 +82,13 @@ const WalletUploadProof: React.FC = () => {
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
       >
-        Upload Payment Proof
+        {uploading ? 'Uploading...' : 'Upload Payment Proof'}
       </Button>
 
-      <input
+      <Input
         ref={inputRef}
         type="file"
-        accept=".jpg,.jpeg,.png,.pdf"
+        accept={FRONTEND_ATTACHMENT_CONSTANTS.ACCEPTED_FILE_EXTENSIONS}
         className="hidden"
         onChange={handleFileChange}
       />
