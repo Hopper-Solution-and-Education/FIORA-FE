@@ -18,48 +18,61 @@ export type BreadcrumbItem = {
  */
 export const routeMapping: Record<string, BreadcrumbItem[]> = {
   '/': [{ title: 'Home', link: '/' }],
-  '/account': [{ title: 'Account', link: '/account' }],
-  '/account/update': [
+  '/account': [
+    { title: 'Finance', link: '/finance/report' },
     { title: 'Account', link: '/account' },
-    { title: 'Update', link: '/account/update' },
   ],
-  '/account/create': [
+  '/account/update/[id]': [
+    { title: 'Finance', link: '/finance/report' },
     { title: 'Account', link: '/account' },
-    { title: 'Create', link: '/account/create' },
+    { title: 'Update', link: '/account/update/[id]' },
   ],
-  '/transaction': [{ title: 'Transaction', link: '/transaction' }],
-  '/transaction/details': [
+  '/account/create/[id]': [
+    { title: 'Finance', link: '/finance/report' },
+    { title: 'Account', link: '/account' },
+    { title: 'Create', link: '/account/create/[id]' },
+  ],
+  '/transaction': [
+    { title: 'Finance', link: '/finance/report' },
     { title: 'Transaction', link: '/transaction' },
-    { title: 'Details', link: '/transaction/details' },
   ],
-  '/category': [{ title: 'Category', link: '/category' }],
-  '/category/create': [
+  '/transaction/details/[id]': [
+    { title: 'Finance', link: '/finance/report' },
+    { title: 'Transaction', link: '/transaction' },
+    { title: 'Details', link: '/transaction/details/[id]' },
+  ],
+  '/category': [
+    { title: 'Finance', link: '/finance/report' },
     { title: 'Category', link: '/category' },
-    { title: 'Create', link: '/category/create' },
   ],
-  '/category/update': [
+  '/category/create/[id]': [
+    { title: 'Finance', link: '/finance/report' },
     { title: 'Category', link: '/category' },
-    { title: 'Update', link: '/category/update' },
+    { title: 'Create', link: '/category/create/[id]' },
   ],
-  '/setting/product/update': [
-    { title: 'Product', link: '/setting/product' },
-    { title: 'Update', link: '/setting/product/update' },
+  '/category/update/[id]': [
+    { title: 'Finance', link: '/finance/report' },
+    { title: 'Category', link: '/category' },
+    { title: 'Update', link: '/category/update/[id]' },
   ],
-  '/setting/product/create': [
-    { title: 'Product', link: '/setting/product' },
-    { title: 'Create', link: '/setting/product/create' },
+
+  '/budgets': [
+    { title: 'Finance', link: '/finance/report' },
+    { title: 'Budgets', link: '/budgets' },
   ],
-  '/budgets': [{ title: 'Budgets', link: '/budgets' }],
-  '/finance/report': [{ title: 'Finance Report', link: '/finance/report' }],
+  '/finance/report': [{ title: 'Finance', link: '/finance/report' }],
   '/budgets/create': [
+    { title: 'Finance', link: '/finance/report' },
     { title: 'Budgets', link: '/budgets' },
     { title: 'Create', link: '/budgets/create' },
   ],
   '/budgets/update/[id]': [
+    { title: 'Finance', link: '/finance/report' },
     { title: 'Budgets', link: '/budgets' },
     { title: 'Update', link: '/budgets/update/[id]' },
   ],
   '/budgets/summary/[year]': [
+    { title: 'Finance', link: '/finance/report' },
     { title: 'Budgets', link: '/budgets' },
     { title: 'Summary', link: '/budgets/summary/[year]' },
   ],
@@ -68,15 +81,38 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Summary', link: '/budgets/summary/[year]' },
     { title: 'Detail', link: '/budgets/summary/detail/[year]' },
   ],
-  '/setting/landing': [{ title: 'Landing Setting', link: '/setting/landing' }],
-  '/setting/exchange-rate': [{ title: 'Exchange Rate Setting', link: '/setting/exchange-rate' }],
-  '/setting/membership': [{ title: 'Membership Setting', link: '/setting/membership' }],
-  '/membership': [{ title: 'Membership', link: '/membership' }],
-  '/wallet': [{ title: 'Wallet', link: '/wallet' }],
+  '/wallet': [
+    { title: 'Finance', link: '/finance/report' },
+    { title: 'Wallet', link: '/wallet' },
+  ],
   '/wallet/deposit': [
+    { title: 'Finance', link: '/finance/report' },
     { title: 'Wallet', link: '/wallet' },
     { title: 'Deposit', link: '/wallet/deposit' },
   ],
+  // Setting
+  '/setting/landing': [{ title: 'Landing Setting', link: '/setting/landing' }],
+  '/setting/exchange-rate': [{ title: 'Exchange Rate Setting', link: '/setting/exchange-rate' }],
+  '/setting/membership': [{ title: 'Membership Setting', link: '/setting/membership' }],
+  '/setting/product': [{ title: 'Product', link: '/setting/product' }],
+  '/setting/product/update': [
+    { title: 'Product', link: '/setting/product' },
+    { title: 'Update', link: '/setting/product/update' },
+  ],
+  '/setting/product/create': [
+    { title: 'Product', link: '/setting/product' },
+    { title: 'Create', link: '/setting/product/create' },
+  ],
+  '/setting/partner': [{ title: 'Partner', link: '/setting/partner' }],
+  '/setting/partner/update/[id]': [
+    { title: 'Partner', link: '/setting/partner' },
+    { title: 'Update', link: '/setting/partner/update/[id]' },
+  ],
+  '/setting/partner/create': [
+    { title: 'Partner', link: '/setting/partner' },
+    { title: 'Create', link: '/setting/partner/create' },
+  ],
+  '/membership': [{ title: 'Membership', link: '/membership' }],
 };
 
 /**
