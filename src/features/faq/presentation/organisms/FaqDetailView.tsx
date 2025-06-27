@@ -154,7 +154,7 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
     <section className="max-w-4xl mx-auto px-4 py-10 text-gray-800">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-3xl font-bold">{faq.title}</h1>
-        {faq.User?.role === 'CS' && (
+        {(currentUserRole === 'CS' || currentUserRole === 'Admin') && (
           <div className="flex items-center gap-2">
             <button className="w-9 h-9 flex items-center justify-center rounded-md border border-gray-300 hover:bg-gray-100 transition">
               <Pencil className="w-5 h-5 text-gray-700" />
