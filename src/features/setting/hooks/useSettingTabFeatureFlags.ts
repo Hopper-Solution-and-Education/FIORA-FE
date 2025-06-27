@@ -2,7 +2,7 @@ import { configureServerSideGrowthBook } from '@/config/growthbook/growthbookSer
 import growthbook from '@/config/growthbook/growthbook';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { validTabs } from '@/features/setting/module/partner/data/constant';
-import { notFound } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 configureServerSideGrowthBook();
 const gb = growthbook;
@@ -12,6 +12,7 @@ const tabFeatureMapping = {
 };
 
 export function useSettingTabFeatureFlags() {
+  const router = useRouter();
   const isTabEnabled = (tab: string): boolean => {
     return (
       tab in tabFeatureMapping && gb.isOn(tabFeatureMapping[tab as keyof typeof tabFeatureMapping])
@@ -30,7 +31,7 @@ export function useSettingTabFeatureFlags() {
    */
   const checkTabAccess = (tab: string) => {
     if (!validTabs.includes(tab as any) || !isTabEnabled(tab)) {
-      notFound();
+      return router.push('/not-found');
     }
   };
 

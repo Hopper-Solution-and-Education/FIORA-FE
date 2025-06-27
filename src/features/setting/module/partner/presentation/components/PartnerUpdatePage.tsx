@@ -6,11 +6,12 @@ import { Partner } from '@/features/setting/module/partner/domain/entities/Partn
 import PartnerUpdateForm from '@/features/setting/module/partner/presentation/components/PartnerUpdateForm';
 import { fetchPartnerById } from '@/features/setting/module/partner/slices/actions/fetchPartnerByIdAsyncThunk';
 import { useAppDispatch } from '@/store';
-import { notFound, useParams } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import DeletePartnerButton from './DeletePartnerButton';
 
 export default function PartnerUpdatePage() {
+  const router = useRouter();
   const params = useParams();
   const id = params?.id as string;
   const dispatch = useAppDispatch();
@@ -41,7 +42,8 @@ export default function PartnerUpdatePage() {
   }
 
   if (error || !partner) {
-    notFound();
+    router.push('/not-found');
+    return null;
   }
 
   return (
