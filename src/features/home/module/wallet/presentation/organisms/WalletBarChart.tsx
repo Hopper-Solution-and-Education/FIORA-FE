@@ -62,6 +62,7 @@ const WalletBarChart = () => {
         const item = payload[0].payload;
         const amount = item.positiveValue !== 0 ? item.positiveValue : item.negativeValue;
         const isPositive = amount > 0;
+
         return (
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm p-3 rounded-md">
             <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{item.name}</p>
