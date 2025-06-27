@@ -2,12 +2,12 @@
 
 import Header from '@/components/layouts/dashboard-header/DashboardHeader';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { navItems as HomeNavItems } from '@/features/home/constants/data';
 import { NavItem } from '@/features/home/types/Nav.types';
 import { Session } from 'next-auth/core/types';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import AppSidebar from '../layouts/app-side-bar/AppSidebar';
+import { expandNavItems, shrinkNavItems } from '@/features/home/constants/data';
 
 const SIDEBAR_STATE_KEY = 'sidebar-open-state';
 
@@ -21,7 +21,7 @@ interface SessionSidebarProps {
 const SessionSidebar = ({
   children,
   defaultOpen = true,
-  navItems = HomeNavItems,
+  navItems,
   appLabel = 'Overview',
 }: SessionSidebarProps) => {
   const { data: session } = useSession() as { data: Session | null };
@@ -47,9 +47,11 @@ const SessionSidebar = ({
     );
   }
 
+  const currentNavItems = navItems || (open ? expandNavItems : shrinkNavItems);
+
   return (
     <SidebarProvider defaultOpen={open} open={open} onOpenChange={setOpen}>
-      <AppSidebar appLabel={appLabel} navItems={navItems} />
+      <AppSidebar appLabel={appLabel} navItems={currentNavItems} />
       <SidebarInset>
         <Header />
         {children}

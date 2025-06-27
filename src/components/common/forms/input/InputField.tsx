@@ -9,7 +9,7 @@ interface InputFieldProps {
   value?: string;
   name?: string;
   onChange?: (value: string) => void;
-  onBlur?: () => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   error?: FieldError;
   label?: React.ReactNode | string;
   placeholder?: string;
@@ -57,7 +57,7 @@ const InputField: React.FC<InputFieldProps> = ({
   };
 
   // Format value on blur
-  const handleBlur = () => {
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     let formattedValue = value;
 
     if (percent && formattedValue !== '') {
@@ -104,7 +104,7 @@ const InputField: React.FC<InputFieldProps> = ({
     }
 
     onChange(formattedValue);
-    if (onBlur) onBlur(); // Call original onBlur if provided
+    onBlur?.(e);
   };
 
   return (

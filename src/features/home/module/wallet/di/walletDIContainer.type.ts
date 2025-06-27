@@ -10,4 +10,7 @@ export const WALLET_TYPES = {
   // UseCases
   IGetWalletByTypeUseCase: Symbol.for('GetWalletByTypeUseCase'),
   IGetWalletsUseCase: Symbol.for('GetWalletsUseCase'),
+  IGetAllPackageFXUseCase: Symbol.for('GetAllPackageFXUseCase'),
+  ICreateDepositRequestUseCase: Symbol.for('CreateDepositRequestUseCase'),
+  IGetFrozenAmountUseCase: Symbol.for('GetFrozenAmountUseCase'),
 };

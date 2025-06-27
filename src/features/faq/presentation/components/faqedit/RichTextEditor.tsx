@@ -2,16 +2,18 @@
 
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import BulletList from '@tiptap/extension-bullet-list';
-import OrderedList from '@tiptap/extension-ordered-list';
-import ListItem from '@tiptap/extension-list-item';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
+import BulletList from '@tiptap/extension-bullet-list';
+import OrderedList from '@tiptap/extension-ordered-list';
+import ListItem from '@tiptap/extension-list-item';
+
 import Toolbar from './Toolbar';
+import { useState } from 'react';
 
 interface RichTextEditorProps {
   value: string;
@@ -19,6 +21,8 @@ interface RichTextEditorProps {
 }
 
 export default function RichTextEditor({ value, onChange }: RichTextEditorProps) {
+  const [preview, setPreview] = useState(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -26,13 +30,11 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         orderedList: false,
         listItem: false,
       }),
-      BulletList,
-      OrderedList,
-      ListItem,
+      BulletList.configure({}),
+      OrderedList.configure({}),
+      ListItem.configure({}),
       Underline,
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
       TextStyle,
       Color,
       Link,
@@ -52,8 +54,20 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
 
   return (
     <div className="border rounded">
-      {editor && <Toolbar editor={editor} />}
-      <EditorContent editor={editor} />
+      <div className="flex justify-between items-center border-b px-4 py-2 bg-muted">
+        {editor && <Toolbar editor={editor} />}
+        <button
+          className="text-sm text-blue-600 hover:underline"
+          onClick={() => setPreview(!preview)}
+        >
+          {preview ? 'Edit' : 'Preview'}
+        </button>
+      </div>
+      {preview ? (
+        <div className="p-4 prose max-w-none" dangerouslySetInnerHTML={{ __html: value }} />
+      ) : (
+        <EditorContent editor={editor} />
+      )}
     </div>
   );
 }

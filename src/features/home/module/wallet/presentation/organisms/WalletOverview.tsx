@@ -1,13 +1,24 @@
-import React, { useMemo } from 'react';
-import MetricCard from '@/components/common/metric/MetricCard';
-import { WalletType } from '../../domain/entity/WalletType';
 import { Loading } from '@/components/common/atoms';
+import MetricCard from '@/components/common/metric/MetricCard';
+import { RootState, useAppDispatch } from '@/store';
+import { useEffect, useMemo } from 'react';
+import { useSelector } from 'react-redux';
+import { WalletType } from '../../domain/enum';
 import { useInitializeUserWallet } from '../hooks';
+import { fetchFrozenAmount } from '../../slices/actions';
 
-const TOTAL_FROZEN_HARDCODED = 1000000;
+const DEFAULT_FROZEN_AMOUNT = 0;
 
 const WalletOverview = () => {
   const { wallets, loading } = useInitializeUserWallet();
+  const dispatch = useAppDispatch();
+  const frozenAmount = useSelector((state: RootState) => state.wallet.frozenAmount);
+
+  useEffect(() => {
+    if (!frozenAmount) {
+      dispatch(fetchFrozenAmount());
+    }
+  }, []);
 
   const totalActive = useMemo(
     () => wallets?.reduce((sum, w) => sum + w.frBalanceActive, 0) || 0,
@@ -22,9 +33,7 @@ const WalletOverview = () => {
     [wallets],
   );
 
-  const totalFrozen = TOTAL_FROZEN_HARDCODED;
-
-  console.log(wallets);
+  const totalFrozen = frozenAmount ?? DEFAULT_FROZEN_AMOUNT;
 
   if (loading) {
     return <Loading />;
@@ -36,7 +45,7 @@ const WalletOverview = () => {
         title="Total Active"
         value={totalActive}
         type="income"
-        icon="wallet"
+        icon="arrowLeftRight"
         description="Total available FX for trading"
       />
 
@@ -44,7 +53,7 @@ const WalletOverview = () => {
         title="Total Frozen"
         value={totalFrozen}
         type="total"
-        icon="lock"
+        icon="snowflake"
         description="Total FX pending activation"
       />
 
@@ -52,7 +61,7 @@ const WalletOverview = () => {
         title="Total Debt"
         value={totalDebt}
         type="expense"
-        icon="credit-card"
+        icon="banknoteArrowDown"
         description="Total FX Debt"
       />
     </div>

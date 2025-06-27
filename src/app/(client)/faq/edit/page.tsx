@@ -1,22 +1,11 @@
 'use client';
 
 import * as FaqPageModule from '@/features/faq/presentation/EditFaqPage';
-import SessionSidebar from '@/components/providers/SessionSidebar';
 
 console.log('FaqPageModule:', FaqPageModule);
 
 const EditFaqPage = FaqPageModule.default;
 
 export default function FaqEditRoute() {
-  return (
-    <SessionSidebar>
-      <div>
-        <div>
-          <main>
-            <EditFaqPage />
-          </main>
-        </div>
-      </div>
-    </SessionSidebar>
-  );
+  return <EditFaqPage />;
 }

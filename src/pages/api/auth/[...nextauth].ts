@@ -1,9 +1,9 @@
-import { PrismaClient, UserRole } from '@prisma/client';
+import { createDefaultCategories } from '@/features/auth/application/use-cases/defaultCategories';
+import { Prisma, PrismaClient, UserRole } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-import { createDefaultCategories } from '@/features/auth/application/use-cases/defaultCategories';
 
 const prisma = new PrismaClient();
 
@@ -96,6 +96,15 @@ export const authOptions: NextAuthOptions = {
                 currency: 'VND',
                 type: 'Payment',
                 icon: 'wallet',
+                createdBy: dbUser.id,
+              },
+            });
+
+            await prisma.membershipProgress.create({
+              data: {
+                userId: dbUser.id,
+                currentSpent: new Prisma.Decimal(0),
+                currentBalance: new Prisma.Decimal(0),
                 createdBy: dbUser.id,
               },
             });

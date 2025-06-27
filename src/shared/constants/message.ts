@@ -196,15 +196,64 @@ export enum Messages {
   INVALID_FINANCE_REPORT_FILTER_TYPE = 'Invalid finance report filter type.',
   INVALID_FINANCE_REPORT_IDS = 'IDs must be a non-empty array',
 
+  // Membership Tier Failed
+  MEMBERSHIP_TIER_ALREADY_EXISTS = 'Membership tier already exists',
+  MEMBERSHIP_TIER_CREATE_FAILED = 'Failed to create membership tier',
+  MEMBERSHIP_TIER_UPDATE_FAILED = 'Failed to update membership tier',
+  MEMBERSHIP_TIER_DELETE_FAILED = 'Failed to delete membership tier',
+  MEMBERSHIP_TIER_NOT_FOUND = 'Membership tier not found',
+  MEMBERSHIP_BENEFIT_SLUG_NAME_NOT_FOUND = 'Membership benefit slug-name not found',
+
+  // Membership Tier Dashboard
+  GET_MEMBERSHIP_TIERS_DASHBOARD_SUCCESS = 'Membership tiers dashboard retrieved successfully',
+
+  // Membership Tier Success
+  UPSERT_MEMBERSHIP_TIER_SUCCESS = 'Membership tier upserted successfully',
+  MEMBERSHIP_TIER_UPDATE_SUCCESS = 'Membership tier updated successfully',
+  MEMBERSHIP_TIER_CREATE_SUCCESS = 'Membership tier created successfully',
+  MEMBERSHIP_TIER_DELETE_SUCCESS = 'Membership tier deleted successfully',
+  MEMBERSHIP_TIER_GET_SUCCESS = 'Membership tier retrieved successfully',
+  MEMBERSHIP_TIER_GET_FAILED = 'Failed to retrieve membership tier',
+  MEMBERSHIP_TIER_GET_ALL_SUCCESS = 'Membership tiers retrieved successfully',
+
+  // Membership Tier Current
+  GET_CURRENT_MEMBERSHIP_TIER_SUCCESS = 'Current membership tier retrieved successfully',
+
+  // Membership Progress Failed
+  MEMBERSHIP_PROGRESS_OF_CURRENT_USER_NOT_FOUND = 'Membership progress of current user not found',
+
+  // Membership Progress Success
+  MEMBERSHIP_PROGRESS_OF_CURRENT_USER_SUCCESS = 'Membership progress of current user retrieved successfully',
   // WALLET
   GET_WALLET_SUCCESS = 'Get wallet successfully.',
+  GET_PACKAGE_FX_SUCCESS = 'Get package FX successfully.',
+  GET_FROZEN_DEPOSIT_AMOUNT_SUCCESS = 'Get frozen deposit amount successfully.',
+  GET_DEPOSIT_REQUEST_SUCCESS = 'Get deposit requests successfully.',
+  CREATE_DEPOSIT_REQUEST_SUCCESS = 'Create deposit request successfully.',
   INVALID_WALLET_TYPE = 'Invalid wallet type.',
+
+  // EXCHANGE RATE SUCCESS
+  CREATE_EXCHANGE_RATE_SUCCESS = 'Create exchange rate successfully.',
+  UPDATE_EXCHANGE_RATE_SUCCESS = 'Update exchange rate successfully.',
+  DELETE_EXCHANGE_RATE_SUCCESS = 'Delete exchange rate successfully.',
+  GET_EXCHANGE_RATE_SUCCESS = 'Get exchange rate successfully.',
+
+  // EXCHANGE RATE FAILED
+  CREATE_EXCHANGE_RATE_FAILED = 'Failed to create exchange rate.',
+  GET_EXCHANGE_RATE_FAILED = 'Failed to get exchange rate.',
+  INVALID_EXCHANGE_RATE_DATA = 'Invalid exchange rate data.',
+  EXCHANGE_RATE_ALREADY_EXISTS = 'Exchange rate already exists.',
+  EXCHANGE_RATE_DUPLICATED_FIELDS = 'Exchange rate duplicated fields.',
+  UPDATE_EXCHANGE_RATE_FAILED = 'Failed to update exchange rate.',
+  EXCHANGE_RATE_NOT_FOUND = 'Exchange rate not found.',
+  DELETE_EXCHANGE_RATE_FAILED = 'Failed to delete exchange rate.',
 
   INVALID_USER = 'Invalid user.',
   USER_EMAIL_EXISTED = 'Email already existed',
   NOT_FOUND_EMAIL = 'User email not found',
   INVALID_PHONE = 'Invalid phone number.',
   INVALID_DOB = 'Invalid date of birth.',
+  INVALID_DEPOSIT_REQUEST_TYPE = 'Invalid deposit request type.',
 
   // COMMON ERRORS
   INVALID_CURRENCY = 'Invalid currency. Must be either VND or USD.',

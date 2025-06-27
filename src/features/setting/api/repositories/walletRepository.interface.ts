@@ -1,4 +1,11 @@
-import { Prisma, Wallet, WalletType } from '@prisma/client';
+import {
+  Prisma,
+  Wallet,
+  WalletType,
+  PackageFX,
+  DepositRequest,
+  DepositRequestStatus,
+} from '@prisma/client';
 
 export interface IWalletRepository {
   createWallet(data: Prisma.WalletUncheckedCreateInput): Promise<Wallet>;
@@ -11,4 +18,10 @@ export interface IWalletRepository {
   deleteWallet(where: Prisma.WalletWhereUniqueInput): Promise<Wallet>;
   findWalletByType(type: WalletType, userId: string): Promise<Wallet | null>;
   findAllWalletsByUser(userId: string): Promise<Wallet[]>;
+  findAllPackageFX(): Promise<PackageFX[]>;
+  getPackageFXById(id: string): Promise<PackageFX | null>;
+  createDepositRequest(data: Prisma.DepositRequestUncheckedCreateInput): Promise<DepositRequest>;
+  findDepositRequestsByType(userId: string, type: DepositRequestStatus): Promise<DepositRequest[]>;
+  findAllDepositRequestsByStatus(status: DepositRequestStatus): Promise<DepositRequest[]>;
+  findManyPackageFXByIds(ids: string[]): Promise<PackageFX[]>;
 }

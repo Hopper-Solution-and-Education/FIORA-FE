@@ -1,6 +1,7 @@
 import {
   AlertCircle,
   AlertTriangle,
+  ArrowLeftRight,
   ArrowRight,
   Ban,
   Banknote,
@@ -51,6 +52,8 @@ import {
   MoreVertical,
   MoveLeft,
   Package,
+  PanelLeftClose,
+  PanelRightOpen,
   Pencil,
   Phone,
   PiggyBank,
@@ -61,6 +64,7 @@ import {
   Settings,
   ShoppingCart,
   Shrink,
+  Snowflake,
   SunMedium,
   Table,
   Trash,
@@ -195,4 +199,8 @@ export const Icons = {
       <circle cx="12" cy="12" r="2" />
     </svg>
   ),
+  arrowLeftRight: ArrowLeftRight,
+  snowflake: Snowflake,
+  panelRightOpen: PanelRightOpen,
+  panelLeftClose: PanelLeftClose,
 };

@@ -39,7 +39,8 @@ export default function EditFaqPage() {
     },
   });
 
-  const title = watch('title');
+  // const title = watch('title');
+  const description = watch('description');
   const [htmlContent, setHtmlContent] = useState('');
 
   const onSubmit = (data: FaqFormValues) => {
@@ -85,6 +86,8 @@ export default function EditFaqPage() {
                 id="description"
                 placeholder="Short description..."
                 {...register('description', { required: true })}
+                readOnly
+                className="bg-gray-100 cursor-not-allowed"
               />
             </div>
 
@@ -123,19 +126,22 @@ export default function EditFaqPage() {
             <div>
               <Label>Preview</Label>
               <div className="bg-white border p-4 rounded-md overflow-y-auto min-h-[400px] space-y-4">
-                <div>
-                  <h1
-                    className={`text-2xl font-bold ${!title ? 'text-gray-400' : 'text-foreground'}`}
-                  >
-                    {title || 'Title goes here'}
-                  </h1>
+                {!description && !htmlContent && (
+                  <p className="italic text-gray-400">Live preview will appear here…</p>
+                )}
 
-                  {!htmlContent && (
-                    <p className="italic text-gray-400">Live preview will appear here…</p>
-                  )}
-                </div>
+                {description && (
+                  <div className="text-sm text-gray-800 border-b pb-3">
+                    <h2 className="text-gray-600 font-semibold mb-1">Description</h2>
+                    <p>{description}</p>
+                  </div>
+                )}
 
-                {htmlContent && <MarkdownPreview content={htmlContent} />}
+                {htmlContent && (
+                  <div>
+                    <MarkdownPreview content={htmlContent} />
+                  </div>
+                )}
               </div>
             </div>
           </div>
