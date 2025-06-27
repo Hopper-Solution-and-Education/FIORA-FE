@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { SelectField } from '@/components/common/forms';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
-import useDataFetcher from '@/shared/hooks/useDataFetcher';
+import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { DropdownOption } from '@/shared/types';
 import { Product } from '@prisma/client';
 import { Loader2 } from 'lucide-react';
@@ -28,7 +28,7 @@ const ProductsSelectField: React.FC<ProductsSelectProps> = ({
 
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
 
-  const { data, isLoading, isValidating } = useDataFetcher<any>({
+  const { data, isLoading, isValidating } = useDataFetch<any>({
     endpoint: `/api/products`,
     method: 'GET',
   });
