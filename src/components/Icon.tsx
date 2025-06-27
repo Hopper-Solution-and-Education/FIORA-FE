@@ -29,6 +29,7 @@ import {
   CreditCard,
   Database,
   DollarSign,
+  Edit,
   Expand,
   Eye,
   File,
@@ -73,6 +74,7 @@ import {
   TrendingDown,
   TrendingUp,
   Twitter,
+  Upload,
   User,
   UserCircle2Icon,
   UserPen,
@@ -238,4 +240,6 @@ export const Icons = {
     </svg>
   ),
   checkCircle: CheckCircle,
+  upload: Upload,
+  edit: Edit,
 };

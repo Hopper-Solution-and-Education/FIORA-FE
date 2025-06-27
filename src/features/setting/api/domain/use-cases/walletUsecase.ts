@@ -12,11 +12,20 @@ interface AttachmentData {
   path: string;
 }
 
+// Wallet type to icon mapping
+const WALLET_TYPE_ICONS: Record<WalletType, string> = {
+  [WalletType.Payment]: 'dollarSign',
+  [WalletType.Invest]: 'trendingUp',
+  [WalletType.Saving]: 'user',
+  [WalletType.Lending]: 'piggyBank',
+  [WalletType.BNPL]: 'billing',
+  [WalletType.Debt]: 'banknoteArrowDown',
+};
+
 const DEFAULT_WALLET_FIELDS = {
   frBalanceActive: 0,
   frBalanceFrozen: 0,
   creditLimit: null,
-  icon: null,
   name: null,
   createdBy: null,
   updatedBy: null,
@@ -48,6 +57,7 @@ class WalletUseCase {
         this._walletRepository.createWallet({
           userId,
           type,
+          icon: WALLET_TYPE_ICONS[type],
           ...DEFAULT_WALLET_FIELDS,
         }),
       ),
