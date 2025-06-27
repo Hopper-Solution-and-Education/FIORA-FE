@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       include: {
         Reaction: true,
         Comment: {
-          take: 10,
+          take: 100, // lấy nhiều comment hơn nếu cần
           orderBy: { createdAt: 'desc' },
           include: {
             User: true,
@@ -27,8 +27,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
+    // Lấy user hiện tại từ session
+    const user = await getSessionUser(req, res);
+
     if (!post) return res.status(404).json({ error: 'Not Found' });
-    return res.status(200).json(post);
+    // Trả về thêm currentUserId và currentUserRole
+    return res.status(200).json({
+      ...post,
+      currentUserId: user?.id || null,
+      currentUserRole: user?.role || null,
+    });
   }
 
   const user = await getSessionUser(req, res);
@@ -38,22 +46,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'PUT') {
     const { title, description, content, categoryId } = req.body;
-
-    if (!title || !content || !categoryId) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-
     await prisma.post.update({
       where: { id: id as string },
       data: {
         title,
         description,
         content,
-        categoryId,
         updatedBy: user.id,
+        PostCategory: {
+          connect: { id: categoryId },
+        },
       },
     });
-
     return res.status(200).json({ success: true });
   }
 

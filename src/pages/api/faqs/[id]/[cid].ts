@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '@/lib/prisma';
-import { getSessionUser, isAdminOrCS } from '@/lib/utils/auth';
+import { getSessionUser } from '@/lib/utils/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { cid } = req.query;
@@ -13,7 +13,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (!comment) return res.status(404).json({ error: 'Comment not found' });
 
-  const canEdit = comment.userId === user.id || isAdminOrCS(user.role);
+  // Chỉ CS hoặc chủ comment mới được xóa/sửa
+  const isCS = user.role?.toLowerCase() === 'cs';
+  const isOwner = comment.userId === user.id;
+  const canEdit = isCS || isOwner;
   if (!canEdit) return res.status(403).json({ error: 'Forbidden' });
 
   if (req.method === 'PUT') {
