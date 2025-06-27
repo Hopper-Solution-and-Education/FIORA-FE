@@ -340,10 +340,10 @@ class ProductUseCase {
         ...(icon && { icon }),
         ...(name && { name }),
         ...(description && { description }),
-        ...(tax_rate && { taxRate: tax_rate }),
         ...(price && { price }),
         ...(type && { type }),
         ...(currency && { currency }),
+        taxRate: new Decimal(tax_rate),
         updatedBy: userId,
       },
     );
