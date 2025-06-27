@@ -10,6 +10,7 @@ import { DepositRequestMapper } from '../mapper/DepositRequestMapper';
 import { DepositRequest } from '../../domain/entity/DepositRequest';
 import { PackageFXMapper } from '../mapper/PackageFXMapper';
 import { PackageFX } from '../../domain/entity/PackageFX';
+import { CreateDepositRequestDto } from '../dto/request/CreateDepositRequestDto';
 
 @injectable()
 export class WalletRepository implements IWalletRepository {
@@ -33,9 +34,9 @@ export class WalletRepository implements IWalletRepository {
     return this._walletApi.getAllPackageFX().then(PackageFXMapper.toPackageFXs);
   }
 
-  createDepositRequest(packageFXId: string, depositProofUrl: string): Promise<DepositRequest> {
+  createDepositRequest(data: CreateDepositRequestDto): Promise<DepositRequest> {
     return this._walletApi
-      .createDepositRequest({ packageFXId, depositProofUrl })
+      .createDepositRequest(data)
       .then((res) => DepositRequestMapper.toDepositRequest(res.data));
   }
 

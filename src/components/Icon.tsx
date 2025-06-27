@@ -12,6 +12,7 @@ import {
   ChartBar,
   ChartColumn,
   Check,
+  CheckCircle,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -203,4 +204,38 @@ export const Icons = {
   snowflake: Snowflake,
   panelRightOpen: PanelRightOpen,
   panelLeftClose: PanelLeftClose,
+  walletPackageCard: ({ ...props }: LucideProps) => (
+    <svg
+      width="60"
+      height="60"
+      viewBox="0 0 60 60"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <rect x="0.5" y="0.5" width="59" height="59" rx="5.5" fill="url(#paint0_linear_2216_23683)" />
+      <rect x="0.5" y="0.5" width="59" height="59" rx="5.5" stroke="#E2E8F0" />
+      <path
+        d="M41.1651 27.0122C42.8982 27.6583 44.4404 28.731 45.649 30.1311C46.8576 31.5311 47.6937 33.2134 48.08 35.0222C48.4662 36.831 48.3901 38.708 47.8587 40.4796C47.3273 42.2512 46.3578 43.8602 45.0397 45.1578C43.7217 46.4554 42.0978 47.3998 40.3181 47.9035C38.5384 48.4071 36.6604 48.454 34.8579 48.0395C33.0553 47.6251 31.3863 46.7629 30.0053 45.5325C28.6243 44.3022 27.5758 42.7435 26.9568 41.0005M20.8333 19.0003H22.6666V26.3337M38.6351 33.4468L39.9185 34.7484L34.7485 39.9184M33.6666 22.667C33.6666 28.7421 28.7418 33.667 22.6666 33.667C16.5915 33.667 11.6666 28.7421 11.6666 22.667C11.6666 16.5919 16.5915 11.667 22.6666 11.667C28.7418 11.667 33.6666 16.5919 33.6666 22.667Z"
+        stroke="white"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <defs>
+        <linearGradient
+          id="paint0_linear_2216_23683"
+          x1="60"
+          y1="30"
+          x2="-22"
+          y2="20"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stop-color="#A855F7" />
+          <stop offset="1" stop-color="#3B82F6" />
+        </linearGradient>
+      </defs>
+    </svg>
+  ),
+  checkCircle: CheckCircle,
 };
