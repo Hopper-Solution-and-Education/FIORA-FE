@@ -1,6 +1,16 @@
 import { Prisma, WalletType, DepositRequestStatus } from '@prisma/client';
 import { walletRepository } from '../../infrastructure/repositories/walletRepository';
 import { IWalletRepository } from '../../repositories/walletRepository.interface';
+import { attachmentRepository } from '../../infrastructure/repositories/attachmentRepository';
+import { IAttachmentRepository } from '../../repositories/attachmentRepository.interface';
+import { ATTACHMENT_CONSTANTS } from '../../constants/attachmentConstants';
+
+interface AttachmentData {
+  type: string;
+  size: number;
+  url: string;
+  path: string;
+}
 
 const DEFAULT_WALLET_FIELDS = {
   frBalanceActive: 0,
@@ -13,7 +23,10 @@ const DEFAULT_WALLET_FIELDS = {
 };
 
 class WalletUseCase {
-  constructor(private _walletRepository: IWalletRepository = walletRepository) {}
+  constructor(
+    private _walletRepository: IWalletRepository = walletRepository,
+    private _attachmentRepository: IAttachmentRepository = attachmentRepository,
+  ) {}
 
   async createWallet(data: Prisma.WalletUncheckedCreateInput) {
     return this._walletRepository.createWallet(data);
@@ -54,16 +67,45 @@ class WalletUseCase {
     return this._walletRepository.findDepositRequestsByType(userId, type);
   }
 
-  async createDepositRequest(userId: string, packageFXId: string, refCode: string) {
+  async createDepositRequest(
+    userId: string,
+    packageFXId: string,
+    refCode: string,
+    attachmentData?: AttachmentData,
+  ) {
     const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
     if (!packageFX) {
       throw new Error('PackageFX not found');
     }
+
+    let attachmentId: string | undefined;
+
+    // Create attachment if attachment data is provided
+    if (attachmentData) {
+      // Validate attachment size
+      if (attachmentData.size > ATTACHMENT_CONSTANTS.MAX_FILE_SIZE) {
+        throw new Error(
+          `File size exceeds maximum limit of ${ATTACHMENT_CONSTANTS.MAX_FILE_SIZE / (1024 * 1024)}MB`,
+        );
+      }
+
+      const attachment = await this._attachmentRepository.createAttachment({
+        type: attachmentData.type || ATTACHMENT_CONSTANTS.TYPES.DEPOSIT_PROOF,
+        size: attachmentData.size || ATTACHMENT_CONSTANTS.DEFAULT_SIZE,
+        url: attachmentData.url,
+        path: attachmentData.path,
+        createdBy: userId,
+      });
+      attachmentId = attachment.id;
+    }
+
     return this._walletRepository.createDepositRequest({
       userId,
       packageFXId,
       refCode,
+      attachmentId,
       status: 'Requested',
+      createdBy: userId,
     });
   }
 

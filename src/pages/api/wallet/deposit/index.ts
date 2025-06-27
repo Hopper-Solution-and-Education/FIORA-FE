@@ -7,11 +7,26 @@ import { Messages } from '@/shared/constants/message';
 import { z } from 'zod';
 import { DepositRequestStatus } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
+import { ATTACHMENT_CONSTANTS } from '@/features/setting/api/constants/attachmentConstants';
 
 const DepositRequestStatusSchema = z.nativeEnum(DepositRequestStatus);
 
+const AttachmentDataSchema = z.object({
+  type: z.string().min(1, 'Attachment type is required'),
+  size: z
+    .number()
+    .min(0, 'Attachment size must be non-negative')
+    .max(
+      ATTACHMENT_CONSTANTS.MAX_FILE_SIZE,
+      `File size must not exceed ${ATTACHMENT_CONSTANTS.MAX_FILE_SIZE / (1024 * 1024)}MB`,
+    ),
+  url: z.string().url('Invalid attachment URL'),
+  path: z.string().min(1, 'Attachment path is required'),
+});
+
 const PostBodySchema = z.object({
-  packageFXId: z.string().min(1),
+  packageFXId: z.string().min(1, 'PackageFX ID is required'),
+  attachmentData: AttachmentDataSchema.optional(),
 });
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
@@ -68,12 +83,17 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
     if (!body.success) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_PARAMS_INPUT);
     }
-    const { packageFXId } = body.data;
+    const { packageFXId, attachmentData } = body.data;
 
     const refCode = uuidv4();
 
     try {
-      const depositRequest = await walletUseCase.createDepositRequest(userId, packageFXId, refCode);
+      const depositRequest = await walletUseCase.createDepositRequest(
+        userId,
+        packageFXId,
+        refCode,
+        attachmentData,
+      );
       return res
         .status(RESPONSE_CODE.OK)
         .json(

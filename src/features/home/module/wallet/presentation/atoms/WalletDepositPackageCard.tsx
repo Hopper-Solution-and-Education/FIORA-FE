@@ -5,6 +5,7 @@ import { RadioGroupItem } from '@/components/ui/radio-group';
 import type { PackageFX } from '../../domain/entity/PackageFX';
 import { formatFIORACurrency } from '@/config/FIORANumberFormat';
 import { CURRENCY } from '@/shared/constants';
+import { Icons } from '@/components/Icon';
 
 const USD_RATE = 1;
 
@@ -28,18 +29,7 @@ const WalletDepositPackageCard: React.FC<WalletDepositPackageCardProps> = ({
       }`}
       onClick={() => onSelect?.(packageFX.id)}
     >
-      <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-violet-100 text-violet-600">
-        <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-          <path
-            d="M12 8v4l3 2"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
+      <Icons.walletPackageCard className="w-12 h-12" />
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">

@@ -1,18 +1,17 @@
 import { Loading } from '@/components/common/atoms';
 import MetricCard from '@/components/common/metric/MetricCard';
-import { RootState, useAppDispatch } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { WalletType } from '../../domain/enum';
-import { useInitializeUserWallet } from '../hooks';
 import { fetchFrozenAmount } from '../../slices/actions';
+import { useInitializeUserWallet } from '../hooks';
 
 const DEFAULT_FROZEN_AMOUNT = 0;
 
 const WalletOverview = () => {
   const { wallets, loading } = useInitializeUserWallet();
   const dispatch = useAppDispatch();
-  const frozenAmount = useSelector((state: RootState) => state.wallet.frozenAmount);
+  const frozenAmount = useAppSelector((state) => state.wallet.frozenAmount);
 
   useEffect(() => {
     if (!frozenAmount) {
