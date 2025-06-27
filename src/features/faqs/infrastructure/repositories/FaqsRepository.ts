@@ -115,7 +115,6 @@ export class FaqsRepository implements IFaqsRepository {
     } = params;
 
     const skip = (page - 1) * pageSize;
-    const take = limit || pageSize;
 
     try {
       // Build where clause for filtering
@@ -150,7 +149,7 @@ export class FaqsRepository implements IFaqsRepository {
           PostCategory: true,
         },
         skip: limit ? 0 : skip,
-        take,
+        take: limit ? limit : undefined,
         orderBy: { [orderBy]: orderDirection },
       });
 
