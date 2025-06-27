@@ -26,9 +26,9 @@ export const menuSettingItems: MenuSettingItem[] = [
     url: '/setting/partner',
     featureFlags: FeatureFlags.PARTNER_FEATURE,
   },
-  { label: 'Users', icon: Icons.users, url: '/users' },
-  { label: 'Role & Permission', icon: Icons.clipboardList, url: '/setting' },
-  { label: 'Landing Settings', icon: Icons.dashboard, url: '/setting/landing', role: 'Admin' },
+  { label: 'Users', icon: Icons.users, url: '#' },
+  { label: 'Role & Permission', icon: Icons.clipboardList, url: '#' },
+  { label: 'Global Setting', icon: Icons.dashboard, url: '/setting/landing', role: 'Admin' },
 ];
 
 export const helpItems = [

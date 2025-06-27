@@ -31,7 +31,9 @@ const ModuleAccessLayout = ({ featureFlag, requiredRoles, children }: ModuleAcce
   if (
     !session ||
     !isFeatureEnabled ||
-    (requiredRoles && requiredRoles.length > 0 && !requiredRoles.includes(session.user.role))
+    (requiredRoles &&
+      requiredRoles.length > 0 &&
+      !requiredRoles.includes(session.user.role.toUpperCase()))
   ) {
     notFound();
   }
