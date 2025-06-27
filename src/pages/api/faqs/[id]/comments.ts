@@ -9,18 +9,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
   if (req.method === 'POST') {
-    const { content } = req.body;
+    const { content, replyToUsername } = req.body as {
+      content: string;
+      replyToUsername?: string;
+    };
 
     if (!content || typeof content !== 'string') {
       return res.status(400).json({ error: 'Invalid content' });
     }
+
+    // Nếu có người được reply thì gắn prefix vào content
+    const finalContent = replyToUsername ? `@${replyToUsername}: ${content}` : content;
 
     const comment = await prisma.comment.create({
       data: {
         id: randomUUID(),
         postId: id as string,
         userId: user.id,
-        content,
+        content: finalContent,
         createdBy: user.id,
       },
     });
