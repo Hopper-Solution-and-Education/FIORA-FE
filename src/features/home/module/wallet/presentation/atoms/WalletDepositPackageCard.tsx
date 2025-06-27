@@ -24,7 +24,7 @@ const WalletDepositPackageCard: React.FC<WalletDepositPackageCardProps> = ({
   return (
     <Card
       className={`flex items-center gap-4 p-4 cursor-pointer border-2 transition-all ${
-        selected ? 'border-primary shadow-lg' : 'border-border hover:border-primary/60'
+        selected ? 'border-blue-500 shadow-lg' : 'border-border hover:border-primary/60'
       }`}
       onClick={() => onSelect?.(packageFX.id)}
     >

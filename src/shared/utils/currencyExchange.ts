@@ -2,7 +2,7 @@ import { Currency, Prisma } from '@prisma/client'; // Import Prisma to use Decim
 
 type ExchangeRates = Record<Currency, number>;
 
-const EXCHANGE_RATES_TO_USD: ExchangeRates = {
+export const EXCHANGE_RATES_TO_USD: ExchangeRates = {
   [Currency.USD]: 1,
   [Currency.VND]: 25000,
   [Currency.FX]: 1,

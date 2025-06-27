@@ -74,7 +74,6 @@ const ItemRankChart = ({
                       src={tierIcon.icon || 'https://placehold.co/60x60/cccccc/000000?text=Icon'}
                       alt={combinedKey}
                       fill
-                      sizes="(max-width: 85px) 100vw, 85px"
                       className={`
                       object-contain transition-transform duration-200
                       ${isCurrent ? 'scale-110' : 'scale-100'}
@@ -85,7 +84,6 @@ const ItemRankChart = ({
                       src={tierIcon.icon || 'https://placehold.co/60x60/cccccc/000000?text=Icon'}
                       alt={combinedKey}
                       fill
-                      sizes="(max-width: 85px) 100vw, 85px"
                       className={`
                         object-contain transition-transform duration-200
                         ${isCurrent ? 'scale-110' : 'scale-100'}

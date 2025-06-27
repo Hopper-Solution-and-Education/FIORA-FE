@@ -32,4 +32,14 @@ export class WalletRepository implements IWalletRepository {
   getAllPackageFX(): Promise<PackageFX[]> {
     return this._walletApi.getAllPackageFX().then(PackageFXMapper.toPackageFXs);
   }
+
+  createDepositRequest(packageFXId: string, depositProofUrl: string): Promise<DepositRequest> {
+    return this._walletApi
+      .createDepositRequest({ packageFXId, depositProofUrl })
+      .then((res) => DepositRequestMapper.toDepositRequest(res.data));
+  }
+
+  getFrozenDepositAmount(): Promise<number> {
+    return this._walletApi.getFrozenDepositAmount().then((res) => res.data.amount);
+  }
 }
