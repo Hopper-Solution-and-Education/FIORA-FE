@@ -114,9 +114,15 @@ const ValidationResults = ({ records, filter }: ValidationResultsProps) => {
                   <StatusBadge isValid={record.isValid} />
                 </TableCell>
 
-                <TableCell className={getCellClassName(record.validationErrors, 'category')}>
-                  {record.rowData?.category}
-                </TableCell>
+                <CollapsibleText
+                  text={record.rowData?.category}
+                  errors={record.validationErrors}
+                  fieldName="category"
+                  uniqueId={`category-${index}`}
+                  isExpanded={expandedTexts.includes(`category-${index}`)}
+                  onToggle={handleToggleTextExpansion}
+                  limit={20}
+                />
 
                 <TableCell className={getCellClassName(record.validationErrors, 'type')}>
                   {record.rowData?.type}
@@ -129,6 +135,7 @@ const ValidationResults = ({ records, filter }: ValidationResultsProps) => {
                   uniqueId={`title-${index}`}
                   isExpanded={expandedTexts.includes(`title-${index}`)}
                   onToggle={handleToggleTextExpansion}
+                  limit={30}
                 />
 
                 <CollapsibleText
@@ -138,6 +145,7 @@ const ValidationResults = ({ records, filter }: ValidationResultsProps) => {
                   uniqueId={`description-${index}`}
                   isExpanded={expandedTexts.includes(`description-${index}`)}
                   onToggle={handleToggleTextExpansion}
+                  limit={80}
                 />
 
                 <CollapsibleText
@@ -149,9 +157,6 @@ const ValidationResults = ({ records, filter }: ValidationResultsProps) => {
                   onToggle={handleToggleTextExpansion}
                 />
 
-                {/* <TableCell className={getCellClassName(record.validationErrors, 'url')}>
-                  {record.rowData?.url}
-                </TableCell> */}
                 <CollapsibleText
                   text={record.rowData?.url}
                   errors={record.validationErrors}
