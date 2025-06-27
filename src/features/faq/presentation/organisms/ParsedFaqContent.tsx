@@ -71,7 +71,7 @@ const ParsedFaqContent: React.FC<Props> = ({ htmlContent }) => {
 
             // Handle <p>
             if (domNode.name === 'p') {
-              return <p className="mb-4">{domToReact(domNode.children)}</p>;
+              return <p className="mb-4">{domToReact(domNode.children as any)}</p>;
             }
           }
         },

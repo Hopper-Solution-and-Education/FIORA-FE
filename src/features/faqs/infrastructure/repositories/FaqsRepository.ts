@@ -1,19 +1,19 @@
 import { prisma } from '@/config';
-import {
-  IFaqsRepository,
-  FaqsQueryParams,
-  CategoryWithFaqs,
-  FaqsListCategoriesResponse,
-} from '../../domain/repositories/IFaqsRepository';
+import { IFaqsRepository } from '../../domain/repositories/IFaqsRepository';
 import {
   FaqsRowRaw,
   FaqsImportResult,
   PostType,
   FaqsListResponse,
   Faq,
+  FaqsCategoriesResponse,
+  FaqsListCategoriesResponse,
+  CategoryWithFaqs,
+  FaqsListQueryParams,
 } from '../../domain/entities/models/faqs';
 import { Prisma } from '@prisma/client';
 import { generateUrlHtml } from '../../utils/contentUtils';
+import { FAQ_LIST_CONSTANTS } from '../../constants';
 
 export class FaqsRepository implements IFaqsRepository {
   async importFaqs(validatedRows: FaqsRowRaw[], userId: string): Promise<FaqsImportResult> {
@@ -104,14 +104,13 @@ export class FaqsRepository implements IFaqsRepository {
     }
   }
 
-  async getFaqsList(params: FaqsQueryParams, userId: string): Promise<FaqsListResponse> {
+  async getFaqsList(params: FaqsListQueryParams): Promise<FaqsListResponse> {
     const {
       page = 1,
       pageSize = 10,
-      category,
-      type,
-      search,
-      orderBy = 'updatedAt',
+      filters = { search: '', categories: [] },
+      orderBy = 'views',
+      orderDirection = 'desc',
       limit,
     } = params;
 
@@ -121,48 +120,28 @@ export class FaqsRepository implements IFaqsRepository {
     try {
       // Build where clause for filtering
       const whereCondition: Prisma.PostWhereInput = {
-        userId,
-        type: type ? (type as any) : 'FAQ',
+        type: PostType.FAQ,
       };
 
       // Add category filter if provided
-      if (category) {
-        if (Array.isArray(category)) {
-          whereCondition.PostCategory = {
-            id: { in: category },
-          };
-        } else {
-          whereCondition.PostCategory = {
-            name: category,
-          };
-        }
+      if (filters.categories && filters.categories.length > 0) {
+        whereCondition.PostCategory = {
+          id: { in: filters.categories },
+        };
       }
 
       // Add search filter if provided
-      if (search) {
+      if (filters.search) {
         whereCondition.OR = [
-          { title: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
-          { description: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
-          { content: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
+          { title: { contains: filters.search, mode: 'insensitive' as Prisma.QueryMode } },
+          // { description: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
+          // { content: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
         ];
       }
 
-      // Build order by clause
-      let orderByClause: Prisma.PostOrderByWithRelationInput = {
-        updatedAt: 'desc',
-      };
-
-      if (orderBy === 'views') {
-        // For most viewed, we'll order by a views field (you may need to add this to your schema)
-        // For now, using createdAt as a placeholder
-        orderByClause = { createdAt: 'desc' };
-      } else if (orderBy === 'createdAt') {
-        orderByClause = { createdAt: 'desc' };
-      }
-
       // Get total count for pagination
-      const totalCount = await prisma.post.count({ where: whereCondition });
-      const totalPages = Math.ceil(totalCount / (pageSize || 10));
+      // const totalCount = await prisma.post.count({ where: whereCondition });
+      // const totalPages = Math.ceil(totalCount / (pageSize || 10));
 
       // Get results
       const posts = await prisma.post.findMany({
@@ -170,9 +149,9 @@ export class FaqsRepository implements IFaqsRepository {
         include: {
           PostCategory: true,
         },
-        skip: limit ? 0 : skip, // If limit is specified, don't skip
+        skip: limit ? 0 : skip,
         take,
-        orderBy: orderByClause,
+        orderBy: { [orderBy]: orderDirection },
       });
 
       // Map to Faq model
@@ -189,10 +168,10 @@ export class FaqsRepository implements IFaqsRepository {
 
       return {
         faqs,
-        totalCount,
         currentPage: page,
         pageSize: pageSize || 10,
-        totalPages,
+        // totalCount,
+        // totalPages,
       };
     } catch (error) {
       console.error('Error getting FAQs list:', error);
@@ -200,27 +179,14 @@ export class FaqsRepository implements IFaqsRepository {
     }
   }
 
-  async getFaqsListByCategories(
-    params: FaqsQueryParams,
-    userId: string,
-  ): Promise<FaqsListCategoriesResponse> {
-    const { search, limit = 4 } = params;
+  async getFaqsListByCategories(params: FaqsListQueryParams): Promise<FaqsListCategoriesResponse> {
+    const { limit = FAQ_LIST_CONSTANTS.FAQS_PER_CATEGORY } = params;
 
     try {
       // Build base where condition
       const baseWhereCondition: Prisma.PostWhereInput = {
-        userId,
         type: 'FAQ',
       };
-
-      // Add search filter if provided
-      if (search) {
-        baseWhereCondition.OR = [
-          { title: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
-          { description: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
-          { content: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
-        ];
-      }
 
       // Get all categories with their post counts
       const categories = await prisma.postCategory.findMany({
@@ -273,7 +239,7 @@ export class FaqsRepository implements IFaqsRepository {
     }
   }
 
-  async getFaqCategories(): Promise<string[]> {
+  async getFaqCategories(): Promise<FaqsCategoriesResponse[]> {
     try {
       const categories = await prisma.postCategory.findMany({
         where: {
@@ -282,10 +248,11 @@ export class FaqsRepository implements IFaqsRepository {
         distinct: ['name'],
         select: {
           name: true,
+          id: true,
         },
       });
 
-      return categories.map((category) => category.name);
+      return categories;
     } catch (error) {
       console.error('Error getting FAQ categories:', error);
       return [];

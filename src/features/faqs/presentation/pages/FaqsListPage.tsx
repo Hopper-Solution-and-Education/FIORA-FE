@@ -1,56 +1,65 @@
-import { useFaqCategories } from '@/features/faqs/hooks';
 import { useFaqsData } from '@/features/faqs/hooks/useFaqsData';
-import FaqsPageHeader from '../molecules/FaqsPageHeader';
-import FaqsFilterResults from '../molecules/FaqsFilterResults';
-import MostViewedSection from '../molecules/MostViewedSection';
-import CategoriesSection from '../molecules/CategoriesSection';
+import FaqsPageHeader from '../organisms/FaqsPageHeader';
+import CategoriesSection from '../organisms/CategoriesSection';
+import MostViewedSection from '../organisms/MostViewedSection';
+import FilteredCategoriesSection from '../organisms/FilteredCategoriesSection';
+import { FAQ_LIST_CONSTANTS } from '../../constants';
+import { useGetFaqCategoriesQuery } from '../../store/api/faqsApi';
+import { Session, useSession } from 'next-auth/react';
+
+enum UserRole {
+  USER = 'User',
+  ADMIN = 'Admin',
+  CS = 'CS',
+}
 
 const FaqsListPage = () => {
   // Hooks
-  const { categories } = useFaqCategories();
+  const { data: categories = [] } = useGetFaqCategoriesQuery();
   const {
     activeFilters,
     expandedCategories,
     mostViewedFaqs,
     categoriesWithFaqs,
     expandedCategoryFaqs,
-    filterResults,
+    filteredFaqs,
     isLoading,
     hasActiveFilters,
-    handleFilterSubmit,
+    handleFilterChange,
     handleShowMore,
-    getFilterDisplayText,
-    FAQS_PER_CATEGORY,
   } = useFaqsData();
 
+  const { data: session } = useSession() as { data: Session | null };
+
+  const isAdminOrCs = session?.user?.role === UserRole.ADMIN || session?.user?.role === UserRole.CS;
+
   return (
-    <div className="w-full px-4 space-y-8">
+    <div className="w-full px-4 space-y-8 mb-6">
       {/* Page Header with Filters */}
       <FaqsPageHeader
         categories={categories}
         activeFilters={activeFilters}
-        onFilterSubmit={handleFilterSubmit}
+        onFilterChange={handleFilterChange}
         isLoading={isLoading}
+        isAdminOrCs={isAdminOrCs}
       />
 
       {/* Main Content */}
       {hasActiveFilters ? (
-        <FaqsFilterResults
-          faqs={filterResults}
-          isLoading={isLoading}
-          selectedCategories={activeFilters.categories}
-          displayText={getFilterDisplayText()}
-        />
+        <FilteredCategoriesSection categoriesWithFaqs={filteredFaqs} isLoading={isLoading} />
       ) : (
         <>
           <MostViewedSection faqs={mostViewedFaqs} isLoading={isLoading} />
+
+          <h3 className="text-2xl font-bold text-center">FAQ Center</h3>
+
           <CategoriesSection
             categoriesWithFaqs={categoriesWithFaqs}
             expandedCategories={expandedCategories}
             expandedCategoryFaqs={expandedCategoryFaqs}
             onShowMore={handleShowMore}
             isLoading={isLoading}
-            faqsPerCategory={FAQS_PER_CATEGORY}
+            faqsPerCategory={FAQ_LIST_CONSTANTS.FAQS_PER_CATEGORY}
           />
         </>
       )}

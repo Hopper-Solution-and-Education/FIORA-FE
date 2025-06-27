@@ -8,9 +8,10 @@ interface FaqsListProps {
   faqs: Faq[];
   isLoading: boolean;
   error?: string;
+  showCategory?: boolean;
 }
 
-const FaqsList = ({ faqs, isLoading, error }: FaqsListProps) => {
+const FaqsList = ({ faqs, isLoading, error, showCategory = false }: FaqsListProps) => {
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -37,10 +38,7 @@ const FaqsList = ({ faqs, isLoading, error }: FaqsListProps) => {
     return (
       <Alert>
         <AlertCircle className="h-4 w-4" />
-        <AlertTitle>No FAQs Found</AlertTitle>
-        <AlertDescription>
-          No FAQs match your current filters. Try adjusting your search criteria.
-        </AlertDescription>
+        <AlertTitle className="mt-1">No FAQs Found</AlertTitle>
       </Alert>
     );
   }
@@ -48,7 +46,7 @@ const FaqsList = ({ faqs, isLoading, error }: FaqsListProps) => {
   return (
     <div>
       {faqs.map((faq) => (
-        <FaqItem key={faq.id} faq={faq} />
+        <FaqItem key={faq.id} faq={faq} showCategory={showCategory} />
       ))}
     </div>
   );

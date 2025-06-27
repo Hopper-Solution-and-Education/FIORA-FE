@@ -6,7 +6,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useCallback } from 'react';
 import { ValidationError } from '../../domain/entities/models/faqs';
 import { getCellClassName } from '../../utils/validationHelpers';
-import { FAQ_IMPORT_CONSTANTS } from '../../constants/import';
+import { FAQ_IMPORT_CONSTANTS } from '../../constants';
 
 interface CollapsibleTextProps {
   text: string | undefined;

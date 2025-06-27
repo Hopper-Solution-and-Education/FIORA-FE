@@ -51,10 +51,49 @@ export interface Faq {
 
 export interface FaqsListResponse {
   faqs: Faq[];
-  totalCount: number;
   currentPage: number;
   pageSize: number;
-  totalPages: number;
+  // totalCount: number;
+  // totalPages: number;
+}
+
+export interface CategoryWithFaqs {
+  categoryId: string;
+  categoryName: string;
+  totalFaqs: number;
+  faqs: {
+    id: string;
+    title: string;
+    description: string;
+    content: string;
+    category: string;
+    type: any;
+    createdAt: Date;
+    updatedAt: Date;
+  }[];
+}
+
+export interface FaqsCategoriesResponse {
+  id: string;
+  name: string;
+}
+
+export interface FaqsListCategoriesResponse {
+  categoriesData: CategoryWithFaqs[];
+}
+
+export interface FaqsListQueryParams {
+  type?: FaqsGetListType;
+  limit?: number;
+  // Legacy support
+  page?: number;
+  pageSize?: number;
+  filters?: {
+    search?: string;
+    categories?: string[];
+  };
+  orderBy?: string;
+  orderDirection?: string;
 }
 
 export enum PostType {
@@ -67,4 +106,9 @@ export enum PostType {
 export enum UrlType {
   IMAGE = 'image',
   VIDEO = 'video',
+}
+
+export enum FaqsGetListType {
+  LIST = 'list',
+  CATEGORIES = 'categories',
 }

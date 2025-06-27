@@ -13,13 +13,9 @@ import { FAQS_VALIDATION_SCHEMAS } from '@/features/faqs/domain/schemas/faqsVali
 const createImportValidationSchema = () => {
   const importSchemas = { ...FAQS_VALIDATION_SCHEMAS };
 
-  // For import, url and typeOfUrl should be optional (not required)
-  // The base schemas already handle this correctly with conditional validation
-
   return yup.object(importSchemas);
 };
 
-// Validation schema for import request using standardized schemas
 const importBatchSchema = yup
   .array(createImportValidationSchema())
   .min(1, 'At least one valid record is required')
@@ -27,7 +23,7 @@ const importBatchSchema = yup
   .required('Valid records array is required');
 
 export default withAuthorization({
-  POST: ['User', 'Admin', 'CS'],
+  POST: ['Admin', 'CS'],
 })(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   switch (req.method) {
     case 'POST':

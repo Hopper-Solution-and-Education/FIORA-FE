@@ -4,7 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import { File, Upload } from 'lucide-react';
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { FAQ_IMPORT_CONSTANTS } from '../../constants/import';
+import { FAQ_IMPORT_CONSTANTS } from '../../constants';
 
 interface FileUploadZoneProps {
   isLoading?: boolean;

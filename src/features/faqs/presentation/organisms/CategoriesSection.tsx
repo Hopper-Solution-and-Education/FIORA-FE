@@ -1,6 +1,5 @@
-import { CategoryWithFaqs } from '@/features/faqs/domain/repositories/IFaqsRepository';
-import FaqsSectionHeader from '../atoms/FaqsSectionHeader';
-import CategoryItem from './CategoryItem';
+import { CategoryWithFaqs } from '../../domain/entities/models/faqs';
+import CategoryItem from '../molecules/CategoryItem';
 
 interface CategoriesSectionProps {
   categoriesWithFaqs: CategoryWithFaqs[];
@@ -21,8 +20,6 @@ const CategoriesSection = ({
 }: CategoriesSectionProps) => {
   return (
     <section>
-      <FaqsSectionHeader title="Browse by Category" />
-
       {isLoading && categoriesWithFaqs.length === 0 ? (
         <div className="text-center py-8">Loading categories...</div>
       ) : (
