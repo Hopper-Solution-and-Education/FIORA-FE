@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HttpResponse } from '@/features/setting/module/product/model';
-import useDataFetch from '@/shared/hooks/useDataFetch';
+import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { cn, formatCurrency } from '@/shared/utils';
 import { useAppSelector } from '@/store';
 import { TransactionType } from '@prisma/client';
