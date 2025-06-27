@@ -5,6 +5,7 @@ export default function FaqDetailPage() {
   return (
     <div>
       <FAQDetail id={id} />
+
     </div>
   );
 }
