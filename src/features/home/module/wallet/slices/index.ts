@@ -8,6 +8,7 @@ import {
   fetchFrozenAmount,
 } from './actions';
 import type { PackageFX } from '../domain/entity/PackageFX';
+import type { AttachmentData } from '../presentation/types/attachment.type';
 
 const initialState: WalletState = {
   wallets: null,
@@ -19,7 +20,7 @@ const initialState: WalletState = {
   minBalance: null,
   maxBalance: null,
   selectedPackageId: null,
-  depositProofUrl: null,
+  attachmentData: null,
   depositSearch: null,
   frozenAmount: null,
 };
@@ -34,8 +35,8 @@ const walletSlice = createSlice({
     setSelectedPackageId: (state, action) => {
       state.selectedPackageId = action.payload;
     },
-    setDepositProofUrl: (state, action) => {
-      state.depositProofUrl = action.payload;
+    setAttachmentData: (state, action: { payload: AttachmentData | null }) => {
+      state.attachmentData = action.payload;
     },
     clearError: (state) => {
       state.error = null;
@@ -133,7 +134,7 @@ const walletSlice = createSlice({
 export const {
   setSelectedWalletType,
   setSelectedPackageId,
-  setDepositProofUrl,
+  setAttachmentData,
   clearError,
   clearWallets,
   setWalletSearch,

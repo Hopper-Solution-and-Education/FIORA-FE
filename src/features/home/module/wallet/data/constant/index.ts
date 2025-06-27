@@ -14,3 +14,5 @@ export const DEFAULT_WALLET_FILTER_CRITERIA: FilterCriteria = {
   userId: '',
   filters: {},
 };
+
+export * from './attachmentConstants';

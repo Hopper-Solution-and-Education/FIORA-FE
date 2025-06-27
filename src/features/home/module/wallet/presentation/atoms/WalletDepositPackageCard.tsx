@@ -5,8 +5,10 @@ import { RadioGroupItem } from '@/components/ui/radio-group';
 import type { PackageFX } from '../../domain/entity/PackageFX';
 import { formatFIORACurrency } from '@/config/FIORANumberFormat';
 import { CURRENCY } from '@/shared/constants';
-
-const USD_RATE = 1;
+import { Icons } from '@/components/Icon';
+import { EXCHANGE_RATES_TO_USD } from '@/shared/utils/currencyExchange';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { useAppSelector } from '@/store';
 
 interface WalletDepositPackageCardProps {
   packageFX: PackageFX;
@@ -21,6 +23,11 @@ const WalletDepositPackageCard: React.FC<WalletDepositPackageCardProps> = ({
   onSelect,
   isPopular = false,
 }) => {
+  const currency = useAppSelector((state) => state.settings.currency);
+
+  // Calculate USD amount using proper exchange rate
+  const usdAmount = packageFX.fxAmount / EXCHANGE_RATES_TO_USD.FX;
+
   return (
     <Card
       className={`flex items-center gap-4 p-4 cursor-pointer border-2 transition-all ${
@@ -28,18 +35,7 @@ const WalletDepositPackageCard: React.FC<WalletDepositPackageCardProps> = ({
       }`}
       onClick={() => onSelect?.(packageFX.id)}
     >
-      <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-violet-100 text-violet-600">
-        <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-          <path
-            d="M12 8v4l3 2"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
+      <Icons.walletPackageCard className="w-12 h-12" />
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -51,7 +47,7 @@ const WalletDepositPackageCard: React.FC<WalletDepositPackageCardProps> = ({
           )}
         </div>
         <div className="text-muted-foreground text-sm">
-          {formatFIORACurrency(packageFX.fxAmount * USD_RATE, CURRENCY.USD)}
+          {formatFIORACurrency(convertCurrency(usdAmount, CURRENCY.USD, currency), currency)}
         </div>
       </div>
 

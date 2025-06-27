@@ -1,4 +1,6 @@
+import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
 import SettingSubTabContent from '@/features/setting/module/partner/presentation/components/SettingSubTabContent';
+import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { Metadata } from 'next';
 
 interface SettingUpdatePageProps {
@@ -12,5 +14,9 @@ export const metadata: Metadata = {
 
 export default async function SettingUpdatePage({ params }: SettingUpdatePageProps) {
   const { tab } = await params;
-  return <SettingSubTabContent tab={tab} subTab="update" />;
+  return (
+    <ModuleAccessLayout featureFlag={FeatureFlags.PARTNER_FEATURE}>
+      <SettingSubTabContent tab={tab} subTab="update" />
+    </ModuleAccessLayout>
+  );
 }

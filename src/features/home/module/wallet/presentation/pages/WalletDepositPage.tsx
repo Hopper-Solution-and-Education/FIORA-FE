@@ -2,19 +2,19 @@ import { LoadingIndicator } from '@/components/common/atoms';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
-import type { RootState } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { ArrowLeftIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import { walletContainer } from '../../di/walletDIContainer';
 import { WALLET_TYPES } from '../../di/walletDIContainer.type';
 import { CreateDepositRequestUsecase } from '../../domain/usecase';
-import { setDepositProofUrl, setSelectedPackageId } from '../../slices';
+import { setAttachmentData, setSelectedPackageId } from '../../slices';
 import { WalletDialog } from '../atoms';
 import { WalletPaymentDetail, WalletTopbarAction } from '../organisms';
 import WalletPackageList from '../organisms/WalletPackageList';
+import { fetchFrozenAmount } from '../../slices/actions';
 
 const WalletDepositPage = () => {
   const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -22,14 +22,14 @@ const WalletDepositPage = () => {
 
   const pendingNavigation = useRef<null | (() => void)>(null);
 
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const router = useRouter();
-  const selectedId = useSelector((state: RootState) => state.wallet.selectedPackageId);
-  const depositProofUrl = useSelector((state: RootState) => state.wallet.depositProofUrl);
+  const selectedId = useAppSelector((state) => state.wallet.selectedPackageId);
+  const attachmentData = useAppSelector((state) => state.wallet.attachmentData);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (depositProofUrl) {
+      if (attachmentData) {
         e.preventDefault();
         e.returnValue = '';
         return '';
@@ -37,18 +37,18 @@ const WalletDepositPage = () => {
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [depositProofUrl]);
+  }, [attachmentData]);
 
   const guardedNavigate = useCallback(
     (cb: () => void) => {
-      if (depositProofUrl) {
+      if (attachmentData) {
         setShowLeaveModal(true);
         pendingNavigation.current = cb;
       } else {
         cb();
       }
     },
-    [depositProofUrl],
+    [attachmentData],
   );
 
   const handleSelect = (id: string) => {
@@ -60,18 +60,23 @@ const WalletDepositPage = () => {
   };
 
   const handleConfirm = async () => {
-    if (!selectedId || !depositProofUrl) return;
+    if (!selectedId || !attachmentData) return;
     setLoading(true);
     try {
       const usecase = walletContainer.get<CreateDepositRequestUsecase>(
         WALLET_TYPES.ICreateDepositRequestUseCase,
       );
 
-      await usecase.execute(selectedId, depositProofUrl);
+      await usecase.execute({
+        packageFXId: selectedId,
+        attachmentData: attachmentData,
+      });
 
       toast.success('Deposit request sent successfully');
-      dispatch(setDepositProofUrl(null));
+      dispatch(setAttachmentData(null));
       dispatch(setSelectedPackageId(null));
+
+      await dispatch(fetchFrozenAmount());
 
       router.push(RouteEnum.WalletDashboard);
     } catch (err: any) {
@@ -83,7 +88,7 @@ const WalletDepositPage = () => {
 
   const handleConfirmLeave = () => {
     setShowLeaveModal(false);
-    dispatch(setDepositProofUrl(null));
+    dispatch(setAttachmentData(null));
     dispatch(setSelectedPackageId(null));
     if (pendingNavigation.current) {
       pendingNavigation.current();
@@ -96,17 +101,21 @@ const WalletDepositPage = () => {
     pendingNavigation.current = null;
   };
 
-  const canConfirm = !!selectedId && !!depositProofUrl && !loading;
+  const canConfirm = !!selectedId && !!attachmentData && !loading;
 
   return (
     <div id="wallet-deposit">
-      <div className="max-w-7xl mx-auto flex justify-center pb-6">
-        <div className="flex flex-col gap-6">
+      <div className="mx-auto flex justify-center pb-6">
+        <div className="flex flex-col gap-6 w-full">
           <WalletTopbarAction enableDeposit={false} enableFilter={false} searchType="deposit" />
 
-          <div className="flex gap-6">
-            <WalletPackageList selectedId={selectedId} setSelectedId={handleSelect} />
-            <WalletPaymentDetail />
+          <div className="flex w-full gap-6">
+            <WalletPackageList
+              selectedId={selectedId}
+              setSelectedId={handleSelect}
+              className="w-full"
+            />
+            <WalletPaymentDetail className="w-full" />
           </div>
 
           <div className="flex justify-between items-center gap-6">
