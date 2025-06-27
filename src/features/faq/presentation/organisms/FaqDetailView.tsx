@@ -17,7 +17,6 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
   const [commentInput, setCommentInput] = useState('');
   const [commentLoading, setCommentLoading] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-
   const [expanded, setExpanded] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
