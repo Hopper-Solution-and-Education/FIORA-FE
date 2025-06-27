@@ -18,7 +18,7 @@ export const config = {
 };
 
 export default withAuthorization({
-  POST: ['User', 'Admin', 'CS'],
+  POST: ['Admin', 'CS'],
 })(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   switch (req.method) {
     case 'POST':

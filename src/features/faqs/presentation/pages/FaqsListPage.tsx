@@ -5,6 +5,13 @@ import MostViewedSection from '../organisms/MostViewedSection';
 import FilteredCategoriesSection from '../organisms/FilteredCategoriesSection';
 import { FAQ_LIST_CONSTANTS } from '../../constants';
 import { useGetFaqCategoriesQuery } from '../../store/api/faqsApi';
+import { Session, useSession } from 'next-auth/react';
+
+enum UserRole {
+  USER = 'User',
+  ADMIN = 'Admin',
+  CS = 'CS',
+}
 
 const FaqsListPage = () => {
   // Hooks
@@ -22,6 +29,10 @@ const FaqsListPage = () => {
     handleShowMore,
   } = useFaqsData();
 
+  const { data: session } = useSession() as { data: Session | null };
+
+  const isUserRole = session?.user?.role === UserRole.USER;
+
   return (
     <div className="w-full px-4 space-y-8 mb-6">
       {/* Page Header with Filters */}
@@ -30,6 +41,7 @@ const FaqsListPage = () => {
         activeFilters={activeFilters}
         onFilterChange={handleFilterChange}
         isLoading={isLoading}
+        isUserRole={isUserRole}
       />
 
       {/* Main Content */}

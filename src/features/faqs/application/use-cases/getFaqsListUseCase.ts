@@ -8,21 +8,18 @@ import { IFaqsRepository } from '../../domain/repositories/IFaqsRepository';
 export class GetFaqsListUseCase {
   constructor(private faqsRepository: IFaqsRepository) {}
 
-  async execute(params: FaqsListQueryParams, userId: string): Promise<FaqsListResponse> {
+  async execute(params: FaqsListQueryParams): Promise<FaqsListResponse> {
     try {
-      return await this.faqsRepository.getFaqsList(params, userId);
+      return await this.faqsRepository.getFaqsList(params);
     } catch (error) {
       console.error('Error in GetFaqsListUseCase:', error);
       throw error;
     }
   }
 
-  async executeByCategories(
-    params: FaqsListQueryParams,
-    userId: string,
-  ): Promise<FaqsListCategoriesResponse> {
+  async executeByCategories(params: FaqsListQueryParams): Promise<FaqsListCategoriesResponse> {
     try {
-      return await this.faqsRepository.getFaqsListByCategories(params, userId);
+      return await this.faqsRepository.getFaqsListByCategories(params);
     } catch (error) {
       console.error('Error in GetFaqsListUseCase (by categories):', error);
       throw error;

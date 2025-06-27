@@ -21,20 +21,17 @@ export interface IFaqsRepository {
   /**
    * Get list of FAQs with pagination and filtering
    */
-  getFaqsList(params: FaqsListQueryParams, userId: string): Promise<FaqsListResponse>;
+  getFaqsList(params: FaqsListQueryParams): Promise<FaqsListResponse>;
 
   /**
    * Get FAQ categories with their FAQs
    */
-  getFaqsListByCategories(
-    params: FaqsListQueryParams,
-    userId: string,
-  ): Promise<FaqsListCategoriesResponse>;
+  getFaqsListByCategories(params: FaqsListQueryParams): Promise<FaqsListCategoriesResponse>;
 
   /**
    * Get FAQ categories
    */
-  getFaqCategories(userId: string): Promise<FaqsCategoriesResponse[]>;
+  getFaqCategories(): Promise<FaqsCategoriesResponse[]>;
 
   /**
    * Check if FAQ titles exist in the database

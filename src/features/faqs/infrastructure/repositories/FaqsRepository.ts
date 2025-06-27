@@ -13,6 +13,7 @@ import {
 } from '../../domain/entities/models/faqs';
 import { Prisma } from '@prisma/client';
 import { generateUrlHtml } from '../../utils/contentUtils';
+import { FAQ_LIST_CONSTANTS } from '../../constants';
 
 export class FaqsRepository implements IFaqsRepository {
   async importFaqs(validatedRows: FaqsRowRaw[], userId: string): Promise<FaqsImportResult> {
@@ -103,7 +104,7 @@ export class FaqsRepository implements IFaqsRepository {
     }
   }
 
-  async getFaqsList(params: FaqsListQueryParams, userId: string): Promise<FaqsListResponse> {
+  async getFaqsList(params: FaqsListQueryParams): Promise<FaqsListResponse> {
     const {
       page = 1,
       pageSize = 10,
@@ -119,7 +120,6 @@ export class FaqsRepository implements IFaqsRepository {
     try {
       // Build where clause for filtering
       const whereCondition: Prisma.PostWhereInput = {
-        userId,
         type: PostType.FAQ,
       };
 
@@ -179,16 +179,12 @@ export class FaqsRepository implements IFaqsRepository {
     }
   }
 
-  async getFaqsListByCategories(
-    params: FaqsListQueryParams,
-    userId: string,
-  ): Promise<FaqsListCategoriesResponse> {
-    const { limit = 4 } = params;
+  async getFaqsListByCategories(params: FaqsListQueryParams): Promise<FaqsListCategoriesResponse> {
+    const { limit = FAQ_LIST_CONSTANTS.FAQS_PER_CATEGORY } = params;
 
     try {
       // Build base where condition
       const baseWhereCondition: Prisma.PostWhereInput = {
-        userId,
         type: 'FAQ',
       };
 

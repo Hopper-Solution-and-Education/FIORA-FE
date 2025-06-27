@@ -26,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
       // Use the getFaqCategoriesUseCase to fetch categories from the database
-      const categories = await getFaqCategoriesUseCase.execute(session.user.id);
+      const categories = await getFaqCategoriesUseCase.execute();
 
       // Return response
       return res.status(200).json({

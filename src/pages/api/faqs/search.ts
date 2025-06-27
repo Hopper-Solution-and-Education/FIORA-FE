@@ -9,10 +9,10 @@ import { FaqsGetListType, FaqsListQueryParams } from '@/features/faqs/domain/ent
 export default withAuthorization({
   POST: ['User', 'Admin', 'CS'],
   GET: ['User', 'Admin', 'CS'],
-})(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
+})(async (req: NextApiRequest, res: NextApiResponse) => {
   switch (req.method) {
     case 'POST':
-      return POST(req, res, userId);
+      return POST(req, res);
 
     default:
       return res
@@ -21,21 +21,18 @@ export default withAuthorization({
   }
 });
 
-export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function POST(req: NextApiRequest, res: NextApiResponse) {
   try {
     let faqsListResponse;
 
     if (req.body.type === FaqsGetListType.LIST) {
       // Get most viewed FAQs
-      faqsListResponse = await getFaqsListUseCase.execute(req.body as FaqsListQueryParams, userId);
+      faqsListResponse = await getFaqsListUseCase.execute(req.body as FaqsListQueryParams);
     } else if (req.body.type === FaqsGetListType.CATEGORIES) {
       // Get all categories with their FAQs
-      faqsListResponse = await getFaqsListUseCase.executeByCategories(
-        {
-          limit: req.body.limit || 4,
-        },
-        userId,
-      );
+      faqsListResponse = await getFaqsListUseCase.executeByCategories({
+        limit: req.body.limit || 4,
+      });
     }
 
     // Return response
