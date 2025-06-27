@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '@/lib/prisma';
 import { getSessionUser } from '@/lib/utils/auth';
 import { randomUUID } from 'crypto';
+import { prisma } from '@/config';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
