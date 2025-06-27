@@ -11,6 +11,7 @@ import { walletContainer } from '../../di/walletDIContainer';
 import { WALLET_TYPES } from '../../di/walletDIContainer.type';
 import { CreateDepositRequestUsecase } from '../../domain/usecase';
 import { setAttachmentData, setSelectedPackageId } from '../../slices';
+import { fetchFrozenAmount } from '../../slices/actions';
 import { WalletDialog } from '../atoms';
 import { WalletPaymentDetail, WalletTopbarAction } from '../organisms';
 import WalletPackageList from '../organisms/WalletPackageList';
@@ -74,6 +75,8 @@ const WalletDepositPage = () => {
       toast.success('Deposit request sent successfully');
       dispatch(setAttachmentData(null));
       dispatch(setSelectedPackageId(null));
+
+      await dispatch(fetchFrozenAmount());
 
       router.push(RouteEnum.WalletDashboard);
     } catch (err: any) {

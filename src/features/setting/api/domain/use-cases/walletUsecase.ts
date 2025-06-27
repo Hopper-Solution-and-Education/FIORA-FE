@@ -114,11 +114,33 @@ class WalletUseCase {
       userId,
       DepositRequestStatus.Requested,
     );
-    const packageFXIds = requests.map((r) => r.packageFXId);
-    if (packageFXIds.length === 0) return 0;
-    const packageFXs = await this._walletRepository.findManyPackageFXByIds(packageFXIds);
 
-    return packageFXs.reduce((sum, fx) => sum + Number(fx.fxAmount || 0), 0);
+    const packageFXIds = requests.map((r) => r.packageFXId);
+
+    // Remove duplicates to get unique packageFX IDs
+    const uniquePackageFXIds = [...new Set(packageFXIds)];
+
+    if (uniquePackageFXIds.length === 0) return 0;
+
+    const packageFXs = await this._walletRepository.findManyPackageFXByIds(uniquePackageFXIds);
+
+    // Count occurrences of each packageFXId
+    const packageFXCounts = packageFXIds.reduce(
+      (acc, id) => {
+        acc[id] = (acc[id] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    // Calculate total with counts
+    const total = packageFXs.reduce((sum, fx) => {
+      const count = packageFXCounts[fx.id] || 0;
+      const amount = Number(fx.fxAmount || 0) * count;
+      return sum + amount;
+    }, 0);
+
+    return total;
   }
 }
 
