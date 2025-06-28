@@ -13,6 +13,7 @@ interface PositiveAndNegativeV2BarLabelBarLabelProps {
   fontSize?: string;
   showShadow?: boolean;
   minWidth?: number;
+  formatter?: (value: number) => string;
 }
 
 const PositiveAndNegativeV2BarLabel = ({
@@ -26,6 +27,7 @@ const PositiveAndNegativeV2BarLabel = ({
   textColor = 'white',
   fontSize = 'text-sm',
   showShadow = true,
+  formatter,
   minWidth = 100,
 }: PositiveAndNegativeV2BarLabelBarLabelProps) => {
   if (Math.abs(width) < minWidth) return null;
@@ -42,7 +44,7 @@ const PositiveAndNegativeV2BarLabel = ({
         pointerEvents: 'none',
       }}
     >
-      {renderValue ? renderValue : formatCurrency(value)}
+      {renderValue ? renderValue : formatter ? formatter(value) : formatCurrency(value)}
     </text>
   );
 };

@@ -1,6 +1,6 @@
+import { RequestType, Response } from '@/shared/types/Common.types';
 import { toast } from 'sonner';
 import useSWR from 'swr';
-import { RequestType, Response } from '@/shared/types/Common.types';
 
 type DataFetcherProps = {
   endpoint: string | null;
@@ -26,10 +26,10 @@ const useDataFetcher = <T = any>(props: DataFetcherProps) => {
   }
 
   const { data, isLoading, isValidating, error, mutate } = useSWR(endpoint, fetchData, {
-    revalidateIfStale: false,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
     shouldRetryOnError: false,
+    onError: (error: any) => {
+      toast.error(error.message || 'Something went wrong!');
+    },
   });
 
   return { data, isLoading, isValidating, error, mutate };
