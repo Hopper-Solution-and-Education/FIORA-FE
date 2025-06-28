@@ -16,8 +16,8 @@ interface AttachmentData {
 const WALLET_TYPE_ICONS: Record<WalletType, string> = {
   [WalletType.Payment]: 'dollarSign',
   [WalletType.Invest]: 'trendingUp',
-  [WalletType.Saving]: 'user',
-  [WalletType.Lending]: 'piggyBank',
+  [WalletType.Saving]: 'piggyBank',
+  [WalletType.Lending]: 'user',
   [WalletType.BNPL]: 'billing',
   [WalletType.Debt]: 'banknoteArrowDown',
 };

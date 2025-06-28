@@ -18,6 +18,7 @@ export const createExchangeRateSchema = (
     }),
     toCurrency: z
       .string()
+      .trim()
       .min(1, 'To currency is required')
       .max(5, 'To currency must be at most 5 characters')
       .refine((value) => value !== 'USD', {
@@ -37,6 +38,7 @@ export const createExchangeRateSchema = (
       ),
     toSymbol: z
       .string()
+      .trim()
       .min(1, 'To symbol is required')
       .max(5, 'To symbol must be at most 5 characters')
       .refine((value) => value !== '$', {
