@@ -31,6 +31,7 @@ import {
   DollarSign,
   Edit,
   Expand,
+  ExternalLink,
   Eye,
   File,
   FileText,
@@ -40,6 +41,7 @@ import {
   HelpCircle,
   Home,
   Image,
+  ImageIcon,
   Laptop,
   LayoutDashboardIcon,
   LayoutTemplate,
@@ -242,4 +244,6 @@ export const Icons = {
   checkCircle: CheckCircle,
   upload: Upload,
   edit: Edit,
+  image: ImageIcon,
+  externalLink: ExternalLink,
 };

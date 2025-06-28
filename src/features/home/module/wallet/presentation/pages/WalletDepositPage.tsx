@@ -24,6 +24,7 @@ const WalletDepositPage = () => {
 
   const dispatch = useAppDispatch();
   const router = useRouter();
+
   const selectedId = useAppSelector((state) => state.wallet.selectedPackageId);
   const attachmentData = useAppSelector((state) => state.wallet.attachmentData);
 
@@ -88,12 +89,13 @@ const WalletDepositPage = () => {
 
   const handleConfirmLeave = () => {
     setShowLeaveModal(false);
-    dispatch(setAttachmentData(null));
-    dispatch(setSelectedPackageId(null));
+
     if (pendingNavigation.current) {
       pendingNavigation.current();
       pendingNavigation.current = null;
     }
+    dispatch(setAttachmentData(null));
+    dispatch(setSelectedPackageId(null));
   };
 
   const handleCancelLeave = () => {
@@ -115,6 +117,7 @@ const WalletDepositPage = () => {
               setSelectedId={handleSelect}
               className="w-full"
             />
+
             <WalletPaymentDetail className="w-full" />
           </div>
 
