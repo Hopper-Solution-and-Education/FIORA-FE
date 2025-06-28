@@ -18,6 +18,8 @@ interface InputFieldProps {
   options?: {
     percent?: boolean; // Enable percentage input
     maxPercent?: number; // Optional: Max percentage (default 100)
+    decimal?: boolean; // Enable decimal input
+    maxDecimal?: number; // Optional: Max decimal places
   };
   maxLength?: number;
   [key: string]: any;
@@ -41,6 +43,8 @@ const InputField: React.FC<InputFieldProps> = ({
   // Handle input changes (allow leading zeros and commas during typing)
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let inputValue = e.target.value;
+
+    inputValue = inputValue.split(',').join('');
 
     if (percent) {
       // Allow numbers, decimal point, and comma
