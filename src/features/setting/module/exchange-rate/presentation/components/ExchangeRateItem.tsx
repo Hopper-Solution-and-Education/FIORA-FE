@@ -11,6 +11,7 @@ import { createExchangeRateSchema, ExchangeRateFormData } from '../schema';
 import { ExchangeRateDeleteType, ExchangeRateObjectType, ExchangeRateType } from '../types';
 import ConfirmUpdateModal from './ConfirmUpdateModal';
 import DeleteExchangeRateDialog from './DeleteExchangeRateModal';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type ExchangeRateItemMode = 'new' | 'existing' | 'updating';
 
@@ -112,6 +113,7 @@ const ExchangeRateItem = (props: ExchangeRateItemProps) => {
 
   const handleEditClick = () => {
     onEditStart?.();
+    setCurrentMode('updating');
   };
 
   const handleCancelEdit = () => {
@@ -354,16 +356,43 @@ const ExchangeRateItem = (props: ExchangeRateItemProps) => {
                 >
                   <Icons.pencil className="w-4 h-4" />
                 </Button>
-                <Button
-                  type="button"
-                  onClick={handleDeleteClick}
-                  variant="outline"
-                  size="sm"
-                  className="p-2 text-red-500 hover:text-red-700"
-                  disabled={disabled}
-                >
-                  <Icons.close className="w-4 h-4" />
-                </Button>
+
+                {rate?.toCurrency === 'VND' || rate?.toCurrency === 'FX' ? (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <Button
+                            type="button"
+                            onClick={handleDeleteClick}
+                            variant="outline"
+                            size="sm"
+                            className="p-2 text-red-500 hover:text-red-700"
+                            disabled={
+                              disabled || rate?.toCurrency === 'VND' || rate?.toCurrency === 'FX'
+                            }
+                          >
+                            <Icons.close className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Currency is already used for transactions</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={handleDeleteClick}
+                    variant="outline"
+                    size="sm"
+                    className="p-2 text-red-500 hover:text-red-700"
+                    disabled={disabled || rate?.toCurrency === 'VND' || rate?.toCurrency === 'FX'}
+                  >
+                    <Icons.close className="w-4 h-4" />
+                  </Button>
+                )}
               </>
             )}
           </div>
