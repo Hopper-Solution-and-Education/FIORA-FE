@@ -119,6 +119,10 @@ class MembershipSettingUseCase {
               throw new Error(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
             }
 
+            if (!newTierBenefit) {
+              throw new Error(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
+            }
+
             const newTierBenefitWithBenefit = {
               ...newTierBenefit,
               slug: newTierBenefit.benefit.slug,
