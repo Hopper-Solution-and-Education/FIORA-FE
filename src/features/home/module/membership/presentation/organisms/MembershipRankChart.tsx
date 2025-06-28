@@ -14,6 +14,8 @@ const MembershipRankChart = () => {
     (state) => state.membership.isLoadingGetMemberships,
   );
 
+  const currentUserTier = useAppSelector((state) => state.user.userTier);
+
   // Transform API data into balance tiers
   const balanceTiers = useMemo(() => {
     return transformToBalanceTiers(memberships);
@@ -33,8 +35,8 @@ const MembershipRankChart = () => {
     <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-8 rounded-lg p-2 dark:border dark:border-gray-700">
       <ScatterRankingChart
         currentTier={{
-          balance: 0,
-          spent: 0,
+          balance: currentUserTier?.data?.currentBalance ?? 0,
+          spent: currentUserTier?.data?.currentSpent ?? 0,
         }}
         balanceTiers={balanceTiers}
         spentTiers={spentTiers}

@@ -352,7 +352,7 @@ const PositiveAndNegativeBarChartV2 = ({
                     radius={[0, 4, 4, 0]}
                     dataKey="positiveValue"
                     label={(props) => (
-                      <PositiveAndNegativeV2BarLabel {...props} formatter={xAxisFormatter} />
+                      <PositiveAndNegativeV2BarLabel {...props} formatter={labelFormatter} />
                     )}
                     onClick={(props) => {
                       const item = props.payload;

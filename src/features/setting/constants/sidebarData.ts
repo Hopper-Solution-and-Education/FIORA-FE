@@ -5,7 +5,7 @@ import { MODULE } from '@/shared/constants';
 export const settingNavItems: NavItem[] = [
   {
     title: 'Global Settings',
-    url: '/',
+    url: '/setting',
     icon: 'settings',
     isActive: false,
     shortcut: ['d', 'd'],

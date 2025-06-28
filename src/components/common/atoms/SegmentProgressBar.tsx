@@ -40,15 +40,14 @@ export default function SegmentProgressBar({
   return (
     <Card className={cn('w-full rounded-sm overflow-hidden', className)}>
       <div className="relative flex h-6 w-full">
+        <div className="absolute left-2 top-0">{leftLabel}</div>
         <div
           className={cn(
             'flex items-center justify-start pl-2 text-black dark:text-white text-sm font-medium',
           )}
           style={{ width: `${computedProgress * 100}%`, backgroundColor: barColor }}
-        >
-          {leftLabel}
-        </div>
-        <div className="flex-1 bg-gray-300 dark:bg-gray-700 flex items-center justify-end pr-2 text-black dark:text-white text-sm">
+        />
+        <div className="absolute right-2 top-0 dark:bg-gray-700 flex items-center justify-end pr-2 text-black dark:text-white text-sm">
           {rightLabel}
         </div>
       </div>

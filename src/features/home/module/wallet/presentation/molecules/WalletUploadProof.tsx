@@ -7,10 +7,12 @@ import { setAttachmentData } from '../../slices';
 import { ATTACHMENT_TYPES, AttachmentType } from '../types/attachment.type';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { Icons } from '@/components/Icon';
+import WalletProofReview from '../atoms/WalletProofReview';
 
 const WalletUploadProof: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -89,7 +91,6 @@ const WalletUploadProof: React.FC = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // Hiển thị thông tin file đã upload thành công
   if (attachmentData) {
     const uploadedFileName = attachmentData.path.split('/').pop() || 'Unknown file';
 
@@ -126,7 +127,13 @@ const WalletUploadProof: React.FC = () => {
           </div>
           <div className="mt-2 flex items-center gap-2 text-sm text-green-600">
             <Icons.post className="w-3 h-3" />
-            <span>{uploadedFileName}</span>
+            <button
+              onClick={() => setShowReviewModal(true)}
+              className="hover:underline cursor-pointer font-medium"
+              title="Click to review file"
+            >
+              {uploadedFileName}
+            </button>
             <span className="text-xs">({formatFileSize(attachmentData.size)})</span>
           </div>
         </div>
@@ -145,6 +152,12 @@ const WalletUploadProof: React.FC = () => {
             Uploading file...
           </div>
         )}
+
+        <WalletProofReview
+          open={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          attachmentData={attachmentData}
+        />
       </div>
     );
   }
