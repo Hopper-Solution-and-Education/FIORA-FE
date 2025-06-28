@@ -124,6 +124,10 @@ class MembershipSettingUseCase {
               };
             };
 
+            if (!newTierBenefit) {
+              throw new Error(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
+            }
+
             const newTierBenefitWithBenefit = {
               ...newTierBenefit,
               slug: newTierBenefit.benefit.slug,
@@ -146,7 +150,7 @@ class MembershipSettingUseCase {
         if (error.code === 'P2002') {
           throw new Error(Messages.MEMBERSHIP_TIER_ALREADY_EXISTS);
         } else {
-          throw new Error(Messages.INTERNAL_ERROR);
+          throw new Error(error.message || Messages.INTERNAL_ERROR);
         }
       }
       throw new Error(error.message || Messages.INTERNAL_ERROR);
