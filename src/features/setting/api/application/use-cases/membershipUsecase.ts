@@ -31,9 +31,9 @@ class MembershipSettingUseCase {
       story,
     } = data;
 
-    const newTierBenefits: TierBenefit[] = [];
-
     try {
+      const newTierBenefits: TierBenefit[] = [];
+
       return await prisma.$transaction(async (tx) => {
         const updatedMembershipTier = await tx.membershipTier.upsert({
           where: { id },
@@ -76,8 +76,7 @@ class MembershipSettingUseCase {
 
         // Create many - many table relationship of tierBenefits with membershipBenefit
         if (tierBenefits.length > 0) {
-          for await (const benefit of tierBenefits) {
-            // find MembershipBenefit by slug
+          const tierBenefitPromises = tierBenefits.map(async (benefit) => {
             const membershipBenefit = await tx.membershipBenefit.findUnique({
               where: { slug: benefit.slug },
               select: { id: true },
@@ -87,8 +86,7 @@ class MembershipSettingUseCase {
               throw new Error(Messages.MEMBERSHIP_BENEFIT_SLUG_NAME_NOT_FOUND);
             }
 
-            // upsert TierBenefit
-            const newTierBenefit = (await tx.tierBenefit.upsert({
+            const newTierBenefit = await tx.tierBenefit.upsert({
               where: {
                 tierId_benefitId: {
                   tierId: updatedMembershipTier.id,
@@ -115,42 +113,43 @@ class MembershipSettingUseCase {
                   },
                 },
               },
-            })) as TierBenefit & {
-              benefit: {
-                slug: string;
-                name: string;
-                suffix: string;
-                description: string;
-              };
-            };
+            });
+
+            if (!newTierBenefit) {
+              throw new Error(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
+            }
+
+            if (!newTierBenefit) {
+              throw new Error(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
+            }
 
             const newTierBenefitWithBenefit = {
               ...newTierBenefit,
               slug: newTierBenefit.benefit.slug,
             };
 
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { benefit: _, ...newTierBenefitWithoutBenefit } = newTierBenefitWithBenefit;
 
-            newTierBenefits.push(newTierBenefitWithoutBenefit);
-          }
+            return newTierBenefitWithoutBenefit;
+          });
+
+          newTierBenefits.push(...(await Promise.all(tierBenefitPromises)));
         }
 
         return {
           ...updatedMembershipTier,
           tierBenefits: newTierBenefits,
         };
-      });
-    } catch (error) {
-      console.log('error', error);
+      }, { maxWait: 10000, timeout: 15000 });
+    } catch (error: any) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new Error(Messages.MEMBERSHIP_TIER_ALREADY_EXISTS);
         } else {
-          throw new Error(Messages.INTERNAL_ERROR);
+          throw new Error(error.message || Messages.INTERNAL_ERROR);
         }
       }
-      throw new Error(error instanceof Error ? error.message : Messages.INTERNAL_ERROR);
+      throw new Error(error.message || Messages.INTERNAL_ERROR);
     }
   }
 
