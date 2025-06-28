@@ -48,49 +48,67 @@ export const useMembershipSettingPage = () => {
       setValue('themeIcon', selectedMembership.themeIconUrl);
       setValue(
         'referralBonus',
-        selectedMembership.tierBenefits.find(
-          (benefit) => benefit.slug === TierBenefitName.REFERRAL_BONUS,
-        )?.value ?? 0,
+        Number(
+          selectedMembership.tierBenefits.find(
+            (benefit) => benefit.slug === TierBenefitName.REFERRAL_BONUS,
+          )?.value ?? 0,
+        ),
       );
       setValue(
         'savingInterest',
-        selectedMembership.tierBenefits.find(
-          (benefit) => benefit.slug === TierBenefitName.SAVING_INTEREST,
-        )?.value ?? 0,
+        Number(
+          selectedMembership.tierBenefits.find(
+            (benefit) => benefit.slug === TierBenefitName.SAVING_INTEREST,
+          )?.value ?? 0,
+        ),
       );
       setValue(
         'stakingInterest',
-        selectedMembership.tierBenefits.find(
-          (benefit) => benefit.slug === TierBenefitName.STAKING_INTEREST,
-        )?.value ?? 0,
+        Number(
+          selectedMembership.tierBenefits.find(
+            (benefit) => benefit.slug === TierBenefitName.STAKING_INTEREST,
+          )?.value ?? 0,
+        ),
       );
       setValue(
         'investmentInterest',
-        selectedMembership.tierBenefits.find(
-          (benefit) => benefit.slug === TierBenefitName.INVESTMENT_INTEREST,
-        )?.value ?? 0,
+        Number(
+          selectedMembership.tierBenefits.find(
+            (benefit) => benefit.slug === TierBenefitName.INVESTMENT_INTEREST,
+          )?.value ?? 0,
+        ),
       );
       setValue(
         'loanInterest',
-        selectedMembership.tierBenefits.find(
-          (benefit) => benefit.slug === TierBenefitName.LOAN_INTEREST,
-        )?.value ?? 0,
+        Number(
+          selectedMembership.tierBenefits.find(
+            (benefit) => benefit.slug === TierBenefitName.LOAN_INTEREST,
+          )?.value ?? 0,
+        ),
       );
       setValue(
         'cashback',
-        selectedMembership.tierBenefits.find((benefit) => benefit.slug === TierBenefitName.CASHBACK)
-          ?.value ?? 0,
+        Number(
+          selectedMembership.tierBenefits.find(
+            (benefit) => benefit.slug === TierBenefitName.CASHBACK,
+          )?.value ?? 0,
+        ),
       );
       setValue(
         'referralKickback',
-        selectedMembership.tierBenefits.find(
-          (benefit) => benefit.slug === TierBenefitName.REFERRAL_KICKBACK,
-        )?.value ?? 0,
+        Number(
+          selectedMembership.tierBenefits.find(
+            (benefit) => benefit.slug === TierBenefitName.REFERRAL_KICKBACK,
+          )?.value ?? 0,
+        ),
       );
       setValue(
         'bnplFee',
-        selectedMembership.tierBenefits.find((benefit) => benefit.slug === TierBenefitName.BNPL_FEE)
-          ?.value ?? 0,
+        Number(
+          selectedMembership.tierBenefits.find(
+            (benefit) => benefit.slug === TierBenefitName.BNPL_FEE,
+          )?.value ?? 0,
+        ),
       );
     }
   }, [selectedMembership, setValue]);
@@ -173,7 +191,8 @@ export const useMembershipSettingPage = () => {
                 }),
               );
             })
-            .catch((error) => {
+            .catch(async (error) => {
+              await Promise.all(uploadedUrls.map((url) => removeFromFirebase(url)));
               throw error;
             });
         })
