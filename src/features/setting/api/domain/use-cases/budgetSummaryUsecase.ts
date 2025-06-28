@@ -634,6 +634,8 @@ class BudgetSummaryUseCase {
         bottomUpBudget,
         currency: targetCurrency,
       };
+    }, {
+      timeout: 30000,
     });
   }
 
