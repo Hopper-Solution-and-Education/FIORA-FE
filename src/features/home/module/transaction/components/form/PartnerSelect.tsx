@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import SelectField from '@/components/common/forms/select/SelectField';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
-import useDataFetcher from '@/shared/hooks/useDataFetcher';
+import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { DropdownOption } from '@/shared/types';
 import { Partner } from '@prisma/client';
 import { Loader2 } from 'lucide-react';
@@ -28,7 +28,7 @@ const PartnerSelectField: React.FC<PartnerSelectProps> = ({
   const selectedType = watch('type') || 'Expense';
 
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
-  const { data, isLoading, isValidating } = useDataFetcher<Partner[]>({
+  const { data, isLoading, isValidating } = useDataFetch<Partner[]>({
     endpoint: '/api/partners',
     method: 'GET',
   });

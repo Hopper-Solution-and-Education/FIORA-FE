@@ -1,6 +1,6 @@
 import SelectField from '@/components/common/forms/select/SelectField';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
-import useDataFetcher from '@/shared/hooks/useDataFetcher';
+import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { DropdownOption } from '@/shared/types';
 import { Loader2 } from 'lucide-react';
 import React, { useEffect } from 'react';
@@ -27,7 +27,7 @@ const FromSelectField: React.FC<FromSelectProps> = ({
 
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
 
-  const { data, mutate, isLoading, isValidating } = useDataFetcher<any>({
+  const { data, mutate, isLoading, isValidating } = useDataFetch<any>({
     endpoint: transactionType ? `/api/transactions/supporting-data?type=${transactionType}` : null,
     method: 'GET',
   });

@@ -12,6 +12,11 @@ const SettingTierInputFieldConfig = () => {
 
   const { setValue, watch } = methods;
 
+  const options = {
+    percent: true,
+    maxPercent: 100,
+  };
+
   const fields = [
     <SettingTierInputField
       key="referralBonus"
@@ -30,7 +35,7 @@ const SettingTierInputFieldConfig = () => {
       value={watch('savingInterest')}
       onChange={(value) => setValue('savingInterest', value)}
       suffix="%/year"
-      options={{ percent: true, maxPercent: 100 }}
+      options={options}
       required
       disabled={isLoadingUpsertMembership}
     />,
@@ -41,7 +46,7 @@ const SettingTierInputFieldConfig = () => {
       value={watch('stakingInterest')}
       onChange={(value) => setValue('stakingInterest', value)}
       suffix="%/year"
-      options={{ percent: true, maxPercent: 100 }}
+      options={options}
       required
       disabled={isLoadingUpsertMembership}
     />,
@@ -52,7 +57,7 @@ const SettingTierInputFieldConfig = () => {
       value={watch('investmentInterest')}
       onChange={(value) => setValue('investmentInterest', value)}
       suffix="%/year"
-      options={{ percent: true, maxPercent: 100 }}
+      options={options}
       required
       disabled={isLoadingUpsertMembership}
     />,
@@ -63,7 +68,7 @@ const SettingTierInputFieldConfig = () => {
       value={watch('loanInterest')}
       onChange={(value) => setValue('loanInterest', value)}
       suffix="%/year"
-      options={{ percent: true, maxPercent: 100 }}
+      options={options}
       required
       disabled={isLoadingUpsertMembership}
     />,
@@ -74,7 +79,7 @@ const SettingTierInputFieldConfig = () => {
       value={watch('cashback')}
       onChange={(value) => setValue('cashback', value)}
       suffix="% total spent"
-      options={{ percent: true, maxPercent: 100 }}
+      options={options}
       required
       disabled={isLoadingUpsertMembership}
     />,
@@ -85,7 +90,7 @@ const SettingTierInputFieldConfig = () => {
       value={watch('referralKickback')}
       onChange={(value) => setValue('referralKickback', value)}
       suffix="% referral spent"
-      options={{ percent: true, maxPercent: 100 }}
+      options={options}
       required
       disabled={isLoadingUpsertMembership}
     />,

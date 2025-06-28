@@ -1,5 +1,5 @@
-import { Currency, Prisma } from '@prisma/client'; // Import Prisma to use Decimal type
 import { formatFIORACurrency } from '@/config/FIORANumberFormat';
+import { Currency, Prisma } from '@prisma/client'; // Import Prisma to use Decimal type
 
 type ExchangeRates = Record<Currency, number>;
 
