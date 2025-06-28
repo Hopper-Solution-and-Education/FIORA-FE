@@ -36,7 +36,7 @@ class BudgetSummaryUseCase {
     private _budgetRepository: IBudgetRepository = budgetRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
     private _categoryRepository: ICategoryRepository = categoryRepository,
-  ) {}
+  ) { }
 
   async getBudgetsByUserIdAndFiscalYear(
     userId: string,
@@ -200,7 +200,7 @@ class BudgetSummaryUseCase {
     const affectedFieldsInitial = new Set<string>();
 
     return await prisma.$transaction(async (prisma) => {
-      for (const key of Object.keys(updateTopBudget)) {
+      for await (const key of Object.keys(updateTopBudget)) {
         if (key.startsWith('m')) {
           const monthIndex = parseInt(key.match(/\d+/)![0]) - 1;
 
@@ -274,6 +274,8 @@ class BudgetSummaryUseCase {
       }
 
       return updatedBudget;
+    }, {
+      timeout: 15000,
     });
   }
 
@@ -336,10 +338,10 @@ class BudgetSummaryUseCase {
           const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
           const value = oldDetail
             ? convertCurrency(
-                Number(oldDetail.amount),
-                oldDetail.currency || targetCurrency,
-                targetCurrency,
-              )
+              Number(oldDetail.amount),
+              oldDetail.currency || targetCurrency,
+              targetCurrency,
+            )
             : 0;
           return { amount: new Prisma.Decimal(value), month: i + 1, currency: targetCurrency };
         });
@@ -541,10 +543,10 @@ class BudgetSummaryUseCase {
           ),
           actual: actualSumUpPlan
             ? convertCurrency(
-                Number(actualSumUpPlan[`m${i + 1}${suffix}`]) || 0,
-                currency,
-                targetCurrency,
-              )
+              Number(actualSumUpPlan[`m${i + 1}${suffix}`]) || 0,
+              currency,
+              targetCurrency,
+            )
             : 0,
         }));
 
