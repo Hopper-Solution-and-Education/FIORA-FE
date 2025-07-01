@@ -1,3 +1,5 @@
+'use client';
+
 import { WalletDepositButton } from '../atoms';
 import { WalletSearch, WalletFilterMenu } from '../molecules';
 import { useAppSelector, useAppDispatch } from '@/store';

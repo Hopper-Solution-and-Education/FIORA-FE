@@ -760,6 +760,8 @@ enum WalletType {
   Lending
   BNPL
   Debt
+  Referral
+  Cashback
 }
 
 enum DepositRequestStatus {
