@@ -69,7 +69,7 @@ const ItemRankChart = ({
             {tierIcon && (
               <div className="w-full h-full p-1 flex items-center justify-center">
                 <div className="relative w-full h-full max-w-[85px] max-h-[85px] min-w-[40px] min-h-[40px]">
-                  {tierIcon.isActive ? (
+                  {tierIcon.isSelected ? (
                     <Image
                       src={tierIcon.icon || 'https://placehold.co/60x60/cccccc/000000?text=Icon'}
                       alt={combinedKey}
@@ -79,15 +79,26 @@ const ItemRankChart = ({
                       ${isCurrent ? 'scale-110' : 'scale-100'}
                     `}
                     />
-                  ) : (
+                  ) : tierIcon.isPassed ? (
                     <Image
-                      src={tierIcon.icon || 'https://placehold.co/60x60/cccccc/000000?text=Icon'}
+                      src={
+                        tierIcon.passedIcon || 'https://placehold.co/60x60/cccccc/000000?text=Icon'
+                      }
                       alt={combinedKey}
                       fill
                       className={`
                         object-contain transition-transform duration-200
                         ${isCurrent ? 'scale-110' : 'scale-100'}
                       `}
+                    />
+                  ) : (
+                    <Image
+                      src={
+                        tierIcon.inActiveIcon ||
+                        'https://placehold.co/60x60/cccccc/000000?text=Icon'
+                      }
+                      alt={combinedKey}
+                      fill
                     />
                   )}
                 </div>

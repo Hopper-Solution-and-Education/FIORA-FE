@@ -28,7 +28,14 @@ const MembershipRankChart = () => {
 
   // Create combined tier icons mapping with onClick handlers
   const combinedTierIcons = useMemo(() => {
-    return createCombinedTierIcons(balanceTiers, spentTiers, memberships, () => {});
+    return createCombinedTierIcons(
+      balanceTiers,
+      spentTiers,
+      memberships,
+      () => {},
+      currentUserTier?.data?.currentBalance ?? 0,
+      currentUserTier?.data?.currentSpent ?? 0,
+    );
   }, [balanceTiers, spentTiers, memberships]);
 
   return (
@@ -61,7 +68,6 @@ const MembershipRankChart = () => {
         }}
         combinedTierIcons={combinedTierIcons}
         isLoading={isLoadingGetMemberships}
-        isDisabled={true}
       />
     </div>
   );
