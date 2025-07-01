@@ -32,15 +32,11 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
           currentMembershipTier,
         ),
       );
-  } catch (error) {
-    return res
-      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createError(
-          res,
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error instanceof Error ? error.message : Messages.INTERNAL_ERROR,
-        ),
-      );
+  } catch (error: any) {
+    return createError(
+      res,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+      error.message || Messages.INTERNAL_ERROR,
+    );
   }
 }

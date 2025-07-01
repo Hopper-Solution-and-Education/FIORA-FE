@@ -44,6 +44,7 @@ export type PositiveAndNegativeBarChartV2Props = {
   expanded?: boolean;
   header?: React.ReactNode;
   xAxisFormatter?: (value: number) => string;
+  labelFormatter?: (value: number) => string;
   callbackYAxis?: (item: TwoSideBarItem) => void;
   callback?: (item: TwoSideBarItem) => void;
 };

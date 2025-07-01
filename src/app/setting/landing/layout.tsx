@@ -1,3 +1,4 @@
+import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -6,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default async function layout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return <ModuleAccessLayout requiredRoles={['ADMIN']}>{children}</ModuleAccessLayout>;
 }

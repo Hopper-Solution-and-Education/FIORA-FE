@@ -1,6 +1,6 @@
 'use client';
 
-import { notFound } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { SettingSubTabComponentProps } from '@/features/setting/presentation/types';
 import dynamic from 'next/dynamic';
 import { ComponentType } from 'react';
@@ -36,19 +36,22 @@ interface SettingSubTabContentProps {
 }
 
 export default function SettingSubTabContent({ tab, subTab }: SettingSubTabContentProps) {
+  const router = useRouter();
   const isValidTab = (tab: string): tab is TabKey => tab in subTabConfig;
   const isValidSubTab = (tab: TabKey, subTab: string): subTab is SubTabKey<typeof tab> =>
     subTab in subTabConfig[tab];
 
   if (!isValidTab(tab)) {
-    notFound();
+    router.push('/not-found');
+    return null;
   }
 
   const tabConfig = subTabConfig[tab];
   const tabInfo = isValidSubTab(tab, subTab) ? tabConfig[subTab] : null;
 
   if (!tabInfo) {
-    notFound();
+    router.push('/not-found');
+    return null;
   }
 
   const Component = tabInfo.component as ComponentType<SettingSubTabComponentProps>;

@@ -3,14 +3,14 @@ import DateRangeFilter from '@/components/common/filters/DateRangeFilter';
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
-import useDataFetcher from '@/shared/hooks/useDataFetcher';
+import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { FilterColumn, FilterComponentConfig, FilterCriteria } from '@/shared/types/filter.types';
+import { formatCurrency } from '@/shared/utils';
 import { useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { TransactionFilterOptionResponse } from '../types';
 import { DEFAULT_TRANSACTION_FILTER_CRITERIA } from '../utils/constants';
-import { formatCurrency } from '@/shared/utils';
 
 // Define constants for magic numbers
 const DEFAULT_MAX_AMOUNT = 10000;
@@ -130,7 +130,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
   });
 
   // Fetch filter options
-  const { data, isLoading } = useDataFetcher<TransactionFilterOptionResponse>({
+  const { data, isLoading } = useDataFetch<TransactionFilterOptionResponse>({
     endpoint: '/api/transactions/options',
     method: 'GET',
   });

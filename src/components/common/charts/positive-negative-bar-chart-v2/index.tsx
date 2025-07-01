@@ -66,6 +66,7 @@ const PositiveAndNegativeBarChartV2 = ({
   totalName = 'Total',
   expanded = true,
   header,
+  labelFormatter,
 }: PositiveAndNegativeBarChartV2Props) => {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [chartHeight, setChartHeight] = useState(height);
@@ -280,7 +281,7 @@ const PositiveAndNegativeBarChartV2 = ({
                       cursor: 'pointer',
                     }}
                     label={(props) => (
-                      <PositiveAndNegativeV2BarLabel {...props} formatter={xAxisFormatter} />
+                      <PositiveAndNegativeV2BarLabel {...props} formatter={labelFormatter} />
                     )}
                     onClick={(props) => {
                       const item = props.payload;
@@ -351,7 +352,7 @@ const PositiveAndNegativeBarChartV2 = ({
                     radius={[0, 4, 4, 0]}
                     dataKey="positiveValue"
                     label={(props) => (
-                      <PositiveAndNegativeV2BarLabel {...props} formatter={xAxisFormatter} />
+                      <PositiveAndNegativeV2BarLabel {...props} formatter={labelFormatter} />
                     )}
                     onClick={(props) => {
                       const item = props.payload;

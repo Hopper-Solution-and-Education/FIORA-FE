@@ -31,126 +31,127 @@ class MembershipSettingUseCase {
       story,
     } = data;
 
-    const newTierBenefits: TierBenefit[] = [];
-
     try {
-      return await prisma.$transaction(async (tx) => {
-        const updatedMembershipTier = await tx.membershipTier.upsert({
-          where: { id },
-          update: {
-            updatedBy: userId,
-            ...(inactiveIconUrl && { inactiveIconUrl }),
-            ...(mainIconUrl && { mainIconUrl }),
-            ...(passedIconUrl && { passedIconUrl }),
-            ...(themeIconUrl && { themeIconUrl }),
-            ...(story && { story }),
-            ...(tierName && { tierName }),
-          },
-          create: {
-            tierName,
-            createdBy: userId,
-            userId,
-            spentMinThreshold: spentMinThreshold
-              ? new Prisma.Decimal(Number(spentMinThreshold))
-              : new Prisma.Decimal(0),
-            spentMaxThreshold: spentMaxThreshold
-              ? new Prisma.Decimal(Number(spentMaxThreshold))
-              : new Prisma.Decimal(0),
-            balanceMinThreshold: balanceMinThreshold
-              ? new Prisma.Decimal(Number(balanceMinThreshold))
-              : new Prisma.Decimal(0),
-            balanceMaxThreshold: balanceMaxThreshold
-              ? new Prisma.Decimal(Number(balanceMaxThreshold))
-              : new Prisma.Decimal(0),
-            ...(inactiveIconUrl && { inactiveIconUrl }),
-            ...(mainIconUrl && { mainIconUrl }),
-            ...(passedIconUrl && { passedIconUrl }),
-            ...(themeIconUrl && { themeIconUrl }),
-            ...(story && { story }),
-          },
-        });
+      const newTierBenefits: TierBenefit[] = [];
 
-        if (!updatedMembershipTier) {
-          throw new Error(Messages.MEMBERSHIP_TIER_CREATE_FAILED);
-        }
+      return await prisma.$transaction(
+        async (tx) => {
+          const updatedMembershipTier = await tx.membershipTier.upsert({
+            where: { id },
+            update: {
+              updatedBy: userId,
+              ...(inactiveIconUrl && { inactiveIconUrl }),
+              ...(mainIconUrl && { mainIconUrl }),
+              ...(passedIconUrl && { passedIconUrl }),
+              ...(themeIconUrl && { themeIconUrl }),
+              ...(story && { story }),
+              ...(tierName && { tierName }),
+            },
+            create: {
+              tierName,
+              createdBy: userId,
+              userId,
+              spentMinThreshold: spentMinThreshold
+                ? new Prisma.Decimal(Number(spentMinThreshold))
+                : new Prisma.Decimal(0),
+              spentMaxThreshold: spentMaxThreshold
+                ? new Prisma.Decimal(Number(spentMaxThreshold))
+                : new Prisma.Decimal(0),
+              balanceMinThreshold: balanceMinThreshold
+                ? new Prisma.Decimal(Number(balanceMinThreshold))
+                : new Prisma.Decimal(0),
+              balanceMaxThreshold: balanceMaxThreshold
+                ? new Prisma.Decimal(Number(balanceMaxThreshold))
+                : new Prisma.Decimal(0),
+              ...(inactiveIconUrl && { inactiveIconUrl }),
+              ...(mainIconUrl && { mainIconUrl }),
+              ...(passedIconUrl && { passedIconUrl }),
+              ...(themeIconUrl && { themeIconUrl }),
+              ...(story && { story }),
+            },
+          });
 
-        // Create many - many table relationship of tierBenefits with membershipBenefit
-        if (tierBenefits.length > 0) {
-          for await (const benefit of tierBenefits) {
-            // find MembershipBenefit by slug
-            const membershipBenefit = await tx.membershipBenefit.findUnique({
-              where: { slug: benefit.slug },
-              select: { id: true },
-            });
+          if (!updatedMembershipTier) {
+            throw new Error(Messages.MEMBERSHIP_TIER_CREATE_FAILED);
+          }
 
-            if (!membershipBenefit) {
-              throw new Error(Messages.MEMBERSHIP_BENEFIT_SLUG_NAME_NOT_FOUND);
-            }
+          // Create many - many table relationship of tierBenefits with membershipBenefit
+          if (tierBenefits.length > 0) {
+            const tierBenefitPromises = tierBenefits.map(async (benefit) => {
+              const membershipBenefit = await tx.membershipBenefit.findUnique({
+                where: { slug: benefit.slug },
+                select: { id: true },
+              });
 
-            // upsert TierBenefit
-            const newTierBenefit = (await tx.tierBenefit.upsert({
-              where: {
-                tierId_benefitId: {
-                  tierId: updatedMembershipTier.id,
-                  benefitId: membershipBenefit.id,
-                },
-              },
-              create: {
-                tierId: updatedMembershipTier.id,
-                benefitId: membershipBenefit.id,
-                value: new Prisma.Decimal(Number(benefit.value)),
-                createdBy: userId,
-              },
-              update: {
-                value: new Prisma.Decimal(Number(benefit.value)),
-                updatedBy: userId,
-              },
-              include: {
-                benefit: {
-                  select: {
-                    slug: true,
-                    name: true,
-                    suffix: true,
-                    description: true,
+              if (!membershipBenefit) {
+                throw new Error(Messages.MEMBERSHIP_BENEFIT_SLUG_NAME_NOT_FOUND);
+              }
+
+              const newTierBenefit = await tx.tierBenefit.upsert({
+                where: {
+                  tierId_benefitId: {
+                    tierId: updatedMembershipTier.id,
+                    benefitId: membershipBenefit.id,
                   },
                 },
-              },
-            })) as TierBenefit & {
-              benefit: {
-                slug: string;
-                name: string;
-                suffix: string;
-                description: string;
+                create: {
+                  tierId: updatedMembershipTier.id,
+                  benefitId: membershipBenefit.id,
+                  value: new Prisma.Decimal(Number(benefit.value)),
+                  createdBy: userId,
+                },
+                update: {
+                  value: new Prisma.Decimal(Number(benefit.value)),
+                  updatedBy: userId,
+                },
+                include: {
+                  benefit: {
+                    select: {
+                      slug: true,
+                      name: true,
+                      suffix: true,
+                      description: true,
+                    },
+                  },
+                },
+              });
+
+              if (!newTierBenefit) {
+                throw new Error(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
+              }
+
+              if (!newTierBenefit) {
+                throw new Error(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
+              }
+
+              const newTierBenefitWithBenefit = {
+                ...newTierBenefit,
+                slug: newTierBenefit.benefit.slug,
               };
-            };
+              const { benefit: _, ...newTierBenefitWithoutBenefit } = newTierBenefitWithBenefit;
+              console.log(_);
+              return newTierBenefitWithoutBenefit;
+            });
 
-            const newTierBenefitWithBenefit = {
-              ...newTierBenefit,
-              slug: newTierBenefit.benefit.slug,
-            };
-
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { benefit: _, ...newTierBenefitWithoutBenefit } = newTierBenefitWithBenefit;
-
-            newTierBenefits.push(newTierBenefitWithoutBenefit);
+            newTierBenefits.push(...(await Promise.all(tierBenefitPromises)));
           }
-        }
 
-        return {
-          ...updatedMembershipTier,
-          tierBenefits: newTierBenefits,
-        };
-      });
-    } catch (error) {
-      console.log('error', error);
+          return {
+            ...updatedMembershipTier,
+            tierBenefits: newTierBenefits,
+          };
+        },
+        { maxWait: 10000, timeout: 15000 },
+      );
+    } catch (error: any) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new Error(Messages.MEMBERSHIP_TIER_ALREADY_EXISTS);
         } else {
-          throw new Error(Messages.INTERNAL_ERROR);
+          throw new Error(error.message || Messages.INTERNAL_ERROR);
         }
       }
-      throw new Error(error instanceof Error ? error.message : Messages.INTERNAL_ERROR);
+      throw new Error(error.message || Messages.INTERNAL_ERROR);
     }
   }
 
