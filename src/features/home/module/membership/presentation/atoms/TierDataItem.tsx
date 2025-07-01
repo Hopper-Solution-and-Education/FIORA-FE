@@ -4,9 +4,10 @@ export interface TierDataItemProps {
   label: string;
   value: string;
   suffix?: string;
+  highlight?: boolean;
 }
 
-const TierDataItem = ({ label, value, suffix }: TierDataItemProps) => {
+const TierDataItem = ({ label, value, suffix, highlight }: TierDataItemProps) => {
   return (
     <div
       className="
@@ -45,13 +46,14 @@ const TierDataItem = ({ label, value, suffix }: TierDataItemProps) => {
       >
         <div className="flex items-center gap-2">
           <span
-            className="
+            className={`
               text-sm
               md:text-sm
               lg:text-md
               text-gray-800
               dark:text-gray-100
-            "
+              ${highlight ? 'bg-green-50 text-red-700 dark:bg-green-900 dark:text-green-100 rounded px-1' : ''}
+            `}
             title={value}
           >
             {value}
