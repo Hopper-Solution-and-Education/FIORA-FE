@@ -98,7 +98,11 @@ export const createCombinedTierIcons = (
 
       icons[key] = {
         icon: selectedMembership?.mainIconUrl || balanceTier.icon,
+        inActiveIcon: selectedMembership?.inactiveIconUrl || balanceTier.icon,
+        passedIcon: selectedMembership?.passedIconUrl || balanceTier.icon,
+        mainIcon: selectedMembership?.mainIconUrl || balanceTier.icon,
         onClick: onTierClick,
+        isPassed: true,
         selectedMembership: selectedMembership || null,
         balanceTier,
         spentTier,
