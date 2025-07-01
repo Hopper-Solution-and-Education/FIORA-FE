@@ -105,11 +105,6 @@ export const createCombinedTierIcons = (
         mainIcon: selectedMembership?.mainIconUrl || balanceTier.icon,
         onClick: onTierClick,
         isPassed: currentSpent >= spentTier.min && currentBalance >= balanceTier.min,
-        isSelected:
-          currentSpent >= spentTier.min &&
-          currentBalance >= balanceTier.min &&
-          currentSpent < spentTier.max &&
-          currentBalance < balanceTier.max,
         selectedMembership: selectedMembership || null,
         balanceTier,
         spentTier,

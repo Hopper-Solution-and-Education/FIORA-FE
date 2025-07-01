@@ -44,8 +44,8 @@ const CurrentTierMembership = ({
             <Image
               src={icon || 'https://picsum.photos/700'}
               alt="tier-rank"
-              width={1280}
-              height={720}
+              width={1920}
+              height={1080}
               className="w-full max-h-[200px] object-contain rounded-lg"
             />
           </div>
