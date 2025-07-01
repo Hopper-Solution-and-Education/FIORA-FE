@@ -5,4 +5,6 @@ export enum WalletType {
   Lending = 'Lending',
   BNPL = 'BNPL',
   Debt = 'Debt',
+  Referral = 'Referral',
+  Cashback = 'Cashback',
 }

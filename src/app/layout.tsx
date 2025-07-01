@@ -1,4 +1,5 @@
 'use client';
+
 import React from 'react';
 import { SessionTimeoutModal } from '@/components/common/SessionTimeoutModal';
 import KBar from '@/components/kbar';
@@ -16,6 +17,7 @@ import { SWRConfig } from 'swr';
 import growthbook from '@/config/growthbook/growthbook';
 import './globals.css';
 import { AmplitudeProvider, ReduxProvider, ThemeProvider } from '@/components/providers';
+import Updater from '@/store/Updater';
 
 const defaultIconHeader = 'https://static.thenounproject.com/png/2864213-200.png';
 
@@ -77,6 +79,8 @@ export default function RootLayout({
                               },
                             }}
                           />
+
+                          <Updater />
                           <main>{children}</main>
                           <SessionTimeoutModal />
                         </SessionProvider>
