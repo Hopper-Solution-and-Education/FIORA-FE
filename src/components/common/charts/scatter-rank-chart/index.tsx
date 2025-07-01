@@ -1,11 +1,8 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import ItemRankChart from './ItemRankChart';
-import LegendXAxis from './LegendXAxis';
-import LegendYAxis from './LegendYAxis';
+import ScatterRankingChartSkeleton from './ScatterRankingChartSkeleton';
 import { defaultBarColors, ScatterChartProps } from './types';
 import { getBalanceRank, getSpentRank } from './utils';
-import { useIsMobile } from '@/shared/hooks/useIsMobile';
-import ScatterRankingChartSkeleton from './ScatterRankingChartSkeleton';
 
 const ScatterRankingChart = ({
   currentTier,
@@ -14,8 +11,8 @@ const ScatterRankingChart = ({
   title = 'Rank Progress Chart',
   className = '',
   barColors = {},
-  xLegend,
-  yLegend,
+  // xLegend,
+  // yLegend,
   cellRenderer,
   combinedTierIcons,
   customTooltipContent,
@@ -27,7 +24,7 @@ const ScatterRankingChart = ({
   const [chartDimensions, setChartDimensions] = useState({ width: 0, height: 0 });
   const [isChartReady, setIsChartReady] = useState(false);
 
-  const isMobile = useIsMobile();
+  // const isMobile = useIsMobile();
 
   const balance = currentTier?.balance ?? 0;
   const spent = currentTier?.spent ?? 0;
@@ -92,7 +89,7 @@ const ScatterRankingChart = ({
         const percent = (value - tierMin) / (tierMax - tierMin || 1);
 
         if (i === 1) {
-          return i * tierWidth + percent * tierWidth;
+          return i * tierWidth + percent * tierWidth + 5;
         }
 
         switch (tierCount) {
@@ -102,9 +99,18 @@ const ScatterRankingChart = ({
             }
             return i * tierWidth + percent * tierWidth - tierCount;
           case 5:
-            return i * tierWidth + percent * tierWidth - (tierCount + 0.5 + i) * i;
+            if (i === 1) {
+              return i * tierWidth + percent * tierWidth;
+            }
+            if (i === 3) {
+              return i * tierWidth + percent * tierWidth - 2;
+            }
+            if (i > 2) {
+              return i * tierWidth + percent * tierWidth - (i + 1);
+            }
+            return i * tierWidth + percent * tierWidth + i;
           default:
-            return i * tierWidth + percent * tierWidth - 1;
+            return i * tierWidth + percent * tierWidth;
         }
       }
     }
@@ -193,7 +199,7 @@ const ScatterRankingChart = ({
             <div
               className={`transition-all duration-500 ${isChartReady ? 'opacity-100' : 'opacity-0'}`}
             >
-              {/* Y-axis Legend (rotated, vertically centered, outside Y labels) */}
+              {/* Y-axis Legend (rotated, vertically centered, outside Y labels)
               {!isMobile && (
                 <div
                   className="absolute top-0 left-1 flex flex-col justify-center items-center"
@@ -201,10 +207,10 @@ const ScatterRankingChart = ({
                 >
                   <LegendYAxis items={yLegend?.items || []} />
                 </div>
-              )}
+              )} */}
 
               {/* Y-axis Labels at grid lines */}
-              <div className="absolute left-5 top-0 w-20" style={{ height: 'calc(100% - 80px)' }}>
+              <div className="absolute left-5 top-0 w-10" style={{ height: 'calc(100% - 80px)' }}>
                 {/* Only render 0 at the bottom left */}
                 <div
                   className="absolute text-xs text-gray-600 font-semibold whitespace-nowrap overflow-hidden"
@@ -229,7 +235,7 @@ const ScatterRankingChart = ({
               </div>
 
               {/* X-axis Labels at grid lines */}
-              <div className="absolute left-[100px] bottom-10 w-full" style={{ height: 20 }}>
+              <div className="absolute left-[70px] bottom-10 w-full" style={{ height: 20 }}>
                 {spentTiers.map((tier, idx) => {
                   if (idx === 0) return null;
                   const left = getXAxisPosition(tier.min) + 10;
@@ -250,7 +256,7 @@ const ScatterRankingChart = ({
                 })}
               </div>
 
-              {/* X-axis Legend (centered below chart grid) */}
+              {/* X-axis Legend (centered below chart grid)
               {!isMobile && (
                 <div
                   className="absolute left-1/2"
@@ -258,11 +264,11 @@ const ScatterRankingChart = ({
                 >
                   <LegendXAxis items={xLegend?.items || []} />
                 </div>
-              )}
+              )} */}
 
               {/* Chart Grid Area */}
               <div
-                className="absolute top-0 left-[120px] w-[calc(100%-140px)] h-[calc(100%-80px)] grid"
+                className="absolute top-0 left-[80px] w-[calc(100%-100px)] h-[calc(100%-80px)] grid"
                 style={{
                   gridTemplateRows: `repeat(${balanceTiers.length}, 1fr)`,
                   gridTemplateColumns: `repeat(${spentTiers.length}, 1fr)`,
@@ -326,7 +332,7 @@ const ScatterRankingChart = ({
               </div>
 
               {/* Progress Bar Chart for XAxis and YAxis */}
-              <div className="absolute bottom-20 left-[110px] w-[calc(100%-130px)]">
+              <div className="absolute bottom-20 left-[70px] w-[calc(100%-90px)]">
                 {/* Background bar */}
                 <div className="absolute left-0 flex items-center w-[calc(100%-10px)] z-10">
                   <div className="w-full h-2.5" style={{ background: colors.xBg }} />
@@ -350,7 +356,7 @@ const ScatterRankingChart = ({
 
               <div
                 className={`
-                  absolute top-0 left-[110px] 
+                  absolute top-0 left-[70px] 
                   h-[calc(100%-70px)]
                   ${chartDimensions.height ? 'block' : 'hidden'}
                 `}
