@@ -4,15 +4,15 @@ export interface TierDataItemProps {
   label: string;
   value: string;
   suffix?: string;
+  highlight?: boolean;
 }
 
-const TierDataItem = ({ label, value, suffix }: TierDataItemProps) => {
+const TierDataItem = ({ label, value, suffix, highlight }: TierDataItemProps) => {
   return (
     <div
       className="
         flex
         items-center
-        justify-between
         gap-2
         w-full
         overflow-hidden
@@ -28,8 +28,9 @@ const TierDataItem = ({ label, value, suffix }: TierDataItemProps) => {
           font-semibold
           text-gray-700
           dark:text-gray-200
-          text-right
+          text-left
           flex-shrink-0
+          min-w-36
         "
       >
         {label}
@@ -38,21 +39,21 @@ const TierDataItem = ({ label, value, suffix }: TierDataItemProps) => {
       <div
         className="
           flex-shrink-0
-          w-28
           text-left
           overflow-hidden
+          
         "
       >
         <div className="flex items-center gap-2">
           <span
-            className="
+            className={`
               text-sm
               md:text-sm
               lg:text-md
               text-gray-800
               dark:text-gray-100
-              max-w-24
-            "
+              ${highlight ? 'bg-green-50 text-red-700 dark:bg-green-900 dark:text-green-100 rounded px-1' : ''}
+            `}
             title={value}
           >
             {value}

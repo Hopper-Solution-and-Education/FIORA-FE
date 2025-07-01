@@ -22,22 +22,22 @@ const ScatterRankingChartSkeleton = ({ className, rows = 5, cols = 5 }: Props) =
       <div className="flex justify-end">
         <div className="relative w-full min-h-[400px] md:min-h-[700px]">
           {/* Y-axis legend skeleton */}
-          <div
+          {/* <div
             className="absolute top-0 left-1 flex flex-col justify-center items-center"
             style={{ height: 'calc(100% - 80px)', width: '40px', zIndex: 2, gap: '10px' }}
           >
             {[...Array(rows)].map((_, i) => (
               <Skeleton key={i} className="h-4 w-8" />
             ))}
-          </div>
+          </div> */}
 
           {/* X-axis legend skeleton */}
-          <div
+          {/* <div
             className="absolute left-1/2"
             style={{ transform: 'translateX(-50%)', bottom: '0px', zIndex: 2 }}
           >
             <Skeleton className="h-4 w-32" />
-          </div>
+          </div> */}
           {/* Chart grid skeleton */}
           <div
             className="absolute top-0 left-[120px] w-[calc(100%-200px)] h-[calc(100%-10px)] grid"
