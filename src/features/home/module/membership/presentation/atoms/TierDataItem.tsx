@@ -12,7 +12,6 @@ const TierDataItem = ({ label, value, suffix }: TierDataItemProps) => {
       className="
         flex
         items-center
-        justify-between
         gap-2
         w-full
         overflow-hidden
@@ -28,8 +27,9 @@ const TierDataItem = ({ label, value, suffix }: TierDataItemProps) => {
           font-semibold
           text-gray-700
           dark:text-gray-200
-          text-right
+          text-left
           flex-shrink-0
+          min-w-36
         "
       >
         {label}
@@ -38,9 +38,9 @@ const TierDataItem = ({ label, value, suffix }: TierDataItemProps) => {
       <div
         className="
           flex-shrink-0
-          w-28
           text-left
           overflow-hidden
+          
         "
       >
         <div className="flex items-center gap-2">
@@ -51,7 +51,6 @@ const TierDataItem = ({ label, value, suffix }: TierDataItemProps) => {
               lg:text-md
               text-gray-800
               dark:text-gray-100
-              max-w-24
             "
             title={value}
           >
