@@ -10,6 +10,8 @@ import { membershipTierSchema } from '@/shared/validators/membershipValidator';
 import { Prisma } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
+export const maxDuration = 30; // 30 seconds
+
 export default withAuthorization({
   POST: ['Admin'],
   PUT: ['Admin'],

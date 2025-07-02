@@ -1,16 +1,19 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
 import React, { useRef, useState } from 'react';
 import { FRONTEND_ATTACHMENT_CONSTANTS } from '../../data/constant';
 import { setAttachmentData } from '../../slices';
 import { ATTACHMENT_TYPES, AttachmentType } from '../types/attachment.type';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { Icons } from '@/components/Icon';
+import WalletProofReview from '../atoms/WalletProofReview';
+import Image from 'next/image';
 
-const WalletUploadProof: React.FC = () => {
+const WalletUploadProof = () => {
   const [error, setError] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -27,7 +30,7 @@ const WalletUploadProof: React.FC = () => {
     return ATTACHMENT_TYPES.DEPOSIT_PROOF;
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -44,34 +47,20 @@ const WalletUploadProof: React.FC = () => {
     }
 
     setError(null);
-    setUploading(true);
 
-    try {
-      const url = await uploadToFirebase({
-        file,
-        path: FRONTEND_ATTACHMENT_CONSTANTS.UPLOAD_PATH,
-        fileName: file.name.replace(/\.[^/.]+$/, ''),
-      });
+    const attachmentData = {
+      type: getFileType(file.type),
+      size: file.size,
+      url: '',
+      path: '',
+      file,
+    };
 
-      const attachmentData = {
-        type: getFileType(file.type),
-        size: file.size,
-        url: url,
-        path: `${FRONTEND_ATTACHMENT_CONSTANTS.UPLOAD_PATH}/${file.name}`,
-      };
-
-      dispatch(setAttachmentData(attachmentData));
-    } catch (err) {
-      console.error('Upload failed:', err);
-      setError('Upload failed. Please try again.');
-    } finally {
-      setUploading(false);
-    }
+    dispatch(setAttachmentData(attachmentData));
   };
 
   const handleRemoveFile = () => {
     dispatch(setAttachmentData(null));
-    // Reset input value to allow selecting the same file again
     if (inputRef.current) {
       inputRef.current.value = '';
     }
@@ -89,12 +78,13 @@ const WalletUploadProof: React.FC = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // Hiển thị thông tin file đã upload thành công
   if (attachmentData) {
-    const uploadedFileName = attachmentData.path.split('/').pop() || 'Unknown file';
+    const uploadedFileName =
+      attachmentData.path?.split('/').pop() || attachmentData.file?.name || 'Unknown file';
+    const isImage = attachmentData.type === ATTACHMENT_TYPES.IMAGE;
 
     return (
-      <div className="w-full flex flex-col items-center gap-2">
+      <div className="w-full flex flex-col items-center gap-2 ">
         <div className="w-full bg-green-50 border border-green-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-green-700">
@@ -106,7 +96,6 @@ const WalletUploadProof: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleUploadClick}
-                disabled={uploading}
                 className="h-8 w-8 p-0 hover:bg-green-100"
                 title="Change file"
               >
@@ -116,7 +105,6 @@ const WalletUploadProof: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleRemoveFile}
-                disabled={uploading}
                 className="h-8 w-8 p-0 hover:bg-red-100"
                 title="Remove file"
               >
@@ -124,10 +112,41 @@ const WalletUploadProof: React.FC = () => {
               </Button>
             </div>
           </div>
-          <div className="mt-2 flex items-center gap-2 text-sm text-green-600">
-            <Icons.post className="w-3 h-3" />
-            <span>{uploadedFileName}</span>
-            <span className="text-xs">({formatFileSize(attachmentData.size)})</span>
+          <div className="mt-2 flex flex-row items-center gap-4 text-green-700 justify-between">
+            <div className="flex flex-col min-w-0 items-start flex-1">
+              <div className="flex items-center min-w-0 gap-2">
+                <Icons.post className="w-4 h-4 flex-shrink-0 text-green-600" />
+                <button
+                  onClick={() => setShowReviewModal(true)}
+                  className="hover:underline cursor-pointer font-semibold truncate max-w-[160px] sm:max-w-[220px] text-left text-green-900"
+                  title={uploadedFileName}
+                >
+                  {uploadedFileName}
+                </button>
+              </div>
+              <span className="block text-xs text-green-600 font-medium pl-6 mt-1">
+                {formatFileSize(attachmentData.size)}
+              </span>
+            </div>
+            {isImage && (
+              <div
+                className="flex justify-center items-center cursor-pointer transition-transform duration-200 hover:scale-105"
+                onClick={() => setShowReviewModal(true)}
+                title="Click to preview"
+              >
+                <Image
+                  src={
+                    attachmentData.url ||
+                    (attachmentData.file ? URL.createObjectURL(attachmentData.file) : '')
+                  }
+                  alt={uploadedFileName}
+                  className="rounded-lg shadow-md max-h-20 sm:max-h-28 md:max-h-32 w-auto max-w-[90px] sm:max-w-[120px] md:max-w-[160px] object-contain border border-green-200 bg-white transition-all duration-200"
+                  style={{ display: 'block', margin: '0 auto' }}
+                  width={120}
+                  height={80}
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -139,36 +158,20 @@ const WalletUploadProof: React.FC = () => {
           onChange={handleFileChange}
         />
 
-        {uploading && (
-          <div className="w-full text-xs text-muted-foreground bg-blue-50 dark:bg-blue-900/20 p-2 rounded-md text-center">
-            <Icons.spinner className="inline mr-2 h-3 w-3 animate-spin" />
-            Uploading file...
-          </div>
-        )}
+        <WalletProofReview
+          open={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          attachmentData={attachmentData}
+        />
       </div>
     );
   }
 
-  // Hiển thị nút upload khi chưa có file
   return (
     <div className="w-full flex flex-col items-center gap-2">
-      <Button
-        variant="outline"
-        className="btn btn-primary w-full"
-        onClick={handleUploadClick}
-        disabled={uploading}
-      >
-        {uploading ? (
-          <>
-            <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-            Uploading...
-          </>
-        ) : (
-          <>
-            <Icons.upload className="mr-2 h-4 w-4" />
-            Upload Payment Proof
-          </>
-        )}
+      <Button variant="outline" className="btn btn-primary w-full" onClick={handleUploadClick}>
+        <Icons.upload className="mr-2 h-4 w-4" />
+        Upload Payment Proof
       </Button>
 
       <Input
@@ -182,13 +185,6 @@ const WalletUploadProof: React.FC = () => {
       {error && (
         <div className="w-full text-xs text-destructive bg-red-50 dark:bg-red-900/20 p-2 rounded-md">
           {error}
-        </div>
-      )}
-
-      {uploading && attachmentData && (
-        <div className="w-full text-xs text-muted-foreground bg-blue-50 dark:bg-blue-900/20 p-2 rounded-md text-center">
-          <Icons.spinner className="inline mr-2 h-3 w-3 animate-spin" />
-          Uploading file...
         </div>
       )}
     </div>

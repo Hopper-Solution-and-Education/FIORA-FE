@@ -8,14 +8,17 @@ export type TierRankData = {
 
 interface TierRankProps {
   data: TierRankData[];
+  nextTierRanks?: TierRankData[];
 }
 
-const TierRank = ({ data }: TierRankProps) => {
+const TierRank = ({ data, nextTierRanks }: TierRankProps) => {
   return (
     <div className="space-y-2">
-      {data.map((item) => (
-        <TierDataItem key={item.label} {...item} />
-      ))}
+      {data.map((item) => {
+        const next = nextTierRanks?.find((b) => b.label === item.label);
+        const highlight = next && next.value !== item.value;
+        return <TierDataItem key={item.label} {...item} highlight={highlight} />;
+      })}
     </div>
   );
 };

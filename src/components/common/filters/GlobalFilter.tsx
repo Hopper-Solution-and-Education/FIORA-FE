@@ -1,3 +1,5 @@
+'use client';
+
 import { Check, Funnel, FunnelPlus, FunnelX } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {

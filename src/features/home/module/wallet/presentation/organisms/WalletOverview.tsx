@@ -1,23 +1,17 @@
+'use client';
+
 import { Loading } from '@/components/common/atoms';
 import MetricCard from '@/components/common/metric/MetricCard';
-import { useAppDispatch, useAppSelector } from '@/store';
-import { useEffect, useMemo } from 'react';
+import { useAppSelector } from '@/store';
+import { useMemo } from 'react';
 import { WalletType } from '../../domain/enum';
-import { useInitializeUserWallet } from '../hooks';
-import { fetchFrozenAmount } from '../../slices/actions';
 
 const DEFAULT_FROZEN_AMOUNT = 0;
 
 const WalletOverview = () => {
-  const { wallets, loading } = useInitializeUserWallet();
-  const dispatch = useAppDispatch();
+  const wallets = useAppSelector((state) => state.wallet.wallets);
+  const loading = useAppSelector((state) => state.wallet.loading);
   const frozenAmount = useAppSelector((state) => state.wallet.frozenAmount);
-
-  useEffect(() => {
-    if (!frozenAmount) {
-      dispatch(fetchFrozenAmount());
-    }
-  }, []);
 
   const totalActive = useMemo(
     () => wallets?.reduce((sum, w) => sum + w.frBalanceActive, 0) || 0,

@@ -1,3 +1,5 @@
+'use client';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/shared/utils';
 import { EXCHANGE_RATES_TO_USD } from '@/shared/utils/currencyExchange';
@@ -49,7 +51,7 @@ const WalletPaymentDetail = ({ className }: WalletPaymentDetailProps) => {
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="flex flex-col items-center gap-4">
+      <CardContent className="flex flex-col items-center gap-4 h-[500px] overflow-y-auto">
         <div className="w-full bg-muted rounded-xl p-6 flex flex-col items-center">
           <div className="text-3xl font-bold">{formatFIORACurrency(fxAmount, CURRENCY.FX)}</div>
           <div className="text-xl text-muted-foreground font-semibold">

@@ -36,7 +36,7 @@ class BudgetSummaryUseCase {
     private _budgetRepository: IBudgetRepository = budgetRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
     private _categoryRepository: ICategoryRepository = categoryRepository,
-  ) { }
+  ) {}
 
   async getBudgetsByUserIdAndFiscalYear(
     userId: string,
@@ -199,84 +199,87 @@ class BudgetSummaryUseCase {
 
     const affectedFieldsInitial = new Set<string>();
 
-    return await prisma.$transaction(async (prisma) => {
-      for await (const key of Object.keys(updateTopBudget)) {
-        if (key.startsWith('m')) {
-          const monthIndex = parseInt(key.match(/\d+/)![0]) - 1;
+    return await prisma.$transaction(
+      async (prisma) => {
+        for await (const key of Object.keys(updateTopBudget)) {
+          if (key.startsWith('m')) {
+            const monthIndex = parseInt(key.match(/\d+/)![0]) - 1;
 
-          const quarter = Math.floor(monthIndex / 3) + 1;
-          const half = monthIndex < 6 ? 1 : 2;
+            const quarter = Math.floor(monthIndex / 3) + 1;
+            const half = monthIndex < 6 ? 1 : 2;
 
-          affectedFieldsInitial.add(key);
-          affectedFieldsInitial.add(`q${quarter}_${strategyType}`);
-          affectedFieldsInitial.add(`h${half}_${strategyType}`);
+            affectedFieldsInitial.add(key);
+            affectedFieldsInitial.add(`q${quarter}_${strategyType}`);
+            affectedFieldsInitial.add(`h${half}_${strategyType}`);
+          }
         }
-      }
 
-      affectedFieldsInitial.add(`total_${strategyType}`);
+        affectedFieldsInitial.add(`total_${strategyType}`);
 
-      const selectFields: Prisma.BudgetsTableSelect = {
-        id: true,
-        currency: true,
-        ...strategy.getFields(affectedFieldsInitial),
-      };
+        const selectFields: Prisma.BudgetsTableSelect = {
+          id: true,
+          currency: true,
+          ...strategy.getFields(affectedFieldsInitial),
+        };
 
-      const existingBudget = await prisma.budgetsTable.findFirst({
-        where: {
-          userId,
-          fiscalYear,
-          type: BudgetType.Top,
-        },
-        select: selectFields,
-      });
+        const existingBudget = await prisma.budgetsTable.findFirst({
+          where: {
+            userId,
+            fiscalYear,
+            type: BudgetType.Top,
+          },
+          select: selectFields,
+        });
 
-      if (!existingBudget) {
-        throw new Error(Messages.BUDGET_NOT_FOUND);
-      }
+        if (!existingBudget) {
+          throw new Error(Messages.BUDGET_NOT_FOUND);
+        }
 
-      const storedCurrency = existingBudget.currency as Currency;
+        const storedCurrency = existingBudget.currency as Currency;
 
-      // Convert existing monthly values to targetCurrency
-      let monthlyValues = this.getMonthlyValues(
-        existingBudget,
-        strategyType,
-        storedCurrency,
-        currency,
-      );
+        // Convert existing monthly values to targetCurrency
+        let monthlyValues = this.getMonthlyValues(
+          existingBudget,
+          strategyType,
+          storedCurrency,
+          currency,
+        );
 
-      // Update the affected fields in the map
-      const affectedFields = new Map<string, boolean>();
+        // Update the affected fields in the map
+        const affectedFields = new Map<string, boolean>();
 
-      monthlyValues = applyUpdates(
-        monthlyValues,
-        updateTopBudget,
-        strategyType,
-        affectedFields,
-        currency,
-        storedCurrency,
-      );
+        monthlyValues = applyUpdates(
+          monthlyValues,
+          updateTopBudget,
+          strategyType,
+          affectedFields,
+          currency,
+          storedCurrency,
+        );
 
-      // Calculate the totals based on the updated monthly values
-      const totals = strategy.calculateTotals(monthlyValues);
-      const updateData = {
-        ...strategy.prepareUpdateData(totals, monthlyValues, affectedFields),
-        updatedBy: userId,
-        updatedAt: now,
-      };
+        // Calculate the totals based on the updated monthly values
+        const totals = strategy.calculateTotals(monthlyValues);
+        const updateData = {
+          ...strategy.prepareUpdateData(totals, monthlyValues, affectedFields),
+          updatedBy: userId,
+          updatedAt: now,
+        };
 
-      const updatedBudget = await prisma.budgetsTable.update({
-        where: { id: existingBudget.id },
-        data: updateData,
-      });
+        const updatedBudget = await prisma.budgetsTable.update({
+          where: { id: existingBudget.id },
+          data: updateData,
+        });
 
-      if (!updatedBudget) {
-        throw new Error(Messages.BUDGET_UPDATE_FAILED);
-      }
+        if (!updatedBudget) {
+          throw new Error(Messages.BUDGET_UPDATE_FAILED);
+        }
 
-      return updatedBudget;
-    }, {
-      timeout: 15000,
-    });
+        return updatedBudget;
+      },
+      {
+        timeout: 15000,
+      },
+    );
   }
 
   async deleteBudgetDetailsCategory(params: BudgetDetailCategoryDeleteParams) {
@@ -338,10 +341,10 @@ class BudgetSummaryUseCase {
           const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
           const value = oldDetail
             ? convertCurrency(
-              Number(oldDetail.amount),
-              oldDetail.currency || targetCurrency,
-              targetCurrency,
-            )
+                Number(oldDetail.amount),
+                oldDetail.currency || targetCurrency,
+                targetCurrency,
+              )
             : 0;
           return { amount: new Prisma.Decimal(value), month: i + 1, currency: targetCurrency };
         });
@@ -517,126 +520,129 @@ class BudgetSummaryUseCase {
       );
     }
 
-    return await prisma.$transaction(async (prisma) => {
-      const extractBudgetTypesByYear = await prisma.budgetsTable.findFirst({
-        where: {
-          userId,
-          fiscalYear: fiscalYear.toString(),
-          type: BudgetType.Bot,
-        },
-      });
-
-      if (!extractBudgetTypesByYear) {
-        throw new Error(Messages.BUDGET_NOT_FOUND);
-      }
-
-      // Determine target currency from BudgetsTable
-      const targetCurrency = extractBudgetTypesByYear.currency;
-
-      const monthlyBudgetDetailValues = Array(12)
-        .fill(0)
-        .map((_, i) => ({
-          bottomUp: convertCurrency(
-            Number(bottomUpPlan[`m${i + 1}${suffix}`]) || 0,
-            currency,
-            targetCurrency,
-          ),
-          actual: actualSumUpPlan
-            ? convertCurrency(
-              Number(actualSumUpPlan[`m${i + 1}${suffix}`]) || 0,
-              currency,
-              targetCurrency,
-            )
-            : 0,
-        }));
-
-      if (monthlyBudgetDetailValues.length !== 12)
-        throw new Error('All 12 months must be provided');
-
-      // 1. Fetch existing BudgetDetails to get old values
-      const oldBudgetDetails = await prisma.budgetDetails.findMany({
-        where: {
-          userId,
-          budgetId: extractBudgetTypesByYear.id,
-          categoryId,
-          type,
-        },
-        select: { month: true, amount: true, currency: true },
-      });
-
-      // 2. Calculate deltas (new value - old value, 0 if no old value)
-      const deltas = Array(12)
-        .fill(0)
-        .map((_, i) => {
-          const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
-
-          const oldValue = oldDetail
-            ? convertCurrency(Number(oldDetail.amount), oldDetail.currency, targetCurrency)
-            : 0;
-
-          const newValue = monthlyBudgetDetailValues[i].bottomUp ?? 0;
-          const convertAmountDecimal = new Prisma.Decimal(newValue - oldValue);
-
-          return {
-            amount: convertAmountDecimal ?? 0,
-            month: i + 1,
-            currency: targetCurrency,
-          };
+    return await prisma.$transaction(
+      async (prisma) => {
+        const extractBudgetTypesByYear = await prisma.budgetsTable.findFirst({
+          where: {
+            userId,
+            fiscalYear: fiscalYear.toString(),
+            type: BudgetType.Bot,
+          },
         });
 
-      const budgetTableCurrency = extractBudgetTypesByYear.currency;
-      // 3. Upsert BudgetDetails for Expense/Income
-      const updatedBudgetDetails = await this.upsertBudgetCategoryDetailsByType(
-        monthlyBudgetDetailValues,
-        userId,
-        extractBudgetTypesByYear.id,
-        categoryId,
-        type,
-        budgetTableCurrency,
-        prisma,
-      );
+        if (!extractBudgetTypesByYear) {
+          throw new Error(Messages.BUDGET_NOT_FOUND);
+        }
 
-      // 4. Optionally create Act entries if actualSumUpPlan is provided
-      let actBudgetDetails: BudgetDetails[] = [];
-      if (actualSumUpPlan) {
-        actBudgetDetails = await this.upsertBudgetCategoryDetailsByType(
+        // Determine target currency from BudgetsTable
+        const targetCurrency = extractBudgetTypesByYear.currency;
+
+        const monthlyBudgetDetailValues = Array(12)
+          .fill(0)
+          .map((_, i) => ({
+            bottomUp: convertCurrency(
+              Number(bottomUpPlan[`m${i + 1}${suffix}`]) || 0,
+              currency,
+              targetCurrency,
+            ),
+            actual: actualSumUpPlan
+              ? convertCurrency(
+                  Number(actualSumUpPlan[`m${i + 1}${suffix}`]) || 0,
+                  currency,
+                  targetCurrency,
+                )
+              : 0,
+          }));
+
+        if (monthlyBudgetDetailValues.length !== 12)
+          throw new Error('All 12 months must be provided');
+
+        // 1. Fetch existing BudgetDetails to get old values
+        const oldBudgetDetails = await prisma.budgetDetails.findMany({
+          where: {
+            userId,
+            budgetId: extractBudgetTypesByYear.id,
+            categoryId,
+            type,
+          },
+          select: { month: true, amount: true, currency: true },
+        });
+
+        // 2. Calculate deltas (new value - old value, 0 if no old value)
+        const deltas = Array(12)
+          .fill(0)
+          .map((_, i) => {
+            const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
+
+            const oldValue = oldDetail
+              ? convertCurrency(Number(oldDetail.amount), oldDetail.currency, targetCurrency)
+              : 0;
+
+            const newValue = monthlyBudgetDetailValues[i].bottomUp ?? 0;
+            const convertAmountDecimal = new Prisma.Decimal(newValue - oldValue);
+
+            return {
+              amount: convertAmountDecimal ?? 0,
+              month: i + 1,
+              currency: targetCurrency,
+            };
+          });
+
+        const budgetTableCurrency = extractBudgetTypesByYear.currency;
+        // 3. Upsert BudgetDetails for Expense/Income
+        const updatedBudgetDetails = await this.upsertBudgetCategoryDetailsByType(
           monthlyBudgetDetailValues,
           userId,
           extractBudgetTypesByYear.id,
           categoryId,
-          BudgetDetailType.Act,
+          type,
           budgetTableCurrency,
           prisma,
         );
-      }
 
-      // 5. Update BudgetsTable with deltas (or new values if creating)
-      const updateData: Prisma.BudgetsTableUpdateInput = await this.sumOldNewBudgetUpdate(
-        userId,
-        extractBudgetTypesByYear,
-        deltas,
-        suffix,
-      );
+        // 4. Optionally create Act entries if actualSumUpPlan is provided
+        let actBudgetDetails: BudgetDetails[] = [];
+        if (actualSumUpPlan) {
+          actBudgetDetails = await this.upsertBudgetCategoryDetailsByType(
+            monthlyBudgetDetailValues,
+            userId,
+            extractBudgetTypesByYear.id,
+            categoryId,
+            BudgetDetailType.Act,
+            budgetTableCurrency,
+            prisma,
+          );
+        }
 
-      const bottomUpBudget = await this._budgetRepository.updateBudgetTx(
-        { id: extractBudgetTypesByYear.id },
-        updateData,
-        prisma,
-      );
+        // 5. Update BudgetsTable with deltas (or new values if creating)
+        const updateData: Prisma.BudgetsTableUpdateInput = await this.sumOldNewBudgetUpdate(
+          userId,
+          extractBudgetTypesByYear,
+          deltas,
+          suffix,
+        );
 
-      if (!bottomUpBudget) {
-        throw new Error(Messages.BUDGET_UPDATE_FAILED);
-      }
+        const bottomUpBudget = await this._budgetRepository.updateBudgetTx(
+          { id: extractBudgetTypesByYear.id },
+          updateData,
+          prisma,
+        );
 
-      return {
-        updatedBudgetDetails,
-        actBudgetDetails: actBudgetDetails.length ? actBudgetDetails : null,
-        bottomUpBudget,
-        currency: targetCurrency,
-      };
-    }, {
-      timeout: 30000,
-    });
+        if (!bottomUpBudget) {
+          throw new Error(Messages.BUDGET_UPDATE_FAILED);
+        }
+
+        return {
+          updatedBudgetDetails,
+          actBudgetDetails: actBudgetDetails.length ? actBudgetDetails : null,
+          bottomUpBudget,
+          currency: targetCurrency,
+        };
+      },
+      {
+        timeout: 30000,
+      },
+    );
   }
 
   private async sumOldNewBudgetUpdate(

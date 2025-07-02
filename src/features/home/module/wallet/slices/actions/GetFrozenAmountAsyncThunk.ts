@@ -3,7 +3,7 @@ import { walletContainer } from '../../di/walletDIContainer';
 import { WALLET_TYPES } from '../../di/walletDIContainer.type';
 import { GetFrozenAmountUsecase } from '../../domain/usecase';
 
-export const fetchFrozenAmount = createAsyncThunk(
+export const fetchFrozenAmountAsyncThunk = createAsyncThunk(
   'wallet/fetchFrozenAmount',
   async (_, { rejectWithValue }) => {
     try {

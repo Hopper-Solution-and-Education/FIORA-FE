@@ -74,7 +74,7 @@ const FormDetailInfo: React.FC<FormDetailInfoProps> = ({
                 {updatedBy?.image ? (
                   <Image
                     src={updatedBy.image}
-                    alt={updatedBy?.name || 'User Avatar'}
+                    alt={updatedBy?.name || 'Avatar'}
                     width={24} // Match container size (w-6 = 24px)
                     height={24} // Match container size (h-6 = 24px)
                     className="object-cover" // Ensure the image covers the container
