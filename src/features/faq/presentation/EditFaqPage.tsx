@@ -20,6 +20,8 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 
+import SuccessToast from '@/features/faq/hook/SuccessToast';
+
 type FaqFormValues = {
   title: string;
   description: string;
@@ -43,8 +45,9 @@ export default function EditFaqPage() {
 
   const [htmlContent, setHtmlContent] = useState('');
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  // Fetch post data
   useEffect(() => {
     if (!id) return;
 
@@ -72,6 +75,7 @@ export default function EditFaqPage() {
   }, [id, reset]);
 
   const onSubmit = async (formData: FaqFormValues) => {
+    setSaving(true);
     try {
       const res = await fetch(`/api/faqs/${id}`, {
         method: 'PUT',
@@ -87,18 +91,23 @@ export default function EditFaqPage() {
       if (!res.ok) {
         const error = await res.json();
         alert(`Error: ${error.error}`);
+        setSaving(false);
         return;
       }
 
-      alert('FAQ updated successfully');
-      router.push('/faqs');
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        router.push(`/faqs/${id}`);
+      }, 1000);
     } catch (err) {
       console.error(err);
       alert('Update failed');
+    } finally {
+      setSaving(false);
     }
   };
 
-  // const title = watch('title');
   const description = watch('description');
 
   if (loading) {
@@ -112,6 +121,14 @@ export default function EditFaqPage() {
   return (
     <SessionSidebar appLabel="Faq">
       <main className="p-6 pt-24 space-y-8 overflow-auto">
+        {showSuccess && (
+          <SuccessToast
+            title="Edit FAQ Successfully"
+            description="Your invoice request has been recorded and is awaiting processing."
+            onClose={() => setShowSuccess(false)}
+          />
+        )}
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -182,9 +199,14 @@ export default function EditFaqPage() {
 
             <button
               type="submit"
-              className="bg-[#3C5588] hover:bg-[#2e446e] px-8 py-4 rounded-md shadow text-white transition"
+              disabled={saving}
+              className="bg-[#3C5588] hover:bg-[#2e446e] px-8 py-4 rounded-md shadow text-white transition flex items-center justify-center min-w-[100px]"
             >
-              <Check size={24} className="text-[#60A673]" />
+              {saving ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <Check size={24} className="text-[#60A673]" />
+              )}
             </button>
           </div>
         </form>
