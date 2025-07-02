@@ -6,16 +6,16 @@ import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
 import { FilterColumn, FilterCriteria } from '@/shared/types/filter.types';
 import { useAppDispatch } from '@/store';
-import { setFilterCriteria } from '../../slices';
+import { setFilterCriteria } from '../../../../slices';
 import {
   DEFAULT_MIN_BALANCE,
   DEFAULT_MAX_BALANCE,
   DEFAULT_SLIDER_STEP,
   WALLET_TYPE_OPTIONS,
   DEFAULT_WALLET_FILTER_CRITERIA,
-} from '../../data/constant';
-import { WalletFilterParams, filterParamsInitState } from '../types/filter.type';
-import { extractWalletFilterData, createWalletFilterStructure } from '../../utils';
+} from '../../../../data/constant';
+import { WalletFilterParams, filterParamsInitState } from '../../../types/filter.type';
+import { extractWalletFilterData, createWalletFilterStructure } from '../../../../utils';
 
 interface WalletFilterMenuProps {
   onFilterChange: (newFilter: FilterCriteria) => void;

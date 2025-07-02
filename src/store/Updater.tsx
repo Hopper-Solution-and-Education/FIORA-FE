@@ -1,7 +1,7 @@
 import {
   useInitialFrozenAmount,
   useInitializeUserWallet,
-} from '@/features/home/module/wallet/presentation/hooks';
+} from '@/features/home/module/wallet/presentation/module/client/hooks';
 
 const Updater = () => {
   useInitializeUserWallet();

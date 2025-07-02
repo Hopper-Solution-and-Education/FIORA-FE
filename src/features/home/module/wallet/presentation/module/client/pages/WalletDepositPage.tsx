@@ -11,13 +11,14 @@ import { ArrowLeftIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { walletContainer } from '../../di/walletDIContainer';
-import { WALLET_TYPES } from '../../di/walletDIContainer.type';
-import { CreateDepositRequestUsecase } from '../../domain/usecase';
-import { setAttachmentData, setSelectedPackageId } from '../../slices';
+import { walletContainer } from '../../../../di/walletDIContainer';
+import { WALLET_TYPES } from '../../../../di/walletDIContainer.type';
+import { CreateDepositRequestUsecase } from '../../../../domain/usecase';
+import { setAttachmentData, setSelectedPackageId } from '../../../../slices';
 import { WalletDialog } from '../atoms';
 import { WalletPaymentDetail, WalletTopbarAction } from '../organisms';
 import WalletPackageList from '../organisms/WalletPackageList';
+import { fetchFrozenAmountAsyncThunk } from '../../../../slices/actions/GetFrozenAmountAsyncThunk';
 
 const WalletDepositPage = () => {
   const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -64,6 +65,7 @@ const WalletDepositPage = () => {
 
   const handleSelect = (id: string) => {
     dispatch(setSelectedPackageId(id));
+    dispatch(setAttachmentData(null));
   };
 
   const handleBack = () => {
@@ -101,6 +103,7 @@ const WalletDepositPage = () => {
       toast.success('Deposit request sent successfully');
       dispatch(setAttachmentData(null));
       dispatch(setSelectedPackageId(null));
+      dispatch(fetchFrozenAmountAsyncThunk());
 
       router.push(RouteEnum.WalletDashboard);
     } catch (err: any) {

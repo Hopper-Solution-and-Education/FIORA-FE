@@ -26,6 +26,7 @@ import {
   CircleFadingArrowUp,
   CircuitBoardIcon,
   ClipboardList,
+  Coins,
   Command,
   CreditCard,
   Database,
@@ -250,4 +251,5 @@ export const Icons = {
   externalLink: ExternalLink,
   userPlus: UserPlus,
   circleFadingArrowUp: CircleFadingArrowUp,
+  coins: Coins,
 };

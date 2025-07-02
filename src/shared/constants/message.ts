@@ -258,4 +258,6 @@ export enum Messages {
   // COMMON ERRORS
   INVALID_CURRENCY = 'Invalid currency. Must be either VND or USD.',
   VALIDATION_ERROR = 'Validation error.',
+
+  INVALID_PAGE_OR_PAGE_SIZE = 'Invalid page or pageSize.',
 }

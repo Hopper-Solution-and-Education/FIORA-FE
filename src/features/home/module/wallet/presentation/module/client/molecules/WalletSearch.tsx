@@ -4,7 +4,7 @@
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { setWalletSearch, setDepositSearch } from '../../slices';
+import { setWalletSearch, setDepositSearch } from '../../../../slices';
 import debounce from 'lodash/debounce';
 import { useCallback } from 'react';
 

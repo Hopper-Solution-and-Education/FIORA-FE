@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { fetchFrozenAmountAsyncThunk } from '../../slices/actions';
+import { fetchFrozenAmountAsyncThunk } from '../../../../slices/actions';
 
 export const useInitialFrozenAmount = () => {
   const dispatch = useAppDispatch();

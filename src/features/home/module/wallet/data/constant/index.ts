@@ -15,4 +15,15 @@ export const DEFAULT_WALLET_FILTER_CRITERIA: FilterCriteria = {
   filters: {},
 };
 
+export const WALLET_TABLE_COLUMNS = {
+  'No.': { index: 0, sortable: false },
+  Name: { index: 1, sortable: true },
+  Type: { index: 2, sortable: true },
+  Balance: { index: 3, sortable: true },
+  Frozen: { index: 4, sortable: true },
+  'Credit Limit': { index: 5, sortable: true },
+  Status: { index: 6, sortable: false },
+  Actions: { index: 7, sortable: false },
+};
+
 export * from './attachmentConstants';

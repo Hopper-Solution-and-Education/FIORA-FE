@@ -4,7 +4,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroupItem } from '@/components/ui/radio-group';
-import type { PackageFX } from '../../domain/entity/PackageFX';
+import type { PackageFX } from '../../../../domain/entity/PackageFX';
 import { formatFIORACurrency } from '@/config/FIORANumberFormat';
 import { CURRENCY } from '@/shared/constants';
 import { Icons } from '@/components/Icon';

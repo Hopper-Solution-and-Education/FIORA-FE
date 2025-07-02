@@ -3,9 +3,9 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import React, { useRef, useState } from 'react';
-import { FRONTEND_ATTACHMENT_CONSTANTS } from '../../data/constant';
-import { setAttachmentData } from '../../slices';
-import { ATTACHMENT_TYPES, AttachmentType } from '../types/attachment.type';
+import { FRONTEND_ATTACHMENT_CONSTANTS } from '../../../../data/constant';
+import { setAttachmentData } from '../../../../slices';
+import { ATTACHMENT_TYPES, AttachmentType } from '../../../types/attachment.type';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { Icons } from '@/components/Icon';
 import WalletProofReview from '../atoms/WalletProofReview';
