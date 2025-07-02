@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { getWalletsAsyncThunk } from '../../slices/actions';
+import { getWalletsAsyncThunk } from '../../../../slices/actions';
 
 export const useInitializeUserWallet = () => {
   const dispatch = useAppDispatch();

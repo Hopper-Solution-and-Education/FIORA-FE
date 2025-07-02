@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { getPackageFXAsyncThunk } from '../../slices/actions';
+import { getPackageFXAsyncThunk } from '../../../../slices/actions';
 
 export function useInitializePackageFX() {
   const dispatch = useAppDispatch();

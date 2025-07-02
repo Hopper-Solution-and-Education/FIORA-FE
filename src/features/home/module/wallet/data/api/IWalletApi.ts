@@ -3,6 +3,8 @@ import type { WalletResponse, WalletsResponse } from '../dto/response/WalletResp
 import type { DepositRequestResponse } from '../dto/response/DepositRequestResponse';
 import type { PackageFXResponse } from '../dto/response/PackageFXResponse';
 import type { CreateDepositRequestDto } from '../dto/request/CreateDepositRequestDto';
+import { DepositRequestStatus } from '../../domain/enum';
+import { _PaginationResponse } from '@/shared/types';
 
 export interface IWalletApi {
   getWalletByType(request: GetWalletByTypeRequest): Promise<WalletResponse>;
@@ -15,4 +17,10 @@ export interface IWalletApi {
     message: string;
     data: { amount: number };
   }>;
+  getDepositRequestsPaginated(
+    userId: string,
+    status: DepositRequestStatus,
+    page: number,
+    pageSize: number,
+  ): Promise<_PaginationResponse<DepositRequestResponse>>;
 }

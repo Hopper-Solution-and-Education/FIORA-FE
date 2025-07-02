@@ -1,5 +1,5 @@
 import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
-import { WalletLayout as WalletWrapper } from '@/features/home/module/wallet/presentation/pages';
+import { WalletLayout as WalletWrapper } from '@/features/home/module/wallet/presentation/module/client/pages';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import type { Metadata } from 'next';
 

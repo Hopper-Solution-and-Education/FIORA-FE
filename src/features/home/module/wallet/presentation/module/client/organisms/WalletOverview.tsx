@@ -4,7 +4,7 @@ import { Loading } from '@/components/common/atoms';
 import MetricCard from '@/components/common/metric/MetricCard';
 import { useAppSelector } from '@/store';
 import { useMemo } from 'react';
-import { WalletType } from '../../domain/enum';
+import { WalletType } from '../../../../domain/enum';
 
 const DEFAULT_FROZEN_AMOUNT = 0;
 

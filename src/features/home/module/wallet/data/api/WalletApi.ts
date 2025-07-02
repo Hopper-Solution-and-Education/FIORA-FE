@@ -9,6 +9,8 @@ import { WALLET_TYPES } from '../../di/walletDIContainer.type';
 import type { DepositRequestResponse } from '../dto/response/DepositRequestResponse';
 import type { PackageFXResponse } from '../dto/response/PackageFXResponse';
 import type { CreateDepositRequestDto } from '../dto/request/CreateDepositRequestDto';
+import { DepositRequestStatus } from '../../domain/enum';
+import { _PaginationResponse } from '@/shared/types';
 
 @injectable()
 export class WalletApi implements IWalletApi {
@@ -51,5 +53,16 @@ export class WalletApi implements IWalletApi {
       message: string;
       data: { amount: number };
     }>(routeConfig(ApiEndpointEnum.WalletFrozenAmount));
+  }
+
+  getDepositRequestsPaginated(
+    userId: string,
+    status: DepositRequestStatus,
+    page: number,
+    pageSize: number,
+  ): Promise<_PaginationResponse<DepositRequestResponse>> {
+    return this.httpClient.get<_PaginationResponse<DepositRequestResponse>>(
+      routeConfig(ApiEndpointEnum.WalletSetting, {}, { userId, status, page, pageSize }),
+    );
   }
 }

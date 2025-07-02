@@ -1,10 +1,11 @@
 'use client';
+
 import Loading from '@/components/common/atoms/Loading';
 import dynamic from 'next/dynamic';
 
 const WalletDashboardRender = dynamic(
   () =>
-    import('@/features/home/module/wallet/presentation/pages').then(
+    import('@/features/home/module/wallet/presentation/module/client/pages').then(
       (mod) => mod.WalletDashboardPage,
     ),
   {

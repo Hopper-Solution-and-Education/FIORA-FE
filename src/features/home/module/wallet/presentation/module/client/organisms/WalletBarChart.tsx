@@ -5,9 +5,9 @@ import PositiveAndNegativeBarChartV2 from '@/components/common/charts/positive-n
 import { COLORS } from '@/shared/constants/chart';
 import { TwoSideBarItem } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
 import { formatFIORACurrency } from '@/config/FIORANumberFormat';
-import { transformWalletsToChartData } from '../../utils';
+import { transformWalletsToChartData } from '../../../../utils';
 import { useAppSelector } from '@/store';
-import { filterWallets } from '../../utils';
+import { filterWallets } from '../../../../utils';
 import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import { Icons } from '@/components/Icon';
 
@@ -53,6 +53,7 @@ const WalletBarChart = () => {
       title=" "
       showTotal={false}
       currency="FX"
+      labelFormatter={(value) => formatFIORACurrency(value, 'FX')}
       legendItems={[
         { name: 'Positive', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
         { name: 'Negative', color: COLORS.DEPS_DANGER.LEVEL_1 },

@@ -76,6 +76,29 @@ class WalletRepository implements IWalletRepository {
   async findManyPackageFXByIds(ids: string[]): Promise<PackageFX[]> {
     return this._prisma.packageFX.findMany({ where: { id: { in: ids } } });
   }
+
+  async isDepositRefCodeExists(refCode: string): Promise<boolean> {
+    const count = await this._prisma.depositRequest.count({ where: { refCode } });
+    return count > 0;
+  }
+
+  async getDepositRequestsPaginated(
+    userId: string,
+    status: DepositRequestStatus,
+    page: number,
+    pageSize: number,
+  ): Promise<{ items: DepositRequest[]; total: number }> {
+    const [items, total] = await Promise.all([
+      this._prisma.depositRequest.findMany({
+        where: { userId, status },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this._prisma.depositRequest.count({ where: { userId, status } }),
+    ]);
+    return { items, total };
+  }
 }
 
 export const walletRepository = new WalletRepository();

@@ -69,7 +69,6 @@ const WalletDialog = ({ open, onCancel, onConfirm }: WalletDialogProps) => (
           size="lg"
         >
           <ArrowLeftIcon className="w-5 h-5 mr-2" />
-          Stay Here
         </Button>
 
         <Button
@@ -78,7 +77,6 @@ const WalletDialog = ({ open, onCancel, onConfirm }: WalletDialogProps) => (
           size="lg"
         >
           <Icons.check className="w-5 h-5 mr-2" />
-          Leave Anyway
         </Button>
       </DialogFooter>
     </DialogContent>

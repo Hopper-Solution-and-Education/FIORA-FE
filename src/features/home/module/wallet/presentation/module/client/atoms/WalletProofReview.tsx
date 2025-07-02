@@ -4,7 +4,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icon';
-import { AttachmentType } from '../types/attachment.type';
+import { AttachmentType } from '../../../types/attachment.type';
 import Image from 'next/image';
 
 interface WalletProofReviewProps {
