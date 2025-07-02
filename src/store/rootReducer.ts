@@ -7,6 +7,7 @@ import {
 import categorySlice from '@/features/home/module/category/slices';
 import membershipSlice from '@/features/home/module/membership/slices';
 import transactionSlice from '@/features/home/module/transaction/slices';
+import transactionDataSlice from '@/features/home/module/transaction/slices/transactionSlice';
 import walletSlice from '@/features/home/module/wallet/slices';
 import landingSlices from '@/features/landing/slices';
 import landingSettingSlice from '@/features/setting/module/landing/slices';
@@ -32,6 +33,7 @@ const reducer = {
   account: accountSlice,
   partner: partnerManagementSlice,
   transaction: transactionSlice,
+  transactionData: transactionDataSlice,
   module: moduleReducer,
   financeControl: financeControlSlice,
   memberShipSettings: memberShipSettingsSlice,

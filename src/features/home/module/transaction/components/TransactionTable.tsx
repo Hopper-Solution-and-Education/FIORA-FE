@@ -7,7 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import useDataFetch from '@/shared/hooks/useDataFetcher';
+import {
+  deleteTransaction as deleteTransactionThunk,
+  fetchTransactions,
+} from '@/features/home/module/transaction/slices/actions';
 import { FilterCriteria, OrderType } from '@/shared/types';
 import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -17,16 +20,10 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useSWRConfig } from 'swr';
 import { formatCurrency } from '../hooks/formatCurrency';
 import { formatDate } from '../hooks/formatDate';
 import { updateAmountRange, updateFilterCriteria } from '../slices';
-import {
-  IRelationalTransaction,
-  ITransactionPaginatedResponse,
-  TransactionColumn,
-  TransactionTableColumnKey,
-} from '../types';
+import { IRelationalTransaction, TransactionColumn, TransactionTableColumnKey } from '../types';
 import {
   DEFAULT_TRANSACTION_TABLE_COLUMNS,
   TRANSACTION_TYPE,
@@ -78,9 +75,11 @@ const TransactionTable = () => {
   const { data } = useSession();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { mutate } = useSWRConfig();
   const toggleRef = useRef(null);
   const { visibleColumns, filterCriteria } = useAppSelector((state) => state.transaction);
+  const transactionDataState = useAppSelector((state) => state.transactionData);
+  const transactionsResponse = transactionDataState.transactions.data;
+  const isTransactionLoading = transactionDataState.transactions.isLoading;
 
   //Sort states
   const [displayData, setDisplayData] = useState<IRelationalTransaction[]>([]);
@@ -96,36 +95,16 @@ const TransactionTable = () => {
     IRelationalTransaction | undefined
   >();
 
-  const {
-    data: fetchData,
-    isLoading,
-    isValidating,
-  } = useDataFetch<ITransactionPaginatedResponse>({
-    endpoint: '/api/transactions',
-    method: 'POST',
-    body: {
-      ...filterCriteria,
-      page: paginationParams.currentPage,
-      pageSize: paginationParams.pageSize,
-      sortBy: { [sortTarget]: sortOrder },
-      userId: data?.user.id,
-    },
-  });
-
   // Implement intersection observer for infinite scrolling
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (
           entries[0].isIntersecting &&
-          !isLoading &&
+          !isTransactionLoading &&
           paginationParams.currentPage < paginationParams.totalPage
         ) {
-          if (
-            paginationParams.currentPage < paginationParams.totalPage &&
-            !isLoading &&
-            !isValidating
-          ) {
+          if (paginationParams.currentPage < paginationParams.totalPage && !isTransactionLoading) {
             setPaginationParams((prev) => ({ ...prev, currentPage: prev.currentPage + 1 }));
           }
         }
@@ -144,7 +123,12 @@ const TransactionTable = () => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, paginationParams.currentPage, paginationParams.totalPage, fetchData]);
+  }, [
+    isTransactionLoading,
+    paginationParams.currentPage,
+    paginationParams.totalPage,
+    transactionsResponse,
+  ]);
 
   const debouncedFilterHandler = useMemo(
     () =>
@@ -158,45 +142,56 @@ const TransactionTable = () => {
 
   // Handle data fetched from API
   useEffect(() => {
-    if (fetchData?.status === 201 && fetchData?.data.data) {
+    if (transactionsResponse && Array.isArray(transactionsResponse.data)) {
       setPaginationParams((prev) => ({
         ...prev,
-        totalPage: fetchData?.data.totalPage,
-        totalItems: fetchData?.data.total,
+        totalPage: transactionsResponse.totalPage,
+        totalItems: transactionsResponse.total,
       }));
+
       dispatch(
-        updateAmountRange({ min: fetchData?.data.amountMin, max: fetchData?.data.amountMax }),
+        updateAmountRange({
+          min: transactionsResponse.amountMin,
+          max: transactionsResponse.amountMax,
+        }),
+      );
+
+      const mappedData = (transactionsResponse.data as IRelationalTransaction[]).map(
+        (item: IRelationalTransaction) => ({
+          ...item,
+          createdBy: (item as any).createdBy || '', // Ensure createdBy is never null
+        }),
       );
 
       if (paginationParams.currentPage === 1) {
-        setDisplayData(
-          fetchData?.data.data.map((item) => ({
-            ...item,
-            createdBy: item.createdBy || '', // Ensure createdBy is never null
-          })) as IRelationalTransaction[],
-        );
+        setDisplayData(mappedData);
       } else {
-        setDisplayData((prev) => [
-          ...prev,
-          ...((fetchData?.data.data.map((item) => ({
-            ...item,
-            createdBy: item.createdBy || '', // Ensure createdBy is never null
-          })) as IRelationalTransaction[]) || []),
-        ]);
+        setDisplayData((prev) => [...prev, ...mappedData]);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchData]);
+  }, [transactionsResponse]);
 
-  // Mutate data when filter criteria and pageNumber changes for lazy loading and filter feature
+  // Dispatch fetchTransactions whenever filter criteria, pagination, or sorting changes
   useEffect(() => {
-    if (fetchData) {
-      mutate('/api/transactions', displayData, {
-        revalidate: true,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paginationParams.currentPage, filterCriteria]);
+    const payload: any = {
+      ...filterCriteria,
+      page: paginationParams.currentPage,
+      pageSize: paginationParams.pageSize,
+      sortBy: { [sortTarget]: sortOrder },
+      userId: data?.user?.id ?? '',
+    };
+
+    dispatch(fetchTransactions(payload));
+  }, [
+    dispatch,
+    filterCriteria,
+    paginationParams.currentPage,
+    paginationParams.pageSize,
+    sortTarget,
+    sortOrder,
+    data?.user?.id,
+  ]);
 
   // Handle sort logics for column header
   const handleSort = (header: string) => {
@@ -221,34 +216,25 @@ const TransactionTable = () => {
   };
 
   const handleDeleteTransaction = () => {
-    //delete logics here
-    const endpoint = `/api/transactions/transaction?id=${selectedTransaction?.id}`;
+    if (!selectedTransaction) return;
     setIsDeleting(true);
-    fetch(endpoint, {
-      method: 'DELETE',
-    })
-      .then(async (response) => {
-        const responseData = await response.json();
 
-        if (response.ok) {
-          // Remove the deleted transaction from the display data
-          setDisplayData((prev) => prev.filter((item) => item.id !== selectedTransaction?.id));
+    dispatch(deleteTransactionThunk(selectedTransaction.id))
+      .unwrap()
+      .then(() => {
+        // Update local data list
+        setDisplayData((prev) =>
+          prev.filter((item: IRelationalTransaction) => item.id !== selectedTransaction.id),
+        );
 
-          // Close the delete modal
-          setIsDeleteModalOpen(false);
-          setSelectedTransaction(undefined);
+        // Close modal
+        setIsDeleteModalOpen(false);
+        setSelectedTransaction(undefined);
 
-          // Alert the user of successful deletion
-          toast.success('Transaction deleted successfully');
-
-          // Revalidate data
-          mutate('/api/transactions');
-        } else {
-          toast.error(responseData.message || 'Failed to delete transaction');
-        }
+        toast.success('Transaction deleted successfully');
       })
-      .catch((error) => {
-        toast.error(error.message || 'Failed to delete transaction');
+      .catch((error: any) => {
+        toast.error(error?.message || 'Failed to delete transaction');
       })
       .finally(() => {
         setIsDeleting(false);
@@ -383,12 +369,12 @@ const TransactionTable = () => {
                 TransactionTableToEntity[key as keyof typeof TransactionTableToEntity];
               return (
                 <TableCell
-                  className={`cursor-${value.sortable && !isLoading && !isValidating ? 'pointer' : 'default'}`}
+                  className={`cursor-${value.sortable && !isTransactionLoading ? 'pointer' : 'default'}`}
                   key={idx}
                   onMouseEnter={() => setHoveringIdx(idx)}
                   onMouseLeave={() => setHoveringIdx(-1)}
                   onClick={() => {
-                    if (!isLoading && !isValidating) handleSort(entityKey);
+                    if (!isTransactionLoading) handleSort(entityKey);
                   }}
                 >
                   <div
@@ -400,7 +386,7 @@ const TransactionTable = () => {
                     {key}
                     {value.sortable && (hoveringIdx === idx || sortTarget === entityKey) && (
                       <>
-                        {!isLoading && !isValidating ? (
+                        {!isTransactionLoading ? (
                           <SortArrowBtn
                             sortOrder={sortOrder ?? 'none'}
                             isActivated={sortTarget === entityKey}
@@ -620,7 +606,7 @@ const TransactionTable = () => {
               </TableRow>
             );
           })}
-          {displayData.length === 0 && !isLoading && !isValidating && (
+          {displayData.length === 0 && !isTransactionLoading && (
             <TableRow>
               <TableCell colSpan={Object.entries(tableVisibleColumns).length}>
                 <div className="w-full h-full flex justify-center items-center">
@@ -635,7 +621,7 @@ const TransactionTable = () => {
                 className="target-div w-full h-full min-h-5 flex justify-center items-center"
                 ref={toggleRef}
               >
-                {(isLoading || isValidating) && <Label>Loading more data...</Label>}
+                {isTransactionLoading && <Label>Loading more data...</Label>}
               </div>
             </TableCell>
           </TableRow>
