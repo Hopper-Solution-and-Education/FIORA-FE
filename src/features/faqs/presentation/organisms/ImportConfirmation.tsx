@@ -1,7 +1,7 @@
 'use client';
 
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
-import { AlertTriangle, CheckCircle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 interface ImportConfirmationProps {
   validRecords: number;
@@ -46,17 +46,6 @@ const ImportConfirmation = ({
             </div>
           </div>
         )}
-
-        <div className="space-y-3">
-          <div className="flex items-center">
-            <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-            <span className="text-gray-700">Only valid records will be imported</span>
-          </div>
-          <div className="flex items-center">
-            <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-            <span className="text-gray-700">This action cannot be automatically undone</span>
-          </div>
-        </div>
       </div>
 
       <DefaultSubmitButton

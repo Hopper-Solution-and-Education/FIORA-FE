@@ -258,6 +258,8 @@ export enum Messages {
   // FAQ
   IMPORT_FAQS_SUCCESS = 'Import FAQs successfully',
   IMPORT_FAQS_FAILED = 'Import FAQs failed',
+  GET_FAQ_CATEGORIES_SUCCESS = 'Get FAQ categories successfully',
+  GET_FAQ_CATEGORIES_FAILED = 'Get FAQ categories failed',
 
   // COMMON ERRORS
   INVALID_CURRENCY = 'Invalid currency. Must be either VND or USD.',
