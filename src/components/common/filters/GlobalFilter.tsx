@@ -41,6 +41,7 @@ export interface GlobalFilterProps {
   defaultFilterCriteria?: FilterCriteria;
   structureCreator?: (params: any) => Record<string, unknown>;
   currentFilter: any;
+  showFilterHeader?: boolean;
 }
 
 const GlobalFilter = (props: GlobalFilterProps) => {
@@ -52,6 +53,7 @@ const GlobalFilter = (props: GlobalFilterProps) => {
     defaultFilterCriteria = DEFAULT_FILTER_CRITERIA,
     structureCreator,
     currentFilter,
+    showFilterHeader = true,
   } = props;
 
   const [isOpen, setIsOpen] = useState(false);
@@ -232,11 +234,14 @@ const GlobalFilter = (props: GlobalFilterProps) => {
         align="start"
         sideOffset={4}
       >
-        <DropdownMenuLabel className="p-0 font-normal">
-          <h2 className="font-semibold">Filter & Settings</h2>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-
+        {showFilterHeader && (
+          <>
+            <DropdownMenuLabel className="p-0 font-normal">
+              <h2 className="font-semibold">Filter & Settings</h2>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+          </>
+        )}
         {/* Filter contents */}
         <div className="w-full h-fit max-h-[45vh] flex justify-start items-start p-2 pb-5">
           {/* Left column filters */}

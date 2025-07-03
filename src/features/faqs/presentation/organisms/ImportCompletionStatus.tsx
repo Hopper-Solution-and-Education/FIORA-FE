@@ -68,7 +68,7 @@ const ImportCompletionStatus: React.FC<ImportCompletionStatusProps> = ({
               onRestart();
             }, 1000);
           }}
-          submitTooltip="Go to Dashboard"
+          submitTooltip="Go to FAQ Center"
         />
       </CardContent>
     </div>

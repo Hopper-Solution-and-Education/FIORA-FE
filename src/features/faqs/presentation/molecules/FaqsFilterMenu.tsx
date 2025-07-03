@@ -100,7 +100,6 @@ const FaqsFilterMenu = ({ categories, activeFilters, onFilterChange }: FaqsFilte
     [activeFilters.search, onFilterChange],
   );
 
-  // Structure creator for GlobalFilter
   const structureCreator = useCallback((params: FilterCriteria) => params.filters, []);
 
   return (
@@ -111,6 +110,7 @@ const FaqsFilterMenu = ({ categories, activeFilters, onFilterChange }: FaqsFilte
       defaultFilterCriteria={defaultFilterCriteria}
       structureCreator={structureCreator}
       currentFilter={hasActiveFilters ? filterParams.filters : {}}
+      showFilterHeader={false}
     />
   );
 };

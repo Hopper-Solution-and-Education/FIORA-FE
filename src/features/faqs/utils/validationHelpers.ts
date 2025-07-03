@@ -33,20 +33,3 @@ export const hasFieldError = (errors: ValidationError[], fieldName: string): boo
 export const getCellClassName = (errors: ValidationError[], fieldName: string): string => {
   return hasFieldError(errors, fieldName) ? 'text-red-600' : '';
 };
-
-/**
- * Get CSS class name for table row based on validation status
- */
-export const getRowClassName = (record: FaqsRowValidated): string => {
-  const classes = [];
-
-  if (!record.isValid) {
-    classes.push('bg-muted/30');
-  }
-
-  if (record.validationErrors.length > 0) {
-    classes.push('border-l-2 border-l-red-500');
-  }
-
-  return classes.join(' ');
-};
