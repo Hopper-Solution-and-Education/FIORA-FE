@@ -3,7 +3,7 @@
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { useMemo, useState, useCallback } from 'react';
 import { FaqsRowValidated, ValidationError } from '../../domain/entities/models/faqs';
-import { filterRecords, getCellClassName, getRowClassName } from '../../utils/validationHelpers';
+import { filterRecords, getCellClassName } from '../../utils/validationHelpers';
 import { CollapsibleText, EmptyState, StatusBadge, ValidationTableHeader } from '../atoms';
 import { AlertCircle, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -109,7 +109,7 @@ const ValidationResults = ({ records, filter }: ValidationResultsProps) => {
           <ValidationTableHeader columns={COLUMN_CONFIG} />
           <TableBody>
             {filteredRecords.map((record, index) => (
-              <TableRow key={index} className={getRowClassName(record)}>
+              <TableRow key={index}>
                 <TableCell>
                   <StatusBadge isValid={record.isValid} />
                 </TableCell>

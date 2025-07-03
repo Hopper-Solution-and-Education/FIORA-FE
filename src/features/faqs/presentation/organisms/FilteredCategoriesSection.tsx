@@ -28,7 +28,7 @@ const FilteredCategoriesSection = ({
 
   return (
     <section>
-      <h2 className="text-2xl font-bold text-center mb-6">FAQ Center</h2>
+      <h2 className="text-2xl font-bold text-center mb-8">FAQ Center</h2>
       <div className="space-y-6">
         {Object.entries(groupedFaqs).map(([category, faqs]) => (
           <div key={category} className="border rounded-lg p-4">
