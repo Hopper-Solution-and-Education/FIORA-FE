@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 import { getSessionUser } from '@/lib/utils/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const prisma = new PrismaClient();
   const { cid } = req.query;
   const user = await getSessionUser(req, res);
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
