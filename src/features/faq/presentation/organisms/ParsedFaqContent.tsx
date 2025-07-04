@@ -8,18 +8,48 @@ interface Props {
   htmlContent: string;
 }
 
+const youtubeRegex =
+  /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})(?:[&?][^\s<"]*)?/g;
+
 const ParsedFaqContent: React.FC<Props> = ({ htmlContent }) => {
-  // Nếu không có thẻ HTML nào thì wrap bằng <p>
-  if (!/<[a-z][\s\S]*>/i.test(htmlContent)) {
-    htmlContent = `<p>${htmlContent}</p>`;
+  let content = htmlContent;
+
+  if (!/<[a-z][\s\S]*>/i.test(content)) {
+    content = `<p>${content}</p>`;
   }
+
+  content = content.replace(
+    /<a [^>]*href=["']?(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})(?:[&?][^\s<"]*)?["']?[^>]*>(.*?)<\/a>/gi,
+    (match, videoId) =>
+      `<iframe width="100%" height="360" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen class="rounded-lg my-4"></iframe>`,
+  );
+
+  content = content.replace(
+    youtubeRegex,
+    (match, videoId) =>
+      `<iframe width="100%" height="360" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen class="rounded-lg my-4"></iframe>`,
+  );
 
   return (
     <div className="prose max-w-none">
-      {parse(htmlContent, {
+      {parse(content, {
         replace: (domNode) => {
           if (domNode instanceof Element) {
-            // Handle <video>
+            if (domNode.name === 'iframe') {
+              return (
+                <div className="mb-6">
+                  <iframe
+                    src={domNode.attribs.src}
+                    width={domNode.attribs.width || '100%'}
+                    height={domNode.attribs.height || '360'}
+                    frameBorder={domNode.attribs.frameborder || 0}
+                    allowFullScreen
+                    className="rounded-lg w-full"
+                  />
+                </div>
+              );
+            }
+
             if (domNode.name === 'video') {
               const sourceTag = domNode.children.find(
                 (c) => c instanceof Element && c.name === 'source',
@@ -46,7 +76,6 @@ const ParsedFaqContent: React.FC<Props> = ({ htmlContent }) => {
               );
             }
 
-            // Handle <img>
             if (domNode.name === 'img') {
               const src = domNode.attribs.src;
               const alt = domNode.attribs.alt || '';
@@ -69,7 +98,6 @@ const ParsedFaqContent: React.FC<Props> = ({ htmlContent }) => {
               );
             }
 
-            // Handle <p>
             if (domNode.name === 'p') {
               return <p className="mb-4">{domToReact(domNode.children as any)}</p>;
             }

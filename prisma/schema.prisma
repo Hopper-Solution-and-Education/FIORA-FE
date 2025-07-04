@@ -24,26 +24,26 @@ model User {
   updatedBy           String?               @db.Uuid
   role                UserRole              @default(User)
   accounts            Account[]             @relation("UserAccounts")
+  AttachmentRelations AttachmentRelations[]
   budgetDetails       BudgetDetails[]
   budgetControl       BudgetsTable[]
   categories          Category[]            @relation("UserCategories")
   categoryProducts    CategoryProducts[]
+  Comment             Comment[]
   depositRequests     DepositRequest[]      @relation("UserDepositRequest")
+  exchangeRateSetting ExchangeRateSetting[]
   MembershipProgress  MembershipProgress[]
   MembershipTier      MembershipTier[]
   partners            Partner[]             @relation("UserPartners")
+  Post                Post[]
   products            Product[]             @relation("UserProducts")
   productItems        ProductItems[]
+  Reaction            Reaction[]
   sessions            Session[]
   transactions        Transaction[]         @relation("UserTransactions")
   authentication      UserAuthentication?
   userNotifications   UserNotification[]    @relation("UserNotification")
   wallet              Wallet[]              @relation("UserWallet")
-  AttachmentRelations AttachmentRelations[]
-  Comment             Comment[]
-  Post                Post[]
-  Reaction            Reaction[]
-  exchangeRateSetting ExchangeRateSetting[]
 
   @@index([isDeleted])
 }
@@ -391,7 +391,6 @@ model BudgetDetails {
 model Wallet {
   id              String     @id @default(uuid()) @db.Uuid
   userId          String     @db.Uuid
-  name            String?    @db.VarChar(50)
   icon            String?
   type            WalletType
   frBalanceActive Decimal    @default(0) @db.Decimal(12, 2)
@@ -401,6 +400,7 @@ model Wallet {
   updatedAt       DateTime   @updatedAt @db.Timestamptz(0)
   createdBy       String?    @db.Uuid
   updatedBy       String?    @db.Uuid
+  name            String?    @db.VarChar(50)
   user            User       @relation("UserWallet", fields: [userId], references: [id])
 
   @@index([userId])
@@ -477,15 +477,15 @@ model Attachment {
   id                  String                @id @default(uuid()) @db.Uuid
   type                String                @db.VarChar(10)
   size                Decimal               @default(0)
-  url                 String                @db.Text
+  url                 String
   path                String                @db.VarChar(255)
   createdAt           DateTime              @default(now()) @db.Timestamptz(0)
   updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
   createdBy           String?               @db.Uuid
   updatedBy           String?               @db.Uuid
+  AttachmentRelations AttachmentRelations[]
   depositRequests     DepositRequest?
   notifications       Notification?
-  AttachmentRelations AttachmentRelations[]
 
   @@index([url])
   @@index([path])
@@ -511,15 +511,15 @@ model MembershipBenefit {
 model MembershipProgress {
   id             String          @id @default(uuid()) @db.Uuid
   userId         String          @db.Uuid
-  tierId         String?         @db.Uuid
   currentSpent   Decimal         @default(0) @db.Decimal(13, 2)
   currentBalance Decimal         @default(0) @db.Decimal(13, 2)
   createdBy      String?         @db.Uuid
   updatedBy      String?         @db.Uuid
   createdAt      DateTime        @default(now()) @db.Timestamptz(0)
   updatedAt      DateTime        @updatedAt @db.Timestamptz(0)
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tierId         String?         @db.Uuid
   tier           MembershipTier? @relation(fields: [tierId], references: [id])
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([tierId])
@@ -528,23 +528,23 @@ model MembershipProgress {
 model MembershipTier {
   id                  String               @id @default(uuid()) @db.Uuid
   tierName            String?              @unique @db.VarChar(500)
-  mainIconUrl         String?              @db.Text
-  passedIconUrl       String?              @db.Text
-  inactiveIconUrl     String?              @db.Text
-  themeIconUrl        String?              @db.Text
+  mainIconUrl         String?
+  passedIconUrl       String?
+  inactiveIconUrl     String?
+  themeIconUrl        String?
   spentMinThreshold   Decimal              @db.Decimal(13, 2)
   spentMaxThreshold   Decimal              @db.Decimal(13, 2)
   balanceMinThreshold Decimal              @db.Decimal(13, 2)
   balanceMaxThreshold Decimal              @db.Decimal(13, 2)
-  story               String?              @db.Text
+  story               String?
   createdAt           DateTime             @default(now()) @db.Timestamptz(0)
   updatedAt           DateTime             @updatedAt @db.Timestamptz(0)
   createdBy           String?              @db.Uuid
   updatedBy           String?              @db.Uuid
-  user                User                 @relation(fields: [userId], references: [id])
   userId              String               @db.Uuid
-  tierBenefits        TierBenefit[]
   membershipProgress  MembershipProgress[]
+  user                User                 @relation(fields: [userId], references: [id])
+  tierBenefits        TierBenefit[]
 
   @@unique([spentMinThreshold, spentMaxThreshold, balanceMinThreshold, balanceMaxThreshold])
   @@index([spentMinThreshold, spentMaxThreshold])
@@ -559,8 +559,8 @@ model TierBenefit {
   updatedAt DateTime          @updatedAt @db.Timestamptz(0)
   createdBy String?           @db.Uuid
   updatedBy String?           @db.Uuid
-  tier      MembershipTier    @relation(fields: [tierId], references: [id], onDelete: Cascade)
   benefit   MembershipBenefit @relation(fields: [benefitId], references: [id], onDelete: Cascade)
+  tier      MembershipTier    @relation(fields: [tierId], references: [id], onDelete: Cascade)
 
   @@id([tierId, benefitId])
 }
@@ -572,7 +572,7 @@ model AttachmentRelations {
   userId       String     @db.Uuid
   createdAt    DateTime   @default(now()) @db.Timestamptz(0)
   createdBy    String     @db.Uuid
-  updatedAt    DateTime   @updatedAt @db.Timestamptz(0)
+  updatedAt    DateTime?  @updatedAt @db.Timestamptz(0)
   updatedBy    String?    @db.Uuid
   attachmentId String     @db.Uuid
   Attachment   Attachment @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
@@ -590,7 +590,7 @@ model Comment {
   userId              String                @db.Uuid
   createdAt           DateTime              @default(now()) @db.Timestamptz(0)
   createdBy           String                @db.Uuid
-  updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
+  updatedAt           DateTime?             @updatedAt @db.Timestamptz(0)
   updatedBy           String?               @db.Uuid
   AttachmentRelations AttachmentRelations[]
   Post                Post                  @relation(fields: [postId], references: [id], onDelete: Cascade)
@@ -602,7 +602,7 @@ model Comment {
 
 model Post {
   id                  String                @id @default(uuid()) @db.Uuid
-  title               String                @unique @db.VarChar(255)
+  title               String                @db.VarChar(255)
   description         String?               @db.VarChar(255)
   content             String
   views               Int                   @default(0)
@@ -611,7 +611,7 @@ model Post {
   categoryId          String                @db.Uuid
   createdAt           DateTime              @default(now()) @db.Timestamptz(0)
   createdBy           String                @db.Uuid
-  updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
+  updatedAt           DateTime?             @updatedAt @db.Timestamptz(0)
   updatedBy           String?               @db.Uuid
   AttachmentRelations AttachmentRelations[]
   Comment             Comment[]
@@ -625,30 +625,30 @@ model Post {
 }
 
 model PostCategory {
-  id          String   @id @default(uuid()) @db.Uuid
-  name        String   @db.VarChar(255)
-  description String?  @db.VarChar(255)
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String    @db.VarChar(255)
+  description String?   @db.VarChar(255)
   type        PostType
-  createdAt   DateTime @default(now()) @db.Timestamptz(0)
-  createdBy   String   @db.Uuid
-  updatedAt   DateTime @updatedAt @db.Timestamptz(0)
-  updatedBy   String?  @db.Uuid
+  createdAt   DateTime  @default(now()) @db.Timestamptz(0)
+  createdBy   String    @db.Uuid
+  updatedAt   DateTime? @updatedAt @db.Timestamptz(0)
+  updatedBy   String?   @db.Uuid
   Post        Post[]
 
   @@index([name])
 }
 
 model Reaction {
-  id           String   @id @default(uuid()) @db.Uuid
-  postId       String   @db.Uuid
-  userId       String   @db.Uuid
-  reactionType String   @db.VarChar(10)
-  createdAt    DateTime @default(now()) @db.Timestamptz(0)
-  createdBy    String   @db.Uuid
-  updatedAt    DateTime @updatedAt @db.Timestamptz(0)
-  updatedBy    String?  @db.Uuid
-  Post         Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String    @id @default(uuid()) @db.Uuid
+  postId       String    @db.Uuid
+  userId       String    @db.Uuid
+  reactionType String    @db.VarChar(10)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(0)
+  createdBy    String    @db.Uuid
+  updatedAt    DateTime? @updatedAt @db.Timestamptz(0)
+  updatedBy    String?   @db.Uuid
+  Post         Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  User         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([postId])
   @@index([userId])
@@ -760,6 +760,8 @@ enum WalletType {
   Lending
   BNPL
   Debt
+  Referral
+  Cashback
 }
 
 enum DepositRequestStatus {
