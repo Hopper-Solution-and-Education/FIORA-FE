@@ -1,6 +1,7 @@
+'use client';
+
 import React from 'react';
 import { WalletDepositPackageCard } from '../atoms';
-import { useInitializePackageFX } from '../hooks';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { RadioGroup } from '@/components/ui/radio-group';
 import { cn } from '@/shared/utils';
@@ -13,7 +14,13 @@ interface WalletPackageListProps {
 }
 
 const WalletPackageList = ({ selectedId, setSelectedId, className }: WalletPackageListProps) => {
+
   const { packageFX, loading, error } = useInitializePackageFX();
+
+  const packageFX = useAppSelector((state) => state.wallet.packageFX);
+  const loading = useAppSelector((state) => state.wallet.loading);
+  const error = useAppSelector((state) => state.wallet.error);
+
   const getIsPopular = (pkg: { fxAmount: number }) => pkg.fxAmount === 250;
   const depositSearch = useAppSelector((state) => state.wallet.depositSearch);
 
@@ -35,7 +42,7 @@ const WalletPackageList = ({ selectedId, setSelectedId, className }: WalletPacka
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="pb-4">
+      <CardContent className="pb-4 h-[500px] overflow-y-auto">
         <div className="overflow-y-auto pr-1 flex flex-col gap-4">
           <RadioGroup
             value={selectedId ?? ''}

@@ -13,6 +13,9 @@ export interface AttachmentData {
   size: number;
   url: string;
   path: string;
+
+  file?: File;
+
 }
 
 export interface CreateDepositRequestData {

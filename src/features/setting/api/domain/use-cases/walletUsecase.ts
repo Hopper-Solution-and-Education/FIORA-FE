@@ -20,6 +20,11 @@ const WALLET_TYPE_ICONS: Record<WalletType, string> = {
   [WalletType.Lending]: 'user',
   [WalletType.BNPL]: 'billing',
   [WalletType.Debt]: 'banknoteArrowDown',
+
+
+  [WalletType.Referral]: 'userPlus',
+  [WalletType.Cashback]: 'circleFadingArrowUp',
+
 };
 
 const DEFAULT_WALLET_FIELDS = {

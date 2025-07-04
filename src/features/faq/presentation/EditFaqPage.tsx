@@ -9,6 +9,10 @@ import SessionSidebar from '@/components/providers/SessionSidebar';
 import RichTextEditor from '@/features/faq/presentation/components/faqedit/RichTextEditor';
 import MarkdownPreview from '@/features/faq/presentation/components/faqedit/MarkdownPreview';
 
+
+import ConfirmExitDialog from '@/features/faq/presentation/organisms/ConfirmExitDialog';
+
+
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -19,6 +23,11 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
+
+
+
+import SuccessToast from '@/features/faq/hook/SuccessToast';
+
 
 type FaqFormValues = {
   title: string;
@@ -44,7 +53,13 @@ export default function EditFaqPage() {
   const [htmlContent, setHtmlContent] = useState('');
   const [loading, setLoading] = useState(true);
 
+
   // Fetch post data
+  const [saving, setSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showConfirmExit, setShowConfirmExit] = useState(false); // NEW: state để mở dialog
+
+
   useEffect(() => {
     if (!id) return;
 
@@ -72,6 +87,10 @@ export default function EditFaqPage() {
   }, [id, reset]);
 
   const onSubmit = async (formData: FaqFormValues) => {
+
+
+    setSaving(true);
+
     try {
       const res = await fetch(`/api/faqs/${id}`, {
         method: 'PUT',
@@ -99,6 +118,24 @@ export default function EditFaqPage() {
   };
 
   // const title = watch('title');
+
+        setSaving(false);
+        return;
+      }
+
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        router.push(`/faqs/${id}`);
+      }, 1000);
+    } catch (err) {
+      console.error(err);
+      alert('Update failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const description = watch('description');
 
   if (loading) {
@@ -112,6 +149,17 @@ export default function EditFaqPage() {
   return (
     <SessionSidebar appLabel="Faq">
       <main className="p-6 pt-24 space-y-8 overflow-auto">
+
+
+        {showSuccess && (
+          <SuccessToast
+            title="Edit FAQ Successfully"
+            description="Your invoice request has been recorded and is awaiting processing."
+            onClose={() => setShowSuccess(false)}
+          />
+        )}
+
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -174,7 +222,11 @@ export default function EditFaqPage() {
           <div className="flex justify-between pt-8">
             <button
               type="button"
+
               onClick={() => router.back()}
+
+              onClick={() => setShowConfirmExit(true)} // NEW: mở dialog khi click
+
               className="bg-[#E0E0E0] hover:bg-[#d5d5d5] text-black px-8 py-4 rounded-md transition"
             >
               <ArrowLeft size={24} />
@@ -182,12 +234,37 @@ export default function EditFaqPage() {
 
             <button
               type="submit"
+
               className="bg-[#3C5588] hover:bg-[#2e446e] px-8 py-4 rounded-md shadow text-white transition"
             >
               <Check size={24} className="text-[#60A673]" />
             </button>
           </div>
         </form>
+
+              disabled={saving}
+              className="bg-[#3C5588] hover:bg-[#2e446e] px-8 py-4 rounded-md shadow text-white transition flex items-center justify-center min-w-[100px]"
+            >
+              {saving ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <Check size={24} className="text-[#60A673]" />
+              )}
+            </button>
+          </div>
+        </form>
+
+        {/* ConfirmExitDialog */}
+        <ConfirmExitDialog
+          open={showConfirmExit}
+          onOpenChange={setShowConfirmExit}
+          onConfirmExit={() => {
+            setShowConfirmExit(false);
+            router.back();
+          }}
+          onCancelExit={() => setShowConfirmExit(false)}
+        />
+
       </main>
     </SessionSidebar>
   );

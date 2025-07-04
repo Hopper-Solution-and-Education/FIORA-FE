@@ -63,31 +63,32 @@ const ItemRankChart = ({
               cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800
               flex items-center justify-center border border-gray-200 dark:border-gray-800
               ${isCurrent ? 'bg-green-100 dark:bg-gray-800 border-green-500 z-10' : 'bg-white dark:bg-black hover:bg-gray-50'}
-              rounded-md relative w-full h-full
+              relative w-full h-full
             `}
           >
             {tierIcon && (
               <div className="w-full h-full p-1 flex items-center justify-center">
                 <div className="relative w-full h-full max-w-[85px] max-h-[85px] min-w-[40px] min-h-[40px]">
-                  {tierIcon.isActive ? (
+                  {isCurrent ? (
                     <Image
-                      src={tierIcon.icon || 'https://placehold.co/60x60/cccccc/000000?text=Icon'}
+                      src={tierIcon.mainIcon || ''}
                       alt={combinedKey}
                       fill
-                      className={`
-                      object-contain transition-transform duration-200
-                      ${isCurrent ? 'scale-110' : 'scale-100'}
-                    `}
+                      className="object-contain transition-transform duration-200 scale-110"
+                    />
+                  ) : tierIcon.isPassed ? (
+                    <Image
+                      src={tierIcon.passedIcon || ''}
+                      alt={combinedKey}
+                      fill
+                      className="object-contain transition-transform duration-200 scale-100"
                     />
                   ) : (
                     <Image
-                      src={tierIcon.icon || 'https://placehold.co/60x60/cccccc/000000?text=Icon'}
+                      src={tierIcon.inActiveIcon || ''}
                       alt={combinedKey}
                       fill
-                      className={`
-                        object-contain transition-transform duration-200
-                        ${isCurrent ? 'scale-110' : 'scale-100'}
-                      `}
+                      className="object-contain transition-transform duration-200 scale-100"
                     />
                   )}
                 </div>

@@ -1,7 +1,14 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+'use client';
+
 import { LoadingIndicator } from '@/components/common/atoms';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
+
+
+import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
+
 import { useAppDispatch, useAppSelector } from '@/store';
 import { ArrowLeftIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -27,6 +34,16 @@ const WalletDepositPage = () => {
 
   const selectedId = useAppSelector((state) => state.wallet.selectedPackageId);
   const attachmentData = useAppSelector((state) => state.wallet.attachmentData);
+
+
+  const packageFX = useAppSelector((state) => state.wallet.packageFX);
+
+  useEffect(() => {
+    if (!selectedId && packageFX && packageFX.length > 0) {
+      dispatch(setSelectedPackageId(packageFX[0].id));
+    }
+  }, [packageFX]);
+
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -64,13 +81,32 @@ const WalletDepositPage = () => {
     if (!selectedId || !attachmentData) return;
     setLoading(true);
     try {
+      let finalAttachmentData = attachmentData;
+      if ((attachmentData as any).file) {
+        const file = (attachmentData as any).file;
+        const url = await uploadToFirebase({
+          file,
+          path: 'wallet-attachments',
+          fileName: file.name.replace(/\.[^/.]+$/, ''),
+        });
+        finalAttachmentData = {
+          ...attachmentData,
+          url,
+          path: `wallet-attachments/${file.name}`,
+        };
+        delete (finalAttachmentData as any).file;
+      }
       const usecase = walletContainer.get<CreateDepositRequestUsecase>(
         WALLET_TYPES.ICreateDepositRequestUseCase,
       );
 
       await usecase.execute({
         packageFXId: selectedId,
+
         attachmentData: attachmentData,
+
+        attachmentData: finalAttachmentData,
+
       });
 
       toast.success('Deposit request sent successfully');

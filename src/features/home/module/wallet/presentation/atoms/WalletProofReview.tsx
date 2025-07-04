@@ -1,3 +1,6 @@
+
+'use client';
+
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -13,6 +16,10 @@ interface WalletProofReviewProps {
     size: number;
     url: string;
     path: string;
+
+
+    file?: File;
+
   } | null;
 }
 
@@ -27,8 +34,18 @@ const WalletProofReview: React.FC<WalletProofReviewProps> = ({ open, onClose, at
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+
   const fileName = attachmentData.path.split('/').pop() || 'Unknown file';
   const isImage = attachmentData.type === 'IMAGE';
+
+  const fileName =
+    attachmentData.path?.split('/').pop() || attachmentData.file?.name || 'Unknown file';
+  const isImage = attachmentData.type === 'IMAGE';
+  let previewUrl = attachmentData.url;
+  if (!previewUrl && isImage && attachmentData.file) {
+    previewUrl = URL.createObjectURL(attachmentData.file);
+  }
+
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -57,7 +74,11 @@ const WalletProofReview: React.FC<WalletProofReviewProps> = ({ open, onClose, at
             {isImage ? (
               <div className="relative w-full h-96 bg-muted dark:bg-muted/30 rounded-lg overflow-hidden border border-border/50">
                 <Image
+
                   src={attachmentData.url}
+
+                  src={previewUrl}
+
                   alt="Payment Proof"
                   className="w-full h-full object-contain"
                   onError={(e) => {
@@ -87,7 +108,12 @@ const WalletProofReview: React.FC<WalletProofReviewProps> = ({ open, onClose, at
                     variant="outline"
                     size="sm"
                     className="mt-2 border-border hover:bg-accent hover:text-accent-foreground"
+
                     onClick={() => window.open(attachmentData.url, '_blank')}
+
+                    onClick={() => previewUrl && window.open(previewUrl, '_blank')}
+                    disabled={!previewUrl}
+
                   >
                     <Icons.externalLink className="w-4 h-4 mr-2" />
                     Open File
@@ -107,8 +133,14 @@ const WalletProofReview: React.FC<WalletProofReviewProps> = ({ open, onClose, at
               Close
             </Button>
             <Button
+
               onClick={() => window.open(attachmentData.url, '_blank')}
               className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
+
+              onClick={() => previewUrl && window.open(previewUrl, '_blank')}
+              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
+              disabled={!previewUrl}
+
             >
               <Icons.externalLink className="w-4 h-4 mr-2" />
               Open in New Tab

@@ -13,6 +13,10 @@ import {
   Code,
   Link as LinkIcon,
   Image as ImageIcon,
+
+
+  VideoIcon,
+
   ChevronDown,
   AlignLeft,
   AlignCenter,
@@ -32,10 +36,17 @@ interface ToolbarProps {
 }
 
 export default function Toolbar({ editor }: ToolbarProps) {
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [selectedColor, setSelectedColor] = useState('#000000');
 
   // Label & icon động cho căn lề
+
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const videoInputRef = useRef<HTMLInputElement | null>(null);
+  const [selectedColor, setSelectedColor] = useState('#000000');
+
+
   const getCurrentAlignment = () => {
     if (editor.isActive({ textAlign: 'left' }))
       return (
@@ -69,8 +80,14 @@ export default function Toolbar({ editor }: ToolbarProps) {
     }
   };
 
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    if (!file) return;
+
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
@@ -81,11 +98,37 @@ export default function Toolbar({ editor }: ToolbarProps) {
     reader.readAsDataURL(file);
   };
 
+
+
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Tạo URL tạm thời từ file (blob URL)
+    const url = URL.createObjectURL(file);
+
+    // Chèn video vào editor
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: 'video',
+        attrs: {
+          src: url,
+          width: '560',
+          height: '315',
+        },
+      })
+      .run();
+  };
+
+
   const activeBtn = 'bg-blue-100 text-blue-700 border border-blue-500 shadow-sm';
   const normalBtn = 'bg-transparent text-black hover:bg-blue-50 border border-transparent';
 
   return (
     <div className="flex flex-wrap items-center gap-2 px-4 py-2 border-b border-border bg-muted rounded-t">
+
       {/* Hidden image input */}
       <input
         type="file"
@@ -96,6 +139,25 @@ export default function Toolbar({ editor }: ToolbarProps) {
       />
 
       {/* Heading dropdown */}
+
+      {/* Hidden inputs */}
+      <input
+        type="file"
+        accept="image/*"
+        ref={imageInputRef}
+        onChange={handleImageUpload}
+        className="hidden"
+      />
+      <input
+        type="file"
+        accept="video/*"
+        ref={videoInputRef}
+        onChange={handleVideoUpload}
+        className="hidden"
+      />
+
+      {/* Heading */}
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -170,7 +232,11 @@ export default function Toolbar({ editor }: ToolbarProps) {
         <Strikethrough size={18} />
       </Toggle>
 
+
       {/* Quote, code block */}
+
+      {/* Quote, code */}
+
       <Toggle
         pressed={editor.isActive('blockquote')}
         onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}
@@ -214,7 +280,11 @@ export default function Toolbar({ editor }: ToolbarProps) {
         <ListOrdered size={18} />
       </Toggle>
 
+
       {/* Alignment dropdown */}
+
+      {/* Align */}
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -239,7 +309,11 @@ export default function Toolbar({ editor }: ToolbarProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
+
       {/* Color dropdown */}
+
+      {/* Color */}
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -266,7 +340,11 @@ export default function Toolbar({ editor }: ToolbarProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
+
       {/* Link / Image */}
+
+      {/* Link, Image, Video */}
+
       <Button
         type="button"
         variant="ghost"
@@ -280,11 +358,27 @@ export default function Toolbar({ editor }: ToolbarProps) {
         type="button"
         variant="ghost"
         size="sm"
+
         onClick={() => fileInputRef.current?.click()}
+
+        onClick={() => imageInputRef.current?.click()}
+
         className="w-9 h-9 flex items-center justify-center rounded"
       >
         <ImageIcon size={18} />
       </Button>
+
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => videoInputRef.current?.click()}
+        className="w-9 h-9 flex items-center justify-center rounded"
+      >
+        <VideoIcon size={18} />
+      </Button>
+
     </div>
   );
 }

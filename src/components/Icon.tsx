@@ -23,6 +23,7 @@ import {
   CircleChevronLeft,
   CircleChevronUp,
   CircleDollarSign,
+  CircleFadingArrowUp,
   CircuitBoardIcon,
   ClipboardList,
   Command,
@@ -80,6 +81,7 @@ import {
   User,
   UserCircle2Icon,
   UserPen,
+  UserPlus,
   Users,
   UserX2Icon,
   UtensilsCrossed,
@@ -246,4 +248,8 @@ export const Icons = {
   edit: Edit,
   image: ImageIcon,
   externalLink: ExternalLink,
+
+  userPlus: UserPlus,
+  circleFadingArrowUp: CircleFadingArrowUp,
+1
 };

@@ -1,5 +1,9 @@
 'use client';
 
+
+
+import { useState } from 'react';
+
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -7,6 +11,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import Link from '@tiptap/extension-link';
+
 import Image from '@tiptap/extension-image';
 import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
@@ -14,6 +19,12 @@ import ListItem from '@tiptap/extension-list-item';
 
 import Toolbar from './Toolbar';
 import { useState } from 'react';
+
+
+import Toolbar from './Toolbar';
+import ResizableImage from './ImageResizable';
+import ResizableVideo from './ResizableVideo';
+
 
 interface RichTextEditorProps {
   value: string;
@@ -25,6 +36,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
 
   const editor = useEditor({
     extensions: [
+
       StarterKit.configure({
         bulletList: false,
         orderedList: false,
@@ -33,15 +45,26 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
       BulletList.configure({}),
       OrderedList.configure({}),
       ListItem.configure({}),
+
+      StarterKit.configure({}),
+
       Underline,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       TextStyle,
       Color,
       Link,
+
       Image,
     ],
     content: value,
     onUpdate({ editor }) {
+
+      ResizableImage,
+      ResizableVideo,
+    ],
+    content: value,
+    onUpdate: ({ editor }) => {
+
       onChange(editor.getHTML());
     },
     editorProps: {
@@ -49,6 +72,29 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         class:
           'min-h-[200px] px-4 py-3 outline-none focus:ring-2 focus:ring-blue-100 rounded-b bg-white border border-t-0',
       },
+
+
+      handlePaste(view, event) {
+        const text = event.clipboardData?.getData('text/plain');
+        if (text && (text.includes('youtube.com') || text.includes('vimeo.com'))) {
+          let embedUrl = text;
+          if (text.includes('watch?v=')) {
+            embedUrl = text.replace('watch?v=', 'embed/');
+          }
+          view.dispatch(
+            view.state.tr.replaceSelectionWith(
+              view.state.schema.nodes.video.create({
+                src: embedUrl,
+                width: '560',
+                height: '315',
+              }),
+            ),
+          );
+          return true;
+        }
+        return false;
+      },
+
     },
   });
 
@@ -64,7 +110,14 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         </button>
       </div>
       {preview ? (
+
         <div className="p-4 prose max-w-none" dangerouslySetInnerHTML={{ __html: value }} />
+
+        <div
+          className="p-4 prose max-w-none"
+          dangerouslySetInnerHTML={{ __html: editor?.getHTML() || '' }}
+        />
+
       ) : (
         <EditorContent editor={editor} />
       )}

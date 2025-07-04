@@ -77,7 +77,7 @@ export default function SettingCenter() {
             session?.user ? 'w-[300px] grid-cols-5' : 'w-[120px] grid-cols-2'
           } p-4 grid gap-4 border shadow-md`}
         >
-          <Tooltip>
+          <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <div
                 onClick={toggleTheme}
@@ -95,7 +95,7 @@ export default function SettingCenter() {
             </TooltipContent>
           </Tooltip>
 
-          <Tooltip>
+          <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <div
                 onClick={handleToggleLanguage}
@@ -113,7 +113,7 @@ export default function SettingCenter() {
             </TooltipContent>
           </Tooltip>
 
-          <Tooltip>
+          <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <div
                 onClick={handleToggleCurrency}
@@ -133,7 +133,7 @@ export default function SettingCenter() {
 
           {session?.user &&
             filteredMenuItems.map((item, index) => (
-              <Tooltip key={index}>
+              <Tooltip delayDuration={0} key={index}>
                 <TooltipTrigger asChild>
                   <Link href={item.url} passHref>
                     <div className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
