@@ -87,7 +87,7 @@ async function convertToFileObject(uploadedFile: formidable.File): Promise<File>
   const fileExtension = path.extname(fileName).toLowerCase();
   const fileBuffer = await fs.readFile(uploadedFile.filepath);
 
-  return new File([fileBuffer], fileName, {
+  return new File([fileBuffer as any], fileName, {
     type:
       fileExtension === '.xlsx'
         ? FAQ_IMPORT_CONSTANTS.ALLOWED_TYPES.XLSX
