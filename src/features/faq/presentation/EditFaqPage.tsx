@@ -8,6 +8,7 @@ import { ArrowLeft, Check } from 'lucide-react';
 import SessionSidebar from '@/components/providers/SessionSidebar';
 import RichTextEditor from '@/features/faq/presentation/components/faqedit/RichTextEditor';
 import MarkdownPreview from '@/features/faq/presentation/components/faqedit/MarkdownPreview';
+import ConfirmExitDialog from '@/features/faq/presentation/organisms/ConfirmExitDialog';
 
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -47,6 +48,7 @@ export default function EditFaqPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showConfirmExit, setShowConfirmExit] = useState(false); // NEW: state để mở dialog
 
   useEffect(() => {
     if (!id) return;
@@ -191,7 +193,7 @@ export default function EditFaqPage() {
           <div className="flex justify-between pt-8">
             <button
               type="button"
-              onClick={() => router.back()}
+              onClick={() => setShowConfirmExit(true)} // NEW: mở dialog khi click
               className="bg-[#E0E0E0] hover:bg-[#d5d5d5] text-black px-8 py-4 rounded-md transition"
             >
               <ArrowLeft size={24} />
@@ -210,6 +212,17 @@ export default function EditFaqPage() {
             </button>
           </div>
         </form>
+
+        {/* ConfirmExitDialog */}
+        <ConfirmExitDialog
+          open={showConfirmExit}
+          onOpenChange={setShowConfirmExit}
+          onConfirmExit={() => {
+            setShowConfirmExit(false);
+            router.back();
+          }}
+          onCancelExit={() => setShowConfirmExit(false)}
+        />
       </main>
     </SessionSidebar>
   );
