@@ -1,14 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useRouter, useParams } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, Check } from 'lucide-react';
 
 import SessionSidebar from '@/components/providers/SessionSidebar';
-import RichTextEditor from '@/features/faq/presentation/components/faqedit/RichTextEditor';
 import MarkdownPreview from '@/features/faq/presentation/components/faqedit/MarkdownPreview';
-
+import RichTextEditor from '@/features/faq/presentation/components/faqedit/RichTextEditor';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -23,91 +22,33 @@ import {
 type FaqFormValues = {
   title: string;
   description: string;
+  type: string;
+  category: string;
   content: string;
-  categoryId: string;
 };
 
 export default function EditFaqPage() {
   const router = useRouter();
-  const params = useParams();
-  const id = params?.id as string;
-
-  const { register, handleSubmit, setValue, watch, reset } = useForm<FaqFormValues>({
+  const { register, handleSubmit, setValue, watch } = useForm<FaqFormValues>({
     defaultValues: {
       title: '',
       description: '',
+      type: '',
+      category: '',
       content: '',
-      categoryId: '',
     },
   });
 
+  const title = watch('title');
   const [htmlContent, setHtmlContent] = useState('');
-  const [loading, setLoading] = useState(true);
 
-  // Fetch post data
-  useEffect(() => {
-    if (!id) return;
-
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/faqs/${id}`);
-        if (!res.ok) throw new Error('Failed to fetch');
-        const data = await res.json();
-        reset({
-          title: data.title,
-          description: data.description,
-          content: data.content,
-          categoryId: data.categoryId,
-        });
-        setHtmlContent(data.content);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
+  const onSubmit = (data: FaqFormValues) => {
+    const finalData = {
+      ...data,
+      content: htmlContent,
     };
-
-    fetchData();
-  }, [id, reset]);
-
-  const onSubmit = async (formData: FaqFormValues) => {
-    try {
-      const res = await fetch(`/api/faqs/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          content: htmlContent,
-        }),
-      });
-
-      if (!res.ok) {
-        const error = await res.json();
-        alert(`Error: ${error.error}`);
-        return;
-      }
-
-      alert('FAQ updated successfully');
-      router.push('/faqs');
-    } catch (err) {
-      console.error(err);
-      alert('Update failed');
-    }
+    console.log('Submit:', finalData);
   };
-
-  // const title = watch('title');
-  const description = watch('description');
-
-  if (loading) {
-    return (
-      <SessionSidebar appLabel="Faq">
-        <main className="p-6 pt-24">Loading...</main>
-      </SessionSidebar>
-    );
-  }
 
   return (
     <SessionSidebar appLabel="Faq">
@@ -120,10 +61,39 @@ export default function EditFaqPage() {
             </div>
 
             <div>
-              <Label htmlFor="categoryId">Category *</Label>
+              <Label htmlFor="type">Type *</Label>
               <Select
-                onValueChange={(value) => setValue('categoryId', value)}
-                value={watch('categoryId')}
+                onValueChange={(value) =>
+                  ((document.getElementsByName('type')[0] as HTMLInputElement).value = value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="guide">Guide</SelectItem>
+                  <SelectItem value="tutorial">Tutorial</SelectItem>
+                  <SelectItem value="troubleshooting">Troubleshooting</SelectItem>
+                </SelectContent>
+              </Select>
+              <input type="hidden" {...register('type', { required: true })} name="type" />
+            </div>
+
+            <div>
+              <Label htmlFor="description">Description *</Label>
+              <Textarea
+                id="description"
+                placeholder="Short description..."
+                {...register('description', { required: true })}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="category">Category *</Label>
+              <Select
+                onValueChange={(value) =>
+                  ((document.getElementsByName('category')[0] as HTMLInputElement).value = value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
@@ -134,16 +104,7 @@ export default function EditFaqPage() {
                   <SelectItem value="technical">Technical</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="md:col-span-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                placeholder="Short description..."
-                {...register('description')}
-                disabled
-              />
+              <input type="hidden" {...register('category', { required: true })} name="category" />
             </div>
           </div>
 
@@ -162,10 +123,18 @@ export default function EditFaqPage() {
             <div>
               <Label>Preview</Label>
               <div className="bg-white border p-4 rounded-md overflow-y-auto min-h-[400px] space-y-4">
-                <p className="text-gray-600">{description}</p>
-                {!htmlContent && (
-                  <p className="italic text-gray-400">Live preview will appear here…</p>
-                )}
+                <div>
+                  <h1
+                    className={`text-2xl font-bold ${!title ? 'text-gray-400' : 'text-foreground'}`}
+                  >
+                    {title || 'Title goes here'}
+                  </h1>
+
+                  {!htmlContent && (
+                    <p className="italic text-gray-400">Live preview will appear here…</p>
+                  )}
+                </div>
+
                 {htmlContent && <MarkdownPreview content={htmlContent} />}
               </div>
             </div>

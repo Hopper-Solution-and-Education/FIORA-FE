@@ -49,14 +49,15 @@ const SettingTierInputField = ({
     >
       <span
         className="
-          text-xs
-          sm:text-sm
-          md:text-sm
+          text-xxs
+          sm:text-xs
+          md:text-xs
           lg:text-sm
           font-semibold text-gray-700 dark:text-gray-200
           mb-4
           gap-2
           flex justify-start
+          w-36
         "
       >
         {label} {required && <span className="text-red-500">*</span>}
@@ -77,7 +78,7 @@ const SettingTierInputField = ({
               <InputField
                 name={name}
                 value={value.toString()}
-                onChange={(e) => onChange(Number(e))}
+                onChange={(e) => onChange(e as unknown as number)}
                 options={options}
                 placeholder="0"
                 required={required}
@@ -106,10 +107,10 @@ const SettingTierInputField = ({
       {suffix && (
         <span
           className="
-            text-xs
+            text-xxs
             sm:text-xs
-            md:text-sm
-            lg:text-sm
+            md:text-xs
+            lg:text-xs
             mb-4
             text-gray-500 dark:text-gray-400
             overflow-hidden

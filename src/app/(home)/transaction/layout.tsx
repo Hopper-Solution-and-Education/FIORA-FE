@@ -1,3 +1,5 @@
+import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
+import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -10,5 +12,9 @@ interface TransactionLayoutProps {
 }
 
 export default function TransactionLayout({ children }: TransactionLayoutProps) {
-  return <section className="container mx-auto sm:px-6 lg:px-8">{children}</section>;
+  return (
+    <ModuleAccessLayout featureFlag={FeatureFlags.TRANSACTION_FEATURE}>
+      <section className="container mx-auto sm:px-6 lg:px-8">{children}</section>
+    </ModuleAccessLayout>
+  );
 }

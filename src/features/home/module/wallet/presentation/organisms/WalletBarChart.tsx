@@ -1,17 +1,19 @@
+'use client';
+
 import React, { useMemo } from 'react';
 import PositiveAndNegativeBarChartV2 from '@/components/common/charts/positive-negative-bar-chart-v2';
 import { COLORS } from '@/shared/constants/chart';
 import { TwoSideBarItem } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
-import { useInitializeUserWallet } from '../hooks';
 import { formatFIORACurrency } from '@/config/FIORANumberFormat';
 import { transformWalletsToChartData } from '../../utils';
 import { useAppSelector } from '@/store';
-import { filterWallets } from '../../utils/transformFilterData';
+import { filterWallets } from '../../utils';
 import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import { Icons } from '@/components/Icon';
 
 const WalletBarChart = () => {
-  const { wallets, loading } = useInitializeUserWallet();
+  const wallets = useAppSelector((state) => state.wallet.wallets);
+  const loading = useAppSelector((state) => state.wallet.loading);
   const filterCriteria = useAppSelector((state) => state.wallet.filterCriteria);
   const { filters, search } = filterCriteria;
 
@@ -55,17 +57,27 @@ const WalletBarChart = () => {
         { name: 'Positive', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
         { name: 'Negative', color: COLORS.DEPS_DANGER.LEVEL_1 },
       ]}
-      height={400}
-      baseBarHeight={60}
+      height={500}
+      baseBarHeight={80}
       tooltipContent={({ payload }) => {
         if (!payload || !payload.length) return null;
         const item = payload[0].payload;
         const amount = item.positiveValue !== 0 ? item.positiveValue : item.negativeValue;
+        const isPositive = amount > 0;
+
         return (
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm p-3 rounded-md">
             <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{item.name}</p>
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              Amount: <span className="font-bold">{formatFIORACurrency(amount, 'FX')}</span>
+              Amount:{' '}
+              <span
+                className="font-bold"
+                style={{
+                  color: isPositive ? COLORS.DEPS_SUCCESS.LEVEL_1 : COLORS.DEPS_DANGER.LEVEL_1,
+                }}
+              >
+                {formatFIORACurrency(amount, 'FX')}
+              </span>
             </p>
           </div>
         );

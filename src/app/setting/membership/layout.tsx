@@ -1,3 +1,5 @@
+import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
+import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -6,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default async function layout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <ModuleAccessLayout featureFlag={FeatureFlags.MEMBERSHIP_FEATURE} requiredRoles={['ADMIN']}>
+      {children}
+    </ModuleAccessLayout>
+  );
 }

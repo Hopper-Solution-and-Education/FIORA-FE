@@ -3,11 +3,14 @@ import { membershipSettingUseCase } from '@/features/setting/api/application/use
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { createErrorResponse } from '@/shared/lib/utils';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { validateBody } from '@/shared/utils/validate';
 import { membershipTierSchema } from '@/shared/validators/membershipValidator';
 import { Prisma } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
+
+export const maxDuration = 30; // 30 seconds
 
 export default withAuthorization({
   POST: ['Admin'],
@@ -61,7 +64,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
     if (error) {
       return res
         .status(RESPONSE_CODE.BAD_REQUEST)
-        .json(createResponse(RESPONSE_CODE.BAD_REQUEST, error.message, error));
+        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
     }
     const newMembershipTier = await membershipSettingUseCase.upsertMembershipTier(req.body, userId);
 
@@ -75,15 +78,11 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
         ),
       );
   } catch (error: any) {
-    return res
-      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createError(
-          res,
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        ),
-      );
+    return createError(
+      res,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+      error.message || Messages.INTERNAL_ERROR,
+    );
   }
 }
 

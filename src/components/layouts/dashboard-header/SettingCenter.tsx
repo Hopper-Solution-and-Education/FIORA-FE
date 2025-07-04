@@ -19,13 +19,16 @@ import { Session, useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect } from 'react';
-import { menuSettingItems } from './utils';
+import { useEffect, useState } from 'react';
+import { menuSettingItems, filterMenuItems, MenuSettingItem } from './utils';
+import growthbook from '@/config/growthbook/growthbook';
 
 export default function SettingCenter() {
   const { theme, setTheme } = useTheme();
   const { currency, language } = useAppSelector((state) => state.settings);
   const dispatch = useAppDispatch();
+  const gb = growthbook;
+  const [filteredMenuItems, setFilteredMenuItems] = useState<MenuSettingItem[]>([]);
 
   const { data: session } = useSession() as { data: Session | null };
 
@@ -48,9 +51,15 @@ export default function SettingCenter() {
     dispatch(toggleCurrency(currency === 'USD' ? 'VND' : 'USD'));
   };
 
-  const filteredMenuItems = menuSettingItems.filter(
-    (item) => !item.role || session?.user?.role === item.role,
-  );
+  useEffect(() => {
+    const handleCheckMenuItems = () => {
+      if (menuSettingItems && session?.user?.role) {
+        setFilteredMenuItems(filterMenuItems(menuSettingItems, gb, session.user.role));
+      }
+    };
+
+    handleCheckMenuItems();
+  }, [menuSettingItems, session?.user?.role, gb]);
 
   return (
     <TooltipProvider>
@@ -68,7 +77,7 @@ export default function SettingCenter() {
             session?.user ? 'w-[300px] grid-cols-5' : 'w-[120px] grid-cols-2'
           } p-4 grid gap-4 border shadow-md`}
         >
-          <Tooltip>
+          <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <div
                 onClick={toggleTheme}
@@ -86,7 +95,7 @@ export default function SettingCenter() {
             </TooltipContent>
           </Tooltip>
 
-          <Tooltip>
+          <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <div
                 onClick={handleToggleLanguage}
@@ -104,7 +113,7 @@ export default function SettingCenter() {
             </TooltipContent>
           </Tooltip>
 
-          <Tooltip>
+          <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <div
                 onClick={handleToggleCurrency}
@@ -124,7 +133,7 @@ export default function SettingCenter() {
 
           {session?.user &&
             filteredMenuItems.map((item, index) => (
-              <Tooltip key={index}>
+              <Tooltip delayDuration={0} key={index}>
                 <TooltipTrigger asChild>
                   <Link href={item.url} passHref>
                     <div className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">

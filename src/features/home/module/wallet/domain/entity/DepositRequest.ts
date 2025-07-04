@@ -5,9 +5,16 @@ export type DepositRequest = {
   userId: string;
   refCode: string;
   packageFXId: string;
-  attachmentId: string;
+  attachmentId?: string;
   status: DepositRequestStatus;
-  remark: string;
+  remark?: string;
   createdAt: string;
   updatedAt: string;
+  attachment?: {
+    id: string;
+    type: string;
+    size: number;
+    url: string;
+    path: string;
+  };
 };

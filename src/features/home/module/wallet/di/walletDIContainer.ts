@@ -28,6 +28,7 @@ walletContainer
   .inSingletonScope();
 
 walletContainer.bind(WALLET_TYPES.IGetWalletsUseCase).to(GetWalletsUsecase).inSingletonScope();
+
 walletContainer
   .bind(WALLET_TYPES.IGetAllPackageFXUseCase)
   .to(GetAllPackageFXUsecase)

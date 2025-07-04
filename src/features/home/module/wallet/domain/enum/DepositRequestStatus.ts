@@ -1,5 +1,5 @@
 export enum DepositRequestStatus {
-  Pending = 'Pending',
+  Requested = 'Requested',
   Approved = 'Approved',
   Rejected = 'Rejected',
 }
