@@ -8,10 +8,7 @@ import { ArrowLeft, Check } from 'lucide-react';
 import SessionSidebar from '@/components/providers/SessionSidebar';
 import RichTextEditor from '@/features/faq/presentation/components/faqedit/RichTextEditor';
 import MarkdownPreview from '@/features/faq/presentation/components/faqedit/MarkdownPreview';
-
-
 import ConfirmExitDialog from '@/features/faq/presentation/organisms/ConfirmExitDialog';
-
 
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,10 +21,7 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 
-
-
 import SuccessToast from '@/features/faq/hook/SuccessToast';
-
 
 type FaqFormValues = {
   title: string;
@@ -52,13 +46,9 @@ export default function EditFaqPage() {
 
   const [htmlContent, setHtmlContent] = useState('');
   const [loading, setLoading] = useState(true);
-
-
-  // Fetch post data
   const [saving, setSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showConfirmExit, setShowConfirmExit] = useState(false); // NEW: state để mở dialog
-
 
   useEffect(() => {
     if (!id) return;
@@ -87,10 +77,7 @@ export default function EditFaqPage() {
   }, [id, reset]);
 
   const onSubmit = async (formData: FaqFormValues) => {
-
-
     setSaving(true);
-
     try {
       const res = await fetch(`/api/faqs/${id}`, {
         method: 'PUT',
@@ -106,19 +93,6 @@ export default function EditFaqPage() {
       if (!res.ok) {
         const error = await res.json();
         alert(`Error: ${error.error}`);
-        return;
-      }
-
-      alert('FAQ updated successfully');
-      router.push('/faqs');
-    } catch (err) {
-      console.error(err);
-      alert('Update failed');
-    }
-  };
-
-  // const title = watch('title');
-
         setSaving(false);
         return;
       }
@@ -149,8 +123,6 @@ export default function EditFaqPage() {
   return (
     <SessionSidebar appLabel="Faq">
       <main className="p-6 pt-24 space-y-8 overflow-auto">
-
-
         {showSuccess && (
           <SuccessToast
             title="Edit FAQ Successfully"
@@ -158,7 +130,6 @@ export default function EditFaqPage() {
             onClose={() => setShowSuccess(false)}
           />
         )}
-
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -222,11 +193,7 @@ export default function EditFaqPage() {
           <div className="flex justify-between pt-8">
             <button
               type="button"
-
-              onClick={() => router.back()}
-
               onClick={() => setShowConfirmExit(true)} // NEW: mở dialog khi click
-
               className="bg-[#E0E0E0] hover:bg-[#d5d5d5] text-black px-8 py-4 rounded-md transition"
             >
               <ArrowLeft size={24} />
@@ -234,14 +201,6 @@ export default function EditFaqPage() {
 
             <button
               type="submit"
-
-              className="bg-[#3C5588] hover:bg-[#2e446e] px-8 py-4 rounded-md shadow text-white transition"
-            >
-              <Check size={24} className="text-[#60A673]" />
-            </button>
-          </div>
-        </form>
-
               disabled={saving}
               className="bg-[#3C5588] hover:bg-[#2e446e] px-8 py-4 rounded-md shadow text-white transition flex items-center justify-center min-w-[100px]"
             >
@@ -264,7 +223,6 @@ export default function EditFaqPage() {
           }}
           onCancelExit={() => setShowConfirmExit(false)}
         />
-
       </main>
     </SessionSidebar>
   );
