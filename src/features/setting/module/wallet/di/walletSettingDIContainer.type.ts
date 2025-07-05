@@ -9,4 +9,5 @@ export const WALLET_SETTING_TYPES = {
 
   // UseCases
   IGetDepositRequestsPaginatedUseCase: Symbol.for('GetDepositRequestsPaginatedUseCase'),
+  IUpdateDepositRequestStatusUseCase: Symbol.for('UpdateDepositRequestStatusUseCase'),
 };

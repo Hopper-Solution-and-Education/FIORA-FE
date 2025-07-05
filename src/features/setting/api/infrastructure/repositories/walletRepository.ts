@@ -83,14 +83,14 @@ class WalletRepository implements IWalletRepository {
   }
 
   async getDepositRequestsPaginated(
-    userId: string,
-    status: DepositRequestStatus,
     page: number,
     pageSize: number,
-  ): Promise<{ items: DepositRequest[]; total: number }> {
+  ): Promise<{
+    items: DepositRequest[];
+    total: number;
+  }> {
     const [items, total] = await Promise.all([
       this._prisma.depositRequest.findMany({
-        where: { userId, status },
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: { createdAt: 'desc' },
@@ -101,11 +101,39 @@ class WalletRepository implements IWalletRepository {
               fxAmount: true,
             },
           },
+          user: {
+            select: {
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+          attachment: true,
         },
       }),
-      this._prisma.depositRequest.count({ where: { userId, status } }),
+
+      this._prisma.depositRequest.count(),
     ]);
     return { items, total };
+  }
+
+  async updateDepositRequestStatus(
+    id: string,
+    newStatus: DepositRequestStatus,
+  ): Promise<DepositRequest | null> {
+    // Only allow update if current status is 'Requested' and newStatus is 'Approved' or 'Rejected'
+    const current = await this._prisma.depositRequest.findUnique({ where: { id } });
+    if (!current) return null;
+    if (
+      current.status !== DepositRequestStatus.Requested ||
+      (newStatus !== DepositRequestStatus.Approved && newStatus !== DepositRequestStatus.Rejected)
+    ) {
+      return null;
+    }
+    return this._prisma.depositRequest.update({
+      where: { id },
+      data: { status: newStatus },
+    });
   }
 }
 

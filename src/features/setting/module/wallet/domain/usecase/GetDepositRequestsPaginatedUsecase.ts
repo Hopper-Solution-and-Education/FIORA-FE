@@ -1,16 +1,10 @@
 import { decorate, inject, injectable } from 'inversify';
-import { WALLET_SETTING_TYPES } from '../../di/walletSettingDIContainer.type';
 import type { IWalletSettingRepository } from '../../data/repository/IWalletSettingRepository';
-import { DepositRequestStatus } from '../enum';
-import { DepositRequestResponse } from '../../data/dto/response/DepositRequestResponse';
+import { WALLET_SETTING_TYPES } from '../../di/walletSettingDIContainer.type';
+import { DepositRequestsPaginated } from '../../presentation';
 
 export interface IGetDepositRequestsPaginatedUseCase {
-  execute(
-    userId: string,
-    status: DepositRequestStatus,
-    page: number,
-    pageSize: number,
-  ): Promise<DepositRequestResponse>;
+  execute(page: number, pageSize: number): Promise<DepositRequestsPaginated>;
 }
 
 export class GetDepositRequestsPaginatedUseCase implements IGetDepositRequestsPaginatedUseCase {
@@ -20,13 +14,8 @@ export class GetDepositRequestsPaginatedUseCase implements IGetDepositRequestsPa
     this.walletRepository = walletRepository;
   }
 
-  async execute(
-    userId: string,
-    status: DepositRequestStatus,
-    page: number,
-    pageSize: number,
-  ): Promise<DepositRequestResponse> {
-    return this.walletRepository.getDepositRequestsPaginated(userId, status, page, pageSize);
+  async execute(page: number, pageSize: number): Promise<DepositRequestsPaginated> {
+    return this.walletRepository.getDepositRequestsPaginated(page, pageSize);
   }
 }
 
@@ -36,9 +25,3 @@ decorate(
   GetDepositRequestsPaginatedUseCase,
   0,
 );
-
-export const createGetDepositRequestsPaginatedUseCase = (
-  walletRepository: IWalletSettingRepository,
-): IGetDepositRequestsPaginatedUseCase => {
-  return new GetDepositRequestsPaginatedUseCase(walletRepository);
-};

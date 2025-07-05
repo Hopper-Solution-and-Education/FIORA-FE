@@ -1,11 +1,13 @@
-import { decorate, inject, injectable } from 'inversify';
-import { IWalletSettingApi } from './IWalletSettingApi';
 import type { IHttpClient } from '@/config';
-import { WALLET_SETTING_TYPES } from '../../di/walletSettingDIContainer.type';
-import { DepositRequestStatus } from '../../domain/enum';
-import { DepositRequestResponse } from '../dto/response/DepositRequestResponse';
-import { routeConfig } from '@/shared/utils/route';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { routeConfig } from '@/shared/utils/route';
+import { decorate, inject, injectable } from 'inversify';
+import { WALLET_SETTING_TYPES } from '../../di/walletSettingDIContainer.type';
+import { IWalletSettingApi } from './IWalletSettingApi';
+import { _PaginationResponse, HttpResponse } from '@/shared/types';
+import { GetDepositRequestResponse } from '../dto/response/GetDepositRequestResponse';
+import { DepositRequestStatus } from '../../domain';
+import { UpdateDepositRequestStatusResponse } from '../dto/response/UpdateDepositRequestStatusResponse';
 
 export class WalletSettingApi implements IWalletSettingApi {
   private httpClient: IHttpClient;
@@ -15,14 +17,20 @@ export class WalletSettingApi implements IWalletSettingApi {
   }
 
   async getDepositRequestsPaginated(
-    userId: string,
-    status: DepositRequestStatus,
     page: number,
     pageSize: number,
-  ): Promise<DepositRequestResponse> {
-    return this.httpClient.get(
-      routeConfig(ApiEndpointEnum.WalletSetting, {}, { userId, status, page, pageSize }),
-    );
+  ): Promise<_PaginationResponse<GetDepositRequestResponse>> {
+    return this.httpClient.get(routeConfig(ApiEndpointEnum.WalletSetting, {}, { page, pageSize }));
+  }
+
+  async updateDepositRequestStatus(
+    id: string,
+    status: DepositRequestStatus,
+  ): Promise<HttpResponse<UpdateDepositRequestStatusResponse>> {
+    return this.httpClient.put(routeConfig(ApiEndpointEnum.WalletSetting), {
+      id,
+      status,
+    });
   }
 }
 

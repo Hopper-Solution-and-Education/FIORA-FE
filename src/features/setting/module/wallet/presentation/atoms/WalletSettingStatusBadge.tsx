@@ -1,17 +1,14 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { DepositRequestStatus } from '../../domain/enum';
-import { WALLET_SETTING_STATUS_OPTIONS } from '@/features/setting/constants';
+import { DepositRequestStatus } from '../../domain';
+import { WALLET_SETTING_STATUS_OPTIONS } from '../../data/constant';
 
 interface WalletSettingStatusBadgeProps {
   status: DepositRequestStatus;
   className?: string;
 }
 
-const WalletSettingStatusBadge: React.FC<WalletSettingStatusBadgeProps> = ({
-  status,
-  className,
-}) => {
+const WalletSettingStatusBadge = ({ status, className }: WalletSettingStatusBadgeProps) => {
   const statusOption = WALLET_SETTING_STATUS_OPTIONS.find((option) => option.value === status);
 
   if (!statusOption) {
@@ -19,7 +16,10 @@ const WalletSettingStatusBadge: React.FC<WalletSettingStatusBadgeProps> = ({
   }
 
   return (
-    <Badge variant="secondary" className={`${statusOption.color} ${className || ''}`}>
+    <Badge
+      variant="secondary"
+      className={`hover:bg-${statusOption.color}  ${statusOption.color} ${className || ''}`}
+    >
       {statusOption.label}
     </Badge>
   );

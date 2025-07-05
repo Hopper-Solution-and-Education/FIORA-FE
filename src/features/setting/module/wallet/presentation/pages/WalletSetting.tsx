@@ -4,23 +4,18 @@ import { useWalletSetting } from '../hooks';
 import { WalletSettingTable, WalletSettingTopBarAction } from '../organisms';
 
 const WalletSetting = () => {
-  const { data, loading, pagination, setPage, handleView, handleApprove, handleReject } =
-    useWalletSetting();
-
-  console.log(data);
+  const { tableData, loading, loadMore } = useWalletSetting();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 border p-4 rounded-2xl mb-12">
       <WalletSettingTopBarAction />
 
       <WalletSettingTable
-        data={data}
+        data={tableData.data}
         loading={loading}
-        pagination={pagination}
-        onPageChange={setPage}
-        onView={handleView}
-        onApprove={handleApprove}
-        onReject={handleReject}
+        hasMore={tableData.hasMore}
+        isLoadingMore={tableData.isLoadingMore}
+        onLoadMore={loadMore}
       />
     </div>
   );

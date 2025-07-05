@@ -6,8 +6,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { DepositRequestStatus } from '../../domain/enum';
-import { WALLET_SETTING_FILTER_OPTIONS } from '@/features/setting/constants';
+import { DepositRequestStatus } from '../../domain';
+import { WALLET_SETTING_FILTER_OPTIONS } from '../../data/constant';
 
 interface WalletSettingFilterMenuProps {
   value: DepositRequestStatus | 'all';
@@ -15,11 +15,7 @@ interface WalletSettingFilterMenuProps {
   className?: string;
 }
 
-const WalletSettingFilterMenu: React.FC<WalletSettingFilterMenuProps> = ({
-  value,
-  onChange,
-  className,
-}) => {
+const WalletSettingFilterMenu = ({ value, onChange, className }: WalletSettingFilterMenuProps) => {
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger className={`w-[180px] ${className || ''}`}>

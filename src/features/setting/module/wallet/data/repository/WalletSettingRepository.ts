@@ -1,9 +1,11 @@
 import { decorate, inject, injectable } from 'inversify';
-import { IWalletSettingRepository } from './IWalletSettingRepository';
 import { WALLET_SETTING_TYPES } from '../../di/walletSettingDIContainer.type';
+import { DepositRequestsPaginated } from '../../presentation';
 import type { IWalletSettingApi } from '../api';
-import { DepositRequestStatus } from '../../domain/enum';
-import { DepositRequestResponse } from '../dto/response/DepositRequestResponse';
+import { WalletSettingMapper } from '../mapper';
+import { IWalletSettingRepository } from './IWalletSettingRepository';
+import { DepositRequestStatus } from '../../domain';
+import { UpdateDepositRequestStatusResponse } from '../dto/response/UpdateDepositRequestStatusResponse';
 
 export class WalletSettingRepository implements IWalletSettingRepository {
   private walletSettingApi: IWalletSettingApi;
@@ -13,19 +15,20 @@ export class WalletSettingRepository implements IWalletSettingRepository {
   }
 
   async getDepositRequestsPaginated(
-    userId: string,
-    status: DepositRequestStatus,
     page: number,
     pageSize: number,
-  ): Promise<DepositRequestResponse> {
-    const response = await this.walletSettingApi.getDepositRequestsPaginated(
-      userId,
-      status,
-      page,
-      pageSize,
-    );
+  ): Promise<DepositRequestsPaginated> {
+    const response = await this.walletSettingApi.getDepositRequestsPaginated(page, pageSize);
 
-    return response;
+    return WalletSettingMapper.toDepositRequestsPaginated(response);
+  }
+
+  async updateDepositRequestStatus(
+    id: string,
+    status: DepositRequestStatus,
+  ): Promise<UpdateDepositRequestStatusResponse> {
+    const response = await this.walletSettingApi.updateDepositRequestStatus(id, status);
+    return WalletSettingMapper.toUpdateDepositRequestStatus(response.data);
   }
 }
 

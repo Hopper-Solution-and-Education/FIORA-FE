@@ -1,8 +1,9 @@
-import { DepositRequestStatus } from '@/features/setting/module/wallet/domain/enum';
+import { DepositRequestStatus } from '@/features/setting/module/wallet/domain';
 
 export const WALLET_SETTING_CONSTANTS = {
-  PAGE_SIZE: 10,
+  PAGE_SIZE: 20,
   DEFAULT_PAGE: 1,
+  INFINITE_SCROLL_THRESHOLD: 0.8,
 } as const;
 
 export const WALLET_SETTING_STATUS_OPTIONS = [

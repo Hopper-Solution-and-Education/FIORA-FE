@@ -1,1 +1,2 @@
-export { useWalletSetting } from './useWalletSetting';
+export * from './useWalletSetting';
+export * from './useInfiniteScroll';

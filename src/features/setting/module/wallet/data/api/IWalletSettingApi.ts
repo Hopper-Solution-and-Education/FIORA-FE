@@ -1,11 +1,16 @@
-import { DepositRequestStatus } from '../../domain/enum';
-import { DepositRequestResponse } from '../dto/response/DepositRequestResponse';
+import { _PaginationResponse } from '@/shared/types';
+import { GetDepositRequestResponse } from '../dto/response/GetDepositRequestResponse';
+import { UpdateDepositRequestStatusResponse } from '../dto/response/UpdateDepositRequestStatusResponse';
+import { DepositRequestStatus } from '../../domain';
+import { HttpResponse } from '@/shared/types';
 
 export interface IWalletSettingApi {
   getDepositRequestsPaginated(
-    userId: string,
-    status: DepositRequestStatus,
     page: number,
     pageSize: number,
-  ): Promise<DepositRequestResponse>;
+  ): Promise<_PaginationResponse<GetDepositRequestResponse>>;
+  updateDepositRequestStatus(
+    id: string,
+    status: DepositRequestStatus,
+  ): Promise<HttpResponse<UpdateDepositRequestStatusResponse>>;
 }

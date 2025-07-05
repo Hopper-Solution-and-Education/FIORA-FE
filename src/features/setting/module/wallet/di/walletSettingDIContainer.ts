@@ -6,7 +6,9 @@ import { IWalletSettingRepository, WalletSettingRepository } from '../data/repos
 import {
   IGetDepositRequestsPaginatedUseCase,
   GetDepositRequestsPaginatedUseCase,
-} from '../domain/usecase';
+  IUpdateDepositRequestStatusUseCase,
+  UpdateDepositRequestStatusUseCase,
+} from '../domain';
 
 const walletSettingContainer = new Container();
 
@@ -31,6 +33,11 @@ walletSettingContainer
     WALLET_SETTING_TYPES.IGetDepositRequestsPaginatedUseCase,
   )
   .to(GetDepositRequestsPaginatedUseCase)
+  .inSingletonScope();
+
+walletSettingContainer
+  .bind<IUpdateDepositRequestStatusUseCase>(WALLET_SETTING_TYPES.IUpdateDepositRequestStatusUseCase)
+  .to(UpdateDepositRequestStatusUseCase)
   .inSingletonScope();
 
 export { walletSettingContainer };

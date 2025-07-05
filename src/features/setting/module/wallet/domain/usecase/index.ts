@@ -1,2 +1,2 @@
-export type { IGetDepositRequestsPaginatedUseCase } from './GetDepositRequestsPaginatedUsecase';
-export { GetDepositRequestsPaginatedUseCase } from './GetDepositRequestsPaginatedUsecase';
+export * from './GetDepositRequestsPaginatedUsecase';
+export * from './UpdateDepositRequestStatusUsecase';
