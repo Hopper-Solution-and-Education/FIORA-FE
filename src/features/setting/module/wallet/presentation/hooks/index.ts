@@ -1,0 +1,1 @@
+export { useWalletSetting } from './useWalletSetting';

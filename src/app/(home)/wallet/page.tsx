@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 
 const WalletDashboardRender = dynamic(
   () =>
-    import('@/features/home/module/wallet/presentation/module/client/pages').then(
+    import('@/features/home/module/wallet/presentation/pages').then(
       (mod) => mod.WalletDashboardPage,
     ),
   {

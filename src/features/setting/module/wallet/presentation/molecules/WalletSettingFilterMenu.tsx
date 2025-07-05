@@ -1,0 +1,39 @@
+import React from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { DepositRequestStatus } from '../../domain/enum';
+import { WALLET_SETTING_FILTER_OPTIONS } from '@/features/setting/constants';
+
+interface WalletSettingFilterMenuProps {
+  value: DepositRequestStatus | 'all';
+  onChange: (value: DepositRequestStatus | 'all') => void;
+  className?: string;
+}
+
+const WalletSettingFilterMenu: React.FC<WalletSettingFilterMenuProps> = ({
+  value,
+  onChange,
+  className,
+}) => {
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className={`w-[180px] ${className || ''}`}>
+        <SelectValue placeholder="Filter by status" />
+      </SelectTrigger>
+      <SelectContent>
+        {WALLET_SETTING_FILTER_OPTIONS.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
+export default WalletSettingFilterMenu;

@@ -94,6 +94,14 @@ class WalletRepository implements IWalletRepository {
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: { createdAt: 'desc' },
+        include: {
+          package: {
+            select: {
+              id: true,
+              fxAmount: true,
+            },
+          },
+        },
       }),
       this._prisma.depositRequest.count({ where: { userId, status } }),
     ]);

@@ -18,7 +18,9 @@ export type FilterOperator =
   | 'lt'
   | 'lte'
   | 'some'
-  | 'every';
+  | 'every'
+  | 'between'
+  | 'in';
 
 export type OrderType = 'asc' | 'desc' | 'none';
 
@@ -56,4 +58,17 @@ export interface FilterFieldMapping<T = Record<string, unknown>> {
     transform?: (value: unknown) => unknown;
   };
   condition?: (value: unknown) => boolean;
+}
+
+export type DynamicFilterCondition = 'AND' | 'OR';
+
+export interface DynamicFilterRule {
+  field: string;
+  operator: FilterOperator;
+  value: any;
+}
+
+export interface DynamicFilterGroup {
+  condition: DynamicFilterCondition;
+  rules: (DynamicFilterRule | DynamicFilterGroup)[];
 }

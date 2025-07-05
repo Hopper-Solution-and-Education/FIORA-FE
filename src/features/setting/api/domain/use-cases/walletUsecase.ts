@@ -179,7 +179,7 @@ class WalletUseCase {
 
   async getDepositRequestsPaginated(
     userId: string,
-    status: import('@prisma/client').DepositRequestStatus,
+    status: DepositRequestStatus,
     page: number,
     pageSize: number,
   ) {
@@ -189,6 +189,7 @@ class WalletUseCase {
       page,
       pageSize,
     );
+
     return {
       items,
       page,

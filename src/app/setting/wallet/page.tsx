@@ -3,9 +3,7 @@ import dynamic from 'next/dynamic';
 
 const WalletSettingPage = dynamic(
   () =>
-    import('@/features/home/module/wallet/presentation/module/setting/pages').then(
-      (mod) => mod.WalletSetting,
-    ),
+    import('@/features/setting/module/wallet/presentation/pages').then((mod) => mod.WalletSetting),
   {
     loading: () => <Loading />,
   },
