@@ -1,12 +1,11 @@
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import React, { useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import { WalletSettingTableRow, TableLoadingState } from '../molecules';
-import { WalletSettingTableData } from '../types';
+import { useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { useInfiniteScroll } from '../hooks';
+import { TableLoadingState, WalletSettingTableRow } from '../molecules';
+import { WalletSettingTableData } from '../types';
 import { WalletSettingTableColumnKey } from '../types/setting.type';
-import { DepositRequestStatus } from '../../domain/enum';
 
 interface WalletSettingTableProps {
   data: WalletSettingTableData[];

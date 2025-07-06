@@ -1,15 +1,13 @@
 import { TableCell, TableRow } from '@/components/ui/table';
 import { formatFIORACurrency } from '@/config/FIORANumberFormat';
 import { formatDateTime } from '@/shared/lib/formatDateTime';
-import React from 'react';
 import {
+  UserProfileCard,
   WalletSettingActionButton,
   WalletSettingAttachmentLink,
   WalletSettingStatusBadge,
-  UserProfileCard,
 } from '../atoms';
 import { WalletSettingTableData } from '../types';
-import { DepositRequestStatus } from '../../domain/enum';
 
 interface WalletSettingTableRowProps {
   data: WalletSettingTableData;
