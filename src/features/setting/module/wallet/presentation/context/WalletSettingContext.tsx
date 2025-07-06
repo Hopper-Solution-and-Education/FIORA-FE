@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, ReactNode } from 'react';
 import { DepositRequestStatus } from '../../domain/enum';
 
 interface WalletSettingContextType {
