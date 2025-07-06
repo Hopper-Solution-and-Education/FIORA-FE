@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useEffect, useRef } from 'react';
 import { WALLET_SETTING_CONSTANTS } from '../../data/constant';
 
