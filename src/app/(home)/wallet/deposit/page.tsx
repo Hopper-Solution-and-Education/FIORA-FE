@@ -4,9 +4,7 @@ import dynamic from 'next/dynamic';
 
 const WalletDepositRender = dynamic(
   () =>
-    import('@/features/home/module/wallet/presentation/module/client/pages').then(
-      (mod) => mod.WalletDepositPage,
-    ),
+    import('@/features/home/module/wallet/presentation/pages').then((mod) => mod.WalletDepositPage),
   {
     loading: () => <Loading />,
   },

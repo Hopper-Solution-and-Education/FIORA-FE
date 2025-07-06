@@ -1,0 +1,1 @@
+export { WalletSettingMapper } from './WalletSettingMapper';

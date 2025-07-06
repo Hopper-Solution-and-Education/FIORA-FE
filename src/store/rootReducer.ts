@@ -14,6 +14,7 @@ import landingSettingSlice from '@/features/setting/module/landing/slices';
 import memberShipSettingsSlice from '@/features/setting/module/membership/slices';
 import partnerManagementSlice from '@/features/setting/module/partner/slices';
 import productManagementSlice from '@/features/setting/module/product/slices';
+import walletSettingSlice from '@/features/setting/module/wallet/slices';
 import { combineReducers } from '@reduxjs/toolkit';
 import dialogSlices from './slices/dialog.slice';
 import moduleReducer from './slices/moduleSlice';
@@ -39,8 +40,10 @@ const reducer = {
   memberShipSettings: memberShipSettingsSlice,
   membership: membershipSlice,
   wallet: walletSlice,
+  walletSetting: walletSettingSlice,
 };
 
 const rootReducer = combineReducers(reducer);
 
+export type RootState = ReturnType<typeof rootReducer>;
 export default rootReducer;

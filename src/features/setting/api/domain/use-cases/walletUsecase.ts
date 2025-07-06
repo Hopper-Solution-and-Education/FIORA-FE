@@ -177,18 +177,12 @@ class WalletUseCase {
     return total;
   }
 
-  async getDepositRequestsPaginated(
-    userId: string,
-    status: import('@prisma/client').DepositRequestStatus,
-    page: number,
-    pageSize: number,
-  ) {
+  async getDepositRequestsPaginated(page: number, pageSize: number) {
     const { items, total } = await this._walletRepository.getDepositRequestsPaginated(
-      userId,
-      status,
       page,
       pageSize,
     );
+
     return {
       items,
       page,
@@ -196,6 +190,14 @@ class WalletUseCase {
       totalPage: Math.ceil(total / pageSize),
       total,
     };
+  }
+
+  async updateDepositRequestStatus(
+    id: string,
+    newStatus: import('@prisma/client').DepositRequestStatus,
+  ) {
+    // Only allow update from Requested to Approved/Rejected (enforced in repository)
+    return this._walletRepository.updateDepositRequestStatus(id, newStatus);
   }
 }
 
