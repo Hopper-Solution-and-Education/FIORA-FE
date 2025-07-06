@@ -1,5 +1,4 @@
-import React from 'react';
-import { TableSkeletonRow, TableEmptyState } from '../atoms';
+import { TableEmptyState, TableSkeletonRow } from '../atoms';
 
 interface TableLoadingStateProps {
   loading: boolean;
