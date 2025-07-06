@@ -6,7 +6,6 @@ import { WalletSettingTableRow, TableLoadingState } from '../molecules';
 import { WalletSettingTableData } from '../types';
 import { useInfiniteScroll } from '../hooks';
 import { WalletSettingTableColumnKey } from '../types/setting.type';
-import { DepositRequestStatus } from '../../domain/enum';
 
 interface WalletSettingTableProps {
   data: WalletSettingTableData[];
