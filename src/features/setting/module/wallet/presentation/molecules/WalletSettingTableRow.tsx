@@ -9,7 +9,6 @@ import {
   UserProfileCard,
 } from '../atoms';
 import { WalletSettingTableData } from '../types';
-import { DepositRequestStatus } from '../../domain/enum';
 
 interface WalletSettingTableRowProps {
   data: WalletSettingTableData;
