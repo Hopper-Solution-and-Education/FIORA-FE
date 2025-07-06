@@ -9,7 +9,7 @@ interface WalletSettingTopBarActionProps {
   className?: string;
 }
 
-const WalletSettingTopBarAction: React.FC<WalletSettingTopBarActionProps> = ({ className }) => {
+const WalletSettingTopBarAction = ({ className }: WalletSettingTopBarActionProps) => {
   return (
     <div className={`flex items-center gap-2 ${className || ''}`}>
       <WalletSettingSearch value="" onChange={() => {}} />

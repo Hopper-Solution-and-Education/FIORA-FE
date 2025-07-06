@@ -37,16 +37,19 @@ const walletSettingSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(updateDepositRequestStatusAsyncThunk.pending, (state) => {
-        state.loading = true;
+      .addCase(updateDepositRequestStatusAsyncThunk.pending, (state, action) => {
+        const { id } = action.meta.arg;
+        state.updatingItems.push(id);
         state.error = null;
       })
-      .addCase(updateDepositRequestStatusAsyncThunk.fulfilled, (state) => {
-        state.loading = false;
+      .addCase(updateDepositRequestStatusAsyncThunk.fulfilled, (state, action) => {
+        const { id } = action.meta.arg;
+        state.updatingItems = state.updatingItems.filter((itemId) => itemId !== id);
         state.error = null;
       })
       .addCase(updateDepositRequestStatusAsyncThunk.rejected, (state, action) => {
-        state.loading = false;
+        const { id } = action.meta.arg;
+        state.updatingItems = state.updatingItems.filter((itemId) => itemId !== id);
         state.error = action.payload || 'Update deposit request status failed';
       });
   },

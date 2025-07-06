@@ -50,7 +50,7 @@ const SortableItem = ({ id, children }: SortableItemProps) => {
   );
 };
 
-const WalletSettingColumnMenu: React.FC = () => {
+const WalletSettingColumnMenu = () => {
   const dispatch = useAppDispatch();
   const columnConfig = useAppSelector((state) => state.walletSetting.columnConfig);
 
