@@ -1,10 +1,9 @@
 'use client';
 
-import { Input } from '@/components/ui/input';
+import InputCurrency from '@/components/common/forms/input/InputCurrency';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/shared/utils';
-import { useState } from 'react';
 import { renderRangeSlider } from './renderRangeSlider';
 
 interface NumberRangeFilterProps {
@@ -16,9 +15,9 @@ interface NumberRangeFilterProps {
   label?: string;
   minLabel?: string;
   maxLabel?: string;
-  formatValue?: (value: number, isEditing: boolean) => string | number;
   tooltipFormat?: (value: number) => string;
   step?: number;
+  currency?: string;
 }
 
 const NumberRangeFilter = ({
@@ -30,45 +29,18 @@ const NumberRangeFilter = ({
   label = 'Range',
   minLabel = 'Min',
   maxLabel = 'Max',
-  formatValue,
   tooltipFormat,
   step = 1,
+  currency = 'USD',
 }: NumberRangeFilterProps) => {
-  const [isMinEditing, setIsMinEditing] = useState(false);
-  const [isMaxEditing, setIsMaxEditing] = useState(false);
-  const [tempMinValue, setTempMinValue] = useState('');
-  const [tempMaxValue, setTempMaxValue] = useState('');
-
   // Calculate an appropriate step based on the range size if not provided
   const calculatedStep =
     step === 1 && maxRange - minRange > 1000
       ? Math.pow(10, Math.floor(Math.log10((maxRange - minRange) / 100)))
       : step;
 
-  const getFormattedValue = (value: number, isEditing: boolean) => {
-    if (formatValue) {
-      return formatValue(value, isEditing);
-    }
-    return isEditing ? value : value.toLocaleString();
-  };
-
-  const getTooltipContent = (value: number) => {
-    if (tooltipFormat) {
-      return tooltipFormat(value);
-    }
-    return value.toLocaleString();
-  };
-
-  const validateAndUpdateValue = (target: 'minValue' | 'maxValue', inputValue: string) => {
-    // Remove commas and other formatting characters
-    const rawValue = inputValue.replace(/[^\d.-]/g, '');
-    const numericValue = Number(rawValue);
-
-    if (isNaN(numericValue)) {
-      return; // Don't update if invalid number
-    }
-
-    let validatedValue = numericValue;
+  const validateAndUpdateValue = (target: 'minValue' | 'maxValue', inputValue: number) => {
+    let validatedValue = inputValue;
 
     // Apply range bounds first
     validatedValue = Math.max(minRange, Math.min(maxRange, validatedValue));
@@ -89,62 +61,19 @@ const NumberRangeFilter = ({
     onValueChange(target, validatedValue);
   };
 
-  const handleInputChange = (target: 'minValue' | 'maxValue', value: string) => {
-    // Allow free typing - store in temporary state
-    if (target === 'minValue') {
-      setTempMinValue(value);
-    } else {
-      setTempMaxValue(value);
-    }
+  const handleMinValueChange = (value: number) => {
+    validateAndUpdateValue('minValue', value);
   };
 
-  const handleInputFocus = (target: 'minValue' | 'maxValue') => {
-    if (target === 'minValue') {
-      setIsMinEditing(true);
-      setTempMinValue(minValue.toString());
-    } else {
-      setIsMaxEditing(true);
-      setTempMaxValue(maxValue.toString());
-    }
+  const handleMaxValueChange = (value: number) => {
+    validateAndUpdateValue('maxValue', value);
   };
 
-  const handleInputBlur = (target: 'minValue' | 'maxValue') => {
-    const tempValue = target === 'minValue' ? tempMinValue : tempMaxValue;
-    validateAndUpdateValue(target, tempValue);
-
-    if (target === 'minValue') {
-      setIsMinEditing(false);
-      setTempMinValue('');
-    } else {
-      setIsMaxEditing(false);
-      setTempMaxValue('');
+  const getTooltipContent = (value: number) => {
+    if (tooltipFormat) {
+      return tooltipFormat(value);
     }
-  };
-
-  const handleKeyPress = (target: 'minValue' | 'maxValue', e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      const tempValue = target === 'minValue' ? tempMinValue : tempMaxValue;
-      validateAndUpdateValue(target, tempValue);
-
-      if (target === 'minValue') {
-        setIsMinEditing(false);
-        setTempMinValue('');
-      } else {
-        setIsMaxEditing(false);
-        setTempMaxValue('');
-      }
-
-      // Remove focus from input
-      (e.target as HTMLInputElement).blur();
-    }
-  };
-
-  const getInputValue = (target: 'minValue' | 'maxValue') => {
-    if (target === 'minValue') {
-      return isMinEditing ? tempMinValue : getFormattedValue(minValue, false);
-    } else {
-      return isMaxEditing ? tempMaxValue : getFormattedValue(maxValue, false);
-    }
+    return value.toLocaleString();
   };
 
   return (
@@ -154,18 +83,18 @@ const NumberRangeFilter = ({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Input
-                value={getInputValue('minValue')}
-                min={minRange}
-                max={maxRange}
-                onFocus={() => handleInputFocus('minValue')}
-                onBlur={() => handleInputBlur('minValue')}
-                onKeyPress={(e) => handleKeyPress('minValue', e)}
-                placeholder={minLabel}
-                onChange={(e) => handleInputChange('minValue', e.target.value)}
-                required
-                className={cn('w-[45%]')}
-              />
+              <div className="w-[45%] h-[40px] overflow-y-hidden">
+                <InputCurrency
+                  value={minValue}
+                  onChange={handleMinValueChange}
+                  placeholder={minLabel}
+                  currency={currency}
+                  showSuggestion={false}
+                  mode="onChange"
+                  classContainer="mb-0"
+                  className={cn('w-full')}
+                />
+              </div>
             </TooltipTrigger>
             <TooltipContent>
               <p>{getTooltipContent(minValue)}</p>
@@ -178,18 +107,18 @@ const NumberRangeFilter = ({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Input
-                value={getInputValue('maxValue')}
-                min={minRange}
-                max={maxRange}
-                placeholder={maxLabel}
-                onFocus={() => handleInputFocus('maxValue')}
-                onBlur={() => handleInputBlur('maxValue')}
-                onKeyPress={(e) => handleKeyPress('maxValue', e)}
-                onChange={(e) => handleInputChange('maxValue', e.target.value)}
-                required
-                className={cn('w-[45%]')}
-              />
+              <div className="w-[45%] h-[40px] overflow-y-hidden">
+                <InputCurrency
+                  value={maxValue}
+                  onChange={handleMaxValueChange}
+                  placeholder={maxLabel}
+                  currency={currency}
+                  showSuggestion={false}
+                  mode="onChange"
+                  classContainer="mb-0"
+                  className={cn('w-full')}
+                />
+              </div>
             </TooltipTrigger>
             <TooltipContent>
               <p>{getTooltipContent(maxValue)}</p>
