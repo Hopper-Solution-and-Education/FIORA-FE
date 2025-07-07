@@ -23,12 +23,15 @@ import {
   CircleChevronLeft,
   CircleChevronUp,
   CircleDollarSign,
+  CircleFadingArrowUp,
   CircuitBoardIcon,
   ClipboardList,
+  Coins,
   Command,
   CreditCard,
   Database,
   DollarSign,
+  Download,
   Edit,
   Expand,
   ExternalLink,
@@ -36,8 +39,11 @@ import {
   File,
   FileText,
   FunnelPlus,
+  Grip,
+  GripVertical,
   HandCoins,
   Handshake,
+  Hash,
   HelpCircle,
   Home,
   Image,
@@ -51,6 +57,7 @@ import {
   LucideIcon,
   LucideProps,
   LucideShoppingBag,
+  Mail,
   Minus,
   Moon,
   MoreVertical,
@@ -63,11 +70,13 @@ import {
   PiggyBank,
   Pizza,
   Plus,
+  RefreshCcw,
   Save,
   SaveAll,
   Settings,
   ShoppingCart,
   Shrink,
+  SlidersHorizontal,
   Snowflake,
   SunMedium,
   Table,
@@ -80,6 +89,7 @@ import {
   User,
   UserCircle2Icon,
   UserPen,
+  UserPlus,
   Users,
   UserX2Icon,
   UtensilsCrossed,
@@ -246,4 +256,47 @@ export const Icons = {
   edit: Edit,
   image: ImageIcon,
   externalLink: ExternalLink,
+  userPlus: UserPlus,
+  circleFadingArrowUp: CircleFadingArrowUp,
+  coins: Coins,
+  mail: Mail,
+  hash: Hash,
+  download: Download,
+  pdf: ({ ...props }: LucideProps) => (
+    <svg
+      width="48"
+      height="48"
+      viewBox="0 0 40 40"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        fill-rule="evenodd"
+        clip-rule="evenodd"
+        d="M13.7824 2H26.1139L36.9991 12.7642V33.4347C36.9991 35.9447 34.9224 38 32.3816 38H13.7825C11.2437 38 9.16699 35.9447 9.16699 33.4347V6.56532C9.16699 4.0553 11.2437 2 13.7824 2Z"
+        fill="#DB5656"
+      />
+      <path
+        fill-rule="evenodd"
+        clip-rule="evenodd"
+        d="M26.1152 2L37.0005 12.7642H27.2889C26.6417 12.7642 26.1152 12.2416 26.1152 11.6018V2Z"
+        fill="#C13A3A"
+      />
+      <path
+        fill-rule="evenodd"
+        clip-rule="evenodd"
+        d="M4.01341 17.3291H29.0904C29.6481 17.3291 30.1038 17.7797 30.1038 18.3311V27.4267C30.1038 27.9781 29.6481 28.4286 29.0904 28.4286H4.01341C3.45572 28.4286 3 27.9781 3 27.4267V18.3311C3 17.7797 3.45579 17.3291 4.01341 17.3291Z"
+        fill="#C13A3A"
+      />
+      <path
+        d="M10.1689 19.1846H8.2773C7.95266 19.1846 7.68945 19.4448 7.68945 19.7658V22.8313V23.5863V25.9914C7.68945 26.3124 7.95266 26.5726 8.2773 26.5726C8.60195 26.5726 8.86515 26.3124 8.86515 25.9914V24.1675H10.1688C11.5359 24.1675 12.6482 23.0678 12.6482 21.7162V21.6359C12.6483 20.2843 11.536 19.1846 10.1689 19.1846ZM11.4726 21.7161C11.4726 22.4268 10.8877 23.005 10.1689 23.005H8.86515V22.8312V20.3469H10.1688C10.8876 20.3469 11.4725 20.9252 11.4725 21.6358V21.7161H11.4726ZM16.4948 19.1846H14.6033C14.2787 19.1846 14.0155 19.4448 14.0155 19.7658V25.9914C14.0155 26.3124 14.2787 26.5726 14.6033 26.5726H16.4948C17.862 26.5726 18.9742 25.4729 18.9742 24.1213V21.6359C18.9742 20.2843 17.862 19.1846 16.4948 19.1846ZM17.7985 24.1212C17.7985 24.8319 17.2137 25.4101 16.4948 25.4101H15.1912V20.3469H16.4948C17.2137 20.3469 17.7985 20.9252 17.7985 21.6358V24.1212ZM21.6315 20.347V21.9559H24.3565C24.6811 21.9559 24.9443 22.2161 24.9443 22.5371C24.9443 22.858 24.6811 23.1183 24.3565 23.1183H21.6315V25.9914C21.6315 26.3124 21.3683 26.5726 21.0437 26.5726C20.719 26.5726 20.4558 26.3124 20.4558 25.9914V19.7658C20.4558 19.4448 20.719 19.1846 21.0437 19.1846H24.8267C25.1514 19.1846 25.4146 19.4448 25.4146 19.7658C25.4146 20.0867 25.1514 20.347 24.8267 20.347H21.6315Z"
+        fill="white"
+      />
+    </svg>
+  ),
+  refreshCcw: RefreshCcw,
+  grip: Grip,
+  gripVertical: GripVertical,
+  slidersHorizontal: SlidersHorizontal,
 };

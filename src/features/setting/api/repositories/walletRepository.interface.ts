@@ -24,4 +24,13 @@ export interface IWalletRepository {
   findDepositRequestsByType(userId: string, type: DepositRequestStatus): Promise<DepositRequest[]>;
   findAllDepositRequestsByStatus(status: DepositRequestStatus): Promise<DepositRequest[]>;
   findManyPackageFXByIds(ids: string[]): Promise<PackageFX[]>;
+  isDepositRefCodeExists(refCode: string): Promise<boolean>;
+  getDepositRequestsPaginated(
+    page: number,
+    pageSize: number,
+  ): Promise<{ items: DepositRequest[]; total: number }>;
+  updateDepositRequestStatus(
+    id: string,
+    newStatus: DepositRequestStatus,
+  ): Promise<DepositRequest | null>;
 }

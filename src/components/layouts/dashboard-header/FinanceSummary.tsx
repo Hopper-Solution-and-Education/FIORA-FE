@@ -1,40 +1,39 @@
 import { COLORS } from '@/shared/constants/chart';
-import { formatCurrency } from '@/shared/utils';
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
+import { useAppSelector } from '@/store';
+import { WalletType } from '@/features/home/module/wallet/domain/enum';
+import { formatFIORACurrency } from '@/config/FIORANumberFormat';
+import { CURRENCY } from '@/shared/constants';
+import { useRouter } from 'next/navigation';
+import { RouteEnum } from '@/shared/constants/RouteEnum';
 
 export default function FinanceSummary() {
-  const [FBalance, setFBalance] = useState('0.0');
-  const [FDebt, setFDebt] = useState('0.0');
-  const [isLoading, setIsLoading] = useState(true);
+  const wallets = useAppSelector((state) => state.wallet.wallets);
+  const frozenAmount = useAppSelector((state) => state.wallet.frozenAmount);
+  const loading = useAppSelector((state) => state.wallet.loading);
+  const router = useRouter();
 
-  const fetchUserBalance = async () => {
-    try {
-      const response = await fetch('/api/accounts/balance');
-      const data = await response.json();
-
-      if (data.status !== 200) {
-        return;
-      } else {
-        const { balance, dept } = data.data;
-        const formatBalance = formatCurrency(balance);
-        const formatDept = formatCurrency(dept);
-
-        setFBalance(formatBalance);
-        setFDebt(formatDept);
-        setIsLoading(false);
-      }
-    } catch (error: any) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    fetchUserBalance();
-  }, []);
+  const { FBalance, FDebt } = useMemo(() => {
+    const totalBalance =
+      (wallets?.reduce((sum, w) => sum + (w.frBalanceActive || 0), 0) || 0) + (frozenAmount || 0);
+    const totalDebt =
+      wallets
+        ?.filter((w) => w.type === WalletType.Debt)
+        .reduce((sum, w) => sum + (w.frBalanceActive || 0), 0) || 0;
+    return {
+      FBalance: formatFIORACurrency(totalBalance, CURRENCY.FX),
+      FDebt: formatFIORACurrency(totalDebt, CURRENCY.FX),
+    };
+  }, [wallets, frozenAmount]);
+  const isLoading = loading || !wallets || frozenAmount === null;
 
   return (
-    <div className="flex flex-col gap-1 mt-2 w-[400px] flex-grow md:flex-grow-0">
+    <div
+      className="flex flex-col gap-1 mt-2 w-[400px] flex-grow md:flex-grow-0 cursor-pointer hover:opacity-90 transition-opacity"
+      onClick={() => router.push(RouteEnum.WalletDashboard)}
+      title="Go to Wallet Dashboard"
+    >
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: '100%' }}

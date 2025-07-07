@@ -1,3 +1,5 @@
+'use client';
+
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { RouteEnum } from '@/shared/constants/RouteEnum';

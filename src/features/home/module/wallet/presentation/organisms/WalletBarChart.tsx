@@ -1,17 +1,19 @@
+'use client';
+
 import React, { useMemo } from 'react';
 import PositiveAndNegativeBarChartV2 from '@/components/common/charts/positive-negative-bar-chart-v2';
 import { COLORS } from '@/shared/constants/chart';
 import { TwoSideBarItem } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
-import { useInitializeUserWallet } from '../hooks';
 import { formatFIORACurrency } from '@/config/FIORANumberFormat';
 import { transformWalletsToChartData } from '../../utils';
 import { useAppSelector } from '@/store';
-import { filterWallets } from '../../utils/transformFilterData';
+import { filterWallets } from '../../utils';
 import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import { Icons } from '@/components/Icon';
 
 const WalletBarChart = () => {
-  const { wallets, loading } = useInitializeUserWallet();
+  const wallets = useAppSelector((state) => state.wallet.wallets);
+  const loading = useAppSelector((state) => state.wallet.loading);
   const filterCriteria = useAppSelector((state) => state.wallet.filterCriteria);
   const { filters, search } = filterCriteria;
 
@@ -51,6 +53,7 @@ const WalletBarChart = () => {
       title=" "
       showTotal={false}
       currency="FX"
+      labelFormatter={(value) => formatFIORACurrency(value, 'FX')}
       legendItems={[
         { name: 'Positive', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
         { name: 'Negative', color: COLORS.DEPS_DANGER.LEVEL_1 },

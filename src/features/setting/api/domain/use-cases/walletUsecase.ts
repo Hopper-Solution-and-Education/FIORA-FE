@@ -4,6 +4,7 @@ import { IWalletRepository } from '../../repositories/walletRepository.interface
 import { attachmentRepository } from '../../infrastructure/repositories/attachmentRepository';
 import { IAttachmentRepository } from '../../repositories/attachmentRepository.interface';
 import { ATTACHMENT_CONSTANTS } from '../../constants/attachmentConstants';
+import { generateRefCode } from '@/shared/utils/stringHelper';
 
 interface AttachmentData {
   type: string;
@@ -20,6 +21,8 @@ const WALLET_TYPE_ICONS: Record<WalletType, string> = {
   [WalletType.Lending]: 'user',
   [WalletType.BNPL]: 'billing',
   [WalletType.Debt]: 'banknoteArrowDown',
+  [WalletType.Referral]: 'userPlus',
+  [WalletType.Cashback]: 'circleFadingArrowUp',
 };
 
 const DEFAULT_WALLET_FIELDS = {
@@ -30,6 +33,8 @@ const DEFAULT_WALLET_FIELDS = {
   createdBy: null,
   updatedBy: null,
 };
+
+const MAX_REF_CODE_ATTEMPTS = 10;
 
 class WalletUseCase {
   constructor(
@@ -119,6 +124,26 @@ class WalletUseCase {
     });
   }
 
+  async createDepositRequestWithUniqueRefCode(
+    userId: string,
+    packageFXId: string,
+    attachmentData?: AttachmentData,
+  ) {
+    let refCode = '';
+    let attempts = 0;
+
+    do {
+      refCode = generateRefCode(6);
+
+      attempts++;
+      if (attempts > MAX_REF_CODE_ATTEMPTS) {
+        throw new Error('Could not generate unique refCode, please try again.');
+      }
+    } while (await this._walletRepository.isDepositRefCodeExists(refCode));
+
+    return this.createDepositRequest(userId, packageFXId, refCode, attachmentData);
+  }
+
   async getTotalRequestedDepositAmount(userId: string) {
     const requests = await this._walletRepository.findDepositRequestsByType(
       userId,
@@ -150,6 +175,29 @@ class WalletUseCase {
     }, 0);
 
     return total;
+  }
+
+  async getDepositRequestsPaginated(page: number, pageSize: number) {
+    const { items, total } = await this._walletRepository.getDepositRequestsPaginated(
+      page,
+      pageSize,
+    );
+
+    return {
+      items,
+      page,
+      pageSize,
+      totalPage: Math.ceil(total / pageSize),
+      total,
+    };
+  }
+
+  async updateDepositRequestStatus(
+    id: string,
+    newStatus: import('@prisma/client').DepositRequestStatus,
+  ) {
+    // Only allow update from Requested to Approved/Rejected (enforced in repository)
+    return this._walletRepository.updateDepositRequestStatus(id, newStatus);
   }
 }
 

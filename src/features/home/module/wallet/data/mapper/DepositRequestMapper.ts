@@ -10,9 +10,11 @@ export class DepositRequestMapper {
 
   static toDepositRequests(response: DepositRequestResponse): DepositRequest[] {
     const { data } = response;
+
     if (Array.isArray(data)) {
       return data.map((item) => DepositRequestMapper.toDepositRequest(item));
     }
+
     return [DepositRequestMapper.toDepositRequest(data)];
   }
 }

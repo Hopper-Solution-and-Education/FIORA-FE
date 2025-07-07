@@ -3,3 +3,13 @@ export interface HttpResponse<T> {
   message: string;
   data: T;
 }
+
+export interface _Pagination<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalPage: number;
+  total: number;
+}
+
+export type _PaginationResponse<T> = HttpResponse<_Pagination<T>>;

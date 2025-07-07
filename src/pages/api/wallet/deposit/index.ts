@@ -6,7 +6,6 @@ import { createResponse, createError } from '@/shared/lib/responseUtils/createRe
 import { Messages } from '@/shared/constants/message';
 import { z } from 'zod';
 import { DepositRequestStatus } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
 import { ATTACHMENT_CONSTANTS } from '@/features/setting/api/constants/attachmentConstants';
 
 const DepositRequestStatusSchema = z.nativeEnum(DepositRequestStatus);
@@ -85,13 +84,10 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
     }
     const { packageFXId, attachmentData } = body.data;
 
-    const refCode = uuidv4();
-
     try {
-      const depositRequest = await walletUseCase.createDepositRequest(
+      const depositRequest = await walletUseCase.createDepositRequestWithUniqueRefCode(
         userId,
         packageFXId,
-        refCode,
         attachmentData,
       );
       return res

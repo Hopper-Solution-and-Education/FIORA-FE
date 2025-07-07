@@ -35,9 +35,15 @@ const MembershipPage = () => {
   const nextSpendingTierIcon = userTier?.nextSpendingTier?.mainIconUrl;
   const nextBalanceTierIcon = userTier?.nextBalanceTier?.mainIconUrl;
 
-  const currentTierBenefits = mapTierBenefits(userTier?.currentTier?.tierBenefits || []);
-  const nextSpendingTierBenefits = mapTierBenefits(userTier?.nextSpendingTier?.tierBenefits || []);
-  const nextBalanceTierBenefits = mapTierBenefits(userTier?.nextBalanceTier?.tierBenefits || []);
+  const currentTierBenefits = mapTierBenefits(userTier?.currentTier?.tierBenefits || []).sort(
+    (a, b) => a.label.localeCompare(b.label),
+  );
+  const nextSpendingTierBenefits = mapTierBenefits(
+    userTier?.nextSpendingTier?.tierBenefits || [],
+  ).sort((a, b) => a.label.localeCompare(b.label));
+  const nextBalanceTierBenefits = mapTierBenefits(
+    userTier?.nextBalanceTier?.tierBenefits || [],
+  ).sort((a, b) => a.label.localeCompare(b.label));
 
   return (
     <div className="min-h-screen p-6 ">
@@ -63,6 +69,7 @@ const MembershipPage = () => {
             label={`Next Spending Tier: ${nextSpendingTierName}`}
             icon={nextSpendingTierIcon}
             tierRanks={nextSpendingTierBenefits}
+            nextTierRanks={currentTierBenefits}
             loading={isLoadingUserTier}
           />
         </div>
@@ -71,6 +78,7 @@ const MembershipPage = () => {
             label={`Next Balance Tier: ${nextBalanceTierName}`}
             icon={nextBalanceTierIcon}
             tierRanks={nextBalanceTierBenefits}
+            nextTierRanks={currentTierBenefits}
             loading={isLoadingUserTier}
           />
         </div>
