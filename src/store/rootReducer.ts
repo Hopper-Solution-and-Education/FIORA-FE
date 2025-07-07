@@ -1,3 +1,4 @@
+import { faqsApi } from '@/features/faqs/store/api/faqsApi';
 import financeControlSlice from '@/features/finance/report/slices';
 import accountSlice from '@/features/home/module/account/slices';
 import {
@@ -16,6 +17,7 @@ import partnerManagementSlice from '@/features/setting/module/partner/slices';
 import productManagementSlice from '@/features/setting/module/product/slices';
 import walletSettingSlice from '@/features/setting/module/wallet/slices';
 import { combineReducers } from '@reduxjs/toolkit';
+import faqsImportSlice from '../features/faqs/store/slices/faqsImportSlice';
 import dialogSlices from './slices/dialog.slice';
 import moduleReducer from './slices/moduleSlice';
 import settingSlices from './slices/setting.slice';
@@ -41,6 +43,10 @@ const reducer = {
   membership: membershipSlice,
   wallet: walletSlice,
   walletSetting: walletSettingSlice,
+  faqsImport: faqsImportSlice,
+
+  // RTK Query API slices
+  [faqsApi.reducerPath]: faqsApi.reducer,
 };
 
 const rootReducer = combineReducers(reducer);

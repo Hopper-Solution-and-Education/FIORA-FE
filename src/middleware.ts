@@ -4,7 +4,7 @@ import { pathToRegexp } from 'path-to-regexp';
 // import { FeatureFlags } from './shared/constants/featuresFlags';
 // import growthbook from './config/growthbook/growthbook';
 
-const publicPatterns = ['/', '/auth/*path'];
+const publicPatterns = ['/', '/auth/*path', '/faqs', '/faqs/*path'];
 
 // const featureProtectedRoutes: { [key: string]: FeatureFlags } = {
 //   '/transaction': FeatureFlags.TRANSACTION_FEATURE,

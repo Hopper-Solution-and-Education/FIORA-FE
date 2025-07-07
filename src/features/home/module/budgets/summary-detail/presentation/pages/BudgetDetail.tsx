@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import { TableV2 } from '@/components/common/tables/custom-table';

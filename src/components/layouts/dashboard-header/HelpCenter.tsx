@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ICON_SIZE } from '@/shared/constants/size';
 import { HelpCircleIcon } from 'lucide-react';
 import { helpItems } from './utils';
+import Link from 'next/link';
 
 export default function HelpCenter() {
   return (
@@ -28,9 +29,12 @@ export default function HelpCenter() {
           {helpItems.map((item, index) => (
             <Tooltip key={index}>
               <TooltipTrigger asChild>
-                <div className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
+                <Link
+                  href={item.url}
+                  className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
+                >
                   <item.icon size={ICON_SIZE.MD} />
-                </div>
+                </Link>
               </TooltipTrigger>
               <TooltipContent side="top">
                 <span>{item.label}</span>
