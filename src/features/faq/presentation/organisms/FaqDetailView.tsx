@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Smile, Meh, Frown, ChevronDown, SendHorizonal, Pencil, Trash2 } from 'lucide-react';
 import ConfirmExitDialog from './ConfirmExitDialog';
 import ParsedFaqContent from './ParsedFaqContent';
+import { useEffect } from 'react';
 
 interface FaqDetailViewProps {
   id: string;
@@ -13,12 +14,13 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function FIORAFAQ({ id }: FaqDetailViewProps) {
   const { data, error, isLoading, mutate } = useSWR(id ? `/api/faqs/${id}` : null, fetcher);
-  const [replyTo, setReplyTo] = useState<{ id: string; username: string } | null>(null);
+  const [replyTo, setReplyTo] = useState<{ id: string; email: string } | null>(null);
   const [commentInput, setCommentInput] = useState('');
   const [commentLoading, setCommentLoading] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [relatedArticles, setRelatedArticles] = useState<any[]>([]);
 
   const reactionCounts = (() => {
     const counts: { [key: string]: number } = {};
@@ -42,7 +44,7 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
 
     let content = commentInput;
     if (replyTo) {
-      content = `@${replyTo.username}: ${commentInput}`;
+      content = `@${replyTo.email}: ${commentInput}`;
     }
 
     const res = await fetch(`/api/faqs/${id}/comments`, {
@@ -50,11 +52,13 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content }),
     });
+
     if (res.ok) {
       setCommentInput('');
       setReplyTo(null);
       mutate();
     }
+
     setCommentLoading(false);
   };
 
@@ -77,7 +81,14 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
   };
 
   const toggleExpanded = () => setExpanded(!expanded);
-
+  useEffect(() => {
+    if (!faq?.categoryId) return;
+    fetch(`/api/faqs/by-category?categoryId=${faq.categoryId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setRelatedArticles(data.filter((item: any) => item.id !== faq.id));
+      });
+  }, [faq?.categoryId, faq?.id]);
   const childComments = comments.filter((c: any) => c.parentId);
   function renderReplies(parentId: string) {
     return childComments
@@ -114,7 +125,10 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
               <button
                 className="text-xs text-blue-500 hover:underline mt-1"
                 onClick={() =>
-                  setReplyTo({ id: reply.id, username: reply.User?.name || reply.userId })
+                  setReplyTo({
+                    id: reply.id,
+                    email: reply.User?.email || reply.userId,
+                  })
                 }
               >
                 Reply
@@ -169,10 +183,17 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
       <p className="text-sm text-gray-400 mb-4">
         Updated {new Date(faq.createdAt).toLocaleString()}
       </p>
-      {faq.content && <ParsedFaqContent htmlContent={faq.content} />}
+      <div
+        className={`relative transition-all duration-300 ${!expanded ? 'max-h-[1200px] overflow-hidden' : ''}`}
+      >
+        {faq.content && <ParsedFaqContent htmlContent={faq.content} />}
+        {!expanded && (
+          <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+        )}
+      </div>
       {!expanded && (
         <div className="flex flex-col items-center mb-6">
-          <button onClick={toggleExpanded} className="text-sm text-black font-medium">
+          <button onClick={toggleExpanded} className="text-sm text-black font-medium z-10 relative">
             See more
           </button>
           <div className="text-black mt-1 flex flex-col items-center leading-none">
@@ -182,51 +203,36 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
           <hr className="mt-2 border-t border-gray-300 w-[80%]" />
         </div>
       )}
-      {expanded && (
-        <>
-          <div className="mb-6">
-            <p>
-              No, FIORA is not a bank, either in Singapore or in any other country where it
-              currently operates... (repeated for effect).
-            </p>
-          </div>
-          <div className="mb-6">
-            <p>
-              No, FIORA is not a bank, either in Singapore or in any other country where it
-              currently operates. FIORA is a Payment Services Institution, providing financial
-              services to customers subject to the relevant laws and regulations of the
-              jurisdictions where it operates.
-            </p>
-          </div>
-        </>
-      )}
       <div className="text-center my-8">
         <p className="font-semibold mb-2">Did this answer your question?</p>
         <div className="flex justify-center gap-10 group" onMouseLeave={() => setFeedback(null)}>
           {['bad', 'neutral', 'good'].map((type) => {
             const Icon = type === 'bad' ? Frown : type === 'neutral' ? Meh : Smile;
 
-            const colorClass =
+            const baseColor =
               type === 'bad'
                 ? 'text-red-500'
                 : type === 'neutral'
                   ? 'text-yellow-500'
                   : 'text-green-500';
 
+            const isHovered = feedback === type;
+            const isSelected = userReaction === type;
+            const colorClass =
+              isHovered || isSelected
+                ? baseColor
+                : feedback || userReaction
+                  ? 'grayscale opacity-50 text-gray-400'
+                  : 'text-gray-400';
+
+            const scaleClass = isHovered || isSelected ? 'scale-110' : 'scale-100';
+
             return (
               <button
                 key={type}
                 onMouseEnter={() => setFeedback(type)}
                 onClick={() => handleReaction(type)}
-                className={`flex flex-col items-center transition-transform duration-200 transform ${
-                  feedback === type
-                    ? `scale-110 ${colorClass}`
-                    : userReaction === type
-                      ? `scale-110 ${colorClass}`
-                      : feedback
-                        ? 'grayscale opacity-60'
-                        : 'text-yellow-400'
-                }`}
+                className={`flex flex-col items-center transition-all duration-200 transform ${scaleClass} ${colorClass}`}
               >
                 <Icon size={40} />
                 <span className="text-sm font-semibold mt-1">{reactionCounts[type] || 0}</span>
@@ -239,15 +245,11 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
       <div className="bg-gray-50 p-6 rounded-xl mt-10">
         <h2 className="font-bold text-lg mb-4">Related Articles</h2>
         <ul className="space-y-2">
-          {[
-            'How to reset my password?',
-            'Why can’t I log into my account?',
-            'How to track my order?',
-            'How to cancel or change an order?',
-            'How to contact customer support?',
-          ].map((title, i) => (
-            <li key={i} className="flex justify-between items-center border-b pb-2">
-              {title} <span className="text-green-500">&gt;</span>
+          {relatedArticles.length === 0 && <li className="text-gray-400">No related articles.</li>}
+          {relatedArticles.map((item) => (
+            <li key={item.id} className="flex justify-between items-center border-b pb-2">
+              {item.title}
+              <span className="text-green-500">&gt;</span>
             </li>
           ))}
         </ul>
@@ -255,7 +257,7 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
       <div className="border border-gray-200 rounded-xl p-6 mt-10 bg-white">
         {replyTo && (
           <div className="mb-2 text-sm text-blue-600 flex items-center gap-2">
-            Replying to <span className="font-semibold">@{replyTo.username}</span>
+            Replying to <span className="font-semibold">@{replyTo.email}</span>
             <button
               className="ml-2 text-xs text-gray-400 hover:text-red-500"
               onClick={() => setReplyTo(null)}
@@ -296,7 +298,7 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
               alt="User avatar"
             />
             <div className="flex-1">
-              <p className="font-semibold">{c.User?.name || c.userId}</p>
+              <p className="font-semibold">{c.User?.email || c.userId}</p>
               <p className="text-xs text-gray-500 mb-1">{new Date(c.createdAt).toLocaleString()}</p>
               <p className="text-sm text-gray-700">
                 {c.content.startsWith('@') && c.content.includes(':') ? (
@@ -312,7 +314,7 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
               {(currentUserRole === 'CS' || currentUserRole === 'Admin') && (
                 <button
                   className="text-xs text-blue-500 hover:underline mt-1"
-                  onClick={() => setReplyTo({ id: c.id, username: c.User?.name || c.userId })}
+                  onClick={() => setReplyTo({ id: c.id, email: c.User?.email || c.userId })}
                 >
                   Reply
                 </button>

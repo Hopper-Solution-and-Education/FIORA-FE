@@ -18,7 +18,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Invalid content' });
     }
 
-    // Nếu có người được reply thì gắn prefix vào content
     const finalContent = replyToUsername ? `@${replyToUsername}: ${content}` : content;
 
     const comment = await prisma.comment.create({

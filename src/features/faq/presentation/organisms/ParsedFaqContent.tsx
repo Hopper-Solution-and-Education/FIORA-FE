@@ -9,7 +9,6 @@ interface Props {
 }
 
 const ParsedFaqContent: React.FC<Props> = ({ htmlContent }) => {
-  // Nếu không có thẻ HTML nào thì wrap bằng <p>
   if (!/<[a-z][\s\S]*>/i.test(htmlContent)) {
     htmlContent = `<p>${htmlContent}</p>`;
   }

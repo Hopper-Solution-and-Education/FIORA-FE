@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       include: {
         Reaction: true,
         Comment: {
-          take: 100, // lấy nhiều comment hơn nếu cần
+          take: 100,
           orderBy: { createdAt: 'desc' },
           include: {
             User: true,
@@ -27,11 +27,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-    // Lấy user hiện tại từ session
     const user = await getSessionUser(req, res);
 
     if (!post) return res.status(404).json({ error: 'Not Found' });
-    // Trả về thêm currentUserId và currentUserRole
+
     return res.status(200).json({
       ...post,
       currentUserId: user?.id || null,
