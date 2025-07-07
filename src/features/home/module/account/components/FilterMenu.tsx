@@ -1,15 +1,13 @@
-import React from 'react';
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
-import { formatCurrency } from '@/shared/lib';
 import { FilterColumn, FilterCriteria } from '@/shared/types/filter.types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { searchAccounts } from '../slices/actions';
-import { setFilterCriteria } from '../slices';
 import { toast } from 'sonner';
+import { setFilterCriteria } from '../slices';
+import { searchAccounts } from '../slices/actions';
 
 // Define constants for magic numbers
 const DEFAULT_MIN_BALANCE = 0;
@@ -282,8 +280,6 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         label="Balance Range"
         minLabel="Min Balance"
         maxLabel="Max Balance"
-        formatValue={(value, isEditing) => (isEditing ? value : formatCurrency(value))}
-        tooltipFormat={(value) => formatCurrency(value)}
         step={DEFAULT_SLIDER_STEP}
       />
     );
