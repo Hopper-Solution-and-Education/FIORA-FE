@@ -13,7 +13,7 @@ export enum FeatureFlags {
 }
 
 export const USER_ROLES = {
-  ADMIN: 'Admin',
-  USER: 'User',
+  ADMIN: 'ADMIN',
+  USER: 'USER',
   CS: 'CS',
 } as const;
