@@ -81,7 +81,6 @@ const TransactionTable = () => {
   const transactionsResponse = transactionDataState.transactions.data;
   const isTransactionLoading = transactionDataState.transactions.isLoading;
 
-  //Sort states
   const [displayData, setDisplayData] = useState<IRelationalTransaction[]>([]);
   const [sortOrder, setSortOrder] = useState<OrderType | undefined>('desc');
   const [sortTarget, setSortTarget] = useState<string>('date');
@@ -95,7 +94,6 @@ const TransactionTable = () => {
     IRelationalTransaction | undefined
   >();
 
-  // Implement intersection observer for infinite scrolling
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -133,14 +131,12 @@ const TransactionTable = () => {
   const debouncedFilterHandler = useMemo(
     () =>
       debounce((value: string) => {
-        console.log('value', value);
         handleFilterChange({ ...filterCriteria, search: String(value).trim() });
       }, 1000),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [filterCriteria],
   );
 
-  // Handle data fetched from API
   useEffect(() => {
     if (transactionsResponse && Array.isArray(transactionsResponse.data)) {
       setPaginationParams((prev) => ({
@@ -159,7 +155,7 @@ const TransactionTable = () => {
       const mappedData = (transactionsResponse.data as IRelationalTransaction[]).map(
         (item: IRelationalTransaction) => ({
           ...item,
-          createdBy: (item as any).createdBy || '', // Ensure createdBy is never null
+          createdBy: (item as any).createdBy || '',
         }),
       );
 
@@ -172,7 +168,6 @@ const TransactionTable = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionsResponse]);
 
-  // Dispatch fetchTransactions whenever filter criteria, pagination, or sorting changes
   useEffect(() => {
     const payload: any = {
       ...filterCriteria,
@@ -193,10 +188,8 @@ const TransactionTable = () => {
     data?.user?.id,
   ]);
 
-  // Handle sort logics for column header
   const handleSort = (header: string) => {
     if (sortTarget === header) {
-      // Nếu đẫ có sort tồn tại
       if (sortOrder === 'asc') {
         setSortOrder('desc');
       } else {
@@ -210,7 +203,6 @@ const TransactionTable = () => {
     handleFilterChange({ ...filterCriteria, sortBy: sortOrder ? { [sortTarget]: sortOrder } : {} });
   };
 
-  // Navigate to create native page
   const handleCreateTransaction = () => {
     router.push('/transaction/create');
   };
@@ -222,12 +214,10 @@ const TransactionTable = () => {
     dispatch(deleteTransactionThunk(selectedTransaction.id))
       .unwrap()
       .then(() => {
-        // Update local data list
         setDisplayData((prev) =>
           prev.filter((item: IRelationalTransaction) => item.id !== selectedTransaction.id),
         );
 
-        // Close modal
         setIsDeleteModalOpen(false);
         setSelectedTransaction(undefined);
 
@@ -241,9 +231,7 @@ const TransactionTable = () => {
       });
   };
 
-  // Navigate to delete page
   const handleCloseDeleteModal = () => {
-    //delete logics here
     setIsDeleteModalOpen(false);
     setSelectedTransaction(undefined);
   };
@@ -253,25 +241,20 @@ const TransactionTable = () => {
     setIsDeleteModalOpen(true);
   };
 
-  // Callback function to apply after updating filter criteria
   const handleFilterChange = (newFilter: FilterCriteria) => {
-    setPaginationParams((prev) => ({ ...prev, currentPage: 1 })); // Reset current page to 1 when applying a new filter
+    setPaginationParams((prev) => ({ ...prev, currentPage: 1 }));
     dispatch(updateFilterCriteria(newFilter));
   };
 
-  // Function to check if a date is older than 3 months
   const isDeleteForbidden = (date: string | Date): boolean => {
     const transactionDate = new Date(date);
 
-    // Calculate date 3 months ago from current date
     const threeMonthsAgo = new Date();
-    threeMonthsAgo.setMonth(currentDate.getMonth() - 1);
+    threeMonthsAgo.setMonth(currentDate.getMonth() - 3);
 
-    // Return true if transaction date is before the 3-months-ago date
     return transactionDate < threeMonthsAgo;
   };
 
-  // Memoize the visible columns to avoid re-rendering
   const tableVisibleColumns: TransactionTableColumnKey = useMemo((): TransactionTableColumnKey => {
     const columns =
       Object.keys(visibleColumns).length > 0
@@ -283,7 +266,6 @@ const TransactionTable = () => {
           }, {} as TransactionTableColumnKey)
         : DEFAULT_TRANSACTION_TABLE_COLUMNS;
 
-    // Sort columns by index
     return Object.fromEntries(
       Object.entries(columns)
         .sort((a, b) => a[1].index - b[1].index)
@@ -298,7 +280,6 @@ const TransactionTable = () => {
           <TableRow className="hover:bg-none">
             <TableCell colSpan={8}>
               <div className="w-full flex justify-between py-2 px-5">
-                {/* Search Box container*/}
                 <div className="flex flex-col justify-start items-start gap-4">
                   <div className="flex gap-2">
                     <div className="relative w-[30vw]">
@@ -325,9 +306,7 @@ const TransactionTable = () => {
                     transaction records
                   </Label>
                 </div>
-                {/* function button group*/}
                 <div className="flex gap-2">
-                  {/* Create button */}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -357,7 +336,6 @@ const TransactionTable = () => {
                     </Tooltip>
                   </TooltipProvider>
 
-                  {/* Setting button */}
                   <SettingsMenu />
                 </div>
               </div>
@@ -403,9 +381,8 @@ const TransactionTable = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {/* Table data loop */}
           {displayData.map((transRecord: IRelationalTransaction, index: number) => {
-            const recordDate = new Date(transRecord.date.toString());
+            const recordDate = new Date(transRecord.date.toLocaleString());
 
             return (
               <TableRow
@@ -548,7 +525,6 @@ const TransactionTable = () => {
                       case 'Actions':
                         return (
                           <TableCell key={columnKey} className="flex justify-center gap-2">
-                            {/* Detail button */}
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -568,7 +544,6 @@ const TransactionTable = () => {
                               </Tooltip>
                             </TooltipProvider>
 
-                            {/* Delete button */}
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
