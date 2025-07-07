@@ -3,7 +3,35 @@ import { NodeViewWrapper } from '@tiptap/react';
 import { ReactNodeViewRenderer, NodeViewProps } from '@tiptap/react';
 
 const ResizableVideoComponent = (props: NodeViewProps) => {
-  const { node } = props; // Removed updateAttributes to avoid ESLint unused var
+  const { node, updateAttributes } = props;
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startY = e.clientY;
+
+    const iframeElement = e.currentTarget.previousSibling as HTMLIFrameElement;
+    const startWidth = iframeElement.offsetWidth;
+    const startHeight = iframeElement.offsetHeight;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const newWidth = startWidth + (moveEvent.clientX - startX);
+      const newHeight = startHeight + (moveEvent.clientY - startY);
+
+      updateAttributes({
+        width: `${newWidth}px`,
+        height: `${newHeight}px`,
+      });
+    };
+
+    const onMouseUp = () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
 
   return (
     <NodeViewWrapper className="relative inline-block">
@@ -14,6 +42,18 @@ const ResizableVideoComponent = (props: NodeViewProps) => {
         frameBorder="0"
         allowFullScreen
         className="block max-w-full"
+      />
+      <span
+        onMouseDown={handleMouseDown}
+        style={{
+          position: 'absolute',
+          right: 0,
+          bottom: 0,
+          width: '10px',
+          height: '10px',
+          background: 'blue',
+          cursor: 'nwse-resize',
+        }}
       />
     </NodeViewWrapper>
   );
@@ -27,8 +67,8 @@ const ResizableVideo = Node.create({
   addAttributes() {
     return {
       src: { default: null },
-      width: { default: '560' },
-      height: { default: '315' },
+      width: { default: '560px' },
+      height: { default: '315px' },
     };
   },
 

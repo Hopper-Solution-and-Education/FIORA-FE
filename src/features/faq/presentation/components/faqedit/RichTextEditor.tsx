@@ -1,15 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
-import Link from '@tiptap/extension-link';
+import BulletList from '@tiptap/extension-bullet-list';
+import OrderedList from '@tiptap/extension-ordered-list';
+import ListItem from '@tiptap/extension-list-item';
+import { useDropzone } from 'react-dropzone';
 
 import Toolbar from './Toolbar';
+import FontSize from './FontSize';
 import ResizableImage from './ImageResizable';
 import ResizableVideo from './ResizableVideo';
 
@@ -19,16 +23,20 @@ interface RichTextEditorProps {
 }
 
 export default function RichTextEditor({ value, onChange }: RichTextEditorProps) {
-  const [preview, setPreview] = useState(false);
-
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({}),
+      StarterKit.configure({
+        bulletList: false,
+        orderedList: false,
+      }),
+      BulletList,
+      OrderedList,
+      ListItem,
       Underline,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       TextStyle,
       Color,
-      Link,
+      FontSize,
       ResizableImage,
       ResizableVideo,
     ],
@@ -64,25 +72,86 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
     },
   });
 
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      acceptedFiles.forEach((file) => {
+        if (!editor) return;
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            editor
+              .chain()
+              .focus()
+              .setImage({
+                src: reader.result as string,
+              })
+              .run();
+          };
+          reader.readAsDataURL(file);
+        } else {
+          alert(`Unsupported file type: ${file.type}`);
+        }
+      });
+    },
+    [editor],
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { 'image/*': [] },
+    noClick: true,
+  });
+
+  const handleIndent = () => {
+    if (!editor) return;
+    if (!editor.isActive('bulletList') && !editor.isActive('orderedList')) {
+      editor.chain().focus().toggleBulletList().run();
+    }
+    editor.chain().focus().sinkListItem('listItem').run();
+  };
+
+  const handleOutdent = () => {
+    if (editor) {
+      editor.chain().focus().liftListItem('listItem').run();
+    }
+  };
+
   return (
     <div className="border rounded">
-      <div className="flex justify-between items-center border-b px-4 py-2 bg-muted">
-        {editor && <Toolbar editor={editor} />}
-        <button
-          className="text-sm text-blue-600 hover:underline"
-          onClick={() => setPreview(!preview)}
-        >
-          {preview ? 'Edit' : 'Preview'}
-        </button>
+      <div className="sticky top-0 z-10 flex justify-between items-center border-b px-4 py-2 bg-white">
+        <div className="flex items-center gap-2">
+          {editor && <Toolbar editor={editor} />}
+          <div className="flex gap-1">
+            <button
+              type="button"
+              onClick={handleOutdent}
+              className="border rounded p-1 bg-gray-100 hover:bg-gray-200 text-xs"
+            >
+              ⬅
+            </button>
+            <button
+              type="button"
+              onClick={handleIndent}
+              className="border rounded p-1 bg-gray-100 hover:bg-gray-200 text-xs"
+            >
+              ➡
+            </button>
+          </div>
+        </div>
       </div>
-      {preview ? (
-        <div
-          className="p-4 prose max-w-none"
-          dangerouslySetInnerHTML={{ __html: editor?.getHTML() || '' }}
-        />
-      ) : (
+
+      <div
+        {...getRootProps()}
+        className="relative border border-dashed rounded p-2 overflow-y-auto"
+      >
+        <input {...getInputProps()} />
+        {isDragActive && (
+          <div className="absolute inset-0 bg-blue-100 bg-opacity-50 flex items-center justify-center pointer-events-none">
+            <p className="text-blue-600 text-lg">Thả ảnh vào đây...</p>
+          </div>
+        )}
         <EditorContent editor={editor} />
-      )}
+      </div>
     </div>
   );
 }

@@ -1,9 +1,10 @@
+'use client';
+
 import Image from 'next/image';
 import useSWR from 'swr';
 import { useState } from 'react';
-import { Smile, Meh, Frown, ChevronDown, SendHorizonal, Pencil, Trash2 } from 'lucide-react';
+import { Smile, Meh, Frown, SendHorizonal, Pencil, Trash2 } from 'lucide-react';
 import ConfirmExitDialog from './ConfirmExitDialog';
-import ParsedFaqContent from './ParsedFaqContent';
 import { useRouter } from 'next/navigation';
 
 interface FaqDetailViewProps {
@@ -18,9 +19,14 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
   const [commentInput, setCommentInput] = useState('');
   const [commentLoading, setCommentLoading] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+
   const router = useRouter();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error || !data) return <div>FAQ not found.</div>;
+
+  const faq = data;
   const reactionCounts = (() => {
     const counts: { [key: string]: number } = {};
     data?.Reaction?.forEach((r: any) => {
@@ -31,21 +37,31 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
   const userReaction =
     data?.Reaction?.find((r: any) => r.userId === data?.currentUserId)?.reactionType || null;
   const comments = data?.Comment || [];
-  const faq = data;
+  const parentComments = comments.filter((c: any) => !c.parentId);
+  const childComments = comments.filter((c: any) => c.parentId);
   const currentUserRole = data?.currentUserRole;
   const currentUserId = data?.currentUserId;
 
-  const parentComments = comments.filter((c: any) => !c.parentId);
+  const handleReaction = async (type: string) => {
+    if (userReaction === type) {
+      await fetch(`/api/faqs/${id}/reaction`, { method: 'DELETE' });
+    } else {
+      await fetch(`/api/faqs/${id}/reaction`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reactionType: type }),
+      });
+    }
+    mutate();
+  };
 
   const handleSendComment = async () => {
     if (!commentInput.trim()) return;
     setCommentLoading(true);
-
     let content = commentInput;
     if (replyTo) {
       content = `@${replyTo.username}: ${commentInput}`;
     }
-
     const res = await fetch(`/api/faqs/${id}/comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -64,22 +80,6 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
     if (res.ok) mutate();
   };
 
-  const handleReaction = async (type: string) => {
-    if (userReaction === type) {
-      await fetch(`/api/faqs/${id}/reaction`, { method: 'DELETE' });
-    } else {
-      await fetch(`/api/faqs/${id}/reaction`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reactionType: type }),
-      });
-    }
-    mutate();
-  };
-
-  const toggleExpanded = () => setExpanded(!expanded);
-
-  const childComments = comments.filter((c: any) => c.parentId);
   function renderReplies(parentId: string) {
     return childComments
       .filter((reply: any) => reply.parentId === parentId)
@@ -110,7 +110,6 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
                 reply.content
               )}
             </p>
-
             {(currentUserRole === 'CS' || currentUserRole === 'Admin') && (
               <button
                 className="text-xs text-blue-500 hover:underline mt-1"
@@ -122,7 +121,6 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
               </button>
             )}
           </div>
-
           {(currentUserRole === 'CS' ||
             (currentUserRole === 'User' && reply.userId === currentUserId)) && (
             <div className="flex flex-col items-end ml-2">
@@ -148,8 +146,6 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
         </div>
       ));
   }
-  if (isLoading) return <div>Loading...</div>;
-  if (error || !faq) return <div>FAQ not found.</div>;
 
   return (
     <section className="max-w-4xl mx-auto px-4 py-10 text-gray-800">
@@ -158,7 +154,7 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
         {(currentUserRole === 'CS' || currentUserRole === 'Admin') && (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => router.push(`/faq/edit/${faq.id}`)} // thêm xử lý click
+              onClick={() => router.push(`/faq/edit/${faq.id}`)}
               className="w-9 h-9 flex items-center justify-center rounded-md border border-gray-300 hover:bg-gray-100 transition"
             >
               <Pencil className="w-5 h-5 text-gray-700" />
@@ -169,47 +165,25 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
           </div>
         )}
       </div>
+
       <p className="text-sm text-gray-500 mb-2">Posted by {faq.User?.email || 'Unknown'}</p>
-      <p className="text-sm text-gray-400 mb-4">
-        Updated {new Date(faq.createdAt).toLocaleString()}
+      <p className="text-sm text-gray-400 mb-2">
+        Updated {new Date(faq.updatedAt).toLocaleString()}
       </p>
-      {faq.content && <ParsedFaqContent htmlContent={faq.content} />}
-      {!expanded && (
-        <div className="flex flex-col items-center mb-6">
-          <button onClick={toggleExpanded} className="text-sm text-black font-medium">
-            See more
-          </button>
-          <div className="text-black mt-1 flex flex-col items-center leading-none">
-            <ChevronDown size={18} strokeWidth={2} />
-            <ChevronDown size={18} strokeWidth={2} className="-mt-1" />
-          </div>
-          <hr className="mt-2 border-t border-gray-300 w-[80%]" />
-        </div>
+
+      <p className="text-gray-600 mb-4">{faq.description || 'No description provided.'}</p>
+
+      {faq.content ? (
+        <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: faq.content }} />
+      ) : (
+        <p className="italic text-gray-400">No content available.</p>
       )}
-      {expanded && (
-        <>
-          <div className="mb-6">
-            <p>
-              No, FIORA is not a bank, either in Singapore or in any other country where it
-              currently operates... (repeated for effect).
-            </p>
-          </div>
-          <div className="mb-6">
-            <p>
-              No, FIORA is not a bank, either in Singapore or in any other country where it
-              currently operates. FIORA is a Payment Services Institution, providing financial
-              services to customers subject to the relevant laws and regulations of the
-              jurisdictions where it operates.
-            </p>
-          </div>
-        </>
-      )}
+
       <div className="text-center my-8">
         <p className="font-semibold mb-2">Did this answer your question?</p>
         <div className="flex justify-center gap-10 group" onMouseLeave={() => setFeedback(null)}>
           {['bad', 'neutral', 'good'].map((type) => {
             const Icon = type === 'bad' ? Frown : type === 'neutral' ? Meh : Smile;
-
             const colorClass =
               type === 'bad'
                 ? 'text-red-500'
@@ -240,22 +214,6 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
         </div>
       </div>
 
-      <div className="bg-gray-50 p-6 rounded-xl mt-10">
-        <h2 className="font-bold text-lg mb-4">Related Articles</h2>
-        <ul className="space-y-2">
-          {[
-            'How to reset my password?',
-            'Why can’t I log into my account?',
-            'How to track my order?',
-            'How to cancel or change an order?',
-            'How to contact customer support?',
-          ].map((title, i) => (
-            <li key={i} className="flex justify-between items-center border-b pb-2">
-              {title} <span className="text-green-500">&gt;</span>
-            </li>
-          ))}
-        </ul>
-      </div>
       <div className="border border-gray-200 rounded-xl p-6 mt-10 bg-white">
         {replyTo && (
           <div className="mb-2 text-sm text-blue-600 flex items-center gap-2">
@@ -288,6 +246,7 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
         <p className="font-semibold mb-4">
           If you have any questions, please comment below and we will respond soon
         </p>
+
         {parentComments.length === 0 && <div className="text-gray-400">No comments yet.</div>}
 
         {parentComments.map((c: any) => (

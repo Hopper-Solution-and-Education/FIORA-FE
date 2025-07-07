@@ -1,6 +1,4 @@
-'use client';
-
-import EditFaqPage from '@/features/faq/presentation/EditFaqPage';
+import EditFaqPage from '@/features/faq/EditFaqPage';
 
 export default function Page() {
   return <EditFaqPage />;
