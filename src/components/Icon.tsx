@@ -1,6 +1,7 @@
 import {
   AlertCircle,
   AlertTriangle,
+  ArrowLeft,
   ArrowLeftRight,
   ArrowRight,
   Ban,
@@ -48,6 +49,7 @@ import {
   Home,
   Image,
   ImageIcon,
+  Info,
   Laptop,
   LayoutDashboardIcon,
   LayoutTemplate,
@@ -299,4 +301,6 @@ export const Icons = {
   grip: Grip,
   gripVertical: GripVertical,
   slidersHorizontal: SlidersHorizontal,
+  info: Info,
+  arrowLeft: ArrowLeft,
 };
