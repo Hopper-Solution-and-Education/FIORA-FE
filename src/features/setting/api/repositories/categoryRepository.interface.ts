@@ -36,6 +36,9 @@ export interface ICategoryRepository {
     where: Prisma.CategoryWhereInput,
     options?: Prisma.CategoryFindManyArgs,
   ): Promise<Category[]>;
+  /**
+   * Find the first category by where condition (e.g. userId + name)
+   */
   findFirstCategory(
     where: Prisma.CategoryWhereInput,
     options?: Prisma.CategoryFindFirstArgs,

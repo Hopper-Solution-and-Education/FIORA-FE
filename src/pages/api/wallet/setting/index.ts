@@ -1,11 +1,10 @@
+import { walletUseCase } from '@/features/setting/api/domain/use-cases/walletUsecase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { createError } from '@/shared/lib/responseUtils/createResponse';
+import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { _PaginationResponse } from '@/shared/types/httpResponse.types';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { walletUseCase } from '@/features/setting/api/domain/use-cases/walletUsecase';
-import { _PaginationResponse } from '@/shared/types/httpResponse.types';
-import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse) => {
   try {
@@ -55,7 +54,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
 
 async function PUT(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { id, status } = req.body;
+    const { id, status, remark } = req.body;
     if (!id || !status) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_PARAMS_INPUT);
     }
@@ -64,7 +63,11 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_STATUS);
     }
 
-    const updated = await walletUseCase.updateDepositRequestStatus(id, status);
+    if (status === 'Rejected' && !remark) {
+      return createError(res, RESPONSE_CODE.BAD_REQUEST, 'Missing rejection reason');
+    }
+
+    const updated = await walletUseCase.updateDepositRequestStatus(id, status, remark);
     if (!updated) {
       return createError(
         res,

@@ -1,16 +1,15 @@
 'use client';
 
-import React from 'react';
+import { Icons } from '@/components/Icon';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { ArrowLeftIcon } from 'lucide-react';
-import { Icons } from '@/components/Icon';
 
 interface WalletDialogProps {
   open: boolean;
@@ -68,7 +67,7 @@ const WalletDialog = ({ open, onCancel, onConfirm }: WalletDialogProps) => (
           className="flex-1 h-12 border-border hover:bg-accent hover:text-accent-foreground transition-colors"
           size="lg"
         >
-          <ArrowLeftIcon className="w-5 h-5 mr-2" />
+          <Icons.arrowLeft className="w-5 h-5 mr-2" />
         </Button>
 
         <Button

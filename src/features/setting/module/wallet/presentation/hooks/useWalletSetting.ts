@@ -8,10 +8,7 @@ import { WALLET_SETTING_TYPES } from '../../di/walletSettingDIContainer.type';
 import { IGetDepositRequestsPaginatedUseCase } from '../../domain';
 import { clearError, setError, setLoading } from '../../slices';
 import { initialState, tableReducer } from '../types/tableReducer.type';
-import { convertToTableData } from '../utils/convertTableData';
-import { updateDepositRequestStatusAsyncThunk } from '../../slices/actions';
-import { toast } from 'sonner';
-import { DepositRequestStatus } from '../../domain/enum';
+import { convertToTableData } from '../utils';
 
 export const useWalletSetting = () => {
   const dispatch = useAppDispatch();
@@ -120,22 +117,10 @@ export const useWalletSetting = () => {
     }
   }, [state.filters.status, fetchData]);
 
-  const handleUpdateStatus = async (id: string, newStatus: DepositRequestStatus) => {
-    try {
-      await dispatch(updateDepositRequestStatusAsyncThunk({ id, status: newStatus })).unwrap();
-      dispatchTable({ type: 'UPDATE_ITEM_STATUS', payload: { id, status: newStatus } });
-      toast.success(
-        `Request has been ${newStatus === DepositRequestStatus.Approved ? 'approved' : 'rejected'}.`,
-      );
-    } catch (error: any) {
-      toast.error(error?.message || 'An error occurred. Please try again.');
-    }
-  };
-
   return {
     tableData: state,
     loading,
     loadMore,
-    handleUpdateStatus,
+    dispatchTable,
   };
 };

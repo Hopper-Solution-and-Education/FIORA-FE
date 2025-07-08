@@ -8,6 +8,8 @@ export interface WalletSettingState {
   error: string | null;
   columnConfig: WalletSettingTableColumnKeyType;
   updatingItems: string[];
+  showRejectModal: boolean;
+  rejectingId: string | null;
 }
 
 export const initialState: WalletSettingState = {
@@ -15,4 +17,6 @@ export const initialState: WalletSettingState = {
   error: null,
   columnConfig: WALLET_SETTING_TABLE_COLUMN_CONFIG,
   updatingItems: [],
+  showRejectModal: false,
+  rejectingId: null,
 };
