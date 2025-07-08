@@ -2,13 +2,12 @@ import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
 import { getProductTransactionAsyncThunk } from '@/features/setting/module/product/slices/actions';
-import { formatCurrency } from '@/shared/lib';
 import { FilterColumn, FilterCriteria } from '@/shared/types/filter.types';
+import { DropdownOption } from '@/shared/types/transaction.types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DEFAULT_DASHBOARD_FILTER_CRITERIA } from '../constants';
-import { DropdownOption } from '@/shared/types/transaction.types';
 
 const DEFAULT_SLIDER_STEP = 1000;
 const DEFAULT_PAGE_SIZE = 10;
@@ -204,8 +203,6 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         label="Expense Range"
         minLabel="Min Expense"
         maxLabel="Max Expense"
-        formatValue={(value, isEditing) => (isEditing ? value : formatCurrency(value))}
-        tooltipFormat={(value) => formatCurrency(value)}
         step={DEFAULT_SLIDER_STEP}
       />
     );
@@ -223,8 +220,6 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         label="Price Range"
         minLabel="Min Price"
         maxLabel="Max Price"
-        formatValue={(value, isEditing) => (isEditing ? value : formatCurrency(value))}
-        tooltipFormat={(value) => formatCurrency(value)}
         step={DEFAULT_SLIDER_STEP}
       />
     );
@@ -242,7 +237,6 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         label="Tax Rate Range"
         minLabel="Min Rate"
         maxLabel="Max Rate"
-        formatValue={(value, isEditing) => (isEditing ? value : `${value}%`)}
         tooltipFormat={(value) => `${value}%`}
         step={1}
       />
@@ -261,8 +255,6 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         label="Income Range"
         minLabel="Min Income"
         maxLabel="Max Income"
-        formatValue={(value, isEditing) => (isEditing ? value : formatCurrency(value))}
-        tooltipFormat={(value) => formatCurrency(value)}
         step={DEFAULT_SLIDER_STEP}
       />
     );
