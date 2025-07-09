@@ -18,6 +18,7 @@ export const useMembershipSettingPage = () => {
     selectedMembership?.tierBenefits.map((benefit) => ({
       key: benefit.slug,
       label: benefit.name,
+      suffix: benefit.suffix,
     })) ?? [];
 
   const editMemberShipSchema = buildDynamicTierSchema(dynamicTierFields);

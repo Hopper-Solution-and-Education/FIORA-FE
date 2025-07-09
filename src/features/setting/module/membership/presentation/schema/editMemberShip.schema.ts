@@ -1,6 +1,12 @@
 import * as yup from 'yup';
 
-export function buildDynamicTierSchema(fields: { key: string; label: string }[]) {
+export type DynamicFieldTier = {
+  key: string;
+  label: string;
+  suffix?: string;
+};
+
+export function buildDynamicTierSchema(fields: DynamicFieldTier[]) {
   const shape: Record<string, yup.AnySchema> = {};
   fields.forEach((field) => {
     shape[field.key] = yup

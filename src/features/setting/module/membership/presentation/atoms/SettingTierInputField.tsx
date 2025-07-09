@@ -54,7 +54,7 @@ const SettingTierInputField = ({
           md:text-xs
           lg:text-sm
           font-semibold text-gray-700 dark:text-gray-200
-          mb-4
+          mb-1
           gap-2
           flex justify-start
           w-36
@@ -68,8 +68,8 @@ const SettingTierInputField = ({
         className="
           w-full
           flex justify-end
-          m-2
-          pr-2
+          m-0
+          pr-1
         "
       >
         <TooltipProvider>
@@ -111,7 +111,7 @@ const SettingTierInputField = ({
             sm:text-xs
             md:text-xs
             lg:text-xs
-            mb-4
+            mb-1
             text-gray-500 dark:text-gray-400
             overflow-hidden
             text-ellipsis

@@ -16,6 +16,9 @@ const membershipSlice = createSlice({
     setSelectedMembership: (state, action: PayloadAction<Membership>) => {
       state.selectedMembership = action.payload;
     },
+    setIsShowDialogAddBenefitTier: (state, action: PayloadAction<boolean>) => {
+      state.isShowDialogAddBenefitTier = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -49,6 +52,10 @@ const membershipSlice = createSlice({
 });
 
 export * from './types';
-export const { resetMembershipState, setSelectedMembership, setMemberships } =
-  membershipSlice.actions;
+export const {
+  resetMembershipState,
+  setSelectedMembership,
+  setMemberships,
+  setIsShowDialogAddBenefitTier,
+} = membershipSlice.actions;
 export default membershipSlice.reducer;

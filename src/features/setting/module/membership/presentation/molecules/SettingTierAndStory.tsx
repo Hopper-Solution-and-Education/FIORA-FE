@@ -4,17 +4,17 @@ import { FormConfig, InputField, UploadImageField } from '@/components/common/fo
 import { useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
 import { SettingTierInputFieldConfig, StoryTierInputFieldConfig } from '../config';
-import { EditMemberShipFormValues } from '../schema/editMemberShip.schema';
+import { DynamicFieldTier, EditMemberShipFormValues } from '../schema/editMemberShip.schema';
 
 const renderEmptySubmitButton = () => {
   return <></>;
 };
 
-const SettingTierAndStory = ({
-  dynamicTierFields,
-}: {
-  dynamicTierFields: { key: string; label: string; suffix?: string }[];
-}) => {
+type SettingTierAndStoryProps = {
+  dynamicTierFields: DynamicFieldTier[];
+};
+
+const SettingTierAndStory = ({ dynamicTierFields }: SettingTierAndStoryProps) => {
   const methods = useFormContext<EditMemberShipFormValues>();
 
   const isLoadingUpsertMembership = useAppSelector(

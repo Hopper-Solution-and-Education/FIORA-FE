@@ -1,8 +1,11 @@
 import { FormConfig } from '@/components/common/forms';
-import { useAppSelector } from '@/store';
+import { Icons } from '@/components/Icon';
+import { Button } from '@/components/ui/button';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
+import { setIsShowDialogAddBenefitTier } from '../../slices';
 import SettingTierInputField from '../atoms/SettingTierInputField';
-import { EditMemberShipFormValues } from '../schema/editMemberShip.schema';
+import { DynamicFieldTier, EditMemberShipFormValues } from '../schema/editMemberShip.schema';
 
 const options = {
   percent: true,
@@ -12,13 +15,18 @@ const options = {
 const SettingTierInputFieldConfig = ({
   dynamicTierFields,
 }: {
-  dynamicTierFields: { key: string; label: string; suffix?: string }[];
+  dynamicTierFields: DynamicFieldTier[];
 }) => {
   const methods = useFormContext<EditMemberShipFormValues>();
+  const dispatch = useAppDispatch();
   const isLoadingUpsertMembership = useAppSelector(
     (state) => state.memberShipSettings.isLoadingUpsertMembership,
   );
   const { setValue, watch } = methods;
+
+  const handleOpenDialogAddBenefitTier = () => {
+    dispatch(setIsShowDialogAddBenefitTier(true));
+  };
 
   // Render dynamic fields based on configuration
   const fields = dynamicTierFields.map((field) => (
@@ -35,11 +43,28 @@ const SettingTierInputFieldConfig = ({
     />
   ));
 
+  // Sticky submit button
   const renderSubmitButton = () => {
-    return <></>;
+    return (
+      <Button
+        type="button"
+        className="w-full mt-1"
+        variant="outline"
+        onClick={handleOpenDialogAddBenefitTier}
+      >
+        <Icons.add />
+      </Button>
+    );
   };
 
-  return <FormConfig fields={fields} methods={methods} renderSubmitButton={renderSubmitButton} />;
+  return (
+    <div className="relative">
+      <div className="max-h-[400px] overflow-y-auto pr-2">
+        <FormConfig fields={fields} methods={methods} renderSubmitButton={() => null} />
+      </div>
+      {renderSubmitButton()}
+    </div>
+  );
 };
 
 export default SettingTierInputFieldConfig;
