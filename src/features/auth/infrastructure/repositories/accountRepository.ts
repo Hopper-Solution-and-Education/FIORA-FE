@@ -13,7 +13,9 @@ export class AccountRepository implements IAccountRepository {
   }
 
   async findById(id: string): Promise<Account | null> {
-    return prisma.account.findUnique({ where: { id } });
+    return prisma.account.findUnique({
+      where: { id },
+    });
   }
 
   async findAll(): Promise<Account[]> {

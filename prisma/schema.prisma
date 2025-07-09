@@ -43,7 +43,6 @@ model User {
   Comment             Comment[]
   Post                Post[]
   Reaction            Reaction[]
-  exchangeRateSetting ExchangeRateSetting[]
 
   @@index([isDeleted])
 }
@@ -61,26 +60,28 @@ model Session {
 }
 
 model Account {
-  id               String        @id @default(uuid()) @db.Uuid
-  userId           String        @db.Uuid
+  id               String            @id @default(uuid()) @db.Uuid
+  userId           String            @db.Uuid
   icon             String?
-  name             String        @db.VarChar(50)
-  description      String?       @db.VarChar(1000)
-  type             AccountType   @default(Payment)
-  currency         Currency      @default(VND)
-  limit            Decimal?      @default(0) @db.Decimal(13, 2)
-  balance          Decimal?      @default(0) @db.Decimal(13, 2)
-  parentId         String?       @db.Uuid
-  createdAt        DateTime      @default(now()) @db.Timestamptz(0)
-  updatedAt        DateTime      @updatedAt @db.Timestamptz(0)
-  createdBy        String?       @db.Uuid
-  updatedBy        String?       @db.Uuid
+  name             String            @db.VarChar(50)
+  description      String?           @db.VarChar(1000)
+  type             AccountType       @default(Payment)
+  currencyId       String?           @db.Uuid
+  currency         String?
+  limit            Decimal?          @default(0) @db.Decimal(13, 2)
+  balance          Decimal?          @default(0) @db.Decimal(13, 2)
+  parentId         String?           @db.Uuid
+  createdAt        DateTime          @default(now()) @db.Timestamptz(0)
+  updatedAt        DateTime          @updatedAt @db.Timestamptz(0)
+  createdBy        String?           @db.Uuid
+  updatedBy        String?           @db.Uuid
   color            String?
-  parent           Account?      @relation("ChildAccounts", fields: [parentId], references: [id])
-  children         Account[]     @relation("ChildAccounts")
-  user             User          @relation("UserAccounts", fields: [userId], references: [id])
-  fromTransactions Transaction[] @relation("FromAccount")
-  toTransactions   Transaction[] @relation("ToAccount")
+  parent           Account?          @relation("ChildAccounts", fields: [parentId], references: [id])
+  children         Account[]         @relation("ChildAccounts")
+  user             User              @relation("UserAccounts", fields: [userId], references: [id])
+  fromTransactions Transaction[]     @relation("FromAccount")
+  toTransactions   Transaction[]     @relation("ToAccount")
+  currencyExchange CurrencyExchange? @relation(fields: [currencyId], references: [id])
 
   @@index([userId])
   @@index([parentId])
@@ -109,24 +110,26 @@ model UserAuthentication {
 }
 
 model Product {
-  id           String               @id @default(uuid()) @db.Uuid
-  userId       String               @db.Uuid
-  catId        String?              @db.Uuid
-  type         ProductType
-  icon         String
-  name         String               @db.VarChar(50)
-  description  String?              @db.VarChar(1000)
-  price        Decimal              @db.Decimal(13, 2)
-  taxRate      Decimal?             @db.Decimal(13, 2)
-  createdAt    DateTime             @default(now()) @db.Timestamptz(0)
-  updatedAt    DateTime             @updatedAt @db.Timestamptz(0)
-  createdBy    String?              @db.Uuid
-  updatedBy    String?              @db.Uuid
-  currency     Currency             @default(VND)
-  category     CategoryProducts?    @relation(fields: [catId], references: [id])
-  user         User                 @relation("UserProducts", fields: [userId], references: [id])
-  items        ProductItems[]
-  transactions ProductTransaction[] @relation("ProductTransactions")
+  id               String               @id @default(uuid()) @db.Uuid
+  userId           String               @db.Uuid
+  catId            String?              @db.Uuid
+  type             ProductType
+  icon             String
+  name             String               @db.VarChar(50)
+  description      String?              @db.VarChar(1000)
+  price            Decimal              @db.Decimal(13, 2)
+  taxRate          Decimal?             @db.Decimal(13, 2)
+  createdAt        DateTime             @default(now()) @db.Timestamptz(0)
+  updatedAt        DateTime             @updatedAt @db.Timestamptz(0)
+  createdBy        String?              @db.Uuid
+  updatedBy        String?              @db.Uuid
+  currencyId       String?              @db.Uuid
+  currency         String?
+  category         CategoryProducts?    @relation(fields: [catId], references: [id])
+  user             User                 @relation("UserProducts", fields: [userId], references: [id])
+  items            ProductItems[]
+  transactions     ProductTransaction[] @relation("ProductTransactions")
+  currencyExchange CurrencyExchange?    @relation(fields: [currencyId], references: [id])
 
   @@unique([userId, name, catId])
   @@index([userId])
@@ -185,7 +188,8 @@ model Transaction {
   updatedAt        DateTime             @updatedAt @db.Timestamptz(0)
   updatedBy        String?              @db.Uuid
   createdBy        String?              @db.Uuid
-  currency         Currency             @default(VND)
+  currencyId       String?              @db.Uuid
+  currency         String?
   isMarked         Boolean              @default(false)
   isExpired        Boolean              @default(false)
   productsRelation ProductTransaction[] @relation("ProductTransactions")
@@ -195,6 +199,7 @@ model Transaction {
   toAccount        Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Restrict)
   toCategory       Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
   user             User?                @relation("UserTransactions", fields: [userId], references: [id])
+  currencyExchange CurrencyExchange?    @relation(fields: [currencyId], references: [id])
 
   @@index([date])
   @@index([type])
@@ -306,57 +311,59 @@ model Category {
 }
 
 model BudgetsTable {
-  id           String          @id @default(uuid()) @db.Uuid
-  userId       String          @db.Uuid
-  fiscalYear   String          @db.VarChar(4)
-  type         BudgetType      @default(Top)
-  total_exp    Decimal         @default(0) @db.Decimal(13, 2)
-  total_inc    Decimal         @default(0) @db.Decimal(13, 2)
-  h1_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  h1_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  h2_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  h2_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  q1_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  q1_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  q2_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  q2_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  q3_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  q3_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  q4_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  q4_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m1_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m1_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m2_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m2_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m3_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m3_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m4_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m4_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m5_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m5_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m6_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m6_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m7_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m7_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m8_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m8_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m9_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m9_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m10_exp      Decimal         @default(0) @db.Decimal(13, 2)
-  m10_inc      Decimal         @default(0) @db.Decimal(13, 2)
-  m11_exp      Decimal         @default(0) @db.Decimal(13, 2)
-  m11_inc      Decimal         @default(0) @db.Decimal(13, 2)
-  m12_exp      Decimal         @default(0) @db.Decimal(13, 2)
-  m12_inc      Decimal         @default(0) @db.Decimal(13, 2)
-  createdAt    DateTime        @default(now()) @db.Timestamptz(0)
-  createdBy    String?         @db.Uuid
-  updatedBy    String?         @db.Uuid
-  updatedAt    DateTime        @updatedAt @db.Timestamptz(0)
-  description  String?
-  icon         String?
-  currency     Currency        @default(VND)
-  budgetDetail BudgetDetails[]
-  user         User            @relation(fields: [userId], references: [id])
+  id               String            @id @default(uuid()) @db.Uuid
+  userId           String            @db.Uuid
+  fiscalYear       String            @db.VarChar(4)
+  type             BudgetType        @default(Top)
+  total_exp        Decimal           @default(0) @db.Decimal(13, 2)
+  total_inc        Decimal           @default(0) @db.Decimal(13, 2)
+  h1_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  h1_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  h2_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  h2_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  q1_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  q1_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  q2_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  q2_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  q3_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  q3_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  q4_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  q4_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m1_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m1_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m2_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m2_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m3_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m3_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m4_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m4_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m5_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m5_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m6_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m6_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m7_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m7_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m8_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m8_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m9_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m9_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m10_exp          Decimal           @default(0) @db.Decimal(13, 2)
+  m10_inc          Decimal           @default(0) @db.Decimal(13, 2)
+  m11_exp          Decimal           @default(0) @db.Decimal(13, 2)
+  m11_inc          Decimal           @default(0) @db.Decimal(13, 2)
+  m12_exp          Decimal           @default(0) @db.Decimal(13, 2)
+  m12_inc          Decimal           @default(0) @db.Decimal(13, 2)
+  createdAt        DateTime          @default(now()) @db.Timestamptz(0)
+  createdBy        String?           @db.Uuid
+  updatedBy        String?           @db.Uuid
+  updatedAt        DateTime          @updatedAt @db.Timestamptz(0)
+  description      String?
+  icon             String?
+  budgetDetail     BudgetDetails[]
+  user             User              @relation(fields: [userId], references: [id])
+  currencyId       String?           @db.Uuid
+  currency         String?
+  currencyExchange CurrencyExchange? @relation(fields: [currencyId], references: [id])
 
   @@unique([fiscalYear, type, userId])
   @@index([userId])
@@ -365,21 +372,23 @@ model BudgetsTable {
 }
 
 model BudgetDetails {
-  id         String           @id @default(uuid()) @db.Uuid
-  userId     String           @db.Uuid
-  budgetId   String           @db.Uuid
-  type       BudgetDetailType
-  categoryId String?          @db.Uuid
-  amount     Decimal          @default(0) @db.Decimal(13, 2)
-  month      Int              @db.SmallInt
-  createdAt  DateTime         @default(now()) @db.Timestamptz(0)
-  createdBy  String?          @db.Uuid
-  updatedBy  String?          @db.Uuid
-  updatedAt  DateTime         @updatedAt @db.Timestamptz(0)
-  currency   Currency         @default(VND)
-  budget     BudgetsTable     @relation(fields: [budgetId], references: [id], onDelete: Cascade)
-  category   Category?        @relation(fields: [categoryId], references: [id])
-  user       User             @relation(fields: [userId], references: [id])
+  id               String            @id @default(uuid()) @db.Uuid
+  userId           String            @db.Uuid
+  budgetId         String            @db.Uuid
+  type             BudgetDetailType
+  categoryId       String?           @db.Uuid
+  amount           Decimal           @default(0) @db.Decimal(13, 2)
+  month            Int               @db.SmallInt
+  createdAt        DateTime          @default(now()) @db.Timestamptz(0)
+  createdBy        String?           @db.Uuid
+  updatedBy        String?           @db.Uuid
+  updatedAt        DateTime          @updatedAt @db.Timestamptz(0)
+  budget           BudgetsTable      @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  category         Category?         @relation(fields: [categoryId], references: [id])
+  user             User              @relation(fields: [userId], references: [id])
+  currencyId       String?           @db.Uuid
+  currency         String?
+  currencyExchange CurrencyExchange? @relation(fields: [currencyId], references: [id])
 
   @@unique([month, categoryId, type, budgetId, userId])
   @@index([userId])
@@ -656,7 +665,6 @@ model Reaction {
 
 model ExchangeRateSetting {
   id             String           @id @default(uuid()) @db.Uuid
-  authorId       String           @db.Uuid
   fromCurrencyId String           @db.Uuid
   fromValue      Decimal          @default(0) @db.Decimal(13, 2)
   toCurrencyId   String           @db.Uuid
@@ -665,12 +673,10 @@ model ExchangeRateSetting {
   updatedAt      DateTime         @updatedAt @db.Timestamptz(0)
   createdBy      String?          @db.Uuid
   updatedBy      String?          @db.Uuid
-  User           User             @relation(fields: [authorId], references: [id])
   FromCurrency   CurrencyExchange @relation("FromCurrency", fields: [fromCurrencyId], references: [id])
   ToCurrency     CurrencyExchange @relation("ToCurrency", fields: [toCurrencyId], references: [id])
 
   @@unique([fromCurrencyId, toCurrencyId])
-  @@index([authorId])
   @@index([fromCurrencyId, toCurrencyId])
 }
 
@@ -684,6 +690,11 @@ model CurrencyExchange {
   updatedBy               String?               @db.Uuid
   fromExchangeRateSetting ExchangeRateSetting[] @relation("FromCurrency")
   toExchangeRateSetting   ExchangeRateSetting[] @relation("ToCurrency")
+  transaction             Transaction[]
+  Account                 Account[]
+  Product                 Product[]
+  BudgetsTable            BudgetsTable[]
+  BudgetDetails           BudgetDetails[]
 }
 
 enum BudgetType {

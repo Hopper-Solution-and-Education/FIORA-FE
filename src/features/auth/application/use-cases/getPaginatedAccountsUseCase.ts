@@ -56,19 +56,21 @@ export class GetPaginatedAccountsUseCase {
     });
 
     // Convert balances to requested currency
-    const accountsWithConvertedBalance = accounts.map((account) => {
-      const convertedBalance = convertCurrency(
-        account.balance?.toNumber() || 0,
-        account.currency,
-        currency,
-      );
+    const accountsWithConvertedBalance = await Promise.all(
+      accounts.map(async (account) => {
+        const convertedBalance = await convertCurrency(
+          account.balance?.toNumber() || 0,
+          account.currency!,
+          currency,
+        );
 
-      return {
-        ...account,
-        balance: convertedBalance.toString(),
-        currency,
-      };
-    });
+        return {
+          ...account,
+          balance: convertedBalance.toString(),
+          currency,
+        };
+      }),
+    );
 
     return {
       accounts: accountsWithConvertedBalance,

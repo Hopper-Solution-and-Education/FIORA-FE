@@ -9,31 +9,35 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { BooleanUtils } from '@/shared/lib';
 import { buildWhereClause } from '@/shared/utils';
 import { normalizeVietnamese, safeString } from '@/shared/utils/ExStringUtils';
+import { NextApiRequest } from 'next';
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
+import { currencySettingRepository } from '../../infrastructure/repositories/currencySettingRepository';
 import { productRepository } from '../../infrastructure/repositories/productRepository';
 import { productItemsRepository } from '../../infrastructure/repositories/productRepositoryItem';
 import { ICategoryProductRepository } from '../../repositories/categoryProductRepository.interface';
+import { ICurrencySettingRepository } from '../../repositories/currencySettingRepository.interface';
 import { IProductItemsRepository } from '../../repositories/productItemRepository.interface';
 import {
   IProductRepository,
   ProductCreation,
   ProductUpdate,
 } from '../../repositories/productRepository.interface';
-import { NextApiRequest } from 'next';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
   private productItemsRepository: IProductItemsRepository;
   private categoryProductRepository: ICategoryProductRepository;
-
+  private currencySettingRepository: ICurrencySettingRepository;
   constructor(
     productRepository: IProductRepository,
     productItemsRepository: IProductItemsRepository,
     categoryProductRepository: ICategoryProductRepository,
+    currencySettingRepository: ICurrencySettingRepository,
   ) {
     this.productRepository = productRepository;
     this.productItemsRepository = productItemsRepository;
     this.categoryProductRepository = categoryProductRepository;
+    this.currencySettingRepository = currencySettingRepository;
   }
 
   async getAllProducts(params: { userId: string }): Promise<Product[]> {
@@ -59,7 +63,10 @@ class ProductUseCase {
       const { userId, page = 1, pageSize = 20, currency = 'VND' } = params;
       const productsAwaited = this.productRepository.findManyProducts(
         { userId },
-        { skip: (page - 1) * pageSize, take: pageSize },
+        {
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        },
       );
 
       const countAwaited = this.productRepository.count({
@@ -75,7 +82,7 @@ class ProductUseCase {
       // Transform the product price to the user's target currency if needed
       const transformedProductsAwaited = products.map(async (product) => {
         const transformedPrice =
-          (await convertCurrency(product.price, product.currency, currency)) ||
+          (await convertCurrency(product.price, product.currency!, currency)) ||
           product.price.toNumber();
 
         return {
@@ -142,15 +149,15 @@ class ProductUseCase {
       const [createdBy, updatedBy] = await Promise.all([
         product.createdBy
           ? prisma.user.findFirst({
-              where: { id: product.createdBy },
-              select: { id: true, name: true, email: true, image: true },
-            })
+            where: { id: product.createdBy },
+            select: { id: true, name: true, email: true, image: true },
+          })
           : null,
         product.updatedBy
           ? prisma.user.findFirst({
-              where: { id: product.updatedBy },
-              select: { id: true, name: true, email: true, image: true },
-            })
+            where: { id: product.updatedBy },
+            select: { id: true, name: true, email: true, image: true },
+          })
           : null,
       ]);
 
@@ -176,7 +183,7 @@ class ProductUseCase {
         type,
         category_id,
         items,
-        currency = Currency.VND,
+        currency,
       } = params;
 
       const category = await this.categoryProductRepository.findUniqueCategoryProduct({
@@ -186,6 +193,14 @@ class ProductUseCase {
 
       if (!category) {
         throw new Error(Messages.CATEGORY_PRODUCT_NOT_FOUND);
+      }
+
+      const foundCurrency = await this.currencySettingRepository.findFirstCurrency({
+        name: currency,
+      });
+
+      if (!foundCurrency) {
+        throw new Error(Messages.CURRENCY_NOT_FOUND);
       }
 
       const result = await prisma.$transaction(async (tx) => {
@@ -215,7 +230,8 @@ class ProductUseCase {
             type,
             catId: category_id,
             createdBy: userId,
-            currency: currency,
+            currencyId: foundCurrency.id,
+            currency: foundCurrency.name,
             ...(description && { description }),
           },
           include: {
@@ -629,23 +645,23 @@ class ProductUseCase {
     const productTransactions =
       productIds.length > 0
         ? await prisma.productTransaction.findMany({
-            where: {
-              productId: { in: productIds },
-              transaction: { userId },
-            },
-            select: {
-              productId: true,
-              transaction: {
-                select: {
-                  id: true,
-                  userId: true,
-                  type: true,
-                  amount: true,
-                  currency: true,
-                },
+          where: {
+            productId: { in: productIds },
+            transaction: { userId },
+          },
+          select: {
+            productId: true,
+            transaction: {
+              select: {
+                id: true,
+                userId: true,
+                type: true,
+                amount: true,
+                currency: true,
               },
             },
-          })
+          },
+        })
         : [];
 
     const creatorIds = categories.map((cat) => cat.createdBy).filter(Boolean) as string[];
@@ -655,9 +671,9 @@ class ProductUseCase {
     const users =
       uniqueUserIds.length > 0
         ? await prisma.user.findMany({
-            where: { id: { in: uniqueUserIds } },
-            select: { id: true, name: true, email: true, image: true },
-          })
+          where: { id: { in: uniqueUserIds } },
+          select: { id: true, name: true, email: true, image: true },
+        })
         : [];
 
     const userMap = users.reduce(
@@ -679,7 +695,7 @@ class ProductUseCase {
           userId: pt.transaction.userId,
           type: pt.transaction.type,
           amount: pt.transaction.amount.toNumber(),
-          currency: pt.transaction.currency,
+          currency: pt.transaction.currency!,
         });
         return acc;
       },
@@ -794,4 +810,5 @@ export const productUseCase = new ProductUseCase(
   productRepository,
   productItemsRepository,
   categoryProductRepository,
+  currencySettingRepository,
 );

@@ -20,7 +20,7 @@ import { ITransactionRepository } from '../../../../transaction/domain/repositor
 import { transactionRepository } from '../../../../transaction/infrastructure/repositories/transactionRepository';
 import { budgetRepository } from '../../infrastructure/repositories/budgetProductRepository';
 import { categoryRepository } from '../../infrastructure/repositories/categoryRepository';
-import { IBudgetRepository } from '../../repositories/budgetRepository';
+import { IBudgetRepository } from '../../repositories/budgetRepository.interface';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
 import { getBudgetStrategy } from '../../strategy/budgetStrategy';
 
@@ -153,20 +153,22 @@ class BudgetSummaryUseCase {
     return budget;
   }
 
-  private getMonthlyValues(
+  private async getMonthlyValues(
     budget: BudgetsTable,
     type: 'exp' | 'inc',
-    fromCurrency: Currency,
-    targetCurrency: Currency,
-  ): number[] {
-    return MONTH_MAPPING.months.map((m) => {
-      const fieldValue =
-        (budget[`${m}_${type}` as keyof BudgetsTable] as Prisma.Decimal | undefined) ??
-        new Prisma.Decimal(0);
-      const value = Number(fieldValue);
+    fromCurrency: string,
+    targetCurrency: string,
+  ): Promise<number[]> {
+    return await Promise.all(
+      MONTH_MAPPING.months.map(async (m) => {
+        const fieldValue =
+          (budget[`${m}_${type}` as keyof BudgetsTable] as Prisma.Decimal | undefined) ??
+          new Prisma.Decimal(0);
+        const value = Number(fieldValue);
 
-      return convertCurrency(value, fromCurrency, targetCurrency);
-    });
+        return await convertCurrency(value, fromCurrency, targetCurrency);
+      }),
+    );
   }
 
   async updateBudgetDetails(params: {
@@ -218,6 +220,7 @@ class BudgetSummaryUseCase {
 
         const selectFields: Prisma.BudgetsTableSelect = {
           id: true,
+          currencyId: true,
           currency: true,
           ...strategy.getFields(affectedFieldsInitial),
         };
@@ -235,26 +238,26 @@ class BudgetSummaryUseCase {
           throw new Error(Messages.BUDGET_NOT_FOUND);
         }
 
-        const storedCurrency = existingBudget.currency as Currency;
+        const storedCurrency = existingBudget.currency;
 
         // Convert existing monthly values to targetCurrency
-        let monthlyValues = this.getMonthlyValues(
+        let monthlyValues = await this.getMonthlyValues(
           existingBudget,
           strategyType,
-          storedCurrency,
+          storedCurrency!,
           currency,
         );
 
         // Update the affected fields in the map
         const affectedFields = new Map<string, boolean>();
 
-        monthlyValues = applyUpdates(
+        monthlyValues = await applyUpdates(
           monthlyValues,
           updateTopBudget,
           strategyType,
           affectedFields,
           currency,
-          storedCurrency,
+          storedCurrency!,
         );
 
         // Calculate the totals based on the updated monthly values
@@ -335,19 +338,25 @@ class BudgetSummaryUseCase {
       }
 
       // 2. Prepare data for subtraction (use old values as amounts to subtract)
-      const amountsToSubtract = Array(12)
-        .fill(0)
-        .map((_, i) => {
-          const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
-          const value = oldDetail
-            ? convertCurrency(
-                Number(oldDetail.amount),
-                oldDetail.currency || targetCurrency,
-                targetCurrency,
-              )
-            : 0;
-          return { amount: new Prisma.Decimal(value), month: i + 1, currency: targetCurrency };
-        });
+      const amountsToSubtract = await Promise.all(
+        Array(12)
+          .fill(0)
+          .map(async (_, i) => {
+            const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
+            const value = oldDetail
+              ? await convertCurrency(
+                  Number(oldDetail.amount),
+                  oldDetail.currency!,
+                  targetCurrency!,
+                )
+              : 0;
+            return {
+              amount: new Prisma.Decimal(value),
+              month: i + 1,
+              currency: targetCurrency!,
+            };
+          }),
+      );
 
       // Prepare update data by summing old and new values
       const updateData: Prisma.BudgetsTableUpdateInput = await this.sumOldNewBudgetUpdate(
@@ -434,7 +443,8 @@ class BudgetSummaryUseCase {
     budgetId: string,
     categoryId: string,
     type: BudgetDetailType,
-    currency: Currency,
+    currency: string,
+    currencyId: string,
     prisma: Prisma.TransactionClient,
   ): Promise<BudgetDetails[]> {
     try {
@@ -459,7 +469,8 @@ class BudgetSummaryUseCase {
           amount,
           month: index + 1,
           createdBy: userId,
-          currency,
+          currencyId: currencyId,
+          currency: currency,
         };
 
         const updateData: Prisma.BudgetDetailsUpdateInput = {
@@ -516,7 +527,9 @@ class BudgetSummaryUseCase {
 
     if (invalidKeys.length) {
       throw new Error(
-        `Invalid keys in budget plan: ${invalidKeys.join(', ').slice(0, 20)}..., invalid keys mapping with given type: ${type}`,
+        `Invalid keys in budget plan: ${invalidKeys
+          .join(', ')
+          .slice(0, 20)}..., invalid keys mapping with given type: ${type}`,
       );
     }
 
@@ -529,7 +542,6 @@ class BudgetSummaryUseCase {
             type: BudgetType.Bot,
           },
         });
-
         if (!extractBudgetTypesByYear) {
           throw new Error(Messages.BUDGET_NOT_FOUND);
         }
@@ -537,22 +549,30 @@ class BudgetSummaryUseCase {
         // Determine target currency from BudgetsTable
         const targetCurrency = extractBudgetTypesByYear.currency;
 
-        const monthlyBudgetDetailValues = Array(12)
-          .fill(0)
-          .map((_, i) => ({
-            bottomUp: convertCurrency(
-              Number(bottomUpPlan[`m${i + 1}${suffix}`]) || 0,
-              currency,
-              targetCurrency,
-            ),
-            actual: actualSumUpPlan
-              ? convertCurrency(
-                  Number(actualSumUpPlan[`m${i + 1}${suffix}`]) || 0,
-                  currency,
-                  targetCurrency,
-                )
-              : 0,
-          }));
+        // Refactored: Use Promise.all to handle async convertCurrency calls in parallel
+        const monthlyBudgetDetailValues = await Promise.all(
+          Array(12)
+            .fill(0)
+            .map(async (_, i) => {
+              const bottomUpValue = Number(bottomUpPlan[`m${i + 1}${suffix}`]) || 0;
+              const actualValue =
+                actualSumUpPlan && actualSumUpPlan[`m${i + 1}${suffix}`] !== undefined
+                  ? Number(actualSumUpPlan[`m${i + 1}${suffix}`]) || 0
+                  : 0;
+
+              const [bottomUp, actual] = await Promise.all([
+                convertCurrency(bottomUpValue, currency, targetCurrency!),
+                actualSumUpPlan
+                  ? convertCurrency(actualValue, currency, targetCurrency!)
+                  : Promise.resolve(0),
+              ]);
+
+              return {
+                bottomUp,
+                actual,
+              };
+            }),
+        );
 
         if (monthlyBudgetDetailValues.length !== 12)
           throw new Error('All 12 months must be provided');
@@ -569,26 +589,43 @@ class BudgetSummaryUseCase {
         });
 
         // 2. Calculate deltas (new value - old value, 0 if no old value)
-        const deltas = Array(12)
-          .fill(0)
-          .map((_, i) => {
-            const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
+        const deltas = await Promise.all(
+          Array(12)
+            .fill(0)
+            .map(async (_, i) => {
+              const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
 
-            const oldValue = oldDetail
-              ? convertCurrency(Number(oldDetail.amount), oldDetail.currency, targetCurrency)
-              : 0;
+              const oldValue = oldDetail
+                ? await convertCurrency(
+                    Number(oldDetail.amount),
+                    oldDetail.currency!,
+                    targetCurrency!,
+                  )
+                : 0;
 
-            const newValue = monthlyBudgetDetailValues[i].bottomUp ?? 0;
-            const convertAmountDecimal = new Prisma.Decimal(newValue - oldValue);
+              const newValue = monthlyBudgetDetailValues[i].bottomUp ?? 0;
+              const convertAmountDecimal = new Prisma.Decimal(newValue - oldValue);
 
-            return {
-              amount: convertAmountDecimal ?? 0,
-              month: i + 1,
-              currency: targetCurrency,
-            };
-          });
+              return {
+                amount: convertAmountDecimal ?? 0,
+                month: i + 1,
+                currency: targetCurrency!,
+              };
+            }),
+        );
 
         const budgetTableCurrency = extractBudgetTypesByYear.currency;
+
+        const foundCurrency = await prisma.currencyExchange.findFirst({
+          where: {
+            name: currency,
+          },
+        });
+
+        if (!foundCurrency) {
+          throw new Error(Messages.CURRENCY_NOT_FOUND);
+        }
+
         // 3. Upsert BudgetDetails for Expense/Income
         const updatedBudgetDetails = await this.upsertBudgetCategoryDetailsByType(
           monthlyBudgetDetailValues,
@@ -596,9 +633,20 @@ class BudgetSummaryUseCase {
           extractBudgetTypesByYear.id,
           categoryId,
           type,
-          budgetTableCurrency,
+          budgetTableCurrency!,
+          foundCurrency.id!,
           prisma,
         );
+
+        const foundCurrencyAct = await prisma.currencyExchange.findFirst({
+          where: {
+            name: currency,
+          },
+        });
+
+        if (!foundCurrencyAct) {
+          throw new Error(Messages.CURRENCY_NOT_FOUND);
+        }
 
         // 4. Optionally create Act entries if actualSumUpPlan is provided
         let actBudgetDetails: BudgetDetails[] = [];
@@ -609,7 +657,8 @@ class BudgetSummaryUseCase {
             extractBudgetTypesByYear.id,
             categoryId,
             BudgetDetailType.Act,
-            budgetTableCurrency,
+            budgetTableCurrency!,
+            foundCurrencyAct.id!,
             prisma,
           );
         }
@@ -648,7 +697,7 @@ class BudgetSummaryUseCase {
   private async sumOldNewBudgetUpdate(
     userId: string,
     extractBudgetTypesByYear: BudgetsTable,
-    deltas: { amount: Prisma.Decimal; month: number; currency?: Currency }[],
+    deltas: { amount: Prisma.Decimal; month: number; currency?: string }[],
     suffix: '_exp' | '_inc',
     operand?: OPERAND,
   ): Promise<Prisma.BudgetsTableUpdateInput> {
@@ -657,20 +706,22 @@ class BudgetSummaryUseCase {
     const targetCurrency = extractBudgetTypesByYear.currency;
 
     // Map deltas to monthly values with currency conversion
-    const monthlyDeltas = Array(12)
-      .fill(0)
-      .map((_, i) => {
-        const delta = deltas.find((d) => d.month === i + 1);
-        if (!delta) {
-          throw new Error(`Missing delta for month ${i + 1}`);
-        }
-        const value = convertCurrency(
-          Number(delta.amount),
-          delta.currency || targetCurrency,
-          targetCurrency,
-        );
-        return operand === OPERAND.SUBTRACT ? -value : value; // Negate for subtraction
-      });
+    const monthlyDeltas = await Promise.all(
+      Array(12)
+        .fill(0)
+        .map(async (_, i) => {
+          const delta = deltas.find((d) => d.month === i + 1);
+          if (!delta) {
+            throw new Error(`Missing delta for month ${i + 1}`);
+          }
+          const value = await convertCurrency(
+            Number(delta.amount),
+            delta.currency! || targetCurrency!,
+            targetCurrency!,
+          );
+          return operand === OPERAND.SUBTRACT ? -value : value; // Negate for subtraction
+        }),
+    );
 
     // Calculate new totals
     const total = monthlyDeltas.reduce((sum, v) => sum + Number(v), 0);

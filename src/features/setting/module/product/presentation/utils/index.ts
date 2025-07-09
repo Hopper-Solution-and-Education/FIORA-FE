@@ -18,14 +18,14 @@ export const mapTransactionsToTwoSideBarItems = (
       let productPositive = 0;
       let productNegative = 0;
 
-      item.transactions?.forEach((tx) => {
+      item.transactions?.forEach(async (tx) => {
         // --- MODIFICATION START ---
         // Ensure tx.amount and tx.currency exist and are valid
         if (tx?.amount !== undefined && tx?.currency !== undefined && tx?.type !== undefined) {
           // Convert the amount to the target currency
-          const convertedAmount = convertCurrency(
+          const convertedAmount = await convertCurrency(
             tx.amount, // Pass the amount (can be Decimal or number)
-            tx.currency as Currency, // Pass the original currency (assuming tx.currency exists)
+            tx.currency, // Pass the original currency (assuming tx.currency exists)
             targetCurrency, // Pass the target currency from function params
           );
 
