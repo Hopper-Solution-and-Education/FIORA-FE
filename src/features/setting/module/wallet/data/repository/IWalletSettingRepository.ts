@@ -1,5 +1,5 @@
-import { DepositRequestsPaginated } from '../../presentation';
 import { DepositRequestStatus } from '../../domain';
+import { DepositRequestsPaginated } from '../../presentation';
 import { UpdateDepositRequestStatusResponse } from '../dto/response/UpdateDepositRequestStatusResponse';
 
 export interface IWalletSettingRepository {
@@ -7,5 +7,6 @@ export interface IWalletSettingRepository {
   updateDepositRequestStatus(
     id: string,
     status: DepositRequestStatus,
+    remark?: string,
   ): Promise<UpdateDepositRequestStatusResponse>;
 }

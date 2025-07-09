@@ -1,10 +1,10 @@
 import {
+  DepositRequest,
+  DepositRequestStatus,
+  PackageFX,
   Prisma,
   Wallet,
   WalletType,
-  PackageFX,
-  DepositRequest,
-  DepositRequestStatus,
 } from '@prisma/client';
 
 export interface IWalletRepository {
@@ -32,5 +32,8 @@ export interface IWalletRepository {
   updateDepositRequestStatus(
     id: string,
     newStatus: DepositRequestStatus,
+    remark?: string,
   ): Promise<DepositRequest | null>;
+  findDepositRequestById(id: string): Promise<DepositRequest | null>;
+  increaseWalletBalance(walletId: string, amount: number): Promise<void>;
 }

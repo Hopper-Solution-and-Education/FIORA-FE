@@ -1,11 +1,15 @@
 import { decorate, inject, injectable } from 'inversify';
+import { UpdateDepositRequestStatusResponse } from '../../data/dto/response/UpdateDepositRequestStatusResponse';
 import type { IWalletSettingRepository } from '../../data/repository/IWalletSettingRepository';
 import { WALLET_SETTING_TYPES } from '../../di/walletSettingDIContainer.type';
 import { DepositRequestStatus } from '../enum';
-import { UpdateDepositRequestStatusResponse } from '../../data/dto/response/UpdateDepositRequestStatusResponse';
 
 export interface IUpdateDepositRequestStatusUseCase {
-  execute(id: string, status: DepositRequestStatus): Promise<UpdateDepositRequestStatusResponse>;
+  execute(
+    id: string,
+    status: DepositRequestStatus,
+    remark?: string,
+  ): Promise<UpdateDepositRequestStatusResponse>;
 }
 
 export class UpdateDepositRequestStatusUseCase implements IUpdateDepositRequestStatusUseCase {
@@ -18,8 +22,9 @@ export class UpdateDepositRequestStatusUseCase implements IUpdateDepositRequestS
   async execute(
     id: string,
     status: DepositRequestStatus,
+    remark?: string,
   ): Promise<UpdateDepositRequestStatusResponse> {
-    return this.walletRepository.updateDepositRequestStatus(id, status);
+    return this.walletRepository.updateDepositRequestStatus(id, status, remark);
   }
 }
 
