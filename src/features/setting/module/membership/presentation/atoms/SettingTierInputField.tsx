@@ -77,7 +77,7 @@ const SettingTierInputField = ({
             <TooltipTrigger asChild>
               <InputField
                 name={name}
-                value={value.toString()}
+                value={value?.toString() ?? '0'}
                 onChange={(e) => onChange(e as unknown as number)}
                 options={options}
                 placeholder="0"

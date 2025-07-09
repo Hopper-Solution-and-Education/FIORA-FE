@@ -14,7 +14,7 @@ const MembershipSettingPage = () => {
     (state) => state.memberShipSettings.isLoadingUpsertMembership,
   );
 
-  const { methods, handleSubmit } = useMembershipSettingPage();
+  const { methods, handleSubmit, dynamicTierFields } = useMembershipSettingPage();
 
   useEffect(() => {
     dispatch(getListMembershipAsyncThunk({ page: 1, limit: 10 }));
@@ -30,7 +30,7 @@ const MembershipSettingPage = () => {
             <MembershipRankChart />
 
             {/* Right Section: Settings and Story col-2 */}
-            <SettingTierAndStory />
+            <SettingTierAndStory dynamicTierFields={dynamicTierFields} />
           </div>
 
           {/* Bottom Row: Icon Upload List */}
