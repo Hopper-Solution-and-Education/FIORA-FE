@@ -4,17 +4,31 @@ import {
 } from '@/shared/types/membership-benefit';
 import { v4 as uuid } from 'uuid';
 import { membershipBenefitRepository } from '../../infrastructure/repositories/memBenefitRepository';
+import { tierBenefitRepository } from '../../infrastructure/repositories/tierBenefitRepository';
 
 class MembershipBenefitService {
   async create(payload: MembershipBenefitCreatePayload, userId: string) {
-    return membershipBenefitRepository.createMembershipBenefit({
+    const membershipBenefit = await membershipBenefitRepository.createMembershipBenefit({
       id: uuid(),
-      ...payload,
+      ...payload.membershipBenefit,
       createdBy: userId,
       updatedBy: userId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
+    if (!membershipBenefit) {
+      throw new Error('Failed to create MembershipBenefit');
+    }
+    payload.tierBenefit.benefitId = membershipBenefit.id;
+    const tier = await tierBenefitRepository.createTierBenefit(payload.tierBenefit, userId);
+
+    return {
+      tierBenefit: tier,
+      membershipBenefit,
+    } as {
+      tierBenefit: typeof tier;
+      membershipBenefit: typeof membershipBenefit;
+    };
   }
 
   async update(payload: MembershipBenefitUpdatePayload, userId: string) {
