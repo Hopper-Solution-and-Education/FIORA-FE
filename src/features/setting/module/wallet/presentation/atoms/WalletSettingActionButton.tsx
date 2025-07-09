@@ -112,6 +112,7 @@ const WalletSettingActionButton = ({ status, id, className }: WalletSettingActio
         open={table.rejectingId === id && !!table.showRejectModal}
         onClose={handleToggleRejectModal}
         onConfirm={handleRejectConfirm}
+        isUpdating={isUpdating}
       />
     </div>
   );

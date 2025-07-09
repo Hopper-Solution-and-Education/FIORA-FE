@@ -6,6 +6,7 @@ import {
 const Updater = () => {
   useInitializeUserWallet();
   useInitialFrozenAmount();
+
   return null;
 };
 

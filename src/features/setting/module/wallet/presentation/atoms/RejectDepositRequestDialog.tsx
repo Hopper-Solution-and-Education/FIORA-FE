@@ -1,3 +1,4 @@
+import { LoadingIndicator } from '@/components/common/atoms';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import {
@@ -5,7 +6,6 @@ import {
   DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,12 +15,14 @@ interface RejectDepositRequestModalProps {
   open: boolean;
   onClose: () => void;
   onConfirm: (remark: string) => void;
+  isUpdating: boolean;
 }
 
 const RejectDepositRequestDialog = ({
   open,
   onClose,
   onConfirm,
+  isUpdating,
 }: RejectDepositRequestModalProps) => {
   const [remark, setRemark] = useState('');
   const [touched, setTouched] = useState(false);
@@ -44,87 +46,79 @@ const RejectDepositRequestDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent
-        className="max-w-lg w-full rounded-2xl bg-white shadow-lg p-10"
-        style={{ minWidth: 360 }}
-      >
-        <div className="flex flex-col items-center w-full">
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 mb-4 mt-2">
-            <Icons.info className="text-blue-500" style={{ fontSize: 36, width: 36, height: 36 }} />
+      <DialogContent className="max-w-md p-6 rounded-2xl bg-white dark:bg-muted shadow-lg">
+        <div className="flex flex-col items-center justify-center gap-4 py-4">
+          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+            <Icons.info className="text-blue-600 dark:text-blue-400 w-8 h-8" />
           </div>
-          <DialogHeader className="w-full">
-            <DialogTitle
-              className="text-2xl font-bold w-full text-center text-[#1A202C]"
-              style={{ lineHeight: '32px' }}
-            >
+
+          <div className="text-center space-y-3 w-full">
+            <DialogTitle className="text-xl font-semibold text-foreground">
               Reject Deposit Request
             </DialogTitle>
-            <DialogDescription
-              className="w-full mt-2 text-base text-[#667085] text-center"
-              style={{ lineHeight: '24px' }}
-            >
+            <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
               Are you sure you want to reject this deposit request?
               <br />
               This action cannot be undone and will notify the user
             </DialogDescription>
-          </DialogHeader>
-        </div>
-        <div className="w-full mt-8">
-          <label
-            className="font-medium text-base mb-2 block text-left text-[#344054]"
-            style={{ marginBottom: 6 }}
-          >
-            Provide a Reason <span className="text-[#F04438]">*</span>
-          </label>
-          <Textarea
-            value={remark}
-            onChange={(e) => setRemark(e.target.value)}
-            onBlur={() => setTouched(true)}
-            placeholder="Type your message here"
-            rows={5}
-            className={
-              'rounded-lg min-h-[120px] text-base px-4 py-4 border-[1.5px] border-[#D0D5DD] focus:outline-none focus:border-blue-500 shadow-sm placeholder:text-[#98A2B3]' +
-              (isError ? ' border-[#F04438]' : '')
-            }
-            style={{ resize: 'none', fontSize: 16, padding: 16 }}
-            autoFocus
-          />
-          {isError && (
-            <div className="text-xs text-[#F04438] mt-1" style={{ marginTop: 4 }}>
-              Reason is required
+          </div>
+
+          <div className="w-full mt-2 text-left">
+            <label className="font-medium text-base mb-2 block text-foreground">
+              Provide a Reason <span className="text-[#F04438]">*</span>
+            </label>
+            <Textarea
+              value={remark}
+              onChange={(e) => setRemark(e.target.value)}
+              onBlur={() => setTouched(true)}
+              placeholder="Type your message here"
+              rows={5}
+              className={`rounded-lg min-h-[120px] text-base px-4 py-4 border-[1.5px] border-[#D0D5DD] focus:border-blue-500 shadow-sm placeholder:text-muted-foreground${isError ? ' border-[#F04438]' : ''}`}
+              style={{ resize: 'none', fontSize: 16, padding: 16 }}
+              autoFocus
+            />
+            {isError && <div className="text-xs text-[#F04438] mt-1">Reason is required</div>}
+          </div>
+
+          <div className="rounded-lg p-4 w-full space-y-3 text-center bg-muted/50 dark:bg-muted/20 mt-2">
+            <div className="flex items-center gap-3 text-xs justify-center">
+              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                <Icons.arrowLeft className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <span className="text-foreground">
+                <span className="font-medium text-blue-600 dark:text-blue-400">Stay</span> to
+                continue your review
+              </span>
             </div>
-          )}
-        </div>
-        <div className="mt-6 text-xs text-[#667085] w-full flex flex-col items-center gap-1">
-          <div className="flex items-center justify-center">
-            Click
-            <span className="mx-1 text-blue-600 font-normal">←</span>
-            <span className="font-semibold">to stay back</span>
-          </div>
-          <div className="flex items-center justify-center">
-            Or click
-            <span className="mx-1 text-green-600 font-normal">✓</span>
-            <span className="font-semibold">to confirm</span>
+            <div className="flex items-center gap-3 text-xs justify-center">
+              <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                <Icons.check className="w-4 h-4 text-green-600 dark:text-green-400" />
+              </div>
+              <span className="text-foreground">
+                <span className="font-medium text-green-600 dark:text-green-400">Leave</span> and
+                reject request
+              </span>
+            </div>
           </div>
         </div>
-        <DialogFooter className="flex flex-row gap-4 justify-center mt-8 w-full">
+        <DialogFooter className="flex flex-row gap-3 mt-6">
           <Button
             variant="outline"
             onClick={handleClose}
             type="button"
-            className="flex-1 h-12 w-full rounded-lg border-[1.5px] border-[#D0D5DD] bg-white text-[#344054] text-base font-medium flex items-center justify-center transition-all duration-200 hover:shadow-md hover:border-blue-500 hover:bg-[#F3F6FA] active:border-blue-700 focus:outline-none"
-            style={{ boxShadow: 'none' }}
+            className="flex-1 h-12 border-border hover:bg-accent hover:text-accent-foreground"
+            size="lg"
           >
-            <Icons.arrowLeft className="w-6 h-6" />
+            <Icons.arrowLeft className="w-5 h-5 mr-2" />
           </Button>
           <Button
             onClick={handleConfirm}
             disabled={!remark.trim()}
             type="button"
-            className="flex-1 h-12 w-full rounded-lg text-base font-medium bg-[#1976D2] text-white border-0 flex items-center justify-center transition-all duration-200 hover:shadow-md hover:bg-[#1565C0] active:bg-[#0D47A1] disabled:opacity-60 focus:outline-none"
-            style={{ boxShadow: 'none' }}
+            className="flex-1 flex justify-center h-12 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium transition-colors"
+            size="lg"
           >
-            <Icons.check className="w-6 h-6" />
+            {isUpdating ? <LoadingIndicator /> : <Icons.check className="w-5 h-5 mr-2" />}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,5 +1,6 @@
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { FilterObject } from '@/shared/types/filter.types';
 import { generateRefCode } from '@/shared/utils/stringHelper';
 import {
   CategoryType,
@@ -193,10 +194,11 @@ class WalletUseCase {
     return total;
   }
 
-  async getDepositRequestsPaginated(page: number, pageSize: number) {
+  async getDepositRequestsPaginated(page: number, pageSize: number, filter?: FilterObject) {
     const { items, total } = await this._walletRepository.getDepositRequestsPaginated(
       page,
       pageSize,
+      filter,
     );
 
     return {
