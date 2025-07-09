@@ -260,6 +260,12 @@ export enum Messages {
   INVALID_DOB = 'Invalid date of birth.',
   INVALID_DEPOSIT_REQUEST_TYPE = 'Invalid deposit request type.',
 
+  // FAQ
+  IMPORT_FAQS_SUCCESS = 'Import FAQs successfully',
+  IMPORT_FAQS_FAILED = 'Import FAQs failed',
+  GET_FAQ_CATEGORIES_SUCCESS = 'Get FAQ categories successfully',
+  GET_FAQ_CATEGORIES_FAILED = 'Get FAQ categories failed',
+
   // COMMON ERRORS
   INVALID_CURRENCY = 'Invalid currency. Must be either VND or USD.',
   VALIDATION_ERROR = 'Validation error.',

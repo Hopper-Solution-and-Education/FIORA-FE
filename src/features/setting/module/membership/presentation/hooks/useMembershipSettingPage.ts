@@ -7,38 +7,42 @@ import { toast } from 'sonner';
 import { setSelectedMembership } from '../../slices';
 import { getListMembershipAsyncThunk } from '../../slices/actions/getMemberShipAsyncThunk';
 import { upsertMembershipAsyncThunk } from '../../slices/actions/upsertMembershipAsyncThunk';
-import {
-  defaultEditMemberShipValue,
-  EditMemberShipFormValues,
-  editMemberShipSchema,
-} from '../schema/editMemberShip.schema';
-
-export enum TierBenefitName {
-  REFERRAL_BONUS = 'referral-bonus',
-  SAVING_INTEREST = 'saving-interest',
-  STAKING_INTEREST = 'staking-interest',
-  INVESTMENT_INTEREST = 'investment-interest',
-  LOAN_INTEREST = 'loan-interest',
-  CASHBACK = 'cashback',
-  REFERRAL_KICKBACK = 'referral-kickback',
-  BNPL_FEE = 'bnpl-fee',
-}
+import { buildDynamicTierSchema, EditMemberShipFormValues } from '../schema/editMemberShip.schema';
 
 export const useMembershipSettingPage = () => {
   const dispatch = useAppDispatch();
+
+  const selectedMembership = useAppSelector((state) => state.memberShipSettings.selectedMembership);
+
+  const dynamicTierFields =
+    selectedMembership?.tierBenefits.map((benefit) => ({
+      key: benefit.slug,
+      label: benefit.name,
+      suffix: benefit.suffix,
+    })) ?? [];
+
+  const editMemberShipSchema = buildDynamicTierSchema(dynamicTierFields);
+
+  const defaultEditMemberShipValue: EditMemberShipFormValues = {
+    tier: '',
+    ...Object.fromEntries(dynamicTierFields.map((f) => [f.key, 0])),
+    story: '',
+    activeIcon: '',
+    inActiveIcon: '',
+    themeIcon: '',
+    mainIcon: '',
+  };
+
   const methods = useForm<EditMemberShipFormValues>({
     resolver: yupResolver(editMemberShipSchema),
     defaultValues: defaultEditMemberShipValue,
   });
-
-  const selectedMembership = useAppSelector((state) => state.memberShipSettings.selectedMembership);
 
   const { setValue } = methods;
 
   //   handle set value when selected membership change
   useEffect(() => {
     if (selectedMembership) {
-      console.log('selectedMembership', selectedMembership);
       setValue('id', selectedMembership.id);
       setValue('tier', selectedMembership.tierName);
       setValue('story', selectedMembership.story);
@@ -46,75 +50,17 @@ export const useMembershipSettingPage = () => {
       setValue('inActiveIcon', selectedMembership.inactiveIconUrl);
       setValue('mainIcon', selectedMembership.mainIconUrl);
       setValue('themeIcon', selectedMembership.themeIconUrl);
-      setValue(
-        'referralBonus',
-        Number(
-          selectedMembership.tierBenefits.find(
-            (benefit) => benefit.slug === TierBenefitName.REFERRAL_BONUS,
-          )?.value ?? 0,
-        ),
-      );
-      setValue(
-        'savingInterest',
-        Number(
-          selectedMembership.tierBenefits.find(
-            (benefit) => benefit.slug === TierBenefitName.SAVING_INTEREST,
-          )?.value ?? 0,
-        ),
-      );
-      setValue(
-        'stakingInterest',
-        Number(
-          selectedMembership.tierBenefits.find(
-            (benefit) => benefit.slug === TierBenefitName.STAKING_INTEREST,
-          )?.value ?? 0,
-        ),
-      );
-      setValue(
-        'investmentInterest',
-        Number(
-          selectedMembership.tierBenefits.find(
-            (benefit) => benefit.slug === TierBenefitName.INVESTMENT_INTEREST,
-          )?.value ?? 0,
-        ),
-      );
-      setValue(
-        'loanInterest',
-        Number(
-          selectedMembership.tierBenefits.find(
-            (benefit) => benefit.slug === TierBenefitName.LOAN_INTEREST,
-          )?.value ?? 0,
-        ),
-      );
-      setValue(
-        'cashback',
-        Number(
-          selectedMembership.tierBenefits.find(
-            (benefit) => benefit.slug === TierBenefitName.CASHBACK,
-          )?.value ?? 0,
-        ),
-      );
-      setValue(
-        'referralKickback',
-        Number(
-          selectedMembership.tierBenefits.find(
-            (benefit) => benefit.slug === TierBenefitName.REFERRAL_KICKBACK,
-          )?.value ?? 0,
-        ),
-      );
-      setValue(
-        'bnplFee',
-        Number(
-          selectedMembership.tierBenefits.find(
-            (benefit) => benefit.slug === TierBenefitName.BNPL_FEE,
-          )?.value ?? 0,
-        ),
-      );
+
+      // set value dynamic for benefit fields
+      (selectedMembership.tierBenefits || []).forEach((benefit) => {
+        setValue(benefit.slug, Number(benefit.value ?? 0));
+      });
     }
   }, [selectedMembership, setValue]);
 
   //   handle submit form
   const handleSubmit = async (data: EditMemberShipFormValues) => {
+    console.log('data', data);
     // Keep track of uploaded URLs to rollback on failure
     const uploadedUrls: string[] = [];
 
@@ -208,5 +154,5 @@ export const useMembershipSettingPage = () => {
     }
   };
 
-  return { methods, handleSubmit };
+  return { methods, handleSubmit, dynamicTierFields };
 };

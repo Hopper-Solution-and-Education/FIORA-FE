@@ -1,5 +1,7 @@
 import { decorate, injectable } from 'inversify';
 import {
+  AddBenefitTierRequest,
+  AddBenefitTierResponse,
   GetListMembershipsRequest,
   GetListMembershipsResponse,
   UpsertMembershipRequest,
@@ -11,6 +13,7 @@ import { MemberMapper } from '../mapper';
 export interface IMembershipRepository {
   getListMemberships(request: GetListMembershipsRequest): Promise<GetListMembershipsResponse>;
   upsertMembership(request: UpsertMembershipRequest): Promise<UpsertMembershipResponse>;
+  addBenefitTier(request: AddBenefitTierRequest): Promise<AddBenefitTierResponse>;
 }
 
 export class MembershipRepository implements IMembershipRepository {
@@ -28,6 +31,12 @@ export class MembershipRepository implements IMembershipRepository {
     const requestDTO = MemberMapper.toUpsertMembershipRequest(request);
     const response = await this.membershipAPI.upsertMembership(requestDTO);
     return MemberMapper.toUpsertMembershipResponse(response);
+  }
+
+  async addBenefitTier(request: AddBenefitTierRequest): Promise<AddBenefitTierResponse> {
+    const requestDTO = MemberMapper.toAddBenefitTierRequest(request);
+    const response = await this.membershipAPI.addBenefitTier(requestDTO);
+    return MemberMapper.toAddBenefitTierResponse(response);
   }
 }
 

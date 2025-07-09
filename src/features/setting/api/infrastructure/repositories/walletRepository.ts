@@ -1,13 +1,13 @@
 import { prisma } from '@/config';
-import { IWalletRepository } from '../../repositories/walletRepository.interface';
 import {
+  DepositRequest,
+  DepositRequestStatus,
+  PackageFX,
   Prisma,
   Wallet,
   WalletType,
-  PackageFX,
-  DepositRequest,
-  DepositRequestStatus,
 } from '@prisma/client';
+import { IWalletRepository } from '../../repositories/walletRepository.interface';
 
 class WalletRepository implements IWalletRepository {
   constructor(private _prisma = prisma) {}
@@ -120,6 +120,7 @@ class WalletRepository implements IWalletRepository {
   async updateDepositRequestStatus(
     id: string,
     newStatus: DepositRequestStatus,
+    remark?: string,
   ): Promise<DepositRequest | null> {
     // Only allow update if current status is 'Requested' and newStatus is 'Approved' or 'Rejected'
     const current = await this._prisma.depositRequest.findUnique({ where: { id } });
@@ -130,9 +131,27 @@ class WalletRepository implements IWalletRepository {
     ) {
       return null;
     }
+
+    // Nếu là Rejected thì lưu remark
+    const updateData: any = { status: newStatus };
+    if (newStatus === DepositRequestStatus.Rejected && remark) {
+      updateData.remark = remark;
+    }
+
     return this._prisma.depositRequest.update({
       where: { id },
-      data: { status: newStatus },
+      data: updateData,
+    });
+  }
+
+  async findDepositRequestById(id: string): Promise<DepositRequest | null> {
+    return this._prisma.depositRequest.findUnique({ where: { id } });
+  }
+
+  async increaseWalletBalance(walletId: string, amount: number): Promise<void> {
+    await this._prisma.wallet.update({
+      where: { id: walletId },
+      data: { frBalanceActive: { increment: amount } },
     });
   }
 }

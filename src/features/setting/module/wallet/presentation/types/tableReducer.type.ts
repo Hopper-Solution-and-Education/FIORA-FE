@@ -17,6 +17,8 @@ export interface TableState {
   showForm: boolean;
   hasMore: boolean;
   isLoadingMore: boolean;
+  showRejectModal: boolean;
+  rejectingId: string | null;
 }
 
 export type TableAction =
@@ -33,7 +35,8 @@ export type TableAction =
   | {
       type: 'UPDATE_ITEM_STATUS';
       payload: { id: string; status: DepositRequestStatus; remark?: string };
-    };
+    }
+  | { type: 'TOGGLE_REJECT_MODAL'; payload: { open: boolean; id?: string | null } };
 
 // Reducer function
 export const tableReducer = (state: TableState, action: TableAction): TableState => {
@@ -80,6 +83,13 @@ export const tableReducer = (state: TableState, action: TableAction): TableState
         selectedItem: null,
       };
 
+    case 'TOGGLE_REJECT_MODAL':
+      return {
+        ...state,
+        showRejectModal: action.payload.open,
+        rejectingId: action.payload.open ? (action.payload.id ?? null) : null,
+      };
+
     default:
       return state;
   }
@@ -100,4 +110,6 @@ export const initialState: TableState = {
   showForm: false,
   hasMore: true,
   isLoadingMore: false,
+  showRejectModal: false,
+  rejectingId: null,
 };

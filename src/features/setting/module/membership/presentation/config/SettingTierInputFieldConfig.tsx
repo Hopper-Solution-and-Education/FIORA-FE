@@ -1,116 +1,74 @@
 import { FormConfig } from '@/components/common/forms';
+import { Icons } from '@/components/Icon';
+import { Button } from '@/components/ui/button';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
+import { setIsShowDialogAddBenefitTier } from '../../slices';
 import SettingTierInputField from '../atoms/SettingTierInputField';
-import { EditMemberShipFormValues } from '../schema/editMemberShip.schema';
-import { useAppSelector } from '@/store';
+import { DynamicFieldTier, EditMemberShipFormValues } from '../schema/editMemberShip.schema';
 
-const SettingTierInputFieldConfig = () => {
+const options = {
+  percent: true,
+  maxPercent: 100,
+};
+
+const SettingTierInputFieldConfig = ({
+  dynamicTierFields,
+}: {
+  dynamicTierFields: DynamicFieldTier[];
+}) => {
   const methods = useFormContext<EditMemberShipFormValues>();
+  const dispatch = useAppDispatch();
   const isLoadingUpsertMembership = useAppSelector(
     (state) => state.memberShipSettings.isLoadingUpsertMembership,
   );
-
   const { setValue, watch } = methods;
 
-  const options = {
-    percent: true,
-    maxPercent: 100,
+  const handleOpenDialogAddBenefitTier = () => {
+    dispatch(setIsShowDialogAddBenefitTier(true));
   };
 
-  const fields = [
+  // Render dynamic fields based on configuration
+  const fields = dynamicTierFields.map((field) => (
     <SettingTierInputField
-      key="referralBonus"
-      label="Referral Bonus"
-      name="referralBonus"
-      value={watch('referralBonus')}
-      onChange={(value) => setValue('referralBonus', value)}
-      suffix="FX"
-      required
-      disabled={isLoadingUpsertMembership}
-    />,
-    <SettingTierInputField
-      key="savingInterest"
-      label="Saving Interest"
-      name="savingInterest"
-      value={watch('savingInterest')}
-      onChange={(value) => setValue('savingInterest', value)}
-      suffix="%/year"
+      key={field.key}
+      label={field.label}
+      name={field.key}
+      value={typeof watch(field.key) === 'number' ? (watch(field.key) as number) : 0}
+      onChange={(value) => setValue(field.key, value)}
+      suffix={field.suffix}
       options={options}
       required
       disabled={isLoadingUpsertMembership}
-    />,
-    <SettingTierInputField
-      key="stakingInterest"
-      label="Staking Interest"
-      name="stakingInterest"
-      value={watch('stakingInterest')}
-      onChange={(value) => setValue('stakingInterest', value)}
-      suffix="%/year"
-      options={options}
-      required
-      disabled={isLoadingUpsertMembership}
-    />,
-    <SettingTierInputField
-      key="investmentInterest"
-      label="Investment Interest"
-      name="investmentInterest"
-      value={watch('investmentInterest')}
-      onChange={(value) => setValue('investmentInterest', value)}
-      suffix="%/year"
-      options={options}
-      required
-      disabled={isLoadingUpsertMembership}
-    />,
-    <SettingTierInputField
-      key="loanInterest"
-      label="Loan Interest"
-      name="loanInterest"
-      value={watch('loanInterest')}
-      onChange={(value) => setValue('loanInterest', value)}
-      suffix="%/year"
-      options={options}
-      required
-      disabled={isLoadingUpsertMembership}
-    />,
-    <SettingTierInputField
-      key="cashback"
-      label="Cashback"
-      name="cashback"
-      value={watch('cashback')}
-      onChange={(value) => setValue('cashback', value)}
-      suffix="% total spent"
-      options={options}
-      required
-      disabled={isLoadingUpsertMembership}
-    />,
-    <SettingTierInputField
-      key="referralKickback"
-      label="Referral Kickback"
-      name="referralKickback"
-      value={watch('referralKickback')}
-      onChange={(value) => setValue('referralKickback', value)}
-      suffix="% referral spent"
-      options={options}
-      required
-      disabled={isLoadingUpsertMembership}
-    />,
-    <SettingTierInputField
-      key="bnplFee"
-      label="BNPL Fee"
-      name="bnplFee"
-      value={watch('bnplFee')}
-      onChange={(value) => setValue('bnplFee', value)}
-      suffix="FX/day"
-      required
-      disabled={isLoadingUpsertMembership}
-    />,
-  ];
+      showRemove={dynamicTierFields.length > 1}
+      onRemove={() => {
+        console.log('remove');
+      }}
+    />
+  ));
 
+  // Sticky submit button
   const renderSubmitButton = () => {
-    return <></>;
+    return (
+      <Button
+        type="button"
+        className="w-full mt-1"
+        variant="outline"
+        onClick={handleOpenDialogAddBenefitTier}
+      >
+        <Icons.add />
+      </Button>
+    );
   };
 
-  return <FormConfig fields={fields} methods={methods} renderSubmitButton={renderSubmitButton} />;
+  return (
+    <div className="relative">
+      <div className="max-h-[400px] overflow-y-auto pr-2">
+        <FormConfig fields={fields} methods={methods} renderSubmitButton={() => null} />
+      </div>
+      {renderSubmitButton()}
+    </div>
+  );
 };
 
 export default SettingTierInputFieldConfig;

@@ -1,6 +1,8 @@
 import { httpClient } from '@/config/http-client/HttpClient';
 import { decorate, injectable } from 'inversify';
 import {
+  AddBenefitTierRequestDTO,
+  AddBenefitTierResponseDTO,
   GetListMembershipsRequestDTO,
   GetListMembershipsResponseDTO,
   UpsertMembershipRequestDTO,
@@ -10,6 +12,7 @@ import {
 export interface IMembershipAPI {
   getListMemberships(request: GetListMembershipsRequestDTO): Promise<GetListMembershipsResponseDTO>;
   upsertMembership(request: UpsertMembershipRequestDTO): Promise<UpsertMembershipResponseDTO>;
+  addBenefitTier(request: AddBenefitTierRequestDTO): Promise<AddBenefitTierResponseDTO>;
 }
 
 class MembershipAPI implements IMembershipAPI {
@@ -24,6 +27,10 @@ class MembershipAPI implements IMembershipAPI {
     request: UpsertMembershipRequestDTO,
   ): Promise<UpsertMembershipResponseDTO> {
     return await httpClient.put(`/api/memberships`, request);
+  }
+
+  async addBenefitTier(request: AddBenefitTierRequestDTO): Promise<AddBenefitTierResponseDTO> {
+    return await httpClient.post('/api/memberships/benefit', request);
   }
 }
 

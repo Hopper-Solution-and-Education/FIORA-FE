@@ -5,7 +5,6 @@ import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { FilterColumn, FilterComponentConfig, FilterCriteria } from '@/shared/types/filter.types';
-import { formatCurrency } from '@/shared/utils';
 import { useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
@@ -401,8 +400,6 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         label="Amount"
         minLabel="Min Amount"
         maxLabel="Max Amount"
-        formatValue={(value, isEditing) => (isEditing ? value : value.toLocaleString())}
-        tooltipFormat={(value) => formatCurrency(value)}
         step={1000}
       />
     );
