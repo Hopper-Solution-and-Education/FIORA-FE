@@ -1,15 +1,18 @@
+import { prisma } from '@/config';
+import { exchangeRateRepository } from '@/features/setting/api/infrastructure/repositories/exchangeRateRepository';
+import { IExchangeRateRepository } from '@/features/setting/api/repositories/exchangeRateRepository.interface';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { Messages } from '@/shared/constants/message';
+import { BooleanUtils } from '@/shared/lib';
+import { GlobalFilters } from '@/shared/types';
+import { buildWhereClause } from '@/shared/utils';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { safeString } from '@/shared/utils/ExStringUtils';
 import { Account, AccountType, Currency, Prisma, Transaction } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IAccountRepository } from '../../domain/repositories/accountRepository.interface';
 import { accountRepository } from '../../infrastructure/repositories/accountRepository';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
-import { GlobalFilters } from '@/shared/types';
-import { buildWhereClause } from '@/shared/utils';
-import { safeString } from '@/shared/utils/ExStringUtils';
-import { BooleanUtils } from '@/shared/lib';
-import { prisma } from '@/config';
 
 const descriptions = {
   ['Payment']:
@@ -28,7 +31,8 @@ export class AccountUseCase {
   constructor(
     private accountRepository: IAccountRepository,
     private transactionRepository: ITransactionRepository,
-  ) {}
+    private currencyRepository: IExchangeRateRepository,
+  ) { }
 
   async create(params: {
     userId: string;
@@ -43,13 +47,21 @@ export class AccountUseCase {
     const {
       name,
       type = AccountType.Payment,
-      currency = 'VND',
+      currency,
       balance = 0,
       limit,
       icon,
       parentId = null,
       userId,
     } = params;
+
+    const foundCurrency = await this.currencyRepository.findFirstCurrency({
+      name: currency,
+    });
+
+    if (!foundCurrency) {
+      throw new Error(Messages.CURRENCY_NOT_FOUND);
+    }
 
     if (parentId) {
       await this.validateParentAccount(parentId, type);
@@ -60,7 +72,8 @@ export class AccountUseCase {
         icon: icon,
         userId,
         balance: new Decimal(balance),
-        currency,
+        currencyId: foundCurrency.id,
+        currency: foundCurrency.name,
         limit: type === AccountType.CreditCard ? limit : new Decimal(0),
         parentId: parentId,
         createdBy: userId,
@@ -79,7 +92,8 @@ export class AccountUseCase {
         icon: icon,
         userId,
         balance: new Decimal(balance),
-        currency,
+        currencyId: foundCurrency.id,
+        currency: foundCurrency.name,
         limit: type === AccountType.CreditCard ? limit : new Decimal(0),
         parentId: null,
         createdBy: userId,
@@ -151,8 +165,8 @@ export class AccountUseCase {
       const enumValues = Object.values(AccountType).map((v: any) => v.toLowerCase());
       const matchedType = enumValues.includes(typeSearchParams)
         ? (Object.values(AccountType).find(
-            (v: any) => v.toLowerCase() === typeSearchParams,
-          ) as AccountType)
+          (v: any) => v.toLowerCase() === typeSearchParams,
+        ) as AccountType)
         : null;
 
       const orConditions: any = [{ name: { contains: typeSearchParams, mode: 'insensitive' } }];
@@ -209,8 +223,8 @@ export class AccountUseCase {
       const enumValues = Object.values(AccountType).map((v: any) => v.toLowerCase());
       const matchedType = enumValues.includes(typeSearchParams)
         ? (Object.values(AccountType).find(
-            (v: any) => v.toLowerCase() === typeSearchParams,
-          ) as AccountType)
+          (v: any) => v.toLowerCase() === typeSearchParams,
+        ) as AccountType)
         : null;
 
       const orConditions: Prisma.AccountWhereInput[] = [
@@ -265,61 +279,78 @@ export class AccountUseCase {
   `;
     }
 
-    const accountWithConvertedBalance = accountRes.map((acc: any) => {
-      const convertedBalance = convertCurrency(
-        acc.balance?.toNumber() || 0,
-        acc.currency,
-        currency,
-      );
+    const accountWithConvertedBalance = await Promise.all(
+      accountRes.map(async (acc: any) => {
+        const convertedBalance = await convertCurrency(
+          acc.balance?.toNumber() || 0,
+          acc.currency,
+          currency,
+        );
 
-      return {
-        ...acc,
-        balance: convertedBalance.toString(),
-        currency: currency,
-        ...(acc.children && {
-          children: acc.children.map((child: Account) => {
-            const childConvertedBalance = convertCurrency(
+        const children = await Promise.all(
+          acc.children.map(async (child: Account) => {
+            const childConvertedBalance = await convertCurrency(
               child.balance?.toNumber() || 0,
-              child.currency,
+              child.currency!,
               currency,
             );
+
             return {
               ...child,
               balance: childConvertedBalance.toString(),
-              currency: currency,
+              currency: child.currency || currency,
             };
           }),
-        }),
-        ...(acc.toTransactions && {
-          toTransactions: acc.toTransactions.map((tx: Transaction) => {
-            const txConvertedBalance = convertCurrency(
+        );
+
+        const toTransactions = await Promise.all(
+          acc.toTransactions.map(async (tx: Transaction) => {
+            const txConvertedBalance = await convertCurrency(
               tx.amount?.toNumber() || 0,
-              tx.currency,
+              tx.currency!,
               currency,
             );
+
             return {
               ...tx,
               amount: txConvertedBalance.toString(),
-              currency: currency,
+              currency: tx.currency || currency,
             };
           }),
-        }),
-        ...(acc.fromTransactions && {
-          fromTransactions: acc.fromTransactions.map((tx: Transaction) => {
-            const txConvertedBalance = convertCurrency(
+        );
+
+        const fromTransactions = await Promise.all(
+          acc.fromTransactions.map(async (tx: Transaction) => {
+            const txConvertedBalance = await convertCurrency(
               tx.amount?.toNumber() || 0,
-              tx.currency,
+              tx.currency!,
               currency,
             );
+
             return {
               ...tx,
               amount: txConvertedBalance.toString(),
-              currency: currency,
+              currency: tx.currency || currency,
             };
           }),
-        }),
-      };
-    });
+        );
+
+        return {
+          ...acc,
+          balance: convertedBalance.toString(),
+          currency: currency,
+          ...(children.length > 0 && {
+            children,
+          }),
+          ...(toTransactions.length > 0 && {
+            toTransactions,
+          }),
+          ...(fromTransactions.length > 0 && {
+            fromTransactions,
+          }),
+        };
+      }),
+    );
 
     const balances = accountWithConvertedBalance.map((a) => Number(a.balance ?? 0));
     let minBalance = balances.length > 0 ? Math.min(...balances) : 0;
@@ -361,61 +392,78 @@ export class AccountUseCase {
       };
     }>[];
 
-    const accountWithConvertedBalance = accountRes.map((acc: any) => {
-      const convertedBalance = convertCurrency(
-        acc.balance?.toNumber() || 0,
-        acc.currency,
-        currency,
-      );
+    const accountWithConvertedBalance = await Promise.all(
+      accountRes.map(async (acc: any) => {
+        const convertedBalance = await convertCurrency(
+          acc.balance?.toNumber() || 0,
+          acc.currency,
+          currency,
+        );
 
-      return {
-        ...acc,
-        balance: convertedBalance.toString(),
-        currency: currency,
-        ...(acc.children && {
-          children: acc.children.map((child: Account) => {
-            const childConvertedBalance = convertCurrency(
+        const children = await Promise.all(
+          acc.children.map(async (child: Account) => {
+            const childConvertedBalance = await convertCurrency(
               child.balance?.toNumber() || 0,
-              child.currency,
+              child.currency!,
               currency,
             );
+
             return {
               ...child,
               balance: childConvertedBalance.toString(),
-              currency: currency,
+              currency: child.currency || currency,
             };
           }),
-        }),
-        ...(acc.toTransactions && {
-          toTransactions: acc.toTransactions.map((tx: Transaction) => {
-            const txConvertedBalance = convertCurrency(
+        );
+
+        const toTransactions = await Promise.all(
+          acc.toTransactions.map(async (tx: Transaction) => {
+            const txConvertedBalance = await convertCurrency(
               tx.amount?.toNumber() || 0,
-              tx.currency,
+              tx.currency!,
               currency,
             );
+
             return {
               ...tx,
               amount: txConvertedBalance.toString(),
-              currency: currency,
+              currency: tx.currency || currency,
             };
           }),
-        }),
-        ...(acc.fromTransactions && {
-          fromTransactions: acc.fromTransactions.map((tx: Transaction) => {
-            const txConvertedBalance = convertCurrency(
+        );
+
+        const fromTransactions = await Promise.all(
+          acc.fromTransactions.map(async (tx: Transaction) => {
+            const txConvertedBalance = await convertCurrency(
               tx.amount?.toNumber() || 0,
-              tx.currency,
+              tx.currency!,
               currency,
             );
+
             return {
               ...tx,
               amount: txConvertedBalance.toString(),
-              currency: currency,
+              currency: tx.currency || currency,
             };
           }),
-        }),
-      };
-    });
+        );
+
+        return {
+          ...acc,
+          balance: convertedBalance.toString(),
+          currency: currency,
+          ...(children.length > 0 && {
+            children,
+          }),
+          ...(toTransactions.length > 0 && {
+            toTransactions,
+          }),
+          ...(fromTransactions.length > 0 && {
+            fromTransactions,
+          }),
+        };
+      }),
+    );
     return accountWithConvertedBalance;
   }
 
@@ -573,4 +621,8 @@ export class AccountUseCase {
   }
 }
 
-export const AccountUseCaseInstance = new AccountUseCase(accountRepository, transactionRepository);
+export const AccountUseCaseInstance = new AccountUseCase(
+  accountRepository,
+  transactionRepository,
+  exchangeRateRepository,
+);

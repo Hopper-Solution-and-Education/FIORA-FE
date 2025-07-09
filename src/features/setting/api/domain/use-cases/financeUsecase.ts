@@ -14,13 +14,13 @@ import {
 } from '@/features/setting/data/module/finance/dto/response/GetFinanceReportResponse';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { Messages } from '@/shared/constants/message';
+import { formatMessage } from '@/shared/utils/messageUtils';
 import { CategoryType, Currency, TransactionType } from '@prisma/client';
 import { categoryRepository } from '../../infrastructure/repositories/categoryRepository';
 import { productRepository } from '../../infrastructure/repositories/productRepository';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
 import { IProductRepository } from '../../repositories/productRepository.interface';
-import { Messages } from '@/shared/constants/message';
-import { formatMessage } from '@/shared/utils/messageUtils';
 
 export class FinanceUseCase {
   constructor(
@@ -51,7 +51,7 @@ export class FinanceUseCase {
   private async getAccountReport(
     userId: string,
   ): Promise<GetFinanceReportResponse<AccountFinanceReportResponse>> {
-    const allAccounts = await this._accountRepository.findMany({ userId }, {});
+    const allAccounts = await this._accountRepository.findMany({ userId });
 
     const result: AccountFinanceReportResponse[] = allAccounts.map((account) => {
       const balance = Number(account.balance || 0);
@@ -255,10 +255,7 @@ export class FinanceUseCase {
     userId: string,
     accountIds: string[],
   ): Promise<GetFinanceReportResponse<AccountFinanceReportResponse>> {
-    const allAccounts = await this._accountRepository.findMany(
-      { userId, id: { in: accountIds } },
-      {},
-    );
+    const allAccounts = await this._accountRepository.findMany({ userId, id: { in: accountIds } });
 
     const result: AccountFinanceReportResponse[] = allAccounts.map((account) => {
       const balance = Number(account.balance || 0);

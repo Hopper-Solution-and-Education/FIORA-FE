@@ -1,11 +1,10 @@
-import { NextApiRequest, NextApiResponse } from 'next';
 import { transactionUseCase } from '@/features/transaction/application/use-cases/transactionUseCase';
-import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { UUID } from 'crypto';
-import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { Messages } from '@/shared/constants/message';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { Currency } from '@prisma/client';
+import { UUID } from 'crypto';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req, res, userId) => {
   switch (req.method) {
@@ -53,10 +52,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       currency,
     } = req.body;
 
-    if (![Currency.VND, Currency.USD].includes(currency)) {
-      return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_CURRENCY);
-    }
-
     // Validate date should be in range 30 days in the past from now. Not allowed to be in the future
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -73,14 +68,13 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       toAccountId: toAccountId as UUID,
       toCategoryId: toCategoryId as UUID,
       fromCategoryId: fromCategoryId as UUID,
-      currency: currency,
       ...(products && { products }),
       ...(partnerId && { partnerId }),
       ...(remark && { remark }),
       ...(date && { date: new Date(date) }),
     };
 
-    const newTransaction = await transactionUseCase.createTransaction(transactionData);
+    const newTransaction = await transactionUseCase.createTransaction(transactionData, currency);
 
     return res
       .status(RESPONSE_CODE.CREATED)

@@ -1,8 +1,8 @@
 import { prisma } from '@/config';
 import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
-import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
-import { ICategoryRepository } from '@/features/setting/api/repositories/categoryRepository.interface';
+import { currencySettingRepository } from '@/features/setting/api/infrastructure/repositories/currencySettingRepository';
+import { ICurrencySettingRepository } from '@/features/setting/api/repositories/currencySettingRepository.interface';
 import { Messages } from '@/shared/constants/message';
 import { BooleanUtils } from '@/shared/lib/booleanUtils';
 import { PaginationResponse } from '@/shared/types/Common.types';
@@ -23,7 +23,7 @@ class TransactionUseCase {
   constructor(
     private transactionRepository: ITransactionRepository,
     private accountRepository: IAccountRepository,
-    private categoryRepository: ICategoryRepository,
+    private currencySettingRepository: ICurrencySettingRepository,
   ) {}
 
   async listTransactions(userId: string): Promise<Transaction[]> {
@@ -97,9 +97,11 @@ class TransactionUseCase {
           toAccount: true,
           toCategory: true,
           partner: true,
+          currencyExchange: true, // Include currency exchange details
         },
       },
     );
+
     const totalTransactionAwaited = this.transactionRepository.count({
       ...where,
     });
@@ -203,6 +205,7 @@ class TransactionUseCase {
           toAccount: true,
           toCategory: true,
           partner: true,
+          currencyExchange: true, // Include currency exchange details
         },
       },
     );
@@ -228,10 +231,14 @@ class TransactionUseCase {
       amountMinAwaited,
     ]);
 
+    const transactionWithCurrency = transactions.map((transaction: any) => ({
+      ...transaction,
+      currency: transaction.currencyExchange?.name || null,
+    }));
     const totalPage = Math.ceil(total / pageSize);
 
     return {
-      data: transactions,
+      data: transactionWithCurrency,
       totalPage,
       page,
       pageSize,
@@ -373,7 +380,15 @@ class TransactionUseCase {
     });
   }
 
-  async createTransaction(data: Prisma.TransactionUncheckedCreateInput) {
+  async createTransaction(data: Prisma.TransactionUncheckedCreateInput, currency: string) {
+    const foundCurrency = await this.currencySettingRepository.findFirstCurrency({
+      name: currency,
+    });
+
+    if (!foundCurrency) {
+      throw new Error(Messages.CURRENCY_NOT_FOUND);
+    }
+
     const transactionHandlers: Record<
       TransactionType,
       (data: Prisma.TransactionUncheckedCreateInput) => Promise<any>
@@ -388,6 +403,9 @@ class TransactionUseCase {
     if (!handler) {
       throw new Error(Messages.INVALID_TRANSACTION_TYPE);
     }
+
+    data.currency = foundCurrency.name;
+    data.currencyId = foundCurrency.id;
 
     return handler(data);
   }
@@ -434,6 +452,7 @@ class TransactionUseCase {
         data: {
           userId: data.userId,
           date: data.date,
+          currencyId: data.currencyId,
           currency: data.currency,
           type: data.type,
           amount: data.amount,
@@ -538,6 +557,7 @@ class TransactionUseCase {
           date: data.date,
           type: data.type,
           amount: data.amount,
+          currencyId: data.currencyId,
           currency: data.currency,
           fromAccountId: data.fromAccountId,
           fromCategoryId: category.id,
@@ -616,6 +636,7 @@ class TransactionUseCase {
           amount: data.amount,
           fromAccountId: data.fromAccountId,
           fromCategoryId: data.fromCategoryId,
+          currencyId: data.currencyId,
           currency: data.currency,
           toAccountId: data.toAccountId,
           toCategoryId: data.toCategoryId,
@@ -709,5 +730,5 @@ class TransactionUseCase {
 export const transactionUseCase = new TransactionUseCase(
   transactionRepository,
   accountRepository,
-  categoryRepository,
+  currencySettingRepository,
 );

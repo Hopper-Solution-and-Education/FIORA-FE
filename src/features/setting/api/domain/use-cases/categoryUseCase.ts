@@ -309,17 +309,25 @@ class CategoryUseCase {
     return { minAmount, maxAmount };
   }
 
-  private calculateActualTotals(
+  private async calculateActualTotals(
     transactions: FetchTransactionResponse[] | [],
-    currency: Currency,
-  ): { totalExpenseAct: number; totalIncomeAct: number } {
-    const totalExpenseAct = transactions
-      .filter((t) => t.type === TransactionType.Expense)
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+    currency: string,
+  ): Promise<{ totalExpenseAct: number; totalIncomeAct: number }> {
+    const expenseTransactions = transactions.filter((t) => t.type === TransactionType.Expense);
+    const incomeTransactions = transactions.filter((t) => t.type === TransactionType.Income);
 
-    const totalIncomeAct = transactions
-      .filter((t) => t.type === TransactionType.Income)
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+    const totalExpenseAct = (
+      await Promise.all(
+        expenseTransactions.map((t) => convertCurrency(t.amount.toNumber(), t.currency!, currency)),
+      )
+    ).reduce((sum, amount) => sum + amount, 0);
+
+    const totalIncomeAct = (
+      await Promise.all(
+        incomeTransactions.map((t) => convertCurrency(t.amount.toNumber(), t.currency!, currency)),
+      )
+    ).reduce((sum, amount) => sum + amount, 0);
+
     return { totalExpenseAct, totalIncomeAct };
   }
 
@@ -327,7 +335,7 @@ class CategoryUseCase {
     categoryId: string,
     year: number,
     userId: string,
-    currency: Currency,
+    currency: string,
   ) {
     // checked if categoryId is valid
     const foundCategory = await this.categoryRepository.findFirstCategory({
@@ -353,12 +361,12 @@ class CategoryUseCase {
         : { fromCategoryId: foundCategory.id }),
     });
 
-    const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
+    const { totalExpenseAct, totalIncomeAct } = await this.calculateActualTotals(
       foundTransactions,
       currency,
     );
 
-    const { monthFields, quarterFields, halfYearFields } = calculateSumUpAllocationByType(
+    const { monthFields, quarterFields, halfYearFields } = await calculateSumUpAllocationByType(
       foundTransactions,
       year,
       foundCategory,
@@ -373,7 +381,7 @@ class CategoryUseCase {
       ...quarterFields,
       ...halfYearFields,
       [`total_${suffix}`]: totalMapping,
-      currency,
+      currency: currency,
       type: foundCategory.type,
     };
   }

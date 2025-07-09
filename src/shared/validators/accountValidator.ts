@@ -1,4 +1,4 @@
-import { AccountType, Currency } from '@prisma/client';
+import { AccountType } from '@prisma/client';
 import Joi from 'joi';
 
 export const accountCreateBody = Joi.object({
@@ -25,9 +25,10 @@ export const accountCreateBody = Joi.object({
       'any.required': 'Account type is required',
       'any.only': 'Account type is invalid',
     }),
-  currency: Joi.string().valid(Currency.VND, Currency.USD).required().messages({
-    'any.only': 'Account currency must be either VND or USD',
+  currency: Joi.string().required().messages({
+    'any.only': 'Account currency must be valid',
     'string.empty': 'Account currency is invalid',
+    'any.required': 'Account currency is required',
   }),
   balance: Joi.number()
     .required()

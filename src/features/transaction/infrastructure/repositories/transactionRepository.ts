@@ -16,6 +16,7 @@ interface EnhancedTransaction extends Transaction {
   createdBy: any | null;
   updatedBy: any | null;
   products: any; // Override the JsonValue type with any for flexibility
+  currency: string | null;
 }
 
 class TransactionRepository implements ITransactionRepository {
@@ -89,6 +90,7 @@ class TransactionRepository implements ITransactionRepository {
     // Create enhanced transaction object
     const enhancedTransaction: EnhancedTransaction = {
       ...transaction,
+      currency: transaction.currency,
       createdBy,
       updatedBy,
       partner: transaction.partner ? { ...transaction.partner } : null,
@@ -340,6 +342,7 @@ class TransactionRepository implements ITransactionRepository {
         toAccount: true,
         fromCategory: true,
         toCategory: true,
+        currencyExchange: true,
       },
       orderBy: { createdAt: 'desc' },
     })) as unknown as TransactionWithProducts[];

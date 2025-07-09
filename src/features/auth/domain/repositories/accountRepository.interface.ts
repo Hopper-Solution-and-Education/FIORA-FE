@@ -13,7 +13,7 @@ export interface SelectOptions {
 
 export interface IAccountRepository {
   create(account: Prisma.AccountUncheckedCreateInput): Promise<Account>;
-  findById(id: string): Promise<Account | null>;
+  findById(id: string, options?: Prisma.AccountFindUniqueArgs): Promise<Account | null>;
   findAll(): Promise<Account[] | []>;
   findMany(
     where: Prisma.AccountWhereInput,

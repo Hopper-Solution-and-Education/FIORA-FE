@@ -260,6 +260,13 @@ export enum Messages {
   INVALID_DOB = 'Invalid date of birth.',
   INVALID_DEPOSIT_REQUEST_TYPE = 'Invalid deposit request type.',
 
+  // CURRENCY SUCCESS
+  GET_CURRENCY_SUCCESS = 'Get currency successfully.',
+  CREATE_CURRENCY_SUCCESS = 'Create currency successfully.',
+  // CURRENCY ERROR
+  CURRENCY_NOT_FOUND = 'Currency not found',
+  GET_CURRENCY_FAILED = 'Failed to get currency.',
+
   // FAQ
   IMPORT_FAQS_SUCCESS = 'Import FAQs successfully',
   IMPORT_FAQS_FAILED = 'Import FAQs failed',
