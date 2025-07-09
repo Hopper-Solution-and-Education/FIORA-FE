@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import React, { useEffect } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { setIsShowDialogAddBenefitTier } from '../../slices';
-import { getListMembershipAsyncThunk } from '../../slices/actions/getMemberShipAsyncThunk';
+import { getListMembershipAsyncThunk } from '../../slices/actions';
 import { useMembershipSettingPage } from '../hooks';
 import { IconUploadList, MembershipRankChart, SettingTierAndStory } from '../molecules';
 import { DialogAddBenefitTier } from '../organisms';

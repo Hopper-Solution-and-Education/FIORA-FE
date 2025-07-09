@@ -2,7 +2,7 @@ import { FormConfig } from '@/components/common/forms';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useAppDispatch } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
 import { setIsShowDialogAddBenefitTier } from '../../slices';
 import useAddBenefitTierFieldConfig from '../config/AddBenefitTierFieldConfig';
@@ -12,6 +12,9 @@ const AddBenefitForm = () => {
   const methods = useFormContext<AddBenefitTierFormValues>();
   const { formState } = methods;
   const config = useAddBenefitTierFieldConfig();
+  const isLoadingAddBenefitTier = useAppSelector(
+    (state) => state.memberShipSettings.isLoadingAddBenefitTier,
+  );
 
   const dispatch = useAppDispatch();
 
@@ -44,7 +47,7 @@ const AddBenefitForm = () => {
               disabled={!formState.isValid || formState.isSubmitting || formState.isValidating}
               className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
             >
-              {formState.isSubmitting ? (
+              {formState.isSubmitting || isLoadingAddBenefitTier ? (
                 <Icons.spinner className="animate-spin h-5 w-5" />
               ) : (
                 <Icons.check className="h-5 w-5" />
@@ -52,7 +55,7 @@ const AddBenefitForm = () => {
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{formState.isSubmitting ? 'Submiting...' : 'Submit'}</p>
+            <p>{formState.isSubmitting || isLoadingAddBenefitTier ? 'Submiting...' : 'Submit'}</p>
           </TooltipContent>
         </Tooltip>
       </div>

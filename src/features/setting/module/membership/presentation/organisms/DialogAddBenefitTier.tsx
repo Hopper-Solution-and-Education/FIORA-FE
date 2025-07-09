@@ -1,6 +1,10 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useAppDispatch } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useSession } from 'next-auth/react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { setIsShowDialogAddBenefitTier } from '../../slices';
+import { addNewBenefitAsyncThunk, getListMembershipAsyncThunk } from '../../slices/actions';
 import { AddBenefitForm } from '../molecules';
 import {
   AddBenefitTierFormValues,
@@ -19,8 +23,23 @@ const DialogAddBenefitTier = ({ open, onOpenChange }: DialogAddBenefitTierProps)
     defaultValues: defaultAddBenefitTierValue,
   });
 
+  const dispatch = useAppDispatch();
+
+  const { data: session } = useSession();
+
   const onSubmit = (data: AddBenefitTierFormValues) => {
-    console.log(data);
+    dispatch(
+      addNewBenefitAsyncThunk({
+        ...data,
+        description: data.description || '',
+        userId: session?.user?.id || '',
+      }),
+    )
+      .unwrap()
+      .then(() => {
+        dispatch(setIsShowDialogAddBenefitTier(false));
+        dispatch(getListMembershipAsyncThunk({ page: 1, limit: 10 }));
+      });
   };
 
   const { handleSubmit } = methods;

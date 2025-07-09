@@ -1,8 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 import { createBudgetAsyncThunk, deleteBudgetAsyncThunk, getBudgetAsyncThunk } from './actions';
-import { initialBudgetControlState } from './types';
 import { updateBudgetAsyncThunk } from './actions/updateBudgetAsyncThunk';
+import { initialBudgetControlState } from './types';
 
 const budgetControlSlice = createSlice({
   name: 'budgetControl',
@@ -32,7 +32,6 @@ const budgetControlSlice = createSlice({
       })
       .addCase(createBudgetAsyncThunk.fulfilled, (state) => {
         state.isCreatingBudget = false;
-        toast.success('Create budget successfully!');
       })
       .addCase(createBudgetAsyncThunk.rejected, (state) => {
         state.isCreatingBudget = false;

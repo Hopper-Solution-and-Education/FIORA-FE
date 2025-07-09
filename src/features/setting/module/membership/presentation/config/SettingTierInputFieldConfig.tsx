@@ -40,6 +40,10 @@ const SettingTierInputFieldConfig = ({
       options={options}
       required
       disabled={isLoadingUpsertMembership}
+      showRemove={dynamicTierFields.length > 1}
+      onRemove={() => {
+        console.log('remove');
+      }}
     />
   ));
 

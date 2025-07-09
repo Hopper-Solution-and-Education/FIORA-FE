@@ -67,4 +67,30 @@ export type UpsertMembershipResponse = {
   message: string;
 };
 
+export type AddBenefitTierRequest = {
+  name: string;
+  slug: string;
+  description?: string;
+  suffix?: string;
+  userId: string;
+};
+
+export type AddBenefitTierResponse = {
+  data: NewBenefitTier;
+  message: string;
+};
+
+export type NewBenefitTier = {
+  name: string;
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string | null;
+  updatedBy: string | null;
+  userId: string;
+  slug: string;
+  description?: string;
+  suffix?: string;
+};
+
 export default Membership;

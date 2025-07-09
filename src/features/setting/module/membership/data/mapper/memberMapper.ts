@@ -1,4 +1,6 @@
 import {
+  AddBenefitTierRequest,
+  AddBenefitTierResponse,
   GetListMembershipsRequest,
   GetListMembershipsResponse,
   Membership,
@@ -6,6 +8,8 @@ import {
   UpsertMembershipResponse,
 } from '../../domain/entities';
 import {
+  AddBenefitTierRequestDTO,
+  AddBenefitTierResponseDTO,
   GetListMembershipsRequestDTO,
   GetListMembershipsResponseDTO,
   UpsertMembershipRequestDTO,
@@ -72,6 +76,34 @@ export class MemberMapper {
   static toUpsertMembershipResponse(data: UpsertMembershipResponseDTO): UpsertMembershipResponse {
     return {
       data: new Membership(data.data),
+      message: data.message,
+    };
+  }
+
+  static toAddBenefitTierRequest(data: AddBenefitTierRequest): AddBenefitTierRequestDTO {
+    return {
+      name: data.name,
+      slug: data.slug,
+      description: data.description,
+      suffix: data.suffix,
+      userId: data.userId,
+    };
+  }
+
+  static toAddBenefitTierResponse(data: AddBenefitTierResponseDTO): AddBenefitTierResponse {
+    return {
+      data: {
+        id: data.data.id,
+        name: data.data.name,
+        slug: data.data.slug,
+        description: data.data.description,
+        suffix: data.data.suffix,
+        createdAt: data.data.createdAt,
+        updatedAt: data.data.updatedAt,
+        createdBy: data.data.createdBy,
+        updatedBy: data.data.updatedBy,
+        userId: data.data.userId,
+      },
       message: data.message,
     };
   }
