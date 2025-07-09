@@ -502,7 +502,7 @@ class CategoryUseCase {
           actualTransaction: {
             ...actualTransaction,
           },
-          isCreated: budgetDetails.length > 0,
+          isCreated: budgetDetails.length > 0 || Number(actualTransaction[`total_${suffix}`]) > 0,
           ...(currency && { currency }),
         };
       },

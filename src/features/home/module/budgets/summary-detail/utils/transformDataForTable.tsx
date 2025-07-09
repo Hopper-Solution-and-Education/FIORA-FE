@@ -134,7 +134,6 @@ export const getColumnsByPeriod = (
 ) => {
   const renderEditableCell = (text: any, record: TableData, index: number, column: ColumnProps) => {
     const isDisableEdited = !PERIOD_CONFIG.months.some((item) => item.key === column.key);
-
     if (record.isEditable && !isDisableEdited) {
       return (
         <InputCurrency
@@ -223,7 +222,7 @@ export const getColumnsByPeriod = (
     createColumn('type', 'Type', {
       width: 200,
       align: 'right',
-      fixed: 'right',
+      fixed: 'left',
       render: (text: string, record: TableData) => {
         if (record.isParent) {
           return (
