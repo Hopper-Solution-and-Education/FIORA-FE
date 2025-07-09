@@ -93,7 +93,8 @@ class WalletRepository implements IWalletRepository {
     total: number;
   }> {
     // Convert FilterObject to Prisma where clause
-    let where: any = {};
+    const where: any = {};
+
     if (filter) {
       // Custom logic for search, status, amount range
       // Parse filter to DynamicFilterGroup for easier handling

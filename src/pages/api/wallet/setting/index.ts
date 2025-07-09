@@ -19,6 +19,7 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse) 
         return createError(res, RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED);
     }
   } catch (error: any) {
+    console.error(error);
     return createError(
       res,
       RESPONSE_CODE.INTERNAL_SERVER_ERROR,
@@ -42,6 +43,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
       try {
         filterObj = FilterBuilder.toFilterObject(filter);
       } catch (e) {
+        console.error(e);
         return createError(res, RESPONSE_CODE.BAD_REQUEST, 'Invalid filter format');
       }
     }
