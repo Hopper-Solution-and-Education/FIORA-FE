@@ -8,19 +8,21 @@ export enum FilterColumn {
   RIGHT = 'right',
 }
 
-export type FilterOperator =
-  | 'equals'
-  | 'contains'
-  | 'startsWith'
-  | 'endsWith'
-  | 'gt'
-  | 'gte'
-  | 'lt'
-  | 'lte'
-  | 'some'
-  | 'every'
-  | 'between'
-  | 'in';
+/**
+ * Enum for all supported filter operators
+ */
+export enum FilterOperator {
+  EQUALS = 'equals',
+  CONTAINS = 'contains',
+  STARTS_WITH = 'startsWith',
+  ENDS_WITH = 'endsWith',
+  GT = 'gt',
+  GTE = 'gte',
+  LT = 'lt',
+  LTE = 'lte',
+  BETWEEN = 'between',
+  IN = 'in',
+}
 
 export type OrderType = 'asc' | 'desc' | 'none';
 
@@ -62,13 +64,40 @@ export interface FilterFieldMapping<T = Record<string, unknown>> {
 
 export type DynamicFilterCondition = 'AND' | 'OR';
 
+/**
+ * Rule for a single filter condition
+ */
 export interface DynamicFilterRule {
   field: string;
   operator: FilterOperator;
-  value: any;
+  value: string | number | (string | number)[];
 }
 
+/**
+ * Group of filter rules (can be nested)
+ */
 export interface DynamicFilterGroup {
   condition: DynamicFilterCondition;
   rules: (DynamicFilterRule | DynamicFilterGroup)[];
 }
+
+/**
+ * Type for backend filter object, supports nested AND/OR and all operators
+ * More strictly typed for each operator
+ */
+export type FilterObject =
+  | { AND: FilterObject[] }
+  | { OR: FilterObject[] }
+  | ({
+      [field: string]:
+        | { gte?: number; lte?: number }
+        | { gt?: number }
+        | { lt?: number }
+        | { in?: (string | number)[] }
+        | { contains?: string }
+        | { startsWith?: string }
+        | { endsWith?: string }
+        | { equals?: string | number }
+        | string
+        | number;
+    } & { AND?: never; OR?: never });

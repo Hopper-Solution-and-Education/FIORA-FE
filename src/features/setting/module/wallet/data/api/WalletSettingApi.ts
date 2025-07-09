@@ -1,6 +1,7 @@
 import type { IHttpClient } from '@/config';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import { _PaginationResponse, HttpResponse } from '@/shared/types';
+import { FilterObject } from '@/shared/types/filter.types';
 import { routeConfig } from '@/shared/utils/route';
 import { decorate, inject, injectable } from 'inversify';
 import { WALLET_SETTING_TYPES } from '../../di/walletSettingDIContainer.type';
@@ -19,8 +20,13 @@ export class WalletSettingApi implements IWalletSettingApi {
   async getDepositRequestsPaginated(
     page: number,
     pageSize: number,
+    filter?: FilterObject,
   ): Promise<_PaginationResponse<GetDepositRequestResponse>> {
-    return this.httpClient.get(routeConfig(ApiEndpointEnum.WalletSetting, {}, { page, pageSize }));
+    return this.httpClient.post(routeConfig(ApiEndpointEnum.WalletSetting), {
+      page,
+      pageSize,
+      filter,
+    });
   }
 
   async updateDepositRequestStatus(

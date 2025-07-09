@@ -1,10 +1,11 @@
+import { FilterObject } from '@/shared/types/filter.types';
 import { decorate, inject, injectable } from 'inversify';
 import type { IWalletSettingRepository } from '../../data/repository/IWalletSettingRepository';
 import { WALLET_SETTING_TYPES } from '../../di/walletSettingDIContainer.type';
 import { DepositRequestsPaginated } from '../../presentation';
 
 export interface IGetDepositRequestsPaginatedUseCase {
-  execute(page: number, pageSize: number): Promise<DepositRequestsPaginated>;
+  execute(page: number, pageSize: number, filter?: FilterObject): Promise<DepositRequestsPaginated>;
 }
 
 export class GetDepositRequestsPaginatedUseCase implements IGetDepositRequestsPaginatedUseCase {
@@ -14,8 +15,12 @@ export class GetDepositRequestsPaginatedUseCase implements IGetDepositRequestsPa
     this.walletRepository = walletRepository;
   }
 
-  async execute(page: number, pageSize: number): Promise<DepositRequestsPaginated> {
-    return this.walletRepository.getDepositRequestsPaginated(page, pageSize);
+  async execute(
+    page: number,
+    pageSize: number,
+    filter?: FilterObject,
+  ): Promise<DepositRequestsPaginated> {
+    return this.walletRepository.getDepositRequestsPaginated(page, pageSize, filter);
   }
 }
 
