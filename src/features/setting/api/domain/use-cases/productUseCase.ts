@@ -2,12 +2,12 @@ import { Messages } from '@/shared/constants/message';
 
 import { prisma } from '@/config';
 import { GlobalFilters, PaginationResponse, ProductItem, TransactionType } from '@/shared/types';
-import { convertCurrency } from '@/shared/utils/exchangeRate';
 import { Currency, Prisma, Product, ProductType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 import { BooleanUtils } from '@/shared/lib';
 import { buildWhereClause } from '@/shared/utils';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { normalizeVietnamese, safeString } from '@/shared/utils/ExStringUtils';
 import { NextApiRequest } from 'next';
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
@@ -87,7 +87,7 @@ class ProductUseCase {
 
         return {
           ...product,
-          price: transformedPrice,
+          price: new Decimal(transformedPrice),
           currency: currency,
         };
       });
@@ -101,7 +101,7 @@ class ProductUseCase {
         totalPage,
       };
     } catch (error: any) {
-      throw new Error('Failed to get all products ', error.message);
+      throw new Error('Failed to get all products1 ', error.message);
     }
   }
 

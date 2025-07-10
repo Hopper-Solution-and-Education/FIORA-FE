@@ -174,10 +174,7 @@ export class ExchangeRateRepository implements IExchangeRateRepository {
       // Calculate indirect rate via USD
       const usdRates = await prisma.exchangeRateSetting.findMany({
         where: {
-          OR: [
-            { FromCurrency: { name: 'United States Dollar' } },
-            { ToCurrency: { name: 'United States Dollar' } },
-          ],
+          OR: [{ FromCurrency: { name: 'USD' } }, { ToCurrency: { name: 'USD' } }],
         },
         include: {
           FromCurrency: { select: { name: true } },

@@ -24,7 +24,7 @@ class TransactionUseCase {
     private transactionRepository: ITransactionRepository,
     private accountRepository: IAccountRepository,
     private currencySettingRepository: ICurrencySettingRepository,
-  ) {}
+  ) { }
 
   async listTransactions(userId: string): Promise<Transaction[]> {
     return this.transactionRepository.getTransactionsByUserId(userId);
@@ -68,13 +68,13 @@ class TransactionUseCase {
                 : []),
               ...(isSearchDate
                 ? [
-                    {
-                      date: {
-                        gte: new Date(typeSearchParams),
-                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
-                      },
+                  {
+                    date: {
+                      gte: new Date(typeSearchParams),
+                      lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
                     },
-                  ]
+                  },
+                ]
                 : []),
             ],
           },
@@ -173,13 +173,13 @@ class TransactionUseCase {
                 : []),
               ...(isSearchDate
                 ? [
-                    {
-                      date: {
-                        gte: new Date(typeSearchParams),
-                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
-                      },
+                  {
+                    date: {
+                      gte: new Date(typeSearchParams),
+                      lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
                     },
-                  ]
+                  },
+                ]
                 : []),
             ],
           },
@@ -205,7 +205,6 @@ class TransactionUseCase {
           toAccount: true,
           toCategory: true,
           partner: true,
-          currencyExchange: true, // Include currency exchange details
         },
       },
     );
@@ -231,14 +230,10 @@ class TransactionUseCase {
       amountMinAwaited,
     ]);
 
-    const transactionWithCurrency = transactions.map((transaction: any) => ({
-      ...transaction,
-      currency: transaction.currencyExchange?.name || null,
-    }));
     const totalPage = Math.ceil(total / pageSize);
 
     return {
-      data: transactionWithCurrency,
+      data: transactions,
       totalPage,
       page,
       pageSize,

@@ -9,7 +9,7 @@ export const EXCHANGE_RATES_TO_USD: ExchangeRates = {
 };
 
 // Update convertCurrency to handle Prisma.Decimal
-export const convertCurrency = (
+export const currencyExchange = (
   amount: number | Prisma.Decimal, // Allow both number and Decimal
   fromCurrency: Currency,
   toCurrency: Currency,

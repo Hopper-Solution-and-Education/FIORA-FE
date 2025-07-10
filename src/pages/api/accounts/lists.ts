@@ -1,9 +1,9 @@
-import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { NextApiRequest, NextApiResponse } from 'next';
 import { Currency } from '@prisma/client';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 // Define the expected session structure
 export const maxDuration = 30; // 30 seconds
@@ -13,7 +13,7 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
 
   try {
     switch (req.method) {
-      case 'POST':
+      case 'GET':
         return GET(req, res, userId);
       default:
         return res
