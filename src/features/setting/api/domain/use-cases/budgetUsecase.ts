@@ -514,8 +514,23 @@ class BudgetUseCase {
 
     let actEstimatedTotalExpense = 0;
     let actEstimatedTotalIncome = 0;
-    let budgetCopyCurrency = currency;
-    let budgetCopyCurrencyId = '';
+
+    // find default currency
+    const foundDefaultCurrency = await prisma.currencyExchange.findFirst({
+      where: {
+        name: currency,
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+    if (!foundDefaultCurrency) {
+      throw new Error('Default currency not found');
+    }
+
+    let budgetCopyCurrencyId = foundDefaultCurrency.id;
+    let budgetCopyCurrency = foundDefaultCurrency.name;
 
     let budgetCopyDescription = defaultDescription;
     let budgetCopyIcon = defaultIcon;
