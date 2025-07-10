@@ -30,16 +30,20 @@ export const convertTableDataCurrency = (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <p className="cursor-pointer">
+          <p className="cursor-pointer px-3 py-2">
             {formatCurrencyValue(bottomUpValue - actualSumUpValue, userCurrency)}
           </p>
         </TooltipTrigger>
-        <TooltipContent>
-          <p>
-            Remaining: {formatCurrencyValue(bottomUpValue - actualSumUpValue, userCurrency)} ={' '}
-            {formatCurrencyValue(bottomUpValue, userCurrency)} -{' '}
-            {formatCurrencyValue(actualSumUpValue, userCurrency)}
-          </p>
+        <TooltipContent className="whitespace-pre-line bg-white text-black dark:bg-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-700">
+          <div>
+            <span>
+              Remaining = Bottom Up - Actual Sum Up
+              {'\n'}
+              {formatCurrencyValue(bottomUpValue - actualSumUpValue, userCurrency)} ={' '}
+              {formatCurrencyValue(bottomUpValue, userCurrency)} -{' '}
+              {formatCurrencyValue(actualSumUpValue, userCurrency)}
+            </span>
+          </div>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

@@ -142,25 +142,30 @@ export const getColumnsByPeriod = (
 
     if (record.isEditable && !isDisableEdited) {
       return (
-        <InputCurrency
-          name={`value_${record.key}_${column.key}`}
-          value={typeof text === 'object' ? text.value : (text ?? 0)}
-          currency={currency}
-          classContainer="m-0"
-          className={cn('text-right', column.className)}
-          onChange={(newValue) => {
-            if (onValueChange) {
-              onValueChange(record, column.key, newValue);
-            }
-          }}
-        />
+        <div className="group">
+          <InputCurrency
+            name={`value_${record.key}_${column.key}`}
+            value={typeof text === 'object' ? text.value : (text ?? 0)}
+            currency={currency}
+            classContainer="m-0"
+            className={cn(
+              'text-right border-none shadow-none hover:border hover:border-blue-500',
+              column.className,
+            )}
+            onChange={(newValue) => {
+              if (onValueChange) {
+                onValueChange(record, column.key, newValue);
+              }
+            }}
+          />
+        </div>
       );
     }
 
     return (
-      <span className={cn(`${column.className}`, isDisableEdited && 'opacity-90')}>
+      <p className={cn(`px-3 py-2 ${column.className}`, isDisableEdited && 'opacity-90')}>
         {formatCurrencyValue(text?.value, currency)}
-      </span>
+      </p>
     );
   };
 
