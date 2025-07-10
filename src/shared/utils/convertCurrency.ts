@@ -1,17 +1,41 @@
 import { formatFIORACurrency } from '@/config/FIORANumberFormat';
 import prisma from '@/config/prisma/prisma';
 import { exchangeRateRepository } from '@/features/setting/api/infrastructure/repositories/exchangeRateRepository';
-import { FIXED_NUMBER_OF_DECIMALS } from '@/shared/constants';
-import { Currency } from '@prisma/client'; // Import Prisma to use Decimal type
+import { Currency, Prisma } from '@prisma/client'; // Import Prisma to use Decimal type
+import { FIXED_NUMBER_OF_DECIMALS } from '../constants';
 
 // Update convertCurrency to handle Prisma.Decimal
 export async function convertCurrency(
-  amount: number,
+  amount: number | Prisma.Decimal,
   fromCurrency: string,
   toCurrency: string,
 ): Promise<number> {
   try {
+    const amountAsNumber = typeof amount === 'number' ? amount : amount.toNumber();
+
+    if (fromCurrency === toCurrency) {
+      return amountAsNumber;
+    }
     // Validate currencies
+    const mappingCurrency = await prisma.exchangeRateSetting.findFirst({
+      where: {
+        FromCurrency: {
+          name: fromCurrency,
+        },
+        ToCurrency: {
+          name: toCurrency,
+        },
+      },
+      select: {
+        fromValue: true,
+        toValue: true,
+      },
+    });
+
+    if (mappingCurrency) {
+      return Number(amountAsNumber * mappingCurrency.toValue.toNumber());
+    }
+
     const [fromCurrencyData, toCurrencyData] = await Promise.all([
       prisma.currencyExchange.findFirst({
         where: { name: fromCurrency },
@@ -25,15 +49,10 @@ export async function convertCurrency(
       throw new Error(`Invalid currency: ${!fromCurrencyData ? fromCurrency : toCurrency}`);
     }
 
-    // Cache is stale or missing rate, repopulate
     const response = await exchangeRateRepository.populateRateCache(fromCurrency);
     const conversionRates = response.conversion_rates;
 
-    if (conversionRates[toCurrency] === undefined) {
-      throw new Error(`No conversion rate available for ${fromCurrency} to ${toCurrency}`);
-    }
-
-    return Number((amount * conversionRates[toCurrency]).toFixed(FIXED_NUMBER_OF_DECIMALS));
+    return Number((amountAsNumber * conversionRates[toCurrency]).toFixed(FIXED_NUMBER_OF_DECIMALS));
   } catch (error) {
     throw new Error(error instanceof Error ? error.message : 'Failed to convert currency');
   }
