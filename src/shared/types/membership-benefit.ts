@@ -13,8 +13,8 @@ export interface MembershipBenefit {
 
 export interface TierBenefit {
   tierId: string;
-  benefitId: string;
   value: number;
+  benefitId: string;
 }
 
 export interface MembershipBenefitUpdatePayload extends MembershipBenefitCreatePayload {

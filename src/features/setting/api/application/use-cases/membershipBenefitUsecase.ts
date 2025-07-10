@@ -1,7 +1,4 @@
-import {
-  MembershipBenefitCreatePayload,
-  MembershipBenefitUpdatePayload,
-} from '@/shared/types/membership-benefit';
+import { MembershipBenefitCreatePayload } from '@/shared/types/membership-benefit';
 import { v4 as uuid } from 'uuid';
 import { membershipBenefitRepository } from '../../infrastructure/repositories/memBenefitRepository';
 import { tierBenefitRepository } from '../../infrastructure/repositories/tierBenefitRepository';
@@ -29,14 +26,6 @@ class MembershipBenefitService {
       tierBenefit: typeof tier;
       membershipBenefit: typeof membershipBenefit;
     };
-  }
-
-  async update(payload: MembershipBenefitUpdatePayload, userId: string) {
-    return membershipBenefitRepository.updateMembershipBenefit(payload.id!, {
-      ...payload,
-      updatedBy: userId,
-      updatedAt: new Date(),
-    });
   }
 
   async delete(id: string) {
