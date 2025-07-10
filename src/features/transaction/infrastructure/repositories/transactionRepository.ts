@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { Prisma, Transaction, TransactionType, Partner } from '@prisma/client';
+import { Partner, Prisma, Transaction, TransactionType } from '@prisma/client';
 import {
   ITransactionRepository,
   TransactionWithProducts,
@@ -200,6 +200,7 @@ class TransactionRepository implements ITransactionRepository {
     let toAccounts: any[] = [];
     let fromCategories: any[] = [];
     let toCategories: any[] = [];
+    let benefit: any[] = [];
 
     if (type === TransactionType.Expense) {
       [fromAccounts, toCategories] = await Promise.all([
@@ -225,7 +226,7 @@ class TransactionRepository implements ITransactionRepository {
     }
 
     if (type === TransactionType.Income) {
-      [fromCategories, toAccounts] = await Promise.all([
+      [fromCategories, toAccounts, benefit] = await Promise.all([
         prisma.category.findMany({
           where: { userId, type: 'Income' },
           select: {
@@ -233,6 +234,7 @@ class TransactionRepository implements ITransactionRepository {
             name: true,
           },
         }),
+
         prisma.account.findMany({
           where: {
             userId,
@@ -245,7 +247,19 @@ class TransactionRepository implements ITransactionRepository {
             type: true,
           },
         }),
+
+        prisma.membershipBenefit.findMany({
+          where: { userId },
+          select: {
+            id: true,
+            name: true,
+          },
+        }),
       ]);
+
+      if (benefit.length > 0) {
+        fromCategories.push(...benefit);
+      }
     }
 
     if (type === TransactionType.Transfer) {

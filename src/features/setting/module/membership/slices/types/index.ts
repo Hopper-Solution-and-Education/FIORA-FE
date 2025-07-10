@@ -5,6 +5,9 @@ interface MembershipState {
   memberships: Membership[];
   selectedMembership: Membership | null;
   isLoadingUpsertMembership: boolean;
+  isShowDialogAddBenefitTier: boolean;
+  isLoadingAddBenefitTier: boolean;
+  isLoadingDeleteBenefitTier: boolean;
 }
 
 export const initialMembershipState: MembershipState = {
@@ -12,4 +15,7 @@ export const initialMembershipState: MembershipState = {
   memberships: [],
   selectedMembership: null,
   isLoadingUpsertMembership: false,
+  isShowDialogAddBenefitTier: false,
+  isLoadingAddBenefitTier: false,
+  isLoadingDeleteBenefitTier: false,
 };
