@@ -11,6 +11,7 @@ import {
   deleteTransaction as deleteTransactionThunk,
   fetchTransactions,
 } from '@/features/home/module/transaction/slices/actions';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { FilterCriteria, OrderType } from '@/shared/types';
 import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -20,7 +21,6 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { formatCurrency } from '../hooks/formatCurrency';
 import { formatDate } from '../hooks/formatDate';
 import { updateAmountRange, updateFilterCriteria } from '../slices';
 import { IRelationalTransaction, TransactionColumn, TransactionTableColumnKey } from '../types';
@@ -80,6 +80,12 @@ const TransactionTable = () => {
   const transactionDataState = useAppSelector((state) => state.transactionData);
   const transactionsResponse = transactionDataState.transactions.data;
   const isTransactionLoading = transactionDataState.transactions.isLoading;
+
+  // Initialize currency formatter hook
+  const { formatCurrency, exchangeAmount } = useCurrencyFormatter();
+
+  // Get current currency setting from Redux store
+  const selectedCurrency = useAppSelector((state) => state.settings.currency);
 
   const [displayData, setDisplayData] = useState<IRelationalTransaction[]>([]);
   const [sortOrder, setSortOrder] = useState<OrderType | undefined>('desc');
@@ -432,15 +438,28 @@ const TransactionTable = () => {
                             {transRecord.type}
                           </TableCell>
                         );
-                      case 'Amount':
+                      case 'Amount': {
+                        const originalAmount = Number(transRecord.amount);
+                        const originalCurrency = transRecord.currency as TransactionCurrency;
+
+                        // Convert to user's selected currency if different from transaction currency
+                        const exchangeResult = exchangeAmount({
+                          amount: originalAmount,
+                          fromCurrency: originalCurrency,
+                          toCurrency: selectedCurrency,
+                        });
+
                         return (
                           <TableCell key={columnKey} className={`font-bold`}>
-                            {formatCurrency(
-                              Number(transRecord.amount),
-                              transRecord.currency as TransactionCurrency,
-                            )}{' '}
+                            <div className="flex flex-col">
+                              {/* Main amount in user's selected currency */}
+                              <span>
+                                {formatCurrency(exchangeResult.convertedAmount, selectedCurrency)}
+                              </span>
+                            </div>
                           </TableCell>
                         );
+                      }
                       case 'From':
                         return (
                           <TableCell

@@ -4,48 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import useCurrencyFormatter from '@/shared/hooks/useCurrencyFormatter';
+import { useAppSelector } from '@/store';
 import { format } from 'date-fns';
 import { Trash } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import LucieIcon from '../../../category/components/LucieIcon';
 import DeleteTransactionDialog from '../../components/DeleteTransactionDialog';
 import { IRelationalTransaction } from '../../types';
 import { TransactionCurrency } from '../../utils/constants';
-import LucieIcon from '../../../category/components/LucieIcon';
-import {
-  formatFIORACurrency,
-  getCurrencySymbol,
-  FIORANumberFormat,
-} from '@/config/FIORANumberFormat';
-import { Currency } from '@/shared/types';
-
-// Custom formatCurrency function using FIORANumberFormat
-const formatCurrency = (
-  num: number,
-  currency: TransactionCurrency,
-  shouldShortened?: boolean,
-): string => {
-  const currencySymbol = getCurrencySymbol(currency as Currency);
-
-  if (num >= 1000000 && shouldShortened) {
-    const inMillions = num / 1000000;
-    // Use FIORANumberFormat for decimal formatting with consistent locale
-    const numberFormatter = new FIORANumberFormat(currency as Currency, {
-      style: 'decimal',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 1,
-    });
-    const formatted = numberFormatter.format(inMillions);
-
-    return currency === 'VND'
-      ? `${formatted}M ${currencySymbol}`
-      : `${currencySymbol} ${formatted}M`;
-  }
-
-  return formatFIORACurrency(num, currency as Currency);
-};
 
 type TransactionDetailsProps = {
   data: IRelationalTransaction;
@@ -55,6 +25,12 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
   // Format the date to a readable format
   const formattedDate = data.date ? format(new Date(data.date), 'Ppp') : 'Unknown';
   const router = useRouter();
+
+  // Initialize currency formatter hook
+  const { formatCurrency, exchangeAmount } = useCurrencyFormatter();
+
+  // Get current currency setting from Redux store
+  const selectedCurrency = useAppSelector((state) => state.settings.currency);
 
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
@@ -73,11 +49,16 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
     }
   };
 
-  // Format the amount with currency
-  const formattedAmount = formatCurrency(
-    Number(data.amount),
-    (data.currency as TransactionCurrency) || TransactionCurrency.VND,
-  );
+  // Format the amount with currency conversion
+  const originalAmount = Number(data.amount);
+  const originalCurrency = (data.currency as TransactionCurrency) || TransactionCurrency.VND;
+
+  // Convert to user's selected currency if different from transaction currency
+  const exchangeResult = exchangeAmount({
+    amount: originalAmount,
+    fromCurrency: originalCurrency,
+    toCurrency: selectedCurrency,
+  });
 
   const handleOpenDeleteModal = () => {
     setIsDeleteModalOpen(true);
@@ -172,7 +153,20 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                   </div>
 
                   <div className="text-sm text-muted-foreground">Amount</div>
-                  <div className="font-medium text-right">{formattedAmount}</div>
+                  <div className="font-medium text-right">
+                    <div className="flex flex-col items-end">
+                      {/* Main amount in user's selected currency */}
+                      <span>
+                        {formatCurrency(exchangeResult.convertedAmount, selectedCurrency)}
+                      </span>
+                      {/* Show original amount if currencies are different */}
+                      {originalCurrency !== selectedCurrency && (
+                        <span className="text-xs font-medium text-gray-500">
+                          ({formatCurrency(originalAmount, originalCurrency)})
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
                   <div className="text-sm text-muted-foreground">Remark</div>
                   <div className={`text-right ${!data.remark ? 'text-gray-500 italic' : ''}`}>
@@ -372,10 +366,43 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                         </span>
                         <span>
                           {product?.price ? (
-                            formatCurrency(
-                              Number(product.price),
-                              (data.currency as TransactionCurrency) || TransactionCurrency.VND,
-                            )
+                            <div className="flex flex-col items-end">
+                              {(() => {
+                                const productOriginalAmount = Number(product.price);
+                                const productOriginalCurrency =
+                                  (data.currency as TransactionCurrency) || TransactionCurrency.VND;
+
+                                // Convert product price to user's selected currency
+                                const productExchangeResult = exchangeAmount({
+                                  amount: productOriginalAmount,
+                                  fromCurrency: productOriginalCurrency,
+                                  toCurrency: selectedCurrency,
+                                });
+
+                                return (
+                                  <>
+                                    {/* Main price in user's selected currency */}
+                                    <span>
+                                      {formatCurrency(
+                                        productExchangeResult.convertedAmount,
+                                        selectedCurrency,
+                                      )}
+                                    </span>
+                                    {/* Show original price if currencies are different */}
+                                    {productOriginalCurrency !== selectedCurrency && (
+                                      <span className="text-xs font-medium text-gray-500">
+                                        (
+                                        {formatCurrency(
+                                          productOriginalAmount,
+                                          productOriginalCurrency,
+                                        )}
+                                        )
+                                      </span>
+                                    )}
+                                  </>
+                                );
+                              })()}
+                            </div>
                           ) : (
                             <span className="text-gray-500 italic">Unknown</span>
                           )}

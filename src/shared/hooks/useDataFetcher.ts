@@ -13,7 +13,7 @@ const useDataFetcher = <T = any>(props: DataFetcherProps) => {
   async function fetchData(url: string) {
     const response = await fetch(url, {
       headers: { 'Content-Type': 'application/json' },
-      method: method, // Use the method from props
+      method: method,
       body: body ? JSON.stringify(body) : undefined,
     });
 

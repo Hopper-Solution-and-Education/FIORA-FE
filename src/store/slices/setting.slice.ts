@@ -2,7 +2,12 @@
 
 import { Currency } from '@prisma/client';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { initialSettingState, Language } from '../types/setting.type';
+import {
+  initialSettingState,
+  type ExchangeRateType,
+  type Language,
+  type SetExchangeRateSettingsParams,
+} from '../types/setting.type';
 
 const settingsSlice = createSlice({
   name: 'settings',
@@ -14,9 +19,17 @@ const settingsSlice = createSlice({
     toggleCurrency: (state, action: PayloadAction<Currency>) => {
       state.currency = action.payload;
     },
+    setExchangeRateSettings: (state, action: PayloadAction<SetExchangeRateSettingsParams>) => {
+      state.baseCurrency = action.payload.baseCurrency;
+      state.exchangeRate = action.payload.exchangeRate;
+    },
+    updateExchangeRates: (state, action: PayloadAction<ExchangeRateType>) => {
+      state.exchangeRate = { ...state.exchangeRate, ...action.payload };
+    },
   },
 });
 
-export const { changeLanguage, toggleCurrency } = settingsSlice.actions;
+export const { changeLanguage, toggleCurrency, setExchangeRateSettings, updateExchangeRates } =
+  settingsSlice.actions;
 
 export default settingsSlice.reducer;
