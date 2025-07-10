@@ -100,9 +100,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
-
-    const updatedRes = await budgetUseCase.updateActBudgetTotalYears(userId, currency);
+    const updatedRes = await budgetUseCase.updateActBudgetTotalYears(userId);
 
     return res
       .status(RESPONSE_CODE.CREATED)

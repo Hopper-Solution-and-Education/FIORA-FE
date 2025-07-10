@@ -214,7 +214,6 @@ class BudgetUseCase {
       estimatedTotalExpense,
       estimatedTotalIncome,
       icon = 'banknote',
-      currencyId,
       currency,
       isSystemGenerated = false,
     } = params;
@@ -223,6 +222,15 @@ class BudgetUseCase {
     const currentYear = new Date().getFullYear();
     if (fiscalYear < currentYear) {
       throw new Error(Messages.BUDGET_PAST_YEAR_NOT_ALLOWED);
+    }
+
+    const foundCurrency = await prisma.currencyExchange.findUnique({
+      where: {
+        name: currency,
+      },
+    });
+    if (!foundCurrency) {
+      throw new Error(Messages.CURRENCY_NOT_FOUND);
     }
 
     return await prisma.$transaction(async (prisma) => {
@@ -252,8 +260,8 @@ class BudgetUseCase {
         const restParams = {
           description,
           icon,
-          currencyId,
-          currency,
+          currencyId: foundCurrency?.id,
+          currency: foundCurrency?.name,
           isSystemGenerated,
         };
 
