@@ -1,3 +1,4 @@
+import { FilterObject } from '@/shared/types/filter.types';
 import { decorate, inject, injectable } from 'inversify';
 import { WALLET_SETTING_TYPES } from '../../di/walletSettingDIContainer.type';
 import { DepositRequestStatus } from '../../domain';
@@ -17,9 +18,13 @@ export class WalletSettingRepository implements IWalletSettingRepository {
   async getDepositRequestsPaginated(
     page: number,
     pageSize: number,
+    filter?: FilterObject,
   ): Promise<DepositRequestsPaginated> {
-    const response = await this.walletSettingApi.getDepositRequestsPaginated(page, pageSize);
-
+    const response = await this.walletSettingApi.getDepositRequestsPaginated(
+      page,
+      pageSize,
+      filter,
+    );
     return WalletSettingMapper.toDepositRequestsPaginated(response);
   }
 

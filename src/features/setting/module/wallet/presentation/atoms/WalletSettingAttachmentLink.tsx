@@ -28,10 +28,6 @@ const WalletSettingAttachmentLink = ({
     return <span className={cn('text-muted-foreground text-sm', className)}>No attachment</span>;
   }
 
-  const handleDownload = () => {
-    window.open(attachment.url, '_blank');
-  };
-
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -60,6 +56,7 @@ const WalletSettingAttachmentLink = ({
       const ext = attachment.type.split('/').pop()?.toLowerCase();
       return !!ext && SUPPORTED_IMAGE_TYPES.includes(ext);
     }
+
     if (attachment.path) {
       const ext = attachment.path.split('.').pop()?.toLowerCase();
       return !!ext && SUPPORTED_IMAGE_TYPES.includes(ext);
@@ -121,7 +118,6 @@ const WalletSettingAttachmentLink = ({
         isPDF={isPDF(attachment)}
         getFileName={getFileName}
         formatFileSize={formatFileSize}
-        handleDownload={handleDownload}
       />
     </>
   );

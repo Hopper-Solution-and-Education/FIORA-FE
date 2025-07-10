@@ -34,6 +34,12 @@ const walletSettingSlice = createSlice({
         state.columnConfig[key].index = newIndex;
       });
     },
+    setWalletSettingFilter: (state, action: PayloadAction<typeof initialState.filter>) => {
+      state.filter = action.payload;
+    },
+    setWalletSettingSearch: (state, action: PayloadAction<string>) => {
+      state.search = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -55,6 +61,14 @@ const walletSettingSlice = createSlice({
   },
 });
 
-export const { setLoading, setError, clearError, toggleColumn, resetColumns, updateColumnIndex } =
-  walletSettingSlice.actions;
+export const {
+  setLoading,
+  setError,
+  clearError,
+  toggleColumn,
+  resetColumns,
+  updateColumnIndex,
+  setWalletSettingFilter,
+  setWalletSettingSearch,
+} = walletSettingSlice.actions;
 export default walletSettingSlice.reducer;
