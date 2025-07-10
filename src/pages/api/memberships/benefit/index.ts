@@ -13,7 +13,7 @@ export const maxDuration = 30;
 
 export default withAuthorization({
   POST: ['Admin'],
-  PUT: ['Admin'],
+  DELETE: ['Admin'],
 })(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   switch (req.method) {
     case 'POST':

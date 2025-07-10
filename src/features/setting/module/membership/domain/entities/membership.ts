@@ -35,6 +35,7 @@ export class Membership {
 }
 
 export class TierBenefit {
+  id: string;
   slug: string;
   name: string;
   suffix: string;
@@ -42,6 +43,7 @@ export class TierBenefit {
   value: number;
 
   constructor(data: TierBenefit) {
+    this.id = data.id;
     this.slug = data.slug;
     this.name = data.name;
     this.suffix = data.suffix;
@@ -101,6 +103,15 @@ export type NewBenefitTier = {
   slug: string;
   description?: string;
   suffix?: string;
+};
+
+export type DeleteBenefitTierRequest = {
+  id: string;
+};
+
+export type DeleteBenefitTierResponse = {
+  data: boolean;
+  message: string;
 };
 
 export default Membership;

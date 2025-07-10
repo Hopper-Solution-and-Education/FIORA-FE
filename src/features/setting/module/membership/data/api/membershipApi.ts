@@ -3,6 +3,8 @@ import { decorate, injectable } from 'inversify';
 import {
   AddBenefitTierRequestDTO,
   AddBenefitTierResponseDTO,
+  DeleteBenefitTierRequestDTO,
+  DeleteBenefitTierResponseDTO,
   GetListMembershipsRequestDTO,
   GetListMembershipsResponseDTO,
   UpsertMembershipRequestDTO,
@@ -13,6 +15,7 @@ export interface IMembershipAPI {
   getListMemberships(request: GetListMembershipsRequestDTO): Promise<GetListMembershipsResponseDTO>;
   upsertMembership(request: UpsertMembershipRequestDTO): Promise<UpsertMembershipResponseDTO>;
   addBenefitTier(request: AddBenefitTierRequestDTO): Promise<AddBenefitTierResponseDTO>;
+  deleteBenefitTier(request: DeleteBenefitTierRequestDTO): Promise<DeleteBenefitTierResponseDTO>;
 }
 
 class MembershipAPI implements IMembershipAPI {
@@ -31,6 +34,12 @@ class MembershipAPI implements IMembershipAPI {
 
   async addBenefitTier(request: AddBenefitTierRequestDTO): Promise<AddBenefitTierResponseDTO> {
     return await httpClient.post('/api/memberships/benefit', request);
+  }
+
+  async deleteBenefitTier(
+    request: DeleteBenefitTierRequestDTO,
+  ): Promise<DeleteBenefitTierResponseDTO> {
+    return await httpClient.delete(`/api/memberships/benefit?id=${request.id}`);
   }
 }
 

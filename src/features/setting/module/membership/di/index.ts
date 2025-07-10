@@ -3,9 +3,11 @@ import { createMembershipAPI, IMembershipAPI } from '../data/api';
 import { createMembershipRepository, IMembershipRepository } from '../data/repositories';
 import {
   createAddNewBenefitUseCase,
+  createDeleteBenefitUseCase,
   createGetListMembershipUseCase,
   createUpsertMembershipUseCase,
   IAddNewBenefitUseCase,
+  IDeleteBenefitUseCase,
   IGetListMembershipUseCase,
   IUpsertMembershipUseCase,
 } from '../domain/usecases';
@@ -18,6 +20,7 @@ export const TYPES = {
   IGetListMembershipUseCase: Symbol('IGetListMembershipUseCase'),
   IUpsertMembershipUseCase: Symbol('IUpsertMembershipUseCase'),
   IAddNewBenefitUseCase: Symbol('IAddNewBenefitUseCase'),
+  IDeleteBenefitUseCase: Symbol('IDeleteBenefitUseCase'),
 };
 
 // Create API instances
@@ -30,6 +33,7 @@ const membershipRepository = createMembershipRepository(membershipAPI);
 const getListMembershipUseCase = createGetListMembershipUseCase(membershipRepository);
 const upsertMembershipUseCase = createUpsertMembershipUseCase(membershipRepository);
 const addNewBenefitUseCase = createAddNewBenefitUseCase(membershipRepository);
+const deleteBenefitUseCase = createDeleteBenefitUseCase(membershipRepository);
 
 // Bind all instances
 membershipDIContainer.bind<IMembershipAPI>(TYPES.IMembershipAPI).toConstantValue(membershipAPI);
@@ -45,5 +49,8 @@ membershipDIContainer
 membershipDIContainer
   .bind<IAddNewBenefitUseCase>(TYPES.IAddNewBenefitUseCase)
   .toConstantValue(addNewBenefitUseCase);
+membershipDIContainer
+  .bind<IDeleteBenefitUseCase>(TYPES.IDeleteBenefitUseCase)
+  .toConstantValue(deleteBenefitUseCase);
 
 export { membershipDIContainer };

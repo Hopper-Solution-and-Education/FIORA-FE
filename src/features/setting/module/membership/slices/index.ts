@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { Membership } from '../domain/entities';
 import {
   addNewBenefitAsyncThunk,
+  deleteBenefitAsyncThunk,
   getListMembershipAsyncThunk,
   upsertMembershipAsyncThunk,
 } from './actions';
@@ -62,6 +63,19 @@ const membershipSlice = createSlice({
       })
       .addCase(addNewBenefitAsyncThunk.rejected, (state) => {
         state.isLoadingAddBenefitTier = false;
+      });
+
+    builder
+      .addCase(deleteBenefitAsyncThunk.pending, (state) => {
+        state.isLoadingDeleteBenefitTier = true;
+      })
+      .addCase(deleteBenefitAsyncThunk.fulfilled, (state, action) => {
+        state.isLoadingDeleteBenefitTier = false;
+        toast.success(action.payload.message);
+      })
+      .addCase(deleteBenefitAsyncThunk.rejected, (state, action) => {
+        state.isLoadingDeleteBenefitTier = false;
+        toast.error(action.payload);
       });
   },
 });

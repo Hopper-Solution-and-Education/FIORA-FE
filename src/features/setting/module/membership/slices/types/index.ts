@@ -7,6 +7,7 @@ interface MembershipState {
   isLoadingUpsertMembership: boolean;
   isShowDialogAddBenefitTier: boolean;
   isLoadingAddBenefitTier: boolean;
+  isLoadingDeleteBenefitTier: boolean;
 }
 
 export const initialMembershipState: MembershipState = {
@@ -16,4 +17,5 @@ export const initialMembershipState: MembershipState = {
   isLoadingUpsertMembership: false,
   isShowDialogAddBenefitTier: false,
   isLoadingAddBenefitTier: false,
+  isLoadingDeleteBenefitTier: false,
 };

@@ -1,6 +1,8 @@
 import {
   AddBenefitTierRequest,
   AddBenefitTierResponse,
+  DeleteBenefitTierRequest,
+  DeleteBenefitTierResponse,
   GetListMembershipsRequest,
   GetListMembershipsResponse,
   Membership,
@@ -10,6 +12,8 @@ import {
 import {
   AddBenefitTierRequestDTO,
   AddBenefitTierResponseDTO,
+  DeleteBenefitTierRequestDTO,
+  DeleteBenefitTierResponseDTO,
   GetListMembershipsRequestDTO,
   GetListMembershipsResponseDTO,
   UpsertMembershipRequestDTO,
@@ -110,6 +114,21 @@ export class MemberMapper {
         updatedBy: data.data.updatedBy,
         userId: data.data.userId,
       },
+      message: data.message,
+    };
+  }
+
+  static toDeleteBenefitTierRequest(data: DeleteBenefitTierRequest): DeleteBenefitTierRequestDTO {
+    return {
+      id: data.id,
+    };
+  }
+
+  static toDeleteBenefitTierResponse(
+    data: DeleteBenefitTierResponseDTO,
+  ): DeleteBenefitTierResponse {
+    return {
+      data: data.data,
       message: data.message,
     };
   }

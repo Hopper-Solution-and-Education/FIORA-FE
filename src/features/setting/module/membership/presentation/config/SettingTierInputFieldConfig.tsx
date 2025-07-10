@@ -1,9 +1,13 @@
 import { FormConfig } from '@/components/common/forms';
+import { GlobalDialog } from '@/components/common/molecules';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { toast } from 'sonner';
 import { setIsShowDialogAddBenefitTier } from '../../slices';
+import { deleteBenefitAsyncThunk, getListMembershipAsyncThunk } from '../../slices/actions';
 import SettingTierInputField from '../atoms/SettingTierInputField';
 import { DynamicFieldTier, EditMemberShipFormValues } from '../schema/editMemberShip.schema';
 
@@ -22,7 +26,12 @@ const SettingTierInputFieldConfig = ({
   const isLoadingUpsertMembership = useAppSelector(
     (state) => state.memberShipSettings.isLoadingUpsertMembership,
   );
+  const [isShowDialogDeleteBenefitTier, setIsShowDialogDeleteBenefitTier] = useState(false);
+  const [idTierToDelete, setIdTierToDelete] = useState<string | null>(null);
   const { setValue, watch } = methods;
+  const isLoadingDeleteBenefitTier = useAppSelector(
+    (state) => state.memberShipSettings.isLoadingDeleteBenefitTier,
+  );
 
   const handleOpenDialogAddBenefitTier = () => {
     dispatch(setIsShowDialogAddBenefitTier(true));
@@ -39,13 +48,16 @@ const SettingTierInputFieldConfig = ({
       suffix={field.suffix}
       options={options}
       required
-      disabled={isLoadingUpsertMembership}
+      disabled={isLoadingUpsertMembership || isLoadingDeleteBenefitTier}
       showRemove={dynamicTierFields.length > 1}
       onRemove={() => {
-        console.log('remove');
+        setIsShowDialogDeleteBenefitTier(true);
+        setIdTierToDelete(field.id);
       }}
     />
   ));
+
+  console.log(idTierToDelete);
 
   // Sticky submit button
   const renderSubmitButton = () => {
@@ -67,6 +79,29 @@ const SettingTierInputFieldConfig = ({
         <FormConfig fields={fields} methods={methods} renderSubmitButton={() => null} />
       </div>
       {renderSubmitButton()}
+      <GlobalDialog
+        open={isShowDialogDeleteBenefitTier}
+        onOpenChange={() => setIsShowDialogDeleteBenefitTier(!isShowDialogDeleteBenefitTier)}
+        heading="Delete Benefit Tier"
+        description="Are you sure you want to delete this benefit tier?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        isLoading={isLoadingDeleteBenefitTier}
+        onConfirm={() => {
+          if (idTierToDelete) {
+            dispatch(deleteBenefitAsyncThunk({ id: idTierToDelete }))
+              .unwrap()
+              .then(() => {
+                dispatch(getListMembershipAsyncThunk({ page: 1, limit: 10 }));
+                setIsShowDialogDeleteBenefitTier(false);
+              })
+              .catch((error) => {
+                toast.error(error);
+                setIsShowDialogDeleteBenefitTier(false);
+              });
+          }
+        }}
+      />
     </div>
   );
 };

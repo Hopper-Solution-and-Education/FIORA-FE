@@ -1,6 +1,7 @@
 import * as yup from 'yup';
 
 export type DynamicFieldTier = {
+  id: string;
   key: string;
   label: string;
   suffix?: string;

@@ -12,6 +12,5 @@ export const membershipBenefitCreateSchema = Joi.object({
   tierBenefit: Joi.object({
     tierId: Joi.string().uuid().required(),
     value: Joi.number().required(),
-    benefitId: Joi.string().uuid().required(),
   }).required(),
 });
