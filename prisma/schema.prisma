@@ -176,6 +176,8 @@ model Transaction {
   fromCategoryId   String?              @db.Uuid
   toAccountId      String?              @db.Uuid
   toCategoryId     String?              @db.Uuid
+  fromWalletId     String?              @db.Uuid
+  toWalletId       String?              @db.Uuid
   products         Json?
   partnerId        String?              @db.Uuid
   remark           String?              @db.VarChar(255)
@@ -195,6 +197,8 @@ model Transaction {
   toAccount        Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Restrict)
   toCategory       Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
   user             User?                @relation("UserTransactions", fields: [userId], references: [id])
+  fromWallet       Wallet?              @relation("FromWallet", fields: [fromWalletId], references: [id])
+  toWallet         Wallet?              @relation("ToWallet", fields: [toWalletId], references: [id])
 
   @@index([date])
   @@index([type])
@@ -402,6 +406,8 @@ model Wallet {
   updatedBy       String?    @db.Uuid
   name            String?    @db.VarChar(50)
   user            User       @relation("UserWallet", fields: [userId], references: [id])
+  fromTransactions Transaction[] @relation("FromWallet")
+  toTransactions   Transaction[] @relation("ToWallet")
 
   @@index([userId])
 }

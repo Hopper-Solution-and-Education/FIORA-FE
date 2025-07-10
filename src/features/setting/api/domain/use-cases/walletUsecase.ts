@@ -1,10 +1,21 @@
-import { Prisma, WalletType, DepositRequestStatus } from '@prisma/client';
-import { walletRepository } from '../../infrastructure/repositories/walletRepository';
-import { IWalletRepository } from '../../repositories/walletRepository.interface';
-import { attachmentRepository } from '../../infrastructure/repositories/attachmentRepository';
-import { IAttachmentRepository } from '../../repositories/attachmentRepository.interface';
-import { ATTACHMENT_CONSTANTS } from '../../constants/attachmentConstants';
+import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
+import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { FilterObject } from '@/shared/types/filter.types';
 import { generateRefCode } from '@/shared/utils/stringHelper';
+import {
+  CategoryType,
+  DepositRequestStatus,
+  Prisma,
+  TransactionType,
+  WalletType,
+} from '@prisma/client';
+import { ATTACHMENT_CONSTANTS } from '../../constants/attachmentConstants';
+import { attachmentRepository } from '../../infrastructure/repositories/attachmentRepository';
+import { categoryRepository } from '../../infrastructure/repositories/categoryRepository';
+import { walletRepository } from '../../infrastructure/repositories/walletRepository';
+import { IAttachmentRepository } from '../../repositories/attachmentRepository.interface';
+import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
+import { IWalletRepository } from '../../repositories/walletRepository.interface';
 
 interface AttachmentData {
   type: string;
@@ -36,10 +47,16 @@ const DEFAULT_WALLET_FIELDS = {
 
 const MAX_REF_CODE_ATTEMPTS = 10;
 
+// Category constants for Deposit FX
+const DEPOSIT_FX_CATEGORY_NAME = 'Deposit FX';
+const DEPOSIT_FX_CATEGORY_ICON = 'piggyBank';
+
 class WalletUseCase {
   constructor(
     private _walletRepository: IWalletRepository = walletRepository,
     private _attachmentRepository: IAttachmentRepository = attachmentRepository,
+    private _transactionRepository: ITransactionRepository = transactionRepository,
+    private _categoryRepository: ICategoryRepository = categoryRepository,
   ) {}
 
   async createWallet(data: Prisma.WalletUncheckedCreateInput) {
@@ -177,10 +194,11 @@ class WalletUseCase {
     return total;
   }
 
-  async getDepositRequestsPaginated(page: number, pageSize: number) {
+  async getDepositRequestsPaginated(page: number, pageSize: number, filter?: FilterObject) {
     const { items, total } = await this._walletRepository.getDepositRequestsPaginated(
       page,
       pageSize,
+      filter,
     );
 
     return {
@@ -192,12 +210,54 @@ class WalletUseCase {
     };
   }
 
-  async updateDepositRequestStatus(
-    id: string,
-    newStatus: import('@prisma/client').DepositRequestStatus,
-  ) {
-    // Only allow update from Requested to Approved/Rejected (enforced in repository)
-    return this._walletRepository.updateDepositRequestStatus(id, newStatus);
+  async updateDepositRequestStatus(id: string, newStatus: DepositRequestStatus, remark?: string) {
+    const depositRequest = await this._walletRepository.findDepositRequestById(id);
+
+    if (!depositRequest) return null;
+
+    if (newStatus === DepositRequestStatus.Approved) {
+      const { userId, packageFXId } = depositRequest;
+      const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
+      if (!packageFX) throw new Error('PackageFX not found');
+      const amount = Number(packageFX.fxAmount);
+      const category = await this.getOrCreateDepositFXCategory(userId);
+      const toWallet = await this._walletRepository.findWalletByType('Payment', userId);
+
+      if (!toWallet) throw new Error('Payment wallet not found');
+
+      await this._transactionRepository.createTransaction({
+        userId,
+        fromCategoryId: category.id,
+        toWalletId: toWallet.id,
+        amount,
+        type: TransactionType.Income,
+        createdBy: userId,
+      });
+
+      await this._walletRepository.increaseWalletBalance(toWallet.id, amount);
+    }
+
+    return this._walletRepository.updateDepositRequestStatus(id, newStatus, remark);
+  }
+
+  private async getOrCreateDepositFXCategory(userId: string) {
+    let category = await this._categoryRepository.findFirstCategory({
+      userId,
+      name: DEPOSIT_FX_CATEGORY_NAME,
+    });
+
+    if (!category) {
+      category = await this._categoryRepository.createCategory({
+        userId,
+        type: CategoryType.Income,
+        icon: DEPOSIT_FX_CATEGORY_ICON,
+        name: DEPOSIT_FX_CATEGORY_NAME,
+        tax_rate: 0,
+        createdBy: userId,
+        updatedBy: userId,
+      });
+    }
+    return category;
   }
 }
 

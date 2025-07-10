@@ -1,10 +1,11 @@
+import { FilterObject } from '@/shared/types/filter.types';
 import {
+  DepositRequest,
+  DepositRequestStatus,
+  PackageFX,
   Prisma,
   Wallet,
   WalletType,
-  PackageFX,
-  DepositRequest,
-  DepositRequestStatus,
 } from '@prisma/client';
 
 export interface IWalletRepository {
@@ -28,9 +29,13 @@ export interface IWalletRepository {
   getDepositRequestsPaginated(
     page: number,
     pageSize: number,
+    filter?: FilterObject,
   ): Promise<{ items: DepositRequest[]; total: number }>;
   updateDepositRequestStatus(
     id: string,
     newStatus: DepositRequestStatus,
+    remark?: string,
   ): Promise<DepositRequest | null>;
+  findDepositRequestById(id: string): Promise<DepositRequest | null>;
+  increaseWalletBalance(walletId: string, amount: number): Promise<void>;
 }

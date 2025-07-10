@@ -1,9 +1,6 @@
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import Image from 'next/image';
-import { Icons } from '@/components/Icon';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import React from 'react';
+import Image from 'next/image';
 
 interface WalletAttachmentPreviewModalProps {
   open: boolean;
@@ -19,10 +16,9 @@ interface WalletAttachmentPreviewModalProps {
   isPDF: boolean;
   getFileName: (path: string) => string;
   formatFileSize: (bytes: number) => string;
-  handleDownload: () => void;
 }
 
-const WalletAttachmentPreviewModal: React.FC<WalletAttachmentPreviewModalProps> = ({
+const WalletAttachmentPreviewModal = ({
   open,
   onOpenChange,
   attachment,
@@ -30,8 +26,7 @@ const WalletAttachmentPreviewModal: React.FC<WalletAttachmentPreviewModalProps> 
   isPDF,
   getFileName,
   formatFileSize,
-  handleDownload,
-}) => {
+}: WalletAttachmentPreviewModalProps) => {
   if (!isImage && !isPDF) return null;
 
   return (
@@ -47,9 +42,6 @@ const WalletAttachmentPreviewModal: React.FC<WalletAttachmentPreviewModalProps> 
           <DialogTitle className="truncate text-xl font-semibold">
             {getFileName(attachment.path)}
           </DialogTitle>
-          <Button variant="ghost" size="sm" onClick={handleDownload} className="h-8 w-8 p-0 ml-2">
-            <Icons.download className="h-4 w-4" />
-          </Button>
         </div>
         <div className="px-10 text-sm text-muted-foreground/60 mb-3 w-full text-left">
           {formatFileSize(attachment.size)} • {attachment.type?.toUpperCase()}

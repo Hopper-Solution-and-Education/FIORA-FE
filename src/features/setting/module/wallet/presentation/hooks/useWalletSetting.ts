@@ -1,6 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
+import { FilterOperator } from '@/shared/types/filter.types';
+import { FilterBuilder } from '@/shared/utils/filterBuilder';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { walletSettingContainer } from '../../di/walletSettingDIContainer';
@@ -8,19 +10,31 @@ import { WALLET_SETTING_TYPES } from '../../di/walletSettingDIContainer.type';
 import { IGetDepositRequestsPaginatedUseCase } from '../../domain';
 import { clearError, setError, setLoading } from '../../slices';
 import { initialState, tableReducer } from '../types/tableReducer.type';
-import { convertToTableData } from '../utils/convertTableData';
-import { updateDepositRequestStatusAsyncThunk } from '../../slices/actions';
-import { toast } from 'sonner';
-import { DepositRequestStatus } from '../../domain/enum';
+import { convertToTableData } from '../utils';
 
 export const useWalletSetting = () => {
   const dispatch = useAppDispatch();
-  const { loading } = useAppSelector((state) => state.walletSetting);
+  const { loading, filter, search } = useAppSelector((state) => state.walletSetting);
 
   const [state, dispatchTable] = useReducer(tableReducer, initialState);
 
   const isInitialLoad = useRef(true);
   const isFetching = useRef(false);
+
+  // Always merge search into filter before sending to API
+  const buildMergedFilter = useCallback(() => {
+    const rules = (filter.rules || []).filter((r) => {
+      if ('field' in r) {
+        return r.field !== 'search';
+      }
+      // Nếu là group, giữ lại (không phải rule search)
+      return true;
+    });
+    if (search && search.trim() !== '') {
+      rules.unshift({ field: 'search', operator: FilterOperator.CONTAINS, value: search });
+    }
+    return { ...filter, rules };
+  }, [filter, search]);
 
   const fetchData = useCallback(
     async (page: number, pageSize: number, isLoadMore = false) => {
@@ -41,7 +55,10 @@ export const useWalletSetting = () => {
           WALLET_SETTING_TYPES.IGetDepositRequestsPaginatedUseCase,
         );
 
-        const response = await useCase.execute(page, pageSize);
+        // Merge search into filter before building filter object
+        const mergedFilter = buildMergedFilter();
+        const filterObject = FilterBuilder.buildDynamicFilter(mergedFilter);
+        const response = await useCase.execute(page, pageSize, filterObject);
 
         const tableData = response.items.map(convertToTableData);
 
@@ -87,7 +104,7 @@ export const useWalletSetting = () => {
         isFetching.current = false;
       }
     },
-    [dispatch],
+    [dispatch, buildMergedFilter],
   );
 
   const loadMore = useCallback(async () => {
@@ -111,6 +128,7 @@ export const useWalletSetting = () => {
     }
   }, [fetchData]);
 
+  // Refetch data when filterObject in redux changes
   useEffect(() => {
     if (!isInitialLoad.current) {
       dispatchTable({ type: 'SET_PAGE', payload: 1 });
@@ -118,24 +136,12 @@ export const useWalletSetting = () => {
       dispatchTable({ type: 'SET_HAS_MORE', payload: true });
       fetchData(1, state.pagination.pageSize, false);
     }
-  }, [state.filters.status, fetchData]);
-
-  const handleUpdateStatus = async (id: string, newStatus: DepositRequestStatus) => {
-    try {
-      await dispatch(updateDepositRequestStatusAsyncThunk({ id, status: newStatus })).unwrap();
-      dispatchTable({ type: 'UPDATE_ITEM_STATUS', payload: { id, status: newStatus } });
-      toast.success(
-        `Request has been ${newStatus === DepositRequestStatus.Approved ? 'approved' : 'rejected'}.`,
-      );
-    } catch (error: any) {
-      toast.error(error?.message || 'An error occurred. Please try again.');
-    }
-  };
+  }, [filter, search, fetchData]);
 
   return {
     tableData: state,
     loading,
     loadMore,
-    handleUpdateStatus,
+    dispatchTable,
   };
 };
