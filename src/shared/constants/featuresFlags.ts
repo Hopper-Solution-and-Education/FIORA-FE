@@ -9,4 +9,11 @@ export enum FeatureFlags {
   WALLET_FEATURE = 'WALLET',
   EXCHANGE_RATE_FEATURE = 'EXCHANGE_RATE',
   MEMBERSHIP_FEATURE = 'MEMBERSHIP',
+  FAQ_FEATURE = 'FAQs',
 }
+
+export const USER_ROLES = {
+  ADMIN: 'ADMIN',
+  USER: 'USER',
+  CS: 'CS',
+} as const;

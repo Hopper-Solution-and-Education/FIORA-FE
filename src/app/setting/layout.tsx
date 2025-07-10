@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import SessionSidebar from '@/components/providers/SessionSidebar';
 import { settingNavItems } from '@/features/setting/constants/sidebarData';
+import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
+import { USER_ROLES } from '@/shared/constants/featuresFlags';
 
 export const metadata: Metadata = {
   title: 'FIORA | Settings',
@@ -13,8 +15,10 @@ export default async function SettingsLayout({ children }: { children: React.Rea
   const defaultOpen = cookieStore.get('sidebar:state')?.value === 'true' || true;
 
   return (
-    <SessionSidebar appLabel="Settings" defaultOpen={defaultOpen} navItems={settingNavItems}>
-      {children}
-    </SessionSidebar>
+    <ModuleAccessLayout requiredRoles={[USER_ROLES.ADMIN]}>
+      <SessionSidebar appLabel="Settings" defaultOpen={defaultOpen} navItems={settingNavItems}>
+        {children}
+      </SessionSidebar>
+    </ModuleAccessLayout>
   );
 }

@@ -224,13 +224,18 @@ export enum Messages {
 
   // Membership Progress Success
   MEMBERSHIP_PROGRESS_OF_CURRENT_USER_SUCCESS = 'Membership progress of current user retrieved successfully',
+
   // WALLET
   GET_WALLET_SUCCESS = 'Get wallet successfully.',
   GET_PACKAGE_FX_SUCCESS = 'Get package FX successfully.',
   GET_FROZEN_DEPOSIT_AMOUNT_SUCCESS = 'Get frozen deposit amount successfully.',
   GET_DEPOSIT_REQUEST_SUCCESS = 'Get deposit requests successfully.',
   CREATE_DEPOSIT_REQUEST_SUCCESS = 'Create deposit request successfully.',
+  UPDATE_DEPOSIT_REQUEST_STATUS_SUCCESS = 'Update deposit request status successfully.',
+
   INVALID_WALLET_TYPE = 'Invalid wallet type.',
+  UPDATE_DEPOSIT_REQUEST_STATUS_FAILED = 'Update deposit request status failed.',
+  INVALID_STATUS = 'Invalid status.',
 
   // EXCHANGE RATE SUCCESS
   CREATE_EXCHANGE_RATE_SUCCESS = 'Create exchange rate successfully.',
@@ -261,8 +266,15 @@ export enum Messages {
   // CURRENCY ERROR
   CURRENCY_NOT_FOUND = 'Currency not found',
   GET_CURRENCY_FAILED = 'Failed to get currency.',
+  // FAQ
+  IMPORT_FAQS_SUCCESS = 'Import FAQs successfully',
+  IMPORT_FAQS_FAILED = 'Import FAQs failed',
+  GET_FAQ_CATEGORIES_SUCCESS = 'Get FAQ categories successfully',
+  GET_FAQ_CATEGORIES_FAILED = 'Get FAQ categories failed',
 
   // COMMON ERRORS
   INVALID_CURRENCY = 'Invalid currency. Must be either VND or USD.',
   VALIDATION_ERROR = 'Validation error.',
+
+  INVALID_PAGE_OR_PAGE_SIZE = 'Invalid page or pageSize.',
 }

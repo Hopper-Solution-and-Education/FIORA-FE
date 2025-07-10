@@ -1,13 +1,13 @@
 import { prisma } from '@/config';
-import { IWalletRepository } from '../../repositories/walletRepository.interface';
 import {
+  DepositRequest,
+  DepositRequestStatus,
+  PackageFX,
   Prisma,
   Wallet,
   WalletType,
-  PackageFX,
-  DepositRequest,
-  DepositRequestStatus,
 } from '@prisma/client';
+import { IWalletRepository } from '../../repositories/walletRepository.interface';
 
 class WalletRepository implements IWalletRepository {
   constructor(private _prisma = prisma) {}
@@ -75,6 +75,84 @@ class WalletRepository implements IWalletRepository {
 
   async findManyPackageFXByIds(ids: string[]): Promise<PackageFX[]> {
     return this._prisma.packageFX.findMany({ where: { id: { in: ids } } });
+  }
+
+  async isDepositRefCodeExists(refCode: string): Promise<boolean> {
+    const count = await this._prisma.depositRequest.count({ where: { refCode } });
+    return count > 0;
+  }
+
+  async getDepositRequestsPaginated(
+    page: number,
+    pageSize: number,
+  ): Promise<{
+    items: DepositRequest[];
+    total: number;
+  }> {
+    const [items, total] = await Promise.all([
+      this._prisma.depositRequest.findMany({
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          package: {
+            select: {
+              id: true,
+              fxAmount: true,
+            },
+          },
+          user: {
+            select: {
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+          attachment: true,
+        },
+      }),
+
+      this._prisma.depositRequest.count(),
+    ]);
+    return { items, total };
+  }
+
+  async updateDepositRequestStatus(
+    id: string,
+    newStatus: DepositRequestStatus,
+    remark?: string,
+  ): Promise<DepositRequest | null> {
+    // Only allow update if current status is 'Requested' and newStatus is 'Approved' or 'Rejected'
+    const current = await this._prisma.depositRequest.findUnique({ where: { id } });
+    if (!current) return null;
+    if (
+      current.status !== DepositRequestStatus.Requested ||
+      (newStatus !== DepositRequestStatus.Approved && newStatus !== DepositRequestStatus.Rejected)
+    ) {
+      return null;
+    }
+
+    // Nếu là Rejected thì lưu remark
+    const updateData: any = { status: newStatus };
+    if (newStatus === DepositRequestStatus.Rejected && remark) {
+      updateData.remark = remark;
+    }
+
+    return this._prisma.depositRequest.update({
+      where: { id },
+      data: updateData,
+    });
+  }
+
+  async findDepositRequestById(id: string): Promise<DepositRequest | null> {
+    return this._prisma.depositRequest.findUnique({ where: { id } });
+  }
+
+  async increaseWalletBalance(walletId: string, amount: number): Promise<void> {
+    await this._prisma.wallet.update({
+      where: { id: walletId },
+      data: { frBalanceActive: { increment: amount } },
+    });
   }
 }
 

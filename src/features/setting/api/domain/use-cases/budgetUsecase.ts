@@ -692,7 +692,7 @@ class BudgetUseCase {
         },
         type: { in: [TransactionType.Income, TransactionType.Expense] },
       },
-      { select: { id: true, date: true, type: true, amount: true, currencyId: true } },
+      { select: { id: true, date: true, type: true, amount: true, currency: true } },
     );
 
     // Step 6: Process transactions to calculate tentative income/expense per year
@@ -822,12 +822,12 @@ class BudgetUseCase {
         const botData = budgetData[BudgetType.Bot] || defaultBudgetData;
         const actData = budgetData[BudgetType.Act] || defaultBudgetData;
 
-        const tentativeKey = `${year}-${actData.currencyId}`;
+        const tentativeKey = `${year}-${actData.currency}`;
 
         const tentativeTotals = tentativeTotalsByYear[tentativeKey] || {
           total_exp: 0,
           total_inc: 0,
-          currencyId: actData.currencyId,
+          currency: actData.currency,
         };
 
         const [

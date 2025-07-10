@@ -179,6 +179,8 @@ model Transaction {
   fromCategoryId   String?              @db.Uuid
   toAccountId      String?              @db.Uuid
   toCategoryId     String?              @db.Uuid
+  fromWalletId     String?              @db.Uuid
+  toWalletId       String?              @db.Uuid
   products         Json?
   partnerId        String?              @db.Uuid
   remark           String?              @db.VarChar(255)
@@ -200,6 +202,8 @@ model Transaction {
   toCategory       Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
   user             User?                @relation("UserTransactions", fields: [userId], references: [id])
   currencyExchange CurrencyExchange?    @relation(fields: [currencyId], references: [id])
+  fromWallet       Wallet?              @relation("FromWallet", fields: [fromWalletId], references: [id])
+  toWallet         Wallet?              @relation("ToWallet", fields: [toWalletId], references: [id])
 
   @@index([date])
   @@index([type])
@@ -398,19 +402,21 @@ model BudgetDetails {
 }
 
 model Wallet {
-  id              String     @id @default(uuid()) @db.Uuid
-  userId          String     @db.Uuid
-  name            String?    @db.VarChar(50)
-  icon            String?
-  type            WalletType
-  frBalanceActive Decimal    @default(0) @db.Decimal(12, 2)
-  frBalanceFrozen Decimal    @default(0)
-  creditLimit     Decimal?   @default(0)
-  createdAt       DateTime   @default(now()) @db.Timestamptz(0)
-  updatedAt       DateTime   @updatedAt @db.Timestamptz(0)
-  createdBy       String?    @db.Uuid
-  updatedBy       String?    @db.Uuid
-  user            User       @relation("UserWallet", fields: [userId], references: [id])
+  id               String        @id @default(uuid()) @db.Uuid
+  userId           String        @db.Uuid
+  name             String?       @db.VarChar(50)
+  icon             String?
+  type             WalletType
+  frBalanceActive  Decimal       @default(0) @db.Decimal(12, 2)
+  frBalanceFrozen  Decimal       @default(0)
+  creditLimit      Decimal?      @default(0)
+  createdAt        DateTime      @default(now()) @db.Timestamptz(0)
+  updatedAt        DateTime      @updatedAt @db.Timestamptz(0)
+  createdBy        String?       @db.Uuid
+  updatedBy        String?       @db.Uuid
+  user             User          @relation("UserWallet", fields: [userId], references: [id])
+  fromTransactions Transaction[] @relation("FromWallet")
+  toTransactions   Transaction[] @relation("ToWallet")
 
   @@index([userId])
 }
@@ -575,13 +581,13 @@ model TierBenefit {
 }
 
 model AttachmentRelations {
-  id           String     @id @db.Uuid
+  id           String     @id @default(uuid()) @db.Uuid
   postId       String     @db.Uuid
   commentId    String?    @db.Uuid
   userId       String     @db.Uuid
   createdAt    DateTime   @default(now()) @db.Timestamptz(0)
   createdBy    String     @db.Uuid
-  updatedAt    DateTime?  @db.Timestamptz(0)
+  updatedAt    DateTime   @updatedAt @db.Timestamptz(0)
   updatedBy    String?    @db.Uuid
   attachmentId String     @db.Uuid
   Attachment   Attachment @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
@@ -593,13 +599,13 @@ model AttachmentRelations {
 }
 
 model Comment {
-  id                  String                @id @db.Uuid
+  id                  String                @id @default(uuid()) @db.Uuid
   content             String
   postId              String                @db.Uuid
   userId              String                @db.Uuid
   createdAt           DateTime              @default(now()) @db.Timestamptz(0)
   createdBy           String                @db.Uuid
-  updatedAt           DateTime?             @db.Timestamptz(0)
+  updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
   updatedBy           String?               @db.Uuid
   AttachmentRelations AttachmentRelations[]
   Post                Post                  @relation(fields: [postId], references: [id], onDelete: Cascade)
@@ -610,8 +616,8 @@ model Comment {
 }
 
 model Post {
-  id                  String                @id @db.Uuid
-  title               String                @db.VarChar(255)
+  id                  String                @id @default(uuid()) @db.Uuid
+  title               String                @unique @db.VarChar(255)
   description         String?               @db.VarChar(255)
   content             String
   views               Int                   @default(0)
@@ -620,7 +626,7 @@ model Post {
   categoryId          String                @db.Uuid
   createdAt           DateTime              @default(now()) @db.Timestamptz(0)
   createdBy           String                @db.Uuid
-  updatedAt           DateTime?             @db.Timestamptz(0)
+  updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
   updatedBy           String?               @db.Uuid
   AttachmentRelations AttachmentRelations[]
   Comment             Comment[]
@@ -634,30 +640,30 @@ model Post {
 }
 
 model PostCategory {
-  id          String    @id @db.Uuid
-  name        String    @db.VarChar(255)
-  description String?   @db.VarChar(255)
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(255)
+  description String?  @db.VarChar(255)
   type        PostType
-  createdAt   DateTime  @default(now()) @db.Timestamptz(0)
-  createdBy   String    @db.Uuid
-  updatedAt   DateTime? @db.Timestamptz(0)
-  updatedBy   String?   @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamptz(0)
+  createdBy   String   @db.Uuid
+  updatedAt   DateTime @updatedAt @db.Timestamptz(0)
+  updatedBy   String?  @db.Uuid
   Post        Post[]
 
   @@index([name])
 }
 
 model Reaction {
-  id           String    @id @db.Uuid
-  postId       String    @db.Uuid
-  userId       String    @db.Uuid
-  reactionType String    @db.VarChar(10)
-  createdAt    DateTime  @default(now()) @db.Timestamptz(0)
-  createdBy    String    @db.Uuid
-  updatedAt    DateTime? @db.Timestamptz(0)
-  updatedBy    String?   @db.Uuid
-  Post         Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  User         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(uuid()) @db.Uuid
+  postId       String   @db.Uuid
+  userId       String   @db.Uuid
+  reactionType String   @db.VarChar(10)
+  createdAt    DateTime @default(now()) @db.Timestamptz(0)
+  createdBy    String   @db.Uuid
+  updatedAt    DateTime @updatedAt @db.Timestamptz(0)
+  updatedBy    String?  @db.Uuid
+  Post         Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([postId])
   @@index([userId])
@@ -771,6 +777,8 @@ enum WalletType {
   Lending
   BNPL
   Debt
+  Referral
+  Cashback
 }
 
 enum DepositRequestStatus {

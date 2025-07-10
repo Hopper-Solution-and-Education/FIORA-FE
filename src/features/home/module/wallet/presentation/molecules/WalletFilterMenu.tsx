@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
@@ -13,10 +15,7 @@ import {
   DEFAULT_WALLET_FILTER_CRITERIA,
 } from '../../data/constant';
 import { WalletFilterParams, filterParamsInitState } from '../types/filter.type';
-import {
-  extractWalletFilterData,
-  createWalletFilterStructure,
-} from '../../utils/transformFilterData';
+import { extractWalletFilterData, createWalletFilterStructure } from '../../utils';
 
 interface WalletFilterMenuProps {
   onFilterChange: (newFilter: FilterCriteria) => void;

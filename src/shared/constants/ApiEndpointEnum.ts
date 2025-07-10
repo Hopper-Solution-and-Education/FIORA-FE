@@ -12,4 +12,5 @@ export enum ApiEndpointEnum {
   WalletPackage = '/api/wallet/package',
   WalletDeposit = '/api/wallet/deposit',
   WalletFrozenAmount = '/api/wallet/deposit/frozen-amount',
+  WalletSetting = '/api/wallet/setting',
 }

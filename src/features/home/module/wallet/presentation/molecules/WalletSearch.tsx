@@ -1,4 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+'use client';
+
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store';

@@ -7,7 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import useDataFetch from '@/shared/hooks/useDataFetcher';
+import {
+  deleteTransaction as deleteTransactionThunk,
+  fetchTransactions,
+} from '@/features/home/module/transaction/slices/actions';
 import { FilterCriteria, OrderType } from '@/shared/types';
 import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -17,16 +20,10 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useSWRConfig } from 'swr';
 import { formatCurrency } from '../hooks/formatCurrency';
 import { formatDate } from '../hooks/formatDate';
 import { updateAmountRange, updateFilterCriteria } from '../slices';
-import {
-  IRelationalTransaction,
-  ITransactionPaginatedResponse,
-  TransactionColumn,
-  TransactionTableColumnKey,
-} from '../types';
+import { IRelationalTransaction, TransactionColumn, TransactionTableColumnKey } from '../types';
 import {
   DEFAULT_TRANSACTION_TABLE_COLUMNS,
   TRANSACTION_TYPE,
@@ -78,11 +75,12 @@ const TransactionTable = () => {
   const { data } = useSession();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { mutate } = useSWRConfig();
   const toggleRef = useRef(null);
   const { visibleColumns, filterCriteria } = useAppSelector((state) => state.transaction);
+  const transactionDataState = useAppSelector((state) => state.transactionData);
+  const transactionsResponse = transactionDataState.transactions.data;
+  const isTransactionLoading = transactionDataState.transactions.isLoading;
 
-  //Sort states
   const [displayData, setDisplayData] = useState<IRelationalTransaction[]>([]);
   const [sortOrder, setSortOrder] = useState<OrderType | undefined>('desc');
   const [sortTarget, setSortTarget] = useState<string>('date');
@@ -96,36 +94,15 @@ const TransactionTable = () => {
     IRelationalTransaction | undefined
   >();
 
-  const {
-    data: fetchData,
-    isLoading,
-    isValidating,
-  } = useDataFetch<ITransactionPaginatedResponse>({
-    endpoint: '/api/transactions',
-    method: 'POST',
-    body: {
-      ...filterCriteria,
-      page: paginationParams.currentPage,
-      pageSize: paginationParams.pageSize,
-      sortBy: { [sortTarget]: sortOrder },
-      userId: data?.user.id,
-    },
-  });
-
-  // Implement intersection observer for infinite scrolling
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (
           entries[0].isIntersecting &&
-          !isLoading &&
+          !isTransactionLoading &&
           paginationParams.currentPage < paginationParams.totalPage
         ) {
-          if (
-            paginationParams.currentPage < paginationParams.totalPage &&
-            !isLoading &&
-            !isValidating
-          ) {
+          if (paginationParams.currentPage < paginationParams.totalPage && !isTransactionLoading) {
             setPaginationParams((prev) => ({ ...prev, currentPage: prev.currentPage + 1 }));
           }
         }
@@ -144,64 +121,75 @@ const TransactionTable = () => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, paginationParams.currentPage, paginationParams.totalPage, fetchData]);
+  }, [
+    isTransactionLoading,
+    paginationParams.currentPage,
+    paginationParams.totalPage,
+    transactionsResponse,
+  ]);
 
   const debouncedFilterHandler = useMemo(
     () =>
       debounce((value: string) => {
-        console.log('value', value);
         handleFilterChange({ ...filterCriteria, search: String(value).trim() });
       }, 1000),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [filterCriteria],
   );
 
-  // Handle data fetched from API
   useEffect(() => {
-    if (fetchData?.status === 201 && fetchData?.data.data) {
+    if (transactionsResponse && Array.isArray(transactionsResponse.data)) {
       setPaginationParams((prev) => ({
         ...prev,
-        totalPage: fetchData?.data.totalPage,
-        totalItems: fetchData?.data.total,
+        totalPage: transactionsResponse.totalPage,
+        totalItems: transactionsResponse.total,
       }));
+
       dispatch(
-        updateAmountRange({ min: fetchData?.data.amountMin, max: fetchData?.data.amountMax }),
+        updateAmountRange({
+          min: transactionsResponse.amountMin,
+          max: transactionsResponse.amountMax,
+        }),
+      );
+
+      const mappedData = (transactionsResponse.data as IRelationalTransaction[]).map(
+        (item: IRelationalTransaction) => ({
+          ...item,
+          createdBy: (item as any).createdBy || '',
+        }),
       );
 
       if (paginationParams.currentPage === 1) {
-        setDisplayData(
-          fetchData?.data.data.map((item) => ({
-            ...item,
-            createdBy: item.createdBy || '', // Ensure createdBy is never null
-          })) as IRelationalTransaction[],
-        );
+        setDisplayData(mappedData);
       } else {
-        setDisplayData((prev) => [
-          ...prev,
-          ...((fetchData?.data.data.map((item) => ({
-            ...item,
-            createdBy: item.createdBy || '', // Ensure createdBy is never null
-          })) as IRelationalTransaction[]) || []),
-        ]);
+        setDisplayData((prev) => [...prev, ...mappedData]);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchData]);
+  }, [transactionsResponse]);
 
-  // Mutate data when filter criteria and pageNumber changes for lazy loading and filter feature
   useEffect(() => {
-    if (fetchData) {
-      mutate('/api/transactions', displayData, {
-        revalidate: true,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paginationParams.currentPage, filterCriteria]);
+    const payload: any = {
+      ...filterCriteria,
+      page: paginationParams.currentPage,
+      pageSize: paginationParams.pageSize,
+      sortBy: { [sortTarget]: sortOrder },
+      userId: data?.user?.id ?? '',
+    };
 
-  // Handle sort logics for column header
+    dispatch(fetchTransactions(payload));
+  }, [
+    dispatch,
+    filterCriteria,
+    paginationParams.currentPage,
+    paginationParams.pageSize,
+    sortTarget,
+    sortOrder,
+    data?.user?.id,
+  ]);
+
   const handleSort = (header: string) => {
     if (sortTarget === header) {
-      // Nếu đẫ có sort tồn tại
       if (sortOrder === 'asc') {
         setSortOrder('desc');
       } else {
@@ -215,49 +203,35 @@ const TransactionTable = () => {
     handleFilterChange({ ...filterCriteria, sortBy: sortOrder ? { [sortTarget]: sortOrder } : {} });
   };
 
-  // Navigate to create native page
   const handleCreateTransaction = () => {
     router.push('/transaction/create');
   };
 
   const handleDeleteTransaction = () => {
-    //delete logics here
-    const endpoint = `/api/transactions/transaction?id=${selectedTransaction?.id}`;
+    if (!selectedTransaction) return;
     setIsDeleting(true);
-    fetch(endpoint, {
-      method: 'DELETE',
-    })
-      .then(async (response) => {
-        const responseData = await response.json();
 
-        if (response.ok) {
-          // Remove the deleted transaction from the display data
-          setDisplayData((prev) => prev.filter((item) => item.id !== selectedTransaction?.id));
+    dispatch(deleteTransactionThunk(selectedTransaction.id))
+      .unwrap()
+      .then(() => {
+        setDisplayData((prev) =>
+          prev.filter((item: IRelationalTransaction) => item.id !== selectedTransaction.id),
+        );
 
-          // Close the delete modal
-          setIsDeleteModalOpen(false);
-          setSelectedTransaction(undefined);
+        setIsDeleteModalOpen(false);
+        setSelectedTransaction(undefined);
 
-          // Alert the user of successful deletion
-          toast.success('Transaction deleted successfully');
-
-          // Revalidate data
-          mutate('/api/transactions');
-        } else {
-          toast.error(responseData.message || 'Failed to delete transaction');
-        }
+        toast.success('Transaction deleted successfully');
       })
-      .catch((error) => {
-        toast.error(error.message || 'Failed to delete transaction');
+      .catch((error: any) => {
+        toast.error(error?.message || 'Failed to delete transaction');
       })
       .finally(() => {
         setIsDeleting(false);
       });
   };
 
-  // Navigate to delete page
   const handleCloseDeleteModal = () => {
-    //delete logics here
     setIsDeleteModalOpen(false);
     setSelectedTransaction(undefined);
   };
@@ -267,25 +241,20 @@ const TransactionTable = () => {
     setIsDeleteModalOpen(true);
   };
 
-  // Callback function to apply after updating filter criteria
   const handleFilterChange = (newFilter: FilterCriteria) => {
-    setPaginationParams((prev) => ({ ...prev, currentPage: 1 })); // Reset current page to 1 when applying a new filter
+    setPaginationParams((prev) => ({ ...prev, currentPage: 1 }));
     dispatch(updateFilterCriteria(newFilter));
   };
 
-  // Function to check if a date is older than 3 months
   const isDeleteForbidden = (date: string | Date): boolean => {
     const transactionDate = new Date(date);
 
-    // Calculate date 3 months ago from current date
     const threeMonthsAgo = new Date();
-    threeMonthsAgo.setMonth(currentDate.getMonth() - 1);
+    threeMonthsAgo.setMonth(currentDate.getMonth() - 3);
 
-    // Return true if transaction date is before the 3-months-ago date
     return transactionDate < threeMonthsAgo;
   };
 
-  // Memoize the visible columns to avoid re-rendering
   const tableVisibleColumns: TransactionTableColumnKey = useMemo((): TransactionTableColumnKey => {
     const columns =
       Object.keys(visibleColumns).length > 0
@@ -297,7 +266,6 @@ const TransactionTable = () => {
           }, {} as TransactionTableColumnKey)
         : DEFAULT_TRANSACTION_TABLE_COLUMNS;
 
-    // Sort columns by index
     return Object.fromEntries(
       Object.entries(columns)
         .sort((a, b) => a[1].index - b[1].index)
@@ -312,7 +280,6 @@ const TransactionTable = () => {
           <TableRow className="hover:bg-none">
             <TableCell colSpan={8}>
               <div className="w-full flex justify-between py-2 px-5">
-                {/* Search Box container*/}
                 <div className="flex flex-col justify-start items-start gap-4">
                   <div className="flex gap-2">
                     <div className="relative w-[30vw]">
@@ -339,9 +306,7 @@ const TransactionTable = () => {
                     transaction records
                   </Label>
                 </div>
-                {/* function button group*/}
                 <div className="flex gap-2">
-                  {/* Create button */}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -371,7 +336,6 @@ const TransactionTable = () => {
                     </Tooltip>
                   </TooltipProvider>
 
-                  {/* Setting button */}
                   <SettingsMenu />
                 </div>
               </div>
@@ -383,12 +347,12 @@ const TransactionTable = () => {
                 TransactionTableToEntity[key as keyof typeof TransactionTableToEntity];
               return (
                 <TableCell
-                  className={`cursor-${value.sortable && !isLoading && !isValidating ? 'pointer' : 'default'}`}
+                  className={`cursor-${value.sortable && !isTransactionLoading ? 'pointer' : 'default'}`}
                   key={idx}
                   onMouseEnter={() => setHoveringIdx(idx)}
                   onMouseLeave={() => setHoveringIdx(-1)}
                   onClick={() => {
-                    if (!isLoading && !isValidating) handleSort(entityKey);
+                    if (!isTransactionLoading) handleSort(entityKey);
                   }}
                 >
                   <div
@@ -400,7 +364,7 @@ const TransactionTable = () => {
                     {key}
                     {value.sortable && (hoveringIdx === idx || sortTarget === entityKey) && (
                       <>
-                        {!isLoading && !isValidating ? (
+                        {!isTransactionLoading ? (
                           <SortArrowBtn
                             sortOrder={sortOrder ?? 'none'}
                             isActivated={sortTarget === entityKey}
@@ -417,9 +381,8 @@ const TransactionTable = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {/* Table data loop */}
           {displayData.map((transRecord: IRelationalTransaction, index: number) => {
-            const recordDate = new Date(transRecord.date.toString());
+            const recordDate = new Date(transRecord.date.toLocaleString());
 
             return (
               <TableRow
@@ -562,7 +525,6 @@ const TransactionTable = () => {
                       case 'Actions':
                         return (
                           <TableCell key={columnKey} className="flex justify-center gap-2">
-                            {/* Detail button */}
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -582,7 +544,6 @@ const TransactionTable = () => {
                               </Tooltip>
                             </TooltipProvider>
 
-                            {/* Delete button */}
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -620,7 +581,7 @@ const TransactionTable = () => {
               </TableRow>
             );
           })}
-          {displayData.length === 0 && !isLoading && !isValidating && (
+          {displayData.length === 0 && !isTransactionLoading && (
             <TableRow>
               <TableCell colSpan={Object.entries(tableVisibleColumns).length}>
                 <div className="w-full h-full flex justify-center items-center">
@@ -635,7 +596,7 @@ const TransactionTable = () => {
                 className="target-div w-full h-full min-h-5 flex justify-center items-center"
                 ref={toggleRef}
               >
-                {(isLoading || isValidating) && <Label>Loading more data...</Label>}
+                {isTransactionLoading && <Label>Loading more data...</Label>}
               </div>
             </TableCell>
           </TableRow>

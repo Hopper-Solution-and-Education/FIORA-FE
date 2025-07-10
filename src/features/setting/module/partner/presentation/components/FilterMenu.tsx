@@ -1,16 +1,14 @@
-import React from 'react';
+import DateRangeFilter from '@/components/common/filters/DateRangeFilter';
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
-import DateRangeFilter from '@/components/common/filters/DateRangeFilter';
-import { formatCurrency } from '@/shared/lib';
 import { FilterColumn, FilterCriteria } from '@/shared/types/filter.types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
-import { searchPartners } from '../../slices/actions/searchPartnersAsyncThunk';
 import { toast } from 'sonner';
+import { searchPartners } from '../../slices/actions/searchPartnersAsyncThunk';
 
 // Define constants for magic numbers
 const DEFAULT_MAX_EXPENSE = 100000;
@@ -275,8 +273,6 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         label="Expense Range"
         minLabel="Min Expense"
         maxLabel="Max Expense"
-        formatValue={(value, isEditing) => (isEditing ? value : formatCurrency(value))}
-        tooltipFormat={(value) => formatCurrency(value)}
         step={DEFAULT_SLIDER_STEP}
       />
     );
@@ -294,8 +290,6 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         label="Income Range"
         minLabel="Min Income"
         maxLabel="Max Income"
-        formatValue={(value, isEditing) => (isEditing ? value : formatCurrency(value))}
-        tooltipFormat={(value) => formatCurrency(value)}
         step={DEFAULT_SLIDER_STEP}
       />
     );

@@ -15,12 +15,9 @@ import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
 
-const TransactionPage = dynamic(
-  () => import('@/features/home/module/transaction/TransactionPage'),
-  {
-    loading: () => <Loading />,
-  },
-);
+const TransactionPage = dynamic(() => import('@/features/home/module/transaction'), {
+  loading: () => <Loading />,
+});
 
 const Transaction = () => {
   const { data } = useSession();

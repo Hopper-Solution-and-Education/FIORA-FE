@@ -5,7 +5,7 @@ import {
   getWalletByTypeAsyncThunk,
   getWalletsAsyncThunk,
   getPackageFXAsyncThunk,
-  fetchFrozenAmount,
+  fetchFrozenAmountAsyncThunk,
 } from './actions';
 import type { PackageFX } from '../domain/entity/PackageFX';
 import type { AttachmentData } from '../presentation/types/attachment.type';
@@ -115,16 +115,16 @@ const walletSlice = createSlice({
         state.loading = false;
         state.error = action.payload || 'Failed to fetch packageFX';
       })
-      .addCase(fetchFrozenAmount.pending, (state) => {
+      .addCase(fetchFrozenAmountAsyncThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchFrozenAmount.fulfilled, (state, action) => {
+      .addCase(fetchFrozenAmountAsyncThunk.fulfilled, (state, action) => {
         state.loading = false;
         state.frozenAmount = action.payload;
         state.error = null;
       })
-      .addCase(fetchFrozenAmount.rejected, (state, action) => {
+      .addCase(fetchFrozenAmountAsyncThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
