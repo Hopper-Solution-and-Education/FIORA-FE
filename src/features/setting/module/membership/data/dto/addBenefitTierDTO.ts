@@ -1,12 +1,13 @@
 import { HttpResponse } from '@/shared/types';
-import { NewBenefitTier } from '../../domain/entities';
+import {
+  AddMembershipBenefitPayload,
+  AddTierBenefitPayload,
+  NewBenefitTier,
+} from '../../domain/entities';
 
 export interface AddBenefitTierRequestDTO {
-  name: string;
-  slug: string;
-  description?: string;
-  suffix?: string;
-  userId: string;
+  tierBenefit: AddTierBenefitPayload;
+  membershipBenefit: AddMembershipBenefitPayload;
 }
 
 export type AddBenefitTierResponseDTO = HttpResponse<NewBenefitTier>;

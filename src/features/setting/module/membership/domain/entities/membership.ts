@@ -68,12 +68,22 @@ export type UpsertMembershipResponse = {
 };
 
 export type AddBenefitTierRequest = {
+  tierBenefit: AddTierBenefitPayload;
+  membershipBenefit: AddMembershipBenefitPayload;
+};
+
+export interface AddMembershipBenefitPayload {
   name: string;
   slug: string;
   description?: string;
   suffix?: string;
   userId: string;
-};
+}
+
+export interface AddTierBenefitPayload {
+  tierId: string;
+  value: number;
+}
 
 export type AddBenefitTierResponse = {
   data: NewBenefitTier;

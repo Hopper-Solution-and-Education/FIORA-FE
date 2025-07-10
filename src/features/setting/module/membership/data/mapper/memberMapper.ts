@@ -82,11 +82,17 @@ export class MemberMapper {
 
   static toAddBenefitTierRequest(data: AddBenefitTierRequest): AddBenefitTierRequestDTO {
     return {
-      name: data.name,
-      slug: data.slug,
-      description: data.description,
-      suffix: data.suffix,
-      userId: data.userId,
+      tierBenefit: {
+        tierId: data.tierBenefit.tierId,
+        value: data.tierBenefit.value,
+      },
+      membershipBenefit: {
+        name: data.membershipBenefit.name,
+        slug: data.membershipBenefit.slug,
+        description: data.membershipBenefit.description,
+        suffix: data.membershipBenefit.suffix,
+        userId: data.membershipBenefit.userId,
+      },
     };
   }
 
