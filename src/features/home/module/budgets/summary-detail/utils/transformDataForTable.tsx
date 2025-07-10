@@ -134,6 +134,12 @@ export const getColumnsByPeriod = (
 ) => {
   const renderEditableCell = (text: any, record: TableData, index: number, column: ColumnProps) => {
     const isDisableEdited = !PERIOD_CONFIG.months.some((item) => item.key === column.key);
+
+    // Check if the text is a render function, then return the render function
+    if (text?.render) {
+      return text.render;
+    }
+
     if (record.isEditable && !isDisableEdited) {
       return (
         <InputCurrency
