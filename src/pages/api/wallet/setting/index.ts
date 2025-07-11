@@ -2,21 +2,24 @@ import { walletUseCase } from '@/features/setting/api/domain/use-cases/walletUse
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { FilterObject } from '@/shared/types/filter.types';
 import { _PaginationResponse } from '@/shared/types/httpResponse.types';
+import { FilterBuilder } from '@/shared/utils/filterBuilder';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     switch (req.method) {
-      case 'GET':
-        return GET(req, res);
+      case 'POST':
+        return POST(req, res);
       case 'PUT':
         return PUT(req, res);
       default:
         return createError(res, RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED);
     }
   } catch (error: any) {
+    console.error(error);
     return createError(
       res,
       RESPONSE_CODE.INTERNAL_SERVER_ERROR,
@@ -25,10 +28,9 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse) 
   }
 });
 
-async function GET(req: NextApiRequest, res: NextApiResponse) {
+async function POST(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { page = '1', pageSize = '10' } = req.query;
-
+    const { page = 1, pageSize = 10, filter } = req.body;
     const pageNum = parseInt(page as string, 10);
     const pageSizeNum = parseInt(pageSize as string, 10);
 
@@ -36,7 +38,17 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_PAGE_OR_PAGE_SIZE);
     }
 
-    const data = await walletUseCase.getDepositRequestsPaginated(pageNum, pageSizeNum);
+    let filterObj: FilterObject | undefined = undefined;
+    if (filter) {
+      try {
+        filterObj = FilterBuilder.toFilterObject(filter);
+      } catch (e) {
+        console.error(e);
+        return createError(res, RESPONSE_CODE.BAD_REQUEST, 'Invalid filter format');
+      }
+    }
+
+    const data = await walletUseCase.getDepositRequestsPaginated(pageNum, pageSizeNum, filterObj);
 
     return res.status(RESPONSE_CODE.OK).json({
       status: RESPONSE_CODE.OK,

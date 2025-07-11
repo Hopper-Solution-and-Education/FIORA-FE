@@ -1,4 +1,6 @@
 import { prisma } from '@/config';
+import { FilterObject } from '@/shared/types/filter.types';
+import { FilterBuilder } from '@/shared/utils/filterBuilder';
 import {
   DepositRequest,
   DepositRequestStatus,
@@ -85,15 +87,63 @@ class WalletRepository implements IWalletRepository {
   async getDepositRequestsPaginated(
     page: number,
     pageSize: number,
+    filter?: FilterObject,
   ): Promise<{
     items: DepositRequest[];
     total: number;
   }> {
+    // Convert FilterObject to Prisma where clause
+    const where: any = {};
+
+    if (filter) {
+      // Custom logic for search, status, amount range
+      // Parse filter to DynamicFilterGroup for easier handling
+      const group = FilterBuilder.parseDynamicFilter(filter);
+
+      for (const ruleOrGroup of group.rules) {
+        if ('condition' in ruleOrGroup) continue; // skip nested for now
+
+        const rule = ruleOrGroup;
+        switch (rule.field) {
+          case 'search':
+            // search applies to refCode, user.email, user.name
+            where.OR = [
+              { refCode: { contains: rule.value, mode: 'insensitive' } },
+              { user: { email: { contains: rule.value, mode: 'insensitive' } } },
+              { user: { name: { contains: rule.value, mode: 'insensitive' } } },
+            ];
+            break;
+          case 'status':
+            if (rule.operator === 'in') {
+              where.status = { in: rule.value };
+            } else {
+              where.status = rule.value;
+            }
+            break;
+          case 'amount':
+            // amount is from package.fxAmount
+            if (rule.operator === 'between') {
+              const arr = Array.isArray(rule.value) ? (rule.value as [number, number]) : [0, 0];
+              where.package = { fxAmount: { gte: arr[0], lte: arr[1] } };
+            } else if (rule.operator === 'gte') {
+              where.package = { fxAmount: { gte: rule.value as number } };
+            } else if (rule.operator === 'lte') {
+              where.package = { fxAmount: { lte: rule.value as number } };
+            }
+            break;
+          default:
+            // fallback: direct field
+            where[rule.field] = rule.value;
+        }
+      }
+    }
+
     const [items, total] = await Promise.all([
       this._prisma.depositRequest.findMany({
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: { createdAt: 'desc' },
+        where,
         include: {
           package: {
             select: {
@@ -111,8 +161,7 @@ class WalletRepository implements IWalletRepository {
           attachment: true,
         },
       }),
-
-      this._prisma.depositRequest.count(),
+      this._prisma.depositRequest.count({ where }),
     ]);
     return { items, total };
   }

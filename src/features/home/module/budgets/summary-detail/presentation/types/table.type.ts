@@ -28,6 +28,7 @@ export interface TableData extends DataSourceProps {
   isEditable?: boolean;
   isNew?: boolean;
   children?: TableData[];
+  categoryId?: string;
 }
 
 export const MONTHS = [

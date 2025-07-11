@@ -137,7 +137,6 @@ export function useBudgetColumns({
           if (categoryRows.includes(record.key)) {
             return null;
           }
-
           return column.render ? column.render(value, record, 2) : value;
         },
       })),

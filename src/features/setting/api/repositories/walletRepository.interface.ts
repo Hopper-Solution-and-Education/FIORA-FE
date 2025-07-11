@@ -1,3 +1,4 @@
+import { FilterObject } from '@/shared/types/filter.types';
 import {
   DepositRequest,
   DepositRequestStatus,
@@ -28,6 +29,7 @@ export interface IWalletRepository {
   getDepositRequestsPaginated(
     page: number,
     pageSize: number,
+    filter?: FilterObject,
   ): Promise<{ items: DepositRequest[]; total: number }>;
   updateDepositRequestStatus(
     id: string,
