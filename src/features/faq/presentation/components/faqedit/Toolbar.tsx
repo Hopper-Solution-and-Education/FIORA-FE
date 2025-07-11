@@ -11,8 +11,8 @@ import {
   ListOrdered,
   Quote,
   Code,
-  Link as LinkIcon,
   Image as ImageIcon,
+  VideoIcon,
   ChevronDown,
   AlignLeft,
   AlignCenter,
@@ -25,6 +25,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 
 interface ToolbarProps {
@@ -32,10 +33,13 @@ interface ToolbarProps {
 }
 
 export default function Toolbar({ editor }: ToolbarProps) {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const videoInputRef = useRef<HTMLInputElement | null>(null);
   const [selectedColor, setSelectedColor] = useState('#000000');
+  const [selectedFontSize, setSelectedFontSize] = useState('14px');
 
-  // Label & icon động cho căn lề
+  const fontSizes = ['12px', '14px', '16px', '18px', '20px', '24px'];
+
   const getCurrentAlignment = () => {
     if (editor.isActive({ textAlign: 'left' }))
       return (
@@ -62,17 +66,9 @@ export default function Toolbar({ editor }: ToolbarProps) {
     );
   };
 
-  const insertLink = () => {
-    const url = window.prompt('Enter URL');
-    if (url) {
-      editor.chain().focus().setLink({ href: url }).run();
-    }
-  };
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = () => {
       const base64 = reader.result as string;
@@ -81,54 +77,81 @@ export default function Toolbar({ editor }: ToolbarProps) {
     reader.readAsDataURL(file);
   };
 
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: 'video',
+        attrs: {
+          src: url,
+          width: '560',
+          height: '315',
+        },
+      })
+      .run();
+  };
+
   const activeBtn = 'bg-blue-100 text-blue-700 border border-blue-500 shadow-sm';
   const normalBtn = 'bg-transparent text-black hover:bg-blue-50 border border-transparent';
 
   return (
     <div className="flex flex-wrap items-center gap-2 px-4 py-2 border-b border-border bg-muted rounded-t">
-      {/* Hidden image input */}
       <input
         type="file"
         accept="image/*"
-        ref={fileInputRef}
+        ref={imageInputRef}
         onChange={handleImageUpload}
         className="hidden"
       />
+      <input
+        type="file"
+        accept="video/*"
+        ref={videoInputRef}
+        onChange={handleVideoUpload}
+        className="hidden"
+      />
 
-      {/* Heading dropdown */}
+      {/* FONT SIZE */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="sm"
-            className="flex items-center gap-1 w-[130px] justify-between"
+            className="flex items-center gap-1 w-[100px] justify-between"
           >
-            {editor.isActive('heading', { level: 1 })
-              ? 'Heading 1'
-              : editor.isActive('heading', { level: 2 })
-                ? 'Heading 2'
-                : 'Normal text'}
+            {selectedFontSize}
             <ChevronDown size={16} />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem onClick={() => editor.chain().focus().setParagraph().run()}>
-            Normal text
-          </DropdownMenuItem>
+          {fontSizes.map((size) => (
+            <DropdownMenuItem
+              key={size}
+              onClick={() => {
+                editor.chain().focus().setFontSize(size).run();
+                setSelectedFontSize(size);
+              }}
+            >
+              {size}
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            onClick={() => {
+              editor.chain().focus().unsetFontSize().run();
+              setSelectedFontSize('14px');
+            }}
           >
-            Heading 1
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          >
-            Heading 2
+            Reset size
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Formatting */}
+      {/* BOLD */}
       <Toggle
         pressed={editor.isActive('bold')}
         onPressedChange={() => editor.chain().focus().toggleBold().run()}
@@ -139,6 +162,8 @@ export default function Toolbar({ editor }: ToolbarProps) {
       >
         <Bold size={18} />
       </Toggle>
+
+      {/* ITALIC */}
       <Toggle
         pressed={editor.isActive('italic')}
         onPressedChange={() => editor.chain().focus().toggleItalic().run()}
@@ -149,6 +174,8 @@ export default function Toolbar({ editor }: ToolbarProps) {
       >
         <Italic size={18} />
       </Toggle>
+
+      {/* UNDERLINE */}
       <Toggle
         pressed={editor.isActive('underline')}
         onPressedChange={() => editor.chain().focus().toggleUnderline().run()}
@@ -159,6 +186,8 @@ export default function Toolbar({ editor }: ToolbarProps) {
       >
         <Underline size={18} />
       </Toggle>
+
+      {/* STRIKE */}
       <Toggle
         pressed={editor.isActive('strike')}
         onPressedChange={() => editor.chain().focus().toggleStrike().run()}
@@ -170,7 +199,7 @@ export default function Toolbar({ editor }: ToolbarProps) {
         <Strikethrough size={18} />
       </Toggle>
 
-      {/* Quote, code block */}
+      {/* BLOCKQUOTE */}
       <Toggle
         pressed={editor.isActive('blockquote')}
         onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}
@@ -181,6 +210,8 @@ export default function Toolbar({ editor }: ToolbarProps) {
       >
         <Quote size={18} />
       </Toggle>
+
+      {/* CODEBLOCK */}
       <Toggle
         pressed={editor.isActive('codeBlock')}
         onPressedChange={() => editor.chain().focus().toggleCodeBlock().run()}
@@ -192,7 +223,7 @@ export default function Toolbar({ editor }: ToolbarProps) {
         <Code size={18} />
       </Toggle>
 
-      {/* Lists */}
+      {/* BULLET LIST */}
       <Toggle
         pressed={editor.isActive('bulletList')}
         onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
@@ -203,6 +234,8 @@ export default function Toolbar({ editor }: ToolbarProps) {
       >
         <List size={18} />
       </Toggle>
+
+      {/* ORDERED LIST */}
       <Toggle
         pressed={editor.isActive('orderedList')}
         onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
@@ -214,7 +247,7 @@ export default function Toolbar({ editor }: ToolbarProps) {
         <ListOrdered size={18} />
       </Toggle>
 
-      {/* Alignment dropdown */}
+      {/* ALIGNMENT */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -239,7 +272,7 @@ export default function Toolbar({ editor }: ToolbarProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Color dropdown */}
+      {/* COLOR PICKER */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -266,24 +299,26 @@ export default function Toolbar({ editor }: ToolbarProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Link / Image */}
+      {/* IMAGE */}
       <Button
         type="button"
         variant="ghost"
         size="sm"
-        onClick={insertLink}
-        className="w-9 h-9 flex items-center justify-center rounded"
-      >
-        <LinkIcon size={18} />
-      </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={() => fileInputRef.current?.click()}
+        onClick={() => imageInputRef.current?.click()}
         className="w-9 h-9 flex items-center justify-center rounded"
       >
         <ImageIcon size={18} />
+      </Button>
+
+      {/* VIDEO */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => videoInputRef.current?.click()}
+        className="w-9 h-9 flex items-center justify-center rounded"
+      >
+        <VideoIcon size={18} />
       </Button>
     </div>
   );
