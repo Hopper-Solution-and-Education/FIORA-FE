@@ -16,11 +16,13 @@ export class FIORANumberFormat extends Intl.NumberFormat {
       throw new Error(`Unsupported currency: ${currency}`);
     }
 
+    // With VND, always set minimumFractionDigits and maximumFractionDigits to 0
+    const isVND = currency === 'VND';
     const formatOptions: Intl.NumberFormatOptions = {
       style: 'currency',
       currency: currency === 'FX' ? 'USD' : currency,
-      minimumFractionDigits: config.minimumFractionDigits,
-      maximumFractionDigits: config.maximumFractionDigits,
+      minimumFractionDigits: isVND ? 0 : config.minimumFractionDigits,
+      maximumFractionDigits: isVND ? 0 : config.maximumFractionDigits,
       ...options,
     };
 
@@ -36,7 +38,17 @@ export class FIORANumberFormat extends Intl.NumberFormat {
     if (this.currency === 'FX') {
       return this.formatCustomCurrency(value);
     }
-
+    // With VND, don't show decimal
+    if (this.currency === 'VND') {
+      // Use Intl.NumberFormat again but force fractionDigits to 0
+      const numberFormatter = new Intl.NumberFormat(this.config.locale, {
+        style: 'currency',
+        currency: 'VND',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      });
+      return numberFormatter.format(typeof value === 'bigint' ? Number(value) : value);
+    }
     return super.format(value);
   }
 
@@ -46,10 +58,11 @@ export class FIORANumberFormat extends Intl.NumberFormat {
   private formatCustomCurrency(value: number | bigint): string {
     const numericValue = typeof value === 'bigint' ? Number(value) : value;
 
-    // Format the number part
+    // With FX, if config is VND, don't show decimal
+    const isVND = this.currency === 'VND';
     const numberFormatter = new Intl.NumberFormat(this.config.locale, {
-      minimumFractionDigits: this.config.minimumFractionDigits,
-      maximumFractionDigits: this.config.maximumFractionDigits,
+      minimumFractionDigits: isVND ? 0 : this.config.minimumFractionDigits,
+      maximumFractionDigits: isVND ? 0 : this.config.maximumFractionDigits,
     });
 
     const formattedNumber = numberFormatter.format(numericValue);

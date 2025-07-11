@@ -581,7 +581,7 @@ model AttachmentRelations {
   userId       String     @db.Uuid
   createdAt    DateTime   @default(now()) @db.Timestamptz(0)
   createdBy    String     @db.Uuid
-  updatedAt    DateTime   @updatedAt @db.Timestamptz(0)
+  updatedAt    DateTime?  @updatedAt @db.Timestamptz(0)
   updatedBy    String?    @db.Uuid
   attachmentId String     @db.Uuid
   Attachment   Attachment @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
@@ -599,7 +599,7 @@ model Comment {
   userId              String                @db.Uuid
   createdAt           DateTime              @default(now()) @db.Timestamptz(0)
   createdBy           String                @db.Uuid
-  updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
+  updatedAt           DateTime?             @updatedAt @db.Timestamptz(0)
   updatedBy           String?               @db.Uuid
   AttachmentRelations AttachmentRelations[]
   Post                Post                  @relation(fields: [postId], references: [id], onDelete: Cascade)
@@ -611,7 +611,7 @@ model Comment {
 
 model Post {
   id                  String                @id @default(uuid()) @db.Uuid
-  title               String                @unique @db.VarChar(255)
+  title               String                @db.VarChar(255)
   description         String?               @db.VarChar(255)
   content             String
   views               Int                   @default(0)
@@ -620,7 +620,7 @@ model Post {
   categoryId          String                @db.Uuid
   createdAt           DateTime              @default(now()) @db.Timestamptz(0)
   createdBy           String                @db.Uuid
-  updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
+  updatedAt           DateTime?             @updatedAt @db.Timestamptz(0)
   updatedBy           String?               @db.Uuid
   AttachmentRelations AttachmentRelations[]
   Comment             Comment[]
@@ -634,30 +634,30 @@ model Post {
 }
 
 model PostCategory {
-  id          String   @id @default(uuid()) @db.Uuid
-  name        String   @db.VarChar(255)
-  description String?  @db.VarChar(255)
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String    @db.VarChar(255)
+  description String?   @db.VarChar(255)
   type        PostType
-  createdAt   DateTime @default(now()) @db.Timestamptz(0)
-  createdBy   String   @db.Uuid
-  updatedAt   DateTime @updatedAt @db.Timestamptz(0)
-  updatedBy   String?  @db.Uuid
+  createdAt   DateTime  @default(now()) @db.Timestamptz(0)
+  createdBy   String    @db.Uuid
+  updatedAt   DateTime? @updatedAt @db.Timestamptz(0)
+  updatedBy   String?   @db.Uuid
   Post        Post[]
 
   @@index([name])
 }
 
 model Reaction {
-  id           String   @id @default(uuid()) @db.Uuid
-  postId       String   @db.Uuid
-  userId       String   @db.Uuid
-  reactionType String   @db.VarChar(10)
-  createdAt    DateTime @default(now()) @db.Timestamptz(0)
-  createdBy    String   @db.Uuid
-  updatedAt    DateTime @updatedAt @db.Timestamptz(0)
-  updatedBy    String?  @db.Uuid
-  Post         Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String    @id @default(uuid()) @db.Uuid
+  postId       String    @db.Uuid
+  userId       String    @db.Uuid
+  reactionType String    @db.VarChar(10)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(0)
+  createdBy    String    @db.Uuid
+  updatedAt    DateTime? @updatedAt @db.Timestamptz(0)
+  updatedBy    String?   @db.Uuid
+  Post         Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  User         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([postId])
   @@index([userId])
