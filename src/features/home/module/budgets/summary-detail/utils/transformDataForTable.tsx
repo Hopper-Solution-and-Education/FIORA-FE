@@ -142,28 +142,31 @@ export const getColumnsByPeriod = (
 
     if (record.isEditable && !isDisableEdited) {
       return (
-        <div className="group">
-          <InputCurrency
-            name={`value_${record.key}_${column.key}`}
-            value={typeof text === 'object' ? text.value : (text ?? 0)}
-            currency={currency}
-            classContainer="m-0"
-            className={cn(
-              'text-right border-none shadow-none hover:border hover:border-blue-500',
-              column.className,
-            )}
-            onChange={(newValue) => {
-              if (onValueChange) {
-                onValueChange(record, column.key, newValue);
-              }
-            }}
-          />
-        </div>
+        <InputCurrency
+          name={`value_${record.key}_${column.key}`}
+          value={typeof text === 'object' ? text.value : (text ?? 0)}
+          currency={currency}
+          classContainer="m-0"
+          className={cn(
+            'text-right h-[3.4rem] border-none rounded-none hover:shadow-md hover:shadow-blue-500/20',
+            column.className,
+          )}
+          onChange={(newValue) => {
+            if (onValueChange) {
+              onValueChange(record, column.key, newValue);
+            }
+          }}
+        />
       );
     }
 
     return (
-      <p className={cn(`px-3 py-2 ${column.className}`, isDisableEdited && 'opacity-90')}>
+      <p
+        className={cn(
+          `px-3 py-2 cursor-default ${column.className}`,
+          isDisableEdited && 'opacity-90',
+        )}
+      >
         {formatCurrencyValue(text?.value, currency)}
       </p>
     );
@@ -186,8 +189,7 @@ export const getColumnsByPeriod = (
       columns: BUDGETR_FILTER_KEY.columnKey,
       styleWhenGreater: 'text-red-500',
       styleWhenLessOrEqual: 'text-blue-500',
-      comparisonType:
-        activeTab === BudgetDetailFilterEnum.EXPENSE ? 'greaterOrEqual' : 'lessOrEqual',
+      comparisonType: activeTab === BudgetDetailFilterEnum.EXPENSE ? 'greater' : 'less',
     },
     ...tableData // Compare between Finance Category Items
       .slice()
@@ -204,8 +206,7 @@ export const getColumnsByPeriod = (
           columns: BUDGETR_FILTER_KEY.columnKey,
           styleWhenGreater: 'text-red-500',
           styleWhenLessOrEqual: 'text-blue-500',
-          comparisonType:
-            activeTab === BudgetDetailFilterEnum.EXPENSE ? 'greaterOrEqual' : 'lessOrEqual',
+          comparisonType: activeTab === BudgetDetailFilterEnum.EXPENSE ? 'greater' : 'less',
         } as ComparisonProps;
       })
       .filter((item): item is ComparisonProps => item !== null),
@@ -322,6 +323,7 @@ export const getColumnsByPeriod = (
         dataIndex: key,
         headerAlign: 'center',
         align: 'right',
+        className: 'p-0',
         ...additionalCellProps,
         render: (text: any, record: TableData, index: number) => {
           const mappedClass = generalComparisonMapper?.(record.key, key, text?.value ?? 0) ?? null;

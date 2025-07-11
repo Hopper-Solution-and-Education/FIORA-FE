@@ -1,12 +1,11 @@
 import { DataSourceItemProps } from '@/components/common/tables/custom-table/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { USD_VND_RATE } from '@/shared/constants';
 import { formatters } from '@/shared/lib';
 import { Currency } from '@/shared/types';
 import { convertVNDToUSD } from '@/shared/utils';
 import { isArray } from 'lodash';
 import { TableData } from '../presentation/types/table.type';
-
-const EXCHANGE_RATE = 23000; // 1 USD = 23,000 VND
 
 export const formatCurrencyValue = (
   value: number | string | undefined,
@@ -88,7 +87,7 @@ export const convertTableDataCurrency = (
           if (baseCurrency === 'VND' && userCurrency === 'USD') {
             originalValue = convertVNDToUSD(originalValue);
           } else if (baseCurrency === 'USD' && userCurrency === 'VND') {
-            originalValue = originalValue * EXCHANGE_RATE;
+            originalValue = originalValue * USD_VND_RATE;
           }
         }
 
@@ -107,7 +106,6 @@ export const convertTableDataCurrency = (
           const actualSumUp = transformedItem.children.find((child) =>
             child.type.includes('Actual Sum Up'),
           );
-
           // If Bottom Up or Actual Sum Up Item has value, calculate the remaining value
           if (
             (bottomUp?.[field] &&
@@ -118,7 +116,7 @@ export const convertTableDataCurrency = (
               'value' in actualSumUp[field])
           ) {
             // Get value of Bottom Up
-            const bottomUpValue =
+            let bottomUpValue =
               bottomUp &&
               bottomUp[field] &&
               typeof bottomUp[field] === 'object' &&
@@ -127,13 +125,24 @@ export const convertTableDataCurrency = (
                 : 0;
 
             // Get value of Actual Sum Up
-            const actualSumUpValue =
+            let actualSumUpValue =
               actualSumUp &&
               actualSumUp[field] &&
               typeof actualSumUp[field] === 'object' &&
               'value' in actualSumUp[field]
                 ? Number((actualSumUp[field] as DataSourceItemProps).value)
                 : 0;
+
+            // Convert currency if needed
+            if (baseCurrency !== userCurrency) {
+              if (baseCurrency === 'VND' && userCurrency === 'USD') {
+                bottomUpValue = convertVNDToUSD(bottomUpValue);
+                actualSumUpValue = convertVNDToUSD(actualSumUpValue);
+              } else if (baseCurrency === 'USD' && userCurrency === 'VND') {
+                bottomUpValue = bottomUpValue * USD_VND_RATE;
+                actualSumUpValue = actualSumUpValue * USD_VND_RATE;
+              }
+            }
 
             // Calculate the remaing value
             transformedItem[field] = {

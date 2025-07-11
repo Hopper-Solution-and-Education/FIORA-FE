@@ -443,6 +443,10 @@ class CategoryUseCase {
           ? { toCategoryId: category.id }
           : { fromCategoryId: category.id }),
         isDeleted: false,
+        date: {
+          gte: new Date(`${fiscalYear}-01-01`),
+          lte: new Date(`${fiscalYear}-12-31`),
+        },
       });
       return {
         ...category,
