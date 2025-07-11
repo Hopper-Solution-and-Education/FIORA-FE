@@ -1,120 +1,36 @@
 import { prisma } from '@/config';
-import { IFaqsRepository } from '../../domain/repositories/IFaqsRepository';
+import { Prisma } from '@prisma/client';
+import { FAQ_LIST_CONSTANTS } from '../../constants';
 import {
-  FaqsRowRaw,
-  FaqsImportResult,
-  PostType,
-  FaqsListResponse,
+  CategoryWithFaqs,
   Faq,
   FaqsCategoriesResponse,
   FaqsListCategoriesResponse,
-  CategoryWithFaqs,
   FaqsListQueryParams,
+  FaqsListResponse,
+  PostType,
 } from '../../domain/entities/models/faqs';
-import { Prisma } from '@prisma/client';
-import { generateUrlHtml } from '../../utils/contentUtils';
-import { FAQ_LIST_CONSTANTS } from '../../constants';
 
-export class FaqsRepository implements IFaqsRepository {
-  async importFaqs(validatedRows: FaqsRowRaw[], userId: string): Promise<FaqsImportResult> {
-    if (validatedRows.length === 0) {
-      return {
-        successful: 0,
-        totalProcessed: 0,
-        failed: 0,
-      };
-    }
+export interface IFaqQueryRepository {
+  getFaqsList(params: FaqsListQueryParams): Promise<FaqsListResponse>;
+  getFaqsListByCategories(params: FaqsListQueryParams): Promise<FaqsListCategoriesResponse>;
+  getFaqCategories(): Promise<FaqsCategoriesResponse[]>;
+}
 
-    try {
-      const formattedRecords = await Promise.all(
-        validatedRows.map(async (record) => {
-          const categoryId = await this.findOrCreateCategory(record.category, record.type, userId);
-
-          if (!categoryId) {
-            return null;
-          }
-
-          // Generate HTML content based on URL and urlType
-          let content = record.content || '';
-          if (record.url && record.typeOfUrl) {
-            const urlHtml = generateUrlHtml(record.url, record.typeOfUrl);
-            content = content ? `${content}\n\n${urlHtml}` : urlHtml;
-          }
-
-          return {
-            categoryId,
-            userId,
-            createdBy: userId,
-            title: record.title || '',
-            description: record.description || '',
-            content,
-            type: record.type || PostType.FAQ,
-          };
-        }),
-      );
-
-      const validFormattedRecords = formattedRecords.filter((record) => record !== null);
-
-      const result = await prisma.post.createMany({
-        data: validFormattedRecords,
-        skipDuplicates: true,
-      });
-
-      return {
-        successful: result.count,
-        totalProcessed: validatedRows.length,
-        failed: validatedRows.length - result.count,
-      };
-    } catch (error) {
-      console.error('Error importing FAQs:', error);
-      return {
-        successful: 0,
-        totalProcessed: validatedRows.length,
-        failed: validatedRows.length,
-      };
-    }
-  }
-
-  async findOrCreateCategory(
-    categoryName: string,
-    type: string,
-    userId: string,
-  ): Promise<string | null> {
-    try {
-      let category = await prisma.postCategory.findFirst({
-        where: {
-          name: categoryName,
-        },
-      });
-
-      if (!category) {
-        category = await prisma.postCategory.create({
-          data: {
-            name: categoryName,
-            type: type as PostType,
-            createdBy: userId,
-          },
-        });
-      }
-
-      return category?.id || null;
-    } catch (error) {
-      console.error('Error finding or creating category:', error);
-      return null;
-    }
-  }
-
+/**
+ * Repository for FAQ list and search operations
+ */
+export class FaqQueryRepository implements IFaqQueryRepository {
   async getFaqsList(params: FaqsListQueryParams): Promise<FaqsListResponse> {
     const {
-      page = 1,
-      pageSize = 10,
+      page,
+      limit,
       filters = { search: '', categories: [] },
       orderBy = 'views',
       orderDirection = 'desc',
-      limit,
     } = params;
 
-    const skip = (page - 1) * pageSize;
+    const skip = page && limit ? (page - 1) * limit : 0;
 
     try {
       // Build where clause for filtering
@@ -138,18 +54,14 @@ export class FaqsRepository implements IFaqsRepository {
         ];
       }
 
-      // Get total count for pagination
-      // const totalCount = await prisma.post.count({ where: whereCondition });
-      // const totalPages = Math.ceil(totalCount / (pageSize || 10));
-
       // Get results
       const posts = await prisma.post.findMany({
         where: whereCondition,
         include: {
           PostCategory: true,
         },
-        skip: limit ? 0 : skip,
-        take: limit ? limit : undefined,
+        skip: skip,
+        take: limit || undefined,
         orderBy: { [orderBy]: orderDirection },
       });
 
@@ -167,10 +79,8 @@ export class FaqsRepository implements IFaqsRepository {
 
       return {
         faqs,
-        currentPage: page,
-        pageSize: pageSize || 10,
-        // totalCount,
-        // totalPages,
+        currentPage: page || undefined,
+        limit: limit || undefined,
       };
     } catch (error) {
       console.error('Error getting FAQs list:', error);
@@ -184,7 +94,7 @@ export class FaqsRepository implements IFaqsRepository {
     try {
       // Build base where condition
       const baseWhereCondition: Prisma.PostWhereInput = {
-        type: 'FAQ',
+        type: PostType.FAQ,
       };
 
       // Get all categories with their post counts
@@ -254,28 +164,6 @@ export class FaqsRepository implements IFaqsRepository {
       return categories;
     } catch (error) {
       console.error('Error getting FAQ categories:', error);
-      return [];
-    }
-  }
-
-  async checkExistingTitles(titles: string[], userId: string): Promise<string[]> {
-    try {
-      const existingPosts = await prisma.post.findMany({
-        where: {
-          userId,
-          type: PostType.FAQ,
-          title: {
-            in: titles,
-          },
-        },
-        select: {
-          title: true,
-        },
-      });
-
-      return existingPosts.map((post) => post.title);
-    } catch (error) {
-      console.error('Error checking existing titles:', error);
       return [];
     }
   }

@@ -1,10 +1,10 @@
-import { createError } from '@/shared/lib/responseUtils/createResponse';
-import { Messages } from '@/shared/constants/message';
-import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { FAQ_LIST_CONSTANTS } from '@/features/faqs/constants';
 import { getFaqsListUseCase } from '@/features/faqs/di/container';
 import { FaqsGetListType, FaqsListQueryParams } from '@/features/faqs/domain/entities/models/faqs';
-import { FAQ_LIST_CONSTANTS } from '@/features/faqs/constants';
+import { Messages } from '@/shared/constants/message';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
@@ -29,11 +29,25 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
       });
     }
 
-    return res.status(RESPONSE_CODE.OK).json({
-      data: faqsListResponse,
-      status: RESPONSE_CODE.OK,
-    });
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_FAQ_LIST_SUCCESS, faqsListResponse));
   } catch (error: any) {
-    return createError(res, RESPONSE_CODE.INTERNAL_SERVER_ERROR, error.message);
+    if (error.validationErrors) {
+      return res.status(RESPONSE_CODE.BAD_REQUEST).json({
+        status: RESPONSE_CODE.BAD_REQUEST,
+        message: Messages.VALIDATION_ERROR,
+        error: error.validationErrors,
+      });
+    }
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createError(
+          res,
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
 }
