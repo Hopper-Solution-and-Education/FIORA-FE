@@ -1,6 +1,7 @@
-import { getSessionUser } from '@/lib/utils/auth';
-import { PostType, PrismaClient, UserRole } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { PrismaClient, PostType, UserRole } from '@prisma/client';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../../auth/[...nextauth]';
 import { v4 as uuidv4 } from 'uuid';
 
 const prisma = new PrismaClient();
@@ -18,13 +19,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const session = await getSessionUser(req, res);
-  if (!session) {
+  const session = await getServerSession(req, res, authOptions);
+  if (!session || !session.user) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
-  const { id: userId, role } = session;
-  if (!role || !([UserRole.Admin, UserRole.CS] as UserRole[]).includes(role)) {
+  const { id: userId, role } = session.user;
+  if (![UserRole.Admin, UserRole.CS].includes(role)) {
     return res.status(403).json({ message: 'Permission denied' });
   }
   const { title, description, content, categoryId, attachmentIds } = req.body;

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Smile, Meh, Frown, ChevronDown, SendHorizonal, Pencil, Trash2 } from 'lucide-react';
 import ConfirmExitDialog from './ConfirmExitDialog';
 import ParsedFaqContent from './ParsedFaqContent';
-
+import { useRouter } from 'next/navigation';
 interface FaqDetailViewProps {
   id: string;
 }
@@ -19,7 +19,7 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
-
+  const router = useRouter();
   const reactionCounts = (() => {
     const counts: { [key: string]: number } = {};
     data?.Reaction?.forEach((r: any) => {
@@ -156,7 +156,10 @@ export default function FIORAFAQ({ id }: FaqDetailViewProps) {
         <h1 className="text-3xl font-bold">{faq.title}</h1>
         {(currentUserRole === 'CS' || currentUserRole === 'Admin') && (
           <div className="flex items-center gap-2">
-            <button className="w-9 h-9 flex items-center justify-center rounded-md border border-gray-300 hover:bg-gray-100 transition">
+            <button
+              onClick={() => router.push(`/faq/edit/${faq.id}`)}
+              className="w-9 h-9 flex items-center justify-center rounded-md border border-gray-300 hover:bg-gray-100 transition"
+            >
               <Pencil className="w-5 h-5 text-gray-700" />
             </button>
             <button className="w-9 h-9 flex items-center justify-center rounded-md border border-gray-300 hover:bg-red-100 transition">
