@@ -2,8 +2,10 @@ import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
 import { FilterColumn, FilterComponentConfig, FilterOperator } from '@/shared/types/filter.types';
+import { useAppDispatch } from '@/store';
 import { WALLET_SETTING_FILTER_OPTIONS } from '../../data/constant';
 import { WalletSettingFilterGroup } from '../../data/types/walletSettingFilter.types';
+import { clearFilter } from '../../slices';
 
 const DEFAULT_MIN_AMOUNT = 0;
 const DEFAULT_MAX_AMOUNT = 1000000;
@@ -62,7 +64,13 @@ const WalletSettingFilterMenu = ({
   onFilterChange,
   onApply,
 }: WalletSettingFilterMenuProps) => {
+  const dispatch = useAppDispatch();
+
   const filterParams = filterGroupToParams(value);
+
+  const handleClearFilter = () => {
+    dispatch(clearFilter());
+  };
 
   const filterComponents: FilterComponentConfig[] = [
     {
@@ -116,6 +124,7 @@ const WalletSettingFilterMenu = ({
         filterComponents={filterComponents}
         onFilterChange={onApply}
         currentFilter={value}
+        onResetFilter={handleClearFilter}
       />
     </div>
   );
