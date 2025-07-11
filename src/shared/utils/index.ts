@@ -1,12 +1,12 @@
+import { formatFIORACurrency, getCurrencySymbol } from '@/config/FIORANumberFormat';
 import { iconOptions } from '@/shared/constants/data';
+import { Currency } from '@/shared/types';
 import { Filter } from '@growthbook/growthbook';
+import { Prisma } from '@prisma/client';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { OrderByFields } from '../types/Common.types';
-import { Prisma } from '@prisma/client';
 import { CURRENCY } from '../constants';
-import { formatFIORACurrency, getCurrencySymbol } from '@/config/FIORANumberFormat';
-import { Currency } from '@/shared/types';
+import { OrderByFields } from '../types/Common.types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -30,12 +30,24 @@ export const formatCurrency = (value: number, currency: string = CURRENCY.VND) =
     let formattedValue = value;
     let suffix = '';
 
-    if (Math.abs(value) >= 1_000_000) {
-      // Convert to millions (M)
+    // Enhanced logic to handle billions (B), trillions (T), and more, with currency context
+    // 1T = 1,000,000,000,000; 1B = 1,000,000,000; 1M = 1,000,000; 1K = 1,000
+    const absValue = Math.abs(value);
+
+    if (absValue >= 1_000_000_000_000) {
+      // Trillions
+      formattedValue = value / 1_000_000_000_000;
+      suffix = 'T';
+    } else if (absValue >= 1_000_000_000) {
+      // Billions
+      formattedValue = value / 1_000_000_000;
+      suffix = 'B';
+    } else if (absValue >= 1_000_000) {
+      // Millions
       formattedValue = value / 1_000_000;
       suffix = 'M';
-    } else if (Math.abs(value) >= 1_000) {
-      // Convert to thousands (K)
+    } else if (absValue >= 1_000) {
+      // Thousands
       formattedValue = value / 1_000;
       suffix = 'K';
     }

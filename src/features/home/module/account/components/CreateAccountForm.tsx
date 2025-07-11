@@ -1,26 +1,27 @@
 'use client';
 
-import GlobalIconSelect from '@/components/common/forms/select/GlobalIconSelect';
-import InputField from '@/components/common/forms/input/InputField';
 import GlobalForm from '@/components/common/forms/GlobalForm';
+import InputField from '@/components/common/forms/input/InputField';
+import GlobalIconSelect from '@/components/common/forms/select/GlobalIconSelect';
+import { Option } from '@/components/common/forms/select/SelectField';
+import AccountBalanceField from '@/features/home/module/account/components/AccountBalance';
 import AccountTypeSelect from '@/features/home/module/account/components/AccountTypeSelect';
+import AvailableLimitDisplay from '@/features/home/module/account/components/AvailableLimitDisplay';
 import CurrencySelect from '@/features/home/module/account/components/CurrencySelect';
 import LimitField from '@/features/home/module/account/components/LimitField';
 import ParentAccountSelect from '@/features/home/module/account/components/ParentAccountSelect';
+import { reset } from '@/features/home/module/account/slices';
+import { createAccount } from '@/features/home/module/account/slices/actions';
+import { Account } from '@/features/home/module/account/slices/types';
 import {
   defaultNewAccountValues,
   validateNewAccountSchema,
 } from '@/features/home/module/account/slices/types/formSchema';
 import { ACCOUNT_TYPES } from '@/shared/constants/account';
-import { useAppDispatch, useAppSelector } from '@/store';
-import AccountBalanceField from '@/features/home/module/account/components/AccountBalance';
-import { createAccount } from '@/features/home/module/account/slices/actions';
 import { Response } from '@/shared/types/Common.types';
-import { toast } from 'sonner';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
-import { Account } from '@/features/home/module/account/slices/types';
-import { Option } from '@/components/common/forms/select/SelectField';
-import AvailableLimitDisplay from '@/features/home/module/account/components/AvailableLimitDisplay';
+import { toast } from 'sonner';
 
 export default function CreateAccountForm() {
   const router = useRouter();
@@ -101,8 +102,8 @@ export default function CreateAccountForm() {
     try {
       const finalData = {
         ...data,
+        ...(data.limit ? { limit: data.limit } : {}),
         balance: data.balance || 0,
-        limit: data.limit ? Number(data.limit) : undefined,
         parentId: data.parentId || undefined,
         isTypeDisabled: data.isTypeDisabled,
         availableLimit: data.availableLimit,
@@ -127,6 +128,10 @@ export default function CreateAccountForm() {
       onSubmit={onSubmit}
       defaultValues={defaultValues}
       schema={validateNewAccountSchema}
+      onBack={() => {
+        dispatch(reset());
+        router.push('/account');
+      }}
     />
   );
 }
