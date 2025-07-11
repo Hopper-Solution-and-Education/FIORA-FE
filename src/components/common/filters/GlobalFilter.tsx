@@ -44,6 +44,7 @@ export interface GlobalFilterProps {
   structureCreator?: (params: any) => Record<string, unknown>;
   currentFilter: any;
   showFilterHeader?: boolean;
+  onResetFilter?: () => void;
 }
 
 const GlobalFilter = (props: GlobalFilterProps) => {
@@ -56,12 +57,17 @@ const GlobalFilter = (props: GlobalFilterProps) => {
     structureCreator,
     currentFilter,
     showFilterHeader = true,
+    onResetFilter,
   } = props;
 
   const [isOpen, setIsOpen] = useState(false);
 
   const handleResetFilter = () => {
-    onFilterChange(defaultFilterCriteria);
+    if (onResetFilter) {
+      onResetFilter();
+    } else {
+      onFilterChange(defaultFilterCriteria);
+    }
     handleClose();
   };
 

@@ -35,7 +35,6 @@ export const WALLET_SETTING_TABLE_COLUMNS = {
 } as const;
 
 export const WALLET_SETTING_FILTER_OPTIONS = [
-  { value: 'all', label: 'All Requests' },
   { value: DepositRequestStatus.Requested, label: 'Requested' },
   { value: DepositRequestStatus.Approved, label: 'Approved' },
   { value: DepositRequestStatus.Rejected, label: 'Rejected' },

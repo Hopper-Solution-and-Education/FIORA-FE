@@ -1,39 +1,71 @@
+import { createCommentUseCase } from '@/features/faqs/di/container';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { Messages } from '@/shared/constants/message';
+import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSessionUser } from '@/lib/utils/auth';
-import { randomUUID } from 'crypto';
-import { prisma } from '@/config';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.query;
-  const user = await getSessionUser(req, res);
-  if (!user) return res.status(401).json({ error: 'Unauthorized' });
+export default withAuthorization({
+  POST: ['User', 'Admin', 'CS'],
+})(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
+  switch (req.method) {
+    case 'POST':
+      return POST(req, res, userId);
+    default:
+      return res
+        .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+        .json({ error: Messages.METHOD_NOT_ALLOWED });
+  }
+});
 
-  if (req.method === 'POST') {
+async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  try {
+    const { id } = req.query;
+
     const { content, replyToUsername } = req.body as {
       content: string;
       replyToUsername?: string;
     };
 
-    if (!content || typeof content !== 'string') {
-      return res.status(400).json({ error: 'Invalid content' });
-    }
-
-    // Nếu có người được reply thì gắn prefix vào content
-    const finalContent = replyToUsername ? `@${replyToUsername}: ${content}` : content;
-
-    const comment = await prisma.comment.create({
-      data: {
-        id: randomUUID(),
-        postId: id as string,
-        userId: user.id,
-        content: finalContent,
-        createdBy: user.id,
-        updatedAt: new Date(),
+    // Execute use case
+    const comment = await createCommentUseCase.execute({
+      faqId: id as string,
+      userId,
+      commentData: {
+        content,
+        replyToUsername,
       },
     });
 
-    return res.status(201).json(comment);
+    return res
+      .status(RESPONSE_CODE.CREATED)
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_COMMENT_SUCCESS, comment));
+  } catch (error: any) {
+    if (error.message === 'FAQ not found') {
+      return res
+        .status(RESPONSE_CODE.NOT_FOUND)
+        .json(createError(res, RESPONSE_CODE.NOT_FOUND, Messages.FAQ_NOT_FOUND));
+    }
+    if (error.message === 'Invalid comment content') {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createError(res, RESPONSE_CODE.BAD_REQUEST, 'Invalid comment content'));
+    }
+    if (error.validationErrors) {
+      return res.status(RESPONSE_CODE.BAD_REQUEST).json({
+        status: RESPONSE_CODE.BAD_REQUEST,
+        message: Messages.VALIDATION_ERROR,
+        error: error.validationErrors,
+      });
+    }
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createError(
+          res,
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
-
-  return res.status(405).end();
 }

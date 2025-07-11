@@ -4,6 +4,7 @@ import { FilterObject } from '@/shared/types/filter.types';
 import { generateRefCode } from '@/shared/utils/stringHelper';
 import {
   CategoryType,
+  Currency,
   DepositRequestStatus,
   Prisma,
   TransactionType,
@@ -230,7 +231,8 @@ class WalletUseCase {
         fromCategoryId: category.id,
         toWalletId: toWallet.id,
         amount,
-        type: TransactionType.Income,
+        currency: Currency.FX,
+        type: TransactionType.Transfer,
         createdBy: userId,
       });
 

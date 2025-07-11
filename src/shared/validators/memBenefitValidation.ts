@@ -1,9 +1,11 @@
 import Joi from 'joi';
 
+const slugNonNumericPattern = /^[a-zA-Z0-9-]+$/;
+
 export const membershipBenefitCreateSchema = Joi.object({
   membershipBenefit: Joi.object({
     name: Joi.string().min(1).max(255).required(),
-    slug: Joi.string().min(1).max(255).required(),
+    slug: Joi.string().min(1).max(255).pattern(slugNonNumericPattern).required(),
     description: Joi.string().max(1000).optional().allow(''),
     suffix: Joi.string().min(1).max(255).optional().allow(''),
     userId: Joi.string().uuid().required(),
