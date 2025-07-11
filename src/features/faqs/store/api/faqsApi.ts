@@ -1,14 +1,17 @@
+import { Response } from '@/shared/types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import {
-  FaqsRowValidated,
-  FaqsImportValidationResult,
-  FaqsImportResult,
-  FaqsListResponse,
-  FaqsListCategoriesResponse,
+  CreateCommentRequest,
+  FaqDetailData,
   FaqsCategoriesResponse,
+  FaqsImportResult,
+  FaqsImportValidationResult,
+  FaqsListCategoriesResponse,
   FaqsListQueryParams,
+  FaqsListResponse,
+  FaqsRowValidated,
+  ReactionType,
 } from '../../domain/entities/models/faqs';
-import { Response } from '@/shared/types';
 
 export const faqsApi = createApi({
   reducerPath: 'faqsApi',
@@ -21,7 +24,7 @@ export const faqsApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ['FaqImport', 'Faqs', 'FaqCategories'],
+  tagTypes: ['FaqImport', 'Faqs', 'FaqCategories', 'FaqDetails', 'FaqComments', 'FaqReactions'],
 
   endpoints: (builder) => ({
     getFaqs: builder.query<FaqsListResponse | FaqsListCategoriesResponse, FaqsListQueryParams>({
@@ -51,16 +54,104 @@ export const faqsApi = createApi({
           },
         };
       },
-      keepUnusedDataFor: 300,
     }),
-    getFaqCategories: builder.query<FaqsCategoriesResponse[], void>({
-      query: () => ({
-        url: '/categories',
-        method: 'GET',
+
+    // FAQ Detail endpoints
+    getFaqDetail: builder.query<
+      FaqDetailData,
+      | string
+      | {
+          id: string;
+          include?: string[];
+          trackView?: boolean;
+        }
+    >({
+      query: (params) => {
+        // Handle both string ID and object with options
+        if (typeof params === 'string') {
+          return `/${params}?track_view=true`; // Default behavior: track view
+        }
+
+        const { id, include, trackView = true } = params;
+        const queryParams = new URLSearchParams();
+
+        // Add includes
+        if (include && include.length > 0) {
+          queryParams.set('include', include.join(','));
+        }
+
+        // Add view tracking
+        if (trackView) {
+          queryParams.set('track_view', 'true');
+        }
+
+        const queryString = queryParams.toString();
+        return `/${id}${queryString ? `?${queryString}` : ''}`;
+      },
+      transformResponse: (response: Response<FaqDetailData>) => response.data,
+      providesTags: (result, error, params) => {
+        const id = typeof params === 'string' ? params : params.id;
+        return [
+          { type: 'FaqDetails', id },
+          // { type: 'FaqComments', id },
+          // { type: 'FaqReactions', id },
+        ];
+      },
+    }),
+
+    deleteFaq: builder.mutation<void, string>({
+      query: (faqId) => ({
+        url: `/${faqId}`,
+        method: 'DELETE',
       }),
-      transformResponse: (response: Response<FaqsCategoriesResponse[]>) => response.data,
-      providesTags: ['FaqCategories'],
+      invalidatesTags: [{ type: 'Faqs', id: 'LIST' }],
     }),
+
+    // Comment endpoints
+    createComment: builder.mutation<void, { faqId: string; comment: CreateCommentRequest }>({
+      query: ({ faqId, comment }) => ({
+        url: `/${faqId}/comments`,
+        method: 'POST',
+        body: comment,
+      }),
+      invalidatesTags: (result, error, { faqId }) => [{ type: 'FaqDetails', id: faqId }],
+    }),
+
+    deleteComment: builder.mutation<void, { faqId: string; commentId: string }>({
+      query: ({ faqId, commentId }) => ({
+        url: `/${faqId}/${commentId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, { faqId }) => [{ type: 'FaqDetails', id: faqId }],
+    }),
+
+    // updateComment: builder.mutation<void, { faqId: string; commentId: string; content: string }>({
+    //   query: ({ faqId, commentId, content }) => ({
+    //     url: `/${faqId}/${commentId}`,
+    //     method: 'PUT',
+    //     body: { content },
+    //   }),
+    //   invalidatesTags: (result, error, { faqId }) => [{ type: 'FaqDetails', id: faqId }],
+    // }),
+
+    // Reaction endpoints
+    createReaction: builder.mutation<void, { faqId: string; reaction: ReactionType }>({
+      query: ({ faqId, reaction }) => ({
+        url: `/${faqId}/reaction`,
+        method: 'POST',
+        body: { reactionType: reaction },
+      }),
+      invalidatesTags: (result, error, { faqId }) => [{ type: 'FaqDetails', id: faqId }],
+    }),
+
+    deleteReaction: builder.mutation<void, string>({
+      query: (faqId) => ({
+        url: `/${faqId}/reaction`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, faqId) => [{ type: 'FaqDetails', id: faqId }],
+    }),
+
     validateImportFile: builder.mutation<FaqsImportValidationResult, FormData>({
       query: (formData) => ({
         url: '/parse-validate',
@@ -88,6 +179,23 @@ export const faqsApi = createApi({
       },
       invalidatesTags: ['FaqImport', { type: 'Faqs', id: 'LIST' }, 'FaqCategories'],
     }),
+
+    // Category endpoints
+    getFaqCategories: builder.query<FaqsCategoriesResponse[], void>({
+      query: () => ({
+        url: '/categories',
+        method: 'GET',
+      }),
+      transformResponse: (response: Response<FaqsCategoriesResponse[]>) => response.data,
+      providesTags: ['FaqCategories'],
+    }),
+    createFaqCategory: builder.mutation<void, string>({
+      query: (name) => ({
+        url: '/categories',
+        method: 'POST',
+        body: { name },
+      }),
+    }),
   }),
 });
 
@@ -96,4 +204,12 @@ export const {
   useGetFaqCategoriesQuery,
   useValidateImportFileMutation,
   useImportFaqsMutation,
+  // FAQ Detail hooks
+  useGetFaqDetailQuery,
+  useCreateCommentMutation,
+  useDeleteCommentMutation,
+  // useUpdateCommentMutation,
+  useCreateReactionMutation,
+  useDeleteReactionMutation,
+  useDeleteFaqMutation,
 } = faqsApi;

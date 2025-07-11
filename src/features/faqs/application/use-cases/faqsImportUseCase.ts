@@ -1,7 +1,7 @@
 import {
+  FaqsImportResult,
   FaqsImportValidationResult,
   FaqsRowRaw,
-  FaqsImportResult,
 } from '../../domain/entities/models/faqs';
 import { IFaqsRepository } from '../../domain/repositories/IFaqsRepository';
 import { FaqsValidationService } from '../../domain/services/FaqsValidationService';
