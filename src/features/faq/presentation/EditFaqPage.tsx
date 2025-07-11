@@ -8,6 +8,7 @@ import { ArrowLeft, Check } from 'lucide-react';
 import SessionSidebar from '@/components/providers/SessionSidebar';
 import RichTextEditor from '@/features/faq/presentation/components/faqedit/RichTextEditor';
 import MarkdownPreview from '@/features/faq/presentation/components/faqedit/MarkdownPreview';
+import ConfirmExitDialog from '@/features/faq/presentation/organisms/ConfirmExitDialog';
 
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +20,9 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
+
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 type FaqFormValues = {
   title: string;
@@ -43,26 +47,38 @@ export default function EditFaqPage() {
 
   const [htmlContent, setHtmlContent] = useState('');
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [showConfirmExit, setShowConfirmExit] = useState(false);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
 
-  // Fetch post data
   useEffect(() => {
     if (!id) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/faqs/${id}`);
-        if (!res.ok) throw new Error('Failed to fetch');
-        const data = await res.json();
+        const [faqRes, catRes] = await Promise.all([
+          fetch(`/api/faqs/${id}`),
+          fetch('/api/faqs/categories'),
+        ]);
+
+        if (!faqRes.ok) throw new Error('Failed to fetch FAQ');
+        if (!catRes.ok) throw new Error('Failed to fetch categories');
+
+        const faqData = await faqRes.json();
+        const catData = await catRes.json();
+
         reset({
-          title: data.title,
-          description: data.description,
-          content: data.content,
-          categoryId: data.categoryId,
+          title: faqData.title,
+          description: faqData.description,
+          content: faqData.content,
+          categoryId: faqData.categoryId,
         });
-        setHtmlContent(data.content);
+        setHtmlContent(faqData.content);
+        setCategories(catData.data);
       } catch (err) {
         console.error(err);
+        toast.error('Failed to load data');
       } finally {
         setLoading(false);
       }
@@ -72,6 +88,7 @@ export default function EditFaqPage() {
   }, [id, reset]);
 
   const onSubmit = async (formData: FaqFormValues) => {
+    setSaving(true);
     try {
       const res = await fetch(`/api/faqs/${id}`, {
         method: 'PUT',
@@ -86,19 +103,31 @@ export default function EditFaqPage() {
 
       if (!res.ok) {
         const error = await res.json();
-        alert(`Error: ${error.error}`);
+        toast.error(`Error: ${error.error}`);
+        setSaving(false);
         return;
       }
 
-      alert('FAQ updated successfully');
-      router.push('/faqs');
+      toast.success(
+        <div>
+          <strong>Edit FAQ Successfully</strong>
+          <div className="text-sm text-gray-600">
+            Your invoice request has been recorded and is awaiting processing.
+          </div>
+        </div>,
+      );
+
+      setTimeout(() => {
+        router.push(`/faqs/${id}`);
+      }, 1500);
     } catch (err) {
       console.error(err);
-      alert('Update failed');
+      toast.error('Update failed');
+    } finally {
+      setSaving(false);
     }
   };
 
-  // const title = watch('title');
   const description = watch('description');
 
   if (loading) {
@@ -111,7 +140,7 @@ export default function EditFaqPage() {
 
   return (
     <SessionSidebar appLabel="Faq">
-      <main className="p-6 pt-24 space-y-8 overflow-auto">
+      <main className="p-6 pt-24 space-y-8">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -129,9 +158,15 @@ export default function EditFaqPage() {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="payment">Payment</SelectItem>
-                  <SelectItem value="account">Account</SelectItem>
-                  <SelectItem value="technical">Technical</SelectItem>
+                  {categories.length > 0 ? (
+                    categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="p-2 text-sm text-gray-500">No categories found</div>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -142,12 +177,11 @@ export default function EditFaqPage() {
                 id="description"
                 placeholder="Short description..."
                 {...register('description')}
-                disabled
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
               <Label>Content</Label>
               <RichTextEditor
@@ -161,7 +195,7 @@ export default function EditFaqPage() {
 
             <div>
               <Label>Preview</Label>
-              <div className="bg-white border p-4 rounded-md overflow-y-auto min-h-[400px] space-y-4">
+              <div className="border rounded p-4 min-h-[600px] max-h-[1000px] overflow-y-auto w-full">
                 <p className="text-gray-600">{description}</p>
                 {!htmlContent && (
                   <p className="italic text-gray-400">Live preview will appear here…</p>
@@ -174,7 +208,7 @@ export default function EditFaqPage() {
           <div className="flex justify-between pt-8">
             <button
               type="button"
-              onClick={() => router.back()}
+              onClick={() => setShowConfirmExit(true)}
               className="bg-[#E0E0E0] hover:bg-[#d5d5d5] text-black px-8 py-4 rounded-md transition"
             >
               <ArrowLeft size={24} />
@@ -182,12 +216,29 @@ export default function EditFaqPage() {
 
             <button
               type="submit"
-              className="bg-[#3C5588] hover:bg-[#2e446e] px-8 py-4 rounded-md shadow text-white transition"
+              disabled={saving}
+              className="bg-[#3C5588] hover:bg-[#2e446e] px-8 py-4 rounded-md shadow text-white transition flex items-center justify-center min-w-[100px]"
             >
-              <Check size={24} className="text-[#60A673]" />
+              {saving ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <Check size={24} className="text-[#60A673]" />
+              )}
             </button>
           </div>
         </form>
+
+        <ConfirmExitDialog
+          open={showConfirmExit}
+          onOpenChange={setShowConfirmExit}
+          onConfirmExit={() => {
+            setShowConfirmExit(false);
+            router.back();
+          }}
+          onCancelExit={() => setShowConfirmExit(false)}
+        />
+
+        <ToastContainer position="bottom-left" />
       </main>
     </SessionSidebar>
   );
