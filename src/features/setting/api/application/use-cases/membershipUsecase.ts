@@ -166,6 +166,7 @@ class MembershipSettingUseCase {
                 value: true,
                 benefit: {
                   select: {
+                    id: true,
                     slug: true,
                     name: true,
                     suffix: true,

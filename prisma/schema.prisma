@@ -167,38 +167,40 @@ model CategoryProducts {
 }
 
 model Transaction {
-  id               String               @id @default(uuid()) @db.Uuid
-  userId           String?              @db.Uuid
-  date             DateTime             @default(now()) @db.Timestamptz(0)
-  type             TransactionType
-  amount           Decimal              @db.Decimal(13, 2)
-  fromAccountId    String?              @db.Uuid
-  fromCategoryId   String?              @db.Uuid
-  toAccountId      String?              @db.Uuid
-  toCategoryId     String?              @db.Uuid
-  fromWalletId     String?              @db.Uuid
-  toWalletId       String?              @db.Uuid
-  products         Json?
-  partnerId        String?              @db.Uuid
-  remark           String?              @db.VarChar(255)
-  isDeleted        Boolean              @default(false)
-  deletedAt        DateTime?            @db.Timestamptz(0)
-  createdAt        DateTime             @default(now()) @db.Timestamptz(0)
-  updatedAt        DateTime             @updatedAt @db.Timestamptz(0)
-  updatedBy        String?              @db.Uuid
-  createdBy        String?              @db.Uuid
-  currency         Currency             @default(VND)
-  isMarked         Boolean              @default(false)
-  isExpired        Boolean              @default(false)
-  productsRelation ProductTransaction[] @relation("ProductTransactions")
-  fromAccount      Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Restrict)
-  fromCategory     Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
-  partner          Partner?             @relation("PartnerTransactions", fields: [partnerId], references: [id])
-  toAccount        Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Restrict)
-  toCategory       Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
-  user             User?                @relation("UserTransactions", fields: [userId], references: [id])
-  fromWallet       Wallet?              @relation("FromWallet", fields: [fromWalletId], references: [id])
-  toWallet         Wallet?              @relation("ToWallet", fields: [toWalletId], references: [id])
+  id                  String               @id @default(uuid()) @db.Uuid
+  userId              String?              @db.Uuid
+  date                DateTime             @default(now()) @db.Timestamptz(0)
+  type                TransactionType
+  amount              Decimal              @db.Decimal(13, 2)
+  fromAccountId       String?              @db.Uuid
+  fromCategoryId      String?              @db.Uuid
+  toAccountId         String?              @db.Uuid
+  toCategoryId        String?              @db.Uuid
+  fromWalletId        String?              @db.Uuid
+  toWalletId          String?              @db.Uuid
+  products            Json?
+  partnerId           String?              @db.Uuid
+  remark              String?              @db.VarChar(255)
+  isDeleted           Boolean              @default(false)
+  deletedAt           DateTime?            @db.Timestamptz(0)
+  createdAt           DateTime             @default(now()) @db.Timestamptz(0)
+  updatedAt           DateTime             @updatedAt @db.Timestamptz(0)
+  updatedBy           String?              @db.Uuid
+  createdBy           String?              @db.Uuid
+  currency            Currency             @default(VND)
+  isMarked            Boolean              @default(false)
+  isExpired           Boolean              @default(false)
+  productsRelation    ProductTransaction[] @relation("ProductTransactions")
+  fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Restrict)
+  fromCategory        Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
+  partner             Partner?             @relation("PartnerTransactions", fields: [partnerId], references: [id])
+  toAccount           Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Restrict)
+  toCategory          Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
+  user                User?                @relation("UserTransactions", fields: [userId], references: [id])
+  MembershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
+  membershipBenefitId String?              @db.Uuid
+  fromWallet       Wallet?                 @relation("FromWallet", fields: [fromWalletId], references: [id])
+  toWallet         Wallet?                 @relation("ToWallet", fields: [toWalletId], references: [id])
 
   @@index([date])
   @@index([type])
@@ -498,17 +500,18 @@ model Attachment {
 }
 
 model MembershipBenefit {
-  id          String        @id @db.Uuid
-  name        String        @db.VarChar(255)
-  slug        String        @unique @db.VarChar(255)
-  description String?       @db.VarChar(1000)
-  suffix      String?       @db.VarChar(255)
-  createdAt   DateTime      @default(now()) @db.Timestamptz(0)
-  updatedAt   DateTime      @db.Timestamptz(0)
-  createdBy   String?       @db.Uuid
-  updatedBy   String?       @db.Uuid
-  userId      String        @db.Uuid
-  TierBenefit TierBenefit[]
+  id           String        @id @db.Uuid
+  name         String        @db.VarChar(255)
+  slug         String        @unique @db.VarChar(255)
+  description  String?       @db.VarChar(1000)
+  suffix       String?       @db.VarChar(255)
+  createdAt    DateTime      @default(now()) @db.Timestamptz(0)
+  updatedAt    DateTime      @db.Timestamptz(0)
+  createdBy    String?       @db.Uuid
+  updatedBy    String?       @db.Uuid
+  userId       String        @db.Uuid
+  TierBenefit  TierBenefit[]
+  transactions Transaction[]
 
   @@index([slug])
   @@index([userId])
