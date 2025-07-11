@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { BudgetDetailFilterEnum } from '../../data/constants';
 import { DeleteCategoryRequestDTO } from '../../data/dto/request/BudgetUpdateRequestDTO';
+import { Category } from '../../data/dto/response/CategoryResponseDTO';
 import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
 import { BudgetDetailFilterType, BudgetInit, TableData } from '../types/table.type';
-import { Category } from '../../data/dto/response/CategoryResponseDTO';
 
 interface UseCategoryManagementProps {
   budgetSummaryUseCase: IBudgetSummaryUseCase;
@@ -23,13 +23,16 @@ export const useCategoryManagement = ({
 }: UseCategoryManagementProps) => {
   const [categoryRows, setCategoryRows] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleAddCategory = () => {
+    setIsLoading(true);
     const hasUnselectedCategory = table.data.some(
       (item) => categoryRows.includes(item.key) && !item.categoryId,
     );
 
     if (hasUnselectedCategory) {
+      setIsLoading(false);
       toast.error('Please select a category before adding a new one.');
       return;
     }
@@ -51,6 +54,7 @@ export const useCategoryManagement = ({
       },
       ...prev.slice(3),
     ]);
+    setIsLoading(false);
   };
 
   const handleCategorySelected = (
@@ -121,6 +125,7 @@ export const useCategoryManagement = ({
   };
 
   const handleDeleteCategory = async (categoryId: string, isTruncate: boolean = true) => {
+    setIsLoading(true);
     try {
       const type = activeTab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income';
 
@@ -149,10 +154,13 @@ export const useCategoryManagement = ({
       categories.fetch();
     } catch (error: any) {
       toast.error(`Failed to delete category: ${error.message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return {
+    isLoading,
     categoryRows,
     selectedCategories,
     setSelectedCategories,
