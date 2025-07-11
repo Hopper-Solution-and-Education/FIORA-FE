@@ -2,7 +2,6 @@
 
 import Loading from '@/components/common/atoms/Loading';
 import dynamic from 'next/dynamic';
-import { useParams } from 'next/navigation';
 
 const FaqDetailPageRender = dynamic(
   () => import('@/features/faqs/presentation/pages/FaqDetailPage'),
@@ -13,9 +12,7 @@ const FaqDetailPageRender = dynamic(
 );
 
 const FaqDetailPage = () => {
-  const { id } = useParams() as { id: string };
-
-  return <FaqDetailPageRender id={id} />;
+  return <FaqDetailPageRender />;
 };
 
 export default FaqDetailPage;

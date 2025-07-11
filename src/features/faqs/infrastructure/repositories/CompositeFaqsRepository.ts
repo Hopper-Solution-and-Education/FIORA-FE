@@ -94,9 +94,9 @@ export class CompositeFaqsRepository implements IFaqsRepository {
   async createOrUpdateReaction(
     faqId: string,
     userId: string,
-    request: { reactionType: ReactionType },
+    reactionType: ReactionType,
   ): Promise<void> {
-    return this.faqReactionRepository.createOrUpdateReaction(faqId, userId, request);
+    return this.faqReactionRepository.createOrUpdateReaction(faqId, userId, reactionType);
   }
 
   async deleteReaction(faqId: string, userId: string): Promise<void> {
