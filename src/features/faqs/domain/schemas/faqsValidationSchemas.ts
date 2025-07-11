@@ -21,7 +21,7 @@ export const FAQS_VALIDATION_SCHEMAS = {
     .string()
     .required('Title is required')
     .max(255, 'Title must be less than 255 characters')
-    .matches(/^[a-zA-Z0-9\s\-_.,]+$/, 'Title can not contain special characters'),
+    .matches(/^[a-zA-Z0-9\s\-_.,?!'"]+$/, 'Title can not contain special characters'),
 
   description: yup
     .string()

@@ -265,7 +265,15 @@ export enum Messages {
   IMPORT_FAQS_FAILED = 'Import FAQs failed',
   GET_FAQ_CATEGORIES_SUCCESS = 'Get FAQ categories successfully',
   GET_FAQ_CATEGORIES_FAILED = 'Get FAQ categories failed',
-
+  DELETE_COMMENT_SUCCESS = 'Delete comment successfully',
+  CREATE_COMMENT_SUCCESS = 'Create comment successfully',
+  CREATE_REACTION_SUCCESS = 'Create reaction successfully',
+  DELETE_REACTION_SUCCESS = 'Delete reaction successfully',
+  GET_FAQ_DETAIL_SUCCESS = 'Get FAQ detail successfully',
+  FAQ_NOT_FOUND = 'FAQ not found',
+  UPDATE_FAQ_SUCCESS = 'Update FAQ successfully',
+  DELETE_FAQ_SUCCESS = 'Delete FAQ successfully',
+  GET_FAQ_LIST_SUCCESS = 'Get FAQ list successfully',
   // COMMON ERRORS
   INVALID_CURRENCY = 'Invalid currency. Must be either VND or USD.',
   VALIDATION_ERROR = 'Validation error.',

@@ -1,17 +1,12 @@
 import { useFaqsData } from '@/features/faqs/hooks/useFaqsData';
-import FaqsPageHeader from '../organisms/FaqsPageHeader';
-import CategoriesSection from '../organisms/CategoriesSection';
-import MostViewedSection from '../organisms/MostViewedSection';
-import FilteredCategoriesSection from '../organisms/FilteredCategoriesSection';
+import { USER_ROLES } from '@/shared/constants/featuresFlags';
+import { Session, useSession } from 'next-auth/react';
 import { FAQ_LIST_CONSTANTS } from '../../constants';
 import { useGetFaqCategoriesQuery } from '../../store/api/faqsApi';
-import { Session, useSession } from 'next-auth/react';
-
-enum UserRole {
-  USER = 'User',
-  ADMIN = 'Admin',
-  CS = 'CS',
-}
+import CategoriesSection from '../organisms/CategoriesSection';
+import FaqsPageHeader from '../organisms/FaqsPageHeader';
+import FilteredCategoriesSection from '../organisms/FilteredCategoriesSection';
+import MostViewedSection from '../organisms/MostViewedSection';
 
 const FaqsListPage = () => {
   // Hooks
@@ -31,7 +26,9 @@ const FaqsListPage = () => {
 
   const { data: session } = useSession() as { data: Session | null };
 
-  const isAdminOrCS = session?.user?.role === UserRole.ADMIN || session?.user?.role === UserRole.CS;
+  const isAdminOrCS =
+    session?.user?.role?.toUpperCase() === USER_ROLES.ADMIN ||
+    session?.user?.role?.toUpperCase() === USER_ROLES.CS;
 
   return (
     <div className="w-full px-4 space-y-8 mb-6">
