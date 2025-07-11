@@ -1,8 +1,8 @@
 import { FormConfig } from '@/components/common/forms';
 import UploadImageField from '@/components/common/forms/upload/UploadImageField';
+import { useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
 import { EditMemberShipFormValues } from '../schema/editMemberShip.schema';
-import { useAppSelector } from '@/store';
 
 const ImageUploadListFieldConfig = () => {
   const methods = useFormContext<EditMemberShipFormValues>();
@@ -37,7 +37,7 @@ const ImageUploadListFieldConfig = () => {
   const fields = iconItems.map((item) => (
     <UploadImageField
       key={item.id}
-      name={item.id as keyof EditMemberShipFormValues}
+      name={item.id}
       label={item.label}
       required
       previewShape="square"
