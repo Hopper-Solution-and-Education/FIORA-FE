@@ -11,6 +11,7 @@ import {
   FaqsListResponse,
   FaqsRowValidated,
   ReactionType,
+  UpdateFaqRequest,
 } from '../../domain/entities/models/faqs';
 
 export const faqsApi = createApi({
@@ -97,6 +98,18 @@ export const faqsApi = createApi({
           // { type: 'FaqReactions', id },
         ];
       },
+    }),
+
+    updateFaq: builder.mutation<void, { faqId: string; updateData: UpdateFaqRequest }>({
+      query: ({ faqId, updateData }) => ({
+        url: `/${faqId}`,
+        method: 'PUT',
+        body: updateData,
+      }),
+      invalidatesTags: (result, error, { faqId }) => [
+        { type: 'FaqDetails', id: faqId },
+        { type: 'Faqs', id: 'LIST' },
+      ],
     }),
 
     deleteFaq: builder.mutation<void, string>({
@@ -189,12 +202,13 @@ export const faqsApi = createApi({
       transformResponse: (response: Response<FaqsCategoriesResponse[]>) => response.data,
       providesTags: ['FaqCategories'],
     }),
-    createFaqCategory: builder.mutation<void, string>({
-      query: (name) => ({
+    createFaqCategory: builder.mutation<void, { name: string; description: string }>({
+      query: (data) => ({
         url: '/categories',
         method: 'POST',
-        body: { name },
+        body: data,
       }),
+      invalidatesTags: ['FaqCategories'],
     }),
   }),
 });
@@ -206,6 +220,8 @@ export const {
   useImportFaqsMutation,
   // FAQ Detail hooks
   useGetFaqDetailQuery,
+  useUpdateFaqMutation,
+  useCreateFaqCategoryMutation,
   useCreateCommentMutation,
   useDeleteCommentMutation,
   // useUpdateCommentMutation,

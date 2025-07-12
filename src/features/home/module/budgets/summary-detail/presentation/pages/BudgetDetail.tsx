@@ -13,6 +13,8 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { COLORS } from '@/shared/constants/chart';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
+import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
+import { cn } from '@/shared/utils';
 import { routeConfig } from '@/shared/utils/route';
 import { useAppSelector } from '@/store';
 import { useLayoutEffect, useMemo } from 'react';
@@ -20,6 +22,7 @@ import { PERIOD_OPTIONS } from '../../data/constants';
 import { budgetSummaryDIContainer } from '../../di/budgetSummaryDIContainer';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
 import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
+import { convertTableDataCurrency } from '../../utils/convertTableDataCurrency';
 import BudgetSummaryYearSelect from '../atoms/BudgetSummaryYearSelect';
 import { useBudgetCategories } from '../hooks/useBudgetCategories';
 import { useBudgetColumns } from '../hooks/useBudgetColumns';
@@ -27,9 +30,6 @@ import { useBudgetInit } from '../hooks/useBudgetInit';
 import { useBudgetNavigation } from '../hooks/useBudgetNavigation';
 import { useBudgetTableData } from '../hooks/useBudgetTableData';
 import { useCategoryManagement } from '../hooks/useCategoryManagement';
-import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
-import { cn } from '@/shared/utils';
-import { convertTableDataCurrency } from '../../utils/convertTableDataCurrency';
 
 interface BudgetDetailProps {
   year: number;
@@ -54,6 +54,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   });
 
   const {
+    isLoading: isCategoryLoading,
     categoryRows,
     selectedCategories,
     setSelectedCategories,
@@ -192,7 +193,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
           <TableV2
             columns={columns}
             dataSource={convertedTableData}
-            loading={isLoading}
+            loading={isLoading || isCategoryLoading}
             loadingRowCount={8}
             rowKey="key"
             bordered

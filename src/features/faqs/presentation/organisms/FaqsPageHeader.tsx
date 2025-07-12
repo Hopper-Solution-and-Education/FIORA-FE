@@ -1,12 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Upload, Search } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useMemo } from 'react';
 import debounce from 'lodash/debounce';
-import FaqsFilterMenu from '../molecules/FaqsFilterMenu';
+import { Search, Upload } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useMemo } from 'react';
 import { FaqsCategoriesResponse } from '../../domain/entities/models/faqs';
+import FaqsFilterMenu from '../molecules/FaqsFilterMenu';
 
 export interface FaqsFilterValues {
   search: string;

@@ -64,17 +64,12 @@ const FaqDetailPage: React.FC = () => {
   const handleDeleteFaq = async () => {
     if (!data?.id) return;
 
-    // Show loading toast
-    const loadingToast = toast.loading('Deleting FAQ...');
-
     try {
       await deleteFaq(data.id).unwrap();
 
       // Close dialog
       setShowDeleteFaqDialog(false);
 
-      // Dismiss loading toast and show success
-      toast.dismiss(loadingToast);
       toast.success(`"${data.title}" has been deleted successfully`);
 
       // Navigate to FAQs list page
@@ -83,9 +78,6 @@ const FaqDetailPage: React.FC = () => {
       }, 1000); // Small delay to show the success message
     } catch (error) {
       console.error('Error deleting FAQ:', error);
-
-      // Dismiss loading toast and show error
-      toast.dismiss(loadingToast);
       toast.error('Failed to delete FAQ. Please try again.');
     }
   };
@@ -113,8 +105,7 @@ const FaqDetailPage: React.FC = () => {
   }
 
   const handleEdit = () => {
-    // TODO: Implement edit functionality
-    console.log('Edit FAQ:', data.id);
+    router.push(`/faqs/details/${id}/edit`);
   };
 
   const handleDelete = () => {

@@ -5,6 +5,12 @@ import { DropdownOption } from '@/shared/types';
 import { Loader2 } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
+import { TransactionType } from '../../types';
+import {
+  GetSupportDataResponse,
+  SupportFromAccountResponse,
+  SupportFromCategoryResponse,
+} from '../../types/getSupportDataResponse';
 
 interface FromSelectProps {
   // name: string;
@@ -27,7 +33,7 @@ const FromSelectField: React.FC<FromSelectProps> = ({
 
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
 
-  const { data, mutate, isLoading, isValidating } = useDataFetch<any>({
+  const { data, mutate, isLoading, isValidating } = useDataFetch<GetSupportDataResponse>({
     endpoint: transactionType ? `/api/transactions/supporting-data?type=${transactionType}` : null,
     method: 'GET',
   });
@@ -43,21 +49,31 @@ const FromSelectField: React.FC<FromSelectProps> = ({
     // Get categories case
     const tmpOptions: DropdownOption[] = [];
 
-    if (data) {
-      [...data.data.fromAccounts, ...data.data.fromCategories].forEach((option: any) => {
-        tmpOptions.push({
-          value: option.id,
-          label: option.name,
+    if (data && data.data) {
+      if (transactionType === TransactionType.Expense) {
+        [...data.data.fromAccounts].forEach((option: SupportFromAccountResponse) => {
+          tmpOptions.push({
+            value: option.id,
+            label: option.name,
+          });
         });
-      });
+      } else if (transactionType === TransactionType.Income) {
+        [...data.data.fromCategories].forEach((option: SupportFromCategoryResponse) => {
+          tmpOptions.push({
+            value: option.id,
+            label: option.name,
+          });
+        });
+      }
     } else {
       tmpOptions.push({
-        label: transactionType === 'Income' ? 'Select Category' : 'Select Account',
+        label: transactionType === TransactionType.Income ? 'Select Category' : 'Select Account',
         value: 'none',
         disabled: true,
       });
     }
     setOptions(tmpOptions);
+
     return () => {
       setOptions([]);
     };
@@ -87,9 +103,11 @@ const FromSelectField: React.FC<FromSelectProps> = ({
               name={`fromId`}
               value={selectedOption}
               disabled={isLoading || isValidating}
-              onValueChange={handleChange}
+              onChange={handleChange}
               options={options}
-              placeholder={transactionType === 'Income' ? 'Select Category' : 'Select Account'}
+              placeholder={
+                transactionType === TransactionType.Income ? 'Select Category' : 'Select Account'
+              }
               error={error}
               noneValue={false}
               {...props}
