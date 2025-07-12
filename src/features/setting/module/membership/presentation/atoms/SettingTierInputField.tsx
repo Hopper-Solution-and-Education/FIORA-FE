@@ -72,6 +72,8 @@ const SettingTierInputField = ({
             gap-2
             flex justify-start
             w-36
+            max-w-[144px]
+            truncate
           "
         >
           {label} {required && <span className="text-red-500">*</span>}
@@ -141,7 +143,7 @@ const SettingTierInputField = ({
       {showRemove && (
         <button
           type="button"
-          className={`absolute right-0 top-1/2 -translate-y-1/2 p-2 text-destructive hover:bg-destructive/10 rounded-full
+          className={`absolute right-0 top-1/3 -translate-y-1/2 p-2 text-destructive hover:bg-destructive/10 rounded-full
             transition-all duration-300 ease-in-out
             ${isHover ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 translate-x-4 pointer-events-none'}`}
           onClick={onRemove}
