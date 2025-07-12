@@ -1,15 +1,14 @@
 'use client';
 
-import React, { useMemo } from 'react';
 import PositiveAndNegativeBarChartV2 from '@/components/common/charts/positive-negative-bar-chart-v2';
-import { COLORS } from '@/shared/constants/chart';
 import { TwoSideBarItem } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
-import { formatFIORACurrency } from '@/config/FIORANumberFormat';
-import { transformWalletsToChartData } from '../../utils';
-import { useAppSelector } from '@/store';
-import { filterWallets } from '../../utils';
 import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import { Icons } from '@/components/Icon';
+import { formatFIORACurrency } from '@/config/FIORANumberFormat';
+import { COLORS } from '@/shared/constants/chart';
+import { useAppSelector } from '@/store';
+import { useMemo } from 'react';
+import { filterWallets, transformWalletsToChartData } from '../../utils';
 
 const WalletBarChart = () => {
   const wallets = useAppSelector((state) => state.wallet.wallets);

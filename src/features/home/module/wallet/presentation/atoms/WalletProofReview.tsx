@@ -1,11 +1,11 @@
 'use client';
 
-import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icon';
-import { AttachmentType } from '../types/attachment.type';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Image from 'next/image';
+import React from 'react';
+import { AttachmentType } from '../types/attachment.type';
 
 interface WalletProofReviewProps {
   open: boolean;
@@ -33,8 +33,9 @@ const WalletProofReview: React.FC<WalletProofReviewProps> = ({ open, onClose, at
   const fileName =
     attachmentData.path?.split('/').pop() || attachmentData.file?.name || 'Unknown file';
   const isImage = attachmentData.type === 'IMAGE';
+  const isPdf = attachmentData.type === 'PDF' || fileName.toLowerCase().endsWith('.pdf');
   let previewUrl = attachmentData.url;
-  if (!previewUrl && isImage && attachmentData.file) {
+  if (!previewUrl && (isImage || isPdf) && attachmentData.file) {
     previewUrl = URL.createObjectURL(attachmentData.file);
   }
 
@@ -83,6 +84,38 @@ const WalletProofReview: React.FC<WalletProofReviewProps> = ({ open, onClose, at
                   <div className="text-center text-muted-foreground">
                     <Icons.image className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">Unable to load image</p>
+                  </div>
+                </div>
+              </div>
+            ) : isPdf ? (
+              <div className="w-full h-96 bg-muted dark:bg-muted/30 rounded-lg overflow-hidden border border-border/50">
+                <iframe
+                  src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                  className="w-full h-full"
+                  title="PDF Preview"
+                  onError={(e) => {
+                    const target = e.target as HTMLIFrameElement;
+                    target.style.display = 'none';
+                    const errorDiv = target.parentElement?.querySelector('.pdf-error-fallback');
+                    if (errorDiv) {
+                      errorDiv.classList.remove('hidden');
+                    }
+                  }}
+                />
+                <div className="pdf-error-fallback hidden absolute inset-0 flex items-center justify-center bg-muted dark:bg-muted/30">
+                  <div className="text-center text-muted-foreground">
+                    <Icons.page className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Unable to load PDF preview</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-2 border-border hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => previewUrl && window.open(previewUrl, '_blank')}
+                      disabled={!previewUrl}
+                    >
+                      <Icons.externalLink className="w-4 h-4 mr-2" />
+                      Open PDF
+                    </Button>
                   </div>
                 </div>
               </div>
