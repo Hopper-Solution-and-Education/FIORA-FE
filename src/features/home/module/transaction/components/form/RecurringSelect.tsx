@@ -49,7 +49,7 @@ const RecurringSelectField: React.FC<RecurringSelectProps> = ({
         render={() => (
           <FormItem className="w-full h-fit flex flex-row justify-start items-center gap-4">
             <FormLabel className="w-[32%] text-right text-sm text-gray-700 dark:text-gray-300">
-              Recurring
+              Description
             </FormLabel>
             <SelectField
               className="w-[50%] flex justify-between"

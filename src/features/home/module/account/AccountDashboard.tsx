@@ -71,7 +71,6 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
     router.push('/account');
   };
 
-
   return (
     <>
       {module === MODULE.ACCOUNT && <DashboardHeader />}
