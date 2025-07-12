@@ -2,44 +2,30 @@ import { formatFIORACurrency, getCurrencySymbol } from '@/config/FIORANumberForm
 import useDataFetcher from '@/shared/hooks/useDataFetcher';
 import { Response } from '@/shared/types/Common.types';
 import { RootState } from '@/store';
-import { updateExchangeRates } from '@/store/slices/setting.slice';
+import { updateExchangeRatesWithTimestamp } from '@/store/slices/setting.slice';
 import { ExchangeRateType } from '@/store/types/setting.type';
 import { Currency } from '@prisma/client';
 import { useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'sonner';
+import { CACHE_KEY, STALE_TIME } from '../constants/exchangeRates';
+import {
+  type CurrencyFormatterOptions,
+  type ExchangeAmountParams,
+  type ExchangeAmountResult,
+  type ExchangeRateResponse,
+} from '../types';
 
-// Types for the hook - matching your actual API structure
-interface ExchangeRateApiResponse {
-  time_last_update_unix: number;
-  time_last_update_utc: string;
-  base_code: string;
-  conversion_rates: {
-    [currencyCode: string]: number;
-  };
-}
+// Constants for localStorage caching
+const apiEndpoint = '/api/setting/currency-setting';
 
-interface CurrencyFormatterOptions {
-  shouldShortened?: boolean;
-  minimumFractionDigits?: number;
-  maximumFractionDigits?: number;
-}
+type CachedExchangeRateData = {
+  rates: ExchangeRateType;
+  updatedAt: number;
+  baseCurrency: string;
+};
 
-interface ExchangeAmountParams {
-  amount: number;
-  fromCurrency: Currency;
-  toCurrency: Currency;
-}
-
-interface ExchangeAmountResult {
-  convertedAmount: number;
-  originalAmount: number;
-  fromCurrency: Currency;
-  toCurrency: Currency;
-  exchangeRate: number;
-  formattedAmount: string;
-}
-
-interface UseCurrencyFormatterReturn {
+type UseCurrencyFormatterReturn = {
   // Core functions
   formatCurrency: (
     amount: number,
@@ -49,7 +35,7 @@ interface UseCurrencyFormatterReturn {
   exchangeAmount: (params: ExchangeAmountParams) => ExchangeAmountResult;
 
   // Data fetching
-  mutate: () => Promise<Response<ExchangeRateApiResponse> | null | undefined>;
+  mutate: () => Promise<Response<ExchangeRateResponse> | null | undefined>;
   refreshExchangeRates: () => Promise<void>;
 
   // State
@@ -63,7 +49,42 @@ interface UseCurrencyFormatterReturn {
   getSupportedCurrencies: () => Currency[];
   getExchangeRate: (fromCurrency: Currency, toCurrency: Currency) => number | null;
   getCurrencySymbol: (currency: Currency) => string;
-}
+};
+
+/**
+ * Helper function to get cached exchange rate data from localStorage
+ */
+const getCachedExchangeRates = (): CachedExchangeRateData | null => {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
+
+    const data: CachedExchangeRateData = JSON.parse(cached);
+    return data;
+  } catch (error) {
+    console.error('Error reading cached exchange rates:', error);
+    return null;
+  }
+};
+
+/**
+ * Helper function to save exchange rate data to localStorage
+ */
+const setCachedExchangeRates = (data: CachedExchangeRateData): void => {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+  } catch (error) {
+    console.error('Error saving exchange rates to cache:', error);
+  }
+};
+
+/**
+ * Helper function to check if cached data is stale (older than 6 hours)
+ */
+const isCacheStale = (updatedAt: number): boolean => {
+  const now = Date.now();
+  return now - updatedAt > STALE_TIME;
+};
 
 /**
  * Custom hook for currency formatting and exchange rate management
@@ -80,69 +101,116 @@ const useCurrencyFormatter = (baseCurrency?: Currency): UseCurrencyFormatterRetu
     currency: selectedCurrency,
     baseCurrency: storeBaseCurrency,
     exchangeRate: exchangeRates,
+    updatedAt: storeUpdatedAt,
   } = useSelector((state: RootState) => state.settings);
 
   const effectiveBaseCurrency = baseCurrency || storeBaseCurrency;
 
-  // Use existing API endpoint for exchange rates
-  const apiEndpoint = '/api/setting/currency-setting';
-
   // Data fetching with useDataFetcher
-  const { isLoading, error, mutate } = useDataFetcher<ExchangeRateApiResponse>({
+  const { isLoading, error, mutate } = useDataFetcher<ExchangeRateResponse>({
     endpoint: apiEndpoint,
     method: 'GET',
   });
 
   /**
    * Checks if exchange rate data is valid and triggers refresh if needed
+   * Now includes localStorage caching with 6-hour stale time
    */
   const ensureExchangeRateData = useCallback(async (): Promise<boolean> => {
-    // Check if we have any exchange rate data
-    if (Object.keys(exchangeRates).length === 0) {
-      console.log('No exchange rate data found, fetching from API...');
-      try {
-        // Call mutate directly to avoid circular dependency
-        const response = await mutate();
+    // First, check if we have valid data in Redux store
+    const hasStoreData = Object.keys(exchangeRates).length > 0;
+    const isStoreDataStale = isCacheStale(storeUpdatedAt);
 
-        if (response?.data?.conversion_rates) {
-          const formattedRates: ExchangeRateType = {};
-          const baseCurrency = response.data.base_code;
+    // If store has valid, non-stale data, we're good
+    if (hasStoreData && !isStoreDataStale) {
+      return true;
+    }
 
-          // Convert API response to our exchange rate format
-          Object.entries(response.data.conversion_rates).forEach(([currency, rate]) => {
-            const directKey = `${baseCurrency}_${currency}`;
-            formattedRates[directKey] = rate;
+    // Check localStorage cache
+    const cachedData = getCachedExchangeRates();
 
-            if (rate !== 0) {
-              const inverseKey = `${currency}_${baseCurrency}`;
-              formattedRates[inverseKey] = 1 / rate;
-            }
-          });
+    if (cachedData) {
+      const isCachedDataStale = isCacheStale(cachedData.updatedAt);
 
-          // Add cross-currency rates
-          const rates = response.data.conversion_rates;
-          Object.keys(rates).forEach((fromCurrency) => {
-            Object.keys(rates).forEach((toCurrency) => {
-              if (fromCurrency !== toCurrency && rates[fromCurrency] && rates[toCurrency]) {
-                const crossRate = rates[toCurrency] / rates[fromCurrency];
-                formattedRates[`${fromCurrency}_${toCurrency}`] = crossRate;
-              }
-            });
-          });
-
-          // Update Redux store
-          dispatch(updateExchangeRates(formattedRates));
-          console.log('Exchange rates loaded successfully');
-          return true;
-        }
-        return false;
-      } catch (error) {
-        console.error('Failed to fetch exchange rates:', error);
-        return false;
+      if (!isCachedDataStale) {
+        // Use cached data if it's fresh
+        dispatch(
+          updateExchangeRatesWithTimestamp({
+            rates: cachedData.rates,
+            updatedAt: cachedData.updatedAt,
+          }),
+        );
+        return true;
       }
     }
-    return true;
-  }, [exchangeRates, mutate, dispatch]);
+
+    // Fetch fresh data from API
+    try {
+      const response = await mutate();
+
+      if (response?.data?.conversion_rates) {
+        const formattedRates: ExchangeRateType = {};
+        const baseCurrency = response.data.base_code;
+        const updatedAt = Date.now();
+
+        // Convert API response to our exchange rate format
+        Object.entries(response.data.conversion_rates).forEach(([currency, rate]) => {
+          const directKey = `${baseCurrency}_${currency}`;
+          formattedRates[directKey] = rate as number;
+
+          if (rate !== 0) {
+            const inverseKey = `${currency}_${baseCurrency}`;
+            formattedRates[inverseKey] = 1 / (rate as number);
+          }
+        });
+
+        // Add cross-currency rates
+        const rates = response.data.conversion_rates;
+        Object.keys(rates).forEach((fromCurrency) => {
+          Object.keys(rates).forEach((toCurrency) => {
+            if (fromCurrency !== toCurrency && rates[fromCurrency] && rates[toCurrency]) {
+              const crossRate = rates[toCurrency] / rates[fromCurrency];
+              formattedRates[`${fromCurrency}_${toCurrency}`] = crossRate;
+            }
+          });
+        });
+
+        // Update Redux store with timestamp
+        dispatch(
+          updateExchangeRatesWithTimestamp({
+            rates: formattedRates,
+            updatedAt,
+          }),
+        );
+
+        // Cache data in localStorage
+        setCachedExchangeRates({
+          rates: formattedRates,
+          updatedAt,
+          baseCurrency,
+        });
+
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Failed to fetch exchange rates:', error);
+      toast.error('Failed to fetch current exchange rates. Using cached data if available.');
+
+      // If API fails but we have stale cached data, use it as fallback
+      if (cachedData) {
+        dispatch(
+          updateExchangeRatesWithTimestamp({
+            rates: cachedData.rates,
+            updatedAt: cachedData.updatedAt,
+          }),
+        );
+        return true;
+      }
+
+      return false;
+    }
+  }, [exchangeRates, storeUpdatedAt, mutate, dispatch]);
 
   /**
    * Formats a number as currency using FIORA number formatting
@@ -190,6 +258,7 @@ const useCurrencyFormatter = (baseCurrency?: Currency): UseCurrencyFormatterRetu
         return formatFIORACurrency(amount, currency, formatOptions);
       } catch (error) {
         console.error('Error formatting currency:', error);
+        toast.error('Error formatting currency. Please try again.');
         return amount.toString();
       }
     },
@@ -253,8 +322,8 @@ const useCurrencyFormatter = (baseCurrency?: Currency): UseCurrencyFormatterRetu
       const rate = getExchangeRate(fromCurrency, toCurrency);
 
       if (rate === null) {
-        console.warn(
-          `No exchange rate available for ${fromCurrency} to ${toCurrency}, triggering data refresh...`,
+        toast.warning(
+          `Exchange rate not available for ${fromCurrency} to ${toCurrency}. Refreshing rates...`,
         );
         // Trigger refresh for missing rate
         ensureExchangeRateData();
@@ -285,26 +354,27 @@ const useCurrencyFormatter = (baseCurrency?: Currency): UseCurrencyFormatterRetu
 
   /**
    * Refreshes exchange rates from API and updates store
+   * Now includes localStorage caching
    */
   const refreshExchangeRates = useCallback(async (): Promise<void> => {
     try {
-      console.log('Fetching exchange rates from API...');
       const response = await mutate();
 
       if (response?.data?.conversion_rates) {
         const formattedRates: ExchangeRateType = {};
         const baseCurrency = response.data.base_code;
+        const updatedAt = Date.now();
 
         // Convert API response to our exchange rate format
         Object.entries(response.data.conversion_rates).forEach(([currency, rate]) => {
           // Direct rate from base currency
           const directKey = `${baseCurrency}_${currency}`;
-          formattedRates[directKey] = rate;
+          formattedRates[directKey] = rate as number;
 
           // Inverse rate (to base currency)
           if (rate !== 0) {
             const inverseKey = `${currency}_${baseCurrency}`;
-            formattedRates[inverseKey] = 1 / rate;
+            formattedRates[inverseKey] = 1 / (rate as number);
           }
         });
 
@@ -320,19 +390,28 @@ const useCurrencyFormatter = (baseCurrency?: Currency): UseCurrencyFormatterRetu
           });
         });
 
-        // Update Redux store
-        dispatch(updateExchangeRates(formattedRates));
+        // Update Redux store with timestamp
+        dispatch(
+          updateExchangeRatesWithTimestamp({
+            rates: formattedRates,
+            updatedAt,
+          }),
+        );
 
-        console.log('Exchange rates updated successfully:', {
+        // Cache data in localStorage
+        setCachedExchangeRates({
+          rates: formattedRates,
+          updatedAt,
           baseCurrency,
-          ratesCount: Object.keys(formattedRates).length,
-          lastUpdate: response.data.time_last_update_utc,
         });
+
+        toast.success('Exchange rates updated successfully');
       } else {
-        console.warn('No conversion rates found in API response');
+        toast.warning('No exchange rate data received from server');
       }
     } catch (error) {
       console.error('Failed to refresh exchange rates:', error);
+      toast.error('Failed to refresh exchange rates. Please check your connection and try again.');
       throw error; // Re-throw to allow error handling in calling functions
     }
   }, [mutate, dispatch]);

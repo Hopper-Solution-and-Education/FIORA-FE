@@ -1,7 +1,7 @@
+import { ChevronDown, Frown, Meh, Pencil, SendHorizonal, Smile, Trash2 } from 'lucide-react';
 import Image from 'next/image';
-import useSWR from 'swr';
 import { useState } from 'react';
-import { Smile, Meh, Frown, ChevronDown, SendHorizonal, Pencil, Trash2 } from 'lucide-react';
+import useSWR from 'swr';
 import ConfirmExitDialog from './ConfirmExitDialog';
 import ParsedFaqContent from './ParsedFaqContent';
 

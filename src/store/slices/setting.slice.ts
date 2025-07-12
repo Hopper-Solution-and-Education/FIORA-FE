@@ -25,11 +25,24 @@ const settingsSlice = createSlice({
     },
     updateExchangeRates: (state, action: PayloadAction<ExchangeRateType>) => {
       state.exchangeRate = { ...state.exchangeRate, ...action.payload };
+      state.updatedAt = Date.now();
+    },
+    updateExchangeRatesWithTimestamp: (
+      state,
+      action: PayloadAction<{ rates: ExchangeRateType; updatedAt: number }>,
+    ) => {
+      state.exchangeRate = { ...state.exchangeRate, ...action.payload.rates };
+      state.updatedAt = action.payload.updatedAt;
     },
   },
 });
 
-export const { changeLanguage, toggleCurrency, setExchangeRateSettings, updateExchangeRates } =
-  settingsSlice.actions;
+export const {
+  changeLanguage,
+  toggleCurrency,
+  setExchangeRateSettings,
+  updateExchangeRates,
+  updateExchangeRatesWithTimestamp,
+} = settingsSlice.actions;
 
 export default settingsSlice.reducer;

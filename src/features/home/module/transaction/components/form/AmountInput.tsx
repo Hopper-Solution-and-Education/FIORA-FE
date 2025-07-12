@@ -37,7 +37,7 @@ const AmountInputField: React.FC<AmountInputProps> = ({
             <FormLabel className="text-right text-sm text-gray-700 dark:text-gray-300 sm:w-[20%]">
               {label ? label : 'Amount'} <span className="text-red-500">*</span>
             </FormLabel>
-            <div className="w-full">
+            <div className="w-full flex flex-col justify-between">
               <InputCurrency
                 value={value}
                 onChange={onChange}

@@ -14,6 +14,7 @@ export type SettingStateType = {
   currency: Currency;
   baseCurrency: Currency;
   exchangeRate: ExchangeRateType;
+  updatedAt: number;
 };
 
 export type SetExchangeRateSettingsParams = Pick<SettingStateType, 'baseCurrency' | 'exchangeRate'>;
@@ -23,6 +24,7 @@ const initialSettingState: SettingStateType = {
   currency: 'USD',
   baseCurrency: 'USD',
   exchangeRate: {},
+  updatedAt: 0,
 };
 
 export { initialSettingState };
