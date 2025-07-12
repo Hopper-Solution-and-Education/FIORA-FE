@@ -1,9 +1,10 @@
 'use client';
 
-import React, { memo } from 'react';
-import { Textarea } from '@/components/ui/textarea';
-import { FieldError } from 'react-hook-form';
 import GlobalLabel from '@/components/common/atoms/GlobalLabel';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/shared/utils';
+import React, { memo } from 'react';
+import { FieldError } from 'react-hook-form';
 
 interface TextareaFieldProps {
   name: string; // Required for form handling
@@ -15,6 +16,7 @@ interface TextareaFieldProps {
   required?: boolean; // Whether the field is required
   placeholder?: string; // Placeholder text
   id?: string; // HTML id for accessibility
+  className?: string;
   [key: string]: any; // Rest props for additional attributes
 }
 
@@ -28,10 +30,11 @@ const TextareaField: React.FC<TextareaFieldProps> = ({
   required = false,
   placeholder,
   id = name, // Default to name if no id provided
+  className,
   ...props
 }) => {
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 mb-4">
       {label &&
         (typeof label === 'string' ? (
           <GlobalLabel text={label} required={required} htmlFor={id} />
@@ -45,7 +48,7 @@ const TextareaField: React.FC<TextareaFieldProps> = ({
         placeholder={placeholder}
         id={id}
         name={name}
-        className={error ? 'border-red-500' : ''}
+        className={cn(error ? 'border-red-500' : '', className)}
         {...props}
       />
       {error && <p className="text-sm text-red-500">{error.message}</p>}
