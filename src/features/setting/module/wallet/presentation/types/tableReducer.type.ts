@@ -1,4 +1,4 @@
-import { WALLET_SETTING_CONSTANTS } from '../../data/constant';
+import { WALLET_SETTING_CONSTANTS } from '../../data';
 import { DepositRequestStatus } from '../../domain';
 import { WalletSettingTableData } from './index';
 

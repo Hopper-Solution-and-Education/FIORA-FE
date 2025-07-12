@@ -1,7 +1,6 @@
-import React from 'react';
 import { Badge } from '@/components/ui/badge';
+import { WALLET_SETTING_STATUS_OPTIONS } from '../../data';
 import { DepositRequestStatus } from '../../domain';
-import { WALLET_SETTING_STATUS_OPTIONS } from '../../data/constant';
 
 interface WalletSettingStatusBadgeProps {
   status: DepositRequestStatus;

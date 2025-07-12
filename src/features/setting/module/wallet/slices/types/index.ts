@@ -1,5 +1,5 @@
-import { FilterOperator } from '@/shared/types';
-import { WalletSettingFilterGroup } from '../../data/types/walletSettingFilter.types';
+import { DynamicFilterGroup, FilterOperator } from '@/shared/types';
+import { DEFAULT_MAX_AMOUNT, DEFAULT_MIN_AMOUNT } from '../../data';
 import {
   WALLET_SETTING_TABLE_COLUMN_CONFIG,
   WalletSettingTableColumnKeyType,
@@ -12,7 +12,7 @@ export interface WalletSettingState {
   updatingItems: string[];
   showRejectModal: boolean;
   rejectingId: string | null;
-  filter: WalletSettingFilterGroup;
+  filter: DynamicFilterGroup;
   search: string; // Add search field
   skipFilters: boolean; // Add state to control whether to skip filters
 }
@@ -40,7 +40,7 @@ export const initialState: WalletSettingState = {
       {
         field: 'amount',
         operator: FilterOperator.BETWEEN,
-        value: [0, 1000000], // Use BETWEEN for amount range with min=0, max=1000000
+        value: [DEFAULT_MIN_AMOUNT, DEFAULT_MAX_AMOUNT], // Use BETWEEN for amount range with min=0, max=1000000
       },
     ],
   },

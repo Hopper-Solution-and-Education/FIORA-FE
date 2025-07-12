@@ -1,11 +1,11 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { DynamicFilterGroup } from '@/shared/types';
 import { RootState } from '@/store';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { WalletSettingFilterGroup } from '../../data/types/walletSettingFilter.types';
 import { setWalletSettingFilter, setWalletSettingSearch } from '../../slices';
 import { WalletSettingFilterMenu, WalletSettingSearch } from '../molecules';
 import WalletSettingColumnMenu from '../molecules/WalletSettingColumnMenu';
@@ -20,7 +20,7 @@ const WalletSettingTopBarAction = ({ className }: WalletSettingTopBarActionProps
   const searchFromRedux = useSelector((state: RootState) => state.walletSetting.search);
 
   // Local state for filter and search
-  const [localFilter, setLocalFilter] = useState<WalletSettingFilterGroup>(filterFromRedux);
+  const [localFilter, setLocalFilter] = useState<DynamicFilterGroup>(filterFromRedux);
   const [localSearch, setLocalSearch] = useState<string>(searchFromRedux);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ const WalletSettingTopBarAction = ({ className }: WalletSettingTopBarActionProps
     [debouncedSetSearch],
   );
 
-  const handleLocalFilterChange = useCallback((newFilter: WalletSettingFilterGroup) => {
+  const handleLocalFilterChange = useCallback((newFilter: DynamicFilterGroup) => {
     setLocalFilter(newFilter);
   }, []);
 
