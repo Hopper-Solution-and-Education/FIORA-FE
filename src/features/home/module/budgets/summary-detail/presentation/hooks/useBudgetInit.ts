@@ -1,5 +1,12 @@
 import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { routeConfig } from '@/shared/utils/route';
+import { useAppDispatch } from '@/store';
+import {
+  clearCategoryListSlice,
+  clearTableDataSlice,
+  setCategoryListSlice,
+  setTableDataSlice,
+} from '@/store/slices/budget-detail.slice';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -22,6 +29,7 @@ export function useBudgetInit({
 }: UseBudgetInitProps) {
   const [tableData, setTableData] = useState<TableData[]>([]);
   const [categoryList, setCategoryList] = useState<Category[]>([]);
+  const dispatch = useAppDispatch();
 
   const router = useRouter();
   const { isLoading, fetchBudgetData } = useBudgetData(budgetSummaryUseCase);
@@ -31,7 +39,9 @@ export function useBudgetInit({
       const data = await fetchBudgetData(initialYear, activeTab);
 
       setTableData(data || []);
+      dispatch(setTableDataSlice(data || []));
     } catch (err) {
+      dispatch(clearTableDataSlice());
       toast.error(err instanceof Error ? err.message : 'Failed to fetch budget data');
       router.push(routeConfig(RouteEnum.Budgets));
     }
@@ -43,7 +53,9 @@ export function useBudgetInit({
       const response = await budgetSummaryUseCase.getCategoriesByType(type, initialYear);
 
       setCategoryList(response);
+      dispatch(setCategoryListSlice(response));
     } catch (err: any) {
+      dispatch(clearCategoryListSlice());
       toast.error(err?.message || 'Failed to fetch categories');
     }
   };

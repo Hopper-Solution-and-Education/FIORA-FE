@@ -4,12 +4,12 @@ import parse, { domToReact, Element } from 'html-react-parser';
 import Image from 'next/image';
 import React from 'react';
 
-interface Props {
+interface ParsedFaqContentProps {
   htmlContent: string;
 }
 
-const ParsedFaqContent: React.FC<Props> = ({ htmlContent }) => {
-  // Nếu không có thẻ HTML nào thì wrap bằng <p>
+const ParsedFaqContent: React.FC<ParsedFaqContentProps> = ({ htmlContent }) => {
+  // If no HTML tags are present, wrap with <p>
   if (!/<[a-z][\s\S]*>/i.test(htmlContent)) {
     htmlContent = `<p>${htmlContent}</p>`;
   }

@@ -1,29 +1,22 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSessionUser, isAdminOrCS } from '@/lib/utils/auth';
+import { prisma } from '@/config';
+import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { PostType, Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
-import { prisma } from '@/config';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'GET') {
-    const { page = 1, limit = 10 } = req.query;
-
-    const faqs = await prisma.post.findMany({
-      where: { type: PostType.FAQ },
-      skip: (Number(page) - 1) * Number(limit),
-      take: Number(limit),
-      orderBy: { createdAt: 'desc' },
-    });
-
-    return res.status(200).json(faqs);
+export default withAuthorization({
+  POST: ['Admin', 'CS'],
+})(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
+  switch (req.method) {
+    case 'POST':
+      return POST(req, res, userId);
+    default:
+      return res.status(405).json({ error: 'Method not allowed' });
   }
+});
 
-  if (req.method === 'POST') {
-    const sessionUser = await getSessionUser(req, res);
-    if (!sessionUser || !isAdminOrCS(sessionUser.role)) {
-      return res.status(403).json({ error: 'Forbidden' });
-    }
-
+async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  try {
     const { title, description, content, categoryId } = req.body as {
       title: string;
       description: string;
@@ -50,9 +43,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         description,
         content,
         type: PostType.FAQ,
-        createdBy: sessionUser.id,
+        createdBy: userId,
         User: {
-          connect: { id: sessionUser.id },
+          connect: { id: userId },
         },
         PostCategory: {
           connect: { id: categoryId },
@@ -61,7 +54,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     return res.status(201).json(faq);
+  } catch (error) {
+    console.error('Error creating FAQ:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
-
-  return res.status(405).end();
 }
