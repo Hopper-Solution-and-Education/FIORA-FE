@@ -1,19 +1,12 @@
 'use client';
 
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
-import TextAlign from '@tiptap/extension-text-align';
-import TextStyle from '@tiptap/extension-text-style';
-import Color from '@tiptap/extension-color';
-import Link from '@tiptap/extension-link';
-import Image from '@tiptap/extension-image';
-import BulletList from '@tiptap/extension-bullet-list';
-import OrderedList from '@tiptap/extension-ordered-list';
-import ListItem from '@tiptap/extension-list-item';
+import dynamic from 'next/dynamic';
+import { useCallback, useMemo } from 'react';
+import { useDropzone } from 'react-dropzone';
+import 'react-quill-new/dist/quill.snow.css';
 
-import Toolbar from './Toolbar';
-import { useState } from 'react';
+// Dynamically import ReactQuill to avoid SSR issues
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 interface RichTextEditorProps {
   value: string;
@@ -21,53 +14,171 @@ interface RichTextEditorProps {
 }
 
 export default function RichTextEditor({ value, onChange }: RichTextEditorProps) {
-  const [preview, setPreview] = useState(false);
+  // Custom image handler for file uploads
+  const handleImageUpload = useCallback(() => {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.click();
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        bulletList: false,
-        orderedList: false,
-        listItem: false,
-      }),
-      BulletList.configure({}),
-      OrderedList.configure({}),
-      ListItem.configure({}),
-      Underline,
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      TextStyle,
-      Color,
-      Link,
-      Image,
-    ],
-    content: value,
-    onUpdate({ editor }) {
-      onChange(editor.getHTML());
-    },
-    editorProps: {
-      attributes: {
-        class:
-          'min-h-[200px] px-4 py-3 outline-none focus:ring-2 focus:ring-blue-100 rounded-b bg-white border border-t-0',
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          // ReactQuill will handle the image insertion through its internal editor instance
+          const quill = (window as any).Quill?.find(document.querySelector('.ql-editor'));
+          if (quill) {
+            const range = quill.getSelection();
+            const index = range ? range.index : 0;
+            quill.insertEmbed(index, 'image', reader.result, 'user');
+            quill.setSelection(index + 1);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+  }, []);
+
+  // Custom video handler for YouTube/Vimeo embeds
+  const handleVideoUpload = useCallback(() => {
+    const url = prompt('Enter video URL (YouTube or Vimeo):');
+    if (url) {
+      let embedUrl = url;
+
+      // Convert YouTube watch URLs to embed URLs
+      if (url.includes('youtube.com/watch?v=')) {
+        const videoId = url.split('watch?v=')[1]?.split('&')[0];
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      }
+      // Convert Vimeo URLs to embed URLs
+      else if (url.includes('vimeo.com/')) {
+        const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
+        embedUrl = `https://player.vimeo.com/video/${videoId}`;
+      }
+
+      // ReactQuill will handle the video insertion through its internal editor instance
+      const quill = (window as any).Quill?.find(document.querySelector('.ql-editor'));
+      if (quill) {
+        const range = quill.getSelection();
+        const index = range ? range.index : 0;
+
+        // Insert video as iframe
+        const videoEmbed = `<iframe width="560" height="315" src="${embedUrl}" frameborder="0" allowfullscreen></iframe>`;
+        quill.clipboard.dangerouslyPasteHTML(index, videoEmbed);
+        quill.setSelection(index + 1);
+      }
+    }
+  }, []);
+
+  // ReactQuill modules configuration
+  const modules = useMemo(
+    () => ({
+      toolbar: {
+        container: [
+          [{ header: [1, 2, 3, 4, 5, 6, false] }],
+          [{ font: [] }],
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ color: [] }, { background: [] }],
+          [{ script: 'sub' }, { script: 'super' }],
+          [{ list: 'ordered' }, { list: 'bullet' }],
+          [{ indent: '-1' }, { indent: '+1' }],
+          [{ direction: 'rtl' }],
+          [{ align: [] }],
+          ['blockquote', 'code-block'],
+          ['link', 'image', 'video'],
+        ],
+        handlers: {
+          image: handleImageUpload,
+          video: handleVideoUpload,
+        },
       },
+      clipboard: {
+        matchVisual: false,
+      },
+    }),
+    [handleImageUpload, handleVideoUpload],
+  );
+
+  // ReactQuill formats configuration
+  const formats = [
+    'header',
+    'font',
+    'size',
+    'bold',
+    'italic',
+    'underline',
+    'strike',
+    'color',
+    'background',
+    'script',
+    'list',
+    'bullet',
+    'indent',
+    'direction',
+    'align',
+    'blockquote',
+    'code-block',
+    'link',
+    'image',
+    'video',
+  ];
+
+  // Handle file drop - simplified for ReactQuill
+  const handleFileUpload = useCallback(
+    (acceptedFiles: File[]) => {
+      acceptedFiles.forEach((file) => {
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            // For drag and drop, we'll add the image to the end of the content
+            const imageHtml = `<img src="${reader.result}" alt="Uploaded image" style="max-width: 100%; height: auto;" />`;
+            onChange(value + imageHtml);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          alert(`Unsupported file type: ${file.type}`);
+        }
+      });
     },
+    [onChange, value],
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: handleFileUpload,
+    accept: {
+      'image/*': [],
+    },
+    noClick: true,
   });
 
   return (
-    <div className="border rounded">
-      <div className="flex justify-between items-center border-b px-4 py-2 bg-muted">
-        {editor && <Toolbar editor={editor} />}
-        <button
-          className="text-sm text-blue-600 hover:underline"
-          onClick={() => setPreview(!preview)}
-        >
-          {preview ? 'Edit' : 'Preview'}
-        </button>
+    <div className="border rounded h-full flex flex-col">
+      {/* Editor Content with Drag & Drop */}
+      <div className="flex-1 overflow-auto">
+        <div {...getRootProps()} className="relative h-full">
+          <input {...getInputProps()} />
+
+          {/* Drag overlay */}
+          {isDragActive && (
+            <div className="absolute inset-0 bg-blue-100 bg-opacity-50 flex items-center justify-center pointer-events-none z-10">
+              <p className="text-blue-600 text-lg font-medium">Drop images here...</p>
+            </div>
+          )}
+
+          {/* ReactQuill Editor */}
+          <ReactQuill
+            theme="snow"
+            value={value}
+            onChange={(content) => {
+              onChange(content);
+            }}
+            modules={modules}
+            formats={formats}
+            className="h-full"
+          />
+        </div>
       </div>
-      {preview ? (
-        <div className="p-4 prose max-w-none" dangerouslySetInnerHTML={{ __html: value }} />
-      ) : (
-        <EditorContent editor={editor} />
-      )}
     </div>
   );
 }

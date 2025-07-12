@@ -1,12 +1,34 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { prisma } from '@/config';
 import { getFaqCategoriesUseCase } from '@/features/faqs/di/container';
-import { createError } from '@/shared/lib/responseUtils/createResponse';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
+import { createError } from '@/shared/lib/responseUtils/createResponse';
+import { withAuthorization } from '@/shared/utils/authorizationWrapper';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') {
+  if (req.method !== 'GET' && req.method !== 'POST') {
     return createError(res, RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED);
+  }
+
+  if (req.method === 'POST') {
+    return withAuthorization({
+      POST: ['Admin', 'User'],
+    })(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
+      const { name, description } = req.body;
+      const category = await prisma.postCategory.create({
+        data: {
+          name,
+          description,
+          type: 'FAQ',
+          createdBy: userId,
+        },
+      });
+      return res.status(200).json({
+        data: category,
+        status: 200,
+      });
+    });
   }
 
   try {
