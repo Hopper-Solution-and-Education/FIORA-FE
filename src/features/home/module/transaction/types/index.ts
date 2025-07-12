@@ -136,3 +136,10 @@ export type CreateTransactionBody = {
   type: string;
   currency: string;
 };
+
+export enum TransactionType {
+  Expense = 'Expense',
+  Income = 'Income',
+}
+
+export * from './getSupportDataResponse';

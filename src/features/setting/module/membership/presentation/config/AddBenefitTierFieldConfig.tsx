@@ -1,12 +1,21 @@
 'use client';
 
 import { InputField, TextareaField } from '@/components/common/forms';
+import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 const useAddBenefitTierFieldConfig = () => {
   const {
     formState: { isSubmitting },
+    watch,
+    setValue,
   } = useFormContext();
+
+  useEffect(() => {
+    if (watch('name')) {
+      setValue('slug', watch('name').toLowerCase().replace(/ /g, '-'));
+    }
+  }, [watch('name')]);
 
   const fields = [
     <InputField
@@ -14,14 +23,6 @@ const useAddBenefitTierFieldConfig = () => {
       name="name"
       label="Name"
       placeholder="Benefit Tier Name"
-      required
-      disabled={isSubmitting}
-    />,
-    <InputField
-      key="slug"
-      name="slug"
-      placeholder="Slug"
-      label="Slug"
       required
       disabled={isSubmitting}
     />,
