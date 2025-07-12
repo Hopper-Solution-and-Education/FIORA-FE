@@ -1,7 +1,6 @@
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { RootState } from '@/store';
+import { useAppSelector } from '@/store';
 import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { useInfiniteScroll } from '../hooks';
 import { TableLoadingState, WalletSettingTableRow } from '../molecules';
 import { WalletSettingTableData } from '../types';
@@ -30,7 +29,7 @@ const WalletSettingTable = ({
     isLoadingMore,
   });
 
-  const columnConfig = useSelector((state: RootState) => state.walletSetting.columnConfig);
+  const columnConfig = useAppSelector((state) => state.walletSetting.columnConfig);
 
   const shownColumns = useMemo(
     () =>

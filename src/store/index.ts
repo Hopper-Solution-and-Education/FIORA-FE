@@ -1,17 +1,16 @@
+import { faqsApi } from '@/features/faqs/store/api/faqsApi';
 import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
-import { PersistConfig, persistReducer } from 'redux-persist';
+import { PersistConfig, persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import apiMiddleware from './middleware/apiMiddleware';
 import rootReducer from './rootReducer';
-import { persistStore } from 'redux-persist';
-import { faqsApi } from '@/features/faqs/store/api/faqsApi';
 
 // for redux persist - use it later
 const persistConfig: PersistConfig<ReturnType<typeof rootReducer>> = {
   key: 'root',
   storage,
-  whitelist: ['settings'], // CHỈ định slice nào được persist
+  whitelist: ['settings', 'budgetDetail'], // CHỈ định slice nào được persist
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

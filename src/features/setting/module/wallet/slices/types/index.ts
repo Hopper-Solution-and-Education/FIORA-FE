@@ -1,6 +1,5 @@
 import { FilterOperator } from '@/shared/types';
 import { WalletSettingFilterGroup } from '../../data/types/walletSettingFilter.types';
-import { DepositRequestStatus } from '../../domain';
 import {
   WALLET_SETTING_TABLE_COLUMN_CONFIG,
   WalletSettingTableColumnKeyType,
@@ -15,6 +14,7 @@ export interface WalletSettingState {
   rejectingId: string | null;
   filter: WalletSettingFilterGroup;
   search: string; // Add search field
+  skipFilters: boolean; // Add state to control whether to skip filters
 }
 
 export const initialState: WalletSettingState = {
@@ -35,11 +35,7 @@ export const initialState: WalletSettingState = {
       {
         field: 'status',
         operator: FilterOperator.IN,
-        value: [
-          DepositRequestStatus.Requested,
-          DepositRequestStatus.Approved,
-          DepositRequestStatus.Rejected,
-        ],
+        value: [],
       },
       {
         field: 'amount',
@@ -49,4 +45,5 @@ export const initialState: WalletSettingState = {
     ],
   },
   search: '', // Add default value for search
+  skipFilters: true, // Default to false - send filters normally
 };

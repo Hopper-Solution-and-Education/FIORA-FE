@@ -14,7 +14,7 @@ import { convertToTableData } from '../utils';
 
 export const useWalletSetting = () => {
   const dispatch = useAppDispatch();
-  const { loading, filter, search } = useAppSelector((state) => state.walletSetting);
+  const { loading, filter, search, skipFilters } = useAppSelector((state) => state.walletSetting);
 
   const [state, dispatchTable] = useReducer(tableReducer, initialState);
 
@@ -55,9 +55,11 @@ export const useWalletSetting = () => {
           WALLET_SETTING_TYPES.IGetDepositRequestsPaginatedUseCase,
         );
 
-        // Merge search into filter before building filter object
-        const mergedFilter = buildMergedFilter();
-        const filterObject = FilterBuilder.buildDynamicFilter(mergedFilter);
+        // Only apply filters if skipFilters is false
+        const filterObject = skipFilters
+          ? undefined
+          : FilterBuilder.buildDynamicFilter(buildMergedFilter());
+
         const response = await useCase.execute(page, pageSize, filterObject);
 
         const tableData = response.items.map(convertToTableData);
@@ -104,7 +106,7 @@ export const useWalletSetting = () => {
         isFetching.current = false;
       }
     },
-    [dispatch, buildMergedFilter],
+    [dispatch, buildMergedFilter, skipFilters],
   );
 
   const loadMore = useCallback(async () => {
@@ -123,6 +125,7 @@ export const useWalletSetting = () => {
 
   useEffect(() => {
     if (isInitialLoad.current) {
+      // On initial load, use the skipFilters state from Redux
       fetchData(1, state.pagination.pageSize, false);
       isInitialLoad.current = false;
     }
@@ -136,7 +139,7 @@ export const useWalletSetting = () => {
       dispatchTable({ type: 'SET_HAS_MORE', payload: true });
       fetchData(1, state.pagination.pageSize, false);
     }
-  }, [filter, search, fetchData]);
+  }, [filter, search, skipFilters, fetchData]);
 
   return {
     tableData: state,
