@@ -8,12 +8,13 @@ import { formatFIORACurrency } from '@/config/FIORANumberFormat';
 import { COLORS } from '@/shared/constants/chart';
 import { useAppSelector } from '@/store';
 import { useMemo } from 'react';
+import { WalletType } from '../../domain/enum';
 import { filterWallets, transformWalletsToChartData } from '../../utils';
 
 const WalletBarChart = () => {
-  const wallets = useAppSelector((state) => state.wallet.wallets);
-  const loading = useAppSelector((state) => state.wallet.loading);
-  const filterCriteria = useAppSelector((state) => state.wallet.filterCriteria);
+  const { wallets, loading, filterCriteria, frozenAmount } = useAppSelector(
+    (state) => state.wallet,
+  );
   const { filters, search } = filterCriteria;
 
   const filteredWallets = useMemo(() => {
@@ -21,8 +22,8 @@ const WalletBarChart = () => {
   }, [wallets, filters, search]);
 
   const chartData: TwoSideBarItem[] = useMemo(
-    () => transformWalletsToChartData(filteredWallets),
-    [filteredWallets],
+    () => transformWalletsToChartData(filteredWallets, frozenAmount),
+    [filteredWallets, frozenAmount],
   );
 
   if (loading) {
@@ -57,13 +58,12 @@ const WalletBarChart = () => {
         { name: 'Positive', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
         { name: 'Negative', color: COLORS.DEPS_DANGER.LEVEL_1 },
       ]}
-      height={500}
-      baseBarHeight={80}
       tooltipContent={({ payload }) => {
         if (!payload || !payload.length) return null;
         const item = payload[0].payload;
         const amount = item.positiveValue !== 0 ? item.positiveValue : item.negativeValue;
         const isPositive = amount > 0;
+        const showFrozen = item.type === WalletType.Payment || item.type === 'total';
 
         return (
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm p-3 rounded-md">
@@ -79,6 +79,20 @@ const WalletBarChart = () => {
                 {formatFIORACurrency(amount, 'FX')}
               </span>
             </p>
+
+            {showFrozen && (
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Frozen Amount:
+                <span
+                  className="font-bold ml-1"
+                  style={{
+                    color: COLORS.DEPS_DISABLE.LEVEL_1,
+                  }}
+                >
+                  {formatFIORACurrency(frozenAmount ?? 0, 'FX')}
+                </span>
+              </p>
+            )}
           </div>
         );
       }}

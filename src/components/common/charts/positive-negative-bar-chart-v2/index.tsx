@@ -1,7 +1,35 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import {
+  ChartLegend,
+  CustomYAxisTick,
+  PositiveAndNegativeV2BarLabel,
+  PositiveAndNegativeV2Tooltip,
+} from '@/components/common/atoms';
+import { PositiveAndNegativeBarChartV2Props } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
+import { ChartSkeleton } from '@/components/common/organisms';
+import { Icons } from '@/components/Icon';
+import { Button } from '@/components/ui/button';
+import {
+  TooltipContent,
+  TooltipProvider,
+  Tooltip as TooltipShadcn,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { formatFIORACurrency } from '@/config/FIORANumberFormat';
+import {
+  BASE_BAR_HEIGHT,
+  DEFAULT_CURRENCY,
+  DEFAULT_LOCALE,
+  MIN_CHART_HEIGHT,
+} from '@/shared/constants/chart';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
+import { Currency } from '@/shared/types';
+import { cn } from '@/shared/utils';
+import { getChartMargins, useWindowSize } from '@/shared/utils/device';
+import debounce from 'lodash/debounce';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -12,42 +40,13 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { useWindowSize } from '@/shared/utils/device';
-import { useIsMobile } from '@/shared/hooks/useIsMobile';
-import debounce from 'lodash/debounce';
-import { getChartMargins } from '@/shared/utils/device';
 import {
-  ChartLegend,
-  CustomYAxisTick,
-  PositiveAndNegativeV2BarLabel,
-  PositiveAndNegativeV2Tooltip,
-} from '@/components/common/atoms';
-import { Button } from '@/components/ui/button';
-import { Icons } from '@/components/Icon';
-import { cn } from '@/shared/utils';
-import {
-  Tooltip as TooltipShadcn,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { ChartSkeleton } from '@/components/common/organisms';
-import {
-  BASE_BAR_HEIGHT,
-  DEFAULT_CURRENCY,
-  DEFAULT_LOCALE,
-  MIN_CHART_HEIGHT,
-} from '@/shared/constants/chart';
-import {
-  prepareChartData,
   buildProcessedData,
   calculateChartDomains,
-  calculateMainBarCount,
   calculateChartVisibility,
+  calculateMainBarCount,
+  prepareChartData,
 } from './utils';
-import { PositiveAndNegativeBarChartV2Props } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
-import { formatFIORACurrency } from '@/config/FIORANumberFormat';
-import { Currency } from '@/shared/types';
 
 const PositiveAndNegativeBarChartV2 = ({
   data,
@@ -76,6 +75,8 @@ const PositiveAndNegativeBarChartV2 = ({
   const isMobile = useIsMobile();
   const BAR_GAP = 0;
   const BAR_CATEGORY_GAP = 10;
+
+  console.log(isMobile);
 
   const toggleExpand = useCallback(
     debounce((name: string) => {
@@ -271,7 +272,25 @@ const PositiveAndNegativeBarChartV2 = ({
                     content={tooltipContent || customTooltipWithConfig}
                     cursor={false}
                   />
+
+                  {/* inner bar for negative */}
+                  {visibleData.map((entry, index) => (
+                    <Bar
+                      key={`inner-bar-${index}`}
+                      dataKey={`innerBar[${index}].negativeValue`}
+                      stackId="a"
+                      label={(props) => (
+                        <PositiveAndNegativeV2BarLabel {...props} formatter={labelFormatter} />
+                      )}
+                      fill={entry.innerBar?.[index]?.colorNegative}
+                    >
+                      {entry.innerBar?.map((innerEntry, innerIndex) => (
+                        <Cell key={`inner-cell-${innerIndex}`} fill={innerEntry.colorNegative} />
+                      ))}
+                    </Bar>
+                  ))}
                   <Bar
+                    stackId="a"
                     radius={[0, 4, 4, 0]}
                     dataKey="negativeValue"
                     activeBar={{
@@ -300,6 +319,7 @@ const PositiveAndNegativeBarChartV2 = ({
                 </BarChart>
               </ResponsiveContainer>
             )}
+
             {(isBothEmpty || showPositiveChart) && (
               <ResponsiveContainer
                 width="100%"
@@ -330,7 +350,7 @@ const PositiveAndNegativeBarChartV2 = ({
                     dataKey="name"
                     tickLine={false}
                     axisLine={false}
-                    width={isMobile ? 70 : 0}
+                    width={isMobile ? 70 : showPositiveChart && !showNegativeChart ? 100 : 0}
                     className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200"
                     tick={(props) => (
                       <CustomYAxisTick
@@ -348,6 +368,26 @@ const PositiveAndNegativeBarChartV2 = ({
                     content={tooltipContent || customTooltipWithConfig}
                     cursor={false}
                   />
+
+                  {/* inner bar for positive */}
+                  {visibleData.map((entry, index) => (
+                    <Bar
+                      key={`inner-bar-${index}`}
+                      dataKey={`innerBar[${index}].positiveValue`}
+                      stackId="a"
+                      label={(props) => (
+                        <PositiveAndNegativeV2BarLabel {...props} formatter={labelFormatter} />
+                      )}
+                      fill={entry.innerBar?.[index]?.colorPositive}
+                    >
+                      {entry.innerBar?.map((innerEntry, innerIndex) => {
+                        return (
+                          <Cell key={`inner-cell-${innerIndex}`} fill={innerEntry.colorPositive} />
+                        );
+                      })}
+                    </Bar>
+                  ))}
+
                   <Bar
                     radius={[0, 4, 4, 0]}
                     dataKey="positiveValue"
@@ -363,6 +403,7 @@ const PositiveAndNegativeBarChartV2 = ({
                       }
                     }}
                     className="transition-all duration-300 cursor-pointer"
+                    stackId="a"
                   >
                     {visibleData.map((entry, index) => (
                       <Cell key={`positive-cell-${index}`} fill={entry.colorPositive} />

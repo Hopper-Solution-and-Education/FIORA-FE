@@ -6,7 +6,7 @@ export const DEFAULT_ICON = 'activity';
 export const DEFAULT_BUDGET_ICON = 'calendar';
 export const DEFAULT_MAX_BAR_RATIO = 1; // 90% of chart width for largest bar
 export const CHART_MARGINS = { top: 10, right: 30, left: 100, bottom: 30 };
-export const BASE_BAR_HEIGHT = 60; // Minimum height per bar in pixels
+export const BASE_BAR_HEIGHT = 70; // Minimum height per bar in pixels
 export const MIN_CHART_HEIGHT = 150; // Minimum height in pixels
 
 export const DEFAULT_CHART_FONT_SIZE: ChartFontSize = {
@@ -49,6 +49,14 @@ export const COLORS = {
     LEVEL_3: '#7ac5ff',
     LEVEL_4: '#a7dfff',
     LEVEL_5: '#d4eaff',
+  },
+
+  DEPS_DISABLE: {
+    LEVEL_1: '#9ca3af', // Gray-400 - darkest for most disabled
+    LEVEL_2: '#d1d5db', // Gray-300
+    LEVEL_3: '#e5e7eb', // Gray-200
+    LEVEL_4: '#f3f4f6', // Gray-100
+    LEVEL_5: '#f9fafb', // Gray-50 - lightest for least disabled
   },
 };
 
