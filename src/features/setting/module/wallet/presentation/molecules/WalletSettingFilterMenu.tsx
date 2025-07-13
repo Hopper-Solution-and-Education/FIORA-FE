@@ -23,15 +23,14 @@ const WalletSettingFilterMenu = ({
   onApply,
 }: WalletSettingFilterMenuProps) => {
   const dispatch = useAppDispatch();
-  const skipFilters = useAppSelector((state) => state.walletSetting.skipFilters);
+  const filter = useAppSelector((state) => state.walletSetting.filter);
 
+  const isFilterApplied = filter.rules.length > 0;
   const filterParams = filterGroupToParams(value);
 
   const handleClearFilter = () => {
     dispatch(clearFilter());
   };
-
-  const isFilterApplied = !skipFilters;
 
   const filterComponents: FilterComponentConfig[] = [
     {

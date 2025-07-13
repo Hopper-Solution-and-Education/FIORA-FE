@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
-import { FilterOperator } from '@/shared/types/filter.types';
+import { DynamicFilterGroup, DynamicFilterRule, FilterOperator } from '@/shared/types/filter.types';
 import { FilterBuilder } from '@/shared/utils/filterBuilder';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useReducer, useRef } from 'react';
@@ -11,17 +11,6 @@ import { IGetDepositRequestsPaginatedUseCase } from '../../domain';
 import { clearError, setError, setLoading } from '../../slices';
 import { initialState, tableReducer } from '../types/tableReducer.type';
 import { convertToTableData } from '../utils';
-
-/**
- * Custom hook for managing wallet setting table state and data fetching
- *
- * This hook handles:
- * - Table data state management using useReducer
- * - API data fetching with pagination and filtering
- * - Search functionality integration
- * - Load more functionality for infinite scroll
- * - Error handling and loading states
- */
 
 /**
  * IMPORTANT: Test Coverage Required
@@ -38,7 +27,7 @@ import { convertToTableData } from '../utils';
  */
 export const useWalletSetting = () => {
   const dispatch = useAppDispatch();
-  const { loading, filter, search, skipFilters } = useAppSelector((state) => state.walletSetting);
+  const { loading, filter, search } = useAppSelector((state) => state.walletSetting);
 
   // Local table state management using reducer
   const [state, dispatchTable] = useReducer(tableReducer, initialState);
@@ -53,7 +42,7 @@ export const useWalletSetting = () => {
    */
   const buildMergedFilter = useCallback(() => {
     // Remove existing search rules from filter
-    const rules = (filter.rules || []).filter((r) => {
+    const rules = (filter.rules || []).filter((r: DynamicFilterRule | DynamicFilterGroup) => {
       if ('field' in r) {
         return r.field !== 'search';
       }
@@ -98,9 +87,7 @@ export const useWalletSetting = () => {
         );
 
         // Build filter object only if skipFilters is false
-        const filterObject = skipFilters
-          ? undefined
-          : FilterBuilder.buildDynamicFilter(buildMergedFilter());
+        const filterObject = FilterBuilder.buildDynamicFilter(buildMergedFilter());
 
         const response = await useCase.execute(page, pageSize, filterObject);
 
@@ -154,7 +141,7 @@ export const useWalletSetting = () => {
         isFetching.current = false;
       }
     },
-    [dispatch, buildMergedFilter, skipFilters],
+    [dispatch, buildMergedFilter],
   );
 
   // Initial data load on component mount
@@ -174,7 +161,7 @@ export const useWalletSetting = () => {
       dispatchTable({ type: 'SET_HAS_MORE', payload: true });
       fetchData(1, state.pagination.pageSize, false);
     }
-  }, [filter, search, skipFilters, fetchData]);
+  }, [filter, search, fetchData]);
 
   /**
    * Load more function for infinite scroll functionality
