@@ -154,7 +154,9 @@ const FromSelectField: React.FC<FromSelectProps> = ({
               disabled={isLoading}
               onValueChange={handleChange}
               options={options}
-              placeholder={transactionType === 'Income' ? 'Select Category' : 'Select Account'}
+              placeholder={
+                transactionType === TransactionType.Income ? 'Select Category' : 'Select Account'
+              }
               error={error}
               noneValue={false}
               {...props}

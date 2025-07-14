@@ -40,6 +40,11 @@ const walletSettingSlice = createSlice({
     setWalletSettingSearch: (state, action: PayloadAction<string>) => {
       state.search = action.payload;
     },
+    clearFilter: (state) => {
+      // Reset filter and search to initial values
+      state.filter = initialState.filter;
+      state.search = initialState.search;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -70,5 +75,6 @@ export const {
   updateColumnIndex,
   setWalletSettingFilter,
   setWalletSettingSearch,
+  clearFilter,
 } = walletSettingSlice.actions;
 export default walletSettingSlice.reducer;

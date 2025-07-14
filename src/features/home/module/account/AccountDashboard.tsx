@@ -71,8 +71,6 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
     router.push('/account');
   };
 
-  if (accounts.error) return <div className="text-red-600">Error: {accounts.error}</div>;
-
   return (
     <>
       {module === MODULE.ACCOUNT && <DashboardHeader />}

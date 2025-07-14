@@ -1,3 +1,158 @@
+// ============================================================================
+// CORE DOMAIN ENTITIES
+// ============================================================================
+
+export interface Faq {
+  id: string;
+  category: string;
+  type: PostType;
+  title: string;
+  description: string;
+  content: string;
+  url?: string;
+  typeOfUrl?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Extended FAQ interface for detail view with comments and reactions
+export interface FaqDetail extends Faq {
+  User?: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  } | null;
+  Comment?: FaqComment[];
+  Reaction?: FaqReaction[];
+}
+
+export interface FaqComment {
+  id: string;
+  content: string;
+  createdAt: Date;
+  userId: string;
+  parentId?: string | null;
+  User?: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  } | null;
+}
+
+export interface FaqReaction {
+  id: string;
+  reactionType: ReactionType;
+  userId: string;
+}
+
+// ============================================================================
+// API REQUEST/RESPONSE TYPES
+// ============================================================================
+
+export interface FaqDetailData {
+  id: string;
+  title: string;
+  description?: string;
+  content: string;
+  categoryId?: string;
+  createdAt: Date;
+  updatedAt?: Date;
+  User?: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  } | null;
+  Comment?: FaqComment[];
+  Reaction?: FaqReaction[];
+  // Optional related articles when using ?include=related
+  relatedArticles?: Faq[];
+}
+
+export interface CreateCommentRequest {
+  content: string;
+  replyToUsername?: string;
+}
+
+export interface UpdateFaqRequest {
+  title: string;
+  description?: string;
+  content: string;
+  categoryId: string;
+}
+
+export interface GetFaqDetailOptions {
+  includes?: string[];
+  trackView?: boolean;
+}
+
+export interface ViewTrackingResult {
+  success: boolean;
+  alreadyViewed?: boolean;
+}
+
+export interface ReactionCounts {
+  bad: number;
+  neutral: number;
+  good: number;
+}
+
+// ============================================================================
+// LIST/PAGINATION TYPES
+// ============================================================================
+
+export interface FaqsListResponse {
+  faqs: Faq[];
+  currentPage?: number;
+  limit?: number;
+  // totalCount: number;
+  // totalPages: number;
+}
+
+export interface CategoryWithFaqs {
+  categoryId: string;
+  categoryName: string;
+  totalFaqs: number;
+  faqs: {
+    id: string;
+    title: string;
+    description: string;
+    content: string;
+    category: string;
+    type: any;
+    createdAt: Date;
+    updatedAt: Date;
+  }[];
+}
+
+export interface FaqsCategoriesResponse {
+  id: string;
+  name: string;
+}
+
+export interface FaqsListCategoriesResponse {
+  categoriesData: CategoryWithFaqs[];
+}
+
+export interface FaqsListQueryParams {
+  type?: FaqsGetListType;
+  // Legacy support
+  page?: number;
+  limit?: number;
+  filters?: {
+    search?: string;
+    categories?: string[];
+  };
+  orderBy?: string;
+  orderDirection?: string;
+}
+
+// ============================================================================
+// IMPORT/VALIDATION TYPES
+// ============================================================================
+
 export interface FaqsRowRaw {
   category: string;
   type: PostType;
@@ -36,65 +191,9 @@ export interface FaqsImportResult {
   failed: number;
 }
 
-export interface Faq {
-  id: string;
-  category: string;
-  type: PostType;
-  title: string;
-  description: string;
-  content: string;
-  url?: string;
-  typeOfUrl?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface FaqsListResponse {
-  faqs: Faq[];
-  currentPage: number;
-  pageSize: number;
-  // totalCount: number;
-  // totalPages: number;
-}
-
-export interface CategoryWithFaqs {
-  categoryId: string;
-  categoryName: string;
-  totalFaqs: number;
-  faqs: {
-    id: string;
-    title: string;
-    description: string;
-    content: string;
-    category: string;
-    type: any;
-    createdAt: Date;
-    updatedAt: Date;
-  }[];
-}
-
-export interface FaqsCategoriesResponse {
-  id: string;
-  name: string;
-}
-
-export interface FaqsListCategoriesResponse {
-  categoriesData: CategoryWithFaqs[];
-}
-
-export interface FaqsListQueryParams {
-  type?: FaqsGetListType;
-  limit?: number;
-  // Legacy support
-  page?: number;
-  pageSize?: number;
-  filters?: {
-    search?: string;
-    categories?: string[];
-  };
-  orderBy?: string;
-  orderDirection?: string;
-}
+// ============================================================================
+// ENUMS & TYPES
+// ============================================================================
 
 export enum PostType {
   FAQ = 'FAQ',
@@ -111,4 +210,10 @@ export enum UrlType {
 export enum FaqsGetListType {
   LIST = 'list',
   CATEGORIES = 'categories',
+}
+
+export enum ReactionType {
+  BAD = 'bad',
+  NEUTRAL = 'neutral',
+  GOOD = 'good',
 }

@@ -13,13 +13,13 @@ const FaqItem = ({ faq, className, showCategory = false }: FaqItemProps) => {
   const router = useRouter();
 
   const handleClick = () => {
-    router.push(`/faqs/${faq.id}`);
+    router.push(`/faqs/details/${faq.id}`);
   };
 
   return (
     <div
       className={cn(
-        'cursor-pointer hover:shadow-lg hover:bg-green-50 hover:text-green-700 transition-all duration-200 rounded-md',
+        'cursor-pointer hover:bg-green-50 hover:text-green-700 transition-all duration-200 rounded-md p-2',
         className,
       )}
       onClick={handleClick}

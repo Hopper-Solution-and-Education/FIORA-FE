@@ -100,8 +100,6 @@ class WalletRepository implements IWalletRepository {
       // Parse filter to DynamicFilterGroup for easier handling
       const group = FilterBuilder.parseDynamicFilter(filter);
 
-      console.log(group);
-
       for (const ruleOrGroup of group.rules) {
         if ('condition' in ruleOrGroup) continue; // skip nested for now
 

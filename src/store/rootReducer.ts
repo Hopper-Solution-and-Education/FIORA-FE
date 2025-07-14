@@ -19,6 +19,7 @@ import productManagementSlice from '@/features/setting/module/product/slices';
 import walletSettingSlice from '@/features/setting/module/wallet/slices';
 import { combineReducers } from '@reduxjs/toolkit';
 import faqsImportSlice from '../features/faqs/store/slices/faqsImportSlice';
+import budgetDetailSlice from './slices/budget-detail.slice';
 import dialogSlices from './slices/dialog.slice';
 import moduleReducer from './slices/moduleSlice';
 import settingSlices from './slices/setting.slice';
@@ -46,6 +47,7 @@ const reducer = {
   wallet: walletSlice,
   walletSetting: walletSettingSlice,
   faqsImport: faqsImportSlice,
+  budgetDetail: budgetDetailSlice,
 
   // RTK Query API slices
   [faqsApi.reducerPath]: faqsApi.reducer,

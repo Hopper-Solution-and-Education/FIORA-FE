@@ -160,9 +160,15 @@ const ToSelectField: React.FC<ToSelectProps> = ({
               name={name}
               disabled={isLoading}
               value={selectedOption}
-              onValueChange={(value: string) => handleChange(value)}
-              options={options}
-              placeholder={transactionType === 'Expense' ? 'Select Category' : 'Select Account'}
+              onChange={handleChange}
+              options={
+                options.length > 0
+                  ? options
+                  : [{ value: 'loading', label: 'Loading...', disabled: true }]
+              }
+              placeholder={
+                transactionType === TransactionType.Income ? 'Select Account' : 'Select Category'
+              }
               error={error}
               noneValue={false}
               {...props}

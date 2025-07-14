@@ -1,11 +1,13 @@
 import { DepositRequestStatus } from '@/features/setting/module/wallet/domain';
 
+// Pagination and UI behavior constants for wallet settings
 export const WALLET_SETTING_CONSTANTS = {
   PAGE_SIZE: 20,
   DEFAULT_PAGE: 1,
   INFINITE_SCROLL_THRESHOLD: 0.8,
 } as const;
 
+// Status options with color schemes for deposit request badges
 export const WALLET_SETTING_STATUS_OPTIONS = [
   {
     value: DepositRequestStatus.Requested,
@@ -24,19 +26,12 @@ export const WALLET_SETTING_STATUS_OPTIONS = [
   },
 ] as const;
 
-export const WALLET_SETTING_TABLE_COLUMNS = {
-  REQUEST_CODE: 'Request Code',
-  REQUESTER: 'Requester',
-  AMOUNT: 'Amount',
-  REQUEST_DATE: 'Request Date',
-  ATTACHMENT: 'Attachment',
-  STATUS: 'Status',
-  ACTION: 'Action',
-} as const;
-
+// Filter options for status-based filtering
 export const WALLET_SETTING_FILTER_OPTIONS = [
-  { value: 'all', label: 'All Requests' },
   { value: DepositRequestStatus.Requested, label: 'Requested' },
   { value: DepositRequestStatus.Approved, label: 'Approved' },
   { value: DepositRequestStatus.Rejected, label: 'Rejected' },
 ] as const;
+
+export const DEFAULT_MIN_AMOUNT = 0;
+export const DEFAULT_MAX_AMOUNT = 1000;

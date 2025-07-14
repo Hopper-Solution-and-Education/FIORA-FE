@@ -10,7 +10,9 @@ const apiMiddleware: Middleware = () => (next) => (action) => {
 
       toast.error(errorResponse.message || errorResponse.error || 'Something went wrong!');
     } catch {
-      toast.error('Something went wrong!');
+      // toast.error('Something went wrong!');
+
+      console.error(action.payload);
     }
   }
   return next(action);

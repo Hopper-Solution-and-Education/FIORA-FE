@@ -70,16 +70,12 @@ const SelectField: React.FC<SelectFieldProps> = ({
   ...props
 }) => {
   const [open, setOpen] = useState(false);
-  const [internalOptions, setInternalOptions] = useState<Option[]>([
-    { value: '', label: 'None' },
-    ...options,
-  ]);
+  const [internalOptions, setInternalOptions] = useState<Option[]>([...options]);
   const inputRef = useRef<HTMLInputElement>(null);
   const selectedOption = internalOptions.find((opt) => opt.value === value);
   const selectedLabel = value && selectedOption ? selectedOption.label : null;
   const selectedIcon = value && selectedOption ? selectedOption.icon : null;
 
-  // Auto-load options nếu có loadOptions, thêm tùy chọn "None" vào đầu
   useEffect(() => {
     if (loadOptions) {
       loadOptions().then((data) => {
@@ -90,14 +86,12 @@ const SelectField: React.FC<SelectFieldProps> = ({
     }
   }, [loadOptions, options, noneValue]);
 
-  // Auto-focus CommandInput khi Popover mở
   useEffect(() => {
     if (open && inputRef.current) {
       inputRef.current.focus();
     }
   }, [open]);
 
-  // Render icon hoặc image dựa trên icon value
   const renderIconOrImage = (iconValue?: string) => {
     if (!iconValue) {
       return <></>;
