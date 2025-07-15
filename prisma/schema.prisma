@@ -42,7 +42,7 @@ model User {
   sessions            Session[]
   transactions        Transaction[]         @relation("UserTransactions")
   authentication      UserAuthentication?
-  userNotifications   UserNotification[]    @relation("UserNotification")
+  UserNotification    UserNotification[]
   wallet              Wallet[]              @relation("UserWallet")
 
   @@index([isDeleted])
@@ -176,8 +176,6 @@ model Transaction {
   fromCategoryId      String?              @db.Uuid
   toAccountId         String?              @db.Uuid
   toCategoryId        String?              @db.Uuid
-  fromWalletId        String?              @db.Uuid
-  toWalletId          String?              @db.Uuid
   products            Json?
   partnerId           String?              @db.Uuid
   remark              String?              @db.VarChar(255)
@@ -190,17 +188,19 @@ model Transaction {
   currency            Currency             @default(VND)
   isMarked            Boolean              @default(false)
   isExpired           Boolean              @default(false)
+  fromWalletId        String?              @db.Uuid
+  toWalletId          String?              @db.Uuid
+  membershipBenefitId String?              @db.Uuid
   productsRelation    ProductTransaction[] @relation("ProductTransactions")
   fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Restrict)
   fromCategory        Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
+  fromWallet          Wallet?              @relation("FromWallet", fields: [fromWalletId], references: [id])
+  MembershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
   partner             Partner?             @relation("PartnerTransactions", fields: [partnerId], references: [id])
   toAccount           Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Restrict)
   toCategory          Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
+  toWallet            Wallet?              @relation("ToWallet", fields: [toWalletId], references: [id])
   user                User?                @relation("UserTransactions", fields: [userId], references: [id])
-  MembershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
-  membershipBenefitId String?              @db.Uuid
-  fromWallet       Wallet?                 @relation("FromWallet", fields: [fromWalletId], references: [id])
-  toWallet         Wallet?                 @relation("ToWallet", fields: [toWalletId], references: [id])
 
   @@index([date])
   @@index([type])
@@ -395,21 +395,21 @@ model BudgetDetails {
 }
 
 model Wallet {
-  id              String     @id @default(uuid()) @db.Uuid
-  userId          String     @db.Uuid
-  icon            String?
-  type            WalletType
-  frBalanceActive Decimal    @default(0) @db.Decimal(12, 2)
-  frBalanceFrozen Decimal    @default(0)
-  creditLimit     Decimal?   @default(0)
-  createdAt       DateTime   @default(now()) @db.Timestamptz(0)
-  updatedAt       DateTime   @updatedAt @db.Timestamptz(0)
-  createdBy       String?    @db.Uuid
-  updatedBy       String?    @db.Uuid
-  name            String?    @db.VarChar(50)
-  user            User       @relation("UserWallet", fields: [userId], references: [id])
+  id               String        @id @default(uuid()) @db.Uuid
+  userId           String        @db.Uuid
+  icon             String?
+  type             WalletType
+  frBalanceActive  Decimal       @default(0) @db.Decimal(12, 2)
+  frBalanceFrozen  Decimal       @default(0)
+  creditLimit      Decimal?      @default(0)
+  createdAt        DateTime      @default(now()) @db.Timestamptz(0)
+  updatedAt        DateTime      @updatedAt @db.Timestamptz(0)
+  createdBy        String?       @db.Uuid
+  updatedBy        String?       @db.Uuid
+  name             String?       @db.VarChar(50)
   fromTransactions Transaction[] @relation("FromWallet")
   toTransactions   Transaction[] @relation("ToWallet")
+  user             User          @relation("UserWallet", fields: [userId], references: [id])
 
   @@index([userId])
 }
@@ -438,6 +438,7 @@ model DepositRequest {
   updatedAt    DateTime             @updatedAt @db.Timestamptz(0)
   createdBy    String?              @db.Uuid
   updatedBy    String?              @db.Uuid
+  currency     Currency             @default(VND)
   attachment   Attachment?          @relation(fields: [attachmentId], references: [id])
   package      PackageFX            @relation(fields: [packageFXId], references: [id])
   user         User                 @relation("UserDepositRequest", fields: [userId], references: [id])
@@ -448,21 +449,57 @@ model DepositRequest {
 }
 
 model Notification {
-  id                String             @id @default(uuid()) @db.Uuid
-  notifyTo          NotificationToType
-  userIds           String[]
-  attachmentId      String?            @unique @db.Uuid
-  message           String
-  type              String
-  deepLink          String?
-  createdAt         DateTime           @default(now()) @db.Timestamptz(0)
-  updatedAt         DateTime           @updatedAt @db.Timestamptz(0)
-  createdBy         String?            @db.Uuid
-  updatedBy         String?            @db.Uuid
-  attachment        Attachment?        @relation(fields: [attachmentId], references: [id])
+  id              String      @id @default(uuid()) @db.Uuid
+  notifyTo        String
+  emails          String[]
+  emailTemplateId String?     @db.Uuid
+  attachmentId    String?     @unique @db.Uuid
+  title           String
+  message         String
+  type            String
+  deepLink        String?
+  channel         ChannelType
+  createdAt       DateTime    @default(now()) @db.Timestamptz(0)
+  createdBy       String?     @db.Uuid
+  updatedAt       DateTime    @updatedAt @db.Timestamptz(0)
+  updatedBy       String?     @db.Uuid
+
+  emailTemplate     EmailTemplate?          @relation(fields: [emailTemplateId], references: [id])
+  attachment        Attachment?             @relation(fields: [attachmentId], references: [id])
   userNotifications UserNotification[]
+  emailLogs         EmailNotificationLogs[]
 
   @@index([attachmentId])
+}
+
+model EmailTemplate {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(255)
+  content   String
+  isActive  Boolean
+  createdAt DateTime @default(now()) @db.Timestamptz(0)
+  createdBy String?  @db.Uuid
+  updatedAt DateTime @updatedAt @db.Timestamptz(0)
+  updatedBy String?  @db.Uuid
+
+  notifications Notification[]
+}
+
+model EmailNotificationLogs {
+  id             String              @id @default(uuid()) @db.Uuid
+  notificationId String              @db.Uuid
+  userId         String              @db.Uuid
+  status         NotificationLogType
+  errorMessage   String?
+  createdAt      DateTime            @default(now()) @db.Timestamptz(0)
+  createdBy      String?             @db.Uuid
+  updatedAt      DateTime            @updatedAt @db.Timestamptz(0)
+  updatedBy      String?             @db.Uuid
+
+  notification Notification @relation(fields: [notificationId], references: [id])
+
+  @@index([notificationId])
+  @@index([userId])
 }
 
 model UserNotification {
@@ -475,7 +512,7 @@ model UserNotification {
   createdBy      String?      @db.Uuid
   updatedBy      String?      @db.Uuid
   notification   Notification @relation(fields: [notificationId], references: [id])
-  user           User         @relation("UserNotification", fields: [userId], references: [id])
+  User           User         @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([notificationId])
@@ -695,6 +732,11 @@ model CurrencyExchange {
   toExchangeRateSetting   ExchangeRateSetting[] @relation("ToCurrency")
 }
 
+enum ChannelType {
+  BOX
+  EMAIL
+}
+
 enum BudgetType {
   Top
   Bot
@@ -771,6 +813,11 @@ enum WalletType {
   Debt
   Referral
   Cashback
+}
+
+enum NotificationLogType {
+  SENT
+  FAILED
 }
 
 enum DepositRequestStatus {
