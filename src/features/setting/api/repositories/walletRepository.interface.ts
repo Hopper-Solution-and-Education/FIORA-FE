@@ -38,4 +38,5 @@ export interface IWalletRepository {
   ): Promise<DepositRequest | null>;
   findDepositRequestById(id: string): Promise<DepositRequest | null>;
   increaseWalletBalance(walletId: string, amount: number): Promise<void>;
+  updateDepositRequestCurrency(id: string, currency: string): Promise<DepositRequest>;
 }

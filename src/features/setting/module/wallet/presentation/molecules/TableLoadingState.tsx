@@ -14,7 +14,7 @@ const TableLoadingState = ({
   isLoadingMore,
   dataLength,
   hasMore,
-  skeletonRows = 5,
+  skeletonRows = 8,
   loadingMoreRows = 3,
 }: TableLoadingStateProps) => {
   if (loading) {

@@ -1,5 +1,5 @@
-import { ContentType } from 'recharts/types/component/Tooltip';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
+import { ContentType } from 'recharts/types/component/Tooltip';
 
 export type TwoSideBarItem = {
   id?: string;
@@ -15,6 +15,9 @@ export type TwoSideBarItem = {
   isChild?: boolean;
   depth?: number;
   isOthers?: boolean;
+
+  // field for innerbar for positive and negative
+  innerBar?: TwoSideBarItem[];
 };
 
 export type PositiveAndNegativeBarV2LevelConfig = {

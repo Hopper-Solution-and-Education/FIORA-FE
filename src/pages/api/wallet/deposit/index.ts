@@ -1,12 +1,12 @@
-import { walletUseCase } from '@/features/setting/api/domain/use-cases/walletUsecase';
-import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { NextApiRequest, NextApiResponse } from 'next';
-import { createResponse, createError } from '@/shared/lib/responseUtils/createResponse';
-import { Messages } from '@/shared/constants/message';
-import { z } from 'zod';
-import { DepositRequestStatus } from '@prisma/client';
 import { ATTACHMENT_CONSTANTS } from '@/features/setting/api/constants/attachmentConstants';
+import { walletUseCase } from '@/features/setting/api/domain/use-cases/walletUsecase';
+import { Messages } from '@/shared/constants/message';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { Currency, DepositRequestStatus } from '@prisma/client';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { z } from 'zod';
 
 const DepositRequestStatusSchema = z.nativeEnum(DepositRequestStatus);
 
@@ -27,6 +27,8 @@ const PostBodySchema = z.object({
   packageFXId: z.string().min(1, 'PackageFX ID is required'),
   attachmentData: AttachmentDataSchema.optional(),
 });
+
+const ALLOWED_CURRENCIES = ['VND', 'USD'];
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {
@@ -84,11 +86,18 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
     }
     const { packageFXId, attachmentData } = body.data;
 
+    // Get currency from header
+    const currency = req.headers['x-user-currency'] as string;
+    if (!currency || !ALLOWED_CURRENCIES.includes(currency)) {
+      return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_CURRENCY);
+    }
+
     try {
       const depositRequest = await walletUseCase.createDepositRequestWithUniqueRefCode(
         userId,
         packageFXId,
         attachmentData,
+        currency as Currency,
       );
       return res
         .status(RESPONSE_CODE.OK)

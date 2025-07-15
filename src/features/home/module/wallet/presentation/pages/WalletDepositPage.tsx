@@ -15,30 +15,35 @@ import { walletContainer } from '../../di/walletDIContainer';
 import { WALLET_TYPES } from '../../di/walletDIContainer.type';
 import { CreateDepositRequestUsecase } from '../../domain/usecase';
 import { setAttachmentData, setSelectedPackageId } from '../../slices';
+import { fetchFrozenAmountAsyncThunk } from '../../slices/actions/GetFrozenAmountAsyncThunk';
 import { WalletDialog } from '../atoms';
 import { WalletPaymentDetail, WalletTopbarAction } from '../organisms';
 import WalletPackageList from '../organisms/WalletPackageList';
-import { fetchFrozenAmountAsyncThunk } from '../../slices/actions/GetFrozenAmountAsyncThunk';
 
 const WalletDepositPage = () => {
+  const dispatch = useAppDispatch();
+  const currency = useAppSelector((state) => state.settings.currency);
+
+  // Get deposit-related state from redux store
+  const selectedId = useAppSelector((state) => state.wallet.selectedPackageId);
+  const attachmentData = useAppSelector((state) => state.wallet.attachmentData);
+  const packageFX = useAppSelector((state) => state.wallet.packageFX);
+
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const pendingNavigation = useRef<null | (() => void)>(null);
 
-  const dispatch = useAppDispatch();
   const router = useRouter();
 
-  const selectedId = useAppSelector((state) => state.wallet.selectedPackageId);
-  const attachmentData = useAppSelector((state) => state.wallet.attachmentData);
-  const packageFX = useAppSelector((state) => state.wallet.packageFX);
-
+  // On mount, if no package is selected, auto-select the first package
   useEffect(() => {
     if (!selectedId && packageFX && packageFX.length > 0) {
       dispatch(setSelectedPackageId(packageFX[0].id));
     }
   }, [packageFX]);
 
+  // Warn user if they try to reload/leave the page with unsent attachment
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (attachmentData) {
@@ -51,6 +56,7 @@ const WalletDepositPage = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [attachmentData]);
 
+  // Navigation guard: if there is an unsent attachment, show confirm dialog before leaving
   const guardedNavigate = useCallback(
     (cb: () => void) => {
       if (attachmentData) {
@@ -63,20 +69,24 @@ const WalletDepositPage = () => {
     [attachmentData],
   );
 
+  // When selecting a different package, reset the attachment
   const handleSelect = (id: string) => {
     dispatch(setSelectedPackageId(id));
     dispatch(setAttachmentData(null));
   };
 
+  // Back button: navigate to dashboard, with guard for unsent attachment
   const handleBack = () => {
     guardedNavigate(() => router.push(RouteEnum.WalletDashboard));
   };
 
+  // Handle sending deposit request
   const handleConfirm = async () => {
     if (!selectedId || !attachmentData) return;
     setLoading(true);
     try {
       let finalAttachmentData = attachmentData;
+      // If the file is local, upload to firebase before sending
       if ((attachmentData as any).file) {
         const file = (attachmentData as any).file;
         const url = await uploadToFirebase({
@@ -91,16 +101,21 @@ const WalletDepositPage = () => {
         };
         delete (finalAttachmentData as any).file;
       }
+      // Call usecase to send deposit request
       const usecase = walletContainer.get<CreateDepositRequestUsecase>(
         WALLET_TYPES.ICreateDepositRequestUseCase,
       );
 
-      await usecase.execute({
-        packageFXId: selectedId,
-        attachmentData: finalAttachmentData,
-      });
+      await usecase.execute(
+        {
+          packageFXId: selectedId,
+          attachmentData: finalAttachmentData,
+        },
+        currency,
+      );
 
       toast.success('Deposit request sent successfully');
+      // Reset state after successful request
       dispatch(setAttachmentData(null));
       dispatch(setSelectedPackageId(null));
       dispatch(fetchFrozenAmountAsyncThunk());
@@ -113,6 +128,7 @@ const WalletDepositPage = () => {
     }
   };
 
+  // Confirm leaving page with unsent attachment
   const handleConfirmLeave = () => {
     setShowLeaveModal(false);
 
@@ -124,11 +140,13 @@ const WalletDepositPage = () => {
     dispatch(setSelectedPackageId(null));
   };
 
+  // Cancel leave confirmation
   const handleCancelLeave = () => {
     setShowLeaveModal(false);
     pendingNavigation.current = null;
   };
 
+  // Only allow confirm if a package is selected, there is an attachment, and not loading
   const canConfirm = !!selectedId && !!attachmentData && !loading;
 
   return (
@@ -144,14 +162,17 @@ const WalletDepositPage = () => {
               className="w-full"
             />
 
+            {/* Payment detail info */}
             <WalletPaymentDetail className="w-full" />
           </div>
 
           <div className="flex justify-between items-center gap-6">
+            {/* Back to dashboard button */}
             <Button variant="outline" onClick={handleBack} className="w-40" size="lg">
               <ArrowLeftIcon className="w-4 h-4" />
             </Button>
 
+            {/* Send deposit request button */}
             <Button
               onClick={handleConfirm}
               disabled={!canConfirm}
@@ -168,6 +189,7 @@ const WalletDepositPage = () => {
         </div>
       </div>
 
+      {/* Dialog to confirm leaving page with unsent attachment */}
       <WalletDialog
         open={showLeaveModal}
         onCancel={handleCancelLeave}

@@ -36,23 +36,14 @@ const walletSettingSlice = createSlice({
     },
     setWalletSettingFilter: (state, action: PayloadAction<typeof initialState.filter>) => {
       state.filter = action.payload;
-      // When setting a new filter, we should send filters down
-      state.skipFilters = false;
     },
     setWalletSettingSearch: (state, action: PayloadAction<string>) => {
       state.search = action.payload;
-      // When setting search, we should send filters down
-      state.skipFilters = false;
     },
     clearFilter: (state) => {
       // Reset filter and search to initial values
       state.filter = initialState.filter;
       state.search = initialState.search;
-      // Set skipFilters to true to prevent sending filters down
-      state.skipFilters = true;
-    },
-    setSkipFilters: (state, action: PayloadAction<boolean>) => {
-      state.skipFilters = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -85,6 +76,5 @@ export const {
   setWalletSettingFilter,
   setWalletSettingSearch,
   clearFilter,
-  setSkipFilters,
 } = walletSettingSlice.actions;
 export default walletSettingSlice.reducer;

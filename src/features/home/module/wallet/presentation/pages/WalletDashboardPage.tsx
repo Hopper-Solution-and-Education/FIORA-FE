@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { WalletBarChart, WalletOverview, WalletTopbarAction } from '../organisms';
 
 const WalletDashboardPage = () => {
