@@ -192,6 +192,8 @@ model Transaction {
   createdBy        String?              @db.Uuid
   currencyId       String?              @db.Uuid
   currency         String?
+  baseCurrency     String?              @default("USD")
+  baseAmount       Decimal?             @db.Decimal(13, 2)
   isMarked         Boolean              @default(false)
   isExpired        Boolean              @default(false)
   productsRelation ProductTransaction[] @relation("ProductTransactions")
