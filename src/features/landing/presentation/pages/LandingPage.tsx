@@ -1,15 +1,15 @@
 'use client';
 
-import Header from '@/features/landing/presentation/components/Header';
+import Header from '@/features/landing/presentation/organisms/Header';
 import { motion, Variants } from 'framer-motion';
-import Footer from './components/Footer';
-import { ScrollToTop } from './components/ScrollToTop';
-import { Banner } from './organisms/Banner';
-import { FioraSystem } from './organisms/FioraSystem';
-import KPSSection from './organisms/KPSSection';
-import { PartnerLogo } from './organisms/PartnerLogo';
-import { ReviewSection } from './organisms/ReviewSection';
-import VisionMission from './organisms/VisionMission';
+import { PartnerLogo } from '../atoms/PartnerLogo';
+import { ScrollToTop } from '../atoms/ScrollToTop';
+import { Banner } from '../molecules/Banner';
+import { FioraSystem } from '../molecules/FioraSystem';
+import Footer from '../organisms/Footer';
+import KPSSection from '../organisms/KPSSection';
+import { ReviewSection } from '../organisms/ReviewSection';
+import VisionMission from '../organisms/VisionMission';
 
 // Framer Motion Variants
 const fadeIn = {
