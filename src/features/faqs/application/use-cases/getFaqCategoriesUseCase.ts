@@ -1,15 +1,33 @@
-import { FaqsCategoriesResponse } from '../../domain/entities/models/faqs';
-import { IFaqsRepository } from '../../domain/repositories/IFaqsRepository';
+import {
+  FaqsCategoriesResponse,
+  FaqsCategoriesWithPostParams,
+  FaqsCategoriesWithPostResponse,
+} from '../../domain/entities/models/faqs';
+import { IFaqCategoryRepository } from '../../domain/repositories';
+import { faqCategoryRepository } from '../../infrastructure/repositories/FaqCategoryRepository';
 
 export class GetFaqCategoriesUseCase {
-  constructor(private faqsRepository: IFaqsRepository) {}
+  constructor(private faqCategoryRepository: IFaqCategoryRepository) {}
 
   async execute(): Promise<FaqsCategoriesResponse[]> {
     try {
-      return await this.faqsRepository.getFaqCategories();
+      return await this.faqCategoryRepository.getFaqCategories();
+    } catch (error) {
+      console.error('Error in GetFaqCategoriesUseCase:', error);
+      throw error;
+    }
+  }
+
+  async executeWithPost(
+    params: FaqsCategoriesWithPostParams,
+  ): Promise<FaqsCategoriesWithPostResponse[]> {
+    try {
+      return await this.faqCategoryRepository.getFaqCategoriesWithPost(params);
     } catch (error) {
       console.error('Error in GetFaqCategoriesUseCase:', error);
       throw error;
     }
   }
 }
+
+export const getFaqCategoriesUseCase = new GetFaqCategoriesUseCase(faqCategoryRepository);

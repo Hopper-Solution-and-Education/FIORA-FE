@@ -1,9 +1,9 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
 import { skipToken } from '@reduxjs/toolkit/query/react';
-import { useGetFaqsQuery } from '../store/api/faqsApi';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FAQ_LIST_CONSTANTS } from '../constants/index';
-import { CategoryWithFaqs, Faq, FaqsGetListType } from '../domain/entities/models/faqs';
+import { Faq, PostType } from '../domain/entities/models/faqs';
 import { FaqsFilterValues } from '../presentation/organisms/FaqsPageHeader';
+import { useGetFaqsQuery } from '../store/api/faqsApi';
 
 export const useFaqsData = () => {
   // State
@@ -22,18 +22,8 @@ export const useFaqsData = () => {
   // Query parameters for most viewed FAQs
   const mostViewedQueryParams = useMemo(
     () => ({
-      type: FaqsGetListType.LIST,
+      type: PostType.FAQ,
       limit: FAQ_LIST_CONSTANTS.MOST_VIEWED_LIMIT,
-      filters: { search: '', categories: [] },
-    }),
-    [],
-  );
-
-  // Query parameters for categories with FAQs
-  const categoriesQueryParams = useMemo(
-    () => ({
-      type: FaqsGetListType.CATEGORIES,
-      limit: FAQ_LIST_CONSTANTS.FAQS_PER_CATEGORY,
       filters: { search: '', categories: [] },
     }),
     [],
@@ -44,7 +34,7 @@ export const useFaqsData = () => {
     () =>
       hasActiveFilters
         ? {
-            type: FaqsGetListType.LIST,
+            type: PostType.FAQ,
             filters: {
               search: activeFilters.search,
               categories: activeFilters.categories,
@@ -59,7 +49,7 @@ export const useFaqsData = () => {
     () =>
       expandingCategoryId
         ? {
-            type: FaqsGetListType.LIST,
+            type: PostType.FAQ,
             filters: { categories: [expandingCategoryId] },
           }
         : skipToken,
@@ -69,13 +59,6 @@ export const useFaqsData = () => {
   // API Queries
   const { data: mostViewedResponse, isLoading: isLoadingMostViewed } = useGetFaqsQuery(
     mostViewedQueryParams,
-    {
-      skip: hasActiveFilters,
-    },
-  );
-
-  const { data: categoriesResponse, isLoading: isLoadingCategories } = useGetFaqsQuery(
-    categoriesQueryParams,
     {
       skip: hasActiveFilters,
     },
@@ -115,13 +98,6 @@ export const useFaqsData = () => {
     return [];
   }, [mostViewedResponse]);
 
-  const categoriesWithFaqs: CategoryWithFaqs[] = useMemo(() => {
-    if (categoriesResponse && 'categoriesData' in categoriesResponse) {
-      return categoriesResponse.categoriesData;
-    }
-    return [];
-  }, [categoriesResponse]);
-
   const filteredFaqs: Faq[] = useMemo(() => {
     if (filteredResponse && 'faqs' in filteredResponse) {
       return filteredResponse.faqs;
@@ -130,8 +106,7 @@ export const useFaqsData = () => {
   }, [filteredResponse]);
 
   // Loading state
-  const isLoading =
-    isLoadingMostViewed || isLoadingCategories || isLoadingFiltered || isLoadingExpandedCategory;
+  const isLoading = isLoadingMostViewed || isLoadingFiltered || isLoadingExpandedCategory;
 
   // Handle filter changes
   const handleFilterChange = useCallback((filters: FaqsFilterValues) => {
@@ -170,7 +145,6 @@ export const useFaqsData = () => {
     activeFilters,
     expandedCategories,
     mostViewedFaqs,
-    categoriesWithFaqs,
     expandedCategoryFaqs,
     filteredFaqs,
     isLoading,

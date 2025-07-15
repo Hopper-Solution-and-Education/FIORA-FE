@@ -1,82 +1,75 @@
+import { USER_ROLES } from '@/shared/constants/featuresFlags';
 import { Session, useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { FaqReaction, ReactionCounts, ReactionType } from '../domain/entities/models/faqs';
-import {
-  useCreateReactionMutation,
-  useDeleteReactionMutation,
-  useGetFaqDetailQuery,
-} from '../store/api/faqsApi';
+import { toast } from 'sonner';
+import { FAQ_LIST_CONSTANTS } from '../constants';
+import { useDeleteFaqMutation, useGetFaqDetailQuery } from '../store/api/faqsApi';
 
-export const useFaqDetail = (id: string, include: string[] = []) => {
+export const useFaqDetail = (id: string) => {
+  const router = useRouter();
   const { data: session } = useSession() as { data: Session | null };
-  // Data fetching - use optimized API with includes and view tracking
-  const queryParams =
-    include.length > 0 ? { id, include, trackView: true } : { id, trackView: true };
+  const isAdminOrCs =
+    session?.user?.role.toUpperCase() === USER_ROLES.ADMIN ||
+    session?.user?.role.toUpperCase() === USER_ROLES.CS;
 
-  const { data, error, isLoading, refetch } = useGetFaqDetailQuery(queryParams);
+  // FAQ detail
+  const {
+    data: faq,
+    error,
+    isLoading,
+  } = useGetFaqDetailQuery({
+    id,
+    trackView: false,
+    include: [FAQ_LIST_CONSTANTS.GET_FAQ_DETAIL_INCLUDE.related],
+  });
 
   // Mutations
-  const [createReaction] = useCreateReactionMutation();
-  const [deleteReaction] = useDeleteReactionMutation();
+  const [deleteFaq, { isLoading: isDeletingFaq }] = useDeleteFaqMutation();
 
-  // Local state
-  const [reactionLoading, setReactionLoading] = useState(false);
+  // Local state for dialogs
+  const [showDeleteFaqDialog, setShowDeleteFaqDialog] = useState(false);
+  const [openWarningDialog, setOpenWarningDialog] = useState(false);
 
-  // Calculate reaction counts
-  const reactionCounts: ReactionCounts = (() => {
-    const counts: ReactionCounts = {
-      [ReactionType.BAD]: 0,
-      [ReactionType.NEUTRAL]: 0,
-      [ReactionType.GOOD]: 0,
-    };
-    data?.Reaction?.forEach((reaction: FaqReaction) => {
-      counts[reaction.reactionType] = (counts[reaction.reactionType] || 0) + 1;
-    });
-    return counts;
-  })();
-
-  // Get user's current reaction
-  const userReaction =
-    data?.Reaction?.find((reaction: FaqReaction) => reaction.userId === session?.user?.id)
-      ?.reactionType || null;
-
-  // Reaction handlers
-  const handleReaction = async (type: ReactionType) => {
-    if (reactionLoading) return;
-    setReactionLoading(true);
-
+  // Handlers
+  const handleDeleteFaq = async () => {
+    if (!faq?.id) return;
     try {
-      if (userReaction === type) {
-        await deleteReaction(id).unwrap();
-      } else {
-        await createReaction({
-          faqId: id,
-          reaction: type,
-        }).unwrap();
-      }
+      await deleteFaq(faq.id).unwrap();
+      setShowDeleteFaqDialog(false);
+      toast.success(`"${faq.title}" has been deleted successfully`);
+      setTimeout(() => {
+        router.push('/faqs');
+      }, 1000);
     } catch (error) {
-      console.error('Error handling reaction:', error);
-    } finally {
-      setReactionLoading(false);
-      refetch();
+      console.error('Error deleting FAQ:', error);
+      toast.error('Failed to delete FAQ. Please try again.');
     }
+  };
+
+  const handleEdit = () => {
+    router.push(`/faqs/details/${id}/edit`);
+  };
+
+  const handleDelete = () => {
+    setShowDeleteFaqDialog(true);
   };
 
   return {
     // Data
-    data,
+    faq,
     error,
     isLoading,
-    reactionCounts,
-    userReaction,
-
-    // State
-    reactionLoading,
-
+    session,
+    isAdminOrCs,
+    showDeleteFaqDialog,
+    setShowDeleteFaqDialog,
+    openWarningDialog,
+    setOpenWarningDialog,
+    isDeletingFaq,
     // Handlers
-    handleReaction,
-
-    // Utils
-    refetch,
+    handleEdit,
+    handleDelete,
+    handleDeleteFaq,
   };
 };

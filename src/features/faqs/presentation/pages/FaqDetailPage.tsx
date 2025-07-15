@@ -1,86 +1,29 @@
 import { Icons } from '@/components/Icon';
-import { USER_ROLES } from '@/shared/constants/featuresFlags';
-import { Session, useSession } from 'next-auth/react';
-import { useParams, useRouter } from 'next/navigation';
-import React, { useState } from 'react';
-import { toast } from 'sonner';
-import { useFaqDetail } from '../../hooks';
-import { useDeleteCommentMutation, useDeleteFaqMutation } from '../../store/api/faqsApi';
-import {
-  ConfirmDeleteDialog,
-  FaqComments,
-  FaqContent,
-  FaqHeader,
-  FaqRelatedArticles,
-} from '../molecules';
+import { notFound, useParams, useRouter } from 'next/navigation';
+import React from 'react';
+import { useFaqDetail } from '../../hooks/useFaqDetail';
+import { ConfirmDeleteDialog, FaqContent, FaqHeader, FaqRelatedArticles } from '../molecules';
 import WarningDialog from '../molecules/WarningDialog';
-import FeedbackSection from '../organisms/FeedbackSection';
+import { FaqCommentsSection, FeedbackSection } from '../organisms';
 
 const FaqDetailPage: React.FC = () => {
   const { id } = useParams() as { id: string };
   const router = useRouter();
-  const { data: session } = useSession() as { data: Session | null };
-  const isAdminOrCs =
-    session?.user?.role.toUpperCase() === USER_ROLES.ADMIN ||
-    session?.user?.role.toUpperCase() === USER_ROLES.CS;
-
   const {
-    // Data
-    data,
+    faq,
     error,
     isLoading,
-    reactionCounts,
-    userReaction,
-
-    // State
-    reactionLoading,
-
-    // Handlers
-    handleReaction,
-  } = useFaqDetail(id, ['related']);
-
-  // Mutations
-  const [deleteComment, { isLoading: isDeletingComment }] = useDeleteCommentMutation();
-  const [deleteFaq, { isLoading: isDeletingFaq }] = useDeleteFaqMutation();
-
-  // Local state for FAQ deletion
-  const [showDeleteFaqDialog, setShowDeleteFaqDialog] = useState(false);
-  const [openWarningDialog, setOpenWarningDialog] = useState(false);
-  const [commentIdToDelete, setCommentIdToDelete] = useState<string | null>(null);
-
-  const confirmDeleteComment = async () => {
-    if (!commentIdToDelete) return;
-
-    try {
-      await deleteComment({ faqId: id, commentId: commentIdToDelete }).unwrap();
-      toast.success('Comment deleted successfully');
-      setCommentIdToDelete(null);
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-      toast.error('Failed to delete comment. Please try again.');
-    }
-  };
-
-  const handleDeleteFaq = async () => {
-    if (!data?.id) return;
-
-    try {
-      await deleteFaq(data.id).unwrap();
-
-      // Close dialog
-      setShowDeleteFaqDialog(false);
-
-      toast.success(`"${data.title}" has been deleted successfully`);
-
-      // Navigate to FAQs list page
-      setTimeout(() => {
-        router.push('/faqs');
-      }, 1000); // Small delay to show the success message
-    } catch (error) {
-      console.error('Error deleting FAQ:', error);
-      toast.error('Failed to delete FAQ. Please try again.');
-    }
-  };
+    session,
+    isAdminOrCs,
+    showDeleteFaqDialog,
+    setShowDeleteFaqDialog,
+    openWarningDialog,
+    setOpenWarningDialog,
+    isDeletingFaq,
+    handleEdit,
+    handleDelete,
+    handleDeleteFaq,
+  } = useFaqDetail(id);
 
   if (isLoading) {
     return (
@@ -93,71 +36,36 @@ const FaqDetailPage: React.FC = () => {
     );
   }
 
-  if (error || !data) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-10 text-center">
-        <div className="text-red-500">
-          <h2 className="text-xl font-semibold mb-2">FAQ not found</h2>
-          <p className="text-gray-600">The requested FAQ could not be loaded.</p>
-        </div>
-      </div>
-    );
+  if (error || !faq) {
+    return notFound();
   }
-
-  const handleEdit = () => {
-    router.push(`/faqs/details/${id}/edit`);
-  };
-
-  const handleDelete = () => {
-    setShowDeleteFaqDialog(true);
-  };
 
   return (
     <section className="max-w-4xl mx-auto px-4 py-10 text-gray-800">
       {/* Header Section */}
       <FaqHeader
-        data={data}
+        data={faq}
         canEdit={isAdminOrCs}
         onEdit={isAdminOrCs ? handleEdit : undefined}
         onDelete={isAdminOrCs ? handleDelete : undefined}
       />
-
       {/* Content Section */}
-      <FaqContent data={data} />
-
+      <FaqContent data={faq} />
       <hr className="my-10 w-1/2 mx-auto" />
-
       {/* Related Articles */}
-      <FaqRelatedArticles includedArticles={data.relatedArticles} />
-
+      <FaqRelatedArticles includedArticles={faq.relatedArticles} />
       <hr className="my-10 w-1/2 mx-auto" />
-
       {/* Feedback Section */}
       <FeedbackSection
-        reactionCounts={reactionCounts}
-        userReaction={userReaction}
-        onReaction={handleReaction}
-        disabled={reactionLoading}
-        setOpenWarningDialog={setOpenWarningDialog}
-        session={session ?? null}
-      />
-
-      {/* Comments Section */}
-      <FaqComments
         faqId={id}
-        comments={data.Comment || []}
         setOpenWarningDialog={setOpenWarningDialog}
         session={session ?? null}
-        handleDeleteComment={(commentId) => setCommentIdToDelete(commentId)}
       />
-
-      {/* Comment Delete Confirmation Dialog */}
-      <ConfirmDeleteDialog
-        open={!!commentIdToDelete}
-        onClose={() => setCommentIdToDelete(null)}
-        onDelete={confirmDeleteComment}
-        description="Are you sure you want to delete this comment? This action cannot be undone."
-        isDeleting={isDeletingComment}
+      {/* Comments Section */}
+      <FaqCommentsSection
+        faqId={id}
+        setOpenWarningDialog={setOpenWarningDialog}
+        session={session ?? null}
       />
 
       {/* FAQ Delete Confirmation Dialog */}

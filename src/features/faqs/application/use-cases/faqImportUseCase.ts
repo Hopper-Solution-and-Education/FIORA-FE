@@ -3,9 +3,11 @@ import {
   FaqsImportValidationResult,
   FaqsRowRaw,
 } from '../../domain/entities/models/faqs';
-import { IFaqsRepository } from '../../domain/repositories/IFaqsRepository';
+import { IFaqImportRepository } from '../../domain/repositories/IFaqImportRepository';
 import { FaqsValidationService } from '../../domain/services/FaqsValidationService';
 import { FileParsingService } from '../../domain/services/FileParsingService';
+
+import { faqImportRepository } from '../../infrastructure/repositories';
 
 interface ValidateFaqsImportFileParams {
   file: File;
@@ -13,10 +15,10 @@ interface ValidateFaqsImportFileParams {
   userId: string;
 }
 
-export class FaqsImportUseCase {
+export class FaqImportUseCase {
   constructor(
-    private readonly faqsRepository: IFaqsRepository,
-    private readonly validationService: FaqsValidationService,
+    private readonly faqImportRepository: IFaqImportRepository,
+    private readonly faqsValidationService: FaqsValidationService,
     private readonly fileParsingService: FileParsingService,
   ) {}
 
@@ -24,7 +26,7 @@ export class FaqsImportUseCase {
    * Import validated FAQs data
    */
   async importFaqs(rows: FaqsRowRaw[], userId: string): Promise<FaqsImportResult> {
-    return this.faqsRepository.importFaqs(rows, userId);
+    return this.faqImportRepository.importFaqs(rows, userId);
   }
 
   /**
@@ -47,14 +49,14 @@ export class FaqsImportUseCase {
 
       // Transform the raw data
       const transformedData = parseResult.rawData.map((row) =>
-        this.validationService.transformRow(row),
+        this.faqsValidationService.transformRow(row),
       );
 
       // Check for existing titles in database
-      const existingTitles = await this.checkExistingTitles(transformedData, params.userId);
+      const existingTitles = await this.checkExistingFaqTitles(transformedData, params.userId);
 
       // Validate the parsed data with duplicate checking
-      return this.validationService.validateImportData(
+      return this.faqsValidationService.validateImportData(
         transformedData,
         parseResult.missingColumns,
         existingTitles,
@@ -68,7 +70,7 @@ export class FaqsImportUseCase {
    * Parse the import file and extract data
    */
   private async parseImportFile({ file, maxRecords }: ValidateFaqsImportFileParams) {
-    const requiredColumns = this.validationService.getRequiredColumns();
+    const requiredColumns = this.faqsValidationService.getRequiredColumns();
 
     return await this.fileParsingService.parseImportFile<FaqsRowRaw>(file, requiredColumns, {
       maxRecords,
@@ -78,7 +80,7 @@ export class FaqsImportUseCase {
   /**
    * Check existing titles in database
    */
-  private async checkExistingTitles(rawData: FaqsRowRaw[], userId: string): Promise<string[]> {
+  private async checkExistingFaqTitles(rawData: FaqsRowRaw[], userId: string): Promise<string[]> {
     try {
       // Extract unique titles from the raw data
       const titles = rawData
@@ -92,7 +94,7 @@ export class FaqsImportUseCase {
       }
 
       // Check which titles exist in the database
-      return await this.faqsRepository.checkExistingTitles(uniqueTitles, userId);
+      return await this.faqImportRepository.checkExistingFaqTitles(uniqueTitles, userId);
     } catch (error) {
       console.error('Error checking existing titles:', error);
       return []; // Return empty array on error to continue validation
@@ -110,7 +112,7 @@ export class FaqsImportUseCase {
    * Create error result for parsing failures
    */
   private createParsingErrorResult(parseResult: any): FaqsImportValidationResult {
-    const requiredColumns = this.validationService.getRequiredColumns();
+    const requiredColumns = this.faqsValidationService.getRequiredColumns();
     const errorMessage = parseResult.error || 'No data found in file';
 
     return this.fileParsingService.createErrorResult(requiredColumns, errorMessage);
@@ -120,9 +122,18 @@ export class FaqsImportUseCase {
    * Create error result for unexpected errors
    */
   private createUnexpectedErrorResult(error: unknown): FaqsImportValidationResult {
-    const requiredColumns = this.validationService.getRequiredColumns();
+    const requiredColumns = this.faqsValidationService.getRequiredColumns();
     const errorMessage = error instanceof Error ? error.message : 'Unexpected error occurred';
 
     return this.fileParsingService.createErrorResult(requiredColumns, errorMessage);
   }
 }
+
+const faqsValidationService = new FaqsValidationService();
+const fileParsingService = new FileParsingService();
+
+export const faqImportUseCase = new FaqImportUseCase(
+  faqImportRepository,
+  faqsValidationService,
+  fileParsingService,
+);

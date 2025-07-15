@@ -2,7 +2,8 @@ import { useFaqsData } from '@/features/faqs/hooks/useFaqsData';
 import { USER_ROLES } from '@/shared/constants/featuresFlags';
 import { Session, useSession } from 'next-auth/react';
 import { FAQ_LIST_CONSTANTS } from '../../constants';
-import { useGetFaqCategoriesQuery } from '../../store/api/faqsApi';
+import { PostType } from '../../domain/entities/models/faqs';
+import { useGetFaqCategoriesWithPostQuery } from '../../store/api/faqsApi';
 import CategoriesSection from '../organisms/CategoriesSection';
 import FaqsPageHeader from '../organisms/FaqsPageHeader';
 import FilteredCategoriesSection from '../organisms/FilteredCategoriesSection';
@@ -10,12 +11,14 @@ import MostViewedSection from '../organisms/MostViewedSection';
 
 const FaqsListPage = () => {
   // Hooks
-  const { data: categories = [] } = useGetFaqCategoriesQuery();
+  const { data: categoriesWithPost = [] } = useGetFaqCategoriesWithPostQuery({
+    type: PostType.FAQ,
+    limit: FAQ_LIST_CONSTANTS.FAQS_PER_CATEGORY,
+  });
   const {
     activeFilters,
     expandedCategories,
     mostViewedFaqs,
-    categoriesWithFaqs,
     expandedCategoryFaqs,
     filteredFaqs,
     isLoading,
@@ -34,7 +37,7 @@ const FaqsListPage = () => {
     <div className="w-full px-4 space-y-8 mb-6">
       {/* Page Header with Filters */}
       <FaqsPageHeader
-        categories={categories}
+        categories={categoriesWithPost}
         activeFilters={activeFilters}
         onFilterChange={handleFilterChange}
         isLoading={isLoading}
@@ -51,12 +54,11 @@ const FaqsListPage = () => {
           <h3 className="text-2xl font-bold text-center">FAQ Center</h3>
 
           <CategoriesSection
-            categoriesWithFaqs={categoriesWithFaqs}
+            categoriesWithFaqs={categoriesWithPost || []}
             expandedCategories={expandedCategories}
             expandedCategoryFaqs={expandedCategoryFaqs}
             onShowMore={handleShowMore}
             isLoading={isLoading}
-            faqsPerCategory={FAQ_LIST_CONSTANTS.FAQS_PER_CATEGORY}
           />
         </>
       )}

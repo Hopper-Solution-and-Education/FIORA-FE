@@ -25,7 +25,7 @@ const FaqHeader: React.FC<FaqHeaderProps> = ({ data, canEdit, onEdit, onDelete }
                 onEdit?.();
               }}
             >
-              <Pencil size={18} color="red" />
+              <Pencil size={18} />
             </Button>
             <Button
               variant="secondary"

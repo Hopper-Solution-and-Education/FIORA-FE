@@ -1,33 +1,47 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import type { FaqComment } from '../domain/entities/models/faqs';
-import { useCreateCommentMutation /* , useUpdateCommentMutation */ } from '../store/api/faqsApi';
+import {
+  useCreateCommentMutation,
+  useDeleteCommentMutation,
+  useGetFaqCommentsQuery,
+} from '../store/api/faqsApi';
 
 interface UseCommentManagerProps {
   faqId: string;
-  comments: FaqComment[];
 }
 
-export const useCommentManager = ({ faqId, comments }: UseCommentManagerProps) => {
+export const useCommentManager = ({ faqId }: UseCommentManagerProps) => {
+  // Pagination
+  const [commentPage, setCommentPage] = useState(0);
+  const PAGE_SIZE = 10;
+  const { data: commentsPage, isLoading: isLoadingCommentsQuery } = useGetFaqCommentsQuery({
+    faqId,
+    skip: commentPage * PAGE_SIZE,
+    take: PAGE_SIZE,
+  });
+  const [allComments, setAllComments] = useState<FaqComment[]>([]);
+  useEffect(() => {
+    if (commentsPage)
+      setAllComments((prev) => (commentPage === 0 ? commentsPage : [...prev, ...commentsPage]));
+  }, [commentsPage, commentPage]);
+  const hasMore = commentsPage?.length === PAGE_SIZE;
+  const fetchNextPage = () => setCommentPage((p) => p + 1);
+
   // Mutations
   const [createComment] = useCreateCommentMutation();
-  // const [updateComment] = useUpdateCommentMutation();
+  const [deleteComment, { isLoading: isDeletingComment }] = useDeleteCommentMutation();
 
   // Local state
   const [commentInput, setCommentInput] = useState('');
   const [replyTo, setReplyTo] = useState<{ id: string; username: string } | null>(null);
   const [commentLoading, setCommentLoading] = useState(false);
-  // const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
-
-  // All comments sorted by creation date (newest first)
-  const allComments = [...comments].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+  const isLoadingComments = isLoadingCommentsQuery || isDeletingComment;
 
   // Comment handlers
   const handleSendComment = async () => {
     if (!commentInput.trim()) return;
     setCommentLoading(true);
-
     try {
       await createComment({
         faqId,
@@ -36,7 +50,6 @@ export const useCommentManager = ({ faqId, comments }: UseCommentManagerProps) =
           replyToUsername: replyTo?.username,
         },
       }).unwrap();
-
       setCommentInput('');
       setReplyTo(null);
     } catch (error) {
@@ -46,18 +59,6 @@ export const useCommentManager = ({ faqId, comments }: UseCommentManagerProps) =
     }
   };
 
-  // const handleEditComment = async (commentId: string, content: string) => {
-  //   setEditingCommentId(commentId);
-  //   try {
-  //     await updateComment({ faqId, commentId, content }).unwrap();
-  //   } catch (error) {
-  //     console.error('Error editing comment:', error);
-  //     throw error; // Re-throw for UI error handling
-  //   } finally {
-  //     setEditingCommentId(null);
-  //   }
-  // };
-
   const handleReply = (commentId: string, username: string) => {
     setReplyTo({ id: commentId, username });
   };
@@ -66,23 +67,35 @@ export const useCommentManager = ({ faqId, comments }: UseCommentManagerProps) =
     setReplyTo(null);
   };
 
+  const confirmDeleteComment = async (commentIdToDelete: string) => {
+    if (!commentIdToDelete) return;
+    try {
+      await deleteComment({ faqId, commentId: commentIdToDelete }).unwrap();
+      toast.success('Comment deleted successfully');
+      setCommentPage(0); // Refetch comments from first page
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      toast.error('Failed to delete comment. Please try again.');
+    }
+  };
+
   return {
     // Data
     allComments,
-
+    hasMore,
+    fetchNextPage,
     // State
     commentInput,
+    setCommentInput,
     commentLoading,
     replyTo,
-    // editingCommentId,
-
+    setReplyTo,
+    isDeletingComment,
+    isLoadingComments,
     // Handlers
     handleSendComment,
-    // handleEditComment,
     handleReply,
     handleCancelReply,
-
-    // Setters
-    setCommentInput,
+    confirmDeleteComment,
   };
 };
