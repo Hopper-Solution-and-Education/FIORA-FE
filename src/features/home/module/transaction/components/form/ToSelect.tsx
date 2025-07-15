@@ -5,6 +5,12 @@ import { DropdownOption } from '@/shared/types';
 import { Loader2 } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
+import { TransactionType } from '../../types';
+import {
+  GetSupportDataResponse,
+  SupportToAccountResponse,
+  SupportToCategoryResponse,
+} from '../../types/getSupportDataResponse';
 
 interface ToSelectProps {
   name: string;
@@ -27,7 +33,7 @@ const ToSelectField: React.FC<ToSelectProps> = ({
 
   const [options, setOptions] = React.useState<DropdownOption[]>([]);
 
-  const { data, mutate, isLoading, isValidating } = useDataFetch<any>({
+  const { data, mutate, isLoading, isValidating } = useDataFetch<GetSupportDataResponse>({
     endpoint: transactionType ? `/api/transactions/supporting-data?type=${transactionType}` : null,
     method: 'GET',
   });
@@ -44,20 +50,30 @@ const ToSelectField: React.FC<ToSelectProps> = ({
     const tmpOptions: DropdownOption[] = [];
 
     if (data && data.data) {
-      [...data.data.toAccounts, ...data.data.toCategories].forEach((option: any) => {
-        tmpOptions.push({
-          value: option.id,
-          label: option.name,
+      if (transactionType === TransactionType.Income) {
+        [...data.data.toAccounts].forEach((option: SupportToAccountResponse) => {
+          tmpOptions.push({
+            value: option.id,
+            label: option.name,
+          });
         });
-      });
+      } else if (transactionType === TransactionType.Expense) {
+        [...data.data.toCategories].forEach((option: SupportToCategoryResponse) => {
+          tmpOptions.push({
+            value: option.id,
+            label: option.name,
+          });
+        });
+      }
     } else {
       tmpOptions.push({
-        label: transactionType === 'Expense' ? 'Select Category' : 'Select Account',
+        label: transactionType === TransactionType.Expense ? 'Select Category' : 'Select Account',
         value: 'none',
         disabled: true,
       });
     }
     setOptions(tmpOptions);
+
     return () => {
       setOptions([]);
     };
@@ -86,9 +102,15 @@ const ToSelectField: React.FC<ToSelectProps> = ({
               name={name}
               disabled={isLoading || isValidating}
               value={selectedOption}
-              onValueChange={(value: string) => handleChange(value)}
-              options={options}
-              placeholder={transactionType === 'Expense' ? 'Select Category' : 'Select Account'}
+              onChange={handleChange}
+              options={
+                options.length > 0
+                  ? options
+                  : [{ value: 'loading', label: 'Loading...', disabled: true }]
+              }
+              placeholder={
+                transactionType === TransactionType.Income ? 'Select Account' : 'Select Category'
+              }
               error={error}
               noneValue={false}
               {...props}

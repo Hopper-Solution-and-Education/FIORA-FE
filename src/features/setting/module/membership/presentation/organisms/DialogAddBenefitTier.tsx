@@ -44,17 +44,20 @@ const DialogAddBenefitTier = ({ open, onOpenChange }: DialogAddBenefitTierProps)
 
     dispatch(
       addNewBenefitAsyncThunk({
-        tierBenefit: {
-          tierId: selectMembershipBenefit?.id || '',
-          value: 0,
+        data: {
+          tierBenefit: {
+            tierId: selectMembershipBenefit?.id || '',
+            value: 0,
+          },
+          membershipBenefit: {
+            name: data.name,
+            slug: data.slug,
+            userId: session?.user?.id || '',
+            description: data.description || '',
+            suffix: data.suffix,
+          },
         },
-        membershipBenefit: {
-          name: data.name,
-          slug: data.slug,
-          userId: session?.user?.id || '',
-          description: data.description || '',
-          suffix: data.suffix,
-        },
+        setError: methods.setError,
       }),
     )
       .unwrap()

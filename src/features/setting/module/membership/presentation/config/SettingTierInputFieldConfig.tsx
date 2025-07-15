@@ -57,14 +57,12 @@ const SettingTierInputFieldConfig = ({
     />
   ));
 
-  console.log(idTierToDelete);
-
   // Sticky submit button
   const renderSubmitButton = () => {
     return (
       <Button
         type="button"
-        className="w-full mt-1"
+        className="w-full mt-10"
         variant="outline"
         onClick={handleOpenDialogAddBenefitTier}
       >
