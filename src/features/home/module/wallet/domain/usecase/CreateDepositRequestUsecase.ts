@@ -1,8 +1,9 @@
+import { Currency } from '@/shared/types';
 import { inject, injectable } from 'inversify';
-import { WALLET_TYPES } from '../../di/walletDIContainer.type';
-import type { IWalletRepository } from '../../data/repository/IWalletRepository';
-import type { DepositRequest } from '../entity/DepositRequest';
 import type { CreateDepositRequestDto } from '../../data/dto/request/CreateDepositRequestDto';
+import type { IWalletRepository } from '../../data/repository/IWalletRepository';
+import { WALLET_TYPES } from '../../di/walletDIContainer.type';
+import type { DepositRequest } from '../entity/DepositRequest';
 
 @injectable()
 export class CreateDepositRequestUsecase {
@@ -11,7 +12,7 @@ export class CreateDepositRequestUsecase {
     private readonly walletRepository: IWalletRepository,
   ) {}
 
-  execute(data: CreateDepositRequestDto): Promise<DepositRequest> {
-    return this.walletRepository.createDepositRequest(data);
+  execute(data: CreateDepositRequestDto, currency: Currency): Promise<DepositRequest> {
+    return this.walletRepository.createDepositRequest(data, currency);
   }
 }

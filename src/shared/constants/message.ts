@@ -233,9 +233,16 @@ export enum Messages {
   CREATE_DEPOSIT_REQUEST_SUCCESS = 'Create deposit request successfully.',
   UPDATE_DEPOSIT_REQUEST_STATUS_SUCCESS = 'Update deposit request status successfully.',
 
+  // WALLET FAID
+  INVALID_DEPOSIT_REQUEST_TYPE = 'Invalid deposit request type.',
+  MISSING_REJECTION_REASON = 'Missing rejection reason.',
+  PACKAGE_FX_NOT_FOUND = 'Package FX not found.',
   INVALID_WALLET_TYPE = 'Invalid wallet type.',
   UPDATE_DEPOSIT_REQUEST_STATUS_FAILED = 'Update deposit request status failed.',
   INVALID_STATUS = 'Invalid status.',
+  PAYMENT_WALLET_NOT_FOUND = 'Payment wallet not found.',
+  COULD_NOT_GENERATE_UNIQUE_REF_CODE = 'Could not generate unique refCode, please try again.',
+  CURRENCY_IS_REQUIRED = 'Currency is required.',
 
   // EXCHANGE RATE SUCCESS
   CREATE_EXCHANGE_RATE_SUCCESS = 'Create exchange rate successfully.',
@@ -258,7 +265,6 @@ export enum Messages {
   NOT_FOUND_EMAIL = 'User email not found',
   INVALID_PHONE = 'Invalid phone number.',
   INVALID_DOB = 'Invalid date of birth.',
-  INVALID_DEPOSIT_REQUEST_TYPE = 'Invalid deposit request type.',
 
   // FAQ
   IMPORT_FAQS_SUCCESS = 'Import FAQs successfully',
@@ -279,4 +285,5 @@ export enum Messages {
   VALIDATION_ERROR = 'Validation error.',
 
   INVALID_PAGE_OR_PAGE_SIZE = 'Invalid page or pageSize.',
+  INVALID_FILTER_FORMAT = 'Invalid filter format.',
 }

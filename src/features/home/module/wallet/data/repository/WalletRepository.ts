@@ -1,16 +1,17 @@
+import { Currency } from '@/shared/types';
 import { inject, injectable } from 'inversify';
 import { WALLET_TYPES } from '../../di/walletDIContainer.type';
-import type { WalletType } from '../../domain/enum';
-import type { IWalletApi } from '../api';
-import type { IWalletRepository } from './IWalletRepository';
-import WalletMapper from '../mapper/WalletMapper';
-import { Wallet } from '../../domain/entity/Wallet';
-import { DepositRequestStatus } from '../../domain/enum/DepositRequestStatus';
-import { DepositRequestMapper } from '../mapper/DepositRequestMapper';
 import { DepositRequest } from '../../domain/entity/DepositRequest';
-import { PackageFXMapper } from '../mapper/PackageFXMapper';
 import { PackageFX } from '../../domain/entity/PackageFX';
+import { Wallet } from '../../domain/entity/Wallet';
+import type { WalletType } from '../../domain/enum';
+import { DepositRequestStatus } from '../../domain/enum/DepositRequestStatus';
+import type { IWalletApi } from '../api';
 import { CreateDepositRequestDto } from '../dto/request/CreateDepositRequestDto';
+import { DepositRequestMapper } from '../mapper/DepositRequestMapper';
+import { PackageFXMapper } from '../mapper/PackageFXMapper';
+import WalletMapper from '../mapper/WalletMapper';
+import type { IWalletRepository } from './IWalletRepository';
 
 @injectable()
 export class WalletRepository implements IWalletRepository {
@@ -34,9 +35,9 @@ export class WalletRepository implements IWalletRepository {
     return this._walletApi.getAllPackageFX().then(PackageFXMapper.toPackageFXs);
   }
 
-  createDepositRequest(data: CreateDepositRequestDto): Promise<DepositRequest> {
+  createDepositRequest(data: CreateDepositRequestDto, currency: Currency): Promise<DepositRequest> {
     return this._walletApi
-      .createDepositRequest(data)
+      .createDepositRequest(data, currency)
       .then((res) => DepositRequestMapper.toDepositRequest(res.data));
   }
 
