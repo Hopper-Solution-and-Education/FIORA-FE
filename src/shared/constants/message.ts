@@ -266,7 +266,6 @@ export enum Messages {
   // CURRENCY ERROR
   CURRENCY_NOT_FOUND = 'Currency not found',
   GET_CURRENCY_FAILED = 'Failed to get currency.',
-
   // FAQ
   IMPORT_FAQS_SUCCESS = 'Import FAQs successfully',
   IMPORT_FAQS_FAILED = 'Import FAQs failed',

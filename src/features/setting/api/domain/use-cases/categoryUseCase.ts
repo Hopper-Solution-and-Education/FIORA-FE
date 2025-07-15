@@ -486,14 +486,14 @@ class CategoryUseCase {
         });
 
         // Map actual transaction to corresponding months
-        categoryFoundWithTransactions.forEach((item: any) => {
+        categoryFoundWithTransactions.forEach(async (item: any) => {
           if (item.id === category.id) {
             actualTransaction[`total_${suffix}`] = 0;
             actualTransaction[`currency`] = currency;
             actualTransaction[`type`] = item.type as TransactionType;
-            item.transactions.forEach((transaction: Transaction) => {
+            item.transactions.forEach(async (transaction: Transaction) => {
               const monthKey = `m${transaction.date.getMonth() + 1}_${suffix}`; // Get month key from transaction date
-              const convertedMonthAmount = convertCurrency(
+              const convertedMonthAmount = await convertCurrency(
                 transaction.amount,
                 transaction.currency as Currency,
                 currency,

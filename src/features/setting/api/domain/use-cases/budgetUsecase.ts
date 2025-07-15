@@ -304,7 +304,7 @@ class BudgetUseCase {
       estimatedTotalExpense,
       estimatedTotalIncome,
       icon,
-      currencyId,
+      currency,
       type,
     } = params;
 
@@ -317,14 +317,23 @@ class BudgetUseCase {
       // { type: 'Act', totalExpense: totalExpenseAct, totalIncome: totalIncomeAct },
     ];
 
-    // update budget
+    const foundCurrency = await prisma.currencyExchange.findUnique({
+      where: {
+        name: currency,
+      },
+    });
+    if (!foundCurrency) {
+      throw new Error(Messages.CURRENCY_NOT_FOUND);
+    }
 
+    // update budget with currency
     const updatedBudgets = await Promise.all(
       budgetTypeData.map((budgetTypeData) =>
         this.updateSingleBudget(prisma, userId, fiscalYear, budgetId, budgetTypeData, {
           description,
           icon,
-          currencyId,
+          currencyId: foundCurrency.id,
+          currency: foundCurrency.name,
         }),
       ),
     );
@@ -845,12 +854,12 @@ class BudgetUseCase {
         const botData = budgetData[BudgetType.Bot] || defaultBudgetData;
         const actData = budgetData[BudgetType.Act] || defaultBudgetData;
 
-        const tentativeKey = `${year}-${actData.currencyId}`;
+        const tentativeKey = `${year}-${actData.currency}`;
 
         const tentativeTotals = tentativeTotalsByYear[tentativeKey] || {
           total_exp: 0,
           total_inc: 0,
-          currencyId: actData.currencyId,
+          currency: actData.currency,
         };
 
         const [
