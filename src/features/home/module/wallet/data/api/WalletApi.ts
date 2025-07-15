@@ -1,16 +1,16 @@
-import { inject, injectable } from 'inversify';
-import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
-import { routeConfig } from '@/shared/utils/route';
 import type { IHttpClient } from '@/config';
-import type { GetWalletByTypeRequest } from '../dto/request/GetWalletRequest';
-import type { WalletResponse, WalletsResponse } from '../dto/response/WalletResponse';
-import type { IWalletApi } from './IWalletApi';
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { _PaginationResponse, Currency } from '@/shared/types';
+import { routeConfig } from '@/shared/utils/route';
+import { inject, injectable } from 'inversify';
 import { WALLET_TYPES } from '../../di/walletDIContainer.type';
+import { DepositRequestStatus } from '../../domain/enum';
+import type { CreateDepositRequestDto } from '../dto/request/CreateDepositRequestDto';
+import type { GetWalletByTypeRequest } from '../dto/request/GetWalletRequest';
 import type { DepositRequestResponse } from '../dto/response/DepositRequestResponse';
 import type { PackageFXResponse } from '../dto/response/PackageFXResponse';
-import type { CreateDepositRequestDto } from '../dto/request/CreateDepositRequestDto';
-import { DepositRequestStatus } from '../../domain/enum';
-import { _PaginationResponse } from '@/shared/types';
+import type { WalletResponse, WalletsResponse } from '../dto/response/WalletResponse';
+import type { IWalletApi } from './IWalletApi';
 
 @injectable()
 export class WalletApi implements IWalletApi {
@@ -36,10 +36,16 @@ export class WalletApi implements IWalletApi {
     return this.httpClient.get<PackageFXResponse>(routeConfig(ApiEndpointEnum.WalletPackage));
   }
 
-  createDepositRequest(data: CreateDepositRequestDto): Promise<DepositRequestResponse> {
+  createDepositRequest(
+    data: CreateDepositRequestDto,
+    currency: Currency,
+  ): Promise<DepositRequestResponse> {
     return this.httpClient.post<DepositRequestResponse>(
       routeConfig(ApiEndpointEnum.WalletDeposit),
       data,
+      {
+        'x-user-currency': currency,
+      },
     );
   }
 
