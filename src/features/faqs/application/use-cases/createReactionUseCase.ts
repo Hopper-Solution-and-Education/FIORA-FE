@@ -1,5 +1,7 @@
 import { ReactionType } from '../../domain/entities/models/faqs';
-import { IFaqsRepository } from '../../domain/repositories/IFaqsRepository';
+import { IFaqReactionRepository } from '../../domain/repositories/IFaqReactionRepository';
+import { IFaqRepository } from '../../domain/repositories/IFaqRepository';
+import { faqReactionRepository, faqRepository } from '../../infrastructure/repositories';
 
 export interface CreateReactionUseCaseRequest {
   faqId: string;
@@ -8,13 +10,16 @@ export interface CreateReactionUseCaseRequest {
 }
 
 export class CreateReactionUseCase {
-  constructor(private readonly faqsRepository: IFaqsRepository) {}
+  constructor(
+    private readonly faqReactionRepository: IFaqReactionRepository,
+    private readonly faqRepository: IFaqRepository,
+  ) {}
 
   async execute(request: CreateReactionUseCaseRequest): Promise<void> {
     const { faqId, userId, reactionType } = request;
 
     // Validate that FAQ exists
-    const existingFaq = await this.faqsRepository.getFaqDetail(faqId);
+    const existingFaq = await this.faqRepository.getFaqDetail(faqId);
     if (!existingFaq) {
       throw new Error('FAQ not found');
     }
@@ -25,6 +30,11 @@ export class CreateReactionUseCase {
     }
 
     // Create or update the reaction
-    await this.faqsRepository.createOrUpdateReaction(faqId, userId, reactionType);
+    await this.faqReactionRepository.createOrUpdateReaction(faqId, userId, reactionType);
   }
 }
+
+export const createReactionUseCase = new CreateReactionUseCase(
+  faqReactionRepository,
+  faqRepository,
+);

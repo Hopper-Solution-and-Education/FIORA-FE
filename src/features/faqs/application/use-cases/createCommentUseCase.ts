@@ -1,5 +1,7 @@
+import { Messages } from '@/shared/constants/message';
 import { CreateCommentRequest, FaqComment } from '../../domain/entities/models/faqs';
-import { IFaqsRepository } from '../../domain/repositories/IFaqsRepository';
+import { IFaqCommentRepository, IFaqRepository } from '../../domain/repositories';
+import { faqCommentRepository, faqRepository } from '../../infrastructure/repositories';
 
 export interface CreateCommentUseCaseRequest {
   faqId: string;
@@ -8,15 +10,18 @@ export interface CreateCommentUseCaseRequest {
 }
 
 export class CreateCommentUseCase {
-  constructor(private readonly faqsRepository: IFaqsRepository) {}
+  constructor(
+    private readonly faqCommentRepository: IFaqCommentRepository,
+    private readonly faqRepository: IFaqRepository,
+  ) {}
 
   async execute(request: CreateCommentUseCaseRequest): Promise<FaqComment> {
     const { faqId, userId, commentData } = request;
 
     // Validate that FAQ exists
-    const existingFaq = await this.faqsRepository.getFaqDetail(faqId);
+    const existingFaq = await this.faqRepository.getFaqDetail(faqId);
     if (!existingFaq) {
-      throw new Error('FAQ not found');
+      throw new Error(Messages.FAQ_NOT_FOUND);
     }
 
     // Validate comment content
@@ -25,10 +30,12 @@ export class CreateCommentUseCase {
       typeof commentData.content !== 'string' ||
       !commentData.content.trim()
     ) {
-      throw new Error('Invalid comment content');
+      throw new Error(Messages.VALIDATION_ERROR);
     }
 
     // Create the comment
-    return await this.faqsRepository.createComment(faqId, userId, commentData);
+    return await this.faqCommentRepository.createComment(faqId, userId, commentData);
   }
 }
+
+export const createCommentUseCase = new CreateCommentUseCase(faqCommentRepository, faqRepository);

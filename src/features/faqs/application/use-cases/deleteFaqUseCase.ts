@@ -1,22 +1,12 @@
-import { IFaqsRepository } from '../../domain/repositories/IFaqsRepository';
-
-export interface DeleteFaqUseCaseRequest {
-  faqId: string;
-}
+import { IFaqRepository } from '../../domain/repositories';
+import { faqRepository } from '../../infrastructure/repositories';
 
 export class DeleteFaqUseCase {
-  constructor(private readonly faqsRepository: IFaqsRepository) {}
+  constructor(private readonly faqRepository: IFaqRepository) {}
 
-  async execute(request: DeleteFaqUseCaseRequest): Promise<void> {
-    const { faqId } = request;
-
-    // Validate that FAQ exists
-    const existingFaq = await this.faqsRepository.getFaqDetail(faqId);
-    if (!existingFaq) {
-      throw new Error('FAQ not found');
-    }
-
-    // Delete the FAQ (this will cascade delete related comments and reactions)
-    await this.faqsRepository.deleteFaq(faqId);
+  async execute(faqId: string): Promise<void> {
+    await this.faqRepository.deleteFaq(faqId);
   }
 }
+
+export const deleteFaqUseCase = new DeleteFaqUseCase(faqRepository);

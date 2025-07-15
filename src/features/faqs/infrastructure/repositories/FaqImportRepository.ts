@@ -1,12 +1,8 @@
 import { prisma } from '@/config';
 import { FaqsImportResult, FaqsRowRaw, PostType } from '../../domain/entities/models/faqs';
+import { IFaqImportRepository } from '../../domain/repositories';
 import { generateUrlHtml } from '../../utils/contentUtils';
-
-export interface IFaqImportRepository {
-  importFaqs(validatedRows: FaqsRowRaw[], userId: string): Promise<FaqsImportResult>;
-  findOrCreateCategory(categoryName: string, type: string, userId: string): Promise<string | null>;
-  checkExistingTitles(titles: string[], userId: string): Promise<string[]>;
-}
+import { faqCategoryRepository } from './FaqCategoryRepository';
 
 /**
  * Repository for FAQ import operations
@@ -28,7 +24,7 @@ export class FaqImportRepository implements IFaqImportRepository {
       const categoryResults = await Promise.all(
         uniqueCategories.map(async (categoryName) => ({
           name: categoryName,
-          id: await this.findOrCreateCategory(categoryName, PostType.FAQ, userId),
+          id: await faqCategoryRepository.findOrCreateCategory(categoryName, PostType.FAQ, userId),
         })),
       );
 
@@ -80,36 +76,7 @@ export class FaqImportRepository implements IFaqImportRepository {
     }
   }
 
-  async findOrCreateCategory(
-    categoryName: string,
-    type: string,
-    userId: string,
-  ): Promise<string | null> {
-    try {
-      let category = await prisma.postCategory.findFirst({
-        where: {
-          name: categoryName,
-        },
-      });
-
-      if (!category) {
-        category = await prisma.postCategory.create({
-          data: {
-            name: categoryName,
-            type: type as PostType,
-            createdBy: userId,
-          },
-        });
-      }
-
-      return category?.id || null;
-    } catch (error) {
-      console.error('Error finding or creating category:', error);
-      return null;
-    }
-  }
-
-  async checkExistingTitles(titles: string[], userId: string): Promise<string[]> {
+  async checkExistingFaqTitles(titles: string[], userId: string): Promise<string[]> {
     try {
       const existingPosts = await prisma.post.findMany({
         where: {
@@ -131,3 +98,5 @@ export class FaqImportRepository implements IFaqImportRepository {
     }
   }
 }
+
+export const faqImportRepository = new FaqImportRepository();
