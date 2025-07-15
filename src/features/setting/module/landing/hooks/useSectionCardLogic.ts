@@ -25,7 +25,6 @@ const mediaTypeMapping: Record<SectionType, MediaType> = {
 };
 
 function useSectionCardLogic({ sectionData, control, sectionType }: UseSectionCardLogicProps) {
-  const [isOpen, setIsOpen] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [mediaIndexToRemove, setMediaIndexToRemove] = useState<number | null>(null);
   const dispatch = useAppDispatch();
@@ -116,8 +115,6 @@ function useSectionCardLogic({ sectionData, control, sectionType }: UseSectionCa
   };
 
   return {
-    isOpen,
-    setIsOpen,
     isDialogOpen,
     setIsDialogOpen,
     mediaFields,
