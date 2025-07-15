@@ -1,10 +1,10 @@
 import { InputCurrency } from '@/components/common/forms';
 import { ColumnProps, DataSourceItemProps } from '@/components/common/tables/custom-table/types';
 import { Icons } from '@/components/Icon';
+import { Category } from '@/features/home/module/budgets/summary-detail/data/dto/response/CategoryResponseDTO';
 import { Currency } from '@/shared/types';
 import { ComparisonProps } from '@/shared/types/chart.type';
 import { cn } from '@/shared/utils';
-import { validate as isUUID } from 'uuid';
 import CategorySelect from '../../../category/components/CategorySelect';
 import {
   BudgetDetailFilterEnum,
@@ -17,6 +17,7 @@ import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
 import {
   BudgetDetailFilterType,
   BudgetDetailType,
+  MONTHS,
   TableData,
 } from '../presentation/types/table.type';
 import { createGeneralComparisonMapper } from './compareDataForTable';
@@ -131,9 +132,16 @@ export const getColumnsByPeriod = (
   onClearTopDown?: () => void,
   tableData: TableData[] = [],
   activeTab: BudgetDetailFilterType = BudgetDetailFilterEnum.EXPENSE,
+  originTableData: TableData[] = [],
+  originCategoriesData: Category[] = [],
 ) => {
   const renderEditableCell = (text: any, record: TableData, index: number, column: ColumnProps) => {
     const isDisableEdited = !PERIOD_CONFIG.months.some((item) => item.key === column.key);
+
+    // Check if the text is a render function, then return the render function
+    if (text?.render) {
+      return text.render;
+    }
 
     if (record.isEditable && !isDisableEdited) {
       return (
@@ -142,7 +150,10 @@ export const getColumnsByPeriod = (
           value={typeof text === 'object' ? text.value : (text ?? 0)}
           currency={currency}
           classContainer="m-0"
-          className={cn('text-right', column.className)}
+          className={cn(
+            'text-right h-[3.4rem] border-none rounded-none hover:shadow-md hover:shadow-blue-500/20',
+            column.className,
+          )}
           onChange={(newValue) => {
             if (onValueChange) {
               onValueChange(record, column.key, newValue);
@@ -153,9 +164,9 @@ export const getColumnsByPeriod = (
     }
 
     return (
-      <span className={cn(`${column.className}`, isDisableEdited && 'opacity-90')}>
+      <p className={cn(`px-3 py-2 cursor-default ${column.className}`, isDisableEdited)}>
         {formatCurrencyValue(text?.value, currency)}
-      </span>
+      </p>
     );
   };
 
@@ -176,8 +187,7 @@ export const getColumnsByPeriod = (
       columns: BUDGETR_FILTER_KEY.columnKey,
       styleWhenGreater: 'text-red-500',
       styleWhenLessOrEqual: 'text-blue-500',
-      comparisonType:
-        activeTab === BudgetDetailFilterEnum.EXPENSE ? 'greaterOrEqual' : 'lessOrEqual',
+      comparisonType: activeTab === BudgetDetailFilterEnum.EXPENSE ? 'greater' : 'less',
     },
     ...tableData // Compare between Finance Category Items
       .slice()
@@ -194,14 +204,96 @@ export const getColumnsByPeriod = (
           columns: BUDGETR_FILTER_KEY.columnKey,
           styleWhenGreater: 'text-red-500',
           styleWhenLessOrEqual: 'text-blue-500',
-          comparisonType:
-            activeTab === BudgetDetailFilterEnum.EXPENSE ? 'greaterOrEqual' : 'lessOrEqual',
+          comparisonType: activeTab === BudgetDetailFilterEnum.EXPENSE ? 'greater' : 'less',
         } as ComparisonProps;
       })
       .filter((item): item is ComparisonProps => item !== null),
   ];
 
   const generalComparisonMapper = createGeneralComparisonMapper(tableData, comparisonConfig);
+
+  // Return array of key and value of object
+  const mapKeyValuePairs = (obj: Record<string, any>, type: 'record' | 'category'): any[] => {
+    if (!obj) return [];
+    switch (type) {
+      case 'record':
+        // Convert keys like "jan" or "feb" to just "m1", "m2", ..., "m12"
+        return MONTHS.map((month, idx) => {
+          let value = obj[month];
+          if (value && typeof value === 'object' && 'value' in value) {
+            value = value.value;
+          }
+          return { key: `m${idx + 1}`, value };
+        });
+      case 'category':
+        // Convert keys like "m1_inc" or "m1_exp" to just "m1", "m2", ..., "m12"
+        // Only keep m1-m12, ignore _inc/_exp
+        return Object.entries(obj)
+          .filter(([key]) => /^m\d+(_inc|_exp)?$/.test(key))
+          .map(([key, value]) => {
+            const match = key.match(/^(m\d+)/);
+            return match ? { key: match[1], value } : null;
+          })
+          .filter(Boolean) as { key: string; value: any }[];
+    }
+  };
+
+  // Check enable when category or top-down change value with budget detail slice
+  const checkEnableValidate = (record: TableData) => {
+    let compareA: any[] = [];
+    let compareB: any[] = [];
+
+    // If record is top-down
+    if (record.key === 'top-down') {
+      compareB = mapKeyValuePairs(originTableData[0] || {}, 'record');
+    }
+
+    // If record is bottom-up of Category
+    if (categories.some((cat) => cat.id === record.key.split('-bottom-up')[0])) {
+      const findCategoryBottomUpPlan = originCategoriesData.find(
+        (cat) => cat.id === record.key.split('-bottom-up')[0],
+      )?.bottomUpPlan;
+      compareB = mapKeyValuePairs(findCategoryBottomUpPlan || {}, 'category');
+    }
+
+    // Logic mapper to extract key and value, where value can be { value: ... } or number or string
+    compareA = mapKeyValuePairs(record, 'record');
+
+    return !compareA.every((item) =>
+      compareB.some((b) => b.key === item.key && b.value === item.value),
+    );
+  };
+
+  const handleDeleteOrResetCategory = (record: TableData, categoryId: string) => {
+    const findCategory = originCategoriesData.find((cat) => cat.id === categoryId);
+
+    if (findCategory) {
+      const isHaveRelationWithTransaction =
+        (findCategory?.actualTransaction?.total_exp &&
+          findCategory?.actualTransaction?.total_exp > 0) ||
+        (findCategory?.actualTransaction?.total_inc &&
+          findCategory?.actualTransaction?.total_inc > 0);
+
+      // Case 1: Exist in Budget Detail and have relation with transaction, then reset it
+      if (isHaveRelationWithTransaction && findCategory.isCreated) {
+        onDeleteCategory?.(categoryId);
+        return;
+      }
+
+      // Case 2: Exist in Budget Detail and not have relation with transaction, then delete it
+      if (!isHaveRelationWithTransaction && findCategory.isCreated) {
+        onRemoveCategory?.(categoryId);
+        onDeleteCategory?.(categoryId, false);
+        return;
+      }
+
+      // Case 3: Not exist in Budget Detail, then remove it
+      if (!findCategory.isCreated) {
+        onRemoveCategory?.(categoryId);
+        return;
+      }
+    }
+  };
 
   const createColumn = (
     key: string,
@@ -221,9 +313,8 @@ export const getColumnsByPeriod = (
 
   const defaultColumns = [
     createColumn('type', 'Type', {
-      width: 200,
       align: 'right',
-      fixed: 'right',
+      width: 200,
       render: (text: string, record: TableData) => {
         if (record.isParent) {
           return (
@@ -252,24 +343,6 @@ export const getColumnsByPeriod = (
     headerAlign: 'center',
     render: (_, record: TableData) => {
       const [categoryId] = record.key.split('-bottom-up');
-      const isCategoryTitleRow = isUUID(record.key);
-
-      if (isCategoryTitleRow) {
-        return (
-          <div className="grid grid-flow-col place-items-center gap-2">
-            <span
-              className={cn('text-red-500 hover:text-red-700 cursor-pointer')}
-              title="Delete"
-              onClick={() => {
-                onRemoveCategory?.(categoryId);
-                onDeleteCategory?.(categoryId, false);
-              }}
-            >
-              <Icons.trash size={15} />
-            </span>
-          </div>
-        );
-      }
 
       if (record.isEditable) {
         return (
@@ -281,16 +354,25 @@ export const getColumnsByPeriod = (
                 if (record.key === 'top-down') {
                   onClearTopDown?.();
                 } else if (categoryId) {
-                  onDeleteCategory?.(categoryId);
+                  handleDeleteOrResetCategory(record, categoryId);
                 }
               }}
             >
               <Icons.close size={15} />
             </span>
             <span
-              className="text-green-500 hover:text-green-700 cursor-pointer"
+              className={cn(
+                'cursor-pointer',
+                checkEnableValidate(record)
+                  ? 'text-green-500 hover:text-green-700'
+                  : 'text-gray-400 cursor-not-allowed',
+              )}
               title="Valid"
-              onClick={() => onValidateClick?.(record)}
+              onClick={() => {
+                if (checkEnableValidate(record)) {
+                  onValidateClick?.(record);
+                }
+              }}
             >
               <Icons.check size={15} />
             </span>
@@ -312,6 +394,7 @@ export const getColumnsByPeriod = (
         dataIndex: key,
         headerAlign: 'center',
         align: 'right',
+        className: 'p-0',
         ...additionalCellProps,
         render: (text: any, record: TableData, index: number) => {
           const mappedClass = generalComparisonMapper?.(record.key, key, text?.value ?? 0) ?? null;

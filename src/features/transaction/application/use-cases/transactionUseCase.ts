@@ -521,9 +521,14 @@ class TransactionUseCase {
       const category = await tx.category.findUnique({
         where: { id: data.fromCategoryId as string },
       });
-      if (!category) {
+      const membershipBenefit = await tx.category.findUnique({
+        where: { id: data.fromCategoryId as string },
+      });
+
+      if (!category || !membershipBenefit) {
         throw new Error(Messages.CATEGORY_NOT_FOUND);
       }
+
       if (category.type !== CategoryType.Income) {
         throw new Error(Messages.INVALID_CATEGORY_TYPE_INCOME);
       }
@@ -550,10 +555,11 @@ class TransactionUseCase {
           currencyId: data.currencyId,
           currency: data.currency,
           fromAccountId: data.fromAccountId,
-          fromCategoryId: data.fromCategoryId,
+          fromCategoryId: category.id,
           toAccountId: data.toAccountId,
           toCategoryId: data.toCategoryId,
           partnerId: data.partnerId,
+          membershipBenefitId: membershipBenefit.id,
           remark: data.remark,
           createdBy: data.userId as string,
           updatedBy: data.userId,

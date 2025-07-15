@@ -1,3 +1,4 @@
+import { CURRENCY } from '@/shared/constants';
 import { Currency } from '@/shared/types';
 import { FIORA_CURRENCY_CONFIG } from './config';
 import { SYMBOL_POSITION } from './constant';
@@ -5,20 +6,41 @@ import { SYMBOL_POSITION } from './constant';
 /**
  * FIORANumberFormat class that extends Intl.NumberFormat
  * Provides custom formatting for FIORA platform currencies, especially FX currency
+ *
+ * @description
+ * This class handles currency formatting based on configuration defined in config.ts.
+ * To modify currency settings (symbols, positions, separators, etc.), please update
+ * the FIORA_CURRENCY_CONFIG in config.ts rather than modifying this class directly.
+ *
+ * @see {@link FIORA_CURRENCY_CONFIG} for currency configuration options
+ * @see {@link SYMBOL_POSITION} for symbol positioning constants
  */
 export class FIORANumberFormat extends Intl.NumberFormat {
   private currency: Currency;
   private config: (typeof FIORA_CURRENCY_CONFIG)[keyof typeof FIORA_CURRENCY_CONFIG];
 
+  /**
+   * Creates a new FIORANumberFormat instance for the specified currency
+   *
+   * @param currency - The currency to format (USD, VND, FX)
+   * @param options - Optional Intl.NumberFormat options to override defaults
+   * @param locale - Optional locale override (uses config.ts locale by default)
+   *
+   * @throws {Error} When currency is not supported in FIORA_CURRENCY_CONFIG
+   *
+   * @note Currency configuration is loaded from config.ts - modify there for changes
+   */
   constructor(currency: Currency, options?: Intl.NumberFormatOptions, locale?: string | string[]) {
     const config = FIORA_CURRENCY_CONFIG[currency];
     if (!config) {
-      throw new Error(`Unsupported currency: ${currency}`);
+      throw new Error(
+        `Unsupported currency: ${currency}. Please add it to FIORA_CURRENCY_CONFIG in config.ts`,
+      );
     }
 
     const formatOptions: Intl.NumberFormatOptions = {
       style: 'currency',
-      currency: currency === 'FX' ? 'USD' : currency,
+      currency: currency === CURRENCY.FX ? CURRENCY.USD : currency,
       minimumFractionDigits: config.minimumFractionDigits,
       maximumFractionDigits: config.maximumFractionDigits,
       ...options,
@@ -30,7 +52,13 @@ export class FIORANumberFormat extends Intl.NumberFormat {
   }
 
   /**
-   * Format number with custom currency symbol for FX
+   * Format number with custom currency symbol and positioning
+   *
+   * @param value - The numeric value to format
+   * @returns Formatted currency string based on config.ts settings
+   *
+   * @note For FX currency, uses custom formatting with symbol positioning from config
+   * @note For other currencies, uses standard Intl.NumberFormat with config overrides
    */
   format(value: number | bigint): string {
     if (this.currency === 'FX') {
@@ -41,12 +69,17 @@ export class FIORANumberFormat extends Intl.NumberFormat {
   }
 
   /**
-   * Format with custom currency symbol and positioning
+   * Format with custom currency symbol and positioning for FX currency
+   *
+   * @param value - The numeric value to format
+   * @returns Formatted string with custom symbol positioning
+   *
+   * @note Uses symbol position, separators, and fraction digits from config.ts
+   * @note This method is specifically for FX currency custom formatting
    */
   private formatCustomCurrency(value: number | bigint): string {
     const numericValue = typeof value === 'bigint' ? Number(value) : value;
 
-    // Format the number part
     const numberFormatter = new Intl.NumberFormat(this.config.locale, {
       minimumFractionDigits: this.config.minimumFractionDigits,
       maximumFractionDigits: this.config.maximumFractionDigits,
@@ -63,21 +96,23 @@ export class FIORANumberFormat extends Intl.NumberFormat {
   }
 
   /**
-   * Get currency symbol
+   * Get currency symbol from configuration
    */
   getCurrencySymbol(): string {
     return this.config.symbol;
   }
 
   /**
-   * Get currency name
+   * Get currency name from configuration
+ 
    */
   getCurrencyName(): string {
     return this.config.name;
   }
 
   /**
-   * Get currency configuration
+   * Get complete currency configuration object
+
    */
   getConfig() {
     return this.config;
@@ -85,6 +120,7 @@ export class FIORANumberFormat extends Intl.NumberFormat {
 
   /**
    * Static method to create formatter for specific currency
+
    */
   static create(currency: Currency, options?: Intl.NumberFormatOptions): FIORANumberFormat {
     return new FIORANumberFormat(currency, options);

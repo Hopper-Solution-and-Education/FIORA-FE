@@ -1,8 +1,9 @@
+import { CURRENCY } from '@/shared/constants';
 import { SYMBOL_POSITION } from './constant';
 import { FIORACurrencyConfig } from './type';
 
 export const FIORA_CURRENCY_CONFIG: FIORACurrencyConfig = {
-  FX: {
+  [CURRENCY.FX]: {
     symbol: 'FX',
     name: 'FIORA',
     locale: 'en-US',
@@ -12,7 +13,7 @@ export const FIORA_CURRENCY_CONFIG: FIORACurrencyConfig = {
     thousandSeparator: ',',
     decimalSeparator: '.',
   },
-  USD: {
+  [CURRENCY.USD]: {
     symbol: '$',
     name: 'US Dollar',
     locale: 'en-US',
@@ -22,12 +23,12 @@ export const FIORA_CURRENCY_CONFIG: FIORACurrencyConfig = {
     thousandSeparator: ',',
     decimalSeparator: '.',
   },
-  VND: {
+  [CURRENCY.VND]: {
     symbol: '₫',
     name: 'Vietnamese Dong',
     locale: 'vi-VN',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
     position: SYMBOL_POSITION.AFTER,
     thousandSeparator: '.',
     decimalSeparator: ',',

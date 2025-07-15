@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
-import { WALLET_SETTING_CONSTANTS } from '../../data/constant';
+import { WALLET_SETTING_CONSTANTS } from '../../data';
 
 interface UseInfiniteScrollProps {
   onLoadMore: () => void;

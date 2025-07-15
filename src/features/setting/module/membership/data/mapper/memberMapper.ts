@@ -1,5 +1,8 @@
-import { TIER_BENEFIT_KEYS } from '@/features/setting/data/module/membership/tierBenefitKey';
 import {
+  AddBenefitTierRequest,
+  AddBenefitTierResponse,
+  DeleteBenefitTierRequest,
+  DeleteBenefitTierResponse,
   GetListMembershipsRequest,
   GetListMembershipsResponse,
   Membership,
@@ -7,11 +10,26 @@ import {
   UpsertMembershipResponse,
 } from '../../domain/entities';
 import {
+  AddBenefitTierRequestDTO,
+  AddBenefitTierResponseDTO,
+  DeleteBenefitTierRequestDTO,
+  DeleteBenefitTierResponseDTO,
   GetListMembershipsRequestDTO,
   GetListMembershipsResponseDTO,
   UpsertMembershipRequestDTO,
   UpsertMembershipResponseDTO,
 } from '../dto';
+
+export enum TierBenefitName {
+  REFERRAL_BONUS = 'referral-bonus',
+  SAVING_INTEREST = 'saving-interest',
+  STAKING_INTEREST = 'staking-interest',
+  INVESTMENT_INTEREST = 'investment-interest',
+  LOAN_INTEREST = 'loan-interest',
+  CASHBACK = 'cashback',
+  REFERRAL_KICKBACK = 'referral-kickback',
+  BNPL_FEE = 'bnpl-fee',
+}
 
 export class MemberMapper {
   static toGetListMembershipsRequest(
@@ -53,7 +71,7 @@ export class MemberMapper {
             key !== 'id',
         )
         .map(([key, value]) => ({
-          slug: TIER_BENEFIT_KEYS[key as keyof typeof TIER_BENEFIT_KEYS],
+          slug: key,
           value: Number(value),
         })),
     };
@@ -62,6 +80,55 @@ export class MemberMapper {
   static toUpsertMembershipResponse(data: UpsertMembershipResponseDTO): UpsertMembershipResponse {
     return {
       data: new Membership(data.data),
+      message: data.message,
+    };
+  }
+
+  static toAddBenefitTierRequest(data: AddBenefitTierRequest): AddBenefitTierRequestDTO {
+    return {
+      tierBenefit: {
+        tierId: data.tierBenefit.tierId,
+        value: data.tierBenefit.value,
+      },
+      membershipBenefit: {
+        name: data.membershipBenefit.name,
+        slug: data.membershipBenefit.slug,
+        description: data.membershipBenefit.description,
+        suffix: data.membershipBenefit.suffix,
+        userId: data.membershipBenefit.userId,
+      },
+    };
+  }
+
+  static toAddBenefitTierResponse(data: AddBenefitTierResponseDTO): AddBenefitTierResponse {
+    return {
+      data: {
+        id: data.data.id,
+        name: data.data.name,
+        slug: data.data.slug,
+        description: data.data.description,
+        suffix: data.data.suffix,
+        createdAt: data.data.createdAt,
+        updatedAt: data.data.updatedAt,
+        createdBy: data.data.createdBy,
+        updatedBy: data.data.updatedBy,
+        userId: data.data.userId,
+      },
+      message: data.message,
+    };
+  }
+
+  static toDeleteBenefitTierRequest(data: DeleteBenefitTierRequest): DeleteBenefitTierRequestDTO {
+    return {
+      id: data.id,
+    };
+  }
+
+  static toDeleteBenefitTierResponse(
+    data: DeleteBenefitTierResponseDTO,
+  ): DeleteBenefitTierResponse {
+    return {
+      data: data.data,
       message: data.message,
     };
   }

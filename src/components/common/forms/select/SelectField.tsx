@@ -70,16 +70,12 @@ const SelectField: React.FC<SelectFieldProps> = ({
   ...props
 }) => {
   const [open, setOpen] = useState(false);
-  const [internalOptions, setInternalOptions] = useState<Option[]>([
-    { value: '', label: 'None' },
-    ...options,
-  ]);
+  const [internalOptions, setInternalOptions] = useState<Option[]>([...options]);
   const inputRef = useRef<HTMLInputElement>(null);
   const selectedOption = internalOptions.find((opt) => opt.value === value);
   const selectedLabel = value && selectedOption ? selectedOption.label : null;
   const selectedIcon = value && selectedOption ? selectedOption.icon : null;
 
-  // Auto-load options nếu có loadOptions, thêm tùy chọn "None" vào đầu
   useEffect(() => {
     if (loadOptions) {
       loadOptions().then((data) => {
@@ -90,14 +86,12 @@ const SelectField: React.FC<SelectFieldProps> = ({
     }
   }, [loadOptions, options, noneValue]);
 
-  // Auto-focus CommandInput khi Popover mở
   useEffect(() => {
     if (open && inputRef.current) {
       inputRef.current.focus();
     }
   }, [open]);
 
-  // Render icon hoặc image dựa trên icon value
   const renderIconOrImage = (iconValue?: string) => {
     if (!iconValue) {
       return <></>;
@@ -184,7 +178,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="animate-spin w-4 h-4 text-muted-foreground" />
                 </div>
-              ) : internalOptions.length === 1 ? (
+              ) : internalOptions.length === 0 ? (
                 customRenderEmpty || <CommandEmpty>No option found.</CommandEmpty>
               ) : (
                 <CommandGroup>

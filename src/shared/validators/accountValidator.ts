@@ -1,14 +1,13 @@
 import { AccountType } from '@prisma/client';
 import Joi from 'joi';
+import { excludeEmojiPattern } from '../constants';
 
 export const accountCreateBody = Joi.object({
-  name: Joi.string()
-    .required()
-    .messages({
-      'string.empty': 'Account name is invalid',
-      'any.required': 'Account name is required',
-    })
-    .pattern(/^[a-zA-Z0-9 ]+$/, 'Account name is invalid'),
+  name: Joi.string().pattern(excludeEmojiPattern).required().messages({
+    'string.empty': 'Account name is invalid',
+    'any.required': 'Account name is required',
+    'string.pattern.base': 'Account name is invalid',
+  }),
   type: Joi.string()
     .required()
     .valid(
@@ -41,31 +40,22 @@ export const accountCreateBody = Joi.object({
   limit: Joi.number().optional().allow(null).messages({
     'number.base': 'Limit must be a number',
   }),
-  icon: Joi.string()
-    .required()
-    .messages({
-      'string.empty': 'Account icon url is invalid',
-      'any.required': 'Account icon is required',
-    })
-    .pattern(/^[a-zA-Z0-9 ]+$/, 'Account icon url is invalid'),
+  icon: Joi.string().required().messages({
+    'string.empty': 'Account icon url is invalid',
+    'any.required': 'Account icon is required',
+  }),
   parentId: Joi.string().optional().allow(null).messages({
     'string.empty': 'Parent id is invalid',
   }),
 });
 
 export const accountUpdateBody = Joi.object({
-  name: Joi.string()
-    .optional()
-    .allow(null)
-    .messages({
-      'string.empty': 'Account name is invalid',
-    })
-    .pattern(/^[a-zA-Z0-9 ]+$/, 'Account name is invalid'),
-  icon: Joi.string()
-    .optional()
-    .allow(null)
-    .messages({
-      'string.empty': 'Account icon url is invalid',
-    })
-    .pattern(/^[a-zA-Z0-9 ]+$/, 'Account icon url is invalid'),
+  name: Joi.string().pattern(excludeEmojiPattern).optional().allow(null).messages({
+    'string.empty': 'Account name is invalid',
+    'string.pattern.base': 'Account name is invalid',
+  }),
+  icon: Joi.string().pattern(excludeEmojiPattern).optional().allow(null).messages({
+    'string.empty': 'Account icon url is invalid',
+    'string.pattern.base': 'Account icon url is invalid',
+  }),
 });

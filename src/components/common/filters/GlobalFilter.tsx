@@ -44,6 +44,8 @@ export interface GlobalFilterProps {
   structureCreator?: (params: any) => Record<string, unknown>;
   currentFilter: any;
   showFilterHeader?: boolean;
+  onResetFilter?: () => void;
+  showFilterIcon?: boolean; // New prop to control filter icon display
 }
 
 const GlobalFilter = (props: GlobalFilterProps) => {
@@ -56,12 +58,18 @@ const GlobalFilter = (props: GlobalFilterProps) => {
     structureCreator,
     currentFilter,
     showFilterHeader = true,
+    onResetFilter,
+    showFilterIcon,
   } = props;
 
   const [isOpen, setIsOpen] = useState(false);
 
   const handleResetFilter = () => {
-    onFilterChange(defaultFilterCriteria);
+    if (onResetFilter) {
+      onResetFilter();
+    } else {
+      onFilterChange(defaultFilterCriteria);
+    }
     handleClose();
   };
 
@@ -205,6 +213,10 @@ const GlobalFilter = (props: GlobalFilterProps) => {
     };
   }, [filterComponents]);
 
+  // Determine if filter icon should be shown based on props or current filter state
+  const shouldShowFilterIcon =
+    showFilterIcon !== undefined ? showFilterIcon : Object.keys(currentFilter).length > 0;
+
   return (
     <DropdownMenu open={isOpen} onOpenChange={(open) => (open ? setIsOpen(open) : handleClose())}>
       <TooltipProvider>
@@ -212,15 +224,11 @@ const GlobalFilter = (props: GlobalFilterProps) => {
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
               <Button
-                variant={Object.keys(currentFilter).length === 0 ? 'secondary' : 'default'}
+                variant={shouldShowFilterIcon ? 'default' : 'secondary'}
                 className="px-3 py-2"
                 onClick={() => setIsOpen((prev) => !prev)}
               >
-                {Object.keys(currentFilter).length === 0 ? (
-                  <FunnelPlus size={15} />
-                ) : (
-                  <Funnel size={15} />
-                )}
+                {shouldShowFilterIcon ? <Funnel size={15} /> : <FunnelPlus size={15} />}
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>

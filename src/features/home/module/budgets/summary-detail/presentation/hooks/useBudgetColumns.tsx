@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/select';
 import { Currency } from '@/shared/types';
 import { cn } from '@/shared/utils';
+import { useAppSelector } from '@/store';
 import { useEffect, useState } from 'react';
 import { Category } from '../../data/dto/response/CategoryResponseDTO';
 import { getColumnsByPeriod } from '../../utils/transformDataForTable';
@@ -62,6 +63,9 @@ export function useBudgetColumns({
   table,
 }: UseBudgetColumnsProps) {
   const [columns, setColumns] = useState<ColumnProps[]>([]);
+  const { tableData: originTableData, categoryList: originCategoriesData } = useAppSelector(
+    (state) => state.budgetDetail,
+  );
 
   useEffect(() => {
     const updatedColumns = getColumnsByPeriod(
@@ -77,10 +81,13 @@ export function useBudgetColumns({
       handleClearTopDown,
       table.data,
       activeTab,
+      originTableData,
+      originCategoriesData,
     );
 
     const columnsWithCategorySelect: ColumnProps[] = [
       {
+        fixed: 'left',
         title: 'CATEGORY',
         dataIndex: 'type',
         key: 'type',
@@ -137,7 +144,6 @@ export function useBudgetColumns({
           if (categoryRows.includes(record.key)) {
             return null;
           }
-
           return column.render ? column.render(value, record, 2) : value;
         },
       })),

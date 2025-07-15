@@ -35,6 +35,7 @@ export class Membership {
 }
 
 export class TierBenefit {
+  id: string;
   slug: string;
   name: string;
   suffix: string;
@@ -42,6 +43,7 @@ export class TierBenefit {
   value: number;
 
   constructor(data: TierBenefit) {
+    this.id = data.id;
     this.slug = data.slug;
     this.name = data.name;
     this.suffix = data.suffix;
@@ -64,6 +66,51 @@ export type UpsertMembershipRequest = EditMemberShipFormValues;
 
 export type UpsertMembershipResponse = {
   data: Membership;
+  message: string;
+};
+
+export type AddBenefitTierRequest = {
+  tierBenefit: AddTierBenefitPayload;
+  membershipBenefit: AddMembershipBenefitPayload;
+};
+
+export interface AddMembershipBenefitPayload {
+  name: string;
+  slug: string;
+  description?: string;
+  suffix?: string;
+  userId: string;
+}
+
+export interface AddTierBenefitPayload {
+  tierId: string;
+  value: number;
+}
+
+export type AddBenefitTierResponse = {
+  data: NewBenefitTier;
+  message: string;
+};
+
+export type NewBenefitTier = {
+  name: string;
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string | null;
+  updatedBy: string | null;
+  userId: string;
+  slug: string;
+  description?: string;
+  suffix?: string;
+};
+
+export type DeleteBenefitTierRequest = {
+  id: string;
+};
+
+export type DeleteBenefitTierResponse = {
+  data: boolean;
   message: string;
 };
 

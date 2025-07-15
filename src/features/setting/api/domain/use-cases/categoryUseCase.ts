@@ -10,7 +10,15 @@ import { CategoryExtras, CategoryWithBudgetDetails } from '@/shared/types/catego
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { normalizeVietnamese, safeString } from '@/shared/utils/ExStringUtils';
 import { calculateSumUpAllocationByType } from '@/shared/utils/monthBudgetUtil';
-import { BudgetType, Category, CategoryType, Prisma, TransactionType } from '@prisma/client';
+import {
+  BudgetType,
+  Category,
+  CategoryType,
+  Currency,
+  Prisma,
+  Transaction,
+  TransactionType,
+} from '@prisma/client';
 import { budgetDetailRepository } from '../../infrastructure/repositories/budgetDetailRepository';
 import { IBudgetDetailRepository } from '../../repositories/budgetDetailRepository';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
@@ -378,7 +386,12 @@ class CategoryUseCase {
     };
   }
 
-  async getListCategoryByType(userId: string, type: CategoryType, fiscalYear: string) {
+  async getListCategoryByType(
+    userId: string,
+    type: CategoryType,
+    fiscalYear: string,
+    currency: Currency,
+  ) {
     if (!Object.values(CategoryType).includes(type)) {
       throw new Error(Messages.INVALID_CATEGORY_TYPE);
     }
@@ -399,6 +412,7 @@ class CategoryUseCase {
     )) as unknown as Category[];
 
     let categoryFoundWithBudgetDetails = [];
+    let categoryFoundWithTransactions = [];
 
     // find all budgetDetails mapping with userId & budgetId & categoryType ( Expense or Income )
     const categoryFoundWithBudgetDetailsAwaited = categoryFound.map(async (category: Category) => {
@@ -429,16 +443,38 @@ class CategoryUseCase {
       };
     });
 
+    // find all transactions mapping with userId & categoryId & type
+    const categoryFoundWithTransactionsAwaited = categoryFound.map(async (category: Category) => {
+      const transactionsFound = await this.transactionRepository.findManyTransactions({
+        userId,
+        ...(type === CategoryType.Expense
+          ? { toCategoryId: category.id }
+          : { fromCategoryId: category.id }),
+        isDeleted: false,
+        date: {
+          gte: new Date(`${fiscalYear}-01-01`),
+          lte: new Date(`${fiscalYear}-12-31`),
+        },
+      });
+      return {
+        ...category,
+        transactions: transactionsFound,
+      };
+    });
+
     categoryFoundWithBudgetDetails = await Promise.all(categoryFoundWithBudgetDetailsAwaited);
+    categoryFoundWithTransactions = await Promise.all(categoryFoundWithTransactionsAwaited);
 
     const transferCategoryFound = categoryFoundWithBudgetDetails.map(
       (category: CategoryWithBudgetDetails) => {
         const suffix = category.type === CategoryType.Expense ? 'exp' : 'inc';
         const bottomUpPlan: Record<string, number> = {};
+        const actualTransaction: Record<string, number | Currency | TransactionType> = {};
 
         // Initialize all months with 0
         for (let i = 1; i <= 12; i++) {
           bottomUpPlan[`m${i}_${suffix}`] = 0;
+          actualTransaction[`m${i}_${suffix}`] = 0;
         }
 
         // Map budgetDetails to corresponding months
@@ -449,14 +485,36 @@ class CategoryUseCase {
           bottomUpPlan[monthKey] = amount; // Assuming no currency conversion for now; adjust if needed
         });
 
-        const currency = category.budgetDetails[0]?.currency;
+        // Map actual transaction to corresponding months
+        categoryFoundWithTransactions.forEach(async (item: any) => {
+          if (item.id === category.id) {
+            actualTransaction[`total_${suffix}`] = 0;
+            actualTransaction[`currency`] = currency;
+            actualTransaction[`type`] = item.type as TransactionType;
+            item.transactions.forEach(async (transaction: Transaction) => {
+              const monthKey = `m${transaction.date.getMonth() + 1}_${suffix}`; // Get month key from transaction date
+              const convertedMonthAmount = await convertCurrency(
+                transaction.amount,
+                transaction.currency as Currency,
+                currency,
+              );
+              actualTransaction[monthKey] =
+                Number(actualTransaction[monthKey]) + convertedMonthAmount; // Sum up amount of transaction in the month
+              actualTransaction[`total_${suffix}`] =
+                Number(actualTransaction[`total_${suffix}`]) + convertedMonthAmount; // Sum up amount of transaction in the year
+            });
+          }
+        });
 
         const { budgetDetails, ...categoryWithoutBudgetDetails } = category;
 
         return {
           ...categoryWithoutBudgetDetails,
           bottomUpPlan,
-          isCreated: budgetDetails.length > 0,
+          actualTransaction: {
+            ...actualTransaction,
+          },
+          isCreated: budgetDetails.length > 0 || Number(actualTransaction[`total_${suffix}`]) > 0,
           ...(currency && { currency }),
         };
       },
