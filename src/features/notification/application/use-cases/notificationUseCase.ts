@@ -1,0 +1,83 @@
+import type { INotificationRepository } from '../../domain/repositories/notificationRepository.interface';
+
+const DASHBOARD_FIELDS = [
+  'subject',
+  'notifyTo',
+  'recipients',
+  'sender',
+  'notifyType',
+  'channel',
+  'status',
+];
+
+// Khai báo kiểu dữ liệu dashboard notification
+export interface NotificationDashboardItem {
+  id: string;
+  sendDate: Date;
+  notifyTo: string;
+  subject: string;
+  recipients: string[];
+  sender: string | null;
+  notifyType: string;
+  channel: string;
+  status: string;
+  emailTemplate?: any;
+  attachment?: any;
+  [key: string]: any; // Cho phép truy cập động
+}
+
+class NotificationUseCase {
+  constructor(private notificationRepository: INotificationRepository) {}
+
+  async getNotificationsPagination({
+    page = 1,
+    pageSize = 20,
+    filters = {},
+    search = '',
+  }: {
+    page?: number;
+    pageSize?: number;
+    filters?: any;
+    search?: string;
+  }): Promise<{
+    data: NotificationDashboardItem[];
+    total: number;
+    totalPage: number;
+    page: number;
+    pageSize: number;
+  }> {
+    let notifications = (await this.notificationRepository.getNotificationsPagination(
+      0,
+      10000,
+      filters,
+    )) as unknown as NotificationDashboardItem[];
+
+    if (filters && filters.status) {
+      const statusArr = Array.isArray(filters.status) ? filters.status : [filters.status];
+      notifications = notifications.filter((n) => statusArr.includes(n.status));
+    }
+
+    if (search) {
+      const searchLower = search.toLowerCase();
+      notifications = notifications.filter((n) =>
+        DASHBOARD_FIELDS.filter((field) => n[field] !== undefined && n[field] !== null).some(
+          (field) => String(n[field]).toLowerCase().includes(searchLower),
+        ),
+      );
+    }
+
+    const total = notifications.length;
+    const totalPage = Math.ceil(total / pageSize);
+    const data = notifications.slice((page - 1) * pageSize, page * pageSize);
+
+    return {
+      data,
+      total,
+      totalPage,
+      page,
+      pageSize,
+    };
+  }
+}
+
+export default NotificationUseCase;
