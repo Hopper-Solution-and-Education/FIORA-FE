@@ -211,12 +211,12 @@ class TransactionUseCase {
     // getting amountMax from transactions
     const amountMaxAwaited = this.transactionRepository.aggregate({
       where: { userId, baseCurrency: DEFAULT_BASE_CURRENCY },
-      _max: { amount: true },
+      _max: { baseAmount: true },
     });
 
     const amountMinAwaited = this.transactionRepository.aggregate({
       where: { userId, baseCurrency: DEFAULT_BASE_CURRENCY },
-      _min: { amount: true },
+      _min: { baseAmount: true },
     });
 
     const [transactions, total, amountMax, amountMin] = await Promise.all([
@@ -224,11 +224,6 @@ class TransactionUseCase {
       totalTransactionAwaited,
       amountMaxAwaited,
       amountMinAwaited,
-    ]);
-
-    const [convertAmountMax, convertAmountMin] = await Promise.all([
-      convertCurrency(amountMax['_max']?.amount, DEFAULT_BASE_CURRENCY, currency),
-      convertCurrency(amountMin['_min']?.amount, DEFAULT_BASE_CURRENCY, currency),
     ]);
 
     const transactionTransformed = await Promise.all(
@@ -243,6 +238,17 @@ class TransactionUseCase {
           amount: amount,
         };
       }),
+    );
+
+    const convertAmountMax = await convertCurrency(
+      amountMax['_max']?.baseAmount,
+      DEFAULT_BASE_CURRENCY,
+      currency,
+    );
+    const convertAmountMin = await convertCurrency(
+      amountMin['_min']?.baseAmount,
+      DEFAULT_BASE_CURRENCY,
+      currency,
     );
 
     const totalPage = Math.ceil(total / pageSize);
