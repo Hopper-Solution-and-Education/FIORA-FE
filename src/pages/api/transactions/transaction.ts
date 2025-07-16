@@ -3,7 +3,6 @@ import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { UUID } from 'crypto';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -61,8 +60,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     if ((date && new Date(date) < thirtyDaysAgo) || new Date(date) > now) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_DATE_RANGE_INPUT_30_DAYS);
     }
-
-    const baseAmount = await convertCurrency(amount, currency, DEFAULT_BASE_CURRENCY);
     const baseCurrency = DEFAULT_BASE_CURRENCY;
 
     const transactionData = {
@@ -77,7 +74,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       ...(partnerId && { partnerId }),
       ...(remark && { remark }),
       ...(date && { date: new Date(date) }),
-      baseAmount: baseAmount,
       baseCurrency: baseCurrency,
     };
 
