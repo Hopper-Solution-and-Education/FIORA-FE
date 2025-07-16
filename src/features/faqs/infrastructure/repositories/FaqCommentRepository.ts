@@ -1,10 +1,10 @@
 import { prisma } from '@/config';
-import { CreateCommentRequest, FaqComment } from '../../domain/entities/models/faqs';
-
-export interface IFaqCommentRepository {
-  createComment(faqId: string, userId: string, request: CreateCommentRequest): Promise<FaqComment>;
-  deleteComment(commentId: string): Promise<void>;
-}
+import {
+  CreateCommentRequest,
+  FaqComment,
+  FaqCommentParams,
+} from '../../domain/entities/models/faqs';
+import { IFaqCommentRepository } from '../../domain/repositories';
 
 /**
  * Repository for FAQ comment operations
@@ -16,9 +16,9 @@ export class FaqCommentRepository implements IFaqCommentRepository {
     request: CreateCommentRequest,
   ): Promise<FaqComment> {
     try {
-      // Nếu có người được reply thì gắn prefix vào content
+      // If there is a reply to username, add prefix to content
       const finalContent = request.replyToUsername
-        ? `@${request.replyToUsername}: ${request.content}`
+        ? `@${request.replyToUsername} ${request.content}`
         : request.content;
 
       const comment = await prisma.comment.create({
@@ -57,4 +57,39 @@ export class FaqCommentRepository implements IFaqCommentRepository {
       throw error;
     }
   }
+
+  async getFaqComments({ faqId, skip, take }: FaqCommentParams): Promise<FaqComment[]> {
+    const comments = await prisma.comment.findMany({
+      where: { postId: faqId },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        userId: true,
+        User: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      skip,
+      take,
+    });
+
+    return comments.map((comment) => ({
+      id: comment.id,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      userId: comment.userId,
+      User: comment.User,
+    }));
+  }
 }
+
+export const faqCommentRepository = new FaqCommentRepository();

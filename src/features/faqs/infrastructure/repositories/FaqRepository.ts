@@ -1,38 +1,94 @@
 import { prisma } from '@/config';
+import { Prisma } from '@prisma/client';
+import { FAQ_LIST_CONSTANTS } from '../../constants';
 import {
+  Faq,
   FaqDetailData,
+  FaqListResponse,
+  FaqsListQueryParams,
   GetFaqDetailOptions,
-  ReactionType,
+  PostType,
   UpdateFaqRequest,
 } from '../../domain/entities/models/faqs';
-
-export interface IFaqRepository {
-  getFaqDetail(faqId: string, options?: GetFaqDetailOptions): Promise<FaqDetailData | null>;
-  updateFaq(faqId: string, updateData: UpdateFaqRequest, userId: string): Promise<void>;
-  deleteFaq(faqId: string): Promise<void>;
-  getRelatedArticles(categoryId: string, currentFaqId: string, limit?: number): Promise<any[]>;
-  incrementViewCount(faqId: string): Promise<void>;
-}
+import { IFaqRepository } from '../../domain/repositories/IFaqRepository';
 
 /**
  * Repository for core FAQ CRUD operations
  */
 export class FaqRepository implements IFaqRepository {
+  async getFaqList(params: FaqsListQueryParams): Promise<FaqListResponse> {
+    const {
+      page,
+      limit,
+      filters = { search: '', categories: [] },
+      orderBy = 'views',
+      orderDirection = 'desc',
+    } = params;
+
+    const skip = page && limit ? (page - 1) * limit : 0;
+
+    try {
+      // Build where clause for filtering
+      const whereCondition: Prisma.PostWhereInput = {
+        type: PostType.FAQ,
+      };
+
+      // Add category filter if provided
+      if (filters.categories && filters.categories.length > 0) {
+        whereCondition.PostCategory = {
+          id: { in: filters.categories },
+        };
+      }
+
+      // Add search filter if provided
+      if (filters.search) {
+        whereCondition.OR = [
+          { title: { contains: filters.search, mode: 'insensitive' as Prisma.QueryMode } },
+          // { description: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
+          // { content: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
+        ];
+      }
+
+      // Get results
+      const posts = await prisma.post.findMany({
+        where: whereCondition,
+        include: {
+          PostCategory: true,
+        },
+        skip: skip,
+        take: limit || undefined,
+        orderBy: { [orderBy]: orderDirection },
+      });
+
+      // Map to Faq model
+      const faqs: Faq[] = posts.map((post) => ({
+        id: post.id,
+        title: post.title,
+        description: post.description || '',
+        content: post.content,
+        category: post.PostCategory.name,
+        type: post.type as PostType,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt || post.createdAt,
+      }));
+
+      return {
+        faqs,
+        currentPage: page || undefined,
+        limit: limit || undefined,
+      };
+    } catch (error) {
+      console.error('Error getting FAQs list:', error);
+      throw error;
+    }
+  }
+
   async getFaqDetail(faqId: string, options?: GetFaqDetailOptions): Promise<FaqDetailData | null> {
     try {
       const post = await prisma.post.findUnique({
         where: { id: faqId },
         include: {
-          Reaction: true,
-          Comment: {
-            take: 100,
-            orderBy: { createdAt: 'desc' },
-            include: {
-              User: true,
-            },
-          },
           PostCategory: true,
-          User: true,
         },
       });
 
@@ -49,23 +105,13 @@ export class FaqRepository implements IFaqRepository {
         categoryId: post.PostCategory?.id || undefined,
         createdAt: post.createdAt,
         updatedAt: post.updatedAt || undefined,
-        User: post.User,
-        Comment: post.Comment.map((comment) => ({
-          id: comment.id,
-          content: comment.content,
-          createdAt: comment.createdAt,
-          userId: comment.userId,
-          User: comment.User,
-        })),
-        Reaction: post.Reaction.map((reaction) => ({
-          id: reaction.id,
-          reactionType: reaction.reactionType as ReactionType,
-          userId: reaction.userId,
-        })),
       };
 
       // Handle includes if provided
-      if (options?.includes?.includes('related') && post.PostCategory?.id) {
+      if (
+        options?.includes?.includes(FAQ_LIST_CONSTANTS.GET_FAQ_DETAIL_INCLUDE.related) &&
+        post.PostCategory?.id
+      ) {
         responseData.relatedArticles = await this.getRelatedArticles(post.PostCategory.id, faqId);
       }
 
@@ -119,9 +165,9 @@ export class FaqRepository implements IFaqRepository {
             id: categoryId,
           },
           id: {
-            not: currentFaqId, // Exclude current FAQ
+            not: currentFaqId,
           },
-          type: 'FAQ', // Only get FAQs
+          type: PostType.FAQ,
         },
         select: {
           id: true,
@@ -169,3 +215,5 @@ export class FaqRepository implements IFaqRepository {
     }
   }
 }
+
+export const faqRepository = new FaqRepository();
