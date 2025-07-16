@@ -16,14 +16,14 @@ import {
 import { UserNav } from '@/components/layouts/user-nav/UserNav';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { ICON_SIZE } from '@/shared/constants/size';
-import { SectionType } from '@prisma/client';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { useSession } from 'next-auth/react';
+import { SectionTypeEnum } from '../../constants';
 import { useGetSection } from '../../hooks/useGetSection';
 
 export default function Header() {
-  const { section, isLoading, isError } = useGetSection(SectionType.HEADER);
+  const { section, isLoading, isError } = useGetSection(SectionTypeEnum.HEADER);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
   const [isOpenAnountment, setIsOpenAnountment] = useState(true);

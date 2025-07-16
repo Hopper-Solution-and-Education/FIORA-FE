@@ -2,18 +2,17 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
-import { Skeleton } from '@/components/ui/skeleton'; // Assuming you have a Skeleton component (e.g., from shadcn/ui)
-import { SectionType } from '@prisma/client';
+import { Skeleton } from '@/components/ui/skeleton';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
-import Link from 'next/link'; // Import Link for navigation
+import Link from 'next/link';
+import { SectionTypeEnum } from '../../constants';
 import { useGetSection } from '../../hooks/useGetSection';
 const defaultURL = 'https://www.facebook.com/HopperSolutionAndEducation';
 
 export function Banner() {
-  const { section, isError, isLoading } = useGetSection(SectionType.BANNER);
+  const { section, isError, isLoading } = useGetSection(SectionTypeEnum.BANNER);
 
-  // Skeleton Component
   const BannerSkeleton = () => (
     <Carousel className="w-full">
       <CarouselContent className="flex">
@@ -62,7 +61,7 @@ export function Banner() {
                     className="block cursor-pointer"
                   >
                     <div className="relative w-full">
-                      <div className="w-full h-[250px] sm:h-[300px] md:h-[650px] lg:h-[850px]">
+                      <div className="w-full h-[250px] sm:h-[300px] md:h-[650px] lg:h-[870px]">
                         <Image
                           src={image.media_url ?? ''}
                           alt={image.description || `Banner ${index + 1}`}

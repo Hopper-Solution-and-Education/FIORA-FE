@@ -1,7 +1,6 @@
-import { SectionType } from '@prisma/client';
-import { injectable, decorate } from 'inversify';
-import { ISection } from '../../slices/types';
 import type { IHttpClient } from '@/config/http-client/HttpClient';
+import { decorate, injectable } from 'inversify';
+import { ISection } from '../../slices/types';
 
 interface ISectionAPI {
   fetchSection(sectionType: SectionType): Promise<ISection>;
@@ -34,5 +33,5 @@ const createSectionAPI = (httpClient: IHttpClient): ISectionAPI => {
   return new SectionAPI(httpClient);
 };
 
-export { SectionAPI, createSectionAPI };
+export { createSectionAPI, SectionAPI };
 export type { ISectionAPI };

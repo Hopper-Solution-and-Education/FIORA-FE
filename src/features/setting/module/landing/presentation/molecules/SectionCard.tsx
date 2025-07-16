@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MediaType, SectionType } from '@prisma/client';
+import { MediaTypeEnum, SectionTypeEnum } from '@/features/landing/constants';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
 import useSectionCardLogic from '../../hooks/useSectionCardLogic';
@@ -23,7 +23,7 @@ import MediaItem from '../atoms/MediaItem';
 interface SectionCardProps {
   sectionData: ISection | undefined;
   control: any;
-  sectionType: SectionType;
+  sectionType: SectionTypeEnum;
 }
 
 export default function SectionCard({ sectionData, control, sectionType }: SectionCardProps) {
@@ -42,28 +42,28 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
   const getSectionHeaderName = useMemo(() => {
     let name = '';
     switch (sectionType) {
-      case SectionType.BANNER:
+      case SectionTypeEnum.BANNER:
         name = 'Banner';
         break;
-      case SectionType.KPS:
+      case SectionTypeEnum.KPS:
         name = 'KSP';
         break;
-      case SectionType.PARTNER_LOGO:
+      case SectionTypeEnum.PARTNER_LOGO:
         name = 'Partner Logo';
         break;
-      case SectionType.FOOTER:
+      case SectionTypeEnum.FOOTER:
         name = 'Footer';
         break;
-      case SectionType.REVIEW:
+      case SectionTypeEnum.REVIEW:
         name = 'Review';
         break;
-      case SectionType.SYSTEM:
+      case SectionTypeEnum.SYSTEM:
         name = 'System';
         break;
-      case SectionType.VISION_MISSION:
+      case SectionTypeEnum.VISION_MISSION:
         name = 'Vision Mission';
         break;
-      case SectionType.HEADER:
+      case SectionTypeEnum.HEADER:
         name = 'Header';
         break;
       default:
@@ -91,7 +91,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
       <CardContent className="pt-0 px-2 md:px-4 pb-4">
         <div className="mb-4">
           <Label htmlFor="description" className="mb-2 block text-sm md:text-base">
-            {sectionType === SectionType.FOOTER ? 'Copyright Text' : 'Title'}
+            {sectionType === SectionTypeEnum.FOOTER ? 'Copyright Text' : 'Title'}
           </Label>
           <Input
             id="name"
@@ -106,57 +106,57 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
             <h3 className="text-xs md:text-sm font-medium">Media Items</h3>
             <div className="flex space-x-2">
               {/* Show Image Media Add Button if section type is Banner, KPS, Partner Logo, Footer, Review, System */}
-              {(sectionType === SectionType.BANNER ||
-                sectionType === SectionType.KPS ||
-                sectionType === SectionType.PARTNER_LOGO ||
-                sectionType === SectionType.FOOTER ||
-                sectionType === SectionType.REVIEW ||
-                sectionType === SectionType.SYSTEM) && (
+              {(sectionType === SectionTypeEnum.BANNER ||
+                sectionType === SectionTypeEnum.KPS ||
+                sectionType === SectionTypeEnum.PARTNER_LOGO ||
+                sectionType === SectionTypeEnum.FOOTER ||
+                sectionType === SectionTypeEnum.REVIEW ||
+                sectionType === SectionTypeEnum.SYSTEM) && (
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   className="text-xs md:text-sm"
-                  onClick={() => addMedia(MediaType.IMAGE)}
+                  onClick={() => addMedia(MediaTypeEnum.IMAGE)}
                 >
                   <PlusCircle className="h-3 w-3 mr-1" /> Image
                 </Button>
               )}
 
               {/* Show Image Media Add Button if section type is Header and no media items */}
-              {sectionType === SectionType.HEADER && mediaFields.length === 0 && (
+              {sectionType === SectionTypeEnum.HEADER && mediaFields.length === 0 && (
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   className="text-xs md:text-sm"
-                  onClick={() => addMedia(MediaType.IMAGE)}
+                  onClick={() => addMedia(MediaTypeEnum.IMAGE)}
                 >
                   <PlusCircle className="h-3 w-3 mr-1" /> Image
                 </Button>
               )}
 
               {/* Show Embed Media Add Button if section type is Review */}
-              {sectionType === SectionType.REVIEW && (
+              {sectionType === SectionTypeEnum.REVIEW && (
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   className="text-xs md:text-sm"
-                  onClick={() => addMedia(MediaType.EMBEDDED)}
+                  onClick={() => addMedia(MediaTypeEnum.EMBEDDED)}
                 >
                   <PlusCircle className="h-3 w-3 mr-1" /> Embed
                 </Button>
               )}
 
               {/* Show Embed Media Add Button if section type is Vision Mission and no media items */}
-              {sectionType === SectionType.VISION_MISSION && mediaFields.length === 0 && (
+              {sectionType === SectionTypeEnum.VISION_MISSION && mediaFields.length === 0 && (
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   className="text-xs md:text-sm"
-                  onClick={() => addMedia(MediaType.EMBEDDED)}
+                  onClick={() => addMedia(MediaTypeEnum.EMBEDDED)}
                 >
                   <PlusCircle className="h-3 w-3 mr-1" /> Embed
                 </Button>

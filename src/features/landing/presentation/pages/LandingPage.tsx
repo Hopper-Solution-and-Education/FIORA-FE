@@ -11,7 +11,6 @@ import KPSSection from '../organisms/KPSSection';
 import { ReviewSection } from '../organisms/ReviewSection';
 import VisionMission from '../organisms/VisionMission';
 
-// Framer Motion Variants
 const fadeIn = {
   hidden: { opacity: 0, y: 50 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } },
@@ -88,7 +87,6 @@ const LandingPage = () => {
         <Footer />
       </motion.div>
 
-      {/* Scroll To Top - Không cần hiệu ứng */}
       <ScrollToTop />
     </>
   );

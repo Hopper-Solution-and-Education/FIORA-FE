@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { MediaType, SectionType } from '@prisma/client';
+import { MediaTypeEnum, SectionTypeEnum } from '@/features/landing/constants';
 import { ArrowDown, ArrowUp, Image as ImageIcon, Trash2, Video } from 'lucide-react';
 import Image from 'next/image';
 import { useFormContext } from 'react-hook-form';
@@ -27,7 +27,7 @@ interface MediaItemProps {
   onMoveDown: () => void;
   isFirst: boolean;
   isLast: boolean;
-  sectionType: SectionType;
+  sectionType: SectionTypeEnum;
 }
 
 export default function MediaItem({
@@ -46,7 +46,7 @@ export default function MediaItem({
   const mediaType = control._formValues.medias[mediaIndex].media_type;
   const embedCode = watch(`${mediaPath}.embed_code`);
 
-  const handleMediaTypeChange = (value: MediaType) => {
+  const handleMediaTypeChange = (value: MediaTypeEnum) => {
     control._formValues.medias[mediaIndex].media_type = value;
   };
 
@@ -56,18 +56,18 @@ export default function MediaItem({
     if (!mediaUrl && !embedCode) {
       return (
         <div className="flex items-center justify-center h-full w-full bg-gray-100 rounded-md">
-          {mediaType === MediaType.IMAGE && <ImageIcon className="h-16 w-16 text-gray-400" />}
-          {mediaType === MediaType.VIDEO && <Video className="h-6 w-6 text-gray-400" />}
-          {mediaType === MediaType.EMBEDDED && (
+          {mediaType === MediaTypeEnum.IMAGE && <ImageIcon className="h-16 w-16 text-gray-400" />}
+          {mediaType === MediaTypeEnum.VIDEO && <Video className="h-6 w-6 text-gray-400" />}
+          {mediaType === MediaTypeEnum.EMBEDDED && (
             <div className="text-gray-400 text-center text-sm">Embed</div>
           )}
         </div>
       );
     }
 
-    if (mediaType === MediaType.IMAGE && mediaUrl) {
+    if (mediaType === MediaTypeEnum.IMAGE && mediaUrl) {
       switch (sectionType) {
-        case SectionType.BANNER:
+        case SectionTypeEnum.BANNER:
           return (
             <div className="relative max-h-80 w-full bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden">
               <Image
@@ -82,7 +82,7 @@ export default function MediaItem({
               />
             </div>
           );
-        case SectionType.KPS:
+        case SectionTypeEnum.KPS:
           return (
             <div className="relative h-48 w-48 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden mx-auto">
               <Image
@@ -97,7 +97,7 @@ export default function MediaItem({
               />
             </div>
           );
-        case SectionType.PARTNER_LOGO:
+        case SectionTypeEnum.PARTNER_LOGO:
           return (
             <div className="relative h-48 w-64 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden mx-auto">
               <Image
@@ -130,7 +130,7 @@ export default function MediaItem({
       }
     }
 
-    if (mediaType === MediaType.VIDEO && mediaUrl) {
+    if (mediaType === MediaTypeEnum.VIDEO && mediaUrl) {
       return (
         <div className="relative h-20 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden flex items-center justify-center">
           <Video className="h-6 w-6 text-gray-400" />
@@ -139,9 +139,9 @@ export default function MediaItem({
       );
     }
 
-    if (mediaType === MediaType.EMBEDDED && embedCode) {
+    if (mediaType === MediaTypeEnum.EMBEDDED && embedCode) {
       switch (sectionType) {
-        case SectionType.VISION_MISSION:
+        case SectionTypeEnum.VISION_MISSION:
           return (
             <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-lg shadow-md overflow-hidden">
               <div className="w-full relative" style={{ paddingBottom: '56.25%' /* 16:9 ratio */ }}>
@@ -154,7 +154,7 @@ export default function MediaItem({
               </div>
             </div>
           );
-        case SectionType.REVIEW:
+        case SectionTypeEnum.REVIEW:
           return (
             <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-lg shadow-md overflow-hidden">
               <div className="w-full relative" style={{ paddingBottom: '56.25%' /* 16:9 ratio */ }}>
@@ -232,13 +232,13 @@ export default function MediaItem({
             <Select
               disabled
               defaultValue={mediaType}
-              onValueChange={(value) => handleMediaTypeChange(value as MediaType)}
+              onValueChange={(value) => handleMediaTypeChange(value as MediaTypeEnum)}
             >
               <SelectTrigger className="h-8 text-xs md:text-sm">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                {Object.values(MediaType).map((type) => (
+                {Object.values(MediaTypeEnum).map((type) => (
                   <SelectItem key={type} value={type} className="text-xs md:text-sm">
                     {type}
                   </SelectItem>
@@ -252,10 +252,10 @@ export default function MediaItem({
             />
           </div>
 
-          {(sectionType === SectionType.REVIEW ||
-            sectionType === SectionType.BANNER ||
-            sectionType === SectionType.VISION_MISSION ||
-            sectionType === SectionType.SYSTEM) && (
+          {(sectionType === SectionTypeEnum.REVIEW ||
+            sectionType === SectionTypeEnum.BANNER ||
+            sectionType === SectionTypeEnum.VISION_MISSION ||
+            sectionType === SectionTypeEnum.SYSTEM) && (
             <div>
               <Label htmlFor={`${mediaPath}.description`} className="text-xs md:text-sm mb-1 block">
                 Content - Description
@@ -281,7 +281,7 @@ export default function MediaItem({
             />
           </div>
 
-          {mediaType === MediaType.EMBEDDED && (
+          {mediaType === MediaTypeEnum.EMBEDDED && (
             <div>
               <Label htmlFor={`${mediaPath}.embed_code`} className="text-xs md:text-sm mb-1 block">
                 Embed Code
@@ -295,7 +295,7 @@ export default function MediaItem({
             </div>
           )}
 
-          {mediaType !== MediaType.EMBEDDED && (
+          {mediaType !== MediaTypeEnum.EMBEDDED && (
             <MediaUploader mediaType={mediaType} mediaPath={mediaPath} />
           )}
         </div>

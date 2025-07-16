@@ -1,4 +1,3 @@
-import { SectionType } from '@prisma/client';
 import { decorate, injectable } from 'inversify';
 import { SectionDefaultValues } from '../../schema/section-form.schema';
 import { ISection } from '../../slices/types';

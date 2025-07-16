@@ -2,14 +2,15 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
-import { MediaType, SectionType } from '@prisma/client';
+import { MediaType } from '@prisma/client';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
 import { useRef } from 'react';
+import { SectionTypeEnum } from '../../constants';
 import { useGetSection } from '../../hooks/useGetSection';
 
 export const ReviewSection = () => {
-  const { isError, section, isLoading } = useGetSection(SectionType.REVIEW);
+  const { isError, section, isLoading } = useGetSection(SectionTypeEnum.REVIEW);
   const autoplayRef = useRef(
     Autoplay({ delay: 3000, stopOnInteraction: true, playOnInit: true, jump: false }),
   );

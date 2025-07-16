@@ -1,4 +1,3 @@
-import { SectionType } from '@prisma/client';
 import { decorate, injectable } from 'inversify';
 import type { ISectionRepository } from '../../data/repositories/sectionRepository';
 import { ISection } from '../../slices/types';

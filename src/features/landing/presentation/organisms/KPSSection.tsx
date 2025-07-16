@@ -1,28 +1,26 @@
 'use client'; // Đảm bảo đây là client component vì sử dụng hook và framer-motion
 
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
-import { SectionType } from '@prisma/client';
-import Autoplay from 'embla-carousel-autoplay';
-import Image from 'next/image';
-import { useGetSection } from '../../hooks/useGetSection';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
+import Autoplay from 'embla-carousel-autoplay';
 import { motion, Variants } from 'framer-motion';
+import Image from 'next/image';
+import { SectionTypeEnum } from '../../constants';
+import { useGetSection } from '../../hooks/useGetSection';
 
-// Định nghĩa các giá trị responsive
 const containerWidthDesktop = 1400;
-const containerWidthMobile = 300; // Giảm chiều rộng container trên mobile
+const containerWidthMobile = 300;
 const numberOfItemsDesktop = 3;
-const numberOfItemsMobile = 1; // Chỉ hiển thị 1 item trên mobile
+const numberOfItemsMobile = 1;
 const gapDesktop = 15;
-const gapMobile = 10; // Giảm gap trên mobile
+const gapMobile = 10;
 const itemHeightDesktop = '600px';
-const itemHeightMobile = '400px'; // Giảm chiều cao trên mobile
+const itemHeightMobile = '400px';
 
 const KPSSection = () => {
-  const { isError, isLoading, section } = useGetSection(SectionType.KPS);
+  const { isError, isLoading, section } = useGetSection(SectionTypeEnum.KPS);
   const isMobile = useIsMobile();
 
-  // Sử dụng các giá trị responsive dựa trên isMobile
   const containerWidth = isMobile ? containerWidthMobile : containerWidthDesktop;
   const numberOfItems = isMobile ? numberOfItemsMobile : numberOfItemsDesktop;
   const gap = isMobile ? gapMobile : gapDesktop;

@@ -4,7 +4,6 @@ import { NavItem } from '@/features/home/types/Nav.types';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import { ICON_SIZE } from '@/shared/constants/size';
 import { cn } from '@/shared/lib/utils';
-import { SectionType } from '@prisma/client';
 import {
   ChevronRight,
   ChevronsUpDown,
@@ -44,6 +43,7 @@ import {
   useSidebar,
 } from '../../ui/sidebar';
 
+import { SectionTypeEnum } from '@/features/landing/constants';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
 import HopperLogo from '@public/images/logo.jpg';
@@ -66,7 +66,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   const { data: session } = useSession() as { data: Session | null };
   const { isTablet } = useMatchBreakpoint();
   const { open, setOpen } = useSidebar();
-  const { section } = useGetSection(SectionType.HEADER, {
+  const { section } = useGetSection(SectionTypeEnum.HEADER, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
     revalidateIfStale: false,

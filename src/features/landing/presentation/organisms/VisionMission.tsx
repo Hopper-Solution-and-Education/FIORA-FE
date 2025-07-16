@@ -1,8 +1,8 @@
-import { SectionType } from '@prisma/client';
+import { SectionTypeEnum } from '../../constants';
 import { useGetSection } from '../../hooks/useGetSection';
 
 const VisionMission = () => {
-  const { section, isError, isLoading } = useGetSection(SectionType.VISION_MISSION);
+  const { section, isError, isLoading } = useGetSection(SectionTypeEnum.VISION_MISSION);
 
   if (isLoading) {
     return (
@@ -59,25 +59,35 @@ const VisionMission = () => {
 
   return (
     <section>
-      <div className="md:mt-20">
-        <div className="bg-muted-2 grid items-center gap-6 lg:grid-cols-3 lg:gap-8">
-          {/* Text Section (Hiển thị trước trên mobile) */}
-          <div className="flex flex-col justify-center items-center sm:p-8 lg:p-10 lg:items-start lg:text-left order-1 lg:order-2">
+      <div className="md:mt-20 px-10">
+        <div className="grid items-start gap-6 lg:grid-cols-5 lg:gap-8">
+          <div className="justify-center items-center px-4 md:py-8 lg:py-16 order-2 col-span-2">
             <h1
               data-aos="fade-up"
-              className="text-center my-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-pretty"
+              className="text-center lg:text-left my-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-pretty"
             >
               {section?.name}
             </h1>
+            <div className="mt-4 text-base sm:text-lg text-center lg:text-left">
+              {section.medias[0].description}
+              Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum
+              printer took a galley of type and scrambled it to make a type specimen book. It has
+              survived not only five centuries, but also the leap into electronic typesetting,
+              remaining essentially unchanged. It was popularised in the 1960s with the release of
+              Letraset sheets containing Lorem Ipsum passages, and more recently with desktop
+              publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+            </div>
+            <button className="mt-8 px-8 py-3 bg-green-700 text-white rounded-full font-semibold hover:bg-green-800 transition">
+              Learn more
+            </button>
           </div>
 
-          {/* Video Section (Hiển thị sau trên mobile) */}
-          <div className="relative col-span-2 h-[300px] md:h-[500px] lg:h-[700px] overflow-hidden justify-center mx-2 order-2 lg:order-1">
+          <div className="relative col-span-3 h-[300px] md:h-[500px] lg:h-[700px] overflow-hidden justify-center mx-2 order-2 lg:order-1">
             {embedCode ? (
               <div
                 className="absolute inset-0"
                 dangerouslySetInnerHTML={{
-                  __html: `<style>iframe { width: 100% !important; height: 100% !important; border: none; border-radius: 8px; object-fit: cover;}</style>${embedCode}`,
+                  __html: `<style>iframe { width: 100% !important; border: none;}</style>${embedCode}`,
                 }}
               />
             ) : (

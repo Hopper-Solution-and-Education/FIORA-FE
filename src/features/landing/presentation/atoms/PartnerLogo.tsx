@@ -2,13 +2,13 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
-import { SectionType } from '@prisma/client';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
+import { SectionTypeEnum } from '../../constants';
 import { useGetSection } from '../../hooks/useGetSection';
 
 export const PartnerLogo = () => {
-  const { isLoading, section, isError } = useGetSection(SectionType.PARTNER_LOGO);
+  const { isLoading, section, isError } = useGetSection(SectionTypeEnum.PARTNER_LOGO);
 
   if (isLoading)
     return <p className="text-center py-8 sm:py-10 text-sm sm:text-base">Loading...</p>;

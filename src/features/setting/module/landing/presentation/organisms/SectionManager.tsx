@@ -3,7 +3,6 @@
 
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { SectionType } from '@prisma/client';
 import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -12,6 +11,7 @@ import { toast } from 'sonner';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { SectionTypeEnum } from '@/features/landing/constants';
 import { removeFromFirebase, uploadToFirebase } from '@/shared/lib';
 import { SectionDefaultValues, sectionFormSchema } from '../../schema/section-form.schema';
 import { changeIsLoadingSaveChange, markSectionFetched, sectionMapping } from '../../slices';
@@ -22,7 +22,7 @@ import { transferDefaultValues } from '../../utils/transferDefaultValue';
 import SectionCard from '../molecules/SectionCard';
 
 interface SectionManagerProps {
-  sectionType: SectionType;
+  sectionType: SectionTypeEnum;
 }
 
 export default function SectionManager({ sectionType }: SectionManagerProps) {
@@ -79,21 +79,17 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
     try {
       const processedData: SectionDefaultValues = { ...data };
 
-      // Lấy danh sách medias cũ từ sectionData để so sánh
       const oldMedias = sectionData?.medias || [];
 
-      // Xử lý từng media item
       const updatedMedias = await Promise.all(
         processedData.medias.map(async (media) => {
-          const oldMedia = oldMedias.find((m) => m.id === media.id); // Tìm media cũ tương ứng
+          const oldMedia = oldMedias.find((m) => m.id === media.id);
 
           if (media.media_url && media.media_url.startsWith('blob:')) {
-            // Nếu có URL cũ và không phải blob, xóa nó trước
             if (oldMedia?.media_url && !oldMedia.media_url.startsWith('blob:')) {
               await removeFromFirebase(oldMedia.media_url);
             }
 
-            // Upload file mới
             const response = await fetch(media.media_url);
             const blob = await response.blob();
             const fileName = media.id || 'media';

@@ -1,4 +1,3 @@
-import { SectionType } from '@prisma/client';
 import useSWR, { SWRConfiguration } from 'swr';
 import { landingDIContainer } from '../di/landingDIContainer';
 import { TYPES } from '../di/landingDIContainer.type';
