@@ -4,6 +4,7 @@ import { ITransactionRepository } from '@/features/transaction/domain/repositori
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { Messages } from '@/shared/constants/message';
 import { FilterObject } from '@/shared/types/filter.types';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { generateRefCode } from '@/shared/utils/stringHelper';
 import {
   Currency,
@@ -16,7 +17,6 @@ import { ATTACHMENT_CONSTANTS } from '../../constants/attachmentConstants';
 import {
   DEFAULT_WALLET_FIELDS,
   MAX_REF_CODE_ATTEMPTS,
-  PAYMENT_ACCOUNT_DEDUCT_RATE,
   WALLET_TYPE_ICONS,
 } from '../../constants/walletConstant';
 import { attachmentRepository } from '../../infrastructure/repositories/attachmentRepository';
@@ -247,35 +247,15 @@ class WalletUseCase {
       });
 
       // Convert depositRequest amount to payment account currency for deduction
-      let deductAmount = 0;
       const depositCurrency = depositRequest.currency || currency;
       const paymentCurrency = paymentAccount.currency;
       // Deposit currency should never be FX, fallback to USD logic if it happens (or throw error)
       let effectiveDepositCurrency = depositCurrency;
       if (depositCurrency === 'FX') {
-        // This should not happen, but fallback to USD logic
         effectiveDepositCurrency = 'USD';
       }
-      if (effectiveDepositCurrency === 'USD') {
-        if (paymentCurrency === 'VND') {
-          deductAmount = amount * PAYMENT_ACCOUNT_DEDUCT_RATE;
-        } else if (paymentCurrency === 'USD') {
-          deductAmount = amount;
-        } else {
-          deductAmount = amount; // fallback
-        }
-      } else if (effectiveDepositCurrency === 'VND') {
-        if (paymentCurrency === 'USD') {
-          deductAmount = amount / PAYMENT_ACCOUNT_DEDUCT_RATE;
-        } else if (paymentCurrency === 'VND') {
-          deductAmount = amount;
-        } else {
-          deductAmount = amount; // fallback
-        }
-      } else {
-        deductAmount = amount; // fallback
-      }
-
+      // Use convertCurrency util for conversion
+      const deductAmount = convertCurrency(amount, effectiveDepositCurrency, paymentCurrency);
       if (deductAmount > 0) {
         const newBalance = Number(paymentAccount.balance ?? 0) - deductAmount;
         await this._accountRepository.update(paymentAccount.id, {
