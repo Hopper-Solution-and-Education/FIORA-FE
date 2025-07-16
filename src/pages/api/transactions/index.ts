@@ -21,8 +21,7 @@ export default sessionWrapper(async (req, res, userId) => {
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-
-    const currency = (req.headers['x-user-currency'] as string) ?? Currency.VND;
+    const currency = (req.headers['x-user-currency'] as string) ?? Currency.USD;
 
     const { filters, page, pageSize, sortBy, search } = req.body;
 
