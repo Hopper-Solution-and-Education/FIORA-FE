@@ -102,6 +102,7 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
           const count = reactionCounts[type] || 0;
           return (
             <button
+              data-test="feedback-section-reaction"
               key={type}
               onClick={() => handleReaction(type)}
               disabled={isLoadingReactions}

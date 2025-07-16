@@ -1,7 +1,7 @@
 'use client';
 
 import { Progress } from '@/components/ui/progress';
-import { File, Upload } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FAQ_IMPORT_CONSTANTS } from '../../constants';
@@ -45,7 +45,7 @@ const FileUploadZone = ({ isLoading = false, onFileSelect }: FileUploadZoneProps
           }
         `}
       >
-        <input {...getInputProps()} />
+        <input data-test="file-upload-zone-input" {...getInputProps()} />
         <div className="space-y-4">
           <div className="flex justify-center">
             <Upload className="h-10 w-10 text-gray-400" />

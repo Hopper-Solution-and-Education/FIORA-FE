@@ -86,6 +86,7 @@ const EditFaqPage: React.FC = () => {
               <h2 className="text-xl font-semibold mb-2">FAQ not found</h2>
               <p className="text-gray-600">The requested FAQ could not be loaded for editing.</p>
               <button
+                data-test="edit-faq-page-go-back"
                 onClick={handleCancel}
                 className="mt-4 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
               >

@@ -142,6 +142,7 @@ const SettingTierInputField = ({
       {/* Trash icon button, show on hover */}
       {showRemove && (
         <button
+          data-test="setting-tier-input-field-remove"
           type="button"
           className={`absolute right-0 top-1/3 -translate-y-1/2 p-2 text-destructive hover:bg-destructive/10 rounded-full
             transition-all duration-300 ease-in-out

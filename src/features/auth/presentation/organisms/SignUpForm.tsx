@@ -9,17 +9,17 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import TermCondition from '@/features/auth/presentation/common/TermCondition';
 import { cn } from '@/shared/utils';
+import {
+  validateConfirmPassword,
+  validateEmail,
+  validatePassword,
+} from '@/shared/validators/signUpValidation';
 import { Check, Eye, EyeOff } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import GoogleIcon from '../components/GoogleIcon';
-import {
-  validateConfirmPassword,
-  validateEmail,
-  validatePassword,
-} from '@/shared/validators/signUpValidation';
 
 const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
   const router = useRouter();
@@ -159,7 +159,11 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
             )}
             {
               !isVerificationStep && (
-                <form onSubmit={handleRegister} className="flex flex-col gap-3 overflow-visible">
+                <form
+                  onSubmit={handleRegister}
+                  className="flex flex-col gap-3 overflow-visible"
+                  data-test="register-form"
+                >
                   <div className="relative flex flex-col sm:flex-row justify-start items-start sm:items-center gap-2">
                     <Label
                       htmlFor="email"
@@ -181,6 +185,7 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                         'flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 py-2',
                         fieldErrors.email ? 'border-red-500' : 'border-none',
                       )}
+                      data-test="email-input"
                     />
                   </div>
                   {fieldErrors.email && (
@@ -205,9 +210,11 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                           'flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 py-2 pr-10',
                           fieldErrors.password ? 'border-red-500' : 'border-none',
                         )}
+                        data-test="password-input"
                       />
                       {password && (
                         <button
+                          data-test="show-password-button"
                           type="button"
                           className="absolute inset-y-0 right-0 flex items-center pr-3"
                           onClick={() => setShowPassword(!showPassword)}
@@ -244,9 +251,11 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                           'flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 py-2 pr-10',
                           fieldErrors.confirmPassword ? 'border-red-500' : 'border-none',
                         )}
+                        data-test="confirm-password-input"
                       />
                       {confirmPassword && (
                         <button
+                          data-test="show-confirm-password"
                           type="button"
                           className="absolute inset-y-0 right-0 flex items-center pr-3"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -278,6 +287,7 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                         isRegistering && 'cursor-not-allowed',
                       )}
                       disabled={isSignUpNotAvailable}
+                      data-test="register-button"
                     >
                       {!isRegistering ? (
                         <Check className="block text-green-300 stroke-[4] transform transition-transform duration-200 drop-shadow-sm hover:text-green-100 !h-[23px] !w-[23px]" />
@@ -314,6 +324,7 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                   <button
                     onClick={handleGoogleSignIn}
                     className="flex items-center justify-center w-8 h-8 cursor-pointer"
+                    data-test="register-google-button"
                   >
                     <GoogleIcon />
                   </button>

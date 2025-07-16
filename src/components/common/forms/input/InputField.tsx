@@ -129,6 +129,7 @@ const InputField: React.FC<InputFieldProps> = ({
           type={percent ? 'text' : props.type || 'text'}
           maxLength={maxLength}
           className={`pr-8 text-xs md:text-sm ${error ? 'border-red-500' : ''}`}
+          data-test={props['data-test'] || (props.name ? `${props.name}-input` : undefined)}
           {...props}
         />
         {percent && (

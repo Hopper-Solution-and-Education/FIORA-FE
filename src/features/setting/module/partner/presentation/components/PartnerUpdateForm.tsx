@@ -186,7 +186,11 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(handleSubmit)} className="space-y-4">
+      <form
+        data-test="partner-update-form"
+        onSubmit={methods.handleSubmit(handleSubmit)}
+        className="space-y-4"
+      >
         <FormConfig
           methods={methods}
           fields={fields}
