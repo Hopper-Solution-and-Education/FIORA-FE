@@ -134,7 +134,7 @@ class TransactionUseCase {
 
   async getTransactionsPagination(
     params: TransactionGetPagination,
-  ): Promise<PaginationResponse<Transaction> & { amountMin?: number; amountMax?: number }> {
+  ): Promise<PaginationResponse<any> & { amountMin?: number; amountMax?: number }> {
     const {
       page = 1,
       pageSize = 20,
@@ -231,15 +231,19 @@ class TransactionUseCase {
       convertCurrency(amountMin['_min']?.amount, DEFAULT_BASE_CURRENCY, currency),
     ]);
 
-    const transactionTransformedAwaited = transactions.map(async (transaction) => {
-      const amount = await convertCurrency(transaction.amount, currency, DEFAULT_BASE_CURRENCY);
-      return {
-        ...transaction,
-        amount: amount,
-      };
-    });
-
-    const transactionTransformed = await Promise.all([transactionTransformedAwaited]);
+    const transactionTransformed = await Promise.all(
+      transactions.map(async (transaction) => {
+        const amount = await convertCurrency(
+          transaction.amount,
+          transaction.currency as string,
+          currency,
+        );
+        return {
+          ...transaction,
+          amount: amount,
+        };
+      }),
+    );
 
     const totalPage = Math.ceil(total / pageSize);
 
@@ -454,6 +458,12 @@ class TransactionUseCase {
         throw new Error(Messages.INVALID_CATEGORY_TYPE_EXPENSE);
       }
 
+      const baseAmount = await convertCurrency(
+        Number(data.amount),
+        data.currency as string,
+        DEFAULT_BASE_CURRENCY,
+      );
+
       const transaction = await tx.transaction.create({
         data: {
           userId: data.userId,
@@ -470,6 +480,8 @@ class TransactionUseCase {
           remark: data.remark,
           createdBy: data.userId as string,
           updatedBy: data.userId,
+          baseAmount: baseAmount,
+          baseCurrency: data.baseCurrency,
         },
       });
 
@@ -557,6 +569,12 @@ class TransactionUseCase {
         throw new Error(Messages.INVALID_ACCOUNT_TYPE_FOR_INCOME);
       }
 
+      const baseAmount = await convertCurrency(
+        Number(data.amount),
+        data.currency as string,
+        DEFAULT_BASE_CURRENCY,
+      );
+
       const transaction = await tx.transaction.create({
         data: {
           userId: data.userId,
@@ -574,6 +592,8 @@ class TransactionUseCase {
           remark: data.remark,
           createdBy: data.userId as string,
           updatedBy: data.userId,
+          baseAmount: baseAmount,
+          baseCurrency: data.baseCurrency,
         },
       });
 
@@ -634,6 +654,12 @@ class TransactionUseCase {
         },
       );
 
+      const baseAmount = await convertCurrency(
+        Number(data.amount),
+        data.currency as string,
+        DEFAULT_BASE_CURRENCY,
+      );
+
       const transaction = await tx.transaction.create({
         data: {
           userId: data.userId,
@@ -650,6 +676,8 @@ class TransactionUseCase {
           remark: data.remark,
           createdBy: data.userId as string,
           updatedBy: data.userId,
+          baseAmount: baseAmount,
+          baseCurrency: data.baseCurrency,
         },
       });
 
