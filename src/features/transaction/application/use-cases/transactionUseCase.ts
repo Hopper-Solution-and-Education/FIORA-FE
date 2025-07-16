@@ -3,11 +3,13 @@ import { IAccountRepository } from '@/features/auth/domain/repositories/accountR
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
 import { currencySettingRepository } from '@/features/setting/api/infrastructure/repositories/currencySettingRepository';
 import { ICurrencySettingRepository } from '@/features/setting/api/repositories/currencySettingRepository.interface';
+import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { BooleanUtils } from '@/shared/lib/booleanUtils';
 import { PaginationResponse } from '@/shared/types/Common.types';
 import { TransactionGetPagination } from '@/shared/types/transaction.types';
 import { buildOrderByTransactionV2, buildWhereClause } from '@/shared/utils';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
 import {
   AccountType,
   CategoryType,
@@ -24,7 +26,7 @@ class TransactionUseCase {
     private transactionRepository: ITransactionRepository,
     private accountRepository: IAccountRepository,
     private currencySettingRepository: ICurrencySettingRepository,
-  ) { }
+  ) {}
 
   async listTransactions(userId: string): Promise<Transaction[]> {
     return this.transactionRepository.getTransactionsByUserId(userId);
@@ -68,13 +70,13 @@ class TransactionUseCase {
                 : []),
               ...(isSearchDate
                 ? [
-                  {
-                    date: {
-                      gte: new Date(typeSearchParams),
-                      lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
+                    {
+                      date: {
+                        gte: new Date(typeSearchParams),
+                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
+                      },
                     },
-                  },
-                ]
+                  ]
                 : []),
             ],
           },
@@ -133,7 +135,15 @@ class TransactionUseCase {
   async getTransactionsPagination(
     params: TransactionGetPagination,
   ): Promise<PaginationResponse<Transaction> & { amountMin?: number; amountMax?: number }> {
-    const { page = 1, pageSize = 20, searchParams = '', filters, sortBy = {}, userId } = params;
+    const {
+      page = 1,
+      pageSize = 20,
+      searchParams = '',
+      filters,
+      sortBy = {},
+      userId,
+      currency,
+    } = params;
     const take = pageSize;
     const skip = (page - 1) * pageSize;
 
@@ -151,11 +161,6 @@ class TransactionUseCase {
         typeTransactionWhere = typeTransaction;
       }
 
-      // test with Regex-Date format YYYY-MM-DD
-      const dateRegex = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD format
-      const date = new Date(typeSearchParams);
-      const isSearchDate = dateRegex.test(typeSearchParams) && !isNaN(date.getTime());
-
       where = {
         AND: [
           where,
@@ -170,16 +175,6 @@ class TransactionUseCase {
               // adding typeTransactionWhere to where clause if exists
               ...(typeTransactionWhere
                 ? [{ type: typeTransactionWhere as unknown as TransactionType }]
-                : []),
-              ...(isSearchDate
-                ? [
-                  {
-                    date: {
-                      gte: new Date(typeSearchParams),
-                      lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
-                    },
-                  },
-                ]
                 : []),
             ],
           },
@@ -215,11 +210,12 @@ class TransactionUseCase {
     });
     // getting amountMax from transactions
     const amountMaxAwaited = this.transactionRepository.aggregate({
-      where: { userId },
+      where: { userId, baseCurrency: DEFAULT_BASE_CURRENCY },
       _max: { amount: true },
     });
+
     const amountMinAwaited = this.transactionRepository.aggregate({
-      where: { userId },
+      where: { userId, baseCurrency: DEFAULT_BASE_CURRENCY },
       _min: { amount: true },
     });
 
@@ -230,15 +226,30 @@ class TransactionUseCase {
       amountMinAwaited,
     ]);
 
+    const [convertAmountMax, convertAmountMin] = await Promise.all([
+      convertCurrency(amountMax['_max']?.amount, DEFAULT_BASE_CURRENCY, currency),
+      convertCurrency(amountMin['_min']?.amount, DEFAULT_BASE_CURRENCY, currency),
+    ]);
+
+    const transactionTransformedAwaited = transactions.map(async (transaction) => {
+      const amount = await convertCurrency(transaction.amount, currency, DEFAULT_BASE_CURRENCY);
+      return {
+        ...transaction,
+        amount: amount,
+      };
+    });
+
+    const transactionTransformed = await Promise.all([transactionTransformedAwaited]);
+
     const totalPage = Math.ceil(total / pageSize);
 
     return {
-      data: transactions,
+      data: transactionTransformed as any,
       totalPage,
       page,
       pageSize,
-      amountMax: Number(amountMax['_max']?.amount) || 0,
-      amountMin: Number(amountMin['_min']?.amount) || 0,
+      amountMax: Number(convertAmountMax) || 0,
+      amountMin: Number(convertAmountMin) || 0,
       total,
     };
   }

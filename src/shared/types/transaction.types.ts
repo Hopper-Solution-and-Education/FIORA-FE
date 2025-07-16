@@ -23,6 +23,7 @@ export interface TransactionGetPagination {
   sortBy?: Record<string, any>;
   searchParams?: string;
   userId: string;
+  currency: string;
 }
 
 export interface Filter {

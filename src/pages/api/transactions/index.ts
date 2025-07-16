@@ -3,6 +3,7 @@ import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { Currency } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export const maxDuration = 30; // 30 seconds
@@ -11,8 +12,6 @@ export default sessionWrapper(async (req, res, userId) => {
   switch (req.method) {
     case 'POST':
       return POST(req, res, userId);
-    case 'GET':
-      return GET(req, res, userId);
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -22,6 +21,8 @@ export default sessionWrapper(async (req, res, userId) => {
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
+    const currency = (req.headers['x-user-currency'] as string) ?? Currency.VND;
+
     const { filters, page, pageSize, sortBy, search } = req.body;
 
     const transactions = await transactionUseCase.getTransactionsPagination({
@@ -31,31 +32,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       sortBy,
       userId,
       searchParams: search,
-    });
-
-    return res
-      .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, Messages.GET_TRANSACTION_SUCCESS, transactions));
-  } catch (error: any) {
-    return createError(
-      res,
-      RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-      error.message || Messages.INTERNAL_ERROR,
-    );
-  }
-}
-
-export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  try {
-    const { filters, page, pageSize, sortBy, search } = req.body;
-
-    const transactions = await transactionUseCase.getTransactions({
-      page,
-      pageSize,
-      filters,
-      sortBy,
-      userId,
-      searchParams: search,
+      currency,
     });
 
     return res

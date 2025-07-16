@@ -146,6 +146,24 @@ export class ExchangeRateRepository implements IExchangeRateRepository {
     };
   }
 
+  async populateCurrencyAbbreviation(): Promise<{ [key: string]: string }> {
+    const currencies = await currencySettingRepository.findManyCurrency(
+      {},
+      {
+        select: { name: true, symbol: true },
+      },
+    );
+
+    const conversionRates: { [key: string]: string } = {};
+
+    for (const currency of currencies) {
+      const name = currency.name;
+      conversionRates[name] = currency.symbol;
+    }
+
+    return conversionRates;
+  }
+
   /**
    * Update a single currency rate in the Redis cache
    */

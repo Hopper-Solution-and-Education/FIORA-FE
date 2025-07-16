@@ -231,8 +231,15 @@ class ExchangeRateUseCase {
         throw new Error(Messages.CURRENCY_NOT_FOUND);
       }
 
-      const response = await this.exchangeRateRepository.populateRateCache(baseCurrency);
-      return response;
+      const [currencyAbbreviation, response] = await Promise.all([
+        this.exchangeRateRepository.populateCurrencyAbbreviation(),
+        this.exchangeRateRepository.populateRateCache(baseCurrency),
+      ]);
+
+      return {
+        ...response,
+        currency_suffix: currencyAbbreviation,
+      };
     } catch (error: any) {
       console.log(error);
       throw new Error(error.message || Messages.GET_CURRENCY_FAILED);

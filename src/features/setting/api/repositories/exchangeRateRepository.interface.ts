@@ -27,6 +27,7 @@ export interface IExchangeRateRepository {
   createCurrency(data: Prisma.CurrencyExchangeUncheckedCreateInput): Promise<CurrencyExchange>;
   getLatestUpdateTimestamp(): Promise<Date>;
   populateRateCache(baseCurrency: string): Promise<ExchangeRateResponse>;
+  populateCurrencyAbbreviation(): Promise<{ [key: string]: string }>;
 }
 
 export interface IUpsertExchangeRateSetting {
