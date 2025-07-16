@@ -1,9 +1,10 @@
 import type { IHttpClient } from '@/config/http-client/HttpClient';
+import { SectionTypeEnum } from '@/features/landing/constants';
 import { decorate, injectable } from 'inversify';
 import { ISection } from '../../slices/types';
 
 interface ISectionAPI {
-  fetchSection(sectionType: SectionType): Promise<ISection>;
+  fetchSection(sectionType: SectionTypeEnum): Promise<ISection>;
   updateSection(section: ISection): Promise<ISection>;
 }
 
@@ -15,7 +16,7 @@ class SectionAPI implements ISectionAPI {
     this.httpClient = httpClient;
   }
 
-  async fetchSection(sectionType: SectionType): Promise<ISection> {
+  async fetchSection(sectionType: SectionTypeEnum): Promise<ISection> {
     return await this.httpClient.get<ISection>(`/api/banner/section?sectionType=${sectionType}`);
   }
 

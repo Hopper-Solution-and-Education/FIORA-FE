@@ -1,10 +1,11 @@
+import { SectionTypeEnum } from '@/features/landing/constants';
 import { decorate, injectable } from 'inversify';
 import { SectionDefaultValues } from '../../schema/section-form.schema';
 import { ISection } from '../../slices/types';
 import type { ISectionAPI } from '../api/sectionApi';
 
 export interface ISectionRepository {
-  getSection: (sectionType: SectionType) => Promise<ISection>;
+  getSection: (sectionType: SectionTypeEnum) => Promise<ISection>;
   updateSection: (section: SectionDefaultValues, createdBy: string) => Promise<ISection>;
 }
 
@@ -47,7 +48,7 @@ export class SectionRepository implements ISectionRepository {
     this.sectionApi = sectionApi;
   }
 
-  async getSection(sectionType: SectionType): Promise<ISection> {
+  async getSection(sectionType: SectionTypeEnum): Promise<ISection> {
     return await this.sectionApi.fetchSection(sectionType);
   }
 

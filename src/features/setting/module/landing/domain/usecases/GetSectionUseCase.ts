@@ -1,3 +1,4 @@
+import { SectionTypeEnum } from '@/features/landing/constants';
 import { decorate, injectable } from 'inversify';
 import type { ISectionRepository } from '../../data/repositories/sectionRepository';
 import { ISection } from '../../slices/types';
@@ -9,7 +10,7 @@ export class GetSectionUseCase {
     this.sectionRepository = sectionRepository;
   }
 
-  async execute(sectionType: SectionType) {
+  async execute(sectionType: SectionTypeEnum) {
     const response = await this.sectionRepository.getSection(sectionType);
     return this.handleProcessResponse(response);
   }

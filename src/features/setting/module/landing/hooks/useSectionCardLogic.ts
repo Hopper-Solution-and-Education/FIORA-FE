@@ -1,5 +1,6 @@
 'use client';
 
+import { SectionTypeEnum } from '@/features/landing/constants';
 import { useAppDispatch } from '@/store';
 import { Media, MediaType, SectionType } from '@prisma/client';
 import { useState } from 'react';
@@ -10,7 +11,7 @@ import { ISection } from '../slices/types';
 interface UseSectionCardLogicProps {
   sectionData: ISection | undefined;
   control: any;
-  sectionType: SectionType;
+  sectionType: SectionTypeEnum;
 }
 
 const mediaTypeMapping: Record<SectionType, MediaType> = {
