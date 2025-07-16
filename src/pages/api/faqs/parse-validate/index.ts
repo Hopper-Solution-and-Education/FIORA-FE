@@ -1,15 +1,15 @@
+import formidable from 'formidable';
 import fs from 'fs/promises';
 import { NextApiRequest, NextApiResponse } from 'next';
 import os from 'os';
 import path from 'path';
-import formidable from 'formidable';
 
+import { faqImportUseCase } from '@/features/faqs/application/use-cases';
+import { FAQ_IMPORT_CONSTANTS } from '@/features/faqs/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
-import { faqsImportUseCase } from '@/features/faqs/di/container';
-import { FAQ_IMPORT_CONSTANTS } from '@/features/faqs/constants';
 
 export const config = {
   api: {
@@ -145,7 +145,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
     const fileObject = await convertToFileObject(uploadedFile);
 
     // Execute validation use case - all the business logic is here now
-    const result = await faqsImportUseCase.validateFaqsImportFile({
+    const result = await faqImportUseCase.validateFaqsImportFile({
       file: fileObject,
       maxRecords: maxRecordsResult.maxRecords,
       userId,

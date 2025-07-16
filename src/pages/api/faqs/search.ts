@@ -1,6 +1,5 @@
-import { FAQ_LIST_CONSTANTS } from '@/features/faqs/constants';
-import { getFaqsListUseCase } from '@/features/faqs/di/container';
-import { FaqsGetListType, FaqsListQueryParams } from '@/features/faqs/domain/entities/models/faqs';
+import { getFaqListUseCase } from '@/features/faqs/application/use-cases';
+import { FaqsListQueryParams } from '@/features/faqs/domain/entities/models/faqs';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
@@ -17,17 +16,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 export async function POST(req: NextApiRequest, res: NextApiResponse) {
   try {
-    let faqsListResponse;
-
-    if (req.body.type === FaqsGetListType.LIST) {
-      // Get most viewed FAQs
-      faqsListResponse = await getFaqsListUseCase.execute(req.body as FaqsListQueryParams);
-    } else if (req.body.type === FaqsGetListType.CATEGORIES) {
-      // Get all categories with their FAQs
-      faqsListResponse = await getFaqsListUseCase.executeByCategories({
-        limit: req.body.limit || FAQ_LIST_CONSTANTS.FAQS_PER_CATEGORY,
-      });
-    }
+    // Get most viewed FAQs
+    const faqsListResponse = await getFaqListUseCase.execute(req.body as FaqsListQueryParams);
 
     return res
       .status(RESPONSE_CODE.OK)

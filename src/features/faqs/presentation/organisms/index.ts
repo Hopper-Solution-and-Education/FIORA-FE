@@ -1,3 +1,5 @@
+export { default as FaqCommentsSection } from './FaqCommentsSection';
+export { default as FeedbackSection } from './FeedbackSection';
 export { default as ImportCompletionStatus } from './ImportCompletionStatus';
 export { default as ImportConfirmation } from './ImportConfirmation';
 export { default as ValidationResultsTabs } from './ValidationResultsTabs';

@@ -203,6 +203,13 @@ class WalletRepository implements IWalletRepository {
       data: { frBalanceActive: { increment: amount } },
     });
   }
+
+  async updateDepositRequestCurrency(id: string, currency: string): Promise<DepositRequest> {
+    return this._prisma.depositRequest.update({
+      where: { id },
+      data: { currency: currency as any } as Prisma.DepositRequestUpdateInput,
+    });
+  }
 }
 
 export const walletRepository = new WalletRepository();
