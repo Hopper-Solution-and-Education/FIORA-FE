@@ -48,6 +48,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
               <form
                 onSubmit={form.handleSubmit(handleCredentialsSignIn)}
                 className="w-full space-y-4 flex flex-col items-center"
+                data-test="login-form"
               >
                 <FormField
                   control={form.control}
@@ -65,6 +66,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                               type="email"
                               placeholder="user@flora.live"
                               className="w-full bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-none"
+                              data-test="email-input"
                               {...field}
                             />
                           </FormControl>
@@ -98,11 +100,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                               type={showPassword ? 'text' : 'password'}
                               placeholder="********"
                               className="w-full bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-none pr-10"
+                              data-test="password-input"
                               {...field}
                             />
                           </FormControl>
                           {field.value && (
                             <button
+                              data-test="show-password-button"
                               type="button"
                               className="absolute inset-y-0 right-0 flex items-center pr-3"
                               onClick={() => setShowPassword(!showPassword)}
@@ -156,6 +160,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                     type="submit"
                     disabled={!isValid}
                     className="group text-lg font-semibold w-44 py-6 bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed"
+                    data-test="login-button"
                   >
                     {isLoading || isSubmitting ? (
                       <LoadingIndicator className="w-4 h-4" color="white" />
@@ -195,6 +200,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
               <button
                 onClick={handleGoogleSignIn}
                 className="flex items-center justify-center w-8 h-8 cursor-pointer"
+                data-test="login-google-button"
               >
                 <GoogleIcon />
               </button>

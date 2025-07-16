@@ -43,6 +43,7 @@ const PanelHeader: React.FC<PanelHeaderProps> = ({
             {isExpanded && <Label className="text-sm text-gray-700 font-medium">{title}</Label>}
           </div>
           <button
+            data-test="content-editor-toggle"
             type="button"
             onClick={onToggle}
             disabled={disabled}
@@ -58,6 +59,7 @@ const PanelHeader: React.FC<PanelHeaderProps> = ({
       ) : (
         <>
           <button
+            data-test="content-editor-toggle"
             type="button"
             onClick={onToggle}
             disabled={disabled}

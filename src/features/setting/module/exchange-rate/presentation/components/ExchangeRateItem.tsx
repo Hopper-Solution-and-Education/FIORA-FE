@@ -4,6 +4,7 @@ import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -11,7 +12,6 @@ import { createExchangeRateSchema, ExchangeRateFormData } from '../schema';
 import { ExchangeRateDeleteType, ExchangeRateObjectType, ExchangeRateType } from '../types';
 import ConfirmUpdateModal from './ConfirmUpdateModal';
 import DeleteExchangeRateDialog from './DeleteExchangeRateModal';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type ExchangeRateItemMode = 'new' | 'existing' | 'updating';
 
@@ -181,7 +181,7 @@ const ExchangeRateItem = (props: ExchangeRateItemProps) => {
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form data-test="exchange-rate-item" onSubmit={handleSubmit(onSubmit)}>
         <div className={getContainerClass()}>
           <div className="space-y-1">
             <Label

@@ -255,6 +255,7 @@ const CustomMultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
           {selected.length > 0 && (
             <div className="sticky bottom-0 z-10 bg-popover border-t p-1 backdrop-blur-sm">
               <button
+                data-test="custom-multi-select-clear"
                 className="w-full text-left px-2 py-1.5 text-sm text-destructive hover:bg-accent/50 hover:text-destructive rounded-sm transition-colors"
                 onClick={() => onChange([])}
               >

@@ -266,6 +266,7 @@ export default function MediaItem({
                   </SelectContent>
                 </Select>
                 <input
+                  data-test="media-item-media-type-input"
                   type="hidden"
                   {...control.register(`${mediaPath}.media_type`)}
                   value={mediaType}

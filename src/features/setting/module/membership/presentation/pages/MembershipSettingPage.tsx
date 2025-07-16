@@ -28,7 +28,11 @@ const MembershipSettingPage = () => {
   return (
     <React.Fragment>
       <FormProvider {...methods}>
-        <form id="edit-member-ship-form" onSubmit={methods.handleSubmit(handleSubmit)}>
+        <form
+          data-test="edit-member-ship-form"
+          id="edit-member-ship-form"
+          onSubmit={methods.handleSubmit(handleSubmit)}
+        >
           <div className="min-h-screen p-6 ">
             {/* Main container with two rows */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">

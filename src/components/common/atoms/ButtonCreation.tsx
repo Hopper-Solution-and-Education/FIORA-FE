@@ -81,6 +81,7 @@ const ButtonCreation: FC<ButtonCreationProps> = ({
   // Button element
   const button = (
     <button
+      data-test="button-creation"
       onClick={action}
       className={cn(
         'inline-flex items-center justify-center font-medium transition-colors',
