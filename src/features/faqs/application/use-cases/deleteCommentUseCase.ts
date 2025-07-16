@@ -1,16 +1,12 @@
-import { IFaqsRepository } from '../../domain/repositories/IFaqsRepository';
-
-export interface DeleteCommentUseCaseRequest {
-  commentId: string;
-}
+import { IFaqCommentRepository } from '../../domain/repositories';
+import { faqCommentRepository } from '../../infrastructure/repositories';
 
 export class DeleteCommentUseCase {
-  constructor(private readonly faqsRepository: IFaqsRepository) {}
+  constructor(private readonly faqCommentRepository: IFaqCommentRepository) {}
 
-  async execute(request: DeleteCommentUseCaseRequest): Promise<void> {
-    const { commentId } = request;
-
-    // Delete the comment (repository should handle validation)
-    await this.faqsRepository.deleteComment(commentId);
+  async execute(commentId: string): Promise<void> {
+    await this.faqCommentRepository.deleteComment(commentId);
   }
 }
+
+export const deleteCommentUseCase = new DeleteCommentUseCase(faqCommentRepository);

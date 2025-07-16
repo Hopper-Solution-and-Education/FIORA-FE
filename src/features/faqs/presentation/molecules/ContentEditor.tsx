@@ -1,5 +1,5 @@
 import { Label } from '@/components/ui/label';
-import RichTextEditor from '@/features/faq/presentation/components/faqedit/RichTextEditor';
+import RichTextEditor from '@/features/faqs/presentation/atoms/RichTextEditor';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import ParsedFaqContent from '../atoms/ParsedFaqContent';

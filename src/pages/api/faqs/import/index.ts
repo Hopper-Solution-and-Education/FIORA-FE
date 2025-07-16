@@ -1,13 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import * as yup from 'yup';
 
-import { faqsImportUseCase } from '@/features/faqs/di/container';
+import { faqImportUseCase } from '@/features/faqs/application/use-cases';
+import { FaqsRowValidated } from '@/features/faqs/domain/entities/models/faqs';
+import { FAQS_VALIDATION_SCHEMAS } from '@/features/faqs/domain/schemas/faqsValidationSchemas';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
-import { FaqsRowValidated } from '@/features/faqs/domain/entities/models/faqs';
-import { FAQS_VALIDATION_SCHEMAS } from '@/features/faqs/domain/schemas/faqsValidationSchemas';
 
 // Create import-specific validation schema based on standardized schemas
 const createImportValidationSchema = () => {
@@ -54,7 +54,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
     }
 
     // Execute import use case
-    const result = await faqsImportUseCase.importFaqs(validRecords, userId);
+    const result = await faqImportUseCase.importFaqs(validRecords, userId);
 
     // Log completion for monitoring
     console.log(

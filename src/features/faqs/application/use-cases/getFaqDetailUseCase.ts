@@ -1,5 +1,6 @@
 import { FaqDetailData, GetFaqDetailOptions } from '../../domain/entities/models/faqs';
-import { IFaqsRepository } from '../../domain/repositories/IFaqsRepository';
+import { IFaqRepository } from '../../domain/repositories/IFaqRepository';
+import { faqRepository } from '../../infrastructure/repositories';
 
 export interface GetFaqDetailRequest {
   faqId: string;
@@ -8,7 +9,7 @@ export interface GetFaqDetailRequest {
 }
 
 export class GetFaqDetailUseCase {
-  constructor(private readonly faqsRepository: IFaqsRepository) {}
+  constructor(private readonly faqsRepository: IFaqRepository) {}
 
   async execute(request: GetFaqDetailRequest): Promise<FaqDetailData | null> {
     const { faqId, includes, trackView } = request;
@@ -36,3 +37,5 @@ export class GetFaqDetailUseCase {
     return faqDetail;
   }
 }
+
+export const getFaqDetailUseCase = new GetFaqDetailUseCase(faqRepository);

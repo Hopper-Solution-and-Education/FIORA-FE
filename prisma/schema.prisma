@@ -442,6 +442,7 @@ model DepositRequest {
   attachmentId String?              @unique @db.Uuid
   status       DepositRequestStatus
   remark       String?
+  currency     Currency             @default(VND)
   createdAt    DateTime             @default(now()) @db.Timestamptz(0)
   updatedAt    DateTime             @updatedAt @db.Timestamptz(0)
   createdBy    String?              @db.Uuid

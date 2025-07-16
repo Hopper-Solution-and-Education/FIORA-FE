@@ -1,5 +1,6 @@
 import { UpdateFaqRequest } from '../../domain/entities/models/faqs';
-import { IFaqsRepository } from '../../domain/repositories/IFaqsRepository';
+import { IFaqRepository } from '../../domain/repositories/IFaqRepository';
+import { faqRepository } from '../../infrastructure/repositories';
 
 export interface UpdateFaqUseCaseRequest {
   faqId: string;
@@ -8,18 +9,20 @@ export interface UpdateFaqUseCaseRequest {
 }
 
 export class UpdateFaqUseCase {
-  constructor(private readonly faqsRepository: IFaqsRepository) {}
+  constructor(private readonly faqRepository: IFaqRepository) {}
 
   async execute(request: UpdateFaqUseCaseRequest): Promise<void> {
     const { faqId, updateData, userId } = request;
 
     // Validate that FAQ exists
-    const existingFaq = await this.faqsRepository.getFaqDetail(faqId);
+    const existingFaq = await this.faqRepository.getFaqDetail(faqId);
     if (!existingFaq) {
       throw new Error('FAQ not found');
     }
 
     // Update the FAQ
-    await this.faqsRepository.updateFaq(faqId, updateData, userId);
+    await this.faqRepository.updateFaq(faqId, updateData, userId);
   }
 }
+
+export const updateFaqUseCase = new UpdateFaqUseCase(faqRepository);

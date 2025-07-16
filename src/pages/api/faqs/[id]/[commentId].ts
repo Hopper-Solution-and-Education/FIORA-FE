@@ -1,4 +1,4 @@
-import { deleteCommentUseCase } from '@/features/faqs/di/container';
+import { deleteCommentUseCase } from '@/features/faqs/application/use-cases/deleteCommentUseCase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
@@ -22,23 +22,17 @@ async function DELETE(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { commentId } = req.query;
 
-    // Execute use case
-    await deleteCommentUseCase.execute({
-      commentId: commentId as string,
-    });
+    await deleteCommentUseCase.execute(commentId as string);
 
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.DELETE_COMMENT_SUCCESS));
   } catch (error: any) {
-    if (error.validationErrors) {
-      return res.status(RESPONSE_CODE.BAD_REQUEST).json({
-        status: RESPONSE_CODE.BAD_REQUEST,
-        message: Messages.VALIDATION_ERROR,
-        error: error.validationErrors,
-      });
+    if (error.message === Messages.COMMENT_NOT_FOUND) {
+      return res
+        .status(RESPONSE_CODE.NOT_FOUND)
+        .json(createError(res, RESPONSE_CODE.NOT_FOUND, Messages.COMMENT_NOT_FOUND));
     }
-
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
       .json(

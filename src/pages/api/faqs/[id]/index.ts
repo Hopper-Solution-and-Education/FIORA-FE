@@ -1,35 +1,25 @@
-import {
-  deleteFaqUseCase,
-  getFaqDetailUseCase,
-  updateFaqUseCase,
-} from '@/features/faqs/di/container';
+import { deleteFaqUseCase, updateFaqUseCase } from '@/features/faqs/application/use-cases';
+import { getFaqDetailUseCase } from '@/features/faqs/application/use-cases/getFaqDetailUseCase';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
-import { withAuthorization } from '@/shared/utils/authorizationWrapper';
+import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'GET') {
-    return GET(req, res);
-  } else {
-    return withAuthorization({
-      PUT: ['Admin', 'CS'],
-      DELETE: ['Admin', 'CS'],
-    })(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
-      switch (req.method) {
-        case 'PUT':
-          return PUT(req, res, userId);
-        case 'DELETE':
-          return DELETE(req, res);
-        default:
-          return res
-            .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-            .json({ error: 'Phương thức không được hỗ trợ' });
-      }
-    })(req, res);
+export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
+  switch (req.method) {
+    case 'GET':
+      return GET(req, res);
+    case 'PUT':
+      return PUT(req, res, userId);
+    case 'DELETE':
+      return DELETE(req, res, userId);
+    default:
+      return res
+        .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+        .json({ error: Messages.METHOD_NOT_ALLOWED });
   }
-}
+});
 
 async function GET(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -76,6 +66,9 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
 }
 
 async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  if (!userId) {
+    return createError(res, RESPONSE_CODE.UNAUTHORIZED, Messages.UNAUTHORIZED);
+  }
   try {
     const { id } = req.query;
     const { title, description, content, categoryId } = req.body;
@@ -120,14 +113,15 @@ async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
   }
 }
 
-async function DELETE(req: NextApiRequest, res: NextApiResponse) {
+async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  if (!userId) {
+    return createError(res, RESPONSE_CODE.UNAUTHORIZED, Messages.UNAUTHORIZED);
+  }
   try {
     const { id } = req.query;
 
     // Execute use case
-    await deleteFaqUseCase.execute({
-      faqId: id as string,
-    });
+    await deleteFaqUseCase.execute(id as string);
 
     return res
       .status(RESPONSE_CODE.OK)
