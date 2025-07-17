@@ -2,8 +2,7 @@
 
 import Header from '@/features/landing/presentation/organisms/Header';
 import { motion, Variants } from 'framer-motion';
-import { PartnerLogo } from '../atoms/PartnerLogo';
-import { ScrollToTop } from '../atoms/ScrollToTop';
+import { PartnerLogo, ScrollToTop } from '../atoms';
 import { Banner } from '../molecules/Banner';
 import { FioraSystem } from '../molecules/FioraSystem';
 import Footer from '../organisms/Footer';

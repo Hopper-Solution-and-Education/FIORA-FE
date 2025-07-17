@@ -8,7 +8,7 @@ import {
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 
-export function ModeToggle() {
+function ModeToggle() {
   const { setTheme } = useTheme();
 
   return (
@@ -40,3 +40,5 @@ export function ModeToggle() {
     </DropdownMenu>
   );
 }
+
+export default ModeToggle;

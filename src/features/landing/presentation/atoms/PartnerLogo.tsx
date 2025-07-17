@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { SectionTypeEnum } from '../../constants';
 import { useGetSection } from '../../hooks/useGetSection';
 
-export const PartnerLogo = () => {
+const PartnerLogo = () => {
   const { isLoading, section, isError } = useGetSection(SectionTypeEnum.PARTNER_LOGO);
 
   if (isLoading)

@@ -5,7 +5,7 @@ import { SectionTypeEnum } from '../../constants';
 import { useGetSection } from '../../hooks/useGetSection';
 const DEFAULT_URL = 'https://www.facebook.com/HopperSolutionAndEducation';
 
-export default function Footer() {
+const Footer = () => {
   const { section, isError, isLoading } = useGetSection(SectionTypeEnum.FOOTER);
 
   if (isLoading) {
@@ -60,4 +60,6 @@ export default function Footer() {
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;
