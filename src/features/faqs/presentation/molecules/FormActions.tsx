@@ -36,6 +36,7 @@ const FormActions: React.FC<FormActionsProps> = ({
     <div className="flex justify-between items-center pt-8">
       {/* Cancel Button */}
       <button
+        data-test="form-actions-cancel"
         type="button"
         onClick={handleCancel}
         disabled={isSubmitting}
@@ -51,6 +52,7 @@ const FormActions: React.FC<FormActionsProps> = ({
 
       {/* Submit Button */}
       <button
+        data-test="form-actions-submit"
         type="button"
         onClick={handleSubmit}
         disabled={disabled || isSubmitting}

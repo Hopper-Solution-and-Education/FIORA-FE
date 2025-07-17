@@ -49,6 +49,7 @@ const TextareaField: React.FC<TextareaFieldProps> = ({
         id={id}
         name={name}
         className={cn(error ? 'border-red-500' : '', className)}
+        data-test={props['data-test'] || (name ? `${name}-textarea` : undefined)}
         {...props}
       />
       {error && <p className="text-sm text-red-500">{error.message}</p>}

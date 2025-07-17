@@ -145,7 +145,12 @@ export const FormSheet = <T,>({
             )}
           >
             <Form {...form}>
-              <form id="form-sheet" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <form
+                id="form-sheet"
+                data-test="form-sheet"
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8"
+              >
                 {sectionKeys.map((sectionKey, index) => (
                   <div key={sectionKey} className="space-y-5">
                     {sectionKey !== 'default' && (

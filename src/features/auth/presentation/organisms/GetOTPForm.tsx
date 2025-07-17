@@ -42,6 +42,7 @@ const EmailOtpForm = ({
   return (
     <Form {...emailOtpForm}>
       <form
+        data-test="email-otp-form"
         onSubmit={emailOtpForm.handleSubmit(handleOtpSubmit)}
         className="w-full space-y-4 max-w-2xl"
       >

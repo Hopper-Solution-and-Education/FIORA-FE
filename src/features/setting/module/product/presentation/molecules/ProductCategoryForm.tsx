@@ -195,7 +195,7 @@ const ProductCategoryForm = ({ setValue }: productCategoryFormType) => {
   );
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form data-test="product-category-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <FormConfig
         methods={methods}
         fields={fields}

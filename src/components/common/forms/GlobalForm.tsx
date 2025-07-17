@@ -94,7 +94,7 @@ const GlobalForm = <T extends yup.AnyObject>({
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form data-test="global-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Map through fields to render each one with Controller */}
         {fields.map((fieldElement) => (
           <Controller

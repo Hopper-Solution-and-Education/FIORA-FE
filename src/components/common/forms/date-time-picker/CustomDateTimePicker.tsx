@@ -313,7 +313,12 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
             )}
           </PopoverContent>
         </Popover>
-        <input type="hidden" {...register(name)} ref={ref} />
+        <input
+          data-test="custom-date-time-picker-input"
+          type="hidden"
+          {...register(name)}
+          ref={ref}
+        />
         {error && <p className="text-sm text-red-500 mt-1">{error.message}</p>}
       </div>
     );

@@ -5,11 +5,11 @@ import type React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/shared/utils';
-import { useLogin } from '../../hooks/useLogin';
 import { useForgotPassword } from '../../hooks/useForgotPassword';
+import { useLogin } from '../../hooks/useLogin';
+import GoogleIcon from '../components/GoogleIcon';
 import EmailOtpForm from './GetOTPForm';
 import ResetPasswordForm from './ResetPasswordForm';
-import GoogleIcon from '../components/GoogleIcon';
 
 const ForgotPasswordForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
   const { handleGoogleSignIn } = useLogin();
@@ -64,6 +64,7 @@ const ForgotPasswordForm = ({ className, ...props }: React.ComponentProps<'div'>
             <div className="relative flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <span className="relative z-10 px-1">Or Sign in with</span>
               <button
+                data-test="forgot-password-form-google-sign-in"
                 onClick={handleGoogleSignIn}
                 className="flex items-center justify-center w-8 h-8 cursor-pointer"
               >

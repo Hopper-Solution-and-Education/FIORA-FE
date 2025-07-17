@@ -71,7 +71,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaType, mediaPath }) =
 
       <div className="flex items-center py-2 gap-5">
         <div {...getRootProps()} className="cursor-pointer rounded-md">
-          <input {...getInputProps()} />
+          <input data-test="media-uploader-input" {...getInputProps()} />
           <Button variant="outline" type="button">
             <Upload className="h-4 w-4 mr-2" />
             Upload {mediaType === MediaType.IMAGE ? 'Image' : 'Video'}

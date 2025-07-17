@@ -70,7 +70,7 @@ export function VerifyOTPForm({ email, setSuccessMessage, setError }: VerifyOtpF
   };
 
   return (
-    <form onSubmit={handleVerify} className="flex flex-col gap-3">
+    <form data-test="verify-otp-form" onSubmit={handleVerify} className="flex flex-col gap-3">
       <div className="grid gap-2 mt-2">
         <Label htmlFor="otp">One-Time Password (OTP)</Label>
         <Input
@@ -90,6 +90,7 @@ export function VerifyOTPForm({ email, setSuccessMessage, setError }: VerifyOtpF
       <p className="text-center text-sm text-muted-foreground mt-2">
         Didn’t receive an OTP?{' '}
         <button
+          data-test="verify-otp-form-resend"
           onClick={handleResend}
           type="submit" // Prevent form submission
           className="underline underline-offset-4 hover:text-primary"

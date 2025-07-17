@@ -47,6 +47,7 @@ const ResetPasswordForm = ({
   return (
     <Form {...resetPasswordForm}>
       <form
+        data-test="reset-password-form"
         onSubmit={resetPasswordForm.handleSubmit(handleResetPasswordSubmit)}
         className="w-full space-y-6"
       >
@@ -76,6 +77,7 @@ const ResetPasswordForm = ({
                         />
                       </FormControl>
                       <button
+                        data-test="show-new-password"
                         type="button"
                         className="absolute inset-y-0 right-0 flex items-center pr-3"
                         onClick={() => setShowNewPassword(!showNewPassword)}
@@ -125,6 +127,7 @@ const ResetPasswordForm = ({
                         />
                       </FormControl>
                       <button
+                        data-test="show-confirm-password"
                         type="button"
                         className="absolute inset-y-0 right-0 flex items-center pr-3"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
