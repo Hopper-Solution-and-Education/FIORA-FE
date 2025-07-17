@@ -18,7 +18,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { redirect, usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import { Icons } from '../../Icon';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/collapsible';
 import {
@@ -80,11 +79,9 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   });
 
   const handleLogout = async () => {
-    await signOut().catch(() => {
-      toast.error('Error logging out');
-    });
+    await signOut().catch(() => {});
 
-    redirect('./');
+    redirect('/');
   };
 
   const isItemActive = (item: NavItem): boolean => isItemActiveUtil(item, pathname as string);

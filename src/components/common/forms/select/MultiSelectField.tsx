@@ -102,6 +102,7 @@ const MultiSelectField: React.FC<MultiSelectFieldProps> = ({
       {error && <p className="mt-1 text-sm text-red-500">{error.message}</p>}
       {onCustomAction && (
         <button
+          data-test="multi-select-field-custom-action"
           type="button"
           className="mt-2 text-sm text-primary hover:text-primary/80 flex items-center gap-1"
           onClick={onCustomAction}

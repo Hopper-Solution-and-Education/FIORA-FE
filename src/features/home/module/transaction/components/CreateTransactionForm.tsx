@@ -77,7 +77,11 @@ const CreateTransactionForm = () => {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
+      <form
+        data-test="create-transaction-form"
+        onSubmit={methods.handleSubmit(onSubmit)}
+        className="space-y-4"
+      >
         <FormConfig fields={fields} methods={methods} onBack={() => window.history.back()} />
       </form>
     </FormProvider>

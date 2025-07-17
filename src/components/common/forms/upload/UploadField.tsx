@@ -248,6 +248,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
         {preview && (
           <div className="absolute top-3 right-3 flex space-x-2">
             <button
+              data-test="upload-field-toggle-shape"
               type="button"
               onClick={toggleShape}
               className="w-8 h-8 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80 text-primary rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 hover:scale-105 border border-primary/10 hover:border-primary/20"
@@ -261,6 +262,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
             </button>
 
             <button
+              data-test="upload-field-clear-image"
               type="button"
               onClick={handleClearImage}
               className="w-8 h-8 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80 text-red-500 rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 hover:scale-105 border border-red-200/20 hover:border-red-200/40 dark:border-red-900/30"

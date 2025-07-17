@@ -26,7 +26,7 @@ const BudgetCreation = ({ methods }: Props) => {
   return (
     <React.Fragment>
       {isLoadingGetBudgetById && <Loading />}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form data-test="budget-creation" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <BudgetFieldForm />
       </form>
     </React.Fragment>
