@@ -127,7 +127,7 @@ export const FioraSystem = () => {
   return (
     <section className="mx-auto font-sans">
       <div className="mx-auto">
-        <div className="border-t border-gray-200 pt-8">
+        <div className="pt-4">
           <div className="mx-auto max-w-3xl text-center">
             {isLoading ? (
               <div className="my-2 sm:my-4 h-10 sm:h-12 w-3/4 mx-auto bg-gray-200 rounded animate-pulse" />

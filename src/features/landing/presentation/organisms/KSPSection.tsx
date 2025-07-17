@@ -1,0 +1,183 @@
+'use client'; // Đảm bảo đây là client component vì sử dụng hook và framer-motion
+
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
+import Autoplay from 'embla-carousel-autoplay';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { useState } from 'react';
+import { SectionTypeEnum } from '../../constants';
+import { Media } from '../../domain/models/Media';
+import { useGetSection } from '../../hooks/useGetSection';
+
+const containerWidthDesktop = 1500;
+const containerWidthMobile = 350;
+const numberOfItemsDesktop = 3;
+const numberOfItemsMobile = 1;
+const gapDesktop = 25;
+const gapMobile = 10;
+const itemHeightDesktop = '850px';
+const itemHeightMobile = '400px';
+
+const KSPSection = () => {
+  const { isLoading, section } = useGetSection(SectionTypeEnum.KPS);
+  const isMobile = useIsMobile();
+
+  const containerWidth = isMobile ? containerWidthMobile : containerWidthDesktop;
+  const numberOfItems = isMobile ? numberOfItemsMobile : numberOfItemsDesktop;
+  const gap = isMobile ? gapMobile : gapDesktop;
+  const totalGapWidth = gap * (numberOfItems - 1);
+  const itemWidth = `${(containerWidth - totalGapWidth) / numberOfItems}px`;
+  const itemHeight = isMobile ? itemHeightMobile : itemHeightDesktop;
+
+  if (isLoading) {
+    return (
+      <section className="py-6 sm:py-8">
+        <div className="mx-auto max-w-3xl text-center mt-8 sm:mt-10">
+          <h1 className={`my-4 sm:my-6 text-2xl sm:text-3xl md:text-5xl font-bold text-pretty`}>
+            Why FIORA?
+          </h1>
+          <p>Loading...</p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="sm:pt-10 font-inter">
+      <div className="mx-auto max-w-6xl text-center pt-6">
+        <h1 data-aos="fade-up" className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold">
+          {section?.name}
+        </h1>
+      </div>
+      <Carousel
+        className={`mx-auto ${isMobile ? 'max-w-[100vw]' : 'max-w-[1500px]'}`}
+        opts={{
+          loop: true,
+          direction: 'ltr',
+        }}
+        plugins={[
+          Autoplay({
+            delay: 5000,
+            stopOnInteraction: false,
+            playOnInit: true,
+            jump: false,
+            stopOnFocusIn: true,
+          }),
+        ]}
+      >
+        <CarouselContent className="flex" style={{ gap: `${gap}px`, height: itemHeight }}>
+          {section?.medias?.map((item, index) => (
+            <CarouselItem
+              key={index}
+              style={{
+                maxWidth: itemWidth,
+                height: itemHeight,
+              }}
+            >
+              <FlippingItemContent
+                item={item as unknown as Media}
+                className="border-none shadow-none"
+                style={{
+                  maxWidth: itemWidth,
+                  height: itemHeight,
+                }}
+              />
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+    </section>
+  );
+};
+
+// New component to encapsulate the flipping logic for the CarouselItem's content
+const FlippingItemContent = ({
+  item,
+  className,
+  style,
+}: {
+  item: Media;
+  className: string;
+  style: React.CSSProperties;
+}) => {
+  const [isFlipped, setIsFlipped] = useState(false);
+
+  const handleFlip = () => {
+    setIsFlipped((prev) => !prev);
+  };
+
+  return (
+    <div
+      className={`w-full rounded-lg shadow-md border relative overflow-hidden card-container cursor-pointer ${className} `}
+      style={{ perspective: '1000px', ...style }} // Added perspective to the container for 3D effect
+      onClick={handleFlip}
+    >
+      <motion.div
+        className="card w-full h-full relative"
+        animate={{ rotateY: isFlipped ? 180 : 0 }}
+        transition={{ duration: 0.8 }}
+        style={{
+          transformStyle: 'preserve-3d',
+        }}
+      >
+        {/* Front Side - pass item data */}
+        <div
+          className="card-front absolute w-full h-full flex justify-center items-center backface-hidden rounded-lg bg-white"
+          style={{
+            backfaceVisibility: 'hidden',
+          }}
+        >
+          <CardFront item={item} />
+        </div>
+
+        {/* Back Side - pass item data */}
+        <div
+          className="card-back absolute w-full h-full flex justify-center items-center backface-hidden rounded-lg bg-white"
+          style={{
+            backfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)',
+          }}
+        >
+          <CardBack item={item} />
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+const CardFront = ({ item }: { item: Media }) => {
+  return (
+    <div className="flex flex-col items-center justify-center w-full h-full min-h-full text-center p-4">
+      <div className="w-full h-2/3">
+        <Image
+          src={item.media_url || 'https://placehold.co/454x271?text=Front+Card'}
+          alt={item.description || 'Front Side'}
+          className="w-full h-full object-cover rounded-lg mb-4"
+          width={454}
+          height={271}
+        />
+      </div>
+      <h3 className="text-xl font-semibold text-gray-800">{item.description}</h3>
+    </div>
+  );
+};
+
+const CardBack = ({ item }: { item: Media }) => {
+  return (
+    <div className="flex flex-col items-center justify-center w-full h-full min-h-full text-center p-4">
+      <div className="w-full h-2/3">
+        <Image
+          src={item.media_url || 'https://placehold.co/454x271?text=Back+Card'}
+          alt={item.description || 'Back Side'}
+          className="w-full h-full object-cover rounded-lg mb-4"
+          width={454}
+          height={271}
+        />
+      </div>
+      <p className="text-gray-600 text-sm overflow-hidden text-ellipsis">{item.description}</p>
+    </div>
+  );
+};
+
+export default KSPSection;

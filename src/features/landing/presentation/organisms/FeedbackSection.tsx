@@ -9,8 +9,8 @@ import { useRef } from 'react';
 import { SectionTypeEnum } from '../../constants';
 import { useGetSection } from '../../hooks/useGetSection';
 
-export const ReviewSection = () => {
-  const { isError, section, isLoading } = useGetSection(SectionTypeEnum.REVIEW);
+export const FeedbackSection = () => {
+  const { section, isLoading } = useGetSection(SectionTypeEnum.REVIEW);
   const autoplayRef = useRef(
     Autoplay({ delay: 3000, stopOnInteraction: true, playOnInit: true, jump: false }),
   );
@@ -29,16 +29,6 @@ export const ReviewSection = () => {
         </CardContent>
       </Card>
     </CarouselItem>
-  );
-
-  // Error Component
-  const ErrorMessage = () => (
-    <div className="text-center py-8 sm:py-10">
-      <h2 className="text-lg sm:text-xl font-semibold text-red-600">Something went wrong</h2>
-      <p className="text-gray-500 mt-1 sm:mt-2 text-sm sm:text-base">
-        Unable to load reviews. Please try again later.
-      </p>
-    </div>
   );
 
   return (
@@ -60,9 +50,7 @@ export const ReviewSection = () => {
           )}
         </div>
 
-        {isError ? (
-          <ErrorMessage />
-        ) : isLoading ? (
+        {isLoading ? (
           <Carousel className="w-full">
             <CarouselContent>
               {Array.from({ length: 4 }).map((_, index) => (
@@ -137,4 +125,4 @@ export const ReviewSection = () => {
   );
 };
 
-export default ReviewSection;
+export default FeedbackSection;

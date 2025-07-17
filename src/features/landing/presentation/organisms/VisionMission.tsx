@@ -59,7 +59,7 @@ const VisionMission = () => {
 
   return (
     <section>
-      <div className="md:mt-20 px-10">
+      <div className="md:mt-36 px-10">
         <div className="grid items-start gap-6 lg:grid-cols-5 lg:gap-8">
           <div className="justify-center items-center px-4 md:py-8 lg:py-16 order-2 col-span-2">
             <h1
