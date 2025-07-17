@@ -3,17 +3,18 @@ import { getFaqCategoriesUseCase } from '@/features/faqs/application/use-cases';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
-import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../auth/[...nextauth]';
 
-export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
     case 'GET':
       return GET(req, res);
     case 'POST':
-      return POST(req, res, userId);
+      return POST(req, res);
   }
-});
+}
 
 async function GET(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -31,10 +32,15 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  if (!userId) {
-    return createError(res, RESPONSE_CODE.UNAUTHORIZED, Messages.UNAUTHORIZED);
+async function POST(req: NextApiRequest, res: NextApiResponse) {
+  const session = await getServerSession(req, res, authOptions);
+
+  if (!session || !session.user?.id) {
+    return res.status(RESPONSE_CODE.UNAUTHORIZED).json({ message: Messages.UNAUTHORIZED });
   }
+
+  const userId = session.user.id;
+
   const { name, description } = req.body;
   try {
     const category = await prisma.postCategory.create({

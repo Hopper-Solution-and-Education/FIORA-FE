@@ -1,7 +1,6 @@
 import { prisma } from '@/config';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { PostType, Prisma } from '@prisma/client';
-import { randomUUID } from 'crypto';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default withAuthorization({
@@ -38,7 +37,6 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
 
     const faq = await prisma.post.create({
       data: {
-        id: randomUUID(),
         title,
         description,
         content,
