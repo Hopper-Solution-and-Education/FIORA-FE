@@ -68,6 +68,8 @@ model Account {
   type             AccountType       @default(Payment)
   currencyId       String?           @db.Uuid
   currency         String?
+  baseCurrency     String?           @default("USD")
+  baseAmount       Decimal?          @default(0) @db.Decimal(13, 2)
   limit            Decimal?          @default(0) @db.Decimal(13, 2)
   balance          Decimal?          @default(0) @db.Decimal(13, 2)
   parentId         String?           @db.Uuid

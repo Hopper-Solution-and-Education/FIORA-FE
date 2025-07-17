@@ -1,9 +1,10 @@
-import { createResponse } from '@/shared/lib/responseUtils/createResponse';
-import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { withAuthorization } from '@/shared/utils/authorizationWrapper';
-import { NextApiRequest, NextApiResponse } from 'next';
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
-import { Currency, GlobalFilters } from '@/shared/types';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { GlobalFilters } from '@/shared/types';
+import { withAuthorization } from '@/shared/utils/authorizationWrapper';
+import { Currency } from '@prisma/client';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 export const maxDuration = 30; // 30 seconds
 
@@ -28,7 +29,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const currency = (req.headers['x-user-currency'] as string as Currency) ?? 'VND';
+    const currency = (req.headers['x-user-currency'] as string) ?? Currency.USD;
     const params = req.body as GlobalFilters;
     const { isParent } = req.query;
     if (isParent) {
