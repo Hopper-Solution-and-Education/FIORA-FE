@@ -40,8 +40,8 @@ const OrbitalItem = ({
     return () => animation.stop();
   }, [angle, orbit.speed, item.initialAngle]);
 
-  const baseDotSize = 16;
-  const baseFontSize = 12;
+  const baseDotSize = 18;
+  const baseFontSize = 18;
 
   return (
     <motion.div
@@ -80,7 +80,7 @@ export const FioraSystem = () => {
   const orbitLevels = [
     {
       id: 'level1',
-      radius: 140,
+      radius: 130,
       items: [
         { id: 'item1-1', name: 'Learning course', initialAngle: 180 },
         { id: 'item1-2', name: 'Mentoring', initialAngle: 270 },
@@ -91,7 +91,7 @@ export const FioraSystem = () => {
     },
     {
       id: 'level2',
-      radius: 260,
+      radius: 250,
       items: [
         { id: 'item2-1', name: 'Talent Portal', initialAngle: 220 },
         { id: 'item2-2', name: 'Safe & Marketing Automation', initialAngle: 100 },
@@ -106,7 +106,7 @@ export const FioraSystem = () => {
     },
     {
       id: 'level3',
-      radius: 380,
+      radius: 370,
       items: [
         { id: 'item3-1', name: 'Ecom Development Service', initialAngle: 120 },
         { id: 'item3-2', name: 'Ecom Insurance Bundling', initialAngle: 300 },
@@ -117,7 +117,7 @@ export const FioraSystem = () => {
     },
     {
       id: 'level4',
-      radius: 500,
+      radius: 490,
       items: [
         { id: 'item4-1', name: 'Global Partnerships', initialAngle: 45 },
         { id: 'item4-2', name: 'AI Integration', initialAngle: 135 },
@@ -136,10 +136,10 @@ export const FioraSystem = () => {
   ];
 
   const categoryLabels = [
-    { label: 'EDUCATION', radius: 200, angle: 225 },
-    { label: 'ECOMMERCE', radius: 320, angle: 10 },
-    { label: 'FINANCE', radius: 440, angle: 45 },
-    { label: 'INSURANCE', radius: 560, angle: 315 },
+    { label: 'EDUCATION', radius: 190, angle: 225 },
+    { label: 'ECOMMERCE', radius: 310, angle: 10 },
+    { label: 'FINANCE', radius: 430, angle: 45 },
+    { label: 'INSURANCE', radius: 550, angle: 315 },
   ];
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -159,7 +159,7 @@ export const FioraSystem = () => {
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
-  const baseSystemWidth = 900;
+  const baseSystemWidth = 1200;
 
   const scaleFactor = containerSize > 0 ? containerSize / baseSystemWidth : 1;
 
@@ -179,7 +179,7 @@ export const FioraSystem = () => {
   }));
 
   return (
-    <section className="mx-auto w-[90%] my-8 font-sans">
+    <section className="mx-auto my-8 font-sans">
       <div className="mx-auto">
         <div className="border-t border-gray-200 pt-8">
           <div className="mx-auto max-w-3xl text-center pb-6">
@@ -195,7 +195,7 @@ export const FioraSystem = () => {
           <div className="flex justify-center pb-2 relative">
             <div
               ref={containerRef}
-              className="relative flex items-center justify-center w-full max-w-[900px] aspect-square"
+              className="relative flex items-center justify-center w-full max-w-[1200px] aspect-square mx-auto overflow-hidden"
             >
               <motion.div
                 className="absolute flex flex-col items-center justify-center bg-white p-4 rounded-full shadow-lg z-50"
@@ -206,9 +206,8 @@ export const FioraSystem = () => {
                 <Image
                   src="https://placehold.co/100x100/4CAF50/FFFFFF?text=Fiora"
                   alt="Fiora Logo"
-                  width={100}
-                  height={100}
-                  className="rounded-full"
+                  fill
+                  className="rounded-full h-20 w-20"
                 />
               </motion.div>
 
@@ -248,7 +247,7 @@ export const FioraSystem = () => {
                       cy={center}
                       r={orbit.radius}
                       fill="none"
-                      stroke="#333"
+                      stroke="#666666"
                       strokeWidth={strokeWidth}
                       strokeDasharray={`${adjustedDash} ${adjustedGap}`}
                       strokeDashoffset="1"

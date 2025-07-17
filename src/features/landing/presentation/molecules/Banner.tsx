@@ -37,7 +37,7 @@ export function Banner() {
   if (isError || !section) return <p>Error loading banners.</p>;
 
   return (
-    <div className="mt-16 md:mt-20 lg:mt-20">
+    <div className="mt-16 md:mt-18 lg:mt-20">
       <Carousel
         opts={{ loop: true }}
         plugins={[
@@ -61,7 +61,7 @@ export function Banner() {
                     className="block cursor-pointer"
                   >
                     <div className="relative w-full">
-                      <div className="w-full h-[250px] sm:h-[300px] md:h-[650px] lg:h-[870px]">
+                      <div className="w-full h-[250px] sm:h-[300px] md:h-[500px] lg:h-[870px]">
                         <Image
                           src={image.media_url ?? ''}
                           alt={image.description || `Banner ${index + 1}`}
