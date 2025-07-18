@@ -68,6 +68,8 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
 async function PUT(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { id, status, remark } = req.body;
+    console.log('run');
+
     if (!id || !status) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_PARAMS_INPUT);
     }
