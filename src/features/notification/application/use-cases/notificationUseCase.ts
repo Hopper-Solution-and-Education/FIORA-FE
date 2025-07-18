@@ -23,7 +23,7 @@ export interface NotificationDashboardItem {
   status: string;
   emailTemplate?: any;
   attachment?: any;
-  [key: string]: any; // Cho phép truy cập động
+  [key: string]: any;
 }
 
 class NotificationUseCase {

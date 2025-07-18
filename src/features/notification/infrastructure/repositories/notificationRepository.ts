@@ -52,13 +52,22 @@ class NotificationRepository implements INotificationRepository {
       query.take = take;
     }
     const notifications = (await prisma.notification.findMany(query)) as any[];
+    // Lấy danh sách userId (createdBy) duy nhất
+    const userIds = Array.from(new Set(notifications.map((n) => n.createdBy).filter(Boolean)));
+    const users = userIds.length
+      ? await prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: { id: true, email: true, name: true },
+        })
+      : [];
+    const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
     return notifications.map((n) => ({
       id: n.id,
       sendDate: n.createdAt,
       notifyTo: n.notifyTo,
       subject: n.message,
       recipients: n.emails,
-      sender: n.createdBy,
+      sender: n.createdBy ? userMap[n.createdBy]?.email || n.createdBy : 'System',
       notifyType: n.type,
       channel: n.channel,
       status: getNotificationStatus(n.emailLogs),
@@ -80,13 +89,29 @@ class NotificationRepository implements INotificationRepository {
       },
     });
     if (!n) return null;
+    let sender = 'System';
+    let senderName = 'System';
+    if (n.createdBy) {
+      const user = await prisma.user.findUnique({
+        where: { id: n.createdBy },
+        select: { email: true, name: true },
+      });
+      if (user) {
+        sender = user.email;
+        senderName = user.name || 'System';
+      } else {
+        sender = n.createdBy;
+        senderName = 'System';
+      }
+    }
     return {
       id: n.id,
       sendDate: n.createdAt,
       notifyTo: n.notifyTo,
       subject: n.message,
       recipients: n.emails,
-      sender: n.createdBy,
+      sender,
+      senderName,
       notifyType: n.type,
       channel: n.channel,
       status: getNotificationStatus(n.emailLogs),
