@@ -41,16 +41,18 @@ const BudgetCreationHeader = () => {
         {budgetYear ? `Update Budget ${budgetYear}` : 'Create New Budget'}
       </h1>
 
-      <Button
-        disabled={!budgetYear}
-        type="button"
-        variant="ghost"
-        className="p-2"
-        aria-label="Delete budget"
-        onClick={handlePressDeleteBudget}
-      >
-        <Trash2 className="h-5 w-5 md:h-6 md:w-6 text-red-500" />
-      </Button>
+      {budgetYear && (
+        <Button
+          disabled={!budgetYear}
+          type="button"
+          variant="ghost"
+          className="p-2"
+          aria-label="Delete budget"
+          onClick={handlePressDeleteBudget}
+        >
+          <Trash2 className="h-5 w-5 md:h-6 md:w-6 text-red-500" />
+        </Button>
+      )}
 
       <DeleteDialog
         open={openDelete}

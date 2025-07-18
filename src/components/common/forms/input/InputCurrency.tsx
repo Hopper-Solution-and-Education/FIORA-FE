@@ -1,11 +1,11 @@
 import GlobalLabel from '@/components/common/atoms/GlobalLabel';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Currency } from '@/shared/types';
+import { cn } from '@/shared/utils';
 import React, { memo, useEffect, useState } from 'react';
 import { FieldError } from 'react-hook-form';
 import { formatCurrency, formatSuggestionValue } from './utils';
-import { Button } from '@/components/ui/button';
-import { Currency } from '@/shared/types';
-import { cn } from '@/shared/utils';
 
 interface InputCurrencyProps {
   value?: number;
@@ -74,6 +74,10 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
     if (value > 0) {
       setShowSuggestionValue(true);
     }
+
+    if (value >= 1000000000) {
+      setShowSuggestionValue(false);
+    }
   };
 
   const handleSuggestionClick = (value: number) => {
@@ -114,38 +118,30 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
         <div className="w-[100%] flex flex-col justify-between items-start overflow-y-hidden overflow-x-auto">
           {/* Increate button group */}
           <div className="w-full h-11 flex justify-evenly items-center gap-2 py-2">
-            <Button
-              type="button"
-              variant={'secondary'}
-              className="w-full h-full"
-              onClick={() => handleSuggestionClick(value * 10)}
-            >
-              {formatSuggestionValue(value * 10, currency as Currency, true)}
-            </Button>
-            <Button
-              type="button"
-              variant={'secondary'}
-              className="w-full h-full"
-              onClick={() => handleSuggestionClick(value * 100)}
-            >
-              {formatSuggestionValue(value * 100, currency as Currency, true)}
-            </Button>
-            <Button
-              type="button"
-              variant={'secondary'}
-              className="w-full h-full"
-              onClick={() => handleSuggestionClick(value * 1000)}
-            >
-              {formatSuggestionValue(value * 1000, currency as Currency, true)}
-            </Button>
-            <Button
-              type="button"
-              variant={'secondary'}
-              className="w-full h-full"
-              onClick={() => handleSuggestionClick(value * 10000)}
-            >
-              {formatSuggestionValue(value * 10000, currency as Currency, true)}
-            </Button>
+            {[{ mul: 10 }, { mul: 100 }, { mul: 1000 }, { mul: 10000 }].map(({ mul }, idx) => {
+              let suggestionValue = value * mul;
+              if (suggestionValue > 10_000_000_000) suggestionValue = 10_000_000_000;
+              // Không render nếu suggestionValue nhỏ hơn value hiện tại hoặc đã trùng với suggestion trước đó
+              if (suggestionValue <= value) return null;
+              // Đảm bảo không render suggestion trùng nhau
+              if (idx > 0) {
+                const prevMul = [10, 100, 1000, 10000][idx - 1];
+                let prevValue = value * prevMul;
+                if (prevValue > 10_000_000_000) prevValue = 10_000_000_000;
+                if (prevValue === suggestionValue) return null;
+              }
+              return (
+                <Button
+                  key={mul}
+                  type="button"
+                  variant={'secondary'}
+                  className="w-full h-full"
+                  onClick={() => handleSuggestionClick(suggestionValue)}
+                >
+                  {formatSuggestionValue(suggestionValue, currency as Currency, true)}
+                </Button>
+              );
+            })}
           </div>
         </div>
       )}

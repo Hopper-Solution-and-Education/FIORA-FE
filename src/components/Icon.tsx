@@ -30,6 +30,7 @@ import {
   ClipboardList,
   Coins,
   Command,
+  CornerDownRight,
   CreditCard,
   Database,
   DollarSign,
@@ -326,4 +327,5 @@ export const Icons = {
     </svg>
   ),
   shieldCheck: ShieldCheck,
+  cornerDownRight: CornerDownRight,
 };

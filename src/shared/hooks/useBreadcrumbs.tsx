@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import { breadcrumbConfig, BreadcrumbConfig } from '@/shared/configs/breadcrumbConfig';
 import { ReadonlyURLSearchParams, usePathname, useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
-import { breadcrumbConfig, BreadcrumbConfig } from '@/shared/configs/breadcrumbConfig';
 
 /**
  * Represents a single breadcrumb item with a title and a link.
@@ -71,10 +71,11 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Budgets', link: '/budgets' },
     { title: 'Create', link: '/budgets/create' },
   ],
-  '/budgets/update/[id]': [
+  '/budgets/summary/update/[year]': [
     { title: 'Finance', link: '/finance/report' },
     { title: 'Budgets', link: '/budgets' },
-    { title: 'Update', link: '/budgets/update/[id]' },
+    { title: 'Summary', link: '/budgets/summary/[year]' },
+    { title: 'Update', link: '/budgets/summary/update/[year]' },
   ],
   '/budgets/summary/[year]': [
     { title: 'Finance', link: '/finance/report' },
