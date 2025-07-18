@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { MediaType } from '@prisma/client';
 import Autoplay from 'embla-carousel-autoplay';
+import { ArrowLeftCircle, ArrowRightCircle, StarIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useRef } from 'react';
 import { SectionTypeEnum } from '../../constants';
@@ -109,50 +110,59 @@ export const FeedbackSection = () => {
 
                     return (
                       <CarouselItem key={index} className="basis-full px-1 sm:px-2">
-                        <Card className="w-full max-w-[1350px] h-[450px] mx-auto shadow-md hover:shadow-lg transition-shadow duration-300 flex rounded-xl px-16">
-                          <CardContent className="pl-10 mt-10 flex flex-col justify-center items-center w-2/4">
-                            <div className="flex justify-start items-center w-full gap-6">
+                        <Card className="w-full max-w-[1450px] min-h-[350px] h-auto mx-auto shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row rounded-xl px-2 md:px-8 lg:px-16 py-4 md:py-8 gap-4 md:gap-0">
+                          {/* CardContent: Reviewer info and review */}
+                          <CardContent className="flex flex-col gap-4 w-full md:w-2/5 justify-center items-center md:items-start px-2 md:px-6 lg:px-10 py-4 md:py-10">
+                            <div className="flex flex-col sm:flex-row items-center md:items-start w-full gap-4">
                               <Image
                                 src={reviewerAvatarUrl}
                                 alt="Reviewer Avatar"
-                                width={80}
-                                height={80}
-                                className="rounded-full object-cover mr-3 flex-shrink-0 w-[50px] h-[50px] sm:w-[40px] sm:h-[40px] md:w-[60px] md:h-[60px] lg:w-[70px] lg:h-[70px] xl:w-[80px] xl:h-[80px]"
+                                width={90}
+                                height={90}
+                                className="rounded-full object-cover flex-shrink-0 w-[60px] h-[60px] sm:w-[70px] sm:h-[70px] md:w-[80px] md:h-[80px] lg:w-[90px] lg:h-[90px]"
                               />
-                              <div>
-                                <h3 className="font-bold text-lg">{reviewerName}</h3>
-                                <p className="text-sm text-gray-600">{reviewerTitle}</p>
+                              <div className="flex flex-col items-center md:items-start gap-1 w-full">
+                                <h3 className="font-bold text-base sm:text-lg md:text-xl lg:text-2xl text-center md:text-left">
+                                  {reviewerName}
+                                </h3>
+                                <p className="text-xs sm:text-sm md:text-base text-gray-600 mb-1 text-center md:text-left">
+                                  {reviewerTitle}
+                                </p>
+                                <div className="flex items-center gap-1 sm:gap-2">
+                                  {Array.from({ length: 5 }).map((_, idx) => (
+                                    <StarIcon
+                                      key={idx}
+                                      className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 fill-yellow-400"
+                                    />
+                                  ))}
+                                </div>
                               </div>
                             </div>
-                            <p className="text-gray-700 text-sm flex-grow overflow-hidden mb-2">
-                              {reviewText}
-                            </p>
+                            <Divider />
+                            {/* review section text */}
+                            <div className="w-full">
+                              <p className="text-gray-700 text-xs sm:text-sm md:text-base flex-grow overflow-hidden mb-2 text-center md:text-left line-clamp-5">
+                                {reviewText}
+                              </p>
+
+                              <div className="flex justify-center md:justify-end gap-2 mt-2 text-gray-400">
+                                <ArrowLeftCircle className="w-6 h-6 cursor-pointer" />
+                                <ArrowRightCircle className="w-6 h-6 cursor-pointer" />
+                              </div>
+                            </div>
                           </CardContent>
-                          <div className="w-2/4 p-10">
+                          {/* Media section */}
+                          <div className="w-full md:w-3/5 p-2 md:p-6 lg:p-10 flex items-center justify-center">
                             {media.media_type === MediaType.EMBEDDED && media.embed_code ? (
                               <div
-                                className="w-full h-full rounded-lg overflow-hidden"
+                                className="w-full h-[200px] sm:h-[300px] md:h-[350px] lg:h-[400px] rounded-xl overflow-hidden"
                                 dangerouslySetInnerHTML={{
                                   __html: `<style>iframe { width: 100% !important; height: 100% !important; border: none; }</style>${media.embed_code}`,
                                 }}
                               />
-                            ) : media.media_type === MediaType.IMAGE && media.media_url ? (
-                              <Image
-                                src={media.media_url}
-                                alt={media.description || `Review ${index + 1}`}
-                                width={600}
-                                height={300}
-                                className="w-full h-full object-cover rounded-lg"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src =
-                                    'https://via.placeholder.com/600x300?text=Image+Not+Found';
-                                }}
-                              />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-lg">
-                                <p className="text-gray-500 text-xs sm:text-sm">
-                                  No content available
-                                </p>
+                              <div className="w-full h-[200px] sm:h-[300px] md:h-[350px] lg:h-[400px] flex items-center justify-center bg-gray-100 rounded-xl">
+                                <span className="text-gray-400">No media</span>
                               </div>
                             )}
                           </div>
@@ -177,3 +187,32 @@ export const FeedbackSection = () => {
 };
 
 export default FeedbackSection;
+
+const Divider = () => {
+  return (
+    <div className="flex justify-center w-full">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 100 20"
+        className="h-5 w-full"
+        fill="none"
+        preserveAspectRatio="none"
+      >
+        {/* Left gray line */}
+        <line x1="0" y1="10" x2="40.5" y2="10" stroke="#c0c0c0" strokeWidth="3" />
+        <line x1="35.5" y1="10" x2="47.5" y2="10" stroke="#2e7d32" strokeWidth="3" />
+        {/* Deeper green V-shaped polyline */}
+        <polyline
+          points="47,9 50,17 52.6,9.4 77.5,10"
+          stroke="#2e7d32"
+          strokeWidth="1.25"
+          fill="none"
+        />
+
+        {/* Right gray line */}
+        <line x1="52.5" y1="10" x2="77.5" y2="10" stroke="#2e7d32" strokeWidth="3" />
+        <line x1="63" y1="10" x2="100" y2="10" stroke="#c0c0c0" strokeWidth="3" />
+      </svg>
+    </div>
+  );
+};

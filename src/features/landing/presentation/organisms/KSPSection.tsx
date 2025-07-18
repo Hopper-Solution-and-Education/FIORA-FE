@@ -14,10 +14,10 @@ const containerWidthDesktop = 1500;
 const containerWidthMobile = 350;
 const numberOfItemsDesktop = 3;
 const numberOfItemsMobile = 1;
-const gapDesktop = 25;
+const gapDesktop = 5;
 const gapMobile = 10;
 const itemHeightDesktop = '850px';
-const itemHeightMobile = '400px';
+const itemHeightMobile = '550px';
 
 const KSPSection = () => {
   const { isLoading, section } = useGetSection(SectionTypeEnum.KPS);
@@ -51,7 +51,7 @@ const KSPSection = () => {
         </h1>
       </div>
       <Carousel
-        className={`mx-auto ${isMobile ? 'max-w-[100vw]' : 'max-w-[1500px]'}`}
+        className={`mx-auto  ${isMobile ? 'max-w-[100vw]' : 'max-w-[1500px]'}`}
         opts={{
           loop: true,
           direction: 'ltr',
@@ -66,18 +66,20 @@ const KSPSection = () => {
           }),
         ]}
       >
-        <CarouselContent className="flex" style={{ gap: `${gap}px`, height: itemHeight }}>
+        <CarouselContent className="flex" style={{ height: itemHeight }}>
           {section?.medias?.map((item, index) => (
             <CarouselItem
               key={index}
               style={{
+                marginRight: `${gap}px`,
+                marginLeft: `${gap}px`,
                 maxWidth: itemWidth,
                 height: itemHeight,
               }}
             >
               <FlippingItemContent
                 item={item as unknown as Media}
-                className="border-none shadow-none"
+                className="border-none shadow-none py-20"
                 style={{
                   maxWidth: itemWidth,
                   height: itemHeight,
@@ -148,34 +150,28 @@ const FlippingItemContent = ({
 
 const CardFront = ({ item }: { item: Media }) => {
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full min-h-full text-center p-4">
-      <div className="w-full h-2/3">
-        <Image
-          src={item.media_url || 'https://placehold.co/454x271?text=Front+Card'}
-          alt={item.description || 'Front Side'}
-          className="w-full h-full object-cover rounded-lg mb-4"
-          width={454}
-          height={271}
-        />
-      </div>
-      <h3 className="text-xl font-semibold text-gray-800">{item.description}</h3>
+    <div className="relative w-full h-full">
+      <Image
+        src={item.media_url || 'https://placehold.co/454x271?text=Front+Card'}
+        alt={item.description || 'Front Side'}
+        className="w-full h-full object-cover rounded-lg"
+        fill
+        sizes="100%"
+      />
     </div>
   );
 };
 
 const CardBack = ({ item }: { item: Media }) => {
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full min-h-full text-center p-4">
-      <div className="w-full h-2/3">
-        <Image
-          src={item.media_url || 'https://placehold.co/454x271?text=Back+Card'}
-          alt={item.description || 'Back Side'}
-          className="w-full h-full object-cover rounded-lg mb-4"
-          width={454}
-          height={271}
-        />
-      </div>
-      <p className="text-gray-600 text-sm overflow-hidden text-ellipsis">{item.description}</p>
+    <div className="relative w-full h-full">
+      <Image
+        src={item.media_url || 'https://placehold.co/454x271?text=Back+Card'}
+        alt={item.description || 'Back Side'}
+        className="w-full h-full object-cover rounded-lg"
+        fill
+        sizes="100%"
+      />
     </div>
   );
 };

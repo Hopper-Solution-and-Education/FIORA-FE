@@ -111,7 +111,7 @@ export const orbitLevels: OrbitLevel[] = [
       {
         id: 'item3-6',
         name: 'Lending',
-        initialAngle: 60,
+        initialAngle: 90,
       },
     ],
     speed: 40,

@@ -1,6 +1,6 @@
 import { Icons } from '@/components/Icon';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { animate, motion, useMotionValue, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { SectionTypeEnum } from '../../constants';
@@ -36,14 +36,20 @@ const OrbitalCategoryLabel = ({
   );
 
   useEffect(() => {
-    const animation = animate(angle, initialAngle + 360, {
-      duration: speed * 1.5,
-      ease: 'linear',
-      repeat: Infinity,
-    });
+    let frameId: number;
+    let lastTime = performance.now();
 
-    return () => animation.stop();
-  }, [angle, speed, initialAngle, radius]);
+    function update(now: number) {
+      const delta = now - lastTime;
+      lastTime = now;
+      const degreesPerMs = 360 / (speed * 1000);
+      angle.set(angle.get() + degreesPerMs * delta);
+      frameId = requestAnimationFrame(update);
+    }
+
+    frameId = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(frameId);
+  }, [angle, speed]);
 
   const baseCategoryDotSize = 40;
 
@@ -127,12 +133,12 @@ export const FioraSystem = () => {
   return (
     <section className="mx-auto font-sans">
       <div className="mx-auto">
-        <div className="pt-4">
+        <div className="pt-20 sm:pt-10 md:pt-14 lg:pt-20">
           <div className="mx-auto max-w-3xl text-center">
             {isLoading ? (
-              <div className="my-2 sm:my-4 h-10 sm:h-12 w-3/4 mx-auto bg-gray-200 rounded animate-pulse" />
+              <div className="h-10 sm:h-12 w-3/4 mx-auto bg-gray-200 rounded animate-pulse" />
             ) : (
-              <h1 className="my-2 sm:my-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">
                 {section?.name}
               </h1>
             )}
@@ -144,7 +150,7 @@ export const FioraSystem = () => {
               className="relative flex items-center justify-center w-full max-w-[1200px] aspect-square mx-auto overflow-hidden"
             >
               <motion.div
-                className="absolute flex flex-col items-center justify-center bg-white rounded-full shadow-lg z-50"
+                className="absolute flex flex-col items-center justify-center bg-white rounded-full shadow-lg z-10"
                 style={{
                   width: `${160 * scaleFactor}px`,
                   height: `${160 * scaleFactor}px`,
@@ -155,7 +161,7 @@ export const FioraSystem = () => {
                 transition={{ duration: 0.5 }}
               >
                 <Image
-                  src="https://placehold.co/100x100/4CAF50/FFFFFF?text=Fiora"
+                  src="https://cdn.pixabay.com/photo/2017/09/12/06/26/home-2741413_960_720.png"
                   alt="Fiora Logo"
                   width={100 * scaleFactor}
                   height={100 * scaleFactor}

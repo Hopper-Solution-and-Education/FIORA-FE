@@ -1,7 +1,7 @@
 'use client';
 
 import Header from '@/features/landing/presentation/organisms/Header';
-import { motion, Variants } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { PartnerLogo, ScrollToTop } from '../atoms';
 import { Banner } from '../molecules/Banner';
 import { FioraSystem } from '../molecules/FioraSystem';
@@ -10,78 +10,120 @@ import Footer from '../organisms/Footer';
 import KPSSection from '../organisms/KSPSection';
 import VisionMission from '../organisms/VisionMission';
 
-const fadeIn = {
-  hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } },
-};
-
-const zoomIn = {
-  hidden: { scale: 0.8, opacity: 0 },
-  visible: { scale: 1, opacity: 1, transition: { duration: 0.8, ease: 'easeOut' } },
+const staggerContainer = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.3,
+      delayChildren: 0.2,
+    },
+  },
 };
 
 const LandingPage = () => {
   return (
     <>
       <Header />
+
+      {/* Banner */}
       <motion.div
-        initial={{ opacity: 0, y: 100 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, ease: 'easeOut' }}
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0, y: 60 },
+          visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.8, ease: ['easeOut'] },
+          },
+        }}
       >
         <Banner />
       </motion.div>
 
+      {/* Sections with stagger animation */}
       <motion.div
-        variants={fadeIn as Variants}
+        variants={staggerContainer}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true }}
+        viewport={{ once: true, amount: 0.2 }}
       >
-        <VisionMission />
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 60 },
+            visible: {
+              opacity: 1,
+              y: 0,
+              transition: { duration: 0.8, ease: ['easeOut'] },
+            },
+          }}
+        >
+          <VisionMission />
+        </motion.div>
+
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 60 },
+            visible: {
+              opacity: 1,
+              y: 0,
+              transition: { duration: 0.8, ease: ['easeOut'] },
+            },
+          }}
+        >
+          <FioraSystem />
+        </motion.div>
+
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 60 },
+            visible: {
+              opacity: 1,
+              y: 0,
+              transition: { duration: 0.8, ease: ['easeOut'] },
+            },
+          }}
+        >
+          <KPSSection />
+        </motion.div>
+
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 60 },
+            visible: {
+              opacity: 1,
+              y: 0,
+              transition: { duration: 0.8, ease: ['easeOut'] },
+            },
+          }}
+        >
+          <FeedbackSection />
+        </motion.div>
       </motion.div>
 
+      {/* Partner logo - zoom effect */}
       <motion.div
-        variants={fadeIn as Variants}
+        variants={{
+          hidden: { scale: 0.9, opacity: 0 },
+          visible: {
+            scale: 1,
+            opacity: 1,
+            transition: { duration: 0.8, ease: 'easeOut' },
+          },
+        }}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true }}
-      >
-        <FioraSystem />
-      </motion.div>
-
-      <motion.div
-        variants={fadeIn as Variants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
-        <KPSSection />
-      </motion.div>
-
-      <motion.div
-        variants={fadeIn as Variants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
-        <FeedbackSection />
-      </motion.div>
-
-      <motion.div
-        variants={zoomIn as Variants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
+        viewport={{ once: true, amount: 0.3 }}
       >
         <PartnerLogo />
       </motion.div>
 
+      {/* Footer - subtle fade in */}
       <motion.div
-        variants={zoomIn as Variants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, ease: 'easeOut' }}
+        viewport={{ once: true, amount: 0.2 }}
       >
         <Footer />
       </motion.div>

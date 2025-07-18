@@ -61,7 +61,7 @@ export function Banner() {
                     className="block cursor-pointer"
                   >
                     <div className="relative w-full">
-                      <div className="w-full h-[250px] sm:h-[300px] md:h-[500px] lg:h-[870px]">
+                      <div className="w-full h-[250px] sm:h-[300px] md:h-[500px] lg:h-[900px]">
                         <Image
                           src={image.media_url ?? ''}
                           alt={image.description || `Banner ${index + 1}`}
