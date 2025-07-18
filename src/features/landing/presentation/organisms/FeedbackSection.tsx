@@ -104,65 +104,29 @@ export const FeedbackSection = () => {
                     const reviewerName = 'Reina Smith';
                     const reviewerTitle = 'Beautician';
                     const reviewerAvatarUrl = `https://i.pravatar.cc/48?img=${index + 1}`; // Unique avatar per item
-                    const rating = 4;
                     const reviewText =
                       'Nunc quis erat ac nunc lacinia egestas. Donec in placerat ipsum. Mauris nec porta magna. Suspendisse potenti. Ut viverra dui vel est viverra lacinia.';
 
                     return (
                       <CarouselItem key={index} className="basis-full px-1 sm:px-2">
-                        <Card className="w-full max-w-[1400px] h-[550px] mx-auto shadow-md hover:shadow-lg transition-shadow duration-300 flex rounded-xl">
-                          <CardContent className="py-10 pl-10 mt-10 flex flex-col justify-center items-center  w-2/4">
-                            <div className="flex">
+                        <Card className="w-full max-w-[1350px] h-[450px] mx-auto shadow-md hover:shadow-lg transition-shadow duration-300 flex rounded-xl px-16">
+                          <CardContent className="pl-10 mt-10 flex flex-col justify-center items-center w-2/4">
+                            <div className="flex justify-start items-center w-full gap-6">
                               <Image
                                 src={reviewerAvatarUrl}
                                 alt="Reviewer Avatar"
                                 width={80}
                                 height={80}
-                                className="rounded-full object-cover mr-3 flex-shrink-0 w-[80px] h-[80px]"
+                                className="rounded-full object-cover mr-3 flex-shrink-0 w-[50px] h-[50px] sm:w-[40px] sm:h-[40px] md:w-[60px] md:h-[60px] lg:w-[70px] lg:h-[70px] xl:w-[80px] xl:h-[80px]"
                               />
                               <div>
                                 <h3 className="font-bold text-lg">{reviewerName}</h3>
                                 <p className="text-sm text-gray-600">{reviewerTitle}</p>
-                                <div className="flex text-yellow-500">
-                                  {Array.from({ length: 5 }).map((_, i) => (
-                                    <span key={i}>{i < rating ? '★' : '☆'}</span>
-                                  ))}
-                                </div>
                               </div>
                             </div>
-                            <p className="text-gray-700 text-sm flex-grow overflow-hidden mb-2 px-6">
+                            <p className="text-gray-700 text-sm flex-grow overflow-hidden mb-2">
                               {reviewText}
                             </p>
-                            <div className="flex justify-end gap-2 mt-2 text-gray-400 px-6 pb-6">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21H3v-3.375c0-1.506.943-2.75 2.356-3.224 1.403-.465 2.887-.84 4.392-1.113l6.007-1.113z"
-                                />
-                              </svg>
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                />
-                              </svg>
-                            </div>
                           </CardContent>
                           <div className="w-2/4 p-10">
                             {media.media_type === MediaType.EMBEDDED && media.embed_code ? (
