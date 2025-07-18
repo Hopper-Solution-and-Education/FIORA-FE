@@ -5,6 +5,7 @@ import QuillResizeImage from 'quill-resize-image';
 import { useCallback, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import 'react-quill-new/dist/quill.snow.css';
+import { uploadToFirebase } from '../../../../shared/lib/firebase/firebaseUtils';
 
 // Dynamically import ReactQuill to avoid SSR issues
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
@@ -21,6 +22,16 @@ if (typeof window !== 'undefined') {
 }
 
 export default function RichTextEditor({ value, onChange }: RichTextEditorProps) {
+  // const uploadToFirebase = async (file: File): Promise<string> => {
+  //   const formData = new FormData();
+  //   formData.append('file', file);
+  //   const res = await fetch(`/api/upload`, { method: 'POST', body: formData });
+  //   const data = await res.json();
+  //   const url = data.url;
+
+  //   return url;
+  // };
+
   // Custom image handler for file uploads
   const handleImageUpload = useCallback(() => {
     const input = document.createElement('input');
@@ -28,28 +39,41 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
     input.setAttribute('accept', 'image/*');
     input.click();
 
-    input.onchange = () => {
-      const file = input.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          // ReactQuill will handle the image insertion through its internal editor instance
-          const quill = (window as any).Quill?.find(document.querySelector('.ql-editor'));
-          if (quill) {
-            const range = quill.getSelection();
-            const index = range ? range.index : 0;
-            quill.insertEmbed(index, 'image', reader.result, 'user');
-            quill.setSelection(index + 1);
-          }
-        };
-        reader.readAsDataURL(file);
+    input.onchange = async () => {
+      if (input !== null && input.files !== null) {
+        const file = input.files?.[0];
+        const url = await uploadToFirebase({ file, path: 'images' });
+        // const reader = new FileReader();
+        // reader.onload = () => {
+        //   // ReactQuill will handle the image insertion through its internal editor instance
+        //   const quill = (window as any).Quill?.find(document.querySelector('.ql-editor'));
+        //   if (quill) {
+        //     const range = quill.getSelection();
+        //     const index = range ? range.index : 0;
+        //     quill.insertEmbed(index, 'image', reader.result, 'user');
+        //     quill.setSelection(index + 1);
+        //   }
+        // };
+        // reader.readAsDataURL(file);
+
+        // }
+
+        const imageHtml = `<img src="${url}" alt="Uploaded image"  />`;
+
+        onChange(value + imageHtml);
+        const quill = (window as any).Quill?.find(document.querySelector('.ql-editor'));
+        if (quill) {
+          const range = quill.getSelection();
+          const index = range ? range.index : 0;
+          quill.setSelection(index + 1);
+        }
       }
     };
-  }, []);
+  }, [onChange, value]);
 
   // Custom video handler for YouTube/Vimeo embeds
   const handleVideoUpload = useCallback(() => {
-    const url = prompt('Enter video URL (YouTube or Vimeo):');
+    const url = prompt('Enter video URL');
     if (url) {
       let embedUrl = url;
 
@@ -58,25 +82,23 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         const videoId = url.split('watch?v=')[1]?.split('&')[0];
         embedUrl = `https://www.youtube.com/embed/${videoId}`;
       }
-      // Convert Vimeo URLs to embed URLs
-      else if (url.includes('vimeo.com/')) {
-        const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
-        embedUrl = `https://player.vimeo.com/video/${videoId}`;
-      }
 
       // ReactQuill will handle the video insertion through its internal editor instance
-      const quill = (window as any).Quill?.find(document.querySelector('.ql-editor'));
-      if (quill) {
-        const range = quill.getSelection();
-        const index = range ? range.index : 0;
+      // const quill = (window as any).Quill?.find(document.querySelector('.ql-editor'));
+      // if (quill) {
+      //   const range = quill.getSelection();
+      //   const index = range ? range.index : 0;
 
-        // Insert video as iframe
-        const videoEmbed = `<iframe width="560" height="315" src="${embedUrl}" frameborder="0" allowfullscreen></iframe>`;
-        quill.clipboard.dangerouslyPasteHTML(index, videoEmbed);
-        quill.setSelection(index + 1);
-      }
+      //   // Insert video as iframe
+      //   const videoEmbed = `<iframe width="560" height="315" src="${embedUrl}" frameborder="0" allowfullscreen></iframe>`;
+      //   quill.clipboard.dangerouslyPasteHTML(index, videoEmbed);
+      //   quill.setSelection(index + 1);
+      // }
+
+      const videoEmbed = `<iframe width="560" height="315" src="${embedUrl}" frameborder="0" allowfullscreen></iframe>`;
+      onChange(value + videoEmbed);
     }
-  }, []);
+  }, [onChange, value]);
 
   // ReactQuill modules configuration
   const modules = useMemo(
@@ -124,7 +146,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
     'background',
     'script',
     'list',
-    'bullet',
+    // 'bullet',
     'indent',
     'direction',
     'align',

@@ -7,6 +7,7 @@ import {
   Ban,
   Banknote,
   BanknoteArrowDown,
+  Bell,
   BellRing,
   Calendar,
   Car,
@@ -303,4 +304,5 @@ export const Icons = {
   slidersHorizontal: SlidersHorizontal,
   info: Info,
   arrowLeft: ArrowLeft,
+  bell: Bell,
 };
