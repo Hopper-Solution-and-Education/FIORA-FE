@@ -121,7 +121,11 @@ export default function PartnerCreateForm() {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(handleSubmit)} className="space-y-4">
+      <form
+        data-test="partner-create-form"
+        onSubmit={methods.handleSubmit(handleSubmit)}
+        className="space-y-4"
+      >
         <FormConfig methods={methods} fields={fields} onBack={() => window.history.back()} />
       </form>
     </FormProvider>

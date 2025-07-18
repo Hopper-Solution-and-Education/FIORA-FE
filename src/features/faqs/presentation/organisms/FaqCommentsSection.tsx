@@ -52,8 +52,7 @@ const FaqCommentsSection: React.FC<FaqCommentsProps> = ({
       if (page === 0) return commentsPage;
       const existingIds = new Set(prev.map((c) => c.id));
       const newUnique = commentsPage.filter((c) => !existingIds.has(c.id));
-      if (newUnique.length === 0 || commentsPage.length < PAGE_SIZE) setHasMore(false);
-      else setHasMore(true);
+      setHasMore(newUnique.length > 0 && commentsPage.length >= PAGE_SIZE);
       setLoadingMore(false);
       return [...prev, ...newUnique];
     });
@@ -169,8 +168,6 @@ const FaqCommentsSection: React.FC<FaqCommentsProps> = ({
             );
           })
         )}
-
-        {hasMore && <div className="text-center py-2 text-gray-400 text-xs">Loading more...</div>}
 
         <ConfirmDeleteDialog
           open={!!commentIdToDelete}

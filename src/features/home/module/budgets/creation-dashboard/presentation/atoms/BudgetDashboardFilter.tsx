@@ -77,7 +77,7 @@ const BudgetDashboardFilter = ({ onFilterDropdownOpenChange }: Props) => {
 
   return (
     <Fragment>
-      <form onSubmit={methods.handleSubmit(onSubmit)}>
+      <form data-test="budget-dashboard-filter" onSubmit={methods.handleSubmit(onSubmit)}>
         <FormConfig methods={methods} fields={fields} renderSubmitButton={renderButton} />
       </form>
     </Fragment>

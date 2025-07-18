@@ -165,6 +165,7 @@ export default function BarGraph() {
             if (!chart || total[key as keyof typeof total] === 0) return null;
             return (
               <button
+                data-test="bar-graph-chart"
                 key={chart}
                 data-active={activeChart === chart}
                 className="relative flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6"

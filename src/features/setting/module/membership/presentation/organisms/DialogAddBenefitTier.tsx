@@ -77,7 +77,7 @@ const DialogAddBenefitTier = ({ open, onOpenChange }: DialogAddBenefitTierProps)
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form data-test="dialog-add-benefit-tier" onSubmit={handleSubmit(onSubmit)}>
             <AddBenefitForm />
           </form>
         </FormProvider>

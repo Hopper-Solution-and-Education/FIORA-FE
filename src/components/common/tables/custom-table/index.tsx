@@ -29,6 +29,7 @@ import {
 } from '@tanstack/react-table';
 import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import './style.css';
 import {
   DataSourceProps,
   FIXED,
@@ -40,7 +41,6 @@ import {
   type SortOrderStateProps,
   type TableProps,
 } from './types';
-import './style.css';
 
 export function TableV2({
   columns = [],
@@ -160,6 +160,7 @@ export function TableV2({
 
               return (
                 <button
+                  data-test="table-v2-header-sort"
                   onClick={canSort ? column.getToggleSortingHandler() : undefined}
                   className={cn(
                     'flex items-center gap-1',

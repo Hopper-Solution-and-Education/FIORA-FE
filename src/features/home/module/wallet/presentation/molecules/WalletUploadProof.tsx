@@ -1,15 +1,15 @@
 'use client';
 
+import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useAppDispatch, useAppSelector } from '@/store';
+import Image from 'next/image';
 import React, { useRef, useState } from 'react';
 import { FRONTEND_ATTACHMENT_CONSTANTS } from '../../data/constant';
 import { setAttachmentData } from '../../slices';
-import { ATTACHMENT_TYPES, AttachmentType } from '../types/attachment.type';
-import { useAppDispatch, useAppSelector } from '@/store';
-import { Icons } from '@/components/Icon';
 import WalletProofReview from '../atoms/WalletProofReview';
-import Image from 'next/image';
+import { ATTACHMENT_TYPES, AttachmentType } from '../types/attachment.type';
 
 const WalletUploadProof = () => {
   const [error, setError] = useState<string | null>(null);
@@ -117,6 +117,7 @@ const WalletUploadProof = () => {
               <div className="flex items-center min-w-0 gap-2">
                 <Icons.post className="w-4 h-4 flex-shrink-0 text-green-600" />
                 <button
+                  data-test="wallet-upload-proof-file-name"
                   onClick={() => setShowReviewModal(true)}
                   className="hover:underline cursor-pointer font-semibold truncate max-w-[160px] sm:max-w-[220px] text-left text-green-900"
                   title={uploadedFileName}

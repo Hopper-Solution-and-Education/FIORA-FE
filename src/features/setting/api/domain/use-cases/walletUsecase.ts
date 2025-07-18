@@ -258,7 +258,6 @@ class WalletUseCase {
         });
       }
 
-      // Sử dụng hằng số cho trường cộng tiền
       let paymentWallet = await this._walletRepository.findWalletByType(WalletType.Payment, userId);
 
       if (!paymentWallet) {
@@ -270,9 +269,7 @@ class WalletUseCase {
         });
       }
 
-      // Cộng amount vào frBalanceActive bằng hàm increaseWalletBalance
       await this._walletRepository.increaseWalletBalance(paymentWallet.id, amount);
-      // ==============================================
     }
 
     return this._walletRepository.updateDepositRequestStatus(id, newStatus, remark);

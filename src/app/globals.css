@@ -151,3 +151,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+.quill {
+  .ql-toolbar.ql-snow {
+    border: none !important;
+    border-bottom: 1px solid #ccc !important;
+  }
+  .ql-container.ql-snow {
+    border: none !important;
+  }
+}

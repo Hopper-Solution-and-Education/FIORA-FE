@@ -63,6 +63,7 @@ const FaqContent: React.FC<FaqContentProps> = ({ data, maxHeight = DEFAULT_MAX_H
     return (
       <div className="flex flex-col items-center mt-4 mb-6">
         <button
+          data-test="faq-content-toggle"
           type="button"
           onClick={handleToggleExpanded}
           className={getToggleButtonClasses()}

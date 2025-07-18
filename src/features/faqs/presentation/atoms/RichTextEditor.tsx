@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import QuillResizeImage from 'quill-resize-image';
 import { useCallback, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import 'react-quill-new/dist/quill.snow.css';
@@ -11,6 +12,12 @@ const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
+}
+
+if (typeof window !== 'undefined') {
+  import('react-quill-new').then(({ Quill }) => {
+    Quill.register('modules/resize', QuillResizeImage);
+  });
 }
 
 export default function RichTextEditor({ value, onChange }: RichTextEditorProps) {
@@ -96,6 +103,10 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
       clipboard: {
         matchVisual: false,
       },
+      resize: {
+        locale: {},
+        keepAspectRatio: false,
+      },
     }),
     [handleImageUpload, handleVideoUpload],
   );
@@ -132,7 +143,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
           const reader = new FileReader();
           reader.onload = () => {
             // For drag and drop, we'll add the image to the end of the content
-            const imageHtml = `<img src="${reader.result}" alt="Uploaded image" style="max-width: 100%; height: auto;" />`;
+            const imageHtml = `<img src="${reader.result}" alt="Uploaded image"  />`;
             onChange(value + imageHtml);
           };
           reader.readAsDataURL(file);

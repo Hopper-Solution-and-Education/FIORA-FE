@@ -1,16 +1,25 @@
 'use client';
 
-import { useState, forwardRef, useEffect } from 'react';
-import { useFormContext } from 'react-hook-form';
-import GlobalLabel from '../../atoms/GlobalLabel';
-import { cn } from '@/shared/lib/utils';
+import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
+import { cn } from '@/shared/lib/utils';
+import {
+  addDays,
+  endOfMonth,
+  endOfYear,
+  format,
+  startOfMonth,
+  startOfYear,
+  subDays,
+  subMonths,
+  subYears,
+} from 'date-fns';
 import { CalendarIcon, CircleX } from 'lucide-react';
-import { format, addDays, subDays } from 'date-fns';
-import { endOfMonth, endOfYear, startOfMonth, startOfYear, subMonths, subYears } from 'date-fns';
+import { forwardRef, useEffect, useState } from 'react';
 import { DateRange } from 'react-day-picker';
+import { useFormContext } from 'react-hook-form';
+import GlobalLabel from '../../atoms/GlobalLabel';
 
 interface CustomDateRangePickerProps {
   name: string;
@@ -308,7 +317,12 @@ const CustomDateRangePicker = forwardRef<HTMLInputElement, CustomDateRangePicker
             </div>
           </PopoverContent>
         </Popover>
-        <input type="hidden" {...register(name)} ref={ref} />
+        <input
+          data-test="custom-date-range-picker-input"
+          type="hidden"
+          {...register(name)}
+          ref={ref}
+        />
         {error && <p className="text-sm text-red-500 mt-1">{error.message}</p>}
       </div>
     );

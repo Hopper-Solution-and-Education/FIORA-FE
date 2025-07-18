@@ -46,6 +46,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
           Replying to <span className="font-semibold">@{replyTo.username}</span>
           {onCancelReply && (
             <button
+              data-test="comment-input-cancel-reply"
               type="button"
               className="ml-2 text-xs text-gray-400 hover:text-red-500 focus:outline-none focus:text-red-500"
               onClick={onCancelReply}
@@ -59,6 +60,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
       )}
       <div className="flex gap-2 mb-4">
         <input
+          data-test="comment-input-text"
           type="text"
           placeholder={placeholder}
           className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -69,6 +71,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
           aria-label="Comment input"
         />
         <button
+          data-test="comment-input-send"
           type="button"
           className="w-10 h-10 flex items-center justify-center rounded-md border border-gray-300 hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleSubmit}
