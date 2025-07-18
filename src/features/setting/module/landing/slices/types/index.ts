@@ -1,7 +1,31 @@
-import { Media, Section } from '@prisma/client';
+import { SectionTypeEnum } from '@/features/landing/constants';
 
-export interface ISection extends Section {
-  medias: Media[];
+export interface IMedia {
+  id: string;
+  media_url: string;
+  media_type: string;
+  redirect_url: string;
+  embed_code: string;
+  description: string;
+  uploaded_by: string;
+  uploaded_date: Date;
+  section_id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  updatedBy: string;
+}
+
+export interface ISection {
+  id: string;
+  name: string;
+  order: number;
+  section_type: SectionTypeEnum;
+  createdAt: Date;
+  updatedAt: Date;
+  medias: IMedia[];
+  createdBy: string;
+  updatedBy: string;
 }
 
 interface LandingSettingsState {

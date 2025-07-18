@@ -10,7 +10,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import Header from '@/features/landing/presentation/components/Header';
+import Header from '@/features/landing/presentation/organisms/Header';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { useBreadcrumbs } from '@/shared/hooks/useBreadcrumbs';
 import { useFeatureIsOn } from '@growthbook/growthbook-react';

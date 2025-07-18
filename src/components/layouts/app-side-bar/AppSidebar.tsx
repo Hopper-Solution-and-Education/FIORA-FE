@@ -121,13 +121,13 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   return (
     <div className="relative h-full">
       <Sidebar collapsible="icon">
-        <SidebarHeader className="flex flex-col gap-2">
+        <SidebarHeader className="flex flex-col">
           <div
             onClick={handlePressLogo}
-            className="flex gap-3 py-2 text-sidebar-accent-foreground items-center cursor-pointer justify-center rounded-lg"
+            className="flex gap-3 text-sidebar-accent-foreground items-center cursor-pointer justify-center rounded-lg"
           >
             {isMobile ? (
-              <div className={`relative transition-all duration-300 overflow-hidden h-40 w-full`}>
+              <div className={`relative transition-all duration-300 overflow-hidden h-35 w-full`}>
                 <Image
                   src={section?.medias[0]?.media_url || HopperLogo}
                   alt="FIORA"
@@ -140,7 +140,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
             ) : (
               <div
                 className={`relative transition-all duration-300 overflow-hidden
-                    ${open ? 'w-full h-60 ' : 'w-full h-14 md:h-18'}`}
+                    ${open ? 'w-full h-35 ' : 'w-full h-14 md:h-18'}`}
               >
                 <Image
                   src={section?.medias[0]?.media_url || HopperLogo}
@@ -161,9 +161,9 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
             >
               <div
                 className={cn(
-                  'flex items-center justify-center rounded-lg p-2 transition-colors duration-200',
+                  'flex items-center justify-center rounded-lg transition-colors duration-200',
                   'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-                  open ? 'size-10' : 'size-8',
+                  open ? 'size-8' : 'size-8 p-2',
                 )}
               >
                 {open ? (
