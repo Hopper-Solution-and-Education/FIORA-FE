@@ -1,23 +1,24 @@
 'use client';
 
 import Loading from '@/components/common/atoms/Loading';
-import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
+import { SelectField } from '@/components/common/forms';
+import { Option } from '@/components/common/forms/select/SelectField';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SectionTypeEnum } from '@/features/landing/constants';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { useAppSelector } from '@/store';
-import { SectionType } from '@prisma/client';
-import { useState } from 'react';
-import SectionManager from './components/SectionManager';
+import { useMemo, useState } from 'react';
+import SectionManager from '../organisms/SectionManager';
 
 const sections = [
-  { value: 'header', label: 'Header', type: SectionType.HEADER },
-  { value: 'banner', label: 'Banner', type: SectionType.BANNER },
-  { value: 'vision', label: 'Vision & Mission', type: SectionType.VISION_MISSION },
-  { value: 'system', label: 'System', type: SectionType.SYSTEM },
-  { value: 'kps', label: 'KSP', type: SectionType.KPS },
-  { value: 'partners', label: 'Partners', type: SectionType.PARTNER_LOGO },
-  { value: 'review', label: 'Review', type: SectionType.REVIEW },
-  { value: 'footer', label: 'Footer', type: SectionType.FOOTER },
+  { value: 'header', label: 'Header', type: SectionTypeEnum.HEADER },
+  { value: 'banner', label: 'Banner', type: SectionTypeEnum.BANNER },
+  { value: 'vision', label: 'Vision & Mission', type: SectionTypeEnum.VISION_MISSION },
+  { value: 'system', label: 'System', type: SectionTypeEnum.SYSTEM },
+  { value: 'kps', label: 'KSP', type: SectionTypeEnum.KPS },
+  { value: 'partners', label: 'Partners', type: SectionTypeEnum.PARTNER_LOGO },
+  { value: 'review', label: 'Review', type: SectionTypeEnum.REVIEW },
+  { value: 'footer', label: 'Footer', type: SectionTypeEnum.FOOTER },
 ];
 
 export default function MediaDashboard() {
@@ -25,8 +26,14 @@ export default function MediaDashboard() {
   const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
   const isLoading = useAppSelector((state) => state.landingSettings.isLoading);
   const isMobile = useIsMobile();
-  // State để lưu giá trị tab hiện tại
-  const [activeTab, setActiveTab] = useState('header');
+  const [activeTab, setActiveTab] = useState<string>('header');
+
+  const options = useMemo((): Option[] => {
+    return sections.map((section) => ({
+      label: section.label,
+      value: section.value,
+    }));
+  }, []);
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4">
@@ -35,21 +42,14 @@ export default function MediaDashboard() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         {isMobile ? (
           <div className="mb-4">
-            <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full">
-                {sections.find((section) => section.value === activeTab)?.label || 'Select Section'}
-              </SelectTrigger>
-              <SelectContent>
-                {sections.map((section) => (
-                  <SelectItem key={section.value} value={section.value}>
-                    {section.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SelectField
+              value={activeTab}
+              onChange={(value) => setActiveTab(value)}
+              options={options}
+              noneValue={false}
+            />
           </div>
         ) : (
-          // Nếu không phải mobile, hiển thị dạng TabsList
           <TabsList className="flex flex-wrap gap-2 mb-10">
             {sections.map((section) => (
               <TabsTrigger

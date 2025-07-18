@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { SectionType } from '@prisma/client';
+import { SectionTypeEnum } from '@/features/landing/constants';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -8,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const sectionType = req.query.sectionType as SectionType;
+    const sectionType = req.query.sectionType as SectionTypeEnum;
 
     const whereCondition = {
       section: {

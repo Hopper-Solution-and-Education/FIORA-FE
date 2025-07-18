@@ -1,5 +1,5 @@
-import { SectionType } from '@prisma/client';
 import { decorate, injectable } from 'inversify';
+import { SectionTypeEnum } from '../../constants';
 import type { IMediaRepository } from '../../data/repositories/mediaRepository';
 
 export class GetMediaUseCase {
@@ -9,7 +9,7 @@ export class GetMediaUseCase {
     this.mediaRepository = mediaRepository;
   }
 
-  async execute(sectionType: SectionType) {
+  async execute(sectionType: SectionTypeEnum) {
     return await this.mediaRepository.getMediaBySection(sectionType);
   }
 }

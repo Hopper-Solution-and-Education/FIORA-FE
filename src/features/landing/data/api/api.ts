@@ -1,12 +1,12 @@
 import type { IHttpClient } from '@/config/http-client/HttpClient';
-import { SectionType } from '@prisma/client';
 import { decorate, injectable } from 'inversify';
+import { SectionTypeEnum } from '../../constants';
 import { ISection } from '../../domain/interfaces/Section';
 import { Media } from '../../domain/models/Media';
 
 interface ILandingAPI {
-  fetchMedia(sectionType: SectionType): Promise<Media[]>;
-  fetchSection(sectionType: SectionType): Promise<ISection>;
+  fetchMedia(sectionType: SectionTypeEnum): Promise<Media[]>;
+  fetchSection(sectionType: SectionTypeEnum): Promise<ISection>;
 }
 
 class LandingAPI implements ILandingAPI {
@@ -16,11 +16,11 @@ class LandingAPI implements ILandingAPI {
     this.httpClient = httpClient;
   }
 
-  fetchMedia(sectionType: SectionType): Promise<Media[]> {
+  fetchMedia(sectionType: SectionTypeEnum): Promise<Media[]> {
     return this.httpClient.get<Media[]>(`/api/banner/media?sectionType=${sectionType}`);
   }
 
-  fetchSection(sectionType: SectionType): Promise<ISection> {
+  fetchSection(sectionType: SectionTypeEnum): Promise<ISection> {
     return this.httpClient.get<ISection>(`/api/banner/section?sectionType=${sectionType}`);
   }
 }

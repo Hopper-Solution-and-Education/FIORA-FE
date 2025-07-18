@@ -2,18 +2,17 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
-import { Skeleton } from '@/components/ui/skeleton'; // Assuming you have a Skeleton component (e.g., from shadcn/ui)
-import { SectionType } from '@prisma/client';
-import Image from 'next/image';
-import Link from 'next/link'; // Import Link for navigation
-import { useGetSection } from '../../hooks/useGetSection';
+import { Skeleton } from '@/components/ui/skeleton';
 import Autoplay from 'embla-carousel-autoplay';
+import Image from 'next/image';
+import Link from 'next/link';
+import { SectionTypeEnum } from '../../constants';
+import { useGetSection } from '../../hooks/useGetSection';
 const defaultURL = 'https://www.facebook.com/HopperSolutionAndEducation';
 
 export function Banner() {
-  const { section, isError, isLoading } = useGetSection(SectionType.BANNER);
+  const { section, isError, isLoading } = useGetSection(SectionTypeEnum.BANNER);
 
-  // Skeleton Component
   const BannerSkeleton = () => (
     <Carousel className="w-full">
       <CarouselContent className="flex">
@@ -22,7 +21,7 @@ export function Banner() {
             <Card>
               <CardContent className="p-0">
                 <div className="relative w-full">
-                  <div className="w-full h-[300px] sm:h-[450px] md:h-[550px] lg:h-[400px]">
+                  <div className="w-full h-[800px] sm:h-[750px] md:h-[900px] lg:h-[1440px]">
                     <Skeleton className="w-full h-full bg-gray-300 animate-pulse" />
                   </div>
                 </div>
@@ -38,10 +37,18 @@ export function Banner() {
   if (isError || !section) return <p>Error loading banners.</p>;
 
   return (
-    <div className="mt-20">
+    <div className="mt-16 md:mt-18 lg:mt-20">
       <Carousel
-        plugins={[Autoplay({ delay: 3000, stopOnInteraction: false, playOnInit: true })]}
-        className="w-full mt-5"
+        opts={{ loop: true }}
+        plugins={[
+          Autoplay({
+            delay: 5000,
+            stopOnInteraction: false,
+            playOnInit: true,
+            stopOnMouseEnter: true,
+          }),
+        ]}
+        className="w-full"
       >
         <CarouselContent className="flex">
           {section?.medias.map((image, index) => (
@@ -54,12 +61,12 @@ export function Banner() {
                     className="block cursor-pointer"
                   >
                     <div className="relative w-full">
-                      <div className="w-full h-[300px] sm:h-[450px] md:h-[550px] lg:h-[400px]">
+                      <div className="w-full h-[250px] sm:h-[300px] md:h-[500px] lg:h-[900px]">
                         <Image
                           src={image.media_url ?? ''}
                           alt={image.description || `Banner ${index + 1}`}
                           fill
-                          className="object-cover"
+                          className="object-fill"
                           priority
                         />
                       </div>

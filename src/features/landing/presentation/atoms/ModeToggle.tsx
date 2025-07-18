@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -5,10 +6,9 @@ import {
   DropdownMenuTrigger,
 } from '@radix-ui/react-dropdown-menu';
 import { Moon, Sun } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useTheme } from './ThemeProvider';
 
-export function ModeToggle() {
+function ModeToggle() {
   const { setTheme } = useTheme();
 
   return (
@@ -40,3 +40,5 @@ export function ModeToggle() {
     </DropdownMenu>
   );
 }
+
+export default ModeToggle;
