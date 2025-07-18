@@ -8,8 +8,10 @@ interface ParsedFaqContentProps {
 }
 
 const ParsedFaqContent: React.FC<ParsedFaqContentProps> = ({ htmlContent }) => {
-  // If no HTML tags are present, wrap with <p>
-  const rawContent = !/<[a-z][\s\S]*>/i.test(htmlContent) ? `<p>${htmlContent}</p>` : htmlContent;
+  // If no HTML tags are present, wrap with <div>
+  const rawContent = !/<[a-z][\s\S]*>/i.test(htmlContent)
+    ? `<div>${htmlContent}</div>`
+    : htmlContent;
 
   return (
     <div className="ql-container ql-snow !border-none">

@@ -34,7 +34,7 @@ const FaqsLayout = ({ children }: FaqsLayoutProps) => {
     return <Loading />;
   }
 
-  if (isFeatureEnabled) {
+  if (!isFeatureEnabled) {
     notFound();
   }
 
