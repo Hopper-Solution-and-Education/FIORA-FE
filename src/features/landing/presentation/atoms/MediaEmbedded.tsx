@@ -1,9 +1,9 @@
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import Image from 'next/image';
 
-export const MediaEmbedded = () => {
+const MediaEmbedded = () => {
   const videoUrl = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
 
   return (
@@ -38,3 +38,5 @@ export const MediaEmbedded = () => {
     </div>
   );
 };
+
+export default MediaEmbedded;

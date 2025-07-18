@@ -1,9 +1,9 @@
-import { MediaType, SectionType } from '@prisma/client';
+import { MediaTypeEnum, SectionTypeEnum } from '@/features/landing/constants';
 import * as yup from 'yup';
 
 export const sectionFormSchema = yup.object({
   section_id: yup.string().required(),
-  section_type: yup.mixed<SectionType>().oneOf(Object.values(SectionType)).required(),
+  section_type: yup.mixed<SectionTypeEnum>().oneOf(Object.values(SectionTypeEnum)).required(),
   name: yup.string().required('Section name is required'),
   order: yup.number().required(),
   created_at: yup.date().required(),
@@ -13,12 +13,12 @@ export const sectionFormSchema = yup.object({
     .of(
       yup.object({
         id: yup.string().required(),
-        media_type: yup.mixed<MediaType>().oneOf(Object.values(MediaType)).required(),
+        media_type: yup.mixed<MediaTypeEnum>().oneOf(Object.values(MediaTypeEnum)).required(),
         media_url: yup
           .string()
           .default(null)
           .when('media_type', {
-            is: (val: MediaType) => val === MediaType.IMAGE || val === MediaType.VIDEO,
+            is: (val: MediaTypeEnum) => val === MediaTypeEnum.IMAGE || val === MediaTypeEnum.VIDEO,
             then: (schema) => schema.required('Media URL is required'),
             otherwise: (schema) => schema.nullable().notRequired(),
           }),
@@ -27,7 +27,7 @@ export const sectionFormSchema = yup.object({
           .string()
           .default(null)
           .when('media_type', {
-            is: (val: MediaType) => val === MediaType.EMBEDDED,
+            is: (val: MediaTypeEnum) => val === MediaTypeEnum.EMBEDDED,
             then: (schema) => schema.required('Embed code is required'),
             otherwise: (schema) => schema.nullable().notRequired(),
           }),
@@ -41,7 +41,7 @@ export const sectionFormSchema = yup.object({
 
 export type SectionDefaultValues = yup.InferType<typeof sectionFormSchema>;
 
-export const defaultValues = (sectionType: SectionType): SectionDefaultValues => {
+export const defaultValues = (sectionType: SectionTypeEnum): SectionDefaultValues => {
   return {
     section_id: `${Date.now()}`,
     section_type: sectionType,

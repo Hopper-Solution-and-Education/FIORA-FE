@@ -22,6 +22,16 @@ if (typeof window !== 'undefined') {
 }
 
 export default function RichTextEditor({ value, onChange }: RichTextEditorProps) {
+  // const uploadToFirebase = async (file: File): Promise<string> => {
+  //   const formData = new FormData();
+  //   formData.append('file', file);
+  //   const res = await fetch(`/api/upload`, { method: 'POST', body: formData });
+  //   const data = await res.json();
+  //   const url = data.url;
+
+  //   return url;
+  // };
+
   // Custom image handler for file uploads
   const handleImageUpload = useCallback(() => {
     const input = document.createElement('input');

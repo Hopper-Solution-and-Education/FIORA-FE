@@ -1,5 +1,5 @@
-import { SectionType } from '@prisma/client';
 import { decorate, injectable } from 'inversify';
+import { SectionTypeEnum } from '../../constants';
 import type { ISectionRepository } from '../../data/repositories/sectionRepository';
 
 export class GetSectionUseCase {
@@ -9,7 +9,7 @@ export class GetSectionUseCase {
     this.sectionRepository = sectionRepository;
   }
 
-  execute(sectionType: SectionType) {
+  execute(sectionType: SectionTypeEnum) {
     return this.sectionRepository.getSection(sectionType);
   }
 }

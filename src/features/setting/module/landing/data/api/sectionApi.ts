@@ -1,10 +1,10 @@
-import { SectionType } from '@prisma/client';
-import { injectable, decorate } from 'inversify';
-import { ISection } from '../../slices/types';
 import type { IHttpClient } from '@/config/http-client/HttpClient';
+import { SectionTypeEnum } from '@/features/landing/constants';
+import { decorate, injectable } from 'inversify';
+import { ISection } from '../../slices/types';
 
 interface ISectionAPI {
-  fetchSection(sectionType: SectionType): Promise<ISection>;
+  fetchSection(sectionType: SectionTypeEnum): Promise<ISection>;
   updateSection(section: ISection): Promise<ISection>;
 }
 
@@ -16,7 +16,7 @@ class SectionAPI implements ISectionAPI {
     this.httpClient = httpClient;
   }
 
-  async fetchSection(sectionType: SectionType): Promise<ISection> {
+  async fetchSection(sectionType: SectionTypeEnum): Promise<ISection> {
     return await this.httpClient.get<ISection>(`/api/banner/section?sectionType=${sectionType}`);
   }
 
@@ -34,5 +34,5 @@ const createSectionAPI = (httpClient: IHttpClient): ISectionAPI => {
   return new SectionAPI(httpClient);
 };
 
-export { SectionAPI, createSectionAPI };
+export { createSectionAPI, SectionAPI };
 export type { ISectionAPI };

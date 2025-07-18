@@ -1,31 +1,30 @@
 'use client';
 
+import { MediaTypeEnum, SectionTypeEnum } from '@/features/landing/constants';
 import { useAppDispatch } from '@/store';
-import { Media, MediaType, SectionType } from '@prisma/client';
 import { useState } from 'react';
 import { useFieldArray } from 'react-hook-form';
 import { saveSection } from '../slices';
-import { ISection } from '../slices/types';
+import { IMedia, ISection } from '../slices/types';
 
 interface UseSectionCardLogicProps {
   sectionData: ISection | undefined;
   control: any;
-  sectionType: SectionType;
+  sectionType: SectionTypeEnum;
 }
 
-const mediaTypeMapping: Record<SectionType, MediaType> = {
-  [SectionType.BANNER]: MediaType.IMAGE,
-  [SectionType.KPS]: MediaType.IMAGE,
-  [SectionType.PARTNER_LOGO]: MediaType.IMAGE,
-  [SectionType.VISION_MISSION]: MediaType.EMBEDDED,
-  [SectionType.HEADER]: MediaType.IMAGE,
-  [SectionType.FOOTER]: MediaType.IMAGE,
-  [SectionType.REVIEW]: MediaType.IMAGE,
-  [SectionType.SYSTEM]: MediaType.IMAGE,
+const mediaTypeMapping: Record<SectionTypeEnum, MediaTypeEnum> = {
+  [SectionTypeEnum.BANNER]: MediaTypeEnum.IMAGE,
+  [SectionTypeEnum.KPS]: MediaTypeEnum.IMAGE,
+  [SectionTypeEnum.PARTNER_LOGO]: MediaTypeEnum.IMAGE,
+  [SectionTypeEnum.VISION_MISSION]: MediaTypeEnum.EMBEDDED,
+  [SectionTypeEnum.HEADER]: MediaTypeEnum.IMAGE,
+  [SectionTypeEnum.FOOTER]: MediaTypeEnum.IMAGE,
+  [SectionTypeEnum.REVIEW]: MediaTypeEnum.IMAGE,
+  [SectionTypeEnum.SYSTEM]: MediaTypeEnum.IMAGE,
 };
 
 function useSectionCardLogic({ sectionData, control, sectionType }: UseSectionCardLogicProps) {
-  const [isOpen, setIsOpen] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [mediaIndexToRemove, setMediaIndexToRemove] = useState<number | null>(null);
   const dispatch = useAppDispatch();
@@ -40,8 +39,8 @@ function useSectionCardLogic({ sectionData, control, sectionType }: UseSectionCa
     name: 'medias',
   });
 
-  const addMedia = (type: MediaType) => {
-    const newMedia: Media = {
+  const addMedia = (type: MediaTypeEnum) => {
+    const newMedia: IMedia = {
       id: `${Date.now()}`,
       media_type: type,
       media_url: '',
@@ -53,7 +52,7 @@ function useSectionCardLogic({ sectionData, control, sectionType }: UseSectionCa
       createdAt: new Date(),
       updatedAt: new Date(),
       createdBy: '',
-      updatedBy: null,
+      updatedBy: '',
       section_id: sectionData?.id ?? '',
     };
     appendMedia(newMedia);
@@ -71,7 +70,7 @@ function useSectionCardLogic({ sectionData, control, sectionType }: UseSectionCa
     // );
   };
 
-  const handleAddMedia = (sectionType: SectionType) => {
+  const handleAddMedia = (sectionType: SectionTypeEnum) => {
     const mediaType = mediaTypeMapping[sectionType];
     if (mediaType) {
       addMedia(mediaType);
@@ -116,8 +115,6 @@ function useSectionCardLogic({ sectionData, control, sectionType }: UseSectionCa
   };
 
   return {
-    isOpen,
-    setIsOpen,
     isDialogOpen,
     setIsDialogOpen,
     mediaFields,

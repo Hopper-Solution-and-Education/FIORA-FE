@@ -1,19 +1,19 @@
-import { SectionType } from '@prisma/client';
+import { SectionTypeEnum } from '@/features/landing/constants';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 import { fetchMediaBySection } from './actions/fetchMediaBySection';
 import { updateMediaBySection } from './actions/updateMediaBySection';
 import { initialLandingSettingState, ISection, LandingSettingsState } from './types';
 
-export const sectionMapping: Record<SectionType, keyof LandingSettingsState> = {
-  [SectionType.BANNER]: 'bannerSection',
-  [SectionType.VISION_MISSION]: 'visionSection',
-  [SectionType.KPS]: 'kpsSection',
-  [SectionType.PARTNER_LOGO]: 'partnerSection',
-  [SectionType.HEADER]: 'headerSection',
-  [SectionType.FOOTER]: 'footerSection',
-  [SectionType.SYSTEM]: 'fioraSystemSection',
-  [SectionType.REVIEW]: 'reviewSection',
+export const sectionMapping: Record<SectionTypeEnum, keyof LandingSettingsState> = {
+  [SectionTypeEnum.BANNER]: 'bannerSection',
+  [SectionTypeEnum.VISION_MISSION]: 'visionSection',
+  [SectionTypeEnum.KPS]: 'kpsSection',
+  [SectionTypeEnum.PARTNER_LOGO]: 'partnerSection',
+  [SectionTypeEnum.HEADER]: 'headerSection',
+  [SectionTypeEnum.FOOTER]: 'footerSection',
+  [SectionTypeEnum.SYSTEM]: 'fioraSystemSection',
+  [SectionTypeEnum.REVIEW]: 'reviewSection',
 };
 
 const landingSettings = createSlice({
@@ -22,7 +22,7 @@ const landingSettings = createSlice({
   reducers: {
     saveSection: (
       state,
-      action: PayloadAction<{ section: ISection; sectionType: SectionType }>,
+      action: PayloadAction<{ section: ISection; sectionType: SectionTypeEnum }>,
     ) => {
       const { section, sectionType } = action.payload;
       const sectionKey = sectionMapping[sectionType];
