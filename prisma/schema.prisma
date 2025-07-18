@@ -257,7 +257,6 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
-// Section - Section for landing page setting - holding media, order, name, etc.
 model Section {
   id           String      @id @default(uuid()) @db.Uuid
   section_type SectionType
@@ -270,42 +269,40 @@ model Section {
   medias       Media[]
 }
 
-// Media - Media for landing page setting - holding image, video, embedded code, description, redirect url, review user, etc.
 model Media {
-  id            String    @id @default(uuid()) @db.Uuid
-  media_title   String?   @db.VarChar(255)
-  media_type    MediaType
-  media_url     String?
-  media_url_2   String?
-  embed_code    String?
-  description   String?
-  media_order   Int?      @default(0)
-  uploaded_by   String?
-  uploaded_date DateTime  @default(now()) @db.Timestamptz(0)
-  section_id    String?   @db.Uuid
-  createdAt     DateTime  @default(now()) @db.Timestamptz(0)
-  updatedAt     DateTime  @updatedAt @db.Timestamptz(0)
-  createdBy     String?   @db.Uuid
-  updatedBy     String?   @db.Uuid
-  redirect_url  String?
-  section       Section?  @relation(fields: [section_id], references: [id])
+  id              String            @id @default(uuid()) @db.Uuid
+  media_type      MediaType
+  media_url       String?
+  embed_code      String?
+  description     String?
+  uploaded_by     String?
+  uploaded_date   DateTime          @default(now()) @db.Timestamptz(0)
+  section_id      String?           @db.Uuid
+  createdAt       DateTime          @default(now()) @db.Timestamptz(0)
+  updatedAt       DateTime          @updatedAt @db.Timestamptz(0)
+  createdBy       String?           @db.Uuid
+  updatedBy       String?           @db.Uuid
+  redirect_url    String?
+  media_order     Int?              @default(0)
+  media_title     String?           @db.VarChar(255)
+  media_url_2     String?
+  section         Section?          @relation(fields: [section_id], references: [id])
   mediaReviewUser MediaReviewUser[]
 }
 
-// Review User - Media Review User for landing page setting
 model MediaReviewUser {
-  id String @id @default(uuid()) @db.Uuid
-  mediaId String @db.Uuid
-  media_user_name String @db.VarChar(255)
-  media_user_avatar String?
-  media_user_email String?
+  id                 String   @id @default(uuid()) @db.Uuid
+  mediaId            String   @db.Uuid
+  media_user_name    String   @db.VarChar(255)
+  media_user_avatar  String?
+  media_user_email   String?
   media_user_comment String?
-  media_user_rating Int?
-  createdAt DateTime @default(now()) @db.Timestamptz(0)
-  updatedAt DateTime @updatedAt @db.Timestamptz(0)
-  createdBy String? @db.Uuid
-  updatedBy String? @db.Uuid
-  media Media @relation(fields: [mediaId], references: [id])
+  media_user_rating  Int?
+  createdAt          DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt          DateTime @updatedAt @db.Timestamptz(0)
+  createdBy          String?  @db.Uuid
+  updatedBy          String?  @db.Uuid
+  media              Media    @relation(fields: [mediaId], references: [id])
 }
 
 model Category {
@@ -741,14 +738,15 @@ model EmailNotificationLogs {
 }
 
 model EmailTemplate {
-  name         String         @db.VarChar(255)
+  name         String            @db.VarChar(255)
   content      String
   isActive     Boolean
-  createdAt    DateTime       @default(now()) @db.Timestamptz(0)
-  createdBy    String?        @db.Uuid
-  updatedAt    DateTime       @db.Timestamptz(0)
-  updatedBy    String?        @db.Uuid
-  id           String         @id @db.Uuid
+  createdAt    DateTime          @default(now()) @db.Timestamptz(0)
+  createdBy    String?           @db.Uuid
+  updatedAt    DateTime          @db.Timestamptz(0)
+  updatedBy    String?           @db.Uuid
+  id           String            @id @db.Uuid
+  type         EmailTemplateType
   Notification Notification[]
 }
 
@@ -867,4 +865,11 @@ enum NotificationType {
   ROLE_CS
   ROLE_USER
   PERSONAL
+}
+
+enum EmailTemplateType {
+  MEMBERSHIP
+  DEPOPSIT
+  KYC
+  DEFAULT
 }

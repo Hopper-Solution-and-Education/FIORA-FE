@@ -55,6 +55,7 @@ const FromSelectField: React.FC<FromSelectProps> = ({
           tmpOptions.push({
             value: option.id,
             label: option.name,
+            icon: option.icon,
           });
         });
       } else if (transactionType === TransactionType.Income) {
@@ -62,6 +63,15 @@ const FromSelectField: React.FC<FromSelectProps> = ({
           tmpOptions.push({
             value: option.id,
             label: option.name,
+            icon: option.icon,
+          });
+        });
+      } else if (transactionType === TransactionType.Transfer) {
+        [...data.data.fromAccounts].forEach((option: SupportFromAccountResponse) => {
+          tmpOptions.push({
+            value: option.id,
+            label: option.name,
+            icon: option.icon,
           });
         });
       }

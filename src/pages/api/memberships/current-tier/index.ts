@@ -6,7 +6,7 @@ import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default withAuthorization({
-  GET: ['User', 'Admin'],
+  GET: ['User', 'Admin', 'CS'],
 })(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   switch (req.method) {
     case 'GET':
