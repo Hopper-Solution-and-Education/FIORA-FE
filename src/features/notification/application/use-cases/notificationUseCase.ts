@@ -1,4 +1,7 @@
-import type { INotificationRepository } from '../../domain/repositories/notificationRepository.interface';
+import type {
+  CreateBoxNotificationInput,
+  INotificationRepository,
+} from '../../domain/repositories/notificationRepository.interface';
 
 const DASHBOARD_FIELDS = [
   'subject',
@@ -77,6 +80,10 @@ class NotificationUseCase {
       page,
       pageSize,
     };
+  }
+
+  async createBoxNotification(input: CreateBoxNotificationInput) {
+    return this.notificationRepository.createBoxNotification(input);
   }
 }
 

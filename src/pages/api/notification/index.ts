@@ -10,10 +10,13 @@ const notificationUseCase = new NotificationUseCase(notificationRepository);
 
 export default withAuthorization({
   GET: ['Admin'],
+  POST: ['Admin'],
 })(async (req: NextApiRequest, res: NextApiResponse) => {
   switch (req.method) {
     case 'GET':
       return GET(req, res);
+    case 'POST':
+      return POST(req, res);
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -33,6 +36,47 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.GET_NOTIFICATION_SUCCESS, result));
+  } catch (error: any) {
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createError(
+          res,
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        ),
+      );
+  }
+}
+
+export async function POST(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    const input = req.body;
+    if (!input.title || !input.type || !input.message) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(
+          createError(
+            res,
+            RESPONSE_CODE.BAD_REQUEST,
+            'Missing required fields: title, type, or message',
+          ),
+        );
+    }
+
+    const notification = await notificationUseCase.createBoxNotification({
+      title: input.title,
+      type: input.type,
+      attachmentId: input.attachmentId,
+      deepLink: input.deepLink,
+      message: input.message,
+      emails: input.emails,
+    });
+    return res
+      .status(RESPONSE_CODE.CREATED)
+      .json(
+        createResponse(RESPONSE_CODE.CREATED, 'Notification created successfully', notification),
+      );
   } catch (error: any) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
