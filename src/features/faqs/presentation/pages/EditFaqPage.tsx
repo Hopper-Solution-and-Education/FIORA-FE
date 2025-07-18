@@ -1,11 +1,12 @@
 'use client';
 
 import { InputField, SelectField } from '@/components/common/forms';
+import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
 import { useParams } from 'next/navigation';
 import React from 'react';
 import { useFaqEdit } from '../../hooks';
 import { FormField } from '../atoms';
-import { ContentEditor, FormActions } from '../molecules';
+import { ContentEditor } from '../molecules';
 import FaqCategoryCreationDialog, {
   FaqCategoryFormValues,
 } from '../organisms/FaqCategoryCreationDialog';
@@ -169,15 +170,11 @@ const EditFaqPage: React.FC = () => {
             showPreview={true}
           />
 
-          {/* Form Actions */}
-          <FormActions
-            onCancel={handleCancel}
-            onSubmit={handleSubmit}
+          <DefaultSubmitButton
             isSubmitting={isUpdating}
             disabled={isFormDisabled}
-            submitText="Update FAQ"
-            cancelText="Cancel"
-            showIcons={true}
+            onSubmit={handleSubmit}
+            onBack={() => handleCancel(id)}
           />
         </div>
       </div>
