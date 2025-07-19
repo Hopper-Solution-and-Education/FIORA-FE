@@ -17,7 +17,6 @@ import { Iframe } from 'reactjs-tiptap-editor/iframe';
 import { Image } from 'reactjs-tiptap-editor/image';
 import { Indent } from 'reactjs-tiptap-editor/indent';
 import { Italic } from 'reactjs-tiptap-editor/italic';
-import { Blockquote } from 'reactjs-tiptap-editor/lib/blockquote';
 import { LineHeight } from 'reactjs-tiptap-editor/lineheight';
 import { Link } from 'reactjs-tiptap-editor/link';
 import { MoreMark } from 'reactjs-tiptap-editor/moremark';
@@ -85,7 +84,6 @@ const extensions = [
       });
     },
   }),
-  Blockquote,
   HorizontalRule,
   Code.configure({
     toolbar: false,
