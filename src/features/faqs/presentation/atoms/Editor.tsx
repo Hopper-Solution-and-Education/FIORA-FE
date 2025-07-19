@@ -2,6 +2,7 @@
 
 import RichTextEditor, { BaseKit } from 'reactjs-tiptap-editor';
 
+import { Blockquote } from 'reactjs-tiptap-editor/blockquote';
 import { Bold } from 'reactjs-tiptap-editor/bold';
 import { BulletList } from 'reactjs-tiptap-editor/bulletlist';
 import { Code } from 'reactjs-tiptap-editor/code';
@@ -84,6 +85,7 @@ const extensions = [
       });
     },
   }),
+  Blockquote,
   HorizontalRule,
   Code.configure({
     toolbar: false,
