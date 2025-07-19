@@ -127,6 +127,8 @@ model Product {
   updatedBy        String?              @db.Uuid
   currencyId       String?              @db.Uuid
   currency         String?
+  baseCurrency     String?              @default("USD")
+  baseAmount       Decimal?             @db.Decimal(13, 2)
   category         CategoryProducts?    @relation(fields: [catId], references: [id])
   user             User                 @relation("UserProducts", fields: [userId], references: [id])
   items            ProductItems[]

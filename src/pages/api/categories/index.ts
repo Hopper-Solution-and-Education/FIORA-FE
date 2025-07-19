@@ -30,7 +30,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       type: CategoryType;
       year: string;
     };
-    const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
+    const currency = (req.headers['x-user-currency'] as string) ?? Currency.USD;
 
     const categories = await categoryUseCase.getListCategoryByType(userId, type, year, currency);
 

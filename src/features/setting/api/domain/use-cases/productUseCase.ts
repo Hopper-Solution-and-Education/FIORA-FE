@@ -22,6 +22,7 @@ import {
   ProductCreation,
   ProductUpdate,
 } from '../../repositories/productRepository.interface';
+import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
@@ -503,12 +504,13 @@ class ProductUseCase {
     return result;
   }
 
-  async fetchProductCategories(req: NextApiRequest, userId: string) {
+  async fetchProductCategories(req: NextApiRequest, userId: string, currency: string) {
     const { page = 1, pageSize = 20 } = req.query;
     const skip = (Number(page) - 1) * Number(pageSize);
     const take = Number(pageSize);
     const params = req.body as GlobalFilters;
     const searchParams = safeString(params.search);
+
     let where: Prisma.ProductWhereInput = {};
     let products: any[] = [];
     let categories: any[] = [];
@@ -642,39 +644,39 @@ class ProductUseCase {
     });
 
     const productIds = products.map((product) => product.id);
-    const productTransactions =
-      productIds.length > 0
-        ? await prisma.productTransaction.findMany({
-          where: {
-            productId: { in: productIds },
-            transaction: { userId },
-          },
+    const foundProduct = await prisma.productTransaction.findMany({
+      where: {
+        productId: { in: productIds },
+        transaction: { userId },
+      },
+      select: {
+        productId: true,
+        transaction: {
           select: {
-            productId: true,
-            transaction: {
-              select: {
-                id: true,
-                userId: true,
-                type: true,
-                amount: true,
-                currency: true,
-              },
-            },
+            id: true,
+            userId: true,
+            type: true,
+            amount: true,
+            currency: true,
+            baseCurrency: true,
+            baseAmount: true,
           },
-        })
-        : [];
+        },
+      },
+    });
+
+    const productTransactions = productIds.length > 0 ? foundProduct : [];
 
     const creatorIds = categories.map((cat) => cat.createdBy).filter(Boolean) as string[];
     const updatorIds = categories.map((cat) => cat.updatedBy).filter(Boolean) as string[];
     const uniqueUserIds = Array.from(new Set([...creatorIds, ...updatorIds]));
 
-    const users =
-      uniqueUserIds.length > 0
-        ? await prisma.user.findMany({
-          where: { id: { in: uniqueUserIds } },
-          select: { id: true, name: true, email: true, image: true },
-        })
-        : [];
+    const foundUsers = await prisma.user.findMany({
+      where: { id: { in: uniqueUserIds } },
+      select: { id: true, name: true, email: true, image: true },
+    });
+
+    const users = uniqueUserIds.length > 0 ? foundUsers : [];
 
     const userMap = users.reduce(
       (acc, user) => {
@@ -696,6 +698,8 @@ class ProductUseCase {
           type: pt.transaction.type,
           amount: pt.transaction.amount.toNumber(),
           currency: pt.transaction.currency!,
+          baseCurrency: pt.transaction.baseCurrency!,
+          baseAmount: pt.transaction.baseAmount?.toNumber() || 0,
         });
         return acc;
       },
@@ -703,15 +707,18 @@ class ProductUseCase {
     );
 
     const productsByCategory = products.reduce(
-      (acc, product) => {
+      async (acc, product) => {
         const catId = product.catId;
         if (catId) {
           if (!acc[catId]) acc[catId] = [];
           const transactions = productTransactionMap[product.id] || [];
+
+          const convertPrice = await convertCurrency(product.price, product.currency, currency);
+
           acc[catId].push({
             product: {
               id: product.id,
-              price: product.price.toNumber(),
+              price: convertPrice,
               name: product.name,
               type: product.type,
               description: product.description,
@@ -720,6 +727,8 @@ class ProductUseCase {
               catId: product.catId,
               icon: product.icon,
               currency: product.currency,
+              baseCurrency: product.baseCurrency,
+              baseAmount: product.baseAmount?.toNumber() || 0,
             },
             transactions,
           });
@@ -756,19 +765,27 @@ class ProductUseCase {
     const incomeTotals: number[] = [];
     const expenseTotals: number[] = [];
 
-    for (const category of transformedData) {
-      for (const item of category.products) {
-        const { price, taxRate } = item.product;
-        priceList.push(price);
+    for await (const category of transformedData) {
+      for await (const item of category.products) {
+        const { taxRate, baseAmount } = item.product;
+        priceList.push(baseAmount || 0);
         taxRateList.push(taxRate);
 
         const transactions = item.transactions;
         const totalIncome = transactions
           .filter((tx: any) => tx.type === 'Income')
-          .reduce((sum: any, tx: any) => sum + tx.amount, 0);
+          .reduce(
+            async (sum: any, tx: any) =>
+              sum + (await convertCurrency(tx.baseAmount, DEFAULT_BASE_CURRENCY, currency)),
+            0,
+          );
         const totalExpense = transactions
           .filter((tx: any) => tx.type === 'Expense')
-          .reduce((sum: any, tx: any) => sum + tx.amount, 0);
+          .reduce(
+            async (sum: any, tx: any) =>
+              sum + (await convertCurrency(tx.baseAmount, DEFAULT_BASE_CURRENCY, currency)),
+            0,
+          );
 
         incomeTotals.push(totalIncome);
         expenseTotals.push(totalExpense);

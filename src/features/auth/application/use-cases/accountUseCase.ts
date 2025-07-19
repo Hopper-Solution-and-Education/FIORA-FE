@@ -365,8 +365,13 @@ export class AccountUseCase {
     const minBalance = balances.length > 0 ? Math.min(...balances) : 0;
     const maxBalance = balances.length > 0 ? Math.max(...balances) : 0;
 
-    const convertMinBalance = await convertCurrency(minBalance, DEFAULT_BASE_CURRENCY, currency);
-    const convertMaxBalance = await convertCurrency(maxBalance, DEFAULT_BASE_CURRENCY, currency);
+    const convertMinBalanceAwaited = convertCurrency(minBalance, DEFAULT_BASE_CURRENCY, currency);
+    const convertMaxBalanceAwaited = convertCurrency(maxBalance, DEFAULT_BASE_CURRENCY, currency);
+
+    const [convertMinBalance, convertMaxBalance] = await Promise.all([
+      convertMinBalanceAwaited,
+      convertMaxBalanceAwaited,
+    ]);
 
     return {
       data: accountWithConvertedBalance,

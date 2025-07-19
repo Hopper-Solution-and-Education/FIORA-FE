@@ -390,7 +390,7 @@ class CategoryUseCase {
     userId: string,
     type: CategoryType,
     fiscalYear: string,
-    currency: Currency,
+    currency: string,
   ) {
     if (!Object.values(CategoryType).includes(type)) {
       throw new Error(Messages.INVALID_CATEGORY_TYPE);
@@ -469,7 +469,7 @@ class CategoryUseCase {
       (category: CategoryWithBudgetDetails) => {
         const suffix = category.type === CategoryType.Expense ? 'exp' : 'inc';
         const bottomUpPlan: Record<string, number> = {};
-        const actualTransaction: Record<string, number | Currency | TransactionType> = {};
+        const actualTransaction: Record<string, number | string | TransactionType> = {};
 
         // Initialize all months with 0
         for (let i = 1; i <= 12; i++) {
