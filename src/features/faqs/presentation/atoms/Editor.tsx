@@ -2,7 +2,6 @@
 
 import RichTextEditor, { BaseKit } from 'reactjs-tiptap-editor';
 
-import { Blockquote } from 'reactjs-tiptap-editor/blockquote';
 import { Bold } from 'reactjs-tiptap-editor/bold';
 import { BulletList } from 'reactjs-tiptap-editor/bulletlist';
 import { Code } from 'reactjs-tiptap-editor/code';
@@ -18,6 +17,8 @@ import { Iframe } from 'reactjs-tiptap-editor/iframe';
 import { Image } from 'reactjs-tiptap-editor/image';
 import { Indent } from 'reactjs-tiptap-editor/indent';
 import { Italic } from 'reactjs-tiptap-editor/italic';
+// @ts-ignore
+import { Blockquote } from 'reactjs-tiptap-editor/lib/blockquote';
 import { LineHeight } from 'reactjs-tiptap-editor/lineheight';
 import { Link } from 'reactjs-tiptap-editor/link';
 import { MoreMark } from 'reactjs-tiptap-editor/moremark';
