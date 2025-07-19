@@ -23,7 +23,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
       categoryId: string;
     };
 
-    if (!title || !description || !content || !categoryId) {
+    if (!title || !content || !categoryId) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 

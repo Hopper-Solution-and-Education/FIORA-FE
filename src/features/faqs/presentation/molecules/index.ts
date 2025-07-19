@@ -8,7 +8,6 @@ export { default as ContentEditor } from './ContentEditor';
 export { default as FaqsFilterMenu } from './FaqsFilterMenu';
 export { default as FaqsList } from './FaqsList';
 export { default as FileUploadZone } from './FileUploadZone';
-export { default as FormActions } from './FormActions';
 export { default as StatsDisplay } from './StatsDisplay';
 export { default as ValidationResults } from './ValidationResults';
 export { default as WarningDialog } from './WarningDialog';
