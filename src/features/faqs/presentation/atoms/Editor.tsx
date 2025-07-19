@@ -104,6 +104,7 @@ function Editor({ content, setContent }: { content: string; setContent: (value: 
         setContent(value);
       }}
       extensions={extensions}
+      dark={false}
       // hideBubble={true}
     />
   );
