@@ -81,7 +81,11 @@ const CommentItem: React.FC<CommentItemProps> = ({
             <div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="p-1 " aria-label="Comment actions">
+                  <button
+                    data-test="comment-item-dropdown-menu-trigger"
+                    className="p-1 "
+                    aria-label="Comment actions"
+                  >
                     <MoreVertical className="w-5 h-5 text-gray-500" />
                   </button>
                 </DropdownMenuTrigger>

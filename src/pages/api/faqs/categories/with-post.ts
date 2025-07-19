@@ -2,10 +2,9 @@ import { getFaqCategoriesUseCase } from '@/features/faqs/application/use-cases';
 import { PostType } from '@/features/faqs/domain/entities/models/faqs';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
-import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse) => {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
     case 'GET':
       return GET(req, res);
@@ -15,7 +14,7 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse) 
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
         .json({ error: Messages.METHOD_NOT_ALLOWED });
   }
-});
+}
 
 async function GET(req: NextApiRequest, res: NextApiResponse) {
   try {

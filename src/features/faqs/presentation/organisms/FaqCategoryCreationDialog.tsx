@@ -74,6 +74,7 @@ const FaqCategoryCreationDialog: React.FC<FaqCategoryCreationDialogProps> = ({
             Please provide the name and (optionally) a description for the new FAQ category.
           </DialogDescription>
           <form
+            data-test="faq-category-creation-form"
             onSubmit={handleSubmit(handleFormSubmit)}
             className="space-y-4"
             onChange={handleFormChange}

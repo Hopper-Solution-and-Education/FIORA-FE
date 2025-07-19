@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { NextRequest, NextResponse } from 'next/server';
 import { pathToRegexp } from 'path-to-regexp';
 // import { FeatureFlags } from './shared/constants/featuresFlags';
 // import growthbook from './config/growthbook/growthbook';
 
-const publicPatterns = ['/', '/auth/*path', '/faqs', '/faqs/*path'];
+const publicPatterns = ['/', '/auth/*path', '/faqs', '/faqs/details/*path'];
 
 // const featureProtectedRoutes: { [key: string]: FeatureFlags } = {
 //   '/transaction': FeatureFlags.TRANSACTION_FEATURE,

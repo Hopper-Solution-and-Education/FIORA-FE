@@ -1,6 +1,6 @@
 import { prisma } from '@/config';
 import { Messages } from '@/shared/constants/message';
-import { MembershipTier, Prisma, TierBenefit } from '@prisma/client';
+import { MembershipTier, Prisma } from '@prisma/client';
 import { membershipTierRepository } from '../../infrastructure/repositories/membershipTierRepository';
 import {
   IMembershipTierRepository,
@@ -32,7 +32,14 @@ class MembershipSettingUseCase {
     } = data;
 
     try {
-      const newTierBenefits: TierBenefit[] = [];
+      const newTierBenefits: Array<{
+        id: string;
+        slug: string;
+        name: string;
+        suffix: string;
+        description: string;
+        value: number;
+      }> = [];
 
       return await prisma.$transaction(
         async (tx) => {
@@ -107,6 +114,7 @@ class MembershipSettingUseCase {
                 include: {
                   benefit: {
                     select: {
+                      id: true,
                       slug: true,
                       name: true,
                       suffix: true,
@@ -125,12 +133,14 @@ class MembershipSettingUseCase {
               }
 
               const newTierBenefitWithBenefit = {
-                ...newTierBenefit,
+                id: newTierBenefit.benefit.id,
                 slug: newTierBenefit.benefit.slug,
+                name: newTierBenefit.benefit.name,
+                suffix: newTierBenefit.benefit.suffix || '',
+                description: newTierBenefit.benefit.description || '',
+                value: Number(newTierBenefit.value),
               };
-              const { benefit: _, ...newTierBenefitWithoutBenefit } = newTierBenefitWithBenefit;
-              console.log(_);
-              return newTierBenefitWithoutBenefit;
+              return newTierBenefitWithBenefit;
             });
 
             newTierBenefits.push(...(await Promise.all(tierBenefitPromises)));

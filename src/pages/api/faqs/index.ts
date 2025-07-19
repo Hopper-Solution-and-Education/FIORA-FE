@@ -1,7 +1,6 @@
 import { prisma } from '@/config';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { PostType, Prisma } from '@prisma/client';
-import { randomUUID } from 'crypto';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default withAuthorization({
@@ -24,7 +23,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
       categoryId: string;
     };
 
-    if (!title || !description || !content || !categoryId) {
+    if (!title || !content || !categoryId) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -38,7 +37,6 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
 
     const faq = await prisma.post.create({
       data: {
-        id: randomUUID(),
         title,
         description,
         content,

@@ -151,3 +151,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+.reactjs-tiptap-editor {
+  .richtext-outline-1 {
+    outline-width: 0px !important;
+  }
+}

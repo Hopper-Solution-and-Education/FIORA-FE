@@ -285,7 +285,15 @@ const DateRangePickerFinance = forwardRef<HTMLInputElement, CustomDateRangePicke
             </div>
           </PopoverContent>
         </Popover>
-        {name && <input type="hidden" name={name} ref={ref} value={JSON.stringify(date)} />}
+        {name && (
+          <input
+            data-test="date-range-picker-finance-input"
+            type="hidden"
+            name={name}
+            ref={ref}
+            value={JSON.stringify(date)}
+          />
+        )}
         {error && <p className="text-sm text-red-500 mt-1">{error.message}</p>}
       </div>
     );

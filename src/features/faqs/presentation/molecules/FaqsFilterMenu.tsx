@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import { FilterColumn, FilterCriteria } from '@/shared/types/filter.types';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FaqsCategoriesResponse } from '../../domain/entities/models/faqs';
 import { FaqsFilterValues } from '../organisms/FaqsPageHeader';
 
@@ -29,7 +29,7 @@ const FaqsFilterMenu = ({ categories, activeFilters, onFilterChange }: FaqsFilte
   // Category filter component
   const CategoryFilterComponent = useMemo(
     () => (
-      <div className="space-y-2">
+      <div className="space-y-2 faq-category-filter">
         <MultiSelectFilter
           options={categories.map((category) => ({
             label: category.name,

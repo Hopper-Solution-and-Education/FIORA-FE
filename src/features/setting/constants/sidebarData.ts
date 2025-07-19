@@ -36,4 +36,10 @@ export const settingNavItems: NavItem[] = [
     icon: 'coins',
     isActive: false,
   },
+  {
+    title: 'Notification',
+    url: '/setting/notification',
+    icon: 'bell',
+    isActive: false,
+  },
 ];

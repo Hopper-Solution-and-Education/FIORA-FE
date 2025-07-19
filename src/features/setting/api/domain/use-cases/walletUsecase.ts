@@ -2,8 +2,10 @@ import { IAccountRepository } from '@/features/auth/domain/repositories/accountR
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { FilterObject } from '@/shared/types/filter.types';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { generateRefCode } from '@/shared/utils/stringHelper';
 import {
   Currency,
@@ -16,7 +18,6 @@ import { ATTACHMENT_CONSTANTS } from '../../constants/attachmentConstants';
 import {
   DEFAULT_WALLET_FIELDS,
   MAX_REF_CODE_ATTEMPTS,
-  PAYMENT_ACCOUNT_DEDUCT_RATE,
   WALLET_TYPE_ICONS,
 } from '../../constants/walletConstant';
 import { attachmentRepository } from '../../infrastructure/repositories/attachmentRepository';
@@ -208,6 +209,7 @@ class WalletUseCase {
       const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
       if (!packageFX) throw new Error(Messages.PACKAGE_FX_NOT_FOUND);
       const amount = Number(packageFX.fxAmount);
+
       // Update currency for depositRequest if not set
       if (!depositRequest.currency && currency) {
         await this._walletRepository.updateDepositRequestCurrency(id, currency);
@@ -246,42 +248,28 @@ class WalletUseCase {
         createdBy: userId,
       });
 
-      // Convert depositRequest amount to payment account currency for deduction
-      let deductAmount = 0;
-      const depositCurrency = depositRequest.currency || currency;
-      const paymentCurrency = paymentAccount.currency;
-      // Deposit currency should never be FX, fallback to USD logic if it happens (or throw error)
-      let effectiveDepositCurrency = depositCurrency;
-      if (depositCurrency === 'FX') {
-        // This should not happen, but fallback to USD logic
-        effectiveDepositCurrency = 'USD';
-      }
-      if (effectiveDepositCurrency === 'USD') {
-        if (paymentCurrency === 'VND') {
-          deductAmount = amount * PAYMENT_ACCOUNT_DEDUCT_RATE;
-        } else if (paymentCurrency === 'USD') {
-          deductAmount = amount;
-        } else {
-          deductAmount = amount; // fallback
-        }
-      } else if (effectiveDepositCurrency === 'VND') {
-        if (paymentCurrency === 'USD') {
-          deductAmount = amount / PAYMENT_ACCOUNT_DEDUCT_RATE;
-        } else if (paymentCurrency === 'VND') {
-          deductAmount = amount;
-        } else {
-          deductAmount = amount; // fallback
-        }
-      } else {
-        deductAmount = amount; // fallback
-      }
+      const deductAmount = convertCurrency(amount, CURRENCY.USD, paymentAccount.currency);
 
       if (deductAmount > 0) {
         const newBalance = Number(paymentAccount.balance ?? 0) - deductAmount;
+
         await this._accountRepository.update(paymentAccount.id, {
           balance: newBalance,
         });
       }
+
+      let paymentWallet = await this._walletRepository.findWalletByType(WalletType.Payment, userId);
+
+      if (!paymentWallet) {
+        paymentWallet = await this._walletRepository.createWallet({
+          userId,
+          type: WalletType.Payment,
+          icon: WALLET_TYPE_ICONS[WalletType.Payment],
+          ...DEFAULT_WALLET_FIELDS,
+        });
+      }
+
+      await this._walletRepository.increaseWalletBalance(paymentWallet.id, amount);
     }
 
     return this._walletRepository.updateDepositRequestStatus(id, newStatus, remark);

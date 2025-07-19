@@ -62,6 +62,7 @@ const DialogAddBenefitTier = ({ open, onOpenChange }: DialogAddBenefitTierProps)
     )
       .unwrap()
       .then(() => {
+        methods.reset();
         dispatch(setIsShowDialogAddBenefitTier(false));
         dispatch(getListMembershipAsyncThunk({ page: 1, limit: 10 }));
       });
@@ -77,7 +78,7 @@ const DialogAddBenefitTier = ({ open, onOpenChange }: DialogAddBenefitTierProps)
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form data-test="dialog-add-benefit-tier" onSubmit={handleSubmit(onSubmit)}>
             <AddBenefitForm />
           </form>
         </FormProvider>

@@ -8,8 +8,8 @@ import { Search } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useMemo } from 'react';
-import { fetchAccounts } from '../slices/actions';
 import { setFilterCriteria } from '../slices';
+import { fetchAccounts } from '../slices/actions';
 import FilterMenu from './FilterMenu';
 
 const DashboardHeader = () => {
@@ -77,7 +77,10 @@ const DashboardHeader = () => {
         </TooltipProvider>
       </div>
       <Link href="/account/create">
-        <button className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white">
+        <button
+          data-test="dashboard-header-create-account"
+          className="p-2 mb-4 rounded-full bg-blue-500 hover:bg-blue-700 text-white"
+        >
           <Icons.add className="h-6 w-6" />
         </button>
       </Link>

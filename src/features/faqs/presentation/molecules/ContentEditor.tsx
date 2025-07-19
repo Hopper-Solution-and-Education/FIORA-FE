@@ -1,7 +1,7 @@
 import { Label } from '@/components/ui/label';
-import RichTextEditor from '@/features/faqs/presentation/atoms/RichTextEditor';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import Editor from '../atoms/Editor';
 import ParsedFaqContent from '../atoms/ParsedFaqContent';
 
 interface ContentEditorProps {
@@ -43,6 +43,7 @@ const PanelHeader: React.FC<PanelHeaderProps> = ({
             {isExpanded && <Label className="text-sm text-gray-700 font-medium">{title}</Label>}
           </div>
           <button
+            data-test="content-editor-toggle"
             type="button"
             onClick={onToggle}
             disabled={disabled}
@@ -58,6 +59,7 @@ const PanelHeader: React.FC<PanelHeaderProps> = ({
       ) : (
         <>
           <button
+            data-test="content-editor-toggle"
             type="button"
             onClick={onToggle}
             disabled={disabled}
@@ -127,11 +129,12 @@ const ContentEditor: React.FC<ContentEditorProps> = ({
           {isEditorExpanded && (
             <div>
               <div className={`h-full ${disabled ? 'pointer-events-none opacity-60' : ''}`}>
-                <RichTextEditor
+                {/* <RichTextEditor
                   key={`editor-${isEditorExpanded}`}
                   value={value}
                   onChange={onChange}
-                />
+                /> */}
+                {value && <Editor content={value} setContent={onChange} />}
               </div>
             </div>
           )}

@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Filter, Trash2 } from 'lucide-react';
+import { Filter, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface BudgetSummaryFilterProps {
@@ -41,6 +41,7 @@ const BudgetSummaryFilter = ({ onFilter, initialValue = '' }: BudgetSummaryFilte
             className="pr-10 py-2 w-full rounded-md border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
           />
           <button
+            data-test="budget-summary-filter-search"
             onClick={handleSearch}
             className="absolute right-2 top-1/2 transform -translate-y-1/2 hover:text-blue-500 transition-colors"
           >

@@ -229,7 +229,11 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
           </div>
 
           {/* Form tạo/cập nhật sản phẩm */}
-          <form onSubmit={method.handleSubmit(handleSubmit)} id="hook-form">
+          <form
+            data-test="product-creation-form"
+            onSubmit={method.handleSubmit(handleSubmit)}
+            id="hook-form"
+          >
             <div className="mb-6">
               <ProductForm />
             </div>
