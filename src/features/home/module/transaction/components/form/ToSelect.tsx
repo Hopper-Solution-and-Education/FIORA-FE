@@ -55,6 +55,7 @@ const ToSelectField: React.FC<ToSelectProps> = ({
           tmpOptions.push({
             value: option.id,
             label: option.name,
+            icon: option.icon,
           });
         });
       } else if (transactionType === TransactionType.Expense) {
@@ -62,6 +63,15 @@ const ToSelectField: React.FC<ToSelectProps> = ({
           tmpOptions.push({
             value: option.id,
             label: option.name,
+            icon: option.icon,
+          });
+        });
+      } else if (transactionType === TransactionType.Transfer) {
+        [...data.data.fromAccounts].forEach((option: SupportToAccountResponse) => {
+          tmpOptions.push({
+            value: option.id,
+            label: option.name,
+            icon: option.icon,
           });
         });
       }
@@ -109,7 +119,7 @@ const ToSelectField: React.FC<ToSelectProps> = ({
                   : [{ value: 'loading', label: 'Loading...', disabled: true }]
               }
               placeholder={
-                transactionType === TransactionType.Income ? 'Select Account' : 'Select Category'
+                transactionType === TransactionType.Expense ? 'Select Category' : 'Select Account'
               }
               error={error}
               noneValue={false}

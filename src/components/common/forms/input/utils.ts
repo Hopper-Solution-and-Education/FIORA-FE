@@ -1,9 +1,9 @@
-import { Currency } from '@/shared/types';
 import {
+  FIORANumberFormat,
   formatFIORACurrency,
   getCurrencySymbol,
-  FIORANumberFormat,
 } from '@/config/FIORANumberFormat';
+import { Currency } from '@/shared/types';
 
 /**
  * Formats a number into a currency string based on the currency code.
@@ -23,20 +23,36 @@ export const formatSuggestionValue = (
 ): string => {
   const currencySymbol = getCurrencySymbol(currency as Currency);
 
-  if (num >= 1000000 && shouldShortened) {
-    const inMillions = num / 1000000;
-    // Use FIORANumberFormat for decimal formatting with consistent locale
-    const numberFormatter = new FIORANumberFormat(currency as Currency, {
-      style: 'decimal',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 1,
-    });
-    const formatted = numberFormatter.format(inMillions);
+  // Limit max suggestion value to 10_000_000_000
+  const cappedNum = Math.min(num, 10_000_000_000);
 
-    return currency === 'VND'
-      ? `${formatted}M ${currencySymbol}`
-      : `${currencySymbol} ${formatted}M`;
+  if (shouldShortened) {
+    let formatted = '';
+    let suffix = '';
+    let value = cappedNum;
+    if (cappedNum >= 1_000_000_000) {
+      value = cappedNum / 1_000_000_000;
+      suffix = 'B';
+    } else if (cappedNum >= 1_000_000) {
+      value = cappedNum / 1_000_000;
+      suffix = 'M';
+    } else if (cappedNum >= 1_000) {
+      value = cappedNum / 1_000;
+      suffix = 'K';
+    }
+    if (suffix) {
+      // Use FIORANumberFormat for decimal formatting with consistent locale
+      const numberFormatter = new FIORANumberFormat(currency as Currency, {
+        style: 'decimal',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 1,
+      });
+      formatted = numberFormatter.format(value);
+      return currency === 'VND'
+        ? `${formatted}${suffix} ${currencySymbol}`
+        : `${currencySymbol} ${formatted}${suffix}`;
+    }
   }
 
-  return formatFIORACurrency(num, currency as Currency);
+  return formatFIORACurrency(cappedNum, currency as Currency);
 };

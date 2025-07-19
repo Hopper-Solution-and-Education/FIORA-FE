@@ -2,6 +2,7 @@
 
 import { ChartLegend, IconDisplay, PositiveAndNegativeV2BarLabel } from '@/components/common/atoms';
 import StackYAxisTick from '@/components/common/atoms/StackYAxisTick';
+import { Icons } from '@/components/Icon';
 import { COLORS, DEFAULT_BUDGET_ICON, DEFAULT_CURRENCY, STACK_KEY } from '@/shared/constants/chart';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { formatter } from '@/shared/lib/charts';
@@ -51,8 +52,39 @@ const PositiveNegativeStackBarChart = ({
   } = processChartData(data, width, isMobile);
 
   const renderTooltipContent = (props: TooltipProps) => {
+    let remaining = 0;
     const { active, payload, label } = props;
     if (!active || !payload || !payload.length) return null;
+
+    const renderKeyText = (key: string | number | undefined) => {
+      if (!key) return '';
+      if (key === STACK_KEY.A) return 'Actual Transaction';
+      if (key === STACK_KEY.T) return 'Top Down';
+      if (key === STACK_KEY.B) return 'Bottom Up';
+      return key.toString();
+    };
+
+    // Remaining:
+    // Type: Expense = Bottom Up - Actual
+    // Type: Profit = Actual - Bottom Up
+    // Type: Income = Actual - Bottom Up
+    switch (label) {
+      case 'Expense':
+        remaining =
+          payload[0].payload[`${STACK_KEY.B}OriginalValue`] -
+          payload[0].payload[`${STACK_KEY.A}OriginalValue`];
+        break;
+      case 'Profit':
+        remaining =
+          payload[0].payload[`${STACK_KEY.A}OriginalValue`] -
+          payload[0].payload[`${STACK_KEY.B}OriginalValue`];
+        break;
+      case 'Income':
+        remaining =
+          payload[0].payload[`${STACK_KEY.A}OriginalValue`] -
+          payload[0].payload[`${STACK_KEY.B}OriginalValue`];
+        break;
+    }
 
     return (
       <div className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm">
@@ -66,12 +98,22 @@ const PositiveNegativeStackBarChart = ({
               className="w-3 h-3 mr-2 rounded-sm"
               style={{ backgroundColor: item.payload.colors[item.dataKey as string] }}
             />
-            <span>{item.dataKey}:</span>
+            <span>{renderKeyText(item.dataKey)}:</span>
             <span className="font-bold ml-1">
               {formatCurrency(item.payload[`${item.dataKey}OriginalValue`], currency)}
             </span>
           </div>
         ))}
+
+        <div className="flex items-center gap-2 text-xs mt-3 px-2 py-1 rounded bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 border border-blue-200 dark:border-blue-700 shadow-inner">
+          <span className="inline-flex items-center font-semibold text-blue-700 dark:text-blue-300">
+            <Icons.cornerDownRight className="w-4 h-4 mr-1" />
+            Remaining
+          </span>
+          <span className="font-bold text-blue-800 dark:text-blue-200">
+            {formatCurrency(remaining, currency)}
+          </span>
+        </div>
         {tutorialText && (
           <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 italic">{tutorialText}</p>
         )}
@@ -160,7 +202,7 @@ const PositiveNegativeStackBarChart = ({
                   className="text-sm text-gray-600"
                 />
                 <Tooltip content={renderTooltipContent} />
-                {[STACK_KEY.A, STACK_KEY.T, STACK_KEY.B].map((key) => (
+                {[STACK_KEY.A, STACK_KEY.B, STACK_KEY.T].map((key) => (
                   <Bar
                     radius={[0, 0, 0, 0]}
                     key={key}
@@ -172,12 +214,27 @@ const PositiveNegativeStackBarChart = ({
                       filter: 'brightness(1.1) drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.25))',
                       cursor: 'pointer',
                     }}
-                    label={(props) => (
-                      <PositiveAndNegativeV2BarLabel
-                        {...props}
-                        renderValue={formatter(key, props.value, currency)}
-                      />
-                    )}
+                    label={(props: any) => {
+                      const entry = positiveData[props.index];
+                      let displayValue = 0;
+                      if (key === STACK_KEY.A) {
+                        // Actual Transaction
+                        displayValue = entry.AOriginalValue;
+                      } else if (key === STACK_KEY.B) {
+                        // Bottom Up
+                        displayValue = entry.BOriginalValue;
+                      } else if (key === STACK_KEY.T) {
+                        // Top Down
+                        displayValue = entry.TOriginalValue;
+                      }
+                      return (
+                        <PositiveAndNegativeV2BarLabel
+                          {...props}
+                          entry={entry}
+                          renderValue={formatter(key, displayValue, currency)}
+                        />
+                      );
+                    }}
                     onClick={(props) => callback && callback(props.payload)}
                     className="transition-all duration-300 cursor-pointer"
                   >
@@ -210,7 +267,7 @@ const PositiveNegativeStackBarChart = ({
                   className="text-sm text-gray-600"
                 />
                 <Tooltip content={renderTooltipContent} />
-                {[STACK_KEY.A, STACK_KEY.T, STACK_KEY.B].map((key) => (
+                {[STACK_KEY.A, STACK_KEY.B, STACK_KEY.T].map((key) => (
                   <Bar
                     radius={[0, 0, 0, 0]}
                     key={key}
@@ -222,12 +279,27 @@ const PositiveNegativeStackBarChart = ({
                       filter: 'brightness(1.1) drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.25))',
                       cursor: 'pointer',
                     }}
-                    label={(props) => (
-                      <PositiveAndNegativeV2BarLabel
-                        {...props}
-                        renderValue={formatter(key, props.value, currency)}
-                      />
-                    )}
+                    label={(props: any) => {
+                      const entry = positiveData[props.index];
+                      let displayValue = 0;
+                      if (key === STACK_KEY.A) {
+                        // Actual Transaction
+                        displayValue = entry.AOriginalValue;
+                      } else if (key === STACK_KEY.B) {
+                        // Bottom Up
+                        displayValue = entry.BOriginalValue;
+                      } else if (key === STACK_KEY.T) {
+                        // Top Down
+                        displayValue = entry.TOriginalValue;
+                      }
+                      return (
+                        <PositiveAndNegativeV2BarLabel
+                          {...props}
+                          entry={entry}
+                          renderValue={formatter(key, displayValue, currency)}
+                        />
+                      );
+                    }}
                     onClick={(props) => callback && callback(props.payload)}
                     className="transition-all duration-300 cursor-pointer"
                   >
@@ -267,7 +339,7 @@ const PositiveNegativeStackBarChart = ({
               className="text-sm text-gray-600"
             />
             <Tooltip content={renderTooltipContent} />
-            {[STACK_KEY.A, STACK_KEY.T, STACK_KEY.B].map((key) => (
+            {[STACK_KEY.A, STACK_KEY.B, STACK_KEY.T].map((key: any) => (
               <Bar
                 radius={[0, 0, 0, 0]}
                 key={key}
@@ -279,12 +351,27 @@ const PositiveNegativeStackBarChart = ({
                   filter: 'brightness(1.1) drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.25))',
                   cursor: 'pointer',
                 }}
-                label={(props) => (
-                  <PositiveAndNegativeV2BarLabel
-                    {...props}
-                    renderValue={formatter(key, props.value, currency)}
-                  />
-                )}
+                label={(props: any) => {
+                  const entry = positiveData[props.index];
+                  let displayValue = 0;
+                  if (key === STACK_KEY.A) {
+                    // Actual Transaction
+                    displayValue = entry.AOriginalValue;
+                  } else if (key === STACK_KEY.B) {
+                    // Bottom Up
+                    displayValue = entry.BOriginalValue;
+                  } else if (key === STACK_KEY.T) {
+                    // Top Down
+                    displayValue = entry.TOriginalValue;
+                  }
+                  return (
+                    <PositiveAndNegativeV2BarLabel
+                      {...props}
+                      entry={entry}
+                      renderValue={formatter(key, displayValue, currency)}
+                    />
+                  );
+                }}
                 onClick={(props) => callback && callback(props.payload)}
                 className="transition-all duration-300 cursor-pointer"
               >

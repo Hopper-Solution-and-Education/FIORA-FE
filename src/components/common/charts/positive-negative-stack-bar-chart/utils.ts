@@ -1,15 +1,15 @@
 import { ChartDataConfig } from '@/components/common/charts/positive-negative-stack-bar-chart/type';
-import { getChartMargins } from '@/shared/utils/device';
 import { BASE_BAR_HEIGHT, MIN_CHART_HEIGHT, STACK_KEY, STACK_TYPE } from '@/shared/constants/chart';
+import { getChartMargins } from '@/shared/utils/device';
 import { CustomBarItem, StackBarDisplay } from '../stacked-bar-chart/type';
 
 const largestKey = (item: CustomBarItem): string => {
-  const largestValue = Math.max(item.A, item.T, item.B);
+  const largestValue = Math.max(item.A, item.B, item.T);
   return largestValue === item.A
     ? STACK_KEY.A
-    : largestValue === item.T
-      ? STACK_KEY.T
-      : STACK_KEY.B;
+    : largestValue === item.B
+      ? STACK_KEY.B
+      : STACK_KEY.T;
 };
 
 const calculateChartDomains = (
@@ -53,24 +53,63 @@ export const processChartData = (
   const negativeData = data.map((item) => ({
     ...item,
     A: item.A < 0 ? item.A : 0,
-    T: item.T < 0 ? item.T : 0,
     B: item.B < 0 ? item.B : 0,
+    T: item.T < 0 ? item.T : 0,
     AOriginalValue: item.A,
     BOriginalValue: item.B,
     TOriginalValue: item.T,
     maxKey: largestKey(item),
   }));
 
-  const positiveData = data.map((item) => ({
-    ...item,
-    A: item.A > 0 ? item.A : 0,
-    T: item.T > 0 && STACK_KEY.T === largestKey(item) ? (item.A > 0 ? item.T - item.A : item.T) : 0,
-    B: item.B > 0 && STACK_KEY.B === largestKey(item) ? (item.T > 0 ? item.B - item.T : item.B) : 0,
-    AOriginalValue: item.A,
-    BOriginalValue: item.B,
-    TOriginalValue: item.T,
-    maxKey: largestKey(item),
-  }));
+  // The priority is A, then B, then T
+  const positiveData = data.map((item) => {
+    // Get the largest key (A, B, T)
+    const maxKey = largestKey(item);
+
+    // Handle A value: if positive, take it, otherwise 0
+    const A = item.A > 0 ? item.A : 0;
+
+    // Handle B value:
+    // If B is positive and is the largest key:
+    //   If A is also positive, take the difference B - A (the part on top of A)
+    //   If A is not positive, take the whole B
+    // If B is positive but not the largest key, take the whole B
+    // If B is not positive, take 0
+    let B = 0;
+    if (item.B > 0) {
+      if (maxKey === STACK_KEY.B) {
+        B = item.A > 0 ? item.B - item.A : item.B;
+      } else {
+        B = item.B;
+      }
+    }
+
+    // Handle T value:
+    // If T is positive and is the largest key:
+    //   If B is also positive, take the difference T - B (the part on top of B)
+    //   If B is not positive, take the whole T
+    // If T is positive but not the largest key, take the whole T
+    // If T is not positive, take 0
+    let T = 0;
+    if (item.T > 0) {
+      if (maxKey === STACK_KEY.T) {
+        T = item.B > 0 ? item.T - item.B : item.T;
+      } else {
+        T = item.T;
+      }
+    }
+
+    return {
+      ...item,
+      A,
+      B,
+      T,
+      AOriginalValue: item.A,
+      BOriginalValue: item.B,
+      TOriginalValue: item.T,
+      maxKey,
+    };
+  });
 
   // Compute chart height
   const chartHeight = Math.max(data.length * BASE_BAR_HEIGHT, MIN_CHART_HEIGHT);
