@@ -17,7 +17,6 @@ import { Iframe } from 'reactjs-tiptap-editor/iframe';
 import { Image } from 'reactjs-tiptap-editor/image';
 import { Indent } from 'reactjs-tiptap-editor/indent';
 import { Italic } from 'reactjs-tiptap-editor/italic';
-// @ts-ignore
 import { Blockquote } from 'reactjs-tiptap-editor/lib/blockquote';
 import { LineHeight } from 'reactjs-tiptap-editor/lineheight';
 import { Link } from 'reactjs-tiptap-editor/link';
