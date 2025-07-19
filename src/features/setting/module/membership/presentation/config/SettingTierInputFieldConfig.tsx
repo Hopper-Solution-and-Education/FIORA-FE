@@ -33,29 +33,46 @@ const SettingTierInputFieldConfig = ({
     (state) => state.memberShipSettings.isLoadingDeleteBenefitTier,
   );
 
+  // Debug logs
+  console.log('🔍 Debug - SettingTierInputFieldConfig render:', {
+    dynamicTierFields,
+    fieldsCount: dynamicTierFields.length,
+    formValues: methods.getValues(),
+  });
+
   const handleOpenDialogAddBenefitTier = () => {
     dispatch(setIsShowDialogAddBenefitTier(true));
   };
 
   // Render dynamic fields based on configuration
-  const fields = dynamicTierFields.map((field) => (
-    <SettingTierInputField
-      key={field.key}
-      label={field.label}
-      name={field.key}
-      value={typeof watch(field.key) === 'number' ? (watch(field.key) as number) : 0}
-      onChange={(value) => setValue(field.key, value)}
-      suffix={field.suffix}
-      options={options}
-      required
-      disabled={isLoadingUpsertMembership || isLoadingDeleteBenefitTier}
-      showRemove={dynamicTierFields.length > 1}
-      onRemove={() => {
-        setIsShowDialogDeleteBenefitTier(true);
-        setIdTierToDelete(field.id);
-      }}
-    />
-  ));
+  const fields = dynamicTierFields.map((field) => {
+    const fieldValue = typeof watch(field.key) === 'number' ? (watch(field.key) as number) : 0;
+    console.log('🔍 Debug - Rendering field:', {
+      key: field.key,
+      label: field.label,
+      value: fieldValue,
+      suffix: field.suffix,
+    });
+
+    return (
+      <SettingTierInputField
+        key={field.key}
+        label={field.label}
+        name={field.key}
+        value={fieldValue}
+        onChange={(value) => setValue(field.key, value)}
+        suffix={field.suffix}
+        options={options}
+        required
+        disabled={isLoadingUpsertMembership || isLoadingDeleteBenefitTier}
+        showRemove={dynamicTierFields.length > 1}
+        onRemove={() => {
+          setIsShowDialogDeleteBenefitTier(true);
+          setIdTierToDelete(field.id);
+        }}
+      />
+    );
+  });
 
   // Sticky submit button
   const renderSubmitButton = () => {
