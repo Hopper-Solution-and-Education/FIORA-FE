@@ -2,6 +2,7 @@
 
 import RichTextEditor, { BaseKit } from 'reactjs-tiptap-editor';
 
+import { uploadToFirebase } from '@/shared/lib';
 import { Blockquote } from 'reactjs-tiptap-editor/blockquote';
 import { Bold } from 'reactjs-tiptap-editor/bold';
 import { BulletList } from 'reactjs-tiptap-editor/bulletlist';
@@ -31,11 +32,8 @@ import { TextDirection } from 'reactjs-tiptap-editor/textdirection';
 import { TextUnderline } from 'reactjs-tiptap-editor/textunderline';
 import { Video } from 'reactjs-tiptap-editor/video';
 
-import 'prism-code-editor-lightweight/layout.css';
-import 'reactjs-tiptap-editor/style.css';
-
-import { uploadToFirebase } from '@/shared/lib';
 import 'react-image-crop/dist/ReactCrop.css';
+import 'reactjs-tiptap-editor/style.css';
 
 const extensions = [
   BaseKit.configure({
