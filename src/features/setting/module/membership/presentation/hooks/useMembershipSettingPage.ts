@@ -1,7 +1,7 @@
 import { removeFromFirebase, uploadToFirebase } from '@/shared/lib';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { setSelectedMembership } from '../../slices';
@@ -14,36 +14,55 @@ export const useMembershipSettingPage = () => {
 
   const selectedMembership = useAppSelector((state) => state.memberShipSettings.selectedMembership);
 
-  const dynamicTierFields =
-    selectedMembership?.tierBenefits.map((benefit) => ({
-      id: benefit.id,
-      key: benefit.slug,
-      label: benefit.name,
-      suffix: benefit.suffix,
-    })) ?? [];
+  const dynamicTierFields = useMemo(
+    () =>
+      selectedMembership?.tierBenefits.map((benefit) => ({
+        id: benefit.id,
+        key: benefit.slug,
+        label: benefit.name,
+        suffix: benefit.suffix,
+      })) ?? [],
+    [selectedMembership?.tierBenefits],
+  );
 
-  const editMemberShipSchema = buildDynamicTierSchema(dynamicTierFields);
+  const editMemberShipSchema = useMemo(
+    () => buildDynamicTierSchema(dynamicTierFields),
+    [dynamicTierFields],
+  );
 
-  const defaultEditMemberShipValue: EditMemberShipFormValues = {
-    tier: '',
-    ...Object.fromEntries(dynamicTierFields.map((f) => [f.key, 0])),
-    story: '',
-    activeIcon: '',
-    inActiveIcon: '',
-    themeIcon: '',
-    mainIcon: '',
-  };
+  const defaultEditMemberShipValue: EditMemberShipFormValues = useMemo(
+    () => ({
+      tier: '',
+      ...Object.fromEntries(dynamicTierFields.map((f) => [f.key, 0])),
+      story: '',
+      activeIcon: '',
+      inActiveIcon: '',
+      themeIcon: '',
+      mainIcon: '',
+    }),
+    [dynamicTierFields],
+  );
 
   const methods = useForm<EditMemberShipFormValues>({
     resolver: yupResolver(editMemberShipSchema),
     defaultValues: defaultEditMemberShipValue,
   });
 
-  const { setValue } = methods;
+  const { setValue, reset } = methods;
 
   //   handle set value when selected membership change
   useEffect(() => {
     if (selectedMembership) {
+      console.log('🔍 Debug - selectedMembership changed:', {
+        tierBenefits: selectedMembership.tierBenefits,
+        dynamicTierFields,
+        defaultEditMemberShipValue,
+      });
+
+      // Reset form with new schema and default values
+      reset(defaultEditMemberShipValue);
+
+      // Then set the actual values
       setValue('id', selectedMembership.id);
       setValue('tier', selectedMembership.tierName);
       setValue('story', selectedMembership.story);
@@ -54,14 +73,18 @@ export const useMembershipSettingPage = () => {
 
       // set value dynamic for benefit fields
       (selectedMembership.tierBenefits || []).forEach((benefit) => {
+        console.log('🔍 Debug - Setting benefit value:', {
+          slug: benefit.slug,
+          name: benefit.name,
+          value: benefit.value,
+        });
         setValue(benefit.slug, Number(benefit.value ?? 0));
       });
     }
-  }, [selectedMembership, setValue]);
+  }, [selectedMembership, setValue, reset, defaultEditMemberShipValue]);
 
   //   handle submit form
   const handleSubmit = async (data: EditMemberShipFormValues) => {
-    console.log('data', data);
     // Keep track of uploaded URLs to rollback on failure
     const uploadedUrls: string[] = [];
 
