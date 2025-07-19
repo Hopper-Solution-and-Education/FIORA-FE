@@ -1,6 +1,7 @@
 'use client';
 
 import { InputField, SelectField } from '@/components/common/forms';
+import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';
@@ -10,7 +11,7 @@ import {
   useGetFaqCategoriesQuery,
 } from '../../store/api/faqsApi';
 import { FormField } from '../atoms';
-import { ContentEditor, FormActions } from '../molecules';
+import { ContentEditor } from '../molecules';
 import FaqCategoryCreationDialog, {
   FaqCategoryFormValues,
 } from '../organisms/FaqCategoryCreationDialog';
@@ -18,7 +19,7 @@ import FaqCategoryCreationDialog, {
 const initialFormData = {
   title: '',
   description: '',
-  content: '',
+  content: 'Content ',
   categoryId: '',
 };
 
@@ -152,7 +153,6 @@ const CreateFaqPage: React.FC = () => {
               key="title"
               name="title"
               label="Title"
-              placeholder="Enter FAQ title"
               value={formData.title}
               onChange={(value) => handleFieldChange('title', value)}
               required
@@ -179,7 +179,6 @@ const CreateFaqPage: React.FC = () => {
             type="textarea"
             value={formData.description}
             onChange={(value) => handleFieldChange('description', value)}
-            placeholder="Brief description (optional)"
             error={errors.description}
             disabled={isFormDisabled}
           />
@@ -191,15 +190,12 @@ const CreateFaqPage: React.FC = () => {
             disabled={isFormDisabled}
             showPreview={true}
           />
+
           {/* Form Actions */}
-          <FormActions
-            onCancel={handleCancel}
-            onSubmit={handleSubmit}
+          <DefaultSubmitButton
             isSubmitting={isSubmitting}
-            disabled={isFormDisabled}
-            submitText="Create FAQ"
-            cancelText="Cancel"
-            showIcons={true}
+            onSubmit={handleSubmit}
+            onBack={handleCancel}
           />
         </div>
       </div>
