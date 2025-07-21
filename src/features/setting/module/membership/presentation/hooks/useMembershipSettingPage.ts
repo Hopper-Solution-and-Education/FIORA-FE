@@ -53,12 +53,6 @@ export const useMembershipSettingPage = () => {
   //   handle set value when selected membership change
   useEffect(() => {
     if (selectedMembership) {
-      console.log('🔍 Debug - selectedMembership changed:', {
-        tierBenefits: selectedMembership.tierBenefits,
-        dynamicTierFields,
-        defaultEditMemberShipValue,
-      });
-
       // Reset form with new schema and default values
       reset(defaultEditMemberShipValue);
 
@@ -73,11 +67,6 @@ export const useMembershipSettingPage = () => {
 
       // set value dynamic for benefit fields
       (selectedMembership.tierBenefits || []).forEach((benefit) => {
-        console.log('🔍 Debug - Setting benefit value:', {
-          slug: benefit.slug,
-          name: benefit.name,
-          value: benefit.value,
-        });
         setValue(benefit.slug, Number(benefit.value ?? 0));
       });
     }
