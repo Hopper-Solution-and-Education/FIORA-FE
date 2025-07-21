@@ -79,34 +79,57 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
     try {
       const processedData: SectionDefaultValues = { ...data };
 
+      processedData.medias = processedData.medias.map((media, idx) => ({
+        ...media,
+        media_order: idx,
+      }));
+
       const oldMedias = sectionData?.medias || [];
 
       const updatedMedias = await Promise.all(
         processedData.medias.map(async (media) => {
           const oldMedia = oldMedias.find((m) => m.id === media.id);
+          if (oldMedia?.media_url && !oldMedia.media_url.startsWith('blob:')) {
+            await removeFromFirebase(oldMedia.media_url);
+          }
+          if (oldMedia?.media_url_2 && !oldMedia.media_url_2.startsWith('blob:')) {
+            await removeFromFirebase(oldMedia.media_url_2);
+          }
 
+          let newMediaUrl = media.media_url;
+          let newMediaUrl2 = media.media_url_2;
+
+          // Upload media_url if it's a blob
           if (media.media_url && media.media_url.startsWith('blob:')) {
-            if (oldMedia?.media_url && !oldMedia.media_url.startsWith('blob:')) {
-              await removeFromFirebase(oldMedia.media_url);
-            }
-
             const response = await fetch(media.media_url);
             const blob = await response.blob();
             const fileName = media.id || 'media';
-            const firebaseUrl = await uploadToFirebase({
+            newMediaUrl = await uploadToFirebase({
               file: blob,
               path: 'images/media',
               fileName,
             });
-
-            return {
-              ...media,
-              media_url: firebaseUrl,
-              uploaded_by: media.uploaded_by || userData?.user.id || 'system',
-              uploaded_date: media.uploaded_date || new Date(),
-            };
           }
-          return media;
+
+          // Upload media_url_2 if it's a blob
+          if (media.media_url_2 && media.media_url_2.startsWith('blob:')) {
+            const response = await fetch(media.media_url_2);
+            const blob = await response.blob();
+            const fileName = media.id || 'media_2';
+            newMediaUrl2 = await uploadToFirebase({
+              file: blob,
+              path: 'images/media',
+              fileName,
+            });
+          }
+
+          return {
+            ...media,
+            media_url: newMediaUrl,
+            media_url_2: newMediaUrl2,
+            uploaded_by: media.uploaded_by || userData?.user.id || 'system',
+            uploaded_date: media.uploaded_date || new Date(),
+          };
         }),
       );
 

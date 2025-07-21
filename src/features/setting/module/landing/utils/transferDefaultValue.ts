@@ -15,11 +15,16 @@ export const transferDefaultValues = (data: ISection): SectionDefaultValues => {
         media.media_type === MediaTypeEnum.IMAGE || media.media_type === MediaTypeEnum.VIDEO
           ? media.media_url || ''
           : '',
+      media_url_2:
+        media.media_type === MediaTypeEnum.IMAGE || media.media_type === MediaTypeEnum.VIDEO
+          ? media.media_url_2 || ''
+          : '',
       redirect_url: media.redirect_url || '',
       embed_code: media.media_type === MediaTypeEnum.EMBEDDED ? media.embed_code || '' : '',
       description: media.description || '',
       uploaded_by: media.uploaded_by || '',
       uploaded_date: media.uploaded_date ? new Date(media.uploaded_date) : new Date(),
+      media_order: media.media_order,
     })),
     created_at: new Date(data.createdAt),
     updated_at: new Date(data.updatedAt),

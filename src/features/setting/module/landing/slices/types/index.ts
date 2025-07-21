@@ -2,7 +2,9 @@ import { SectionTypeEnum } from '@/features/landing/constants';
 
 export interface IMedia {
   id: string;
-  media_url: string;
+  media_url: string | null;
+  media_url_2: string | null;
+  media_order: number;
   media_type: string;
   redirect_url: string;
   embed_code: string;

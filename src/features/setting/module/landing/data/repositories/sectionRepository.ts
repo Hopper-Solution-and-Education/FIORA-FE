@@ -23,6 +23,7 @@ export const mapSectionDefaultValuesToISection = (
     medias: section.medias.map((media) => ({
       id: media.id,
       media_url: media.media_url,
+      media_url_2: media.media_url_2,
       media_type: media.media_type,
       redirect_url: media.redirect_url,
       embed_code: media.embed_code,
@@ -34,6 +35,7 @@ export const mapSectionDefaultValuesToISection = (
       updatedAt: new Date(),
       createdBy: createdBy,
       updatedBy: createdBy,
+      media_order: media.media_order,
     })),
     createdBy: createdBy,
     updatedBy: createdBy,

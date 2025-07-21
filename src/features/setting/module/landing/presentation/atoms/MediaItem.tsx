@@ -40,11 +40,26 @@ export default function MediaItem({
   isLast,
   sectionType,
 }: MediaItemProps) {
-  const { watch } = useFormContext();
+  const {
+    watch,
+    formState: { errors },
+  } = useFormContext();
 
   const mediaPath = `medias.${mediaIndex}`;
   const mediaType = control._formValues.medias[mediaIndex].media_type;
   const embedCode = watch(`${mediaPath}.embed_code`);
+
+  // Helper to get nested error
+  const getNestedError = (errors: any, path: string) => {
+    const keys = path.split('.');
+    let current = errors;
+    for (const key of keys) {
+      if (current && current[key]) {
+        current = current[key];
+      } else return undefined;
+    }
+    return current;
+  };
 
   const handleMediaTypeChange = (value: MediaTypeEnum) => {
     control._formValues.medias[mediaIndex].media_type = value;
@@ -52,7 +67,7 @@ export default function MediaItem({
 
   const getMediaPreview = () => {
     const mediaUrl = control._formValues.medias[mediaIndex].media_url;
-
+    const mediaUrl2 = control._formValues.medias[mediaIndex].media_url_2;
     if (!mediaUrl && !embedCode) {
       return (
         <div className="flex items-center justify-center h-full w-full bg-gray-100 rounded-md">
@@ -65,7 +80,7 @@ export default function MediaItem({
       );
     }
 
-    if (mediaType === MediaTypeEnum.IMAGE && mediaUrl) {
+    if (mediaType === MediaTypeEnum.IMAGE) {
       switch (sectionType) {
         case SectionTypeEnum.BANNER:
           return (
@@ -84,17 +99,44 @@ export default function MediaItem({
           );
         case SectionTypeEnum.KPS:
           return (
-            <div className="relative h-48 w-48 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden mx-auto">
-              <Image
-                src={mediaUrl || '/placeholder.svg'}
-                alt="KPS Preview"
-                width={300}
-                height={300}
-                className="object-cover w-full h-full"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/placeholder.svg?height=300&width=300';
-                }}
-              />
+            <div className="flex gap-4">
+              <div className="relative h-56 w-44 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden">
+                {mediaUrl ? (
+                  <Image
+                    src={mediaUrl || '/placeholder.svg'}
+                    alt="Preview"
+                    width={400}
+                    height={200}
+                    className="object-contain w-full h-full"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/placeholder.svg?height=200&width=400';
+                    }}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full w-full bg-gray-100 rounded-md">
+                    <ImageIcon className="h-16 w-12 text-gray-400" />
+                  </div>
+                )}
+              </div>
+
+              <div className="relative h-56 w-44 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden">
+                {mediaUrl2 ? (
+                  <Image
+                    src={mediaUrl2 || '/placeholder.svg'}
+                    alt="Preview"
+                    width={400}
+                    height={200}
+                    className="object-contain w-full h-full"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/placeholder.svg?height=200&width=400';
+                    }}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full w-full bg-gray-100 rounded-md">
+                    <ImageIcon className="h-16 w-12 text-gray-400" />
+                  </div>
+                )}
+              </div>
             </div>
           );
         case SectionTypeEnum.PARTNER_LOGO:
@@ -112,6 +154,7 @@ export default function MediaItem({
               />
             </div>
           );
+
         default:
           return (
             <div className="relative h-48 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden">
@@ -178,6 +221,97 @@ export default function MediaItem({
     }
   };
 
+  function renderFieldsDefault() {
+    return (
+      <>
+        <div>
+          <Label htmlFor={`${mediaPath}.media_type`} className="text-xs md:text-sm mb-1 block">
+            Media Type
+          </Label>
+          <Select
+            disabled
+            defaultValue={mediaType}
+            onValueChange={(value) => handleMediaTypeChange(value as MediaTypeEnum)}
+          >
+            <SelectTrigger className="h-8 text-xs md:text-sm">
+              <SelectValue placeholder="Select type" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.values(MediaTypeEnum).map((type) => (
+                <SelectItem key={type} value={type} className="text-xs md:text-sm">
+                  {type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <input type="hidden" {...control.register(`${mediaPath}.media_type`)} value={mediaType} />
+          {getNestedError(errors, `${mediaPath}.media_type`)?.message && (
+            <p className="text-red-500 text-xs mt-1">
+              {getNestedError(errors, `${mediaPath}.media_type`)?.message}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <Label htmlFor={`${mediaPath}.description`} className="text-xs md:text-sm mb-1 block">
+            Content - Description
+          </Label>
+          <Textarea
+            id={`${mediaPath}.description`}
+            className="h-20 text-xs md:text-sm"
+            placeholder="Enter description"
+            {...control.register(`${mediaPath}.description`)}
+          />
+          {getNestedError(errors, `${mediaPath}.description`)?.message && (
+            <p className="text-red-500 text-xs mt-1">
+              {getNestedError(errors, `${mediaPath}.description`)?.message}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <Label htmlFor={`${mediaPath}.redirect_url`} className="text-xs md:text-sm mb-1 block">
+            Redirect URL
+          </Label>
+          <Input
+            id={`${mediaPath}.redirect_url`}
+            className="h-8 text-xs md:text-sm"
+            placeholder="Enter redirect URL (e.g., https://example.com)"
+            {...control.register(`${mediaPath}.redirect_url`)}
+          />
+          {getNestedError(errors, `${mediaPath}.redirect_url`)?.message && (
+            <p className="text-red-500 text-xs mt-1">
+              {getNestedError(errors, `${mediaPath}.redirect_url`)?.message}
+            </p>
+          )}
+        </div>
+
+        {mediaType === MediaTypeEnum.EMBEDDED && (
+          <div>
+            <Label htmlFor={`${mediaPath}.embed_code`} className="text-xs md:text-sm mb-1 block">
+              Embed Code
+            </Label>
+            <Textarea
+              id={`${mediaPath}.embed_code`}
+              className="h-20 min-h-[80px] text-xs md:text-sm"
+              placeholder="Paste embed code here"
+              {...control.register(`${mediaPath}.embed_code`)}
+            />
+            {getNestedError(errors, `${mediaPath}.embed_code`)?.message && (
+              <p className="text-red-500 text-xs mt-1">
+                {getNestedError(errors, `${mediaPath}.embed_code`)?.message}
+              </p>
+            )}
+          </div>
+        )}
+
+        {mediaType !== MediaTypeEnum.EMBEDDED && (
+          <MediaUploader mediaType={mediaType} mediaPath={mediaPath} sectionType={sectionType} />
+        )}
+      </>
+    );
+  }
+
   return (
     <Card className="border border-gray-200 dark:border-gray-700">
       <div className="flex items-center justify-between p-3">
@@ -220,85 +354,8 @@ export default function MediaItem({
       </div>
 
       <CardContent className="p-3 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs md:text-sm">
-        {/* Left Side: Media Preview (50%) */}
         <div className="flex items-center justify-center">{getMediaPreview()}</div>
-
-        {/* Right Side: Fields (50%) */}
-        <div className="space-y-3">
-          <div>
-            <Label htmlFor={`${mediaPath}.media_type`} className="text-xs md:text-sm mb-1 block">
-              Media Type
-            </Label>
-            <Select
-              disabled
-              defaultValue={mediaType}
-              onValueChange={(value) => handleMediaTypeChange(value as MediaTypeEnum)}
-            >
-              <SelectTrigger className="h-8 text-xs md:text-sm">
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.values(MediaTypeEnum).map((type) => (
-                  <SelectItem key={type} value={type} className="text-xs md:text-sm">
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <input
-              type="hidden"
-              {...control.register(`${mediaPath}.media_type`)}
-              value={mediaType}
-            />
-          </div>
-
-          {(sectionType === SectionTypeEnum.REVIEW ||
-            sectionType === SectionTypeEnum.BANNER ||
-            sectionType === SectionTypeEnum.VISION_MISSION ||
-            sectionType === SectionTypeEnum.SYSTEM) && (
-            <div>
-              <Label htmlFor={`${mediaPath}.description`} className="text-xs md:text-sm mb-1 block">
-                Content - Description
-              </Label>
-              <Textarea
-                id={`${mediaPath}.description`}
-                className="h-20 text-xs md:text-sm"
-                placeholder="Enter description"
-                {...control.register(`${mediaPath}.description`)}
-              />
-            </div>
-          )}
-
-          <div>
-            <Label htmlFor={`${mediaPath}.redirect_url`} className="text-xs md:text-sm mb-1 block">
-              Redirect URL
-            </Label>
-            <Input
-              id={`${mediaPath}.redirect_url`}
-              className="h-8 text-xs md:text-sm"
-              placeholder="Enter redirect URL (e.g., https://example.com)"
-              {...control.register(`${mediaPath}.redirect_url`)}
-            />
-          </div>
-
-          {mediaType === MediaTypeEnum.EMBEDDED && (
-            <div>
-              <Label htmlFor={`${mediaPath}.embed_code`} className="text-xs md:text-sm mb-1 block">
-                Embed Code
-              </Label>
-              <Textarea
-                id={`${mediaPath}.embed_code`}
-                className="h-20 min-h-[80px] text-xs md:text-sm"
-                placeholder="Paste embed code here"
-                {...control.register(`${mediaPath}.embed_code`)}
-              />
-            </div>
-          )}
-
-          {mediaType !== MediaTypeEnum.EMBEDDED && (
-            <MediaUploader mediaType={mediaType} mediaPath={mediaPath} />
-          )}
-        </div>
+        <div className="space-y-3">{renderFieldsDefault()}</div>
       </CardContent>
     </Card>
   );

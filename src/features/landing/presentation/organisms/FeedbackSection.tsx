@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { MediaType } from '@prisma/client';
 import Autoplay from 'embla-carousel-autoplay';
-import { ArrowLeftCircle, ArrowRightCircle, StarIcon } from 'lucide-react';
+import { StarIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useRef } from 'react';
 import { SectionTypeEnum } from '../../constants';
@@ -141,14 +141,9 @@ export const FeedbackSection = () => {
                             <Divider />
                             {/* review section text */}
                             <div className="w-full">
-                              <p className="text-gray-700 text-xs sm:text-sm md:text-base flex-grow overflow-hidden mb-2 text-center md:text-left line-clamp-5">
+                              <p className="text-gray-700 text-xs sm:text-sm md:text-md flex-grow overflow-hidden mb-2 text-center md:text-left line-clamp-5">
                                 {reviewText}
                               </p>
-
-                              <div className="flex justify-center md:justify-end gap-2 mt-2 text-gray-400">
-                                <ArrowLeftCircle className="w-6 h-6 cursor-pointer" />
-                                <ArrowRightCircle className="w-6 h-6 cursor-pointer" />
-                              </div>
                             </div>
                           </CardContent>
                           {/* Media section */}

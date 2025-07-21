@@ -23,6 +23,8 @@ export const sectionFormSchema = yup.object({
             otherwise: (schema) => schema.nullable().notRequired(),
           }),
         redirect_url: yup.string().default(null),
+        media_url_2: yup.string().default(null).nullable().notRequired(),
+        media_order: yup.number().default(0),
         embed_code: yup
           .string()
           .default(null)
@@ -34,6 +36,17 @@ export const sectionFormSchema = yup.object({
         description: yup.string().default(null).optional(),
         uploaded_by: yup.string().default(null).optional(),
         uploaded_date: yup.date().required(),
+        reviewUser: yup
+          .object({
+            media_user_name: yup.string().optional(),
+            media_user_avatar: yup.string().optional(),
+            media_user_email: yup.string().optional(),
+            media_user_comment: yup.string().optional(),
+            media_user_rating: yup.number().optional(),
+            createdBy: yup.string().optional(),
+            updatedBy: yup.string().optional(),
+          })
+          .optional(),
       }),
     )
     .default([]),

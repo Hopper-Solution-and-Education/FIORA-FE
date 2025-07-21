@@ -20,10 +20,10 @@ const PartnerLogo = () => {
     );
 
   return (
-    <section className="w-full my-8 sm:my-10 flex flex-col items-center px-2 sm:px-4 pt-8 sm:pt-10">
+    <section className="w-full sm:my-10 flex flex-col items-center px-2 sm:px-4 pt-8 sm:pt-10">
       <h1
         data-aos="fade-up"
-        className="my-4 sm:my-20 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-pretty"
+        className="my-2 sm:my-10 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-pretty"
       >
         {section?.name}
       </h1>
@@ -48,9 +48,9 @@ const PartnerLogo = () => {
             {section.medias.concat(section.medias).map((logo, index) => (
               <CarouselItem
                 key={index}
-                className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/4 xl:basis-1/5 flex justify-center"
+                className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/4 xl:basis-1/5 flex justify-center py-2"
               >
-                <Card className="w-48 h-28 md:w-56 md:h-32 flex items-center justify-center shadow-md rounded-xl overflow-hidden border border-gray-300 transition-transform hover:scale-105">
+                <Card className="w-52 h-28 md:w-64 md:h-32 flex items-center justify-center shadow-md rounded-xl overflow-hidden border border-gray-300 transition-transform hover:scale-105">
                   <CardContent className="relative w-full h-full">
                     <Image
                       src={logo.media_url || ''}

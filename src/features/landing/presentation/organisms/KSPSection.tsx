@@ -10,14 +10,14 @@ import { SectionTypeEnum } from '../../constants';
 import { Media } from '../../domain/models/Media';
 import { useGetSection } from '../../hooks/useGetSection';
 
-const containerWidthDesktop = 1500;
+const containerWidthDesktop = 1300;
 const containerWidthMobile = 350;
 const numberOfItemsDesktop = 3;
 const numberOfItemsMobile = 1;
 const gapDesktop = 5;
 const gapMobile = 10;
-const itemHeightDesktop = '850px';
-const itemHeightMobile = '550px';
+const itemHeightDesktop = '750px';
+const itemHeightMobile = '350px';
 
 const KSPSection = () => {
   const { isLoading, section } = useGetSection(SectionTypeEnum.KPS);
@@ -51,7 +51,7 @@ const KSPSection = () => {
         </h1>
       </div>
       <Carousel
-        className={`mx-auto  ${isMobile ? 'max-w-[100vw]' : 'max-w-[1500px]'}`}
+        className={`mx-auto  ${isMobile ? 'max-w-[100vw]' : 'max-w-[1300px]'}`}
         opts={{
           loop: true,
           direction: 'ltr',
@@ -63,6 +63,7 @@ const KSPSection = () => {
             playOnInit: true,
             jump: false,
             stopOnFocusIn: true,
+            stopOnMouseEnter: true,
           }),
         ]}
       >
@@ -105,15 +106,12 @@ const FlippingItemContent = ({
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
 
-  const handleFlip = () => {
-    setIsFlipped((prev) => !prev);
-  };
-
   return (
     <div
       className={`w-full rounded-lg shadow-md border relative overflow-hidden card-container cursor-pointer ${className} `}
       style={{ perspective: '1000px', ...style }} // Added perspective to the container for 3D effect
-      onClick={handleFlip}
+      onMouseEnter={() => setIsFlipped(true)}
+      onMouseLeave={() => setIsFlipped(false)}
     >
       <motion.div
         className="card w-full h-full relative"

@@ -187,10 +187,10 @@ model Transaction {
   createdBy           String?              @db.Uuid
   currency            Currency             @default(VND)
   isMarked            Boolean              @default(false)
-  isExpired           Boolean              @default(false)
   fromWalletId        String?              @db.Uuid
-  toWalletId          String?              @db.Uuid
+  isExpired           Boolean              @default(false)
   membershipBenefitId String?              @db.Uuid
+  toWalletId          String?              @db.Uuid
   productsRelation    ProductTransaction[] @relation("ProductTransactions")
   fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Restrict)
   fromCategory        Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
@@ -287,7 +287,7 @@ model Media {
   media_title     String?           @db.VarChar(255)
   media_url_2     String?
   section         Section?          @relation(fields: [section_id], references: [id])
-  mediaReviewUser MediaReviewUser[]
+  mediaReviewUser MediaReviewUser[] @relation("MediaToReviewUser")
 }
 
 model MediaReviewUser {
@@ -302,7 +302,7 @@ model MediaReviewUser {
   updatedAt          DateTime @updatedAt @db.Timestamptz(0)
   createdBy          String?  @db.Uuid
   updatedBy          String?  @db.Uuid
-  media              Media    @relation(fields: [mediaId], references: [id])
+  media              Media    @relation("MediaToReviewUser", fields: [mediaId], references: [id])
 }
 
 model Category {

@@ -13,11 +13,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     case 'DELETE':
       return withAuthorization({ DELETE: ['Admin'] })(DELETE)(req, res);
     case 'GET':
-      return GET(req, res); // Không dùng withAuthorization cho GET
+      return GET(req, res);
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-        .json({ error: 'Phương thức không được hỗ trợ' });
+        .json({ error: 'Method is not supported' });
   }
 }
 
@@ -32,7 +32,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
     where: { section_type: sectionType as SectionType },
     orderBy: { createdAt: 'asc' },
     take: 1,
-    include: { medias: true },
+    include: { medias: { orderBy: { media_order: 'asc' } } },
   });
 
   if (!section) {
@@ -69,26 +69,44 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
       });
 
       if (medias && Array.isArray(medias) && medias.length > 0) {
-        await prisma.media.createMany({
-          data: medias.map((media: Media) => ({
-            media_type: media.media_type,
-            media_url: media.media_url || null,
-            redirect_url: media.redirect_url || null,
-            embed_code: media.embed_code || null,
-            description: media.description || null,
-            uploaded_by: media.uploaded_by || createdBy || null,
-            uploaded_date: new Date(),
-            section_id: section.id,
-            createdBy: createdBy,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          })),
-        });
+        for (const media of medias) {
+          const createdMedia = await prisma.media.create({
+            data: {
+              media_type: media.media_type,
+              media_url: media.media_url || null,
+              media_url_2: media.media_url_2 || null,
+              media_order: media.media_order,
+              redirect_url: media.redirect_url || null,
+              embed_code: media.embed_code || null,
+              description: media.description || null,
+              uploaded_by: media.uploaded_by || createdBy || null,
+              uploaded_date: new Date(),
+              section_id: section.id,
+              createdBy: createdBy,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          });
+
+          if (media.reviewUser) {
+            await prisma.mediaReviewUser.create({
+              data: {
+                mediaId: createdMedia.id,
+                media_user_name: media.reviewUser.media_user_name,
+                media_user_avatar: media.reviewUser.media_user_avatar,
+                media_user_email: media.reviewUser.media_user_email,
+                media_user_comment: media.reviewUser.media_user_comment,
+                media_user_rating: media.reviewUser.media_user_rating,
+                createdBy: media.reviewUser.createdBy || createdBy,
+              },
+            });
+          }
+        }
       }
 
       return await prisma.section.findUnique({
         where: { id: section.id },
-        include: { medias: true },
+        include: { medias: { include: { mediaReviewUser: true } } },
       });
     });
 
@@ -143,6 +161,8 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
             data: mediasToCreate.map((media: Media) => ({
               media_type: media.media_type,
               media_url: media.media_url || null,
+              media_url_2: media.media_url_2 || null,
+              media_order: media.media_order,
               redirect_url: media.redirect_url || null,
               embed_code: media.embed_code || null,
               description: media.description || null,
@@ -163,6 +183,8 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
             data: {
               media_type: media.media_type,
               media_url: media.media_url || null,
+              media_url_2: media.media_url_2 || null,
+              media_order: media.media_order,
               redirect_url: media.redirect_url || null,
               embed_code: media.embed_code || null,
               description: media.description || null,
@@ -170,6 +192,40 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
               updatedBy: updatedBy || null,
             },
           });
+
+          // Xử lý reviewUser
+          if (media.reviewUser) {
+            const existingReviewUser = await prisma.mediaReviewUser.findFirst({
+              where: { mediaId: media.id },
+            });
+            if (existingReviewUser) {
+              // Update
+              await prisma.mediaReviewUser.update({
+                where: { id: existingReviewUser.id },
+                data: {
+                  media_user_name: media.reviewUser.media_user_name,
+                  media_user_avatar: media.reviewUser.media_user_avatar,
+                  media_user_email: media.reviewUser.media_user_email,
+                  media_user_comment: media.reviewUser.media_user_comment,
+                  media_user_rating: media.reviewUser.media_user_rating,
+                  updatedBy: media.reviewUser.updatedBy || updatedBy,
+                },
+              });
+            } else {
+              // Create
+              await prisma.mediaReviewUser.create({
+                data: {
+                  mediaId: media.id,
+                  media_user_name: media.reviewUser.media_user_name,
+                  media_user_avatar: media.reviewUser.media_user_avatar,
+                  media_user_email: media.reviewUser.media_user_email,
+                  media_user_comment: media.reviewUser.media_user_comment,
+                  media_user_rating: media.reviewUser.media_user_rating,
+                  createdBy: media.reviewUser.createdBy || updatedBy,
+                },
+              });
+            }
+          }
         }
 
         // Delete media items that are no longer in the list
@@ -185,7 +241,7 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
       // Fetch the updated section with its medias
       return await prisma.section.findUnique({
         where: { id },
-        include: { medias: true },
+        include: { medias: { include: { mediaReviewUser: true } } },
       });
     });
 
