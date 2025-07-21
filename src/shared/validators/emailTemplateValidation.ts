@@ -13,9 +13,6 @@ export const emailTemplateSchema = Joi.object({
     'string.pattern.base': 'Content template name is invalid',
     'any.required': 'Content template name is required',
   }),
-  isActive: Joi.boolean().required().messages({
-    'string.empty': 'Email template description is invalid',
-  }),
   type: Joi.string()
     .required()
     .valid(

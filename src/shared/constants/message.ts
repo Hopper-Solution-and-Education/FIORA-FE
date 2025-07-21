@@ -301,4 +301,5 @@ export enum Messages {
   UPDATE_EMAIL_TEMPLATE_SUCCESS = 'Update email template successfully',
   DELETE_EMAIL_TEMPLATE_SUCCESS = 'Delete email template successfully',
   GET_EMAIL_TEMPLATE_SUCCESS = 'Get email template successfully',
+  EMAIL_TEMPLATE_NOT_FOUND = 'Email template not found',
 }

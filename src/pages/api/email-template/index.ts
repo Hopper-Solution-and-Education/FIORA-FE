@@ -1,3 +1,4 @@
+import { emailTemplateUseCase } from '@/features/setting/api/domain/use-cases/emailTemplateUsecase';
 import { emailTemplateRepository } from '@/features/setting/api/infrastructure/repositories/emailTemplateRepository';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
@@ -16,6 +17,8 @@ export default sessionWrapper(async (req, res, userId) => {
       return POST(req, res, userId);
     case 'GET':
       return GET(res);
+    case 'PUT':
+      return PUT(req, res, userId);
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -57,16 +60,49 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
         .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
     }
 
-    const newCategory = await emailTemplateRepository.createEmailTemplate({
+    const newEmailTemplate = await emailTemplateRepository.createEmailTemplate({
       ...req.body,
+      isActive: true,
       createdBy: userId,
       updatedBy: userId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      id: crypto.randomUUID(),
     });
     return res
       .status(RESPONSE_CODE.CREATED)
       .json(
-        createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_EMAIL_TEMPLATE_SUCCESS, newCategory),
+        createResponse(
+          RESPONSE_CODE.CREATED,
+          Messages.CREATE_EMAIL_TEMPLATE_SUCCESS,
+          newEmailTemplate,
+        ),
       );
+  } catch (error: any) {
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, error || Messages.INTERNAL_ERROR));
+  }
+}
+
+export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  try {
+    const { id } = req.body;
+
+    const { error } = validateBody(emailTemplateSchema, req.body);
+    if (error) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
+    }
+    const updatedCategory = await emailTemplateUseCase.updateEmailTemplate(id, userId, {
+      ...req.body,
+      updatedBy: userId,
+      updatedAt: new Date(),
+    });
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_CATEGORY_SUCCESS, updatedCategory));
   } catch (error: any) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
