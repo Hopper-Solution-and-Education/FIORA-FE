@@ -295,4 +295,10 @@ export enum Messages {
 
   INVALID_PAGE_OR_PAGE_SIZE = 'Invalid page or pageSize.',
   INVALID_FILTER_FORMAT = 'Invalid filter format.',
+
+  // Email template
+  CREATE_EMAIL_TEMPLATE_SUCCESS = 'Create email template successfully',
+  UPDATE_EMAIL_TEMPLATE_SUCCESS = 'Update email template successfully',
+  DELETE_EMAIL_TEMPLATE_SUCCESS = 'Delete email template successfully',
+  GET_EMAIL_TEMPLATE_SUCCESS = 'Get email template successfully',
 }

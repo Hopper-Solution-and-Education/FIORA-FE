@@ -868,8 +868,8 @@ enum NotificationType {
 }
 
 enum EmailTemplateType {
+  DEFAULT
   MEMBERSHIP
   DEPOPSIT
   KYC
-  DEFAULT
 }
