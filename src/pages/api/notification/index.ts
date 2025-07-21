@@ -30,6 +30,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
       filters,
       search: String(search),
     });
+
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.GET_NOTIFICATION_SUCCESS, result));
