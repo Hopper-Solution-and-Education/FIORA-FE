@@ -135,15 +135,7 @@ class TransactionUseCase {
   async getTransactionsPagination(
     params: TransactionGetPagination,
   ): Promise<PaginationResponse<any> & { amountMin?: number; amountMax?: number }> {
-    const {
-      page = 1,
-      pageSize = 20,
-      searchParams = '',
-      filters,
-      sortBy = {},
-      userId,
-      currency,
-    } = params;
+    const { page = 1, pageSize = 20, searchParams = '', filters, sortBy = {}, userId } = params;
     const take = pageSize;
     const skip = (page - 1) * pageSize;
 
@@ -226,40 +218,15 @@ class TransactionUseCase {
       amountMinAwaited,
     ]);
 
-    const transactionTransformed = await Promise.all(
-      transactions.map(async (transaction) => {
-        const amount = await convertCurrency(
-          transaction.amount,
-          transaction.currency as string,
-          currency,
-        );
-        return {
-          ...transaction,
-          amount: amount,
-        };
-      }),
-    );
-
-    const convertAmountMax = await convertCurrency(
-      amountMax['_max']?.baseAmount,
-      DEFAULT_BASE_CURRENCY,
-      currency,
-    );
-    const convertAmountMin = await convertCurrency(
-      amountMin['_min']?.baseAmount,
-      DEFAULT_BASE_CURRENCY,
-      currency,
-    );
-
     const totalPage = Math.ceil(total / pageSize);
 
     return {
-      data: transactionTransformed as any,
+      data: transactions as any,
       totalPage,
       page,
       pageSize,
-      amountMax: Number(convertAmountMax) || 0,
-      amountMin: Number(convertAmountMin) || 0,
+      amountMax: Number(amountMax['_max']?.baseAmount) || 0,
+      amountMin: Number(amountMin['_min']?.baseAmount) || 0,
       total,
     };
   }

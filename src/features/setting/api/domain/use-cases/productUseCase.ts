@@ -5,6 +5,7 @@ import { GlobalFilters, PaginationResponse, ProductItem, TransactionType } from 
 import { Currency, Prisma, Product, ProductType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
+import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { BooleanUtils } from '@/shared/lib';
 import { buildWhereClause } from '@/shared/utils';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
@@ -22,7 +23,6 @@ import {
   ProductCreation,
   ProductUpdate,
 } from '../../repositories/productRepository.interface';
-import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
@@ -58,10 +58,9 @@ class ProductUseCase {
     userId: string;
     page?: number;
     pageSize?: number;
-    currency?: Currency;
   }): Promise<PaginationResponse<Product>> {
     try {
-      const { userId, page = 1, pageSize = 20, currency = 'VND' } = params;
+      const { userId, page = 1, pageSize = 20 } = params;
       const productsAwaited = this.productRepository.findManyProducts(
         { userId },
         {
@@ -80,23 +79,8 @@ class ProductUseCase {
 
       const totalPage = Math.ceil(count / pageSize);
 
-      // Transform the product price to the user's target currency if needed
-      const transformedProductsAwaited = products.map(async (product) => {
-        const transformedPrice =
-          (await convertCurrency(product.price, product.currency!, currency)) ||
-          product.price.toNumber();
-
-        return {
-          ...product,
-          price: new Decimal(transformedPrice),
-          currency: currency,
-        };
-      });
-
-      const transformedProducts = await Promise.all(transformedProductsAwaited);
-
       return {
-        data: transformedProducts,
+        data: products,
         page,
         pageSize,
         totalPage,
@@ -220,6 +204,8 @@ class ProductUseCase {
           throw new Error(Messages.DUPLICATE_PRODUCT_TENANT_ERROR);
         }
 
+        const baseAmount = await convertCurrency(price, currency!, DEFAULT_BASE_CURRENCY);
+
         // Create the product
         const product = await tx.product.create({
           data: {
@@ -234,6 +220,7 @@ class ProductUseCase {
             currencyId: foundCurrency.id,
             currency: foundCurrency.name,
             ...(description && { description }),
+            baseAmount: new Decimal(baseAmount),
           },
           include: {
             items: true,

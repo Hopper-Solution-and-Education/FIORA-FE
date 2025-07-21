@@ -3,12 +3,12 @@ import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createErrorResponse } from '@/shared/lib';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { PaginationResponse } from '@/shared/types';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { validateBody } from '@/shared/utils/validate';
-import { Currency, Product, ProductType } from '@prisma/client';
 import { productBodySchema } from '@/shared/validators/productValidator';
+import { Product, ProductType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { PaginationResponse } from '@/shared/types';
 
 export const maxDuration = 30; // 30 seconds
 
@@ -35,7 +35,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     return res.status(RESPONSE_CODE.METHOD_NOT_ALLOWED).json({ error: 'Method not allowed' });
   }
   try {
-    const userCurrency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
     const { page, pageSize, isPaginate = true } = req.query;
 
     let categories: PaginationResponse<Product> | Product[] = [];
@@ -46,7 +45,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
         userId,
         page: Number(page) || 1,
         pageSize: Number(pageSize) || 20,
-        currency: userCurrency,
       });
     }
 
