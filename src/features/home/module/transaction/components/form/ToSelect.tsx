@@ -9,6 +9,7 @@ import React, { useEffect, useMemo } from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSupportingData, retryFetchSupportingData } from '../../slices/createTransactionSlice';
+import { SupportToAccountResponse } from '../../types';
 
 interface ToSelectProps {
   name: string;
@@ -79,9 +80,10 @@ const ToSelectField: React.FC<ToSelectProps> = ({
 
     // Build options from destination data
     if (destinationData.length > 0) {
-      return destinationData.map((option) => ({
+      return destinationData.map((option: SupportToAccountResponse) => ({
         value: option.id,
         label: option.name,
+        icon: option.icon,
       }));
     }
 
@@ -167,7 +169,7 @@ const ToSelectField: React.FC<ToSelectProps> = ({
                   : [{ value: 'loading', label: 'Loading...', disabled: true }]
               }
               placeholder={
-                transactionType === TransactionType.Income ? 'Select Account' : 'Select Category'
+                transactionType === TransactionType.Expense ? 'Select Category' : 'Select Account'
               }
               error={error}
               noneValue={false}

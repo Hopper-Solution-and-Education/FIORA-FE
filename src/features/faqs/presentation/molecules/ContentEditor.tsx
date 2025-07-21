@@ -1,7 +1,7 @@
 import { Label } from '@/components/ui/label';
-import RichTextEditor from '@/features/faqs/presentation/atoms/RichTextEditor';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import Editor from '../atoms/Editor';
 import ParsedFaqContent from '../atoms/ParsedFaqContent';
 
 interface ContentEditorProps {
@@ -129,11 +129,12 @@ const ContentEditor: React.FC<ContentEditorProps> = ({
           {isEditorExpanded && (
             <div>
               <div className={`h-full ${disabled ? 'pointer-events-none opacity-60' : ''}`}>
-                <RichTextEditor
+                {/* <RichTextEditor
                   key={`editor-${isEditorExpanded}`}
                   value={value}
                   onChange={onChange}
-                />
+                /> */}
+                {value && <Editor content={value} setContent={onChange} />}
               </div>
             </div>
           )}

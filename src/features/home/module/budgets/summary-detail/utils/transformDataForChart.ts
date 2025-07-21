@@ -1,8 +1,8 @@
 import { COLORS, STACK_TYPE } from '@/shared/constants/chart';
+import { Currency } from '@/shared/types';
+import { Budget } from '../domain/entities/Budget';
 import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
 import { ChartItem, HierarchicalBarItem } from '../presentation/types/chart.type';
-import { Budget } from '../domain/entities/Budget';
-import { Currency } from '@/shared/types';
 
 interface TransformDataParams {
   topBudget: BudgetSummaryByType | null;
@@ -54,8 +54,8 @@ export const transformDataForChart = ({
         B: botExp,
         colors: {
           A: COLORS.DEPS_DANGER.LEVEL_1,
-          T: COLORS.DEPS_DANGER.LEVEL_3,
-          B: COLORS.DEPS_DANGER.LEVEL_5,
+          B: COLORS.DEPS_DANGER.LEVEL_3,
+          T: COLORS.DEPS_DANGER.LEVEL_5,
         },
         layers: [
           {
@@ -64,13 +64,13 @@ export const transformDataForChart = ({
             color: COLORS.DEPS_DANGER.LEVEL_1,
           },
           {
-            id: 'T',
-            value: topExp,
+            id: 'B',
+            value: botExp,
             color: COLORS.DEPS_DANGER.LEVEL_3,
           },
           {
-            id: 'B',
-            value: botExp,
+            id: 'T',
+            value: topExp,
             color: COLORS.DEPS_DANGER.LEVEL_5,
           },
         ],
@@ -84,8 +84,8 @@ export const transformDataForChart = ({
         B: botInc,
         colors: {
           A: COLORS.DEPS_SUCCESS.LEVEL_1,
-          T: COLORS.DEPS_SUCCESS.LEVEL_3,
-          B: COLORS.DEPS_SUCCESS.LEVEL_5,
+          B: COLORS.DEPS_SUCCESS.LEVEL_3,
+          T: COLORS.DEPS_SUCCESS.LEVEL_5,
         },
         layers: [
           {
@@ -94,13 +94,13 @@ export const transformDataForChart = ({
             color: COLORS.DEPS_SUCCESS.LEVEL_1,
           },
           {
-            id: 'T',
-            value: topInc,
+            id: 'B',
+            value: botInc,
             color: COLORS.DEPS_SUCCESS.LEVEL_3,
           },
           {
-            id: 'B',
-            value: botInc,
+            id: 'T',
+            value: topInc,
             color: COLORS.DEPS_SUCCESS.LEVEL_5,
           },
         ],
@@ -114,8 +114,8 @@ export const transformDataForChart = ({
         B: botProfit,
         colors: {
           A: COLORS.DEPS_INFO.LEVEL_1,
-          T: COLORS.DEPS_INFO.LEVEL_3,
-          B: COLORS.DEPS_INFO.LEVEL_5,
+          B: COLORS.DEPS_INFO.LEVEL_3,
+          T: COLORS.DEPS_INFO.LEVEL_5,
         },
         layers: [
           {
@@ -124,13 +124,13 @@ export const transformDataForChart = ({
             color: COLORS.DEPS_INFO.LEVEL_1,
           },
           {
-            id: 'T',
-            value: topProfit,
+            id: 'B',
+            value: botProfit,
             color: COLORS.DEPS_INFO.LEVEL_3,
           },
           {
-            id: 'B',
-            value: botProfit,
+            id: 'T',
+            value: topProfit,
             color: COLORS.DEPS_INFO.LEVEL_5,
           },
         ],

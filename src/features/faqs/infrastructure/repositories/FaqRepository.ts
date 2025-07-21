@@ -89,6 +89,7 @@ export class FaqRepository implements IFaqRepository {
         where: { id: faqId },
         include: {
           PostCategory: true,
+          User: true,
         },
       });
 
@@ -105,6 +106,7 @@ export class FaqRepository implements IFaqRepository {
         categoryId: post.PostCategory?.id || undefined,
         createdAt: post.createdAt,
         updatedAt: post.updatedAt || undefined,
+        User: post.User,
       };
 
       // Handle includes if provided

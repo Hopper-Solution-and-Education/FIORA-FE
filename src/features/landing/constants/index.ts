@@ -1,12 +1,16 @@
-export const optionCarousel = {
-  opts: {
-    loop: true,
-    direction: 'ltr',
-  },
-  autoPlay: {
-    delay: 3000, // Loại bỏ delay để tạo scroll liên tục
-    stopOnInteraction: false, // Không dừng khi tương tác
-    playOnInit: true, // Chạy ngay khi khởi tạo
-    jump: false, // Không nhảy từng bước mà scroll mượt
-  },
-};
+export enum SectionTypeEnum {
+  BANNER = 'BANNER',
+  FOOTER = 'FOOTER',
+  HEADER = 'HEADER',
+  KPS = 'KPS',
+  PARTNER_LOGO = 'PARTNER_LOGO',
+  REVIEW = 'REVIEW',
+  SYSTEM = 'SYSTEM',
+  VISION_MISSION = 'VISION_MISSION',
+}
+
+export enum MediaTypeEnum {
+  IMAGE = 'IMAGE',
+  VIDEO = 'VIDEO',
+  EMBEDDED = 'EMBEDDED',
+}

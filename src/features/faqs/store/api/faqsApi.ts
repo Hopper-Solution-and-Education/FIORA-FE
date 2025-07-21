@@ -104,6 +104,18 @@ export const faqsApi = createApi({
       invalidatesTags: [{ type: 'Faqs', id: 'LIST' }],
     }),
 
+    createFaq: builder.mutation<
+      { id: string },
+      { title: string; description?: string; content: string; categoryId: string }
+    >({
+      query: (data) => ({
+        url: '/',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: [{ type: 'Faqs', id: 'LIST' }],
+    }),
+
     // Paginated FAQ comments endpoint
     getFaqComments: builder.query<FaqComment[], { faqId: string; skip?: number; take?: number }>({
       query: ({ faqId, skip = 0, take = 10 }) => `/${faqId}/comments?skip=${skip}&take=${take}`,
@@ -237,6 +249,7 @@ export const {
   // FAQ Detail hooks
   useGetFaqDetailQuery,
   useUpdateFaqMutation,
+  useCreateFaqMutation,
   useCreateFaqCategoryMutation,
   useCreateCommentMutation,
   useDeleteCommentMutation,

@@ -6,10 +6,10 @@ import { AmplitudeProvider, ReduxProvider, ThemeProvider } from '@/components/pr
 import { Toaster } from '@/components/ui/sonner';
 import growthbook from '@/config/growthbook/growthbook';
 import { swrOptions } from '@/config/swr/swrConfig';
+import { SectionTypeEnum } from '@/features/landing/constants';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import Updater from '@/store/Updater';
 import { GrowthBookProvider } from '@growthbook/growthbook-react';
-import { SectionType } from '@prisma/client';
 import { SessionProvider } from 'next-auth/react';
 import { Inter } from 'next/font/google';
 import NextTopLoader from 'nextjs-toploader';
@@ -28,7 +28,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { section } = useGetSection(SectionType.HEADER);
+  const { section } = useGetSection(SectionTypeEnum.HEADER);
 
   return (
     <html lang="en" suppressHydrationWarning>

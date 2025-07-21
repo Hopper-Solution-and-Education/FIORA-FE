@@ -55,7 +55,7 @@ const validateNewTransactionSchema = z.object({
 const defaultNewTransactionValues: NewTransactionDefaultValues = {
   type: TransactionType.Expense,
   date: new Date(),
-  amount: 1,
+  amount: 0,
   currency: TransactionCurrency.VND,
   product: null,
   fromId: '', // From account or category ID

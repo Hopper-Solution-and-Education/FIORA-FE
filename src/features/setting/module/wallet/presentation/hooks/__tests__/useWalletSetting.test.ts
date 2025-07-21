@@ -158,7 +158,7 @@ describe('useWalletSetting', () => {
       renderHook(() => useWalletSetting());
 
       await waitFor(() => {
-        expect(mockUseCase.execute).toHaveBeenCalledWith(1, 20, undefined);
+        expect(mockUseCase.execute).toHaveBeenCalledWith(1, 20, { undefined: [] });
       });
     });
 

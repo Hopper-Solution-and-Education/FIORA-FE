@@ -9,6 +9,7 @@ import React, { useEffect, useMemo } from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSupportingData, retryFetchSupportingData } from '../../slices/createTransactionSlice';
+import { SupportFromCategoryResponse } from '../../types';
 
 interface FromSelectProps {
   // name: string;
@@ -74,9 +75,10 @@ const FromSelectField: React.FC<FromSelectProps> = ({
 
     // Build options from source data
     if (sourceData.length > 0) {
-      return sourceData.map((option) => ({
+      return sourceData.map((option: SupportFromCategoryResponse) => ({
         value: option.id,
         label: option.name,
+        icon: option.icon,
       }));
     }
 
