@@ -60,6 +60,7 @@ class NotificationRepository implements INotificationRepository {
       query.take = take;
     }
     const notifications = (await prisma.notification.findMany(query)) as any[];
+    console.log('🚀 ~ NotificationRepository ~ notifications:', notifications);
 
     const userIds = Array.from(new Set(notifications.map((n) => n.createdBy).filter(Boolean)));
     const users = userIds.length
@@ -79,8 +80,8 @@ class NotificationRepository implements INotificationRepository {
       notifyType: getNotificationStatus(n.type, n.emailLogs),
       channel: n.channel,
       status: n.channel === 'BOX' ? 'SENT' : 'UNKNOWN',
-      emailTemplate: n.emailTemplateId ? { id: n.emailTemplateId } : null,
-      attachment: n.attachmentId ? { id: n.attachmentId } : null,
+      emailTemplate: n.emailTemplate,
+      attachment: n.attachment,
     }));
   }
 
