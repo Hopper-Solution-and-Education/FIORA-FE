@@ -152,7 +152,7 @@ class WalletUseCase {
     }
 
     // Gọi transaction từ repository
-    return this._walletRepository.deletePackageFXWithCascade(id);
+    return this._walletRepository.deletePackageFX(id);
   }
 
   async getDepositRequestsByType(
