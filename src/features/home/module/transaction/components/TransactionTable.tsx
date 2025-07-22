@@ -15,6 +15,7 @@ import { useCurrencyFormatter } from '@/shared/hooks';
 import { FilterCriteria, OrderType } from '@/shared/types';
 import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { Currency } from '@prisma/client';
 import { debounce } from 'lodash';
 import { FileText, Loader2, Search, Trash } from 'lucide-react';
 import { useSession } from 'next-auth/react';
@@ -27,7 +28,6 @@ import { IRelationalTransaction, TransactionColumn, TransactionTableColumnKey } 
 import {
   DEFAULT_TRANSACTION_TABLE_COLUMNS,
   TRANSACTION_TYPE,
-  TransactionCurrency,
   TransactionTableToEntity,
 } from '../utils/constants';
 import DeleteTransactionDialog from './DeleteTransactionDialog';
@@ -176,7 +176,7 @@ const TransactionTable = () => {
   }, [transactionsResponse]);
 
   useEffect(() => {
-    const payload: any = {
+    const payload: FilterCriteria = {
       ...filterCriteria,
       page: paginationParams.currentPage,
       pageSize: paginationParams.pageSize,
@@ -446,7 +446,7 @@ const TransactionTable = () => {
                             );
                           case 'Amount': {
                             const originalAmount = Number(transRecord.amount);
-                            const originalCurrency = transRecord.currency as TransactionCurrency;
+                            const originalCurrency = transRecord.currency as Currency;
 
                             // Convert to user's selected currency if different from transaction currency
                             const exchangeResult = exchangeAmount({

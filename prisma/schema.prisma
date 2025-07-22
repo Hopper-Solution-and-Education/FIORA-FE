@@ -31,7 +31,6 @@ model User {
   categoryProducts    CategoryProducts[]
   Comment             Comment[]
   depositRequests     DepositRequest[]      @relation("UserDepositRequest")
-  ExchangeRateSetting ExchangeRateSetting[]
   MembershipProgress  MembershipProgress[]
   MembershipTier      MembershipTier[]
   partners            Partner[]             @relation("UserPartners")
@@ -61,16 +60,13 @@ model Session {
 }
 
 model Account {
-  id               String        @id @default(uuid()) @db.Uuid
-  userId           String        @db.Uuid
+  id               String            @id @default(uuid()) @db.Uuid
+  userId           String            @db.Uuid
   icon             String?
   name             String            @db.VarChar(50)
   description      String?           @db.VarChar(1000)
   type             AccountType       @default(Payment)
   currencyId       String?           @db.Uuid
-  currency         String?
-  baseCurrency     String?           @default("USD")
-  baseAmount       Decimal?          @default(0) @db.Decimal(13, 2)
   limit            Decimal?          @default(0) @db.Decimal(13, 2)
   balance          Decimal?          @default(0) @db.Decimal(13, 2)
   parentId         String?           @db.Uuid
@@ -79,11 +75,15 @@ model Account {
   createdBy        String?           @db.Uuid
   updatedBy        String?           @db.Uuid
   color            String?
-  parent           Account?      @relation("ChildAccounts", fields: [parentId], references: [id])
-  children         Account[]     @relation("ChildAccounts")
-  user             User          @relation("UserAccounts", fields: [userId], references: [id])
-  fromTransactions Transaction[] @relation("FromAccount")
-  toTransactions   Transaction[] @relation("ToAccount")
+  currency         String?
+  baseAmount       Decimal?          @default(0) @db.Decimal(13, 2)
+  baseCurrency     String?           @default("USD")
+  currencyExchange CurrencyExchange? @relation(fields: [currencyId], references: [id])
+  parent           Account?          @relation("ChildAccounts", fields: [parentId], references: [id])
+  children         Account[]         @relation("ChildAccounts")
+  user             User              @relation("UserAccounts", fields: [userId], references: [id])
+  fromTransactions Transaction[]     @relation("FromAccount")
+  toTransactions   Transaction[]     @relation("ToAccount")
 
   @@index([userId])
   @@index([parentId])
@@ -127,13 +127,13 @@ model Product {
   updatedBy        String?              @db.Uuid
   currencyId       String?              @db.Uuid
   currency         String?
-  baseCurrency     String?              @default("USD")
   baseAmount       Decimal?             @db.Decimal(13, 2)
+  baseCurrency     String?              @default("USD")
   category         CategoryProducts?    @relation(fields: [catId], references: [id])
+  currencyExchange CurrencyExchange?    @relation(fields: [currencyId], references: [id])
   user             User                 @relation("UserProducts", fields: [userId], references: [id])
   items            ProductItems[]
   transactions     ProductTransaction[] @relation("ProductTransactions")
-  currencyExchange CurrencyExchange?    @relation(fields: [currencyId], references: [id])
 
   @@unique([userId, name, catId])
   @@index([userId])
@@ -174,44 +174,44 @@ model CategoryProducts {
 }
 
 model Transaction {
-  id               String               @id @default(uuid()) @db.Uuid
-  userId           String?              @db.Uuid
-  date             DateTime             @default(now()) @db.Timestamptz(0)
-  type             TransactionType
-  amount           Decimal              @db.Decimal(13, 2)
-  fromAccountId    String?              @db.Uuid
-  fromCategoryId   String?              @db.Uuid
-  toAccountId      String?              @db.Uuid
-  toCategoryId     String?              @db.Uuid
-  fromWalletId     String?              @db.Uuid
-  toWalletId       String?              @db.Uuid
-  products         Json?
-  partnerId        String?              @db.Uuid
-  remark           String?              @db.VarChar(255)
-  isDeleted        Boolean              @default(false)
-  deletedAt        DateTime?            @db.Timestamptz(0)
-  createdAt        DateTime             @default(now()) @db.Timestamptz(0)
-  updatedAt        DateTime             @updatedAt @db.Timestamptz(0)
-  updatedBy        String?              @db.Uuid
-  createdBy        String?              @db.Uuid
-  currencyId       String?              @db.Uuid
-  currency         String?
-  baseCurrency     String?              @default("USD")
-  baseAmount       Decimal?             @db.Decimal(13, 2)
-  isMarked         Boolean              @default(false)
-  isExpired        Boolean              @default(false)
-  productsRelation ProductTransaction[] @relation("ProductTransactions")
-  fromAccount      Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Restrict)
-  fromCategory     Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
-  partner          Partner?             @relation("PartnerTransactions", fields: [partnerId], references: [id])
-  toAccount        Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Restrict)
-  toCategory       Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
-  user             User?                @relation("UserTransactions", fields: [userId], references: [id])
-  currencyExchange CurrencyExchange?    @relation(fields: [currencyId], references: [id])
-  fromWallet       Wallet?              @relation("FromWallet", fields: [fromWalletId], references: [id])
-  toWallet         Wallet?              @relation("ToWallet", fields: [toWalletId], references: [id])
-  MembershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
+  id                  String               @id @default(uuid()) @db.Uuid
+  userId              String?              @db.Uuid
+  date                DateTime             @default(now()) @db.Timestamptz(0)
+  type                TransactionType
+  amount              Decimal              @db.Decimal(13, 2)
+  fromAccountId       String?              @db.Uuid
+  fromCategoryId      String?              @db.Uuid
+  toAccountId         String?              @db.Uuid
+  toCategoryId        String?              @db.Uuid
+  products            Json?
+  partnerId           String?              @db.Uuid
+  remark              String?              @db.VarChar(255)
+  isDeleted           Boolean              @default(false)
+  deletedAt           DateTime?            @db.Timestamptz(0)
+  createdAt           DateTime             @default(now()) @db.Timestamptz(0)
+  updatedAt           DateTime             @updatedAt @db.Timestamptz(0)
+  updatedBy           String?              @db.Uuid
+  createdBy           String?              @db.Uuid
+  currencyId          String?              @db.Uuid
+  isMarked            Boolean              @default(false)
+  isExpired           Boolean              @default(false)
+  currency            String?
+  fromWalletId        String?              @db.Uuid
+  toWalletId          String?              @db.Uuid
   membershipBenefitId String?              @db.Uuid
+  baseCurrency        String?              @default("USD")
+  baseAmount          Decimal?             @db.Decimal(13, 2)
+  productsRelation    ProductTransaction[] @relation("ProductTransactions")
+  currencyExchange    CurrencyExchange?    @relation(fields: [currencyId], references: [id])
+  fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Restrict)
+  fromCategory        Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
+  fromWallet          Wallet?              @relation("FromWallet", fields: [fromWalletId], references: [id])
+  MembershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
+  partner             Partner?             @relation("PartnerTransactions", fields: [partnerId], references: [id])
+  toAccount           Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Restrict)
+  toCategory          Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
+  toWallet            Wallet?              @relation("ToWallet", fields: [toWalletId], references: [id])
+  user                User?                @relation("UserTransactions", fields: [userId], references: [id])
 
   @@index([date])
   @@index([type])
@@ -281,39 +281,20 @@ model Section {
 }
 
 model Media {
-  id              String            @id @default(uuid()) @db.Uuid
-  media_type      MediaType
-  media_url       String?
-  embed_code      String?
-  description     String?
-  uploaded_by     String?
-  uploaded_date   DateTime          @default(now()) @db.Timestamptz(0)
-  section_id      String?           @db.Uuid
-  createdAt       DateTime          @default(now()) @db.Timestamptz(0)
-  updatedAt       DateTime          @updatedAt @db.Timestamptz(0)
-  createdBy       String?           @db.Uuid
-  updatedBy       String?           @db.Uuid
-  redirect_url    String?
-  media_order     Int?              @default(0)
-  media_title     String?           @db.VarChar(255)
-  media_url_2     String?
-  section         Section?          @relation(fields: [section_id], references: [id])
-  mediaReviewUser MediaReviewUser[]
-}
-
-model MediaReviewUser {
-  id                 String   @id @default(uuid()) @db.Uuid
-  mediaId            String   @db.Uuid
-  media_user_name    String   @db.VarChar(255)
-  media_user_avatar  String?
-  media_user_email   String?
-  media_user_comment String?
-  media_user_rating  Int?
-  createdAt          DateTime @default(now()) @db.Timestamptz(0)
-  updatedAt          DateTime @updatedAt @db.Timestamptz(0)
-  createdBy          String?  @db.Uuid
-  updatedBy          String?  @db.Uuid
-  media              Media    @relation(fields: [mediaId], references: [id])
+  id            String    @id @default(uuid()) @db.Uuid
+  media_type    MediaType
+  media_url     String?
+  embed_code    String?
+  description   String?
+  uploaded_by   String?
+  uploaded_date DateTime  @default(now()) @db.Timestamptz(0)
+  section_id    String?   @db.Uuid
+  createdAt     DateTime  @default(now()) @db.Timestamptz(0)
+  updatedAt     DateTime  @updatedAt @db.Timestamptz(0)
+  createdBy     String?   @db.Uuid
+  updatedBy     String?   @db.Uuid
+  redirect_url  String?
+  section       Section?  @relation(fields: [section_id], references: [id])
 }
 
 model Category {
@@ -342,57 +323,59 @@ model Category {
 }
 
 model BudgetsTable {
-  id           String          @id @default(uuid()) @db.Uuid
-  userId       String          @db.Uuid
-  fiscalYear   String          @db.VarChar(4)
-  type         BudgetType      @default(Top)
-  total_exp    Decimal         @default(0) @db.Decimal(13, 2)
-  total_inc    Decimal         @default(0) @db.Decimal(13, 2)
-  h1_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  h1_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  h2_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  h2_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  q1_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  q1_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  q2_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  q2_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  q3_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  q3_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  q4_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  q4_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m1_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m1_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m2_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m2_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m3_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m3_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m4_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m4_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m5_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m5_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m6_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m6_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m7_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m7_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m8_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m8_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m9_exp       Decimal         @default(0) @db.Decimal(13, 2)
-  m9_inc       Decimal         @default(0) @db.Decimal(13, 2)
-  m10_exp      Decimal         @default(0) @db.Decimal(13, 2)
-  m10_inc      Decimal         @default(0) @db.Decimal(13, 2)
-  m11_exp      Decimal         @default(0) @db.Decimal(13, 2)
-  m11_inc      Decimal         @default(0) @db.Decimal(13, 2)
-  m12_exp      Decimal         @default(0) @db.Decimal(13, 2)
-  m12_inc      Decimal         @default(0) @db.Decimal(13, 2)
-  createdAt    DateTime        @default(now()) @db.Timestamptz(0)
-  createdBy    String?         @db.Uuid
-  updatedBy    String?         @db.Uuid
-  updatedAt    DateTime        @updatedAt @db.Timestamptz(0)
-  description  String?
-  icon         String?
-  currency     Currency        @default(VND)
-  budgetDetail BudgetDetails[]
-  user         User            @relation(fields: [userId], references: [id])
+  id               String            @id @default(uuid()) @db.Uuid
+  userId           String            @db.Uuid
+  fiscalYear       String            @db.VarChar(4)
+  type             BudgetType        @default(Top)
+  total_exp        Decimal           @default(0) @db.Decimal(13, 2)
+  total_inc        Decimal           @default(0) @db.Decimal(13, 2)
+  h1_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  h1_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  h2_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  h2_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  q1_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  q1_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  q2_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  q2_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  q3_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  q3_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  q4_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  q4_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m1_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m1_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m2_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m2_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m3_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m3_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m4_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m4_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m5_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m5_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m6_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m6_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m7_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m7_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m8_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m8_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m9_exp           Decimal           @default(0) @db.Decimal(13, 2)
+  m9_inc           Decimal           @default(0) @db.Decimal(13, 2)
+  m10_exp          Decimal           @default(0) @db.Decimal(13, 2)
+  m10_inc          Decimal           @default(0) @db.Decimal(13, 2)
+  m11_exp          Decimal           @default(0) @db.Decimal(13, 2)
+  m11_inc          Decimal           @default(0) @db.Decimal(13, 2)
+  m12_exp          Decimal           @default(0) @db.Decimal(13, 2)
+  m12_inc          Decimal           @default(0) @db.Decimal(13, 2)
+  createdAt        DateTime          @default(now()) @db.Timestamptz(0)
+  createdBy        String?           @db.Uuid
+  updatedBy        String?           @db.Uuid
+  updatedAt        DateTime          @updatedAt @db.Timestamptz(0)
+  description      String?
+  icon             String?
+  currencyId       String?           @db.Uuid
+  currency         String?
+  budgetDetail     BudgetDetails[]
+  currencyExchange CurrencyExchange? @relation(fields: [currencyId], references: [id])
+  user             User              @relation(fields: [userId], references: [id])
 
   @@unique([fiscalYear, type, userId])
   @@index([userId])
@@ -401,21 +384,23 @@ model BudgetsTable {
 }
 
 model BudgetDetails {
-  id         String           @id @default(uuid()) @db.Uuid
-  userId     String           @db.Uuid
-  budgetId   String           @db.Uuid
-  type       BudgetDetailType
-  categoryId String?          @db.Uuid
-  amount     Decimal          @default(0) @db.Decimal(13, 2)
-  month      Int              @db.SmallInt
-  createdAt  DateTime         @default(now()) @db.Timestamptz(0)
-  createdBy  String?          @db.Uuid
-  updatedBy  String?          @db.Uuid
-  updatedAt  DateTime         @updatedAt @db.Timestamptz(0)
-  currency   Currency         @default(VND)
-  budget     BudgetsTable     @relation(fields: [budgetId], references: [id], onDelete: Cascade)
-  category   Category?        @relation(fields: [categoryId], references: [id])
-  user       User             @relation(fields: [userId], references: [id])
+  id               String            @id @default(uuid()) @db.Uuid
+  userId           String            @db.Uuid
+  budgetId         String            @db.Uuid
+  type             BudgetDetailType
+  categoryId       String?           @db.Uuid
+  amount           Decimal           @default(0) @db.Decimal(13, 2)
+  month            Int               @db.SmallInt
+  createdAt        DateTime          @default(now()) @db.Timestamptz(0)
+  createdBy        String?           @db.Uuid
+  updatedBy        String?           @db.Uuid
+  updatedAt        DateTime          @updatedAt @db.Timestamptz(0)
+  currencyId       String?           @db.Uuid
+  currency         String?
+  budget           BudgetsTable      @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  category         Category?         @relation(fields: [categoryId], references: [id])
+  currencyExchange CurrencyExchange? @relation(fields: [currencyId], references: [id])
+  user             User              @relation(fields: [userId], references: [id])
 
   @@unique([month, categoryId, type, budgetId, userId])
   @@index([userId])
@@ -427,6 +412,7 @@ model BudgetDetails {
 model Wallet {
   id               String        @id @default(uuid()) @db.Uuid
   userId           String        @db.Uuid
+  name             String?       @db.VarChar(50)
   icon             String?
   type             WalletType
   frBalanceActive  Decimal       @default(0) @db.Decimal(12, 2)
@@ -436,7 +422,6 @@ model Wallet {
   updatedAt        DateTime      @updatedAt @db.Timestamptz(0)
   createdBy        String?       @db.Uuid
   updatedBy        String?       @db.Uuid
-  name             String?       @db.VarChar(50)
   fromTransactions Transaction[] @relation("FromWallet")
   toTransactions   Transaction[] @relation("ToWallet")
   user             User          @relation("UserWallet", fields: [userId], references: [id])
@@ -451,7 +436,6 @@ model PackageFX {
   updatedAt       DateTime         @updatedAt @db.Timestamptz(0)
   createdBy       String?          @db.Uuid
   updatedBy       String?          @db.Uuid
-  attachment_id   String[]
   depositRequests DepositRequest[]
 
   @@index([fxAmount])
@@ -480,24 +464,19 @@ model DepositRequest {
 }
 
 model Notification {
-  id                    String                  @id @default(uuid()) @db.Uuid
-  attachmentId          String?                 @unique @db.Uuid
-  message               String
-  deepLink              String?
-  createdAt             DateTime                @default(now()) @db.Timestamptz(0)
-  updatedAt             DateTime                @updatedAt @db.Timestamptz(0)
-  createdBy             String?                 @db.Uuid
-  updatedBy             String?                 @db.Uuid
-  channel               ChannelType
-  emails                String[]
-  title                 String
-  notifyTo              String
-  emailTemplateId       String?                 @db.Uuid
-  type                  NotificationType
-  EmailNotificationLogs EmailNotificationLogs[]
-  attachment            Attachment?             @relation(fields: [attachmentId], references: [id])
-  EmailTemplate         EmailTemplate?          @relation(fields: [emailTemplateId], references: [id])
-  userNotifications     UserNotification[]
+  id                String             @id @default(uuid()) @db.Uuid
+  notifyTo          NotificationToType
+  userIds           String[]
+  attachmentId      String?            @unique @db.Uuid
+  message           String
+  type              String
+  deepLink          String?
+  createdAt         DateTime           @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime           @updatedAt @db.Timestamptz(0)
+  createdBy         String?            @db.Uuid
+  updatedBy         String?            @db.Uuid
+  attachment        Attachment?        @relation(fields: [attachmentId], references: [id])
+  userNotifications UserNotification[]
 
   @@index([attachmentId])
 }
@@ -557,13 +536,13 @@ model MembershipBenefit {
 model MembershipProgress {
   id             String          @id @default(uuid()) @db.Uuid
   userId         String          @db.Uuid
+  tierId         String?         @db.Uuid
   currentSpent   Decimal         @default(0) @db.Decimal(13, 2)
   currentBalance Decimal         @default(0) @db.Decimal(13, 2)
   createdBy      String?         @db.Uuid
   updatedBy      String?         @db.Uuid
   createdAt      DateTime        @default(now()) @db.Timestamptz(0)
   updatedAt      DateTime        @updatedAt @db.Timestamptz(0)
-  tierId         String?         @db.Uuid
   tier           MembershipTier? @relation(fields: [tierId], references: [id])
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -702,7 +681,6 @@ model Reaction {
 
 model ExchangeRateSetting {
   id             String           @id @default(uuid()) @db.Uuid
-  authorId       String           @db.Uuid
   fromCurrencyId String           @db.Uuid
   fromValue      Decimal          @default(0) @db.Decimal(13, 2)
   toCurrencyId   String           @db.Uuid
@@ -711,13 +689,11 @@ model ExchangeRateSetting {
   updatedAt      DateTime         @updatedAt @db.Timestamptz(0)
   createdBy      String?          @db.Uuid
   updatedBy      String?          @db.Uuid
-  User           User             @relation(fields: [authorId], references: [id])
   FromCurrency   CurrencyExchange @relation("FromCurrency", fields: [fromCurrencyId], references: [id])
   ToCurrency     CurrencyExchange @relation("ToCurrency", fields: [toCurrencyId], references: [id])
 
   @@unique([fromCurrencyId, toCurrencyId])
   @@index([fromCurrencyId, toCurrencyId])
-  @@index([authorId])
 }
 
 model CurrencyExchange {
@@ -728,37 +704,13 @@ model CurrencyExchange {
   updatedAt               DateTime              @updatedAt @db.Timestamptz(0)
   createdBy               String?               @db.Uuid
   updatedBy               String?               @db.Uuid
+  Account                 Account[]
+  BudgetDetails           BudgetDetails[]
+  BudgetsTable            BudgetsTable[]
   fromExchangeRateSetting ExchangeRateSetting[] @relation("FromCurrency")
   toExchangeRateSetting   ExchangeRateSetting[] @relation("ToCurrency")
-}
-
-model EmailNotificationLogs {
-  status         NotificationLogType
-  errorMessage   String?
-  createdAt      DateTime            @default(now()) @db.Timestamptz(0)
-  createdBy      String?             @db.Uuid
-  updatedAt      DateTime            @db.Timestamptz(0)
-  updatedBy      String?             @db.Uuid
-  id             String              @id @db.Uuid
-  notificationId String              @db.Uuid
-  userId         String              @db.Uuid
-  Notification   Notification        @relation(fields: [notificationId], references: [id])
-
-  @@index([notificationId])
-  @@index([userId])
-}
-
-model EmailTemplate {
-  name         String            @db.VarChar(255)
-  content      String
-  isActive     Boolean
-  createdAt    DateTime          @default(now()) @db.Timestamptz(0)
-  createdBy    String?           @db.Uuid
-  updatedAt    DateTime          @db.Timestamptz(0)
-  updatedBy    String?           @db.Uuid
-  id           String            @id @db.Uuid
-  type         EmailTemplateType
-  Notification Notification[]
+  Product                 Product[]
+  transaction             Transaction[]
 }
 
 enum BudgetType {
@@ -858,29 +810,4 @@ enum PostType {
   NEWS
   TUTORIAL
   INTRO
-}
-
-enum ChannelType {
-  BOX
-  EMAIL
-}
-
-enum NotificationLogType {
-  SENT
-  FAILED
-}
-
-enum NotificationType {
-  ALL
-  ROLE_ADMIN
-  ROLE_CS
-  ROLE_USER
-  PERSONAL
-}
-
-enum EmailTemplateType {
-  MEMBERSHIP
-  DEPOPSIT
-  KYC
-  DEFAULT
 }

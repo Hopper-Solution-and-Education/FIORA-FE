@@ -7,13 +7,20 @@ export type Language = 'vi' | 'en';
 export const keyLocalCurrency = 'currency';
 export const keyLanguage = 'language';
 
-export type ExchangeRateType = { [key: string]: number };
+export type CurrencyType = {
+  [key: string]: {
+    rate: number;
+    suffix: string;
+  };
+};
+
+export type CurrencyObjectType = CurrencyType[keyof CurrencyType];
 
 export type SettingStateType = {
   language: Language;
   currency: Currency;
   baseCurrency: Currency;
-  exchangeRate: ExchangeRateType;
+  exchangeRate: CurrencyType;
   updatedAt: number;
 };
 

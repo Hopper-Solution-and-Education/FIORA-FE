@@ -1,6 +1,6 @@
 import { TransactionType } from '@prisma/client';
 import { z } from 'zod';
-import { TransactionCurrency, TransactionRecurringType } from './constants';
+import { TransactionRecurringType } from './constants';
 
 const validateNewTransactionSchema = z.object({
   type: z.nativeEnum(TransactionType, {
@@ -56,7 +56,7 @@ const defaultNewTransactionValues: NewTransactionDefaultValues = {
   type: TransactionType.Expense,
   date: new Date(),
   amount: 0,
-  currency: TransactionCurrency.VND,
+  currency: '',
   product: null,
   fromId: '', // From account or category ID
   toId: '', // To account or category ID

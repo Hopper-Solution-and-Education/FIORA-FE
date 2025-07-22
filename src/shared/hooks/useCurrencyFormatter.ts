@@ -1,11 +1,9 @@
-import { formatFIORACurrency, getCurrencySymbol } from '@/config/FIORANumberFormat';
 import useDataFetcher from '@/shared/hooks/useDataFetcher';
 import { Response } from '@/shared/types/Common.types';
 import { RootState } from '@/store';
 import { updateExchangeRatesWithTimestamp } from '@/store/slices/setting.slice';
-import { ExchangeRateType } from '@/store/types/setting.type';
-import { Currency } from '@prisma/client';
-import { useCallback, useMemo } from 'react';
+import { CurrencyObjectType, CurrencyType } from '@/store/types/setting.type';
+import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import { CACHE_KEY, STALE_TIME } from '../constants/exchangeRates';
@@ -17,10 +15,10 @@ import {
 } from '../types';
 
 // Constants for localStorage caching
-const apiEndpoint = '/api/setting/currency-setting';
+const apiEndpoint = '/api/setting/currency-setting/USD';
 
 type CachedExchangeRateData = {
-  rates: ExchangeRateType;
+  rates: CurrencyType;
   updatedAt: number;
   baseCurrency: string;
 };
@@ -29,7 +27,7 @@ type UseCurrencyFormatterReturn = {
   // Core functions
   formatCurrency: (
     amount: number,
-    currency: Currency,
+    currency: CurrencyObjectType | string,
     options?: CurrencyFormatterOptions,
   ) => string;
   exchangeAmount: (params: ExchangeAmountParams) => ExchangeAmountResult;
@@ -39,16 +37,15 @@ type UseCurrencyFormatterReturn = {
   refreshExchangeRates: () => Promise<void>;
 
   // State
-  exchangeRates: ExchangeRateType;
-  baseCurrency: Currency;
-  selectedCurrency: Currency;
+  exchangeRates: CurrencyType;
+  baseCurrency: string;
+  selectedCurrency: string;
   isLoading: boolean;
   error: any;
 
   // Utilities
-  getSupportedCurrencies: () => Currency[];
-  getExchangeRate: (fromCurrency: Currency, toCurrency: Currency) => number | null;
-  getCurrencySymbol: (currency: Currency) => string;
+  getSupportedCurrencies: () => string[];
+  getExchangeRate: (fromCurrency: string, toCurrency: string) => number | null;
 };
 
 /**
@@ -93,7 +90,7 @@ const isCacheStale = (updatedAt: number): boolean => {
  * @param baseCurrency - Optional base currency for exchange rate calculations
  * @returns Object containing all currency-related functions and state
  */
-const useCurrencyFormatter = (baseCurrency?: Currency): UseCurrencyFormatterReturn => {
+const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn => {
   const dispatch = useDispatch();
 
   // Get state from Redux store
@@ -149,30 +146,16 @@ const useCurrencyFormatter = (baseCurrency?: Currency): UseCurrencyFormatterRetu
       const response = await mutate();
 
       if (response?.data?.conversion_rates) {
-        const formattedRates: ExchangeRateType = {};
+        const formattedRates: CurrencyType = {};
         const baseCurrency = response.data.base_code;
         const updatedAt = Date.now();
 
         // Convert API response to our exchange rate format
         Object.entries(response.data.conversion_rates).forEach(([currency, rate]) => {
-          const directKey = `${baseCurrency}_${currency}`;
-          formattedRates[directKey] = rate as number;
-
-          if (rate !== 0) {
-            const inverseKey = `${currency}_${baseCurrency}`;
-            formattedRates[inverseKey] = 1 / (rate as number);
-          }
-        });
-
-        // Add cross-currency rates
-        const rates = response.data.conversion_rates;
-        Object.keys(rates).forEach((fromCurrency) => {
-          Object.keys(rates).forEach((toCurrency) => {
-            if (fromCurrency !== toCurrency && rates[fromCurrency] && rates[toCurrency]) {
-              const crossRate = rates[toCurrency] / rates[fromCurrency];
-              formattedRates[`${fromCurrency}_${toCurrency}`] = crossRate;
-            }
-          });
+          formattedRates[currency] = {
+            rate: rate as number,
+            suffix: response.data.currency_suffix[currency],
+          };
         });
 
         // Update Redux store with timestamp
@@ -217,15 +200,49 @@ const useCurrencyFormatter = (baseCurrency?: Currency): UseCurrencyFormatterRetu
    * Automatically fetches exchange rates if not available
    */
   const formatCurrency = useCallback(
-    (amount: number, currency: Currency, options: CurrencyFormatterOptions = {}): string => {
+    (
+      amount: number,
+      currency: CurrencyObjectType | string,
+      options: CurrencyFormatterOptions = {},
+    ): string => {
       try {
+        // Handle null/undefined inputs gracefully
+        if (amount == null || amount === undefined) {
+          console.warn('formatCurrency: amount is null or undefined, defaulting to 0');
+          amount = 0;
+        }
+
+        if (!currency) {
+          console.warn('formatCurrency: currency is null or undefined, using fallback');
+          return amount.toString();
+        }
+
         // Check and ensure exchange rate data is available
         ensureExchangeRateData();
 
-        const { shouldShortened = false, ...formatOptions } = options;
+        const { shouldShortened = false } = options;
 
+        // Get currency object - handle both string and object inputs
+        let currencyObj: CurrencyObjectType;
+
+        if (typeof currency === 'string') {
+          // Convert string currency code to currency object
+          currencyObj = exchangeRates[currency];
+          if (!currencyObj) {
+            console.warn(
+              `formatCurrency: Currency ${currency} not found in exchange rates, using fallback`,
+            );
+            return `${currency} ${amount.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`;
+          }
+        } else {
+          currencyObj = currency;
+        }
+
+        // Handle shortened format
         if (shouldShortened && Math.abs(amount) >= 1000) {
-          const currencySymbol = getCurrencySymbol(currency);
           let formattedValue = amount;
           let suffix = '';
 
@@ -240,56 +257,78 @@ const useCurrencyFormatter = (baseCurrency?: Currency): UseCurrencyFormatterRetu
             suffix = 'K';
           }
 
-          const formatted = formatFIORACurrency(formattedValue, currency, formatOptions);
-
-          // Insert suffix appropriately based on currency
-          if (currency === 'USD') {
-            const numericPart = formatted.replace('$', '').trim();
-            return `$${numericPart}${suffix}`;
-          } else if (currency === 'VND') {
-            const parts = formatted.split('₫').map((part) => part.trim());
-            return `${parts[0]}${suffix} ₫${parts[1] || ''}`;
-          } else {
-            const parts = formatted.split(currencySymbol).map((part) => part.trim());
-            return `${parts[0]}${suffix} ${currencySymbol}${parts[1] || ''}`;
-          }
+          // Format with 2 decimal places and add currency symbol at the beginning
+          const formattedNumber = formattedValue.toFixed(2);
+          return `${currencyObj.suffix ?? ''}${formattedNumber}${suffix}`;
         }
 
-        return formatFIORACurrency(amount, currency, formatOptions);
+        // For non-shortened format, use standard currency formatting
+        return `${currencyObj.suffix ?? ''}${amount.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`;
       } catch (error) {
         console.error('Error formatting currency:', error);
         toast.error('Error formatting currency. Please try again.');
-        return amount.toString();
+        // Safe fallback that won't throw errors
+        return (amount || 0).toString();
       }
     },
-    [ensureExchangeRateData],
+    [ensureExchangeRateData, exchangeRates],
   );
 
   /**
    * Gets exchange rate between two currencies
    */
   const getExchangeRate = useCallback(
-    (fromCurrency: Currency, toCurrency: Currency): number | null => {
+    (fromCurrency: string, toCurrency: string): number | null => {
+      // Compare currency suffixes instead of object references
       if (fromCurrency === toCurrency) return 1;
+      // Try to get rates from the stored exchange rates first
+      const storedFromRate = exchangeRates[fromCurrency as keyof typeof exchangeRates];
+      const storedToRate = exchangeRates[toCurrency as keyof typeof exchangeRates];
 
-      // Try direct rate
-      const directKey = `${fromCurrency}_${toCurrency}`;
-      if (exchangeRates[directKey]) {
-        return exchangeRates[directKey];
+      // If both rates are available in store, use them
+      if (storedFromRate && storedToRate) {
+        return storedToRate.rate / storedFromRate.rate;
       }
 
-      // Try inverse rate
-      const inverseKey = `${toCurrency}_${fromCurrency}`;
-      if (exchangeRates[inverseKey]) {
-        return 1 / exchangeRates[inverseKey];
+      // If one currency is the base currency, handle direct conversion
+      if (fromCurrency === effectiveBaseCurrency && storedToRate) {
+        return storedToRate.rate;
       }
 
-      // Try conversion through base currency
-      const fromBaseKey = `${effectiveBaseCurrency}_${fromCurrency}`;
-      const toBaseKey = `${effectiveBaseCurrency}_${toCurrency}`;
+      if (toCurrency === effectiveBaseCurrency && storedFromRate) {
+        return 1 / storedFromRate.rate;
+      }
 
-      if (exchangeRates[fromBaseKey] && exchangeRates[toBaseKey]) {
-        return exchangeRates[toBaseKey] / exchangeRates[fromBaseKey];
+      // Try to use cached data from localStorage if store doesn't have data
+      const cachedData = getCachedExchangeRates();
+      if (cachedData?.rates) {
+        const cachedFromRate = cachedData.rates[fromCurrency];
+        const cachedToRate = cachedData.rates[toCurrency];
+
+        if (cachedFromRate && cachedToRate) {
+          console.info(`Using cached exchange rate for ${fromCurrency} to ${toCurrency}`);
+          return cachedToRate.rate / cachedFromRate.rate;
+        }
+
+        // Handle base currency conversions with cached data
+        if (fromCurrency === effectiveBaseCurrency && cachedToRate) {
+          return cachedToRate.rate;
+        }
+
+        if (toCurrency === effectiveBaseCurrency && cachedFromRate) {
+          return 1 / cachedFromRate.rate;
+        }
+      }
+
+      // If we have partial data from either source, try to use it
+      const finalFromRate = storedFromRate || cachedData?.rates[fromCurrency];
+      const finalToRate = storedToRate || cachedData?.rates[toCurrency];
+
+      if (finalFromRate && finalToRate) {
+        return finalToRate.rate / finalFromRate.rate;
       }
 
       return null;
@@ -305,51 +344,58 @@ const useCurrencyFormatter = (baseCurrency?: Currency): UseCurrencyFormatterRetu
     (params: ExchangeAmountParams): ExchangeAmountResult => {
       const { amount, fromCurrency, toCurrency } = params;
 
-      // Check and ensure exchange rate data is available
+      // Trigger exchange rate data fetch to ensure we have the latest data
       ensureExchangeRateData();
 
+      // Handle same currency conversion
       if (fromCurrency === toCurrency) {
+        const currencyObj = exchangeRates[toCurrency];
+        const fallbackCurrencyObj = { rate: 1, suffix: toCurrency };
+
         return {
           convertedAmount: amount,
           originalAmount: amount,
-          fromCurrency,
-          toCurrency,
+          fromCurrency: fromCurrency,
+          toCurrency: toCurrency,
           exchangeRate: 1,
-          formattedAmount: formatCurrency(amount, toCurrency),
+          formattedAmount: formatCurrency(amount, currencyObj || fallbackCurrencyObj),
         };
       }
 
+      // Create currency objects - use stored data if available, otherwise create minimal objects
+      const toCurrencyObj = exchangeRates[toCurrency] || { rate: 1, suffix: toCurrency };
+
+      // Try to get exchange rate (this will check store and cache)
       const rate = getExchangeRate(fromCurrency, toCurrency);
 
       if (rate === null) {
-        toast.warning(
-          `Exchange rate not available for ${fromCurrency} to ${toCurrency}. Refreshing rates...`,
+        console.warn(
+          `Exchange rate not available for ${fromCurrency} to ${toCurrency}. Returning 1:1 conversion.`,
         );
-        // Trigger refresh for missing rate
-        ensureExchangeRateData();
-
+        // Return 1:1 conversion as last resort only
         return {
           convertedAmount: amount,
           originalAmount: amount,
-          fromCurrency,
-          toCurrency,
+          fromCurrency: fromCurrency,
+          toCurrency: toCurrency,
           exchangeRate: 1,
-          formattedAmount: formatCurrency(amount, toCurrency),
+          formattedAmount: formatCurrency(amount, toCurrencyObj),
         };
       }
 
+      // Apply the exchange rate conversion
       const convertedAmount = Number((amount * rate).toFixed(2));
 
       return {
         convertedAmount,
         originalAmount: amount,
-        fromCurrency,
-        toCurrency,
+        fromCurrency: fromCurrency,
+        toCurrency: toCurrency,
         exchangeRate: rate,
-        formattedAmount: formatCurrency(convertedAmount, toCurrency),
+        formattedAmount: formatCurrency(convertedAmount, toCurrencyObj),
       };
     },
-    [formatCurrency, getExchangeRate, ensureExchangeRateData],
+    [formatCurrency, getExchangeRate, ensureExchangeRateData, exchangeRates],
   );
 
   /**
@@ -361,33 +407,16 @@ const useCurrencyFormatter = (baseCurrency?: Currency): UseCurrencyFormatterRetu
       const response = await mutate();
 
       if (response?.data?.conversion_rates) {
-        const formattedRates: ExchangeRateType = {};
+        const formattedRates: CurrencyType = {};
         const baseCurrency = response.data.base_code;
         const updatedAt = Date.now();
 
         // Convert API response to our exchange rate format
         Object.entries(response.data.conversion_rates).forEach(([currency, rate]) => {
-          // Direct rate from base currency
-          const directKey = `${baseCurrency}_${currency}`;
-          formattedRates[directKey] = rate as number;
-
-          // Inverse rate (to base currency)
-          if (rate !== 0) {
-            const inverseKey = `${currency}_${baseCurrency}`;
-            formattedRates[inverseKey] = 1 / (rate as number);
-          }
-        });
-
-        // Add cross-currency rates for common pairs
-        const rates = response.data.conversion_rates;
-        Object.keys(rates).forEach((fromCurrency) => {
-          Object.keys(rates).forEach((toCurrency) => {
-            if (fromCurrency !== toCurrency && rates[fromCurrency] && rates[toCurrency]) {
-              const crossRate = rates[toCurrency] / rates[fromCurrency];
-              const crossKey = `${fromCurrency}_${toCurrency}`;
-              formattedRates[crossKey] = crossRate;
-            }
-          });
+          formattedRates[currency] = {
+            rate: rate as number,
+            suffix: response.data.currency_suffix[currency],
+          };
         });
 
         // Update Redux store with timestamp
@@ -419,14 +448,12 @@ const useCurrencyFormatter = (baseCurrency?: Currency): UseCurrencyFormatterRetu
   /**
    * Gets list of supported currencies
    */
-  const getSupportedCurrencies = useCallback((): Currency[] => {
-    const currencies = new Set<Currency>();
+  const getSupportedCurrencies = useCallback((): string[] => {
+    const currencies = new Set<string>();
 
-    // Add currencies from exchange rates
-    Object.keys(exchangeRates).forEach((key) => {
-      const [from, to] = key.split('_');
-      if (from) currencies.add(from as Currency);
-      if (to) currencies.add(to as Currency);
+    // Add currencies from exchange rates (keys are currency codes now)
+    Object.keys(exchangeRates).forEach((currency) => {
+      currencies.add(currency);
     });
 
     // Ensure base currencies are included
@@ -436,11 +463,6 @@ const useCurrencyFormatter = (baseCurrency?: Currency): UseCurrencyFormatterRetu
 
     return Array.from(currencies).sort();
   }, [exchangeRates]);
-
-  /**
-   * Memoized currency symbol getter
-   */
-  const getCurrencySymbolMemo = useMemo(() => getCurrencySymbol, []);
 
   return {
     // Core functions
@@ -461,7 +483,6 @@ const useCurrencyFormatter = (baseCurrency?: Currency): UseCurrencyFormatterRetu
     // Utilities
     getSupportedCurrencies,
     getExchangeRate,
-    getCurrencySymbol: getCurrencySymbolMemo,
   };
 };
 

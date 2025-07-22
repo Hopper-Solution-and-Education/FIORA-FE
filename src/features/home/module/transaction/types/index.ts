@@ -1,5 +1,34 @@
 import { OrderType } from '@/shared/types';
-import { Transaction } from '@prisma/client';
+
+export type Transaction = {
+  id: string;
+  userId: string | null;
+  date: Date;
+  type: 'Expense' | 'Income' | 'Transfer';
+  amount: number;
+  fromAccountId: string | null;
+  fromCategoryId: string | null;
+  toAccountId: string | null;
+  toCategoryId: string | null;
+  products: any;
+  partnerId: string | null;
+  remark: string | null;
+  isDeleted: boolean;
+  deletedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  updatedBy: string | null;
+  createdBy: string | null;
+  currencyId: string | null;
+  isMarked: boolean;
+  isExpired: boolean;
+  currency: string | null;
+  fromWalletId: string | null;
+  toWalletId: string | null;
+  membershipBenefitId: string | null;
+  baseCurrency: string | null;
+  baseAmount: string | null;
+};
 
 export type TransactionPartner = {
   id: string;
@@ -75,6 +104,15 @@ export interface IRelationalTransaction extends Transaction {
   updatedAt: Date;
   createdBy: any;
   updatedBy: any;
+  currencyId: string | null;
+  isMarked: boolean;
+  isExpired: boolean;
+  currency: string | null;
+  fromWalletId: string | null;
+  toWalletId: string | null;
+  membershipBenefitId: string | null;
+  baseCurrency: string | null;
+  baseAmount: string | null;
   fromAccount?: TransactionAccount | null;
   fromCategory?: TransactionCategory | null;
   toAccount?: TransactionAccount | null;

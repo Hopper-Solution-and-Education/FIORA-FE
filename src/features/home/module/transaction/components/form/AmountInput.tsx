@@ -2,7 +2,6 @@ import InputCurrency from '@/components/common/forms/input/InputCurrency';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import React from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
-import { TransactionCurrency } from '../../utils/constants';
 
 interface AmountInputProps {
   value?: number;
@@ -26,7 +25,7 @@ const AmountInputField: React.FC<AmountInputProps> = ({
   ...props
 }) => {
   const { watch } = useFormContext();
-  const amountCurrency: TransactionCurrency = watch('currency') || 'VND';
+  const amountCurrency: string = watch('currency') || '';
 
   return (
     <FormField

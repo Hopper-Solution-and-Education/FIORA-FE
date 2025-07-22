@@ -1,5 +1,3 @@
-import { Currency } from '@prisma/client';
-
 export type ExchangeRateUpsertParams = {
   fromCurrency: string;
   toCurrency: string;
@@ -14,6 +12,7 @@ export type ExchangeRateResponse = {
   time_last_update_utc: string;
   base_code: string;
   conversion_rates: { [key: string]: number };
+  currency_suffix: { [key: string]: string };
 };
 
 export type CurrencyFormatterOptions = {
@@ -24,15 +23,15 @@ export type CurrencyFormatterOptions = {
 
 export type ExchangeAmountParams = {
   amount: number;
-  fromCurrency: Currency;
-  toCurrency: Currency;
+  fromCurrency: string;
+  toCurrency: string;
 };
 
 export type ExchangeAmountResult = {
   convertedAmount: number;
   originalAmount: number;
-  fromCurrency: Currency;
-  toCurrency: Currency;
+  fromCurrency: string;
+  toCurrency: string;
   exchangeRate: number;
   formattedAmount: string;
 };
