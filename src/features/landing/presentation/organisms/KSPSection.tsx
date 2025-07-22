@@ -4,6 +4,7 @@ import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carouse
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import Autoplay from 'embla-carousel-autoplay';
 import { motion } from 'framer-motion';
+import { ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { SectionTypeEnum } from '../../constants';
@@ -149,13 +150,19 @@ const FlippingItemContent = ({
 const CardFront = ({ item }: { item: Media }) => {
   return (
     <div className="relative w-full h-full">
-      <Image
-        src={item.media_url || 'https://placehold.co/454x271?text=Front+Card'}
-        alt={item.description || 'Front Side'}
-        className="w-full h-full object-cover rounded-lg"
-        fill
-        sizes="100%"
-      />
+      {item.media_url ? (
+        <Image
+          src={item.media_url}
+          alt={item.description || 'Front Side'}
+          className="w-full h-full object-cover rounded-lg"
+          fill
+          sizes="100%"
+        />
+      ) : (
+        <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+          <ImageIcon />
+        </div>
+      )}
     </div>
   );
 };
@@ -163,13 +170,19 @@ const CardFront = ({ item }: { item: Media }) => {
 const CardBack = ({ item }: { item: Media }) => {
   return (
     <div className="relative w-full h-full">
-      <Image
-        src={item.media_url || 'https://placehold.co/454x271?text=Back+Card'}
-        alt={item.description || 'Back Side'}
-        className="w-full h-full object-cover rounded-lg"
-        fill
-        sizes="100%"
-      />
+      {item.media_url ? (
+        <Image
+          src={item.media_url}
+          alt={item.description || 'Back Side'}
+          className="w-full h-full object-cover rounded-lg"
+          fill
+          sizes="100%"
+        />
+      ) : (
+        <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+          <ImageIcon />
+        </div>
+      )}
     </div>
   );
 };
