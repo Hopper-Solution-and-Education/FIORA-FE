@@ -194,13 +194,25 @@ class WalletRepository implements IWalletRepository {
   }
 
   async findDepositRequestById(id: string): Promise<DepositRequest | null> {
-    return this._prisma.depositRequest.findUnique({ where: { id } });
+    return this._prisma.depositRequest.findUnique({
+      where: { id },
+      include: {
+        user: true,
+      },
+    });
   }
 
   async increaseWalletBalance(walletId: string, amount: number): Promise<void> {
     await this._prisma.wallet.update({
       where: { id: walletId },
       data: { frBalanceActive: { increment: amount } },
+    });
+  }
+
+  async updateDepositRequestCurrency(id: string, currency: string): Promise<DepositRequest> {
+    return this._prisma.depositRequest.update({
+      where: { id },
+      data: { currency: currency as any } as Prisma.DepositRequestUpdateInput,
     });
   }
 }

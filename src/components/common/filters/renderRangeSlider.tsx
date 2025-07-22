@@ -118,6 +118,7 @@ export const renderRangeSlider = ({
 
         {/* Min value input - hidden but used for accessibility */}
         <input
+          data-test="render-range-slider-min-value-input"
           type="range"
           min={minRange}
           max={maxRange}
@@ -131,6 +132,7 @@ export const renderRangeSlider = ({
 
         {/* Max value input - hidden but used for accessibility */}
         <input
+          data-test="render-range-slider-max-value-input"
           type="range"
           min={minRange}
           max={maxRange}

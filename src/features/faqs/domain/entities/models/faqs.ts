@@ -41,6 +41,12 @@ export interface FaqComment {
   } | null;
 }
 
+export interface FaqCommentParams {
+  faqId: string;
+  skip: number;
+  take: number;
+}
+
 export interface FaqReaction {
   id: string;
   reactionType: ReactionType;
@@ -103,7 +109,7 @@ export interface ReactionCounts {
 // LIST/PAGINATION TYPES
 // ============================================================================
 
-export interface FaqsListResponse {
+export interface FaqListResponse {
   faqs: Faq[];
   currentPage?: number;
   limit?: number;
@@ -111,20 +117,14 @@ export interface FaqsListResponse {
   // totalPages: number;
 }
 
-export interface CategoryWithFaqs {
-  categoryId: string;
-  categoryName: string;
-  totalFaqs: number;
-  faqs: {
-    id: string;
-    title: string;
-    description: string;
-    content: string;
-    category: string;
-    type: any;
-    createdAt: Date;
-    updatedAt: Date;
-  }[];
+export interface FaqCategory {
+  id: string;
+  name: string;
+  type: PostType;
+  description: string;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface FaqsCategoriesResponse {
@@ -132,12 +132,18 @@ export interface FaqsCategoriesResponse {
   name: string;
 }
 
-export interface FaqsListCategoriesResponse {
-  categoriesData: CategoryWithFaqs[];
+export interface FaqsCategoriesWithPostResponse {
+  id: string;
+  name: string;
+  faqs: Faq[];
+}
+
+export interface FaqsCategoriesWithPostParams {
+  type?: PostType;
+  limit?: number;
 }
 
 export interface FaqsListQueryParams {
-  type?: FaqsGetListType;
   // Legacy support
   page?: number;
   limit?: number;
@@ -147,6 +153,7 @@ export interface FaqsListQueryParams {
   };
   orderBy?: string;
   orderDirection?: string;
+  type?: PostType;
 }
 
 // ============================================================================
@@ -205,11 +212,6 @@ export enum PostType {
 export enum UrlType {
   IMAGE = 'image',
   VIDEO = 'video',
-}
-
-export enum FaqsGetListType {
-  LIST = 'list',
-  CATEGORIES = 'categories',
 }
 
 export enum ReactionType {

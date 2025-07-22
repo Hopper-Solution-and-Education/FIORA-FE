@@ -148,6 +148,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
             )}
             id={id}
             onClick={() => setOpen((prev) => !prev)}
+            data-test={props['data-test'] || (props.name ? `${props.name}-select` : undefined)}
             {...props}
           >
             <span

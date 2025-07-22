@@ -1,7 +1,6 @@
-import { cn } from '@/shared/utils';
-import React from 'react';
 import { Icons } from '@/components/Icon';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/shared/utils';
 import { ButtonProps } from './type';
 
 interface ActionButtonProps extends ButtonProps {
@@ -31,6 +30,7 @@ const ActionButton = ({
 
   const button = (
     <button
+      data-test="action-button"
       className={cn(
         'inline-flex items-center justify-center font-medium transition-colors',
         'bg-blue-500 hover:bg-blue-700 text-white',

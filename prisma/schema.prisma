@@ -270,24 +270,39 @@ model Section {
 }
 
 model Media {
-  id              String            @id @default(uuid()) @db.Uuid
+  id              String           @id @default(uuid()) @db.Uuid
   media_type      MediaType
   media_url       String?
   embed_code      String?
   description     String?
   uploaded_by     String?
-  uploaded_date   DateTime          @default(now()) @db.Timestamptz(0)
-  section_id      String?           @db.Uuid
-  createdAt       DateTime          @default(now()) @db.Timestamptz(0)
-  updatedAt       DateTime          @updatedAt @db.Timestamptz(0)
-  createdBy       String?           @db.Uuid
-  updatedBy       String?           @db.Uuid
+  uploaded_date   DateTime         @default(now()) @db.Timestamptz(0)
+  section_id      String?          @db.Uuid
+  createdAt       DateTime         @default(now()) @db.Timestamptz(0)
+  updatedAt       DateTime         @updatedAt @db.Timestamptz(0)
+  createdBy       String?          @db.Uuid
+  updatedBy       String?          @db.Uuid
   redirect_url    String?
-  media_order     Int?              @default(0)
-  media_title     String?           @db.VarChar(255)
+  media_order     Int?             @default(0)
+  media_title     String?          @db.VarChar(255)
   media_url_2     String?
-  section         Section?          @relation(fields: [section_id], references: [id])
-  MediaReviewUser MediaReviewUser[]
+  section         Section?         @relation(fields: [section_id], references: [id])
+  mediaReviewUser MediaReviewUser? @relation("MediaToReviewUser")
+}
+
+model MediaReviewUser {
+  id                 String   @id @default(uuid()) @db.Uuid
+  mediaId            String   @unique @db.Uuid
+  media_user_name    String   @db.VarChar(255)
+  media_user_avatar  String?
+  media_user_email   String?
+  media_user_comment String?
+  media_user_rating  Int?
+  createdAt          DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt          DateTime @updatedAt @db.Timestamptz(0)
+  createdBy          String?  @db.Uuid
+  updatedBy          String?  @db.Uuid
+  media              Media    @relation("MediaToReviewUser", fields: [mediaId], references: [id])
 }
 
 model Category {
@@ -735,26 +750,6 @@ model CurrencyExchange {
   toExchangeRateSetting   ExchangeRateSetting[] @relation("ToCurrency")
 }
 
-model MediaReviewUser {
-  id                 String   @id @db.Uuid
-  mediaId            String   @db.Uuid
-  media_user_name    String   @db.VarChar(255)
-  media_user_avatar  String?
-  media_user_email   String?
-  media_user_comment String?
-  media_user_rating  Int?
-  createdAt          DateTime @default(now()) @db.Timestamptz(0)
-  updatedAt          DateTime @db.Timestamptz(0)
-  createdBy          String?  @db.Uuid
-  updatedBy          String?  @db.Uuid
-  Media              Media    @relation(fields: [mediaId], references: [id])
-}
-
-enum ChannelType {
-  BOX
-  EMAIL
-}
-
 enum BudgetType {
   Top
   Bot
@@ -831,6 +826,11 @@ enum WalletType {
   Debt
   Referral
   Cashback
+}
+
+enum ChannelType {
+  EMAIL
+  BOX
 }
 
 enum NotificationLogType {

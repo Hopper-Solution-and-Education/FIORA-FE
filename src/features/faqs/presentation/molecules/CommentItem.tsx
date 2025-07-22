@@ -1,6 +1,12 @@
-import React /* , { useState } */ from 'react';
-// import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { differenceInHours, differenceInMinutes, format, isPast } from 'date-fns';
+import { MoreVertical } from 'lucide-react';
+import React from 'react';
 import type { FaqComment } from '../../domain/entities/models/faqs';
 import { UserAvatar } from '../atoms';
 
@@ -10,34 +16,44 @@ interface CommentItemProps {
   onDelete: () => void;
   canDelete?: boolean;
   canReply?: boolean;
-  // onEdit?: (commentId: string, content: string) => Promise<void>;
-  // isEditing?: boolean;
 }
 
 const formatTimeAgo = (createdAt: Date): string => {
   const commentDate = new Date(createdAt);
   const now = new Date();
-
   if (isPast(commentDate)) {
     const minutesDiff = differenceInMinutes(now, commentDate);
-
     if (minutesDiff >= 1440) {
-      return format(commentDate, 'MMM d, yyyy');
+      return format(commentDate, 'MMM d, yyyy hh:mm a');
     }
-
     if (minutesDiff < 1) {
       return 'just now';
     }
-
     if (minutesDiff < 60) {
       return `${minutesDiff} minute${minutesDiff === 1 ? '' : 's'} ago`;
     }
-
     const hoursDiff = differenceInHours(now, commentDate);
     return `${hoursDiff} hour${hoursDiff === 1 ? '' : 's'} ago`;
   } else {
-    return format(commentDate, 'MMM d, yyyy');
+    return format(commentDate, 'MMM d, yyyy hh:mm a');
   }
+};
+
+const renderCommentContent = (content: string) => {
+  if (content.startsWith('@')) {
+    const firstSpace = content.indexOf(' ');
+    if (firstSpace > 0) {
+      const username = content.slice(0, firstSpace);
+      const rest = content.slice(firstSpace);
+      return (
+        <span>
+          <span className="text-blue-600 font-medium">{username}</span>
+          {rest}
+        </span>
+      );
+    }
+  }
+  return content;
 };
 
 const CommentItem: React.FC<CommentItemProps> = ({
@@ -46,120 +62,63 @@ const CommentItem: React.FC<CommentItemProps> = ({
   onDelete,
   canDelete = false,
   canReply = false,
-  // onEdit,
-  // isEditing = false,
 }) => {
-  // const [isEditMode, setIsEditMode] = useState(false);
-  // const [editContent, setEditContent] = useState(comment.content);
-  // const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // const handleEditSubmit = async () => {
-  //   if (!onEdit || !editContent.trim() || editContent === comment.content) {
-  //     setIsEditMode(false);
-  //     return;
-  //   }
-
-  //   setIsSubmitting(true);
-  //   try {
-  //     await onEdit(comment.id, editContent.trim());
-  //     setIsEditMode(false);
-  //   } catch (error) {
-  //     console.error('Failed to edit comment:', error);
-  //     // Reset content on error
-  //     setEditContent(comment.content);
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
-
-  // const handleEditCancel = () => {
-  //   setEditContent(comment.content);
-  //   setIsEditMode(false);
-  // };
-
-  // const handleEditClick = () => {
-  //   setIsEditMode(true);
-  //   setEditContent(comment.content);
-  // };
-
   return (
-    <div className="flex gap-3 p-4">
-      <UserAvatar src={comment.User?.image} name={comment.User?.email} />
-
-      <div className="flex-1 min-w-0">
-        {/* User info */}
-        <div className="flex items-center gap-2 mb-1">
-          <span className="font-medium text-sm">{comment.User?.email || 'Unknown User'}</span>
-          <span className="text-xs text-gray-500">{formatTimeAgo(comment.createdAt)}</span>
-        </div>
-
-        {/* Comment content */}
-        {/* {isEditMode ? (
-          <div className="space-y-2">
-            <textarea
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              className="w-full p-2 border rounded-md resize-none min-h-[60px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              disabled={isSubmitting}
-              autoFocus
-            />
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                onClick={handleEditSubmit}
-                disabled={isSubmitting || !editContent.trim()}
-                className="h-7 px-3 text-xs"
-              >
-                {isSubmitting ? 'Saving...' : 'Save'}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleEditCancel}
-                disabled={isSubmitting}
-                className="h-7 px-3 text-xs"
-              >
-                Cancel
-              </Button>
-            </div>
+    <div className="py-3 border-b border-gray-100 last:border-b-0">
+      <div className="pt-1 flex items-center gap-4">
+        <UserAvatar src={comment.User?.image} name={comment.User?.email} size="lg" />
+        {/* Header: user, date, menu */}
+        <div className="flex justify-between mb-1 w-full">
+          <div className="flex flex-col gap-2">
+            <span className="font-medium text-sm text-gray-900 leading-tight">
+              {comment.User?.email || 'Unknown User'}
+            </span>
+            <span className="text-xs text-gray-500 leading-tight">
+              {formatTimeAgo(comment.createdAt)}
+            </span>
           </div>
-        ) : ( */}
-        <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{comment.content}</p>
-        {/* )} */}
-
-        {/* Action buttons */}
-        {/* {!isEditMode && ( */}
-        <div className="flex items-center gap-4 mt-2">
-          {canReply && (
-            <button
-              onClick={() => onReply(comment.id, comment.User?.email || 'Unknown')}
-              className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
-              // disabled={isEditing}
-            >
-              Reply
-            </button>
-          )}
-
-          {/* {canEdit && onEdit && (
-              <button
-                onClick={handleEditClick}
-                className="text-xs text-gray-600 hover:text-gray-800 hover:underline"
-                disabled={isEditing}
-              >
-                Edit
-              </button>
-            )} */}
-
-          {canDelete && (
-            <button
-              onClick={onDelete}
-              className="text-xs text-red-600 hover:text-red-800 hover:underline"
-            >
-              Delete
-            </button>
+          {(canReply || canDelete) && (
+            <div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    data-test="comment-item-dropdown-menu-trigger"
+                    className="p-1 "
+                    aria-label="Comment actions"
+                  >
+                    <MoreVertical className="w-5 h-5 text-gray-500" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  {canReply && (
+                    <DropdownMenuItem
+                      onClick={() => onReply(comment.id, comment.User?.email || 'Unknown')}
+                      className="cursor-pointer"
+                    >
+                      Reply comment
+                    </DropdownMenuItem>
+                  )}
+                  {canDelete && (
+                    <DropdownMenuItem
+                      onClick={onDelete}
+                      className="text-red-600 focus:text-red-700 cursor-pointer"
+                    >
+                      Delete comment
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           )}
         </div>
-        {/* )} */}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="rounded-xl p-2 bg-white">
+          {/* Comment content */}
+          <p className="text-sm text-gray-700 whitespace-pre-wrap break-words mt-1">
+            {renderCommentContent(comment.content)}
+          </p>
+        </div>
       </div>
     </div>
   );

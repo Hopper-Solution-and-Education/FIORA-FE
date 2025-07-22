@@ -1,10 +1,10 @@
-import { SectionType } from '@prisma/client';
 import useSWR, { SWRConfiguration } from 'swr';
+import { SectionTypeEnum } from '../constants';
 import { landingDIContainer } from '../di/landingDIContainer';
 import { TYPES } from '../di/landingDIContainer.type';
 import { GetSectionUseCase } from '../domain/use-cases/GetSectionUseCase';
 
-export const useGetSection = (sectionType: SectionType, swrOptions?: SWRConfiguration) => {
+export const useGetSection = (sectionType: SectionTypeEnum, swrOptions?: SWRConfiguration) => {
   const { data, error } = useSWR(
     `section-${sectionType}`,
     async () => {

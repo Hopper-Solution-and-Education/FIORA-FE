@@ -7,24 +7,24 @@ import {
 } from '@/features/setting/module/wallet/slices';
 import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
-import React, { useMemo } from 'react';
-import { WalletSettingTableColumnKey } from '../types/setting.type';
 import {
-  DndContext,
   closestCenter,
+  DndContext,
+  DragEndEvent,
+  KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
-  KeyboardSensor,
 } from '@dnd-kit/core';
 import {
   SortableContext,
+  sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
-  sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import React, { useMemo } from 'react';
+import { WalletSettingTableColumnKey } from '../types/setting.type';
 
 interface SortableItemProps {
   id: WalletSettingTableColumnKey;
@@ -100,6 +100,7 @@ const WalletSettingColumnMenu = () => {
       <div className="flex items-center justify-between mb-2 pb-2 border-b border-border">
         <span className="font-semibold text-base text-foreground">Column Settings</span>
         <button
+          data-test="wallet-setting-column-menu-reset"
           className="p-1 ml-2"
           onClick={() => dispatch(resetColumns())}
           title="Reset to default"

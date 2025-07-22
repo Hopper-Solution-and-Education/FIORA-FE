@@ -233,9 +233,16 @@ export enum Messages {
   CREATE_DEPOSIT_REQUEST_SUCCESS = 'Create deposit request successfully.',
   UPDATE_DEPOSIT_REQUEST_STATUS_SUCCESS = 'Update deposit request status successfully.',
 
+  // WALLET FAID
+  INVALID_DEPOSIT_REQUEST_TYPE = 'Invalid deposit request type.',
+  MISSING_REJECTION_REASON = 'Missing rejection reason.',
+  PACKAGE_FX_NOT_FOUND = 'Package FX not found.',
   INVALID_WALLET_TYPE = 'Invalid wallet type.',
   UPDATE_DEPOSIT_REQUEST_STATUS_FAILED = 'Update deposit request status failed.',
   INVALID_STATUS = 'Invalid status.',
+  PAYMENT_WALLET_NOT_FOUND = 'Payment wallet not found.',
+  COULD_NOT_GENERATE_UNIQUE_REF_CODE = 'Could not generate unique refCode, please try again.',
+  CURRENCY_IS_REQUIRED = 'Currency is required.',
 
   // EXCHANGE RATE SUCCESS
   CREATE_EXCHANGE_RATE_SUCCESS = 'Create exchange rate successfully.',
@@ -258,13 +265,14 @@ export enum Messages {
   NOT_FOUND_EMAIL = 'User email not found',
   INVALID_PHONE = 'Invalid phone number.',
   INVALID_DOB = 'Invalid date of birth.',
-  INVALID_DEPOSIT_REQUEST_TYPE = 'Invalid deposit request type.',
 
   // FAQ
   IMPORT_FAQS_SUCCESS = 'Import FAQs successfully',
   IMPORT_FAQS_FAILED = 'Import FAQs failed',
   GET_FAQ_CATEGORIES_SUCCESS = 'Get FAQ categories successfully',
   GET_FAQ_CATEGORIES_FAILED = 'Get FAQ categories failed',
+  GET_FAQ_CATEGORIES_WITH_POST_SUCCESS = 'Get FAQ categories with post successfully',
+  GET_FAQ_CATEGORIES_WITH_POST_FAILED = 'Get FAQ categories with post failed',
   DELETE_COMMENT_SUCCESS = 'Delete comment successfully',
   CREATE_COMMENT_SUCCESS = 'Create comment successfully',
   CREATE_REACTION_SUCCESS = 'Create reaction successfully',
@@ -274,6 +282,13 @@ export enum Messages {
   UPDATE_FAQ_SUCCESS = 'Update FAQ successfully',
   DELETE_FAQ_SUCCESS = 'Delete FAQ successfully',
   GET_FAQ_LIST_SUCCESS = 'Get FAQ list successfully',
+  CREATE_FAQ_CATEGORY_SUCCESS = 'Create FAQ category successfully',
+  CREATE_FAQ_CATEGORY_FAILED = 'Create FAQ category failed',
+  COMMENT_NOT_FOUND = 'Comment not found',
+  GET_FAQ_COMMENTS_SUCCESS = 'Get FAQ comments successfully',
+  GET_FAQ_COMMENTS_FAILED = 'Get FAQ comments failed',
+  GET_FAQ_REACTIONS_SUCCESS = 'Get FAQ reactions successfully',
+  GET_FAQ_REACTIONS_FAILED = 'Get FAQ reactions failed',
   // COMMON ERRORS
   INVALID_CURRENCY = 'Invalid currency. Must be either VND or USD.',
   VALIDATION_ERROR = 'Validation error.',
@@ -281,4 +296,5 @@ export enum Messages {
   GET_NOTIFICATION_SUCCESS = 'Get notification list successfully.',
 
   INVALID_PAGE_OR_PAGE_SIZE = 'Invalid page or pageSize.',
+  INVALID_FILTER_FORMAT = 'Invalid filter format.',
 }

@@ -6,6 +6,7 @@ import { FilterObject } from '@/shared/types/filter.types';
 import { _PaginationResponse } from '@/shared/types/httpResponse.types';
 import { FilterBuilder } from '@/shared/utils/filterBuilder';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { DepositRequestStatus } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse) => {
@@ -44,7 +45,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
         filterObj = FilterBuilder.toFilterObject(filter);
       } catch (e) {
         console.error(e);
-        return createError(res, RESPONSE_CODE.BAD_REQUEST, 'Invalid filter format');
+        return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_FILTER_FORMAT);
       }
     }
 
@@ -67,16 +68,18 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
 async function PUT(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { id, status, remark } = req.body;
+    console.log('run');
+
     if (!id || !status) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_PARAMS_INPUT);
     }
 
-    if (status !== 'Approved' && status !== 'Rejected') {
+    if (status !== DepositRequestStatus.Approved && status !== DepositRequestStatus.Rejected) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_STATUS);
     }
 
-    if (status === 'Rejected' && !remark) {
-      return createError(res, RESPONSE_CODE.BAD_REQUEST, 'Missing rejection reason');
+    if (status === DepositRequestStatus.Rejected && !remark) {
+      return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_REJECTION_REASON);
     }
 
     const updated = await walletUseCase.updateDepositRequestStatus(id, status, remark);

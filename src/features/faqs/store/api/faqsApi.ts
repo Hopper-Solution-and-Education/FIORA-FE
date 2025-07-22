@@ -2,13 +2,16 @@ import { Response } from '@/shared/types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import {
   CreateCommentRequest,
+  FaqComment,
   FaqDetailData,
+  FaqListResponse,
+  FaqReaction,
   FaqsCategoriesResponse,
+  FaqsCategoriesWithPostParams,
+  FaqsCategoriesWithPostResponse,
   FaqsImportResult,
   FaqsImportValidationResult,
-  FaqsListCategoriesResponse,
   FaqsListQueryParams,
-  FaqsListResponse,
   FaqsRowValidated,
   ReactionType,
   UpdateFaqRequest,
@@ -28,33 +31,14 @@ export const faqsApi = createApi({
   tagTypes: ['FaqImport', 'Faqs', 'FaqCategories', 'FaqDetails', 'FaqComments', 'FaqReactions'],
 
   endpoints: (builder) => ({
-    getFaqs: builder.query<FaqsListResponse | FaqsListCategoriesResponse, FaqsListQueryParams>({
+    getFaqs: builder.query<FaqListResponse, FaqsListQueryParams>({
       query: (params) => ({
         url: '/search',
         method: 'POST',
         body: params,
       }),
-      transformResponse: (response: Response<FaqsListResponse | FaqsListCategoriesResponse>) =>
-        response.data,
-      providesTags: (result) =>
-        result && 'faqs' in result
-          ? [
-              ...result.faqs.map(({ id }) => ({ type: 'Faqs' as const, id })),
-              { type: 'Faqs', id: 'LIST' },
-            ]
-          : [{ type: 'Faqs', id: 'LIST' }],
-      serializeQueryArgs: ({ queryArgs }) => {
-        return {
-          type: queryArgs.type,
-          limit: queryArgs.limit,
-          filters: {
-            search: queryArgs.filters?.search || '',
-            categories: queryArgs.filters?.categories
-              ? [...queryArgs.filters.categories].sort()
-              : [],
-          },
-        };
-      },
+      transformResponse: (response: Response<FaqListResponse>) => response.data,
+      providesTags: () => [{ type: 'Faqs', id: 'LIST' }],
     }),
 
     // FAQ Detail endpoints
@@ -120,14 +104,31 @@ export const faqsApi = createApi({
       invalidatesTags: [{ type: 'Faqs', id: 'LIST' }],
     }),
 
-    // Comment endpoints
+    createFaq: builder.mutation<
+      { id: string },
+      { title: string; description?: string; content: string; categoryId: string }
+    >({
+      query: (data) => ({
+        url: '/',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: [{ type: 'Faqs', id: 'LIST' }],
+    }),
+
+    // Paginated FAQ comments endpoint
+    getFaqComments: builder.query<FaqComment[], { faqId: string; skip?: number; take?: number }>({
+      query: ({ faqId, skip = 0, take = 10 }) => `/${faqId}/comments?skip=${skip}&take=${take}`,
+      providesTags: (result, error, { faqId }) => [{ type: 'FaqComments', id: faqId }],
+      transformResponse: (response: Response<FaqComment[]>) => response.data,
+    }),
+
     createComment: builder.mutation<void, { faqId: string; comment: CreateCommentRequest }>({
       query: ({ faqId, comment }) => ({
         url: `/${faqId}/comments`,
         method: 'POST',
         body: comment,
       }),
-      invalidatesTags: (result, error, { faqId }) => [{ type: 'FaqDetails', id: faqId }],
     }),
 
     deleteComment: builder.mutation<void, { faqId: string; commentId: string }>({
@@ -135,7 +136,6 @@ export const faqsApi = createApi({
         url: `/${faqId}/${commentId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (result, error, { faqId }) => [{ type: 'FaqDetails', id: faqId }],
     }),
 
     // updateComment: builder.mutation<void, { faqId: string; commentId: string; content: string }>({
@@ -148,21 +148,36 @@ export const faqsApi = createApi({
     // }),
 
     // Reaction endpoints
-    createReaction: builder.mutation<void, { faqId: string; reaction: ReactionType }>({
+    getFaqReactions: builder.query<FaqReaction[], string>({
+      query: (faqId) => `/${faqId}/reactions`,
+      providesTags: (result, error, faqId) => [{ type: 'FaqReactions', id: faqId }],
+      transformResponse: (response: Response<FaqReaction[]>) => response.data,
+    }),
+    createReaction: builder.mutation<
+      void,
+      { faqId: string; reaction: ReactionType; tempReactions: FaqReaction[] }
+    >({
       query: ({ faqId, reaction }) => ({
-        url: `/${faqId}/reaction`,
+        url: `/${faqId}/reactions`,
         method: 'POST',
         body: { reactionType: reaction },
       }),
-      invalidatesTags: (result, error, { faqId }) => [{ type: 'FaqDetails', id: faqId }],
-    }),
-
-    deleteReaction: builder.mutation<void, string>({
-      query: (faqId) => ({
-        url: `/${faqId}/reaction`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: (result, error, faqId) => [{ type: 'FaqDetails', id: faqId }],
+      invalidatesTags: (result, error, { faqId }) => [{ type: 'FaqReactions', id: faqId }],
+      // Optimistic update
+      async onQueryStarted({ faqId, tempReactions }, { dispatch, queryFulfilled }) {
+        // Optimistically update the reactions list
+        const patchResult = dispatch(
+          faqsApi.util.updateQueryData('getFaqReactions', faqId, (draft) => {
+            if (!draft) return;
+            draft.splice(0, draft.length, ...tempReactions);
+          }),
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
     }),
 
     validateImportFile: builder.mutation<FaqsImportValidationResult, FormData>({
@@ -210,22 +225,37 @@ export const faqsApi = createApi({
       }),
       invalidatesTags: ['FaqCategories'],
     }),
+    getFaqCategoriesWithPost: builder.query<
+      FaqsCategoriesWithPostResponse[],
+      FaqsCategoriesWithPostParams
+    >({
+      query: (params) => ({
+        url: '/categories/with-post',
+        method: 'GET',
+        params,
+      }),
+      transformResponse: (response: Response<FaqsCategoriesWithPostResponse[]>) => response.data,
+      providesTags: ['FaqCategories'],
+    }),
   }),
 });
 
 export const {
   useGetFaqsQuery,
   useGetFaqCategoriesQuery,
+  useGetFaqCategoriesWithPostQuery,
   useValidateImportFileMutation,
   useImportFaqsMutation,
   // FAQ Detail hooks
   useGetFaqDetailQuery,
   useUpdateFaqMutation,
+  useCreateFaqMutation,
   useCreateFaqCategoryMutation,
   useCreateCommentMutation,
   useDeleteCommentMutation,
   // useUpdateCommentMutation,
   useCreateReactionMutation,
-  useDeleteReactionMutation,
   useDeleteFaqMutation,
+  useGetFaqCommentsQuery,
+  useGetFaqReactionsQuery,
 } = faqsApi;

@@ -152,7 +152,7 @@ export const useFaqEdit = ({ faqId }: UseFaqEditProps) => {
   };
 
   // Cancel handler
-  const handleCancel = () => {
+  const handleCancel = (faqId: string) => {
     if (hasChanges) {
       const confirmCancel = window.confirm(
         'You have unsaved changes. Are you sure you want to cancel?',
@@ -160,7 +160,7 @@ export const useFaqEdit = ({ faqId }: UseFaqEditProps) => {
       if (!confirmCancel) return;
     }
 
-    router.back();
+    router.push(`/faqs/details/${faqId}`);
   };
 
   // Loading states

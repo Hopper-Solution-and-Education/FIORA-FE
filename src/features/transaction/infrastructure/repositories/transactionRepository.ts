@@ -213,6 +213,7 @@ class TransactionRepository implements ITransactionRepository {
             id: true,
             name: true,
             type: true,
+            icon: true,
           },
         }),
         prisma.category.findMany({
@@ -220,6 +221,7 @@ class TransactionRepository implements ITransactionRepository {
           select: {
             id: true,
             name: true,
+            icon: true,
           },
         }),
       ]);
@@ -232,6 +234,7 @@ class TransactionRepository implements ITransactionRepository {
           select: {
             id: true,
             name: true,
+            icon: true,
           },
         }),
 
@@ -245,6 +248,7 @@ class TransactionRepository implements ITransactionRepository {
             id: true,
             name: true,
             type: true,
+            icon: true,
           },
         }),
 
@@ -278,6 +282,7 @@ class TransactionRepository implements ITransactionRepository {
             id: true,
             name: true,
             type: true,
+            icon: true,
           },
         }),
         prisma.account.findMany({
@@ -286,6 +291,7 @@ class TransactionRepository implements ITransactionRepository {
             id: true,
             name: true,
             type: true,
+            icon: true,
           },
         }),
       ]);

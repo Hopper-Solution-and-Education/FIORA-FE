@@ -20,12 +20,12 @@ const FaqHeader: React.FC<FaqHeaderProps> = ({ data, canEdit, onEdit, onDelete }
           <div className="flex items-center gap-2">
             <Button
               variant="secondary"
-              className="px-3 py-2 hover:bg-red-200"
+              className="px-3 py-2 hover:bg-green-200"
               onClick={() => {
                 onEdit?.();
               }}
             >
-              <Pencil size={18} color="red" />
+              <Pencil size={18} />
             </Button>
             <Button
               variant="secondary"

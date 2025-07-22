@@ -10,7 +10,6 @@ export const ACCOUNT_TYPE_RULES = {
 };
 
 export const validateAccount = (accountType: AccountType, balance: number, limit?: number) => {
-
   const rules = ACCOUNT_TYPE_RULES[accountType];
 
   if (balance < rules.minBalance && !rules.allowNegative) {

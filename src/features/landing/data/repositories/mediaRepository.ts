@@ -1,10 +1,10 @@
-import { SectionType } from '@prisma/client';
 import { decorate, injectable } from 'inversify';
+import { SectionTypeEnum } from '../../constants';
 import { Media } from '../../domain/models/Media';
 import type { ILandingAPI } from '../api/api';
 
 export interface IMediaRepository {
-  getMediaBySection(sectionType: SectionType): Promise<Media[]>;
+  getMediaBySection(sectionType: SectionTypeEnum): Promise<Media[]>;
 }
 
 export class MediaRepository implements IMediaRepository {
@@ -14,7 +14,7 @@ export class MediaRepository implements IMediaRepository {
     this.landingAPI = landingAPI;
   }
 
-  getMediaBySection(sectionType: SectionType): Promise<Media[]> {
+  getMediaBySection(sectionType: SectionTypeEnum): Promise<Media[]> {
     return this.landingAPI.fetchMedia(sectionType);
   }
 }

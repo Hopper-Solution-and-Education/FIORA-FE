@@ -1,8 +1,8 @@
-import { SectionType } from '@prisma/client';
+import { SectionTypeEnum } from '../../constants';
 import { useGetSection } from '../../hooks/useGetSection';
 
 const VisionMission = () => {
-  const { section, isError, isLoading } = useGetSection(SectionType.VISION_MISSION);
+  const { section, isError, isLoading } = useGetSection(SectionTypeEnum.VISION_MISSION);
 
   if (isLoading) {
     return (
@@ -59,30 +59,39 @@ const VisionMission = () => {
 
   return (
     <section>
-      <div className="md:mt-20">
-        <div className="bg-muted-2 grid items-center gap-6 lg:grid-cols-3 lg:gap-8">
-          {/* Text Section (Hiển thị trước trên mobile) */}
-          <div className="flex flex-col justify-center items-center sm:p-8 lg:p-10 lg:items-start lg:text-left order-1 lg:order-2">
+      <div className="md:mt-24 lg:mt-36 px-2 sm:px-6 md:px-10">
+        <div className="grid items-start gap-4 sm:gap-6 lg:grid-cols-5 lg:gap-8">
+          <div className="justify-center items-center px-2 sm:px-4 md:px-8 md:py-8 lg:py-16 order-2 col-span-2">
             <h1
               data-aos="fade-up"
-              className="text-center my-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-pretty"
+              className="text-center lg:text-left my-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-pretty"
             >
               {section?.name}
             </h1>
+            <div className="mt-4 text-sm sm:text-base md:text-md lg:text-lg xl:text-lg text-center lg:text-left">
+              {section.medias[0].description}
+              Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum
+              printer took a galley of type and scrambled it to make a type specimen book. It has
+              survived not only five centuries, but also the leap into electronic typesetting,
+            </div>
+            <button className="mt-8 px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base md:text-lg bg-green-700 text-white rounded-full font-semibold hover:bg-green-800 transition">
+              Learn more
+            </button>
           </div>
 
-          {/* Video Section (Hiển thị sau trên mobile) */}
-          <div className="relative col-span-2 h-[300px] md:h-[500px] lg:h-[700px] overflow-hidden justify-center mx-2 order-2 lg:order-1">
+          <div className="relative col-span-3 h-[180px] sm:h-[300px] md:h-[400px] lg:h-[500px] xl:h-[700px] overflow-hidden justify-center mx-1 sm:mx-2 order-2 lg:order-1">
             {embedCode ? (
               <div
-                className="absolute inset-0"
+                className="w-full h-full rounded-xl overflow-hidden"
                 dangerouslySetInnerHTML={{
-                  __html: `<style>iframe { width: 100% !important; height: 100% !important; border: none; border-radius: 8px; object-fit: cover;}</style>${embedCode}`,
+                  __html: `<style>iframe { width: 100% !important; height: 100% !important; border: none; }</style>${embedCode}`,
                 }}
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-200 rounded-md">
-                <p className="text-gray-500 text-sm sm:text-base">No embedded content available</p>
+                <p className="text-gray-500 text-xs sm:text-sm md:text-base">
+                  No embedded content available
+                </p>
               </div>
             )}
           </div>

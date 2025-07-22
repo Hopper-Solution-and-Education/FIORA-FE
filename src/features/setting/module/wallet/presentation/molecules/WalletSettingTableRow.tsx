@@ -30,7 +30,7 @@ const WalletSettingTableRow = ({ data, columns }: WalletSettingTableRowProps) =>
             );
           case 'Requester':
             return (
-              <TableCell key={col} className="text-center max-w-[180px]">
+              <TableCell key={col} className="text-left max-w-[180px]">
                 <UserProfileCard user={data.user} userId={data.userId} />
               </TableCell>
             );

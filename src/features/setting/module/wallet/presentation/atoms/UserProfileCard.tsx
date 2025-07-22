@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icon';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 interface UserProfileCardProps {
   user?: {
@@ -166,6 +166,7 @@ const UserProfileCard = ({ user, userId, className }: UserProfileCardProps) => {
             {/* Footer with action hint */}
             <div className="mt-5 pt-4 border-t border-gray-100 dark:border-neutral-800 flex justify-center">
               <button
+                data-test="user-profile-card-view-detail"
                 type="button"
                 className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-150 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/40 hover:bg-blue-100 dark:hover:bg-blue-900/60"
                 tabIndex={-1}

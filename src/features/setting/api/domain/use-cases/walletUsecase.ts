@@ -1,9 +1,13 @@
+import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
+import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { CURRENCY } from '@/shared/constants';
+import { Messages } from '@/shared/constants/message';
 import { FilterObject } from '@/shared/types/filter.types';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { generateRefCode } from '@/shared/utils/stringHelper';
 import {
-  CategoryType,
   Currency,
   DepositRequestStatus,
   Prisma,
@@ -11,11 +15,14 @@ import {
   WalletType,
 } from '@prisma/client';
 import { ATTACHMENT_CONSTANTS } from '../../constants/attachmentConstants';
+import {
+  DEFAULT_WALLET_FIELDS,
+  MAX_REF_CODE_ATTEMPTS,
+  WALLET_TYPE_ICONS,
+} from '../../constants/walletConstant';
 import { attachmentRepository } from '../../infrastructure/repositories/attachmentRepository';
-import { categoryRepository } from '../../infrastructure/repositories/categoryRepository';
 import { walletRepository } from '../../infrastructure/repositories/walletRepository';
 import { IAttachmentRepository } from '../../repositories/attachmentRepository.interface';
-import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
 import { IWalletRepository } from '../../repositories/walletRepository.interface';
 
 interface AttachmentData {
@@ -25,39 +32,12 @@ interface AttachmentData {
   path: string;
 }
 
-// Wallet type to icon mapping
-const WALLET_TYPE_ICONS: Record<WalletType, string> = {
-  [WalletType.Payment]: 'dollarSign',
-  [WalletType.Invest]: 'trendingUp',
-  [WalletType.Saving]: 'piggyBank',
-  [WalletType.Lending]: 'user',
-  [WalletType.BNPL]: 'billing',
-  [WalletType.Debt]: 'banknoteArrowDown',
-  [WalletType.Referral]: 'userPlus',
-  [WalletType.Cashback]: 'circleFadingArrowUp',
-};
-
-const DEFAULT_WALLET_FIELDS = {
-  frBalanceActive: 0,
-  frBalanceFrozen: 0,
-  creditLimit: null,
-  name: null,
-  createdBy: null,
-  updatedBy: null,
-};
-
-const MAX_REF_CODE_ATTEMPTS = 10;
-
-// Category constants for Deposit FX
-const DEPOSIT_FX_CATEGORY_NAME = 'Deposit FX';
-const DEPOSIT_FX_CATEGORY_ICON = 'piggyBank';
-
 class WalletUseCase {
   constructor(
     private _walletRepository: IWalletRepository = walletRepository,
     private _attachmentRepository: IAttachmentRepository = attachmentRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
-    private _categoryRepository: ICategoryRepository = categoryRepository,
+    private _accountRepository: IAccountRepository = accountRepository,
   ) {}
 
   async createWallet(data: Prisma.WalletUncheckedCreateInput) {
@@ -105,6 +85,7 @@ class WalletUseCase {
     packageFXId: string,
     refCode: string,
     attachmentData?: AttachmentData,
+    currency?: Currency,
   ) {
     const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
     if (!packageFX) {
@@ -139,6 +120,7 @@ class WalletUseCase {
       attachmentId,
       status: 'Requested',
       createdBy: userId,
+      currency,
     });
   }
 
@@ -146,6 +128,7 @@ class WalletUseCase {
     userId: string,
     packageFXId: string,
     attachmentData?: AttachmentData,
+    currency?: Currency,
   ) {
     let refCode = '';
     let attempts = 0;
@@ -155,11 +138,11 @@ class WalletUseCase {
 
       attempts++;
       if (attempts > MAX_REF_CODE_ATTEMPTS) {
-        throw new Error('Could not generate unique refCode, please try again.');
+        throw new Error(Messages.COULD_NOT_GENERATE_UNIQUE_REF_CODE);
       }
     } while (await this._walletRepository.isDepositRefCodeExists(refCode));
 
-    return this.createDepositRequest(userId, packageFXId, refCode, attachmentData);
+    return this.createDepositRequest(userId, packageFXId, refCode, attachmentData, currency);
   }
 
   async getTotalRequestedDepositAmount(userId: string) {
@@ -211,7 +194,12 @@ class WalletUseCase {
     };
   }
 
-  async updateDepositRequestStatus(id: string, newStatus: DepositRequestStatus, remark?: string) {
+  async updateDepositRequestStatus(
+    id: string,
+    newStatus: DepositRequestStatus,
+    remark?: string,
+    currency?: Currency,
+  ) {
     const depositRequest = await this._walletRepository.findDepositRequestById(id);
 
     if (!depositRequest) return null;
@@ -219,47 +207,72 @@ class WalletUseCase {
     if (newStatus === DepositRequestStatus.Approved) {
       const { userId, packageFXId } = depositRequest;
       const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
-      if (!packageFX) throw new Error('PackageFX not found');
+      if (!packageFX) throw new Error(Messages.PACKAGE_FX_NOT_FOUND);
       const amount = Number(packageFX.fxAmount);
-      const category = await this.getOrCreateDepositFXCategory(userId);
-      const toWallet = await this._walletRepository.findWalletByType('Payment', userId);
 
-      if (!toWallet) throw new Error('Payment wallet not found');
+      // Update currency for depositRequest if not set
+      if (!depositRequest.currency && currency) {
+        await this._walletRepository.updateDepositRequestCurrency(id, currency);
+        depositRequest.currency = currency;
+      }
+      let txCurrency = depositRequest.currency || currency;
+      if (!txCurrency) throw new Error(Messages.CURRENCY_IS_REQUIRED);
+      // If FX, treat as USD
+      if (txCurrency === 'FX') txCurrency = 'USD';
 
+      // Find root Payment Account (parentId: null, any currency)
+      let paymentAccount = await this._accountRepository.findByCondition({
+        userId,
+        type: 'Payment',
+        parentId: null,
+      });
+      if (!paymentAccount) {
+        // Default to VND if creating new
+        paymentAccount = await this._accountRepository.create({
+          userId,
+          type: 'Payment',
+          currency: 'VND',
+          name: 'Payment Account',
+          icon: 'dollarSign',
+          balance: 0,
+        });
+      }
+
+      // create transaction from payment account (for record, still use txCurrency)
       await this._transactionRepository.createTransaction({
         userId,
-        fromCategoryId: category.id,
-        toWalletId: toWallet.id,
+        fromAccountId: paymentAccount.id,
         amount,
-        currency: Currency.FX,
+        currency: txCurrency,
         type: TransactionType.Transfer,
         createdBy: userId,
       });
 
-      await this._walletRepository.increaseWalletBalance(toWallet.id, amount);
+      const deductAmount = convertCurrency(amount, CURRENCY.USD, paymentAccount.currency);
+
+      if (deductAmount > 0) {
+        const newBalance = Number(paymentAccount.balance ?? 0) - deductAmount;
+
+        await this._accountRepository.update(paymentAccount.id, {
+          balance: newBalance,
+        });
+      }
+
+      let paymentWallet = await this._walletRepository.findWalletByType(WalletType.Payment, userId);
+
+      if (!paymentWallet) {
+        paymentWallet = await this._walletRepository.createWallet({
+          userId,
+          type: WalletType.Payment,
+          icon: WALLET_TYPE_ICONS[WalletType.Payment],
+          ...DEFAULT_WALLET_FIELDS,
+        });
+      }
+
+      await this._walletRepository.increaseWalletBalance(paymentWallet.id, amount);
     }
 
     return this._walletRepository.updateDepositRequestStatus(id, newStatus, remark);
-  }
-
-  private async getOrCreateDepositFXCategory(userId: string) {
-    let category = await this._categoryRepository.findFirstCategory({
-      userId,
-      name: DEPOSIT_FX_CATEGORY_NAME,
-    });
-
-    if (!category) {
-      category = await this._categoryRepository.createCategory({
-        userId,
-        type: CategoryType.Income,
-        icon: DEPOSIT_FX_CATEGORY_ICON,
-        name: DEPOSIT_FX_CATEGORY_NAME,
-        tax_rate: 0,
-        createdBy: userId,
-        updatedBy: userId,
-      });
-    }
-    return category;
   }
 }
 
