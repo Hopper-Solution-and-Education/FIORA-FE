@@ -64,6 +64,13 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
         const buffer = Buffer.concat(buffers);
         const blob = new Blob([buffer], { type: mimeType });
         const size = buffer.length;
+        // BỔ SUNG KIỂM TRA DUNG LƯỢNG FILE 5MB
+        if (size > 5 * 1024 * 1024) {
+          // Đẩy lỗi vào mảng errors để xử lý sau khi upload xong
+          if (!fields.__fileSizeError) fields.__fileSizeError = [];
+          fields.__fileSizeError.push(`${filename} vượt quá 5MB`);
+          return; // Không upload file này
+        }
         const uploadPromise = uploadToFirebase({
           file: blob,
           path: `images/packagefx/${fieldname}`,
@@ -87,6 +94,14 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
     busboy.on('finish', async () => {
       try {
         await Promise.all(fileUploadPromises);
+        // Kiểm tra nếu có lỗi file vượt quá 5MB
+        if (fields.__fileSizeError && fields.__fileSizeError.length > 0) {
+          return createError(
+            res,
+            RESPONSE_CODE.BAD_REQUEST,
+            `File size error: ${fields.__fileSizeError.join(', ')}`,
+          );
+        }
         // Validate required fields
         if (!fields.fxAmount) {
           return createError(res, RESPONSE_CODE.BAD_REQUEST, 'fxAmount are required');
@@ -137,6 +152,12 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
         const buffer = Buffer.concat(buffers);
         const blob = new Blob([buffer], { type: mimeType });
         const size = buffer.length;
+        // BỔ SUNG KIỂM TRA DUNG LƯỢNG FILE 5MB
+        if (size > 5 * 1024 * 1024) {
+          if (!fields.__fileSizeError) fields.__fileSizeError = [];
+          fields.__fileSizeError.push(`${filename} vượt quá 5MB`);
+          return; // Không upload file này
+        }
         const uploadPromise = uploadToFirebase({
           file: blob,
           path: `images/packagefx/${fieldname}`,
@@ -160,7 +181,14 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
     busboy.on('finish', async () => {
       try {
         await Promise.all(fileUploadPromises);
-
+        // Kiểm tra nếu có lỗi file vượt quá 5MB
+        if (fields.__fileSizeError && fields.__fileSizeError.length > 0) {
+          return createError(
+            res,
+            RESPONSE_CODE.BAD_REQUEST,
+            `File size error: ${fields.__fileSizeError.join(', ')}`,
+          );
+        }
         // Validate required fields
         if (!fields.id) {
           return createError(res, RESPONSE_CODE.BAD_REQUEST, 'id is required');
