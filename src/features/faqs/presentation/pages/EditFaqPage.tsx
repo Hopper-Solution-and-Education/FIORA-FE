@@ -59,7 +59,7 @@ const EditFaqPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <main className="p-6 pt-24">
+      <main className="px-6">
         <div className="max-w-6xl mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-gray-300 rounded w-1/3"></div>

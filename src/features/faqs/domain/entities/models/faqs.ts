@@ -41,12 +41,6 @@ export interface FaqComment {
   } | null;
 }
 
-export interface FaqCommentParams {
-  faqId: string;
-  skip: number;
-  take: number;
-}
-
 export interface FaqReaction {
   id: string;
   reactionType: ReactionType;
