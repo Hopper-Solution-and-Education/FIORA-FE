@@ -1,7 +1,7 @@
 import { Loading } from '@/components/common/atoms';
 import dynamic from 'next/dynamic';
 
-const NotificationDashboardPage = dynamic(
+const NotificationDashboardPageRender = dynamic(
   () =>
     import(
       '@/features/setting/module/notification-dashboard/presentation/pages/NotificationDashboardPage'
@@ -11,6 +11,8 @@ const NotificationDashboardPage = dynamic(
   },
 );
 
-export default function NotificationPage() {
-  return <NotificationDashboardPage />;
-}
+const page = () => {
+  return <NotificationDashboardPageRender />;
+};
+
+export default page;

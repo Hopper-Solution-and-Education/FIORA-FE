@@ -1,4 +1,5 @@
-import { ChannelType, NotificationType } from '../../domain';
+import { ChannelType, NotificationTo } from '../../domain';
+import { NotificationLogType } from '../../domain/enum/NotificationLogType';
 import {
   NOTIFICATION_DASHBOARD_TABLE_COLUMN_CONFIG,
   NotificationDashboardTableColumnKeyType,
@@ -6,12 +7,12 @@ import {
 
 export interface NotificationDashboardFilterState {
   subject?: string | null;
-  notifyTo?: string | string[] | null;
+  notifyType?: string | string[] | null; //deposit_request,...
   recipients?: string | string[] | null;
   sender?: string | null;
-  notifyType?: NotificationType | null;
+  notifyTo?: NotificationTo | null;
   channel?: ChannelType | null;
-  status?: string | string[] | null;
+  status?: NotificationLogType | NotificationLogType[] | null;
   search?: string | null;
 }
 
@@ -33,7 +34,7 @@ export const initialState: NotificationDashboardState = {
     sender: null,
     notifyType: null,
     channel: null,
-    status: 'all',
+    status: null,
     search: null,
   },
 };

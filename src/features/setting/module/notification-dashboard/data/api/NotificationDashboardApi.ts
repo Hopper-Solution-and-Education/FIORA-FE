@@ -1,7 +1,8 @@
 import type { IHttpClient } from '@/config';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import { routeConfig } from '@/shared/utils/route';
-import { decorate, injectable } from 'inversify';
+import { decorate, inject, injectable } from 'inversify';
+import { NOTIFICATION_DASHBOARD_TYPES } from '../../di/notificationDashboardDIContainer.type';
 import { NotificationDashboardFilterRequest } from '../dto/request/NotificationDashboardFilterRequest';
 import { NotificationPaginatedResponse } from '../dto/response/NotificationResponse';
 import { INotificationDashboardApi } from './INotificationDashboardApi';
@@ -35,10 +36,12 @@ class NotificationDashboardApi implements INotificationDashboardApi {
       sender: filter?.sender,
       search: filter?.search,
     };
+
     return this.httpClient.get(routeConfig(ApiEndpointEnum.Notification, {}, params));
   }
 }
 
 decorate(injectable(), NotificationDashboardApi);
+decorate(inject(NOTIFICATION_DASHBOARD_TYPES.IHttpClient), NotificationDashboardApi, 0);
 
 export { NotificationDashboardApi };

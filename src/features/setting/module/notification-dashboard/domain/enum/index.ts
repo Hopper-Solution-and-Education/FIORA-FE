@@ -1,2 +1,2 @@
 export * from './ChannelType';
-export * from './NotificationType';
+export * from './NotificationTo';
