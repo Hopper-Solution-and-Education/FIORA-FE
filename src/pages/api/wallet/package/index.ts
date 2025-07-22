@@ -1,15 +1,22 @@
 import { walletUseCase } from '@/features/setting/api/domain/use-cases/walletUsecase';
-import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { NextApiRequest, NextApiResponse } from 'next';
-import { createResponse, createError } from '@/shared/lib/responseUtils/createResponse';
 import { Messages } from '@/shared/constants/message';
-
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
+import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import Busboy from 'busboy';
+import { NextApiRequest, NextApiResponse } from 'next';
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     switch (req.method) {
       case 'GET':
         return GET(req, res);
+      case 'POST':
+        return POST(req, res);
+      case 'PUT':
+        return PUT(req, res);
+      case 'DELETE':
+        return DELETE(req, res);
       default:
         return createError(res, RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED);
     }
@@ -21,7 +28,11 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse) 
     );
   }
 });
-
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 async function GET(req: NextApiRequest, res: NextApiResponse) {
   try {
     const packages = await walletUseCase.getAllPackageFX();
@@ -29,6 +40,183 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.GET_PACKAGE_FX_SUCCESS, packages));
+  } catch (error: any) {
+    return createError(
+      res,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+      error.message || Messages.INTERNAL_ERROR,
+    );
+  }
+}
+
+async function POST(req: NextApiRequest, res: NextApiResponse) {
+  if (req.headers['content-type']?.includes('multipart/form-data')) {
+    const busboy = Busboy({ headers: req.headers });
+    const fields: Record<string, any> = {};
+    const fileUploadPromises: Promise<void>[] = [];
+    const files: Array<{ url: string; size: number; path: string; type: string }> = [];
+
+    busboy.on('file', (fieldname, file, info) => {
+      const { filename, mimeType } = info;
+      const buffers: Uint8Array[] = [];
+      file.on('data', (data) => buffers.push(data));
+      file.on('end', () => {
+        const buffer = Buffer.concat(buffers);
+        const blob = new Blob([buffer], { type: mimeType });
+        const size = buffer.length;
+        const uploadPromise = uploadToFirebase({
+          file: blob,
+          path: `images/packagefx/${fieldname}`,
+          fileName: filename,
+        }).then((firebaseUrl) => {
+          files.push({
+            url: firebaseUrl,
+            size,
+            path: `images/packagefx/${fieldname}`,
+            type: fieldname.toUpperCase(),
+          });
+        });
+        fileUploadPromises.push(uploadPromise);
+      });
+    });
+
+    busboy.on('field', (fieldname, val) => {
+      fields[fieldname] = val;
+    });
+
+    busboy.on('finish', async () => {
+      try {
+        await Promise.all(fileUploadPromises);
+        // Validate required fields
+        if (!fields.fxAmount) {
+          return createError(res, RESPONSE_CODE.BAD_REQUEST, 'fxAmount are required');
+        }
+        const fxAmount = Number(fields.fxAmount);
+        if (isNaN(fxAmount) || fxAmount < 0) {
+          return createError(
+            res,
+            RESPONSE_CODE.BAD_REQUEST,
+            'fxAmount must be a non-negative number',
+          );
+        }
+        // Build data for createPackageFx
+        const data = {
+          fxAmount,
+          files,
+          createdBy: fields.createdBy || null,
+        };
+        const result = await walletUseCase.createPackageFx(data);
+        return res
+          .status(RESPONSE_CODE.CREATED)
+          .json(createResponse(RESPONSE_CODE.CREATED, 'PackageFX created successfully', result));
+      } catch (error: any) {
+        return createError(
+          res,
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        );
+      }
+    });
+    req.pipe(busboy);
+  } else {
+    return createError(res, RESPONSE_CODE.BAD_REQUEST, 'Content-Type must be multipart/form-data');
+  }
+}
+async function PUT(req: NextApiRequest, res: NextApiResponse) {
+  if (req.headers['content-type']?.includes('multipart/form-data')) {
+    const busboy = Busboy({ headers: req.headers });
+    const fields: Record<string, any> = {};
+    const fileUploadPromises: Promise<void>[] = [];
+    const files: Array<{ url: string; size: number; path: string; type: string }> = [];
+
+    busboy.on('file', (fieldname, file, info) => {
+      const { filename, mimeType } = info;
+      const buffers: Uint8Array[] = [];
+      file.on('data', (data) => buffers.push(data));
+      file.on('end', () => {
+        const buffer = Buffer.concat(buffers);
+        const blob = new Blob([buffer], { type: mimeType });
+        const size = buffer.length;
+        const uploadPromise = uploadToFirebase({
+          file: blob,
+          path: `images/packagefx/${fieldname}`,
+          fileName: filename,
+        }).then((firebaseUrl) => {
+          files.push({
+            url: firebaseUrl,
+            size,
+            path: `images/packagefx/${fieldname}`,
+            type: fieldname.toUpperCase(),
+          });
+        });
+        fileUploadPromises.push(uploadPromise);
+      });
+    });
+
+    busboy.on('field', (fieldname, val) => {
+      fields[fieldname] = val;
+    });
+
+    busboy.on('finish', async () => {
+      try {
+        await Promise.all(fileUploadPromises);
+
+        // Validate required fields
+        if (!fields.id) {
+          return createError(res, RESPONSE_CODE.BAD_REQUEST, 'id is required');
+        }
+        if (!fields.fxAmount) {
+          return createError(res, RESPONSE_CODE.BAD_REQUEST, 'fxAmount is required');
+        }
+
+        const fxAmount = Number(fields.fxAmount);
+        if (isNaN(fxAmount) || fxAmount < 0) {
+          return createError(
+            res,
+            RESPONSE_CODE.BAD_REQUEST,
+            'fxAmount must be a non-negative number',
+          );
+        }
+
+        // Update PackageFX
+        const result = await walletUseCase.updatePackageFX(fields.id, {
+          fxAmount,
+          files: files.length > 0 ? files : undefined,
+        });
+
+        if (!result) {
+          return createError(res, RESPONSE_CODE.NOT_FOUND, 'PackageFX not found');
+        }
+
+        return res
+          .status(RESPONSE_CODE.OK)
+          .json(createResponse(RESPONSE_CODE.OK, 'PackageFX updated successfully', result));
+      } catch (error: any) {
+        return createError(
+          res,
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || Messages.INTERNAL_ERROR,
+        );
+      }
+    });
+    req.pipe(busboy);
+  } else {
+    return createError(res, RESPONSE_CODE.BAD_REQUEST, 'Content-Type must be multipart/form-data');
+  }
+}
+async function DELETE(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    const id = req.query.id || req.body?.id;
+    if (!id || typeof id !== 'string') {
+      return createError(res, RESPONSE_CODE.BAD_REQUEST, 'Missing or invalid id');
+    }
+    const deleted = await walletUseCase.deletePackageFX(id);
+    if (!deleted) {
+      return createError(res, RESPONSE_CODE.NOT_FOUND, 'PackageFX not found');
+    }
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, 'PackageFX deleted successfully', deleted));
   } catch (error: any) {
     return createError(
       res,

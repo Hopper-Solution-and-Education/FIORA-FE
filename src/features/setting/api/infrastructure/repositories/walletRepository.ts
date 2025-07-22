@@ -57,7 +57,31 @@ class WalletRepository implements IWalletRepository {
   async getPackageFXById(id: string): Promise<PackageFX | null> {
     return this._prisma.packageFX.findUnique({ where: { id } });
   }
+  async createPackageFX(data: Prisma.PackageFXUncheckedCreateInput): Promise<PackageFX> {
+    return this._prisma.packageFX.create({ data });
+  }
+  async updatePackageFX(
+    id: string,
+    data: { fxAmount: number; attachment_id?: string[] },
+  ): Promise<PackageFX | null> {
+    return this._prisma.packageFX.update({ where: { id }, data });
+  }
+  async deletePackageFX(id: string): Promise<PackageFX> {
+    return this._prisma.$transaction(async (tx) => {
+      await tx.depositRequest.deleteMany({
+        where: {
+          packageFXId: id,
+          NOT: {
+            status: 'Requested',
+          },
+        },
+      });
 
+      return tx.packageFX.delete({
+        where: { id },
+      });
+    });
+  }
   async createDepositRequest(
     data: Prisma.DepositRequestUncheckedCreateInput,
   ): Promise<DepositRequest> {
@@ -196,6 +220,15 @@ class WalletRepository implements IWalletRepository {
   async findDepositRequestById(id: string): Promise<DepositRequest | null> {
     return this._prisma.depositRequest.findUnique({
       where: { id },
+      include: {
+        user: true,
+      },
+    });
+  }
+
+  async findDepositRequestsByPackageFXId(packageFXId: string): Promise<DepositRequest[]> {
+    return this._prisma.depositRequest.findMany({
+      where: { packageFXId },
       include: {
         user: true,
       },

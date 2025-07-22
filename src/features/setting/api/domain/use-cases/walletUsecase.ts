@@ -2,7 +2,6 @@ import { IAccountRepository } from '@/features/auth/domain/repositories/accountR
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
-import { CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { FilterObject } from '@/shared/types/filter.types';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
@@ -71,6 +70,89 @@ class WalletUseCase {
 
   async getAllPackageFX() {
     return this._walletRepository.findAllPackageFX();
+  }
+
+  async createPackageFx(data: {
+    fxAmount: number;
+    files?: Array<{ url: string; size: number; path: string; type: string }>;
+    createdBy?: string;
+  }) {
+    let attachment_id: string[] = [];
+    if (data.files && data.files.length > 0) {
+      const attachments = await Promise.all(
+        data.files.map((file) =>
+          this._attachmentRepository.createAttachment({
+            type: file.type,
+            url: file.url,
+            path: file.path,
+            size: file.size,
+            createdBy: data.createdBy || null,
+          }),
+        ),
+      );
+      attachment_id = attachments.map((att) => att.id);
+    }
+    return this._walletRepository.createPackageFX({
+      fxAmount: data.fxAmount,
+      attachment_id,
+      createdBy: data.createdBy || null,
+    });
+  }
+
+  async updatePackageFX(
+    id: string,
+    data: {
+      fxAmount: number;
+      files?: Array<{ url: string; size: number; path: string; type: string }>;
+    },
+  ) {
+    const found = await this._walletRepository.getPackageFXById(id);
+    if (!found) return null;
+    const depositRequests = await this._walletRepository.findDepositRequestsByPackageFXId(id);
+    const hasActiveRequests = depositRequests.some((req) => req.status === 'Requested');
+    if (hasActiveRequests) {
+      throw new Error(
+        'Cannot update PackageFX: There are active deposit requests pending approval',
+      );
+    }
+    const updateData: { fxAmount: number; attachment_id?: string[] } = { fxAmount: data.fxAmount };
+    if (data.files && data.files.length > 0) {
+      const attachments = await Promise.all(
+        data.files.map((file) =>
+          this._attachmentRepository.createAttachment({
+            type: file.type,
+            url: file.url,
+            path: file.path,
+            size: file.size,
+            createdBy: found.createdBy || null,
+          }),
+        ),
+      );
+      updateData.attachment_id = attachments.map((att) => att.id);
+    }
+    return this._walletRepository.updatePackageFX(id, updateData);
+  }
+
+  async deletePackageFX(id: string) {
+    const found = await this._walletRepository.getPackageFXById(id);
+    if (!found) return null;
+
+    const depositRequests = await this._walletRepository.findDepositRequestsByPackageFXId(id);
+
+    if (depositRequests.length > 0) {
+      const hasActiveRequests = depositRequests.some((req: any) => req.status === 'Requested');
+
+      if (hasActiveRequests) {
+        throw new Error(
+          'Cannot delete PackageFX: There are active deposit requests pending approval',
+        );
+      }
+
+      console.warn(`Deleting PackageFX ${id} with ${depositRequests.length} deposit requests`);
+    }
+
+    // Gọi transaction từ repository
+    return this._walletRepository.deletePackageFXWithCascade(id);
   }
 
   async getDepositRequestsByType(
@@ -209,7 +291,6 @@ class WalletUseCase {
       const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
       if (!packageFX) throw new Error(Messages.PACKAGE_FX_NOT_FOUND);
       const amount = Number(packageFX.fxAmount);
-
       // Update currency for depositRequest if not set
       if (!depositRequest.currency && currency) {
         await this._walletRepository.updateDepositRequestCurrency(id, currency);
@@ -248,28 +329,22 @@ class WalletUseCase {
         createdBy: userId,
       });
 
-      const deductAmount = convertCurrency(amount, CURRENCY.USD, paymentAccount.currency);
-
+      // Convert depositRequest amount to payment account currency for deduction
+      const depositCurrency = depositRequest.currency || currency;
+      const paymentCurrency = paymentAccount.currency;
+      // Deposit currency should never be FX, fallback to USD logic if it happens (or throw error)
+      let effectiveDepositCurrency = depositCurrency;
+      if (depositCurrency === 'FX') {
+        effectiveDepositCurrency = 'USD';
+      }
+      // Use convertCurrency util for conversion
+      const deductAmount = convertCurrency(amount, effectiveDepositCurrency, paymentCurrency);
       if (deductAmount > 0) {
         const newBalance = Number(paymentAccount.balance ?? 0) - deductAmount;
-
         await this._accountRepository.update(paymentAccount.id, {
           balance: newBalance,
         });
       }
-
-      let paymentWallet = await this._walletRepository.findWalletByType(WalletType.Payment, userId);
-
-      if (!paymentWallet) {
-        paymentWallet = await this._walletRepository.createWallet({
-          userId,
-          type: WalletType.Payment,
-          icon: WALLET_TYPE_ICONS[WalletType.Payment],
-          ...DEFAULT_WALLET_FIELDS,
-        });
-      }
-
-      await this._walletRepository.increaseWalletBalance(paymentWallet.id, amount);
     }
 
     return this._walletRepository.updateDepositRequestStatus(id, newStatus, remark);
