@@ -60,7 +60,7 @@ class NotificationRepository implements INotificationRepository {
       query.take = take;
     }
     const notifications = (await prisma.notification.findMany(query)) as any[];
-    // Lấy danh sách userId (createdBy) duy nhất
+
     const userIds = Array.from(new Set(notifications.map((n) => n.createdBy).filter(Boolean)));
     const users = userIds.length
       ? await prisma.user.findMany({
@@ -76,13 +76,11 @@ class NotificationRepository implements INotificationRepository {
       subject: n.message,
       recipients: n.emails,
       sender: n.createdBy ? userMap[n.createdBy]?.email || n.createdBy : 'System',
-      notifyType: n.type,
+      notifyType: getNotificationStatus(n.type, n.emailLogs),
       channel: n.channel,
-      status: getNotificationStatus(n.channel, n.emailLogs),
-      emailTemplate: n.emailTemplate
-        ? { id: n.emailTemplate.id, name: n.emailTemplate.name }
-        : null,
-      attachment: n.attachment ? { id: n.attachment.id, url: n.attachment.url } : null,
+      status: n.channel === 'BOX' ? 'SENT' : 'UNKNOWN',
+      emailTemplate: n.emailTemplateId ? { id: n.emailTemplateId } : null,
+      attachment: n.attachmentId ? { id: n.attachmentId } : null,
     }));
   }
 
@@ -91,9 +89,6 @@ class NotificationRepository implements INotificationRepository {
       where: { id },
       include: {
         userNotifications: true,
-        emailLogs: true,
-        emailTemplate: true,
-        attachment: true,
       },
     });
     if (!n) return null;
@@ -112,17 +107,15 @@ class NotificationRepository implements INotificationRepository {
     return {
       id: n.id,
       sendDate: n.createdAt,
-      notifyTo: n.notifyTo,
+      notifyTo: n.notifyTo, // enum NotificationType
       subject: n.message,
       recipients: n.emails,
       sender,
-      notifyType: n.type,
+      notifyType: n.type, // string
       channel: n.channel,
-      status: getNotificationStatus(n.channel, n.emailLogs),
-      emailTemplate: n.emailTemplate
-        ? { id: n.emailTemplate.id, name: n.emailTemplate.name }
-        : null,
-      attachment: n.attachment ? { id: n.attachment.id, url: n.attachment.url } : null,
+      status: n.channel === 'BOX' ? 'SENT' : 'UNKNOWN',
+      emailTemplate: n.emailTemplateId ? { id: n.emailTemplateId } : null,
+      attachment: n.attachmentId ? { id: n.attachmentId } : null,
     };
   }
 
@@ -139,26 +132,27 @@ class NotificationRepository implements INotificationRepository {
   }
 
   async createBoxNotification(input: CreateBoxNotificationInput): Promise<any> {
-    const { title, type, attachmentId, deepLink, message, emails } = input;
+    const { title, type, attachmentId, deepLink, message, emails, notifyTo } = input;
     let users: { id: string }[] = [];
-    if (type === 'ALL') {
+
+    if (notifyTo === 'ALL') {
       users = await prisma.user.findMany({ where: { isDeleted: false }, select: { id: true } });
-    } else if (type === 'ROLE_ADMIN') {
+    } else if (notifyTo === 'ROLE_ADMIN') {
       users = await prisma.user.findMany({
         where: { isDeleted: false, role: 'Admin' },
         select: { id: true },
       });
-    } else if (type === 'ROLE_CS') {
+    } else if (notifyTo === 'ROLE_CS') {
       users = await prisma.user.findMany({
         where: { isDeleted: false, role: 'CS' },
         select: { id: true },
       });
-    } else if (type === 'ROLE_USER') {
+    } else if (notifyTo === 'ROLE_USER') {
       users = await prisma.user.findMany({
         where: { isDeleted: false, role: 'User' },
         select: { id: true },
       });
-    } else if (type === 'PERSONAL') {
+    } else if (notifyTo === 'PERSONAL') {
       if (!emails || emails.length === 0) {
         throw new AppError(400, 'No email provided for PERSONAL notification');
       }
@@ -174,13 +168,13 @@ class NotificationRepository implements INotificationRepository {
       // 1. Tạo notification trước
       const notification = await tx.notification.create({
         data: {
-          notifyTo: type,
+          notifyTo: notifyTo,
           emails: emails || [],
           emailTemplateId: null,
           attachmentId: attachmentId || null,
           title,
           message,
-          type,
+          type: type,
           deepLink: deepLink || null,
           channel: ChannelType.BOX,
           createdAt: new Date(),
