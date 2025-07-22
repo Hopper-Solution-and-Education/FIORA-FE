@@ -491,7 +491,7 @@ class ProductUseCase {
     return result;
   }
 
-  async fetchProductCategories(req: NextApiRequest, userId: string, currency: string) {
+  async fetchProductCategories(req: NextApiRequest, userId: string) {
     const { page = 1, pageSize = 20 } = req.query;
     const skip = (Number(page) - 1) * Number(pageSize);
     const take = Number(pageSize);
@@ -700,12 +700,10 @@ class ProductUseCase {
           if (!acc[catId]) acc[catId] = [];
           const transactions = productTransactionMap[product.id] || [];
 
-          const convertPrice = await convertCurrency(product.price, product.currency, currency);
-
           acc[catId].push({
             product: {
               id: product.id,
-              price: convertPrice,
+              price: product.price,
               name: product.name,
               type: product.type,
               description: product.description,
@@ -752,8 +750,8 @@ class ProductUseCase {
     const incomeTotals: number[] = [];
     const expenseTotals: number[] = [];
 
-    for await (const category of transformedData) {
-      for await (const item of category.products) {
+    for (const category of transformedData) {
+      for (const item of category.products) {
         const { taxRate, baseAmount } = item.product;
         priceList.push(baseAmount || 0);
         taxRateList.push(taxRate);
@@ -763,14 +761,14 @@ class ProductUseCase {
           .filter((tx: any) => tx.type === 'Income')
           .reduce(
             async (sum: any, tx: any) =>
-              sum + (await convertCurrency(tx.baseAmount, DEFAULT_BASE_CURRENCY, currency)),
+              sum + tx.baseAmount,
             0,
           );
         const totalExpense = transactions
           .filter((tx: any) => tx.type === 'Expense')
           .reduce(
             async (sum: any, tx: any) =>
-              sum + (await convertCurrency(tx.baseAmount, DEFAULT_BASE_CURRENCY, currency)),
+              sum + tx.baseAmount,
             0,
           );
 

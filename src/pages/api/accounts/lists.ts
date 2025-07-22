@@ -2,7 +2,6 @@ import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/ac
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { Currency } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 // Define the expected session structure
@@ -30,8 +29,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     if (req.method !== 'GET') {
       return res.status(405).json({ error: 'Method not allowed' });
     }
-    const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
-
     const { isParent } = req.query;
     if (isParent) {
       const accounts = await AccountUseCaseInstance.getAllParentAccount(userId);
@@ -39,7 +36,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
         .status(200)
         .json(createResponse(RESPONSE_CODE.OK, 'Lấy danh sách tài khoản thành công', accounts));
     } else {
-      const accounts = await AccountUseCaseInstance.getAllAccountByUserId(userId, currency);
+      const accounts = await AccountUseCaseInstance.getAllAccountByUserId(userId);
       return res
         .status(200)
         .json(createResponse(RESPONSE_CODE.OK, 'Lấy danh sách tài khoản thành công', accounts));

@@ -3,7 +3,6 @@ import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { Currency } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(async (req, res, userId) => {
@@ -19,8 +18,7 @@ export default sessionWrapper(async (req, res, userId) => {
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const currency = (req.headers['x-user-currency'] as string) ?? Currency.USD;
-    const result = await productUseCase.fetchProductCategories(req, userId, currency);
+    const result = await productUseCase.fetchProductCategories(req, userId);
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, 'Fetched product categories successfully', result));

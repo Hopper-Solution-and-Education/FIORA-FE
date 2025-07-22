@@ -380,7 +380,7 @@ export class AccountUseCase {
     };
   }
 
-  async getAllAccountByUserId(userId: string, currency: string) {
+  async getAllAccountByUserId(userId: string) {
     const accountRes = (await this.accountRepository.findManyWithCondition(
       {
         userId,
@@ -405,79 +405,7 @@ export class AccountUseCase {
       };
     }>[];
 
-    const accountWithConvertedBalance = await Promise.all(
-      accountRes.map(async (acc: any) => {
-        const convertedBalance = await convertCurrency(
-          acc.balance?.toNumber() || 0,
-          acc.currency,
-          currency,
-        );
-
-        const children = await Promise.all(
-          acc.children.map(async (child: Account) => {
-            const childConvertedBalance = await convertCurrency(
-              child.balance?.toNumber() || 0,
-              child.currency!,
-              currency,
-            );
-
-            return {
-              ...child,
-              balance: childConvertedBalance.toString(),
-              currency: child.currency || currency,
-            };
-          }),
-        );
-
-        const toTransactions = await Promise.all(
-          acc.toTransactions.map(async (tx: Transaction) => {
-            const txConvertedBalance = await convertCurrency(
-              tx.amount?.toNumber() || 0,
-              tx.currency!,
-              currency,
-            );
-
-            return {
-              ...tx,
-              amount: txConvertedBalance.toString(),
-              currency: tx.currency || currency,
-            };
-          }),
-        );
-
-        const fromTransactions = await Promise.all(
-          acc.fromTransactions.map(async (tx: Transaction) => {
-            const txConvertedBalance = await convertCurrency(
-              tx.amount?.toNumber() || 0,
-              tx.currency!,
-              currency,
-            );
-
-            return {
-              ...tx,
-              amount: txConvertedBalance.toString(),
-              currency: tx.currency || currency,
-            };
-          }),
-        );
-
-        return {
-          ...acc,
-          balance: convertedBalance.toString(),
-          currency: currency,
-          ...(children.length > 0 && {
-            children,
-          }),
-          ...(toTransactions.length > 0 && {
-            toTransactions,
-          }),
-          ...(fromTransactions.length > 0 && {
-            fromTransactions,
-          }),
-        };
-      }),
-    );
-    return accountWithConvertedBalance;
+    return accountRes;
   }
 
   async fetchBalanceByUserId(userId: string): Promise<any> {
