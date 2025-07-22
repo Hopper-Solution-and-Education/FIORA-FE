@@ -20,23 +20,39 @@ export const mapSectionDefaultValuesToISection = (
     order: section.order,
     createdAt: section.created_at,
     updatedAt: section.updated_at,
-    medias: section.medias.map((media) => ({
-      id: media.id,
-      media_url: media.media_url,
-      media_url_2: media.media_url_2,
-      media_type: media.media_type,
-      redirect_url: media.redirect_url,
-      embed_code: media.embed_code,
-      description: media.description,
-      uploaded_by: createdBy,
-      uploaded_date: media.uploaded_date,
-      section_id: section.section_id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      createdBy: createdBy,
-      updatedBy: createdBy,
-      media_order: media.media_order,
-    })),
+    medias: section.medias.map((media) => {
+      let mediaReviewUser = null;
+      if (media.mediaReviewUser) {
+        mediaReviewUser = {
+          media_user_name: media.mediaReviewUser.media_user_name || '',
+          media_user_avatar: media.mediaReviewUser.media_user_avatar || '',
+          media_user_comment: media.mediaReviewUser.media_user_comment || '',
+          media_user_rating: media.mediaReviewUser.media_user_rating ?? 0,
+          media_user_email: media.mediaReviewUser.media_user_email || '',
+          createdBy: media.mediaReviewUser.createdBy || '',
+          updatedBy: media.mediaReviewUser.updatedBy || '',
+        };
+      }
+      const mappedMedia = {
+        id: media.id,
+        media_url: media.media_url,
+        media_url_2: media.media_url_2,
+        media_type: media.media_type,
+        redirect_url: media.redirect_url,
+        embed_code: media.embed_code,
+        description: media.description,
+        uploaded_by: createdBy,
+        uploaded_date: media.uploaded_date,
+        section_id: section.section_id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: createdBy,
+        updatedBy: createdBy,
+        media_order: media.media_order,
+        mediaReviewUser,
+      };
+      return mappedMedia;
+    }),
     createdBy: createdBy,
     updatedBy: createdBy,
   };

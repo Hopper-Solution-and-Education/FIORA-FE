@@ -32,14 +32,30 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
     where: { section_type: sectionType as SectionType },
     orderBy: { createdAt: 'asc' },
     take: 1,
-    include: { medias: { orderBy: { media_order: 'asc' } } },
+    include: {
+      medias: {
+        orderBy: { media_order: 'asc' },
+        include: { mediaReviewUser: true },
+      },
+    },
   });
 
   if (!section) {
     return res.status(RESPONSE_CODE.NOT_FOUND).json({ error: 'Section not found' });
   }
 
-  return res.status(RESPONSE_CODE.ACCEPTED).json(section);
+  // Map mediaReviewUser to be an object (or null)
+  const sectionWithReviewUser = {
+    ...section,
+    medias: section.medias.map((media) => {
+      return {
+        ...media,
+        mediaReviewUser: media.mediaReviewUser || null,
+      };
+    }),
+  };
+
+  return res.status(RESPONSE_CODE.ACCEPTED).json(sectionWithReviewUser);
 }
 
 async function POST(req: NextApiRequest, res: NextApiResponse) {
@@ -88,16 +104,16 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
             },
           });
 
-          if (media.reviewUser) {
+          if (media.mediaReviewUser) {
             await prisma.mediaReviewUser.create({
               data: {
                 mediaId: createdMedia.id,
-                media_user_name: media.reviewUser.media_user_name,
-                media_user_avatar: media.reviewUser.media_user_avatar,
-                media_user_email: media.reviewUser.media_user_email,
-                media_user_comment: media.reviewUser.media_user_comment,
-                media_user_rating: media.reviewUser.media_user_rating,
-                createdBy: media.reviewUser.createdBy || createdBy,
+                media_user_name: media.mediaReviewUser.media_user_name,
+                media_user_avatar: media.mediaReviewUser.media_user_avatar,
+                media_user_email: media.mediaReviewUser.media_user_email,
+                media_user_comment: media.mediaReviewUser.media_user_comment,
+                media_user_rating: media.mediaReviewUser.media_user_rating,
+                createdBy: media.mediaReviewUser.createdBy || createdBy,
               },
             });
           }
@@ -194,21 +210,22 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
           });
 
           // Xử lý reviewUser
-          if (media.reviewUser) {
+          if (media.mediaReviewUser) {
             const existingReviewUser = await prisma.mediaReviewUser.findFirst({
               where: { mediaId: media.id },
             });
             if (existingReviewUser) {
-              // Update
+              // Update all fields of reviewUser
               await prisma.mediaReviewUser.update({
                 where: { id: existingReviewUser.id },
                 data: {
-                  media_user_name: media.reviewUser.media_user_name,
-                  media_user_avatar: media.reviewUser.media_user_avatar,
-                  media_user_email: media.reviewUser.media_user_email,
-                  media_user_comment: media.reviewUser.media_user_comment,
-                  media_user_rating: media.reviewUser.media_user_rating,
-                  updatedBy: media.reviewUser.updatedBy || updatedBy,
+                  media_user_name: media.mediaReviewUser.media_user_name,
+                  media_user_avatar: media.mediaReviewUser.media_user_avatar,
+                  media_user_email: media.mediaReviewUser.media_user_email,
+                  media_user_comment: media.mediaReviewUser.media_user_comment,
+                  media_user_rating: media.mediaReviewUser.media_user_rating,
+                  updatedBy: media.mediaReviewUser.updatedBy || updatedBy,
+                  updatedAt: new Date(),
                 },
               });
             } else {
@@ -216,12 +233,14 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
               await prisma.mediaReviewUser.create({
                 data: {
                   mediaId: media.id,
-                  media_user_name: media.reviewUser.media_user_name,
-                  media_user_avatar: media.reviewUser.media_user_avatar,
-                  media_user_email: media.reviewUser.media_user_email,
-                  media_user_comment: media.reviewUser.media_user_comment,
-                  media_user_rating: media.reviewUser.media_user_rating,
-                  createdBy: media.reviewUser.createdBy || updatedBy,
+                  media_user_name: media.mediaReviewUser.media_user_name,
+                  media_user_avatar: media.mediaReviewUser.media_user_avatar,
+                  media_user_email: media.mediaReviewUser.media_user_email,
+                  media_user_comment: media.mediaReviewUser.media_user_comment,
+                  media_user_rating: media.mediaReviewUser.media_user_rating,
+                  createdBy: media.mediaReviewUser.createdBy || updatedBy,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
                 },
               });
             }

@@ -26,6 +26,9 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaType, mediaPath, sec
   } = useFormContext();
   const [fileName, setFileName] = useState<string | null>(null);
   const isMobile = useIsMobile();
+  const MAX_FILE_SIZE_MB = 10;
+  const [error, setError] = useState('');
+  const [error2, setError2] = useState('');
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
@@ -35,6 +38,11 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaType, mediaPath, sec
     onDrop: (acceptedFiles) => {
       if (acceptedFiles.length > 0) {
         const file = acceptedFiles[0];
+        if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+          setError('File size must be less than 10MB');
+          return;
+        }
+        setError('');
         const fileUrl = URL.createObjectURL(file);
         setValue(`${mediaPath}.media_url`, fileUrl, { shouldValidate: true });
         setFileName(file.name);
@@ -50,6 +58,11 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaType, mediaPath, sec
     onDrop: (acceptedFiles) => {
       if (acceptedFiles.length > 0) {
         const file = acceptedFiles[0];
+        if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+          setError2('File size must be less than 10MB');
+          return;
+        }
+        setError2('');
         const fileUrl = URL.createObjectURL(file);
         setValue(`${mediaPath}.media_url_2`, fileUrl, { shouldValidate: true });
         setFileName(file.name);
@@ -142,6 +155,8 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaType, mediaPath, sec
             {mediaError && !mediaUrl && (
               <p className="text-red-500 text-sm mt-1">{mediaError.message}</p>
             )}
+            {/* Hiển thị lỗi nếu có */}
+            {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
           </div>
         </div>
       </div>
@@ -204,6 +219,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ mediaType, mediaPath, sec
               {mediaUrl2Error && !mediaUrl2 && (
                 <p className="text-red-500 text-sm mt-1">{mediaUrl2Error.message}</p>
               )}
+              {error2 && <p className="text-red-500 text-xs mt-1">{error2}</p>}
             </div>
           </div>
         </div>

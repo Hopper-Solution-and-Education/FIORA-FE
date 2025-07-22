@@ -183,7 +183,7 @@ export const FeedbackSection = () => {
 
 export default FeedbackSection;
 
-const Divider = () => {
+export const Divider = () => {
   return (
     <div className="flex justify-center w-full">
       <svg

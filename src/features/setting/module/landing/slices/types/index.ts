@@ -16,6 +16,15 @@ export interface IMedia {
   updatedAt: Date;
   createdBy: string;
   updatedBy: string;
+  mediaReviewUser: {
+    media_user_name: string;
+    media_user_avatar: string;
+    media_user_comment: string;
+    media_user_rating: number;
+    media_user_email: string;
+    createdBy: string;
+    updatedBy: string;
+  } | null;
 }
 
 export interface ISection {

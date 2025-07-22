@@ -25,6 +25,17 @@ export const transferDefaultValues = (data: ISection): SectionDefaultValues => {
       uploaded_by: media.uploaded_by || '',
       uploaded_date: media.uploaded_date ? new Date(media.uploaded_date) : new Date(),
       media_order: media.media_order,
+      mediaReviewUser: media.mediaReviewUser
+        ? {
+            media_user_name: media.mediaReviewUser.media_user_name || '',
+            media_user_avatar: media.mediaReviewUser.media_user_avatar || '',
+            media_user_comment: media.mediaReviewUser.media_user_comment || '',
+            media_user_rating: media.mediaReviewUser.media_user_rating || 0,
+            media_user_email: media.mediaReviewUser.media_user_email || '',
+            createdBy: media.mediaReviewUser.createdBy || '',
+            updatedBy: media.mediaReviewUser.updatedBy || '',
+          }
+        : null,
     })),
     created_at: new Date(data.createdAt),
     updated_at: new Date(data.updatedAt),

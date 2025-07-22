@@ -17,6 +17,7 @@ import { MediaTypeEnum, SectionTypeEnum } from '@/features/landing/constants';
 import { ArrowDown, ArrowUp, Image as ImageIcon, Trash2, Video } from 'lucide-react';
 import Image from 'next/image';
 import { useFormContext } from 'react-hook-form';
+import MediaReviewUserUpload from './MediaReviewUserUpload';
 import MediaUploader from './MediaUploader';
 
 interface MediaItemProps {
@@ -221,6 +222,101 @@ export default function MediaItem({
     }
   };
 
+  function renderPreviewUser() {
+    const media_user_avatar = watch(`${mediaPath}.mediaReviewUser.media_user_avatar`);
+
+    return (
+      <div className="relative mt-10 h-56 w-56 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden mx-auto">
+        {media_user_avatar ? (
+          <Image
+            src={media_user_avatar || '/placeholder.svg'}
+            alt="Partner Logo Preview"
+            width={600}
+            height={400}
+            className="object-contain w-full h-full"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/placeholder.svg?height=300&width=300';
+            }}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full w-full bg-gray-100 rounded-full">
+            <ImageIcon className="h-16 w-12 text-gray-400" />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function renderFieldsReviewUser() {
+    return (
+      <>
+        <div>
+          <Label
+            htmlFor={`${mediaPath}.mediaReviewUser.media_user_name`}
+            className="text-xs md:text-sm mb-1 block"
+          >
+            User Name
+          </Label>
+          <Input
+            id={`${mediaPath}.mediaReviewUser.media_user_name`}
+            className="h-8 text-xs md:text-sm"
+            placeholder="Enter user name"
+            {...control.register(`${mediaPath}.mediaReviewUser.media_user_name`)}
+          />
+          {getNestedError(errors, `${mediaPath}.mediaReviewUser.media_user_name`)?.message && (
+            <p className="text-red-500 text-xs mt-1">
+              {getNestedError(errors, `${mediaPath}.mediaReviewUser.media_user_name`)?.message}
+            </p>
+          )}
+        </div>
+        <MediaReviewUserUpload mediaPath={mediaPath} />
+
+        <div>
+          <Label
+            htmlFor={`${mediaPath}.mediaReviewUser.media_user_comment`}
+            className="text-xs md:text-sm mb-1 block"
+          >
+            User Comment
+          </Label>
+          <Textarea
+            id={`${mediaPath}.mediaReviewUser.media_user_comment`}
+            className="h-16 text-xs md:text-sm"
+            placeholder="Enter comment"
+            {...control.register(`${mediaPath}.mediaReviewUser.media_user_comment`)}
+          />
+          {getNestedError(errors, `${mediaPath}.mediaReviewUser.media_user_comment`)?.message && (
+            <p className="text-red-500 text-xs mt-1">
+              {getNestedError(errors, `${mediaPath}.mediaReviewUser.media_user_comment`)?.message}
+            </p>
+          )}
+        </div>
+        <div>
+          <Label
+            htmlFor={`${mediaPath}.mediaReviewUser.media_user_rating`}
+            className="text-xs md:text-sm mb-1 block"
+          >
+            User Rating
+          </Label>
+          <Input
+            id={`${mediaPath}.mediaReviewUser.media_user_rating`}
+            className="h-8 text-xs md:text-sm"
+            type="number"
+            min={1}
+            max={5}
+            defaultValue={0}
+            placeholder="Enter rating (1-5)"
+            {...control.register(`${mediaPath}.mediaReviewUser.media_user_rating`)}
+          />
+          {getNestedError(errors, `${mediaPath}.mediaReviewUser.media_user_rating`)?.message && (
+            <p className="text-red-500 text-xs mt-1">
+              {getNestedError(errors, `${mediaPath}.mediaReviewUser.media_user_rating`)?.message}
+            </p>
+          )}
+        </div>
+      </>
+    );
+  }
+
   function renderFieldsDefault() {
     return (
       <>
@@ -252,22 +348,24 @@ export default function MediaItem({
           )}
         </div>
 
-        <div>
-          <Label htmlFor={`${mediaPath}.description`} className="text-xs md:text-sm mb-1 block">
-            Content - Description
-          </Label>
-          <Textarea
-            id={`${mediaPath}.description`}
-            className="h-20 text-xs md:text-sm"
-            placeholder="Enter description"
-            {...control.register(`${mediaPath}.description`)}
-          />
-          {getNestedError(errors, `${mediaPath}.description`)?.message && (
-            <p className="text-red-500 text-xs mt-1">
-              {getNestedError(errors, `${mediaPath}.description`)?.message}
-            </p>
-          )}
-        </div>
+        {sectionType !== SectionTypeEnum.REVIEW && (
+          <div>
+            <Label htmlFor={`${mediaPath}.description`} className="text-xs md:text-sm mb-1 block">
+              Content - Description
+            </Label>
+            <Textarea
+              id={`${mediaPath}.description`}
+              className="h-20 text-xs md:text-sm"
+              placeholder="Enter description"
+              {...control.register(`${mediaPath}.description`)}
+            />
+            {getNestedError(errors, `${mediaPath}.description`)?.message && (
+              <p className="text-red-500 text-xs mt-1">
+                {getNestedError(errors, `${mediaPath}.description`)?.message}
+              </p>
+            )}
+          </div>
+        )}
 
         <div>
           <Label htmlFor={`${mediaPath}.redirect_url`} className="text-xs md:text-sm mb-1 block">
@@ -307,6 +405,13 @@ export default function MediaItem({
 
         {mediaType !== MediaTypeEnum.EMBEDDED && (
           <MediaUploader mediaType={mediaType} mediaPath={mediaPath} sectionType={sectionType} />
+        )}
+
+        {sectionType === SectionTypeEnum.REVIEW && (
+          <div className="space-y-4 border-t pt-4 mt-4">
+            <Label className="font-semibold text-xs md:text-sm">User Review Info</Label>
+            {renderFieldsReviewUser()}
+          </div>
         )}
       </>
     );
@@ -354,7 +459,10 @@ export default function MediaItem({
       </div>
 
       <CardContent className="p-3 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs md:text-sm">
-        <div className="flex items-center justify-center">{getMediaPreview()}</div>
+        <div>
+          <div className="flex items-center justify-center">{getMediaPreview()}</div>
+          {sectionType === SectionTypeEnum.REVIEW && renderPreviewUser()}
+        </div>
         <div className="space-y-3">{renderFieldsDefault()}</div>
       </CardContent>
     </Card>

@@ -36,17 +36,18 @@ export const sectionFormSchema = yup.object({
         description: yup.string().default(null).optional(),
         uploaded_by: yup.string().default(null).optional(),
         uploaded_date: yup.date().required(),
-        reviewUser: yup
+        mediaReviewUser: yup
           .object({
-            media_user_name: yup.string().optional(),
-            media_user_avatar: yup.string().optional(),
-            media_user_email: yup.string().optional(),
-            media_user_comment: yup.string().optional(),
-            media_user_rating: yup.number().optional(),
-            createdBy: yup.string().optional(),
-            updatedBy: yup.string().optional(),
+            media_user_name: yup.string().optional().nullable(),
+            media_user_avatar: yup.string().optional().nullable(),
+            media_user_email: yup.string().optional().nullable(),
+            media_user_comment: yup.string().optional().nullable(),
+            media_user_rating: yup.number().optional().default(0).min(0).max(5).nullable(),
+            createdBy: yup.string().optional().nullable(),
+            updatedBy: yup.string().optional().nullable(),
           })
-          .optional(),
+          .optional()
+          .nullable(),
       }),
     )
     .default([]),
