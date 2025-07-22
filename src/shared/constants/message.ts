@@ -302,4 +302,6 @@ export enum Messages {
   DELETE_EMAIL_TEMPLATE_SUCCESS = 'Delete email template successfully',
   GET_EMAIL_TEMPLATE_SUCCESS = 'Get email template successfully',
   EMAIL_TEMPLATE_NOT_FOUND = 'Email template not found',
+  NOT_DELETE_TEMPLATE = 'Do not delete template default',
+  ID_REQUIRE = 'You must provide an ID',
 }

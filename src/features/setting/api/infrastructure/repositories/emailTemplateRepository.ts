@@ -41,6 +41,10 @@ class EmailTemplateRepository implements IEmailTemplateRepository {
   async findEmailTemplateById(id: string): Promise<EmailTemplate | null> {
     return await prisma.emailTemplate.findUnique({ where: { id } });
   }
+
+  async delete(id: string): Promise<EmailTemplate | null> {
+    return await prisma.emailTemplate.delete({ where: { id } });
+  }
 }
 
 export const emailTemplateRepository = new EmailTemplateRepository();

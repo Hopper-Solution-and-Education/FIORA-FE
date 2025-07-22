@@ -15,12 +15,7 @@ export const emailTemplateSchema = Joi.object({
   }),
   type: Joi.string()
     .required()
-    .valid(
-      EmailTemplateType.DEFAULT,
-      EmailTemplateType.DEPOPSIT,
-      EmailTemplateType.KYC,
-      EmailTemplateType.MEMBERSHIP,
-    )
+    .valid(EmailTemplateType.DEPOPSIT, EmailTemplateType.KYC, EmailTemplateType.MEMBERSHIP)
     .messages({
       'string.empty': 'Email template type is invalid',
       'any.required': 'Email template type is required',
