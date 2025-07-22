@@ -3,13 +3,14 @@ import { exchangeRateRepository } from '@/features/setting/api/infrastructure/re
 import { IExchangeRateRepository } from '@/features/setting/api/repositories/exchangeRateRepository.interface';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { BooleanUtils } from '@/shared/lib';
 import { GlobalFilters } from '@/shared/types';
 import { buildWhereClause } from '@/shared/utils';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { safeString } from '@/shared/utils/ExStringUtils';
-import { Account, AccountType, Currency, Prisma, Transaction } from '@prisma/client';
+import { Account, AccountType, Prisma, Transaction } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IAccountRepository } from '../../domain/repositories/accountRepository.interface';
 import { accountRepository } from '../../infrastructure/repositories/accountRepository';
@@ -38,7 +39,7 @@ export class AccountUseCase {
     userId: string;
     name: string;
     type: 'Payment' | 'Debt' | 'Lending' | 'Saving' | 'CreditCard';
-    currency: Currency;
+    currency: string;
     balance: number;
     icon: string;
     parentId?: string;
@@ -63,6 +64,9 @@ export class AccountUseCase {
       throw new Error(Messages.CURRENCY_NOT_FOUND);
     }
 
+    const baseCurrency = DEFAULT_BASE_CURRENCY;
+    const baseAmount = await convertCurrency(balance, currency, baseCurrency);
+
     if (parentId) {
       await this.validateParentAccount(parentId, type);
       const subAccount = await this.accountRepository.create({
@@ -77,6 +81,8 @@ export class AccountUseCase {
         limit: type === AccountType.CreditCard ? limit : new Decimal(0),
         parentId: parentId,
         createdBy: userId,
+        baseCurrency,
+        baseAmount,
       });
 
       if (!subAccount) {
@@ -97,6 +103,8 @@ export class AccountUseCase {
         limit: type === AccountType.CreditCard ? limit : new Decimal(0),
         parentId: null,
         createdBy: userId,
+        baseCurrency,
+        baseAmount,
       });
 
       if (!parentAccount) {
@@ -199,7 +207,7 @@ export class AccountUseCase {
       AND unaccent("name") ILIKE unaccent('%' || ${searchParams.toLowerCase()} || '%')
   `;
     }
-    const balances = accountFiltered.map((a) => Number(a.balance ?? 0));
+    const balances = accountFiltered.map((a) => Number(a.baseAmount ?? 0));
     let minBalance = balances.length > 0 ? Math.min(...balances) : 0;
     const maxBalance = balances.length > 0 ? Math.max(...balances) : 0;
 
@@ -214,7 +222,7 @@ export class AccountUseCase {
     };
   }
 
-  async getAllAccountByUserIdFilter(userId: string, currency: Currency, params: GlobalFilters) {
+  async getAllAccountByUserIdFilter(userId: string, currency: string, params: GlobalFilters) {
     const searchParams = safeString(params.search);
     let where = buildWhereClause(params.filters) as Prisma.AccountWhereInput;
 
@@ -352,22 +360,27 @@ export class AccountUseCase {
       }),
     );
 
-    const balances = accountWithConvertedBalance.map((a) => Number(a.balance ?? 0));
-    let minBalance = balances.length > 0 ? Math.min(...balances) : 0;
+    const balances = accountWithConvertedBalance.map((a) => Number(a.baseAmount ?? 0));
+
+    const minBalance = balances.length > 0 ? Math.min(...balances) : 0;
     const maxBalance = balances.length > 0 ? Math.max(...balances) : 0;
 
-    if (minBalance === maxBalance) {
-      minBalance = 0;
-    }
+    const convertMinBalanceAwaited = convertCurrency(minBalance, DEFAULT_BASE_CURRENCY, currency);
+    const convertMaxBalanceAwaited = convertCurrency(maxBalance, DEFAULT_BASE_CURRENCY, currency);
+
+    const [convertMinBalance, convertMaxBalance] = await Promise.all([
+      convertMinBalanceAwaited,
+      convertMaxBalanceAwaited,
+    ]);
 
     return {
       data: accountWithConvertedBalance,
-      minBalance,
-      maxBalance,
+      minBalance: convertMinBalance,
+      maxBalance: convertMaxBalance,
     };
   }
 
-  async getAllAccountByUserId(userId: string, currency: Currency) {
+  async getAllAccountByUserId(userId: string) {
     const accountRes = (await this.accountRepository.findManyWithCondition(
       {
         userId,
@@ -392,79 +405,7 @@ export class AccountUseCase {
       };
     }>[];
 
-    const accountWithConvertedBalance = await Promise.all(
-      accountRes.map(async (acc: any) => {
-        const convertedBalance = await convertCurrency(
-          acc.balance?.toNumber() || 0,
-          acc.currency,
-          currency,
-        );
-
-        const children = await Promise.all(
-          acc.children.map(async (child: Account) => {
-            const childConvertedBalance = await convertCurrency(
-              child.balance?.toNumber() || 0,
-              child.currency!,
-              currency,
-            );
-
-            return {
-              ...child,
-              balance: childConvertedBalance.toString(),
-              currency: child.currency || currency,
-            };
-          }),
-        );
-
-        const toTransactions = await Promise.all(
-          acc.toTransactions.map(async (tx: Transaction) => {
-            const txConvertedBalance = await convertCurrency(
-              tx.amount?.toNumber() || 0,
-              tx.currency!,
-              currency,
-            );
-
-            return {
-              ...tx,
-              amount: txConvertedBalance.toString(),
-              currency: tx.currency || currency,
-            };
-          }),
-        );
-
-        const fromTransactions = await Promise.all(
-          acc.fromTransactions.map(async (tx: Transaction) => {
-            const txConvertedBalance = await convertCurrency(
-              tx.amount?.toNumber() || 0,
-              tx.currency!,
-              currency,
-            );
-
-            return {
-              ...tx,
-              amount: txConvertedBalance.toString(),
-              currency: tx.currency || currency,
-            };
-          }),
-        );
-
-        return {
-          ...acc,
-          balance: convertedBalance.toString(),
-          currency: currency,
-          ...(children.length > 0 && {
-            children,
-          }),
-          ...(toTransactions.length > 0 && {
-            toTransactions,
-          }),
-          ...(fromTransactions.length > 0 && {
-            fromTransactions,
-          }),
-        };
-      }),
-    );
-    return accountWithConvertedBalance;
+    return accountRes;
   }
 
   async fetchBalanceByUserId(userId: string): Promise<any> {

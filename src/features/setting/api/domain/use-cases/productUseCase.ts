@@ -5,6 +5,7 @@ import { GlobalFilters, PaginationResponse, ProductItem, TransactionType } from 
 import { Currency, Prisma, Product, ProductType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
+import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { BooleanUtils } from '@/shared/lib';
 import { buildWhereClause } from '@/shared/utils';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
@@ -57,10 +58,9 @@ class ProductUseCase {
     userId: string;
     page?: number;
     pageSize?: number;
-    currency?: Currency;
   }): Promise<PaginationResponse<Product>> {
     try {
-      const { userId, page = 1, pageSize = 20, currency = 'VND' } = params;
+      const { userId, page = 1, pageSize = 20 } = params;
       const productsAwaited = this.productRepository.findManyProducts(
         { userId },
         {
@@ -79,23 +79,8 @@ class ProductUseCase {
 
       const totalPage = Math.ceil(count / pageSize);
 
-      // Transform the product price to the user's target currency if needed
-      const transformedProductsAwaited = products.map(async (product) => {
-        const transformedPrice =
-          (await convertCurrency(product.price, product.currency!, currency)) ||
-          product.price.toNumber();
-
-        return {
-          ...product,
-          price: new Decimal(transformedPrice),
-          currency: currency,
-        };
-      });
-
-      const transformedProducts = await Promise.all(transformedProductsAwaited);
-
       return {
-        data: transformedProducts,
+        data: products,
         page,
         pageSize,
         totalPage,
@@ -219,6 +204,8 @@ class ProductUseCase {
           throw new Error(Messages.DUPLICATE_PRODUCT_TENANT_ERROR);
         }
 
+        const baseAmount = await convertCurrency(price, currency!, DEFAULT_BASE_CURRENCY);
+
         // Create the product
         const product = await tx.product.create({
           data: {
@@ -233,6 +220,7 @@ class ProductUseCase {
             currencyId: foundCurrency.id,
             currency: foundCurrency.name,
             ...(description && { description }),
+            baseAmount: new Decimal(baseAmount),
           },
           include: {
             items: true,
@@ -509,6 +497,7 @@ class ProductUseCase {
     const take = Number(pageSize);
     const params = req.body as GlobalFilters;
     const searchParams = safeString(params.search);
+
     let where: Prisma.ProductWhereInput = {};
     let products: any[] = [];
     let categories: any[] = [];
@@ -642,39 +631,39 @@ class ProductUseCase {
     });
 
     const productIds = products.map((product) => product.id);
-    const productTransactions =
-      productIds.length > 0
-        ? await prisma.productTransaction.findMany({
-          where: {
-            productId: { in: productIds },
-            transaction: { userId },
-          },
+    const foundProduct = await prisma.productTransaction.findMany({
+      where: {
+        productId: { in: productIds },
+        transaction: { userId },
+      },
+      select: {
+        productId: true,
+        transaction: {
           select: {
-            productId: true,
-            transaction: {
-              select: {
-                id: true,
-                userId: true,
-                type: true,
-                amount: true,
-                currency: true,
-              },
-            },
+            id: true,
+            userId: true,
+            type: true,
+            amount: true,
+            currency: true,
+            baseCurrency: true,
+            baseAmount: true,
           },
-        })
-        : [];
+        },
+      },
+    });
+
+    const productTransactions = productIds.length > 0 ? foundProduct : [];
 
     const creatorIds = categories.map((cat) => cat.createdBy).filter(Boolean) as string[];
     const updatorIds = categories.map((cat) => cat.updatedBy).filter(Boolean) as string[];
     const uniqueUserIds = Array.from(new Set([...creatorIds, ...updatorIds]));
 
-    const users =
-      uniqueUserIds.length > 0
-        ? await prisma.user.findMany({
-          where: { id: { in: uniqueUserIds } },
-          select: { id: true, name: true, email: true, image: true },
-        })
-        : [];
+    const foundUsers = await prisma.user.findMany({
+      where: { id: { in: uniqueUserIds } },
+      select: { id: true, name: true, email: true, image: true },
+    });
+
+    const users = uniqueUserIds.length > 0 ? foundUsers : [];
 
     const userMap = users.reduce(
       (acc, user) => {
@@ -696,6 +685,8 @@ class ProductUseCase {
           type: pt.transaction.type,
           amount: pt.transaction.amount.toNumber(),
           currency: pt.transaction.currency!,
+          baseCurrency: pt.transaction.baseCurrency!,
+          baseAmount: pt.transaction.baseAmount?.toNumber() || 0,
         });
         return acc;
       },
@@ -703,15 +694,16 @@ class ProductUseCase {
     );
 
     const productsByCategory = products.reduce(
-      (acc, product) => {
+      async (acc, product) => {
         const catId = product.catId;
         if (catId) {
           if (!acc[catId]) acc[catId] = [];
           const transactions = productTransactionMap[product.id] || [];
+
           acc[catId].push({
             product: {
               id: product.id,
-              price: product.price.toNumber(),
+              price: product.price,
               name: product.name,
               type: product.type,
               description: product.description,
@@ -720,6 +712,8 @@ class ProductUseCase {
               catId: product.catId,
               icon: product.icon,
               currency: product.currency,
+              baseCurrency: product.baseCurrency,
+              baseAmount: product.baseAmount?.toNumber() || 0,
             },
             transactions,
           });
@@ -758,17 +752,25 @@ class ProductUseCase {
 
     for (const category of transformedData) {
       for (const item of category.products) {
-        const { price, taxRate } = item.product;
-        priceList.push(price);
+        const { taxRate, baseAmount } = item.product;
+        priceList.push(baseAmount || 0);
         taxRateList.push(taxRate);
 
         const transactions = item.transactions;
         const totalIncome = transactions
           .filter((tx: any) => tx.type === 'Income')
-          .reduce((sum: any, tx: any) => sum + tx.amount, 0);
+          .reduce(
+            async (sum: any, tx: any) =>
+              sum + tx.baseAmount,
+            0,
+          );
         const totalExpense = transactions
           .filter((tx: any) => tx.type === 'Expense')
-          .reduce((sum: any, tx: any) => sum + tx.amount, 0);
+          .reduce(
+            async (sum: any, tx: any) =>
+              sum + tx.baseAmount,
+            0,
+          );
 
         incomeTotals.push(totalIncome);
         expenseTotals.push(totalExpense);

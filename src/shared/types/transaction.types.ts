@@ -15,7 +15,10 @@ export interface TransactionType {
   type: string;
   amount: number;
   currency: string;
+  baseCurrency: string;
+  baseAmount: number;
 }
+
 export interface TransactionGetPagination {
   page: number;
   pageSize: number;
@@ -23,7 +26,6 @@ export interface TransactionGetPagination {
   sortBy?: Record<string, any>;
   searchParams?: string;
   userId: string;
-  currency: string;
 }
 
 export interface Filter {

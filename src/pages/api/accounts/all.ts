@@ -3,7 +3,6 @@ import { AccountRepository } from '@/features/auth/infrastructure/repositories/a
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { Currency } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 const accountRepository = new AccountRepository();
@@ -30,7 +29,6 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
 
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
     const { page = '1', pageSize = '40', search = '' } = req.query;
 
     const pageNumber = parseInt(page as string);
@@ -39,7 +37,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 
     const { accounts, total } = await getPaginatedAccountsUseCase.execute({
       userId,
-      currency,
       page: pageNumber,
       pageSize: pageSizeNumber,
       search: searchQuery,

@@ -14,7 +14,6 @@ import {
   BudgetType,
   Category,
   CategoryType,
-  Currency,
   Prisma,
   Transaction,
   TransactionType,
@@ -386,12 +385,7 @@ class CategoryUseCase {
     };
   }
 
-  async getListCategoryByType(
-    userId: string,
-    type: CategoryType,
-    fiscalYear: string,
-    currency: Currency,
-  ) {
+  async getListCategoryByType(userId: string, type: CategoryType, fiscalYear: string) {
     if (!Object.values(CategoryType).includes(type)) {
       throw new Error(Messages.INVALID_CATEGORY_TYPE);
     }
@@ -469,7 +463,7 @@ class CategoryUseCase {
       (category: CategoryWithBudgetDetails) => {
         const suffix = category.type === CategoryType.Expense ? 'exp' : 'inc';
         const bottomUpPlan: Record<string, number> = {};
-        const actualTransaction: Record<string, number | Currency | TransactionType> = {};
+        const actualTransaction: Record<string, number | string | TransactionType> = {};
 
         // Initialize all months with 0
         for (let i = 1; i <= 12; i++) {
@@ -489,19 +483,15 @@ class CategoryUseCase {
         categoryFoundWithTransactions.forEach(async (item: any) => {
           if (item.id === category.id) {
             actualTransaction[`total_${suffix}`] = 0;
-            actualTransaction[`currency`] = currency;
+            actualTransaction[`currency`] = item.currency;
             actualTransaction[`type`] = item.type as TransactionType;
             item.transactions.forEach(async (transaction: Transaction) => {
               const monthKey = `m${transaction.date.getMonth() + 1}_${suffix}`; // Get month key from transaction date
-              const convertedMonthAmount = await convertCurrency(
-                transaction.amount,
-                transaction.currency as Currency,
-                currency,
-              );
+
               actualTransaction[monthKey] =
-                Number(actualTransaction[monthKey]) + convertedMonthAmount; // Sum up amount of transaction in the month
+                Number(actualTransaction[monthKey]) + Number(transaction.amount); // Sum up amount of transaction in the month
               actualTransaction[`total_${suffix}`] =
-                Number(actualTransaction[`total_${suffix}`]) + convertedMonthAmount; // Sum up amount of transaction in the year
+                Number(actualTransaction[`total_${suffix}`]) + Number(transaction.amount); // Sum up amount of transaction in the year
             });
           }
         });
@@ -515,7 +505,6 @@ class CategoryUseCase {
             ...actualTransaction,
           },
           isCreated: budgetDetails.length > 0 || Number(actualTransaction[`total_${suffix}`]) > 0,
-          ...(currency && { currency }),
         };
       },
     );

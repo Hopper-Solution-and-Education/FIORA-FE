@@ -3,7 +3,6 @@ import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { Currency } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export const maxDuration = 30; // 30 seconds
@@ -21,8 +20,6 @@ export default sessionWrapper(async (req, res, userId) => {
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const currency = (req.headers['x-user-currency'] as string) ?? Currency.USD;
-
     const { filters, page, pageSize, sortBy, search } = req.body;
 
     const transactions = await transactionUseCase.getTransactionsPagination({
@@ -32,7 +29,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       sortBy,
       userId,
       searchParams: search,
-      currency,
     });
 
     return res

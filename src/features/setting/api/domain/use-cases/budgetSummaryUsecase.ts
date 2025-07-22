@@ -8,14 +8,7 @@ import {
 } from '@/shared/types/budgetDetail.types';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { applyUpdates, MONTH_MAPPING } from '@/shared/utils/monthBudgetUtil';
-import {
-  BudgetDetails,
-  BudgetDetailType,
-  BudgetsTable,
-  BudgetType,
-  Currency,
-  Prisma,
-} from '@prisma/client';
+import { BudgetDetails, BudgetDetailType, BudgetsTable, BudgetType, Prisma } from '@prisma/client';
 import { ITransactionRepository } from '../../../../transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '../../../../transaction/infrastructure/repositories/transactionRepository';
 import { budgetRepository } from '../../infrastructure/repositories/budgetProductRepository';
@@ -36,7 +29,7 @@ class BudgetSummaryUseCase {
     private _budgetRepository: IBudgetRepository = budgetRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
     private _categoryRepository: ICategoryRepository = categoryRepository,
-  ) {}
+  ) { }
 
   async getBudgetsByUserIdAndFiscalYear(
     userId: string,
@@ -176,7 +169,7 @@ class BudgetSummaryUseCase {
     fiscalYear: string;
     type: BudgetDetailType;
     updateTopBudget: Record<string, number>;
-    currency: Currency;
+    currency: string;
   }): Promise<BudgetsTable> {
     const { userId, fiscalYear, type, updateTopBudget, currency } = params;
 
@@ -345,10 +338,10 @@ class BudgetSummaryUseCase {
             const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
             const value = oldDetail
               ? await convertCurrency(
-                  Number(oldDetail.amount),
-                  oldDetail.currency!,
-                  targetCurrency!,
-                )
+                Number(oldDetail.amount),
+                oldDetail.currency!,
+                targetCurrency!,
+              )
               : 0;
             return {
               amount: new Prisma.Decimal(value),
@@ -597,10 +590,10 @@ class BudgetSummaryUseCase {
 
               const oldValue = oldDetail
                 ? await convertCurrency(
-                    Number(oldDetail.amount),
-                    oldDetail.currency!,
-                    targetCurrency!,
-                  )
+                  Number(oldDetail.amount),
+                  oldDetail.currency!,
+                  targetCurrency!,
+                )
                 : 0;
 
               const newValue = monthlyBudgetDetailValues[i].bottomUp ?? 0;
