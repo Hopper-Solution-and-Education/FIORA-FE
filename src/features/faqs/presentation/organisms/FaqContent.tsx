@@ -83,8 +83,6 @@ const FaqContent: React.FC<FaqContentProps> = ({ data, maxHeight = DEFAULT_MAX_H
           />
           {!isExpanded && <Icon size={18} strokeWidth={2} className="-mt-1 opacity-60" />}
         </div>
-
-        <hr className="mt-3 border-t border-gray-300 w-4/5 max-w-md" />
       </div>
     );
   };

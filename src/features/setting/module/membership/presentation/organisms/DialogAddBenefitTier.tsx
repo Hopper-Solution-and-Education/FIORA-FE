@@ -62,6 +62,7 @@ const DialogAddBenefitTier = ({ open, onOpenChange }: DialogAddBenefitTierProps)
     )
       .unwrap()
       .then(() => {
+        methods.reset();
         dispatch(setIsShowDialogAddBenefitTier(false));
         dispatch(getListMembershipAsyncThunk({ page: 1, limit: 10 }));
       });

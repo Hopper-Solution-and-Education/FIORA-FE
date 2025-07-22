@@ -1,8 +1,16 @@
 import { prisma } from '@/config';
-import type { EmailNotificationLogs, UserNotification } from '@prisma/client';
-import type { INotificationRepository } from '../../domain/repositories/notificationRepository.interface';
+import { AppError } from '@/shared/lib/responseUtils/errors';
+import { ChannelType, type EmailNotificationLogs, type UserNotification } from '@prisma/client';
+import type {
+  CreateBoxNotificationInput,
+  INotificationRepository,
+} from '../../domain/repositories/notificationRepository.interface';
 
-function getNotificationStatus(emailLogs: EmailNotificationLogs[]): 'FAILED' | 'SENT' | 'UNKNOWN' {
+function getNotificationStatus(
+  channel: string,
+  emailLogs: EmailNotificationLogs[],
+): 'FAILED' | 'SENT' | 'UNKNOWN' {
+  if (channel === 'BOX') return 'SENT';
   if (!emailLogs || emailLogs.length === 0) return 'UNKNOWN';
   return emailLogs.some((log) => log.status === 'FAILED') ? 'FAILED' : 'SENT';
 }
@@ -70,7 +78,7 @@ class NotificationRepository implements INotificationRepository {
       sender: n.createdBy ? userMap[n.createdBy]?.email || n.createdBy : 'System',
       notifyType: n.type,
       channel: n.channel,
-      status: getNotificationStatus(n.emailLogs),
+      status: getNotificationStatus(n.channel, n.emailLogs),
       emailTemplate: n.emailTemplate
         ? { id: n.emailTemplate.id, name: n.emailTemplate.name }
         : null,
@@ -90,7 +98,6 @@ class NotificationRepository implements INotificationRepository {
     });
     if (!n) return null;
     let sender = 'System';
-    let senderName = 'System';
     if (n.createdBy) {
       const user = await prisma.user.findUnique({
         where: { id: n.createdBy },
@@ -98,10 +105,8 @@ class NotificationRepository implements INotificationRepository {
       });
       if (user) {
         sender = user.email;
-        senderName = user.name || 'System';
       } else {
         sender = n.createdBy;
-        senderName = 'System';
       }
     }
     return {
@@ -111,10 +116,9 @@ class NotificationRepository implements INotificationRepository {
       subject: n.message,
       recipients: n.emails,
       sender,
-      senderName,
       notifyType: n.type,
       channel: n.channel,
-      status: getNotificationStatus(n.emailLogs),
+      status: getNotificationStatus(n.channel, n.emailLogs),
       emailTemplate: n.emailTemplate
         ? { id: n.emailTemplate.id, name: n.emailTemplate.name }
         : null,
@@ -132,6 +136,63 @@ class NotificationRepository implements INotificationRepository {
 
   async getEmailNotificationLogs(notificationId: string): Promise<EmailNotificationLogs[]> {
     return prisma.emailNotificationLogs.findMany({ where: { notificationId } });
+  }
+
+  async createBoxNotification(input: CreateBoxNotificationInput): Promise<any> {
+    const { title, type, attachmentId, deepLink, message, emails } = input;
+    let users: { id: string }[] = [];
+    if (type === 'ALL') {
+      users = await prisma.user.findMany({ where: { isDeleted: false }, select: { id: true } });
+    } else if (type === 'ROLE_ADMIN') {
+      users = await prisma.user.findMany({
+        where: { isDeleted: false, role: 'Admin' },
+        select: { id: true },
+      });
+    } else if (type === 'ROLE_CS') {
+      users = await prisma.user.findMany({
+        where: { isDeleted: false, role: 'CS' },
+        select: { id: true },
+      });
+    } else if (type === 'ROLE_USER') {
+      users = await prisma.user.findMany({
+        where: { isDeleted: false, role: 'User' },
+        select: { id: true },
+      });
+    } else if (type === 'PERSONAL') {
+      if (!emails || emails.length === 0) {
+        throw new AppError(400, 'No email provided for PERSONAL notification');
+      }
+      users = await prisma.user.findMany({
+        where: { isDeleted: false, email: { in: emails } },
+        select: { id: true },
+      });
+    }
+    if (!users || users.length === 0) {
+      throw new AppError(400, 'No user found for this role or email');
+    }
+    return await prisma.$transaction(async (tx) => {
+      // 1. Tạo notification trước
+      const notification = await tx.notification.create({
+        data: {
+          notifyTo: type,
+          emails: emails || [],
+          emailTemplateId: null,
+          attachmentId: attachmentId || null,
+          title,
+          message,
+          type,
+          deepLink: deepLink || null,
+          channel: ChannelType.BOX,
+          createdAt: new Date(),
+        },
+      });
+      // 2. Tạo userNotification với notificationId đã có
+      await tx.userNotification.createMany({
+        data: users.map((u) => ({ userId: u.id, notificationId: notification.id, isRead: false })),
+        skipDuplicates: true,
+      });
+      return notification;
+    });
   }
 }
 

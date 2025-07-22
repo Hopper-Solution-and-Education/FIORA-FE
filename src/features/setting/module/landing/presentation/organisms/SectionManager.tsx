@@ -3,7 +3,6 @@
 
 import { useAppDispatch, useAppSelector } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { MediaType, SectionType } from '@prisma/client';
 import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -12,20 +11,18 @@ import { toast } from 'sonner';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { SectionTypeEnum } from '@/features/landing/constants';
 import { removeFromFirebase, uploadToFirebase } from '@/shared/lib';
-import {
-  defaultValues,
-  SectionDefaultValues,
-  sectionFormSchema,
-} from '../../schema/section-form.schema';
+import { SectionDefaultValues, sectionFormSchema } from '../../schema/section-form.schema';
 import { changeIsLoadingSaveChange, markSectionFetched, sectionMapping } from '../../slices';
 import { fetchMediaBySection } from '../../slices/actions/fetchMediaBySection';
 import { updateMediaBySection } from '../../slices/actions/updateMediaBySection';
 import { ISection } from '../../slices/types';
-import SectionCard from './SectionCard';
+import { transferDefaultValues } from '../../utils/transferDefaultValue';
+import SectionCard from '../molecules/SectionCard';
 
 interface SectionManagerProps {
-  sectionType: SectionType;
+  sectionType: SectionTypeEnum;
 }
 
 export default function SectionManager({ sectionType }: SectionManagerProps) {
@@ -37,33 +34,23 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
 
   const fetchedSections = useAppSelector((state) => state.landingSettings.fetchedSections);
 
-  const transferDefaultValues = (data: ISection): SectionDefaultValues => {
-    return {
-      section_id: data.id,
-      section_type: data.section_type,
-      name: data.name,
-      order: data.order,
-      medias: data.medias.map((media) => ({
-        id: media.id,
-        media_type: media.media_type,
-        media_url:
-          media.media_type === MediaType.IMAGE || media.media_type === MediaType.VIDEO
-            ? media.media_url || ''
-            : '',
-        redirect_url: media.redirect_url || '',
-        embed_code: media.media_type === MediaType.EMBEDDED ? media.embed_code || '' : '',
-        description: media.description || '',
-        uploaded_by: media.uploaded_by || '',
-        uploaded_date: media.uploaded_date ? new Date(media.uploaded_date) : new Date(),
-      })),
-      created_at: new Date(data.createdAt), // Chuyển thành `Date`
-      updated_at: new Date(data.updatedAt), // Chuyển thành `Date`
-    };
-  };
+  const defaultValues = sectionData
+    ? transferDefaultValues(sectionData)
+    : transferDefaultValues({
+        id: '',
+        section_type: sectionType,
+        name: '',
+        order: 0,
+        medias: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: '',
+        updatedBy: '',
+      });
 
   const methods = useForm({
     resolver: yupResolver(sectionFormSchema),
-    defaultValues: defaultValues(sectionType),
+    defaultValues: defaultValues,
   });
 
   const dispatch = useAppDispatch();
@@ -92,21 +79,17 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
     try {
       const processedData: SectionDefaultValues = { ...data };
 
-      // Lấy danh sách medias cũ từ sectionData để so sánh
       const oldMedias = sectionData?.medias || [];
 
-      // Xử lý từng media item
       const updatedMedias = await Promise.all(
         processedData.medias.map(async (media) => {
-          const oldMedia = oldMedias.find((m) => m.id === media.id); // Tìm media cũ tương ứng
+          const oldMedia = oldMedias.find((m) => m.id === media.id);
 
           if (media.media_url && media.media_url.startsWith('blob:')) {
-            // Nếu có URL cũ và không phải blob, xóa nó trước
             if (oldMedia?.media_url && !oldMedia.media_url.startsWith('blob:')) {
               await removeFromFirebase(oldMedia.media_url);
             }
 
-            // Upload file mới
             const response = await fetch(media.media_url);
             const blob = await response.blob();
             const fileName = media.id || 'media';
@@ -146,25 +129,11 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
 
   return (
     <FormProvider {...methods}>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">
-            {sectionType === 'KPS' ? 'KSP' : sectionType.replace('_', ' ')} Section
-          </h2>
-        </div>
-
-        <div className="space-y-4">
-          <SectionCard
-            sectionData={sectionData}
-            control={methods.control}
-            sectionType={sectionType}
-          />
-        </div>
-      </div>
+      <SectionCard sectionData={sectionData} control={methods.control} sectionType={sectionType} />
 
       <div className="flex justify-end space-x-2">
-        <TooltipProvider>
-          <div className="flex justify-between gap-4 mt-6">
+        <TooltipProvider delayDuration={0}>
+          <div className="flex justify-end gap-4">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button

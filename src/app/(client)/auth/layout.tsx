@@ -1,7 +1,7 @@
 'use client';
 
-import Footer from '@/features/landing/presentation/components/Footer';
-import Header from '@/features/landing/presentation/components/Header';
+import Footer from '@/features/landing/presentation/organisms/Footer';
+import Header from '@/features/landing/presentation/organisms/Header';
 import React from 'react';
 
 interface AuthUILayoutProps {

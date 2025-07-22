@@ -1,10 +1,10 @@
-import { SectionType } from '@prisma/client';
 import { decorate, injectable } from 'inversify';
+import { SectionTypeEnum } from '../../constants';
 import { ISection } from '../../domain/interfaces/Section';
 import type { ILandingAPI } from '../api/api';
 
 export interface ISectionRepository {
-  getSection(sectionType: SectionType): Promise<ISection>;
+  getSection(sectionType: SectionTypeEnum): Promise<ISection>;
 }
 
 export class SectionRepository implements ISectionRepository {
@@ -14,7 +14,7 @@ export class SectionRepository implements ISectionRepository {
     this.landingAPI = landingAPI;
   }
 
-  async getSection(sectionType: SectionType): Promise<ISection> {
+  async getSection(sectionType: SectionTypeEnum): Promise<ISection> {
     const response = await this.landingAPI.fetchSection(sectionType);
     return response;
   }

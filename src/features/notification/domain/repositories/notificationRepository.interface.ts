@@ -1,5 +1,14 @@
 import type { EmailNotificationLogs, Notification, UserNotification } from '@prisma/client';
 
+export interface CreateBoxNotificationInput {
+  title: string;
+  type: 'ALL' | 'ROLE_ADMIN' | 'ROLE_CS' | 'ROLE_USER' | 'PERSONAL';
+  attachmentId?: string;
+  deepLink?: string;
+  message: string;
+  emails?: string[];
+}
+
 export interface INotificationRepository {
   getNotificationsPagination(
     skip: number,
@@ -10,4 +19,5 @@ export interface INotificationRepository {
   count(): Promise<number>;
   getUserNotification(userId: string): Promise<UserNotification[]>;
   getEmailNotificationLogs(notificationId: string): Promise<EmailNotificationLogs[]>;
+  createBoxNotification(input: CreateBoxNotificationInput): Promise<Notification>;
 }

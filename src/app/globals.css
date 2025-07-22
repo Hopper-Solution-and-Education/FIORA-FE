@@ -152,12 +152,8 @@
   }
 }
 
-.quill {
-  .ql-toolbar.ql-snow {
-    border: none !important;
-    border-bottom: 1px solid #ccc !important;
-  }
-  .ql-container.ql-snow {
-    border: none !important;
+.reactjs-tiptap-editor {
+  .richtext-outline-1 {
+    outline-width: 0px !important;
   }
 }
