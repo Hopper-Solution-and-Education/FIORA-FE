@@ -2,7 +2,8 @@
 
 import { InputField, SelectField } from '@/components/common/forms';
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
-import { useParams } from 'next/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
+import { notFound, useParams } from 'next/navigation';
 import React from 'react';
 import { useFaqEdit } from '../../hooks';
 import { FormField } from '../atoms';
@@ -59,33 +60,14 @@ const EditFaqPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <main className="p-6 pt-24">
-        <div className="max-w-6xl mx-auto">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-300 rounded w-1/3"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="h-10 bg-gray-300 rounded"></div>
-              <div className="h-10 bg-gray-300 rounded"></div>
-            </div>
-            <div className="h-20 bg-gray-300 rounded"></div>
-            <div className="h-96 bg-gray-300 rounded"></div>
-          </div>
-        </div>
-      </main>
+      <div className="p-6 space-y-4">
+        <Skeleton className="w-full h-96" />
+      </div>
     );
   }
 
   if (error || !faqData) {
-    return (
-      <main className="p-6 pt-24">
-        <div className="max-w-6xl mx-auto text-center">
-          <div className="text-red-500">
-            <h2 className="text-xl font-semibold mb-2">FAQ not found</h2>
-            <p className="text-gray-600">The requested FAQ could not be loaded for editing.</p>
-          </div>
-        </div>
-      </main>
-    );
+    return notFound();
   }
 
   return (

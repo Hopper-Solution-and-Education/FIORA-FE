@@ -36,7 +36,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
         createError(
           res,
           RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
+          error?.message || Messages.INTERNAL_ERROR,
         ),
       );
   }

@@ -24,11 +24,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { id } = req.query;
 
-    const comments = await getFaqCommentsUseCase.execute({
-      faqId: id as string,
-      skip: Number(req.query?.skip ?? 0),
-      take: Number(req.query?.take ?? 10),
-    });
+    const comments = await getFaqCommentsUseCase.execute(id as string);
 
     return res
       .status(RESPONSE_CODE.OK)
