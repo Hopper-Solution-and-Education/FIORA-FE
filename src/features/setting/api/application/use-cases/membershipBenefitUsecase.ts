@@ -5,6 +5,7 @@ import { tierBenefitRepository } from '../../infrastructure/repositories/tierBen
 
 class MembershipBenefitService {
   async create(payload: MembershipBenefitCreatePayload, userId: string) {
+    payload.membershipBenefit.slug = `${payload.membershipBenefit.slug}-${Date.now()}`;
     const membershipBenefit = await membershipBenefitRepository.createMembershipBenefit({
       id: uuid(),
       ...payload.membershipBenefit,
