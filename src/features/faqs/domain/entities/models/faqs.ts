@@ -83,6 +83,14 @@ export interface UpdateFaqRequest {
   categoryId: string;
 }
 
+export interface CreateFaqRequest {
+  title: string;
+  description?: string;
+  content: string;
+  categoryId: string;
+  userId: string;
+}
+
 export interface GetFaqDetailOptions {
   includes?: string[];
   trackView?: boolean;

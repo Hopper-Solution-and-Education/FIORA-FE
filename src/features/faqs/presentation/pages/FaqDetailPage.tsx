@@ -31,8 +31,8 @@ const FaqDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="w-full h-64" />
+      <div className="p-6 space-y-4">
+        <Skeleton className="w-full h-96" />
       </div>
     );
   }

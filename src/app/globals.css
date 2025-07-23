@@ -159,5 +159,10 @@
 
   .parsed-content {
     padding: 10px !important;
+    .image {
+      img {
+        display: inline-block !important;
+      }
+    }
   }
 }

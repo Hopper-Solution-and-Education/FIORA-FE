@@ -90,9 +90,7 @@ function Editor({ content, setContent }: { content: string; setContent: (value: 
     <RichTextEditor
       output="html"
       content={content as any}
-      onChangeContent={(value) => {
-        setContent(value);
-      }}
+      onChangeContent={setContent}
       extensions={extensions}
       dark={false}
       // hideBubble={true}
