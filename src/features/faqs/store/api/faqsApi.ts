@@ -117,9 +117,9 @@ export const faqsApi = createApi({
     }),
 
     // Paginated FAQ comments endpoint
-    getFaqComments: builder.query<FaqComment[], { faqId: string; skip?: number; take?: number }>({
-      query: ({ faqId, skip = 0, take = 10 }) => `/${faqId}/comments?skip=${skip}&take=${take}`,
-      providesTags: (result, error, { faqId }) => [{ type: 'FaqComments', id: faqId }],
+    getFaqComments: builder.query<FaqComment[], string>({
+      query: (faqId) => `/${faqId}/comments`,
+      providesTags: (result, error, faqId) => [{ type: 'FaqComments', id: faqId }],
       transformResponse: (response: Response<FaqComment[]>) => response.data,
     }),
 
@@ -129,6 +129,7 @@ export const faqsApi = createApi({
         method: 'POST',
         body: comment,
       }),
+      invalidatesTags: (result, error, { faqId }) => [{ type: 'FaqComments', id: faqId }],
     }),
 
     deleteComment: builder.mutation<void, { faqId: string; commentId: string }>({
@@ -136,6 +137,7 @@ export const faqsApi = createApi({
         url: `/${faqId}/${commentId}`,
         method: 'DELETE',
       }),
+      invalidatesTags: (result, error, { faqId }) => [{ type: 'FaqComments', id: faqId }],
     }),
 
     // updateComment: builder.mutation<void, { faqId: string; commentId: string; content: string }>({

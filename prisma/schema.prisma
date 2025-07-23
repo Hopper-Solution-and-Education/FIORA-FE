@@ -302,6 +302,7 @@ model MediaReviewUser {
   updatedAt          DateTime @updatedAt @db.Timestamptz(0)
   createdBy          String?  @db.Uuid
   updatedBy          String?  @db.Uuid
+  media_user_title   String?
   media              Media    @relation("MediaToReviewUser", fields: [mediaId], references: [id])
 }
 

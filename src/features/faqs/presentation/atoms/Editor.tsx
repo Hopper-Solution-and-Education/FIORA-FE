@@ -3,7 +3,6 @@
 import RichTextEditor, { BaseKit } from 'reactjs-tiptap-editor';
 
 import { uploadToFirebase } from '@/shared/lib';
-import { Blockquote } from 'reactjs-tiptap-editor/blockquote';
 import { Bold } from 'reactjs-tiptap-editor/bold';
 import { BulletList } from 'reactjs-tiptap-editor/bulletlist';
 import { Code } from 'reactjs-tiptap-editor/code';
@@ -26,9 +25,7 @@ import { ColumnActionButton } from 'reactjs-tiptap-editor/multicolumn';
 import { OrderedList } from 'reactjs-tiptap-editor/orderedlist';
 import { Strike } from 'reactjs-tiptap-editor/strike';
 import { Table } from 'reactjs-tiptap-editor/table';
-import { TaskList } from 'reactjs-tiptap-editor/tasklist';
 import { TextAlign } from 'reactjs-tiptap-editor/textalign';
-import { TextDirection } from 'reactjs-tiptap-editor/textdirection';
 import { TextUnderline } from 'reactjs-tiptap-editor/textunderline';
 import { Video } from 'reactjs-tiptap-editor/video';
 
@@ -57,12 +54,6 @@ const extensions = [
   TextAlign.configure({ types: ['heading', 'paragraph'], spacer: true }),
   Indent,
   LineHeight,
-  TaskList.configure({
-    spacer: true,
-    taskItem: {
-      nested: true,
-    },
-  }),
   Link,
   Image.configure({
     upload: async (files: File) => {
@@ -73,6 +64,7 @@ const extensions = [
         return '';
       }
     },
+    resourceImage: 'both',
   }),
   Video.configure({
     upload: (files: File) => {
@@ -83,7 +75,6 @@ const extensions = [
       });
     },
   }),
-  Blockquote,
   HorizontalRule,
   Code.configure({
     toolbar: false,
@@ -92,7 +83,6 @@ const extensions = [
   ColumnActionButton,
   Table,
   Iframe,
-  TextDirection,
 ];
 
 function Editor({ content, setContent }: { content: string; setContent: (value: string) => void }) {
@@ -100,9 +90,7 @@ function Editor({ content, setContent }: { content: string; setContent: (value: 
     <RichTextEditor
       output="html"
       content={content as any}
-      onChangeContent={(value) => {
-        setContent(value);
-      }}
+      onChangeContent={setContent}
       extensions={extensions}
       dark={false}
       // hideBubble={true}

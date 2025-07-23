@@ -142,9 +142,7 @@ export const useFaqEdit = ({ faqId }: UseFaqEditProps) => {
       setHasChanges(false);
 
       // Navigate back to detail page after a short delay
-      setTimeout(() => {
-        router.push(`/faqs/details/${faqId}`);
-      }, 1500);
+      router.push(`/faqs/details/${faqId}`);
     } catch (error) {
       console.error('Error updating FAQ:', error);
       toast.error('Failed to update FAQ. Please try again.');
