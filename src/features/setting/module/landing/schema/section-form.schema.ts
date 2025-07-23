@@ -40,6 +40,7 @@ export const sectionFormSchema = yup.object({
           .object({
             media_user_name: yup.string().optional().nullable(),
             media_user_avatar: yup.string().optional().nullable(),
+            media_user_title: yup.string().optional().nullable(),
             media_user_email: yup.string().optional().nullable(),
             media_user_comment: yup.string().optional().nullable(),
             media_user_rating: yup.number().optional().default(0).min(0).max(5).nullable(),

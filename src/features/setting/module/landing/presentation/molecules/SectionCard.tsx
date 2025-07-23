@@ -18,7 +18,7 @@ import { PlusCircle, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
 import useSectionCardLogic from '../../hooks/useSectionCardLogic';
 import { ISection } from '../../slices/types';
-import MediaItem from '../atoms/MediaItem';
+import MediaItem from './MediaForm';
 
 interface SectionCardProps {
   sectionData: ISection | undefined;

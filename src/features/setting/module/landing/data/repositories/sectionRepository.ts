@@ -26,6 +26,7 @@ export const mapSectionDefaultValuesToISection = (
         mediaReviewUser = {
           media_user_name: media.mediaReviewUser.media_user_name || '',
           media_user_avatar: media.mediaReviewUser.media_user_avatar || '',
+          media_user_title: media.mediaReviewUser.media_user_title || '',
           media_user_comment: media.mediaReviewUser.media_user_comment || '',
           media_user_rating: media.mediaReviewUser.media_user_rating ?? 0,
           media_user_email: media.mediaReviewUser.media_user_email || '',

@@ -39,6 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           select: {
             media_user_name: true,
             media_user_avatar: true,
+            media_user_title: true,
             media_user_email: true,
             media_user_comment: true,
             media_user_rating: true,

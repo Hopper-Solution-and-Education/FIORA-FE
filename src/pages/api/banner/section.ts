@@ -109,6 +109,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
               data: {
                 mediaId: createdMedia.id,
                 media_user_name: media.mediaReviewUser.media_user_name,
+                media_user_title: media.mediaReviewUser.media_user_title,
                 media_user_avatar: media.mediaReviewUser.media_user_avatar,
                 media_user_email: media.mediaReviewUser.media_user_email,
                 media_user_comment: media.mediaReviewUser.media_user_comment,
@@ -220,6 +221,7 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
                 where: { id: existingReviewUser.id },
                 data: {
                   media_user_name: media.mediaReviewUser.media_user_name,
+                  media_user_title: media.mediaReviewUser.media_user_title,
                   media_user_avatar: media.mediaReviewUser.media_user_avatar,
                   media_user_email: media.mediaReviewUser.media_user_email,
                   media_user_comment: media.mediaReviewUser.media_user_comment,
@@ -234,6 +236,7 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
                 data: {
                   mediaId: media.id,
                   media_user_name: media.mediaReviewUser.media_user_name,
+                  media_user_title: media.mediaReviewUser.media_user_title,
                   media_user_avatar: media.mediaReviewUser.media_user_avatar,
                   media_user_email: media.mediaReviewUser.media_user_email,
                   media_user_comment: media.mediaReviewUser.media_user_comment,
