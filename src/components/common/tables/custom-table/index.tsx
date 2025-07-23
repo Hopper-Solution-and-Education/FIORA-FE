@@ -424,7 +424,7 @@ export function TableV2({
               {showHeader && (
                 <TableHeader
                   ref={headerRef}
-                  className={cn('bg-muted/30', 'sticky-top', 'table-header')}
+                  className={cn('bg-white dark:bg-gray-900', 'sticky-top', 'table-header')}
                   style={{ top: 0 }}
                 >
                   {table.getHeaderGroups().map((headerGroup) => (
@@ -443,9 +443,9 @@ export function TableV2({
                               size === 'small' ? 'h-8 px-2' : 'h-10 px-4',
                               'font-medium',
                               meta?.fixed === 'left' &&
-                                'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border',
+                                'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border border-r border-border',
                               meta?.fixed === 'right' &&
-                                'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border',
+                                'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border border-l border-border',
                             )}
                           >
                             {flexRender(header.column.columnDef.header, header.getContext())}
@@ -479,9 +479,9 @@ export function TableV2({
                             meta?.align === 'center' && 'text-center',
                             meta?.align === 'right' && 'text-right',
                             meta?.fixed === 'left' &&
-                              'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border',
+                              'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border border-r border-border',
                             meta?.fixed === 'right' &&
-                              'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border',
+                              'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border border-l border-border',
                           )}
                           style={{
                             width: meta?.width,
@@ -574,7 +574,7 @@ export function TableV2({
               {showHeader && (
                 <TableHeader
                   ref={headerRef}
-                  className={cn('bg-muted/30', 'sticky-top', 'table-header')}
+                  className={cn('bg-white dark:bg-gray-900', 'sticky-top', 'table-header')}
                   style={{ top: 0 }}
                 >
                   <TableRow>
@@ -592,9 +592,9 @@ export function TableV2({
                             meta?.align === 'center' && 'text-center',
                             meta?.align === 'right' && 'text-right',
                             meta?.fixed === 'left' &&
-                              'sticky left-0 z-10 bg-muted/30 shadow-[1px_0_0_0] shadow-border',
+                              'sticky left-0 z-10 bg-muted/30 shadow-[1px_0_0_0] shadow-border border-r border-border',
                             meta?.fixed === 'right' &&
-                              'sticky right-0 z-10 bg-muted/30 shadow-[-1px_0_0_0] shadow-border',
+                              'sticky right-0 z-10 bg-muted/30 shadow-[-1px_0_0_0] shadow-border border-l border-border',
                           )}
                         >
                           {flexRender(column.header, {} as any)}
@@ -704,7 +704,7 @@ export function TableV2({
           {showHeader && (
             <TableHeader
               ref={headerRef}
-              className={cn('bg-muted/30', 'sticky-top', 'table-header')}
+              className={cn('bg-white dark:bg-gray-900', 'sticky-top', 'table-header')}
               style={{ top: 0 }}
             >
               {table.getHeaderGroups().map((headerGroup) => (
@@ -726,9 +726,9 @@ export function TableV2({
                           'text-right' &&
                           'justify-items-end',
                         (header.column.columnDef.meta as TableV2Meta)?.fixed === 'left' &&
-                          'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border',
+                          'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border border-r border-border',
                         (header.column.columnDef.meta as TableV2Meta)?.fixed === 'right' &&
-                          'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border',
+                          'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border border-l border-border',
                       )}
                     >
                       {header.isPlaceholder
@@ -752,8 +752,10 @@ export function TableV2({
                     'border-b border-border transition-colors bg-muted/10',
                     rowHover && 'hover:bg-muted/20',
                     rowCursor && 'cursor-pointer',
-                    parentRowWithChildren.fixed === 'top' && 'sticky-top',
-                    parentRowWithChildren.fixed === 'bottom' && 'sticky-bottom',
+                    parentRowWithChildren.fixed === 'top' &&
+                      'sticky-top bg-white dark:bg-gray-900 border-b border-border hover:bg-muted/10',
+                    parentRowWithChildren.fixed === 'bottom' &&
+                      'sticky-bottom bg-white dark:bg-gray-900 border-t border-border hover:bg-muted/10',
                   )}
                   style={{
                     ...(parentRowWithChildren.fixed === 'top'
@@ -797,9 +799,9 @@ export function TableV2({
                           columnMeta?.align === 'center' && 'text-center',
                           columnMeta?.align === 'right' && 'text-right',
                           columnMeta?.fixed === 'left' &&
-                            'sticky left-0 z-30 bg-background shadow-[1px_0_0_0] shadow-border',
+                            'sticky left-0 z-30 bg-background shadow-[1px_0_0_0] shadow-border border-r border-border',
                           columnMeta?.fixed === 'right' &&
-                            'sticky right-0 z-30 bg-background shadow-[-1px_0_0_0] shadow-border',
+                            'sticky right-0 z-30 bg-background shadow-[-1px_0_0_0] shadow-border border-l border-border',
                         )}
                         style={{
                           width: columnMeta?.width,
@@ -827,8 +829,9 @@ export function TableV2({
                         'border-b border-border transition-colors',
                         rowHover && 'hover:bg-muted/10',
                         rowCursor && 'cursor-pointer',
-                        child.fixed === 'top' && 'sticky top-0 z-20 bg-background',
-                        child.fixed === 'bottom' && 'sticky bottom-0 z-20 bg-background',
+                        child.fixed === 'top' && 'sticky top-0 z-20 bg-white dark:bg-gray-900',
+                        child.fixed === 'bottom' &&
+                          'sticky bottom-0 z-20 bg-white dark:bg-gray-900',
                       )}
                       onClick={() =>
                         onRowClick?.({
@@ -868,9 +871,9 @@ export function TableV2({
                               columnMeta?.align === 'right' && 'text-right',
                               columnMeta?.bgColorClassName,
                               columnMeta?.fixed === 'left' &&
-                                'sticky left-0 z-30 bg-background shadow-[1px_0_0_0] shadow-border',
+                                'sticky left-0 z-30 bg-background shadow-[1px_0_0_0] shadow-border border-r border-border',
                               columnMeta?.fixed === 'right' &&
-                                'sticky right-0 z-30 bg-background shadow-[-1px_0_0_0] shadow-border',
+                                'sticky right-0 z-30 bg-background shadow-[-1px_0_0_0] shadow-border border-l border-border',
                               'text-gray-700 dark:text-gray-300',
                             )}
                             style={{

@@ -24,32 +24,18 @@
 .sticky-top {
   position: sticky;
   top: 0;
-  z-index: 20;
-  background-color: #fff;
+  z-index: 50;
 }
 
 /* Header sticky-top sẽ có z-index cao hơn */
 .table-header.sticky-top {
-  z-index: 30;
+  z-index: 50;
 }
 
 .sticky-bottom {
   position: sticky;
   bottom: 0;
   z-index: 20;
-  background-color: #fff;
-}
-
-@media (prefers-color-scheme: dark) {
-  .sticky-top {
-    background-color: #18181b;
-  }
-  .sticky-bottom {
-    background-color: #18181b;
-  }
-  .table-header.sticky-top {
-    background-color: #18181b;
-  }
 }
 
 .table-scroll-y {
