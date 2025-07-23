@@ -2,12 +2,15 @@
 
 import { InputField, SelectField, TextareaField } from '@/components/common/forms';
 import { MediaTypeEnum } from '@/features/landing/constants';
+import { useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
 
 const useReviewFormConfig = (mediaPath: string, mediaType: MediaTypeEnum) => {
   const {
     formState: { isSubmitting },
   } = useFormContext();
+
+  const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
 
   const mediaTypeOptions = Object.values(MediaTypeEnum).map((type) => ({
     label: type,
@@ -29,7 +32,7 @@ const useReviewFormConfig = (mediaPath: string, mediaType: MediaTypeEnum) => {
       name={`${mediaPath}.description`}
       label="Content - Description"
       required
-      disabled={isSubmitting}
+      disabled={isSubmitting || isLoadingSaveChange}
     />,
 
     <InputField
@@ -48,7 +51,7 @@ const useReviewFormConfig = (mediaPath: string, mediaType: MediaTypeEnum) => {
         name={`${mediaPath}.embed_code`}
         label="Embed Code"
         required
-        disabled={isSubmitting}
+        disabled={isSubmitting || isLoadingSaveChange}
       />,
     );
   }

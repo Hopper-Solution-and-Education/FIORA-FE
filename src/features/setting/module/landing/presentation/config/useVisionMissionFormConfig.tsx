@@ -2,12 +2,15 @@
 
 import { InputField, SelectField, TextareaField } from '@/components/common/forms';
 import { MediaTypeEnum } from '@/features/landing/constants';
+import { useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
 
 const useVisionMissionFormConfig = (mediaPath: string) => {
   const {
     formState: { isSubmitting },
   } = useFormContext();
+
+  const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
 
   const mediaTypeOptions = Object.values(MediaTypeEnum).map((type) => ({
     label: type,
@@ -19,7 +22,7 @@ const useVisionMissionFormConfig = (mediaPath: string) => {
       key="mediaType"
       name={`${mediaPath}.media_type`}
       label="Media Type"
-      disabled={isSubmitting}
+      disabled={isSubmitting || isLoadingSaveChange}
       required
     />,
 
@@ -28,7 +31,7 @@ const useVisionMissionFormConfig = (mediaPath: string) => {
       name={`${mediaPath}.redirect_url`}
       label="Redirect URL"
       required
-      disabled={isSubmitting}
+      disabled={isSubmitting || isLoadingSaveChange}
     />,
 
     <TextareaField
@@ -36,7 +39,7 @@ const useVisionMissionFormConfig = (mediaPath: string) => {
       name={`${mediaPath}.embed_code`}
       label="Embed Code"
       required
-      disabled={isSubmitting}
+      disabled={isSubmitting || isLoadingSaveChange}
     />,
 
     <TextareaField
@@ -44,7 +47,7 @@ const useVisionMissionFormConfig = (mediaPath: string) => {
       name={`${mediaPath}.description`}
       label="Content"
       required
-      disabled={isSubmitting}
+      disabled={isSubmitting || isLoadingSaveChange}
     />,
   ];
 

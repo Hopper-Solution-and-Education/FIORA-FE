@@ -1,6 +1,7 @@
 'use client';
 
-import { UploadField } from '@/components/common/forms';
+import { UploadImageField } from '@/components/common/forms';
+import { useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
 
 const useReviewUploadImageConfig = (mediaPath: string) => {
@@ -8,12 +9,14 @@ const useReviewUploadImageConfig = (mediaPath: string) => {
     formState: { isSubmitting },
   } = useFormContext();
 
+  const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
+
   const fields = [
-    <UploadField
+    <UploadImageField
       key={`${mediaPath}.mediaReviewUser.media_user_avatar`}
       name={`${mediaPath}.mediaReviewUser.media_user_avatar`}
       label="Upload Review User"
-      disabled={isSubmitting}
+      disabled={isSubmitting || isLoadingSaveChange}
       required
     />,
   ];

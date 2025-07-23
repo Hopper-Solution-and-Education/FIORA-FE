@@ -18,6 +18,7 @@ export interface IMedia {
   updatedBy: string;
   mediaReviewUser: {
     media_user_name: string;
+    media_user_title: string;
     media_user_avatar: string;
     media_user_comment: string;
     media_user_rating: number;

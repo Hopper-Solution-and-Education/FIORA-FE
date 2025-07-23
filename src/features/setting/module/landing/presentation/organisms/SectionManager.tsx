@@ -33,9 +33,7 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
   });
 
   const fetchedSections = useAppSelector((state) => state.landingSettings.fetchedSections);
-
-  console.log(sectionData);
-
+  const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
   const defaultValues = sectionData
     ? transferDefaultValues(sectionData)
     : transferDefaultValues({
@@ -160,6 +158,7 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
             mediaReviewUser: {
               media_user_name: media.mediaReviewUser?.media_user_name || '',
               media_user_avatar: newReviewUserAvatar || '',
+              media_user_title: media.mediaReviewUser?.media_user_title || '',
               media_user_comment: media.mediaReviewUser?.media_user_comment || '',
               media_user_rating: media.mediaReviewUser?.media_user_rating || 0,
               media_user_email: media.mediaReviewUser?.media_user_email || '',
@@ -199,7 +198,11 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
                 <Button
                   type="button"
                   onClick={methods.handleSubmit(onSubmit)}
-                  disabled={methods.formState.isSubmitting || methods.formState.isValidating}
+                  disabled={
+                    methods.formState.isSubmitting ||
+                    methods.formState.isValidating ||
+                    isLoadingSaveChange
+                  }
                   className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   {methods.formState.isSubmitting ? (

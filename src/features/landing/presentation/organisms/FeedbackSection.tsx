@@ -109,16 +109,16 @@ export const FeedbackSection = () => {
                               <Image
                                 src={media.mediaReviewUser?.media_user_avatar || ''}
                                 alt="Reviewer Avatar"
-                                width={90}
-                                height={90}
-                                className="rounded-full object-cover flex-shrink-0 w-[60px] h-[60px] sm:w-[70px] sm:h-[70px] md:w-[80px] md:h-[80px] lg:w-[90px] lg:h-[90px]"
+                                width={120}
+                                height={120}
+                                className="rounded-full object-cover flex-shrink-0 w-[120px] h-[120px] sm:w-[120px] sm:h-[120px] md:w-[120px] md:h-[120px] lg:w-[120px] lg:h-[120px]"
                               />
-                              <div className="flex flex-col items-center md:items-start gap-1 w-full">
+                              <div className="flex flex-col items-center md:items-start gap-2 w-full mt-4">
                                 <h3 className="font-bold text-base sm:text-lg md:text-xl lg:text-2xl text-center md:text-left">
                                   {media.mediaReviewUser?.media_user_name}
                                 </h3>
                                 <p className="text-xs sm:text-sm md:text-base text-gray-600 mb-1 text-center md:text-left">
-                                  {media.mediaReviewUser?.media_user_email}
+                                  {media.mediaReviewUser?.media_user_title}
                                 </p>
                                 <div className="flex items-center gap-1 sm:gap-2">
                                   {Array.from({ length: 5 }).map((_, idx) => (

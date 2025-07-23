@@ -2,12 +2,14 @@
 
 import { InputField, SelectField, TextareaField } from '@/components/common/forms';
 import { MediaTypeEnum } from '@/features/landing/constants';
+import { useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
 
 const useBannerFormConfig = (mediaPath: string) => {
   const {
     formState: { isSubmitting },
   } = useFormContext();
+  const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
 
   const mediaTypeOptions = Object.values(MediaTypeEnum).map((type) => ({
     label: type,
@@ -19,7 +21,7 @@ const useBannerFormConfig = (mediaPath: string) => {
       key="mediaType"
       name={`${mediaPath}.media_type`}
       label="Media Type"
-      disabled={isSubmitting}
+      disabled={isSubmitting || isLoadingSaveChange}
       required
     />,
 
@@ -28,7 +30,7 @@ const useBannerFormConfig = (mediaPath: string) => {
       name={`${mediaPath}.description`}
       label="Content - Description"
       required
-      disabled={isSubmitting}
+      disabled={isSubmitting || isLoadingSaveChange}
     />,
 
     <InputField
@@ -36,7 +38,7 @@ const useBannerFormConfig = (mediaPath: string) => {
       name={`${mediaPath}.redirect_url`}
       label="Redirect URL"
       required
-      disabled={isSubmitting}
+      disabled={isSubmitting || isLoadingSaveChange}
     />,
   ];
 

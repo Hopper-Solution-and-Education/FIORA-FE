@@ -2,12 +2,15 @@
 
 import { InputField, SelectField, TextareaField } from '@/components/common/forms';
 import { MediaTypeEnum } from '@/features/landing/constants';
+import { useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
 
 const useKSPFormConfig = (mediaPath: string) => {
   const {
     formState: { isSubmitting },
   } = useFormContext();
+
+  const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
 
   const mediaTypeOptions = Object.values(MediaTypeEnum).map((type) => ({
     label: type,
@@ -28,7 +31,7 @@ const useKSPFormConfig = (mediaPath: string) => {
       name={`${mediaPath}.description`}
       label="Content - Description"
       required
-      disabled={isSubmitting}
+      disabled={isSubmitting || isLoadingSaveChange}
     />,
 
     <InputField
@@ -36,7 +39,7 @@ const useKSPFormConfig = (mediaPath: string) => {
       name={`${mediaPath}.redirect_url`}
       label="Redirect URL"
       required
-      disabled={isSubmitting}
+      disabled={isSubmitting || isLoadingSaveChange}
     />,
   ];
 

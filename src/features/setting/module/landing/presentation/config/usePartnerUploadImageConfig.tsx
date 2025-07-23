@@ -1,6 +1,7 @@
 'use client';
 
-import { UploadField } from '@/components/common/forms';
+import { UploadImageField } from '@/components/common/forms';
+import { useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
 
 const usePartnerUploadImageConfig = (mediaPath: string) => {
@@ -8,12 +9,14 @@ const usePartnerUploadImageConfig = (mediaPath: string) => {
     formState: { isSubmitting },
   } = useFormContext();
 
+  const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
+
   const fields = [
-    <UploadField
+    <UploadImageField
       key={`${mediaPath}.media_url`}
       name={`${mediaPath}.media_url`}
       label="Upload Partner Image"
-      disabled={isSubmitting}
+      disabled={isSubmitting || isLoadingSaveChange}
       required
     />,
   ];
