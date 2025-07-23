@@ -1,7 +1,7 @@
-import { PaginationResponse } from '@/shared/types';
+import { HttpResponse, PaginationResponse } from '@/shared/types';
 import { Notification } from '../../../domain';
 
-export type NotificationPaginatedResponse = PaginationResponse<Notification>;
+export type NotificationPaginatedResponse = HttpResponse<PaginationResponse<Notification>>;
 
 export interface NotificationDashboardListPaginated {
   items: Notification[];

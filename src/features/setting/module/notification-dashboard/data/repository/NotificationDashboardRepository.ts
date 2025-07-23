@@ -23,6 +23,7 @@ export class NotificationDashboardRepository implements INotificationDashboardRe
       pageSize,
       filter,
     );
+
     return NotificationDashboardMapper.toNotificationListPaginated(response);
   }
 }
