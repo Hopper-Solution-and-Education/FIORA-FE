@@ -9,6 +9,7 @@ import {
   BanknoteArrowDown,
   Bell,
   BellRing,
+  Book,
   Calendar,
   Car,
   ChartBar,
@@ -42,6 +43,7 @@ import {
   File,
   FileText,
   FunnelPlus,
+  GraduationCap,
   Grip,
   GripVertical,
   HandCoins,
@@ -328,4 +330,6 @@ export const Icons = {
   ),
   shieldCheck: ShieldCheck,
   cornerDownRight: CornerDownRight,
+  book: Book,
+  graduationCap: GraduationCap,
 };

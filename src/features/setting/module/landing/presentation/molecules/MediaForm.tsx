@@ -66,7 +66,7 @@ export default function MediaItem({
   const partnerUploadImageConfig = usePartnerUploadImageConfig(mediaPath);
   const systemUploadImageConfig = useSystemUploadImageConfig(mediaPath);
   const kspUploadImageConfig = useKSPUploadImageConfig(mediaPath);
-  const reviewUploadImageConfig = useReviewUploadImageConfig(mediaPath);
+  const reviewUploadImageConfig = useReviewUploadImageConfig(mediaPath, mediaType);
   const userReviewMediaFormConfig = useUserReviewMediaFormConfig(mediaPath);
   let formConfig: JSX.Element[] = [];
   let uploadImageConfig: JSX.Element[] = [];
@@ -193,13 +193,15 @@ export default function MediaItem({
           />
 
           <div className="space-y-3">
-            <h3 className="text-sm font-medium text-center my-4">User Review</h3>
             {sectionType === SectionTypeEnum.REVIEW && (
-              <FormConfig
-                fields={userReviewMediaFormConfig}
-                methods={methods}
-                renderSubmitButton={renderSubmitButton}
-              />
+              <>
+                <h3 className="text-sm font-medium text-center my-4">User Review</h3>
+                <FormConfig
+                  fields={userReviewMediaFormConfig}
+                  methods={methods}
+                  renderSubmitButton={renderSubmitButton}
+                />
+              </>
             )}
           </div>
         </div>

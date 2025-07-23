@@ -34,6 +34,7 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
 
   const fetchedSections = useAppSelector((state) => state.landingSettings.fetchedSections);
   const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
+  const isLoading = useAppSelector((state) => state.landingSettings.isLoading);
   const defaultValues = sectionData
     ? transferDefaultValues(sectionData)
     : transferDefaultValues({
@@ -201,7 +202,8 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
                   disabled={
                     methods.formState.isSubmitting ||
                     methods.formState.isValidating ||
-                    isLoadingSaveChange
+                    isLoadingSaveChange ||
+                    isLoading
                   }
                   className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
                 >

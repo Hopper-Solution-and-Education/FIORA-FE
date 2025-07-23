@@ -6,6 +6,7 @@ import Autoplay from 'embla-carousel-autoplay';
 import { motion } from 'framer-motion';
 import { ImageIcon } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useState } from 'react';
 import { SectionTypeEnum } from '../../constants';
 import { Media } from '../../domain/models/Media';
@@ -108,42 +109,44 @@ const FlippingItemContent = ({
   const [isFlipped, setIsFlipped] = useState(false);
 
   return (
-    <div
-      className={`w-full rounded-lg shadow-md border relative overflow-hidden card-container cursor-pointer ${className} `}
-      style={{ perspective: '1000px', ...style }} // Added perspective to the container for 3D effect
-      onMouseEnter={() => setIsFlipped(true)}
-      onMouseLeave={() => setIsFlipped(false)}
-    >
-      <motion.div
-        className="card w-full h-full relative"
-        animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ duration: 0.8 }}
-        style={{
-          transformStyle: 'preserve-3d',
-        }}
+    <Link href={item.redirect_url || ''} target="_blank">
+      <div
+        className={`w-full rounded-lg shadow-md border relative overflow-hidden card-container cursor-pointer ${className} `}
+        style={{ perspective: '1000px', ...style }} // Added perspective to the container for 3D effect
+        onMouseEnter={() => setIsFlipped(true)}
+        onMouseLeave={() => setIsFlipped(false)}
       >
-        {/* Front Side - pass item data */}
-        <div
-          className="card-front absolute w-full h-full flex justify-center items-center backface-hidden rounded-lg bg-white"
+        <motion.div
+          className="card w-full h-full relative"
+          animate={{ rotateY: isFlipped ? 180 : 0 }}
+          transition={{ duration: 0.8 }}
           style={{
-            backfaceVisibility: 'hidden',
+            transformStyle: 'preserve-3d',
           }}
         >
-          <CardFront item={item} />
-        </div>
+          {/* Front Side - pass item data */}
+          <div
+            className="card-front absolute w-full h-full flex justify-center items-center backface-hidden rounded-lg bg-white"
+            style={{
+              backfaceVisibility: 'hidden',
+            }}
+          >
+            <CardFront item={item} />
+          </div>
 
-        {/* Back Side - pass item data */}
-        <div
-          className="card-back absolute w-full h-full flex justify-center items-center backface-hidden rounded-lg bg-white"
-          style={{
-            backfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
-          }}
-        >
-          <CardBack item={item} />
-        </div>
-      </motion.div>
-    </div>
+          {/* Back Side - pass item data */}
+          <div
+            className="card-back absolute w-full h-full flex justify-center items-center backface-hidden rounded-lg bg-white"
+            style={{
+              backfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)',
+            }}
+          >
+            <CardBack item={item} />
+          </div>
+        </motion.div>
+      </div>
+    </Link>
   );
 };
 
@@ -170,9 +173,9 @@ const CardFront = ({ item }: { item: Media }) => {
 const CardBack = ({ item }: { item: Media }) => {
   return (
     <div className="relative w-full h-full">
-      {item.media_url ? (
+      {item.media_url_2 ? (
         <Image
-          src={item.media_url}
+          src={item.media_url_2}
           alt={item.description || 'Back Side'}
           className="w-full h-full object-cover rounded-lg"
           fill

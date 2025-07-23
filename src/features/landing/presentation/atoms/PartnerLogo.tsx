@@ -1,8 +1,5 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
-import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
 import { SectionTypeEnum } from '../../constants';
 import { useGetSection } from '../../hooks/useGetSection';
@@ -27,49 +24,49 @@ const PartnerLogo = () => {
       >
         {section?.name}
       </h1>
-
-      <div className="w-full mx-auto relative">
-        <Carousel
-          className="w-full"
-          opts={{
-            loop: true,
-            direction: 'ltr',
+      <div className="overflow-hidden w-full max-w-[90%] mx-auto relative">
+        <div
+          className="flex gap-8 animate-marquee p-4"
+          style={{
+            animation: 'marquee 30s linear infinite',
+            width: 'max-content',
           }}
-          plugins={[
-            Autoplay({
-              delay: 5000,
-              stopOnInteraction: true,
-              playOnInit: true,
-              jump: false,
-            }),
-          ]}
         >
-          <CarouselContent className="flex">
-            {section.medias.concat(section.medias).map((logo, index) => (
-              <CarouselItem
-                key={index}
-                className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/4 xl:basis-1/5 flex justify-center py-2"
-              >
-                <Card className="w-52 h-28 md:w-64 md:h-32 flex items-center justify-center shadow-md rounded-xl overflow-hidden border border-gray-300 transition-transform hover:scale-105">
-                  <CardContent className="relative w-full h-full">
-                    <Image
-                      src={logo.media_url || ''}
-                      alt={logo.description || `Partner Logo ${index + 1}`}
-                      fill
-                      style={{ objectFit: 'contain', objectPosition: 'center' }}
-                      className="rounded-xl"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          'https://via.placeholder.com/150?text=Logo+Not+Found';
-                      }}
-                    />
-                  </CardContent>
-                </Card>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
+          {[...section.medias, ...section.medias].map((logo, index) => (
+            <div
+              key={index}
+              className="w-52 h-28 md:w-80 md:h-32 flex items-center justify-center shadow-md rounded-xl overflow-hidden border border-gray-300 transition-transform hover:scale-105"
+            >
+              <div className="relative w-full h-full">
+                <Image
+                  src={logo.media_url || ''}
+                  alt={logo.description || `Partner Logo ${index + 1}`}
+                  fill
+                  style={{ objectFit: 'contain', objectPosition: 'center' }}
+                  className="rounded-xl"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      'https://via.placeholder.com/150?text=Logo+Not+Found';
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
+      <style jsx>{`
+        @keyframes marquee {
+          0% {
+            transform: translateX(0%);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+        .animate-marquee {
+          will-change: transform;
+        }
+      `}</style>
     </section>
   );
 };

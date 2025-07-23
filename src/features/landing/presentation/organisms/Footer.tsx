@@ -8,8 +8,8 @@ const DEFAULT_URL = 'https://www.facebook.com/HopperSolutionAndEducation';
 
 const FooterContent = ({ medias, description }: { medias: any[]; description: string }) => (
   <footer className="bg-[#2E4F2E] text-white py-8 px-4 md:px-10 rounded-t-3xl">
-    <div className="flex flex-col md:flex-row items-center justify-between pb-6 md:pb-8">
-      <h2 className="text-2xl font-bold mb-4 md:mb-0">FIORA</h2>
+    <div className="flex flex-col md:flex-row items-center justify-between pb-2 px-4 lg:px-20">
+      <h2 className="text-2xl font-bold">FIORA</h2>
       <div className="flex space-x-4">
         {medias.map((icon, index) => (
           <Link
@@ -32,8 +32,8 @@ const FooterContent = ({ medias, description }: { medias: any[]; description: st
 
     <hr className="border-t border-gray-600 mb-6 md:mb-8" />
 
-    <div className="text-sm text-center md:text-left leading-relaxed">
-      <p>{description}</p>
+    <div className="md:text-left leading-relaxed px-4 lg:px-20">
+      <p className="text-sm md:text-base">{description}</p>
     </div>
   </footer>
 );

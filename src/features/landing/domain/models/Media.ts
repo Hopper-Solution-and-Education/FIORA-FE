@@ -1,6 +1,7 @@
 export interface Media {
   id: number;
   media_url: string | null;
+  media_url_2: string | null;
   redirect_url: string | null;
   description: string | null;
   embed_code: string | null;

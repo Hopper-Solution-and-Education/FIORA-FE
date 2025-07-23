@@ -295,7 +295,6 @@ model MediaReviewUser {
   mediaId            String   @unique @db.Uuid
   media_user_name    String   @db.VarChar(255)
   media_user_avatar  String?
-  media_user_title   String?
   media_user_email   String?
   media_user_comment String?
   media_user_rating  Int?
@@ -303,8 +302,22 @@ model MediaReviewUser {
   updatedAt          DateTime @updatedAt @db.Timestamptz(0)
   createdBy          String?  @db.Uuid
   updatedBy          String?  @db.Uuid
+  media_user_title   String?
   media              Media    @relation("MediaToReviewUser", fields: [mediaId], references: [id])
 }
+
+model Announcement {
+  id           String    @id @default(uuid()) @db.Uuid
+  title        String    @db.VarChar(255)
+  content      String    @db.Text
+  sentAt       DateTime  @default(now()) @db.Timestamptz(0)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(0)
+  updatedAt    DateTime  @updatedAt @db.Timestamptz(0)
+  createdBy    String?   @db.Uuid
+  updatedBy    String?   @db.Uuid
+  isActive     Boolean   @default(true)
+}
+
 
 model Category {
   id               String          @id @default(uuid()) @db.Uuid
@@ -471,7 +484,7 @@ model DepositRequest {
 
 model Notification {
   id                    String                  @id @default(uuid()) @db.Uuid
-  attachmentId          String?                 @unique @db.Uuid
+  attachmentId          String?                 @db.Uuid
   message               String
   deepLink              String?
   createdAt             DateTime                @default(now()) @db.Timestamptz(0)
@@ -484,8 +497,8 @@ model Notification {
   emailTemplateId       String?                 @db.Uuid
   notifyTo              NotificationType
   type                  String
+  Attachment            Attachment[]
   EmailNotificationLogs EmailNotificationLogs[]
-  attachment            Attachment?             @relation(fields: [attachmentId], references: [id])
   EmailTemplate         EmailTemplate?          @relation(fields: [emailTemplateId], references: [id])
   userNotifications     UserNotification[]
 
@@ -518,9 +531,10 @@ model Attachment {
   updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
   createdBy           String?               @db.Uuid
   updatedBy           String?               @db.Uuid
+  notificationId      String?               @db.Uuid
+  Notification        Notification?         @relation(fields: [notificationId], references: [id])
   AttachmentRelations AttachmentRelations[]
   depositRequests     DepositRequest?
-  notifications       Notification?
 
   @@index([url])
   @@index([path])

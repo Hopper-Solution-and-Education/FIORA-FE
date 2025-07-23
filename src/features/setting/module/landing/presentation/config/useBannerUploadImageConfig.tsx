@@ -17,6 +17,7 @@ const useBannerUploadImageConfig = (mediaPath: string) => {
       label="Upload Banner Image"
       disabled={isSubmitting || isLoadingSaveChange}
       required
+      size="large"
     />,
   ];
 

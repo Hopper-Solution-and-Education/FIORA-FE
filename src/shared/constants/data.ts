@@ -1,6 +1,6 @@
-import { GlobalNavItem } from '@/shared/types/GlobalNav.types';
 import { Icons } from '@/components/Icon';
 import { IconsOptions } from '@/shared/types/Common.types';
+import { GlobalNavItem } from '@/shared/types/GlobalNav.types';
 
 export const globalNavItems: GlobalNavItem[] = [
   {
@@ -91,6 +91,8 @@ export const iconOptions: IconsOptions[] = [
       { value: 'piggyBank', label: 'Piggy Bank', icon: Icons.piggyBank },
       { value: 'shoppingCart', label: 'Shopping Cart', icon: Icons.shoppingCart },
       { value: 'trendingUp', label: 'TrendingUp', icon: Icons.trendingUp },
+      { value: 'chartBar', label: 'Chart Bar', icon: Icons.chartBar },
+      { value: 'shieldCheck', label: 'Shield Check', icon: Icons.shieldCheck },
     ],
   },
   {
@@ -155,5 +157,22 @@ export const iconOptions: IconsOptions[] = [
     // Sản phẩm/Mua sắm / Product/Shopping
     label: 'Product/Shopping',
     options: [{ value: 'product', label: 'Shopping', icon: Icons.product }],
+  },
+  {
+    // Thương hiệu/Nền tảng / Brand/Platform
+    label: 'Brand/Platform',
+    options: [
+      { value: 'logo', label: 'Command', icon: Icons.logo },
+      { value: 'trello', label: 'Trello', icon: Icons.trello },
+      { value: 'twitter', label: 'Twitter', icon: Icons.twitter },
+    ],
+  },
+  {
+    // Giáo dục/Học tập / Education/Learning
+    label: 'Education',
+    options: [
+      { value: 'book', label: 'Book', icon: Icons.book },
+      { value: 'graduationCap', label: 'Graduation Cap', icon: Icons.graduationCap },
+    ],
   },
 ];

@@ -1,4 +1,5 @@
 import { SectionTypeEnum } from '@/features/landing/constants';
+import { IAnnouncement } from '../../domain/entities/Announcement';
 
 export interface IMedia {
   id: string;
@@ -53,6 +54,9 @@ interface LandingSettingsState {
   error: string | null;
   isLoading: boolean;
   isLoadingSaveChange: boolean;
+  announcements: IAnnouncement[];
+  isLoadingAnnouncement: boolean;
+  isLoadingUpdateAnnouncement: boolean;
 }
 
 const initialLandingSettingState: LandingSettingsState = {
@@ -68,6 +72,9 @@ const initialLandingSettingState: LandingSettingsState = {
   fetchedSections: [],
   isLoading: false,
   isLoadingSaveChange: false,
+  announcements: [],
+  isLoadingAnnouncement: false,
+  isLoadingUpdateAnnouncement: false,
 };
 
 export { initialLandingSettingState };

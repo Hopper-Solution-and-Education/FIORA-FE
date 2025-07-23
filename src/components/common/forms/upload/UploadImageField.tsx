@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState, memo } from 'react';
-import UploadField from './UploadField';
-import { isImageFile, isUrl } from '@/shared/lib/utils';
 import { FormItem } from '@/components/ui/form';
+import { isImageFile, isUrl } from '@/shared/lib/utils';
+import { memo, useCallback, useEffect, useState } from 'react';
+import UploadField from './UploadField';
 
 interface UploadImageFieldProps {
   value?: string;
@@ -13,6 +13,7 @@ interface UploadImageFieldProps {
   previewShape?: 'square' | 'circle';
   label?: string;
   placeholder?: string;
+  size?: 'small' | 'medium' | 'large';
 }
 
 const UploadImageField = ({
@@ -25,6 +26,7 @@ const UploadImageField = ({
   previewShape = 'square',
   label = 'Upload Image',
   placeholder = 'Choose image',
+  size = 'medium',
 }: UploadImageFieldProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -81,6 +83,7 @@ const UploadImageField = ({
         initialImageUrl={imageUrl}
         accept="image/*"
         placeholder={placeholder}
+        size={size}
       />
     </FormItem>
   );

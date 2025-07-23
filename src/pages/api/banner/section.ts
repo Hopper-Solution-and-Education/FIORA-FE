@@ -104,7 +104,8 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
             },
           });
 
-          if (media.mediaReviewUser) {
+          // Chỉ tạo mediaReviewUser nếu section_type là REVIEW
+          if (section_type === 'REVIEW' && media.mediaReviewUser) {
             await prisma.mediaReviewUser.create({
               data: {
                 mediaId: createdMedia.id,
@@ -137,7 +138,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
 }
 
 async function PUT(req: NextApiRequest, res: NextApiResponse) {
-  const { id, name, order, medias, updatedBy } = req.body;
+  const { id, name, order, medias, updatedBy, section_type } = req.body;
 
   if (!id) {
     return res.status(RESPONSE_CODE.BAD_REQUEST).json({ error: 'Section ID is required' });
@@ -210,8 +211,8 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
             },
           });
 
-          // Xử lý reviewUser
-          if (media.mediaReviewUser) {
+          // Chỉ xử lý reviewUser nếu section_type là REVIEW
+          if (section_type === 'REVIEW' && media.mediaReviewUser) {
             const existingReviewUser = await prisma.mediaReviewUser.findFirst({
               where: { mediaId: media.id },
             });
@@ -252,9 +253,20 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
 
         // Delete media items that are no longer in the list
         if (mediasToDelete.length > 0) {
+          // Delete mediaReviewUser records first
+          const mediaIdsToDelete = mediasToDelete.map((m) => m.id);
+
+          // Xóa mediaReviewUser trước
+          await prisma.mediaReviewUser.deleteMany({
+            where: {
+              mediaId: { in: mediaIdsToDelete },
+            },
+          });
+
+          // Sau đó mới xóa media
           await prisma.media.deleteMany({
             where: {
-              id: { in: mediasToDelete.map((m) => m.id) },
+              id: { in: mediaIdsToDelete },
             },
           });
         }

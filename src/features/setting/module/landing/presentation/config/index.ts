@@ -1,3 +1,4 @@
+export { default as useAnnouncementFormConfig } from './useAnnouncementFormConfig';
 export { default as useBannerFormConfig } from './useBannerFormConfig';
 export { default as useBannerUploadImageConfig } from './useBannerUploadImageConfig';
 export { default as useFooterFormConfig } from './useFooterFormConfig';

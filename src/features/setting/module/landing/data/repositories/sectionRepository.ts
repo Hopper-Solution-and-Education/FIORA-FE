@@ -22,7 +22,8 @@ export const mapSectionDefaultValuesToISection = (
     updatedAt: section.updated_at,
     medias: section.medias.map((media) => {
       let mediaReviewUser = null;
-      if (media.mediaReviewUser) {
+      // Chỉ gửi mediaReviewUser nếu section_type là REVIEW
+      if (section.section_type === SectionTypeEnum.REVIEW && media.mediaReviewUser) {
         mediaReviewUser = {
           media_user_name: media.mediaReviewUser.media_user_name || '',
           media_user_avatar: media.mediaReviewUser.media_user_avatar || '',
@@ -50,7 +51,7 @@ export const mapSectionDefaultValuesToISection = (
         createdBy: createdBy,
         updatedBy: createdBy,
         media_order: media.media_order,
-        mediaReviewUser,
+        mediaReviewUser, // sẽ là null hoặc object tùy section_type
       };
       return mappedMedia;
     }),

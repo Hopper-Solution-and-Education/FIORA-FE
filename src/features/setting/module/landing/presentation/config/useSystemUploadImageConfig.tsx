@@ -1,6 +1,6 @@
 'use client';
 
-import { UploadImageField } from '@/components/common/forms';
+import { IconSelectUpload } from '@/components/common/forms';
 import { useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
 
@@ -12,7 +12,7 @@ const useSystemUploadImageConfig = (mediaPath: string) => {
   const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
 
   const fields = [
-    <UploadImageField
+    <IconSelectUpload
       key={`${mediaPath}.media_url`}
       name={`${mediaPath}.media_url`}
       label="Upload System Image"
