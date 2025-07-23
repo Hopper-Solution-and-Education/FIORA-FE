@@ -7,9 +7,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import { ICON_SIZE } from '@/shared/constants/size';
+import useAnnouncementManager from '@/shared/hooks/useAnnouncementManager';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { Bell, Gift } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { Breadcrumbs } from '../../Breadcrumbs';
 import { Alert, AlertDescription } from '../../ui/alert';
 import { Separator } from '../../ui/separator';
@@ -17,35 +19,24 @@ import { UserNav } from '../user-nav/UserNav';
 import FinanceSummary from './FinanceSummary';
 import HelpCenter from './HelpCenter';
 import SettingCenter from './SettingCenter';
-import { useIsMobile } from '@/shared/hooks/useIsMobile';
-import { SidebarTrigger } from '@/components/ui/sidebar';
-
-const keyOpenAnnouncement = 'isOpenAnnouncement';
 
 export default function Header() {
   const isMobile = useIsMobile();
-  const [isOpenAnnouncement, setIsOpenAnnouncement] = useState(() => {
-    // Get the stored state from localStorage, default to true if not found
-    const storedState = localStorage.getItem(keyOpenAnnouncement);
-    return storedState === null ? true : JSON.parse(storedState);
-  });
 
-  useEffect(() => {
-    localStorage.setItem(keyOpenAnnouncement, isOpenAnnouncement);
-  }, [isOpenAnnouncement]);
+  const { announcement, isLoading } = useAnnouncementManager();
 
   return (
     <header className="transition-[width,height] ease-linear">
       {/* Announcement */}
-      {isOpenAnnouncement && (
+      {announcement?.data?.[0]?.content && !isLoading && (
         <div className="relative w-full">
           <Alert variant="default" className="rounded-none hidden md:block relative">
-            <AlertDescription>This is an important announcement for all users.</AlertDescription>
+            <AlertDescription>{announcement?.data?.[0]?.content}</AlertDescription>
             <Button
               variant="ghost"
               size="icon"
               className="absolute top-2 right-2 p-2 rounded-full hover:bg-gray-100"
-              onClick={() => setIsOpenAnnouncement(false)}
+              onClick={() => {}}
             >
               ✕
             </Button>

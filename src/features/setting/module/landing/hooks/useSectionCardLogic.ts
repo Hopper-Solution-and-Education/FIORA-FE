@@ -54,6 +54,9 @@ function useSectionCardLogic({ sectionData, control, sectionType }: UseSectionCa
       createdBy: '',
       updatedBy: '',
       section_id: sectionData?.id ?? '',
+      media_url_2: '',
+      media_order: 0,
+      mediaReviewUser: null,
     };
     appendMedia(newMedia);
 

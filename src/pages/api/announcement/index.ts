@@ -1,18 +1,18 @@
 import { prisma } from '@/config';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
-import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export const maxDuration = 30; // 30 seconds
 
-export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     switch (req.method) {
       case 'GET':
         return GET(req, res);
       case 'PUT':
-        return PUT(req, res, userId);
+        return withAuthorization({ PUT: ['Admin'] })(PUT)(req, res);
 
       default:
         return res
@@ -22,7 +22,7 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
   } catch (error: any) {
     return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
-});
+}
 
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -54,13 +54,11 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
         try {
           let result;
           if (id) {
-            // Update nếu có id
             result = await prisma.announcement.update({
               where: { id },
               data,
             });
           } else {
-            // Tạo mới nếu không có id
             data.createdBy = userId;
             result = await prisma.announcement.create({
               data,
@@ -75,7 +73,6 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
         .status(RESPONSE_CODE.OK)
         .json(createResponse(RESPONSE_CODE.OK, 'Update announcement successfully', results));
     } else {
-      // Nếu là object đơn
       const { id, title, content, isActive } = body;
       const data: any = {
         title,

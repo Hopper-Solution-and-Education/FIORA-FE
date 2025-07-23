@@ -17,6 +17,7 @@ import { UserNav } from '@/components/layouts/user-nav/UserNav';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ICON_SIZE } from '@/shared/constants/size';
+import useAnnouncementManager from '@/shared/hooks/useAnnouncementManager';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { useSession } from 'next-auth/react';
 import { SectionTypeEnum } from '../../constants';
@@ -26,8 +27,9 @@ export default function Header() {
   const { section, isLoading, isError } = useGetSection(SectionTypeEnum.HEADER);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
-  const [isOpenAnountment, setIsOpenAnountment] = useState(true);
   const { data } = useSession();
+
+  const { announcement } = useAnnouncementManager();
 
   const toggleMenu = () => setIsMenuOpen((prevState) => !prevState);
 
@@ -64,16 +66,16 @@ export default function Header() {
 
         <div className="w-full h-full">
           <div className="w-full">
-            {isOpenAnountment && (
+            {announcement?.data?.[0]?.content && (
               <div
                 className={`flex justify-between items-start ${isMobile ? 'text-xs' : 'text-base'} px-4 shadow-sm`}
               >
-                <div>This is an important announcement for all users.</div>
+                <div>{announcement?.data?.[0]?.content}</div>
 
                 <X
                   size={18}
                   className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer "
-                  onClick={() => setIsOpenAnountment(false)}
+                  onClick={() => {}}
                 />
               </div>
             )}
