@@ -1,7 +1,9 @@
 'use client';
 
 import { useAppDispatch, useAppSelector } from '@/store';
-import { setNotificationDashboardFilter } from '../../slices';
+import { useEffect } from 'react';
+import { setColumnConfig, setNotificationDashboardFilter } from '../../slices';
+import { loadColumnConfigFromStorage } from '../../slices/persist';
 import { DispatchTableProvider } from '../context/DispatchTableContext';
 import { TableProvider } from '../context/TableContext';
 import { useNotificationDashboard } from '../hooks/useNotificationDashboard';
@@ -15,6 +17,13 @@ const NotificationDashboardPage = () => {
   const filter = useAppSelector((state) => state.notificationDashboard.filter);
   const search = filter.search || '';
   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    const config = loadColumnConfigFromStorage();
+    if (config) {
+      dispatch(setColumnConfig(config));
+    }
+  }, [dispatch]);
 
   const handleFilterChange = (newFilter: any) => {
     dispatch(setNotificationDashboardFilter(newFilter));

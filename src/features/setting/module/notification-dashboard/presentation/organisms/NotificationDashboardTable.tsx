@@ -1,10 +1,10 @@
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useAppSelector } from '@/store';
 import { useMemo } from 'react';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import NotificationDashboardTableRow from '../molecules/NotificationDashboardTableRow';
 import TableLoadingState from '../molecules/TableLoadingState';
 import {
-  NOTIFICATION_DASHBOARD_TABLE_COLUMN_CONFIG,
   NotificationDashboardTableColumnKey,
   NotificationDashboardTableData,
 } from '../types/setting.type';
@@ -26,7 +26,7 @@ const NotificationDashboardTable = ({
   onLoadMore,
   className,
 }: NotificationDashboardTableProps) => {
-  const columnConfig = NOTIFICATION_DASHBOARD_TABLE_COLUMN_CONFIG;
+  const columnConfig = useAppSelector((state) => state.notificationDashboard.columnConfig);
   const shownColumns = useMemo(
     () =>
       (Object.keys(columnConfig) as NotificationDashboardTableColumnKey[])

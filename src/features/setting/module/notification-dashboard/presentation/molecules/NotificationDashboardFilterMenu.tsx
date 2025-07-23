@@ -35,12 +35,10 @@ const NotificationDashboardFilterMenu = ({
   const dispatch = useAppDispatch();
   const filter = useAppSelector((state) => state.notificationDashboard.filter);
 
-  // Xác định filter đã apply chưa
   const isFilterApplied = Object.entries(filter || {}).some(
     ([k, v]) => v !== null && v !== '' && v !== 'all' && k !== 'search',
   );
 
-  // Chuẩn bị các filter component
   const filterComponents: FilterComponentConfig[] = [
     {
       key: 'status',
@@ -85,20 +83,6 @@ const NotificationDashboardFilterMenu = ({
       ),
       column: FilterColumn.LEFT,
       order: 2,
-    },
-    {
-      key: 'sender',
-      component: (
-        <input
-          type="text"
-          placeholder="Sender"
-          value={value.sender || ''}
-          onChange={(e) => onFilterChange({ ...value, sender: e.target.value })}
-          className="border rounded px-2 py-1 text-sm w-full"
-        />
-      ),
-      column: FilterColumn.LEFT,
-      order: 3,
     },
   ];
 

@@ -120,6 +120,7 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
   ],
   '/membership': [{ title: 'Membership', link: '/membership' }],
   '/setting/wallet': [{ title: 'Deposit FX', link: '/setting/wallet' }],
+  '/setting/notification': [{ title: 'Notification', link: '/setting/notification' }],
 };
 
 /**
