@@ -1,4 +1,4 @@
-import { ChannelType, NotificationType } from '../enum';
+import { ChannelType } from '../enum';
 
 export type Notification = {
   id: string;
@@ -8,7 +8,7 @@ export type Notification = {
   attachmentId?: string;
   title: string;
   message: string;
-  type: NotificationType;
+  type: string;
   deepLink?: string;
   channel: ChannelType;
   createdAt: string;
