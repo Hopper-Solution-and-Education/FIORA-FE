@@ -289,9 +289,13 @@ export enum Messages {
   GET_FAQ_COMMENTS_FAILED = 'Get FAQ comments failed',
   GET_FAQ_REACTIONS_SUCCESS = 'Get FAQ reactions successfully',
   GET_FAQ_REACTIONS_FAILED = 'Get FAQ reactions failed',
+  FAQ_TITLE_ALREADY_EXISTS = 'FAQ title already exists',
+  CREATE_FAQ_SUCCESS = 'Create FAQ successfully',
   // COMMON ERRORS
   INVALID_CURRENCY = 'Invalid currency. Must be either VND or USD.',
   VALIDATION_ERROR = 'Validation error.',
+
+  GET_NOTIFICATION_SUCCESS = 'Get notification list successfully.',
 
   INVALID_PAGE_OR_PAGE_SIZE = 'Invalid page or pageSize.',
   INVALID_FILTER_FORMAT = 'Invalid filter format.',
