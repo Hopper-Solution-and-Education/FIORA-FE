@@ -270,29 +270,29 @@ model Section {
 }
 
 model Media {
-  id              String            @id @default(uuid()) @db.Uuid
+  id              String           @id @default(uuid()) @db.Uuid
   media_type      MediaType
   media_url       String?
   embed_code      String?
   description     String?
   uploaded_by     String?
-  uploaded_date   DateTime          @default(now()) @db.Timestamptz(0)
-  section_id      String?           @db.Uuid
-  createdAt       DateTime          @default(now()) @db.Timestamptz(0)
-  updatedAt       DateTime          @updatedAt @db.Timestamptz(0)
-  createdBy       String?           @db.Uuid
-  updatedBy       String?           @db.Uuid
+  uploaded_date   DateTime         @default(now()) @db.Timestamptz(0)
+  section_id      String?          @db.Uuid
+  createdAt       DateTime         @default(now()) @db.Timestamptz(0)
+  updatedAt       DateTime         @updatedAt @db.Timestamptz(0)
+  createdBy       String?          @db.Uuid
+  updatedBy       String?          @db.Uuid
   redirect_url    String?
-  media_order     Int?              @default(0)
-  media_title     String?           @db.VarChar(255)
+  media_order     Int?             @default(0)
+  media_title     String?          @db.VarChar(255)
   media_url_2     String?
-  section         Section?          @relation(fields: [section_id], references: [id])
-  mediaReviewUser MediaReviewUser[]
+  section         Section?         @relation(fields: [section_id], references: [id])
+  mediaReviewUser MediaReviewUser?
 }
 
 model MediaReviewUser {
   id                 String   @id @default(uuid()) @db.Uuid
-  mediaId            String   @db.Uuid
+  mediaId            String   @unique @db.Uuid
   media_user_name    String   @db.VarChar(255)
   media_user_avatar  String?
   media_user_email   String?
@@ -480,9 +480,9 @@ model Notification {
   channel               ChannelType
   emails                String[]
   title                 String
-  notifyTo              String
   emailTemplateId       String?                 @db.Uuid
-  type                  NotificationType
+  notifyTo              NotificationType
+  type                  String
   EmailNotificationLogs EmailNotificationLogs[]
   attachment            Attachment?             @relation(fields: [attachmentId], references: [id])
   EmailTemplate         EmailTemplate?          @relation(fields: [emailTemplateId], references: [id])
@@ -871,5 +871,4 @@ enum EmailTemplateType {
   MEMBERSHIP
   DEPOPSIT
   KYC
-  DEFAULT
 }

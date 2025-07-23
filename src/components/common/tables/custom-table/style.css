@@ -20,3 +20,38 @@
   animation: progress 1.5s ease-in-out infinite;
   background-color: #3b82f6;
 }
+
+.sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: #fff;
+}
+
+/* Header sticky-top sẽ có z-index cao hơn */
+.table-header.sticky-top {
+  z-index: 30;
+}
+
+.sticky-bottom {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  background-color: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sticky-top {
+    background-color: #18181b;
+  }
+  .sticky-bottom {
+    background-color: #18181b;
+  }
+  .table-header.sticky-top {
+    background-color: #18181b;
+  }
+}
+
+.table-scroll-y {
+  overflow-y: auto;
+}

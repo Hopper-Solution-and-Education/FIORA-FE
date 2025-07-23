@@ -1,5 +1,9 @@
 import { InputCurrency } from '@/components/common/forms';
-import { ColumnProps, DataSourceItemProps } from '@/components/common/tables/custom-table/types';
+import {
+  ColumnProps,
+  DataSourceItemProps,
+  FIXED,
+} from '@/components/common/tables/custom-table/types';
 import { Icons } from '@/components/Icon';
 import { Category } from '@/features/home/module/budgets/summary-detail/data/dto/response/CategoryResponseDTO';
 import { Currency } from '@/shared/types';
@@ -84,12 +88,14 @@ export const getTableDataByPeriod = (
     data: { [key: string]: DataSourceItemProps },
     isEditable: boolean,
     currency?: Currency,
+    fixed?: FIXED.TOP | FIXED.BOTTOM | FIXED.LEFT | FIXED.RIGHT,
   ): TableData => ({
     key,
     type,
     ...data,
     isEditable,
     currency: currency as Currency,
+    fixed,
   });
 
   const baseCurrency = top?.budget.currency;
@@ -101,6 +107,7 @@ export const getTableDataByPeriod = (
       aggregateForPeriod(top, type),
       true,
       top?.budget.currency ?? baseCurrency,
+      FIXED.TOP,
     ),
     createTableRow(
       'bottom-up',
@@ -108,6 +115,7 @@ export const getTableDataByPeriod = (
       aggregateForPeriod(bot, type),
       false,
       bot?.budget.currency ?? baseCurrency,
+      FIXED.TOP,
     ),
     createTableRow(
       'actual',
@@ -115,6 +123,7 @@ export const getTableDataByPeriod = (
       aggregateForPeriod(act, type),
       false,
       act?.budget.currency ?? baseCurrency,
+      FIXED.TOP,
     ),
   ];
 };

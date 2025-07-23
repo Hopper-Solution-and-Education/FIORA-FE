@@ -202,6 +202,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
             pagination={false}
             rowHover
             className="w-full scrollbar-thin rounded-lg shadow-sm"
+            tableContainerClassName="overflow-y-auto max-h-[30rem]"
           />
         </div>
       </div>

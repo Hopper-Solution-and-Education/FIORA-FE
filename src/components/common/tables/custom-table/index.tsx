@@ -28,7 +28,7 @@ import {
   type Updater,
 } from '@tanstack/react-table';
 import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import './style.css';
 import {
   DataSourceProps,
@@ -70,8 +70,34 @@ export function TableV2({
   showPagination = true,
   paginationEnabled = true,
   className,
+  tableContainerClassName,
   ...rest
 }: TableProps) {
+  // Header sticky
+  const headerRef = useRef<HTMLTableSectionElement>(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  useLayoutEffect(() => {
+    if (headerRef.current) {
+      setHeaderHeight(headerRef.current.getBoundingClientRect().height);
+    }
+  }, [showHeader, columns, size]);
+
+  const stickyTopOffsets = useMemo(() => {
+    let offset = headerHeight;
+    const offsets: Record<string | number, number> = {};
+    dataSource.forEach((row) => {
+      if (row.fixed === 'top') {
+        const key = row[rowKey] as string | number;
+        if (typeof key === 'string' || typeof key === 'number') {
+          offsets[key] = offset;
+          offset += 50; // chiều cao row
+        }
+      }
+    });
+    return offsets;
+  }, [dataSource, rowKey]);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLTableElement>(null);
 
@@ -387,6 +413,7 @@ export function TableV2({
             }}
           >
             <Table
+              containerClassName={tableContainerClassName}
               className={cn(
                 bordered &&
                   'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
@@ -395,7 +422,11 @@ export function TableV2({
               )}
             >
               {showHeader && (
-                <TableHeader className="bg-muted/30">
+                <TableHeader
+                  ref={headerRef}
+                  className={cn('bg-muted/30', 'sticky-top', 'table-header')}
+                  style={{ top: 0 }}
+                >
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow key={headerGroup.id} className="border-b border-border">
                       {headerGroup.headers.map((header) => {
@@ -414,7 +445,7 @@ export function TableV2({
                               meta?.fixed === 'left' &&
                                 'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border',
                               meta?.fixed === 'right' &&
-                                'sticky right-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border',
+                                'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border',
                             )}
                           >
                             {flexRender(header.column.columnDef.header, header.getContext())}
@@ -532,6 +563,7 @@ export function TableV2({
             }}
           >
             <Table
+              containerClassName={tableContainerClassName}
               className={cn(
                 bordered &&
                   'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
@@ -540,7 +572,11 @@ export function TableV2({
               )}
             >
               {showHeader && (
-                <TableHeader className="bg-muted/30">
+                <TableHeader
+                  ref={headerRef}
+                  className={cn('bg-muted/30', 'sticky-top', 'table-header')}
+                  style={{ top: 0 }}
+                >
                   <TableRow>
                     {tableColumns.map((column, index) => {
                       const meta = column.meta as TableV2Meta;
@@ -657,6 +693,7 @@ export function TableV2({
       >
         <Table
           ref={tableRef}
+          containerClassName={tableContainerClassName}
           className={cn(
             bordered &&
               'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
@@ -665,7 +702,11 @@ export function TableV2({
           )}
         >
           {showHeader && (
-            <TableHeader className="bg-muted/30">
+            <TableHeader
+              ref={headerRef}
+              className={cn('bg-muted/30', 'sticky-top', 'table-header')}
+              style={{ top: 0 }}
+            >
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id} className="border-b border-border">
                   {headerGroup.headers.map((header) => (
@@ -711,7 +752,14 @@ export function TableV2({
                     'border-b border-border transition-colors bg-muted/10',
                     rowHover && 'hover:bg-muted/20',
                     rowCursor && 'cursor-pointer',
+                    parentRowWithChildren.fixed === 'top' && 'sticky-top',
+                    parentRowWithChildren.fixed === 'bottom' && 'sticky-bottom',
                   )}
+                  style={{
+                    ...(parentRowWithChildren.fixed === 'top'
+                      ? { top: stickyTopOffsets[parentRowWithChildren[rowKey] as string | number] }
+                      : {}),
+                  }}
                   onClick={() =>
                     onRowClick?.({
                       ...parentRowWithChildren,
@@ -749,9 +797,9 @@ export function TableV2({
                           columnMeta?.align === 'center' && 'text-center',
                           columnMeta?.align === 'right' && 'text-right',
                           columnMeta?.fixed === 'left' &&
-                            'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border',
+                            'sticky left-0 z-30 bg-background shadow-[1px_0_0_0] shadow-border',
                           columnMeta?.fixed === 'right' &&
-                            'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border',
+                            'sticky right-0 z-30 bg-background shadow-[-1px_0_0_0] shadow-border',
                         )}
                         style={{
                           width: columnMeta?.width,
@@ -779,6 +827,8 @@ export function TableV2({
                         'border-b border-border transition-colors',
                         rowHover && 'hover:bg-muted/10',
                         rowCursor && 'cursor-pointer',
+                        child.fixed === 'top' && 'sticky top-0 z-20 bg-background',
+                        child.fixed === 'bottom' && 'sticky bottom-0 z-20 bg-background',
                       )}
                       onClick={() =>
                         onRowClick?.({
@@ -818,9 +868,9 @@ export function TableV2({
                               columnMeta?.align === 'right' && 'text-right',
                               columnMeta?.bgColorClassName,
                               columnMeta?.fixed === 'left' &&
-                                'sticky left-0 z-1 bg-white dark:bg-gray-900 shadow-[1px_0_0_0] shadow-border dark:shadow-gray-700',
+                                'sticky left-0 z-30 bg-background shadow-[1px_0_0_0] shadow-border',
                               columnMeta?.fixed === 'right' &&
-                                'sticky right-0 z-1 bg-white dark:bg-gray-900 shadow-[-1px_0_0_0] shadow-border dark:shadow-gray-700',
+                                'sticky right-0 z-30 bg-background shadow-[-1px_0_0_0] shadow-border',
                               'text-gray-700 dark:text-gray-300',
                             )}
                             style={{
