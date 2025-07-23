@@ -2,6 +2,7 @@ import { prisma } from '@/config';
 import { Prisma } from '@prisma/client';
 import { FAQ_LIST_CONSTANTS } from '../../constants';
 import {
+  CreateFaqRequest,
   Faq,
   FaqDetailData,
   FaqListResponse,
@@ -213,6 +214,38 @@ export class FaqRepository implements IFaqRepository {
       });
     } catch (error) {
       console.error('Error incrementing view count:', error);
+      throw error;
+    }
+  }
+
+  async createFaq(params: CreateFaqRequest): Promise<FaqDetailData> {
+    try {
+      const { title, description, content, categoryId, userId } = params;
+      const faq = await prisma.post.create({
+        data: {
+          title,
+          description,
+          content,
+          type: PostType.FAQ,
+          createdBy: userId,
+          User: {
+            connect: { id: userId },
+          },
+          PostCategory: {
+            connect: { id: categoryId },
+          },
+        } as Prisma.PostCreateInput,
+      });
+      return {
+        id: faq.id,
+        title: faq.title,
+        description: faq.description || undefined,
+        content: faq.content,
+        createdAt: faq.createdAt,
+        updatedAt: faq.updatedAt || undefined,
+      };
+    } catch (error) {
+      console.error('Error creating FAQ:', error);
       throw error;
     }
   }

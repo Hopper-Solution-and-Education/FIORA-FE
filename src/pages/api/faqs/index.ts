@@ -1,6 +1,11 @@
-import { prisma } from '@/config';
+import { createFaqUseCase } from '@/features/faqs/application/use-cases/createFaqUseCase';
+import { Messages } from '@/shared/constants/message';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { createErrorResponse } from '@/shared/lib/utils';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
-import { PostType, Prisma } from '@prisma/client';
+import { validateBody } from '@/shared/utils/validate';
+import { faqCreateSchema } from '@/shared/validators/faqValidator';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default withAuthorization({
@@ -16,44 +21,36 @@ export default withAuthorization({
 
 async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { title, description, content, categoryId } = req.body as {
-      title: string;
-      description: string;
-      content: string;
-      categoryId: string;
-    };
+    const { error, value } = validateBody(faqCreateSchema, req.body);
 
-    if (!title || !content || !categoryId) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    if (error) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
     }
 
-    const dup = await prisma.post.findFirst({
-      where: { title, type: PostType.FAQ },
+    const { title, description, content, categoryId } = value;
+
+    const faq = await createFaqUseCase.execute({
+      title,
+      description,
+      content,
+      categoryId,
+      userId,
     });
 
-    if (dup) {
-      return res.status(409).json({ error: 'Title already exists' });
-    }
-
-    const faq = await prisma.post.create({
-      data: {
-        title,
-        description,
-        content,
-        type: PostType.FAQ,
-        createdBy: userId,
-        User: {
-          connect: { id: userId },
-        },
-        PostCategory: {
-          connect: { id: categoryId },
-        },
-      } as Prisma.PostCreateInput,
-    });
-
-    return res.status(201).json(faq);
-  } catch (error) {
-    console.error('Error creating FAQ:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res
+      .status(RESPONSE_CODE.CREATED)
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_FAQ_SUCCESS, faq));
+  } catch (error: any) {
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createError(
+          res,
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error?.message || Messages.INTERNAL_ERROR,
+        ),
+      );
   }
 }

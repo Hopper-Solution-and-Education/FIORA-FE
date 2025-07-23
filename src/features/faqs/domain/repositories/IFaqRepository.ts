@@ -1,4 +1,5 @@
 import {
+  CreateFaqRequest,
   FaqDetailData,
   FaqListResponse,
   FaqsListQueryParams,
@@ -7,22 +8,15 @@ import {
 } from '../entities/models/faqs';
 
 export interface IFaqRepository {
-  /**
-   * Get list of FAQs with pagination and filtering
-   */
   getFaqList(params: FaqsListQueryParams): Promise<FaqListResponse>;
 
-  /**
-   * Get FAQ detail by ID with optional includes
-   */
   getFaqDetail(faqId: string, options?: GetFaqDetailOptions): Promise<FaqDetailData | null>;
 
   updateFaq(faqId: string, updateData: UpdateFaqRequest, userId: string): Promise<void>;
 
   deleteFaq(faqId: string): Promise<void>;
 
-  /**
-   * View count increment
-   */
+  createFaq(params: CreateFaqRequest): Promise<FaqDetailData>;
+
   incrementViewCount(faqId: string): Promise<void>;
 }

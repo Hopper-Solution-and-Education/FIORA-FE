@@ -65,7 +65,7 @@ const ForgotPasswordForm = ({ className, ...props }: React.ComponentProps<'div'>
               <span className="relative z-10 px-1">Or Sign in with</span>
               <button
                 data-test="forgot-password-form-google-sign-in"
-                onClick={handleGoogleSignIn}
+                onClick={() => handleGoogleSignIn()}
                 className="flex items-center justify-center w-8 h-8 cursor-pointer"
               >
                 <GoogleIcon />
