@@ -41,12 +41,6 @@ export interface FaqComment {
   } | null;
 }
 
-export interface FaqCommentParams {
-  faqId: string;
-  skip: number;
-  take: number;
-}
-
 export interface FaqReaction {
   id: string;
   reactionType: ReactionType;
@@ -87,6 +81,14 @@ export interface UpdateFaqRequest {
   description?: string;
   content: string;
   categoryId: string;
+}
+
+export interface CreateFaqRequest {
+  title: string;
+  description?: string;
+  content: string;
+  categoryId: string;
+  userId: string;
 }
 
 export interface GetFaqDetailOptions {

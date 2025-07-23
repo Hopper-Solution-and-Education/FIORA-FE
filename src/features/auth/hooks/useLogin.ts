@@ -35,7 +35,10 @@ export function useLogin() {
     },
   });
 
-  const handleCredentialsSignIn = async (data: { email: string; password: string }) => {
+  const handleCredentialsSignIn = async (
+    data: { email: string; password: string },
+    callbackUrl?: string,
+  ) => {
     setError(null);
     setSuccess(null);
     setIsLoading(true);
@@ -49,7 +52,7 @@ export function useLogin() {
 
       if (response?.ok) {
         form.reset(); // Reset form fields
-        router.push('/');
+        router.push(callbackUrl || '/');
       } else {
         setError('LoginID or Password is incorrect!');
       }
@@ -61,11 +64,11 @@ export function useLogin() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = async (callbackUrl?: string) => {
     setError(null);
     setSuccess(null);
     try {
-      await signIn('google', { redirect: true, callbackUrl: '/' });
+      await signIn('google', { redirect: true, callbackUrl: callbackUrl || '/' });
     } catch (error) {
       console.error('Google login error:', error);
       setError('An unexpected error occurred during Google login.');
