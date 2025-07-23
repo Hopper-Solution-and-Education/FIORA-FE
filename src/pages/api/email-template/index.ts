@@ -12,10 +12,10 @@ import { NextApiRequest, NextApiResponse } from 'next';
 export const maxDuration = 30; // 30 seconds
 
 export default withAuthorization({
-  GET: ['Admin', 'CS'],
-  POST: ['Admin', 'CS'],
-  PUT: ['Admin', 'CS'],
-  DELETE: ['Admin', 'CS'],
+  GET: ['Admin', 'CS', 'User'],
+  POST: ['Admin', 'CS', 'User'],
+  PUT: ['Admin', 'CS', 'User'],
+  DELETE: ['Admin', 'CS', 'User'],
 })(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   switch (req.method) {
     case 'POST':
@@ -66,10 +66,20 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
         .status(RESPONSE_CODE.BAD_REQUEST)
         .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
     }
+    const { type, name } = req.body;
+    const existingTemplate = await emailTemplateRepository.findEmailTemplateByTypeOrName(
+      type,
+      name,
+    );
+    if (existingTemplate) {
+      return res
+        .status(RESPONSE_CODE.CONFLICT)
+        .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.DUPLICATE_EMAIL_TEMPLATE));
+    }
 
     const newEmailTemplate = await emailTemplateRepository.createEmailTemplate({
       ...req.body,
-      isActive: true,
+      isActive: false,
       createdBy: userId,
       updatedBy: userId,
       createdAt: new Date(),
@@ -94,13 +104,21 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
 
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { id } = req.body;
+    const { id, isActive } = req.body;
 
     const { error } = validateBody(emailTemplateSchema, req.body);
     if (error) {
       return res
         .status(RESPONSE_CODE.BAD_REQUEST)
         .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
+    }
+    if (isActive) {
+      const checkTemplateDefault = await emailTemplateRepository.checkTemplateDefault();
+      if (checkTemplateDefault) {
+        return res
+          .status(RESPONSE_CODE.CONFLICT)
+          .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.EMAIL_TEMPLATE_DEFAULT_EXIT));
+      }
     }
     const updatedCategory = await emailTemplateUseCase.updateEmailTemplate(id, userId, {
       ...req.body,

@@ -304,4 +304,6 @@ export enum Messages {
   EMAIL_TEMPLATE_NOT_FOUND = 'Email template not found',
   NOT_DELETE_TEMPLATE = 'Do not delete template default',
   ID_REQUIRE = 'You must provide an ID',
+  DUPLICATE_EMAIL_TEMPLATE = 'Do not duplicate email template of the same type or name',
+  EMAIL_TEMPLATE_DEFAULT_EXIT = 'Email template default already exists',
 }

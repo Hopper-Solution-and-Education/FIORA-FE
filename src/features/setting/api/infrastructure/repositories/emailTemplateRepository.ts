@@ -1,6 +1,6 @@
 import { prisma } from '@/config';
 import { BadRequestError } from '@/shared/lib';
-import { EmailTemplate, Prisma } from '@prisma/client';
+import { EmailTemplate, EmailTemplateType, Prisma } from '@prisma/client';
 import { IEmailTemplateRepository } from '../../repositories/emailTemplateRepository.interface';
 
 class EmailTemplateRepository implements IEmailTemplateRepository {
@@ -9,7 +9,6 @@ class EmailTemplateRepository implements IEmailTemplateRepository {
   }
   async getEmailTemplate(): Promise<EmailTemplate[]> {
     return await prisma.emailTemplate.findMany({
-      where: { isActive: true },
       orderBy: {
         createdAt: 'desc',
       },
@@ -44,6 +43,23 @@ class EmailTemplateRepository implements IEmailTemplateRepository {
 
   async delete(id: string): Promise<EmailTemplate | null> {
     return await prisma.emailTemplate.delete({ where: { id } });
+  }
+
+  async findEmailTemplateByTypeOrName(
+    type: EmailTemplateType,
+    name: string,
+  ): Promise<EmailTemplate | null> {
+    return await prisma.emailTemplate.findFirst({
+      where: {
+        OR: [{ type }, { name }],
+      },
+    });
+  }
+
+  async checkTemplateDefault(): Promise<EmailTemplate | null> {
+    return await prisma.emailTemplate.findFirst({
+      where: { isActive: true },
+    });
   }
 }
 
