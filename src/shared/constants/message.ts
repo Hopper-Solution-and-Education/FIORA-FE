@@ -299,4 +299,15 @@ export enum Messages {
 
   INVALID_PAGE_OR_PAGE_SIZE = 'Invalid page or pageSize.',
   INVALID_FILTER_FORMAT = 'Invalid filter format.',
+
+  // Email template
+  CREATE_EMAIL_TEMPLATE_SUCCESS = 'Create email template successfully',
+  UPDATE_EMAIL_TEMPLATE_SUCCESS = 'Update email template successfully',
+  DELETE_EMAIL_TEMPLATE_SUCCESS = 'Delete email template successfully',
+  GET_EMAIL_TEMPLATE_SUCCESS = 'Get email template successfully',
+  EMAIL_TEMPLATE_NOT_FOUND = 'Email template not found',
+  NOT_DELETE_TEMPLATE = 'Do not delete template default',
+  ID_REQUIRE = 'You must provide an ID',
+  DUPLICATE_EMAIL_TEMPLATE = 'Do not duplicate email template of the same type or name',
+  EMAIL_TEMPLATE_DEFAULT_EXIT = 'Email template default already exists',
 }
