@@ -35,6 +35,16 @@ function mapDashboardFilterToDB(filters: Record<string, any>) {
       dbFilters[key] = value;
     }
   }
+
+  if (filters.sendDateFrom && filters.sendDateTo) {
+    dbFilters.createdAt = {};
+    if (filters.sendDateFrom) {
+      dbFilters.createdAt.gte = new Date(filters.sendDateFrom + 'T00:00:00.000Z');
+    }
+    if (filters.sendDateTo) {
+      dbFilters.createdAt.lte = new Date(filters.sendDateTo + 'T23:59:59.999Z');
+    }
+  }
   return dbFilters;
 }
 
@@ -60,7 +70,6 @@ class NotificationRepository implements INotificationRepository {
       query.take = take;
     }
     const notifications = (await prisma.notification.findMany(query)) as any[];
-    console.log('🚀 ~ NotificationRepository ~ notifications:', notifications);
 
     const userIds = Array.from(new Set(notifications.map((n) => n.createdBy).filter(Boolean)));
     const users = userIds.length
