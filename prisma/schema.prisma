@@ -471,7 +471,7 @@ model DepositRequest {
 
 model Notification {
   id                String                  @id @default(uuid()) @db.Uuid
-  attachmentId      String?                 @unique @db.Uuid
+  attachmentId      String?                 @db.Uuid
   message           String
   deepLink          String?
   createdAt         DateTime                @default(now()) @db.Timestamptz(0)
@@ -485,9 +485,9 @@ model Notification {
   notifyTo          NotificationType
   type              String
   emailLogs         EmailNotificationLogs[]
-  attachment        Attachment?             @relation(fields: [attachmentId], references: [id])
   emailTemplate     EmailTemplate?          @relation(fields: [emailTemplateId], references: [id])
   userNotifications UserNotification[]
+  Attachment        Attachment[]
 
   @@index([attachmentId])
 }
@@ -549,7 +549,8 @@ model Attachment {
   updatedBy           String?               @db.Uuid
   AttachmentRelations AttachmentRelations[]
   depositRequests     DepositRequest?
-  notifications       Notification?
+  notifications       Notification?         @relation(fields: [notificationId], references: [id])
+  notificationId      String?               @db.Uuid
 
   @@index([url])
   @@index([path])
