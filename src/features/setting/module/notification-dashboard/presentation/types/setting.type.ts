@@ -16,6 +16,7 @@ export type NotificationDashboardTableColumn = {
   sortable: boolean;
   sortedBy?: 'asc' | 'desc';
   isVisible: boolean;
+  side: 'left' | 'right' | 'center';
 };
 
 export type NotificationDashboardTableColumnKey =
@@ -35,14 +36,14 @@ export type NotificationDashboardTableColumnKeyType = {
 };
 
 export const NOTIFICATION_DASHBOARD_TABLE_COLUMN_CONFIG: NotificationDashboardTableColumnKeyType = {
-  'No.': { index: 0, sortable: false, isVisible: true },
-  'Send Date': { index: 1, sortable: true, isVisible: true },
-  'Notify To': { index: 2, sortable: true, isVisible: true },
-  Subject: { index: 3, sortable: true, isVisible: true },
-  Recipients: { index: 4, sortable: false, isVisible: true },
-  Sender: { index: 5, sortable: true, isVisible: true },
-  'Notify Type': { index: 6, sortable: true, isVisible: true },
-  Channel: { index: 7, sortable: true, isVisible: true },
-  Status: { index: 8, sortable: true, isVisible: true },
-  Action: { index: 9, sortable: false, isVisible: true },
+  'No.': { index: 0, sortable: false, isVisible: true, side: 'center' },
+  'Send Date': { index: 1, sortable: true, isVisible: true, side: 'center' },
+  'Notify To': { index: 2, sortable: true, isVisible: true, side: 'center' },
+  Subject: { index: 3, sortable: true, isVisible: true, side: 'left' },
+  Recipients: { index: 4, sortable: false, isVisible: true, side: 'center' },
+  Sender: { index: 5, sortable: true, isVisible: true, side: 'left' },
+  'Notify Type': { index: 6, sortable: true, isVisible: true, side: 'center' },
+  Channel: { index: 7, sortable: true, isVisible: true, side: 'center' },
+  Status: { index: 8, sortable: true, isVisible: true, side: 'center' },
+  Action: { index: 9, sortable: false, isVisible: true, side: 'center' },
 };

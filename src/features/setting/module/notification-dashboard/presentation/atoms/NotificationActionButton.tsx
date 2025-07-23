@@ -1,14 +1,23 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
+import { RouteEnum } from '@/shared/constants/RouteEnum';
+import { routeConfig } from '@/shared/utils/route';
+import { useRouter } from 'next/navigation';
 
 interface NotificationActionButtonProps {
-  onClick?: () => void;
+  notificationId: string;
 }
 
-const NotificationActionButton = ({ onClick }: NotificationActionButtonProps) => {
+const NotificationActionButton = ({ notificationId }: NotificationActionButtonProps) => {
+  const router = useRouter();
+
+  const onClick = () => {
+    router.push(routeConfig(RouteEnum.NotificationDetail, { id: notificationId }));
+  };
+
   return (
     <Button variant="ghost" size="icon" onClick={onClick} aria-label="View Detail">
-      <Icons.page className="w-4 h-4" />
+      <Icons.post className="w-4 h-4" />
     </Button>
   );
 };
