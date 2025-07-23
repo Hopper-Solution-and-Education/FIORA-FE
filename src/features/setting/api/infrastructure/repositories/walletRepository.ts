@@ -2,6 +2,7 @@ import { prisma } from '@/config';
 import { FilterObject } from '@/shared/types/filter.types';
 import { FilterBuilder } from '@/shared/utils/filterBuilder';
 import {
+  Attachment,
   DepositRequest,
   DepositRequestStatus,
   PackageFX,
@@ -54,8 +55,14 @@ class WalletRepository implements IWalletRepository {
     return this._prisma.packageFX.findMany();
   }
 
-  async getPackageFXById(id: string): Promise<PackageFX | null> {
-    return this._prisma.packageFX.findUnique({ where: { id } });
+  async getPackageFXById(id: string): Promise<(PackageFX & { attachments?: Attachment[] }) | null> {
+    const packageFX = await this._prisma.packageFX.findUnique({ where: { id } });
+    if (!packageFX) return null;
+    const attachments =
+      packageFX.attachment_id && packageFX.attachment_id.length > 0
+        ? await this._prisma.attachment.findMany({ where: { id: { in: packageFX.attachment_id } } })
+        : [];
+    return { ...packageFX, attachments };
   }
   async createPackageFX(data: Prisma.PackageFXUncheckedCreateInput): Promise<PackageFX> {
     return this._prisma.packageFX.create({ data });

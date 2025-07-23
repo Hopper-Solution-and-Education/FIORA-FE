@@ -104,18 +104,22 @@ class WalletUseCase {
     data: {
       fxAmount: number;
       files?: Array<{ url: string; size: number; path: string; type: string }>;
+      replaceAttachments?: boolean;
     },
   ) {
     const found = await this._walletRepository.getPackageFXById(id);
     if (!found) return null;
+
     const depositRequests = await this._walletRepository.findDepositRequestsByPackageFXId(id);
     const hasActiveRequests = depositRequests.some((req) => req.status === 'Requested');
     if (hasActiveRequests) {
-      throw new Error(
-        'Cannot update PackageFX: There are active deposit requests pending approval',
-      );
+      throw new Error(Messages.PACKAGE_FX_HAS_ACTIVE_DEPOSIT_REQUEST);
     }
-    const updateData: { fxAmount: number; attachment_id?: string[] } = { fxAmount: data.fxAmount };
+
+    const updateData: { fxAmount: number; attachment_id?: string[] } = {
+      fxAmount: data.fxAmount,
+    };
+
     if (data.files && data.files.length > 0) {
       const attachments = await Promise.all(
         data.files.map((file) =>
@@ -128,11 +132,16 @@ class WalletUseCase {
           }),
         ),
       );
-      updateData.attachment_id = attachments.map((att) => att.id);
+
+      updateData.attachment_id = data.replaceAttachments
+        ? attachments.map((att) => att.id)
+        : [...(found.attachment_id || []), ...attachments.map((att) => att.id)]; // append
+    } else {
+      updateData.attachment_id = found.attachment_id || [];
     }
+
     return this._walletRepository.updatePackageFX(id, updateData);
   }
-
   async deletePackageFX(id: string) {
     const found = await this._walletRepository.getPackageFXById(id);
     if (!found) return null;

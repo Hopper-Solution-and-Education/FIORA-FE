@@ -21,11 +21,9 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse) 
         return createError(res, RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED);
     }
   } catch (error: any) {
-    return createError(
-      res,
-      RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-      error.message || Messages.INTERNAL_ERROR,
-    );
+    console.log(error.message);
+
+    return createError(res, RESPONSE_CODE.INTERNAL_SERVER_ERROR, Messages.INTERNAL_ERROR);
   }
 });
 export const config = {
@@ -41,11 +39,8 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.GET_PACKAGE_FX_SUCCESS, packages));
   } catch (error: any) {
-    return createError(
-      res,
-      RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-      error.message || Messages.INTERNAL_ERROR,
-    );
+    console.error(error.message);
+    return createError(res, RESPONSE_CODE.INTERNAL_SERVER_ERROR, Messages.INTERNAL_ERROR);
   }
 }
 
@@ -125,16 +120,13 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
           .status(RESPONSE_CODE.CREATED)
           .json(createResponse(RESPONSE_CODE.CREATED, 'PackageFX created successfully', result));
       } catch (error: any) {
-        return createError(
-          res,
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        );
+        console.error(error.message);
+        return createError(res, RESPONSE_CODE.INTERNAL_SERVER_ERROR, Messages.INTERNAL_ERROR);
       }
     });
     req.pipe(busboy);
   } else {
-    return createError(res, RESPONSE_CODE.BAD_REQUEST, 'Content-Type must be multipart/form-data');
+    return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_CONTENT_TYPE_MULTIPART);
   }
 }
 async function PUT(req: NextApiRequest, res: NextApiResponse) {
@@ -220,16 +212,13 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
           .status(RESPONSE_CODE.OK)
           .json(createResponse(RESPONSE_CODE.OK, 'PackageFX updated successfully', result));
       } catch (error: any) {
-        return createError(
-          res,
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        );
+        console.error(error.message);
+        return createError(res, RESPONSE_CODE.INTERNAL_SERVER_ERROR, Messages.INTERNAL_ERROR);
       }
     });
     req.pipe(busboy);
   } else {
-    return createError(res, RESPONSE_CODE.BAD_REQUEST, 'Content-Type must be multipart/form-data');
+    return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_CONTENT_TYPE_MULTIPART);
   }
 }
 async function DELETE(req: NextApiRequest, res: NextApiResponse) {
@@ -246,10 +235,7 @@ async function DELETE(req: NextApiRequest, res: NextApiResponse) {
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, 'PackageFX deleted successfully', deleted));
   } catch (error: any) {
-    return createError(
-      res,
-      RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-      error.message || Messages.INTERNAL_ERROR,
-    );
+    console.error(error.message);
+    return createError(res, RESPONSE_CODE.INTERNAL_SERVER_ERROR, Messages.INTERNAL_ERROR);
   }
 }

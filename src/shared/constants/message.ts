@@ -258,6 +258,7 @@ export enum Messages {
   PACKAGE_FX_FX_FAILED = 'fxAmount is requird',
   PACKAGE_FX_FX_AMOUNT_INVALID = 'fxAmount must be a non-negative number',
   PACKAGE_FX_FILE_UPLOAD_FAILED = 'Failed to upload file for package FX.',
+  PACKAGE_FX_HAS_ACTIVE_DEPOSIT_REQUEST = 'Cannot update PackageFX: There are active deposit requests pending approval',
 
   // EXCHANGE RATE SUCCESS
   CREATE_EXCHANGE_RATE_SUCCESS = 'Create exchange rate successfully.',
@@ -310,4 +311,5 @@ export enum Messages {
 
   INVALID_PAGE_OR_PAGE_SIZE = 'Invalid page or pageSize.',
   INVALID_FILTER_FORMAT = 'Invalid filter format.',
+  INVALID_CONTENT_TYPE_MULTIPART = 'Content-Type must be multipart/form-data',
 }
