@@ -23,12 +23,12 @@ import SettingCenter from './SettingCenter';
 export default function Header() {
   const isMobile = useIsMobile();
 
-  const { announcement, isLoading } = useAnnouncementManager();
+  const { announcement, isLoading, show: showAnnouncement, handleClose } = useAnnouncementManager();
 
   return (
     <header className="transition-[width,height] ease-linear">
       {/* Announcement */}
-      {announcement?.data?.[0]?.content && !isLoading && (
+      {showAnnouncement && announcement?.data?.[0]?.content && !isLoading && (
         <div className="relative w-full">
           <Alert variant="default" className="rounded-none hidden md:block relative">
             <AlertDescription>{announcement?.data?.[0]?.content}</AlertDescription>
@@ -36,7 +36,7 @@ export default function Header() {
               variant="ghost"
               size="icon"
               className="absolute top-2 right-2 p-2 rounded-full hover:bg-gray-100"
-              onClick={() => {}}
+              onClick={handleClose}
             >
               ✕
             </Button>

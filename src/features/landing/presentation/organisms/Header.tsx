@@ -29,7 +29,11 @@ export default function Header() {
   const isMobile = useIsMobile();
   const { data } = useSession();
 
-  const { announcement } = useAnnouncementManager();
+  const {
+    announcement,
+    show: showAnnouncement,
+    handleClose: handleCloseAnnouncement,
+  } = useAnnouncementManager();
 
   const toggleMenu = () => setIsMenuOpen((prevState) => !prevState);
 
@@ -66,16 +70,15 @@ export default function Header() {
 
         <div className="w-full h-full">
           <div className="w-full">
-            {announcement?.data?.[0]?.content && (
+            {showAnnouncement && announcement?.data?.[0]?.content && (
               <div
                 className={`flex justify-between items-start ${isMobile ? 'text-xs' : 'text-base'} px-4 shadow-sm`}
               >
                 <div>{announcement?.data?.[0]?.content}</div>
-
                 <X
                   size={18}
                   className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer "
-                  onClick={() => {}}
+                  onClick={handleCloseAnnouncement}
                 />
               </div>
             )}
