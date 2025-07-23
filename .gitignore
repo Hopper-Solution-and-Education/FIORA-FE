@@ -52,6 +52,7 @@ bun.lock
 
 # pnpm
 pnpm-lock.yaml
+pnpm-workspace.yaml
 
 # yarn
 
