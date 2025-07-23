@@ -302,6 +302,7 @@ model MediaReviewUser {
   updatedAt          DateTime @updatedAt @db.Timestamptz(0)
   createdBy          String?  @db.Uuid
   updatedBy          String?  @db.Uuid
+  media_user_title   String?
   media              Media    @relation("MediaToReviewUser", fields: [mediaId], references: [id])
 }
 
@@ -458,6 +459,7 @@ model DepositRequest {
   updatedAt    DateTime             @updatedAt @db.Timestamptz(0)
   createdBy    String?              @db.Uuid
   updatedBy    String?              @db.Uuid
+  currency     Currency             @default(VND)
   attachment   Attachment?          @relation(fields: [attachmentId], references: [id])
   package      PackageFX            @relation(fields: [packageFXId], references: [id])
   user         User                 @relation("UserDepositRequest", fields: [userId], references: [id])

@@ -1,6 +1,11 @@
 import { prisma } from '@/config';
 import { AppError } from '@/shared/lib/responseUtils/errors';
-import { ChannelType, type EmailNotificationLogs, type UserNotification } from '@prisma/client';
+import {
+  ChannelType,
+  NotificationType,
+  type EmailNotificationLogs,
+  type UserNotification,
+} from '@prisma/client';
 import type {
   CreateBoxNotificationInput,
   INotificationRepository,
@@ -175,7 +180,7 @@ class NotificationRepository implements INotificationRepository {
           attachmentId: attachmentId || null,
           title,
           message,
-          type: type,
+          type: type as NotificationType,
           deepLink: deepLink || null,
           channel: ChannelType.BOX,
           createdAt: new Date(),
