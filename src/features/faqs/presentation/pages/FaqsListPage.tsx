@@ -34,7 +34,7 @@ const FaqsListPage = () => {
     session?.user?.role?.toUpperCase() === USER_ROLES.CS;
 
   return (
-    <div className="w-full px-4 space-y-8 mb-6">
+    <div className="w-full px-6 space-y-8 mb-6">
       {/* Page Header with Filters */}
       <FaqsPageHeader
         categories={categoriesWithPost}

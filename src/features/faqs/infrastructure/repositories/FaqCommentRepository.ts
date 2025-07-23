@@ -1,9 +1,5 @@
 import { prisma } from '@/config';
-import {
-  CreateCommentRequest,
-  FaqComment,
-  FaqCommentParams,
-} from '../../domain/entities/models/faqs';
+import { CreateCommentRequest, FaqComment } from '../../domain/entities/models/faqs';
 import { IFaqCommentRepository } from '../../domain/repositories';
 
 /**
@@ -58,7 +54,7 @@ export class FaqCommentRepository implements IFaqCommentRepository {
     }
   }
 
-  async getFaqComments({ faqId, skip, take }: FaqCommentParams): Promise<FaqComment[]> {
+  async getFaqComments(faqId: string): Promise<FaqComment[]> {
     const comments = await prisma.comment.findMany({
       where: { postId: faqId },
       select: {
@@ -78,8 +74,6 @@ export class FaqCommentRepository implements IFaqCommentRepository {
       orderBy: {
         createdAt: 'desc',
       },
-      skip,
-      take,
     });
 
     return comments.map((comment) => ({
