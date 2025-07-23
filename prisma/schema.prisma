@@ -479,9 +479,9 @@ model Notification {
   channel           ChannelType
   emails            String[]
   title             String
-  notifyTo          String
   emailTemplateId   String?                 @db.Uuid
-  type              NotificationType
+  notifyTo          NotificationType
+  type              String
   emailLogs         EmailNotificationLogs[]
   attachment        Attachment?             @relation(fields: [attachmentId], references: [id])
   emailTemplate     EmailTemplate?          @relation(fields: [emailTemplateId], references: [id])
@@ -828,8 +828,8 @@ enum WalletType {
 }
 
 enum ChannelType {
-  EMAIL
   BOX
+  EMAIL
 }
 
 enum NotificationLogType {

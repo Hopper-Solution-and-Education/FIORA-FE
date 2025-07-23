@@ -68,6 +68,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
     const notification = await notificationUseCase.createBoxNotification({
       title: input.title,
       type: input.type,
+      notifyTo: input.notifyTo,
       attachmentId: input.attachmentId,
       deepLink: input.deepLink,
       message: input.message,
