@@ -77,11 +77,21 @@ export function TableV2({
   const headerRef = useRef<HTMLTableSectionElement>(null);
   const [headerHeight, setHeaderHeight] = useState(0);
 
+  // Ref and state to save the actual height of each fixed top row
+  const rowRefs = useRef<Record<string | number, HTMLTableRowElement | null>>({});
+  const [rowHeights, setRowHeights] = useState<Record<string | number, number>>({});
+
   useLayoutEffect(() => {
     if (headerRef.current) {
       setHeaderHeight(headerRef.current.getBoundingClientRect().height);
     }
-  }, [showHeader, columns, size]);
+    // Get the actual height of each fixed top row
+    const heights: Record<string | number, number> = {};
+    Object.entries(rowRefs.current).forEach(([key, el]) => {
+      if (el) heights[key] = el.getBoundingClientRect().height;
+    });
+    setRowHeights(heights);
+  }, [showHeader, columns, size, dataSource]);
 
   const stickyTopOffsets = useMemo(() => {
     let offset = headerHeight;
@@ -91,12 +101,13 @@ export function TableV2({
         const key = row[rowKey] as string | number;
         if (typeof key === 'string' || typeof key === 'number') {
           offsets[key] = offset;
-          offset += 50; // chiều cao row
+          // Get height of row
+          offset += rowHeights[key] || 55;
         }
       }
     });
     return offsets;
-  }, [dataSource, rowKey]);
+  }, [dataSource, rowKey, headerHeight, rowHeights]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLTableElement>(null);
@@ -741,21 +752,39 @@ export function TableV2({
             </TableHeader>
           )}
           <TableBody>
-            {dataSource.flatMap((parentRow) => {
+            {dataSource.flatMap((parentRow, parentIndex, arr) => {
               const parentRowWithChildren = parentRow as DataSourceProps;
               const parentRowContext = createRowContext(parentRowWithChildren, -1, table);
+
+              // Xác định index các hàng fixed top/bottom
+              const fixedTopRows = arr.filter((r) => r.fixed === 'top');
+              const fixedBottomRows = arr.filter((r) => r.fixed === 'bottom');
+              const isLastFixedTop =
+                parentRowWithChildren.fixed === 'top' &&
+                fixedTopRows[fixedTopRows.length - 1]?.[rowKey] === parentRowWithChildren[rowKey];
+              const isFirstFixedBottom =
+                parentRowWithChildren.fixed === 'bottom' &&
+                fixedBottomRows[0]?.[rowKey] === parentRowWithChildren[rowKey];
 
               const parentElement = (
                 <TableRow
                   key={parentRowWithChildren[rowKey] as string}
+                  ref={(el) => {
+                    // Gán ref cho row fixed top
+                    if (parentRowWithChildren.fixed === 'top') {
+                      rowRefs.current[parentRowWithChildren[rowKey] as string | number] = el;
+                    }
+                  }}
                   className={cn(
                     'border-b border-border transition-colors bg-muted/10',
                     rowHover && 'hover:bg-muted/20',
                     rowCursor && 'cursor-pointer',
                     parentRowWithChildren.fixed === 'top' &&
-                      'sticky-top bg-white dark:bg-gray-900 border-b border-border hover:bg-muted/10',
+                      'sticky-top bg-white dark:bg-gray-900 hover:bg-white dark:hover:bg-gray-900',
                     parentRowWithChildren.fixed === 'bottom' &&
-                      'sticky-bottom bg-white dark:bg-gray-900 border-t border-border hover:bg-muted/10',
+                      'sticky-bottom bg-white dark:bg-gray-900 hover:bg-white dark:hover:bg-gray-900',
+                    isLastFixedTop && 'fixed-top-shadow-bottom',
+                    isFirstFixedBottom && 'fixed-bottom-shadow-top',
                   )}
                   style={{
                     ...(parentRowWithChildren.fixed === 'top'

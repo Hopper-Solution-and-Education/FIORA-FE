@@ -160,7 +160,7 @@ export const getColumnsByPeriod = (
           currency={currency}
           classContainer="m-0"
           className={cn(
-            'text-right h-[3.4rem] border-none rounded-none hover:shadow-md hover:shadow-blue-500/20',
+            'text-right h-[3.4rem] border-none rounded-none bg-white dark:bg-gray-900 hover:shadow-md hover:shadow-blue-500/20 focus-visible:border-blue-500 focus-visible:ring-blue-500/20 dark:focus-visible:ring-blue-500/40',
             column.className,
           )}
           onChange={(newValue) => {
@@ -417,14 +417,16 @@ export const getColumnsByPeriod = (
       }),
     );
 
-  const monthColumns = createPeriodColumns(PERIOD_CONFIG.months);
+  const monthColumns = createPeriodColumns(PERIOD_CONFIG.months, {
+    bgColorClassName: 'bg-blue-50 dark:bg-blue-900',
+  });
 
   const quarterColumns = createPeriodColumns(PERIOD_CONFIG.quarters, {
-    bgColorClassName: 'bg-muted',
+    bgColorClassName: 'bg-green-50 dark:bg-green-900',
   });
 
   const halfYearColumns = createPeriodColumns(PERIOD_CONFIG.halfYears, {
-    bgColorClassName: 'bg-muted',
+    bgColorClassName: 'bg-yellow-50 dark:bg-yellow-900',
   });
 
   const fullYearColumn = [
@@ -433,7 +435,7 @@ export const getColumnsByPeriod = (
       align: 'right',
       render: (text: any, record: TableData, index: number) =>
         renderEditableCell(text, record, index, { key: 'fullYear' }),
-      bgColorClassName: 'bg-muted',
+      bgColorClassName: 'bg-purple-50 dark:bg-purple-900',
     }),
   ];
 

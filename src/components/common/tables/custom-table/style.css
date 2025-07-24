@@ -41,3 +41,15 @@
 .table-scroll-y {
   overflow-y: auto;
 }
+
+/* Shadow cho hàng fixed top (chỉ hàng cuối cùng) */
+.fixed-top-shadow-bottom {
+  box-shadow: 0 2px 4px -2px rgba(0, 0, 0, 0.12);
+  z-index: 60;
+}
+
+/* Shadow cho hàng fixed bottom (chỉ hàng đầu tiên) */
+.fixed-bottom-shadow-top {
+  box-shadow: 0 -2px 4px -2px rgba(0, 0, 0, 0.12);
+  z-index: 30;
+}
