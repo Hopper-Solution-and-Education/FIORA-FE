@@ -44,7 +44,12 @@ export const useNotificationDashboard = () => {
     async (page: number, pageSize: number, isLoadMore = false) => {
       if (isFetching.current) return;
       isFetching.current = true;
-      dispatch(setLoading(true));
+
+      if (isLoadMore) {
+        dispatchTable({ type: 'SET_IS_LOADING_MORE', payload: true });
+      } else {
+        dispatch(setLoading(true));
+      }
 
       try {
         const useCase = notificationDashboardContainer.get<IGetNotificationsPaginatedUseCase>(
@@ -52,6 +57,7 @@ export const useNotificationDashboard = () => {
         );
         const clean = cleanFilter(filter);
         const response = await useCase.execute(page, pageSize, clean);
+
         const tableData = response.items.map(convertToTableData);
 
         if (isLoadMore) {
@@ -68,8 +74,17 @@ export const useNotificationDashboard = () => {
             total: response.total ?? 0,
           },
         });
+
+        const hasMore =
+          response.page <
+          (response.totalPage ?? Math.ceil((response.total ?? 0) / response.pageSize));
+        dispatchTable({ type: 'SET_HAS_MORE', payload: hasMore });
       } finally {
-        dispatch(setLoading(false));
+        if (isLoadMore) {
+          dispatchTable({ type: 'SET_IS_LOADING_MORE', payload: false });
+        } else {
+          dispatch(setLoading(false));
+        }
         isFetching.current = false;
       }
     },

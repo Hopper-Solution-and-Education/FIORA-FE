@@ -5,6 +5,7 @@ import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import NotificationDashboardTableRow from '../molecules/NotificationDashboardTableRow';
 import TableLoadingState from '../molecules/TableLoadingState';
 import {
+  NOTIFICATION_DASHBOARD_TABLE_COLUMN_CONFIG,
   NotificationDashboardTableColumnKey,
   NotificationDashboardTableData,
 } from '../types/setting.type';
@@ -47,11 +48,17 @@ const NotificationDashboardTable = ({
         <Table>
           <TableHeader className="sticky top-0 bg-background z-10">
             <TableRow>
-              {shownColumns.map((col) => (
-                <TableHead key={col} className="text-center">
-                  {col}
-                </TableHead>
-              ))}
+              {shownColumns.map((col) => {
+                const side = NOTIFICATION_DASHBOARD_TABLE_COLUMN_CONFIG[col]?.side || 'center';
+                let alignClass = 'text-center';
+                if (side === 'left') alignClass = 'text-left';
+                else if (side === 'right') alignClass = 'text-right';
+                return (
+                  <TableHead key={col} className={alignClass}>
+                    {col}
+                  </TableHead>
+                );
+              })}
             </TableRow>
           </TableHeader>
 
