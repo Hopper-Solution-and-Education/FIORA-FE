@@ -4,20 +4,22 @@ import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carouse
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import Autoplay from 'embla-carousel-autoplay';
 import { motion } from 'framer-motion';
+import { ImageIcon } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useState } from 'react';
 import { SectionTypeEnum } from '../../constants';
 import { Media } from '../../domain/models/Media';
 import { useGetSection } from '../../hooks/useGetSection';
 
-const containerWidthDesktop = 1500;
-const containerWidthMobile = 350;
+const containerWidthDesktop = 1300;
+const containerWidthMobile = 300;
 const numberOfItemsDesktop = 3;
 const numberOfItemsMobile = 1;
 const gapDesktop = 5;
 const gapMobile = 10;
-const itemHeightDesktop = '850px';
-const itemHeightMobile = '550px';
+const itemHeightDesktop = '750px';
+const itemHeightMobile = '500px';
 
 const KSPSection = () => {
   const { isLoading, section } = useGetSection(SectionTypeEnum.KPS);
@@ -51,7 +53,7 @@ const KSPSection = () => {
         </h1>
       </div>
       <Carousel
-        className={`mx-auto  ${isMobile ? 'max-w-[100vw]' : 'max-w-[1500px]'}`}
+        className={`mx-auto  ${isMobile ? 'max-w-[100vw]' : 'max-w-[1300px]'}`}
         opts={{
           loop: true,
           direction: 'ltr',
@@ -63,6 +65,7 @@ const KSPSection = () => {
             playOnInit: true,
             jump: false,
             stopOnFocusIn: true,
+            stopOnMouseEnter: true,
           }),
         ]}
       >
@@ -105,59 +108,64 @@ const FlippingItemContent = ({
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
 
-  const handleFlip = () => {
-    setIsFlipped((prev) => !prev);
-  };
-
   return (
-    <div
-      className={`w-full rounded-lg shadow-md border relative overflow-hidden card-container cursor-pointer ${className} `}
-      style={{ perspective: '1000px', ...style }} // Added perspective to the container for 3D effect
-      onClick={handleFlip}
-    >
-      <motion.div
-        className="card w-full h-full relative"
-        animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ duration: 0.8 }}
-        style={{
-          transformStyle: 'preserve-3d',
-        }}
+    <Link href={item.redirect_url || ''} target="_blank">
+      <div
+        className={`w-full rounded-lg shadow-md border relative overflow-hidden card-container cursor-pointer ${className} `}
+        style={{ perspective: '1000px', ...style }} // Added perspective to the container for 3D effect
+        onMouseEnter={() => setIsFlipped(true)}
+        onMouseLeave={() => setIsFlipped(false)}
       >
-        {/* Front Side - pass item data */}
-        <div
-          className="card-front absolute w-full h-full flex justify-center items-center backface-hidden rounded-lg bg-white"
+        <motion.div
+          className="card w-full h-full relative"
+          animate={{ rotateY: isFlipped ? 180 : 0 }}
+          transition={{ duration: 0.8 }}
           style={{
-            backfaceVisibility: 'hidden',
+            transformStyle: 'preserve-3d',
           }}
         >
-          <CardFront item={item} />
-        </div>
+          {/* Front Side - pass item data */}
+          <div
+            className="card-front absolute w-full h-full flex justify-center items-center backface-hidden rounded-lg bg-white"
+            style={{
+              backfaceVisibility: 'hidden',
+            }}
+          >
+            <CardFront item={item} />
+          </div>
 
-        {/* Back Side - pass item data */}
-        <div
-          className="card-back absolute w-full h-full flex justify-center items-center backface-hidden rounded-lg bg-white"
-          style={{
-            backfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
-          }}
-        >
-          <CardBack item={item} />
-        </div>
-      </motion.div>
-    </div>
+          {/* Back Side - pass item data */}
+          <div
+            className="card-back absolute w-full h-full flex justify-center items-center backface-hidden rounded-lg bg-white"
+            style={{
+              backfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)',
+            }}
+          >
+            <CardBack item={item} />
+          </div>
+        </motion.div>
+      </div>
+    </Link>
   );
 };
 
 const CardFront = ({ item }: { item: Media }) => {
   return (
     <div className="relative w-full h-full">
-      <Image
-        src={item.media_url || 'https://placehold.co/454x271?text=Front+Card'}
-        alt={item.description || 'Front Side'}
-        className="w-full h-full object-cover rounded-lg"
-        fill
-        sizes="100%"
-      />
+      {item.media_url ? (
+        <Image
+          src={item.media_url}
+          alt={item.description || 'Front Side'}
+          className="w-full h-full object-cover rounded-lg"
+          fill
+          sizes="100%"
+        />
+      ) : (
+        <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+          <ImageIcon />
+        </div>
+      )}
     </div>
   );
 };
@@ -165,13 +173,19 @@ const CardFront = ({ item }: { item: Media }) => {
 const CardBack = ({ item }: { item: Media }) => {
   return (
     <div className="relative w-full h-full">
-      <Image
-        src={item.media_url || 'https://placehold.co/454x271?text=Back+Card'}
-        alt={item.description || 'Back Side'}
-        className="w-full h-full object-cover rounded-lg"
-        fill
-        sizes="100%"
-      />
+      {item.media_url_2 ? (
+        <Image
+          src={item.media_url_2}
+          alt={item.description || 'Back Side'}
+          className="w-full h-full object-cover rounded-lg"
+          fill
+          sizes="100%"
+        />
+      ) : (
+        <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+          <ImageIcon />
+        </div>
+      )}
     </div>
   );
 };

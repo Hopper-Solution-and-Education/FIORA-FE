@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import growthbook from '@/config/growthbook/growthbook';
 import { ICON_SIZE } from '@/shared/constants/size';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { changeLanguage, toggleCurrency } from '@/store/slices/setting.slice';
@@ -20,8 +21,7 @@ import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { menuSettingItems, filterMenuItems, MenuSettingItem } from './utils';
-import growthbook from '@/config/growthbook/growthbook';
+import { filterMenuItems, MenuSettingItem, menuSettingItems } from './utils';
 
 export default function SettingCenter() {
   const { theme, setTheme } = useTheme();
@@ -74,7 +74,7 @@ export default function SettingCenter() {
         <DropdownMenuContent
           align="end"
           className={`${
-            session?.user ? 'w-[300px] grid-cols-5' : 'w-[120px] grid-cols-2'
+            session?.user ? 'w-[300px] grid-cols-5' : 'w-[180px] grid-cols-3'
           } p-4 grid gap-4 border shadow-md`}
         >
           <Tooltip delayDuration={0}>

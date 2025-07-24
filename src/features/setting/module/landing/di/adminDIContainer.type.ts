@@ -3,4 +3,6 @@ export const TYPES = {
   ISectionRepository: Symbol.for('ISectionRepository'),
   ISectionAPI: Symbol.for('ISectionAPI'),
   IHttpClient: Symbol.for('IHttpClient'),
+  IAnnouncementRepository: Symbol.for('IAnnouncementRepository'),
+  IAnnouncementAPI: Symbol.for('IAnnouncementAPI'),
 };
