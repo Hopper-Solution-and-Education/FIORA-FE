@@ -3,6 +3,7 @@ import { Response } from '@/shared/types/Common.types';
 import { RootState } from '@/store';
 import { updateExchangeRatesWithTimestamp } from '@/store/slices/setting.slice';
 import { CurrencyObjectType, CurrencyType } from '@/store/types/setting.type';
+import { Currency } from '@prisma/client';
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
@@ -39,7 +40,7 @@ type UseCurrencyFormatterReturn = {
   // State
   exchangeRates: CurrencyType;
   baseCurrency: string;
-  selectedCurrency: string;
+  selectedCurrency: Currency;
   isLoading: boolean;
   error: any;
 
@@ -58,8 +59,7 @@ const getCachedExchangeRates = (): CachedExchangeRateData | null => {
 
     const data: CachedExchangeRateData = JSON.parse(cached);
     return data;
-  } catch (error) {
-    console.error('Error reading cached exchange rates:', error);
+  } catch {
     return null;
   }
 };
@@ -70,8 +70,8 @@ const getCachedExchangeRates = (): CachedExchangeRateData | null => {
 const setCachedExchangeRates = (data: CachedExchangeRateData): void => {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-  } catch (error) {
-    console.error('Error saving exchange rates to cache:', error);
+  } catch {
+    // Silently ignore cache write errors
   }
 };
 
@@ -176,8 +176,7 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
         return true;
       }
       return false;
-    } catch (error) {
-      console.error('Failed to fetch exchange rates:', error);
+    } catch {
       toast.error('Failed to fetch current exchange rates. Using cached data if available.');
 
       // If API fails but we have stale cached data, use it as fallback
@@ -194,88 +193,6 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
       return false;
     }
   }, [exchangeRates, storeUpdatedAt, mutate, dispatch]);
-
-  /**
-   * Formats a number as currency using FIORA number formatting
-   * Automatically fetches exchange rates if not available
-   */
-  const formatCurrency = useCallback(
-    (
-      amount: number,
-      currency: CurrencyObjectType | string,
-      options: CurrencyFormatterOptions = {},
-    ): string => {
-      try {
-        // Handle null/undefined inputs gracefully
-        if (amount == null || amount === undefined) {
-          console.warn('formatCurrency: amount is null or undefined, defaulting to 0');
-          amount = 0;
-        }
-
-        if (!currency) {
-          console.warn('formatCurrency: currency is null or undefined, using fallback');
-          return amount.toString();
-        }
-
-        // Check and ensure exchange rate data is available
-        ensureExchangeRateData();
-
-        const { shouldShortened = false } = options;
-
-        // Get currency object - handle both string and object inputs
-        let currencyObj: CurrencyObjectType;
-
-        if (typeof currency === 'string') {
-          // Convert string currency code to currency object
-          currencyObj = exchangeRates[currency];
-          if (!currencyObj) {
-            console.warn(
-              `formatCurrency: Currency ${currency} not found in exchange rates, using fallback`,
-            );
-            return `${currency} ${amount.toLocaleString('en-US', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}`;
-          }
-        } else {
-          currencyObj = currency;
-        }
-
-        // Handle shortened format
-        if (shouldShortened && Math.abs(amount) >= 1000) {
-          let formattedValue = amount;
-          let suffix = '';
-
-          if (Math.abs(amount) >= 1_000_000_000) {
-            formattedValue = amount / 1_000_000_000;
-            suffix = 'B';
-          } else if (Math.abs(amount) >= 1_000_000) {
-            formattedValue = amount / 1_000_000;
-            suffix = 'M';
-          } else if (Math.abs(amount) >= 1_000) {
-            formattedValue = amount / 1_000;
-            suffix = 'K';
-          }
-
-          // Format with 2 decimal places and add currency symbol at the beginning
-          const formattedNumber = formattedValue.toFixed(2);
-          return `${currencyObj.suffix ?? ''}${formattedNumber}${suffix}`;
-        }
-
-        // For non-shortened format, use standard currency formatting
-        return `${currencyObj.suffix ?? ''}${amount.toLocaleString('en-US', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}`;
-      } catch (error) {
-        console.error('Error formatting currency:', error);
-        toast.error('Error formatting currency. Please try again.');
-        // Safe fallback that won't throw errors
-        return (amount || 0).toString();
-      }
-    },
-    [ensureExchangeRateData, exchangeRates],
-  );
 
   /**
    * Gets exchange rate between two currencies
@@ -309,7 +226,6 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
         const cachedToRate = cachedData.rates[toCurrency];
 
         if (cachedFromRate && cachedToRate) {
-          console.info(`Using cached exchange rate for ${fromCurrency} to ${toCurrency}`);
           return cachedToRate.rate / cachedFromRate.rate;
         }
 
@@ -334,6 +250,184 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
       return null;
     },
     [exchangeRates, effectiveBaseCurrency],
+  );
+
+  /**
+   * Formats a number as currency using FIORA number formatting
+   * Automatically converts between currencies if different from selected currency (when applyExchangeRate is true)
+   * Automatically fetches exchange rates if not available
+   *
+   * @param amount - The numeric amount to format
+   * @param currency - Currency code (string) or currency object
+   * @param options - Formatting options including applyExchangeRate flag
+   * @param options.applyExchangeRate - Whether to apply automatic currency conversion (default: true)
+   * @param options.shouldShortened - Whether to use shortened format (K, M, B) for large numbers
+   */
+  const formatCurrency = useCallback(
+    (
+      amount: number,
+      currency: CurrencyObjectType | string,
+      options: CurrencyFormatterOptions = {},
+    ): string => {
+      try {
+        // Handle null/undefined inputs gracefully and ensure number conversion
+        if (amount == null || amount === undefined) {
+          amount = 0;
+        }
+
+        // Ensure amount is a number (handle string inputs from database)
+        const numericAmount = typeof amount === 'string' ? parseFloat(amount) || 0 : Number(amount);
+        if (isNaN(numericAmount)) {
+          return '0.00';
+        }
+        amount = numericAmount;
+
+        if (!currency) {
+          // Even without currency, format the number properly
+          return amount.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+        }
+
+        const { shouldShortened = false, applyExchangeRate = true } = options;
+
+        // If applyExchangeRate is false, just format with the original currency
+        if (!applyExchangeRate) {
+          let currencySymbol: string = '';
+
+          if (typeof currency === 'string') {
+            // For string currency codes, look up the suffix from exchange rates
+            const currencyObj = exchangeRates[currency];
+            currencySymbol = currencyObj?.suffix || currency;
+          } else if (currency && typeof currency === 'object' && 'suffix' in currency) {
+            // Use the currency object's suffix
+            currencySymbol = currency.suffix || '';
+          }
+
+          // Handle shortened format
+          if (shouldShortened && Math.abs(amount) >= 1000) {
+            let formattedValue = amount;
+            let suffix = '';
+
+            if (Math.abs(amount) >= 1_000_000_000) {
+              formattedValue = amount / 1_000_000_000;
+              suffix = 'B';
+            } else if (Math.abs(amount) >= 1_000_000) {
+              formattedValue = amount / 1_000_000;
+              suffix = 'M';
+            } else if (Math.abs(amount) >= 1_000) {
+              formattedValue = amount / 1_000;
+              suffix = 'K';
+            }
+
+            const formattedNumber = formattedValue.toFixed(2);
+            return `${currencySymbol}${formattedNumber}${suffix}`;
+          }
+
+          // For non-shortened format, use standard currency formatting
+          return `${currencySymbol}${amount.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`;
+        }
+
+        // Check and ensure exchange rate data is available for exchange rate operations
+        ensureExchangeRateData();
+
+        // Get currency code from input
+        let inputCurrencyCode: string;
+        if (typeof currency === 'string') {
+          inputCurrencyCode = currency;
+        } else {
+          // For currency objects, we need to find the matching currency code
+          const currencySuffix = currency.suffix;
+          inputCurrencyCode =
+            Object.keys(exchangeRates).find(
+              (code) => exchangeRates[code].suffix === currencySuffix,
+            ) || 'USD'; // fallback to USD if not found
+        }
+
+        // Apply exchange rate conversion to selected currency
+        let finalAmount = amount;
+        let targetCurrencyCode: string = selectedCurrency;
+
+        if (inputCurrencyCode !== selectedCurrency) {
+          // Convert from input currency to selected currency with exchange rate
+          const exchangeRate = getExchangeRate(inputCurrencyCode, selectedCurrency);
+
+          if (exchangeRate !== null) {
+            finalAmount = Number((amount * exchangeRate).toFixed(2));
+          } else {
+            // Keep original currency if conversion is not possible
+            targetCurrencyCode = inputCurrencyCode;
+            finalAmount = amount;
+          }
+        }
+
+        // Get target currency object for formatting
+        let targetCurrencyObj: CurrencyObjectType;
+        if (typeof currency === 'string' && targetCurrencyCode === inputCurrencyCode) {
+          // Use original currency if no conversion happened
+          targetCurrencyObj = exchangeRates[targetCurrencyCode];
+          if (!targetCurrencyObj) {
+            return `${targetCurrencyCode} ${finalAmount.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`;
+          }
+        } else if (typeof currency !== 'string' && targetCurrencyCode === inputCurrencyCode) {
+          // Use the passed currency object if no conversion happened
+          targetCurrencyObj = currency;
+        } else {
+          // Use the target currency object after conversion
+          targetCurrencyObj = exchangeRates[targetCurrencyCode];
+          if (!targetCurrencyObj) {
+            return `${targetCurrencyCode} ${finalAmount.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`;
+          }
+        }
+
+        // Handle shortened format
+        if (shouldShortened && Math.abs(finalAmount) >= 1000) {
+          let formattedValue = finalAmount;
+          let suffix = '';
+
+          if (Math.abs(finalAmount) >= 1_000_000_000) {
+            formattedValue = finalAmount / 1_000_000_000;
+            suffix = 'B';
+          } else if (Math.abs(finalAmount) >= 1_000_000) {
+            formattedValue = finalAmount / 1_000_000;
+            suffix = 'M';
+          } else if (Math.abs(finalAmount) >= 1_000) {
+            formattedValue = finalAmount / 1_000;
+            suffix = 'K';
+          }
+
+          // Format with 2 decimal places and add currency symbol at the beginning
+          const formattedNumber = formattedValue.toFixed(2);
+          return `${targetCurrencyObj.suffix ?? ''}${formattedNumber}${suffix}`;
+        }
+
+        // For non-shortened format, use standard currency formatting
+        return `${targetCurrencyObj.suffix ?? ''}${finalAmount.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`;
+      } catch {
+        toast.error('Error formatting currency. Please try again.');
+        // Safe fallback that maintains proper number formatting
+        const fallbackAmount =
+          typeof amount === 'string' ? parseFloat(amount) || 0 : Number(amount) || 0;
+        return fallbackAmount.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+      }
+    },
+    [ensureExchangeRateData, exchangeRates, selectedCurrency, getExchangeRate],
   );
 
   /**
@@ -369,9 +463,6 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
       const rate = getExchangeRate(fromCurrency, toCurrency);
 
       if (rate === null) {
-        console.warn(
-          `Exchange rate not available for ${fromCurrency} to ${toCurrency}. Returning 1:1 conversion.`,
-        );
         // Return 1:1 conversion as last resort only
         return {
           convertedAmount: amount,
@@ -439,7 +530,6 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
         toast.warning('No exchange rate data received from server');
       }
     } catch (error) {
-      console.error('Failed to refresh exchange rates:', error);
       toast.error('Failed to refresh exchange rates. Please check your connection and try again.');
       throw error; // Re-throw to allow error handling in calling functions
     }
@@ -455,11 +545,6 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
     Object.keys(exchangeRates).forEach((currency) => {
       currencies.add(currency);
     });
-
-    // Ensure base currencies are included
-    currencies.add('USD');
-    currencies.add('VND');
-    currencies.add('FX');
 
     return Array.from(currencies).sort();
   }, [exchangeRates]);

@@ -1,5 +1,6 @@
 import InputCurrency from '@/components/common/forms/input/InputCurrency';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { CURRENCY } from '@/shared/constants';
 import React from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
 
@@ -25,7 +26,7 @@ const AmountInputField: React.FC<AmountInputProps> = ({
   ...props
 }) => {
   const { watch } = useFormContext();
-  const amountCurrency: string = watch('currency') || '';
+  const amountCurrency: string = watch('currency') || CURRENCY.USD;
 
   return (
     <FormField
@@ -49,6 +50,7 @@ const AmountInputField: React.FC<AmountInputProps> = ({
                 mode="onChange"
                 classContainer="mb-0"
                 className={error ? 'border-red-500' : ''}
+                applyExchangeRate={false}
                 {...props}
               />
             </div>

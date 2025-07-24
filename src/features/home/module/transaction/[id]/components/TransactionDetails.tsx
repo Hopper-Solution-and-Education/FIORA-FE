@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { CURRENCY } from '@/shared/constants';
 import useCurrencyFormatter from '@/shared/hooks/useCurrencyFormatter';
-import { useAppSelector } from '@/store';
 import { format } from 'date-fns';
 import { Trash } from 'lucide-react';
 import Image from 'next/image';
@@ -14,11 +14,9 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import LucieIcon from '../../../category/components/LucieIcon';
 import DeleteTransactionDialog from '../../components/DeleteTransactionDialog';
-import { IRelationalTransaction } from '../../types';
-import { TransactionCurrency } from '../../utils/constants';
 
 type TransactionDetailsProps = {
-  data: IRelationalTransaction;
+  data: any;
 };
 
 const TransactionDetails = ({ data }: TransactionDetailsProps) => {
@@ -27,10 +25,7 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
   const router = useRouter();
 
   // Initialize currency formatter hook
-  const { formatCurrency, exchangeAmount } = useCurrencyFormatter();
-
-  // Get current currency setting from Redux store
-  const selectedCurrency = useAppSelector((state) => state.settings.currency);
+  const { formatCurrency } = useCurrencyFormatter();
 
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
@@ -48,17 +43,6 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
         return 'bg-gray-500';
     }
   };
-
-  // Format the amount with currency conversion
-  const originalAmount = Number(data.amount);
-  const originalCurrency = (data.currency as TransactionCurrency) || TransactionCurrency.VND;
-
-  // Convert to user's selected currency if different from transaction currency
-  const exchangeResult = exchangeAmount({
-    amount: originalAmount,
-    fromCurrency: originalCurrency,
-    toCurrency: selectedCurrency,
-  });
 
   const handleOpenDeleteModal = () => {
     setIsDeleteModalOpen(true);
@@ -154,21 +138,27 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
 
                   <div className="text-sm text-muted-foreground">Amount</div>
                   <div className="font-medium text-right">
-                    <div className="flex flex-col items-end">
-                      {/* Main amount in user's selected currency */}
-                      <span>
-                        {formatCurrency(exchangeResult.convertedAmount, selectedCurrency)}
-                      </span>
-                      {/* Show original amount if currencies are different */}
-                      {originalCurrency !== selectedCurrency && (
-                        <span className="text-xs font-medium text-gray-500">
-                          ({formatCurrency(originalAmount, originalCurrency)})
-                        </span>
+                    <div className="space-y-1">
+                      {data && (
+                        <>
+                          <div>
+                            {formatCurrency(data.amount, data.currency ?? CURRENCY.USD, {
+                              applyExchangeRate: true,
+                            })}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            (
+                            {formatCurrency(data.amount, data.currency ?? CURRENCY.USD, {
+                              applyExchangeRate: false,
+                            })}
+                            )
+                          </div>
+                        </>
                       )}
                     </div>
                   </div>
 
-                  <div className="text-sm text-muted-foreground">Remark</div>
+                  <div className="text-sm text-muted-foreground">Description</div>
                   <div className={`text-right ${!data.remark ? 'text-gray-500 italic' : ''}`}>
                     {data.remark || 'Unknown'}
                   </div>
@@ -364,49 +354,36 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                         <span className={!product?.name ? 'text-gray-500 italic' : ''}>
                           {product?.name || 'Unknown'}
                         </span>
-                        <span>
+                        <div className="text-right">
                           {product?.price ? (
-                            <div className="flex flex-col items-end">
-                              {(() => {
-                                const productOriginalAmount = Number(product.price);
-                                const productOriginalCurrency =
-                                  (data.currency as TransactionCurrency) || TransactionCurrency.VND;
-
-                                // Convert product price to user's selected currency
-                                const productExchangeResult = exchangeAmount({
-                                  amount: productOriginalAmount,
-                                  fromCurrency: productOriginalCurrency,
-                                  toCurrency: selectedCurrency,
-                                });
-
-                                return (
-                                  <>
-                                    {/* Main price in user's selected currency */}
-                                    <span>
-                                      {formatCurrency(
-                                        productExchangeResult.convertedAmount,
-                                        selectedCurrency,
-                                      )}
-                                    </span>
-                                    {/* Show original price if currencies are different */}
-                                    {productOriginalCurrency !== selectedCurrency && (
-                                      <span className="text-xs font-medium text-gray-500">
-                                        (
-                                        {formatCurrency(
-                                          productOriginalAmount,
-                                          productOriginalCurrency,
-                                        )}
-                                        )
-                                      </span>
-                                    )}
-                                  </>
-                                );
-                              })()}
+                            <div className="space-y-1">
+                              <div>
+                                {formatCurrency(
+                                  Number(product.price),
+                                  data.currency ?? CURRENCY.USD,
+                                  {
+                                    applyExchangeRate: true,
+                                  },
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                (
+                                {data?.productsRelation?.[0]?.product?.currency
+                                  ? formatCurrency(
+                                      Number(product.price),
+                                      data.productsRelation?.[0]?.product?.currency,
+                                      {
+                                        applyExchangeRate: false,
+                                      },
+                                    )
+                                  : 'Unknown'}
+                                )
+                              </div>
                             </div>
                           ) : (
                             <span className="text-gray-500 italic">Unknown</span>
                           )}
-                        </span>
+                        </div>
                       </div>
                     ))
                   ) : (

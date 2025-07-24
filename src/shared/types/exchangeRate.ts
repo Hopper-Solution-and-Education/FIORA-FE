@@ -19,6 +19,7 @@ export type CurrencyFormatterOptions = {
   shouldShortened?: boolean;
   minimumFractionDigits?: number;
   maximumFractionDigits?: number;
+  applyExchangeRate?: boolean;
 };
 
 export type ExchangeAmountParams = {

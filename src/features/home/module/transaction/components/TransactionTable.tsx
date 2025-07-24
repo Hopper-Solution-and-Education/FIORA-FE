@@ -83,10 +83,7 @@ const TransactionTable = () => {
   const isTransactionLoading = transactionDataState.transactions.isLoading;
 
   // Initialize currency formatter hook
-  const { formatCurrency, exchangeAmount } = useCurrencyFormatter();
-
-  // Get current currency setting from Redux store
-  const selectedCurrency = useAppSelector((state) => state.settings.currency);
+  const { formatCurrency } = useCurrencyFormatter();
 
   const [displayData, setDisplayData] = useState<IRelationalTransaction[]>([]);
   const [sortOrder, setSortOrder] = useState<OrderType | undefined>('desc');
@@ -445,24 +442,14 @@ const TransactionTable = () => {
                               </TableCell>
                             );
                           case 'Amount': {
-                            const originalAmount = Number(transRecord.amount);
-                            const originalCurrency = transRecord.currency as Currency;
-
-                            // Convert to user's selected currency if different from transaction currency
-                            const exchangeResult = exchangeAmount({
-                              amount: originalAmount,
-                              fromCurrency: originalCurrency,
-                              toCurrency: selectedCurrency,
-                            });
-
                             return (
                               <TableCell key={columnKey} className={`font-bold`}>
                                 <div className="flex flex-col">
                                   {/* Main amount in user's selected currency */}
                                   <span>
                                     {formatCurrency(
-                                      exchangeResult.convertedAmount,
-                                      selectedCurrency,
+                                      transRecord.amount,
+                                      transRecord.currency as Currency,
                                     )}
                                   </span>
                                 </div>

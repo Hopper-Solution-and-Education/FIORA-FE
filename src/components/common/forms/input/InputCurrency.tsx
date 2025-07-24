@@ -3,10 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { cn } from '@/shared/utils';
-import { RootState } from '@/store/rootReducer';
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useState } from 'react';
 import { FieldError } from 'react-hook-form';
-import { useSelector } from 'react-redux';
 
 interface InputCurrencyProps {
   value?: number;
@@ -25,6 +23,7 @@ interface InputCurrencyProps {
   classContainer?: string;
   className?: string;
   [key: string]: any;
+  applyExchangeRate?: boolean;
 }
 
 const InputCurrency: React.FC<InputCurrencyProps> = ({
@@ -42,22 +41,15 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   mode = 'onBlur',
   classContainer,
   className,
+  applyExchangeRate = false,
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
-  const [localValue, setLocalValue] = useState(value ? value.toString() : '');
   const [showSuggestionValue, setShowSuggestionValue] = useState(showSuggestion);
   const { formatCurrency } = useCurrencyFormatter();
-
-  const { exchangeRate } = useSelector((state: RootState) => state.settings);
-  const currencyObject = exchangeRate[currency as keyof typeof exchangeRate];
-
-  // Sync local value with form value when not focused
-  useEffect(() => {
-    if (!isFocused) {
-      setLocalValue(value ? formatCurrency(value, currencyObject) : '');
-    }
-  }, [value, currency, isFocused]);
+  const [localValue, setLocalValue] = useState(
+    formatCurrency(value, currency, { applyExchangeRate }),
+  );
 
   const handleFocus = () => {
     setIsFocused(true);
@@ -108,7 +100,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
           label
         ))}
       <Input
-        value={isFocused ? localValue : formatCurrency(value, currency)}
+        value={isFocused ? localValue : formatCurrency(value, currency, { applyExchangeRate })}
         onChange={handleChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
@@ -143,8 +135,9 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
                   className="w-full h-full"
                   onClick={() => handleSuggestionClick(suggestionValue)}
                 >
-                  {formatCurrency(suggestionValue, currencyObject, {
+                  {formatCurrency(suggestionValue, currency, {
                     shouldShortened: true,
+                    applyExchangeRate,
                   })}
                 </Button>
               );
