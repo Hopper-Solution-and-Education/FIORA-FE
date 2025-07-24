@@ -23,8 +23,10 @@ import AnnouncementForm from '../molecules/AnnouncementForm';
 export default function AnnouncementManager() {
   const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
   const isLoading = useAppSelector((state) => state.landingSettings.isLoading);
+  const isLoadingUpdateAnnouncement = useAppSelector(
+    (state) => state.landingSettings.isLoadingUpdateAnnouncement,
+  );
   const dispatch = useAppDispatch();
-  const announcements = useAppSelector((state) => state.landingSettings.announcements);
 
   const methods = useForm<AnnouncementListForm>({
     resolver: yupResolver(announcementListFormSchema),
@@ -35,8 +37,6 @@ export default function AnnouncementManager() {
     control: methods.control,
     name: 'announcements',
   });
-
-  console.log(announcements);
 
   useEffect(() => {
     dispatch(fetchAnnouncement())
@@ -91,7 +91,8 @@ export default function AnnouncementManager() {
                   methods.formState.isSubmitting ||
                   methods.formState.isValidating ||
                   isLoadingSaveChange ||
-                  isLoading
+                  isLoading ||
+                  isLoadingUpdateAnnouncement
                 }
                 className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
               >

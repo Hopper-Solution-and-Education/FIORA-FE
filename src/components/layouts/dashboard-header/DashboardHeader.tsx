@@ -13,11 +13,11 @@ import useAnnouncementManager from '@/shared/hooks/useAnnouncementManager';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { Bell, Gift } from 'lucide-react';
 import { Breadcrumbs } from '../../Breadcrumbs';
-import { Alert, AlertDescription } from '../../ui/alert';
 import { Separator } from '../../ui/separator';
 import { UserNav } from '../user-nav/UserNav';
 import FinanceSummary from './FinanceSummary';
 import HelpCenter from './HelpCenter';
+import MarqueeAnnouncement from './MarqueAnnouncement';
 import SettingCenter from './SettingCenter';
 
 export default function Header() {
@@ -29,18 +29,13 @@ export default function Header() {
     <header className="transition-[width,height] ease-linear">
       {/* Announcement */}
       {showAnnouncement && announcement?.data?.[0]?.content && !isLoading && (
-        <div className="relative w-full">
-          <Alert variant="default" className="rounded-none hidden md:block relative">
-            <AlertDescription>{announcement?.data?.[0]?.content}</AlertDescription>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2 p-2 rounded-full hover:bg-gray-100"
-              onClick={handleClose}
-            >
-              ✕
-            </Button>
-          </Alert>
+        <div className="flex items-center justify-between w-full">
+          <MarqueeAnnouncement className="text-sm w-full">
+            {announcement?.data?.[0]?.content}
+          </MarqueeAnnouncement>
+          <Button variant="ghost" size="icon" onClick={handleClose}>
+            ✕
+          </Button>
         </div>
       )}
 

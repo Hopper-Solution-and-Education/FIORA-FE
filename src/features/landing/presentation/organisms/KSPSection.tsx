@@ -13,13 +13,13 @@ import { Media } from '../../domain/models/Media';
 import { useGetSection } from '../../hooks/useGetSection';
 
 const containerWidthDesktop = 1300;
-const containerWidthMobile = 350;
+const containerWidthMobile = 300;
 const numberOfItemsDesktop = 3;
 const numberOfItemsMobile = 1;
 const gapDesktop = 5;
 const gapMobile = 10;
 const itemHeightDesktop = '750px';
-const itemHeightMobile = '350px';
+const itemHeightMobile = '500px';
 
 const KSPSection = () => {
   const { isLoading, section } = useGetSection(SectionTypeEnum.KPS);
