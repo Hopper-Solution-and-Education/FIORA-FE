@@ -765,18 +765,6 @@ model CurrencyExchange {
   toExchangeRateSetting   ExchangeRateSetting[] @relation("ToCurrency")
 }
 
-model Announcement {
-  id        String   @id @db.Uuid
-  title     String   @db.VarChar(255)
-  content   String
-  sentAt    DateTime @default(now()) @db.Timestamptz(0)
-  createdAt DateTime @default(now()) @db.Timestamptz(0)
-  updatedAt DateTime @db.Timestamptz(0)
-  createdBy String?  @db.Uuid
-  updatedBy String?  @db.Uuid
-  isActive  Boolean  @default(true)
-}
-
 enum BudgetType {
   Top
   Bot
