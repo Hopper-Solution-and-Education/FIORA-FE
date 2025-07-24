@@ -15,7 +15,10 @@ const ParsedFaqContent: React.FC<ParsedFaqContentProps> = ({ htmlContent }) => {
   return (
     <div className="reactjs-tiptap-editor">
       <div className="richtext-relative ">
-        <div className="tiptap ProseMirror" dangerouslySetInnerHTML={{ __html: rawContent }}></div>
+        <div
+          className="tiptap ProseMirror parsed-content"
+          dangerouslySetInnerHTML={{ __html: rawContent }}
+        ></div>
       </div>
     </div>
   );
