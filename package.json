@@ -38,7 +38,8 @@
     "vercel-build": "vercel build",
     "vercel-build:debug": "NEXT_DEBUG_BUILD=true vercel build",
     "check-paths": "node scripts/check-path-aliases.mjs",
-    "fix-paths": "node scripts/fix-path-aliases.mjs"
+    "fix-paths": "node scripts/fix-path-aliases.mjs",
+    "clean": "rm -rf .next && rm -rf node_modules && rm -rf package-lock.json && rm -rf bun.lock"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
