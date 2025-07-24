@@ -306,6 +306,19 @@ model MediaReviewUser {
   media              Media    @relation("MediaToReviewUser", fields: [mediaId], references: [id])
 }
 
+model Announcement {
+  id           String    @id @default(uuid()) @db.Uuid
+  title        String    @db.VarChar(255)
+  content      String    @db.Text
+  sentAt       DateTime  @default(now()) @db.Timestamptz(0)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(0)
+  updatedAt    DateTime  @updatedAt @db.Timestamptz(0)
+  createdBy    String?   @db.Uuid
+  updatedBy    String?   @db.Uuid
+  isActive     Boolean   @default(true)
+}
+
+
 model Category {
   id               String          @id @default(uuid()) @db.Uuid
   userId           String          @db.Uuid
@@ -750,18 +763,6 @@ model CurrencyExchange {
   updatedBy               String?               @db.Uuid
   fromExchangeRateSetting ExchangeRateSetting[] @relation("FromCurrency")
   toExchangeRateSetting   ExchangeRateSetting[] @relation("ToCurrency")
-}
-
-model Announcement {
-  id        String   @id @db.Uuid
-  title     String   @db.VarChar(255)
-  content   String
-  sentAt    DateTime @default(now()) @db.Timestamptz(0)
-  createdAt DateTime @default(now()) @db.Timestamptz(0)
-  updatedAt DateTime @db.Timestamptz(0)
-  createdBy String?  @db.Uuid
-  updatedBy String?  @db.Uuid
-  isActive  Boolean  @default(true)
 }
 
 enum BudgetType {

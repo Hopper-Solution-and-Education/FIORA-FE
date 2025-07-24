@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { MediaType } from '@prisma/client';
 import Autoplay from 'embla-carousel-autoplay';
-import { ArrowLeftCircle, ArrowRightCircle, StarIcon } from 'lucide-react';
+import { StarIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useRef } from 'react';
 import { SectionTypeEnum } from '../../constants';
@@ -88,7 +88,7 @@ export const FeedbackSection = () => {
         ) : (
           <div className="relative">
             <Carousel
-              className="w-full px-2 sm:px-5"
+              className="w-full"
               opts={{
                 loop: true,
                 direction: 'ltr',
@@ -100,33 +100,25 @@ export const FeedbackSection = () => {
               <CarouselContent>
                 {section?.medias && section.medias.length > 0 ? (
                   section.medias.map((media, index) => {
-                    // Dummy data for reviewer info as it's not in the `media` object.
-                    // In a real application, this data would come from your backend/API
-                    const reviewerName = 'Reina Smith';
-                    const reviewerTitle = 'Beautician';
-                    const reviewerAvatarUrl = `https://i.pravatar.cc/48?img=${index + 1}`; // Unique avatar per item
-                    const reviewText =
-                      'Nunc quis erat ac nunc lacinia egestas. Donec in placerat ipsum. Mauris nec porta magna. Suspendisse potenti. Ut viverra dui vel est viverra lacinia.';
-
                     return (
-                      <CarouselItem key={index} className="basis-full px-1 sm:px-2">
-                        <Card className="w-full max-w-[1450px] min-h-[350px] h-auto mx-auto shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row rounded-xl px-2 md:px-8 lg:px-16 py-4 md:py-8 gap-4 md:gap-0">
+                      <CarouselItem key={index} className="basis-full">
+                        <Card className="w-full max-w-[1300px] min-h-[350px] h-auto mx-auto shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row rounded-xl px-2 md:px-8 lg:px-16 py-4 md:py-8 gap-4 md:gap-0">
                           {/* CardContent: Reviewer info and review */}
                           <CardContent className="flex flex-col gap-4 w-full md:w-2/5 justify-center items-center md:items-start px-2 md:px-6 lg:px-10 py-4 md:py-10">
                             <div className="flex flex-col sm:flex-row items-center md:items-start w-full gap-4">
                               <Image
-                                src={reviewerAvatarUrl}
+                                src={media.mediaReviewUser?.media_user_avatar || ''}
                                 alt="Reviewer Avatar"
-                                width={90}
-                                height={90}
-                                className="rounded-full object-cover flex-shrink-0 w-[60px] h-[60px] sm:w-[70px] sm:h-[70px] md:w-[80px] md:h-[80px] lg:w-[90px] lg:h-[90px]"
+                                width={120}
+                                height={120}
+                                className="rounded-full object-cover flex-shrink-0 w-[120px] h-[120px] sm:w-[120px] sm:h-[120px] md:w-[120px] md:h-[120px] lg:w-[120px] lg:h-[120px]"
                               />
-                              <div className="flex flex-col items-center md:items-start gap-1 w-full">
+                              <div className="flex flex-col items-center md:items-start gap-2 w-full mt-4">
                                 <h3 className="font-bold text-base sm:text-lg md:text-xl lg:text-2xl text-center md:text-left">
-                                  {reviewerName}
+                                  {media.mediaReviewUser?.media_user_name}
                                 </h3>
                                 <p className="text-xs sm:text-sm md:text-base text-gray-600 mb-1 text-center md:text-left">
-                                  {reviewerTitle}
+                                  {media.mediaReviewUser?.media_user_title}
                                 </p>
                                 <div className="flex items-center gap-1 sm:gap-2">
                                   {Array.from({ length: 5 }).map((_, idx) => (
@@ -141,14 +133,9 @@ export const FeedbackSection = () => {
                             <Divider />
                             {/* review section text */}
                             <div className="w-full">
-                              <p className="text-gray-700 text-xs sm:text-sm md:text-base flex-grow overflow-hidden mb-2 text-center md:text-left line-clamp-5">
-                                {reviewText}
+                              <p className="text-gray-700 text-xs sm:text-sm md:text-md flex-grow overflow-hidden mb-2 text-center md:text-left line-clamp-5">
+                                {media.mediaReviewUser?.media_user_comment}
                               </p>
-
-                              <div className="flex justify-center md:justify-end gap-2 mt-2 text-gray-400">
-                                <ArrowLeftCircle className="w-6 h-6 cursor-pointer" />
-                                <ArrowRightCircle className="w-6 h-6 cursor-pointer" />
-                              </div>
                             </div>
                           </CardContent>
                           {/* Media section */}
@@ -188,7 +175,7 @@ export const FeedbackSection = () => {
 
 export default FeedbackSection;
 
-const Divider = () => {
+export const Divider = () => {
   return (
     <div className="flex justify-center w-full">
       <svg

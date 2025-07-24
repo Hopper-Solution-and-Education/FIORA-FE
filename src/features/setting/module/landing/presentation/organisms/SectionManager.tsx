@@ -33,7 +33,8 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
   });
 
   const fetchedSections = useAppSelector((state) => state.landingSettings.fetchedSections);
-
+  const isLoadingSaveChange = useAppSelector((state) => state.landingSettings.isLoadingSaveChange);
+  const isLoading = useAppSelector((state) => state.landingSettings.isLoading);
   const defaultValues = sectionData
     ? transferDefaultValues(sectionData)
     : transferDefaultValues({
@@ -79,12 +80,22 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
     try {
       const processedData: SectionDefaultValues = { ...data };
 
+      processedData.medias = processedData.medias.map((media, idx) => ({
+        ...media,
+        media_order: idx,
+      }));
+
       const oldMedias = sectionData?.medias || [];
 
       const updatedMedias = await Promise.all(
         processedData.medias.map(async (media) => {
           const oldMedia = oldMedias.find((m) => m.id === media.id);
 
+          let newMediaUrl = media.media_url;
+          let newMediaUrl2 = media.media_url_2;
+          let newReviewUserAvatar = media.mediaReviewUser?.media_user_avatar;
+
+          // Upload media_url if it's a blob
           if (media.media_url && media.media_url.startsWith('blob:')) {
             if (oldMedia?.media_url && !oldMedia.media_url.startsWith('blob:')) {
               await removeFromFirebase(oldMedia.media_url);
@@ -93,20 +104,69 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
             const response = await fetch(media.media_url);
             const blob = await response.blob();
             const fileName = media.id || 'media';
-            const firebaseUrl = await uploadToFirebase({
+            newMediaUrl = await uploadToFirebase({
               file: blob,
               path: 'images/media',
               fileName,
             });
-
-            return {
-              ...media,
-              media_url: firebaseUrl,
-              uploaded_by: media.uploaded_by || userData?.user.id || 'system',
-              uploaded_date: media.uploaded_date || new Date(),
-            };
           }
-          return media;
+
+          // Upload media_url_2 if it's a blob
+          if (media.media_url_2 && media.media_url_2.startsWith('blob:')) {
+            if (oldMedia?.media_url_2 && !oldMedia.media_url_2.startsWith('blob:')) {
+              await removeFromFirebase(oldMedia.media_url_2);
+            }
+
+            const response = await fetch(media.media_url_2);
+            const blob = await response.blob();
+            const fileName = media.id || 'media_2';
+            newMediaUrl2 = await uploadToFirebase({
+              file: blob,
+              path: 'images/media',
+              fileName,
+            });
+          }
+
+          if (media.mediaReviewUser) {
+            if (
+              media.mediaReviewUser?.media_user_avatar &&
+              media.mediaReviewUser?.media_user_avatar.startsWith('blob:')
+            ) {
+              if (
+                oldMedia?.mediaReviewUser?.media_user_avatar &&
+                !oldMedia.mediaReviewUser?.media_user_avatar.startsWith('blob:')
+              ) {
+                await removeFromFirebase(oldMedia.mediaReviewUser?.media_user_avatar);
+              }
+
+              const response = await fetch(media.mediaReviewUser?.media_user_avatar);
+              const blob = await response.blob();
+              const fileName = media.id || 'media_user_avatar';
+              newReviewUserAvatar = await uploadToFirebase({
+                file: blob,
+                path: 'images/media',
+                fileName,
+              });
+            }
+          }
+
+          return {
+            ...media,
+            media_url: newMediaUrl,
+            media_url_2: newMediaUrl2,
+            uploaded_by: media.uploaded_by || userData?.user.id || 'system',
+            uploaded_date: media.uploaded_date || new Date(),
+            mediaReviewUser: {
+              media_user_name: media.mediaReviewUser?.media_user_name || '',
+              media_user_avatar: newReviewUserAvatar || '',
+              media_user_title: media.mediaReviewUser?.media_user_title || '',
+              media_user_comment: media.mediaReviewUser?.media_user_comment || '',
+              media_user_rating: media.mediaReviewUser?.media_user_rating || 0,
+              media_user_email: media.mediaReviewUser?.media_user_email || '',
+              createdBy: media.mediaReviewUser?.createdBy || '',
+              updatedBy: media.mediaReviewUser?.updatedBy || '',
+            },
+          };
         }),
       );
 
@@ -139,7 +199,12 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
                 <Button
                   type="button"
                   onClick={methods.handleSubmit(onSubmit)}
-                  disabled={methods.formState.isSubmitting || methods.formState.isValidating}
+                  disabled={
+                    methods.formState.isSubmitting ||
+                    methods.formState.isValidating ||
+                    isLoadingSaveChange ||
+                    isLoading
+                  }
                   className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   {methods.formState.isSubmitting ? (
