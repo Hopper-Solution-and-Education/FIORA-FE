@@ -42,7 +42,7 @@ model User {
   sessions            Session[]
   transactions        Transaction[]         @relation("UserTransactions")
   authentication      UserAuthentication?
-  userNotifications   UserNotification[]    @relation("UserNotification")
+  UserNotification    UserNotification[]
   wallet              Wallet[]              @relation("UserWallet")
 
   @@index([isDeleted])
@@ -287,7 +287,7 @@ model Media {
   media_title     String?          @db.VarChar(255)
   media_url_2     String?
   section         Section?         @relation(fields: [section_id], references: [id])
-  mediaReviewUser MediaReviewUser?
+  mediaReviewUser MediaReviewUser? @relation("MediaToReviewUser")
 }
 
 model MediaReviewUser {
@@ -302,7 +302,8 @@ model MediaReviewUser {
   updatedAt          DateTime @updatedAt @db.Timestamptz(0)
   createdBy          String?  @db.Uuid
   updatedBy          String?  @db.Uuid
-  media              Media    @relation(fields: [mediaId], references: [id])
+  media_user_title   String?
+  media              Media    @relation("MediaToReviewUser", fields: [mediaId], references: [id])
 }
 
 model Category {
@@ -469,26 +470,55 @@ model DepositRequest {
 }
 
 model Notification {
-  id                    String                  @id @default(uuid()) @db.Uuid
-  attachmentId          String?                 @unique @db.Uuid
-  message               String
-  deepLink              String?
-  createdAt             DateTime                @default(now()) @db.Timestamptz(0)
-  updatedAt             DateTime                @updatedAt @db.Timestamptz(0)
-  createdBy             String?                 @db.Uuid
-  updatedBy             String?                 @db.Uuid
-  channel               ChannelType
-  emails                String[]
-  title                 String
-  emailTemplateId       String?                 @db.Uuid
-  notifyTo              NotificationType
-  type                  String
-  EmailNotificationLogs EmailNotificationLogs[]
-  attachment            Attachment?             @relation(fields: [attachmentId], references: [id])
-  EmailTemplate         EmailTemplate?          @relation(fields: [emailTemplateId], references: [id])
-  userNotifications     UserNotification[]
+  id                String                  @id @default(uuid()) @db.Uuid
+  attachmentId      String?                 @db.Uuid
+  message           String
+  deepLink          String?
+  createdAt         DateTime                @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime                @updatedAt @db.Timestamptz(0)
+  createdBy         String?                 @db.Uuid
+  updatedBy         String?                 @db.Uuid
+  channel           ChannelType
+  emails            String[]
+  title             String
+  emailTemplateId   String?                 @db.Uuid
+  notifyTo          NotificationType
+  type              String
+  Attachment        Attachment[]
+  emailLogs         EmailNotificationLogs[]
+  emailTemplate     EmailTemplate?          @relation(fields: [emailTemplateId], references: [id])
+  userNotifications UserNotification[]
 
   @@index([attachmentId])
+}
+
+model EmailTemplate {
+  name          String            @db.VarChar(255)
+  content       String
+  isActive      Boolean
+  createdAt     DateTime          @default(now()) @db.Timestamptz(0)
+  createdBy     String?           @db.Uuid
+  updatedAt     DateTime          @updatedAt @db.Timestamptz(0)
+  updatedBy     String?           @db.Uuid
+  id            String            @id @default(uuid()) @db.Uuid
+  type          EmailTemplateType
+  notifications Notification[]
+}
+
+model EmailNotificationLogs {
+  status         NotificationLogType
+  errorMessage   String?
+  createdAt      DateTime            @default(now()) @db.Timestamptz(0)
+  createdBy      String?             @db.Uuid
+  updatedAt      DateTime            @updatedAt @db.Timestamptz(0)
+  updatedBy      String?             @db.Uuid
+  id             String              @id @default(uuid()) @db.Uuid
+  notificationId String              @db.Uuid
+  userId         String              @db.Uuid
+  notification   Notification        @relation(fields: [notificationId], references: [id])
+
+  @@index([notificationId])
+  @@index([userId])
 }
 
 model UserNotification {
@@ -501,7 +531,7 @@ model UserNotification {
   createdBy      String?      @db.Uuid
   updatedBy      String?      @db.Uuid
   notification   Notification @relation(fields: [notificationId], references: [id])
-  user           User         @relation("UserNotification", fields: [userId], references: [id])
+  User           User         @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([notificationId])
@@ -517,9 +547,10 @@ model Attachment {
   updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
   createdBy           String?               @db.Uuid
   updatedBy           String?               @db.Uuid
+  notificationId      String?               @db.Uuid
+  notifications       Notification?         @relation(fields: [notificationId], references: [id])
   AttachmentRelations AttachmentRelations[]
   depositRequests     DepositRequest?
-  notifications       Notification?
 
   @@index([url])
   @@index([path])
@@ -721,33 +752,16 @@ model CurrencyExchange {
   toExchangeRateSetting   ExchangeRateSetting[] @relation("ToCurrency")
 }
 
-model EmailNotificationLogs {
-  status         NotificationLogType
-  errorMessage   String?
-  createdAt      DateTime            @default(now()) @db.Timestamptz(0)
-  createdBy      String?             @db.Uuid
-  updatedAt      DateTime            @db.Timestamptz(0)
-  updatedBy      String?             @db.Uuid
-  id             String              @id @db.Uuid
-  notificationId String              @db.Uuid
-  userId         String              @db.Uuid
-  Notification   Notification        @relation(fields: [notificationId], references: [id])
-
-  @@index([notificationId])
-  @@index([userId])
-}
-
-model EmailTemplate {
-  name         String            @db.VarChar(255)
-  content      String
-  isActive     Boolean
-  createdAt    DateTime          @default(now()) @db.Timestamptz(0)
-  createdBy    String?           @db.Uuid
-  updatedAt    DateTime          @db.Timestamptz(0)
-  updatedBy    String?           @db.Uuid
-  id           String            @id @db.Uuid
-  type         EmailTemplateType
-  Notification Notification[]
+model Announcement {
+  id        String   @id @db.Uuid
+  title     String   @db.VarChar(255)
+  content   String
+  sentAt    DateTime @default(now()) @db.Timestamptz(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt DateTime @db.Timestamptz(0)
+  createdBy String?  @db.Uuid
+  updatedBy String?  @db.Uuid
+  isActive  Boolean  @default(true)
 }
 
 enum BudgetType {
@@ -828,6 +842,16 @@ enum WalletType {
   Cashback
 }
 
+enum ChannelType {
+  BOX
+  EMAIL
+}
+
+enum NotificationLogType {
+  SENT
+  FAILED
+}
+
 enum DepositRequestStatus {
   Requested
   Rejected
@@ -847,16 +871,6 @@ enum PostType {
   NEWS
   TUTORIAL
   INTRO
-}
-
-enum ChannelType {
-  BOX
-  EMAIL
-}
-
-enum NotificationLogType {
-  SENT
-  FAILED
 }
 
 enum NotificationType {

@@ -21,6 +21,12 @@ export interface IWalletRepository {
   findAllWalletsByUser(userId: string): Promise<Wallet[]>;
   findAllPackageFX(): Promise<PackageFX[]>;
   getPackageFXById(id: string): Promise<PackageFX | null>;
+  createPackageFX(data: Prisma.PackageFXUncheckedCreateInput): Promise<PackageFX>;
+  updatePackageFX(
+    id: string,
+    data: { fxAmount: number; attachment_id?: string[] },
+  ): Promise<PackageFX | null>;
+  deletePackageFX(id: string): Promise<PackageFX | null>;
   createDepositRequest(data: Prisma.DepositRequestUncheckedCreateInput): Promise<DepositRequest>;
   findDepositRequestsByType(userId: string, type: DepositRequestStatus): Promise<DepositRequest[]>;
   findAllDepositRequestsByStatus(status: DepositRequestStatus): Promise<DepositRequest[]>;
@@ -37,6 +43,7 @@ export interface IWalletRepository {
     remark?: string,
   ): Promise<DepositRequest | null>;
   findDepositRequestById(id: string): Promise<DepositRequest | null>;
+  findDepositRequestsByPackageFXId(packageFXId: string): Promise<DepositRequest[]>;
   increaseWalletBalance(walletId: string, amount: number): Promise<void>;
   updateDepositRequestCurrency(id: string, currency: string): Promise<DepositRequest>;
 }
