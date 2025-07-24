@@ -1,39 +1,48 @@
 import { DataSourceItemProps } from '@/components/common/tables/custom-table/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { USD_VND_RATE } from '@/shared/constants';
-import { formatters } from '@/shared/lib';
 import { Currency } from '@/shared/types';
-import { convertVNDToUSD } from '@/shared/utils';
+import { convertVNDToUSD, formatCurrency } from '@/shared/utils';
 import { isArray } from 'lodash';
 import { TableData } from '../presentation/types/table.type';
 
 export const formatCurrencyValue = (
   value: number | string | undefined,
   currency: Currency,
+  isFullCurrencyDisplay?: boolean,
 ): string => {
   if (value === undefined || value === '') return '';
 
   const numValue = typeof value === 'string' ? parseFloat(value) : value;
-  return formatters[currency].format(numValue);
+  return formatCurrency(numValue, currency, isFullCurrencyDisplay);
 };
 
 export const convertTableDataCurrency = (
   tableData: TableData[],
   userCurrency: Currency,
+  isFullCurrencyDisplay?: boolean,
 ): TableData[] => {
   const renderRemaining = (
     bottomUpValue: number,
     actualSumUpValue: number,
     userCurrency: Currency,
+    isFullCurrencyDisplay?: boolean,
   ) => (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <p className="cursor-pointer px-3 py-2">
-            {formatCurrencyValue(bottomUpValue - actualSumUpValue, userCurrency)}
+            {formatCurrencyValue(
+              bottomUpValue - actualSumUpValue,
+              userCurrency,
+              isFullCurrencyDisplay,
+            )}
           </p>
         </TooltipTrigger>
-        <TooltipContent className="whitespace-pre-line bg-white text-black dark:bg-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-700">
+        <TooltipContent
+          className="whitespace-pre-line bg-white text-black dark:bg-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-700"
+          style={{ zIndex: 70 }}
+        >
           <div>
             <span>
               Remaining = Bottom Up - Actual Sum Up
@@ -48,7 +57,11 @@ export const convertTableDataCurrency = (
     </TooltipProvider>
   );
 
-  const transformItem = (item: TableData, baseCurrency: Currency): TableData => {
+  const transformItem = (
+    item: TableData,
+    baseCurrency: Currency,
+    isFullCurrencyDisplay?: boolean,
+  ): TableData => {
     const transformedItem: TableData = { ...item };
 
     const periodFields = [
@@ -147,7 +160,12 @@ export const convertTableDataCurrency = (
             // Calculate the remaing value
             transformedItem[field] = {
               value: bottomUpValue - actualSumUpValue,
-              render: renderRemaining(bottomUpValue, actualSumUpValue, userCurrency),
+              render: renderRemaining(
+                bottomUpValue,
+                actualSumUpValue,
+                userCurrency,
+                isFullCurrencyDisplay,
+              ),
             };
           } else {
             // If both Bottom Up and Actual Sum Up has no value, set remaining value to 0
@@ -159,7 +177,7 @@ export const convertTableDataCurrency = (
 
     if (transformedItem.children) {
       transformedItem.children = transformedItem.children.map((child) =>
-        transformItem(child, baseCurrency),
+        transformItem(child, baseCurrency, isFullCurrencyDisplay),
       );
     }
 
@@ -170,5 +188,5 @@ export const convertTableDataCurrency = (
   const topDownItem = tableData.find((item) => item.key === 'top-down');
   const baseCurrency = (topDownItem?.currency || 'USD') as Currency;
 
-  return tableData.map((item) => transformItem(item, baseCurrency));
+  return tableData.map((item) => transformItem(item, baseCurrency, isFullCurrencyDisplay));
 };

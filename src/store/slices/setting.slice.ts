@@ -6,7 +6,10 @@ import { initialSettingState, Language } from '../types/setting.type';
 
 const settingsSlice = createSlice({
   name: 'settings',
-  initialState: initialSettingState,
+  initialState: {
+    ...initialSettingState,
+    isFullCurrencyDisplay: true, // mặc định hiển thị đầy đủ
+  },
   reducers: {
     changeLanguage(state, action: PayloadAction<Language>) {
       state.language = action.payload;
@@ -14,9 +17,12 @@ const settingsSlice = createSlice({
     toggleCurrency: (state, action: PayloadAction<Currency>) => {
       state.currency = action.payload;
     },
+    setFullCurrencyDisplay(state, action: PayloadAction<boolean>) {
+      state.isFullCurrencyDisplay = action.payload;
+    },
   },
 });
 
-export const { changeLanguage, toggleCurrency } = settingsSlice.actions;
+export const { changeLanguage, toggleCurrency, setFullCurrencyDisplay } = settingsSlice.actions;
 
 export default settingsSlice.reducer;

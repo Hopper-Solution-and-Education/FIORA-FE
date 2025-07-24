@@ -307,17 +307,16 @@ model MediaReviewUser {
 }
 
 model Announcement {
-  id           String    @id @default(uuid()) @db.Uuid
-  title        String    @db.VarChar(255)
-  content      String    @db.Text
-  sentAt       DateTime  @default(now()) @db.Timestamptz(0)
-  createdAt    DateTime  @default(now()) @db.Timestamptz(0)
-  updatedAt    DateTime  @updatedAt @db.Timestamptz(0)
-  createdBy    String?   @db.Uuid
-  updatedBy    String?   @db.Uuid
-  isActive     Boolean   @default(true)
+  id        String   @id @default(uuid()) @db.Uuid
+  title     String   @db.VarChar(255)
+  content   String
+  sentAt    DateTime @default(now()) @db.Timestamptz(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt DateTime @updatedAt @db.Timestamptz(0)
+  createdBy String?  @db.Uuid
+  updatedBy String?  @db.Uuid
+  isActive  Boolean  @default(true)
 }
-
 
 model Category {
   id               String          @id @default(uuid()) @db.Uuid

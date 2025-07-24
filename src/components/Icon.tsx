@@ -40,6 +40,7 @@ import {
   Expand,
   ExternalLink,
   Eye,
+  EyeOff,
   File,
   FileText,
   FunnelPlus,
@@ -332,4 +333,5 @@ export const Icons = {
   cornerDownRight: CornerDownRight,
   book: Book,
   graduationCap: GraduationCap,
+  eyeOff: EyeOff,
 };

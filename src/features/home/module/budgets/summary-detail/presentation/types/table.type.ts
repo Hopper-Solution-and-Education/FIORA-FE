@@ -29,6 +29,7 @@ export interface TableData extends DataSourceProps {
   isNew?: boolean;
   children?: TableData[];
   categoryId?: string;
+  isFullCurrencyDisplay?: boolean;
 }
 
 export const MONTHS = [
