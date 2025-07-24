@@ -81,7 +81,7 @@ export default function Header() {
             )}
             <div className="flex w-full justify-end">
               {/* Navigation */}
-              <nav className="hidden md:flex items-center gap-8 px-8 mt-3">
+              <nav className="hidden md:flex items-center gap-8 px-8">
                 <HelpCenter />
                 <SettingCenter />
 

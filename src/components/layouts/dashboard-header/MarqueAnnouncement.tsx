@@ -6,7 +6,7 @@ interface MarqueeProps {
   className?: string;
 }
 
-const MarqueeAnnouncement: React.FC<MarqueeProps> = ({ children, speed = 60, className }) => {
+const MarqueeAnnouncement: React.FC<MarqueeProps> = ({ children, speed = 90, className }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const [shouldScroll, setShouldScroll] = useState(false);
