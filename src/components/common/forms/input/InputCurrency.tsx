@@ -2,10 +2,10 @@ import GlobalLabel from '@/components/common/atoms/GlobalLabel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Currency } from '@/shared/types';
-import { cn } from '@/shared/utils';
+import { cn, formatCurrency } from '@/shared/utils';
 import React, { memo, useEffect, useState } from 'react';
 import { FieldError } from 'react-hook-form';
-import { formatCurrency, formatSuggestionValue } from './utils';
+import { formatSuggestionValue } from './utils';
 
 interface InputCurrencyProps {
   value?: number;
@@ -23,6 +23,7 @@ interface InputCurrencyProps {
   mode?: 'onBlur' | 'onChange';
   classContainer?: string;
   className?: string;
+  isFullCurrencyDisplay?: boolean;
   [key: string]: any;
 }
 
@@ -41,6 +42,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   mode = 'onBlur',
   classContainer,
   className,
+  isFullCurrencyDisplay = false,
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -103,7 +105,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
           label
         ))}
       <Input
-        value={isFocused ? localValue : formatCurrency(value, currency)}
+        value={isFocused ? localValue : formatCurrency(value, currency, isFullCurrencyDisplay)}
         onChange={handleChange}
         onFocus={handleFocus}
         onBlur={handleBlur}

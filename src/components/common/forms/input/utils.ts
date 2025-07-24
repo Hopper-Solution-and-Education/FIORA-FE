@@ -23,8 +23,10 @@ export const formatSuggestionValue = (
 ): string => {
   const currencySymbol = getCurrencySymbol(currency as Currency);
 
-  // Limit max suggestion value to 10_000_000_000
-  const cappedNum = Math.min(num, 10_000_000_000);
+  // Limit max suggestion value to 10_000_000_000, preserve sign
+  const sign = num < 0 ? '-' : '';
+  const absNum = Math.abs(num);
+  const cappedNum = Math.min(absNum, 10_000_000_000);
 
   if (shouldShortened) {
     let formatted = '';
@@ -49,10 +51,12 @@ export const formatSuggestionValue = (
       });
       formatted = numberFormatter.format(value);
       return currency === 'VND'
-        ? `${formatted}${suffix} ${currencySymbol}`
-        : `${currencySymbol} ${formatted}${suffix}`;
+        ? `${sign}${formatted}${suffix} ${currencySymbol}`
+        : `${sign}${currencySymbol} ${formatted}${suffix}`;
     }
   }
 
-  return formatFIORACurrency(cappedNum, currency as Currency);
+  // For non-shortened, use formatFIORACurrency and add sign if needed
+  const formattedCurrency = formatFIORACurrency(cappedNum, currency as Currency);
+  return sign ? `-${formattedCurrency}` : formattedCurrency;
 };

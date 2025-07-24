@@ -8,7 +8,7 @@ import { Icons } from '@/components/Icon';
 import { Category } from '@/features/home/module/budgets/summary-detail/data/dto/response/CategoryResponseDTO';
 import { Currency } from '@/shared/types';
 import { ComparisonProps } from '@/shared/types/chart.type';
-import { cn } from '@/shared/utils';
+import { cn, formatCurrency } from '@/shared/utils';
 import CategorySelect from '../../../category/components/CategorySelect';
 import {
   BudgetDetailFilterEnum,
@@ -25,7 +25,6 @@ import {
   TableData,
 } from '../presentation/types/table.type';
 import { createGeneralComparisonMapper } from './compareDataForTable';
-import { formatCurrencyValue } from './convertTableDataCurrency';
 
 export const getBudgetValue = (
   budget: BudgetSummaryByType | null,
@@ -143,6 +142,7 @@ export const getColumnsByPeriod = (
   activeTab: BudgetDetailFilterType = BudgetDetailFilterEnum.EXPENSE,
   originTableData: TableData[] = [],
   originCategoriesData: Category[] = [],
+  isFullCurrencyDisplay?: boolean,
 ) => {
   const renderEditableCell = (text: any, record: TableData, index: number, column: ColumnProps) => {
     const isDisableEdited = !PERIOD_CONFIG.months.some((item) => item.key === column.key);
@@ -158,6 +158,7 @@ export const getColumnsByPeriod = (
           name={`value_${record.key}_${column.key}`}
           value={typeof text === 'object' ? text.value : (text ?? 0)}
           currency={currency}
+          isFullCurrencyDisplay={isFullCurrencyDisplay}
           classContainer="m-0"
           className={cn(
             'text-right h-[3.4rem] border-none rounded-none bg-white dark:bg-gray-900 hover:shadow-md hover:shadow-blue-500/20 focus-visible:border-blue-500 focus-visible:ring-blue-500/20 dark:focus-visible:ring-blue-500/40',
@@ -174,7 +175,7 @@ export const getColumnsByPeriod = (
 
     return (
       <p className={cn(`px-3 py-2 cursor-default ${column.className}`, isDisableEdited)}>
-        {formatCurrencyValue(text?.value, currency)}
+        {formatCurrency(text?.value, currency, isFullCurrencyDisplay)}
       </p>
     );
   };

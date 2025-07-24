@@ -95,8 +95,8 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   });
 
   const convertedTableData = useMemo(() => {
-    return convertTableDataCurrency(table.data, currency);
-  }, [table.data, currency]);
+    return convertTableDataCurrency(table.data, currency, isFullCurrencyDisplay);
+  }, [table.data, currency, isFullCurrencyDisplay]);
 
   const { columns } = useBudgetColumns({
     period,
@@ -115,6 +115,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     handleRemoveCategory,
     handleClearTopDown,
     initialYear,
+    isFullCurrencyDisplay,
   });
 
   useLayoutEffect(() => {
