@@ -13,11 +13,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     case 'DELETE':
       return withAuthorization({ DELETE: ['Admin'] })(DELETE)(req, res);
     case 'GET':
-      return GET(req, res); // Không dùng withAuthorization cho GET
+      return GET(req, res);
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-        .json({ error: 'Phương thức không được hỗ trợ' });
+        .json({ error: 'Method is not supported' });
   }
 }
 
@@ -32,14 +32,30 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
     where: { section_type: sectionType as SectionType },
     orderBy: { createdAt: 'asc' },
     take: 1,
-    include: { medias: true },
+    include: {
+      medias: {
+        orderBy: { media_order: 'asc' },
+        include: { mediaReviewUser: true },
+      },
+    },
   });
 
   if (!section) {
     return res.status(RESPONSE_CODE.NOT_FOUND).json({ error: 'Section not found' });
   }
 
-  return res.status(RESPONSE_CODE.ACCEPTED).json(section);
+  // Map mediaReviewUser to be an object (or null)
+  const sectionWithReviewUser = {
+    ...section,
+    medias: section.medias.map((media) => {
+      return {
+        ...media,
+        mediaReviewUser: media.mediaReviewUser || null,
+      };
+    }),
+  };
+
+  return res.status(RESPONSE_CODE.ACCEPTED).json(sectionWithReviewUser);
 }
 
 async function POST(req: NextApiRequest, res: NextApiResponse) {
@@ -69,26 +85,46 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
       });
 
       if (medias && Array.isArray(medias) && medias.length > 0) {
-        await prisma.media.createMany({
-          data: medias.map((media: Media) => ({
-            media_type: media.media_type,
-            media_url: media.media_url || null,
-            redirect_url: media.redirect_url || null,
-            embed_code: media.embed_code || null,
-            description: media.description || null,
-            uploaded_by: media.uploaded_by || createdBy || null,
-            uploaded_date: new Date(),
-            section_id: section.id,
-            createdBy: createdBy,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          })),
-        });
+        for (const media of medias) {
+          const createdMedia = await prisma.media.create({
+            data: {
+              media_type: media.media_type,
+              media_url: media.media_url || null,
+              media_url_2: media.media_url_2 || null,
+              media_order: media.media_order,
+              redirect_url: media.redirect_url || null,
+              embed_code: media.embed_code || null,
+              description: media.description || null,
+              uploaded_by: media.uploaded_by || createdBy || null,
+              uploaded_date: new Date(),
+              section_id: section.id,
+              createdBy: createdBy,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          });
+
+          // Chỉ tạo mediaReviewUser nếu section_type là REVIEW
+          if (section_type === 'REVIEW' && media.mediaReviewUser) {
+            await prisma.mediaReviewUser.create({
+              data: {
+                mediaId: createdMedia.id,
+                media_user_name: media.mediaReviewUser.media_user_name,
+                media_user_title: media.mediaReviewUser.media_user_title,
+                media_user_avatar: media.mediaReviewUser.media_user_avatar,
+                media_user_email: media.mediaReviewUser.media_user_email,
+                media_user_comment: media.mediaReviewUser.media_user_comment,
+                media_user_rating: media.mediaReviewUser.media_user_rating,
+                createdBy: media.mediaReviewUser.createdBy || createdBy,
+              },
+            });
+          }
+        }
       }
 
       return await prisma.section.findUnique({
         where: { id: section.id },
-        include: { medias: true },
+        include: { medias: { include: { mediaReviewUser: true } } },
       });
     });
 
@@ -102,7 +138,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
 }
 
 async function PUT(req: NextApiRequest, res: NextApiResponse) {
-  const { id, name, order, medias, updatedBy } = req.body;
+  const { id, name, order, medias, updatedBy, section_type } = req.body;
 
   if (!id) {
     return res.status(RESPONSE_CODE.BAD_REQUEST).json({ error: 'Section ID is required' });
@@ -143,6 +179,8 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
             data: mediasToCreate.map((media: Media) => ({
               media_type: media.media_type,
               media_url: media.media_url || null,
+              media_url_2: media.media_url_2 || null,
+              media_order: media.media_order,
               redirect_url: media.redirect_url || null,
               embed_code: media.embed_code || null,
               description: media.description || null,
@@ -163,6 +201,8 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
             data: {
               media_type: media.media_type,
               media_url: media.media_url || null,
+              media_url_2: media.media_url_2 || null,
+              media_order: media.media_order,
               redirect_url: media.redirect_url || null,
               embed_code: media.embed_code || null,
               description: media.description || null,
@@ -170,13 +210,63 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
               updatedBy: updatedBy || null,
             },
           });
+
+          // Chỉ xử lý reviewUser nếu section_type là REVIEW
+          if (section_type === 'REVIEW' && media.mediaReviewUser) {
+            const existingReviewUser = await prisma.mediaReviewUser.findFirst({
+              where: { mediaId: media.id },
+            });
+            if (existingReviewUser) {
+              // Update all fields of reviewUser
+              await prisma.mediaReviewUser.update({
+                where: { id: existingReviewUser.id },
+                data: {
+                  media_user_name: media.mediaReviewUser.media_user_name,
+                  media_user_title: media.mediaReviewUser.media_user_title,
+                  media_user_avatar: media.mediaReviewUser.media_user_avatar,
+                  media_user_email: media.mediaReviewUser.media_user_email,
+                  media_user_comment: media.mediaReviewUser.media_user_comment,
+                  media_user_rating: media.mediaReviewUser.media_user_rating,
+                  updatedBy: media.mediaReviewUser.updatedBy || updatedBy,
+                  updatedAt: new Date(),
+                },
+              });
+            } else {
+              // Create
+              await prisma.mediaReviewUser.create({
+                data: {
+                  mediaId: media.id,
+                  media_user_name: media.mediaReviewUser.media_user_name,
+                  media_user_title: media.mediaReviewUser.media_user_title,
+                  media_user_avatar: media.mediaReviewUser.media_user_avatar,
+                  media_user_email: media.mediaReviewUser.media_user_email,
+                  media_user_comment: media.mediaReviewUser.media_user_comment,
+                  media_user_rating: media.mediaReviewUser.media_user_rating,
+                  createdBy: media.mediaReviewUser.createdBy || updatedBy,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                },
+              });
+            }
+          }
         }
 
         // Delete media items that are no longer in the list
         if (mediasToDelete.length > 0) {
+          // Delete mediaReviewUser records first
+          const mediaIdsToDelete = mediasToDelete.map((m) => m.id);
+
+          // Xóa mediaReviewUser trước
+          await prisma.mediaReviewUser.deleteMany({
+            where: {
+              mediaId: { in: mediaIdsToDelete },
+            },
+          });
+
+          // Sau đó mới xóa media
           await prisma.media.deleteMany({
             where: {
-              id: { in: mediasToDelete.map((m) => m.id) },
+              id: { in: mediaIdsToDelete },
             },
           });
         }
@@ -185,7 +275,7 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
       // Fetch the updated section with its medias
       return await prisma.section.findUnique({
         where: { id },
-        include: { medias: true },
+        include: { medias: { include: { mediaReviewUser: true } } },
       });
     });
 

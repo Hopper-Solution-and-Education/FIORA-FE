@@ -14,6 +14,7 @@ import walletSlice from '@/features/home/module/wallet/slices';
 import landingSlices from '@/features/landing/slices';
 import landingSettingSlice from '@/features/setting/module/landing/slices';
 import memberShipSettingsSlice from '@/features/setting/module/membership/slices';
+import notificationDashboardSlice from '@/features/setting/module/notification-dashboard/slices';
 import partnerManagementSlice from '@/features/setting/module/partner/slices';
 import productManagementSlice from '@/features/setting/module/product/slices';
 import walletSettingSlice from '@/features/setting/module/wallet/slices';
@@ -48,6 +49,7 @@ const reducer = {
   walletSetting: walletSettingSlice,
   faqsImport: faqsImportSlice,
   budgetDetail: budgetDetailSlice,
+  notificationDashboard: notificationDashboardSlice,
 
   // RTK Query API slices
   [faqsApi.reducerPath]: faqsApi.reducer,

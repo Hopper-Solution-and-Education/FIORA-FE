@@ -74,7 +74,7 @@ export default function SettingCenter() {
         <DropdownMenuContent
           align="end"
           className={`${
-            session?.user ? 'w-[300px] grid-cols-5' : 'w-[120px] grid-cols-2'
+            session?.user ? 'w-[300px] grid-cols-5' : 'w-[180px] grid-cols-3'
           } p-4 grid gap-4 border shadow-md`}
         >
           <Tooltip delayDuration={0}>

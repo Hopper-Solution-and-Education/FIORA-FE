@@ -8,6 +8,7 @@ import { SectionTypeEnum } from '@/features/landing/constants';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { useAppSelector } from '@/store';
 import { useMemo, useState } from 'react';
+import AnnouncementManager from '../organisms/AnnouncementManager';
 import SectionManager from '../organisms/SectionManager';
 
 const sections = [
@@ -19,6 +20,7 @@ const sections = [
   { value: 'partners', label: 'Partners', type: SectionTypeEnum.PARTNER_LOGO },
   { value: 'review', label: 'Review', type: SectionTypeEnum.REVIEW },
   { value: 'footer', label: 'Footer', type: SectionTypeEnum.FOOTER },
+  { value: 'announcement', label: 'Announcement', type: 'ANNOUNCEMENT' },
 ];
 
 export default function MediaDashboard() {
@@ -65,7 +67,11 @@ export default function MediaDashboard() {
 
         {sections.map((section) => (
           <TabsContent key={section.value} value={section.value}>
-            <SectionManager sectionType={section.type} />
+            {section.type === 'ANNOUNCEMENT' ? (
+              <AnnouncementManager />
+            ) : (
+              <SectionManager sectionType={section.type as SectionTypeEnum} />
+            )}
           </TabsContent>
         ))}
       </Tabs>

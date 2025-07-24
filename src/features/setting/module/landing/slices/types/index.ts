@@ -1,8 +1,11 @@
 import { SectionTypeEnum } from '@/features/landing/constants';
+import { IAnnouncement } from '../../domain/entities/Announcement';
 
 export interface IMedia {
   id: string;
-  media_url: string;
+  media_url: string | null;
+  media_url_2: string | null;
+  media_order: number;
   media_type: string;
   redirect_url: string;
   embed_code: string;
@@ -14,6 +17,16 @@ export interface IMedia {
   updatedAt: Date;
   createdBy: string;
   updatedBy: string;
+  mediaReviewUser: {
+    media_user_name: string;
+    media_user_title: string;
+    media_user_avatar: string;
+    media_user_comment: string;
+    media_user_rating: number;
+    media_user_email: string;
+    createdBy: string;
+    updatedBy: string;
+  } | null;
 }
 
 export interface ISection {
@@ -41,6 +54,9 @@ interface LandingSettingsState {
   error: string | null;
   isLoading: boolean;
   isLoadingSaveChange: boolean;
+  announcements: IAnnouncement[];
+  isLoadingAnnouncement: boolean;
+  isLoadingUpdateAnnouncement: boolean;
 }
 
 const initialLandingSettingState: LandingSettingsState = {
@@ -56,6 +72,9 @@ const initialLandingSettingState: LandingSettingsState = {
   fetchedSections: [],
   isLoading: false,
   isLoadingSaveChange: false,
+  announcements: [],
+  isLoadingAnnouncement: false,
+  isLoadingUpdateAnnouncement: false,
 };
 
 export { initialLandingSettingState };
