@@ -84,7 +84,6 @@ class NotificationRepository implements INotificationRepository {
         userNotifications: true,
         emailLogs: true,
         emailTemplate: true,
-        attachment: true,
       },
     };
     if (typeof take === 'number' && take > 0) {
