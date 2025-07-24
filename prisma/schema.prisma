@@ -443,7 +443,7 @@ model PackageFX {
   updatedBy       String?          @db.Uuid
   attachment_id   String[]
   depositRequests DepositRequest[]
-
+  attachment_id   String[] 
   @@index([fxAmount])
 }
 

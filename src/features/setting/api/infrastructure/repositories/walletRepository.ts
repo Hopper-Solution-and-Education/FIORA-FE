@@ -2,6 +2,7 @@ import { prisma } from '@/config';
 import { FilterObject } from '@/shared/types/filter.types';
 import { FilterBuilder } from '@/shared/utils/filterBuilder';
 import {
+  Attachment,
   DepositRequest,
   DepositRequestStatus,
   PackageFX,
@@ -54,10 +55,40 @@ class WalletRepository implements IWalletRepository {
     return this._prisma.packageFX.findMany();
   }
 
-  async getPackageFXById(id: string): Promise<PackageFX | null> {
-    return this._prisma.packageFX.findUnique({ where: { id } });
+  async getPackageFXById(id: string): Promise<(PackageFX & { attachments?: Attachment[] }) | null> {
+    const packageFX = await this._prisma.packageFX.findUnique({ where: { id } });
+    if (!packageFX) return null;
+    const attachments =
+      packageFX.attachment_id && packageFX.attachment_id.length > 0
+        ? await this._prisma.attachment.findMany({ where: { id: { in: packageFX.attachment_id } } })
+        : [];
+    return { ...packageFX, attachments };
   }
+  async createPackageFX(data: Prisma.PackageFXUncheckedCreateInput): Promise<PackageFX> {
+    return this._prisma.packageFX.create({ data });
+  }
+  async updatePackageFX(
+    id: string,
+    data: { fxAmount: number; attachment_id?: string[] },
+  ): Promise<PackageFX | null> {
+    return this._prisma.packageFX.update({ where: { id }, data });
+  }
+  async deletePackageFX(id: string): Promise<PackageFX> {
+    return this._prisma.$transaction(async (tx) => {
+      await tx.depositRequest.deleteMany({
+        where: {
+          packageFXId: id,
+          NOT: {
+            status: 'Requested',
+          },
+        },
+      });
 
+      return tx.packageFX.delete({
+        where: { id },
+      });
+    });
+  }
   async createDepositRequest(
     data: Prisma.DepositRequestUncheckedCreateInput,
   ): Promise<DepositRequest> {
@@ -196,6 +227,15 @@ class WalletRepository implements IWalletRepository {
   async findDepositRequestById(id: string): Promise<DepositRequest | null> {
     return this._prisma.depositRequest.findUnique({
       where: { id },
+      include: {
+        user: true,
+      },
+    });
+  }
+
+  async findDepositRequestsByPackageFXId(packageFXId: string): Promise<DepositRequest[]> {
+    return this._prisma.depositRequest.findMany({
+      where: { packageFXId },
       include: {
         user: true,
       },

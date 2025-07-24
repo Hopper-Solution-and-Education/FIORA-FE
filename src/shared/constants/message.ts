@@ -236,13 +236,29 @@ export enum Messages {
   // WALLET FAID
   INVALID_DEPOSIT_REQUEST_TYPE = 'Invalid deposit request type.',
   MISSING_REJECTION_REASON = 'Missing rejection reason.',
-  PACKAGE_FX_NOT_FOUND = 'Package FX not found.',
   INVALID_WALLET_TYPE = 'Invalid wallet type.',
   UPDATE_DEPOSIT_REQUEST_STATUS_FAILED = 'Update deposit request status failed.',
   INVALID_STATUS = 'Invalid status.',
   PAYMENT_WALLET_NOT_FOUND = 'Payment wallet not found.',
   COULD_NOT_GENERATE_UNIQUE_REF_CODE = 'Could not generate unique refCode, please try again.',
   CURRENCY_IS_REQUIRED = 'Currency is required.',
+
+  // PACKAGE FX SUCCESS
+  CREATE_PACKAGE_FX_SUCCESS = 'Create package FX successfully.',
+  UPDATE_PACKAGE_FX_SUCCESS = 'Update package FX successfully.',
+  DELETE_PACKAGE_FX_SUCCESS = 'Delete package FX successfully.',
+  GET_PACKAGE_FX_BY_ID_SUCCESS = 'Get package FX by id successfully.',
+
+  // PACKAGE FX FAILED
+  CREATE_PACKAGE_FX_FAILED = 'Failed to create package FX.',
+  UPDATE_PACKAGE_FX_FAILED = 'Failed to update package FX.',
+  DELETE_PACKAGE_FX_FAILED = 'Failed to delete package FX.',
+  PACKAGE_FX_NOT_FOUND = 'Package FX not found.',
+  PACKAGE_FX_ID_REQUIRED = 'Package FX id is required.',
+  PACKAGE_FX_FX_FAILED = 'fxAmount is requird',
+  PACKAGE_FX_FX_AMOUNT_INVALID = 'fxAmount must be a non-negative number',
+  PACKAGE_FX_FILE_UPLOAD_FAILED = 'Failed to upload file for package FX.',
+  PACKAGE_FX_HAS_ACTIVE_DEPOSIT_REQUEST = 'Cannot update PackageFX: There are active deposit requests pending approval',
 
   // EXCHANGE RATE SUCCESS
   CREATE_EXCHANGE_RATE_SUCCESS = 'Create exchange rate successfully.',
@@ -299,6 +315,7 @@ export enum Messages {
 
   INVALID_PAGE_OR_PAGE_SIZE = 'Invalid page or pageSize.',
   INVALID_FILTER_FORMAT = 'Invalid filter format.',
+  INVALID_CONTENT_TYPE_MULTIPART = 'Content-Type must be multipart/form-data',
 
   // Email template
   CREATE_EMAIL_TEMPLATE_SUCCESS = 'Create email template successfully',
