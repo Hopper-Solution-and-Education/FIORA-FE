@@ -15,7 +15,11 @@ const TYPE_COLOR: Record<string, string> = {
 
 export const NotificationTypeBadge = ({ notifyType, className }: NotificationTypeBadgeProps) => {
   const color = TYPE_COLOR[notifyType] || 'bg-gray-100 text-gray-800';
-  return <Badge className={`${color} ${className || ''}`}>{notifyType}</Badge>;
+  return (
+    <Badge variant="secondary" className={`hover:bg-${color} ${color} ${className || ''}`}>
+      {notifyType}
+    </Badge>
+  );
 };
 
 export default NotificationTypeBadge;

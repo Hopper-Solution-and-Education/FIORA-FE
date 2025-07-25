@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { SectionTypeEnum } from '../../constants';
 import { useGetSection } from '../../hooks/useGetSection';
 
@@ -68,15 +70,23 @@ const VisionMission = () => {
             >
               {section?.name}
             </h1>
-            <div className="mt-4 text-sm sm:text-base md:text-md lg:text-lg xl:text-lg text-center lg:text-left">
+            <div
+              className="mt-4 text-sm sm:text-base md:text-md lg:text-lg xl:text-lg text-center lg:text-left"
+              style={{
+                display: '-webkit-box',
+                WebkitLineClamp: 10,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
               {section.medias[0].description}
-              Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum
-              printer took a galley of type and scrambled it to make a type specimen book. It has
-              survived not only five centuries, but also the leap into electronic typesetting,
             </div>
-            <button className="mt-8 px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base md:text-lg bg-green-700 text-white rounded-full font-semibold hover:bg-green-800 transition">
-              Learn more
-            </button>
+            <Link href={section.medias[0].redirect_url || ''} target="_blank">
+              <Button className="mt-8 px-6 h-12 sm:px-8 py-2 sm:py-3 text-sm sm:text-base md:text-lg bg-green-700 text-white rounded-full font-semibold hover:bg-green-800 transition">
+                Learn more
+              </Button>
+            </Link>
           </div>
 
           <div className="relative col-span-3 h-[180px] sm:h-[300px] md:h-[400px] lg:h-[500px] xl:h-[700px] overflow-hidden justify-center mx-1 sm:mx-2 order-2 lg:order-1">

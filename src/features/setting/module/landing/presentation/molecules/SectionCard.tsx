@@ -13,12 +13,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { MediaTypeEnum, SectionTypeEnum } from '@/features/landing/constants';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
 import useSectionCardLogic from '../../hooks/useSectionCardLogic';
 import { ISection } from '../../slices/types';
-import MediaItem from '../atoms/MediaItem';
+import MediaItem from './MediaForm';
 
 interface SectionCardProps {
   sectionData: ISection | undefined;
@@ -93,12 +94,22 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
           <Label htmlFor="description" className="mb-2 block text-sm md:text-base">
             {sectionType === SectionTypeEnum.FOOTER ? 'Copyright Text' : 'Title'}
           </Label>
-          <Input
-            id="name"
-            placeholder="Enter section title"
-            className="text-xs md:text-sm lg:text-base"
-            {...control.register('name')}
-          />
+          {sectionType === SectionTypeEnum.FOOTER ? (
+            <Textarea
+              id="description"
+              placeholder="Enter copyright text"
+              className="text-xs md:text-sm lg:text-base"
+              rows={4}
+              {...control.register('name')}
+            />
+          ) : (
+            <Input
+              id="name"
+              placeholder="Enter section title"
+              className="text-xs md:text-sm lg:text-base"
+              {...control.register('name')}
+            />
+          )}
         </div>
 
         <div className="space-y-2">
