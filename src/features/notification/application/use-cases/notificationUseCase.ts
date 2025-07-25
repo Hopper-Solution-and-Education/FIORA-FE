@@ -85,6 +85,10 @@ class NotificationUseCase {
   async createBoxNotification(input: CreateBoxNotificationInput) {
     return this.notificationRepository.createBoxNotification(input);
   }
+
+  async getNotificationById(id: string) {
+    return this.notificationRepository.getNotificationById(id);
+  }
 }
 
 export default NotificationUseCase;
