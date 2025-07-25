@@ -29,6 +29,7 @@ export function useBudgetInit({
 }: UseBudgetInitProps) {
   const [tableData, setTableData] = useState<TableData[]>([]);
   const [categoryList, setCategoryList] = useState<Category[]>([]);
+  const [categoryLoading, setCategoryLoading] = useState(false);
   const dispatch = useAppDispatch();
 
   const router = useRouter();
@@ -48,6 +49,7 @@ export function useBudgetInit({
   };
 
   const fetchCategories = async () => {
+    setCategoryLoading(true);
     try {
       const type = activeTab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income';
       const response = await budgetSummaryUseCase.getCategoriesByType(type, initialYear);
@@ -57,11 +59,13 @@ export function useBudgetInit({
     } catch (err: any) {
       dispatch(clearCategoryListSlice());
       toast.error(err?.message || 'Failed to fetch categories');
+    } finally {
+      setCategoryLoading(false);
     }
   };
 
   return {
-    isLoading,
+    isLoading: isLoading || categoryLoading,
     table: {
       data: tableData,
       set: setTableData,
