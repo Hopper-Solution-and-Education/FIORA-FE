@@ -4,22 +4,22 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  FIORANumberFormat,
+  formatFIORACurrency,
+  getCurrencySymbol,
+} from '@/config/FIORANumberFormat';
+import { Currency } from '@/shared/types';
 import { format } from 'date-fns';
 import { Trash } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import LucieIcon from '../../../category/components/LucieIcon';
 import DeleteTransactionDialog from '../../components/DeleteTransactionDialog';
 import { IRelationalTransaction } from '../../types';
 import { TransactionCurrency } from '../../utils/constants';
-import LucieIcon from '../../../category/components/LucieIcon';
-import {
-  formatFIORACurrency,
-  getCurrencySymbol,
-  FIORANumberFormat,
-} from '@/config/FIORANumberFormat';
-import { Currency } from '@/shared/types';
 
 // Custom formatCurrency function using FIORANumberFormat
 const formatCurrency = (
@@ -102,7 +102,7 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
 
           // Revalidate data
         } else {
-          toast.error(responseData.message || 'Failed to delete transaction');
+          toast.error(responseData?.message || 'Failed to delete transaction');
         }
       })
       .catch((error) => {
