@@ -85,7 +85,7 @@ export function useBudgetColumns({
       activeTab,
       originTableData,
       originCategoriesData,
-      isFullCurrencyDisplay, // truyền xuống getColumnsByPeriod
+      isFullCurrencyDisplay,
     );
 
     const columnsWithCategorySelect: ColumnProps[] = [

@@ -1,6 +1,6 @@
-import React from 'react';
-import { Category } from '@/features/home/module/category/slices/types';
 import SelectField from '@/components/common/forms/select/SelectField';
+import { Category } from '@/features/home/module/category/slices/types';
+import React from 'react';
 
 interface CategorySelectProps {
   side?: 'top' | 'bottom' | 'left' | 'right';
