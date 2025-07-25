@@ -99,27 +99,6 @@ export function useBudgetColumns({
 
             return (
               <div className="flex items-center gap-2">
-                {/* // <Select
-                //   value={(record.categoryId as string) || undefined}
-                //   onValueChange={(selectedValue) => {
-                //     const category = categories.data.find((cat) => cat.id === selectedValue);
-                //     if (category) {
-                //       handleCategorySelected(record.key, selectedValue, table.set, category.name);
-                //       handleCategoryChange(selectedValue, record.key);
-                //     }
-                //   }}
-                // >
-                //   <SelectTrigger className="w-[180px]">
-                //     <SelectValue placeholder="Select category" />
-                //   </SelectTrigger>
-                //   <SelectContent>
-                //     {availableCategories.map((category) => (
-                //       <SelectItem key={category.id} value={category.id}>
-                //         {category.name}
-                //       </SelectItem>
-                //     ))}
-                //   </SelectContent>
-                // </Select> */}
                 <CategorySelect
                   className="w-full h-full m-0 z-70"
                   value={(record.categoryId as string) || undefined}
