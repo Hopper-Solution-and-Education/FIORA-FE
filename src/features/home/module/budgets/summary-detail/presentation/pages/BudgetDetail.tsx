@@ -72,7 +72,12 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     categories,
   });
 
-  const { handleValueChange, handleValidateClick, handleClearTopDown } = useBudgetTableData({
+  const {
+    isLoading: isTableDataLoading,
+    handleValueChange,
+    handleValidateClick,
+    handleClearTopDown,
+  } = useBudgetTableData({
     initialYear,
     activeTab,
     period,
@@ -84,7 +89,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     budgetSummaryUseCase,
   });
 
-  const { handleCategoryChange } = useBudgetCategories({
+  const { handleCategoryChange, isLoading: isCategoryChangeLoading } = useBudgetCategories({
     activeTab,
     budgetSummaryUseCase,
     initialYear,
@@ -236,7 +241,9 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
           <TableV2
             columns={columns}
             dataSource={convertedTableData}
-            loading={isLoading || isCategoryLoading}
+            loading={
+              isLoading || isCategoryLoading || isCategoryChangeLoading || isTableDataLoading
+            }
             loadingRowCount={8}
             rowKey="key"
             bordered
