@@ -21,6 +21,8 @@ export enum SORT_ORDER {
 export enum FIXED {
   LEFT = 'left',
   RIGHT = 'right',
+  TOP = 'top',
+  BOTTOM = 'bottom',
 }
 
 export interface DataSourceItemProps {
@@ -31,6 +33,7 @@ export interface DataSourceItemProps {
 
 export interface DataSourceProps {
   key: string;
+  fixed?: FIXED.TOP | FIXED.BOTTOM | FIXED.LEFT | FIXED.RIGHT;
   children?: DataSourceProps[];
   rowSpan?: number;
   colSpan?: number;
@@ -62,7 +65,7 @@ export type PaginationPositionProps =
   | PAGINATION_POSITION.BOTTOM_LEFT
   | PAGINATION_POSITION.BOTTOM_RIGHT;
 
-export type Fixed = FIXED.LEFT | FIXED.RIGHT | string;
+export type Fixed = FIXED.LEFT | FIXED.RIGHT | FIXED.TOP | FIXED.BOTTOM | string;
 
 export type SortOrderProps = SORT_ORDER.ASCEND | SORT_ORDER.DESCEND | null;
 
@@ -167,4 +170,5 @@ export interface TableProps extends React.HTMLAttributes<HTMLDivElement> {
   indexSelected?: number;
   showPagination?: boolean;
   paginationEnabled?: boolean;
+  tableContainerClassName?: string;
 }

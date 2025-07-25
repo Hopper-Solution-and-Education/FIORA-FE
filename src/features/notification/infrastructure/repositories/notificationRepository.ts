@@ -6,15 +6,15 @@ import type {
   INotificationRepository,
 } from '../../domain/repositories/notificationRepository.interface';
 
-function getNotificationStatus(channel: string, emailLogs: any[]): 'SENT' | 'FAILED' {
-  if (channel === 'BOX') return 'SENT';
+function getNotificationStatus(channel: string, emailLogs: any[]): 'Success' | 'Failed' {
+  if (channel === 'BOX') return 'Success';
   if (channel === 'EMAIL') {
-    if (emailLogs && emailLogs.some((log: any) => log.status === 'FAILED')) {
-      return 'FAILED';
+    if (emailLogs && emailLogs.some((log: any) => log.status === 'Failed')) {
+      return 'Failed';
     }
-    return 'SENT';
+    return 'Success';
   }
-  return 'SENT'; // fallback, should not happen
+  return 'Success'; // fallback, should not happen
 }
 
 // Add a reusable mapping function for dashboard items
@@ -84,7 +84,6 @@ class NotificationRepository implements INotificationRepository {
         userNotifications: true,
         emailLogs: true,
         emailTemplate: true,
-        attachment: true,
       },
     };
     if (typeof take === 'number' && take > 0) {

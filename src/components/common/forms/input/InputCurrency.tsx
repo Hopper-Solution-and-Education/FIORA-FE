@@ -22,6 +22,7 @@ interface InputCurrencyProps {
   mode?: 'onBlur' | 'onChange';
   classContainer?: string;
   className?: string;
+  isFullCurrencyDisplay?: boolean;
   [key: string]: any;
   applyExchangeRate?: boolean;
 }

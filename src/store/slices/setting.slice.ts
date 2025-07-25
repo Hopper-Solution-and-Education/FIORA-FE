@@ -11,7 +11,10 @@ import {
 
 const settingsSlice = createSlice({
   name: 'settings',
-  initialState: initialSettingState,
+  initialState: {
+    ...initialSettingState,
+    isFullCurrencyDisplay: true, // mặc định hiển thị đầy đủ
+  },
   reducers: {
     changeLanguage(state, action: PayloadAction<Language>) {
       state.language = action.payload;
@@ -33,6 +36,9 @@ const settingsSlice = createSlice({
     ) => {
       state.exchangeRate = { ...state.exchangeRate, ...action.payload.rates };
       state.updatedAt = action.payload.updatedAt;
+    },
+    setFullCurrencyDisplay(state, action: PayloadAction<boolean>) {
+      state.isFullCurrencyDisplay = action.payload;
     },
   },
 });

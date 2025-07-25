@@ -38,7 +38,8 @@
     "vercel-build": "vercel build",
     "vercel-build:debug": "NEXT_DEBUG_BUILD=true vercel build",
     "check-paths": "node scripts/check-path-aliases.mjs",
-    "fix-paths": "node scripts/fix-path-aliases.mjs"
+    "fix-paths": "node scripts/fix-path-aliases.mjs",
+    "clean": "rm -rf .next && rm -rf node_modules && rm -rf package-lock.json && rm -rf bun.lock"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -52,6 +53,7 @@
     "@growthbook/growthbook-react": "^1.4.1",
     "@hello-pangea/dnd": "^18.0.1",
     "@hookform/resolvers": "^4.1.2",
+    "@next/bundle-analyzer": "^15.4.3",
     "@prisma/client": "^6.9.0",
     "@radix-ui/react-accordion": "^1.2.8",
     "@radix-ui/react-alert-dialog": "^1.1.6",
