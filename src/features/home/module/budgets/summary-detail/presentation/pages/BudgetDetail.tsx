@@ -18,19 +18,12 @@ import { cn } from '@/shared/utils';
 import { routeConfig } from '@/shared/utils/route';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setFullCurrencyDisplay } from '@/store/slices/setting.slice';
-import { useLayoutEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { PERIOD_OPTIONS } from '../../data/constants';
-import { budgetSummaryDIContainer } from '../../di/budgetSummaryDIContainer';
-import { TYPES } from '../../di/budgetSummaryDIContainer.type';
-import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
 import { convertTableDataCurrency } from '../../utils/convertTableDataCurrency';
 import BudgetSummaryYearSelect from '../atoms/BudgetSummaryYearSelect';
-import { useBudgetCategories } from '../hooks/useBudgetCategories';
-import { useBudgetColumns } from '../hooks/useBudgetColumns';
-import { useBudgetInit } from '../hooks/useBudgetInit';
-import { useBudgetNavigation } from '../hooks/useBudgetNavigation';
-import { useBudgetTableData } from '../hooks/useBudgetTableData';
-import { useCategoryManagement } from '../hooks/useCategoryManagement';
+import { getBudgetColumns } from '../hooks/useBudgetColumns';
+import { useBudgetDetail } from '../hooks/useBudgetDetail';
 
 interface BudgetDetailProps {
   year: number;
@@ -41,88 +34,59 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   const dispatch = useAppDispatch();
   const { isMobile } = useMatchBreakpoint();
 
-  const budgetSummaryUseCase = useMemo(
-    () => budgetSummaryDIContainer.get<IBudgetSummaryUseCase>(TYPES.IBudgetSummaryUseCase),
-    [],
-  );
-
-  const { period, periodId, activeTab, handlePeriodChange, handleFilterChange } =
-    useBudgetNavigation({ initialYear });
-
-  const { categories, table, isLoading } = useBudgetInit({
-    initialYear,
-    activeTab,
-    budgetSummaryUseCase,
-  });
-
+  // Sử dụng hook tổng hợp
   const {
-    isLoading: isCategoryLoading,
-    categoryRows,
-    selectedCategories,
+    state,
+    handlePeriodChange,
+    handleTabChange,
+    handleAddCategoryRow,
+    handleRemoveCategoryRow,
     setSelectedCategories,
-    handleAddCategory,
     handleCategorySelected,
-    handleRemoveCategory,
-    handleDeleteCategory,
-  } = useCategoryManagement({
-    budgetSummaryUseCase,
-    initialYear,
-    activeTab,
-    table,
-    categories,
-  });
-
-  const { handleValueChange, handleValidateClick, handleClearTopDown } = useBudgetTableData({
-    initialYear,
-    activeTab,
-    period,
-    periodId,
-    currency,
-    setSelectedCategories,
-    table,
-    categories,
-    budgetSummaryUseCase,
-  });
-
-  const { handleCategoryChange } = useBudgetCategories({
-    activeTab,
-    budgetSummaryUseCase,
-    initialYear,
-    period,
-    periodId,
-    table,
-    categories,
-  });
-
-  const convertedTableData = useMemo(() => {
-    return convertTableDataCurrency(table.data, currency, isFullCurrencyDisplay);
-  }, [table.data, currency, isFullCurrencyDisplay]);
-
-  const { columns } = useBudgetColumns({
-    period,
-    periodId,
-    table: { ...table, data: convertedTableData },
-    categories,
-    currency,
-    activeTab,
-    categoryRows,
-    selectedCategories,
-    handleCategoryChange,
     handleValidateClick,
     handleValueChange,
-    handleCategorySelected,
-    handleDeleteCategory,
-    handleRemoveCategory,
-    handleClearTopDown,
+    rowLoading,
+    // ... các handler khác nếu cần
+  } = useBudgetDetail(initialYear);
+
+  // Lấy các state cần thiết từ state
+  const {
+    period,
+    periodId,
+    activeTab,
+    tableData,
+    categoryList,
+    categoryRows,
+    selectedCategories,
+    isLoading,
+  } = state;
+
+  // Convert table data theo currency display
+  const convertedTableData = useMemo(() => {
+    return convertTableDataCurrency(tableData, currency, isFullCurrencyDisplay);
+  }, [tableData, currency, isFullCurrencyDisplay]);
+
+  // Columns cho TableV2
+  const columns = getBudgetColumns({
+    period: period as any, // hoặc ép kiểu BudgetPeriodType nếu import được
+    periodId,
+    table: { data: convertedTableData, set: () => {}, fetch: async () => {} },
+    categories: { data: categoryList, set: () => {}, fetch: async () => {} },
+    currency,
+    activeTab: activeTab as any, // hoặc ép kiểu BudgetDetailFilterType nếu import được
+    categoryRows,
+    selectedCategories,
+    handleCategoryChange: () => {},
+    handleValidateClick, // truyền handler thực tế
+    handleValueChange, // truyền handler thực tế
+    handleCategorySelected, // truyền handler thực tế
+    handleDeleteCategory: () => {},
+    handleRemoveCategory: () => {},
+    handleClearTopDown: () => {},
     initialYear,
     isFullCurrencyDisplay,
+    rowLoading, // truyền loading từng dòng
   });
-
-  useLayoutEffect(() => {
-    if (table.data.length === 3) {
-      handleAddCategory();
-    }
-  }, [table.data.length, handleAddCategory]);
 
   return (
     <div className="p-4 w-full flex flex-col min-h-screen">
@@ -135,7 +99,6 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
                 selectedYear={initialYear}
                 route={routeConfig(RouteEnum.BudgetDetail, {}, { period, periodId })}
               />
-
               {/* Tabs toggle currency display (mobile) */}
               {isMobile && (
                 <Tabs
@@ -157,12 +120,11 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
                   </TabsList>
                 </Tabs>
               )}
-
               {isMobile && (
                 <ActionButton
                   tooltipContent="Add New Category"
                   showIcon={true}
-                  onClick={handleAddCategory}
+                  onClick={handleAddCategoryRow}
                 />
               )}
             </div>
@@ -178,11 +140,10 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
                 ))}
               </SelectContent>
             </Select>
-
             <Tabs
               defaultValue="expense"
               value={activeTab}
-              onValueChange={handleFilterChange}
+              onValueChange={handleTabChange}
               className="w-full sm:w-auto"
             >
               <TabsList className="grid grid-cols-2 sm:flex w-full sm:w-auto  rounded-lg">
@@ -193,7 +154,6 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
                   <Icons.trendindDown size={16} color={COLORS.DEPS_DANGER.LEVEL_1} />
                   Expense
                 </TabsTrigger>
-
                 <TabsTrigger
                   value="income"
                   className="flex items-center gap-2 rounded-lg transition-all"
@@ -204,7 +164,6 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
               </TabsList>
             </Tabs>
           </div>
-
           {/* Tabs toggle currency display (desktop) */}
           {!isMobile && (
             <div className="flex items-center gap-2">
@@ -226,17 +185,16 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
               <ActionButton
                 tooltipContent="Add New Category"
                 showIcon={true}
-                onClick={handleAddCategory}
+                onClick={handleAddCategoryRow}
               />
             </div>
           )}
         </div>
-
         <div className="w-[5rem] md:w-[20rem] lg:w-[50rem] min-w-full">
           <TableV2
             columns={columns}
             dataSource={convertedTableData}
-            loading={isLoading || isCategoryLoading}
+            loading={isLoading}
             loadingRowCount={8}
             rowKey="key"
             bordered

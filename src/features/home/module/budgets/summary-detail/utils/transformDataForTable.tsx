@@ -4,7 +4,6 @@ import {
   DataSourceItemProps,
   FIXED,
 } from '@/components/common/tables/custom-table/types';
-import { Icons } from '@/components/Icon';
 import { Category } from '@/features/home/module/budgets/summary-detail/data/dto/response/CategoryResponseDTO';
 import { Currency } from '@/shared/types';
 import { ComparisonProps } from '@/shared/types/chart.type';
@@ -346,54 +345,6 @@ export const getColumnsByPeriod = (
     }),
   ];
 
-  const actionColumn: ColumnProps = createColumn('action', 'ACTION', {
-    fixed: 'right',
-    align: 'center',
-    width: 60,
-    headerAlign: 'center',
-    render: (_, record: TableData) => {
-      const [categoryId] = record.key.split('-bottom-up');
-
-      if (record.isEditable) {
-        return (
-          <div className="grid grid-flow-col place-items-center gap-2">
-            <span
-              className={cn('cursor-pointer', 'text-red-500 hover:text-red-700')}
-              title="Invalid"
-              onClick={() => {
-                if (record.key === 'top-down') {
-                  onClearTopDown?.();
-                } else if (categoryId) {
-                  handleDeleteOrResetCategory(record, categoryId);
-                }
-              }}
-            >
-              <Icons.close size={15} />
-            </span>
-            <span
-              className={cn(
-                'cursor-pointer',
-                checkEnableValidate(record)
-                  ? 'text-green-500 hover:text-green-700'
-                  : 'text-gray-400 cursor-not-allowed',
-              )}
-              title="Valid"
-              onClick={() => {
-                if (checkEnableValidate(record)) {
-                  onValidateClick?.(record);
-                }
-              }}
-            >
-              <Icons.check size={15} />
-            </span>
-          </div>
-        );
-      }
-
-      return null;
-    },
-  });
-
   const createPeriodColumns = (
     config: typeof PERIOD_CONFIG.months,
     additionalCellProps?: Partial<ColumnProps>,
@@ -503,5 +454,5 @@ export const getColumnsByPeriod = (
     }
   }
 
-  return [...defaultColumns, ...periodColumns, actionColumn];
+  return [...defaultColumns, ...periodColumns];
 };
