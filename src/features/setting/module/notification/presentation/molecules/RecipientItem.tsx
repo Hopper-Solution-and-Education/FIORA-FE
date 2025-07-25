@@ -1,35 +1,37 @@
-// src/components/recipient-item.tsx
-import { cn } from '@/lib/utils'; // For utility functions, specifically for conditional classNames
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 import { CheckCircle2, XCircle } from 'lucide-react';
 
 interface RecipientItemProps {
-  recipient: {
+  data: {
     email: string;
-    time: string;
-    status: 'received' | 'not-received';
-    selected?: boolean;
+    createAt: string;
+    isValid: boolean;
+    isSelected: boolean;
   };
+  onClick: () => void;
 }
 
-export function RecipientItem({ recipient }: RecipientItemProps) {
+export function RecipientItem({ data, onClick }: RecipientItemProps) {
   return (
     <div
       className={cn(
         'flex items-center justify-between p-3 rounded-md cursor-pointer hover:bg-gray-50 transition-colors',
-        recipient.selected
-          ? 'bg-blue-50 border border-blue-200'
-          : 'bg-white border border-gray-200',
+        data.isSelected ? 'bg-blue-50 border border-blue-200' : 'bg-white border border-gray-200',
       )}
+      onClick={onClick}
     >
       <div>
-        <p className={cn('font-medium', recipient.selected ? 'text-blue-800' : 'text-gray-800')}>
-          {recipient.email}
+        <p
+          className={cn('font-medium text-sm', data.isSelected ? 'text-blue-800' : 'text-gray-800')}
+        >
+          {data.email}
         </p>
-        <p className={cn('text-sm', recipient.selected ? 'text-blue-600' : 'text-gray-500')}>
-          {recipient.time}
+        <p className={cn('text-sm', data.isSelected ? 'text-blue-600' : 'text-gray-500')}>
+          {format(data.createAt, 'dd/MM/yyyy HH:mm:ss')}
         </p>
       </div>
-      {recipient.status === 'received' ? (
+      {data.isValid ? (
         <CheckCircle2 className="h-5 w-5 text-green-500" />
       ) : (
         <XCircle className="h-5 w-5 text-red-500" />
