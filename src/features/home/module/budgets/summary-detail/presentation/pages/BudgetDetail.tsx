@@ -16,7 +16,8 @@ import { RouteEnum } from '@/shared/constants/RouteEnum';
 import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
 import { cn } from '@/shared/utils';
 import { routeConfig } from '@/shared/utils/route';
-import { useAppSelector } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { setFullCurrencyDisplay } from '@/store/slices/setting.slice';
 import { useLayoutEffect, useMemo } from 'react';
 import { PERIOD_OPTIONS } from '../../data/constants';
 import { budgetSummaryDIContainer } from '../../di/budgetSummaryDIContainer';
@@ -36,7 +37,8 @@ interface BudgetDetailProps {
 }
 
 const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
-  const { currency } = useAppSelector((state) => state.settings);
+  const { currency, isFullCurrencyDisplay } = useAppSelector((state) => state.settings);
+  const dispatch = useAppDispatch();
   const { isMobile } = useMatchBreakpoint();
 
   const budgetSummaryUseCase = useMemo(
@@ -70,7 +72,12 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     categories,
   });
 
-  const { handleValueChange, handleValidateClick, handleClearTopDown } = useBudgetTableData({
+  const {
+    isLoading: isTableDataLoading,
+    handleValueChange,
+    handleValidateClick,
+    handleClearTopDown,
+  } = useBudgetTableData({
     initialYear,
     activeTab,
     period,
@@ -82,7 +89,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     budgetSummaryUseCase,
   });
 
-  const { handleCategoryChange } = useBudgetCategories({
+  const { handleCategoryChange, isLoading: isCategoryChangeLoading } = useBudgetCategories({
     activeTab,
     budgetSummaryUseCase,
     initialYear,
@@ -93,8 +100,8 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   });
 
   const convertedTableData = useMemo(() => {
-    return convertTableDataCurrency(table.data, currency);
-  }, [table.data, currency]);
+    return convertTableDataCurrency(table.data, currency, isFullCurrencyDisplay);
+  }, [table.data, currency, isFullCurrencyDisplay]);
 
   const { columns } = useBudgetColumns({
     period,
@@ -113,6 +120,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     handleRemoveCategory,
     handleClearTopDown,
     initialYear,
+    isFullCurrencyDisplay,
   });
 
   useLayoutEffect(() => {
@@ -132,6 +140,28 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
                 selectedYear={initialYear}
                 route={routeConfig(RouteEnum.BudgetDetail, {}, { period, periodId })}
               />
+
+              {/* Tabs toggle currency display (mobile) */}
+              {isMobile && (
+                <Tabs
+                  value={isFullCurrencyDisplay ? 'full' : 'short'}
+                  onValueChange={(val) => dispatch(setFullCurrencyDisplay(val === 'full'))}
+                  className="ml-2 min-w-[120px]"
+                >
+                  <TabsList className="w-full grid grid-cols-2 rounded-lg bg-muted/30">
+                    <TabsTrigger value="full" className="flex items-center gap-1 px-2 py-1 text-xs">
+                      <Icons.eye size={16} className="text-primary" />
+                      1K | 1M | 1B
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="short"
+                      className="flex items-center gap-1 px-2 py-1 text-xs"
+                    >
+                      <Icons.eyeOff size={16} className="text-muted-foreground" />K | M | B
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              )}
 
               {isMobile && (
                 <ActionButton
@@ -180,12 +210,30 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
             </Tabs>
           </div>
 
+          {/* Tabs toggle currency display (desktop) */}
           {!isMobile && (
-            <ActionButton
-              tooltipContent="Add New Category"
-              showIcon={true}
-              onClick={handleAddCategory}
-            />
+            <div className="flex items-center gap-2">
+              <Tabs
+                value={isFullCurrencyDisplay ? 'full' : 'short'}
+                onValueChange={(val) => dispatch(setFullCurrencyDisplay(val === 'full'))}
+                className="min-w-[120px]"
+              >
+                <TabsList className="w-full grid grid-cols-2 rounded-lg bg-muted/30">
+                  <TabsTrigger value="full" className="flex items-center gap-1 px-2 py-1 text-xs">
+                    <Icons.eye size={16} className="text-primary" />
+                    1K | 1M | 1B
+                  </TabsTrigger>
+                  <TabsTrigger value="short" className="flex items-center gap-1 px-2 py-1 text-xs">
+                    <Icons.eyeOff size={16} className="text-muted-foreground" />K | M | B
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+              <ActionButton
+                tooltipContent="Add New Category"
+                showIcon={true}
+                onClick={handleAddCategory}
+              />
+            </div>
           )}
         </div>
 
@@ -193,7 +241,9 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
           <TableV2
             columns={columns}
             dataSource={convertedTableData}
-            loading={isLoading || isCategoryLoading}
+            loading={
+              isLoading || isCategoryLoading || isCategoryChangeLoading || isTableDataLoading
+            }
             loadingRowCount={8}
             rowKey="key"
             bordered
@@ -202,6 +252,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
             pagination={false}
             rowHover
             className="w-full scrollbar-thin rounded-lg shadow-sm"
+            tableContainerClassName="overflow-y-auto max-h-[30rem]"
           />
         </div>
       </div>

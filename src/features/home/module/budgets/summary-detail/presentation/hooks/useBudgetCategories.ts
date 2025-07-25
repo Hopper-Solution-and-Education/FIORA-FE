@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { BudgetDetailFilterEnum } from '../../data/constants';
 import { MonthlyPlanningData } from '../../data/dto/request/BudgetUpdateRequestDTO';
@@ -28,8 +28,10 @@ export function useBudgetCategories({
   table,
   initialYear,
 }: UseBudgetCategoriesProps) {
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     const updateTableDataWithCreatedCategories = async () => {
+      setIsLoading(true);
       const createdCategories = categories.data.filter((cat) => cat.isCreated === true);
 
       if (createdCategories.length > 0) {
@@ -82,16 +84,23 @@ export function useBudgetCategories({
           });
         } catch (error: any) {
           toast.error(error.message || 'Failed to fetch category data');
+        } finally {
+          setIsLoading(false);
         }
       }
+      setIsLoading(false);
     };
 
     updateTableDataWithCreatedCategories();
   }, [categories.data]);
 
   const handleCategoryChange = async (categoryId: string, parentKey?: string) => {
+    setIsLoading(true);
     const selectedCategoryData = categories.data.find((cat) => cat.id === categoryId);
-    if (!selectedCategoryData) return;
+    if (!selectedCategoryData) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const actualResponse = await budgetSummaryUseCase.getActualPlanningByCategory(
@@ -146,8 +155,10 @@ export function useBudgetCategories({
       );
     } catch (err: any) {
       toast.error(err?.message || 'Failed to fetch category planning data');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  return { handleCategoryChange };
+  return { isLoading, handleCategoryChange };
 }

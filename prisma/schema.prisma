@@ -484,7 +484,7 @@ model Notification {
   emailTemplateId   String?                 @db.Uuid
   type              NotificationType
   emailLogs         EmailNotificationLogs[]
-  attachment        Attachment?             @relation(fields: [attachmentId], references: [id])
+  Attachment        Attachment?             @relation(fields: [attachmentId], references: [id])
   emailTemplate     EmailTemplate?          @relation(fields: [emailTemplateId], references: [id])
   userNotifications UserNotification[]
 
@@ -548,7 +548,7 @@ model Attachment {
   updatedBy           String?               @db.Uuid
   AttachmentRelations AttachmentRelations[]
   depositRequests     DepositRequest?
-  notifications       Notification?
+  Notification        Notification?
 
   @@index([url])
   @@index([path])

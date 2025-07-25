@@ -1,5 +1,5 @@
 import { Currency } from '@/shared/types';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { BudgetDetailFilterEnum } from '../../data/constants';
 import { MonthlyPlanningData } from '../../data/dto/request/BudgetUpdateRequestDTO';
@@ -37,9 +37,15 @@ export function useBudgetTableData({
   categories,
   budgetSummaryUseCase,
 }: UseBudgetTableDataProps) {
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
-    table.fetch();
-    categories.fetch();
+    const fetchData = async () => {
+      setIsLoading(true);
+      await table.fetch();
+      await categories.fetch();
+      setIsLoading(false);
+    };
+    fetchData();
   }, [initialYear, periodId, currency, activeTab]);
 
   useEffect(() => {
@@ -54,6 +60,7 @@ export function useBudgetTableData({
   }, [table.data]);
 
   const handleValueChange = (record: TableData, columnKey: string, value: number) => {
+    setIsLoading(true);
     table.set((prevData) =>
       prevData.map((item) => {
         console.log(item.key, columnKey);
@@ -80,9 +87,11 @@ export function useBudgetTableData({
         return item;
       }),
     );
+    setIsLoading(false);
   };
 
   const handleValidateClick = async (record: TableData) => {
+    setIsLoading(true);
     try {
       const suffix = activeTab === BudgetDetailFilterEnum.EXPENSE ? '_exp' : '_inc';
 
@@ -148,10 +157,13 @@ export function useBudgetTableData({
       }
     } catch (err: any) {
       toast.error(err?.message || 'Failed to update planning');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleClearTopDown = async () => {
+    setIsLoading(true);
     try {
       const clearedData = table.data.map((item) => {
         if (item.key === 'top-down') {
@@ -187,10 +199,13 @@ export function useBudgetTableData({
       // Rollback nếu API thất bại (tùy chọn)
       table.fetch();
       categories.fetch();
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return {
+    isLoading,
     handleValueChange,
     handleValidateClick,
     handleClearTopDown,

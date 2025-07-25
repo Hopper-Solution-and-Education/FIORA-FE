@@ -1,8 +1,14 @@
-import type { EmailNotificationLogs, Notification, UserNotification } from '@prisma/client';
+import type {
+  EmailNotificationLogs,
+  Notification,
+  NotificationType,
+  UserNotification,
+} from '@prisma/client';
 
 export interface CreateBoxNotificationInput {
   title: string;
-  type: 'ALL' | 'ROLE_ADMIN' | 'ROLE_CS' | 'ROLE_USER' | 'PERSONAL';
+  type: string;
+  notifyTo: NotificationType;
   attachmentId?: string;
   deepLink?: string;
   message: string;

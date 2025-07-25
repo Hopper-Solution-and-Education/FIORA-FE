@@ -1,14 +1,18 @@
-import { Icons } from '@/components/Icon';
-import { notFound, useParams, useRouter } from 'next/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
+import { notFound, useParams } from 'next/navigation';
 import React from 'react';
 import { useFaqDetail } from '../../hooks/useFaqDetail';
-import { ConfirmDeleteDialog, FaqContent, FaqHeader, FaqRelatedArticles } from '../molecules';
-import WarningDialog from '../molecules/WarningDialog';
+import {
+  ConfirmDeleteDialog,
+  FaqContent,
+  FaqHeader,
+  FaqRelatedArticles,
+  LoginDialog,
+} from '../molecules';
 import { FaqCommentsSection, FeedbackSection } from '../organisms';
 
 const FaqDetailPage: React.FC = () => {
   const { id } = useParams() as { id: string };
-  const router = useRouter();
   const {
     faq,
     error,
@@ -27,11 +31,8 @@ const FaqDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-10 text-center">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-300 rounded w-3/4 mx-auto mb-4"></div>
-          <div className="h-4 bg-gray-300 rounded w-1/2 mx-auto"></div>
-        </div>
+      <div className="p-6 space-y-4">
+        <Skeleton className="w-full h-96" />
       </div>
     );
   }
@@ -77,16 +78,10 @@ const FaqDetailPage: React.FC = () => {
         isDeleting={isDeletingFaq}
       />
 
-      <WarningDialog
+      <LoginDialog
         open={openWarningDialog}
         onClose={() => setOpenWarningDialog(false)}
-        onSubmit={() => {
-          setOpenWarningDialog(false);
-          router.push('/login');
-        }}
-        title="Login Required"
-        description="You need to login to do this action"
-        icon={<Icons.warning className="h-5 w-5" />}
+        callbackUrl={id}
       />
     </section>
   );

@@ -23,7 +23,11 @@ import { useState } from 'react';
 import { useLogin } from '../../hooks/useLogin';
 import GoogleIcon from '../components/GoogleIcon';
 
-export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {
+export function LoginForm({
+  className,
+  callbackUrl,
+  ...props
+}: React.ComponentProps<'div'> & { callbackUrl?: string }) {
   const {
     rememberMe,
     toggleRememberMe,
@@ -46,7 +50,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
 
             <Form {...form}>
               <form
-                onSubmit={form.handleSubmit(handleCredentialsSignIn)}
+                onSubmit={form.handleSubmit((data) => handleCredentialsSignIn(data, callbackUrl))}
                 className="w-full space-y-4 flex flex-col items-center"
                 data-test="login-form"
               >
@@ -198,7 +202,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
             <div className="relative flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <span className="relative z-10 px-1">Or Sign in with</span>
               <button
-                onClick={handleGoogleSignIn}
+                onClick={() => handleGoogleSignIn(callbackUrl)}
                 className="flex items-center justify-center w-8 h-8 cursor-pointer"
                 data-test="login-google-button"
               >

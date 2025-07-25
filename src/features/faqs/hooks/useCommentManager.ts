@@ -15,11 +15,7 @@ export const useCommentManager = ({ faqId }: UseCommentManagerProps) => {
   // Pagination
   const [commentPage, setCommentPage] = useState(0);
   const PAGE_SIZE = 10;
-  const { data: commentsPage, isLoading: isLoadingCommentsQuery } = useGetFaqCommentsQuery({
-    faqId,
-    skip: commentPage * PAGE_SIZE,
-    take: PAGE_SIZE,
-  });
+  const { data: commentsPage, isLoading: isLoadingCommentsQuery } = useGetFaqCommentsQuery(faqId);
   const [allComments, setAllComments] = useState<FaqComment[]>([]);
   useEffect(() => {
     if (commentsPage)

@@ -17,6 +17,7 @@ interface TextareaFieldProps {
   placeholder?: string; // Placeholder text
   id?: string; // HTML id for accessibility
   className?: string;
+  fontSizeClass?: string;
   [key: string]: any; // Rest props for additional attributes
 }
 
@@ -29,8 +30,9 @@ const TextareaField: React.FC<TextareaFieldProps> = ({
   label,
   required = false,
   placeholder,
-  id = name, // Default to name if no id provided
+  id = name,
   className,
+  fontSizeClass = 'text-sm',
   ...props
 }) => {
   return (
@@ -48,7 +50,7 @@ const TextareaField: React.FC<TextareaFieldProps> = ({
         placeholder={placeholder}
         id={id}
         name={name}
-        className={cn(error ? 'border-red-500' : '', className)}
+        className={cn(fontSizeClass, error ? 'border-red-500' : '', className)}
         data-test={props['data-test'] || (name ? `${name}-textarea` : undefined)}
         {...props}
       />

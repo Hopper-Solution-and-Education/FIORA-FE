@@ -6,13 +6,34 @@ import type {
   INotificationRepository,
 } from '../../domain/repositories/notificationRepository.interface';
 
-function getNotificationStatus(
-  channel: string,
-  emailLogs: EmailNotificationLogs[],
-): 'FAILED' | 'SENT' | 'UNKNOWN' {
+function getNotificationStatus(channel: string, emailLogs: any[]): 'SENT' | 'Failed' {
   if (channel === 'BOX') return 'SENT';
-  if (!emailLogs || emailLogs.length === 0) return 'UNKNOWN';
-  return emailLogs.some((log) => log.status === 'FAILED') ? 'FAILED' : 'SENT';
+  if (channel === 'EMAIL') {
+    if (emailLogs && emailLogs.some((log: any) => log.status === 'Failed')) {
+      return 'Failed';
+    }
+    return 'SENT';
+  }
+  return 'SENT'; // fallback, should not happen
+}
+
+// Add a reusable mapping function for dashboard items
+function mapNotificationDashboardItem(n: any, userMap: Record<string, any>): any {
+  return {
+    id: n.id,
+    sendDate: n.createdAt,
+    notifyTo: n.notifyTo,
+    subject: n.message,
+    recipients: n.emails,
+    sender: n.createdBy ? userMap[n.createdBy]?.email || n.createdBy : 'System',
+    notifyType: getNotificationStatus(n.channel, n.emailLogs),
+    channel: n.channel,
+    status: getNotificationStatus(n.channel, n.emailLogs),
+    emailTemplate: n.emailTemplate,
+    attachment: n.attachment,
+    userNotifications: n.userNotifications,
+    emailLogs: n.emailLogs,
+  };
 }
 
 // Map filter key từ dashboard sang DB
@@ -35,6 +56,16 @@ function mapDashboardFilterToDB(filters: Record<string, any>) {
       dbFilters[key] = value;
     }
   }
+
+  if (filters.sendDateFrom && filters.sendDateTo) {
+    dbFilters.createdAt = {};
+    if (filters.sendDateFrom) {
+      dbFilters.createdAt.gte = new Date(filters.sendDateFrom + 'T00:00:00.000Z');
+    }
+    if (filters.sendDateTo) {
+      dbFilters.createdAt.lte = new Date(filters.sendDateTo + 'T23:59:59.999Z');
+    }
+  }
   return dbFilters;
 }
 
@@ -53,14 +84,13 @@ class NotificationRepository implements INotificationRepository {
         userNotifications: true,
         emailLogs: true,
         emailTemplate: true,
-        attachment: true,
       },
     };
     if (typeof take === 'number' && take > 0) {
       query.take = take;
     }
     const notifications = (await prisma.notification.findMany(query)) as any[];
-    // Lấy danh sách userId (createdBy) duy nhất
+
     const userIds = Array.from(new Set(notifications.map((n) => n.createdBy).filter(Boolean)));
     const users = userIds.length
       ? await prisma.user.findMany({
@@ -69,21 +99,7 @@ class NotificationRepository implements INotificationRepository {
         })
       : [];
     const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
-    return notifications.map((n) => ({
-      id: n.id,
-      sendDate: n.createdAt,
-      notifyTo: n.notifyTo,
-      subject: n.message,
-      recipients: n.emails,
-      sender: n.createdBy ? userMap[n.createdBy]?.email || n.createdBy : 'System',
-      notifyType: n.type,
-      channel: n.channel,
-      status: getNotificationStatus(n.channel, n.emailLogs),
-      emailTemplate: n.emailTemplate
-        ? { id: n.emailTemplate.id, name: n.emailTemplate.name }
-        : null,
-      attachment: n.attachment ? { id: n.attachment.id, url: n.attachment.url } : null,
-    }));
+    return notifications.map((n) => mapNotificationDashboardItem(n, userMap));
   }
 
   async getNotificationById(id: string): Promise<any | null> {
@@ -91,9 +107,6 @@ class NotificationRepository implements INotificationRepository {
       where: { id },
       include: {
         userNotifications: true,
-        emailLogs: true,
-        emailTemplate: true,
-        attachment: true,
       },
     });
     if (!n) return null;
@@ -112,17 +125,15 @@ class NotificationRepository implements INotificationRepository {
     return {
       id: n.id,
       sendDate: n.createdAt,
-      notifyTo: n.notifyTo,
+      notifyTo: n.notifyTo, // enum NotificationType
       subject: n.message,
       recipients: n.emails,
       sender,
-      notifyType: n.type,
+      notifyType: n.type, // string
       channel: n.channel,
-      status: getNotificationStatus(n.channel, n.emailLogs),
-      emailTemplate: n.emailTemplate
-        ? { id: n.emailTemplate.id, name: n.emailTemplate.name }
-        : null,
-      attachment: n.attachment ? { id: n.attachment.id, url: n.attachment.url } : null,
+      status: n.channel === 'BOX' ? 'SENT' : 'UNKNOWN',
+      emailTemplate: n.emailTemplateId ? { id: n.emailTemplateId } : null,
+      attachment: n.attachmentId ? { id: n.attachmentId } : null,
     };
   }
 
@@ -139,26 +150,27 @@ class NotificationRepository implements INotificationRepository {
   }
 
   async createBoxNotification(input: CreateBoxNotificationInput): Promise<any> {
-    const { title, type, attachmentId, deepLink, message, emails } = input;
+    const { title, type, attachmentId, deepLink, message, emails, notifyTo } = input;
     let users: { id: string }[] = [];
-    if (type === 'ALL') {
+
+    if (notifyTo === 'ALL') {
       users = await prisma.user.findMany({ where: { isDeleted: false }, select: { id: true } });
-    } else if (type === 'ROLE_ADMIN') {
+    } else if (notifyTo === 'ROLE_ADMIN') {
       users = await prisma.user.findMany({
         where: { isDeleted: false, role: 'Admin' },
         select: { id: true },
       });
-    } else if (type === 'ROLE_CS') {
+    } else if (notifyTo === 'ROLE_CS') {
       users = await prisma.user.findMany({
         where: { isDeleted: false, role: 'CS' },
         select: { id: true },
       });
-    } else if (type === 'ROLE_USER') {
+    } else if (notifyTo === 'ROLE_USER') {
       users = await prisma.user.findMany({
         where: { isDeleted: false, role: 'User' },
         select: { id: true },
       });
-    } else if (type === 'PERSONAL') {
+    } else if (notifyTo === 'PERSONAL') {
       if (!emails || emails.length === 0) {
         throw new AppError(400, 'No email provided for PERSONAL notification');
       }
@@ -174,13 +186,13 @@ class NotificationRepository implements INotificationRepository {
       // 1. Tạo notification trước
       const notification = await tx.notification.create({
         data: {
-          notifyTo: type,
+          notifyTo: notifyTo,
           emails: emails || [],
           emailTemplateId: null,
           attachmentId: attachmentId || null,
           title,
           message,
-          type,
+          type: type,
           deepLink: deepLink || null,
           channel: ChannelType.BOX,
           createdAt: new Date(),
@@ -192,6 +204,41 @@ class NotificationRepository implements INotificationRepository {
         skipDuplicates: true,
       });
       return notification;
+    });
+  }
+
+  // Lấy tất cả UserNotification của userId, include notification và các bảng liên quan
+  async getUserNotifications(userId: string): Promise<any[]> {
+    return prisma.userNotification.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        notification: {
+          include: {
+            emailLogs: true,
+            emailTemplate: true,
+            attachment: true,
+          },
+        },
+      },
+    });
+  }
+
+  // Lấy 20 UserNotification chưa đọc gần nhất theo userId, include notification và các bảng liên quan
+  async getUserNotificationsUnread(userId: string, take: number = 20): Promise<any[]> {
+    return prisma.userNotification.findMany({
+      where: { userId, isRead: false },
+      orderBy: { createdAt: 'desc' },
+      take,
+      include: {
+        notification: {
+          include: {
+            emailLogs: true,
+            emailTemplate: true,
+            attachment: true,
+          },
+        },
+      },
     });
   }
 }

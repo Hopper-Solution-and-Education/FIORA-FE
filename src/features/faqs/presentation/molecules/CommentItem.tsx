@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { differenceInHours, differenceInMinutes, format, isPast } from 'date-fns';
 import { MoreVertical } from 'lucide-react';
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import type { FaqComment } from '../../domain/entities/models/faqs';
 import { UserAvatar } from '../atoms';
 
@@ -56,72 +56,81 @@ const renderCommentContent = (content: string) => {
   return content;
 };
 
-const CommentItem: React.FC<CommentItemProps> = ({
-  comment,
-  onReply,
-  onDelete,
-  canDelete = false,
-  canReply = false,
-}) => {
-  return (
-    <div className="py-3 border-b border-gray-100 last:border-b-0">
-      <div className="pt-1 flex items-center gap-4">
-        <UserAvatar src={comment.User?.image} name={comment.User?.email} size="lg" />
-        {/* Header: user, date, menu */}
-        <div className="flex justify-between mb-1 w-full">
-          <div className="flex flex-col gap-2">
-            <span className="font-medium text-sm text-gray-900 leading-tight">
-              {comment.User?.email || 'Unknown User'}
-            </span>
-            <span className="text-xs text-gray-500 leading-tight">
-              {formatTimeAgo(comment.createdAt)}
-            </span>
-          </div>
-          {(canReply || canDelete) && (
-            <div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    data-test="comment-item-dropdown-menu-trigger"
-                    className="p-1 "
-                    aria-label="Comment actions"
-                  >
-                    <MoreVertical className="w-5 h-5 text-gray-500" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
-                  {canReply && (
-                    <DropdownMenuItem
-                      onClick={() => onReply(comment.id, comment.User?.email || 'Unknown')}
-                      className="cursor-pointer"
-                    >
-                      Reply comment
-                    </DropdownMenuItem>
-                  )}
-                  {canDelete && (
-                    <DropdownMenuItem
-                      onClick={onDelete}
-                      className="text-red-600 focus:text-red-700 cursor-pointer"
-                    >
-                      Delete comment
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+const CommentItem: React.FC<CommentItemProps> = memo(
+  ({ comment, onReply, onDelete, canDelete = false, canReply = false }) => {
+    const handleReplyClick = useCallback(() => {
+      onReply(comment.id, comment.User?.email || 'Unknown');
+    }, [onReply, comment.id, comment.User?.email]);
+
+    const handleDeleteClick = useCallback(() => {
+      onDelete();
+    }, [onDelete]);
+
+    return (
+      <div className="py-3 border-b border-gray-100 last:border-b-0">
+        <div className="pt-1 flex items-center gap-4">
+          <UserAvatar src={comment.User?.image} name={comment.User?.email} size="lg" />
+          {/* Header: user, date, menu */}
+          <div className="flex justify-between mb-1 w-full">
+            <div className="flex flex-col gap-2">
+              <span className="font-medium text-sm text-gray-900 leading-tight">
+                {comment.User?.email || 'Unknown User'}
+              </span>
+              <span className="text-xs text-gray-500 leading-tight">
+                {formatTimeAgo(comment.createdAt)}
+              </span>
             </div>
-          )}
+            {(canReply || canDelete) && (
+              <div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      data-test="comment-item-dropdown-menu-trigger"
+                      className="p-1"
+                      aria-label="Comment actions"
+                      tabIndex={0}
+                    >
+                      <MoreVertical className="w-5 h-5 text-gray-500" aria-hidden="true" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40">
+                    {canReply && (
+                      <DropdownMenuItem
+                        onClick={handleReplyClick}
+                        className="cursor-pointer"
+                        aria-label="Reply to comment"
+                      >
+                        Reply comment
+                      </DropdownMenuItem>
+                    )}
+                    {canDelete && (
+                      <DropdownMenuItem
+                        onClick={handleDeleteClick}
+                        className="text-red-600 focus:text-red-700 cursor-pointer"
+                        aria-label="Delete comment"
+                      >
+                        Delete comment
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="rounded-xl p-2 bg-white">
+            {/* Comment content */}
+            <p className="text-sm text-gray-700 whitespace-pre-wrap break-words mt-1">
+              {renderCommentContent(comment.content)}
+            </p>
+          </div>
         </div>
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="rounded-xl p-2 bg-white">
-          {/* Comment content */}
-          <p className="text-sm text-gray-700 whitespace-pre-wrap break-words mt-1">
-            {renderCommentContent(comment.content)}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-};
+    );
+  },
+);
+
+CommentItem.displayName = 'CommentItem';
 
 export default CommentItem;
