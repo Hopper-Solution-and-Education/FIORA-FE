@@ -8,6 +8,7 @@ interface CategorySelectProps {
   value?: string;
   onChange?: (value: string) => void;
   categories: Category[];
+  usePortal?: boolean;
   [key: string]: any;
 }
 
@@ -17,6 +18,7 @@ const CategorySelect: React.FC<CategorySelectProps> = ({
   value = '',
   onChange = () => {},
   categories,
+  usePortal = false,
   ...props
 }) => {
   const options = categories.map((category) => ({
@@ -33,6 +35,7 @@ const CategorySelect: React.FC<CategorySelectProps> = ({
       onChange={onChange}
       options={options}
       placeholder="Select a category"
+      usePortal={usePortal}
       {...props}
     />
   );
