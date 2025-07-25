@@ -90,9 +90,9 @@ export function NotificationContent({ data }: { data: Notification[] }) {
               </Button>
             </Link>
           </CardHeader>
-          <DropdownMenuSeparator className="m-0" /> {/* Separator below header */}
+          <DropdownMenuSeparator className="m-0" />
           <CardContent className="p-0">
-            <ScrollArea className="h-[360px] max-h-[400px]">
+            <ScrollArea className="max-h-[400px]">
               <div className="space-y-3 p-4">
                 {data.map((notification: Notification) => (
                   <DropdownMenuItem
@@ -100,7 +100,6 @@ export function NotificationContent({ data }: { data: Notification[] }) {
                     asChild
                     className="p-0 focus:bg-transparent cursor-pointer"
                   >
-                    {/* Wrap NotificationItem with Link if it has a link */}
                     {notification?.notification?.deepLink ? (
                       <Link href={notification?.notification?.deepLink} passHref>
                         <NotificationItem {...notification?.notification} />

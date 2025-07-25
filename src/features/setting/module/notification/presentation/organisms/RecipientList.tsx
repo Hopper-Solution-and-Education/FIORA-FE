@@ -2,7 +2,7 @@
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { INotificationDetails } from '../../domain/entity';
 import { RecipientItem } from '../molecules/RecipientItem';
 
@@ -23,21 +23,23 @@ export function RecipientList({
 
   const recipientData = useMemo(() => {
     return data.recipients.map((recipient) => {
-      const userNotification = data.userNotifications.find(
-        (userNotification) => userNotification.User.email === recipient,
-      );
+      const userNotification = data.userNotifications.find((userNotification) => {
+        return userNotification.User.email === recipient;
+      });
       return {
         email: recipient,
-        createAt: userNotification?.createdAt || data.createdAt,
+        createAt: userNotification ? userNotification?.createdAt : data.sendDate,
         isValid: userNotification !== undefined,
         isSelected: recipient === emailSelected,
       };
     });
-  }, [data.recipients, data.userNotifications, data.createdAt, emailSelected]);
+  }, [data.recipients, data.userNotifications, data.sendDate, emailSelected]);
+
+  const [search, setSearch] = useState('');
 
   return (
     <div className="space-y-4 h-full flex flex-col">
-      <h2 className="text-2xl font-semibold flex items-center justify-between">
+      <h2 className="text-lg font-semibold flex items-center justify-between">
         Recipients{' '}
         <span className="text-gray-500 text-base font-normal">({data.recipients.length})</span>
       </h2>
@@ -47,19 +49,21 @@ export function RecipientList({
           type="text"
           placeholder="Search emails..."
           className="pl-9 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
         />
       </div>
       <ScrollArea className="flex-1 pr-2">
-        {' '}
-        {/* Added pr-2 for scrollbar spacing */}
         <div className="space-y-2">
-          {recipientData.map((recipient) => (
-            <RecipientItem
-              key={recipient.email}
-              data={recipient}
-              onClick={() => setEmailSelected(recipient.email)}
-            />
-          ))}
+          {recipientData
+            .filter((recipient) => recipient.email.includes(search))
+            .map((recipient) => (
+              <RecipientItem
+                key={recipient.email}
+                data={recipient}
+                onClick={() => setEmailSelected(recipient.email)}
+              />
+            ))}
         </div>
       </ScrollArea>
     </div>

@@ -28,7 +28,7 @@ export function RecipientItem({ data, onClick }: RecipientItemProps) {
           {data.email}
         </p>
         <p className={cn('text-sm', data.isSelected ? 'text-blue-600' : 'text-gray-500')}>
-          {format(data.createAt, 'dd/MM/yyyy HH:mm:ss')}
+          {format(data?.createAt || new Date(), 'dd/MM/yyyy HH:mm:ss')}
         </p>
       </div>
       {data.isValid ? (

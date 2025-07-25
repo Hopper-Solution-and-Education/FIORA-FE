@@ -9,7 +9,6 @@ export interface INotificationDetails {
   notifyType: string;
   deepLink?: string;
   channel: ChannelType;
-  createdAt: string;
   createdBy?: string;
   sendDate: string;
   updatedBy?: string;

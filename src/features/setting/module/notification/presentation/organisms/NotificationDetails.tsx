@@ -33,7 +33,7 @@ export function NotificationDetails({
   };
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold mb-2">Notification Details</h2>
+      <h2 className="text-lg font-semibold mb-2">Notification Details</h2>
 
       <div className="text-gray-600 mb-2 text-sm">
         Show details for: <span className="font-bold">{emailSelected}</span>
