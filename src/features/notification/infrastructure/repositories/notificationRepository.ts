@@ -217,7 +217,7 @@ class NotificationRepository implements INotificationRepository {
           include: {
             emailLogs: true,
             emailTemplate: true,
-            attachment: true,
+            Attachment: true,
           },
         },
       },
@@ -235,7 +235,7 @@ class NotificationRepository implements INotificationRepository {
           include: {
             emailLogs: true,
             emailTemplate: true,
-            attachment: true,
+            Attachment: true,
           },
         },
       },
