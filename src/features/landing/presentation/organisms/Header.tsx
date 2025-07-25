@@ -9,6 +9,7 @@ import { redirect } from 'next/navigation';
 import { useState } from 'react';
 
 import HelpCenter from '@/components/layouts/dashboard-header/HelpCenter';
+import MarqueeAnnouncement from '@/components/layouts/dashboard-header/MarqueAnnouncement';
 import {
   default as SettingCenter,
   default as ThemeToggle,
@@ -17,7 +18,7 @@ import { UserNav } from '@/components/layouts/user-nav/UserNav';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ICON_SIZE } from '@/shared/constants/size';
-import { useIsMobile } from '@/shared/hooks/useIsMobile';
+import useAnnouncementManager from '@/shared/hooks/useAnnouncementManager';
 import { useSession } from 'next-auth/react';
 import { SectionTypeEnum } from '../../constants';
 import { useGetSection } from '../../hooks/useGetSection';
@@ -25,9 +26,13 @@ import { useGetSection } from '../../hooks/useGetSection';
 export default function Header() {
   const { section, isLoading, isError } = useGetSection(SectionTypeEnum.HEADER);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const isMobile = useIsMobile();
-  const [isOpenAnountment, setIsOpenAnountment] = useState(true);
   const { data } = useSession();
+
+  const {
+    announcement,
+    show: showAnnouncement,
+    handleClose: handleCloseAnnouncement,
+  } = useAnnouncementManager();
 
   const toggleMenu = () => setIsMenuOpen((prevState) => !prevState);
 
@@ -64,22 +69,19 @@ export default function Header() {
 
         <div className="w-full h-full">
           <div className="w-full">
-            {isOpenAnountment && (
-              <div
-                className={`flex justify-between items-start ${isMobile ? 'text-xs' : 'text-base'} px-4 shadow-sm`}
-              >
-                <div>This is an important announcement for all users.</div>
-
-                <X
-                  size={18}
-                  className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer "
-                  onClick={() => setIsOpenAnountment(false)}
-                />
+            {showAnnouncement && announcement?.data?.[0]?.content && !isLoading && (
+              <div className="flex items-center justify-between w-full">
+                <MarqueeAnnouncement className="text-sm w-full">
+                  {announcement?.data?.[0]?.content}
+                </MarqueeAnnouncement>
+                <Button variant="ghost" size="icon" onClick={handleCloseAnnouncement}>
+                  ✕
+                </Button>
               </div>
             )}
             <div className="flex w-full justify-end">
               {/* Navigation */}
-              <nav className="hidden md:flex items-center gap-8 px-8 mt-3">
+              <nav className="hidden md:flex items-center gap-8 px-8">
                 <HelpCenter />
                 <SettingCenter />
 

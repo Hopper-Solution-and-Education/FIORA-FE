@@ -9,6 +9,7 @@ import {
   BanknoteArrowDown,
   Bell,
   BellRing,
+  Book,
   Calendar,
   Car,
   ChartBar,
@@ -39,9 +40,11 @@ import {
   Expand,
   ExternalLink,
   Eye,
+  EyeOff,
   File,
   FileText,
   FunnelPlus,
+  GraduationCap,
   Grip,
   GripVertical,
   HandCoins,
@@ -315,9 +318,9 @@ export const Icons = {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className="lucide lucide-graduation-cap-icon lucide-graduation-cap"
       {...props}
     >
@@ -328,4 +331,7 @@ export const Icons = {
   ),
   shieldCheck: ShieldCheck,
   cornerDownRight: CornerDownRight,
+  book: Book,
+  graduationCap: GraduationCap,
+  eyeOff: EyeOff,
 };

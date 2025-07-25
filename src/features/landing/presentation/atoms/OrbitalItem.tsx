@@ -33,7 +33,7 @@ const OrbitalItem = ({
   }, [angle, orbit.speed, item.initialAngle]);
 
   const baseDotSize = 14;
-  const baseFontSize = 16;
+  const baseFontSize = 14;
 
   return (
     <motion.div
@@ -54,7 +54,7 @@ const OrbitalItem = ({
         }}
       ></div>
       <motion.span
-        className="absolute font-medium text-green-800 whitespace-nowrap bottom-full mb-1 -translate-x-1/2"
+        className="absolute text-center bottom-full mb-1 -translate-x-1/2"
         style={{
           fontSize: `${baseFontSize * scaleFactor}px`,
           marginBottom: `${20 * scaleFactor}px`,

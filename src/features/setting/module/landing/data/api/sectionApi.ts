@@ -21,8 +21,7 @@ class SectionAPI implements ISectionAPI {
   }
 
   async updateSection(section: ISection): Promise<ISection> {
-    const reponse = await this.httpClient.put<ISection>(`/api/banner/section`, section);
-    return reponse;
+    return await this.httpClient.put<ISection>(`/api/banner/section`, section);
   }
 }
 

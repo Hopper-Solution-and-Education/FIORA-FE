@@ -27,6 +27,7 @@ interface UploadFieldProps {
   maxSize?: number; // Size in MB
   className?: string;
   disabled?: boolean;
+  size?: 'small' | 'medium' | 'large';
   [key: string]: any;
 }
 
@@ -46,6 +47,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
   maxSize = 5, // Default to 5MB
   className,
   disabled,
+  size = 'medium',
   ...props
 }) => {
   const [preview, setPreview] = useState<string | null>(null);
@@ -168,7 +170,13 @@ const UploadField: React.FC<UploadFieldProps> = ({
   return (
     <div className={cn('space-y-3', className)}>
       {label && <GlobalLabel text={label} required={required} htmlFor={id} />}
-      <div className="relative w-full h-48 overflow-hidden border-2 border-dashed rounded-lg ">
+      <div
+        className={cn(
+          'relative overflow-hidden border-2 border-dashed rounded-lg ',
+          size === 'small' && 'h-32 w-32',
+          size === 'large' && 'h-100 w-100',
+        )}
+      >
         <label
           ref={dropAreaRef}
           htmlFor={id}
@@ -196,7 +204,14 @@ const UploadField: React.FC<UploadFieldProps> = ({
             {...props}
           />
           {preview ? (
-            <div className="relative w-32 h-32">
+            <div
+              className={cn(
+                'relative w-full h-full',
+                size === 'small' && 'w-32 h-32',
+                size === 'medium' && 'w-48 h-48',
+                size === 'large' && 'w-full h-72',
+              )}
+            >
               <div
                 className={cn(
                   'w-full h-full overflow-hidden',
@@ -204,10 +219,10 @@ const UploadField: React.FC<UploadFieldProps> = ({
                 )}
               >
                 <Image
-                  src={preview || '/placeholder.svg'}
+                  src={preview}
                   alt="Preview"
-                  width={128}
-                  height={128}
+                  width={260}
+                  height={260}
                   className={cn(
                     'object-cover border border-primary/10 transition-all duration-300 transform group-hover:scale-105',
                     'shadow-[0_4px_20px_rgba(0,0,0,0.08)] w-full h-full',

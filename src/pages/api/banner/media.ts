@@ -25,6 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       select: {
         id: true,
         media_url: true,
+        media_url_2: true,
         embed_code: true,
         description: true,
         uploaded_by: true,
@@ -32,6 +33,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         section: {
           select: {
             section_type: true,
+          },
+        },
+        mediaReviewUser: {
+          select: {
+            media_user_name: true,
+            media_user_avatar: true,
+            media_user_title: true,
+            media_user_email: true,
+            media_user_comment: true,
+            media_user_rating: true,
+            createdBy: true,
+            updatedBy: true,
           },
         },
       },

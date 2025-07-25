@@ -1,7 +1,11 @@
 import { SectionTypeEnum } from '@/features/landing/constants';
+import { HttpResponse } from '@/shared/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
+import { IAnnouncement } from '../domain/entities/Announcement';
+import { fetchAnnouncement } from './actions/fetchAnnouncement';
 import { fetchMediaBySection } from './actions/fetchMediaBySection';
+import { updateAnnouncement } from './actions/updateAnnouncement';
 import { updateMediaBySection } from './actions/updateMediaBySection';
 import { initialLandingSettingState, ISection, LandingSettingsState } from './types';
 
@@ -30,13 +34,13 @@ const landingSettings = createSlice({
         (state[sectionKey] as ISection) = section;
       }
     },
-    changeIsLoadingSaveChange: (state, action) => {
-      state.isLoadingSaveChange = action.payload;
-    },
     markSectionFetched: (state, action: PayloadAction<string>) => {
       if (!state.fetchedSections.includes(action.payload)) {
         state.fetchedSections.push(action.payload);
       }
+    },
+    changeIsLoadingSaveChange: (state, action: PayloadAction<boolean>) => {
+      state.isLoadingSaveChange = action.payload;
     },
     importSections: (state, action: PayloadAction<LandingSettingsState>) => {
       const importedData = action.payload;
@@ -70,12 +74,54 @@ const landingSettings = createSlice({
       state.error = (action.payload as any) ?? 'Unknown error occurred';
     });
 
+    builder.addCase(updateMediaBySection.pending, (state) => {
+      state.isLoadingSaveChange = true;
+    });
+
     builder.addCase(updateMediaBySection.fulfilled, (state, action) => {
       const sectionKey = sectionMapping[action.payload.section_type];
       if (sectionKey) {
         (state[sectionKey] as ISection) = action.payload;
       }
-      state.isLoading = false;
+      state.isLoadingSaveChange = false;
+    });
+
+    builder.addCase(updateMediaBySection.rejected, (state, action) => {
+      state.isLoadingSaveChange = false;
+      state.error = (action.payload as any) ?? 'Unknown error occurred';
+    });
+
+    builder.addCase(fetchAnnouncement.pending, (state) => {
+      state.isLoadingAnnouncement = true;
+      state.error = null;
+    });
+
+    builder.addCase(fetchAnnouncement.fulfilled, (state, action) => {
+      state.announcements = action.payload.data;
+      state.isLoadingAnnouncement = false;
+    });
+
+    builder.addCase(fetchAnnouncement.rejected, (state, action) => {
+      state.isLoadingAnnouncement = false;
+      state.error = (action.payload as any) ?? 'Unknown error occurred';
+    });
+
+    builder.addCase(updateAnnouncement.pending, (state) => {
+      state.isLoadingUpdateAnnouncement = true;
+      state.error = null;
+    });
+
+    builder.addCase(
+      updateAnnouncement.fulfilled,
+      (state, action: PayloadAction<HttpResponse<IAnnouncement[]>>) => {
+        state.announcements = action.payload.data;
+        state.isLoadingUpdateAnnouncement = false;
+      },
+    );
+
+    builder.addCase(updateAnnouncement.rejected, (state, action) => {
+      state.isLoadingUpdateAnnouncement = false;
+      state.error = (action.payload as any) ?? 'Unknown error occurred';
     });
   },
 });

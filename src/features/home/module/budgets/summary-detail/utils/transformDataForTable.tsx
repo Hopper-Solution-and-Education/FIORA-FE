@@ -1,10 +1,14 @@
 import { InputCurrency } from '@/components/common/forms';
-import { ColumnProps, DataSourceItemProps } from '@/components/common/tables/custom-table/types';
+import {
+  ColumnProps,
+  DataSourceItemProps,
+  FIXED,
+} from '@/components/common/tables/custom-table/types';
 import { Icons } from '@/components/Icon';
 import { Category } from '@/features/home/module/budgets/summary-detail/data/dto/response/CategoryResponseDTO';
 import { Currency } from '@/shared/types';
 import { ComparisonProps } from '@/shared/types/chart.type';
-import { cn } from '@/shared/utils';
+import { cn, formatCurrency } from '@/shared/utils';
 import CategorySelect from '../../../category/components/CategorySelect';
 import {
   BudgetDetailFilterEnum,
@@ -21,7 +25,6 @@ import {
   TableData,
 } from '../presentation/types/table.type';
 import { createGeneralComparisonMapper } from './compareDataForTable';
-import { formatCurrencyValue } from './convertTableDataCurrency';
 
 export const getBudgetValue = (
   budget: BudgetSummaryByType | null,
@@ -84,12 +87,14 @@ export const getTableDataByPeriod = (
     data: { [key: string]: DataSourceItemProps },
     isEditable: boolean,
     currency?: Currency,
+    fixed?: FIXED.TOP | FIXED.BOTTOM | FIXED.LEFT | FIXED.RIGHT,
   ): TableData => ({
     key,
     type,
     ...data,
     isEditable,
     currency: currency as Currency,
+    fixed,
   });
 
   const baseCurrency = top?.budget.currency;
@@ -101,6 +106,7 @@ export const getTableDataByPeriod = (
       aggregateForPeriod(top, type),
       true,
       top?.budget.currency ?? baseCurrency,
+      FIXED.TOP,
     ),
     createTableRow(
       'bottom-up',
@@ -108,6 +114,7 @@ export const getTableDataByPeriod = (
       aggregateForPeriod(bot, type),
       false,
       bot?.budget.currency ?? baseCurrency,
+      FIXED.TOP,
     ),
     createTableRow(
       'actual',
@@ -115,6 +122,7 @@ export const getTableDataByPeriod = (
       aggregateForPeriod(act, type),
       false,
       act?.budget.currency ?? baseCurrency,
+      FIXED.TOP,
     ),
   ];
 };
@@ -134,6 +142,7 @@ export const getColumnsByPeriod = (
   activeTab: BudgetDetailFilterType = BudgetDetailFilterEnum.EXPENSE,
   originTableData: TableData[] = [],
   originCategoriesData: Category[] = [],
+  isFullCurrencyDisplay?: boolean,
 ) => {
   const renderEditableCell = (text: any, record: TableData, index: number, column: ColumnProps) => {
     const isDisableEdited = !PERIOD_CONFIG.months.some((item) => item.key === column.key);
@@ -149,9 +158,10 @@ export const getColumnsByPeriod = (
           name={`value_${record.key}_${column.key}`}
           value={typeof text === 'object' ? text.value : (text ?? 0)}
           currency={currency}
+          isFullCurrencyDisplay={isFullCurrencyDisplay}
           classContainer="m-0"
           className={cn(
-            'text-right h-[3.4rem] border-none rounded-none hover:shadow-md hover:shadow-blue-500/20',
+            'text-right h-[3.4rem] border-none rounded-none bg-white dark:bg-gray-900 hover:shadow-md hover:shadow-blue-500/20 focus-visible:border-blue-500 focus-visible:ring-blue-500/20 dark:focus-visible:ring-blue-500/40',
             column.className,
           )}
           onChange={(newValue) => {
@@ -165,7 +175,7 @@ export const getColumnsByPeriod = (
 
     return (
       <p className={cn(`px-3 py-2 cursor-default ${column.className}`, isDisableEdited)}>
-        {formatCurrencyValue(text?.value, currency)}
+        {formatCurrency(text?.value, currency, isFullCurrencyDisplay)}
       </p>
     );
   };
@@ -250,10 +260,14 @@ export const getColumnsByPeriod = (
 
     // If record is bottom-up of Category
     if (categories.some((cat) => cat.id === record.key.split('-bottom-up')[0])) {
-      const findCategoryBottomUpPlan = originCategoriesData.find(
+      const findCategory = originCategoriesData.find(
         (cat) => cat.id === record.key.split('-bottom-up')[0],
-      )?.bottomUpPlan;
+      );
+      const findCategoryBottomUpPlan = findCategory?.bottomUpPlan;
       compareB = mapKeyValuePairs(findCategoryBottomUpPlan || {}, 'category');
+      if (findCategory?.isCreated === false) {
+        return true;
+      }
     }
 
     // Logic mapper to extract key and value, where value can be { value: ... } or number or string
@@ -408,14 +422,16 @@ export const getColumnsByPeriod = (
       }),
     );
 
-  const monthColumns = createPeriodColumns(PERIOD_CONFIG.months);
+  const monthColumns = createPeriodColumns(PERIOD_CONFIG.months, {
+    bgColorClassName: 'bg-blue-50 dark:bg-blue-900',
+  });
 
   const quarterColumns = createPeriodColumns(PERIOD_CONFIG.quarters, {
-    bgColorClassName: 'bg-muted',
+    bgColorClassName: 'bg-green-50 dark:bg-green-900',
   });
 
   const halfYearColumns = createPeriodColumns(PERIOD_CONFIG.halfYears, {
-    bgColorClassName: 'bg-muted',
+    bgColorClassName: 'bg-yellow-50 dark:bg-yellow-900',
   });
 
   const fullYearColumn = [
@@ -424,7 +440,7 @@ export const getColumnsByPeriod = (
       align: 'right',
       render: (text: any, record: TableData, index: number) =>
         renderEditableCell(text, record, index, { key: 'fullYear' }),
-      bgColorClassName: 'bg-muted',
+      bgColorClassName: 'bg-purple-50 dark:bg-purple-900',
     }),
   ];
 
