@@ -7,8 +7,8 @@ import type {
 
 export interface CreateBoxNotificationInput {
   title: string;
-  type: string;
-  notifyTo: NotificationType;
+  type: NotificationType;
+  notifyTo: string;
   attachmentId?: string;
   deepLink?: string;
   message: string;
