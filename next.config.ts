@@ -1,15 +1,11 @@
-import { SentryBuildOptions, withSentryConfig } from '@sentry/nextjs';
+import withBundleAnalyzer from '@next/bundle-analyzer';
+import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 import path from 'path';
 
-const sentryConfig: SentryBuildOptions = {
-  org: 'hopper-ga',
-  project: 'javascript-nextjs',
-
-  authToken: process.env.SENTRY_AUTH_TOKEN,
-
-  silent: false, // Can be used to suppress logs
-};
+const bundleAnalyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const nextConfig: NextConfig = {
   swcMinify: false, // Disable SWC minification to avoid issues with decorators
@@ -45,10 +41,13 @@ const nextConfig: NextConfig = {
   //----End Configurations for the PDF viewer
 };
 
-export default withSentryConfig(withSentryConfig(nextConfig, sentryConfig), {
+// Wrap nextConfig with bundleAnalyzer, then withSentryConfig
+const configWithAnalyzer = bundleAnalyzer(nextConfig);
+
+export default withSentryConfig(configWithAnalyzer, {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
-
+  authToken: process.env.SENTRY_AUTH_TOKEN,
   org: 'hopper-ga',
   project: 'javascript-nextjs',
 

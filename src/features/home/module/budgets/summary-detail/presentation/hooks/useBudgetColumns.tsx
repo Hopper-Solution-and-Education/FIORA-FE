@@ -43,6 +43,7 @@ interface UseBudgetColumnsProps {
   handleDeleteCategory: (categoryId: string) => void;
   handleClearTopDown: () => void;
   initialYear: number;
+  isFullCurrencyDisplay: boolean;
 }
 
 export function useBudgetColumns({
@@ -61,6 +62,7 @@ export function useBudgetColumns({
   handleClearTopDown,
   categories,
   table,
+  isFullCurrencyDisplay,
 }: UseBudgetColumnsProps) {
   const [columns, setColumns] = useState<ColumnProps[]>([]);
   const { tableData: originTableData, categoryList: originCategoriesData } = useAppSelector(
@@ -83,6 +85,7 @@ export function useBudgetColumns({
       activeTab,
       originTableData,
       originCategoriesData,
+      isFullCurrencyDisplay, // truyền xuống getColumnsByPeriod
     );
 
     const columnsWithCategorySelect: ColumnProps[] = [
@@ -150,7 +153,16 @@ export function useBudgetColumns({
     ];
 
     setColumns(columnsWithCategorySelect);
-  }, [period, periodId, currency, categories.data, activeTab, categoryRows, selectedCategories]);
+  }, [
+    period,
+    periodId,
+    currency,
+    categories.data,
+    activeTab,
+    categoryRows,
+    selectedCategories,
+    isFullCurrencyDisplay,
+  ]);
 
   return { columns };
 }

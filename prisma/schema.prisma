@@ -306,6 +306,18 @@ model MediaReviewUser {
   media              Media    @relation("MediaToReviewUser", fields: [mediaId], references: [id])
 }
 
+model Announcement {
+  id        String   @id @default(uuid()) @db.Uuid
+  title     String   @db.VarChar(255)
+  content   String
+  sentAt    DateTime @default(now()) @db.Timestamptz(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt DateTime @updatedAt @db.Timestamptz(0)
+  createdBy String?  @db.Uuid
+  updatedBy String?  @db.Uuid
+  isActive  Boolean  @default(true)
+}
+
 model Category {
   id               String          @id @default(uuid()) @db.Uuid
   userId           String          @db.Uuid
@@ -484,10 +496,10 @@ model Notification {
   emailTemplateId   String?                 @db.Uuid
   notifyTo          NotificationType
   type              String
+  Attachment        Attachment[]
   emailLogs         EmailNotificationLogs[]
   emailTemplate     EmailTemplate?          @relation(fields: [emailTemplateId], references: [id])
   userNotifications UserNotification[]
-  Attachment        Attachment[]
 
   @@index([attachmentId])
 }
@@ -547,10 +559,10 @@ model Attachment {
   updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
   createdBy           String?               @db.Uuid
   updatedBy           String?               @db.Uuid
+  notificationId      String?               @db.Uuid
+  notifications       Notification?         @relation(fields: [notificationId], references: [id])
   AttachmentRelations AttachmentRelations[]
   depositRequests     DepositRequest?
-  notifications       Notification?         @relation(fields: [notificationId], references: [id])
-  notificationId      String?               @db.Uuid
 
   @@index([url])
   @@index([path])

@@ -24,56 +24,56 @@ export const useGetIconLabel = (icon: string): string => {
   );
 };
 
-export const formatCurrency = (value: number, currency: string = CURRENCY.VND) => {
+export const formatCurrency = (
+  value: number,
+  currency: string = CURRENCY.VND,
+  isFullCurrencyDisplay: boolean = false,
+) => {
   try {
-    // Handle compact notation for large numbers
-    let formattedValue = value;
+    const sign = value < 0 ? '-' : '';
+    const absValue = Math.abs(value);
+    let formattedValue = absValue;
     let suffix = '';
 
-    // Enhanced logic to handle billions (B), trillions (T), and more, with currency context
-    // 1T = 1,000,000,000,000; 1B = 1,000,000,000; 1M = 1,000,000; 1K = 1,000
-    const absValue = Math.abs(value);
-
-    if (absValue >= 1_000_000_000_000) {
-      // Trillions
-      formattedValue = value / 1_000_000_000_000;
-      suffix = 'T';
-    } else if (absValue >= 1_000_000_000) {
-      // Billions
-      formattedValue = value / 1_000_000_000;
-      suffix = 'B';
-    } else if (absValue >= 1_000_000) {
-      // Millions
-      formattedValue = value / 1_000_000;
-      suffix = 'M';
-    } else if (absValue >= 1_000) {
-      // Thousands
-      formattedValue = value / 1_000;
-      suffix = 'K';
+    if (!isFullCurrencyDisplay) {
+      // Compact/shortened notation
+      if (absValue >= 1_000_000_000_000) {
+        formattedValue = absValue / 1_000_000_000_000;
+        suffix = 'T';
+      } else if (absValue >= 1_000_000_000) {
+        formattedValue = absValue / 1_000_000_000;
+        suffix = 'B';
+      } else if (absValue >= 1_000_000) {
+        formattedValue = absValue / 1_000_000;
+        suffix = 'M';
+      } else if (absValue >= 1_000) {
+        formattedValue = absValue / 1_000;
+        suffix = 'K';
+      }
     }
 
     // Use FIORANumberFormat for currency formatting
     const formatted = formatFIORACurrency(formattedValue, currency as Currency);
 
-    // Format the number and insert suffix before the currency symbol
-    if (suffix) {
+    if (!isFullCurrencyDisplay && suffix) {
       const currencySymbol = getCurrencySymbol(currency as Currency);
       if (currency === CURRENCY.USD) {
         // For USD, move the suffix after the number but keep $ at the start
         const numericPart = formatted.replace('$', '').trim();
-        return `$${numericPart}${suffix}`;
+        return `${sign}$${numericPart}${suffix}`;
       } else if (currency === CURRENCY.VND) {
         // For VND, split at ₫ and place suffix before the currency symbol
         const parts = formatted.split('₫').map((part) => part.trim());
-        return `${parts[0]}${suffix} ₫${parts[1] || ''}`;
+        return `${sign}${parts[0]}${suffix} ₫${parts[1] || ''}`;
       } else {
         // For FX and other currencies, place suffix before the currency symbol
         const parts = formatted.split(currencySymbol).map((part) => part.trim());
-        return `${parts[0]}${suffix} ${currencySymbol}${parts[1] || ''}`;
+        return `${sign}${parts[0]}${suffix} ${currencySymbol}${parts[1] || ''}`;
       }
     }
 
-    return formatted;
+    // Full currency display or no suffix
+    return sign ? `-${formatted}` : formatted;
   } catch (error) {
     console.error('Error formatting currency:', error);
     return value.toString();

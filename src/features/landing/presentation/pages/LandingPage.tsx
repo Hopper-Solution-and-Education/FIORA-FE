@@ -42,12 +42,7 @@ const LandingPage = () => {
       </motion.div>
 
       {/* Sections with stagger animation */}
-      <motion.div
-        variants={staggerContainer}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-      >
+      <motion.div variants={staggerContainer} initial="hidden" whileInView="visible">
         <motion.div
           variants={{
             hidden: { opacity: 0, y: 60 },
@@ -102,21 +97,7 @@ const LandingPage = () => {
       </motion.div>
 
       {/* Partner logo - zoom effect */}
-      <motion.div
-        variants={{
-          hidden: { scale: 0.9, opacity: 0 },
-          visible: {
-            scale: 1,
-            opacity: 1,
-            transition: { duration: 0.8, ease: 'easeOut' },
-          },
-        }}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-      >
-        <PartnerLogo />
-      </motion.div>
+      <PartnerLogo />
 
       {/* Footer - subtle fade in */}
       <motion.div
