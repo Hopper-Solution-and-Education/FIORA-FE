@@ -1,12 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { ColumnProps } from '@/components/common/tables/custom-table/types';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
+import CategorySelect from '@/features/home/module/category/components/CategorySelect';
 import { Currency } from '@/shared/types';
 import { cn } from '@/shared/utils';
 import { useAppSelector } from '@/store';
@@ -85,7 +80,7 @@ export function useBudgetColumns({
       activeTab,
       originTableData,
       originCategoriesData,
-      isFullCurrencyDisplay, // truyền xuống getColumnsByPeriod
+      isFullCurrencyDisplay,
     );
 
     const columnsWithCategorySelect: ColumnProps[] = [
@@ -104,27 +99,23 @@ export function useBudgetColumns({
 
             return (
               <div className="flex items-center gap-2">
-                <Select
+                <CategorySelect
+                  className="w-full h-full m-0 z-70"
                   value={(record.categoryId as string) || undefined}
-                  onValueChange={(selectedValue) => {
-                    const category = categories.data.find((cat) => cat.id === selectedValue);
+                  name="category"
+                  placeholder="Select a category"
+                  categories={availableCategories as any[]}
+                  noneValue={false}
+                  usePortal={true}
+                  onChange={(value) => {
+                    handleCategoryChange(value, record.key);
+                    const category = categories.data.find((cat) => cat.id === value);
                     if (category) {
-                      handleCategorySelected(record.key, selectedValue, table.set, category.name);
-                      handleCategoryChange(selectedValue, record.key);
+                      handleCategorySelected(record.key, value, table.set, category.name);
+                      handleCategoryChange(value, record.key);
                     }
                   }}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableCategories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
               </div>
             );
           } else {

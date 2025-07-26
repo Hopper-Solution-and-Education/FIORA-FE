@@ -44,24 +44,26 @@ const DefaultSubmitButton = ({
           <div className="w-32 h-12" />
         )}
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={onSubmit}
-              disabled={disabled || isSubmitting}
-              className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
-            >
-              {isSubmitting ? (
-                <Icons.spinner className="animate-spin h-5 w-5" />
-              ) : (
-                <Icons.check className="h-5 w-5" />
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{isSubmitting ? 'Submiting...' : submitTooltip || 'Submit'}</p>
-          </TooltipContent>
-        </Tooltip>
+        {onSubmit && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={onSubmit}
+                disabled={disabled || isSubmitting}
+                className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
+              >
+                {isSubmitting ? (
+                  <Icons.spinner className="animate-spin h-5 w-5" />
+                ) : (
+                  <Icons.check className="h-5 w-5" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isSubmitting ? 'Submiting...' : submitTooltip || 'Submit'}</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
       </div>
     </TooltipProvider>
   );

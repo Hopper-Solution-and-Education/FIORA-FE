@@ -72,7 +72,12 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     categories,
   });
 
-  const { handleValueChange, handleValidateClick, handleClearTopDown } = useBudgetTableData({
+  const {
+    isLoading: isTableDataLoading,
+    handleValueChange,
+    handleValidateClick,
+    handleClearTopDown,
+  } = useBudgetTableData({
     initialYear,
     activeTab,
     period,
@@ -84,7 +89,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     budgetSummaryUseCase,
   });
 
-  const { handleCategoryChange } = useBudgetCategories({
+  const { handleCategoryChange, isLoading: isCategoryChangeLoading } = useBudgetCategories({
     activeTab,
     budgetSummaryUseCase,
     initialYear,
@@ -144,14 +149,14 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
                   className="ml-2 min-w-[120px]"
                 >
                   <TabsList className="w-full grid grid-cols-2 rounded-lg bg-muted/30">
-                    <TabsTrigger value="full" className="flex items-center gap-1 px-2 py-1 text-xs">
-                      <Icons.eye size={16} className="text-primary" />
-                      1K | 1M | 1B
-                    </TabsTrigger>
                     <TabsTrigger
                       value="short"
                       className="flex items-center gap-1 px-2 py-1 text-xs"
                     >
+                      <Icons.eye size={16} className="text-primary" />
+                      1K | 1M | 1B
+                    </TabsTrigger>
+                    <TabsTrigger value="full" className="flex items-center gap-1 px-2 py-1 text-xs">
                       <Icons.eyeOff size={16} className="text-muted-foreground" />K | M | B
                     </TabsTrigger>
                   </TabsList>
@@ -214,11 +219,11 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
                 className="min-w-[120px]"
               >
                 <TabsList className="w-full grid grid-cols-2 rounded-lg bg-muted/30">
-                  <TabsTrigger value="full" className="flex items-center gap-1 px-2 py-1 text-xs">
+                  <TabsTrigger value="short" className="flex items-center gap-1 px-2 py-1 text-xs">
                     <Icons.eye size={16} className="text-primary" />
                     1K | 1M | 1B
                   </TabsTrigger>
-                  <TabsTrigger value="short" className="flex items-center gap-1 px-2 py-1 text-xs">
+                  <TabsTrigger value="full" className="flex items-center gap-1 px-2 py-1 text-xs">
                     <Icons.eyeOff size={16} className="text-muted-foreground" />K | M | B
                   </TabsTrigger>
                 </TabsList>
@@ -236,7 +241,9 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
           <TableV2
             columns={columns}
             dataSource={convertedTableData}
-            loading={isLoading || isCategoryLoading}
+            loading={
+              isLoading || isCategoryLoading || isCategoryChangeLoading || isTableDataLoading
+            }
             loadingRowCount={8}
             rowKey="key"
             bordered

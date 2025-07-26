@@ -67,7 +67,7 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
 
           // Revalidate data
         } else {
-          toast.error(responseData.message || 'Failed to delete transaction');
+          toast.error(responseData?.message || 'Failed to delete transaction');
         }
       })
       .catch((error) => {

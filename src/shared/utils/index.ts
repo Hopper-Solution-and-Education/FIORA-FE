@@ -27,7 +27,7 @@ export const useGetIconLabel = (icon: string): string => {
 export const formatCurrency = (
   value: number,
   currency: string = CURRENCY.VND,
-  isFullCurrencyDisplay: boolean = false,
+  isFullCurrencyDisplay: boolean = true,
 ) => {
   try {
     const sign = value < 0 ? '-' : '';

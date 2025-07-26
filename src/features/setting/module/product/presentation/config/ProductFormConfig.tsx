@@ -47,7 +47,7 @@ const useProductFormConfig = () => {
   const fields = [
     <IconSelectUpload key="icon" name="icon" required disabled={isSubmitting} />,
     <SelectField
-      options={data.map((item) => ({ label: item.name, value: item.id, icon: item.icon }))}
+      options={data.map((item: any) => ({ label: item.name, value: item.id, icon: item.icon }))}
       key="catId"
       name="catId"
       label="Category"
@@ -92,7 +92,6 @@ const useProductFormConfig = () => {
       name="price"
       label="Price"
       currency={watch('currency') || 'VND'}
-      required
       disabled={isSubmitting}
     />,
     <TextareaField
@@ -107,7 +106,6 @@ const useProductFormConfig = () => {
       name="taxRate"
       placeholder="0.00%"
       label="Tax Rate"
-      required
       disabled={isSubmitting}
       options={{
         percent: true,

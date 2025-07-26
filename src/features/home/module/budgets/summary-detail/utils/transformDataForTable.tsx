@@ -260,10 +260,14 @@ export const getColumnsByPeriod = (
 
     // If record is bottom-up of Category
     if (categories.some((cat) => cat.id === record.key.split('-bottom-up')[0])) {
-      const findCategoryBottomUpPlan = originCategoriesData.find(
+      const findCategory = originCategoriesData.find(
         (cat) => cat.id === record.key.split('-bottom-up')[0],
-      )?.bottomUpPlan;
+      );
+      const findCategoryBottomUpPlan = findCategory?.bottomUpPlan;
       compareB = mapKeyValuePairs(findCategoryBottomUpPlan || {}, 'category');
+      if (findCategory?.isCreated === false) {
+        return true;
+      }
     }
 
     // Logic mapper to extract key and value, where value can be { value: ... } or number or string

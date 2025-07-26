@@ -1,85 +1,111 @@
-// src/components/notification-details.tsx
-import { ScrollArea } from '@/components/ui/scroll-area';
+'use client';
 
-export function NotificationDetails() {
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { format } from 'date-fns';
+import Link from 'next/link';
+import { ChannelType, NotificationStatus, type INotificationDetails } from '../../domain/entity';
+
+const ATTACHMENT_TYPES = {
+  WEBP: 'WEBP',
+  IMAGE: 'IMAGE',
+  QR: 'QR',
+  ICON: 'ICON',
+  PDF: 'PDF',
+};
+
+export function NotificationDetails({
+  data,
+  emailSelected,
+}: {
+  data: INotificationDetails;
+  emailSelected: string;
+}) {
+  const renderAttachment = () => {
+    switch (data?.attachment?.type) {
+      case ATTACHMENT_TYPES.IMAGE:
+      case ATTACHMENT_TYPES.WEBP:
+      case ATTACHMENT_TYPES.QR:
+        return <img src={data?.attachment?.url} alt="attachment" width={100} height={100} />;
+
+      default:
+        return <div>Attachment</div>;
+    }
+  };
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold mb-2">Notification Details</h2>
+      <h2 className="text-lg font-semibold mb-2">Notification Details</h2>
 
       <div className="text-gray-600 mb-2 text-sm">
-        Show details for: <span className="font-medium text-blue-600">nguyenvanana@gmail.com</span>
+        Show details for: <span className="font-bold">{emailSelected}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-y-6 gap-x-10">
         <div>
           <b>Title</b>
-          <p className="text-sm ">Hướng dẫn hoàn tất quy trình KYC trên hệ thống FIORA</p>
+          <p className="text-sm ">{data?.title}</p>
         </div>
         <div>
           <b>Sender</b>
-          <p className="text-sm">admin@fiora.com</p>
+          <p className="text-sm">{data?.sender}</p>
         </div>
         <div>
           <b>Notify Type</b>
-          <p className="text-sm text-green-600">Support</p>
+          <p className="text-sm">{data?.notifyType}</p>
         </div>
         <div>
           <b>Channel</b>
-          <p className="text-sm text-blue-600">Email</p>
+          <div className="px-2 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 max-w-20 text-center">
+            {data?.channel}
+          </div>
         </div>
         <div>
           <b>Received At</b>
-          <p className="text-sm">09/06/2025, 08:25:00</p>
+          <p className="text-sm">{format(data?.sendDate, 'dd/MM/yyyy HH:mm:ss')}</p>
         </div>
         <div>
           <b>Send Status</b>
-          <div className="items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 max-w-20">
-            Success
-          </div>
+          {data?.status === NotificationStatus.SENT ? (
+            <div className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 max-w-20 text-center">
+              Success
+            </div>
+          ) : (
+            <div className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 max-w-20 text-center">
+              Failed
+            </div>
+          )}
         </div>
+
+        {data.channel === ChannelType.BOX && (
+          <>
+            <div>
+              <b>Attachment</b>
+              <div>{renderAttachment()}</div>
+            </div>
+
+            <div>
+              <div className="font-bold">Deep Link</div>
+              <Link
+                href={data?.deepLink || ''}
+                target="_blank"
+                className="text-sm text-blue-500 hover:underline"
+              >
+                {data?.deepLink || ''}
+              </Link>
+            </div>
+          </>
+        )}
+        {data?.status !== NotificationStatus.SENT && (
+          <div>
+            <b>Error Message</b>
+            <p className="text-sm text-red-500">{data?.message}</p>
+          </div>
+        )}
       </div>
 
       <div className="mt-6">
         <h3 className="text-lg font-semibold mb-2">Content</h3>
         <ScrollArea className=" w-full rounded-md border p-4 bg-gray-50">
-          <p className="mb-2">Kính gửi {'{name}'},</p>
-          <p className="mb-2">Chúng tôi hy vọng bạn vẫn khỏe.</p>
-          <p className="mb-2">
-            Để hoàn tất việc kích hoạt tài khoản của bạn trên hệ thống FIORA và đảm bảo tuân thủ các
-            quy định tài chính, chúng tôi cần bạn hoàn tất quy trình{' '}
-            <span className="font-semibold">Xác minh danh tính khách hàng (KYC)</span>.
-          </p>
-          <p className="mb-2">
-            Quy trình KYC là bước quan trọng giúp chúng tôi bảo vệ tài khoản của bạn và ngăn chặn
-            các hoạt động gian lận. Việc này chỉ mất vài phút để hoàn thành.
-          </p>
-          <p className="font-semibold text-lg mb-2">
-            Vui lòng làm theo các bước đơn giản sau để hoàn tất KYC:
-          </p>
-          <ol className="list-decimal list-inside space-y-1">
-            <li>
-              <span className="font-semibold">Đăng nhập vào tài khoản FIORA của bạn:</span> Truy cập{' '}
-              <a
-                href="https://fiora-dev.vercel.app/auth/sign-in"
-                className="text-blue-600 underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                https://fiora-dev.vercel.app/auth/sign-in
-              </a>{' '}
-              và đăng nhập bằng thông tin đăng nhập của bạn.
-            </li>
-            <li>
-              <span className="font-semibold">Truy cập phần KYC:</span> Sau khi đăng nhập, tìm và
-              nhấp vào mục &quot;Xác minh danh tính&quot; hoặc &quot;KYC&quot; trên bảng điều khiển
-              hoặc menu tài khoản của bạn.
-            </li>
-            <li>
-              <span className="font-semibold">Cung cấp thông tin yêu cầu:</span> Bạn sẽ được yêu cầu
-              cung cấp một số thông tin cá nhân và tải lên các tài liệu cần thiết (ví dụ: bản sao
-              CMND/CCC...).
-            </li>
-          </ol>
+          <div dangerouslySetInnerHTML={{ __html: data?.subject || '' }} />
         </ScrollArea>
       </div>
     </div>

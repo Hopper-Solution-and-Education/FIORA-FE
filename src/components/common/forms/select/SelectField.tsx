@@ -45,6 +45,7 @@ interface SelectFieldProps {
   customActionLabel?: string;
   className?: string;
   noneValue?: boolean;
+  usePortal?: boolean;
   [key: string]: any;
 }
 
@@ -67,6 +68,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
   customActionLabel,
   className,
   noneValue = true,
+  usePortal = false,
   ...props
 }) => {
   const [open, setOpen] = useState(false);
@@ -171,6 +173,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
           avoidCollisions={true}
           collisionPadding={10}
           className="p-0 w-[--radix-popover-trigger-width] z-[9999] overflow-visible"
+          usePortal={usePortal}
         >
           <Command>
             <CommandInput ref={inputRef} placeholder="Search..." className="h-9" />
