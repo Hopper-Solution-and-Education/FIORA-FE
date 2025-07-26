@@ -1,5 +1,7 @@
 import { DataSourceProps } from '@/components/common/tables/custom-table/types';
+import { Currency } from '@/shared/types';
 import { BudgetDetailFilterEnum } from '../../data/constants';
+import { Category as BudgetCategory } from '../../data/dto/response/CategoryResponseDTO';
 
 export type BudgetDetailFilterType =
   (typeof BudgetDetailFilterEnum)[keyof typeof BudgetDetailFilterEnum];
@@ -32,7 +34,25 @@ export interface TableData extends DataSourceProps {
   isFullCurrencyDisplay?: boolean;
 }
 
-export const MONTHS = [
+// Type definition for month abbreviations to improve type safety and debugging
+export type MonthAbbreviation =
+  | 'jan'
+  | 'feb'
+  | 'mar'
+  | 'apr'
+  | 'may'
+  | 'jun'
+  | 'jul'
+  | 'aug'
+  | 'sep'
+  | 'oct'
+  | 'nov'
+  | 'dec';
+
+// Type for the MONTHS array to ensure type safety when accessing by index
+export type MonthsArray = readonly MonthAbbreviation[];
+
+export const MONTHS: MonthsArray = [
   'jan',
   'feb',
   'mar',
@@ -47,8 +67,18 @@ export const MONTHS = [
   'dec',
 ] as const;
 
+// Type for getColumnsByPeriod function parameters to improve maintainability
+export interface GetColumnsByPeriodParams {
+  period: string;
+  periodId: string;
+  currency: Currency;
+  categories?: BudgetCategory[];
+  onValueChange?: (record: TableData, columnKey: string, value: number) => void;
+  tableData?: TableData[];
+  activeTab?: BudgetDetailFilterType;
+  isFullCurrencyDisplay?: boolean;
+}
+
 export interface BudgetInit<T> {
   data: T[];
-  set: React.Dispatch<React.SetStateAction<T[]>>;
-  fetch: () => Promise<void>;
 }

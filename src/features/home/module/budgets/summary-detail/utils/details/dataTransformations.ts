@@ -1,7 +1,7 @@
 import { DataSourceItemProps } from '@/components/common/tables/custom-table/types';
-import { BudgetDetailFilterEnum } from '../data/constants';
-import { MonthlyPlanningData } from '../data/dto/request/BudgetUpdateRequestDTO';
-import { BudgetDetailFilterType, MONTHS, TableData } from '../presentation/types/table.type';
+import { BudgetDetailFilterEnum } from '../../data/constants';
+import { MonthlyPlanningData } from '../../data/dto/request/BudgetUpdateRequestDTO';
+import { BudgetDetailFilterType, MONTHS, TableData } from '../../presentation/types/table.type';
 
 export const transformMonthlyDataToTableFormat = (data: MonthlyPlanningData) => {
   const result: { [key: string]: DataSourceItemProps } = {};

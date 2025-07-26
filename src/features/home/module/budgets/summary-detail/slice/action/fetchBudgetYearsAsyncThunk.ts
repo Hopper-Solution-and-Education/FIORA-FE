@@ -1,21 +1,20 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { BudgetType } from '../../domain/entities/BudgetType';
 import { budgetSummaryDIContainer } from '../../di/budgetSummaryDIContainer';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
 import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
 
-export const fetchBudgetByTypeAsyncThunk = createAsyncThunk(
-  'budgetSummary/fetchBudgetByType',
-  async ({ fiscalYear, type }: { fiscalYear: number; type: BudgetType }) => {
+export const fetchBudgetYearsAsyncThunk = createAsyncThunk(
+  'budgetSummary/fetchBudgetYears',
+  async () => {
     try {
       const budgetSummaryUseCase = budgetSummaryDIContainer.get<IBudgetSummaryUseCase>(
         TYPES.IBudgetSummaryUseCase,
       );
 
-      const data = await budgetSummaryUseCase.getBudgetByType(fiscalYear, type);
+      const data = await budgetSummaryUseCase.getBudgetYears();
       return data;
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Fail to Fetch');
+      throw error instanceof Error ? error : new Error('Failed to fetch budget years');
     }
   },
 );

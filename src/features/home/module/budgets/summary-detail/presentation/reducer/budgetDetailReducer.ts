@@ -73,7 +73,7 @@ export function budgetDetailReducer(
       return {
         ...state,
         tableData: [
-          ...state.tableData,
+          ...state.tableData.slice(0, 3), // Keep first 3 rows (Top Down, Bottom Up, Actual Sum Up)
           {
             key: action.payload,
             type: '',
@@ -82,6 +82,7 @@ export function budgetDetailReducer(
             isParent: true,
             action: true,
           },
+          ...state.tableData.slice(3), // Add remaining rows after the new category
         ],
         categoryRows: [...state.categoryRows, action.payload],
       };

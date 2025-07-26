@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext } from 'react';
+import { createContext, ReactNode } from 'react';
 import { BudgetDetailState } from '../reducer/budgetDetailReducer';
 
 interface BudgetDetailStateContextType {
@@ -18,12 +18,4 @@ export const BudgetDetailStateProvider = ({ children, value }: BudgetDetailState
   return (
     <BudgetDetailStateContext.Provider value={value}>{children}</BudgetDetailStateContext.Provider>
   );
-};
-
-export const useBudgetDetailStateContext = () => {
-  const context = useContext(BudgetDetailStateContext);
-  if (!context) {
-    throw new Error('useBudgetDetailStateContext must be used within a BudgetDetailStateProvider');
-  }
-  return context;
 };

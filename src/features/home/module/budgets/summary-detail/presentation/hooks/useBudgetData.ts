@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { BudgetType } from '../../domain/entities/BudgetType';
 import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
-import { getTableDataByPeriod } from '../../utils/transformDataForTable';
+import { getTableDataByPeriod } from '../../utils/details/transformDataForTable';
 import { BudgetDetailFilterType } from '../types/table.type';
-import { toast } from 'sonner';
 
 export const useBudgetData = (budgetSummaryUseCase: IBudgetSummaryUseCase) => {
   const [isLoading, setIsLoading] = useState(false);

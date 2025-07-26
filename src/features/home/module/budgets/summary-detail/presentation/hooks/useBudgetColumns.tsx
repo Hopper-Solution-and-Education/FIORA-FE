@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { ColumnProps } from '@/components/common/tables/custom-table/types';
+import { Icons } from '@/components/Icon';
 import {
   Select,
   SelectContent,
@@ -9,10 +10,8 @@ import {
 } from '@/components/ui/select';
 import { Currency } from '@/shared/types';
 import { cn } from '@/shared/utils';
-import { useAppSelector } from '@/store';
-import { Check, Loader2, X } from 'lucide-react';
 import { Category } from '../../data/dto/response/CategoryResponseDTO';
-import { getColumnsByPeriod } from '../../utils/transformDataForTable';
+import { getColumnsByPeriod } from '../../utils/details/transformDataForTable';
 import {
   BudgetDetailFilterType,
   BudgetInit,
@@ -30,14 +29,9 @@ interface UseBudgetColumnsProps {
   activeTab: BudgetDetailFilterType;
   categoryRows: string[];
   selectedCategories: Set<string>;
-  handleCategoryChange: (categoryId: string, parentKey?: string) => void;
   handleValidateClick: (record: TableData) => void;
   handleValueChange: (record: TableData, columnKey: string, value: number) => void;
   handleCategorySelected: (rowKey: string, category: Category) => Promise<void>;
-  handleRemoveCategory: (categoryId: string) => void;
-  handleDeleteCategory: (categoryId: string) => void;
-  handleClearTopDown: () => void;
-  initialYear: number;
   isFullCurrencyDisplay: boolean;
   handleRemoveRow?: (record: TableData) => void;
   rowLoading?: Record<string, boolean>;
@@ -50,41 +44,25 @@ export function getBudgetColumns({
   activeTab,
   categoryRows,
   selectedCategories,
-  handleCategoryChange,
   handleValidateClick,
   handleValueChange,
   handleCategorySelected,
-  handleRemoveCategory,
-  handleDeleteCategory,
-  handleClearTopDown,
   categories,
   table,
   isFullCurrencyDisplay,
-  initialYear,
   handleRemoveRow,
   rowLoading,
 }: UseBudgetColumnsProps) {
-  const { tableData: originTableData, categoryList: originCategoriesData } = useAppSelector(
-    (state) => state.budgetDetail,
-  );
-
-  const updatedColumns = getColumnsByPeriod(
+  const updatedColumns = getColumnsByPeriod({
     period,
     periodId,
     currency,
-    categories.data,
-    handleCategoryChange,
-    handleValidateClick,
-    handleValueChange,
-    handleDeleteCategory,
-    handleRemoveCategory,
-    handleClearTopDown,
-    table.data,
+    categories: categories.data,
+    onValueChange: handleValueChange,
+    tableData: table.data,
     activeTab,
-    originTableData,
-    originCategoriesData,
-    isFullCurrencyDisplay, // truyền xuống getColumnsByPeriod
-  );
+    isFullCurrencyDisplay,
+  });
 
   const columnsWithCategorySelect: ColumnProps[] = [
     {
@@ -110,7 +88,6 @@ export function getBudgetColumns({
                   );
                   if (category) {
                     handleCategorySelected(record.key, category);
-                    handleCategoryChange(selectedValue, record.key);
                   }
                 }}
               >
@@ -156,6 +133,7 @@ export function getBudgetColumns({
     key: 'action',
     fixed: 'right',
     align: 'center',
+    title: 'ACTION',
     width: 60,
     headerAlign: 'center',
     render: (_, record: TableData) => {
@@ -169,15 +147,14 @@ export function getBudgetColumns({
               title="Invalid"
               onClick={() => handleRemoveRow && handleRemoveRow(record)}
             >
-              <X size={15} />
+              {rowLoading && rowLoading[record.key] ? (
+                <Icons.spinner size={15} className="animate-spin" />
+              ) : (
+                <Icons.close size={15} />
+              )}
             </span>
             <span
-              className={cn(
-                'cursor-pointer',
-                record.isEditable && !rowLoading?.[record.key]
-                  ? 'text-green-500 hover:text-green-700'
-                  : 'text-gray-400 cursor-not-allowed',
-              )}
+              className={cn('cursor-pointer text-green-500 hover:text-green-700')}
               title="Valid"
               onClick={() => {
                 if (record.isEditable && !rowLoading?.[record.key]) {
@@ -187,9 +164,9 @@ export function getBudgetColumns({
             >
               {/* Hiển thị loading nếu rowLoading[record.key] true */}
               {rowLoading && rowLoading[record.key] ? (
-                <Loader2 size={15} className="animate-spin" />
+                <Icons.spinner size={15} className="animate-spin" />
               ) : (
-                <Check size={15} />
+                <Icons.check size={15} />
               )}
             </span>
           </div>

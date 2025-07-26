@@ -10,11 +10,11 @@ import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCa
 import {
   transformMonthlyDataToTableFormat,
   transformMonthlyPayload,
-} from '../../utils/dataTransformations';
-import { getTableDataByPeriod } from '../../utils/transformDataForTable';
-import { useBudgetDetailDispatchContext } from '../context/BudgetDetailDispatchContext';
-import { useBudgetDetailStateContext } from '../context/BudgetDetailStateContext';
+} from '../../utils/details/dataTransformations';
+import { getTableDataByPeriod } from '../../utils/details/transformDataForTable';
 import { BudgetDetailFilterType } from '../types/table.type';
+import { useBudgetDetailDispatchContext } from './useBudgetDetailDispatchContext';
+import { useBudgetDetailStateContext } from './useBudgetDetailStateContext';
 
 export function useBudgetDetail(initialYear: number) {
   const { state } = useBudgetDetailStateContext();
@@ -52,6 +52,7 @@ export function useBudgetDetail(initialYear: number) {
             categoryId: cat.id,
             category: { value: cat.name },
             isParent: true,
+            isCreated: true, // Thêm dòng này để phân biệt category đã tạo
             action: true,
             children: [
               {
@@ -191,6 +192,7 @@ export function useBudgetDetail(initialYear: number) {
           type: tab === 'expense' ? 'Expense' : 'Income',
           updateTopBudget: transformMonthlyPayload(record, tab as BudgetDetailFilterType),
         });
+        toast.success('Top Down updated successfully!');
       } else if (record.key.includes('-bottom-up')) {
         const [categoryId] = record.key.split('-bottom-up');
         // Lấy actualSumUpPlan từ dòng con actual nếu có
@@ -216,8 +218,11 @@ export function useBudgetDetail(initialYear: number) {
           },
           currency,
         );
+        toast.success('Bottom Up updated successfully!');
       }
       await fetchData();
+    } catch (err: any) {
+      toast.error(err?.message || 'Update failed!');
     } finally {
       setRowLoading(record.key, false);
     }
@@ -238,53 +243,32 @@ export function useBudgetDetail(initialYear: number) {
           updateTopBudget: zeroPayload,
         });
         await fetchData();
-      } else if (record.isParent) {
-        if (record.isCreated) {
+        toast.success('Top Down cleared successfully!');
+      } else if (record.key.includes('-bottom-up')) {
+        // Tìm parent row
+        const [categoryId] = record.key.split('-bottom-up');
+        const parentItem = state.tableData.find((item) => item.categoryId === categoryId);
+        if (parentItem?.isCreated) {
           // Gọi API xóa category
           await budgetSummaryUseCase.deleteCategory({
             fiscalYear: initialYear.toString(),
             type: tab === 'expense' ? 'Expense' : 'Income',
-            categoryId: record.categoryId,
+            categoryId,
           });
           await fetchData();
-        } else {
-          // Chỉ remove khỏi bảng
-          dispatch({ type: 'REMOVE_CATEGORY_ROW', payload: record.key });
+          toast.success('Category deleted successfully!');
+        } else if (parentItem) {
+          // Chỉ remove khỏi bảng (local)
+          dispatch({ type: 'REMOVE_CATEGORY_ROW', payload: parentItem.key });
           dispatch({
             type: 'SET_TABLE_DATA',
-            payload: state.tableData.filter((row) => row.key !== record.key),
+            payload: state.tableData.filter((row) => row.key !== parentItem.key),
           });
+          toast.success('Category removed from table!');
         }
-      } else if (record.key.includes('-bottom-up')) {
-        // Nếu là dòng bottom-up: clear bottomUpPlan về 0, giữ actual
-        const [categoryId] = record.key.split('-bottom-up');
-        let actualSumUpPlan = {};
-        const parentItem = state.tableData.find(
-          (item) => item.children && item.children.some((child) => child.key === record.key),
-        );
-        if (parentItem && parentItem.children) {
-          const actualChild = parentItem.children.find(
-            (child) => child.key === `${categoryId}-actual`,
-          );
-          if (actualChild) {
-            actualSumUpPlan = transformMonthlyPayload(actualChild, tab as BudgetDetailFilterType);
-          }
-        }
-        // Tạo bottomUpPlan toàn 0
-        const zeroPayload: any = {};
-        for (let i = 1; i <= 12; i++) zeroPayload[`m${i}_${tab === 'expense' ? 'exp' : 'inc'}`] = 0;
-        await budgetSummaryUseCase.updateCategoryPlanning(
-          {
-            fiscalYear: initialYear.toString(),
-            type: tab === 'expense' ? 'Expense' : 'Income',
-            categoryId,
-            bottomUpPlan: zeroPayload,
-            actualSumUpPlan,
-          },
-          currency,
-        );
-        await fetchData();
       }
+    } catch (err: any) {
+      toast.error(err?.message || 'Action failed!');
     } finally {
       setRowLoading(record.key, false);
     }

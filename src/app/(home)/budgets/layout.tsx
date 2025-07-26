@@ -1,4 +1,5 @@
 import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
+import BudgetUpdater from '@/features/home/module/budgets/summary-detail/presentation/pages/BudgetUpdater';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { Metadata } from 'next';
 
@@ -9,6 +10,10 @@ export const metadata: Metadata = {
 
 export default async function layout({ children }: { children: React.ReactNode }) {
   return (
-    <ModuleAccessLayout featureFlag={FeatureFlags.BUDGET_FEATURE}>{children}</ModuleAccessLayout>
+    <ModuleAccessLayout featureFlag={FeatureFlags.BUDGET_FEATURE}>
+      <BudgetUpdater />
+
+      {children}
+    </ModuleAccessLayout>
   );
 }

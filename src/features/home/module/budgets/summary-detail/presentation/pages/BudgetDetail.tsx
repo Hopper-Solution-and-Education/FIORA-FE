@@ -20,7 +20,7 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { setFullCurrencyDisplay } from '@/store/slices/setting.slice';
 import { useMemo } from 'react';
 import { PERIOD_OPTIONS } from '../../data/constants';
-import { convertTableDataCurrency } from '../../utils/convertTableDataCurrency';
+import { convertTableDataCurrency } from '../../utils/details/convertTableDataCurrency';
 import BudgetSummaryYearSelect from '../atoms/BudgetSummaryYearSelect';
 import { getBudgetColumns } from '../hooks/useBudgetColumns';
 import { useBudgetDetail } from '../hooks/useBudgetDetail';
@@ -45,6 +45,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     handleCategorySelected,
     handleValidateClick,
     handleValueChange,
+    handleRemoveRow,
     rowLoading,
     // ... các handler khác nếu cần
   } = useBudgetDetail(initialYear);
@@ -66,25 +67,20 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     return convertTableDataCurrency(tableData, currency, isFullCurrencyDisplay);
   }, [tableData, currency, isFullCurrencyDisplay]);
 
-  // Columns cho TableV2
   const columns = getBudgetColumns({
-    period: period as any, // hoặc ép kiểu BudgetPeriodType nếu import được
+    period: period as any,
     periodId,
-    table: { data: convertedTableData, set: () => {}, fetch: async () => {} },
-    categories: { data: categoryList, set: () => {}, fetch: async () => {} },
+    table: { data: convertedTableData },
+    categories: { data: categoryList },
     currency,
-    activeTab: activeTab as any, // hoặc ép kiểu BudgetDetailFilterType nếu import được
+    activeTab: activeTab as any,
     categoryRows,
     selectedCategories,
-    handleCategoryChange: () => {},
     handleValidateClick, // truyền handler thực tế
     handleValueChange, // truyền handler thực tế
     handleCategorySelected, // truyền handler thực tế
-    handleDeleteCategory: () => {},
-    handleRemoveCategory: () => {},
-    handleClearTopDown: () => {},
-    initialYear,
     isFullCurrencyDisplay,
+    handleRemoveRow, // truyền đúng handler xoá
     rowLoading, // truyền loading từng dòng
   });
 
