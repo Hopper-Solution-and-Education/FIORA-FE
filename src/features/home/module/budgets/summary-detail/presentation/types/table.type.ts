@@ -69,8 +69,8 @@ export const MONTHS: MonthsArray = [
 
 // Type for getColumnsByPeriod function parameters to improve maintainability
 export interface GetColumnsByPeriodParams {
-  period: string;
-  periodId: string;
+  period: BudgetPeriodType;
+  periodId: BudgetPeriodIdType;
   currency: Currency;
   categories?: BudgetCategory[];
   onValueChange?: (record: TableData, columnKey: string, value: number) => void;

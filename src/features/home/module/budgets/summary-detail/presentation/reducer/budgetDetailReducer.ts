@@ -1,5 +1,11 @@
+import { BudgetDetailFilterEnum } from '../../data/constants';
 import { Category } from '../../data/dto/response/CategoryResponseDTO';
-import { TableData } from '../types/table.type';
+import {
+  BudgetDetailFilterType,
+  BudgetPeriodIdType,
+  BudgetPeriodType,
+  TableData,
+} from '../types/table.type';
 
 export interface BudgetDetailState {
   tableData: TableData[];
@@ -7,9 +13,9 @@ export interface BudgetDetailState {
   categoryRows: string[];
   selectedCategories: Set<string>;
   isLoading: boolean;
-  period: string;
-  periodId: string;
-  activeTab: string;
+  period: BudgetPeriodType;
+  periodId: BudgetPeriodIdType;
+  activeTab: BudgetDetailFilterType;
   rowLoading: Record<string, boolean>;
 }
 
@@ -20,9 +26,9 @@ export type BudgetDetailAction =
   | { type: 'REMOVE_CATEGORY_ROW'; payload: string }
   | { type: 'SET_SELECTED_CATEGORIES'; payload: Set<string> }
   | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_PERIOD'; payload: string }
-  | { type: 'SET_PERIOD_ID'; payload: string }
-  | { type: 'SET_ACTIVE_TAB'; payload: string }
+  | { type: 'SET_PERIOD'; payload: BudgetPeriodType }
+  | { type: 'SET_PERIOD_ID'; payload: BudgetPeriodIdType }
+  | { type: 'SET_ACTIVE_TAB'; payload: BudgetDetailFilterType }
   | { type: 'RESET_BUDGET_DETAIL_STATE' }
   | { type: 'ADD_EMPTY_CATEGORY_ROW'; payload: string }
   | { type: 'SET_CATEGORY_SELECTED'; payload: { rowKey: string; category: Category } }
@@ -40,7 +46,7 @@ export const initialBudgetDetailState: BudgetDetailState = {
   isLoading: false,
   period: 'year',
   periodId: 'year',
-  activeTab: 'expense',
+  activeTab: BudgetDetailFilterEnum.EXPENSE,
   rowLoading: {},
 };
 

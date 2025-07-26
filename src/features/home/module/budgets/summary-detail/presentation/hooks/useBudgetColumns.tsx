@@ -8,58 +8,53 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Currency } from '@/shared/types';
 import { cn } from '@/shared/utils';
+import { useAppSelector } from '@/store';
+import { useMemo } from 'react';
 import { Category } from '../../data/dto/response/CategoryResponseDTO';
+import { convertTableDataCurrency } from '../../utils/details/convertTableDataCurrency';
 import { getColumnsByPeriod } from '../../utils/details/transformDataForTable';
-import {
-  BudgetDetailFilterType,
-  BudgetInit,
-  BudgetPeriodIdType,
-  BudgetPeriodType,
-  TableData,
-} from '../types/table.type';
+import { TableData } from '../types/table.type';
+import { useBudgetDetailStateContext } from './useBudgetDetailStateContext';
 
 interface UseBudgetColumnsProps {
-  period: BudgetPeriodType;
-  periodId: BudgetPeriodIdType;
-  table: BudgetInit<TableData>;
-  categories: BudgetInit<Category>;
-  currency: Currency;
-  activeTab: BudgetDetailFilterType;
-  categoryRows: string[];
-  selectedCategories: Set<string>;
   handleValidateClick: (record: TableData) => void;
   handleValueChange: (record: TableData, columnKey: string, value: number) => void;
   handleCategorySelected: (rowKey: string, category: Category) => Promise<void>;
-  isFullCurrencyDisplay: boolean;
   handleRemoveRow?: (record: TableData) => void;
-  rowLoading?: Record<string, boolean>;
 }
 
-export function getBudgetColumns({
-  period,
-  periodId,
-  currency,
-  activeTab,
-  categoryRows,
-  selectedCategories,
+export function useBudgetColumns({
   handleValidateClick,
   handleValueChange,
   handleCategorySelected,
-  categories,
-  table,
-  isFullCurrencyDisplay,
   handleRemoveRow,
-  rowLoading,
 }: UseBudgetColumnsProps) {
+  const {
+    state: {
+      period,
+      periodId,
+      activeTab,
+      tableData,
+      categoryList,
+      categoryRows,
+      selectedCategories,
+      rowLoading,
+    },
+  } = useBudgetDetailStateContext();
+  const { currency, isFullCurrencyDisplay } = useAppSelector((state) => state.settings);
+
+  const convertedTableData = useMemo(() => {
+    return convertTableDataCurrency(tableData, currency, isFullCurrencyDisplay);
+  }, [tableData, currency, isFullCurrencyDisplay]);
+
   const updatedColumns = getColumnsByPeriod({
     period,
     periodId,
     currency,
-    categories: categories.data,
+    categories: categoryList,
     onValueChange: handleValueChange,
-    tableData: table.data,
+    tableData,
     activeTab,
     isFullCurrencyDisplay,
   });
@@ -72,10 +67,27 @@ export function getBudgetColumns({
       key: 'type',
       width: 200,
       render: (value: any, record: TableData) => {
-        if (categoryRows.includes(record.key) || record.isCreated) {
-          const availableCategories = categories.data.filter(
+        // Nếu là category đã tạo (isCreated = true), hiển thị text
+        if (record.isCreated) {
+          return (
+            <span
+              className={cn(
+                'inline-flex items-center font-medium w-full',
+                record.isChild && 'ml-5',
+              )}
+            >
+              {value}
+            </span>
+          );
+        }
+
+        // Nếu là category mới select (chưa có isCreated) hoặc trong categoryRows, hiển thị select
+        if (categoryRows.includes(record.key) || record.categoryId) {
+          // Chỉ hiển thị các category chưa được tạo (isCreated = false) và chưa được chọn
+          const availableCategories = categoryList.filter(
             (category: Category) =>
-              !selectedCategories.has(category.id) || category.id === record.categoryId,
+              !category.isCreated &&
+              (!selectedCategories.has(category.id) || category.id === record.categoryId),
           );
 
           return (
@@ -83,9 +95,7 @@ export function getBudgetColumns({
               <Select
                 value={record.categoryId || undefined}
                 onValueChange={(selectedValue) => {
-                  const category = categories.data.find(
-                    (cat: Category) => cat.id === selectedValue,
-                  );
+                  const category = categoryList.find((cat: Category) => cat.id === selectedValue);
                   if (category) {
                     handleCategorySelected(record.key, category);
                   }
@@ -120,7 +130,7 @@ export function getBudgetColumns({
     },
     ...updatedColumns.slice(1).map((column) => ({
       ...column,
-      render: (value: any, record: any) => {
+      render: (value: any, record: TableData) => {
         if (categoryRows.includes(record.key)) {
           return null;
         }
@@ -137,7 +147,43 @@ export function getBudgetColumns({
     width: 60,
     headerAlign: 'center',
     render: (_, record: TableData) => {
-      const [categoryId] = record.key.split('-bottom-up');
+      const isLoading = rowLoading && rowLoading[record.key];
+
+      // Logic để xác định có nên enable nút check hay không
+      const isCheckEnabled = () => {
+        // Nếu là top-down, chỉ enable khi có thay đổi
+        if (record.key === 'top-down') {
+          return record.hasChanges || false;
+        }
+
+        // Nếu là bottom-up row, cần tìm parent category
+        if (record.key.includes('-bottom-up')) {
+          const categoryId = record.key.split('-bottom-up')[0];
+          const parentCategory = convertedTableData.find((item) => item.categoryId === categoryId);
+
+          // Nếu parent category chưa được tạo (isCreated = false hoặc undefined), luôn enable
+          if (!parentCategory?.isCreated) {
+            return true;
+          }
+
+          // Nếu parent category đã được tạo, chỉ enable khi có thay đổi
+          if (parentCategory.isCreated) {
+            return record.hasChanges || false;
+          }
+        }
+
+        // Nếu là category mới select (chưa có isCreated), luôn enable
+        if (record.categoryId && !record.isCreated) {
+          return true;
+        }
+
+        // Nếu là category đã tạo (isCreated = true), chỉ enable khi có thay đổi
+        if (record.isCreated) {
+          return record.hasChanges || false;
+        }
+
+        return false;
+      };
 
       if (record.isEditable) {
         return (
@@ -147,23 +193,27 @@ export function getBudgetColumns({
               title="Invalid"
               onClick={() => handleRemoveRow && handleRemoveRow(record)}
             >
-              {rowLoading && rowLoading[record.key] ? (
+              {isLoading ? (
                 <Icons.spinner size={15} className="animate-spin" />
               ) : (
                 <Icons.close size={15} />
               )}
             </span>
             <span
-              className={cn('cursor-pointer text-green-500 hover:text-green-700')}
+              className={cn(
+                'cursor-pointer',
+                isCheckEnabled() && !isLoading
+                  ? 'text-green-500 hover:text-green-700'
+                  : 'text-gray-400 cursor-not-allowed',
+              )}
               title="Valid"
               onClick={() => {
-                if (record.isEditable && !rowLoading?.[record.key]) {
+                if (isCheckEnabled() && !isLoading) {
                   handleValidateClick?.(record);
                 }
               }}
             >
-              {/* Hiển thị loading nếu rowLoading[record.key] true */}
-              {rowLoading && rowLoading[record.key] ? (
+              {isLoading ? (
                 <Icons.spinner size={15} className="animate-spin" />
               ) : (
                 <Icons.check size={15} />
@@ -177,5 +227,8 @@ export function getBudgetColumns({
     },
   };
 
-  return [...columnsWithCategorySelect, actionColumn];
+  return {
+    columns: [...columnsWithCategorySelect, actionColumn],
+    convertedTableData,
+  };
 }

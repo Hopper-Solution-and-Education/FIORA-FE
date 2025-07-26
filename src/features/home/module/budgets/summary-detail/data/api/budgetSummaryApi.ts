@@ -3,7 +3,8 @@ import { httpClient } from '@/config/http-client/HttpClient';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import { Currency, HttpResponse } from '@/shared/types';
 import { routeConfig } from '@/shared/utils/route';
-import { injectable } from 'inversify';
+import { decorate, injectable } from 'inversify';
+import { Budget } from '../../domain/entities/Budget';
 import { BudgetType } from '../../domain/entities/BudgetType';
 import { BudgetSummaryRequestDTO } from '../dto/request/BudgetSummaryRequestDTO';
 import {
@@ -15,6 +16,7 @@ import {
   BudgetByTypeResponseDTO,
   BudgetSummaryResponseDTO,
   BudgetYearsResponseDTO,
+  CategoryPlanningUpdateResponse,
 } from '../dto/response/BudgetSummaryResponseDTO';
 import {
   CategoryPlanningResponseDTO,
@@ -22,10 +24,9 @@ import {
 } from '../dto/response/CategoryResponseDTO';
 import { IBudgetSummaryAPI } from './IBudgetSummaryAPI';
 
-@injectable()
 export class BudgetSummaryAPI implements IBudgetSummaryAPI {
   async getBudgetSummary(params: BudgetSummaryRequestDTO): Promise<BudgetSummaryResponseDTO> {
-    return httpClient.get<BudgetSummaryResponseDTO>(
+    return await httpClient.get<BudgetSummaryResponseDTO>(
       routeConfig(ApiEndpointEnum.BudgetByType, {}, { fiscalYear: params.fiscalYear }),
     );
   }
@@ -40,7 +41,7 @@ export class BudgetSummaryAPI implements IBudgetSummaryAPI {
     type: 'Income' | 'Expense',
     year: number,
   ): Promise<CategoryResponseDTO> {
-    return httpClient.get<CategoryResponseDTO>(
+    return await httpClient.get<CategoryResponseDTO>(
       routeConfig(ApiEndpointEnum.CategoriesByType, {}, { type, year }),
     );
   }
@@ -49,33 +50,49 @@ export class BudgetSummaryAPI implements IBudgetSummaryAPI {
     categoryId: string,
     year: number,
   ): Promise<CategoryPlanningResponseDTO> {
-    return httpClient.get<CategoryPlanningResponseDTO>(
+    return await httpClient.get<CategoryPlanningResponseDTO>(
       routeConfig(ApiEndpointEnum.BudgetActualPlanningSumUp, { categoryId }, { year }),
     );
   }
 
-  async updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<void> {
-    await httpClient.put<void>(ApiEndpointEnum.BudgetTopDownUpdate, data);
+  async updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<Budget> {
+    const response = await httpClient.put(ApiEndpointEnum.BudgetTopDownUpdate, data);
+    return (response as any).data;
   }
 
   async updateCategoryPlanning(
     data: CategoryPlanningUpdateRequestDTO,
     currency: Currency,
-  ): Promise<void> {
-    await httpClient.put<void>(ApiEndpointEnum.BudgetCategories, data, {
-      'x-user-currency': currency,
-    });
+  ): Promise<CategoryPlanningUpdateResponse> {
+    const response: HttpResponse<CategoryPlanningUpdateResponse> = await httpClient.put(
+      ApiEndpointEnum.BudgetCategories,
+      data,
+      {
+        'x-user-currency': currency,
+      },
+    );
+
+    const responseData = response?.data;
+
+    const { updatedBudgetDetails, actBudgetDetails, bottomUpBudget } = responseData;
+
+    return {
+      updatedBudgetDetails,
+      actBudgetDetails,
+      bottomUpBudget,
+      currency: responseData.currency || currency,
+    };
   }
 
   async deleteCategory(data: DeleteCategoryRequestDTO): Promise<string> {
     const response: any = await httpClient.post<void>(ApiEndpointEnum.BudgetCategories, data);
-
-    return response?.data.code || '';
+    return response?.data?.code || '';
   }
 
   async getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>> {
-    return httpClient.get<HttpResponse<BudgetYearsResponseDTO>>(ApiEndpointEnum.BudgetYears);
+    return await httpClient.get<HttpResponse<BudgetYearsResponseDTO>>(ApiEndpointEnum.BudgetYears);
   }
 }
 
-export default new BudgetSummaryAPI();
+// Apply decorators programmatically
+decorate(injectable(), BudgetSummaryAPI);

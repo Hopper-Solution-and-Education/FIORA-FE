@@ -8,18 +8,29 @@ export const transformMonthlyDataToTableFormat = (data: MonthlyPlanningData) => 
   const monthlyTotals: DataSourceItemProps[] = new Array(12).fill(0);
   let fullYear: DataSourceItemProps = { value: 0 };
 
+  // Map API keys with _exp/_inc to table keys
   Object.entries(data).forEach(([key, value]) => {
-    const numValue = typeof value === 'number' ? value : 0;
+    const numValue = Number(value) || 0;
+    // Map q1_exp/q1_inc -> q1, h1_exp/h1_inc -> h1, total_exp/total_inc -> fullYear
+    if (key === 'q1_exp' || key === 'q1_inc') result['q1'] = { value: numValue };
+    if (key === 'q2_exp' || key === 'q2_inc') result['q2'] = { value: numValue };
+    if (key === 'q3_exp' || key === 'q3_inc') result['q3'] = { value: numValue };
+    if (key === 'q4_exp' || key === 'q4_inc') result['q4'] = { value: numValue };
+    if (key === 'h1_exp' || key === 'h1_inc') result['h1'] = { value: numValue };
+    if (key === 'h2_exp' || key === 'h2_inc') result['h2'] = { value: numValue };
+    if (key === 'total_exp' || key === 'total_inc') {
+      result['fullYear'] = { value: numValue };
+      fullYear = { value: numValue };
+    }
+  });
+
+  Object.entries(data).forEach(([key, value]) => {
+    const numValue = Number(value) || 0;
     const match = key.match(/(m|q|h)(\d+)_|total_/);
 
     if (match) {
       if (match[0].startsWith('total_')) {
-        result['fullYear'] = {
-          value: numValue,
-        };
-        fullYear = {
-          value: numValue,
-        };
+        // Đã xử lý ở trên
       } else {
         const type = match[1];
         const number = parseInt(match[2], 10) - 1;
@@ -35,50 +46,59 @@ export const transformMonthlyDataToTableFormat = (data: MonthlyPlanningData) => 
               };
             }
             break;
-          case 'q':
-            if (number >= 0 && number < 4) {
-              result[`q${number + 1}`] = {
-                value: numValue,
-              };
-            }
-            break;
-          case 'h':
-            if (number >= 0 && number < 2) {
-              result[`h${number + 1}`] = {
-                value: numValue,
-              };
-            }
-            break;
         }
       }
     }
   });
 
-  result['q1'] = {
-    value: monthlyTotals.slice(0, 3).reduce((sum, val) => Number(sum) + Number(val?.value || 0), 0),
-  };
-  result['q2'] = {
-    value: monthlyTotals.slice(3, 6).reduce((sum, val) => Number(sum) + Number(val?.value || 0), 0),
-  };
-  result['q3'] = {
-    value: monthlyTotals.slice(6, 9).reduce((sum, val) => Number(sum) + Number(val?.value || 0), 0),
-  };
-  result['q4'] = {
-    value: monthlyTotals
-      .slice(9, 12)
-      .reduce((sum, val) => Number(sum) + Number(val?.value || 0), 0),
-  };
-  result['h1'] = {
-    value: monthlyTotals.slice(0, 6).reduce((sum, val) => Number(sum) + Number(val?.value || 0), 0),
-  };
-  result['h2'] = {
-    value: monthlyTotals
-      .slice(6, 12)
-      .reduce((sum, val) => Number(sum) + Number(val?.value || 0), 0),
-  };
-  result['fullYear'] = fullYear || {
-    value: monthlyTotals.reduce((sum, val) => Number(sum) + Number(val?.value || 0), 0),
-  };
+  // Nếu chưa có các trường tổng hợp, tự tính lại
+  if (!result['q1']) {
+    result['q1'] = {
+      value: monthlyTotals
+        .slice(0, 3)
+        .reduce((sum, val) => Number(sum) + Number(val?.value || 0), 0),
+    };
+  }
+  if (!result['q2']) {
+    result['q2'] = {
+      value: monthlyTotals
+        .slice(3, 6)
+        .reduce((sum, val) => Number(sum) + Number(val?.value || 0), 0),
+    };
+  }
+  if (!result['q3']) {
+    result['q3'] = {
+      value: monthlyTotals
+        .slice(6, 9)
+        .reduce((sum, val) => Number(sum) + Number(val?.value || 0), 0),
+    };
+  }
+  if (!result['q4']) {
+    result['q4'] = {
+      value: monthlyTotals
+        .slice(9, 12)
+        .reduce((sum, val) => Number(sum) + Number(val?.value || 0), 0),
+    };
+  }
+  if (!result['h1']) {
+    result['h1'] = {
+      value: monthlyTotals
+        .slice(0, 6)
+        .reduce((sum, val) => Number(sum) + Number(val?.value || 0), 0),
+    };
+  }
+  if (!result['h2']) {
+    result['h2'] = {
+      value: monthlyTotals
+        .slice(6, 12)
+        .reduce((sum, val) => Number(sum) + Number(val?.value || 0), 0),
+    };
+  }
+  if (!result['fullYear']) {
+    result['fullYear'] = {
+      value: monthlyTotals.reduce((sum, val) => Number(sum) + Number(val?.value || 0), 0),
+    };
+  }
 
   return result;
 };

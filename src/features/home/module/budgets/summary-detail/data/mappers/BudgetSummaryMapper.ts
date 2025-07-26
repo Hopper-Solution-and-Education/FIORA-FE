@@ -1,23 +1,12 @@
-import { BudgetSummary } from '../../domain/entities/BudgetSummary';
+import { HttpResponse } from '@/features/setting/module/product/model';
 import { BudgetSummaryByType } from '../../domain/entities/BudgetSummaryByType';
-import { BudgetSummaryResponseDTO } from '../dto/response/BudgetSummaryResponseDTO';
+import { BudgetType } from '../../domain/entities/BudgetType';
 import {
   BudgetByTypeResponseDTO,
   BudgetYearsResponseDTO,
 } from '../dto/response/BudgetSummaryResponseDTO';
-import { BudgetType } from '../../domain/entities/BudgetType';
-import { HttpResponse } from '@/features/setting/module/product/model';
 
 export class BudgetSummaryMapper {
-  static toBudgetSummary(dto: BudgetSummaryResponseDTO): BudgetSummary {
-    return {
-      topBudget: dto.topBudget,
-      botBudget: dto.botBudget,
-      actBudget: dto.actBudget,
-      allBudgets: dto.allBudgets,
-    };
-  }
-
   static toBudgetByType(dto: BudgetByTypeResponseDTO): BudgetSummaryByType {
     return {
       budget: {

@@ -16,72 +16,38 @@ import { RouteEnum } from '@/shared/constants/RouteEnum';
 import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
 import { cn } from '@/shared/utils';
 import { routeConfig } from '@/shared/utils/route';
-import { useAppDispatch, useAppSelector } from '@/store';
-import { setFullCurrencyDisplay } from '@/store/slices/setting.slice';
-import { useMemo } from 'react';
 import { PERIOD_OPTIONS } from '../../data/constants';
-import { convertTableDataCurrency } from '../../utils/details/convertTableDataCurrency';
 import BudgetSummaryYearSelect from '../atoms/BudgetSummaryYearSelect';
-import { getBudgetColumns } from '../hooks/useBudgetColumns';
+import CurrencyDisplayToggle from '../atoms/CurrencyDisplayToggle';
+import { useBudgetColumns } from '../hooks/useBudgetColumns';
 import { useBudgetDetail } from '../hooks/useBudgetDetail';
+import { useBudgetDetailStateContext } from '../hooks/useBudgetDetailStateContext';
 
 interface BudgetDetailProps {
   year: number;
 }
 
 const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
-  const { currency, isFullCurrencyDisplay } = useAppSelector((state) => state.settings);
-  const dispatch = useAppDispatch();
   const { isMobile } = useMatchBreakpoint();
-
-  // Sử dụng hook tổng hợp
   const {
-    state,
+    state: { period, periodId, activeTab, tableData, isLoading },
+  } = useBudgetDetailStateContext();
+
+  const {
     handlePeriodChange,
     handleTabChange,
     handleAddCategoryRow,
-    handleRemoveCategoryRow,
-    setSelectedCategories,
     handleCategorySelected,
     handleValidateClick,
     handleValueChange,
     handleRemoveRow,
-    rowLoading,
-    // ... các handler khác nếu cần
   } = useBudgetDetail(initialYear);
 
-  // Lấy các state cần thiết từ state
-  const {
-    period,
-    periodId,
-    activeTab,
-    tableData,
-    categoryList,
-    categoryRows,
-    selectedCategories,
-    isLoading,
-  } = state;
-
-  // Convert table data theo currency display
-  const convertedTableData = useMemo(() => {
-    return convertTableDataCurrency(tableData, currency, isFullCurrencyDisplay);
-  }, [tableData, currency, isFullCurrencyDisplay]);
-
-  const columns = getBudgetColumns({
-    period: period as any,
-    periodId,
-    table: { data: convertedTableData },
-    categories: { data: categoryList },
-    currency,
-    activeTab: activeTab as any,
-    categoryRows,
-    selectedCategories,
-    handleValidateClick, // truyền handler thực tế
-    handleValueChange, // truyền handler thực tế
-    handleCategorySelected, // truyền handler thực tế
-    isFullCurrencyDisplay,
-    handleRemoveRow, // truyền đúng handler xoá
-    rowLoading, // truyền loading từng dòng
+  const { columns, convertedTableData } = useBudgetColumns({
+    handleValidateClick,
+    handleValueChange,
+    handleCategorySelected,
+    handleRemoveRow,
   });
 
   return (
@@ -96,26 +62,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
                 route={routeConfig(RouteEnum.BudgetDetail, {}, { period, periodId })}
               />
               {/* Tabs toggle currency display (mobile) */}
-              {isMobile && (
-                <Tabs
-                  value={isFullCurrencyDisplay ? 'full' : 'short'}
-                  onValueChange={(val) => dispatch(setFullCurrencyDisplay(val === 'full'))}
-                  className="ml-2 min-w-[120px]"
-                >
-                  <TabsList className="w-full grid grid-cols-2 rounded-lg bg-muted/30">
-                    <TabsTrigger value="full" className="flex items-center gap-1 px-2 py-1 text-xs">
-                      <Icons.eye size={16} className="text-primary" />
-                      1K | 1M | 1B
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="short"
-                      className="flex items-center gap-1 px-2 py-1 text-xs"
-                    >
-                      <Icons.eyeOff size={16} className="text-muted-foreground" />K | M | B
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              )}
+              {isMobile && <CurrencyDisplayToggle className="ml-2 min-w-[120px]" />}
               {isMobile && (
                 <ActionButton
                   tooltipContent="Add New Category"
@@ -163,21 +110,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
           {/* Tabs toggle currency display (desktop) */}
           {!isMobile && (
             <div className="flex items-center gap-2">
-              <Tabs
-                value={isFullCurrencyDisplay ? 'full' : 'short'}
-                onValueChange={(val) => dispatch(setFullCurrencyDisplay(val === 'full'))}
-                className="min-w-[120px]"
-              >
-                <TabsList className="w-full grid grid-cols-2 rounded-lg bg-muted/30">
-                  <TabsTrigger value="full" className="flex items-center gap-1 px-2 py-1 text-xs">
-                    <Icons.eye size={16} className="text-primary" />
-                    1K | 1M | 1B
-                  </TabsTrigger>
-                  <TabsTrigger value="short" className="flex items-center gap-1 px-2 py-1 text-xs">
-                    <Icons.eyeOff size={16} className="text-muted-foreground" />K | M | B
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <CurrencyDisplayToggle className="min-w-[120px]" />
               <ActionButton
                 tooltipContent="Add New Category"
                 showIcon={true}

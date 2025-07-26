@@ -1,5 +1,5 @@
 import { Currency, HttpResponse } from '@/shared/types';
-import { inject, injectable } from 'inversify';
+import { decorate, inject, injectable } from 'inversify';
 import {
   CategoryPlanningUpdateRequestDTO,
   DeleteCategoryRequestDTO,
@@ -8,20 +8,18 @@ import {
 import {
   BudgetSummaryResponseDTO,
   BudgetYearsResponseDTO,
+  CategoryPlanningUpdateResponse,
 } from '../../data/dto/response/BudgetSummaryResponseDTO';
 import { Category, CategoryPlanning } from '../../data/dto/response/CategoryResponseDTO';
 import type { IBudgetSummaryRepository } from '../../data/repositories/IBudgetSummaryRepository';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
+import { Budget } from '../entities/Budget';
 import { BudgetSummaryByType } from '../entities/BudgetSummaryByType';
 import { BudgetType } from '../entities/BudgetType';
 import { IBudgetSummaryUseCase } from './IBudgetSummaryUseCase';
 
-@injectable()
 export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
-  constructor(
-    @inject(TYPES.IBudgetSummaryRepository)
-    private readonly budgetSummaryRepository: IBudgetSummaryRepository,
-  ) {}
+  constructor(private readonly budgetSummaryRepository: IBudgetSummaryRepository) {}
 
   async getBudgetsByUserIdAndFiscalYear(
     userId: string,
@@ -42,14 +40,14 @@ export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
     return this.budgetSummaryRepository.getActualPlanningByCategory(categoryId, year);
   }
 
-  async updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<void> {
+  async updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<Budget> {
     return this.budgetSummaryRepository.updateTopDownPlanning(data);
   }
 
   async updateCategoryPlanning(
     data: CategoryPlanningUpdateRequestDTO,
     currency: Currency,
-  ): Promise<void> {
+  ): Promise<CategoryPlanningUpdateResponse> {
     return this.budgetSummaryRepository.updateCategoryPlanning(data, currency);
   }
 
@@ -58,6 +56,9 @@ export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
   }
 
   async deleteCategory(data: DeleteCategoryRequestDTO): Promise<string> {
-    return await this.budgetSummaryRepository.deleteCategory(data);
+    return this.budgetSummaryRepository.deleteCategory(data);
   }
 }
+
+decorate(injectable(), BudgetSummaryUsecase);
+decorate(inject(TYPES.IBudgetSummaryRepository), BudgetSummaryUsecase, 0);

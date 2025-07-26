@@ -1,6 +1,7 @@
 import { Currency, HttpResponse } from '@/shared/types';
-import { inject, injectable } from 'inversify';
+import { decorate, inject, injectable } from 'inversify';
 import { TYPES } from '../../di/budgetSummaryDIContainer.type';
+import { Budget } from '../../domain/entities/Budget';
 import { BudgetSummaryByType } from '../../domain/entities/BudgetSummaryByType';
 import { BudgetType } from '../../domain/entities/BudgetType';
 import type { IBudgetSummaryAPI } from '../api/IBudgetSummaryAPI';
@@ -13,14 +14,14 @@ import {
 import {
   BudgetSummaryResponseDTO,
   BudgetYearsResponseDTO,
+  CategoryPlanningUpdateResponse,
 } from '../dto/response/BudgetSummaryResponseDTO';
 import { Category, CategoryPlanning } from '../dto/response/CategoryResponseDTO';
 import { BudgetSummaryMapper } from '../mappers/BudgetSummaryMapper';
 import { IBudgetSummaryRepository } from './IBudgetSummaryRepository';
 
-@injectable()
 export class BudgetSummaryRepository implements IBudgetSummaryRepository {
-  constructor(@inject(TYPES.IBudgetSummaryAPI) private budgetSummaryAPI: IBudgetSummaryAPI) {}
+  constructor(private budgetSummaryAPI: IBudgetSummaryAPI) {}
 
   async getBudgetSummary(params: BudgetSummaryRequestDTO): Promise<BudgetSummaryResponseDTO> {
     return await this.budgetSummaryAPI.getBudgetSummary(params);
@@ -42,19 +43,18 @@ export class BudgetSummaryRepository implements IBudgetSummaryRepository {
 
   async getActualPlanningByCategory(categoryId: string, year: number): Promise<CategoryPlanning> {
     const response = await this.budgetSummaryAPI.getActualPlanningByCategory(categoryId, year);
-
     return response.data;
   }
 
-  async updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<void> {
-    await this.budgetSummaryAPI.updateTopDownPlanning(data);
+  async updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<Budget> {
+    return await this.budgetSummaryAPI.updateTopDownPlanning(data);
   }
 
   async updateCategoryPlanning(
     data: CategoryPlanningUpdateRequestDTO,
     currency: Currency,
-  ): Promise<void> {
-    await this.budgetSummaryAPI.updateCategoryPlanning(data, currency);
+  ): Promise<CategoryPlanningUpdateResponse> {
+    return await this.budgetSummaryAPI.updateCategoryPlanning(data, currency);
   }
 
   async getBudgetYears(): Promise<HttpResponse<BudgetYearsResponseDTO>> {
@@ -65,3 +65,6 @@ export class BudgetSummaryRepository implements IBudgetSummaryRepository {
     return await this.budgetSummaryAPI.deleteCategory(data);
   }
 }
+
+decorate(injectable(), BudgetSummaryRepository);
+decorate(inject(TYPES.IBudgetSummaryAPI), BudgetSummaryRepository, 0);
