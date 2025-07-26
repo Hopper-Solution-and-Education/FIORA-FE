@@ -24,7 +24,7 @@ const PartnerLogo = () => {
       >
         {section?.name}
       </h1>
-      <div className="overflow-hidden w-full max-w-[90%] mx-auto relative">
+      <div className="overflow-hidden w-full mx-auto relative">
         <div
           className="flex gap-8 animate-marquee p-4"
           style={{

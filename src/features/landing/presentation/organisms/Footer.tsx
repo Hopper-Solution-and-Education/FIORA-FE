@@ -7,7 +7,7 @@ import { useGetSection } from '../../hooks/useGetSection';
 const DEFAULT_URL = 'https://www.facebook.com/HopperSolutionAndEducation';
 
 const FooterContent = ({ medias, description }: { medias: any[]; description: string }) => (
-  <footer className="bg-[#2E4F2E] text-white py-8 px-4 md:px-10 rounded-t-3xl">
+  <footer className="bg-[#2E4F2E] text-white py-4 px-4 md:px-10 rounded-t-3xl">
     <div className="flex flex-col md:flex-row items-center justify-between pb-2 px-4 lg:px-20">
       <h2 className="text-2xl font-bold">FIORA</h2>
       <div className="flex space-x-4">
@@ -30,7 +30,7 @@ const FooterContent = ({ medias, description }: { medias: any[]; description: st
       </div>
     </div>
 
-    <hr className="border-t border-gray-600 mb-6 md:mb-8" />
+    <hr className="border-t border-gray-600 mb-4" />
 
     <div className="md:text-left leading-relaxed px-4 lg:px-20">
       <p className="text-sm md:text-base">{description}</p>

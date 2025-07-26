@@ -34,6 +34,7 @@ export const transferDefaultValues = (data: ISection): SectionDefaultValues => {
             media_user_email: media.mediaReviewUser.media_user_email || '',
             createdBy: media.mediaReviewUser.createdBy || '',
             updatedBy: media.mediaReviewUser.updatedBy || '',
+            media_user_title: media.mediaReviewUser.media_user_title || '',
           }
         : null,
     })),
