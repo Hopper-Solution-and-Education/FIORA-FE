@@ -2,7 +2,6 @@ import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 
 interface BudgetDetailExpandToggleProps {
-  isExpanded: boolean;
   onToggle: () => void;
   className?: string;
 }
@@ -12,7 +11,6 @@ interface BudgetDetailExpandToggleProps {
  * Displays expand or collapse button with appropriate icon
  */
 export default function BudgetDetailExpandToggle({
-  isExpanded,
   onToggle,
   className,
 }: BudgetDetailExpandToggleProps) {

@@ -78,7 +78,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
           {!isMobile && (
             <div className="flex items-center gap-2">
               <CurrencyDisplayToggle className="min-w-[120px]" />
-              <BudgetDetailExpandToggle isExpanded={expand} onToggle={handleToggleExpand} />
+              <BudgetDetailExpandToggle onToggle={handleToggleExpand} />
               <ActionButton
                 tooltipContent="Add New Category"
                 showIcon={true}
