@@ -1,10 +1,8 @@
 import { faqsApi } from '@/features/faqs/store/api/faqsApi';
 import financeControlSlice from '@/features/finance/report/slices';
 import accountSlice from '@/features/home/module/account/slices';
-import {
-  default as budgetControlSlice,
-  default as budgetSummarySlice,
-} from '@/features/home/module/budgets/creation-dashboard/slices';
+import { default as budgetControlSlice } from '@/features/home/module/budgets/creation-dashboard/slices';
+import budgetSummarySlice from '@/features/home/module/budgets/summary-detail/slice/budgetSummarySlice';
 import categorySlice from '@/features/home/module/category/slices';
 import membershipSlice from '@/features/home/module/membership/slices';
 import transactionSlice from '@/features/home/module/transaction/slices';
