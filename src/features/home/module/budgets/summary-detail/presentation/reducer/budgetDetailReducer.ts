@@ -17,6 +17,7 @@ export interface BudgetDetailState {
   periodId: BudgetPeriodIdType;
   activeTab: BudgetDetailFilterType;
   rowLoading: Record<string, boolean>;
+  expand: boolean;
 }
 
 export type BudgetDetailAction =
@@ -36,7 +37,8 @@ export type BudgetDetailAction =
       type: 'SET_CATEGORY_CHILD_DATA';
       payload: { rowKey: string; bottomUpData: any; actualData: any };
     }
-  | { type: 'SET_ROW_LOADING'; payload: { rowKey: string; loading: boolean } };
+  | { type: 'SET_ROW_LOADING'; payload: { rowKey: string; loading: boolean } }
+  | { type: 'SET_EXPAND'; payload: boolean };
 
 export const initialBudgetDetailState: BudgetDetailState = {
   tableData: [],
@@ -48,6 +50,7 @@ export const initialBudgetDetailState: BudgetDetailState = {
   periodId: 'year',
   activeTab: BudgetDetailFilterEnum.EXPENSE,
   rowLoading: {},
+  expand: false,
 };
 
 export function budgetDetailReducer(
@@ -152,6 +155,8 @@ export function budgetDetailReducer(
         ...state,
         rowLoading: { ...state.rowLoading, [action.payload.rowKey]: action.payload.loading },
       };
+    case 'SET_EXPAND':
+      return { ...state, expand: action.payload };
     default:
       return state;
   }

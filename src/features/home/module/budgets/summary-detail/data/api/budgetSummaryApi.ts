@@ -55,8 +55,11 @@ export class BudgetSummaryAPI implements IBudgetSummaryAPI {
     );
   }
 
-  async updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<Budget> {
-    const response = await httpClient.put(ApiEndpointEnum.BudgetTopDownUpdate, data);
+  async updateTopDownPlanning(data: TopDownUpdateRequestDTO, currency: Currency): Promise<Budget> {
+    const response = await httpClient.put(ApiEndpointEnum.BudgetTopDownUpdate, data, {
+      'x-user-currency': currency,
+    });
+
     return (response as any).data;
   }
 

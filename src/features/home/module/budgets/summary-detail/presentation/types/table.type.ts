@@ -1,4 +1,7 @@
-import { DataSourceProps } from '@/components/common/tables/custom-table/types';
+import {
+  DataSourceItemProps,
+  DataSourceProps,
+} from '@/components/common/tables/custom-table/types';
 import { Currency } from '@/shared/types';
 import { BudgetDetailFilterEnum } from '../../data/constants';
 import { Category as BudgetCategory } from '../../data/dto/response/CategoryResponseDTO';
@@ -32,7 +35,18 @@ export interface TableData extends DataSourceProps {
   children?: TableData[];
   categoryId?: string;
   isFullCurrencyDisplay?: boolean;
+  originalData?: TableRowData;
+  hasChanges?: boolean;
 }
+
+export interface TableRowData {
+  [key: string]: DataSourceItemProps;
+}
+
+export type TableRowDataWithOriginal = TableRowData & {
+  originalData: TableRowData;
+  hasChanges: boolean;
+};
 
 // Type definition for month abbreviations to improve type safety and debugging
 export type MonthAbbreviation =
@@ -77,8 +91,4 @@ export interface GetColumnsByPeriodParams {
   tableData?: TableData[];
   activeTab?: BudgetDetailFilterType;
   isFullCurrencyDisplay?: boolean;
-}
-
-export interface BudgetInit<T> {
-  data: T[];
 }

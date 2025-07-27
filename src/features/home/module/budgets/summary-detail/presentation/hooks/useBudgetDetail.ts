@@ -9,102 +9,76 @@ import { TYPES } from '../../di/budgetSummaryDIContainer.type';
 import { BudgetType } from '../../domain/entities/BudgetType';
 import { IBudgetSummaryUseCase } from '../../domain/usecases/IBudgetSummaryUseCase';
 import {
+  addOriginalDataToRowData,
+  addOriginalDataToTableData,
+  convertBudgetToMonthlyData,
+  createChildData,
+  getTabSuffix,
+  getTabType,
+} from '../../utils/details/compareDataForTable';
+import {
   transformMonthlyDataToTableFormat,
   transformMonthlyPayload,
 } from '../../utils/details/dataTransformations';
 import { getTableDataByPeriod } from '../../utils/details/transformDataForTable';
-import { BudgetDetailFilterType, TableData } from '../types/table.type';
+import { BudgetDetailFilterType, TableData, TableRowData } from '../types/table.type';
 import { useBudgetDetailDispatchContext } from './useBudgetDetailDispatchContext';
 import { useBudgetDetailStateContext } from './useBudgetDetailStateContext';
 
-// Helper function to convert tab to API type
-const getTabType = (tab: BudgetDetailFilterType): 'Expense' | 'Income' => {
-  return tab === BudgetDetailFilterEnum.EXPENSE ? 'Expense' : 'Income';
-};
-
-// Helper function to get suffix for monthly data
-const getTabSuffix = (tab: BudgetDetailFilterType): '_exp' | '_inc' => {
-  return tab === BudgetDetailFilterEnum.EXPENSE ? '_exp' : '_inc';
-};
-
-// Helper function to convert Budget to MonthlyPlanningData
-const convertBudgetToMonthlyData = (
-  budget: any,
-  activeTab: BudgetDetailFilterType,
-): MonthlyPlanningData => {
-  if (!budget) return {};
-  const suffix = getTabSuffix(activeTab); // _exp hoặc _inc
-  const monthlyData: MonthlyPlanningData = {};
-
-  console.log("budget", budget)
-
-  for (const key in budget) {
-    if (Object.prototype.hasOwnProperty.call(budget, key)) {
-      // Chỉ lấy các trường đúng suffix hoặc tổng hợp đúng loại
-      if (
-        key.endsWith(suffix) ||
-        (activeTab === BudgetDetailFilterEnum.EXPENSE && key === 'total_exp') ||
-        (activeTab === BudgetDetailFilterEnum.INCOME && key === 'total_inc') ||
-        (activeTab === BudgetDetailFilterEnum.EXPENSE && key.match(/^q\d_exp$|^h\d_exp$/)) ||
-        (activeTab === BudgetDetailFilterEnum.INCOME && key.match(/^q\d_inc$|^h\d_inc$/))
-      ) {
-        const numValue = Number(budget[key]);
-        monthlyData[key as keyof MonthlyPlanningData] = isNaN(numValue) ? 0 : numValue;
-      }
-    }
-  }
-
-  return monthlyData;
-};
-
+/**
+ * Main hook for managing budget detail functionality
+ * Handles data fetching, state management, and user interactions for budget planning
+ * @param initialYear - The fiscal year to load budget data for
+ *
+ * Please run below test after update this hook
+ * @test To run tests for this hook:
+ * pnpm test src/features/home/module/budgets/summary-detail/presentation/hooks/__test__/useBudgetDetail.test.ts --coverage=false
+ * pnpm test -- --testPathPattern=src/features/home/module/budgets/summary-detail/presentation/hooks/__test__/useBudgetDetail.test.ts --coverage=false
+ * pnpm run test:watch -- --testPathPattern=src/features/home/module/budgets/summary-detail/presentation/hooks/__test__/useBudgetDetail.test.ts --coverage=false
+ */
 export function useBudgetDetail(initialYear: number) {
   const { state } = useBudgetDetailStateContext();
   const { dispatch } = useBudgetDetailDispatchContext();
 
-  // Memo budgetSummaryUseCase to prevent unnecessary re-creation
+  // Get currency from global settings
+  const currency = useAppSelector((store) => store.settings.currency);
+
+  // Memoize budgetSummaryUseCase to prevent unnecessary re-creation
   const budgetSummaryUseCase = useMemo(
     () => budgetSummaryDIContainer.get<IBudgetSummaryUseCase>(TYPES.IBudgetSummaryUseCase),
     [],
   );
 
-  const currency = useAppSelector((store) => store.settings.currency) || 'VND';
-
-  // Fetch table data and categories
+  /**
+   * Fetches and transforms budget data for display in the table
+   * Includes categories, top-down, bottom-up, and actual budget data
+   */
   const fetchData = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
-      // Fetch categories
+      // Fetch categories based on current active tab (expense/income)
       const type = getTabType(state.activeTab);
       const categories = await budgetSummaryUseCase.getCategoriesByType(type, initialYear);
       dispatch({ type: 'SET_CATEGORY_LIST', payload: categories });
 
-      // Fetch table data (top, bot, act)
+      // Fetch all budget data types in parallel for better performance
       const [top, bot, act] = await Promise.all([
         budgetSummaryUseCase.getBudgetByType(initialYear, BudgetType.Top),
         budgetSummaryUseCase.getBudgetByType(initialYear, BudgetType.Bot),
         budgetSummaryUseCase.getBudgetByType(initialYear, BudgetType.Act),
       ]);
-      // Transform về TableData[]
+
+      // Transform raw budget data into table format
       let tableData = getTableDataByPeriod(top, bot, act, state.activeTab);
 
-      // Thêm originalData cho mỗi record để track changes
-      const addOriginalData = (record: any) => {
-        const originalData: any = {};
-        Object.keys(record).forEach((key) => {
-          if (typeof record[key] === 'object' && record[key]?.value !== undefined) {
-            originalData[key] = { value: record[key].value };
-          }
-        });
-        return { ...record, originalData, hasChanges: false };
-      };
+      // Add original data tracking to all records for change detection
+      tableData = tableData.map(addOriginalDataToTableData);
 
-      // Thêm originalData cho tất cả records
-      tableData = tableData.map(addOriginalData);
-
-      // Thêm các category đã isCreated=true vào bảng nếu chưa có
+      // Add existing created categories to the table if not already present
       const createdCategories = categories.filter((cat: Category) => cat.isCreated);
       for (const cat of createdCategories) {
         if (!tableData.some((row) => row.categoryId === cat.id)) {
+          // Transform category's bottom-up and actual data for table display
           const bottomUpData = transformMonthlyDataToTableFormat(
             (cat.bottomUpPlan as MonthlyPlanningData) || {},
           );
@@ -112,6 +86,7 @@ export function useBudgetDetail(initialYear: number) {
             (cat.actualTransaction as MonthlyPlanningData) || {},
           );
 
+          // Create parent category row with child rows for bottom-up and actual data
           tableData.push({
             key: cat.id,
             type: cat.name,
@@ -123,26 +98,8 @@ export function useBudgetDetail(initialYear: number) {
             originalData: {},
             hasChanges: false,
             children: [
-              {
-                key: `${cat.id}-bottom-up`,
-                type: 'Bottom Up',
-                isChild: true,
-                action: true,
-                isEditable: true,
-                originalData: addOriginalData(bottomUpData).originalData,
-                hasChanges: false,
-                ...bottomUpData,
-              },
-              {
-                key: `${cat.id}-actual`,
-                type: 'Actual Sum Up',
-                isChild: true,
-                action: true,
-                isEditable: false,
-                originalData: addOriginalData(actualData).originalData,
-                hasChanges: false,
-                ...actualData,
-              },
+              createChildData(`${cat.id}-bottom-up`, 'Bottom Up', bottomUpData, true),
+              createChildData(`${cat.id}-actual`, 'Actual Sum Up', actualData, false),
             ],
           });
         }
@@ -153,9 +110,24 @@ export function useBudgetDetail(initialYear: number) {
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  }, [state.activeTab, initialYear, dispatch, budgetSummaryUseCase]);
+  }, [state.activeTab, initialYear]);
 
-  // Handle period change
+  // Fetch data on mount or when year/tab/period changes
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Automatically add an empty category row when only default rows exist
+  useEffect(() => {
+    if (state.tableData.length === 3) {
+      handleAddCategoryRow();
+    }
+  }, [state.tableData.length]);
+
+  /**
+   * Handles period change (month/quarter/half-year/year)
+   * Updates the period state and triggers data refetch
+   */
   const handlePeriodChange = (value: string) => {
     const option = PERIOD_OPTIONS.find((opt) => opt.value === value);
     if (option) {
@@ -164,23 +136,33 @@ export function useBudgetDetail(initialYear: number) {
     }
   };
 
-  // Handle tab change
+  /**
+   * Handles tab change between expense and income
+   * Updates the active tab and triggers data refetch
+   */
   const handleTabChange = (value: string) => {
     dispatch({ type: 'SET_ACTIVE_TAB', payload: value as BudgetDetailFilterType });
   };
 
-  // Add/remove category row
+  /**
+   * Adds a new empty category row for user to select a category
+   * Generates a unique key for the new row
+   */
   const handleAddCategoryRow = () => {
     const newRowId = `new-category-${Date.now()}`;
     dispatch({ type: 'ADD_EMPTY_CATEGORY_ROW', payload: newRowId });
   };
 
-  // Chọn category cho hàng trống, sẽ sinh 2 dòng con và fetch dữ liệu thực tế
+  /**
+   * Handles category selection for empty rows
+   * Creates child rows (Bottom Up and Actual Sum Up) with category data
+   * @param rowKey - The key of the row where category was selected
+   * @param category - The selected category object
+   */
   const handleCategorySelected = async (rowKey: string, category: Category) => {
     dispatch({ type: 'SET_CATEGORY_SELECTED', payload: { rowKey, category } });
     try {
-      // Nếu category đã có dữ liệu, hiển thị luôn
-      const suffix = getTabSuffix(state.activeTab);
+      // Transform category's existing data for immediate display
       const bottomUpData = transformMonthlyDataToTableFormat(
         (category.bottomUpPlan as MonthlyPlanningData) || {},
       );
@@ -188,20 +170,11 @@ export function useBudgetDetail(initialYear: number) {
         (category.actualTransaction as MonthlyPlanningData) || {},
       );
 
-      // Thêm originalData cho bottomUpData và actualData
-      const addOriginalData = (record: any) => {
-        const originalData: any = {};
-        Object.keys(record).forEach((key) => {
-          if (typeof record[key] === 'object' && record[key]?.value !== undefined) {
-            originalData[key] = { value: record[key].value };
-          }
-        });
-        return { ...record, originalData, hasChanges: false };
-      };
+      // Add original data tracking to the transformed data
+      const bottomUpWithOriginal = addOriginalDataToRowData(bottomUpData);
+      const actualWithOriginal = addOriginalDataToRowData(actualData);
 
-      const bottomUpWithOriginal = addOriginalData(bottomUpData);
-      const actualWithOriginal = addOriginalData(actualData);
-
+      // Update the table with the new category data
       dispatch({
         type: 'SET_CATEGORY_CHILD_DATA',
         payload: {
@@ -210,34 +183,34 @@ export function useBudgetDetail(initialYear: number) {
           actualData: actualWithOriginal,
         },
       });
-      // Nếu muốn fetch actual từ API vẫn giữ lại đoạn fetch dưới đây
-      // const actualResponse = await budgetSummaryUseCase.getActualPlanningByCategory(
-      //   category.id,
-      //   initialYear,
-      // );
-      // const actualData = transformMonthlyDataToTableFormat(createMonthlyData(actualResponse, suffix));
-      // dispatch({ ... })
     } catch (err: any) {
-      // Nếu lỗi vẫn giữ 2 dòng con rỗng
+      toast.error(err?.message || 'Failed to fetch budget detail data');
     }
   };
 
-  // Thay đổi giá trị ô input (top-down hoặc bottom-up)
-  const handleValueChange = (record: TableData, columnKey: string, value: any) => {
-    // Cập nhật lại tableData trong state
+  /**
+   * Handles value changes in editable cells
+   * Updates the table data and tracks changes for validation
+   * @param record - The table row record being modified
+   * @param columnKey - The column key being changed
+   * @param value - The new value
+   */
+  const handleValueChange = (record: TableData, columnKey: string, value: number) => {
+    // Update table data in state
     const newTableData = state.tableData.map((item) => {
       if (item.key === record.key) {
-        // Kiểm tra xem có thay đổi so với giá trị gốc không
-        const originalValue = (item.originalData as any)?.[columnKey]?.value;
+        // Check if value has changed from original for change tracking
+        const originalValue = item.originalData?.[columnKey]?.value;
         const hasChanges = originalValue !== value;
         return { ...item, [columnKey]: { value }, hasChanges };
       } else if (item.children) {
+        // Handle changes in child rows
         return {
           ...item,
           children: item.children.map((child: TableData) => {
             if (child.key === record.key) {
-              // Kiểm tra xem có thay đổi so với giá trị gốc không
-              const originalValue = (child.originalData as any)?.[columnKey]?.value;
+              // Check if value has changed from original for change tracking
+              const originalValue = child.originalData?.[columnKey]?.value;
               const hasChanges = originalValue !== value;
               return { ...child, [columnKey]: { value }, hasChanges };
             }
@@ -250,48 +223,51 @@ export function useBudgetDetail(initialYear: number) {
     dispatch({ type: 'SET_TABLE_DATA', payload: newTableData });
   };
 
-  // Fetch data on mount or when year/tab/period changes
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // Khi mới vào trang hoặc sau khi fetch, nếu chỉ có 3 dòng mặc định thì tự động thêm 1 hàng trống
-  useEffect(() => {
-    if (state.tableData.length === 3) {
-      handleAddCategoryRow();
-    }
-  }, [state.tableData.length]);
-
+  /**
+   * Sets loading state for specific rows during API operations
+   * @param rowKey - The key of the row to set loading for
+   * @param loading - Whether the row is loading
+   */
   const setRowLoading = (rowKey: string, loading: boolean) => {
     dispatch({ type: 'SET_ROW_LOADING', payload: { rowKey, loading } });
   };
 
+  /**
+   * Handles validation/save button clicks
+   * Updates budget data via API and refreshes the table
+   * @param record - The table row record to validate/save
+   */
   const handleValidateClick = async (record: TableData) => {
     setRowLoading(record.key, true);
     try {
       const tabType = getTabType(state.activeTab);
 
       if (record.key === 'top-down') {
-        // Update top-down and get new data back
-        const updatedTopDown = await budgetSummaryUseCase.updateTopDownPlanning({
-          fiscalYear: initialYear.toString(),
-          type: tabType,
-          updateTopBudget: transformMonthlyPayload(record, state.activeTab),
-        });
+        // Update top-down budget planning
+        const updatedTopDown = await budgetSummaryUseCase.updateTopDownPlanning(
+          {
+            fiscalYear: initialYear.toString(),
+            type: tabType,
+            updateTopBudget: transformMonthlyPayload(record, state.activeTab),
+          },
+          currency,
+        );
 
-        // Convert Budget to MonthlyPlanningData and update only the top-down row
+        // Convert updated budget back to table format
         const monthlyData = convertBudgetToMonthlyData(updatedTopDown, state.activeTab);
 
+        // Update the top-down row with new data and reset change tracking
         const newTableData = state.tableData.map((item) => {
           if (item.key === 'top-down') {
             const updatedData = transformMonthlyDataToTableFormat(monthlyData);
-            // Cập nhật originalData và reset hasChanges
-            const originalData: any = {};
+            // Update original data and reset change tracking
+            const originalData: TableRowData = {};
             Object.keys(updatedData).forEach((key) => {
-              if (typeof updatedData[key] === 'object' && updatedData[key]?.value !== undefined) {
+              if (typeof updatedData[key] === 'object' && updatedData[key]?.value !== null) {
                 originalData[key] = { value: updatedData[key].value };
               }
             });
+
             const updatedItem = {
               ...item,
               ...updatedData,
@@ -306,8 +282,10 @@ export function useBudgetDetail(initialYear: number) {
         dispatch({ type: 'SET_TABLE_DATA', payload: newTableData });
         toast.success('Top Down updated successfully!');
       } else if (record.key.includes('-bottom-up')) {
+        // Handle bottom-up category planning updates
         const [categoryId] = record.key.split('-bottom-up');
-        // Lấy actualSumUpPlan từ dòng con actual nếu có
+
+        // Get actual sum-up plan from the actual child row if it exists
         let actualSumUpPlan = {};
 
         const parentItem = state.tableData.find(
@@ -323,7 +301,7 @@ export function useBudgetDetail(initialYear: number) {
           }
         }
 
-        // Update category planning and get new data back
+        // Update category planning via API
         const updatedCategoryData = await budgetSummaryUseCase.updateCategoryPlanning(
           {
             fiscalYear: initialYear.toString(),
@@ -335,45 +313,47 @@ export function useBudgetDetail(initialYear: number) {
           currency,
         );
 
-        // Convert updatedBudgetDetails to MonthlyPlanningData for category
-        const bottomUpMonthlyData: any = {};
+        // Convert API response back to monthly data format for bottom-up
+        const bottomUpMonthlyData: MonthlyPlanningData = {};
+
         updatedCategoryData.updatedBudgetDetails.forEach((detail) => {
-          if (detail && detail.month !== undefined && detail.amount !== undefined) {
-            const monthKey = `m${detail.month}_${state.activeTab === BudgetDetailFilterEnum.EXPENSE ? 'exp' : 'inc'}`;
+          if (detail && detail.month !== null && detail.amount !== null) {
+            const monthKey =
+              `m${detail.month}_${state.activeTab === BudgetDetailFilterEnum.EXPENSE ? 'exp' : 'inc'}` as keyof MonthlyPlanningData;
             bottomUpMonthlyData[monthKey] = Number(detail.amount);
           }
         });
 
-        // Convert actBudgetDetails to MonthlyPlanningData for category
-        const actualMonthlyData: any = {};
+        // Convert API response back to monthly data format for actual
+        const actualMonthlyData: MonthlyPlanningData = {};
+
         updatedCategoryData.actBudgetDetails.forEach((detail) => {
-          if (detail && detail.month !== undefined && detail.amount !== undefined) {
-            const monthKey = `m${detail.month}_${state.activeTab === BudgetDetailFilterEnum.EXPENSE ? 'exp' : 'inc'}`;
+          if (detail && detail.month !== null && detail.amount !== null) {
+            const monthKey =
+              `m${detail.month}_${state.activeTab === BudgetDetailFilterEnum.EXPENSE ? 'exp' : 'inc'}` as keyof MonthlyPlanningData;
             actualMonthlyData[monthKey] = Number(detail.amount);
           }
         });
 
-        // Convert bottomUpBudget to MonthlyPlanningData for bottom budget row
+        // Convert bottom-up budget to monthly data for the bottom budget row
         const bottomBudgetMonthlyData = convertBudgetToMonthlyData(
-          updatedCategoryData.bottomUpBudget,
+          updatedCategoryData.bottomUpBudget.budget,
           state.activeTab,
         );
 
+        // Update all affected rows with new data
         const newTableData = state.tableData.map((item) => {
           if (item.categoryId === categoryId && item.children) {
             return {
               ...item,
-              isCreated: true, // Set isCreated = true sau khi update thành công
+              isCreated: true, // Mark category as created after successful update
               children: item.children.map((child) => {
                 if (child.key === `${categoryId}-bottom-up`) {
                   const updatedData = transformMonthlyDataToTableFormat(bottomUpMonthlyData);
-                  // Cập nhật originalData và reset hasChanges
-                  const originalData: any = {};
+                  // Update original data and reset change tracking
+                  const originalData: TableRowData = {};
                   Object.keys(updatedData).forEach((key) => {
-                    if (
-                      typeof updatedData[key] === 'object' &&
-                      updatedData[key]?.value !== undefined
-                    ) {
+                    if (typeof updatedData[key] === 'object' && updatedData[key]?.value !== null) {
                       originalData[key] = { value: updatedData[key].value };
                     }
                   });
@@ -386,13 +366,10 @@ export function useBudgetDetail(initialYear: number) {
                 }
                 if (child.key === `${categoryId}-actual`) {
                   const updatedData = transformMonthlyDataToTableFormat(actualMonthlyData);
-                  // Cập nhật originalData và reset hasChanges
-                  const originalData: any = {};
+                  // Update original data and reset change tracking
+                  const originalData: TableRowData = {};
                   Object.keys(updatedData).forEach((key) => {
-                    if (
-                      typeof updatedData[key] === 'object' &&
-                      updatedData[key]?.value !== undefined
-                    ) {
+                    if (typeof updatedData[key] === 'object' && updatedData[key]?.value !== null) {
                       originalData[key] = { value: updatedData[key].value };
                     }
                   });
@@ -407,13 +384,14 @@ export function useBudgetDetail(initialYear: number) {
               }),
             };
           }
-          // Update bottom budget row with new data
+          // Update bottom budget row with new aggregated data
           if (item.key === 'bottom-up') {
             const updatedData = transformMonthlyDataToTableFormat(bottomBudgetMonthlyData);
-            // Cập nhật originalData và reset hasChanges
-            const originalData: any = {};
+            // Update original data and reset change tracking
+            const originalData: TableRowData = {};
+
             Object.keys(updatedData).forEach((key) => {
-              if (typeof updatedData[key] === 'object' && updatedData[key]?.value !== undefined) {
+              if (typeof updatedData[key] === 'object' && updatedData[key]?.value !== null) {
                 originalData[key] = { value: updatedData[key].value };
               }
             });
@@ -437,29 +415,38 @@ export function useBudgetDetail(initialYear: number) {
     }
   };
 
-  // Xử lý nút X cho từng dòng
+  /**
+   * Handles remove/clear button clicks (X button)
+   * For top-down: clears all values to zero
+   * For categories: deletes created categories or removes new categories locally
+   * @param record - The table row record to remove/clear
+   */
   const handleRemoveRow = async (record: TableData) => {
     const tabType = getTabType(state.activeTab);
     setRowLoading(record.key, true);
     try {
       if (record.key === 'top-down') {
-        // Clear all values về 0
+        // Clear all top-down values to zero
         const suffix = getTabSuffix(state.activeTab);
+
         const zeroPayload: MonthlyPlanningData = Object.fromEntries(
           Array.from({ length: 12 }, (_, i) => {
             const key = `m${i + 1}${suffix}` as keyof MonthlyPlanningData;
             return [key, 0];
           }),
-        ) as MonthlyPlanningData;
+        );
 
-        // Clear top-down and get new data back
-        const clearedTopDown = await budgetSummaryUseCase.updateTopDownPlanning({
-          fiscalYear: initialYear.toString(),
-          type: tabType,
-          updateTopBudget: zeroPayload,
-        });
+        // Update top-down with zero values via API
+        const clearedTopDown = await budgetSummaryUseCase.updateTopDownPlanning(
+          {
+            fiscalYear: initialYear.toString(),
+            type: tabType,
+            updateTopBudget: zeroPayload,
+          },
+          currency,
+        );
 
-        // Convert Budget to MonthlyPlanningData and update only the top-down row
+        // Convert cleared budget back to table format and update the row
         const monthlyData = convertBudgetToMonthlyData(clearedTopDown, state.activeTab);
         const newTableData = state.tableData.map((item) => {
           if (item.key === 'top-down') {
@@ -474,11 +461,12 @@ export function useBudgetDetail(initialYear: number) {
         dispatch({ type: 'SET_TABLE_DATA', payload: newTableData });
         toast.success('Top Down cleared successfully!');
       } else if (record.key.includes('-bottom-up')) {
-        // Tìm parent row
+        // Handle category removal/clear
         const [categoryId] = record.key.split('-bottom-up');
         const parentItem = state.tableData.find((item) => item.categoryId === categoryId);
+
         if (parentItem?.isCreated) {
-          // Gọi API xóa category
+          // Delete created category via API
           await budgetSummaryUseCase.deleteCategory({
             fiscalYear: initialYear.toString(),
             type: tabType,
@@ -490,7 +478,7 @@ export function useBudgetDetail(initialYear: number) {
           dispatch({ type: 'SET_TABLE_DATA', payload: newTableData });
           toast.success('Category deleted successfully!');
         } else if (parentItem) {
-          // Chỉ remove khỏi bảng (local)
+          // Remove new category locally (not yet created)
           dispatch({ type: 'REMOVE_CATEGORY_ROW', payload: parentItem.key });
           dispatch({
             type: 'SET_TABLE_DATA',
@@ -506,6 +494,7 @@ export function useBudgetDetail(initialYear: number) {
     }
   };
 
+  // Return all handlers and state for component consumption
   return {
     handlePeriodChange,
     handleTabChange,
@@ -514,5 +503,6 @@ export function useBudgetDetail(initialYear: number) {
     handleValueChange,
     handleValidateClick,
     handleRemoveRow,
+    dispatch,
   };
 }

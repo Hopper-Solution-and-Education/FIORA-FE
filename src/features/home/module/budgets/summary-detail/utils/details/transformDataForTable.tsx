@@ -13,6 +13,7 @@ import {
   BudgetDetailFilterEnum,
   BUDGETR_FILTER_KEY,
   COMPARISON_TYPES,
+  HEIGHT_ROW,
   PERIOD_CONFIG,
 } from '../../data/constants';
 import { Category as BudgetCategory } from '../../data/dto/response/CategoryResponseDTO';
@@ -202,7 +203,7 @@ export const getColumnsByPeriod = ({
           isFullCurrencyDisplay={isFullCurrencyDisplay}
           classContainer="m-0"
           className={cn(
-            'text-right h-[3.4rem] border-none rounded-none bg-white dark:bg-gray-900 hover:shadow-md hover:shadow-blue-500/20 focus-visible:border-blue-500 focus-visible:ring-blue-500/20 dark:focus-visible:ring-blue-500/40',
+            `text-right h-[${HEIGHT_ROW}rem] border-none rounded-none bg-white dark:bg-gray-900 hover:shadow-md hover:shadow-blue-500/20 focus-visible:border-blue-500 focus-visible:ring-blue-500/20 dark:focus-visible:ring-blue-500/40`,
             column.className,
           )}
           onChange={(newValue) => {

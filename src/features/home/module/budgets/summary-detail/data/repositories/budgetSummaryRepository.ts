@@ -46,8 +46,8 @@ export class BudgetSummaryRepository implements IBudgetSummaryRepository {
     return response.data;
   }
 
-  async updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<Budget> {
-    return await this.budgetSummaryAPI.updateTopDownPlanning(data);
+  async updateTopDownPlanning(data: TopDownUpdateRequestDTO, currency: Currency): Promise<Budget> {
+    return await this.budgetSummaryAPI.updateTopDownPlanning(data, currency);
   }
 
   async updateCategoryPlanning(

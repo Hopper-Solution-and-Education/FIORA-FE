@@ -21,7 +21,7 @@ export interface IBudgetSummaryRepository {
   getBudgetsByUserIdAndFiscalYear(fiscalYear: number): Promise<BudgetSummaryResponseDTO>;
   getCategoriesByType(type: 'Income' | 'Expense', year: number): Promise<Category[]>;
   getActualPlanningByCategory(categoryId: string, year: number): Promise<CategoryPlanning>;
-  updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<Budget>;
+  updateTopDownPlanning(data: TopDownUpdateRequestDTO, currency: Currency): Promise<Budget>;
   updateCategoryPlanning(
     data: CategoryPlanningUpdateRequestDTO,
     currency: Currency,

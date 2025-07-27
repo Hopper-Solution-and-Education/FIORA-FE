@@ -2,21 +2,13 @@
 
 import { TableV2 } from '@/components/common/tables/custom-table';
 import ActionButton from '@/components/common/UIKit/Button/ActionButton';
-import { Icons } from '@/components/Icon';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { COLORS } from '@/shared/constants/chart';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
 import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
 import { cn } from '@/shared/utils';
 import { routeConfig } from '@/shared/utils/route';
-import { PERIOD_OPTIONS } from '../../data/constants';
+import BudgetDetailExpandToggle from '../atoms/BudgetDetailExpandToggle';
+import BudgetDetailPeriodSelect from '../atoms/BudgetDetailPeriodSelect';
+import BudgetDetailTabs from '../atoms/BudgetDetailTabs';
 import BudgetSummaryYearSelect from '../atoms/BudgetSummaryYearSelect';
 import CurrencyDisplayToggle from '../atoms/CurrencyDisplayToggle';
 import { useBudgetColumns } from '../hooks/useBudgetColumns';
@@ -30,7 +22,7 @@ interface BudgetDetailProps {
 const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   const { isMobile } = useMatchBreakpoint();
   const {
-    state: { period, periodId, activeTab, tableData, isLoading },
+    state: { period, periodId, activeTab, isLoading, expand },
   } = useBudgetDetailStateContext();
 
   const {
@@ -41,6 +33,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     handleValidateClick,
     handleValueChange,
     handleRemoveRow,
+    dispatch,
   } = useBudgetDetail(initialYear);
 
   const { columns, convertedTableData } = useBudgetColumns({
@@ -49,6 +42,10 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     handleCategorySelected,
     handleRemoveRow,
   });
+
+  const handleToggleExpand = () => {
+    dispatch({ type: 'SET_EXPAND', payload: !expand });
+  };
 
   return (
     <div className="p-4 w-full flex flex-col min-h-screen">
@@ -61,6 +58,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
                 selectedYear={initialYear}
                 route={routeConfig(RouteEnum.BudgetDetail, {}, { period, periodId })}
               />
+
               {/* Tabs toggle currency display (mobile) */}
               {isMobile && <CurrencyDisplayToggle className="ml-2 min-w-[120px]" />}
               {isMobile && (
@@ -71,46 +69,16 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
                 />
               )}
             </div>
-            <Select onValueChange={handlePeriodChange} value={periodId}>
-              <SelectTrigger className="w-full sm:w-[150px] rounded-lg">
-                <SelectValue placeholder="Select period" />
-              </SelectTrigger>
-              <SelectContent>
-                {PERIOD_OPTIONS.map(({ value, label }) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Tabs
-              defaultValue="expense"
-              value={activeTab}
-              onValueChange={handleTabChange}
-              className="w-full sm:w-auto"
-            >
-              <TabsList className="grid grid-cols-2 sm:flex w-full sm:w-auto  rounded-lg">
-                <TabsTrigger
-                  value="expense"
-                  className="flex items-center gap-2 rounded-lg transition-all"
-                >
-                  <Icons.trendindDown size={16} color={COLORS.DEPS_DANGER.LEVEL_1} />
-                  Expense
-                </TabsTrigger>
-                <TabsTrigger
-                  value="income"
-                  className="flex items-center gap-2 rounded-lg transition-all"
-                >
-                  <Icons.trendingUp size={16} color={COLORS.DEPS_SUCCESS.LEVEL_1} />
-                  Income
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+
+            <BudgetDetailPeriodSelect periodId={periodId} onPeriodChange={handlePeriodChange} />
+            <BudgetDetailTabs activeTab={activeTab} onTabChange={handleTabChange} />
           </div>
+
           {/* Tabs toggle currency display (desktop) */}
           {!isMobile && (
             <div className="flex items-center gap-2">
               <CurrencyDisplayToggle className="min-w-[120px]" />
+              <BudgetDetailExpandToggle isExpanded={expand} onToggle={handleToggleExpand} />
               <ActionButton
                 tooltipContent="Add New Category"
                 showIcon={true}
@@ -119,6 +87,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
             </div>
           )}
         </div>
+
         <div className="w-[5rem] md:w-[20rem] lg:w-[50rem] min-w-full">
           <TableV2
             columns={columns}
@@ -132,7 +101,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
             pagination={false}
             rowHover
             className="w-full scrollbar-thin rounded-lg shadow-sm"
-            tableContainerClassName="overflow-y-auto max-h-[30rem]"
+            tableContainerClassName={cn('overflow-y-auto', expand ? '' : 'max-h-[30rem]')}
           />
         </div>
       </div>

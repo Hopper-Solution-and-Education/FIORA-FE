@@ -40,8 +40,8 @@ export class BudgetSummaryUsecase implements IBudgetSummaryUseCase {
     return this.budgetSummaryRepository.getActualPlanningByCategory(categoryId, year);
   }
 
-  async updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<Budget> {
-    return this.budgetSummaryRepository.updateTopDownPlanning(data);
+  async updateTopDownPlanning(data: TopDownUpdateRequestDTO, currency: Currency): Promise<Budget> {
+    return this.budgetSummaryRepository.updateTopDownPlanning(data, currency);
   }
 
   async updateCategoryPlanning(

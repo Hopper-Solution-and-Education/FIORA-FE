@@ -11,6 +11,7 @@ import {
 import { cn } from '@/shared/utils';
 import { useAppSelector } from '@/store';
 import { useMemo } from 'react';
+import { HEIGHT_ROW } from '../../data/constants';
 import { Category } from '../../data/dto/response/CategoryResponseDTO';
 import { convertTableDataCurrency } from '../../utils/details/convertTableDataCurrency';
 import { getColumnsByPeriod } from '../../utils/details/transformDataForTable';
@@ -70,14 +71,14 @@ export function useBudgetColumns({
         // Nếu là category đã tạo (isCreated = true), hiển thị text
         if (record.isCreated) {
           return (
-            <span
+            <div
               className={cn(
-                'inline-flex items-center font-medium w-full',
+                `w-full h-[${HEIGHT_ROW}rem] flex items-center gap-2`,
                 record.isChild && 'ml-5',
               )}
             >
               {value}
-            </span>
+            </div>
           );
         }
 
@@ -116,14 +117,14 @@ export function useBudgetColumns({
           );
         } else {
           return (
-            <span
+            <div
               className={cn(
-                'inline-flex items-center font-medium w-full',
+                `w-full h-[${HEIGHT_ROW}rem] flex items-center gap-2`,
                 record.isChild && 'ml-5',
               )}
             >
               {value}
-            </span>
+            </div>
           );
         }
       },

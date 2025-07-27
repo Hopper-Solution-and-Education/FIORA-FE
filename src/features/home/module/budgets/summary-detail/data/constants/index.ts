@@ -3,6 +3,8 @@ import { BudgetDetailType } from '../../presentation/types/table.type';
 export const BUDGET_SUMMARY_TREE_INCRESEMENT_LENGTH_PER_LEVEL = 32;
 export const BUDGET_SUMMARY_TREE_LINE_STOKE = 2;
 
+export const HEIGHT_ROW = 3.4;
+
 export const PERIOD_OPTIONS = [
   // Months 1-3 + Q1
   ...Array.from({ length: 3 }, (_, i) => ({

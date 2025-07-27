@@ -26,7 +26,7 @@ export interface IBudgetSummaryAPI {
     categoryId: string,
     year: number,
   ): Promise<CategoryPlanningResponseDTO>;
-  updateTopDownPlanning(data: TopDownUpdateRequestDTO): Promise<Budget>;
+  updateTopDownPlanning(data: TopDownUpdateRequestDTO, currency: Currency): Promise<Budget>;
   updateCategoryPlanning(
     data: CategoryPlanningUpdateRequestDTO,
     currency: Currency,
