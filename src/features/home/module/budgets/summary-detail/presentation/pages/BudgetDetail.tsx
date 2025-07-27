@@ -21,6 +21,7 @@ interface BudgetDetailProps {
 
 const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   const { isMobile } = useMatchBreakpoint();
+
   const {
     state: { period, periodId, activeTab, isLoading, expand },
   } = useBudgetDetailStateContext();
@@ -33,7 +34,7 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     handleValidateClick,
     handleValueChange,
     handleRemoveRow,
-    dispatch,
+    handleToggleExpand,
   } = useBudgetDetail(initialYear);
 
   const { columns, convertedTableData } = useBudgetColumns({
@@ -42,10 +43,6 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     handleCategorySelected,
     handleRemoveRow,
   });
-
-  const handleToggleExpand = () => {
-    dispatch({ type: 'SET_EXPAND', payload: !expand });
-  };
 
   return (
     <div className="p-4 w-full flex flex-col min-h-screen">

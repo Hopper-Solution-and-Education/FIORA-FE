@@ -1,6 +1,6 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { ColumnProps } from '@/components/common/tables/custom-table/types';
 import { Icons } from '@/components/Icon';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -31,6 +31,7 @@ export function useBudgetColumns({
   handleCategorySelected,
   handleRemoveRow,
 }: UseBudgetColumnsProps) {
+  // Get budget detail state from context
   const {
     state: {
       period,
@@ -43,12 +44,16 @@ export function useBudgetColumns({
       rowLoading,
     },
   } = useBudgetDetailStateContext();
+
+  // Get currency settings from global store
   const { currency, isFullCurrencyDisplay } = useAppSelector((state) => state.settings);
 
+  // Convert table data to display currency format
   const convertedTableData = useMemo(() => {
     return convertTableDataCurrency(tableData, currency, isFullCurrencyDisplay);
   }, [tableData, currency, isFullCurrencyDisplay]);
 
+  // Get columns configuration based on period type
   const updatedColumns = getColumnsByPeriod({
     period,
     periodId,
@@ -60,6 +65,7 @@ export function useBudgetColumns({
     isFullCurrencyDisplay,
   });
 
+  // Define columns with category selection functionality
   const columnsWithCategorySelect: ColumnProps[] = [
     {
       fixed: 'left',
@@ -68,7 +74,7 @@ export function useBudgetColumns({
       key: 'type',
       width: 200,
       render: (value: any, record: TableData) => {
-        // Nếu là category đã tạo (isCreated = true), hiển thị text
+        // Display as text if category is already created
         if (record.isCreated) {
           return (
             <div
@@ -82,9 +88,9 @@ export function useBudgetColumns({
           );
         }
 
-        // Nếu là category mới select (chưa có isCreated) hoặc trong categoryRows, hiển thị select
+        // Display select dropdown for new categories or category rows
         if (categoryRows.includes(record.key) || record.categoryId) {
-          // Chỉ hiển thị các category chưa được tạo (isCreated = false) và chưa được chọn
+          // Filter available categories: not created and not already selected
           const availableCategories = categoryList.filter(
             (category: Category) =>
               !category.isCreated &&
@@ -116,6 +122,7 @@ export function useBudgetColumns({
             </div>
           );
         } else {
+          // Default text display for other cases
           return (
             <div
               className={cn(
@@ -129,9 +136,11 @@ export function useBudgetColumns({
         }
       },
     },
+    // Map other columns and hide content for category rows
     ...updatedColumns.slice(1).map((column) => ({
       ...column,
       render: (value: any, record: TableData) => {
+        // Hide content for category selection rows
         if (categoryRows.includes(record.key)) {
           return null;
         }
@@ -140,6 +149,7 @@ export function useBudgetColumns({
     })),
   ];
 
+  // Define action column with validation and removal buttons
   const actionColumn: ColumnProps = {
     key: 'action',
     fixed: 'right',
@@ -150,35 +160,35 @@ export function useBudgetColumns({
     render: (_, record: TableData) => {
       const isLoading = rowLoading && rowLoading[record.key];
 
-      // Logic để xác định có nên enable nút check hay không
+      // Determine if check button should be enabled based on record type and state
       const isCheckEnabled = () => {
-        // Nếu là top-down, chỉ enable khi có thay đổi
+        // For top-down records, enable only when there are changes
         if (record.key === 'top-down') {
           return record.hasChanges || false;
         }
 
-        // Nếu là bottom-up row, cần tìm parent category
+        // For bottom-up rows, check parent category status
         if (record.key.includes('-bottom-up')) {
           const categoryId = record.key.split('-bottom-up')[0];
           const parentCategory = convertedTableData.find((item) => item.categoryId === categoryId);
 
-          // Nếu parent category chưa được tạo (isCreated = false hoặc undefined), luôn enable
+          // Always enable if parent category is not created yet
           if (!parentCategory?.isCreated) {
             return true;
           }
 
-          // Nếu parent category đã được tạo, chỉ enable khi có thay đổi
+          // Enable only when there are changes if parent category is created
           if (parentCategory.isCreated) {
             return record.hasChanges || false;
           }
         }
 
-        // Nếu là category mới select (chưa có isCreated), luôn enable
+        // Always enable for newly selected categories (not created yet)
         if (record.categoryId && !record.isCreated) {
           return true;
         }
 
-        // Nếu là category đã tạo (isCreated = true), chỉ enable khi có thay đổi
+        // Enable only when there are changes for created categories
         if (record.isCreated) {
           return record.hasChanges || false;
         }
@@ -186,12 +196,15 @@ export function useBudgetColumns({
         return false;
       };
 
+      // Render action buttons only for editable records
       if (record.isEditable) {
         return (
           <div className="grid grid-flow-col place-items-center gap-2">
-            <span
-              className={cn('cursor-pointer', 'text-red-500 hover:text-red-700')}
-              title="Invalid"
+            {/* Remove/Invalid button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn('h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50')}
               onClick={() => handleRemoveRow && handleRemoveRow(record)}
             >
               {isLoading ? (
@@ -199,27 +212,32 @@ export function useBudgetColumns({
               ) : (
                 <Icons.close size={15} />
               )}
-            </span>
-            <span
+            </Button>
+
+            {/* Validate/Check button */}
+            <div
               className={cn(
-                'cursor-pointer',
-                isCheckEnabled() && !isLoading
-                  ? 'text-green-500 hover:text-green-700'
-                  : 'text-gray-400 cursor-not-allowed',
+                isCheckEnabled() && !isLoading ? 'cursor-pointer' : 'cursor-not-allowed',
               )}
-              title="Valid"
-              onClick={() => {
-                if (isCheckEnabled() && !isLoading) {
-                  handleValidateClick?.(record);
-                }
-              }}
             >
-              {isLoading ? (
-                <Icons.spinner size={15} className="animate-spin" />
-              ) : (
-                <Icons.check size={15} />
-              )}
-            </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                disabled={!isCheckEnabled() || isLoading}
+                className={cn('h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50')}
+                onClick={() => {
+                  if (isCheckEnabled() && !isLoading) {
+                    handleValidateClick?.(record);
+                  }
+                }}
+              >
+                {isLoading ? (
+                  <Icons.spinner size={15} className="animate-spin" />
+                ) : (
+                  <Icons.check size={15} />
+                )}
+              </Button>
+            </div>
           </div>
         );
       }
@@ -228,6 +246,7 @@ export function useBudgetColumns({
     },
   };
 
+  // Return columns configuration and converted table data
   return {
     columns: [...columnsWithCategorySelect, actionColumn],
     convertedTableData,
