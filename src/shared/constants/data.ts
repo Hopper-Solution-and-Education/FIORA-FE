@@ -93,6 +93,7 @@ export const iconOptions: IconsOptions[] = [
       { value: 'trendingUp', label: 'TrendingUp', icon: Icons.trendingUp },
       { value: 'chartBar', label: 'Chart Bar', icon: Icons.chartBar },
       { value: 'shieldCheck', label: 'Shield Check', icon: Icons.shieldCheck },
+      { value: 'wallet', label: 'Wallet', icon: Icons.wallet },
     ],
   },
   {

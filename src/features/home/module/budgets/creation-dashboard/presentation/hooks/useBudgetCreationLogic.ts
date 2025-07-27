@@ -69,7 +69,10 @@ export const useBudgetCreationLogic = () => {
       };
 
       // Validate the estimated total expense and income
-      if (data.estimatedTotalExpense.toString().length > MAX_NUMBER_OF_DIGITS_FOR_BUDGET_AMOUNT) {
+      if (
+        data.estimatedTotalExpense &&
+        data?.estimatedTotalExpense?.toString().length > MAX_NUMBER_OF_DIGITS_FOR_BUDGET_AMOUNT
+      ) {
         setError('estimatedTotalExpense', {
           message: 'Total expense must be less than 11 digits',
           type: 'validate',
@@ -78,7 +81,10 @@ export const useBudgetCreationLogic = () => {
       }
 
       // Validate the estimated total income
-      if (data.estimatedTotalIncome.toString().length > MAX_NUMBER_OF_DIGITS_FOR_BUDGET_AMOUNT) {
+      if (
+        data.estimatedTotalIncome &&
+        data?.estimatedTotalIncome?.toString().length > MAX_NUMBER_OF_DIGITS_FOR_BUDGET_AMOUNT
+      ) {
         setError('estimatedTotalIncome', {
           message: 'Total income must be less than 11 digits',
           type: 'validate',
@@ -110,8 +116,8 @@ export const useBudgetCreationLogic = () => {
               budgetYear,
               currency: data.currency as Currency,
               description: data.description ?? '',
-              estimatedTotalExpense: data.estimatedTotalExpense,
-              estimatedTotalIncome: data.estimatedTotalIncome,
+              estimatedTotalExpense: data.estimatedTotalExpense ?? 0,
+              estimatedTotalIncome: data.estimatedTotalIncome ?? 0,
               fiscalYear: Number(data.fiscalYear),
               icon: data.icon,
               type: 'Top',
@@ -130,8 +136,8 @@ export const useBudgetCreationLogic = () => {
             data: {
               icon: data.icon,
               fiscalYear: data.fiscalYear,
-              estimatedTotalExpense: data.estimatedTotalExpense,
-              estimatedTotalIncome: data.estimatedTotalIncome,
+              estimatedTotalExpense: data.estimatedTotalExpense ?? 0,
+              estimatedTotalIncome: data.estimatedTotalIncome ?? 0,
               description: data.description ?? '',
               currency: data.currency as Currency,
             },

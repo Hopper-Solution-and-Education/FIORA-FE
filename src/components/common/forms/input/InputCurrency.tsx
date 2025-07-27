@@ -42,7 +42,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   mode = 'onBlur',
   classContainer,
   className,
-  isFullCurrencyDisplay = false,
+  isFullCurrencyDisplay,
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);

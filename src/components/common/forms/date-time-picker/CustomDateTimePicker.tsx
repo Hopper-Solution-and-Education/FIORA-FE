@@ -35,6 +35,8 @@ interface CustomDateTimePickerProps {
   yearOnly?: boolean; // Enable year-only mode
   disabled?: boolean;
   isYearDisabled?: (year: number) => boolean;
+  startMonth?: Date;
+  endMonth?: Date;
 }
 
 const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerProps>(
@@ -51,6 +53,8 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
       yearOnly = false,
       disabled = false,
       isYearDisabled,
+      startMonth,
+      endMonth,
     },
     ref,
   ) => {
@@ -253,7 +257,8 @@ const CustomDateTimePicker = forwardRef<HTMLInputElement, CustomDateTimePickerPr
                 captionLayout="dropdown"
                 defaultMonth={date || new Date()}
                 initialFocus
-                startMonth={new Date(1980, 6)}
+                startMonth={startMonth || new Date(1980, 0, 1)}
+                endMonth={endMonth || new Date(new Date().getFullYear(), 11, 31)}
                 hideNavigation
                 components={{
                   DropdownNav: ({ children }) => (
