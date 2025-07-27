@@ -4,26 +4,26 @@ import {
   DataSourceItemProps,
   FIXED,
 } from '@/components/common/tables/custom-table/types';
-import { Icons } from '@/components/Icon';
 import { Category } from '@/features/home/module/budgets/summary-detail/data/dto/response/CategoryResponseDTO';
 import { Currency } from '@/shared/types';
 import { ComparisonProps } from '@/shared/types/chart.type';
 import { cn, formatCurrency } from '@/shared/utils';
-import CategorySelect from '../../../category/components/CategorySelect';
+import CategorySelect from '../../../../category/components/CategorySelect';
 import {
   BudgetDetailFilterEnum,
   BUDGETR_FILTER_KEY,
   COMPARISON_TYPES,
+  HEIGHT_ROW,
   PERIOD_CONFIG,
-} from '../data/constants';
-import { Category as BudgetCategory } from '../data/dto/response/CategoryResponseDTO';
-import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
+} from '../../data/constants';
+import { Category as BudgetCategory } from '../../data/dto/response/CategoryResponseDTO';
+import { BudgetSummaryByType } from '../../domain/entities/BudgetSummaryByType';
 import {
-  BudgetDetailFilterType,
   BudgetDetailType,
+  GetColumnsByPeriodParams,
   MONTHS,
   TableData,
-} from '../presentation/types/table.type';
+} from '../../presentation/types/table.type';
 import { createGeneralComparisonMapper } from './compareDataForTable';
 
 export const getBudgetValue = (
@@ -127,31 +127,73 @@ export const getTableDataByPeriod = (
   ];
 };
 
-export const getColumnsByPeriod = (
-  period: string,
-  periodId: string,
-  currency: Currency,
-  categories: BudgetCategory[] = [],
-  onCategoryChange?: (categoryId: string) => void,
-  onValidateClick?: (record: TableData) => void,
-  onValueChange?: (record: TableData, columnKey: string, value: number) => void,
-  onDeleteCategory?: (categoryId: string, isTruncate?: boolean) => void,
-  onRemoveCategory?: (categoryId: string) => void,
-  onClearTopDown?: () => void,
-  tableData: TableData[] = [],
-  activeTab: BudgetDetailFilterType = BudgetDetailFilterEnum.EXPENSE,
-  originTableData: TableData[] = [],
-  originCategoriesData: Category[] = [],
-  isFullCurrencyDisplay?: boolean,
+// Helper: Return array of key and value of object
+export const mapKeyValuePairs = (obj: Record<string, any>, type: 'record' | 'category'): any[] => {
+  if (!obj) return [];
+  switch (type) {
+    case 'record':
+      return MONTHS.map((month, idx) => {
+        let value = obj[month];
+        if (value && typeof value === 'object' && 'value' in value) {
+          value = value.value;
+        }
+        return { key: `m${idx + 1}`, value };
+      });
+    case 'category':
+      return Object.entries(obj)
+        .filter(([key]) => /^m\d+(_inc|_exp)?$/.test(key))
+        .map(([key, value]) => {
+          const match = key.match(/^(m\d+)/);
+          return match ? { key: match[1], value } : null;
+        })
+        .filter(Boolean) as { key: string; value: any }[];
+  }
+};
+
+// Helper: Check enable validate
+export const checkEnableValidate = (
+  record: TableData,
+  categories: BudgetCategory[],
+  originTableData: TableData[],
+  originCategoriesData: Category[],
 ) => {
+  let compareA: any[] = [];
+  let compareB: any[] = [];
+
+  if (record.key === 'top-down') {
+    compareB = mapKeyValuePairs(originTableData[0] || {}, 'record');
+  }
+  if (categories.some((cat) => cat.id === record.key.split('-bottom-up')[0])) {
+    const findCategory = originCategoriesData.find(
+      (cat) => cat.id === record.key.split('-bottom-up')[0],
+    );
+    const findCategoryBottomUpPlan = findCategory?.bottomUpPlan;
+    compareB = mapKeyValuePairs(findCategoryBottomUpPlan || {}, 'category');
+    if (findCategory?.isCreated === false) {
+      return true;
+    }
+  }
+  compareA = mapKeyValuePairs(record, 'record');
+  return !compareA.every((item) =>
+    compareB.some((b) => b.key === item.key && b.value === item.value),
+  );
+};
+
+export const getColumnsByPeriod = ({
+  period,
+  periodId,
+  currency,
+  categories = [],
+  onValueChange,
+  tableData = [],
+  activeTab = BudgetDetailFilterEnum.EXPENSE,
+  isFullCurrencyDisplay,
+}: GetColumnsByPeriodParams): ColumnProps[] => {
   const renderEditableCell = (text: any, record: TableData, index: number, column: ColumnProps) => {
     const isDisableEdited = !PERIOD_CONFIG.months.some((item) => item.key === column.key);
-
-    // Check if the text is a render function, then return the render function
     if (text?.render) {
       return text.render;
     }
-
     if (record.isEditable && !isDisableEdited) {
       return (
         <InputCurrency
@@ -161,7 +203,7 @@ export const getColumnsByPeriod = (
           isFullCurrencyDisplay={isFullCurrencyDisplay}
           classContainer="m-0"
           className={cn(
-            'text-right h-[3.4rem] border-none rounded-none bg-white dark:bg-gray-900 hover:shadow-md hover:shadow-blue-500/20 focus-visible:border-blue-500 focus-visible:ring-blue-500/20 dark:focus-visible:ring-blue-500/40',
+            `text-right h-[${HEIGHT_ROW}rem] border-none rounded-none bg-white dark:bg-gray-900 hover:shadow-md hover:shadow-blue-500/20 focus-visible:border-blue-500 focus-visible:ring-blue-500/20 dark:focus-visible:ring-blue-500/40`,
             column.className,
           )}
           onChange={(newValue) => {
@@ -172,7 +214,6 @@ export const getColumnsByPeriod = (
         />
       );
     }
-
     return (
       <p className={cn(`px-3 py-2 cursor-default ${column.className}`, isDisableEdited)}>
         {formatCurrency(text?.value, currency, isFullCurrencyDisplay)}
@@ -222,93 +263,6 @@ export const getColumnsByPeriod = (
 
   const generalComparisonMapper = createGeneralComparisonMapper(tableData, comparisonConfig);
 
-  // Return array of key and value of object
-  const mapKeyValuePairs = (obj: Record<string, any>, type: 'record' | 'category'): any[] => {
-    if (!obj) return [];
-    switch (type) {
-      case 'record':
-        // Convert keys like "jan" or "feb" to just "m1", "m2", ..., "m12"
-        return MONTHS.map((month, idx) => {
-          let value = obj[month];
-          if (value && typeof value === 'object' && 'value' in value) {
-            value = value.value;
-          }
-          return { key: `m${idx + 1}`, value };
-        });
-      case 'category':
-        // Convert keys like "m1_inc" or "m1_exp" to just "m1", "m2", ..., "m12"
-        // Only keep m1-m12, ignore _inc/_exp
-        return Object.entries(obj)
-          .filter(([key]) => /^m\d+(_inc|_exp)?$/.test(key))
-          .map(([key, value]) => {
-            const match = key.match(/^(m\d+)/);
-            return match ? { key: match[1], value } : null;
-          })
-          .filter(Boolean) as { key: string; value: any }[];
-    }
-  };
-
-  // Check enable when category or top-down change value with budget detail slice
-  const checkEnableValidate = (record: TableData) => {
-    let compareA: any[] = [];
-    let compareB: any[] = [];
-
-    // If record is top-down
-    if (record.key === 'top-down') {
-      compareB = mapKeyValuePairs(originTableData[0] || {}, 'record');
-    }
-
-    // If record is bottom-up of Category
-    if (categories.some((cat) => cat.id === record.key.split('-bottom-up')[0])) {
-      const findCategory = originCategoriesData.find(
-        (cat) => cat.id === record.key.split('-bottom-up')[0],
-      );
-      const findCategoryBottomUpPlan = findCategory?.bottomUpPlan;
-      compareB = mapKeyValuePairs(findCategoryBottomUpPlan || {}, 'category');
-      if (findCategory?.isCreated === false) {
-        return true;
-      }
-    }
-
-    // Logic mapper to extract key and value, where value can be { value: ... } or number or string
-    compareA = mapKeyValuePairs(record, 'record');
-
-    return !compareA.every((item) =>
-      compareB.some((b) => b.key === item.key && b.value === item.value),
-    );
-  };
-
-  const handleDeleteOrResetCategory = (record: TableData, categoryId: string) => {
-    const findCategory = originCategoriesData.find((cat) => cat.id === categoryId);
-
-    if (findCategory) {
-      const isHaveRelationWithTransaction =
-        (findCategory?.actualTransaction?.total_exp &&
-          findCategory?.actualTransaction?.total_exp > 0) ||
-        (findCategory?.actualTransaction?.total_inc &&
-          findCategory?.actualTransaction?.total_inc > 0);
-
-      // Case 1: Exist in Budget Detail and have relation with transaction, then reset it
-      if (isHaveRelationWithTransaction && findCategory.isCreated) {
-        onDeleteCategory?.(categoryId);
-        return;
-      }
-
-      // Case 2: Exist in Budget Detail and not have relation with transaction, then delete it
-      if (!isHaveRelationWithTransaction && findCategory.isCreated) {
-        onRemoveCategory?.(categoryId);
-        onDeleteCategory?.(categoryId, false);
-        return;
-      }
-
-      // Case 3: Not exist in Budget Detail, then remove it
-      if (!findCategory.isCreated) {
-        onRemoveCategory?.(categoryId);
-        return;
-      }
-    }
-  };
-
   const createColumn = (
     key: string,
     title: string,
@@ -338,7 +292,6 @@ export const getColumnsByPeriod = (
                 name="category"
                 categories={categories as any[]}
                 side="right"
-                onChange={(value) => onCategoryChange?.(value)}
                 value={text ? categories.find((cat) => cat.name === text)?.id : undefined}
                 placeholder="Select a category"
               />
@@ -349,54 +302,6 @@ export const getColumnsByPeriod = (
       },
     }),
   ];
-
-  const actionColumn: ColumnProps = createColumn('action', 'ACTION', {
-    fixed: 'right',
-    align: 'center',
-    width: 60,
-    headerAlign: 'center',
-    render: (_, record: TableData) => {
-      const [categoryId] = record.key.split('-bottom-up');
-
-      if (record.isEditable) {
-        return (
-          <div className="grid grid-flow-col place-items-center gap-2">
-            <span
-              className={cn('cursor-pointer', 'text-red-500 hover:text-red-700')}
-              title="Invalid"
-              onClick={() => {
-                if (record.key === 'top-down') {
-                  onClearTopDown?.();
-                } else if (categoryId) {
-                  handleDeleteOrResetCategory(record, categoryId);
-                }
-              }}
-            >
-              <Icons.close size={15} />
-            </span>
-            <span
-              className={cn(
-                'cursor-pointer',
-                checkEnableValidate(record)
-                  ? 'text-green-500 hover:text-green-700'
-                  : 'text-gray-400 cursor-not-allowed',
-              )}
-              title="Valid"
-              onClick={() => {
-                if (checkEnableValidate(record)) {
-                  onValidateClick?.(record);
-                }
-              }}
-            >
-              <Icons.check size={15} />
-            </span>
-          </div>
-        );
-      }
-
-      return null;
-    },
-  });
 
   const createPeriodColumns = (
     config: typeof PERIOD_CONFIG.months,
@@ -507,5 +412,5 @@ export const getColumnsByPeriod = (
     }
   }
 
-  return [...defaultColumns, ...periodColumns, actionColumn];
+  return [...defaultColumns, ...periodColumns];
 };

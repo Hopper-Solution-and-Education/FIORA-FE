@@ -1,8 +1,8 @@
 import { COLORS, STACK_TYPE } from '@/shared/constants/chart';
 import { Currency } from '@/shared/types';
-import { Budget } from '../domain/entities/Budget';
-import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
-import { ChartItem, HierarchicalBarItem } from '../presentation/types/chart.type';
+import { Budget } from '../../domain/entities/Budget';
+import { BudgetSummaryByType } from '../../domain/entities/BudgetSummaryByType';
+import { ChartItem, HierarchicalBarItem } from '../../presentation/types/chart.type';
 
 interface TransformDataParams {
   topBudget: BudgetSummaryByType | null;
