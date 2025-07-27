@@ -7,7 +7,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { routeConfig } from '@/shared/utils/route';
-import { useAppDispatch, useAppSelector } from '@/store';
+import { useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
 
 interface BudgetSummaryYearSelectProps {
@@ -16,7 +16,6 @@ interface BudgetSummaryYearSelectProps {
 }
 
 const BudgetSummaryYearSelect = ({ selectedYear, route }: BudgetSummaryYearSelectProps) => {
-  const dispatch = useAppDispatch();
   const { budgetYears, loading } = useAppSelector((state) => state.budgetSummary);
   const router = useRouter();
 

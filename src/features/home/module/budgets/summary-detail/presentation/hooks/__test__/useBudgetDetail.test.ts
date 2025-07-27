@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react/no-children-prop */
+
 import { useAppSelector } from '@/store';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React, { useReducer } from 'react';
