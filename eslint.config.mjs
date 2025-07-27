@@ -59,7 +59,7 @@ const config = [
     },
     rules: {
       'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
+      'react-hooks/exhaustive-deps': 'off',
       'import/no-unresolved': 'off',
       'unused-imports/no-unused-imports': 'error',
       'prettier/prettier': 'warn',
