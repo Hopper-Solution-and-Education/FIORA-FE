@@ -14,10 +14,17 @@ const productSchema = yup.object({
   icon: yup.string().required('Icon is required'),
   name: yup.string().required('Name is required').max(50, 'Name must be less than 50 characters'),
   description: yup.string().max(1000, 'Description must be less than 1000 characters'),
-  price: yup.number().required('Price is required').positive('Price must be positive'),
+  price: yup.number(),
   taxRate: yup
     .number()
     .nullable()
+    .transform((value, originalValue) => {
+      // If the original value is an empty string, treat it as 0
+      if (originalValue === '' || originalValue == null) return 0;
+      // If the value is NaN (e.g., from casting '' to number), treat as 0
+      if (typeof value === 'number' && isNaN(value)) return 0;
+      return value;
+    })
     .min(0, 'Tax rate must be greater or equal to 0')
     .max(100, 'Tax rate must be less or equal to 100'),
   type: yup

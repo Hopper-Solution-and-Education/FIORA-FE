@@ -178,11 +178,14 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
           toast.success('Success', {
             description: 'Section updated successfully',
           });
+          dispatch(changeIsLoadingSaveChange(false));
+        })
+        .catch(() => {
+          dispatch(changeIsLoadingSaveChange(false));
         });
     } catch (error) {
       console.error('Error in onSubmit:', error);
       toast.error('Failed to update section');
-    } finally {
       dispatch(changeIsLoadingSaveChange(false));
     }
   };

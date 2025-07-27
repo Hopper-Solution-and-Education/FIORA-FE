@@ -166,7 +166,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
       let formattedData: ProductFormValues = {
         ...data,
         price: Number(data.price),
-        taxRate: data.taxRate ? Number(data.taxRate) : null,
+        taxRate: data.taxRate ? Number(data.taxRate) : 0,
       };
 
       if (formattedData.icon && formattedData.icon.startsWith('blob:')) {

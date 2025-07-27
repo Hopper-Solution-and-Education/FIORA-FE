@@ -106,9 +106,23 @@ class NotificationRepository implements INotificationRepository {
     const n = await prisma.notification.findUnique({
       where: { id },
       include: {
-        userNotifications: true,
+        userNotifications: {
+          include: {
+            User: {
+              select: {
+                email: true,
+              },
+            },
+          },
+        },
       },
     });
+    let attachment = null;
+    if (n?.attachmentId) {
+      attachment = await prisma.attachment.findUnique({
+        where: { id: n.attachmentId },
+      });
+    }
     if (!n) return null;
     let sender = 'System';
     if (n.createdBy) {
@@ -133,7 +147,12 @@ class NotificationRepository implements INotificationRepository {
       channel: n.channel,
       status: n.channel === 'BOX' ? 'SENT' : 'UNKNOWN',
       emailTemplate: n.emailTemplateId ? { id: n.emailTemplateId } : null,
-      attachment: n.attachmentId ? { id: n.attachmentId } : null,
+      attachment: attachment
+        ? { id: attachment.id, url: attachment.url, type: attachment.type }
+        : null,
+      title: n.title,
+      userNotifications: n.userNotifications,
+      deepLink: n.deepLink,
     };
   }
 
