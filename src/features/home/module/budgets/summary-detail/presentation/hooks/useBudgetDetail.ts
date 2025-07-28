@@ -53,23 +53,23 @@ export function useBudgetDetail(initialYear: number) {
    * Fetches and transforms budget data for display in the table
    * Includes categories, top-down, bottom-up, and actual budget data
    */
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (tab: string, year: number) => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
       // Fetch categories based on current active tab (expense/income)
-      const type = getTabType(state.activeTab);
-      const categories = await budgetSummaryUseCase.getCategoriesByType(type, initialYear);
+      const type = getTabType(tab as BudgetDetailFilterType);
+      const categories = await budgetSummaryUseCase.getCategoriesByType(type, year);
       dispatch({ type: 'SET_CATEGORY_LIST', payload: categories });
 
       // Fetch all budget data types in parallel for better performance
       const [top, bot, act] = await Promise.all([
-        budgetSummaryUseCase.getBudgetByType(initialYear, BudgetType.Top),
-        budgetSummaryUseCase.getBudgetByType(initialYear, BudgetType.Bot),
-        budgetSummaryUseCase.getBudgetByType(initialYear, BudgetType.Act),
+        budgetSummaryUseCase.getBudgetByType(year, BudgetType.Top),
+        budgetSummaryUseCase.getBudgetByType(year, BudgetType.Bot),
+        budgetSummaryUseCase.getBudgetByType(year, BudgetType.Act),
       ]);
 
       // Transform raw budget data into table format
-      let tableData = getTableDataByPeriod(top, bot, act, state.activeTab);
+      let tableData = getTableDataByPeriod(top, bot, act, tab as BudgetDetailFilterType);
 
       // Add original data tracking to all records for change detection
       tableData = tableData.map(addOriginalDataToTableData);
@@ -110,12 +110,12 @@ export function useBudgetDetail(initialYear: number) {
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  }, [state.activeTab, initialYear]);
+  }, []);
 
   // Fetch data on mount or when year/tab/period changes
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchData(state.activeTab, initialYear);
+  }, [fetchData, state.activeTab, initialYear]);
 
   // Automatically add an empty category row when only default rows exist
   useEffect(() => {
@@ -494,15 +494,24 @@ export function useBudgetDetail(initialYear: number) {
     }
   };
 
+  /**
+   * Toggle table expand/collapse state
+   */
+  const handleToggleExpand = useCallback(() => {
+    dispatch({ type: 'SET_EXPAND', payload: !state.expand });
+  }, [dispatch, state.expand]);
+
   // Return all handlers and state for component consumption
   return {
+    fetchData,
     handlePeriodChange,
     handleTabChange,
     handleAddCategoryRow,
     handleCategorySelected,
     handleValueChange,
+    setRowLoading,
     handleValidateClick,
     handleRemoveRow,
-    dispatch,
+    handleToggleExpand,
   };
 }

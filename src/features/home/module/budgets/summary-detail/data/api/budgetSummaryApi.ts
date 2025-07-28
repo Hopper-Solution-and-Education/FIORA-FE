@@ -1,4 +1,3 @@
-/* eslint-disable import/no-anonymous-default-export */
 import { httpClient } from '@/config/http-client/HttpClient';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import { Currency, HttpResponse } from '@/shared/types';
