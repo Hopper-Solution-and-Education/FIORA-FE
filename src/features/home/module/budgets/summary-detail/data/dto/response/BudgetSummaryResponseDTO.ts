@@ -1,5 +1,6 @@
 import { Currency } from '@/shared/types';
 import { Budget } from '../../../domain/entities/Budget';
+import { BudgetSummaryByType } from '../../../domain/entities/BudgetSummaryByType';
 import { BudgetType } from '../../../domain/entities/BudgetType';
 
 export interface BudgetDTO {
@@ -66,3 +67,25 @@ export interface BudgetByTypeResponseDTO {
 }
 
 export type BudgetYearsResponseDTO = string[];
+
+export interface BudgetDetailResponse {
+  id: string;
+  userId: string;
+  budgetId: string;
+  type: string;
+  categoryId: string;
+  amount: string;
+  month: number;
+  createdAt: string;
+  createdBy: string;
+  updatedBy: string;
+  updatedAt: string;
+  currency: string;
+}
+
+export interface CategoryPlanningUpdateResponse {
+  updatedBudgetDetails: BudgetDetailResponse[];
+  actBudgetDetails: BudgetDetailResponse[];
+  bottomUpBudget: BudgetSummaryByType;
+  currency: string;
+}

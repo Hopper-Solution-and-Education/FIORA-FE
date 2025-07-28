@@ -6,15 +6,15 @@ import type {
   INotificationRepository,
 } from '../../domain/repositories/notificationRepository.interface';
 
-function getNotificationStatus(channel: string, emailLogs: any[]): 'Success' | 'Failed' {
-  if (channel === 'BOX') return 'Success';
+function getNotificationStatus(channel: string, emailLogs: any[]): 'SENT' | 'Failed' {
+  if (channel === 'BOX') return 'SENT';
   if (channel === 'EMAIL') {
     if (emailLogs && emailLogs.some((log: any) => log.status === 'Failed')) {
       return 'Failed';
     }
-    return 'Success';
+    return 'SENT';
   }
-  return 'Success'; // fallback, should not happen
+  return 'SENT'; // fallback, should not happen
 }
 
 // Add a reusable mapping function for dashboard items
@@ -106,9 +106,23 @@ class NotificationRepository implements INotificationRepository {
     const n = await prisma.notification.findUnique({
       where: { id },
       include: {
-        userNotifications: true,
+        userNotifications: {
+          include: {
+            User: {
+              select: {
+                email: true,
+              },
+            },
+          },
+        },
       },
     });
+    let attachment = null;
+    if (n?.attachmentId) {
+      attachment = await prisma.attachment.findUnique({
+        where: { id: n.attachmentId },
+      });
+    }
     if (!n) return null;
     let sender = 'System';
     if (n.createdBy) {
@@ -133,7 +147,12 @@ class NotificationRepository implements INotificationRepository {
       channel: n.channel,
       status: n.channel === 'BOX' ? 'SENT' : 'UNKNOWN',
       emailTemplate: n.emailTemplateId ? { id: n.emailTemplateId } : null,
-      attachment: n.attachmentId ? { id: n.attachmentId } : null,
+      attachment: attachment
+        ? { id: attachment.id, url: attachment.url, type: attachment.type }
+        : null,
+      title: n.title,
+      userNotifications: n.userNotifications,
+      deepLink: n.deepLink,
     };
   }
 

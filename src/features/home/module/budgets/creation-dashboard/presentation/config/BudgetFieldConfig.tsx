@@ -35,13 +35,16 @@ const useBudgetFieldConfig = () => {
       isYearDisabled={(year) => (budgetYear ? false : year < currentYear)}
     />,
     <SelectField
-      options={Object.entries(Currency).map(([key, value]) => ({ label: key, value }))}
+      options={Object.entries(Currency)
+        .filter(([key]) => key !== 'FX')
+        .map(([key, value]) => ({ label: key, value }))}
       key="currency"
       name="currency"
       label="Currency"
       placeholder="Select Currency"
       required
       disabled={isDisabledField}
+      noneValue={false}
     />,
     <InputCurrency
       key="estimatedTotalExpense"
@@ -49,7 +52,7 @@ const useBudgetFieldConfig = () => {
       label="Estimated Total Expense"
       currency={watch('currency') || 'VND'}
       maxLength={11}
-      required
+      // required
       disabled={isDisabledField}
       showSuggestion
       mode="onChange"
@@ -60,7 +63,7 @@ const useBudgetFieldConfig = () => {
       label="Estimated Total Income"
       currency={watch('currency') || 'VND'}
       maxLength={11}
-      required
+      // required
       disabled={isDisabledField}
       showSuggestion
       mode="onChange"

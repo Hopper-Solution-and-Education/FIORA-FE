@@ -18,6 +18,7 @@ export type CategoryLabel = {
   radius: number;
   speed: number;
   iconSrc?: keyof typeof Icons;
+  href?: string;
 };
 export const orbitLevels: OrbitLevel[] = [
   {
@@ -148,6 +149,7 @@ export const categoryLabels: CategoryLabel[] = [
     radius: 200,
     speed: 50,
     iconSrc: 'education',
+    href: '#',
   },
   {
     label: 'ECOMMERCE',
@@ -155,6 +157,7 @@ export const categoryLabels: CategoryLabel[] = [
     radius: 330,
     speed: 50,
     iconSrc: 'shoppingCart',
+    href: '#',
   },
   {
     label: 'FINANCE',
@@ -162,6 +165,7 @@ export const categoryLabels: CategoryLabel[] = [
     radius: 330,
     speed: 50,
     iconSrc: 'wallet',
+    href: '#',
   },
   {
     label: 'INSURANCE',
@@ -169,5 +173,6 @@ export const categoryLabels: CategoryLabel[] = [
     radius: 440,
     speed: 50,
     iconSrc: 'shieldCheck',
+    href: '#',
   },
 ];

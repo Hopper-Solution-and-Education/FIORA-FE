@@ -9,5 +9,5 @@ export enum RouteEnum {
 
   // Notification
   NotificationDashboard = '/setting/notification',
-  NotificationDetail = '/setting/notification/{id}',
+  NotificationDetail = '/setting/notification/details/{id}',
 }
