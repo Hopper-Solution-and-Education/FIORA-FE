@@ -108,7 +108,7 @@ class NotificationRepository implements INotificationRepository {
       include: {
         userNotifications: {
           include: {
-            User: {
+            user: {
               select: {
                 email: true,
               },
@@ -234,8 +234,8 @@ class NotificationRepository implements INotificationRepository {
       include: {
         notification: {
           include: {
-            emailLogs: true,
-            emailTemplate: true,
+            EmailNotificationLogs: true,
+            EmailTemplate: true,
             Attachment: true,
           },
         },
@@ -252,8 +252,8 @@ class NotificationRepository implements INotificationRepository {
       include: {
         notification: {
           include: {
-            emailLogs: true,
-            emailTemplate: true,
+            EmailNotificationLogs: true,
+            EmailTemplate: true,
             Attachment: true,
           },
         },
