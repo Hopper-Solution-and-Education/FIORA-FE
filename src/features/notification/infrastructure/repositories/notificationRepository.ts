@@ -50,6 +50,8 @@ function mapDashboardFilterToDB(filters: Record<string, any>) {
       dbFilters['emails'] = Array.isArray(value) ? { hasSome: value } : { has: value };
     } else if (['channel', 'notifyType', 'type'].includes(key)) {
       dbFilters[key] = Array.isArray(value) ? { in: value } : value;
+    } else if (key === 'notifyTo') {
+      dbFilters['notifyTo'] = Array.isArray(value) ? { in: value } : value;
     } else if (map[key]) {
       dbFilters[map[key]] = value;
     } else if (['notifyTo', 'createdBy', 'message'].includes(key)) {
@@ -166,6 +168,43 @@ class NotificationRepository implements INotificationRepository {
 
   async getEmailNotificationLogs(notificationId: string): Promise<EmailNotificationLogs[]> {
     return prisma.emailNotificationLogs.findMany({ where: { notificationId } });
+  }
+
+  async getNotificationFilterOptions() {
+    const notifications = await prisma.notification.findMany({
+      select: {
+        createdBy: true,
+        emails: true,
+        type: true,
+      },
+    });
+
+    const senderIds = Array.from(new Set(notifications.map((n) => n.createdBy).filter(Boolean)));
+
+    let senders: string[] = [];
+    if (senderIds.length > 0) {
+      const users = await prisma.user.findMany({
+        where: { id: { in: senderIds as string[] } },
+        select: { email: true },
+      });
+      senders = users.map((u) => u.email);
+    }
+
+    const recipientsSet = new Set<string>();
+    notifications.forEach((n) => {
+      if (Array.isArray(n.emails)) {
+        n.emails.forEach((email: string) => recipientsSet.add(email));
+      }
+    });
+    const recipients = Array.from(recipientsSet);
+
+    const notifyTypes = Array.from(new Set(notifications.map((n) => n.type).filter(Boolean)));
+
+    return {
+      sender: senders,
+      recipient: recipients,
+      notifyType: notifyTypes,
+    };
   }
 
   async createBoxNotification(input: CreateBoxNotificationInput): Promise<any> {
