@@ -54,7 +54,7 @@ function mapDashboardFilterToDB(filters: Record<string, any>) {
       dbFilters['notifyTo'] = Array.isArray(value) ? { in: value } : value;
     } else if (map[key]) {
       dbFilters[map[key]] = value;
-    } else if (['notifyTo', 'createdBy', 'message'].includes(key)) {
+    } else if (['createdBy', 'message'].includes(key)) {
       dbFilters[key] = value;
     }
   }
