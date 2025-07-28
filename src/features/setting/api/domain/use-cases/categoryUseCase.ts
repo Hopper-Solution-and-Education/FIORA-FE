@@ -21,6 +21,7 @@ import {
 import { budgetDetailRepository } from '../../infrastructure/repositories/budgetDetailRepository';
 import { IBudgetDetailRepository } from '../../repositories/budgetDetailRepository';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
+import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 
 class CategoryUseCase {
   private categoryRepository: ICategoryRepository;
@@ -99,12 +100,14 @@ class CategoryUseCase {
     const calculateBalance = (category: CategoryExtras): number => {
       if (category.type === CategoryType.Expense.valueOf()) {
         return (category.toTransactions ?? []).reduce(
-          (sum: any, tx: any) => sum + Number(tx.amount),
+          // Get baseAmount from transaction
+          (sum: any, tx: any) => sum + Number(tx.baseAmount),
           0,
         );
       } else if (category.type === CategoryType.Income.valueOf()) {
         return (category.fromTransactions ?? []).reduce(
-          (sum: any, tx: any) => sum + Number(tx.amount),
+          // Get baseAmount from transaction
+          (sum: any, tx: any) => sum + Number(tx.baseAmount),
           0,
         );
       }
@@ -116,6 +119,7 @@ class CategoryUseCase {
       categoryMap.set(category.id, {
         ...category,
         balance: calculateBalance(category),
+        currency: DEFAULT_BASE_CURRENCY,
       });
     });
 
@@ -184,12 +188,12 @@ class CategoryUseCase {
     const calculateBalance = (category: CategoryExtras): number => {
       if (category.type === CategoryType.Expense.valueOf()) {
         return (category.toTransactions ?? []).reduce(
-          (sum: any, tx: any) => sum + Number(tx.amount),
+          (sum: any, tx: any) => sum + Number(tx.baseAmount),
           0,
         );
       } else if (category.type === CategoryType.Income.valueOf()) {
         return (category.fromTransactions ?? []).reduce(
-          (sum: any, tx: any) => sum + Number(tx.amount),
+          (sum: any, tx: any) => sum + Number(tx.baseAmount),
           0,
         );
       }

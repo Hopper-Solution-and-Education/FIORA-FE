@@ -20,8 +20,10 @@ import {
   WALLET_TYPE_ICONS,
 } from '../../constants/walletConstant';
 import { attachmentRepository } from '../../infrastructure/repositories/attachmentRepository';
+import { currencySettingRepository } from '../../infrastructure/repositories/currencySettingRepository';
 import { walletRepository } from '../../infrastructure/repositories/walletRepository';
 import { IAttachmentRepository } from '../../repositories/attachmentRepository.interface';
+import { ICurrencySettingRepository } from '../../repositories/currencySettingRepository.interface';
 import { IWalletRepository } from '../../repositories/walletRepository.interface';
 
 interface AttachmentData {
@@ -37,7 +39,8 @@ class WalletUseCase {
     private _attachmentRepository: IAttachmentRepository = attachmentRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
     private _accountRepository: IAccountRepository = accountRepository,
-  ) {}
+    private _currencyRepository: ICurrencySettingRepository = currencySettingRepository,
+  ) { }
 
   async createWallet(data: Prisma.WalletUncheckedCreateInput) {
     return this._walletRepository.createWallet(data);
@@ -289,7 +292,7 @@ class WalletUseCase {
     id: string,
     newStatus: DepositRequestStatus,
     remark?: string,
-    currency?: Currency,
+    currency?: string,
   ) {
     const depositRequest = await this._walletRepository.findDepositRequestById(id);
 
@@ -298,12 +301,20 @@ class WalletUseCase {
     if (newStatus === DepositRequestStatus.Approved) {
       const { userId, packageFXId } = depositRequest;
       const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
+
       if (!packageFX) throw new Error(Messages.PACKAGE_FX_NOT_FOUND);
       const amount = Number(packageFX.fxAmount);
+
+      const foundCurrency = await this._currencyRepository.findFirstCurrency({
+        name: currency,
+      });
+
+      if (!foundCurrency) throw new Error(Messages.CURRENCY_NOT_FOUND);
       // Update currency for depositRequest if not set
       if (!depositRequest.currency && currency) {
         await this._walletRepository.updateDepositRequestCurrency(id, currency);
-        depositRequest.currency = currency;
+
+        depositRequest.currencyId = foundCurrency.id;
       }
       let txCurrency = depositRequest.currency || currency;
       if (!txCurrency) throw new Error(Messages.CURRENCY_IS_REQUIRED);
@@ -341,13 +352,19 @@ class WalletUseCase {
       // Convert depositRequest amount to payment account currency for deduction
       const depositCurrency = depositRequest.currency || currency;
       const paymentCurrency = paymentAccount.currency;
+
       // Deposit currency should never be FX, fallback to USD logic if it happens (or throw error)
       let effectiveDepositCurrency = depositCurrency;
       if (depositCurrency === 'FX') {
         effectiveDepositCurrency = 'USD';
       }
       // Use convertCurrency util for conversion
-      const deductAmount = convertCurrency(amount, effectiveDepositCurrency, paymentCurrency);
+      const deductAmount = await convertCurrency(
+        amount,
+        effectiveDepositCurrency!,
+        paymentCurrency!,
+      );
+
       if (deductAmount > 0) {
         const newBalance = Number(paymentAccount.balance ?? 0) - deductAmount;
         await this._accountRepository.update(paymentAccount.id, {
