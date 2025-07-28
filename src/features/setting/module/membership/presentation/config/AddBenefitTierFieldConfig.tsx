@@ -3,6 +3,7 @@
 import { InputField, TextareaField } from '@/components/common/forms';
 import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { v4 as uuidv4 } from 'uuid';
 
 const useAddBenefitTierFieldConfig = () => {
   const {
@@ -13,7 +14,9 @@ const useAddBenefitTierFieldConfig = () => {
 
   useEffect(() => {
     if (watch('name')) {
-      setValue('slug', watch('name').toLowerCase().replace(/ /g, '-'));
+      const baseSlug = watch('name').toLowerCase().replace(/ /g, '-');
+      const uuid = uuidv4().split('-')[0];
+      setValue('slug', `${baseSlug}-${uuid}`);
     }
   }, [watch('name')]);
 

@@ -2,6 +2,7 @@ import { IAccountRepository } from '@/features/auth/domain/repositories/accountR
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { FilterObject } from '@/shared/types/filter.types';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
@@ -167,10 +168,7 @@ class WalletUseCase {
     return this._walletRepository.deletePackageFX(id);
   }
 
-  async getDepositRequestsByType(
-    userId: string,
-    type: import('@prisma/client').DepositRequestStatus,
-  ) {
+  async getDepositRequestsByType(userId: string, type: DepositRequestStatus) {
     return this._walletRepository.findDepositRequestsByType(userId, type);
   }
 
@@ -349,28 +347,28 @@ class WalletUseCase {
         createdBy: userId,
       });
 
-      // Convert depositRequest amount to payment account currency for deduction
-      const depositCurrency = depositRequest.currency || currency;
-      const paymentCurrency = paymentAccount.currency;
-
-      // Deposit currency should never be FX, fallback to USD logic if it happens (or throw error)
-      let effectiveDepositCurrency = depositCurrency;
-      if (depositCurrency === 'FX') {
-        effectiveDepositCurrency = 'USD';
-      }
-      // Use convertCurrency util for conversion
-      const deductAmount = await convertCurrency(
-        amount,
-        effectiveDepositCurrency!,
-        paymentCurrency!,
-      );
+      const deductAmount = await convertCurrency(amount, CURRENCY.USD, paymentAccount.currency!);
 
       if (deductAmount > 0) {
         const newBalance = Number(paymentAccount.balance ?? 0) - deductAmount;
+
         await this._accountRepository.update(paymentAccount.id, {
           balance: newBalance,
         });
       }
+
+      let paymentWallet = await this._walletRepository.findWalletByType(WalletType.Payment, userId);
+
+      if (!paymentWallet) {
+        paymentWallet = await this._walletRepository.createWallet({
+          userId,
+          type: WalletType.Payment,
+          icon: WALLET_TYPE_ICONS[WalletType.Payment],
+          ...DEFAULT_WALLET_FIELDS,
+        });
+      }
+
+      await this._walletRepository.increaseWalletBalance(paymentWallet.id, amount);
     }
 
     return this._walletRepository.updateDepositRequestStatus(id, newStatus, remark);

@@ -151,7 +151,7 @@ export class ProductMapper {
       name: request.name,
       description: request.description,
       tax_rate: request.taxRate,
-      price: request.price,
+      price: request.price ?? 0,
       type: request.type,
       category_id: request.catId,
       items: request.items?.map(
@@ -168,7 +168,7 @@ export class ProductMapper {
       name: request.name,
       description: request.description,
       tax_rate: request.taxRate,
-      price: request.price,
+      price: request.price ?? 0,
       type: request.type,
       category_id: request.catId,
       items: request.items?.map(

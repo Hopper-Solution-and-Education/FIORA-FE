@@ -224,7 +224,7 @@ const TransactionTable = () => {
         toast.success('Transaction deleted successfully');
       })
       .catch((error: any) => {
-        toast.error(error?.message || 'Failed to delete transaction');
+        console.log('error: ', error);
       })
       .finally(() => {
         setIsDeleting(false);

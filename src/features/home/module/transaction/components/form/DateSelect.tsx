@@ -4,10 +4,12 @@ import React from 'react';
 
 interface TypeSelectProps {
   name: string;
+  startMonth?: Date;
+  endMonth?: Date;
   [key: string]: any;
 }
 
-const DateSelectField: React.FC<TypeSelectProps> = ({ name }) => {
+const DateSelectField: React.FC<TypeSelectProps> = ({ name, startMonth, endMonth }) => {
   return (
     <FormField
       name="date"
@@ -27,6 +29,8 @@ const DateSelectField: React.FC<TypeSelectProps> = ({ name }) => {
               dropdownMode="select"
               dateFormat="dd/MM/yyyy HH:mm:ss"
               containTimePicker
+              startMonth={startMonth}
+              endMonth={endMonth}
             />
           </div>
         </FormItem>
