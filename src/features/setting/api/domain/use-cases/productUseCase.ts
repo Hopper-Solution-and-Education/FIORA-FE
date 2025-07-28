@@ -175,7 +175,6 @@ class ProductUseCase {
         id: category_id,
         userId,
       });
-
       if (!category) {
         throw new Error(Messages.CATEGORY_PRODUCT_NOT_FOUND);
       }
@@ -183,7 +182,6 @@ class ProductUseCase {
       const foundCurrency = await this.currencySettingRepository.findFirstCurrency({
         name: currency,
       });
-
       if (!foundCurrency) {
         throw new Error(Messages.CURRENCY_NOT_FOUND);
       }
@@ -199,7 +197,6 @@ class ProductUseCase {
             },
           },
         });
-
         if (foundTenantProduct) {
           throw new Error(Messages.DUPLICATE_PRODUCT_TENANT_ERROR);
         }
@@ -334,22 +331,37 @@ class ProductUseCase {
       throw new Error(Messages.PRODUCT_NOT_FOUND);
     }
 
+    const foundCurrency = await this.currencySettingRepository.findFirstCurrency({
+      name: currency,
+    });
+    if (!foundCurrency) {
+      throw new Error(Messages.CURRENCY_NOT_FOUND);
+    }
+
+    const updatedBody = {
+      ...(category && { catId: category_id }),
+      ...(icon && { icon }),
+      ...(name && { name }),
+      ...(description && { description }),
+      ...(type && { type }),
+      ...(currency && { currencyId: foundCurrency.id }),
+      ...(currency && { currency: foundCurrency.name }),
+      taxRate: new Decimal(tax_rate),
+      updatedBy: userId,
+    } as Prisma.ProductUpdateInput;
+
+    if (price) {
+      const updatedBaseAmount = await convertCurrency(price, currency!, DEFAULT_BASE_CURRENCY);
+      updatedBody.baseAmount = new Decimal(updatedBaseAmount);
+      updatedBody.price = new Decimal(price);
+    }
+
     const updatedProduct = await this.productRepository.updateProduct(
       {
         id,
         userId,
       },
-      {
-        ...(category && { catId: category_id }),
-        ...(icon && { icon }),
-        ...(name && { name }),
-        ...(description && { description }),
-        ...(price && { price }),
-        ...(type && { type }),
-        ...(currency && { currency }),
-        taxRate: new Decimal(tax_rate),
-        updatedBy: userId,
-      },
+      updatedBody,
     );
 
     if (!updatedProduct) {
@@ -382,7 +394,7 @@ class ProductUseCase {
       }
 
       // delete product items
-      if (deleteItemsId && Array.isArray(deleteItemsId)) {
+      if (deleteItemsId && Array.isArray(deleteItemsId) && deleteItemsId.length > 0) {
         for await (const itemId of deleteItemsId) {
           await this.productItemsRepository.deleteProductItems({ id: itemId, userId });
         }
@@ -619,6 +631,8 @@ class ProductUseCase {
         catId: true,
         icon: true,
         currency: true,
+        baseCurrency: true,
+        baseAmount: true,
         items: {
           select: {
             id: true,
@@ -685,7 +699,7 @@ class ProductUseCase {
           type: pt.transaction.type,
           amount: pt.transaction.amount.toNumber(),
           currency: pt.transaction.currency!,
-          baseCurrency: pt.transaction.baseCurrency!,
+          baseCurrency: pt.transaction.baseCurrency || DEFAULT_BASE_CURRENCY,
           baseAmount: pt.transaction.baseAmount?.toNumber() || 0,
         });
         return acc;
@@ -694,7 +708,7 @@ class ProductUseCase {
     );
 
     const productsByCategory = products.reduce(
-      async (acc, product) => {
+      (acc, product) => {
         const catId = product.catId;
         if (catId) {
           if (!acc[catId]) acc[catId] = [];
@@ -712,7 +726,7 @@ class ProductUseCase {
               catId: product.catId,
               icon: product.icon,
               currency: product.currency,
-              baseCurrency: product.baseCurrency,
+              baseCurrency: product.baseCurrency || DEFAULT_BASE_CURRENCY,
               baseAmount: product.baseAmount?.toNumber() || 0,
             },
             transactions,
@@ -727,6 +741,7 @@ class ProductUseCase {
       const createdBy = category.createdBy ? userMap[category.createdBy] || null : null;
       const updatedBy = category.updatedBy ? userMap[category.updatedBy] || null : null;
       const categoryProducts = productsByCategory[category.id] || [];
+
       return {
         category: {
           id: category.id,
@@ -753,24 +768,17 @@ class ProductUseCase {
     for (const category of transformedData) {
       for (const item of category.products) {
         const { taxRate, baseAmount } = item.product;
+
         priceList.push(baseAmount || 0);
         taxRateList.push(taxRate);
 
         const transactions = item.transactions;
         const totalIncome = transactions
           .filter((tx: any) => tx.type === 'Income')
-          .reduce(
-            async (sum: any, tx: any) =>
-              sum + tx.baseAmount,
-            0,
-          );
+          .reduce((sum: any, tx: any) => sum + tx.baseAmount, 0);
         const totalExpense = transactions
           .filter((tx: any) => tx.type === 'Expense')
-          .reduce(
-            async (sum: any, tx: any) =>
-              sum + tx.baseAmount,
-            0,
-          );
+          .reduce((sum: any, tx: any) => sum + tx.baseAmount, 0);
 
         incomeTotals.push(totalIncome);
         expenseTotals.push(totalExpense);

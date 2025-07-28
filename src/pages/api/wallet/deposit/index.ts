@@ -28,8 +28,6 @@ const PostBodySchema = z.object({
   attachmentData: AttachmentDataSchema.optional(),
 });
 
-const ALLOWED_CURRENCIES = ['VND', 'USD'];
-
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {
     switch (req.method) {
@@ -88,7 +86,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
 
     // Get currency from header
     const currency = req.headers['x-user-currency'] as string;
-    if (!currency || !ALLOWED_CURRENCIES.includes(currency)) {
+    if (!currency) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_CURRENCY);
     }
 

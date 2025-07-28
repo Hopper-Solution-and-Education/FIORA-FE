@@ -29,7 +29,7 @@ export class FinanceUseCase {
     private _productRepository: IProductRepository = productRepository,
     private _partnerRepository: IPartnerRepository = partnerRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
-  ) {}
+  ) { }
 
   async getReport({ request, userId }: { request: GetFinanceReportRequest; userId: string }) {
     const { type, filter = FinanceReportFilterEnum.ALL } = request;
@@ -54,9 +54,9 @@ export class FinanceUseCase {
     const allAccounts = await this._accountRepository.findMany({ userId });
 
     const result: AccountFinanceReportResponse[] = allAccounts.map((account) => {
-      const balance = Number(account.balance || 0);
-      const totalIncome = balance > 0 ? balance : 0;
-      const totalExpense = balance < 0 ? -balance : 0;
+      const baseAmount = Number(account.baseAmount || 0);
+      const totalIncome = baseAmount > 0 ? baseAmount : 0;
+      const totalExpense = baseAmount < 0 ? -baseAmount : 0;
       const totalProfit = 0;
 
       return {
@@ -100,12 +100,12 @@ export class FinanceUseCase {
       if (!transaction.partnerId || !partnerTotalMap.has(transaction.partnerId)) return;
 
       const totals = partnerTotalMap.get(transaction.partnerId)!;
-      const amount = Number(transaction.amount);
+      const baseAmount = Number(transaction.baseAmount);
 
       if (transaction.type === TransactionType.Expense) {
-        totals.expense += amount;
+        totals.expense += baseAmount;
       } else if (transaction.type === TransactionType.Income) {
-        totals.income += amount;
+        totals.income += baseAmount;
       }
     });
 
@@ -146,12 +146,12 @@ export class FinanceUseCase {
         if (!productTotalMap.has(relation.productId)) return;
 
         const totals = productTotalMap.get(relation.productId)!;
-        const amount = Number(pt.amount);
+        const baseAmount = Number(pt.baseAmount);
 
         if (pt.type === TransactionType.Expense) {
-          totals.expense += amount;
+          totals.expense += baseAmount;
         } else if (pt.type === TransactionType.Income) {
-          totals.income += amount;
+          totals.income += baseAmount;
         }
       });
     });
@@ -192,13 +192,13 @@ export class FinanceUseCase {
 
       if (category.type === CategoryType.Expense) {
         const expenseAmount = (category.toTransactions || []).reduce(
-          (sum, tx) => sum + Number(tx.amount),
+          (sum, tx) => sum + Number(tx.baseAmount),
           0,
         );
         totals.expense += expenseAmount;
       } else if (category.type === CategoryType.Income) {
         const incomeAmount = (category.fromTransactions || []).reduce(
-          (sum, tx) => sum + Number(tx.amount),
+          (sum, tx) => sum + Number(tx.baseAmount),
           0,
         );
         totals.income += incomeAmount;
@@ -258,9 +258,9 @@ export class FinanceUseCase {
     const allAccounts = await this._accountRepository.findMany({ userId, id: { in: accountIds } });
 
     const result: AccountFinanceReportResponse[] = allAccounts.map((account) => {
-      const balance = Number(account.balance || 0);
-      const totalIncome = balance > 0 ? balance : 0;
-      const totalExpense = balance < 0 ? -balance : 0;
+      const baseAmount = Number(account.baseAmount || 0);
+      const totalIncome = baseAmount > 0 ? baseAmount : 0;
+      const totalExpense = baseAmount < 0 ? -baseAmount : 0;
       const totalProfit = 0;
 
       return {
@@ -309,12 +309,12 @@ export class FinanceUseCase {
       if (!transaction.partnerId || !partnerTotalMap.has(transaction.partnerId)) return;
 
       const totals = partnerTotalMap.get(transaction.partnerId)!;
-      const amount = Number(transaction.amount);
+      const baseAmount = Number(transaction.baseAmount);
 
       if (transaction.type === TransactionType.Expense) {
-        totals.expense += amount;
+        totals.expense += baseAmount;
       } else if (transaction.type === TransactionType.Income) {
-        totals.income += amount;
+        totals.income += baseAmount;
       }
     });
 
@@ -359,12 +359,12 @@ export class FinanceUseCase {
         if (!productTotalMap.has(relation.productId)) return;
 
         const totals = productTotalMap.get(relation.productId)!;
-        const amount = Number(pt.amount);
+        const baseAmount = Number(pt.baseAmount);
 
         if (pt.type === TransactionType.Expense) {
-          totals.expense += amount;
+          totals.expense += baseAmount;
         } else if (pt.type === TransactionType.Income) {
-          totals.income += amount;
+          totals.income += baseAmount;
         }
       });
     });
