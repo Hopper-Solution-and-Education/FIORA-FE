@@ -3,4 +3,5 @@ export const NOTIFICATION_DASHBOARD_TYPES = {
   INotificationDashboardApi: Symbol.for('NotificationDashboardApi'),
   INotificationDashboardRepository: Symbol.for('NotificationDashboardRepository'),
   IGetNotificationsPaginatedUseCase: Symbol.for('GetNotificationsPaginatedUseCase'),
+  IGetFilterOptionsUseCase: Symbol.for('GetFilterOptionsUseCase'),
 };

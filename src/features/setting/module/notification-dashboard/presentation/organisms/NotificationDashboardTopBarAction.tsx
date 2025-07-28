@@ -1,14 +1,14 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { NotificationDashboardFilterState } from '../../slices/types';
 import NotificationDashboardColumnMenu from '../molecules/NotificationDashboardColumnMenu';
 import NotificationDashboardFilterMenu from '../molecules/NotificationDashboardFilterMenu';
 import NotificationDashboardSearch from '../molecules/NotificationDashboardSearch';
 
 interface NotificationDashboardTopBarActionProps {
-  filter: any;
-  onFilterChange: (newFilter: any) => void;
-  onApply: () => void;
+  filter: NotificationDashboardFilterState;
+  onFilterChange: (newFilter: NotificationDashboardFilterState) => void;
   search: string;
   onSearchChange: (value: string) => void;
   className?: string;
@@ -17,7 +17,6 @@ interface NotificationDashboardTopBarActionProps {
 const NotificationDashboardTopBarAction = ({
   filter,
   onFilterChange,
-  onApply,
   search,
   onSearchChange,
   className,
@@ -26,11 +25,7 @@ const NotificationDashboardTopBarAction = ({
     <div className={`flex justify-between items-center gap-2 ${className || ''}`}>
       <div className="flex items-center gap-2">
         <NotificationDashboardSearch value={search} onChange={onSearchChange} />
-        <NotificationDashboardFilterMenu
-          value={filter}
-          onFilterChange={onFilterChange}
-          onApply={onApply}
-        />
+        <NotificationDashboardFilterMenu value={filter} onFilterChange={onFilterChange} />
       </div>
 
       <div className="">

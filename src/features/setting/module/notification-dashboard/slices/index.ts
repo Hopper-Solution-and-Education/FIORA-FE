@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { NotificationDashboardTableColumnKey } from '../presentation/types/setting.type';
+import { fetchFilterOptionsAsyncThunk } from './actions';
 import { initialState } from './types';
 
 const notificationDashboardSlice = createSlice({
@@ -41,6 +42,21 @@ const notificationDashboardSlice = createSlice({
     setColumnConfig: (state, action: PayloadAction<typeof initialState.columnConfig>) => {
       state.columnConfig = action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchFilterOptionsAsyncThunk.pending, (state) => {
+        state.filterOptionsLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchFilterOptionsAsyncThunk.fulfilled, (state, action) => {
+        state.filterOptionsLoading = false;
+        state.filterOptions = action.payload;
+      })
+      .addCase(fetchFilterOptionsAsyncThunk.rejected, (state, action) => {
+        state.filterOptionsLoading = false;
+        state.error = action.payload || 'Failed to fetch filter options';
+      });
   },
 });
 

@@ -4,9 +4,11 @@ export interface NotificationDashboardFilterRequest {
   subject?: string;
   notifyTo?: string | string[];
   recipients?: string | string[];
-  sender?: string;
+  sender?: string | string[];
   notifyType?: string | string[];
-  channel?: ChannelType;
+  channel?: ChannelType | ChannelType[];
   status?: string | string[];
   search?: string;
+  sendDateFrom?: Date;
+  sendDateTo?: Date;
 }

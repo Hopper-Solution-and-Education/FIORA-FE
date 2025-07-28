@@ -1,4 +1,5 @@
 import { NotificationDashboardFilterRequest } from '../dto/request/NotificationDashboardFilterRequest';
+import { NotificationFilterOptionsResponse } from '../dto/response/NotificationFilterOptionsResponse';
 import { NotificationPaginatedResponse } from '../dto/response/NotificationResponse';
 
 export interface INotificationDashboardApi {
@@ -7,4 +8,6 @@ export interface INotificationDashboardApi {
     pageSize: number,
     filter?: NotificationDashboardFilterRequest,
   ): Promise<NotificationPaginatedResponse>;
+
+  getFilterOptions(): Promise<NotificationFilterOptionsResponse>;
 }
