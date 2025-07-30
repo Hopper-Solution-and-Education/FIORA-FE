@@ -603,6 +603,9 @@ class TransactionUseCase {
             this.validatePaymentAccount(fromAccount, data.amount as number),
           [AccountType.CreditCard]: () =>
             this.validateCreditCardAccount(fromAccount, data.amount as number),
+          [AccountType.Debt]: () => this.validateDebtAccount(fromAccount, data.amount as number),
+          [AccountType.Invest]: () =>
+            this.validateInvestAccount(fromAccount, data.amount as number),
         },
         () => {
           throw new Error(Messages.UNSUPPORTED_ACCOUNT_TYPE.replace('{type}', type));
@@ -703,6 +706,18 @@ class TransactionUseCase {
 
     if (availableCredit - amount < 0) {
       throw new Error('Credit Card does not have enough available credit limit.');
+    }
+  }
+
+  private validateDebtAccount(account: Account, amount: number) {
+    if (account.balance!.toNumber() >= amount) {
+      throw new Error('Debt Account must have balance below 0.');
+    }
+  }
+
+  private validateInvestAccount(account: Account, amount: number) {
+    if (account.balance!.toNumber() <= amount) {
+      throw new Error('Invest Account must have balance above 0.');
     }
   }
 }
