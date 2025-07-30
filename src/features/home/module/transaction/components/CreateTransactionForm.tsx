@@ -93,7 +93,8 @@ const CreateTransactionForm = () => {
       key="date"
       name="date"
       required
-      endMonth={new Date(new Date().getFullYear() + 5, 11, 31)}
+      endMonth={new Date(new Date().getFullYear() + 1, 11, 31)}
+      startMonth={new Date(new Date().getFullYear(), 0, 1)}
     />,
     <TypeSelectField key="type" name="type" required />,
     <CurrencySelectField key="currency" name="currency" required />,
