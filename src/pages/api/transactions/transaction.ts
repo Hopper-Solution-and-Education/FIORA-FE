@@ -56,8 +56,9 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     // Validate date should be in range 30 days in the past from now. Not allowed to be in the future
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const nextYear = new Date(now.getFullYear() + 1, 11, 31);
 
-    if ((date && new Date(date) < thirtyDaysAgo) || new Date(date) > now) {
+    if ((date && new Date(date) < thirtyDaysAgo) || new Date(date) > nextYear) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_DATE_RANGE_INPUT_30_DAYS);
     }
     const baseCurrency = DEFAULT_BASE_CURRENCY;

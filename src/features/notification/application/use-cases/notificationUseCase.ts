@@ -89,6 +89,10 @@ class NotificationUseCase {
   async getNotificationById(id: string) {
     return this.notificationRepository.getNotificationById(id);
   }
+
+  async getNotificationFilterOptions() {
+    return this.notificationRepository.getNotificationFilterOptions();
+  }
 }
 
 export default NotificationUseCase;

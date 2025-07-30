@@ -3,7 +3,6 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { GlobalFilters } from '@/shared/types';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
-import { Currency } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export const maxDuration = 30; // 30 seconds
@@ -29,7 +28,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const currency = (req.headers['x-user-currency'] as string) ?? Currency.USD;
     const params = req.body as GlobalFilters;
     const { isParent } = req.query;
     if (isParent) {
@@ -40,7 +38,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     } else {
       const accounts = await AccountUseCaseInstance.getAllAccountByUserIdFilter(
         userId,
-        currency,
         params,
       );
       return res
