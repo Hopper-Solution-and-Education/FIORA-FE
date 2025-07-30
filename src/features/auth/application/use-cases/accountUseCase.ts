@@ -10,7 +10,7 @@ import { GlobalFilters } from '@/shared/types';
 import { buildWhereClause } from '@/shared/utils';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { safeString } from '@/shared/utils/ExStringUtils';
-import { Account, AccountType, Prisma, Transaction } from '@prisma/client';
+import { Account, AccountType, Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IAccountRepository } from '../../domain/repositories/accountRepository.interface';
 import { accountRepository } from '../../infrastructure/repositories/accountRepository';
@@ -222,7 +222,7 @@ export class AccountUseCase {
     };
   }
 
-  async getAllAccountByUserIdFilter(userId: string, currency: string, params: GlobalFilters) {
+  async getAllAccountByUserIdFilter(userId: string, params: GlobalFilters) {
     const searchParams = safeString(params.search);
     let where = buildWhereClause(params.filters) as Prisma.AccountWhereInput;
 
@@ -287,96 +287,15 @@ export class AccountUseCase {
   `;
     }
 
-    const accountWithConvertedBalance = await Promise.all(
-      accountRes.map(async (acc: any) => {
-        const convertedBalance = await convertCurrency(
-          acc.balance?.toNumber() || 0,
-          acc.currency,
-          currency,
-        );
-
-        const children = await Promise.all(
-          acc.children.map(async (child: Account) => {
-            const childConvertedBalance = await convertCurrency(
-              child.balance?.toNumber() || 0,
-              child.currency!,
-              currency,
-            );
-
-            return {
-              ...child,
-              balance: childConvertedBalance.toString(),
-              currency: child.currency || currency,
-            };
-          }),
-        );
-
-        const toTransactions = await Promise.all(
-          acc.toTransactions.map(async (tx: Transaction) => {
-            const txConvertedBalance = await convertCurrency(
-              tx.amount?.toNumber() || 0,
-              tx.currency!,
-              currency,
-            );
-
-            return {
-              ...tx,
-              amount: txConvertedBalance.toString(),
-              currency: tx.currency || currency,
-            };
-          }),
-        );
-
-        const fromTransactions = await Promise.all(
-          acc.fromTransactions.map(async (tx: Transaction) => {
-            const txConvertedBalance = await convertCurrency(
-              tx.amount?.toNumber() || 0,
-              tx.currency!,
-              currency,
-            );
-
-            return {
-              ...tx,
-              amount: txConvertedBalance.toString(),
-              currency: tx.currency || currency,
-            };
-          }),
-        );
-
-        return {
-          ...acc,
-          balance: convertedBalance.toString(),
-          currency: currency,
-          ...(children.length > 0 && {
-            children,
-          }),
-          ...(toTransactions.length > 0 && {
-            toTransactions,
-          }),
-          ...(fromTransactions.length > 0 && {
-            fromTransactions,
-          }),
-        };
-      }),
-    );
-
-    const balances = accountWithConvertedBalance.map((a) => Number(a.baseAmount ?? 0));
+    const balances = accountRes.map((a) => Number(a.baseAmount ?? 0));
 
     const minBalance = balances.length > 0 ? Math.min(...balances) : 0;
     const maxBalance = balances.length > 0 ? Math.max(...balances) : 0;
 
-    const convertMinBalanceAwaited = convertCurrency(minBalance, DEFAULT_BASE_CURRENCY, currency);
-    const convertMaxBalanceAwaited = convertCurrency(maxBalance, DEFAULT_BASE_CURRENCY, currency);
-
-    const [convertMinBalance, convertMaxBalance] = await Promise.all([
-      convertMinBalanceAwaited,
-      convertMaxBalanceAwaited,
-    ]);
-
     return {
-      data: accountWithConvertedBalance,
-      minBalance: convertMinBalance,
-      maxBalance: convertMaxBalance,
+      data: accountRes,
+      minBalance,
+      maxBalance,
     };
   }
 
