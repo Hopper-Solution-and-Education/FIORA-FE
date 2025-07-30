@@ -276,6 +276,8 @@ class TransactionRepository implements ITransactionRepository {
               { type: 'CreditCard' },
               { type: 'Saving' },
               { type: 'Lending' },
+              { type: 'Debt' },
+              { type: 'Invest' },
             ],
           },
           select: {
