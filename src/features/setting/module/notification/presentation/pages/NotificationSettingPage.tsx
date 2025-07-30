@@ -1,62 +1,56 @@
-import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+'use client';
+
+import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
+import useDataFetch from '@/shared/hooks/useDataFetcher';
+import { notFound, useParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { INotificationDetails } from '../../domain/entity';
 import { NotificationDetails } from '../organisms/NotificationDetails';
 import { RecipientList } from '../organisms/RecipientList';
 
 const NotificationSettingPage = () => {
-  //   const notification = {
-  //     title: 'Hỗ trợ danh sách tài khoản truy cập thông báo FIORA',
-  //     sender: 'admin@fiora.com',
-  //     type: 'Support',
-  //     sentAt: '09/06/2025, 08:25:00',
-  //     content: `Kính gửi (tên),
+  const { id } = useParams() as { id: string };
+  const router = useRouter();
+  const { data, isLoading } = useDataFetch<INotificationDetails>({
+    endpoint: `/api/notification/${id}`,
+    method: 'GET',
+  });
 
-  // Chúc bạn một ngày tốt lành.
+  const [emailSelected, setEmailSelected] = useState<string>('');
 
-  // Đề bài: Hỗ trợ danh sách tài khoản truy cập thông báo FIORA.
-
-  // 1. Bạn cần đăng nhập vào hệ thống KYC.
-  // 2. Bạn cần tải lên các tài liệu cần thiết để hoàn tất quy trình KYC.
-  // 3. Sau khi hoàn tất, bạn sẽ nhận được thông báo từ hệ thống.
-
-  // Trân trọng,
-  // Đội ngũ hỗ trợ KYC - Sau đăng nhập, tìm mục "KYC" trong tài khoản của bạn.
-  // Nếu bạn gặp khó khăn trong việc thực hiện, vui lòng liên hệ với bộ phận hỗ trợ qua email hoặc số điện thoại.
-
-  // Cảm ơn bạn!`,
-  //   };
-
-  //   const recipients = [
-  //     { email: 'huynhthg@gmail.com', status: '✓', time: '09/06/2025, 08:27:00' },
-  //     { email: 'nguyenhu@gmail.com', status: '✓', time: '09/06/2025, 08:28:00' },
-  //     { email: 'dinhvan@gmail.com', status: '✓', time: '09/06/2025, 08:28:30' },
-  //     { email: 'daothid@gmail.com', status: '✓', time: '09/06/2025, 08:29:00' },
-  //     { email: 'levanc@gmail.com', status: '✓', time: '09/06/2025, 08:29:30' },
-  //     { email: 'nguyenvana@gmail.com', status: '✓', time: '09/06/2025, 08:25:00' },
-  //     { email: 'huynhvb@gmail.com', status: '✗', time: '09/06/2025, 08:24:00' },
-  //   ];
+  if (!data?.data && !isLoading) {
+    return notFound();
+  }
 
   return (
-    <div className="px-4">
-      <div className="flex border border-gray-200 rounded-lg">
-        <div className="flex flex-1 overflow-hidden">
-          {/* Notification Details Section */}
-          <div className="w-2/3 p-6 border-r border-gray-200">
-            <NotificationDetails />
-          </div>
+    data?.data && (
+      <div className="px-4">
+        <div className="flex border border-gray-200 rounded-lg">
+          <div className="flex flex-1 overflow-hidden">
+            {/* Notification Details Section */}
+            <div className="w-2/3 p-6 border-r border-gray-200">
+              <NotificationDetails data={data.data} emailSelected={emailSelected} />
+            </div>
 
-          {/* Recipient List Section */}
-          <div className="w-1/3 p-6">
-            <RecipientList />
+            {/* Recipient List Section */}
+            <div className="w-1/3 p-6">
+              <RecipientList
+                data={data.data}
+                emailSelected={emailSelected}
+                setEmailSelected={setEmailSelected}
+              />
+            </div>
           </div>
         </div>
+        <div className="mb-4">
+          <DefaultSubmitButton
+            onBack={() => {
+              router.back();
+            }}
+          />
+        </div>
       </div>
-      <div>
-        <Button variant="outline" size="icon" className="w-10 h-10 rounded-full">
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
-      </div>
-    </div>
+    )
   );
 };
 

@@ -10,20 +10,27 @@ import {
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { ICON_SIZE } from '@/shared/constants/size';
 import useAnnouncementManager from '@/shared/hooks/useAnnouncementManager';
+import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
-import { Bell, Gift } from 'lucide-react';
+import { Gift } from 'lucide-react';
 import { Breadcrumbs } from '../../Breadcrumbs';
 import { Separator } from '../../ui/separator';
 import { UserNav } from '../user-nav/UserNav';
 import FinanceSummary from './FinanceSummary';
 import HelpCenter from './HelpCenter';
 import MarqueeAnnouncement from './MarqueAnnouncement';
+import { NotificationContent } from './NotificationContent';
 import SettingCenter from './SettingCenter';
 
 export default function Header() {
   const isMobile = useIsMobile();
 
   const { announcement, isLoading, show: showAnnouncement, handleClose } = useAnnouncementManager();
+
+  const { data: notification } = useDataFetch({
+    endpoint: '/api/notification/user',
+    method: 'GET',
+  });
 
   return (
     <header className="transition-[width,height] ease-linear">
@@ -46,7 +53,7 @@ export default function Header() {
 
         {/* Icon Buttons + User */}
         <div className="hidden md:flex items-center gap-6">
-          <DropdownMenu>
+          {/* <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Bell
                 size={ICON_SIZE.MD}
@@ -56,7 +63,9 @@ export default function Header() {
             <DropdownMenuContent align="end">
               <DropdownMenuItem>No new notifications</DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu> */}
+
+          <NotificationContent data={notification?.data || []} />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -50,9 +50,11 @@ function mapDashboardFilterToDB(filters: Record<string, any>) {
       dbFilters['emails'] = Array.isArray(value) ? { hasSome: value } : { has: value };
     } else if (['channel', 'notifyType', 'type'].includes(key)) {
       dbFilters[key] = Array.isArray(value) ? { in: value } : value;
+    } else if (key === 'notifyTo') {
+      dbFilters['notifyTo'] = Array.isArray(value) ? { in: value } : value;
     } else if (map[key]) {
       dbFilters[map[key]] = value;
-    } else if (['notifyTo', 'createdBy', 'message'].includes(key)) {
+    } else if (['createdBy', 'message'].includes(key)) {
       dbFilters[key] = value;
     }
   }
@@ -106,9 +108,23 @@ class NotificationRepository implements INotificationRepository {
     const n = await prisma.notification.findUnique({
       where: { id },
       include: {
-        userNotifications: true,
+        userNotifications: {
+          include: {
+            User: {
+              select: {
+                email: true,
+              },
+            },
+          },
+        },
       },
     });
+    let attachment = null;
+    if (n?.attachmentId) {
+      attachment = await prisma.attachment.findUnique({
+        where: { id: n.attachmentId },
+      });
+    }
     if (!n) return null;
     let sender = 'System';
     if (n.createdBy) {
@@ -133,7 +149,12 @@ class NotificationRepository implements INotificationRepository {
       channel: n.channel,
       status: n.channel === 'BOX' ? 'SENT' : 'UNKNOWN',
       emailTemplate: n.emailTemplateId ? { id: n.emailTemplateId } : null,
-      attachment: n.attachmentId ? { id: n.attachmentId } : null,
+      attachment: attachment
+        ? { id: attachment.id, url: attachment.url, type: attachment.type }
+        : null,
+      title: n.title,
+      userNotifications: n.userNotifications,
+      deepLink: n.deepLink,
     };
   }
 
@@ -147,6 +168,43 @@ class NotificationRepository implements INotificationRepository {
 
   async getEmailNotificationLogs(notificationId: string): Promise<EmailNotificationLogs[]> {
     return prisma.emailNotificationLogs.findMany({ where: { notificationId } });
+  }
+
+  async getNotificationFilterOptions() {
+    const notifications = await prisma.notification.findMany({
+      select: {
+        createdBy: true,
+        emails: true,
+        type: true,
+      },
+    });
+
+    const senderIds = Array.from(new Set(notifications.map((n) => n.createdBy).filter(Boolean)));
+
+    let senders: string[] = [];
+    if (senderIds.length > 0) {
+      const users = await prisma.user.findMany({
+        where: { id: { in: senderIds as string[] } },
+        select: { email: true },
+      });
+      senders = users.map((u) => u.email);
+    }
+
+    const recipientsSet = new Set<string>();
+    notifications.forEach((n) => {
+      if (Array.isArray(n.emails)) {
+        n.emails.forEach((email: string) => recipientsSet.add(email));
+      }
+    });
+    const recipients = Array.from(recipientsSet);
+
+    const notifyTypes = Array.from(new Set(notifications.map((n) => n.type).filter(Boolean)));
+
+    return {
+      sender: senders,
+      recipient: recipients,
+      notifyType: notifyTypes,
+    };
   }
 
   async createBoxNotification(input: CreateBoxNotificationInput): Promise<any> {

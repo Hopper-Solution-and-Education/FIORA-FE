@@ -22,7 +22,7 @@ export default function TabLayout({ children, params }: TabLayoutProps) {
     } catch {
       router.push('/not-found');
     }
-  }, [unwrappedParams.tab, checkTabAccess]);
+  }, [unwrappedParams.tab, checkTabAccess, router]);
 
   return (
     <ModuleAccessLayout featureFlag={FeatureFlags.PARTNER_FEATURE}>{children}</ModuleAccessLayout>

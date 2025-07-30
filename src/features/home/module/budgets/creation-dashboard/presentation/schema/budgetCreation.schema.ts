@@ -1,3 +1,4 @@
+import { Currency } from '@prisma/client';
 import * as yup from 'yup';
 
 const budgetCreationSchema = yup.object({
@@ -11,12 +12,32 @@ const budgetCreationSchema = yup.object({
   currency: yup.string().required('Currency is required'),
   estimatedTotalExpense: yup
     .number()
-    .required('Total expense is required')
-    .min(1, 'Total income must be greater than 0'),
+    .test(
+      'min-or-zero-expense',
+      'Total expense must be 0 or at least 2,500,000 VND or 100 USD',
+      function (value) {
+        const { currency } = this.parent;
+        if (typeof value !== 'number') return false;
+        if (value === 0) return true;
+        if (currency === Currency.VND) return value >= 2500000;
+        if (currency === Currency.USD) return value >= 100;
+        return true; // For other currencies, skip this rule
+      },
+    ),
   estimatedTotalIncome: yup
     .number()
-    .required('Total income is required')
-    .min(1, 'Total income must be greater than 0'),
+    .test(
+      'min-or-zero-income',
+      'Total income must be 0 or at least 2,500,000 VND or 100 USD',
+      function (value) {
+        const { currency } = this.parent;
+        if (typeof value !== 'number') return false;
+        if (value === 0) return true;
+        if (currency === Currency.VND) return value >= 2500000;
+        if (currency === Currency.USD) return value >= 100;
+        return true;
+      },
+    ),
   // Added missing description field
   description: yup.string().optional().max(1000, 'Description must be less than 1000 characters'),
 });

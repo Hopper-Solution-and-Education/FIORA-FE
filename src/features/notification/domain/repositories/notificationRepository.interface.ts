@@ -1,3 +1,4 @@
+import { NotificationFilterOptions } from '@/shared/types/notification.types';
 import type {
   EmailNotificationLogs,
   Notification,
@@ -26,4 +27,5 @@ export interface INotificationRepository {
   getUserNotification(userId: string): Promise<UserNotification[]>;
   getEmailNotificationLogs(notificationId: string): Promise<EmailNotificationLogs[]>;
   createBoxNotification(input: CreateBoxNotificationInput): Promise<Notification>;
+  getNotificationFilterOptions(): Promise<NotificationFilterOptions>;
 }

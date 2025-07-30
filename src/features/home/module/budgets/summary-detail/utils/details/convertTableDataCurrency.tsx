@@ -4,7 +4,7 @@ import { USD_VND_RATE } from '@/shared/constants';
 import { Currency } from '@/shared/types';
 import { convertVNDToUSD, formatCurrency } from '@/shared/utils';
 import { isArray } from 'lodash';
-import { TableData } from '../presentation/types/table.type';
+import { TableData } from '../../presentation/types/table.type';
 
 export const formatCurrencyValue = (
   value: number | string | undefined,

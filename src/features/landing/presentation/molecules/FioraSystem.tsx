@@ -2,6 +2,7 @@ import { Icons } from '@/components/Icon';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { SectionTypeEnum } from '../../constants';
 import { categoryLabels, orbitLevels, shadowRings } from '../../constants/fiora-system';
@@ -79,11 +80,22 @@ const OrbitalCategoryLabel = ({
                 cursor: 'pointer',
               }}
             >
-              {iconSrc && <Icon className="w-[60%] h-[60%] text-white" />}
+              {iconSrc &&
+                (iconSrc.startsWith('http') ? (
+                  <Image
+                    src={iconSrc}
+                    alt={label}
+                    width={scaledCategoryDotSize}
+                    height={scaledCategoryDotSize}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <Icon className="w-[60%] h-[60%] text-white" />
+                ))}
             </div>
           </TooltipTrigger>
-          <TooltipContent className="bg-gray-800 text-white px-3 py-1 rounded-md text-sm font-bold shadow-lg z-50">
-            {label}
+          <TooltipContent className="bg-gray-800 text-white px-3 py-1 rounded-md text-sm font-bold shadow-lg z-50 max-w-[200px]">
+            <div className="line-clamp-4 break-words whitespace-normal">{label}</div>
           </TooltipContent>
         </Tooltip>
       </motion.div>
@@ -125,9 +137,12 @@ export const FioraSystem = () => {
     radius: ring.radius * scaleFactor,
   }));
 
-  const scaledCategoryLabels = categoryLabels.map((label) => ({
+  const scaledCategoryLabels = categoryLabels.map((label, index) => ({
     ...label,
     radius: label.radius * scaleFactor,
+    iconSrc: section?.medias?.[index]?.media_url ?? label.iconSrc,
+    label: section?.medias?.[index]?.description ?? label.label,
+    href: section?.medias?.[index]?.redirect_url ?? label.href,
   }));
 
   return (
@@ -235,17 +250,18 @@ export const FioraSystem = () => {
                   />
                 );
               })}
-
               {scaledCategoryLabels.map((label) => (
-                <OrbitalCategoryLabel
-                  key={label.label}
-                  label={label.label}
-                  initialAngle={label.initialAngle}
-                  radius={label.radius}
-                  scaleFactor={scaleFactor}
-                  speed={label.speed}
-                  iconSrc={label.iconSrc as keyof typeof Icons}
-                />
+                <Link href={label.href ?? '#'} target="_blank" key={label.label}>
+                  <OrbitalCategoryLabel
+                    label={label.label}
+                    initialAngle={label.initialAngle}
+                    radius={label.radius}
+                    scaleFactor={scaleFactor}
+                    speed={label.speed}
+                    iconSrc={label.iconSrc as keyof typeof Icons}
+                    key={label.label}
+                  />
+                </Link>
               ))}
             </div>
           </div>
