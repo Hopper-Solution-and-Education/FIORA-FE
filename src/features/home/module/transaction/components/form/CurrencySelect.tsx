@@ -44,10 +44,12 @@ const TypeSelectField: React.FC<TypeSelectProps> = ({
   const options = useMemo(() => {
     if (currencies.length > 0) {
       // Map the fetched data to the expected format using the correct API structure
-      return currencies.map((currency) => ({
-        value: currency.name, // Use 'name' field (USD, VND, FX)
-        label: `${currency.name} (${currency.symbol})`, // Show both name and symbol
-      }));
+      return currencies
+        .filter((currency) => currency.name !== 'FX')
+        .map((currency) => ({
+          value: currency.name, // Use 'name' field (USD, VND, FX)
+          label: `${currency.name} (${currency.symbol})`, // Show both name and symbol
+        }));
     }
 
     // Fallback to default options if data is not available

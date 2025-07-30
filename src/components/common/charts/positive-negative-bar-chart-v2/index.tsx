@@ -17,13 +17,13 @@ import {
   Tooltip as TooltipShadcn,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { formatFIORACurrency } from '@/config/FIORANumberFormat';
 import {
   BASE_BAR_HEIGHT,
   DEFAULT_CURRENCY,
   DEFAULT_LOCALE,
   MIN_CHART_HEIGHT,
 } from '@/shared/constants/chart';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { Currency } from '@/shared/types';
 import { cn } from '@/shared/utils';
@@ -48,25 +48,28 @@ import {
   prepareChartData,
 } from './utils';
 
-const PositiveAndNegativeBarChartV2 = ({
-  data,
-  title,
-  currency = DEFAULT_CURRENCY,
-  locale = DEFAULT_LOCALE,
-  xAxisFormatter = (value) => formatFIORACurrency(value, currency as Currency),
-  tooltipContent,
-  legendItems,
-  tutorialText,
-  callback,
-  levelConfig,
-  height = MIN_CHART_HEIGHT,
-  baseBarHeight = BASE_BAR_HEIGHT,
-  showTotal = false,
-  totalName = 'Total',
-  expanded = true,
-  header,
-  labelFormatter,
-}: PositiveAndNegativeBarChartV2Props) => {
+const PositiveAndNegativeBarChartV2 = (props: PositiveAndNegativeBarChartV2Props) => {
+  const { formatCurrency } = useCurrencyFormatter();
+  const {
+    data,
+    title,
+    currency = DEFAULT_CURRENCY,
+    locale = DEFAULT_LOCALE,
+    xAxisFormatter = (value) => formatCurrency(value, currency as Currency),
+    tooltipContent,
+    legendItems,
+    tutorialText,
+    callback,
+    levelConfig,
+    height = MIN_CHART_HEIGHT,
+    baseBarHeight = BASE_BAR_HEIGHT,
+    showTotal = false,
+    totalName = 'Total',
+    expanded = true,
+    header,
+    labelFormatter,
+  } = props;
+
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [chartHeight, setChartHeight] = useState(height);
   const [showAll, setShowAll] = useState(false);

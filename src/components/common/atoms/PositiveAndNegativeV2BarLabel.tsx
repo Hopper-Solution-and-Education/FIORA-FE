@@ -1,4 +1,7 @@
-import { formatCurrency } from '@/shared/utils';
+import { useCurrencyFormatter } from '@/shared/hooks';
+import { useAppSelector } from '@/store';
+import { RootState } from '@/store/rootReducer';
+import { Currency } from '@prisma/client';
 import { memo } from 'react';
 
 interface PositiveAndNegativeV2BarLabelBarLabelProps {
@@ -30,6 +33,9 @@ const PositiveAndNegativeV2BarLabel = ({
   formatter,
   minWidth = 100,
 }: PositiveAndNegativeV2BarLabelBarLabelProps) => {
+  const { formatCurrency } = useCurrencyFormatter();
+  const { currency } = useAppSelector((state: RootState) => state.settings);
+
   if (Math.abs(width) < minWidth) return null;
 
   return (
@@ -44,7 +50,11 @@ const PositiveAndNegativeV2BarLabel = ({
         pointerEvents: 'none',
       }}
     >
-      {renderValue ? renderValue : formatter ? formatter(value) : formatCurrency(value)}
+      {renderValue
+        ? renderValue
+        : formatter
+          ? formatter(value)
+          : formatCurrency(value, currency as Currency)}
     </text>
   );
 };

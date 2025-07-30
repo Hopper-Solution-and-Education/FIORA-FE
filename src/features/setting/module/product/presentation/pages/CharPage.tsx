@@ -1,10 +1,11 @@
 'use client';
 
-import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import PositiveAndNegativeBarChartV2 from '@/components/common/charts/positive-negative-bar-chart-v2';
+import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import { COLORS } from '@/shared/constants/chart';
-import { formatCurrency } from '@/shared/utils';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { FolderOpen } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
@@ -15,7 +16,6 @@ import {
   setProductCategoryToEdit,
 } from '../../slices';
 import { mapTransactionsToTwoSideBarItems } from '../utils';
-import { FolderOpen } from 'lucide-react';
 
 const ChartPage = () => {
   const data = useAppSelector((state) => state.productManagement.productTransaction.data);
@@ -26,6 +26,7 @@ const ChartPage = () => {
   const dispatch = useAppDispatch();
   const { data: userData } = useSession();
   const currency = useAppSelector((state) => state.settings.currency);
+  const { formatCurrency } = useCurrencyFormatter();
 
   const handleEditCategoryProduct = (categoryProduct: CategoryProduct) => {
     dispatch(setProductCategoryFormState('edit'));

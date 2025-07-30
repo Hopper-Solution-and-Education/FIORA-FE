@@ -5,11 +5,11 @@ import { ChartSkeleton } from '@/components/common/organisms';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { FinanceReportFilterEnum } from '@/features/setting/data/module/finance/constant/FinanceReportFilterEnum';
 import { COLORS } from '@/shared/constants/chart';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { Currency } from '@/shared/types';
-import { formatCurrency } from '@/shared/utils';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { useAppDispatch, useAppSelector } from '@/store';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getFinanceByCategoryAsyncThunk } from '../../slices/actions';
 
 const ChartByAccount = () => {
@@ -18,6 +18,8 @@ const ChartByAccount = () => {
   const selectedIds = useAppSelector((state) => state.financeControl.selectedAccounts);
   const currency = useAppSelector((state) => state.settings.currency);
   const dispatch = useAppDispatch();
+  const { formatCurrency } = useCurrencyFormatter();
+  const [data, setData] = useState<any[]>([]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -32,15 +34,38 @@ const ChartByAccount = () => {
     }
   }, [dispatch, selectedIds]);
 
-  const data = Array.isArray(financeByCategory)
-    ? financeByCategory.map((item) => ({
-        icon: item.icon,
-        name: item.name,
-        totalExpense: convertCurrency(item.totalExpense, item.currency as Currency, currency),
-        totalIncome: convertCurrency(item.totalIncome, item.currency as Currency, currency),
-        balance: convertCurrency(Number(item?.balance ?? 0), item.currency as Currency, currency),
-      }))
-    : [];
+  useEffect(() => {
+    const processData = async () => {
+      if (Array.isArray(financeByCategory)) {
+        const processedData = await Promise.all(
+          financeByCategory.map(async (item) => ({
+            icon: item.icon,
+            name: item.name,
+            totalExpense: await convertCurrency(
+              item.totalExpense,
+              item.currency as Currency,
+              currency,
+            ),
+            totalIncome: await convertCurrency(
+              item.totalIncome,
+              item.currency as Currency,
+              currency,
+            ),
+            balance: await convertCurrency(
+              Number(item?.balance ?? 0),
+              item.currency as Currency,
+              currency,
+            ),
+          })),
+        );
+        setData(processedData);
+      } else {
+        setData([]);
+      }
+    };
+
+    processData();
+  }, [financeByCategory, currency]);
 
   return (
     <div className="space-y-8">

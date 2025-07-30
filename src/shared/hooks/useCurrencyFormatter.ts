@@ -7,7 +7,7 @@ import { Currency } from '@prisma/client';
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
-import { CACHE_KEY, STALE_TIME } from '../constants/exchangeRates';
+import { CACHE_KEY, EXCHANGE_RATE_STALE_TIME } from '../constants/exchangeRates';
 import {
   type CurrencyFormatterOptions,
   type ExchangeAmountParams,
@@ -31,7 +31,7 @@ type UseCurrencyFormatterReturn = {
     currency: CurrencyObjectType | string,
     options?: CurrencyFormatterOptions,
   ) => string;
-  exchangeAmount: (params: ExchangeAmountParams) => ExchangeAmountResult;
+  getExchangeAmount: (params: ExchangeAmountParams) => ExchangeAmountResult;
 
   // Data fetching
   mutate: () => Promise<Response<ExchangeRateResponse> | null | undefined>;
@@ -80,7 +80,7 @@ const setCachedExchangeRates = (data: CachedExchangeRateData): void => {
  */
 const isCacheStale = (updatedAt: number): boolean => {
   const now = Date.now();
-  return now - updatedAt > STALE_TIME;
+  return now - updatedAt > EXCHANGE_RATE_STALE_TIME;
 };
 
 /**
@@ -107,6 +107,7 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
   const { isLoading, error, mutate } = useDataFetcher<ExchangeRateResponse>({
     endpoint: apiEndpoint,
     method: 'GET',
+    refreshInterval: EXCHANGE_RATE_STALE_TIME,
   });
 
   /**
@@ -434,7 +435,7 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
    * Exchanges amount between currencies with detailed result
    * Automatically fetches exchange rates if not available
    */
-  const exchangeAmount = useCallback(
+  const getExchangeAmount = useCallback(
     (params: ExchangeAmountParams): ExchangeAmountResult => {
       const { amount, fromCurrency, toCurrency } = params;
 
@@ -533,7 +534,7 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
       toast.error('Failed to refresh exchange rates. Please check your connection and try again.');
       throw error; // Re-throw to allow error handling in calling functions
     }
-  }, [mutate, dispatch]);
+  }, []);
 
   /**
    * Gets list of supported currencies
@@ -552,7 +553,7 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
   return {
     // Core functions
     formatCurrency,
-    exchangeAmount,
+    getExchangeAmount,
 
     // Data fetching
     mutate,

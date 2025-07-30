@@ -7,7 +7,8 @@ import DeleteDialog from '@/features/home/module/category/components/DeleteDialo
 import { fetchCategories } from '@/features/home/module/category/slices/actions';
 import { Category } from '@/features/home/module/category/slices/types';
 import { COLORS } from '@/shared/constants/chart';
-import { convertVNDToUSD, formatCurrency } from '@/shared/utils';
+import { useCurrencyFormatter } from '@/shared/hooks';
+import { convertVNDToUSD } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { CategoryType } from '@prisma/client';
 import { useRouter } from 'next/navigation';
@@ -19,6 +20,7 @@ const CategoryDashboard = () => {
   const router = useRouter();
   const { categories, filterCriteria } = useAppSelector((state) => state.category);
   const { currency } = useAppSelector((state) => state.settings);
+  const { formatCurrency } = useCurrencyFormatter();
 
   // * INITIALIZATION CHART DATA ZONE
   const chartData: BarItem[] = useMemo(() => {

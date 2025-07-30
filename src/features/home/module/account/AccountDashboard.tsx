@@ -10,7 +10,7 @@ import { fetchAccounts, fetchParents } from '@/features/home/module/account/slic
 import { mapAccountsToBarItems } from '@/features/home/module/account/utils';
 import { MODULE } from '@/shared/constants';
 import { COLORS } from '@/shared/constants/chart';
-import { formatCurrency } from '@/shared/utils';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -22,7 +22,7 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
   const chartRef = useRef<HTMLDivElement>(null);
   const [showNavigateDialog, setShowNavigateDialog] = useState(false);
   const { accounts, refresh, filterCriteria } = useAppSelector((state) => state.account);
-  const { currency } = useAppSelector((state) => state.settings);
+  const { formatCurrency } = useCurrencyFormatter();
 
   useEffect(() => {
     dispatch(fetchAccounts(filterCriteria));
@@ -31,8 +31,8 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
 
   const chartData: BarItem[] = useMemo(() => {
     if (!accounts.data) return [];
-    return mapAccountsToBarItems(accounts.data, currency);
-  }, [accounts.data, currency]);
+    return mapAccountsToBarItems(accounts.data, accounts.data[0].currency);
+  }, [accounts.data]);
 
   type Depth = 0 | 1 | 2;
 
@@ -90,8 +90,8 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
           <PositiveAndNegativeBarChart
             title={module === MODULE.ACCOUNT ? 'Accounts' : undefined}
             data={chartData}
-            xAxisFormatter={(value) => formatCurrency(value, currency)}
-            currency={currency}
+            xAxisFormatter={(value) => formatCurrency(value, accounts.data?.[0]?.currency || '')}
+            currency={accounts.data?.[0]?.currency || ''}
             levelConfig={levelConfig}
             callback={module === MODULE.ACCOUNT ? handleDisplayDetail : undefined}
             header={

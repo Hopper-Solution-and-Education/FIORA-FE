@@ -5,10 +5,11 @@ import { ChartSkeleton } from '@/components/common/organisms';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { FinanceReportFilterEnum } from '@/features/setting/data/module/finance/constant/FinanceReportFilterEnum';
 import { COLORS } from '@/shared/constants/chart';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { Currency } from '@/shared/types';
-import { convertCurrency, formatCurrency } from '@/shared/utils/convertCurrency';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Cell } from 'recharts';
 import { getFinanceByCategoryAsyncThunk } from '../../slices/actions/getFinanceByCategoryAsyncThunk';
 
@@ -18,6 +19,8 @@ const ChartByProduct = () => {
   const selectedIds = useAppSelector((state) => state.financeControl.selectedProducts);
   const currency = useAppSelector((state) => state.settings.currency);
   const dispatch = useAppDispatch();
+  const { formatCurrency } = useCurrencyFormatter();
+  const [data, setData] = useState<any[]>([]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -32,22 +35,40 @@ const ChartByProduct = () => {
     }
   }, [dispatch, selectedIds]);
 
-  // data showing when income and data showing when expense
-  const data = Array.isArray(financeByProduct)
-    ? financeByProduct.map((item) => {
-        const profit = convertCurrency(item.totalProfit, item.currency as Currency, currency);
-        return {
-          name: item.name,
-          icon: item.icon,
-          column1: convertCurrency(item.totalExpense, item.currency as Currency, currency),
-          column2: convertCurrency(item.totalIncome, item.currency as Currency, currency),
-          column3: Math.abs(profit),
-          profitStatus: profit < 0 ? 'negative' : 'positive',
-          originalProfit: profit,
-          currency: currency,
-        };
-      })
-    : [];
+  useEffect(() => {
+    const processData = async () => {
+      if (Array.isArray(financeByProduct)) {
+        const processedData = await Promise.all(
+          financeByProduct.map(async (item) => {
+            const profit = await convertCurrency(
+              item.totalProfit,
+              item.currency as Currency,
+              currency,
+            );
+            return {
+              name: item.name,
+              icon: item.icon,
+              column1: await convertCurrency(
+                item.totalExpense,
+                item.currency as Currency,
+                currency,
+              ),
+              column2: await convertCurrency(item.totalIncome, item.currency as Currency, currency),
+              column3: Math.abs(profit),
+              profitStatus: profit < 0 ? 'negative' : 'positive',
+              originalProfit: profit,
+              currency: currency,
+            };
+          }),
+        );
+        setData(processedData);
+      } else {
+        setData([]);
+      }
+    };
+
+    processData();
+  }, [financeByProduct, currency]);
 
   return (
     <div className="space-y-8">

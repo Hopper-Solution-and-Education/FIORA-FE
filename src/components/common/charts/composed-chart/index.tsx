@@ -15,9 +15,10 @@ import {
   DEFAULT_CHART_TICK_COUNT,
   DEFAULT_CURRENCY,
 } from '@/shared/constants/chart';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { ColumnConfig, LineConfig, TooltipProps } from '@/shared/types/chart.type';
-import { cn, formatCurrency, isImageUrl } from '@/shared/utils';
+import { cn, isImageUrl } from '@/shared/utils';
 import { findMaxMinValues } from '@/shared/utils/chart';
 import { getChartMargins, useWindowSize } from '@/shared/utils/device';
 import Image from 'next/image';
@@ -71,22 +72,24 @@ export const renderIconOrImage = (iconValue?: string) => {
   return <LucieIcon icon={iconValue} className="w-4 h-4" />;
 };
 
-const ComposedChartComponent = ({
-  data = [],
-  title,
-  callback,
-  className,
-  columns,
-  lines,
-  yAxisFormatter = (value: number) => formatCurrency(value, currency),
-  isLoading = false,
-  showLegend = true,
-  currency = DEFAULT_CURRENCY,
-  height = DEFAULT_COMPOSED_CHART_HEIGHT,
-  fontSize = DEFAULT_CHART_FONT_SIZE,
-  tickCount = DEFAULT_CHART_TICK_COUNT,
-  tooltipFormatter,
-}: ComposedChartProps) => {
+const ComposedChartComponent = (props: ComposedChartProps) => {
+  const { formatCurrency } = useCurrencyFormatter();
+  const {
+    data = [],
+    title,
+    callback,
+    className,
+    columns,
+    lines,
+    yAxisFormatter = (value: number) => formatCurrency(value, currency),
+    isLoading = false,
+    showLegend = true,
+    currency = DEFAULT_CURRENCY,
+    height = DEFAULT_COMPOSED_CHART_HEIGHT,
+    fontSize = DEFAULT_CHART_FONT_SIZE,
+    tickCount = DEFAULT_CHART_TICK_COUNT,
+    tooltipFormatter,
+  } = props;
   const { width } = useWindowSize();
   const isMobile = useIsMobile();
   const chartMargins = useMemo(() => getChartMargins(width), [width]);

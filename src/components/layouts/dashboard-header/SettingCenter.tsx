@@ -9,12 +9,13 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import growthbook from '@/config/growthbook/growthbook';
 import { ICON_SIZE } from '@/shared/constants/size';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { changeLanguage, toggleCurrency } from '@/store/slices/setting.slice';
+import { Currency } from '@prisma/client';
 import EnglishIcon from '@public/icons/united-kingdom.png';
 import usdIcon from '@public/icons/usd.svg';
 import VietnameseIcon from '@public/icons/vietnam.png';
-import vndIcon from '@public/icons/vnd.svg';
 import { Settings } from 'lucide-react';
 import { Session, useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
@@ -29,6 +30,8 @@ export default function SettingCenter() {
   const dispatch = useAppDispatch();
   const gb = growthbook;
   const [filteredMenuItems, setFilteredMenuItems] = useState<MenuSettingItem[]>([]);
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const { getSupportedCurrencies, selectedCurrency, exchangeRates } = useCurrencyFormatter();
 
   const { data: session } = useSession() as { data: Session | null };
 
@@ -46,9 +49,14 @@ export default function SettingCenter() {
     dispatch(changeLanguage(language === 'en' ? 'vi' : 'en'));
   };
 
-  const handleToggleCurrency = (e: any) => {
+  const handleOpenCurrencyDropdown = (e: any) => {
     e.stopPropagation();
-    dispatch(toggleCurrency(currency === 'USD' ? 'VND' : 'USD'));
+    setShowCurrencyDropdown(!showCurrencyDropdown);
+  };
+
+  const handleToggleCurrency = (e: any, currency: string) => {
+    e.stopPropagation();
+    dispatch(toggleCurrency(currency as Currency));
   };
 
   useEffect(() => {
@@ -116,18 +124,14 @@ export default function SettingCenter() {
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <div
-                onClick={handleToggleCurrency}
+                onClick={handleOpenCurrencyDropdown}
                 className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
               >
-                {currency === 'VND' ? (
-                  <Image src={vndIcon} alt="VND" width={20} height={20} className="dark:invert" />
-                ) : (
-                  <Image src={usdIcon} alt="USD" width={20} height={20} className="dark:invert" />
-                )}
+                <Image src={usdIcon} alt="USD" width={20} height={20} className="dark:invert" />
               </div>
             </TooltipTrigger>
             <TooltipContent side="top">
-              <span>Toggle Currency</span>
+              <span>Currency Display</span>
             </TooltipContent>
           </Tooltip>
 
@@ -146,6 +150,29 @@ export default function SettingCenter() {
                 </TooltipContent>
               </Tooltip>
             ))}
+
+          <div className="col-span-5 py-2 border-t-[1px] border-gray-200 dark:border-gray-700 grid grid-cols-5 gap-2">
+            {showCurrencyDropdown &&
+              getSupportedCurrencies().map((currency: string) => (
+                <Tooltip delayDuration={0} key={currency}>
+                  <TooltipTrigger asChild>
+                    <div
+                      onClick={(e) => handleToggleCurrency(e, currency)}
+                      className={`flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 ${
+                        selectedCurrency === currency ? 'bg-gray-200 dark:bg-gray-700' : ''
+                      }`}
+                    >
+                      <span className="text-md font-semibold">
+                        {exchangeRates[currency].suffix}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <span>{currency}</span>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
     </TooltipProvider>

@@ -49,6 +49,7 @@ export const {
   setExchangeRateSettings,
   updateExchangeRates,
   updateExchangeRatesWithTimestamp,
+  setFullCurrencyDisplay,
 } = settingsSlice.actions;
 
 export default settingsSlice.reducer;

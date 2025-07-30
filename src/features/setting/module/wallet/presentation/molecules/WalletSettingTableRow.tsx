@@ -1,5 +1,5 @@
 import { TableCell, TableRow } from '@/components/ui/table';
-import { formatFIORACurrency } from '@/config/FIORANumberFormat';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { formatDateTime } from '@/shared/lib/formatDateTime';
 import {
   UserProfileCard,
@@ -15,6 +15,7 @@ interface WalletSettingTableRowProps {
 }
 
 const WalletSettingTableRow = ({ data, columns }: WalletSettingTableRowProps) => {
+  const { formatCurrency } = useCurrencyFormatter();
   return (
     <TableRow>
       {columns.map((col) => {
@@ -37,7 +38,7 @@ const WalletSettingTableRow = ({ data, columns }: WalletSettingTableRowProps) =>
           case 'Amount':
             return (
               <TableCell key={col} className="text-center">
-                {formatFIORACurrency(data.fxAmount, 'FX')}
+                {formatCurrency(data.fxAmount, 'FX')}
               </TableCell>
             );
           case 'Request Date':

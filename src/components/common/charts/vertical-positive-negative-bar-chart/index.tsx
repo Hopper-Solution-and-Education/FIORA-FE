@@ -7,10 +7,11 @@ import {
   DEFAULT_CHART_TICK_COUNT,
   DEFAULT_CURRENCY,
 } from '@/shared/constants/chart';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { ColumnConfig, TooltipProps } from '@/shared/types/chart.type';
-import { cn, formatCurrency } from '@/shared/utils';
-import { findMaxMinValues, buildResponsiveBarCategoryGap } from '@/shared/utils/chart';
+import { cn } from '@/shared/utils';
+import { buildResponsiveBarCategoryGap, findMaxMinValues } from '@/shared/utils/chart';
 import { getChartMargins, useWindowSize } from '@/shared/utils/device';
 import { memo, useCallback, useMemo } from 'react';
 import {
@@ -24,29 +25,32 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { renderCustomLegend } from './components/VerticalPositiveNegativeBarChartLegend';
 import {
   DEFAULT_VERTICAL_BAR_CHART_HEIGHT,
   DEFAULT_VERTICAL_BAR_CHART_ITEM_WIDTH,
 } from './constant';
 import { VerticalPositiveNegativeBarChartProps } from './types';
-import { renderCustomLegend } from './components/VerticalPositiveNegativeBarChartLegend';
 
-const VerticalPositiveNegativeBarChart = ({
-  data = [],
-  title,
-  tooltipContent,
-  columns,
-  showLegend = true,
-  isLoading = false,
-  xAxisFormatter = (value: number) => value.toString(),
-  yAxisFormatter = (value: number) => formatCurrency(value, currency),
-  currency = DEFAULT_CURRENCY,
-  height = DEFAULT_VERTICAL_BAR_CHART_HEIGHT,
-  fontSize = DEFAULT_CHART_FONT_SIZE,
-  tickCount = DEFAULT_CHART_TICK_COUNT,
-}: VerticalPositiveNegativeBarChartProps) => {
+const VerticalPositiveNegativeBarChart = (props: VerticalPositiveNegativeBarChartProps) => {
   const { width } = useWindowSize();
   const isMobile = useIsMobile();
+  const { formatCurrency } = useCurrencyFormatter();
+
+  const {
+    data = [],
+    title,
+    tooltipContent,
+    columns,
+    showLegend = true,
+    isLoading = false,
+    xAxisFormatter = (value: number) => value.toString(),
+    yAxisFormatter = (value: number) => formatCurrency(value, currency),
+    currency = DEFAULT_CURRENCY,
+    height = DEFAULT_VERTICAL_BAR_CHART_HEIGHT,
+    fontSize = DEFAULT_CHART_FONT_SIZE,
+    tickCount = DEFAULT_CHART_TICK_COUNT,
+  } = props;
 
   const chartMargins = useMemo(() => getChartMargins(width), [width]);
 

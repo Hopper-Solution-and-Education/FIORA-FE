@@ -3,6 +3,7 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -26,10 +27,12 @@ const ExchangeRateSettingPage = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [exchangeRates, setExchangeRates] = useState<ExchangeRateType[]>([]);
+  const { refreshExchangeRates } = useCurrencyFormatter();
 
   const { data, mutate } = useDataFetch<ExchangeRateType[]>({
     endpoint: '/api/setting/currency-setting',
     method: 'GET',
+    refreshInterval: 1000,
   });
 
   useEffect(() => {
@@ -84,6 +87,7 @@ const ExchangeRateSettingPage = () => {
     });
     const data = await response.json();
     if (response.ok) {
+      refreshExchangeRates();
       toast.success(data.message || 'Exchange rate updated successfully');
       mutate();
     } else {

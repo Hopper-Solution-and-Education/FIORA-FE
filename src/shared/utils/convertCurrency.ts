@@ -1,4 +1,3 @@
-import { formatFIORACurrency } from '@/config/FIORANumberFormat';
 import prisma from '@/config/prisma/prisma';
 import { exchangeRateRepository } from '@/features/setting/api/infrastructure/repositories/exchangeRateRepository';
 import { Currency, Prisma } from '@prisma/client'; // Import Prisma to use Decimal type
@@ -61,13 +60,3 @@ export async function convertCurrency(
 export const isValidCurrency = (currency: string): currency is Currency => {
   return Object.values(Currency).includes(currency as Currency);
 };
-
-/**
- * Format a number to currency string.
- * @param value - The numeric value to format.
- * @param currency - The ISO 4217 currency code (e.g. 'USD', 'VND', 'FX').
- * @returns A formatted currency string.
- */
-export function formatCurrency(value: number, currency: Currency): string {
-  return formatFIORACurrency(value, currency);
-}

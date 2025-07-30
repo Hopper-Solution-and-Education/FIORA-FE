@@ -1,18 +1,19 @@
-import { COLORS } from '@/shared/constants/chart';
-import { motion } from 'framer-motion';
-import { useMemo } from 'react';
-import { useAppSelector } from '@/store';
 import { WalletType } from '@/features/home/module/wallet/domain/enum';
-import { formatFIORACurrency } from '@/config/FIORANumberFormat';
 import { CURRENCY } from '@/shared/constants';
-import { useRouter } from 'next/navigation';
+import { COLORS } from '@/shared/constants/chart';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
+import { useCurrencyFormatter } from '@/shared/hooks';
+import { useAppSelector } from '@/store';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { useMemo } from 'react';
 
 export default function FinanceSummary() {
   const wallets = useAppSelector((state) => state.wallet.wallets);
   const frozenAmount = useAppSelector((state) => state.wallet.frozenAmount);
   const loading = useAppSelector((state) => state.wallet.loading);
   const router = useRouter();
+  const { formatCurrency } = useCurrencyFormatter();
 
   const { FBalance, FDebt } = useMemo(() => {
     const totalBalance =
@@ -22,8 +23,8 @@ export default function FinanceSummary() {
         ?.filter((w) => w.type === WalletType.Debt)
         .reduce((sum, w) => sum + (w.frBalanceActive || 0), 0) || 0;
     return {
-      FBalance: formatFIORACurrency(totalBalance, CURRENCY.FX),
-      FDebt: formatFIORACurrency(totalDebt, CURRENCY.FX),
+      FBalance: formatCurrency(totalBalance, CURRENCY.FX),
+      FDebt: formatCurrency(totalDebt, CURRENCY.FX),
     };
   }, [wallets, frozenAmount]);
   const isLoading = loading || !wallets || frozenAmount === null;

@@ -13,5 +13,5 @@ export type ExchangeRate = keyof typeof exchangeRates;
 export type ExchangeRateValue = keyof (typeof exchangeRates)[ExchangeRate];
 export type ExchangeRateObject = (typeof exchangeRates)[ExchangeRate];
 
-export const STALE_TIME = 6 * 60 * 60 * 1000;
+export const EXCHANGE_RATE_STALE_TIME = 6 * 60 * 60 * 1000;
 export const CACHE_KEY = 'fiora_exchange_rates';

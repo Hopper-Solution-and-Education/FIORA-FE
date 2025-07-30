@@ -1,11 +1,8 @@
-import { formatFIORACurrency, getCurrencySymbol } from '@/config/FIORANumberFormat';
 import { iconOptions } from '@/shared/constants/data';
-import { Currency } from '@/shared/types';
 import { Filter } from '@growthbook/growthbook';
 import { Prisma } from '@prisma/client';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { CURRENCY } from '../constants';
 import { OrderByFields } from '../types/Common.types';
 
 export function cn(...inputs: ClassValue[]) {
@@ -22,62 +19,6 @@ export const useGetIconLabel = (icon: string): string => {
       .find((option) => option.options.some((o) => o.value === icon))
       ?.options.find((o) => o.value === icon)?.label || ''
   );
-};
-
-export const formatCurrency = (
-  value: number,
-  currency: string = CURRENCY.VND,
-  isFullCurrencyDisplay: boolean = true,
-) => {
-  try {
-    const sign = value < 0 ? '-' : '';
-    const absValue = Math.abs(value);
-    let formattedValue = absValue;
-    let suffix = '';
-
-    if (!isFullCurrencyDisplay) {
-      // Compact/shortened notation
-      if (absValue >= 1_000_000_000_000) {
-        formattedValue = absValue / 1_000_000_000_000;
-        suffix = 'T';
-      } else if (absValue >= 1_000_000_000) {
-        formattedValue = absValue / 1_000_000_000;
-        suffix = 'B';
-      } else if (absValue >= 1_000_000) {
-        formattedValue = absValue / 1_000_000;
-        suffix = 'M';
-      } else if (absValue >= 1_000) {
-        formattedValue = absValue / 1_000;
-        suffix = 'K';
-      }
-    }
-
-    // Use FIORANumberFormat for currency formatting
-    const formatted = formatFIORACurrency(formattedValue, currency as Currency);
-
-    if (!isFullCurrencyDisplay && suffix) {
-      const currencySymbol = getCurrencySymbol(currency as Currency);
-      if (currency === CURRENCY.USD) {
-        // For USD, move the suffix after the number but keep $ at the start
-        const numericPart = formatted.replace('$', '').trim();
-        return `${sign}$${numericPart}${suffix}`;
-      } else if (currency === CURRENCY.VND) {
-        // For VND, split at ₫ and place suffix before the currency symbol
-        const parts = formatted.split('₫').map((part) => part.trim());
-        return `${sign}${parts[0]}${suffix} ₫${parts[1] || ''}`;
-      } else {
-        // For FX and other currencies, place suffix before the currency symbol
-        const parts = formatted.split(currencySymbol).map((part) => part.trim());
-        return `${sign}${parts[0]}${suffix} ${currencySymbol}${parts[1] || ''}`;
-      }
-    }
-
-    // Full currency display or no suffix
-    return sign ? `-${formatted}` : formatted;
-  } catch (error) {
-    console.error('Error formatting currency:', error);
-    return value.toString();
-  }
 };
 
 export const convertVNDToUSD = (amountVND: number): number => {
