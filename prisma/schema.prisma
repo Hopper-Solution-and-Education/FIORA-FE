@@ -10,39 +10,42 @@ datasource db {
 }
 
 model User {
-  id                  String                @id @default(uuid()) @db.Uuid
-  name                String?
-  email               String                @unique
-  password            String?
-  emailVerified       Boolean?              @default(false)
-  image               String?
-  isDeleted           Boolean               @default(false)
-  deletedAt           DateTime?             @db.Timestamptz(0)
-  createdAt           DateTime              @default(now()) @db.Timestamptz(0)
-  updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
-  createdBy           String?               @db.Uuid
-  updatedBy           String?               @db.Uuid
-  role                UserRole              @default(User)
-  accounts            Account[]             @relation("UserAccounts")
-  AttachmentRelations AttachmentRelations[]
-  budgetDetails       BudgetDetails[]
-  budgetControl       BudgetsTable[]
-  categories          Category[]            @relation("UserCategories")
-  categoryProducts    CategoryProducts[]
-  Comment             Comment[]
-  depositRequests     DepositRequest[]      @relation("UserDepositRequest")
-  MembershipProgress  MembershipProgress[]
-  MembershipTier      MembershipTier[]
-  partners            Partner[]             @relation("UserPartners")
-  Post                Post[]
-  products            Product[]             @relation("UserProducts")
-  productItems        ProductItems[]
-  Reaction            Reaction[]
-  sessions            Session[]
-  transactions        Transaction[]         @relation("UserTransactions")
-  authentication      UserAuthentication?
-  userNotifications   UserNotification[]    @relation("UserNotification")
-  wallet              Wallet[]              @relation("UserWallet")
+  id                     String                   @id @default(uuid()) @db.Uuid
+  name                   String?
+  email                  String                   @unique
+  password               String?
+  emailVerified          Boolean?                 @default(false)
+  image                  String?
+  isDeleted              Boolean                  @default(false)
+  deletedAt              DateTime?                @db.Timestamptz(0)
+  createdAt              DateTime                 @default(now()) @db.Timestamptz(0)
+  updatedAt              DateTime                 @updatedAt @db.Timestamptz(0)
+  createdBy              String?                  @db.Uuid
+  updatedBy              String?                  @db.Uuid
+  role                   UserRole                 @default(User)
+  accounts               Account[]                @relation("UserAccounts")
+  AttachmentRelations    AttachmentRelations[]
+  budgetDetails          BudgetDetails[]
+  budgetControl          BudgetsTable[]
+  categories             Category[]               @relation("UserCategories")
+  categoryProducts       CategoryProducts[]
+  Comment                Comment[]
+  depositRequests        DepositRequest[]         @relation("UserDepositRequest")
+  exchangeRateSetting    ExchangeRateSetting[]
+  MembershipProgress     MembershipProgress[]
+  MembershipTier         MembershipTier[]
+  partners               Partner[]                @relation("UserPartners")
+  Post                   Post[]
+  products               Product[]                @relation("UserProducts")
+  productItems           ProductItems[]
+  Reaction               Reaction[]
+  sessions               Session[]
+  transactions           Transaction[]            @relation("UserTransactions")
+  authentication         UserAuthentication?
+  UserNotification       UserNotification[]
+  wallet                 Wallet[]                 @relation("UserWallet")
+  BankAccount            BankAccount[]
+  IdentificationDocument IdentificationDocument[]
 
   @@index([isDeleted])
 }
@@ -281,29 +284,29 @@ model Section {
 }
 
 model Media {
-  id              String            @id @default(uuid()) @db.Uuid
+  id              String           @id @default(uuid()) @db.Uuid
   media_type      MediaType
   media_url       String?
   embed_code      String?
   description     String?
   uploaded_by     String?
-  uploaded_date   DateTime          @default(now()) @db.Timestamptz(0)
-  section_id      String?           @db.Uuid
-  createdAt       DateTime          @default(now()) @db.Timestamptz(0)
-  updatedAt       DateTime          @updatedAt @db.Timestamptz(0)
-  createdBy       String?           @db.Uuid
-  updatedBy       String?           @db.Uuid
+  uploaded_date   DateTime         @default(now()) @db.Timestamptz(0)
+  section_id      String?          @db.Uuid
+  createdAt       DateTime         @default(now()) @db.Timestamptz(0)
+  updatedAt       DateTime         @updatedAt @db.Timestamptz(0)
+  createdBy       String?          @db.Uuid
+  updatedBy       String?          @db.Uuid
   redirect_url    String?
-  media_order     Int?              @default(0)
-  media_title     String?           @db.VarChar(255)
+  media_order     Int?             @default(0)
+  media_title     String?          @db.VarChar(255)
   media_url_2     String?
-  section         Section?          @relation(fields: [section_id], references: [id])
-  mediaReviewUser MediaReviewUser[]
+  section         Section?         @relation(fields: [section_id], references: [id])
+  mediaReviewUser MediaReviewUser? @relation("MediaToReviewUser")
 }
 
 model MediaReviewUser {
   id                 String   @id @default(uuid()) @db.Uuid
-  mediaId            String   @db.Uuid
+  mediaId            String   @unique @db.Uuid
   media_user_name    String   @db.VarChar(255)
   media_user_avatar  String?
   media_user_email   String?
@@ -313,7 +316,8 @@ model MediaReviewUser {
   updatedAt          DateTime @updatedAt @db.Timestamptz(0)
   createdBy          String?  @db.Uuid
   updatedBy          String?  @db.Uuid
-  media              Media    @relation(fields: [mediaId], references: [id])
+  media_user_title   String?
+  media              Media    @relation("MediaToReviewUser", fields: [mediaId], references: [id])
 }
 
 model Category {
@@ -485,26 +489,55 @@ model DepositRequest {
 }
 
 model Notification {
-  id                    String                  @id @default(uuid()) @db.Uuid
-  attachmentId          String?                 @unique @db.Uuid
-  message               String
-  deepLink              String?
-  createdAt             DateTime                @default(now()) @db.Timestamptz(0)
-  updatedAt             DateTime                @updatedAt @db.Timestamptz(0)
-  createdBy             String?                 @db.Uuid
-  updatedBy             String?                 @db.Uuid
-  channel               ChannelType
-  emails                String[]
-  title                 String
-  notifyTo              String
-  emailTemplateId       String?                 @db.Uuid
-  type                  NotificationType
-  EmailNotificationLogs EmailNotificationLogs[]
-  attachment            Attachment?             @relation(fields: [attachmentId], references: [id])
-  EmailTemplate         EmailTemplate?          @relation(fields: [emailTemplateId], references: [id])
-  userNotifications     UserNotification[]
+  id                String                  @id @default(uuid()) @db.Uuid
+  attachmentId      String?                 @db.Uuid
+  message           String
+  deepLink          String?
+  createdAt         DateTime                @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime                @updatedAt @db.Timestamptz(0)
+  createdBy         String?                 @db.Uuid
+  updatedBy         String?                 @db.Uuid
+  channel           ChannelType
+  emails            String[]
+  title             String
+  emailTemplateId   String?                 @db.Uuid
+  notifyTo          NotificationType
+  type              String
+  Attachment        Attachment[]
+  emailLogs         EmailNotificationLogs[]
+  emailTemplate     EmailTemplate?          @relation(fields: [emailTemplateId], references: [id])
+  userNotifications UserNotification[]
 
   @@index([attachmentId])
+}
+
+model EmailTemplate {
+  name          String            @db.VarChar(255)
+  content       String
+  isActive      Boolean
+  createdAt     DateTime          @default(now()) @db.Timestamptz(0)
+  createdBy     String?           @db.Uuid
+  updatedAt     DateTime          @updatedAt @db.Timestamptz(0)
+  updatedBy     String?           @db.Uuid
+  id            String            @id @default(uuid()) @db.Uuid
+  type          EmailTemplateType
+  notifications Notification[]
+}
+
+model EmailNotificationLogs {
+  status         NotificationLogType
+  errorMessage   String?
+  createdAt      DateTime            @default(now()) @db.Timestamptz(0)
+  createdBy      String?             @db.Uuid
+  updatedAt      DateTime            @updatedAt @db.Timestamptz(0)
+  updatedBy      String?             @db.Uuid
+  id             String              @id @default(uuid()) @db.Uuid
+  notificationId String              @db.Uuid
+  userId         String              @db.Uuid
+  notification   Notification        @relation(fields: [notificationId], references: [id])
+
+  @@index([notificationId])
+  @@index([userId])
 }
 
 model UserNotification {
@@ -517,7 +550,7 @@ model UserNotification {
   createdBy      String?      @db.Uuid
   updatedBy      String?      @db.Uuid
   notification   Notification @relation(fields: [notificationId], references: [id])
-  user           User         @relation("UserNotification", fields: [userId], references: [id])
+  User           User         @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([notificationId])
@@ -533,10 +566,11 @@ model Attachment {
   updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
   createdBy           String?               @db.Uuid
   updatedBy           String?               @db.Uuid
+  notificationId      String?               @db.Uuid
+  Notification        Notification?         @relation(fields: [notificationId], references: [id])
   AttachmentRelations AttachmentRelations[]
   BankAccount         BankAccount[]
   depositRequests     DepositRequest?
-  notifications       Notification?
 
   @@index([url])
   @@index([path])
@@ -718,6 +752,8 @@ model ExchangeRateSetting {
   updatedBy      String?          @db.Uuid
   FromCurrency   CurrencyExchange @relation("FromCurrency", fields: [fromCurrencyId], references: [id])
   ToCurrency     CurrencyExchange @relation("ToCurrency", fields: [toCurrencyId], references: [id])
+  User           User?            @relation(fields: [userId], references: [id])
+  userId         String?          @db.Uuid
 
   @@unique([fromCurrencyId, toCurrencyId])
   @@index([fromCurrencyId, toCurrencyId])
@@ -740,33 +776,55 @@ model CurrencyExchange {
   BudgetDetails           BudgetDetails[]
 }
 
-model EmailNotificationLogs {
-  status         NotificationLogType
-  errorMessage   String?
-  createdAt      DateTime            @default(now()) @db.Timestamptz(0)
-  createdBy      String?             @db.Uuid
-  updatedAt      DateTime            @db.Timestamptz(0)
-  updatedBy      String?             @db.Uuid
-  id             String              @id @db.Uuid
-  notificationId String              @db.Uuid
-  userId         String              @db.Uuid
-  Notification   Notification        @relation(fields: [notificationId], references: [id])
-
-  @@index([notificationId])
-  @@index([userId])
+model Announcement {
+  id        String   @id @db.Uuid
+  title     String   @db.VarChar(255)
+  content   String
+  sentAt    DateTime @default(now()) @db.Timestamptz(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt DateTime @db.Timestamptz(0)
+  createdBy String?  @db.Uuid
+  updatedBy String?  @db.Uuid
+  isActive  Boolean  @default(true)
 }
 
-model EmailTemplate {
-  name         String            @db.VarChar(255)
-  content      String
-  isActive     Boolean
-  createdAt    DateTime          @default(now()) @db.Timestamptz(0)
-  createdBy    String?           @db.Uuid
-  updatedAt    DateTime          @db.Timestamptz(0)
-  updatedBy    String?           @db.Uuid
-  id           String            @id @db.Uuid
-  type         EmailTemplateType
-  Notification Notification[]
+model BankAccount {
+  id            String            @id @db.Uuid
+  accountNumber String            @db.VarChar(50)
+  accountName   String            @db.VarChar(100)
+  bankName      String            @db.VarChar(100)
+  SWIFT         String            @db.VarChar(20)
+  status        BankAccountStatus
+  paymentRefId  String?           @db.Uuid
+  remarks       String
+  updatedAt     DateTime          @db.Timestamptz(0)
+  updatedBy     String?           @db.Uuid
+  userId        String            @db.Uuid
+  createdAt     DateTime          @default(now()) @db.Timestamptz(0)
+  createdBy     String?           @db.Uuid
+  Attachment    Attachment?       @relation(fields: [paymentRefId], references: [id])
+  User          User              @relation(fields: [userId], references: [id])
+}
+
+model IdentificationDocument {
+  id             String               @id @db.Uuid
+  createdAt      DateTime             @default(now()) @db.Timestamptz(0)
+  createdBy      String?              @db.Uuid
+  fileBackId     String?              @db.Uuid
+  fileFrontId    String?              @db.Uuid
+  fileLocationId String?              @db.Uuid
+  filePhotoId    String?              @db.Uuid
+  idAddress      String               @db.VarChar(255)
+  idNumber       String               @db.VarChar(100)
+  issuedDate     DateTime?            @db.Date
+  issuedPlace    String               @db.VarChar(255)
+  remarks        String
+  status         IdentificationStatus
+  type           IdentificationType
+  updatedAt      DateTime             @db.Timestamptz(0)
+  updatedBy      String?              @db.Uuid
+  userId         String               @db.Uuid
+  User           User                 @relation(fields: [userId], references: [id])
 }
 
 enum BudgetType {
@@ -847,6 +905,16 @@ enum WalletType {
   Cashback
 }
 
+enum ChannelType {
+  BOX
+  EMAIL
+}
+
+enum NotificationLogType {
+  SENT
+  FAILED
+}
+
 enum DepositRequestStatus {
   Requested
   Rejected
@@ -866,16 +934,8 @@ enum PostType {
   NEWS
   TUTORIAL
   INTRO
-}
-
-enum ChannelType {
-  BOX
-  EMAIL
-}
-
-enum NotificationLogType {
-  SENT
-  FAILED
+  ABOUT
+  TNC
 }
 
 enum NotificationType {
@@ -890,5 +950,23 @@ enum EmailTemplateType {
   MEMBERSHIP
   DEPOPSIT
   KYC
-  DEFAULT
+}
+
+enum BankAccountStatus {
+  pending
+  approval
+  reject
+}
+
+enum IdentificationStatus {
+  pending
+  approval
+  reject
+}
+
+enum IdentificationType {
+  national
+  passport
+  business
+  tax
 }
