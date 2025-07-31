@@ -327,4 +327,9 @@ export enum Messages {
   ID_REQUIRE = 'You must provide an ID',
   DUPLICATE_EMAIL_TEMPLATE = 'Do not duplicate email template of the same type or name',
   EMAIL_TEMPLATE_DEFAULT_EXIT = 'Email template default already exists',
+
+  //Bank Account
+  EXIT_BANK_ACCOUNT = 'Bank account already exists',
+  CREATE_BANK_ACCOUNT_SUCCESS = 'Create bank account successfully',
+  GET_BANK_ACCOUNT_SUCCESS = 'Get bank account successfully',
 }
