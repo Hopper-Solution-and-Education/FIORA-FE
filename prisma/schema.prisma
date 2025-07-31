@@ -10,39 +10,42 @@ datasource db {
 }
 
 model User {
-  id                  String                @id @default(uuid()) @db.Uuid
-  name                String?
-  email               String                @unique
-  password            String?
-  emailVerified       Boolean?              @default(false)
-  image               String?
-  isDeleted           Boolean               @default(false)
-  deletedAt           DateTime?             @db.Timestamptz(0)
-  createdAt           DateTime              @default(now()) @db.Timestamptz(0)
-  updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
-  createdBy           String?               @db.Uuid
-  updatedBy           String?               @db.Uuid
-  role                UserRole              @default(User)
-  accounts            Account[]             @relation("UserAccounts")
-  AttachmentRelations AttachmentRelations[]
-  budgetDetails       BudgetDetails[]
-  budgetControl       BudgetsTable[]
-  categories          Category[]            @relation("UserCategories")
-  categoryProducts    CategoryProducts[]
-  Comment             Comment[]
-  depositRequests     DepositRequest[]      @relation("UserDepositRequest")
-  MembershipProgress  MembershipProgress[]
-  MembershipTier      MembershipTier[]
-  partners            Partner[]             @relation("UserPartners")
-  Post                Post[]
-  products            Product[]             @relation("UserProducts")
-  productItems        ProductItems[]
-  Reaction            Reaction[]
-  sessions            Session[]
-  transactions        Transaction[]         @relation("UserTransactions")
-  authentication      UserAuthentication?
-  UserNotification    UserNotification[]
-  wallet              Wallet[]              @relation("UserWallet")
+  id                     String                   @id @default(uuid()) @db.Uuid
+  name                   String?
+  email                  String                   @unique
+  password               String?
+  emailVerified          Boolean?                 @default(false)
+  image                  String?
+  isDeleted              Boolean                  @default(false)
+  deletedAt              DateTime?                @db.Timestamptz(0)
+  createdAt              DateTime                 @default(now()) @db.Timestamptz(0)
+  updatedAt              DateTime                 @updatedAt @db.Timestamptz(0)
+  createdBy              String?                  @db.Uuid
+  updatedBy              String?                  @db.Uuid
+  role                   UserRole                 @default(User)
+  accounts               Account[]                @relation("UserAccounts")
+  AttachmentRelations    AttachmentRelations[]
+  budgetDetails          BudgetDetails[]
+  budgetControl          BudgetsTable[]
+  categories             Category[]               @relation("UserCategories")
+  categoryProducts       CategoryProducts[]
+  Comment                Comment[]
+  depositRequests        DepositRequest[]         @relation("UserDepositRequest")
+  exchangeRateSetting    ExchangeRateSetting[]
+  MembershipProgress     MembershipProgress[]
+  MembershipTier         MembershipTier[]
+  partners               Partner[]                @relation("UserPartners")
+  Post                   Post[]
+  products               Product[]                @relation("UserProducts")
+  productItems           ProductItems[]
+  Reaction               Reaction[]
+  sessions               Session[]
+  transactions           Transaction[]            @relation("UserTransactions")
+  authentication         UserAuthentication?
+  UserNotification       UserNotification[]
+  wallet                 Wallet[]                 @relation("UserWallet")
+  BankAccount            BankAccount[]
+  IdentificationDocument IdentificationDocument[]
 
   @@index([isDeleted])
 }
@@ -566,6 +569,7 @@ model Attachment {
   notificationId      String?               @db.Uuid
   Notification        Notification?         @relation(fields: [notificationId], references: [id])
   AttachmentRelations AttachmentRelations[]
+  BankAccount         BankAccount[]
   depositRequests     DepositRequest?
 
   @@index([url])
@@ -748,6 +752,8 @@ model ExchangeRateSetting {
   updatedBy      String?          @db.Uuid
   FromCurrency   CurrencyExchange @relation("FromCurrency", fields: [fromCurrencyId], references: [id])
   ToCurrency     CurrencyExchange @relation("ToCurrency", fields: [toCurrencyId], references: [id])
+  User           User?            @relation(fields: [userId], references: [id])
+  userId         String?          @db.Uuid
 
   @@unique([fromCurrencyId, toCurrencyId])
   @@index([fromCurrencyId, toCurrencyId])
@@ -780,6 +786,45 @@ model Announcement {
   createdBy String?  @db.Uuid
   updatedBy String?  @db.Uuid
   isActive  Boolean  @default(true)
+}
+
+model BankAccount {
+  id            String            @id @db.Uuid
+  accountNumber String            @db.VarChar(50)
+  accountName   String            @db.VarChar(100)
+  bankName      String            @db.VarChar(100)
+  SWIFT         String            @db.VarChar(20)
+  status        BankAccountStatus
+  paymentRefId  String?           @db.Uuid
+  remarks       String
+  updatedAt     DateTime          @db.Timestamptz(0)
+  updatedBy     String?           @db.Uuid
+  userId        String            @db.Uuid
+  createdAt     DateTime          @default(now()) @db.Timestamptz(0)
+  createdBy     String?           @db.Uuid
+  Attachment    Attachment?       @relation(fields: [paymentRefId], references: [id])
+  User          User              @relation(fields: [userId], references: [id])
+}
+
+model IdentificationDocument {
+  id             String               @id @db.Uuid
+  createdAt      DateTime             @default(now()) @db.Timestamptz(0)
+  createdBy      String?              @db.Uuid
+  fileBackId     String?              @db.Uuid
+  fileFrontId    String?              @db.Uuid
+  fileLocationId String?              @db.Uuid
+  filePhotoId    String?              @db.Uuid
+  idAddress      String               @db.VarChar(255)
+  idNumber       String               @db.VarChar(100)
+  issuedDate     DateTime?            @db.Date
+  issuedPlace    String               @db.VarChar(255)
+  remarks        String
+  status         IdentificationStatus
+  type           IdentificationType
+  updatedAt      DateTime             @db.Timestamptz(0)
+  updatedBy      String?              @db.Uuid
+  userId         String               @db.Uuid
+  User           User                 @relation(fields: [userId], references: [id])
 }
 
 enum BudgetType {
@@ -889,6 +934,8 @@ enum PostType {
   NEWS
   TUTORIAL
   INTRO
+  ABOUT
+  TNC
 }
 
 enum NotificationType {
@@ -903,4 +950,23 @@ enum EmailTemplateType {
   MEMBERSHIP
   DEPOPSIT
   KYC
+}
+
+enum BankAccountStatus {
+  pending
+  approval
+  reject
+}
+
+enum IdentificationStatus {
+  pending
+  approval
+  reject
+}
+
+enum IdentificationType {
+  national
+  passport
+  business
+  tax
 }

@@ -36,10 +36,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
         .status(200)
         .json(createResponse(RESPONSE_CODE.OK, 'Lấy danh sách tài khoản thành công', accounts));
     } else {
-      const accounts = await AccountUseCaseInstance.getAllAccountByUserIdFilter(
-        userId,
-        params,
-      );
+      const accounts = await AccountUseCaseInstance.getAllAccountByUserIdFilter(userId, params);
       return res
         .status(200)
         .json(createResponse(RESPONSE_CODE.OK, 'Lấy danh sách tài khoản thành công', accounts));
