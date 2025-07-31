@@ -261,27 +261,8 @@ const NotificationDashboardFilterMenu = ({
         column: FilterColumn.RIGHT,
         order: 2,
       },
-      {
-        key: 'notifyType',
-        component: (
-          <MultiSelectFilter
-            options={
-              filterOptions?.notifyType.map((item) => ({
-                label: item,
-                value: item,
-              })) || []
-            }
-            selectedValues={localFilter.notifyType}
-            onChange={(values) => handleLocalFilterChange('notifyType', values)}
-            label="Notify Type"
-            placeholder="Select notify type"
-          />
-        ),
-        column: FilterColumn.RIGHT,
-        order: 3,
-      },
     ],
-    [localFilter, dateRange, handleLocalFilterChange, handleDateRangeChange],
+    [localFilter, dateRange, handleLocalFilterChange, handleDateRangeChange, filterOptions],
   );
 
   return (
