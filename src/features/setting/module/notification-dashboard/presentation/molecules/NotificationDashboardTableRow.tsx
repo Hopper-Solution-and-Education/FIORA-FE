@@ -20,7 +20,7 @@ const NotificationDashboardTableRow = ({
   index,
 }: NotificationDashboardTableRowProps) => {
   return (
-    <TableRow className="hover:bg-gray-50 transition-colors">
+    <TableRow className="transition-colors">
       {columns.map((col) => {
         switch (col) {
           case 'No.':
