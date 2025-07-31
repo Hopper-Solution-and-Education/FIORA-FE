@@ -534,6 +534,7 @@ model Attachment {
   createdBy           String?               @db.Uuid
   updatedBy           String?               @db.Uuid
   AttachmentRelations AttachmentRelations[]
+  BankAccount         BankAccount[]
   depositRequests     DepositRequest?
   notifications       Notification?
 
