@@ -3,9 +3,7 @@ name: Deploy to Vercel
 on:
   push:
     branches:
-      - develop
       - staging
-      - main
   workflow_dispatch:
     inputs:
       environment:
