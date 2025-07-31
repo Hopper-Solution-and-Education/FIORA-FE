@@ -8,6 +8,7 @@ import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import ExchangeRateItem from './presentation/components/ExchangeRateItem';
+import ExchangeRateItemSkeleton from './presentation/components/ExchangeRateItemSkeleton';
 import {
   ExchangeRateDeleteType,
   ExchangeRateObjectType,
@@ -29,7 +30,7 @@ const ExchangeRateSettingPage = () => {
   const [exchangeRates, setExchangeRates] = useState<ExchangeRateType[]>([]);
   const { refreshExchangeRates } = useCurrencyFormatter();
 
-  const { data, mutate } = useDataFetch<ExchangeRateType[]>({
+  const { data, mutate, isLoading } = useDataFetch<ExchangeRateType[]>({
     endpoint: '/api/setting/currency-setting',
     method: 'GET',
     refreshInterval: 1000,
@@ -140,24 +141,28 @@ const ExchangeRateSettingPage = () => {
               />
             )}
 
-            {exchangeRates?.map((rate) => {
-              const isEditing = editingId === rate.id;
+            {isLoading && !exchangeRates.length ? (
+              <ExchangeRateItemSkeleton count={3} />
+            ) : (
+              exchangeRates?.map((rate) => {
+                const isEditing = editingId === rate.id;
 
-              return (
-                <ExchangeRateItem
-                  key={rate.id}
-                  mode={isEditing ? 'updating' : 'existing'}
-                  rate={rate}
-                  existingRates={exchangeRates}
-                  onSave={handleSaveEdit}
-                  onCancel={handleCancelEdit}
-                  onEdit={handleEditRate}
-                  onEditStart={() => handleEditStart(rate.id)}
-                  onDelete={handleDeleteRate}
-                  disabled={isAdding}
-                />
-              );
-            })}
+                return (
+                  <ExchangeRateItem
+                    key={rate.id}
+                    mode={isEditing ? 'updating' : 'existing'}
+                    rate={rate}
+                    existingRates={exchangeRates}
+                    onSave={handleSaveEdit}
+                    onCancel={handleCancelEdit}
+                    onEdit={handleEditRate}
+                    onEditStart={() => handleEditStart(rate.id)}
+                    onDelete={handleDeleteRate}
+                    disabled={isAdding}
+                  />
+                );
+              })
+            )}
           </div>
         </CardContent>
       </Card>

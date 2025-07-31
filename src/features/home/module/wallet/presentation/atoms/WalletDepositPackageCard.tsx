@@ -1,16 +1,15 @@
 'use client';
 
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { RadioGroupItem } from '@/components/ui/radio-group';
-import type { PackageFX } from '../../domain/entity/PackageFX';
-import { formatFIORACurrency } from '@/config/FIORANumberFormat';
-import { CURRENCY } from '@/shared/constants';
 import { Icons } from '@/components/Icon';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { RadioGroupItem } from '@/components/ui/radio-group';
+import { CURRENCY } from '@/shared/constants';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { EXCHANGE_RATES_TO_USD } from '@/shared/utils/currencyExchange';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { useAppSelector } from '@/store';
+import React from 'react';
+import type { PackageFX } from '../../domain/entity/PackageFX';
 
 interface WalletDepositPackageCardProps {
   packageFX: PackageFX;
@@ -26,6 +25,7 @@ const WalletDepositPackageCard: React.FC<WalletDepositPackageCardProps> = ({
   isPopular = false,
 }) => {
   const currency = useAppSelector((state) => state.settings.currency);
+  const { formatCurrency } = useCurrencyFormatter();
 
   // Calculate USD amount using proper exchange rate
   const usdAmount = packageFX.fxAmount / EXCHANGE_RATES_TO_USD.FX;
@@ -42,15 +42,13 @@ const WalletDepositPackageCard: React.FC<WalletDepositPackageCardProps> = ({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-base">
-            {formatFIORACurrency(packageFX.fxAmount, CURRENCY.FX)}
+            {formatCurrency(packageFX.fxAmount, CURRENCY.FX)}
           </span>
           {isPopular && (
             <Badge className="bg-orange-100 text-orange-700 font-medium">Popular</Badge>
           )}
         </div>
-        <div className="text-muted-foreground text-sm">
-          {formatFIORACurrency(convertCurrency(usdAmount, CURRENCY.USD, currency), currency)}
-        </div>
+        <div className="text-muted-foreground text-sm">{formatCurrency(usdAmount, currency)}</div>
       </div>
 
       <RadioGroupItem
