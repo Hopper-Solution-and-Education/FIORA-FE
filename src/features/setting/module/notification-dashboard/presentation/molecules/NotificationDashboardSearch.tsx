@@ -1,5 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
+import { NOTIFICATION_DASHBOARD_FILTER_CONSTANTS } from '../../data/constant';
 
 interface NotificationDashboardSearchProps {
   value: string;
@@ -11,7 +12,7 @@ interface NotificationDashboardSearchProps {
 const NotificationDashboardSearch = ({
   value,
   onChange,
-  placeholder = 'Search notifications...',
+  placeholder = NOTIFICATION_DASHBOARD_FILTER_CONSTANTS.SEARCH_PLACEHOLDER,
   className,
 }: NotificationDashboardSearchProps) => {
   return (

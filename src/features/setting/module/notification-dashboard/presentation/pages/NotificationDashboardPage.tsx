@@ -1,9 +1,11 @@
 'use client';
 
 import { useAppDispatch, useAppSelector } from '@/store';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { setColumnConfig, setNotificationDashboardFilter } from '../../slices';
+import { fetchFilterOptionsAsyncThunk } from '../../slices/actions';
 import { loadColumnConfigFromStorage } from '../../slices/persist';
+import { NotificationDashboardFilterState } from '../../slices/types';
 import { DispatchTableProvider } from '../context/DispatchTableContext';
 import { TableProvider } from '../context/TableContext';
 import { useNotificationDashboard } from '../hooks/useNotificationDashboard';
@@ -23,17 +25,23 @@ const NotificationDashboardPage = () => {
     if (config) {
       dispatch(setColumnConfig(config));
     }
+
+    dispatch(fetchFilterOptionsAsyncThunk());
   }, [dispatch]);
 
-  const handleFilterChange = (newFilter: any) => {
-    dispatch(setNotificationDashboardFilter(newFilter));
-  };
-  const handleApply = () => {
-    // fetch sẽ tự động trigger qua useNotificationDashboard
-  };
-  const handleSearchChange = (value: string) => {
-    dispatch(setNotificationDashboardFilter({ ...filter, search: value }));
-  };
+  const handleFilterChange = useCallback(
+    (newFilter: NotificationDashboardFilterState) => {
+      dispatch(setNotificationDashboardFilter(newFilter));
+    },
+    [dispatch],
+  );
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      dispatch(setNotificationDashboardFilter({ ...filter, search: value }));
+    },
+    [dispatch, filter],
+  );
 
   return (
     <DispatchTableProvider value={{ dispatchTable }}>
@@ -43,7 +51,6 @@ const NotificationDashboardPage = () => {
             <NotificationDashboardTopBarAction
               filter={filter}
               onFilterChange={handleFilterChange}
-              onApply={handleApply}
               search={search}
               onSearchChange={handleSearchChange}
             />

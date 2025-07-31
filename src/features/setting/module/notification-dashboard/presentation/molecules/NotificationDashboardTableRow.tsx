@@ -34,7 +34,7 @@ const NotificationDashboardTableRow = ({
             );
           case 'Send Date':
             return (
-              <TableCell key={col} className="text-center">
+              <TableCell key={col} className="text-center truncate max-w-[180px]">
                 {formatDateTime(data.sendDate)}
               </TableCell>
             );

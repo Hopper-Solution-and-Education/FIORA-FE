@@ -4,7 +4,9 @@ import { routeConfig } from '@/shared/utils/route';
 import { decorate, inject, injectable } from 'inversify';
 import { NOTIFICATION_DASHBOARD_TYPES } from '../../di/notificationDashboardDIContainer.type';
 import { NotificationDashboardFilterRequest } from '../dto/request/NotificationDashboardFilterRequest';
+import { NotificationFilterOptionsResponse } from '../dto/response/NotificationFilterOptionsResponse';
 import { NotificationPaginatedResponse } from '../dto/response/NotificationResponse';
+import { NotificationDashboardMapper } from '../mapper/NotificationMapper';
 import { INotificationDashboardApi } from './INotificationDashboardApi';
 
 class NotificationDashboardApi implements INotificationDashboardApi {
@@ -19,25 +21,19 @@ class NotificationDashboardApi implements INotificationDashboardApi {
     pageSize: number,
     filter?: NotificationDashboardFilterRequest,
   ): Promise<NotificationPaginatedResponse> {
-    const params = {
-      page,
-      pageSize,
-      ...filter,
-      notifyTo: Array.isArray(filter?.notifyTo) ? filter?.notifyTo.join(',') : filter?.notifyTo,
-      recipients: Array.isArray(filter?.recipients)
-        ? filter?.recipients.join(',')
-        : filter?.recipients,
-      status: Array.isArray(filter?.status) ? filter?.status.join(',') : filter?.status,
-      notifyType: Array.isArray(filter?.notifyType)
-        ? filter?.notifyType.join(',')
-        : filter?.notifyType,
-      channel: Array.isArray(filter?.channel) ? filter?.channel.join(',') : filter?.channel,
-      subject: filter?.subject,
-      sender: filter?.sender,
-      search: filter?.search,
-    };
+    // Use mapper to convert filter to search parameters
+    const searchParams = NotificationDashboardMapper.toSearchParams(page, pageSize, filter);
 
-    return this.httpClient.get(routeConfig(ApiEndpointEnum.Notification, {}, params));
+    // Build the URL with query parameters
+    const baseUrl = routeConfig(ApiEndpointEnum.Notification);
+    const url = `${baseUrl}?${searchParams.toString()}`;
+
+    return this.httpClient.get(url);
+  }
+
+  async getFilterOptions(): Promise<NotificationFilterOptionsResponse> {
+    const url = routeConfig(ApiEndpointEnum.NotificationFilterOptions);
+    return this.httpClient.get(url);
   }
 }
 
