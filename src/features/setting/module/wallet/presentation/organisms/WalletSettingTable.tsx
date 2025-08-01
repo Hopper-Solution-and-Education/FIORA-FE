@@ -4,7 +4,10 @@ import { useMemo } from 'react';
 import { useInfiniteScroll } from '../hooks';
 import { TableLoadingState, WalletSettingTableRow } from '../molecules';
 import { WalletSettingTableData } from '../types';
-import { WalletSettingTableColumnKey } from '../types/setting.type';
+import {
+  WALLET_SETTING_TABLE_COLUMN_CONFIG,
+  WalletSettingTableColumnKey,
+} from '../types/setting.type';
 
 interface WalletSettingTableProps {
   data: WalletSettingTableData[];
@@ -45,11 +48,19 @@ const WalletSettingTable = ({
         <Table>
           <TableHeader className="sticky top-0 bg-background z-10">
             <TableRow>
-              {shownColumns.map((col: WalletSettingTableColumnKey) => (
-                <TableHead key={col} className="text-center">
-                  {col}
-                </TableHead>
-              ))}
+              {shownColumns.map((col: WalletSettingTableColumnKey) => {
+                const side = WALLET_SETTING_TABLE_COLUMN_CONFIG[col]?.side || 'center';
+                let alignClass = 'text-center';
+
+                if (side === 'left') alignClass = 'text-left';
+                else if (side === 'right') alignClass = 'text-right';
+
+                return (
+                  <TableHead key={col} className={`${alignClass} truncate`}>
+                    {col}
+                  </TableHead>
+                );
+              })}
             </TableRow>
           </TableHeader>
 
@@ -60,6 +71,7 @@ const WalletSettingTable = ({
                 isLoadingMore={false}
                 dataLength={0}
                 hasMore={true}
+                columns={shownColumns}
               />
             ) : data.length > 0 ? (
               <>
@@ -71,6 +83,7 @@ const WalletSettingTable = ({
                   isLoadingMore={isLoadingMore}
                   dataLength={data.length}
                   hasMore={hasMore}
+                  columns={shownColumns}
                 />
               </>
             ) : (
@@ -79,6 +92,7 @@ const WalletSettingTable = ({
                 isLoadingMore={false}
                 dataLength={0}
                 hasMore={hasMore}
+                columns={shownColumns}
               />
             )}
           </TableBody>

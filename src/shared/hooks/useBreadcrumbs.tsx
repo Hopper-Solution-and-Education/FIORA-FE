@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { breadcrumbConfig, BreadcrumbConfig } from '@/shared/configs/breadcrumbConfig';
 import { ReadonlyURLSearchParams, usePathname, useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
@@ -121,6 +120,38 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
   '/membership': [{ title: 'Membership', link: '/membership' }],
   '/setting/wallet': [{ title: 'Deposit FX', link: '/setting/wallet' }],
   '/setting/notification': [{ title: 'Notification', link: '/setting/notification' }],
+  '/helps-center/about-us': [{ title: 'About Us', link: '/helps-center/about-us' }],
+  '/helps-center/about-us/edit/[id]': [
+    { title: 'About Us', link: '/helps-center/about-us' },
+    { title: 'Edit', link: '/helps-center/about-us/edit/[id]' },
+  ],
+  '/helps-center/faqs': [{ title: 'FAQs', link: '/helps-center/faqs' }],
+  '/helps-center/faqs/details/[id]/': [
+    { title: 'FAQs', link: '/helps-center/faqs' },
+    { title: 'Details', link: '/helps-center/faqs/details/[id]' },
+  ],
+  '/helps-center/faqs/details/[id]/edit': [
+    { title: 'FAQs', link: '/helps-center/faqs' },
+    { title: 'Details', link: '/helps-center/faqs/details/[id]' },
+    { title: 'Edit', link: '/helps-center/faqs/details/[id]/edit' },
+  ],
+  '/helps-center/faqs/create': [
+    { title: 'FAQs', link: '/helps-center/faqs' },
+    { title: 'Create', link: '/helps-center/faqs/create' },
+  ],
+  '/helps-center/faqs/import': [
+    { title: 'FAQs', link: '/helps-center/faqs' },
+    { title: 'Import', link: '/helps-center/faqs/import' },
+  ],
+  '/helps-center/contact-us': [{ title: 'Contact Us', link: '/helps-center/contact-us' }],
+  '/helps-center/terms-and-conditions': [
+    { title: 'Terms and Conditions', link: '/helps-center/terms-and-conditions' },
+  ],
+  '/helps-center/user-tutorial': [{ title: 'User Tutorial', link: '/helps-center/user-tutorial' }],
+  '/helps-center/user-tutorial/edit/[id]': [
+    { title: 'User Tutorial', link: '/helps-center/user-tutorial' },
+    { title: 'Edit', link: '/helps-center/user-tutorial/edit/[id]' },
+  ],
 };
 
 /**

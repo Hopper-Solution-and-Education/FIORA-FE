@@ -1,11 +1,29 @@
 'use client';
 
+import { useAppDispatch } from '@/store';
+import { useEffect } from 'react';
+import { setColumnConfig } from '../../slices';
+import { loadColumnConfigFromStorage } from '../../slices/persist';
 import { DispatchTableProvider, TableProvider } from '../context';
 import { useWalletSetting } from '../hooks';
 import { WalletSettingTable, WalletSettingTopBarAction } from '../organisms';
 
+/**
+ * Main wallet setting page component
+ * Manages the overall layout and provides context for child components
+ */
 const WalletSetting = () => {
   const { tableData, loading, loadMore, dispatchTable } = useWalletSetting();
+  const dispatch = useAppDispatch();
+
+  // Initialize wallet setting on component mount
+  useEffect(() => {
+    // Load saved column configuration from localStorage
+    const config = loadColumnConfigFromStorage();
+    if (config) {
+      dispatch(setColumnConfig(config));
+    }
+  }, [dispatch]);
 
   return (
     // DispatchTableProvider: Provides dispatch function for table actions (filter, sort, pagination)

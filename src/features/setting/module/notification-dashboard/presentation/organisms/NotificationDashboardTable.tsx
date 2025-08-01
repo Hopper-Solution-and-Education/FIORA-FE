@@ -28,6 +28,7 @@ const NotificationDashboardTable = ({
   className,
 }: NotificationDashboardTableProps) => {
   const columnConfig = useAppSelector((state) => state.notificationDashboard.columnConfig);
+
   const shownColumns = useMemo(
     () =>
       (Object.keys(columnConfig) as NotificationDashboardTableColumnKey[])
@@ -51,10 +52,12 @@ const NotificationDashboardTable = ({
               {shownColumns.map((col) => {
                 const side = NOTIFICATION_DASHBOARD_TABLE_COLUMN_CONFIG[col]?.side || 'center';
                 let alignClass = 'text-center';
+
                 if (side === 'left') alignClass = 'text-left';
                 else if (side === 'right') alignClass = 'text-right';
+
                 return (
-                  <TableHead key={col} className={alignClass}>
+                  <TableHead key={col} className={`${alignClass} truncate`}>
                     {col}
                   </TableHead>
                 );

@@ -27,10 +27,15 @@ export default function Header() {
 
   const { announcement, isLoading, show: showAnnouncement, handleClose } = useAnnouncementManager();
 
-  const { data: notification } = useDataFetch({
+  const { data: notification, mutate: mutateNotification } = useDataFetch({
     endpoint: '/api/notification/user',
     method: 'GET',
   });
+
+  const handleNotificationUpdate = () => {
+    // Refresh the notification data
+    mutateNotification();
+  };
 
   return (
     <header className="transition-[width,height] ease-linear">
@@ -65,7 +70,10 @@ export default function Header() {
             </DropdownMenuContent>
           </DropdownMenu> */}
 
-          <NotificationContent data={notification?.data || []} />
+          <NotificationContent
+            data={notification?.data || []}
+            onNotificationUpdate={handleNotificationUpdate}
+          />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
