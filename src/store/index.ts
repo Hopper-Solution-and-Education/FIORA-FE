@@ -1,4 +1,4 @@
-import { faqsApi } from '@/features/faqs/store/api/faqsApi';
+import { faqsApi } from '@/features/helps-center/store/api/faqsApi';
 import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { PersistConfig, persistReducer, persistStore } from 'redux-persist';

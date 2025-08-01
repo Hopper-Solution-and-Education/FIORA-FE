@@ -32,10 +32,11 @@ export const menuSettingItems: MenuSettingItem[] = [
 ];
 
 export const helpItems = [
-  { label: 'FAQs', icon: BookIcon, url: '/faqs' },
-  { label: 'User Tutorials', icon: PlayCircleIcon, url: '/' },
-  { label: 'About Us', icon: InfoIcon, url: '/' },
-  { label: 'Contact Us', icon: MailIcon, url: '/' },
+  { label: 'FAQs', icon: BookIcon, url: '/helps-center/faqs' },
+  { label: 'User Tutorials', icon: PlayCircleIcon, url: '/helps-center/user-tutorial' },
+  { label: 'About Us', icon: InfoIcon, url: '/helps-center/about-us' },
+  { label: 'Contact Us', icon: MailIcon, url: '/helps-center/contact-us' },
+  { label: 'Terms and Conditions', icon: InfoIcon, url: '/helps-center/terms-and-conditions' },
 ];
 
 export const filterMenuItems = (
