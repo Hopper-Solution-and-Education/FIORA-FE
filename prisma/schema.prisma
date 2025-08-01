@@ -194,12 +194,12 @@ model Transaction {
   toWalletId          String?              @db.Uuid
   membershipBenefitId String?              @db.Uuid
   productsRelation    ProductTransaction[] @relation("ProductTransactions")
-  fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Restrict)
+  fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
   fromCategory        Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
   fromWallet          Wallet?              @relation("FromWallet", fields: [fromWalletId], references: [id])
   MembershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
   partner             Partner?             @relation("PartnerTransactions", fields: [partnerId], references: [id])
-  toAccount           Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Restrict)
+  toAccount           Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Cascade)
   toCategory          Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
   toWallet            Wallet?              @relation("ToWallet", fields: [toWalletId], references: [id])
   user                User?                @relation("UserTransactions", fields: [userId], references: [id])
@@ -782,7 +782,7 @@ model BankAccount {
   createdAt     DateTime          @default(now()) @db.Timestamptz(0)
   createdBy     String?           @db.Uuid
   Attachment    Attachment?       @relation(fields: [paymentRefId], references: [id])
-  User          User             @relation(fields: [userId], references: [id])
+  User          User              @relation(fields: [userId], references: [id])
 }
 
 model IdentificationDocument {
