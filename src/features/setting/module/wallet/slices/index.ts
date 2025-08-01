@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
   WALLET_SETTING_TABLE_COLUMN_CONFIG,
   WalletSettingTableColumnKey,
+  WalletSettingTableColumnKeyType,
 } from '../presentation/types/setting.type';
 import { updateDepositRequestStatusAsyncThunk } from './actions';
 import { initialState } from './types';
@@ -33,6 +34,10 @@ const walletSettingSlice = createSlice({
       action.payload.forEach(({ key, newIndex }) => {
         state.columnConfig[key].index = newIndex;
       });
+    },
+    setColumnConfig: (state, action: PayloadAction<WalletSettingTableColumnKeyType>) => {
+      // Load column configuration from localStorage
+      state.columnConfig = action.payload;
     },
     setWalletSettingFilter: (state, action: PayloadAction<typeof initialState.filter>) => {
       state.filter = action.payload;
@@ -73,6 +78,7 @@ export const {
   toggleColumn,
   resetColumns,
   updateColumnIndex,
+  setColumnConfig,
   setWalletSettingFilter,
   setWalletSettingSearch,
   clearFilter,

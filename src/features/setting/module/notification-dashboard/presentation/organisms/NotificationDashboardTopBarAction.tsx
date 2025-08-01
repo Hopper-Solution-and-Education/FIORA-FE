@@ -1,33 +1,43 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { useCallback } from 'react';
+import { setNotificationDashboardFilter } from '../../slices';
 import { NotificationDashboardFilterState } from '../../slices/types';
 import NotificationDashboardColumnMenu from '../molecules/NotificationDashboardColumnMenu';
 import NotificationDashboardFilterMenu from '../molecules/NotificationDashboardFilterMenu';
 import NotificationDashboardSearch from '../molecules/NotificationDashboardSearch';
 
-interface NotificationDashboardTopBarActionProps {
-  filter: NotificationDashboardFilterState;
-  onFilterChange: (newFilter: NotificationDashboardFilterState) => void;
-  search: string;
-  onSearchChange: (value: string) => void;
-  className?: string;
-}
+/**
+ * Top bar action component that handles search, filtering, and column management
+ * This component is completely self-contained and manages its own Redux state
+ */
+const NotificationDashboardTopBarAction = () => {
+  const dispatch = useAppDispatch();
+  // Get current filter state from Redux store
+  const filter = useAppSelector((state) => state.notificationDashboard.filter);
 
-const NotificationDashboardTopBarAction = ({
-  filter,
-  onFilterChange,
-  search,
-  onSearchChange,
-  className,
-}: NotificationDashboardTopBarActionProps) => {
+  // Handle filter changes and dispatch to Redux store
+  // This triggers API calls with new filter criteria
+  const handleFilterChange = useCallback(
+    (newFilter: NotificationDashboardFilterState) => {
+      dispatch(setNotificationDashboardFilter(newFilter));
+    },
+    [dispatch],
+  );
+
   return (
-    <div className={`flex justify-between items-center gap-2 ${className || ''}`}>
+    <div className="flex justify-between items-center gap-2">
+      {/* Left side: Search and filter controls */}
       <div className="flex items-center gap-2">
-        <NotificationDashboardSearch value={search} onChange={onSearchChange} />
-        <NotificationDashboardFilterMenu value={filter} onFilterChange={onFilterChange} />
+        {/* Self-contained search component with debounce */}
+        <NotificationDashboardSearch />
+        {/* Filter menu for advanced filtering options */}
+        <NotificationDashboardFilterMenu value={filter} onFilterChange={handleFilterChange} />
       </div>
 
+      {/* Right side: Column management */}
       <div className="">
         <Popover>
           <PopoverTrigger asChild>
@@ -40,6 +50,7 @@ const NotificationDashboardTopBarAction = ({
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-max" align="end" sideOffset={8}>
+            {/* Column visibility and ordering controls */}
             <NotificationDashboardColumnMenu />
           </PopoverContent>
         </Popover>
