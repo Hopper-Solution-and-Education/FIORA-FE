@@ -1,6 +1,11 @@
 import { prisma } from '@/config';
 import { AppError } from '@/shared/lib/responseUtils/errors';
-import { ChannelType, type EmailNotificationLogs, type UserNotification } from '@prisma/client';
+import {
+  ChannelType,
+  Notification,
+  type EmailNotificationLogs,
+  type UserNotification,
+} from '@prisma/client';
 import type {
   CreateBoxNotificationInput,
   INotificationRepository,
@@ -72,6 +77,9 @@ function mapDashboardFilterToDB(filters: Record<string, any>) {
 }
 
 class NotificationRepository implements INotificationRepository {
+  updateNotification(): Promise<Notification> {
+    throw new Error('Method not implemented.');
+  }
   async getNotificationsPagination(
     skip: number,
     take?: number | null,
@@ -298,6 +306,21 @@ class NotificationRepository implements INotificationRepository {
         },
       },
     });
+  }
+
+  async markReadNotification(id: string): Promise<any> {
+    return prisma.userNotification.update({
+      where: { id },
+      data: { isRead: true },
+    });
+  }
+
+  async checkIfNotificationBelongToUser(id: string, userId: string): Promise<boolean> {
+    const notification = await prisma.userNotification.findUnique({
+      where: { id: id, userId: userId },
+    });
+
+    return !!notification;
   }
 }
 
