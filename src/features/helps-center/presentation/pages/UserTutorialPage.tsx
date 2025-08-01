@@ -4,12 +4,12 @@ import { useRouter } from 'next/navigation';
 import { Post } from '../../domain/entities/models/faqs';
 import { useUserSession } from '../../hooks/useUserSession';
 import { ParsedFaqContent } from '../atoms';
-import AboutUsHeader from '../organisms/AboutUsHeader';
+import UserTutorialHeader from '../organisms/UserTutorialHeader';
 
-const AboutUsPage = () => {
+const UserTutorialPage = () => {
   const router = useRouter();
   const { data, isLoading } = useDataFetcher<Post>({
-    endpoint: '/api/helps-center/about-us',
+    endpoint: '/api/helps-center/user-tutorial',
     method: 'GET',
   });
 
@@ -27,18 +27,20 @@ const AboutUsPage = () => {
     <div className="container mx-auto px-6 space-y-6">
       {data?.data && (
         <>
-          <AboutUsHeader
+          <UserTutorialHeader
             data={data?.data}
             canEdit={isAdminOrCs}
             onEdit={() => {
-              router.push(`/helps-center/about-us/edit/${data?.data.id}`);
+              router.push(`/helps-center/user-tutorial/edit/${data?.data.id}`);
             }}
           />
-          <ParsedFaqContent htmlContent={data?.data.content} />
+          <div className="border border-gray-200 p-4">
+            <ParsedFaqContent htmlContent={data?.data.content} />
+          </div>
         </>
       )}
     </div>
   );
 };
 
-export default AboutUsPage;
+export default UserTutorialPage;

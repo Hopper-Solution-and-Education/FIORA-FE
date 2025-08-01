@@ -147,6 +147,11 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
   '/helps-center/terms-and-conditions': [
     { title: 'Terms and Conditions', link: '/helps-center/terms-and-conditions' },
   ],
+  '/helps-center/user-tutorial': [{ title: 'User Tutorial', link: '/helps-center/user-tutorial' }],
+  '/helps-center/user-tutorial/edit/[id]': [
+    { title: 'User Tutorial', link: '/helps-center/user-tutorial' },
+    { title: 'Edit', link: '/helps-center/user-tutorial/edit/[id]' },
+  ],
 };
 
 /**
