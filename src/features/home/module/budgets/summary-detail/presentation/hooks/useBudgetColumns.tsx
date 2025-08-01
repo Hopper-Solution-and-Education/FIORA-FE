@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { cn } from '@/shared/utils';
 import { useAppSelector } from '@/store';
 import { useMemo } from 'react';
@@ -47,11 +48,12 @@ export function useBudgetColumns({
 
   // Get currency settings from global store
   const { currency, isFullCurrencyDisplay } = useAppSelector((state) => state.settings);
+  const { formatCurrency } = useCurrencyFormatter();
 
   // Convert table data to display currency format
   const convertedTableData = useMemo(() => {
-    return convertTableDataCurrency(tableData, currency, isFullCurrencyDisplay);
-  }, [tableData, currency, isFullCurrencyDisplay]);
+    return convertTableDataCurrency(tableData, currency, formatCurrency, isFullCurrencyDisplay);
+  }, [tableData, currency, isFullCurrencyDisplay, formatCurrency]);
 
   // Get columns configuration based on period type
   const updatedColumns = getColumnsByPeriod({
@@ -63,6 +65,7 @@ export function useBudgetColumns({
     tableData,
     activeTab,
     isFullCurrencyDisplay,
+    formatCurrency,
   });
 
   // Define columns with category selection functionality

@@ -2,24 +2,18 @@ import { DataSourceItemProps } from '@/components/common/tables/custom-table/typ
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { USD_VND_RATE } from '@/shared/constants';
 import { Currency } from '@/shared/types';
-import { convertVNDToUSD, formatCurrency } from '@/shared/utils';
+import { convertVNDToUSD } from '@/shared/utils';
 import { isArray } from 'lodash';
 import { TableData } from '../../presentation/types/table.type';
-
-export const formatCurrencyValue = (
-  value: number | string | undefined,
-  currency: Currency,
-  isFullCurrencyDisplay?: boolean,
-): string => {
-  if (value === undefined || value === '') return '';
-
-  const numValue = typeof value === 'string' ? parseFloat(value) : value;
-  return formatCurrency(numValue, currency, isFullCurrencyDisplay);
-};
 
 export const convertTableDataCurrency = (
   tableData: TableData[],
   userCurrency: Currency,
+  formatCurrency: (
+    value: number,
+    currency: Currency,
+    options?: { shouldShortened?: boolean },
+  ) => string,
   isFullCurrencyDisplay?: boolean,
 ): TableData[] => {
   const renderRemaining = (
@@ -32,11 +26,9 @@ export const convertTableDataCurrency = (
       <Tooltip>
         <TooltipTrigger asChild>
           <p className="cursor-pointer px-3 py-2">
-            {formatCurrencyValue(
-              bottomUpValue - actualSumUpValue,
-              userCurrency,
-              isFullCurrencyDisplay,
-            )}
+            {formatCurrency(bottomUpValue - actualSumUpValue, userCurrency, {
+              shouldShortened: isFullCurrencyDisplay,
+            })}
           </p>
         </TooltipTrigger>
         <TooltipContent
@@ -47,9 +39,17 @@ export const convertTableDataCurrency = (
             <span>
               Remaining = Bottom Up - Actual Sum Up
               {'\n'}
-              {formatCurrencyValue(bottomUpValue - actualSumUpValue, userCurrency)} ={' '}
-              {formatCurrencyValue(bottomUpValue, userCurrency)} -{' '}
-              {formatCurrencyValue(actualSumUpValue, userCurrency)}
+              {formatCurrency(bottomUpValue - actualSumUpValue, userCurrency, {
+                shouldShortened: isFullCurrencyDisplay,
+              })}{' '}
+              ={' '}
+              {formatCurrency(bottomUpValue, userCurrency, {
+                shouldShortened: isFullCurrencyDisplay,
+              })}{' '}
+              -{' '}
+              {formatCurrency(actualSumUpValue, userCurrency, {
+                shouldShortened: isFullCurrencyDisplay,
+              })}
             </span>
           </div>
         </TooltipContent>

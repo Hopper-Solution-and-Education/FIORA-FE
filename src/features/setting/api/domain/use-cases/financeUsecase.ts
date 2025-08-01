@@ -29,7 +29,7 @@ export class FinanceUseCase {
     private _productRepository: IProductRepository = productRepository,
     private _partnerRepository: IPartnerRepository = partnerRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
-  ) { }
+  ) {}
 
   async getReport({ request, userId }: { request: GetFinanceReportRequest; userId: string }) {
     const { type, filter = FinanceReportFilterEnum.ALL } = request;
@@ -53,7 +53,7 @@ export class FinanceUseCase {
   ): Promise<GetFinanceReportResponse<AccountFinanceReportResponse>> {
     const allAccounts = await this._accountRepository.findMany({ userId });
 
-    const result: AccountFinanceReportResponse[] = allAccounts.map((account) => {
+    const result: AccountFinanceReportResponse[] = allAccounts.map(({ currency, ...account }) => {
       const baseAmount = Number(account.baseAmount || 0);
       const totalIncome = baseAmount > 0 ? baseAmount : 0;
       const totalExpense = baseAmount < 0 ? -baseAmount : 0;
@@ -64,7 +64,7 @@ export class FinanceUseCase {
         totalIncome,
         totalExpense,
         totalProfit,
-        currency: account.currency,
+        currency: (currency as Currency) || Currency.VND,
       };
     });
 
@@ -156,7 +156,7 @@ export class FinanceUseCase {
       });
     });
 
-    const result: ProductFinanceReportResponse[] = allProducts.map((product) => {
+    const result: ProductFinanceReportResponse[] = allProducts.map(({ currency, ...product }) => {
       const totals = productTotalMap.get(product.id) || { expense: 0, income: 0 };
       const totalProfit = totals.income - totals.expense;
 
@@ -165,7 +165,7 @@ export class FinanceUseCase {
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: product.currency,
+        currency: (currency as Currency) || Currency.VND,
       };
     });
 
@@ -257,7 +257,7 @@ export class FinanceUseCase {
   ): Promise<GetFinanceReportResponse<AccountFinanceReportResponse>> {
     const allAccounts = await this._accountRepository.findMany({ userId, id: { in: accountIds } });
 
-    const result: AccountFinanceReportResponse[] = allAccounts.map((account) => {
+    const result: AccountFinanceReportResponse[] = allAccounts.map(({ currency, ...account }) => {
       const baseAmount = Number(account.baseAmount || 0);
       const totalIncome = baseAmount > 0 ? baseAmount : 0;
       const totalExpense = baseAmount < 0 ? -baseAmount : 0;
@@ -268,7 +268,7 @@ export class FinanceUseCase {
         totalIncome,
         totalExpense,
         totalProfit,
-        currency: account.currency,
+        currency: (currency as Currency) || Currency.VND,
       };
     });
 
@@ -369,7 +369,7 @@ export class FinanceUseCase {
       });
     });
 
-    const result: ProductFinanceReportResponse[] = allProducts.map((product) => {
+    const result: ProductFinanceReportResponse[] = allProducts.map(({ currency, ...product }) => {
       const totals = productTotalMap.get(product.id) || { expense: 0, income: 0 };
       const totalProfit = totals.income - totals.expense;
 
@@ -378,7 +378,7 @@ export class FinanceUseCase {
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: product.currency,
+        currency: (currency as Currency) || Currency.VND,
       };
     });
 

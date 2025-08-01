@@ -91,4 +91,9 @@ export interface GetColumnsByPeriodParams {
   tableData?: TableData[];
   activeTab?: BudgetDetailFilterType;
   isFullCurrencyDisplay?: boolean;
+  formatCurrency: (
+    value: number,
+    currency: Currency,
+    options?: { shouldShortened?: boolean },
+  ) => string;
 }

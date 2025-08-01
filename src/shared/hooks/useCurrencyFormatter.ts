@@ -155,7 +155,7 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
         Object.entries(response.data.conversion_rates).forEach(([currency, rate]) => {
           formattedRates[currency] = {
             rate: rate as number,
-            suffix: response.data.currency_suffix[currency],
+            suffix: response.data.currency_suffix?.[currency] || currency,
           };
         });
 
@@ -507,7 +507,7 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
         Object.entries(response.data.conversion_rates).forEach(([currency, rate]) => {
           formattedRates[currency] = {
             rate: rate as number,
-            suffix: response.data.currency_suffix[currency],
+            suffix: response.data.currency_suffix?.[currency] || currency,
           };
         });
 

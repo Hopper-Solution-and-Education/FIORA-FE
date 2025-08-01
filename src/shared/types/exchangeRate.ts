@@ -12,7 +12,7 @@ export type ExchangeRateResponse = {
   time_last_update_utc: string;
   base_code: string;
   conversion_rates: { [key: string]: number };
-  currency_suffix: { [key: string]: string };
+  currency_suffix?: { [key: string]: string };
 };
 
 export type CurrencyFormatterOptions = {

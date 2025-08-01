@@ -2,11 +2,13 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { useCurrencyFormatter } from '@/shared/hooks';
+import { cn } from '@/shared/utils';
+import { useAppSelector } from '@/store';
 import { Plus } from 'lucide-react';
-import FinancialAccount from './FInancialAccount';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Account } from '../../types/FinancialOverview.types';
-import { cn, formatCurrency } from '@/shared/utils';
+import FinancialAccount from './FInancialAccount';
 
 interface AccountListProps {
   className?: string;
@@ -19,6 +21,8 @@ export default function AccountList({ className }: AccountListProps) {
   const [totalBalance, setTotalBalance] = useState<string>('0');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isTriggered, setIsTriggered] = useState(false);
+  const { formatCurrency } = useCurrencyFormatter();
+  const { currency } = useAppSelector((state) => state.settings);
 
   const fetchAccountsData = useCallback(async () => {
     try {
@@ -61,7 +65,7 @@ export default function AccountList({ className }: AccountListProps) {
       // Calculate total balance
       const totalBalance = getTotalBalance(parents);
       // Format currency
-      const formattedCurrency = formatCurrency(totalBalance);
+      const formattedCurrency = formatCurrency(totalBalance, currency);
       setTotalBalance(formattedCurrency);
 
       // Convert grouped parents to array and sort by type
@@ -74,12 +78,10 @@ export default function AccountList({ className }: AccountListProps) {
     } catch (err) {
       // alert('Error fetching data');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTriggered, accountsMap, parentAccounts, setIsTriggered, setIsCreateModalOpen]);
 
   useEffect(() => {
     fetchAccountsData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTriggered, setIsTriggered, setIsCreateModalOpen]);
 
   // only get the total balance of the parent accounts except type as 'CreditCard'
@@ -92,7 +94,7 @@ export default function AccountList({ className }: AccountListProps) {
         return acc;
       }, 0);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [isTriggered, accountsMap, parentAccounts, setIsTriggered],
   );
 
@@ -129,7 +131,6 @@ export default function AccountList({ className }: AccountListProps) {
                 isTriggered={isTriggered}
               />
             );
-            // eslint-disable-next-line react-hooks/exhaustive-deps
           }, [accountsMap, parentAccounts])}
         </div>
       </div>

@@ -14,10 +14,14 @@ export interface BaseFinanceReportResponse {
   currency: Currency;
 }
 
-export interface AccountFinanceReportResponse extends Account, BaseFinanceReportResponse {}
+export interface AccountFinanceReportResponse
+  extends Omit<Account, 'currency'>,
+    BaseFinanceReportResponse {}
 
 export interface PartnerFinanceReportResponse extends Partner, BaseFinanceReportResponse {}
 
-export interface ProductFinanceReportResponse extends Product, BaseFinanceReportResponse {}
+export interface ProductFinanceReportResponse
+  extends Omit<Product, 'currency'>,
+    BaseFinanceReportResponse {}
 
 export interface CategoryFinanceReportResponse extends CategoryExtras, BaseFinanceReportResponse {}

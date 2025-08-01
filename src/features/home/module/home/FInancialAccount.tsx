@@ -22,8 +22,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useCurrencyFormatter } from '@/shared/hooks';
+import { useAppSelector } from '@/store';
 import { Account } from '../../types/FinancialOverview.types';
-import { formatCurrency } from '@/shared/utils';
 
 export default function FinancialAccount({
   accountsMap,
@@ -38,6 +39,8 @@ export default function FinancialAccount({
   setTriggered: (value: boolean) => void;
   isTriggered: boolean;
 }) {
+  const { formatCurrency } = useCurrencyFormatter();
+  const { currency } = useAppSelector((state) => state.settings);
   // State for accounts data
 
   // State for the selected account and modal visibility
@@ -64,7 +67,7 @@ export default function FinancialAccount({
 
       setIsModalOpen(true);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [setAccountsMap, accountsMap],
   );
 
@@ -170,7 +173,7 @@ export default function FinancialAccount({
               </div>
             </div>
             <div className={`font-semibold ${account?.balance < 0 ? 'text-red-600' : ''}`}>
-              {formatCurrency(account?.balance)}
+              {formatCurrency(account?.balance, currency)}
             </div>
           </div>
         ))}
@@ -190,7 +193,7 @@ export default function FinancialAccount({
               <span
                 className={`font-semibold ${selectedAccount && selectedAccount.balance < 0 ? 'text-red-600' : ''}`}
               >
-                {selectedAccount ? formatCurrency(selectedAccount.balance) : ''}
+                {selectedAccount ? formatCurrency(selectedAccount.balance, currency) : ''}
               </span>
             </DialogDescription>
           </DialogHeader>
@@ -220,7 +223,7 @@ export default function FinancialAccount({
                       <span
                         className={`${subAccount.balance >= 0 ? '' : 'text-red-600'} font-medium`}
                       >
-                        {formatCurrency(subAccount.balance)}
+                        {formatCurrency(subAccount.balance, currency)}
                       </span>
                       <Button
                         variant="destructive"

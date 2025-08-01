@@ -1,4 +1,4 @@
-import { BudgetDetailType, Currency, TransactionType } from '@prisma/client';
+import { BudgetDetailType, TransactionType } from '@prisma/client';
 import Joi from 'joi';
 
 export const budgetCreateBody = Joi.object({
