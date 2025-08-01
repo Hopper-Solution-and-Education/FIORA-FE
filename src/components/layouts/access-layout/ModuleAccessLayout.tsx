@@ -3,7 +3,6 @@
 
 import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import { Session, useSession } from 'next-auth/react';
-import { notFound } from 'next/navigation';
 import { ReactNode } from 'react';
 
 import Loading from '@/components/common/atoms/Loading';
@@ -35,7 +34,7 @@ const ModuleAccessLayout = ({ featureFlag, requiredRoles, children }: ModuleAcce
       requiredRoles.length > 0 &&
       !requiredRoles.includes(session.user.role.toUpperCase()))
   ) {
-    notFound();
+    // notFound();
   }
 
   return <>{children}</>;

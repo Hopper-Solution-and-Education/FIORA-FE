@@ -1,5 +1,5 @@
-import { getFaqCategoriesUseCase } from '@/features/faqs/application/use-cases';
-import { PostType } from '@/features/faqs/domain/entities/models/faqs';
+import { getFaqCategoriesUseCase } from '@/features/helps-center/application/use-cases/faq';
+import { PostType } from '@/features/helps-center/domain/entities/models/faqs';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { NextApiRequest, NextApiResponse } from 'next';
