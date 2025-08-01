@@ -31,6 +31,7 @@ const NotificationRecipientsPopover = ({
     if (timerRef.current) clearTimeout(timerRef.current);
     setOpen(true);
   };
+
   const handleMouseLeave = () => {
     timerRef.current = setTimeout(() => setOpen(false), 50); // small delay for UX
   };

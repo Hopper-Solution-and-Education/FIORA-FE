@@ -23,7 +23,8 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
+import { saveColumnConfigToStorage } from '../../slices/persist';
 import { WalletSettingTableColumnKey } from '../types/setting.type';
 
 interface SortableItemProps {
@@ -53,6 +54,11 @@ const SortableItem = ({ id, children }: SortableItemProps) => {
 const WalletSettingColumnMenu = () => {
   const dispatch = useAppDispatch();
   const columnConfig = useAppSelector((state) => state.walletSetting.columnConfig);
+
+  // Sync column config with localStorage whenever it changes
+  useEffect(() => {
+    saveColumnConfigToStorage(columnConfig);
+  }, [columnConfig]);
 
   const shownColumns = useMemo(
     () =>
