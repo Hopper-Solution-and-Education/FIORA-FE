@@ -20,7 +20,7 @@ import {
 export const faqsApi = createApi({
   reducerPath: 'faqsApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/faqs',
+    baseUrl: '/api/helps-center/faqs',
     prepareHeaders: (headers, { endpoint }) => {
       if (endpoint !== 'validateImportFile') {
         headers.set('Content-Type', 'application/json');

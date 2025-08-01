@@ -1,11 +1,11 @@
-import { createCommentUseCase } from '@/features/helps-center/application/use-cases/faq';
-import { getFaqCommentsUseCase } from '@/features/helps-center/application/use-cases/faq/getFaqCommentsUseCase';
+import { createReactionUseCase } from '@/features/helps-center/application/use-cases/faq';
+import { getFaqReactionsUseCase } from '@/features/helps-center/application/use-cases/faq/getFaqReactionsUseCase';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]';
+import { authOptions } from '../../../auth/[...nextauth]';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
@@ -22,13 +22,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 async function GET(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { id } = req.query;
+    const { id: postId } = req.query;
 
-    const comments = await getFaqCommentsUseCase.execute(id as string);
+    const reactions = await getFaqReactionsUseCase.execute(postId as string);
 
     return res
       .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_FAQ_COMMENTS_SUCCESS, comments));
+      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_FAQ_REACTIONS_SUCCESS, reactions));
   } catch (error: any) {
     if (error.message === Messages.FAQ_NOT_FOUND) {
       return res
@@ -57,35 +57,32 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
   const userId = session.user.id;
 
   try {
-    const { id } = req.query;
+    const { id: postId } = req.query;
 
-    const { content, replyToUsername } = req.body as {
-      content: string;
-      replyToUsername?: string;
-    };
+    const { reactionType } = req.body;
 
-    const comment = await createCommentUseCase.execute({
-      faqId: id as string,
+    // Execute use case
+    await createReactionUseCase.execute({
+      faqId: postId as string,
       userId,
-      commentData: {
-        content,
-        replyToUsername,
-      },
+      reactionType,
     });
 
     return res
-      .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_COMMENT_SUCCESS, comment));
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, Messages.CREATE_REACTION_SUCCESS));
   } catch (error: any) {
-    if (error.message === Messages.FAQ_NOT_FOUND) {
+    if (error.message === 'FAQ not found') {
       return res
         .status(RESPONSE_CODE.NOT_FOUND)
         .json(createError(res, RESPONSE_CODE.NOT_FOUND, Messages.FAQ_NOT_FOUND));
     }
-    if (error.message === Messages.VALIDATION_ERROR) {
-      return res
-        .status(RESPONSE_CODE.BAD_REQUEST)
-        .json(createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR));
+    if (error.validationErrors) {
+      return res.status(RESPONSE_CODE.BAD_REQUEST).json({
+        status: RESPONSE_CODE.BAD_REQUEST,
+        message: Messages.VALIDATION_ERROR,
+        error: error.validationErrors,
+      });
     }
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)

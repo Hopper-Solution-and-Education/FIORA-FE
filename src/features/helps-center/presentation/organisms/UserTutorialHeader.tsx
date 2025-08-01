@@ -3,18 +3,18 @@ import { Pencil } from 'lucide-react';
 import React from 'react';
 import type { Post } from '../../domain/entities/models/faqs';
 
-interface AboutUsHeaderProps {
+interface UserTutorialHeaderProps {
   data: Post;
   canEdit: boolean;
   onEdit: () => void;
 }
 
-const AboutUsHeader: React.FC<AboutUsHeaderProps> = ({ data, canEdit, onEdit }) => {
+const UserTutorialHeader: React.FC<UserTutorialHeaderProps> = ({ data, canEdit, onEdit }) => {
   return (
     <>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-3xl font-bold">{data.title}</h1>
+        <h1 className="text-3xl font-bold mx-auto">{data.title}</h1>
         {canEdit && (
           <div className="flex items-center gap-2">
             <Button
@@ -31,12 +31,12 @@ const AboutUsHeader: React.FC<AboutUsHeaderProps> = ({ data, canEdit, onEdit }) 
       </div>
 
       {/* Meta information */}
-      <div className="text-sm text-gray-500 !mt-0">Posted by {data.User?.email || 'Unknown'}</div>
-      <div className="text-sm text-gray-500 !mt-1">
+      {/* <p className="text-sm text-gray-500 mb-2">Posted by {data.User?.email || 'Unknown'}</p>
+      <p className="text-sm text-gray-400 mb-4">
         Updated {new Date(data.updatedAt || data.createdAt).toLocaleString()}
-      </div>
+      </p> */}
     </>
   );
 };
 
-export default AboutUsHeader;
+export default UserTutorialHeader;
