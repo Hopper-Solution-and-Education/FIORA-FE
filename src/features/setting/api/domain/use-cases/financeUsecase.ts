@@ -14,9 +14,10 @@ import {
 } from '@/features/setting/data/module/finance/dto/response/GetFinanceReportResponse';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { formatMessage } from '@/shared/utils/messageUtils';
-import { CategoryType, Currency, TransactionType } from '@prisma/client';
+import { CategoryType, TransactionType } from '@prisma/client';
 import { categoryRepository } from '../../infrastructure/repositories/categoryRepository';
 import { productRepository } from '../../infrastructure/repositories/productRepository';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
@@ -64,7 +65,7 @@ export class FinanceUseCase {
         totalIncome,
         totalExpense,
         totalProfit,
-        currency: account.currency,
+        currency: account.currency!,
       };
     });
 
@@ -118,7 +119,7 @@ export class FinanceUseCase {
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: Currency.VND,
+        currency: 'VND',
       };
     });
 
@@ -165,7 +166,7 @@ export class FinanceUseCase {
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: product.currency,
+        currency: product.currency!,
       };
     });
 
@@ -214,7 +215,7 @@ export class FinanceUseCase {
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: Currency.VND,
+        currency: 'VND',
       };
     });
 
@@ -268,7 +269,7 @@ export class FinanceUseCase {
         totalIncome,
         totalExpense,
         totalProfit,
-        currency: account.currency,
+        currency: account.currency!,
       };
     });
 
@@ -327,7 +328,7 @@ export class FinanceUseCase {
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: Currency.VND,
+        currency: DEFAULT_BASE_CURRENCY,
       };
     });
 
@@ -378,7 +379,7 @@ export class FinanceUseCase {
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: product.currency,
+        currency: product.currency!,
       };
     });
 
