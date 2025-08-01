@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { getFaqCategoriesUseCase } from '@/features/faqs/application/use-cases';
+import { getFaqCategoriesUseCase } from '@/features/helps-center/application/use-cases/faq';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';

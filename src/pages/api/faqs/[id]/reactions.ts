@@ -1,5 +1,5 @@
-import { createReactionUseCase } from '@/features/faqs/application/use-cases';
-import { getFaqReactionsUseCase } from '@/features/faqs/application/use-cases/getFaqReactionsUseCase';
+import { createReactionUseCase } from '@/features/helps-center/application/use-cases/faq';
+import { getFaqReactionsUseCase } from '@/features/helps-center/application/use-cases/faq/getFaqReactionsUseCase';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';

@@ -1,4 +1,4 @@
-import { createFaqUseCase } from '@/features/faqs/application/use-cases/createFaqUseCase';
+import { createFaqUseCase } from '@/features/helps-center/application/use-cases/faq/createFaqUseCase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';

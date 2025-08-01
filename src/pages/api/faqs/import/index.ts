@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import * as yup from 'yup';
 
-import { faqImportUseCase } from '@/features/faqs/application/use-cases';
-import { FaqsRowValidated } from '@/features/faqs/domain/entities/models/faqs';
-import { FAQS_VALIDATION_SCHEMAS } from '@/features/faqs/domain/schemas/faqsValidationSchemas';
+import { faqImportUseCase } from '@/features/helps-center/application/use-cases/faq';
+import { FaqsRowValidated } from '@/features/helps-center/domain/entities/models/faqs';
+import { FAQS_VALIDATION_SCHEMAS } from '@/features/helps-center/domain/schemas/faqsValidationSchemas';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';

@@ -1,5 +1,8 @@
-import { deleteFaqUseCase, updateFaqUseCase } from '@/features/faqs/application/use-cases';
-import { getFaqDetailUseCase } from '@/features/faqs/application/use-cases/getFaqDetailUseCase';
+import {
+  deleteFaqUseCase,
+  updateFaqUseCase,
+} from '@/features/helps-center/application/use-cases/faq';
+import { getFaqDetailUseCase } from '@/features/helps-center/application/use-cases/faq/getFaqDetailUseCase';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';

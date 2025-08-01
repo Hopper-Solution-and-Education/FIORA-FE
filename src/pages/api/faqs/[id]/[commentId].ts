@@ -1,4 +1,4 @@
-import { deleteCommentUseCase } from '@/features/faqs/application/use-cases/deleteCommentUseCase';
+import { deleteCommentUseCase } from '@/features/helps-center/application/use-cases/faq/deleteCommentUseCase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
