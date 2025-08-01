@@ -1,4 +1,3 @@
-import { BankAccountStatus } from '@prisma/client';
 import Joi from 'joi';
 
 export const bankAccountSchema = Joi.object({
@@ -25,14 +24,6 @@ export const bankAccountSchema = Joi.object({
     'string.max': 'SWIFT code must be at most 20 characters',
     'any.required': 'SWIFT code is required',
   }),
-
-  status: Joi.string()
-    .valid(...Object.values(BankAccountStatus))
-    .required()
-    .messages({
-      'any.only': 'status must be one of: pending, approved, reject',
-      'any.required': 'status is required',
-    }),
 
   paymentRefId: Joi.string().uuid().optional().messages({
     'string.guid': 'Payment paymentRefId must be a valid UUID',

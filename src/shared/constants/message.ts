@@ -332,4 +332,9 @@ export enum Messages {
   EXIT_BANK_ACCOUNT = 'Bank account already exists',
   CREATE_BANK_ACCOUNT_SUCCESS = 'Create bank account successfully',
   GET_BANK_ACCOUNT_SUCCESS = 'Get bank account successfully',
+
+  //Identification
+  IDENTIFICATION_ACCOUNT = 'Identification already exists',
+  CREATE_IDENTIFICATION_SUCCESS = 'Create identification successfully',
+  GET_IDENTIFICATION_SUCCESS = 'Get identification successfully',
 }
