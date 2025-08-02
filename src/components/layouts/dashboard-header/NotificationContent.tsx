@@ -17,6 +17,8 @@ import { format } from 'date-fns';
 import { Bell } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link'; // For View All link
+import { useCallback } from 'react';
+import { toast } from 'sonner';
 
 interface Notification {
   id: string;
@@ -31,30 +33,85 @@ interface Notification {
   };
 }
 
-export function NotificationContent({ data }: { data: Notification[] }) {
+// Custom hook for marking notification as read
+const useMarkNotificationAsRead = () => {
+  const markAsRead = useCallback(async (notificationId: string) => {
+    try {
+      const response = await fetch(`/api/notification/${notificationId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to mark notification as read');
+      }
+
+      return await response.json();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to mark notification as read');
+      throw error;
+    }
+  }, []);
+
+  return { markAsRead };
+};
+
+export function NotificationContent({
+  data,
+  onNotificationUpdate,
+}: {
+  data: Notification[];
+  onNotificationUpdate?: () => void;
+}) {
   const unreadCount = data.filter((n) => !n.isRead).length;
+  const { markAsRead } = useMarkNotificationAsRead();
+
+  const handleNotificationClick = useCallback(
+    async (notification: Notification) => {
+      // If notification is unread, mark it as read
+      if (!notification.isRead) {
+        try {
+          await markAsRead(notification.id);
+          // Call the callback to refresh the notification list
+          onNotificationUpdate?.();
+        } catch (error) {
+          // Error is already handled in the hook
+          console.error('Failed to mark notification as read:', error);
+        }
+      }
+    },
+    [markAsRead, onNotificationUpdate],
+  );
 
   const NotificationItem = ({
-    title,
-    message,
-    createdAt,
-    imageUrl,
-  }: Notification['notification']) => {
+    isRead,
+    data,
+    onClick,
+  }: {
+    isRead: boolean;
+    data: Notification['notification'];
+    onClick?: () => void;
+  }) => {
     return (
       <div
         className={cn(
-          'flex items-center p-3 gap-4 rounded-lg shadow-sm shadow-gray-400 border border-gray-200',
+          'flex items-center p-3 gap-4 rounded-lg shadow-sm shadow-gray-400 border border-gray-200 hover:bg-gray-100 cursor-pointer',
+          isRead && '!opacity-60',
         )}
+        onClick={onClick}
       >
         <div className="flex-1">
-          <p className="font-semibold text-gray-900">{title}</p>
-          <p className="text-sm text-gray-600">{message}</p>
-          <p className="text-xs text-gray-500 mt-1">{format(createdAt, 'dd MMM yyyy')}</p>
+          <p className="font-semibold text-gray-900">{data.title}</p>
+          <p className="text-sm text-gray-600">{data.message}</p>
+          <p className="text-xs text-gray-500 mt-1">{format(data.createdAt, 'dd MMM yyyy')}</p>
         </div>
-        {imageUrl && (
+        {data.imageUrl && (
           <div className="w-16 h-16 flex-shrink-0 relative overflow-hidden rounded-md border border-gray-200">
             <Image
-              src={imageUrl}
+              src={data.imageUrl}
               alt="Notification thumbnail"
               layout="fill"
               objectFit="cover"
@@ -101,11 +158,20 @@ export function NotificationContent({ data }: { data: Notification[] }) {
                     className="p-0 focus:bg-transparent cursor-pointer"
                   >
                     {notification?.notification?.deepLink ? (
-                      <Link href={notification?.notification?.deepLink} passHref>
-                        <NotificationItem {...notification?.notification} />
+                      <Link href={notification?.notification?.deepLink} target="_blank">
+                        <div onClick={() => handleNotificationClick(notification)}>
+                          <NotificationItem
+                            isRead={notification.isRead}
+                            data={notification?.notification}
+                          />
+                        </div>
                       </Link>
                     ) : (
-                      <NotificationItem {...notification?.notification} />
+                      <NotificationItem
+                        isRead={notification.isRead}
+                        data={notification?.notification}
+                        onClick={() => handleNotificationClick(notification)}
+                      />
                     )}
                   </DropdownMenuItem>
                 ))}

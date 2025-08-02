@@ -1,7 +1,7 @@
 import { Icons } from '@/components/Icon';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { GrowthBook } from '@growthbook/growthbook';
-import { BookIcon, InfoIcon, MailIcon, PlayCircleIcon } from 'lucide-react';
+import { BookIcon, InfoIcon, MailIcon, PlayCircleIcon, ScrollTextIcon } from 'lucide-react';
 
 export type Language = 'vi' | 'en';
 export type Currency = 'vnd' | 'usd';
@@ -36,7 +36,11 @@ export const helpItems = [
   { label: 'User Tutorials', icon: PlayCircleIcon, url: '/helps-center/user-tutorial' },
   { label: 'About Us', icon: InfoIcon, url: '/helps-center/about-us' },
   { label: 'Contact Us', icon: MailIcon, url: '/helps-center/contact-us' },
-  { label: 'Terms and Conditions', icon: InfoIcon, url: '/helps-center/terms-and-conditions' },
+  {
+    label: 'Terms and Conditions',
+    icon: ScrollTextIcon,
+    url: '/helps-center/terms-and-conditions',
+  },
 ];
 
 export const filterMenuItems = (
