@@ -400,9 +400,11 @@ export class AccountUseCase {
         throw new Error('Cannot delete master account with sub account still existed');
       } else {
         const transaction = await this.transactionRepository.findManyTransactions({
-          OR: [{ fromAccountId: id }, { toAccountId: id }], // check if any transaction linked to this account
+          AND: {
+            isDeleted: false,
+            OR: [{ fromAccountId: id }, { toAccountId: id }], // check if any transaction linked to this account
+          },
         });
-
         if (transaction.length > 0) {
           throw new Error('Sorry! You cannot delete Account which already has transactions');
         }
