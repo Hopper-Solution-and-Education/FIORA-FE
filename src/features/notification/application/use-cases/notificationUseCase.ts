@@ -1,3 +1,6 @@
+import { Messages } from '@/shared/constants/message';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { BadRequestError } from '@/shared/lib';
 import type {
   CreateBoxNotificationInput,
   INotificationRepository,
@@ -92,6 +95,20 @@ class NotificationUseCase {
 
   async getNotificationFilterOptions() {
     return this.notificationRepository.getNotificationFilterOptions();
+  }
+
+  async markReadNotification(id: string, userId: string) {
+    const isBelongToUser = await this.notificationRepository.checkIfNotificationBelongToUser(
+      id,
+      userId,
+    );
+
+    if (!isBelongToUser) {
+      throw new BadRequestError(Messages.NOTIFICATION_NOT_BELONG_TO_USER, {
+        statusCode: RESPONSE_CODE.BAD_REQUEST,
+      });
+    }
+    return this.notificationRepository.markReadNotification(id);
   }
 }
 

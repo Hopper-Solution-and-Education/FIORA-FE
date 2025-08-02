@@ -58,8 +58,7 @@ const useBudgetFieldConfig = () => {
       name="currency"
       label="Currency"
       placeholder="Select Currency"
-      required
-      disabled={isDisabledField}
+      disabled
       noneValue={false}
     />,
     <InputCurrency

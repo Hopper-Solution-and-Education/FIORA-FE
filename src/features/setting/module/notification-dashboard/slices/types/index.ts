@@ -1,3 +1,4 @@
+import { NotificationFilterOptions } from '../../data/dto/response/NotificationFilterOptionsResponse';
 import { ChannelType, NotificationTo } from '../../domain';
 import { NotificationLogType } from '../../domain/enum/NotificationLogType';
 import {
@@ -6,14 +7,15 @@ import {
 } from '../../presentation/types/setting.type';
 
 export interface NotificationDashboardFilterState {
-  subject?: string | null;
-  notifyType?: string | string[] | null; //deposit_request,...
-  recipients?: string | string[] | null;
-  sender?: string | null;
-  notifyTo?: NotificationTo | null;
-  channel?: ChannelType | null;
-  status?: NotificationLogType | NotificationLogType[] | null;
+  notifyType?: string[] | null;
+  recipients?: string[] | null;
+  sender?: string[] | null;
+  notifyTo?: NotificationTo[] | null;
+  channel?: ChannelType[] | null;
+  status?: NotificationLogType[] | null;
   search?: string | null;
+  sendDateFrom: Date | null;
+  sendDateTo: Date | null;
 }
 
 export interface NotificationDashboardState {
@@ -21,6 +23,8 @@ export interface NotificationDashboardState {
   error: string | null;
   columnConfig: NotificationDashboardTableColumnKeyType;
   filter: NotificationDashboardFilterState;
+  filterOptions: NotificationFilterOptions | null;
+  filterOptionsLoading: boolean;
 }
 
 export const initialState: NotificationDashboardState = {
@@ -28,7 +32,6 @@ export const initialState: NotificationDashboardState = {
   error: null,
   columnConfig: NOTIFICATION_DASHBOARD_TABLE_COLUMN_CONFIG,
   filter: {
-    subject: null,
     notifyTo: null,
     recipients: null,
     sender: null,
@@ -36,5 +39,9 @@ export const initialState: NotificationDashboardState = {
     channel: null,
     status: null,
     search: null,
+    sendDateFrom: null,
+    sendDateTo: null,
   },
+  filterOptions: null,
+  filterOptionsLoading: false,
 };

@@ -8,8 +8,8 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ICON_SIZE } from '@/shared/constants/size';
 import { HelpCircleIcon } from 'lucide-react';
-import { helpItems } from './utils';
 import Link from 'next/link';
+import { helpItems } from './utils';
 
 export default function HelpCenter() {
   return (
@@ -24,7 +24,7 @@ export default function HelpCenter() {
         <DropdownMenuContent
           align="end"
           sideOffset={8}
-          className="p-4 grid grid-cols-4 gap-4 border shadow-md w-[250px]"
+          className="p-4 grid grid-cols-5 gap-4 border shadow-md w-[300px]"
         >
           {helpItems.map((item, index) => (
             <Tooltip key={index}>

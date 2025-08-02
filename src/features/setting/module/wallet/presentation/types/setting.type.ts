@@ -18,6 +18,7 @@ export type WalletSettingTableColumn = {
   sortable: boolean;
   sortedBy?: OrderType;
   isVisible: boolean;
+  side: 'left' | 'right' | 'center';
 };
 
 export type WalletSettingTableColumnKey =
@@ -34,11 +35,11 @@ export type WalletSettingTableColumnKeyType = {
 };
 
 export const WALLET_SETTING_TABLE_COLUMN_CONFIG: WalletSettingTableColumnKeyType = {
-  'Request Code': { index: 0, sortable: true, isVisible: true },
-  Requester: { index: 1, sortable: true, isVisible: true },
-  Amount: { index: 2, sortable: true, isVisible: true },
-  'Request Date': { index: 3, sortable: true, isVisible: true },
-  Attachment: { index: 4, sortable: false, isVisible: true },
-  Status: { index: 5, sortable: true, isVisible: true },
-  Action: { index: 6, sortable: false, isVisible: true },
+  'Request Code': { index: 0, sortable: true, isVisible: true, side: 'center' },
+  Requester: { index: 1, sortable: true, isVisible: true, side: 'left' },
+  Amount: { index: 2, sortable: true, isVisible: true, side: 'center' },
+  'Request Date': { index: 3, sortable: true, isVisible: true, side: 'center' },
+  Attachment: { index: 4, sortable: false, isVisible: true, side: 'center' },
+  Status: { index: 5, sortable: true, isVisible: true, side: 'center' },
+  Action: { index: 6, sortable: false, isVisible: true, side: 'center' },
 };

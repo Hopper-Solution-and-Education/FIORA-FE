@@ -16,4 +16,5 @@ export enum ApiEndpointEnum {
 
   // Notification
   Notification = '/api/notification',
+  NotificationFilterOptions = '/api/notification/options',
 }

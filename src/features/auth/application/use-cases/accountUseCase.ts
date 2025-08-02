@@ -10,7 +10,6 @@ import { GlobalFilters } from '@/shared/types';
 import { buildWhereClause } from '@/shared/utils';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { safeString } from '@/shared/utils/ExStringUtils';
-import { Account, AccountType, Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IAccountRepository } from '../../domain/repositories/accountRepository.interface';
 import { accountRepository } from '../../infrastructure/repositories/accountRepository';
@@ -33,7 +32,7 @@ export class AccountUseCase {
     private accountRepository: IAccountRepository,
     private transactionRepository: ITransactionRepository,
     private currencyRepository: IExchangeRateRepository,
-  ) { }
+  ) {}
 
   async create(params: {
     userId: string;
@@ -173,8 +172,8 @@ export class AccountUseCase {
       const enumValues = Object.values(AccountType).map((v: any) => v.toLowerCase());
       const matchedType = enumValues.includes(typeSearchParams)
         ? (Object.values(AccountType).find(
-          (v: any) => v.toLowerCase() === typeSearchParams,
-        ) as AccountType)
+            (v: any) => v.toLowerCase() === typeSearchParams,
+          ) as AccountType)
         : null;
 
       const orConditions: any = [{ name: { contains: typeSearchParams, mode: 'insensitive' } }];
@@ -231,8 +230,8 @@ export class AccountUseCase {
       const enumValues = Object.values(AccountType).map((v: any) => v.toLowerCase());
       const matchedType = enumValues.includes(typeSearchParams)
         ? (Object.values(AccountType).find(
-          (v: any) => v.toLowerCase() === typeSearchParams,
-        ) as AccountType)
+            (v: any) => v.toLowerCase() === typeSearchParams,
+          ) as AccountType)
         : null;
 
       const orConditions: Prisma.AccountWhereInput[] = [
@@ -400,9 +399,11 @@ export class AccountUseCase {
         throw new Error('Cannot delete master account with sub account still existed');
       } else {
         const transaction = await this.transactionRepository.findManyTransactions({
-          OR: [{ fromAccountId: id }, { toAccountId: id }], // check if any transaction linked to this account
+          AND: {
+            isDeleted: false,
+            OR: [{ fromAccountId: id }, { toAccountId: id }], // check if any transaction linked to this account
+          },
         });
-
         if (transaction.length > 0) {
           throw new Error('Sorry! You cannot delete Account which already has transactions');
         }

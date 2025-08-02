@@ -20,7 +20,7 @@ const NotificationDashboardTableRow = ({
   index,
 }: NotificationDashboardTableRowProps) => {
   return (
-    <TableRow className="hover:bg-gray-50 transition-colors">
+    <TableRow className="transition-colors">
       {columns.map((col) => {
         switch (col) {
           case 'No.':
@@ -34,7 +34,7 @@ const NotificationDashboardTableRow = ({
             );
           case 'Send Date':
             return (
-              <TableCell key={col} className="text-center">
+              <TableCell key={col} className="text-center truncate max-w-[180px]">
                 {formatDateTime(data.sendDate)}
               </TableCell>
             );
