@@ -1,12 +1,13 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { getSkeletonAlignClass } from '../utils/convertTableUtils';
 
 interface TableSkeletonRowProps {
-  columns?: number;
+  columns?: string[];
   className?: string;
 }
 
-const TableSkeletonRow = ({ columns = 10, className }: TableSkeletonRowProps) => {
+const TableSkeletonRow = ({ columns = [], className }: TableSkeletonRowProps) => {
   const skeletonWidths = [
     'w-10',
     'w-32',
@@ -22,13 +23,16 @@ const TableSkeletonRow = ({ columns = 10, className }: TableSkeletonRowProps) =>
 
   return (
     <TableRow className={className}>
-      {Array.from({ length: columns }).map((_, index) => (
-        <TableCell key={index} className="text-center">
-          <div className="flex justify-center">
-            <Skeleton className={`h-4 ${skeletonWidths[index] || 'w-20'}`} />
-          </div>
-        </TableCell>
-      ))}
+      {columns.map((col, index) => {
+        const { cellClass, flexClass } = getSkeletonAlignClass(col);
+        return (
+          <TableCell key={index} className={cellClass}>
+            <div className={`flex ${flexClass}`}>
+              <Skeleton className={`h-4 ${skeletonWidths[index] || 'w-20'}`} />
+            </div>
+          </TableCell>
+        );
+      })}
     </TableRow>
   );
 };
