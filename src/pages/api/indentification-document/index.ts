@@ -58,6 +58,16 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
         .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
     }
 
+    const existingIdentification = await identificationRepository.checkIdentification(
+      req.body,
+      userId,
+    );
+    if (existingIdentification) {
+      return res
+        .status(RESPONSE_CODE.CONFLICT)
+        .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.IDENTIFICATION_ACCOUNT));
+    }
+
     const newIdentification = await identificationRepository.create({
       ...req.body,
       status: IdentificationStatus.pending,

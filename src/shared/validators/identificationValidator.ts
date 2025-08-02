@@ -7,7 +7,7 @@ const baseSchema = Joi.object({
     .required()
     .messages({
       'any.required': 'Document type is required',
-      'any.only': 'Document type must be NATIONAL_CARD, PASSPORT or BUSINESS_LICENSE',
+      'any.only': 'Document type must be national, passport or business',
     }),
 
   idNumber: Joi.string().max(100).required().messages({

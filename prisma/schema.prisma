@@ -782,7 +782,7 @@ model BankAccount {
   createdAt     DateTime          @default(now()) @db.Timestamptz(0)
   createdBy     String?           @db.Uuid
   Attachment    Attachment?       @relation(fields: [paymentRefId], references: [id])
-  User          User             @relation(fields: [userId], references: [id])
+  User          User              @relation(fields: [userId], references: [id])
 }
 
 model IdentificationDocument {

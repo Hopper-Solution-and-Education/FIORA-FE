@@ -17,6 +17,17 @@ class IdentificationRepository {
     });
   }
 
+  async checkIdentification(data: Prisma.IdentificationDocumentCreateInput, userId: string) {
+    const { type, idNumber } = data;
+    return await prisma.identificationDocument.findFirst({
+      where: {
+        type,
+        userId,
+        idNumber,
+      },
+    });
+  }
+
   async getById(id: string) {
     return await prisma.identificationDocument.findFirst({
       where: {
