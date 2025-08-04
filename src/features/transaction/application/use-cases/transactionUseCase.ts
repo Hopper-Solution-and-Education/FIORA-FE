@@ -62,7 +62,15 @@ class TransactionUseCase {
               { toAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
               { partner: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
               {
-                amount: { gte: Number(typeSearchParams) || 0, lte: Number(typeSearchParams) || 0 },
+                AND: [
+                  {
+                    baseAmount: {
+                      gte: Number(typeSearchParams),
+                      lte: Number(typeSearchParams),
+                    },
+                    baseCurrency: { equals: 'USD' },
+                  },
+                ],
               },
               // adding typeTransactionWhere to where clause if exists
               ...(typeTransactionWhere

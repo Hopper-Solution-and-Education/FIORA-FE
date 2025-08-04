@@ -14,6 +14,7 @@ import {
 } from '@/features/setting/data/module/finance/dto/response/GetFinanceReportResponse';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { formatMessage } from '@/shared/utils/messageUtils';
 import { CategoryType, Currency, TransactionType } from '@prisma/client';
@@ -118,7 +119,7 @@ export class FinanceUseCase {
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: Currency.VND,
+        currency: 'VND',
       };
     });
 
@@ -214,7 +215,7 @@ export class FinanceUseCase {
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: Currency.VND,
+        currency: 'VND',
       };
     });
 
@@ -327,7 +328,7 @@ export class FinanceUseCase {
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: Currency.VND,
+        currency: DEFAULT_BASE_CURRENCY,
       };
     });
 
