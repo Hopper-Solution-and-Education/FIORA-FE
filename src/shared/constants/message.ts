@@ -312,6 +312,7 @@ export enum Messages {
   VALIDATION_ERROR = 'Validation error.',
 
   GET_NOTIFICATION_SUCCESS = 'Get notification list successfully.',
+  NOTIFICATION_NOT_BELONG_TO_USER = 'Notification not belong to user',
 
   INVALID_PAGE_OR_PAGE_SIZE = 'Invalid page or pageSize.',
   INVALID_FILTER_FORMAT = 'Invalid filter format.',

@@ -5,10 +5,10 @@ import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import NotificationDashboardTableRow from '../molecules/NotificationDashboardTableRow';
 import TableLoadingState from '../molecules/TableLoadingState';
 import {
-  NOTIFICATION_DASHBOARD_TABLE_COLUMN_CONFIG,
   NotificationDashboardTableColumnKey,
   NotificationDashboardTableData,
 } from '../types/setting.type';
+import { getAlignClass } from '../utils/convertTableUtils';
 
 interface NotificationDashboardTableProps {
   data: NotificationDashboardTableData[];
@@ -28,6 +28,7 @@ const NotificationDashboardTable = ({
   className,
 }: NotificationDashboardTableProps) => {
   const columnConfig = useAppSelector((state) => state.notificationDashboard.columnConfig);
+
   const shownColumns = useMemo(
     () =>
       (Object.keys(columnConfig) as NotificationDashboardTableColumnKey[])
@@ -49,12 +50,9 @@ const NotificationDashboardTable = ({
           <TableHeader className="sticky top-0 bg-background z-10">
             <TableRow>
               {shownColumns.map((col) => {
-                const side = NOTIFICATION_DASHBOARD_TABLE_COLUMN_CONFIG[col]?.side || 'center';
-                let alignClass = 'text-center';
-                if (side === 'left') alignClass = 'text-left';
-                else if (side === 'right') alignClass = 'text-right';
+                const alignClass = getAlignClass(col);
                 return (
-                  <TableHead key={col} className={alignClass}>
+                  <TableHead key={col} className={`${alignClass} truncate`}>
                     {col}
                   </TableHead>
                 );
@@ -69,6 +67,7 @@ const NotificationDashboardTable = ({
                 isLoadingMore={false}
                 dataLength={0}
                 hasMore={true}
+                columns={shownColumns}
               />
             ) : data.length > 0 ? (
               <>
@@ -85,6 +84,7 @@ const NotificationDashboardTable = ({
                   isLoadingMore={isLoadingMore}
                   dataLength={data.length}
                   hasMore={hasMore}
+                  columns={shownColumns}
                 />
               </>
             ) : (
@@ -93,6 +93,7 @@ const NotificationDashboardTable = ({
                 isLoadingMore={false}
                 dataLength={0}
                 hasMore={hasMore}
+                columns={shownColumns}
               />
             )}
           </TableBody>
