@@ -1,12 +1,9 @@
-import NotificationUseCase from '@/features/notification/application/use-cases/notificationUseCase';
-import { notificationRepository } from '@/features/notification/infrastructure/repositories/notificationRepository';
+import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-const notificationUseCase = new NotificationUseCase(notificationRepository);
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   try {

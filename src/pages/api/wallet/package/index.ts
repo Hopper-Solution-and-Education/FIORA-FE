@@ -6,6 +6,7 @@ import { createError, createResponse } from '@/shared/lib/responseUtils/createRe
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import Busboy from 'busboy';
 import { NextApiRequest, NextApiResponse } from 'next';
+
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     switch (req.method) {
@@ -26,11 +27,13 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse) 
     return createError(res, RESPONSE_CODE.INTERNAL_SERVER_ERROR, Messages.INTERNAL_ERROR);
   }
 });
+
 export const config = {
   api: {
     bodyParser: false,
   },
 };
+
 async function GET(req: NextApiRequest, res: NextApiResponse) {
   try {
     const packages = await walletUseCase.getAllPackageFX();

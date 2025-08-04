@@ -24,13 +24,7 @@ import { attachmentRepository } from '../../infrastructure/repositories/attachme
 import { walletRepository } from '../../infrastructure/repositories/walletRepository';
 import { IAttachmentRepository } from '../../repositories/attachmentRepository.interface';
 import { IWalletRepository } from '../../repositories/walletRepository.interface';
-
-interface AttachmentData {
-  type: string;
-  size: number;
-  url: string;
-  path: string;
-}
+import { AttachmentData } from '../../types/attachmentTypes';
 
 class WalletUseCase {
   constructor(
@@ -38,6 +32,8 @@ class WalletUseCase {
     private _attachmentRepository: IAttachmentRepository = attachmentRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
     private _accountRepository: IAccountRepository = accountRepository,
+
+    // private _notificationUsecase = notificationUseCase,
   ) {}
 
   async createWallet(data: Prisma.WalletUncheckedCreateInput) {
