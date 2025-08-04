@@ -5,6 +5,7 @@ import type {
   CreateBoxNotificationInput,
   INotificationRepository,
 } from '../../domain/repositories/notificationRepository.interface';
+import { notificationRepository } from '../../infrastructure/repositories/notificationRepository';
 
 const DASHBOARD_FIELDS = [
   'subject',
@@ -112,4 +113,4 @@ class NotificationUseCase {
   }
 }
 
-export default NotificationUseCase;
+export const notificationUseCase = new NotificationUseCase(notificationRepository);
