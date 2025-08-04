@@ -15,6 +15,8 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
   switch (req.method) {
     case 'PATCH':
       return PATCH(req, res, userId);
+    case 'DELETE':
+      return DELETE(req, res);
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -32,6 +34,13 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse, userId: s
         .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
     }
     const { kycId, remarks, status } = req.body;
+    const checkIdentify = await identificationRepository.getById(String(id));
+    if (!checkIdentify) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, Messages.BANK_ACCOUNT_NOT_FOUND, error));
+    }
+
     const checkKyc = await eKycRepository.getById(kycId);
     if (!checkKyc) {
       return res
@@ -62,6 +71,20 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse, userId: s
           newIdentification,
         ),
       );
+  } catch (error: any) {
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, error || Messages.INTERNAL_ERROR));
+  }
+}
+
+export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    const { id } = req.query;
+    await identificationRepository.delete(String(id));
+    return res
+      .status(RESPONSE_CODE.CREATED)
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.DELETE_SUCCESS, null));
   } catch (error: any) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)

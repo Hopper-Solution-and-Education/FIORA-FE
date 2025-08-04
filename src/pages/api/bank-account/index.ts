@@ -1,4 +1,5 @@
 import { bankAccountRepository } from '@/features/setting/api/infrastructure/repositories/bankAccountRepository';
+import { eKycRepository } from '@/features/setting/api/infrastructure/repositories/eKycRepository';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createErrorResponse } from '@/shared/lib';
@@ -6,7 +7,7 @@ import { createError, createResponse } from '@/shared/lib/responseUtils/createRe
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { validateBody } from '@/shared/utils/validate';
 import { bankAccountSchema } from '@/shared/validators/bankAccountValidator';
-import { BankAccountStatus } from '@prisma/client';
+import { KYCStatus } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export const maxDuration = 30; // 30 seconds
@@ -26,7 +27,7 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
 
 export async function GET(res: NextApiResponse, userId: string) {
   try {
-    const bankAccounts = await bankAccountRepository.getById(userId);
+    const bankAccounts = await bankAccountRepository.getByUserId(userId);
 
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -57,6 +58,8 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
         .status(RESPONSE_CODE.BAD_REQUEST)
         .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
     }
+    const { kycId } = req.body;
+    const checkKyc = await eKycRepository.getById(kycId);
     const existingTemplate = await bankAccountRepository.checkBankAccount(req.body);
     if (existingTemplate) {
       return res
@@ -64,16 +67,32 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
         .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.EXIT_BANK_ACCOUNT));
     }
 
-    const newBankAccount = await bankAccountRepository.create({
-      ...req.body,
-      status: BankAccountStatus.pending,
-      userId: userId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      remarks: '',
-      paymentRefId: req.body?.paymentRefId || null,
-      id: crypto.randomUUID(),
-    });
+    if (!checkKyc) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, Messages.KYC_NOT_FOUND, error));
+    }
+
+    if (checkKyc.refId) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.KYC_CHECK, error));
+    }
+
+    delete req.body.kycId;
+    const newBankAccount = await bankAccountRepository.create(
+      {
+        ...req.body,
+        status: KYCStatus.PENDING,
+        userId: userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        remarks: '',
+        paymentRefId: req.body?.paymentRefId || null,
+        id: crypto.randomUUID(),
+      },
+      kycId,
+    );
     return res
       .status(RESPONSE_CODE.CREATED)
       .json(

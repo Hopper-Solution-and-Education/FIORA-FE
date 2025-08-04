@@ -1,4 +1,4 @@
-import { IdentificationStatus, IdentificationType } from '@prisma/client';
+import { IdentificationType, KYCStatus } from '@prisma/client';
 import Joi from 'joi';
 
 const baseSchema = Joi.object({
@@ -7,7 +7,7 @@ const baseSchema = Joi.object({
     .required()
     .messages({
       'any.required': 'Document type is required',
-      'any.only': 'Document type must be national, passport or business',
+      'any.only': 'Document type must be NATIONAL, PASSPORT, BUSINESS',
     }),
 
   idNumber: Joi.string().max(100).required().messages({
@@ -33,6 +33,11 @@ const baseSchema = Joi.object({
     'any.required': 'Address is required',
   }),
 
+  kycId: Joi.string().uuid().required().messages({
+    'string.guid': 'refId must be a valid UUID',
+    'string.empty': 'Address is required',
+  }),
+
   remarks: Joi.string().allow('', null).optional(),
 
   fileFrontId: Joi.string().uuid().optional().allow(null),
@@ -41,12 +46,12 @@ const baseSchema = Joi.object({
   fileLocationId: Joi.string().uuid().optional().allow(null),
 
   status: Joi.string()
-    .valid(...Object.values(IdentificationStatus))
-    .default(IdentificationStatus.pending),
+    .valid(...Object.values(KYCStatus))
+    .default(KYCStatus.PENDING),
 });
 
 export const identificationDocumentSchema = baseSchema
-  .when(Joi.object({ type: IdentificationType.national }).unknown(), {
+  .when(Joi.object({ type: IdentificationType.NATIONAL }).unknown(), {
     then: Joi.object({
       fileFrontId: Joi.string().uuid().required().messages({
         'any.required': 'Front side of ID card is required',
@@ -59,7 +64,7 @@ export const identificationDocumentSchema = baseSchema
       }),
     }),
   })
-  .when(Joi.object({ type: IdentificationType.passport }).unknown(), {
+  .when(Joi.object({ type: IdentificationType.PASSPORT }).unknown(), {
     then: Joi.object({
       fileFrontId: Joi.string().uuid().required().messages({
         'any.required': 'Passport information page is required',
@@ -69,7 +74,7 @@ export const identificationDocumentSchema = baseSchema
       }),
     }),
   })
-  .when(Joi.object({ type: IdentificationType.business }).unknown(), {
+  .when(Joi.object({ type: IdentificationType.BUSINESS }).unknown(), {
     then: Joi.object({
       fileFrontId: Joi.string().uuid().required().messages({
         'any.required': 'Front side of business license is required',
@@ -82,3 +87,20 @@ export const identificationDocumentSchema = baseSchema
       }),
     }),
   });
+
+export const editIdentificationSchema = Joi.object({
+  status: Joi.string()
+    .valid(...Object.values(KYCStatus))
+    .required()
+    .messages({
+      'any.required': 'status is required',
+      'any.only': 'status must be PENDING, APPROVAL, REJECTED',
+    }),
+
+  remarks: Joi.string().optional().messages({}),
+
+  kycId: Joi.string().uuid().required().messages({
+    'string.guid': 'refId must be a valid UUID',
+    'string.empty': 'Address is required',
+  }),
+});

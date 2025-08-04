@@ -15,6 +15,8 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
   switch (req.method) {
     case 'PATCH':
       return PATCH(req, res, userId);
+    case 'DELETE':
+      return DELETE(req, res);
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -65,6 +67,20 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse, userId: s
       .json(
         createResponse(RESPONSE_CODE.CREATED, Messages.VERIFY_BANK_ACCOUNT_SUCCESS, bankAccount),
       );
+  } catch (error: any) {
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, error || Messages.INTERNAL_ERROR));
+  }
+}
+
+export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    const { id } = req.query;
+    await bankAccountRepository.delete(String(id));
+    return res
+      .status(RESPONSE_CODE.CREATED)
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.DELETE_SUCCESS, null));
   } catch (error: any) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
