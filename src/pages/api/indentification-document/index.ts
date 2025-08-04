@@ -82,6 +82,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
         id: crypto.randomUUID(),
       },
       kycId,
+      userId,
     );
     return res
       .status(RESPONSE_CODE.CREATED)

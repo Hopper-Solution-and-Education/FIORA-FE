@@ -2,10 +2,16 @@ import { prisma } from '@/config';
 import { IdentificationDocument, KYCStatus, Prisma } from '@prisma/client';
 
 class IdentificationRepository {
-  async create(data: Prisma.IdentificationDocumentCreateInput, kycId: string): Promise<any> {
+  async create(
+    data: Prisma.IdentificationDocumentCreateInput,
+    kycId: string,
+    userid: string,
+  ): Promise<any> {
     try {
       return prisma.$transaction(async (tx) => {
-        const identification = await tx.identificationDocument.create({ data: { ...data } });
+        const identification = await tx.identificationDocument.create({
+          data: { ...data, createdBy: userid },
+        });
 
         await tx.eKYC.update({ where: { id: kycId }, data: { refId: identification?.id || null } });
 
