@@ -1,4 +1,4 @@
-import { BankAccountStatus } from '@prisma/client';
+import { KYCStatus } from '@prisma/client';
 import Joi from 'joi';
 
 export const bankAccountSchema = Joi.object({
@@ -26,17 +26,31 @@ export const bankAccountSchema = Joi.object({
     'any.required': 'SWIFT code is required',
   }),
 
-  status: Joi.string()
-    .valid(...Object.values(BankAccountStatus))
-    .required()
-    .messages({
-      'any.only': 'status must be one of: pending, approved, reject',
-      'any.required': 'status is required',
-    }),
-
   paymentRefId: Joi.string().uuid().optional().messages({
     'string.guid': 'Payment paymentRefId must be a valid UUID',
   }),
 
   remarks: Joi.string().optional().messages({}),
+
+  kycId: Joi.string().uuid().required().messages({
+    'string.guid': 'refId must be a valid UUID',
+    'string.empty': 'Address is required',
+  }),
+});
+
+export const editBankAccountSchema = Joi.object({
+  status: Joi.string()
+    .valid(...Object.values(KYCStatus))
+    .required()
+    .messages({
+      'any.required': 'status is required',
+      'any.only': 'status must be PENDING, APPROVAL, REJECTED',
+    }),
+
+  remarks: Joi.string().optional().messages({}),
+
+  kycId: Joi.string().uuid().required().messages({
+    'string.guid': 'refId must be a valid UUID',
+    'string.empty': 'Address is required',
+  }),
 });

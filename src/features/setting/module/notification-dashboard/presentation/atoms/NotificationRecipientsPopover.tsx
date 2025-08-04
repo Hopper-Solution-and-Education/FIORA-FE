@@ -5,11 +5,13 @@ import { useMemo, useRef, useState } from 'react';
 interface NotificationRecipientsPopoverProps {
   recipients: string | string[];
   children: React.ReactNode;
+  showSearch?: boolean;
 }
 
 const NotificationRecipientsPopover = ({
   recipients,
   children,
+  showSearch = true,
 }: NotificationRecipientsPopoverProps) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -48,12 +50,14 @@ const NotificationRecipientsPopover = ({
         onMouseLeave={handleMouseLeave}
         align="start"
       >
-        <Input
-          placeholder="Search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="mb-2"
-        />
+        {showSearch && (
+          <Input
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="mb-2"
+          />
+        )}
         <div className="max-h-48 overflow-y-auto">
           {filtered.length > 0 ? (
             filtered.map((email, idx) => (

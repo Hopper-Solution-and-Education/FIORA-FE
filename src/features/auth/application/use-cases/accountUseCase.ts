@@ -32,8 +32,12 @@ export class AccountUseCase {
   constructor(
     private accountRepository: IAccountRepository,
     private transactionRepository: ITransactionRepository,
+<<<<<<< HEAD
     private currencyRepository: IExchangeRateRepository,
   ) { }
+=======
+  ) {}
+>>>>>>> 67fac0f7772a80a053af83f4c01bfa60f118f08d
 
   async create(params: {
     userId: string;
@@ -173,8 +177,8 @@ export class AccountUseCase {
       const enumValues = Object.values(AccountType).map((v: any) => v.toLowerCase());
       const matchedType = enumValues.includes(typeSearchParams)
         ? (Object.values(AccountType).find(
-          (v: any) => v.toLowerCase() === typeSearchParams,
-        ) as AccountType)
+            (v: any) => v.toLowerCase() === typeSearchParams,
+          ) as AccountType)
         : null;
 
       const orConditions: any = [{ name: { contains: typeSearchParams, mode: 'insensitive' } }];
@@ -231,8 +235,8 @@ export class AccountUseCase {
       const enumValues = Object.values(AccountType).map((v: any) => v.toLowerCase());
       const matchedType = enumValues.includes(typeSearchParams)
         ? (Object.values(AccountType).find(
-          (v: any) => v.toLowerCase() === typeSearchParams,
-        ) as AccountType)
+            (v: any) => v.toLowerCase() === typeSearchParams,
+          ) as AccountType)
         : null;
 
       const orConditions: Prisma.AccountWhereInput[] = [
