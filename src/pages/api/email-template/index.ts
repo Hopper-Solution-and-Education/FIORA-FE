@@ -3,7 +3,8 @@ import { emailTemplateRepository } from '@/features/setting/api/infrastructure/r
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createErrorResponse } from '@/shared/lib';
-import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { validateBody } from '@/shared/utils/validate';
 import { emailTemplateSchema } from '@/shared/validators/emailTemplateValidation';
@@ -16,90 +17,75 @@ export default withAuthorization({
   POST: ['Admin', 'CS', 'User'],
   PUT: ['Admin', 'CS', 'User'],
   DELETE: ['Admin', 'CS', 'User'],
-})(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
-  switch (req.method) {
-    case 'POST':
-      return POST(req, res, userId);
-    case 'GET':
-      return GET(res);
-    case 'PUT':
-      return PUT(req, res, userId);
-    case 'DELETE':
-      return DELETE(req, res);
-    default:
-      return res
-        .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-        .json({ error: Messages.METHOD_NOT_ALLOWED });
-  }
-});
+})((req: NextApiRequest, res: NextApiResponse, userId: string) =>
+  errorHandler(
+    async (request, response) => {
+      switch (request.method) {
+        case 'POST':
+          return POST(request, response, userId);
+        case 'GET':
+          return GET(response);
+        case 'PUT':
+          return PUT(request, response, userId);
+        case 'DELETE':
+          return DELETE(request, response);
+        default:
+          return response
+            .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+            .json({ error: Messages.METHOD_NOT_ALLOWED });
+      }
+    },
+    req,
+    res,
+  ),
+);
 
 export async function GET(res: NextApiResponse) {
-  try {
-    const emailTemplates = await emailTemplateRepository.getEmailTemplate();
+  const emailTemplates = await emailTemplateRepository.getEmailTemplate();
 
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    res.setHeader('Surrogate-Control', 'no-store');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
 
-    return res
-      .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_EMAIL_TEMPLATE_SUCCESS, emailTemplates));
-  } catch (error: any) {
-    res
-      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createError(
-          res,
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error.message || Messages.INTERNAL_ERROR,
-        ),
-      );
-  }
+  return res
+    .status(RESPONSE_CODE.OK)
+    .json(createResponse(RESPONSE_CODE.OK, Messages.GET_EMAIL_TEMPLATE_SUCCESS, emailTemplates));
 }
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  try {
-    const { error } = validateBody(emailTemplateSchema, req.body);
-    if (error) {
-      return res
-        .status(RESPONSE_CODE.BAD_REQUEST)
-        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
-    }
-    const { type, name } = req.body;
-    const existingTemplate = await emailTemplateRepository.findEmailTemplateByTypeOrName(
-      type,
-      name,
-    );
-    if (existingTemplate) {
-      return res
-        .status(RESPONSE_CODE.CONFLICT)
-        .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.DUPLICATE_EMAIL_TEMPLATE));
-    }
-
-    const newEmailTemplate = await emailTemplateRepository.createEmailTemplate({
-      ...req.body,
-      isActive: false,
-      createdBy: userId,
-      updatedBy: userId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      id: crypto.randomUUID(),
-    });
+  const { error } = validateBody(emailTemplateSchema, req.body);
+  if (error) {
     return res
-      .status(RESPONSE_CODE.CREATED)
-      .json(
-        createResponse(
-          RESPONSE_CODE.CREATED,
-          Messages.CREATE_EMAIL_TEMPLATE_SUCCESS,
-          newEmailTemplate,
-        ),
-      );
-  } catch (error: any) {
-    return res
-      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, error || Messages.INTERNAL_ERROR));
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
   }
+  const { type, name } = req.body;
+  const existingTemplate = await emailTemplateRepository.findEmailTemplateByTypeOrName(type, name);
+  if (existingTemplate) {
+    return res
+      .status(RESPONSE_CODE.CONFLICT)
+      .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.DUPLICATE_EMAIL_TEMPLATE));
+  }
+
+  const newEmailTemplate = await emailTemplateRepository.createEmailTemplate({
+    ...req.body,
+    isActive: false,
+    createdBy: userId,
+    updatedBy: userId,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    id: crypto.randomUUID(),
+  });
+  return res
+    .status(RESPONSE_CODE.CREATED)
+    .json(
+      createResponse(
+        RESPONSE_CODE.CREATED,
+        Messages.CREATE_EMAIL_TEMPLATE_SUCCESS,
+        newEmailTemplate,
+      ),
+    );
 }
 
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
@@ -141,7 +127,7 @@ async function DELETE(req: NextApiRequest, res: NextApiResponse) {
     if (!emailTemplateId) {
       return res
         .status(RESPONSE_CODE.NOT_FOUND)
-        .json(createError(res, RESPONSE_CODE.NOT_FOUND, Messages.ID_REQUIRE));
+        .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, Messages.ID_REQUIRE));
     }
     const emailTemplate = await emailTemplateRepository.findEmailTemplateById(
       emailTemplateId?.toString() || '',
@@ -150,7 +136,7 @@ async function DELETE(req: NextApiRequest, res: NextApiResponse) {
     if (emailTemplate?.isActive) {
       return res
         .status(RESPONSE_CODE.CONFLICT)
-        .json(createError(res, RESPONSE_CODE.CONFLICT, Messages.NOT_DELETE_TEMPLATE));
+        .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.NOT_DELETE_TEMPLATE));
     }
     await emailTemplateRepository.delete(emailTemplateId?.toString() || '');
     return res
@@ -160,13 +146,12 @@ async function DELETE(req: NextApiRequest, res: NextApiResponse) {
     if (error.message === Messages.COMMENT_NOT_FOUND) {
       return res
         .status(RESPONSE_CODE.NOT_FOUND)
-        .json(createError(res, RESPONSE_CODE.NOT_FOUND, Messages.EMAIL_TEMPLATE_NOT_FOUND));
+        .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, Messages.EMAIL_TEMPLATE_NOT_FOUND));
     }
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
       .json(
-        createError(
-          res,
+        createErrorResponse(
           RESPONSE_CODE.INTERNAL_SERVER_ERROR,
           Messages.INTERNAL_ERROR || error.message,
         ),
