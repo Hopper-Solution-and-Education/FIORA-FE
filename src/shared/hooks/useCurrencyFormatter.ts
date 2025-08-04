@@ -434,58 +434,119 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
   /**
    * Exchanges amount between currencies with detailed result
    * Automatically fetches exchange rates if not available
+   * Now uses the same robust logic as formatCurrency for consistent calculations
    */
   const getExchangeAmount = useCallback(
     (params: ExchangeAmountParams): ExchangeAmountResult => {
-      const { amount, fromCurrency, toCurrency } = params;
+      try {
+        const { amount: inputAmount, fromCurrency, toCurrency } = params;
 
-      // Trigger exchange rate data fetch to ensure we have the latest data
-      ensureExchangeRateData();
+        // Handle null/undefined inputs gracefully and ensure number conversion
+        let amount = inputAmount;
+        if (amount == null || amount === undefined) {
+          amount = 0;
+        }
 
-      // Handle same currency conversion
-      if (fromCurrency === toCurrency) {
-        const currencyObj = exchangeRates[toCurrency];
-        const fallbackCurrencyObj = { rate: 1, suffix: toCurrency };
+        // Ensure amount is a number (handle string inputs from database)
+        const numericAmount = typeof amount === 'string' ? parseFloat(amount) || 0 : Number(amount);
+        if (isNaN(numericAmount)) {
+          amount = 0;
+        } else {
+          amount = numericAmount;
+        }
+
+        // Check and ensure exchange rate data is available
+        ensureExchangeRateData();
+
+        // Handle same currency conversion
+        if (fromCurrency === toCurrency) {
+          const currencyObj = exchangeRates[toCurrency];
+          const fallbackCurrencyObj = { rate: 1, suffix: toCurrency };
+
+          return {
+            convertedAmount: amount,
+            originalAmount: amount,
+            fromCurrency: fromCurrency,
+            toCurrency: toCurrency,
+            exchangeRate: 1,
+            formattedAmount: formatCurrency(amount, currencyObj || fallbackCurrencyObj, {
+              applyExchangeRate: false,
+            }),
+          };
+        }
+
+        // Get input currency code - handle both string and object inputs
+        const inputCurrencyCode: string = fromCurrency;
+
+        // Apply exchange rate conversion logic (similar to formatCurrency)
+        let finalAmount = amount;
+        let targetCurrencyCode: string = toCurrency;
+        let actualExchangeRate: number = 1;
+
+        if (inputCurrencyCode !== toCurrency) {
+          // Convert from input currency to target currency with exchange rate
+
+          if (exchangeRates !== null) {
+            finalAmount = Number((amount * exchangeRates[toCurrency].rate).toFixed(2));
+            actualExchangeRate = exchangeRates[toCurrency].rate;
+          } else {
+            // Keep original currency and amount if conversion is not possible
+            targetCurrencyCode = inputCurrencyCode;
+            finalAmount = amount;
+            actualExchangeRate = 1;
+          }
+        }
+
+        // Get target currency object for formatting
+        let targetCurrencyObj: CurrencyObjectType;
+        if (targetCurrencyCode === inputCurrencyCode) {
+          // Use original currency if no conversion happened
+          targetCurrencyObj = exchangeRates[targetCurrencyCode];
+          if (!targetCurrencyObj) {
+            targetCurrencyObj = { rate: 1, suffix: targetCurrencyCode };
+          }
+        } else {
+          // Use the target currency object after conversion
+          targetCurrencyObj = exchangeRates[targetCurrencyCode];
+          if (!targetCurrencyObj) {
+            targetCurrencyObj = { rate: 1, suffix: targetCurrencyCode };
+          }
+        }
 
         return {
-          convertedAmount: amount,
+          convertedAmount: finalAmount,
           originalAmount: amount,
-          fromCurrency: fromCurrency,
-          toCurrency: toCurrency,
-          exchangeRate: 1,
-          formattedAmount: formatCurrency(amount, currencyObj || fallbackCurrencyObj),
+          fromCurrency: inputCurrencyCode,
+          toCurrency: targetCurrencyCode,
+          exchangeRate: actualExchangeRate,
+          formattedAmount: formatCurrency(finalAmount, targetCurrencyObj, {
+            applyExchangeRate: false,
+          }),
         };
-      }
+      } catch {
+        toast.error('Error calculating exchange amount. Please try again.');
 
-      // Create currency objects - use stored data if available, otherwise create minimal objects
-      const toCurrencyObj = exchangeRates[toCurrency] || { rate: 1, suffix: toCurrency };
+        // Safe fallback
+        const fallbackAmount =
+          typeof params.amount === 'string'
+            ? parseFloat(params.amount) || 0
+            : Number(params.amount) || 0;
+        const fallbackCurrencyObj = exchangeRates[params.toCurrency] || {
+          rate: 1,
+          suffix: params.toCurrency,
+        };
 
-      // Try to get exchange rate (this will check store and cache)
-      const rate = getExchangeRate(fromCurrency, toCurrency);
-
-      if (rate === null) {
-        // Return 1:1 conversion as last resort only
         return {
-          convertedAmount: amount,
-          originalAmount: amount,
-          fromCurrency: fromCurrency,
-          toCurrency: toCurrency,
+          convertedAmount: fallbackAmount,
+          originalAmount: fallbackAmount,
+          fromCurrency: params.fromCurrency,
+          toCurrency: params.toCurrency,
           exchangeRate: 1,
-          formattedAmount: formatCurrency(amount, toCurrencyObj),
+          formattedAmount: formatCurrency(fallbackAmount, fallbackCurrencyObj, {
+            applyExchangeRate: false,
+          }),
         };
       }
-
-      // Apply the exchange rate conversion
-      const convertedAmount = Number((amount * rate).toFixed(2));
-
-      return {
-        convertedAmount,
-        originalAmount: amount,
-        fromCurrency: fromCurrency,
-        toCurrency: toCurrency,
-        exchangeRate: rate,
-        formattedAmount: formatCurrency(convertedAmount, toCurrencyObj),
-      };
     },
     [formatCurrency, getExchangeRate, ensureExchangeRateData, exchangeRates],
   );

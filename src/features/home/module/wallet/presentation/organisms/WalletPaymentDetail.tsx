@@ -42,6 +42,12 @@ const WalletPaymentDetail = ({ className }: WalletPaymentDetailProps) => {
     toCurrency: currency,
   });
 
+  const applyingRate = getExchangeAmount({
+    amount: 1,
+    fromCurrency: CURRENCY.FX,
+    toCurrency: currency,
+  });
+
   const qrValue = JSON.stringify({ fxAmount, usdAmount: actualAmount, rate, id });
 
   return (
@@ -59,10 +65,10 @@ const WalletPaymentDetail = ({ className }: WalletPaymentDetailProps) => {
           <div className="text-xl text-muted-foreground font-semibold">
             {formatCurrency(actualAmount, currency)}
           </div>
-          {/* <div className="text-sm text-muted-foreground">
-            Rate: {getExchangeRate(CURRENCY.FX, currency)} ={' '}
-            {getExchangeRate(currency, CURRENCY.FX)}
-          </div> */}
+          <div className="text-sm text-muted-foreground">
+            Rate: {formatCurrency(applyingRate.originalAmount, applyingRate.fromCurrency)} ={' '}
+            {formatCurrency(applyingRate.convertedAmount, applyingRate.toCurrency)}
+          </div>
         </div>
         <div className="flex flex-col items-center gap-2">
           <div className="bg-white rounded-xl p-4 shadow">

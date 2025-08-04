@@ -6,7 +6,6 @@ import { Card } from '@/components/ui/card';
 import { RadioGroupItem } from '@/components/ui/radio-group';
 import { CURRENCY } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
-import { EXCHANGE_RATES_TO_USD } from '@/shared/utils/currencyExchange';
 import { useAppSelector } from '@/store';
 import React from 'react';
 import type { PackageFX } from '../../domain/entity/PackageFX';
@@ -25,10 +24,13 @@ const WalletDepositPackageCard: React.FC<WalletDepositPackageCardProps> = ({
   isPopular = false,
 }) => {
   const currency = useAppSelector((state) => state.settings.currency);
-  const { formatCurrency } = useCurrencyFormatter();
+  const { formatCurrency, getExchangeAmount } = useCurrencyFormatter();
 
-  // Calculate USD amount using proper exchange rate
-  const usdAmount = packageFX.fxAmount / EXCHANGE_RATES_TO_USD.FX;
+  const usdAmount = getExchangeAmount({
+    fromCurrency: CURRENCY.FX,
+    toCurrency: currency,
+    amount: packageFX.fxAmount,
+  }).convertedAmount;
 
   return (
     <Card

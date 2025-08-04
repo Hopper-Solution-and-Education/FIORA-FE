@@ -1,3 +1,5 @@
+import { Currency } from '@prisma/client';
+
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 export const USD_VND_RATE = 25000;
@@ -14,7 +16,7 @@ export const MODULE = {
   ADMIN: 'ADMIN',
 } as const;
 
-export const CURRENCY = {
+export const CURRENCY: Record<Currency, string> = {
   USD: 'USD',
   VND: 'VND',
   FX: 'FX',

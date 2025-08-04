@@ -41,7 +41,7 @@ class WalletUseCase {
     private _transactionRepository: ITransactionRepository = transactionRepository,
     private _accountRepository: IAccountRepository = accountRepository,
     private _currencyRepository: ICurrencySettingRepository = currencySettingRepository,
-  ) { }
+  ) {}
 
   async createWallet(data: Prisma.WalletUncheckedCreateInput) {
     return this._walletRepository.createWallet(data);
