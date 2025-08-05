@@ -26,13 +26,7 @@ import { walletRepository } from '../../infrastructure/repositories/walletReposi
 import { IAttachmentRepository } from '../../repositories/attachmentRepository.interface';
 import { ICurrencySettingRepository } from '../../repositories/currencySettingRepository.interface';
 import { IWalletRepository } from '../../repositories/walletRepository.interface';
-
-interface AttachmentData {
-  type: string;
-  size: number;
-  url: string;
-  path: string;
-}
+import { AttachmentData } from '../../types/attachmentTypes';
 
 class WalletUseCase {
   constructor(

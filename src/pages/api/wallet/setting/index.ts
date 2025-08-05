@@ -83,6 +83,7 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
     }
 
     const updated = await walletUseCase.updateDepositRequestStatus(id, status, remark);
+
     if (!updated) {
       return createError(
         res,
