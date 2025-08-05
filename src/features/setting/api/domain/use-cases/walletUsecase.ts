@@ -68,7 +68,17 @@ class WalletUseCase {
   async getAllPackageFX() {
     return this._walletRepository.findAllPackageFX();
   }
-
+  async getPackageFXPaginated({
+    sortBy,
+    page,
+    limit,
+  }: {
+    sortBy?: Record<string, 'asc' | 'desc'>;
+    page?: number;
+    limit?: number;
+  }) {
+    return this._walletRepository.findPackageFXPaginated({ sortBy, page, limit });
+  }
   async createPackageFx(data: {
     fxAmount: number;
     files?: Array<{ url: string; size: number; path: string; type: string }>;
@@ -76,50 +86,63 @@ class WalletUseCase {
   }) {
     let attachment_id: string[] = [];
     if (data.files && data.files.length > 0) {
-      const attachments = await Promise.all(
-        data.files.map((file) =>
-          this._attachmentRepository.createAttachment({
-            type: file.type,
-            url: file.url,
-            path: file.path,
-            size: file.size,
-            createdBy: data.createdBy || null,
+      try {
+        const attachments: Array<{ id: string }> = await Promise.all(
+          data.files.map((file) => {
+            return this._attachmentRepository.createAttachment({
+              type: file.type,
+              url: file.url,
+              path: file.path,
+              size: file.size,
+              createdBy: data.createdBy || null,
+            });
           }),
-        ),
-      );
-      attachment_id = attachments.map((att) => att.id);
+        );
+        attachment_id = attachments.map((att) => att.id);
+      } catch (err) {
+        console.error('Error creating attachments:', err);
+        throw err;
+      }
     }
-    return this._walletRepository.createPackageFX({
-      fxAmount: data.fxAmount,
-      attachment_id,
-      createdBy: data.createdBy || null,
-    });
+    try {
+      const packageFXData = {
+        fxAmount: data.fxAmount,
+        attachment_id,
+        createdBy: data.createdBy || null,
+      };
+      const result = await this._walletRepository.createPackageFX(packageFXData);
+      return result;
+    } catch (err) {
+      console.error('Error creating PackageFX:', err);
+      throw err;
+    }
   }
-
   async updatePackageFX(
     id: string,
     data: {
       fxAmount: number;
-      files?: Array<{ url: string; size: number; path: string; type: string }>;
-      replaceAttachments?: boolean;
+      newFiles?: Array<{ url: string; size: number; path: string; type: string }>;
+      removeAttachmentIds?: string[];
     },
   ) {
     const found = await this._walletRepository.getPackageFXById(id);
     if (!found) return null;
 
     const depositRequests = await this._walletRepository.findDepositRequestsByPackageFXId(id);
-    const hasActiveRequests = depositRequests.some((req) => req.status === 'Requested');
-    if (hasActiveRequests) {
+    if (depositRequests.some((req) => req.status === 'Requested')) {
       throw new Error(Messages.PACKAGE_FX_HAS_ACTIVE_DEPOSIT_REQUEST);
     }
 
-    const updateData: { fxAmount: number; attachment_id?: string[] } = {
-      fxAmount: data.fxAmount,
-    };
+    // Xử lý giữ lại các attachment cũ nếu không bị remove
+    const existingAttachmentIds = (found.attachment_id || []).filter(
+      (id) => !data.removeAttachmentIds?.includes(id),
+    );
 
-    if (data.files && data.files.length > 0) {
-      const attachments = await Promise.all(
-        data.files.map((file) =>
+    // Upload file mới nếu có
+    let newAttachmentIds: string[] = [];
+    if (data.newFiles && data.newFiles.length > 0) {
+      const newAttachments = await Promise.all(
+        data.newFiles.map((file) =>
           this._attachmentRepository.createAttachment({
             type: file.type,
             url: file.url,
@@ -129,35 +152,29 @@ class WalletUseCase {
           }),
         ),
       );
-
-      updateData.attachment_id = data.replaceAttachments
-        ? attachments.map((att) => att.id)
-        : [...(found.attachment_id || []), ...attachments.map((att) => att.id)]; // append
-    } else {
-      updateData.attachment_id = found.attachment_id || [];
+      newAttachmentIds = newAttachments.map((att) => att.id);
     }
+
+    const mergedAttachments = [...existingAttachmentIds, ...newAttachmentIds].slice(0, 3); // optional limit
+
+    const updateData = {
+      fxAmount: data.fxAmount,
+      attachment_id: mergedAttachments,
+    };
 
     return this._walletRepository.updatePackageFX(id, updateData);
   }
+
   async deletePackageFX(id: string) {
     const found = await this._walletRepository.getPackageFXById(id);
-    if (!found) return null;
-
+    if (!found) throw new Error(Messages.PACKAGE_FX_NOT_FOUND);
     const depositRequests = await this._walletRepository.findDepositRequestsByPackageFXId(id);
-
     if (depositRequests.length > 0) {
       const hasActiveRequests = depositRequests.some((req: any) => req.status === 'Requested');
-
       if (hasActiveRequests) {
-        throw new Error(
-          'Cannot delete PackageFX: There are active deposit requests pending approval',
-        );
+        throw new Error(Messages.PACKAGE_FX_HAS_ACTIVE_DEPOSIT_REQUEST);
       }
-
-      console.warn(`Deleting PackageFX ${id} with ${depositRequests.length} deposit requests`);
     }
-
-    // Gọi transaction từ repository
     return this._walletRepository.deletePackageFX(id);
   }
 

@@ -1,3 +1,4 @@
+import { PackageFX } from '@/features/home/module/wallet';
 import { AttachmentType } from '../constants/attachmentConstants';
 
 export interface AttachmentData {
@@ -32,4 +33,7 @@ export interface DepositRequestWithAttachment {
     url: string;
     path: string;
   };
+}
+export interface PackageFXWithAttachments extends PackageFX {
+  attachments: { id: string; url: string }[];
 }

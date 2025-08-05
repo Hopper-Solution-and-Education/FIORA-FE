@@ -43,7 +43,7 @@
     content: '';
     @apply absolute bottom-0 left-0 h-[3px] w-0;
     transform-origin: left;
-    animation: progress 3000ms linear forwards;
+    /* animation: progress 3000ms linear forwards; */
   }
   .sonner-toast-success::after {
     @apply bg-emerald-500;
