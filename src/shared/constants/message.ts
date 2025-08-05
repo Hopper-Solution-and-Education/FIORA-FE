@@ -332,5 +332,25 @@ export enum Messages {
   //Bank Account
   EXIT_BANK_ACCOUNT = 'Bank account already exists',
   CREATE_BANK_ACCOUNT_SUCCESS = 'Create bank account successfully',
+  VERIFY_BANK_ACCOUNT_SUCCESS = 'Verify bank account successfully',
   GET_BANK_ACCOUNT_SUCCESS = 'Get bank account successfully',
+  BANK_ACCOUNT_NOT_FOUND = 'BankAccount not found',
+
+  //Identification
+  IDENTIFICATION_ACCOUNT = 'Identification already exists',
+  CREATE_IDENTIFICATION_SUCCESS = 'Create identification successfully',
+  GET_IDENTIFICATION_SUCCESS = 'Get identification successfully',
+  VERIFY_IDENTIFICATION_SUCCESS = 'Verify identification successfully',
+  IDENTIFICATION_NOT_FOUND = 'Identification not found',
+
+  //eKyc
+  KYC_ACCOUNT = 'eKyc already exists',
+  CREATE_KYC_SUCCESS = 'Create eKyc successfully',
+  GET_KYC_SUCCESS = 'Get eKyc successfully',
+  KYC_NOT_FOUND = 'Kyc not found',
+  KYC_CHECK = 'Kyc is used',
+  KYC_NOT_MATCH = 'Kyc not match',
+
+  //Common
+  DELETE_SUCCESS = 'Delete successfully',
 }

@@ -1,4 +1,7 @@
-import { NotificationDashboardTableData } from '../types/setting.type';
+import {
+  NOTIFICATION_DASHBOARD_TABLE_COLUMN_CONFIG,
+  NotificationDashboardTableData,
+} from '../types/setting.type';
 
 /**
  * Clean filter object by removing null/undefined values
@@ -29,4 +32,44 @@ export function convertToTableData(item: any): NotificationDashboardTableData {
     status: item.status,
     key: item.id,
   };
+}
+
+/**
+ * Get alignment class based on column configuration
+ * Shared utility function for consistent alignment across components
+ */
+export function getAlignClass(col: string): string {
+  const side =
+    NOTIFICATION_DASHBOARD_TABLE_COLUMN_CONFIG[
+      col as keyof typeof NOTIFICATION_DASHBOARD_TABLE_COLUMN_CONFIG
+    ]?.side || 'center';
+
+  switch (side) {
+    case 'left':
+      return 'text-left';
+    case 'right':
+      return 'text-right';
+    default:
+      return 'text-center';
+  }
+}
+
+/**
+ * Get alignment class for skeleton rows (includes justify classes)
+ * Used specifically for skeleton loading states
+ */
+export function getSkeletonAlignClass(col: string): { cellClass: string; flexClass: string } {
+  const side =
+    NOTIFICATION_DASHBOARD_TABLE_COLUMN_CONFIG[
+      col as keyof typeof NOTIFICATION_DASHBOARD_TABLE_COLUMN_CONFIG
+    ]?.side || 'center';
+
+  switch (side) {
+    case 'left':
+      return { cellClass: 'text-left', flexClass: 'justify-start' };
+    case 'right':
+      return { cellClass: 'text-right', flexClass: 'justify-end' };
+    default:
+      return { cellClass: 'text-center', flexClass: 'justify-center' };
+  }
 }

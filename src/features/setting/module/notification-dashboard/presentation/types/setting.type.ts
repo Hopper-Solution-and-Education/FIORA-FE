@@ -37,10 +37,10 @@ export type NotificationDashboardTableColumnKeyType = {
 
 export const NOTIFICATION_DASHBOARD_TABLE_COLUMN_CONFIG: NotificationDashboardTableColumnKeyType = {
   'No.': { index: 0, sortable: false, isVisible: true, side: 'center' },
-  'Send Date': { index: 1, sortable: true, isVisible: true, side: 'center' },
+  'Send Date': { index: 1, sortable: true, isVisible: true, side: 'left' },
   'Notify To': { index: 2, sortable: true, isVisible: true, side: 'center' },
   Subject: { index: 3, sortable: true, isVisible: true, side: 'left' },
-  Recipients: { index: 4, sortable: false, isVisible: true, side: 'center' },
+  Recipients: { index: 4, sortable: false, isVisible: true, side: 'left' },
   Sender: { index: 5, sortable: true, isVisible: true, side: 'left' },
   'Notify Type': { index: 6, sortable: true, isVisible: true, side: 'center' },
   Channel: { index: 7, sortable: true, isVisible: true, side: 'center' },

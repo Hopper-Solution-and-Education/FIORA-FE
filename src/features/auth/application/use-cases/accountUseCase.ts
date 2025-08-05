@@ -1,15 +1,15 @@
+import { prisma } from '@/config';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { BooleanUtils } from '@/shared/lib';
+import { GlobalFilters } from '@/shared/types';
+import { buildWhereClause } from '@/shared/utils';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { safeString } from '@/shared/utils/ExStringUtils';
 import { Account, AccountType, Currency, Prisma, Transaction } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IAccountRepository } from '../../domain/repositories/accountRepository.interface';
 import { accountRepository } from '../../infrastructure/repositories/accountRepository';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
-import { GlobalFilters } from '@/shared/types';
-import { buildWhereClause } from '@/shared/utils';
-import { safeString } from '@/shared/utils/ExStringUtils';
-import { BooleanUtils } from '@/shared/lib';
-import { prisma } from '@/config';
 
 const descriptions = {
   ['Payment']:
@@ -492,9 +492,11 @@ export class AccountUseCase {
         throw new Error('Cannot delete master account with sub account still existed');
       } else {
         const transaction = await this.transactionRepository.findManyTransactions({
-          OR: [{ fromAccountId: id }, { toAccountId: id }], // check if any transaction linked to this account
+          AND: {
+            isDeleted: false,
+            OR: [{ fromAccountId: id }, { toAccountId: id }], // check if any transaction linked to this account
+          },
         });
-
         if (transaction.length > 0) {
           throw new Error('Sorry! You cannot delete Account which already has transactions');
         }

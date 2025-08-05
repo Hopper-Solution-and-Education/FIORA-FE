@@ -1,39 +1,49 @@
 import { prisma } from '@/config';
-import { BankAccount, KYCStatus, Prisma } from '@prisma/client';
+import { IdentificationDocument, KYCStatus, Prisma } from '@prisma/client';
 
-class BankAccountRepository {
-  async create(data: Prisma.BankAccountCreateInput, kycId: string): Promise<any> {
+class IdentificationRepository {
+  async create(
+    data: Prisma.IdentificationDocumentCreateInput,
+    kycId: string,
+    userid: string,
+  ): Promise<any> {
     try {
       return prisma.$transaction(async (tx) => {
-        const bankAccount = await prisma.bankAccount.create({ data: { ...data } });
+        const identification = await tx.identificationDocument.create({
+          data: { ...data, createdBy: userid },
+        });
 
-        await tx.eKYC.update({ where: { id: kycId }, data: { refId: bankAccount?.id || null } });
+        await tx.eKYC.update({ where: { id: kycId }, data: { refId: identification?.id || null } });
 
-        return bankAccount;
+        return identification;
       });
     } catch (error) {
       console.log(error);
+      return error as unknown;
     }
   }
-  async get(): Promise<BankAccount[]> {
-    return await prisma.bankAccount.findMany({
+
+  async get(): Promise<IdentificationDocument[]> {
+    return await prisma.identificationDocument.findMany({
       orderBy: {
         createdAt: 'desc',
       },
     });
   }
-  async checkBankAccount(data: Prisma.BankAccountCreateInput) {
-    const { bankName, accountNumber } = data;
-    return await prisma.bankAccount.findFirst({
+
+  async checkIdentification(data: Prisma.IdentificationDocumentCreateInput, userId: string) {
+    const { type, idNumber } = data;
+    return await prisma.identificationDocument.findFirst({
       where: {
-        bankName,
-        accountNumber,
+        type,
+        userId,
+        idNumber,
       },
     });
   }
 
   async getById(id: string) {
-    return await prisma.bankAccount.findFirst({
+    return await prisma.identificationDocument.findFirst({
       where: {
         id,
       },
@@ -41,7 +51,7 @@ class BankAccountRepository {
   }
 
   async getByUserId(id: string) {
-    return await prisma.bankAccount.findFirst({
+    return await prisma.identificationDocument.findFirst({
       where: {
         userId: id,
       },
@@ -54,14 +64,14 @@ class BankAccountRepository {
       remarks: string;
       status: KYCStatus;
     },
-    bankAccountId: string,
+    identificationId: string,
     userId: string,
   ): Promise<any> {
     try {
       const { kycId, remarks, status } = data;
       return prisma.$transaction(async (tx) => {
-        const bankAccount = await tx.bankAccount.update({
-          where: { id: bankAccountId },
+        const identification = await tx.identificationDocument.update({
+          where: { id: identificationId },
           data: {
             remarks: remarks || '',
             status: status,
@@ -71,11 +81,11 @@ class BankAccountRepository {
         });
 
         await tx.eKYC.update({
-          where: { id: kycId, refId: bankAccountId },
+          where: { id: kycId, refId: identificationId },
           data: { updatedAt: new Date(), updatedBy: userId, status: status, verifiedBy: userId },
         });
 
-        return bankAccount;
+        return identification;
       });
     } catch (error) {
       console.log(error);
@@ -86,14 +96,14 @@ class BankAccountRepository {
   async delete(id: string) {
     try {
       return prisma.$transaction(async (tx) => {
-        const bank = await tx.bankAccount.delete({ where: { id } });
+        const identification = await tx.identificationDocument.delete({ where: { id } });
 
         const eKycRecord = await tx.eKYC.findFirst({ where: { refId: id } });
         if (eKycRecord) {
           await tx.eKYC.delete({ where: { id: eKycRecord.id } });
         }
 
-        return bank;
+        return identification;
       });
     } catch (error) {
       console.log(error);
@@ -102,4 +112,4 @@ class BankAccountRepository {
   }
 }
 
-export const bankAccountRepository = new BankAccountRepository();
+export const identificationRepository = new IdentificationRepository();

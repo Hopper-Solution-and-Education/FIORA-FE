@@ -1,5 +1,5 @@
-import { bankAccountRepository } from '@/features/setting/api/infrastructure/repositories/bankAccountRepository';
 import { eKycRepository } from '@/features/setting/api/infrastructure/repositories/eKycRepository';
+import { identificationRepository } from '@/features/setting/api/infrastructure/repositories/indentificationRepository';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createErrorResponse } from '@/shared/lib';
@@ -7,7 +7,7 @@ import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { validateBody } from '@/shared/utils/validate';
-import { bankAccountSchema } from '@/shared/validators/bankAccountValidator';
+import { identificationDocumentSchema } from '@/shared/validators/identificationValidator';
 import { KYCStatus } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -33,7 +33,7 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
 );
 
 export async function GET(res: NextApiResponse, userId: string) {
-  const bankAccounts = await bankAccountRepository.getByUserId(userId);
+  const identification = await identificationRepository.getByUserId(userId);
 
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
@@ -42,11 +42,11 @@ export async function GET(res: NextApiResponse, userId: string) {
 
   return res
     .status(RESPONSE_CODE.OK)
-    .json(createResponse(RESPONSE_CODE.OK, Messages.GET_BANK_ACCOUNT_SUCCESS, bankAccounts));
+    .json(createResponse(RESPONSE_CODE.OK, Messages.GET_IDENTIFICATION_SUCCESS, identification));
 }
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const { error } = validateBody(bankAccountSchema, req.body);
+  const { error } = validateBody(identificationDocumentSchema, req.body);
   if (error) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
@@ -54,27 +54,18 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
   }
   const { kycId } = req.body;
   const checkKyc = await eKycRepository.getById(kycId);
-  const existingTemplate = await bankAccountRepository.checkBankAccount(req.body);
-  if (existingTemplate) {
-    return res
-      .status(RESPONSE_CODE.CONFLICT)
-      .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.EXIT_BANK_ACCOUNT));
-  }
-
   if (!checkKyc) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
       .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, Messages.KYC_NOT_FOUND, error));
   }
-
   if (checkKyc.refId) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
       .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.KYC_CHECK, error));
   }
-
   delete req.body.kycId;
-  const newBankAccount = await bankAccountRepository.create(
+  const newIdentification = await identificationRepository.create(
     {
       ...req.body,
       status: KYCStatus.PENDING,
@@ -82,14 +73,18 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       createdAt: new Date(),
       updatedAt: new Date(),
       remarks: '',
-      paymentRefId: req.body?.paymentRefId || null,
       id: crypto.randomUUID(),
     },
     kycId,
+    userId,
   );
   return res
     .status(RESPONSE_CODE.CREATED)
     .json(
-      createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_BANK_ACCOUNT_SUCCESS, newBankAccount),
+      createResponse(
+        RESPONSE_CODE.CREATED,
+        Messages.CREATE_BANK_ACCOUNT_SUCCESS,
+        newIdentification,
+      ),
     );
 }
