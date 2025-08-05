@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 // Base error class
@@ -92,6 +93,16 @@ export const errorHandler = async (
 // Normalize errors into AppError instances
 const normalizeError = (error: unknown): AppError => {
   if (error instanceof AppError) return error;
+  // Prisma error handling
+  if (
+    error instanceof Prisma.PrismaClientKnownRequestError ||
+    error instanceof Prisma.PrismaClientUnknownRequestError ||
+    error instanceof Prisma.PrismaClientRustPanicError ||
+    error instanceof Prisma.PrismaClientInitializationError ||
+    error instanceof Prisma.PrismaClientValidationError
+  ) {
+    return new InternalServerError('A system error occurred. Please try again later.');
+  }
   //   if (error instanceof z.ZodError) return new ValidationError('Validation failed', error.errors);
   console.log({ error });
   return new InternalServerError();

@@ -1,5 +1,6 @@
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { errorHandler } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { GlobalFilters } from '@/shared/types';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
@@ -10,17 +11,22 @@ export const maxDuration = 30; // 30 seconds
 export default withAuthorization({
   POST: ['User', 'Admin', 'CS'],
   GET: ['User', 'Admin', 'CS'],
-})(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
-  switch (req.method) {
-    case 'POST':
-      return POST(req, res, userId);
-
-    default:
-      return res
-        .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-        .json({ error: 'Phương thức không được hỗ trợ' });
-  }
-});
+})((req: NextApiRequest, res: NextApiResponse, userId: string) =>
+  errorHandler(
+    async (request, response) => {
+      switch (request.method) {
+        case 'POST':
+          return POST(request, response, userId);
+        default:
+          return response
+            .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+            .json({ error: 'Phương thức không được hỗ trợ' });
+      }
+    },
+    req,
+    res,
+  ),
+);
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {

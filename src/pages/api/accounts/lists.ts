@@ -9,7 +9,6 @@ export const maxDuration = 30; // 30 seconds
 
 export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   // Get the session using NextAuth's getServerSession
-
   try {
     switch (req.method) {
       case 'GET':
