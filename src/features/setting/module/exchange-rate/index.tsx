@@ -28,7 +28,7 @@ const ExchangeRateSettingPage = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [exchangeRates, setExchangeRates] = useState<ExchangeRateType[]>([]);
-  const { refreshExchangeRates } = useCurrencyFormatter();
+  const { mutate: refreshExchangeRates } = useCurrencyFormatter();
 
   const { data, mutate, isLoading } = useDataFetch<ExchangeRateType[]>({
     endpoint: '/api/setting/currency-setting',
@@ -42,6 +42,13 @@ const ExchangeRateSettingPage = () => {
     }
   }, [data]);
 
+  const handleCompleteAction = async (message?: string) => {
+    await refreshExchangeRates();
+    toast.success(message || 'Exchange rate added successfully');
+    setIsAdding(false); // Close the create UI
+    setEditingId(null); // Reset editing state
+    mutate(); // Refresh the data
+  };
   const handleAddRate = async (newRate: ExchangeRateObjectType) => {
     const response = await fetch(`/api/setting/currency-setting`, {
       method: 'PUT',
@@ -53,9 +60,7 @@ const ExchangeRateSettingPage = () => {
     const data = await response.json();
 
     if (response.ok) {
-      toast.success(data.message || 'Exchange rate added successfully');
-      setIsAdding(false); // Close the create UI
-      mutate(); // Refresh the data
+      handleCompleteAction(data?.message);
     } else {
       toast.error(data.message || 'Failed to add exchange rate');
     }
@@ -71,8 +76,7 @@ const ExchangeRateSettingPage = () => {
     });
     const data = await response.json();
     if (response.ok) {
-      toast.success(data.message || 'Exchange rate deleted successfully');
-      mutate();
+      handleCompleteAction(data?.message);
     } else {
       toast.error(data.message || 'Failed to delete exchange rate');
     }
@@ -88,9 +92,7 @@ const ExchangeRateSettingPage = () => {
     });
     const data = await response.json();
     if (response.ok) {
-      refreshExchangeRates();
-      toast.success(data.message || 'Exchange rate updated successfully');
-      mutate();
+      handleCompleteAction(data?.message);
     } else {
       toast.error(data.message || 'Failed to update exchange rate');
     }

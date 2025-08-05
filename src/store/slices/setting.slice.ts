@@ -27,14 +27,14 @@ const settingsSlice = createSlice({
       state.exchangeRate = action.payload.exchangeRate;
     },
     updateExchangeRates: (state, action: PayloadAction<CurrencyType>) => {
-      state.exchangeRate = { ...state.exchangeRate, ...action.payload };
+      state.exchangeRate = action.payload; // Replace completely instead of merging
       state.updatedAt = Date.now();
     },
     updateExchangeRatesWithTimestamp: (
       state,
       action: PayloadAction<{ rates: CurrencyType; updatedAt: number }>,
     ) => {
-      state.exchangeRate = { ...state.exchangeRate, ...action.payload.rates };
+      state.exchangeRate = action.payload.rates; // Replace completely instead of merging
       state.updatedAt = action.payload.updatedAt;
     },
     setFullCurrencyDisplay(state, action: PayloadAction<boolean>) {
