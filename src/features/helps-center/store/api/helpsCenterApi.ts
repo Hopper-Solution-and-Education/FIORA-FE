@@ -1,6 +1,8 @@
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import { Response } from '@/shared/types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import {
+  ContactUsRequest,
   CreateCommentRequest,
   FaqComment,
   FaqDetail,
@@ -13,14 +15,14 @@ import {
   FaqsImportValidationResult,
   FaqsListQueryParams,
   FaqsRowValidated,
+  Post,
   ReactionType,
   UpdateFaqRequest,
 } from '../../domain/entities/models/faqs';
 
-export const faqsApi = createApi({
-  reducerPath: 'faqsApi',
+export const helpsCenterApi = createApi({
+  reducerPath: 'helpsCenterApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/helps-center/faqs',
     prepareHeaders: (headers, { endpoint }) => {
       if (endpoint !== 'validateImportFile') {
         headers.set('Content-Type', 'application/json');
@@ -28,12 +30,23 @@ export const faqsApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ['FaqImport', 'Faqs', 'FaqCategories', 'FaqDetails', 'FaqComments', 'FaqReactions'],
+  tagTypes: [
+    'FaqImport',
+    'Faqs',
+    'FaqCategories',
+    'FaqDetails',
+    'FaqComments',
+    'FaqReactions',
+    'AboutUs',
+    'UserTutorial',
+    'ContactUs',
+    'TermsAndConditions',
+  ],
 
   endpoints: (builder) => ({
     getFaqs: builder.query<FaqListResponse, FaqsListQueryParams>({
       query: (params) => ({
-        url: '/search',
+        url: `${ApiEndpointEnum.HelpsCenterFaqs}/search`,
         method: 'POST',
         body: params,
       }),
@@ -44,20 +57,14 @@ export const faqsApi = createApi({
     // FAQ Detail endpoints
     getFaqDetail: builder.query<
       FaqDetail,
-      | string
-      | {
-          id: string;
-          include?: string[];
-          trackView?: boolean;
-        }
+      {
+        id: string;
+        include?: string[];
+        trackView?: boolean;
+      }
     >({
       query: (params) => {
-        // Handle both string ID and object with options
-        if (typeof params === 'string') {
-          return `/${params}?track_view=true`; // Default behavior: track view
-        }
-
-        const { id, include, trackView = true } = params;
+        const { id, include, trackView = false } = params;
         const queryParams = new URLSearchParams();
 
         // Add includes
@@ -71,22 +78,15 @@ export const faqsApi = createApi({
         }
 
         const queryString = queryParams.toString();
-        return `/${id}${queryString ? `?${queryString}` : ''}`;
+        return `${ApiEndpointEnum.HelpsCenterFaqs}/${id}${queryString ? `?${queryString}` : ''}`;
       },
       transformResponse: (response: Response<FaqDetail>) => response.data,
-      providesTags: (result, error, params) => {
-        const id = typeof params === 'string' ? params : params.id;
-        return [
-          { type: 'FaqDetails', id },
-          // { type: 'FaqComments', id },
-          // { type: 'FaqReactions', id },
-        ];
-      },
+      providesTags: (result, error, params) => [{ type: 'FaqDetails', id: params.id }],
     }),
 
     updateFaq: builder.mutation<void, { faqId: string; updateData: UpdateFaqRequest }>({
       query: ({ faqId, updateData }) => ({
-        url: `/${faqId}`,
+        url: `${ApiEndpointEnum.HelpsCenterFaqs}/${faqId}`,
         method: 'PUT',
         body: updateData,
       }),
@@ -98,7 +98,7 @@ export const faqsApi = createApi({
 
     deleteFaq: builder.mutation<void, string>({
       query: (faqId) => ({
-        url: `/${faqId}`,
+        url: `${ApiEndpointEnum.HelpsCenterFaqs}/${faqId}`,
         method: 'DELETE',
       }),
       invalidatesTags: [{ type: 'Faqs', id: 'LIST' }],
@@ -109,7 +109,7 @@ export const faqsApi = createApi({
       { title: string; description?: string; content: string; categoryId: string }
     >({
       query: (data) => ({
-        url: '/',
+        url: ApiEndpointEnum.HelpsCenterFaqs,
         method: 'POST',
         body: data,
       }),
@@ -118,14 +118,14 @@ export const faqsApi = createApi({
 
     // Paginated FAQ comments endpoint
     getFaqComments: builder.query<FaqComment[], string>({
-      query: (faqId) => `/${faqId}/comments`,
+      query: (faqId) => `${ApiEndpointEnum.HelpsCenterFaqs}/${faqId}/comments`,
       providesTags: (result, error, faqId) => [{ type: 'FaqComments', id: faqId }],
       transformResponse: (response: Response<FaqComment[]>) => response.data,
     }),
 
     createComment: builder.mutation<void, { faqId: string; comment: CreateCommentRequest }>({
       query: ({ faqId, comment }) => ({
-        url: `/${faqId}/comments`,
+        url: `${ApiEndpointEnum.HelpsCenterFaqs}/${faqId}/comments`,
         method: 'POST',
         body: comment,
       }),
@@ -134,7 +134,7 @@ export const faqsApi = createApi({
 
     deleteComment: builder.mutation<void, { faqId: string; commentId: string }>({
       query: ({ faqId, commentId }) => ({
-        url: `/${faqId}/${commentId}`,
+        url: `${ApiEndpointEnum.HelpsCenterFaqs}/${faqId}/${commentId}`,
         method: 'DELETE',
       }),
       invalidatesTags: (result, error, { faqId }) => [{ type: 'FaqComments', id: faqId }],
@@ -151,16 +151,17 @@ export const faqsApi = createApi({
 
     // Reaction endpoints
     getFaqReactions: builder.query<FaqReaction[], string>({
-      query: (faqId) => `/${faqId}/reactions`,
+      query: (faqId) => `${ApiEndpointEnum.HelpsCenterFaqs}/${faqId}/reactions`,
       providesTags: (result, error, faqId) => [{ type: 'FaqReactions', id: faqId }],
       transformResponse: (response: Response<FaqReaction[]>) => response.data,
     }),
+
     createReaction: builder.mutation<
       void,
       { faqId: string; reaction: ReactionType; tempReactions: FaqReaction[] }
     >({
       query: ({ faqId, reaction }) => ({
-        url: `/${faqId}/reactions`,
+        url: `${ApiEndpointEnum.HelpsCenterFaqs}/${faqId}/reactions`,
         method: 'POST',
         body: { reactionType: reaction },
       }),
@@ -169,7 +170,7 @@ export const faqsApi = createApi({
       async onQueryStarted({ faqId, tempReactions }, { dispatch, queryFulfilled }) {
         // Optimistically update the reactions list
         const patchResult = dispatch(
-          faqsApi.util.updateQueryData('getFaqReactions', faqId, (draft) => {
+          helpsCenterApi.util.updateQueryData('getFaqReactions', faqId, (draft) => {
             if (!draft) return;
             draft.splice(0, draft.length, ...tempReactions);
           }),
@@ -184,60 +185,79 @@ export const faqsApi = createApi({
 
     validateImportFile: builder.mutation<FaqsImportValidationResult, FormData>({
       query: (formData) => ({
-        url: '/parse-validate',
+        url: ApiEndpointEnum.HelpsCenterFaqsParseValidate,
         method: 'POST',
         body: formData,
       }),
       transformResponse: (response: Response<FaqsImportValidationResult>) => response.data,
-      transformErrorResponse: (response: any) => {
-        if (response.data?.error) return response.data.error;
-        if (response.data?.message) return response.data.message;
-        return 'Failed to validate file';
-      },
     }),
+
     importFaqs: builder.mutation<FaqsImportResult, { validRecords: FaqsRowValidated[] }>({
       query: (data) => ({
-        url: '/import',
+        url: ApiEndpointEnum.HelpsCenterFaqsImport,
         method: 'POST',
         body: data,
       }),
       transformResponse: (response: Response<FaqsImportResult>) => response.data,
-      transformErrorResponse: (response: any) => {
-        if (response.data?.error) return response.data.error;
-        if (response.data?.message) return response.data.message;
-        return 'Failed to import FAQs';
-      },
-      invalidatesTags: ['FaqImport', { type: 'Faqs', id: 'LIST' }, 'FaqCategories'],
+      invalidatesTags: ['FaqImport', { type: 'Faqs', id: 'LIST' }],
     }),
 
     // Category endpoints
     getFaqCategories: builder.query<FaqsCategoriesResponse[], void>({
-      query: () => ({
-        url: '/categories',
-        method: 'GET',
-      }),
+      query: () => ApiEndpointEnum.HelpsCenterFaqsCategories,
       transformResponse: (response: Response<FaqsCategoriesResponse[]>) => response.data,
       providesTags: ['FaqCategories'],
     }),
+
     createFaqCategory: builder.mutation<void, { name: string; description: string }>({
       query: (data) => ({
-        url: '/categories',
+        url: ApiEndpointEnum.HelpsCenterFaqsCategories,
         method: 'POST',
         body: data,
       }),
       invalidatesTags: ['FaqCategories'],
     }),
+
     getFaqCategoriesWithPost: builder.query<
       FaqsCategoriesWithPostResponse[],
       FaqsCategoriesWithPostParams
     >({
-      query: (params) => ({
-        url: '/categories/with-post',
-        method: 'GET',
-        params,
-      }),
+      query: () => ApiEndpointEnum.HelpsCenterFaqsCategoriesWithPost,
       transformResponse: (response: Response<FaqsCategoriesWithPostResponse[]>) => response.data,
       providesTags: ['FaqCategories'],
+    }),
+
+    getAboutUs: builder.query<Post, void>({
+      query: () => ApiEndpointEnum.HelpsCenterAboutUs,
+      transformResponse: (response: Response<Post>) => response.data,
+      providesTags: ['AboutUs'],
+    }),
+    getUserTutorial: builder.query<Post, void>({
+      query: () => ApiEndpointEnum.HelpsCenterUserTutorial,
+      transformResponse: (response: Response<Post>) => response.data,
+      providesTags: ['UserTutorial'],
+    }),
+
+    contactUs: builder.mutation<void, ContactUsRequest>({
+      query: (data) => ({
+        url: ApiEndpointEnum.HelpsCenterContactUs,
+        method: 'POST',
+        body: data,
+      }),
+    }),
+
+    updateTermsAndConditions: builder.mutation<void, { url: string }>({
+      query: (data) => ({
+        url: ApiEndpointEnum.HelpsCenterTermsAndConditions,
+        method: 'POST',
+        body: data,
+      }),
+    }),
+
+    getTermsAndConditions: builder.query<Post, void>({
+      query: () => ApiEndpointEnum.HelpsCenterTermsAndConditions,
+      transformResponse: (response: Response<Post>) => response.data,
+      providesTags: ['TermsAndConditions'],
     }),
   }),
 });
@@ -260,4 +280,10 @@ export const {
   useDeleteFaqMutation,
   useGetFaqCommentsQuery,
   useGetFaqReactionsQuery,
-} = faqsApi;
+
+  useContactUsMutation,
+  useGetAboutUsQuery,
+  useGetUserTutorialQuery,
+  useUpdateTermsAndConditionsMutation,
+  useGetTermsAndConditionsQuery,
+} = helpsCenterApi;

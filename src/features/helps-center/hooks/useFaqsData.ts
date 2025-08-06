@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FAQ_LIST_CONSTANTS } from '../constants/index';
 import { Post, PostType } from '../domain/entities/models/faqs';
 import { FaqsFilterValues } from '../presentation/organisms/FaqsPageHeader';
-import { useGetFaqsQuery } from '../store/api/faqsApi';
+import { useGetFaqsQuery } from '../store/api/helpsCenterApi';
 
 export const useFaqsData = () => {
   // State

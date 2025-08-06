@@ -7,7 +7,7 @@ import {
   useCreateCommentMutation,
   useDeleteCommentMutation,
   useGetFaqCommentsQuery,
-} from '../../store/api/faqsApi';
+} from '../../store/api/helpsCenterApi';
 import { CommentInput, CommentItem, ConfirmDeleteDialog } from '../molecules';
 
 interface FaqCommentsProps {

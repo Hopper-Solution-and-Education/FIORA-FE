@@ -1,17 +1,14 @@
 import { Skeleton } from '@/components/ui/skeleton';
-import useDataFetcher from '@/shared/hooks/useDataFetcher';
 import { useRouter } from 'next/navigation';
-import { Post } from '../../domain/entities/models/faqs';
 import { useUserSession } from '../../hooks/useUserSession';
+import { useGetUserTutorialQuery } from '../../store/api/helpsCenterApi';
 import { ParsedFaqContent } from '../atoms';
-import UserTutorialHeader from '../organisms/UserTutorialHeader';
+import PostDetailHeader from '../organisms/PostDetailHeader';
 
 const UserTutorialPage = () => {
   const router = useRouter();
-  const { data, isLoading } = useDataFetcher<Post>({
-    endpoint: '/api/helps-center/user-tutorial',
-    method: 'GET',
-  });
+
+  const { data, isLoading } = useGetUserTutorialQuery();
 
   const { isAdminOrCs } = useUserSession();
 
@@ -25,17 +22,17 @@ const UserTutorialPage = () => {
 
   return (
     <div className="container mx-auto px-6 space-y-6">
-      {data?.data && (
+      {data && (
         <>
-          <UserTutorialHeader
-            data={data?.data}
+          <PostDetailHeader
+            title={data.title}
             canEdit={isAdminOrCs}
             onEdit={() => {
-              router.push(`/helps-center/user-tutorial/edit/${data?.data.id}`);
+              router.push(`/helps-center/user-tutorial/edit/${data.id}`);
             }}
           />
           <div className="border border-gray-200 p-4">
-            <ParsedFaqContent htmlContent={data?.data.content} />
+            <ParsedFaqContent htmlContent={data.content} />
           </div>
         </>
       )}

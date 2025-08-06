@@ -5,6 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
+import { FAQ_IMPORT_CONSTANTS } from '../../constants';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { useFaqsImport } from '../../hooks/useFaqsImport';
 import { useValidationStats } from '../../hooks/useValidationStats';
@@ -39,7 +40,17 @@ const FaqsImportPage = () => {
   const renderContent = () => {
     switch (step) {
       case 'upload':
-        return <FileUploadZone onFileSelect={handleFileSelect} isLoading={isValidating} />;
+        return (
+          <FileUploadZone
+            onFileSelect={handleFileSelect}
+            isLoading={isValidating}
+            label="Accepts CSV or Excel files (.csv, .xlsx) up to 2MB"
+            accept={{
+              [FAQ_IMPORT_CONSTANTS.ALLOWED_TYPES.XLSX]: ['.xlsx'],
+              [FAQ_IMPORT_CONSTANTS.ALLOWED_TYPES.CSV]: ['.csv'],
+            }}
+          />
+        );
 
       case 'validation':
         if (!validationResult) return null;

@@ -3,8 +3,8 @@ import { USER_ROLES } from '@/shared/constants/featuresFlags';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'FIORA | FAQs Edit',
-  description: 'FIORA - FAQs Edit',
+  title: 'FIORA | Terms and Conditions Edit',
+  description: 'FIORA - Terms and Conditions Edit',
 };
 
 export default async function layout({ children }: { children: React.ReactNode }) {
