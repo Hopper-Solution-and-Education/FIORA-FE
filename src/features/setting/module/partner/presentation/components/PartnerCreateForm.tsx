@@ -32,7 +32,7 @@ export default function PartnerCreateForm() {
   const methods = useForm<PartnerFormValues>({
     resolver: yupResolver(partnerSchema),
     defaultValues: {
-      parentId: 'none',
+      parentId: '',
     },
     mode: 'onChange',
   });
@@ -60,15 +60,12 @@ export default function PartnerCreateForm() {
     fetchPartnersData();
   }, [dispatch, status, session, isDataFetched]);
 
-  const parentOptions = [
-    { value: 'none', label: 'None' },
-    ...partners
-      .filter((partner) => partner.parentId === null)
-      .map((partner) => ({
-        value: partner.id,
-        label: partner.name,
-      })),
-  ];
+  const parentOptions = partners
+    .filter((partner) => partner.parentId === null)
+    .map((partner) => ({
+      value: partner.id,
+      label: partner.name,
+    }));
 
   const fields = [
     <UploadField key="logo" label="Logo" name="logo" previewShape="circle" />,
@@ -79,7 +76,7 @@ export default function PartnerCreateForm() {
       label="Parent"
       options={parentOptions}
       placeholder="FIORA"
-      defaultValue="none"
+      defaultValue=""
     />,
     <TextareaField
       key="description"
