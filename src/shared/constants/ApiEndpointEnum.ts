@@ -17,4 +17,15 @@ export enum ApiEndpointEnum {
   // Notification
   Notification = '/api/notification',
   NotificationFilterOptions = '/api/notification/options',
+
+  // Helps Center
+  HelpsCenterFaqs = '/api/helps-center/faqs',
+  HelpsCenterFaqsCategories = '/api/helps-center/faqs/categories',
+  HelpsCenterFaqsCategoriesWithPost = '/api/helps-center/faqs/categories/with-post',
+  HelpsCenterFaqsImport = '/api/helps-center/faqs/import',
+  HelpsCenterFaqsParseValidate = '/api/helps-center/faqs/parse-validate',
+  HelpsCenterAboutUs = '/api/helps-center/about-us',
+  HelpsCenterUserTutorial = '/api/helps-center/user-tutorial',
+  HelpsCenterContactUs = '/api/helps-center/contact-us',
+  HelpsCenterTermsAndConditions = '/api/helps-center/terms-and-conditions',
 }

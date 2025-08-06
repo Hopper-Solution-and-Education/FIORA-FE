@@ -9,7 +9,7 @@ import {
   useCreateFaqCategoryMutation,
   useCreateFaqMutation,
   useGetFaqCategoriesQuery,
-} from '../../store/api/faqsApi';
+} from '../../store/api/helpsCenterApi';
 import { FormField } from '../atoms';
 import { ContentEditor } from '../molecules';
 import FaqCategoryCreationDialog, {

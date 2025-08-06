@@ -9,9 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useGetTermsAndConditionsQuery } from '@/features/helps-center/store/api/helpsCenterApi';
 import { DialogClose } from '@radix-ui/react-dialog';
-import { useEffect, useRef, useState } from 'react';
 import { Check, CircleX, Loader2, TriangleAlert } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 type TermsAndConditionModalProps = {
   isOpen: boolean;
@@ -42,8 +43,10 @@ const ErrorLoading = () => (
 const TermsAndConditionsModal = (props: TermsAndConditionModalProps) => {
   const { isOpen, onClose, onAccept, onDecline, pdfUrl } = props;
 
+  const { data, isLoading: isLoadingTermsAndConditions } = useGetTermsAndConditionsQuery();
+
   const defaultPdfUrl =
-    'https://firebasestorage.googleapis.com/v0/b/hopper-3d98d.firebasestorage.app/o/Terms%20%26%20Conditions%2Fsample-terms-conditions-agreement.pdf?alt=media&token=cbbcd191-6ee1-4099-ba65-73714f9cf83d';
+    'https://firebasestorage.googleapis.com/v0/b/hopper-3d98d.firebasestorage.app/o/terms-and-conditions%2Fterms-and-conditions_1754480165072.pdf?alt=media&token=fcf3c06e-551d-43bc-91d0-1cb2becacd0a';
 
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -76,17 +79,17 @@ const TermsAndConditionsModal = (props: TermsAndConditionModalProps) => {
           <DialogDescription>Please read the terms and conditions carefully.</DialogDescription>
         </DialogHeader>
         <div className="h-[70vh] p-0 overflow-x-hidden relative">
-          {isLoading && <Loading />}
+          {(isLoading || isLoadingTermsAndConditions) && <Loading />}
           {error && <ErrorLoading />}
           <iframe
             ref={iframeRef}
-            src={pdfUrlToUse}
+            src={data?.content || pdfUrlToUse}
             className="w-full border-0"
             title="Terms and Conditions"
             onLoad={handleIframeLoad}
             onError={handleIframeError}
             style={{
-              display: isLoading || error ? 'none' : 'block',
+              display: isLoading || isLoadingTermsAndConditions || error ? 'none' : 'block',
               minHeight: '100%',
             }}
           />

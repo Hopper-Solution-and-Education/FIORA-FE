@@ -7,6 +7,7 @@ import { ReactNode } from 'react';
 
 import Loading from '@/components/common/atoms/Loading';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { notFound } from 'next/navigation';
 
 interface ModuleAccessLayoutProps {
   featureFlag?: FeatureFlags;
@@ -34,7 +35,7 @@ const ModuleAccessLayout = ({ featureFlag, requiredRoles, children }: ModuleAcce
       requiredRoles.length > 0 &&
       !requiredRoles.includes(session.user.role.toUpperCase()))
   ) {
-    // notFound();
+    notFound();
   }
 
   return <>{children}</>;

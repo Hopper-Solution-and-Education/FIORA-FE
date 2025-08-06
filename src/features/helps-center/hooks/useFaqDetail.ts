@@ -2,7 +2,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { FAQ_LIST_CONSTANTS } from '../constants';
-import { useDeleteFaqMutation, useGetFaqDetailQuery } from '../store/api/faqsApi';
+import { useDeleteFaqMutation, useGetFaqDetailQuery } from '../store/api/helpsCenterApi';
 
 export const useFaqDetail = (id: string) => {
   const router = useRouter();
@@ -14,7 +14,7 @@ export const useFaqDetail = (id: string) => {
     isLoading,
   } = useGetFaqDetailQuery({
     id,
-    trackView: false,
+    trackView: true,
     include: [FAQ_LIST_CONSTANTS.GET_FAQ_DETAIL_INCLUDE.related],
   });
 

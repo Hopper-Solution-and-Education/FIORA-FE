@@ -1,4 +1,4 @@
-import { faqsApi } from '@/features/helps-center/store/api/faqsApi';
+import { helpsCenterApi } from '@/features/helps-center/store/api/helpsCenterApi';
 import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { PersistConfig, persistReducer, persistStore } from 'redux-persist';
@@ -21,7 +21,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false })
       .concat(apiMiddleware)
-      .concat(faqsApi.middleware),
+      .concat(helpsCenterApi.middleware),
 });
 
 export const setupStore = (preloadedState?: Partial<RootState>) => {
@@ -31,7 +31,7 @@ export const setupStore = (preloadedState?: Partial<RootState>) => {
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({ serializableCheck: false })
         .concat(apiMiddleware)
-        .concat(faqsApi.middleware),
+        .concat(helpsCenterApi.middleware),
   });
 };
 

@@ -1,7 +1,6 @@
-import { ALLOWED_TYPES, MAX_FILE_SIZE } from '@/shared/constants/import';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback } from 'react';
-import { useImportFaqsMutation, useValidateImportFileMutation } from '../store/api/faqsApi';
+import { useImportFaqsMutation, useValidateImportFileMutation } from '../store/api/helpsCenterApi';
 import {
   clearValidationResult,
   ImportStep,
@@ -13,11 +12,6 @@ import {
   ValidationTab,
 } from '../store/slices/faqsImportSlice';
 import { useErrorHandler } from './useErrorHandler';
-
-const FILE_VALIDATION_ERRORS = {
-  SIZE: 'File is too large. Maximum size is 2MB.',
-  TYPE: 'Invalid file type. Please upload a .csv or .xlsx file.',
-} as const;
 
 export const useFaqsImport = () => {
   const dispatch = useAppDispatch();
@@ -35,22 +29,9 @@ export const useFaqsImport = () => {
   const isLoading = isValidating || isImporting;
   const error = validateError || importError;
 
-  // Validate file constraints
-  const validateFile = useCallback((file: File): string | null => {
-    if (file.size > MAX_FILE_SIZE) return FILE_VALIDATION_ERRORS.SIZE;
-    if (!ALLOWED_TYPES.includes(file.type)) return FILE_VALIDATION_ERRORS.TYPE;
-    return null;
-  }, []);
-
   // Handle file selection and validation
   const handleFileSelect = useCallback(
     async (file: File) => {
-      const validationError = validateFile(file);
-      if (validationError) {
-        handleError(validationError);
-        return { error: validationError };
-      }
-
       dispatch(setSelectedFile(file));
 
       try {
@@ -70,7 +51,7 @@ export const useFaqsImport = () => {
         return { error: errorMessage };
       }
     },
-    [dispatch, validateFile, validateImportFile, handleError, handleSuccess, extractErrorMessage],
+    [dispatch, validateImportFile, handleError, handleSuccess, extractErrorMessage],
   );
 
   // Handle import confirmation

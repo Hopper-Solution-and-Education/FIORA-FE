@@ -1,10 +1,9 @@
 import { prisma } from '@/config';
 import { PostType } from '@/features/helps-center/domain/entities/models/faqs';
-import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-const handler = (req: NextApiRequest, res: NextApiResponse) =>
+export default (req: NextApiRequest, res: NextApiResponse) =>
   errorHandler(
     async (request, response) => {
       switch (request.method) {
@@ -19,7 +18,7 @@ const handler = (req: NextApiRequest, res: NextApiResponse) =>
   );
 
 async function GET(req: NextApiRequest, res: NextApiResponse) {
-  const data = await prisma.post.findFirst({
+  const post = await prisma.post.findFirst({
     where: {
       type: PostType.TUTORIAL,
     },
@@ -27,10 +26,8 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
       User: true,
     },
   });
-  return res.status(RESPONSE_CODE.OK).json({
-    data,
-    status: RESPONSE_CODE.OK,
+  return res.status(200).json({
+    data: post,
+    status: 200,
   });
 }
-
-export default handler;

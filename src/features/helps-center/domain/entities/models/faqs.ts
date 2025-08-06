@@ -92,6 +92,15 @@ export interface ReactionCounts {
   good: number;
 }
 
+export interface ContactUsRequest {
+  name: string;
+  email: string;
+  phoneNumber: string;
+  title: string;
+  message: string;
+  attachments?: File[];
+}
+
 // ============================================================================
 // LIST/PAGINATION TYPES
 // ============================================================================

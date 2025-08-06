@@ -1,17 +1,13 @@
 import { Skeleton } from '@/components/ui/skeleton';
-import useDataFetcher from '@/shared/hooks/useDataFetcher';
 import { useRouter } from 'next/navigation';
-import { Post } from '../../domain/entities/models/faqs';
 import { useUserSession } from '../../hooks/useUserSession';
+import { useGetAboutUsQuery } from '../../store/api/helpsCenterApi';
 import { ParsedFaqContent } from '../atoms';
-import AboutUsHeader from '../organisms/AboutUsHeader';
+import PostDetailHeader from '../organisms/PostDetailHeader';
 
 const AboutUsPage = () => {
   const router = useRouter();
-  const { data, isLoading } = useDataFetcher<Post>({
-    endpoint: '/api/helps-center/about-us',
-    method: 'GET',
-  });
+  const { data, isLoading } = useGetAboutUsQuery();
 
   const { isAdminOrCs } = useUserSession();
 
@@ -25,16 +21,18 @@ const AboutUsPage = () => {
 
   return (
     <div className="container mx-auto px-6 space-y-6">
-      {data?.data && (
+      {data && (
         <>
-          <AboutUsHeader
-            data={data?.data}
+          <PostDetailHeader
+            title={data.title}
             canEdit={isAdminOrCs}
             onEdit={() => {
-              router.push(`/helps-center/about-us/edit/${data?.data.id}`);
+              router.push(`/helps-center/about-us/edit/${data.id}`);
             }}
           />
-          <ParsedFaqContent htmlContent={data?.data.content} />
+          <div className="border border-gray-200 p-4">
+            <ParsedFaqContent htmlContent={data.content} />
+          </div>
         </>
       )}
     </div>

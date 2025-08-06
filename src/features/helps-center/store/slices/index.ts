@@ -1,7 +1,7 @@
-import { faqsApi } from '../api/faqsApi';
+import { helpsCenterApi } from '../api/helpsCenterApi';
 
-export const faqsReducers = {
-  [faqsApi.reducerPath]: faqsApi.reducer,
+export const helpsCenterReducers = {
+  [helpsCenterApi.reducerPath]: helpsCenterApi.reducer,
 };
 
-export const faqsMiddlewares = [faqsApi.middleware];
+export const helpsCenterMiddlewares = [helpsCenterApi.middleware];
