@@ -36,9 +36,8 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     type: CategoryType;
     year: string;
   };
-  const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
 
-  const categories = await categoryUseCase.getListCategoryByType(userId, type, year, currency);
+  const categories = await categoryUseCase.getListCategoryByType(userId, type, year);
 
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');

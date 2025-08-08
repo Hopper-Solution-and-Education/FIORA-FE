@@ -1,7 +1,7 @@
 import { transactionUseCase } from '@/features/transaction/application/use-cases/transactionUseCase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { UUID } from 'crypto';
@@ -15,8 +15,6 @@ export default sessionWrapper((req, res, userId) =>
           return POST(request, response, userId);
         case 'GET':
           return GET(request, response, userId);
-        case 'DELETE':
-          return DELETE(request, response, userId);
         default:
           return response
             .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -50,24 +48,15 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     currency,
   } = req.body;
 
-  if (![Currency.VND, Currency.USD].includes(currency)) {
-    return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_CURRENCY, null));
-  }
-
   // Validate date should be in range 30 days in the past from now. Not allowed to be in the future
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const nextYear = new Date(now.getFullYear() + 1, 11, 31);
 
   if ((date && new Date(date) < thirtyDaysAgo) || new Date(date) > nextYear) {
-    return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(
-        createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_DATE_RANGE_INPUT_30_DAYS, null),
-      );
+    return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_DATE_RANGE_INPUT_30_DAYS);
   }
+  const baseCurrency = DEFAULT_BASE_CURRENCY;
 
   const transactionData = {
     userId: userId,
@@ -77,14 +66,14 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     toAccountId: toAccountId as UUID,
     toCategoryId: toCategoryId as UUID,
     fromCategoryId: fromCategoryId as UUID,
-    currency: currency,
     ...(products && { products }),
     ...(partnerId && { partnerId }),
     ...(remark && { remark }),
     ...(date && { date: new Date(date) }),
+    baseCurrency: baseCurrency,
   };
 
-  const newTransaction = await transactionUseCase.createTransaction(transactionData);
+  const newTransaction = await transactionUseCase.createTransaction(transactionData, currency);
 
   return res
     .status(RESPONSE_CODE.CREATED)
