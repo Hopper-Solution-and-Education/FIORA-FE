@@ -1,7 +1,8 @@
 import { profileUseCase } from '@/features/profile/application/use-cases/profileUseCase';
-import { authOptions } from '@/pages/api/auth/[...nextauth]';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { errorHandler } from '@/shared/lib/responseUtils/errors';
+import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
 
 type ProfileDTO = {
   id: string;
@@ -22,37 +23,41 @@ const toDTO = (u: any): ProfileDTO => ({
 
 const updateToDTO = (u: any): ProfileDTO => toDTO(u);
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
-  if (!session?.user?.email) {
-    return res.status(401).json({ message: 'Unauthorized', data: null, status: 401 });
-  }
+export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId: string) =>
+  errorHandler(
+    async (request, response) => {
+      switch (request.method) {
+        case 'POST':
+          return PUT(request, response, userId);
+        case 'GET':
+          return GET(request, response, userId);
+        default:
+          return response
+            .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+            .json({ error: 'Method is not allowed' });
+      }
+    },
+    req,
+    res,
+  ),
+);
 
-  const user = await profileUseCase.getByEmail(session.user.email);
-  if (!user) {
-    return res.status(404).json({ message: 'User not found', data: null, status: 404 });
+export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  const profile = await profileUseCase.getById(userId);
+  if (!profile) {
+    return res.status(404).json({ message: 'Profile not found', data: null, status: 404 });
   }
+  return res.status(RESPONSE_CODE.OK).json({ message: 'OK', data: toDTO(profile), status: 200 });
+}
 
-  if (req.method === 'GET') {
-    const profile = await profileUseCase.getById(user.id);
-    if (!profile) {
-      return res.status(404).json({ message: 'Profile not found', data: null, status: 404 });
-    }
-    return res.status(200).json({ message: 'OK', data: toDTO(profile), status: 200 });
-  }
-
-  if (req.method === 'PUT') {
-    const body = req.body as Partial<ProfileDTO>;
-    const updated = await profileUseCase.update(user.id, {
-      name: body.name,
-      image: body.image,
-      phone: body.phone,
-      address: body.address,
-      birthday: body.birthday,
-    });
-    return res.status(200).json({ message: 'Updated', data: updateToDTO(updated), status: 200 });
-  }
-
-  res.setHeader('Allow', ['GET', 'PUT']);
-  return res.status(405).json({ message: 'Method Not Allowed', data: null, status: 405 });
+export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  const body = req.body as Partial<ProfileDTO>;
+  const updated = await profileUseCase.update(userId, {
+    name: body.name,
+    image: body.image,
+    phone: body.phone,
+    address: body.address,
+    birthday: body.birthday,
+  });
+  return res.status(200).json({ message: 'Updated', data: updateToDTO(updated), status: 200 });
 }

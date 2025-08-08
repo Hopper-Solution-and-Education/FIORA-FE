@@ -1,5 +1,5 @@
+import { FaqsImportValidationResult } from '@/features/helps-center/domain/entities/models/faqs';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { FaqsImportValidationResult } from '../../domain/entities/models/faqs';
 
 export type ImportStep = 'upload' | 'validation' | 'import' | 'complete';
 export type ValidationTab = 'all' | 'valid' | 'invalid';
