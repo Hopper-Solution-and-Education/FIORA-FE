@@ -1,6 +1,6 @@
 'use server';
 import sgMail from '@sendgrid/mail';
-import { InternalServerError } from '../../shared/lib/responseUtils/errors';
+import { BadRequestError, InternalServerError } from '../../shared/lib/responseUtils/errors';
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
 
 export const sendEmail = async (to: string, otp: string, verificationLink: string) => {
@@ -33,6 +33,121 @@ export const sendOtp = async (to: string, otp: string) => {
   } catch (error) {
     console.error(error);
     throw new InternalServerError('Failed to send email');
+  }
+};
+
+export const sendBulkEmailUtility = async (
+  recipients: string[],
+  subject: string,
+  htmlContent: string,
+  options?: {
+    from?: string;
+    batchSize?: number;
+    delayBetweenBatches?: number;
+  },
+) => {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
+
+  const {
+    from = process.env.SENDER_EMAIL || 'tribui.it.work@gmail.com',
+    batchSize = 1000,
+    delayBetweenBatches = 1000,
+  } = options || {};
+
+  try {
+    // Validate inputs
+    if (!recipients || recipients.length === 0) {
+      throw new BadRequestError('Recipients list is empty');
+    }
+
+    if (!subject || !htmlContent) {
+      throw new BadRequestError('Subject and HTML content are required');
+    }
+
+    // Clean and validate emails
+    const validEmails = recipients
+      .filter((email) => email && typeof email === 'string' && email.includes('@'))
+      .filter((email, index, self) => self.indexOf(email) === index);
+
+    if (validEmails.length === 0) {
+      throw new BadRequestError('No valid email addresses found');
+    }
+
+    // Split into batches
+    const batches: string[][] = [];
+    for (let i = 0; i < validEmails.length; i += batchSize) {
+      batches.push(validEmails.slice(i, i + batchSize));
+    }
+
+    console.log(`Sending ${validEmails.length} emails in ${batches.length} batches`);
+
+    let sentCount = 0;
+    let failedCount = 0;
+    const failedEmails: string[] = [];
+
+    // Process batches
+    for (let i = 0; i < batches.length; i++) {
+      const batch = batches[i];
+
+      try {
+        const msg = {
+          to: batch,
+          from,
+          subject,
+          html: htmlContent,
+        };
+
+        await sgMail.send(msg);
+        sentCount += batch.length;
+
+        console.log(
+          `Batch ${i + 1}/${batches.length} sent successfully to ${batch.length} recipients`,
+        );
+
+        // Delay between batches
+        if (i < batches.length - 1 && delayBetweenBatches > 0) {
+          await new Promise((resolve) => setTimeout(resolve, delayBetweenBatches));
+        }
+      } catch (batchError) {
+        console.error(`Batch ${i + 1} failed, trying individual emails:`, batchError);
+
+        // Try sending individually if batch fails
+        for (const email of batch) {
+          try {
+            const individualMsg = {
+              to: email,
+              from,
+              subject,
+              html: htmlContent,
+            };
+
+            await sgMail.send(individualMsg);
+            sentCount++;
+          } catch (individualError) {
+            failedCount++;
+            failedEmails.push(email);
+            console.error(`Failed to send to ${email}:`, individualError);
+          }
+        }
+      }
+    }
+
+    const result = {
+      success: failedCount === 0,
+      totalRecipients: validEmails.length,
+      sentCount,
+      failedCount,
+      failedEmails,
+    };
+
+    console.log(`Bulk email completed: ${sentCount} sent, ${failedCount} failed`);
+
+    return result;
+  } catch (error) {
+    console.error('Bulk email utility failed:', error);
+    throw new InternalServerError(
+      `Failed to send bulk email: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 };
 
