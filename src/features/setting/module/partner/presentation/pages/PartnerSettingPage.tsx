@@ -8,7 +8,6 @@ import { fetchPartners } from '@/features/setting/module/partner/slices/actions/
 import { COLORS } from '@/shared/constants/chart';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { RootState } from '@/store/rootReducer';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo } from 'react';
@@ -17,8 +16,8 @@ import { TabActionHeader } from '../components/TabActionHeader';
 const PartnerSettingPage = () => {
   const dispatch = useAppDispatch();
   const { data: session } = useSession();
-  const { partners, isLoading } = useAppSelector((state: RootState) => state.partner);
-  const { currency } = useAppSelector((state: RootState) => state.settings);
+  const { partners, isLoading } = useAppSelector((state) => state.partner);
+  const { currency } = useAppSelector((state) => state.settings);
   const router = useRouter();
   const { formatCurrency } = useCurrencyFormatter();
 
