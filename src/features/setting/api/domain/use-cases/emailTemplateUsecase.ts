@@ -1,5 +1,5 @@
 import { Messages } from '@/shared/constants/message';
-import { EmailTemplate, EmailTemplateType, Prisma } from '@prisma/client';
+import { EmailTemplate, Prisma } from '@prisma/client';
 import { emailTemplateRepository } from '../../infrastructure/repositories/emailTemplateRepository';
 import { IEmailTemplateRepository } from '../../repositories/emailTemplateRepository.interface';
 
@@ -26,9 +26,6 @@ class EmailTemplateUseCase implements IEmailTemplateRepository {
     const emailTemplate = await this.emailTemplateRepository.findEmailTemplateById(id);
     if (!emailTemplate) {
       throw new Error(Messages.EMAIL_TEMPLATE_NOT_FOUND);
-    }
-    if (data.type && !Object.values(EmailTemplateType).includes(data.type)) {
-      throw new Error(Messages.INVALID_CATEGORY_TYPE);
     }
     return await this.emailTemplateRepository.updateEmailTemplate(id, userId, {
       ...data,

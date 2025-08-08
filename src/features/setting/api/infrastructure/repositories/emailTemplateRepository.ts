@@ -22,7 +22,7 @@ class EmailTemplateRepository implements IEmailTemplateRepository {
   ): Promise<EmailTemplate> {
     const emailTemplate = await prisma.emailTemplate.findUnique({
       where: { id },
-      select: { type: true, isActive: true },
+      select: { isActive: true },
     });
 
     if (!emailTemplate || emailTemplate.isActive == false) {
@@ -51,7 +51,7 @@ class EmailTemplateRepository implements IEmailTemplateRepository {
   ): Promise<EmailTemplate | null> {
     return await prisma.emailTemplate.findFirst({
       where: {
-        OR: [{ type }, { name }],
+        OR: [{ name }],
       },
     });
   }
