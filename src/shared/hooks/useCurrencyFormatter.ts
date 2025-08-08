@@ -4,6 +4,7 @@ import { RootState } from '@/store';
 import { updateExchangeRatesWithTimestamp } from '@/store/slices/setting.slice';
 import { CurrencyObjectType, CurrencyType } from '@/store/types/setting.type';
 import { Currency } from '@prisma/client';
+import { useSession } from 'next-auth/react';
 import { useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
@@ -66,9 +67,9 @@ const cacheUtilities = {
   /**
    * Gets cached exchange rate data from localStorage
    */
-  getCachedExchangeRates: (): CachedExchangeRateData | null => {
+  getCachedExchangeRates: (userId: string): CachedExchangeRateData | null => {
     try {
-      const cached = localStorage.getItem(CACHE_KEY);
+      const cached = localStorage.getItem(`${CACHE_KEY}-${userId}`);
       if (!cached) return null;
 
       const data: CachedExchangeRateData = JSON.parse(cached);
@@ -81,9 +82,9 @@ const cacheUtilities = {
   /**
    * Saves exchange rate data to localStorage
    */
-  setCachedExchangeRates: (data: CachedExchangeRateData): void => {
+  setCachedExchangeRates: (userId: string, data: CachedExchangeRateData): void => {
     try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+      localStorage.setItem(`${CACHE_KEY}-${userId}`, JSON.stringify(data));
     } catch {
       // Silently ignore cache write errors
     }
@@ -205,9 +206,13 @@ const dataUtilities = {
    * Checks if exchange rate data needs to be fetched
    * Prioritizes localStorage cache over Redux store data
    */
-  shouldFetchExchangeRates: (exchangeRates: CurrencyType, storeUpdatedAt: number): boolean => {
+  shouldFetchExchangeRates: (
+    userId: string,
+    exchangeRates: CurrencyType,
+    storeUpdatedAt: number,
+  ): boolean => {
     // First check localStorage cache
-    const cachedData = cacheUtilities.getCachedExchangeRates();
+    const cachedData = cacheUtilities.getCachedExchangeRates(userId);
 
     if (cachedData) {
       const isCachedDataStale = cacheUtilities.isCacheStale(cachedData.updatedAt);
@@ -236,6 +241,7 @@ const dataUtilities = {
   processExchangeRateResponse: (
     response: Response<ExchangeRateResponse>,
     dispatch: any,
+    userId: string,
   ): boolean => {
     const formattedRates: CurrencyType = {};
     const baseCurrency = response.data.base_code;
@@ -258,7 +264,7 @@ const dataUtilities = {
     );
 
     // Cache data in localStorage
-    cacheUtilities.setCachedExchangeRates({
+    cacheUtilities.setCachedExchangeRates(userId, {
       rates: formattedRates,
       updatedAt,
       baseCurrency,
@@ -286,6 +292,8 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
     updatedAt: storeUpdatedAt,
   } = useSelector((state: RootState) => state.settings);
 
+  const { data: userData } = useSession();
+
   const effectiveBaseCurrency = baseCurrency || storeBaseCurrency;
 
   // Data fetching with useDataFetcher - remove refreshInterval to prevent automatic requests
@@ -306,7 +314,11 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
    */
   const processExchangeRateResponse = useCallback(
     (response: Response<ExchangeRateResponse>) => {
-      return dataUtilities.processExchangeRateResponse(response, dispatch);
+      return dataUtilities.processExchangeRateResponse(
+        response,
+        dispatch,
+        userData?.user?.id || '',
+      );
     },
     [dispatch],
   );
@@ -340,7 +352,7 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
     }
 
     // First, check localStorage cache as primary source
-    const cachedData = cacheUtilities.getCachedExchangeRates();
+    const cachedData = cacheUtilities.getCachedExchangeRates(userData?.user?.id || '');
 
     if (cachedData) {
       const isCachedDataStale = cacheUtilities.isCacheStale(cachedData.updatedAt);
@@ -368,7 +380,7 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
       (!cachedData || cacheUtilities.isCacheStale(cachedData.updatedAt))
     ) {
       // Update localStorage with current store data
-      cacheUtilities.setCachedExchangeRates({
+      cacheUtilities.setCachedExchangeRates(userData?.user?.id || '', {
         rates: exchangeRates,
         updatedAt: storeUpdatedAt,
         baseCurrency: effectiveBaseCurrency,
@@ -421,7 +433,7 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
       if (fromCurrency === toCurrency) return 1;
 
       // First, try to get rates from localStorage cache
-      const cachedData = cacheUtilities.getCachedExchangeRates();
+      const cachedData = cacheUtilities.getCachedExchangeRates(userData?.user?.id || '');
       if (cachedData?.rates && !cacheUtilities.isCacheStale(cachedData.updatedAt)) {
         const cachedFromRate = cachedData.rates[fromCurrency];
         const cachedToRate = cachedData.rates[toCurrency];
@@ -534,7 +546,13 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
         }
 
         // Check if we have exchange rate data available, prioritizing cache over store
-        if (dataUtilities.shouldFetchExchangeRates(exchangeRates, storeUpdatedAt)) {
+        if (
+          dataUtilities.shouldFetchExchangeRates(
+            userData?.user?.id || '',
+            exchangeRates,
+            storeUpdatedAt,
+          )
+        ) {
           // Fire and forget - don't block the formatting operation
           ensureExchangeRateData().catch(() => {
             // Silently handle errors - fallback logic will handle it
@@ -613,7 +631,13 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
         const amount = numberUtilities.toSafeNumber(inputAmount);
 
         // Check if we have exchange rate data available, prioritizing cache over store
-        if (dataUtilities.shouldFetchExchangeRates(exchangeRates, storeUpdatedAt)) {
+        if (
+          dataUtilities.shouldFetchExchangeRates(
+            userData?.user?.id || '',
+            exchangeRates,
+            storeUpdatedAt,
+          )
+        ) {
           // Fire and forget - don't block the operation
           ensureExchangeRateData().catch(() => {
             // Silently handle errors - fallback logic will handle it
@@ -647,10 +671,11 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
 
         if (inputCurrencyCode !== toCurrency) {
           // Convert from input currency to target currency with exchange rate
+          const exchangeRate = getExchangeRate(inputCurrencyCode, toCurrency);
 
-          if (exchangeRates !== null) {
-            finalAmount = Number((amount * exchangeRates[toCurrency].rate).toFixed(2));
-            actualExchangeRate = exchangeRates[toCurrency].rate;
+          if (exchangeRate !== null) {
+            finalAmount = Number((amount * exchangeRate).toFixed(2));
+            actualExchangeRate = exchangeRate;
           } else {
             // Keep original currency and amount if conversion is not possible
             targetCurrencyCode = inputCurrencyCode;

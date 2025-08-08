@@ -1,8 +1,8 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import DateRangeFilter from '@/components/common/filters/DateRangeFilter';
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { FilterColumn, FilterComponentConfig, FilterCriteria } from '@/shared/types/filter.types';
 import { useAppSelector } from '@/store';
@@ -21,6 +21,11 @@ interface DateCondition {
 }
 
 interface AmountCondition {
+  gte?: number;
+  lte?: number;
+}
+
+interface BaseAmountCondition {
   gte?: number;
   lte?: number;
 }
@@ -75,14 +80,19 @@ interface FilterAndCondition {
     name?: string;
   };
   amount?: AmountCondition;
+  baseAmount?: BaseAmountCondition;
+  baseCurrency?: string;
   date?: string | DateCondition;
   OR?: (TypeCondition | PartnerCondition | NestedOrCondition)[];
+  AND?: FilterAndCondition[];
 }
 
 interface FilterStructure {
   AND?: FilterAndCondition[];
   date?: string | DateCondition;
   amount?: AmountCondition;
+  baseAmount?: BaseAmountCondition;
+  baseCurrency?: string;
 }
 
 type FilterParams = {
@@ -120,6 +130,8 @@ const options = [
 const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>) => {
   const { callBack, components } = props;
   const { amountMin, amountMax, filterCriteria } = useAppSelector((state) => state.transaction);
+  const { currency: selectedCurrency, baseCurrency } = useAppSelector((state) => state.settings);
+  const { getExchangeAmount } = useCurrencyFormatter();
 
   // State for managing filter parameters
   const [filterParams, setFilterParams] = useState<FilterParams>({
@@ -129,21 +141,36 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
   });
 
   // Fetch filter options
-  const { data, isLoading } = useDataFetch<TransactionFilterOptionResponse>({
+  const { data, isLoading, mutate } = useDataFetch<TransactionFilterOptionResponse>({
     endpoint: '/api/transactions/options',
     method: 'GET',
+    refreshInterval: 1000 * 60 * 5,
   });
 
   // Update filter params when server data is loaded
   useEffect(() => {
+    mutate();
     if (data?.data?.amountMin !== undefined && data?.data?.amountMax !== undefined) {
+      // Server returns amounts in base currency, convert to selected currency for display
+      const convertedMin = getExchangeAmount({
+        amount: data.data.amountMin,
+        fromCurrency: baseCurrency,
+        toCurrency: selectedCurrency,
+      });
+
+      const convertedMax = getExchangeAmount({
+        amount: data.data.amountMax,
+        fromCurrency: baseCurrency,
+        toCurrency: selectedCurrency,
+      });
+
       setFilterParams((prev) => ({
         ...prev,
-        amountMin: Math.max(prev.amountMin, data.data.amountMin),
-        amountMax: Math.min(prev.amountMax, data.data.amountMax),
+        amountMin: convertedMin.convertedAmount,
+        amountMax: convertedMax.convertedAmount,
       }));
     }
-  }, [data]);
+  }, [data, baseCurrency, selectedCurrency, getExchangeAmount, mutate]);
 
   // Extract filter data from complex filter structure
   const extractFilterData = useCallback(
@@ -188,10 +215,57 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
           if (condition.fromAccount?.name) accounts.add(condition.fromAccount.name);
           if (condition.toAccount?.name) accounts.add(condition.toAccount.name);
 
-          // Handle amount conditions
-          if (condition.amount) {
+          // Handle baseAmount conditions (prioritize over amount)
+          if (condition.baseAmount) {
+            if (condition.baseAmount.gte !== undefined) {
+              // Convert from base currency (USD) to selected currency for display
+              const convertedMin = getExchangeAmount({
+                amount: condition.baseAmount.gte,
+                fromCurrency: baseCurrency,
+                toCurrency: selectedCurrency,
+              });
+              currentAmountMin = convertedMin.convertedAmount;
+            }
+            if (condition.baseAmount.lte !== undefined) {
+              // Convert from base currency (USD) to selected currency for display
+              const convertedMax = getExchangeAmount({
+                amount: condition.baseAmount.lte,
+                fromCurrency: baseCurrency,
+                toCurrency: selectedCurrency,
+              });
+              currentAmountMax = convertedMax.convertedAmount;
+            }
+          }
+          // Fallback to amount conditions if baseAmount is not present
+          else if (condition.amount) {
             if (condition.amount.gte !== undefined) currentAmountMin = condition.amount.gte;
             if (condition.amount.lte !== undefined) currentAmountMax = condition.amount.lte;
+          }
+
+          // Handle nested AND conditions for baseAmount and baseCurrency
+          if (Array.isArray(condition.AND)) {
+            condition.AND.forEach((nestedCondition) => {
+              if (nestedCondition.baseAmount) {
+                if (nestedCondition.baseAmount.gte !== undefined) {
+                  // Convert from base currency (USD) to selected currency for display
+                  const convertedMin = getExchangeAmount({
+                    amount: nestedCondition.baseAmount.gte,
+                    fromCurrency: baseCurrency,
+                    toCurrency: selectedCurrency,
+                  });
+                  currentAmountMin = convertedMin.convertedAmount;
+                }
+                if (nestedCondition.baseAmount.lte !== undefined) {
+                  // Convert from base currency (USD) to selected currency for display
+                  const convertedMax = getExchangeAmount({
+                    amount: nestedCondition.baseAmount.lte,
+                    fromCurrency: baseCurrency,
+                    toCurrency: selectedCurrency,
+                  });
+                  currentAmountMax = convertedMax.convertedAmount;
+                }
+              }
+            });
           }
 
           // Handle date range in AND conditions (though less common)
@@ -294,8 +368,29 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
       if (!Array.isArray(filters?.AND) && typeof filters === 'object' && filters) {
         const flatFilters = filters;
 
-        // Process amount range
-        if (flatFilters.amount) {
+        // Process baseAmount range (prioritize over amount)
+        if (flatFilters.baseAmount) {
+          if (flatFilters.baseAmount.gte !== undefined) {
+            // Convert from base currency to selected currency for display
+            const convertedMin = getExchangeAmount({
+              amount: flatFilters.baseAmount.gte,
+              fromCurrency: baseCurrency,
+              toCurrency: selectedCurrency,
+            });
+            currentAmountMin = convertedMin.convertedAmount;
+          }
+          if (flatFilters.baseAmount.lte !== undefined) {
+            // Convert from base currency to selected currency for display
+            const convertedMax = getExchangeAmount({
+              amount: flatFilters.baseAmount.lte,
+              fromCurrency: baseCurrency,
+              toCurrency: selectedCurrency,
+            });
+            currentAmountMax = convertedMax.convertedAmount;
+          }
+        }
+        // Fallback to amount range
+        else if (flatFilters.amount) {
           currentAmountMin =
             flatFilters.amount.gte !== undefined ? flatFilters.amount.gte : amountMin;
           currentAmountMax =
@@ -313,7 +408,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         dateRange: dateFrom || dateTo ? { from: dateFrom, to: dateTo } : undefined,
       };
     },
-    [amountMin, amountMax],
+    [amountMin, amountMax, baseCurrency, selectedCurrency, getExchangeAmount],
   );
 
   // Sync filter params when filter criteria changes
@@ -397,7 +492,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         onValueChange={(target, value) =>
           handleEditFilter(target === 'minValue' ? 'amountMin' : 'amountMax', value)
         }
-        label="Amount"
+        label={`Amount (${selectedCurrency})`}
         minLabel="Min Amount"
         maxLabel="Max Amount"
         step={1000}
@@ -472,68 +567,98 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         order: 2,
       },
     ];
-  }, [filterParams, categoryOptions, accountOptions, partnerOptions, isLoading, handleEditFilter]);
+  }, [
+    filterParams,
+    categoryOptions,
+    accountOptions,
+    partnerOptions,
+    isLoading,
+    handleEditFilter,
+    selectedCurrency,
+  ]);
 
-  const createFilterStructure = useCallback((params: FilterParams): Record<string, any> => {
-    const updatedFilters: Record<string, any> = {};
+  const createFilterStructure = useCallback(
+    (params: FilterParams): Record<string, any> => {
+      const updatedFilters: Record<string, any> = {};
 
-    const andConditions: any[] = [];
+      const andConditions: any[] = [];
 
-    // Handle date range - always place at top level
-    if (params.dateRange?.from || params.dateRange?.to) {
-      updatedFilters.date = {
-        gte: params.dateRange?.from ? params.dateRange.from.toISOString() : null,
-        lte: params.dateRange?.to ? params.dateRange.to.toISOString() : null,
-      };
-    }
+      // Handle date range - always place at top level
+      if (params.dateRange?.from || params.dateRange?.to) {
+        updatedFilters.date = {
+          gte: params.dateRange?.from ? params.dateRange.from.toISOString() : null,
+          lte: params.dateRange?.to ? params.dateRange.to.toISOString() : null,
+        };
+      }
 
-    // Types OR group
-    if (params.types?.length) {
-      andConditions.push({
-        OR: params.types.map((type) => ({ type })),
+      // Types OR group
+      if (params.types?.length) {
+        andConditions.push({
+          OR: params.types.map((type) => ({ type })),
+        });
+      }
+
+      // Partners OR group
+      if (params.partners?.length) {
+        andConditions.push({
+          OR: params.partners.map((partner) => ({ partner: { name: partner } })),
+        });
+      }
+
+      // Categories OR group
+      if (params.categories?.length) {
+        andConditions.push({
+          OR: params.categories.map((category) => ({
+            OR: [{ toCategory: { name: category } }, { fromCategory: { name: category } }],
+          })),
+        });
+      }
+
+      // Accounts OR group
+      if (params.accounts?.length) {
+        andConditions.push({
+          OR: params.accounts.map((account) => ({
+            OR: [{ toAccount: { name: account } }, { fromAccount: { name: account } }],
+          })),
+        });
+      }
+
+      // Amount with base currency conversion
+      const minAmountInBaseCurrency = getExchangeAmount({
+        amount: params.amountMin,
+        fromCurrency: selectedCurrency,
+        toCurrency: baseCurrency,
       });
-    }
 
-    // Partners OR group
-    if (params.partners?.length) {
-      andConditions.push({
-        OR: params.partners.map((partner) => ({ partner: { name: partner } })),
+      const maxAmountInBaseCurrency = getExchangeAmount({
+        amount: params.amountMax,
+        fromCurrency: selectedCurrency,
+        toCurrency: baseCurrency,
       });
-    }
 
-    // Categories OR group
-    if (params.categories?.length) {
       andConditions.push({
-        OR: params.categories.map((category) => ({
-          OR: [{ toCategory: { name: category } }, { fromCategory: { name: category } }],
-        })),
+        AND: [
+          {
+            baseAmount: {
+              gte: minAmountInBaseCurrency.convertedAmount,
+              lte: maxAmountInBaseCurrency.convertedAmount,
+            },
+          },
+          {
+            baseCurrency: baseCurrency,
+          },
+        ],
       });
-    }
 
-    // Accounts OR group
-    if (params.accounts?.length) {
-      andConditions.push({
-        OR: params.accounts.map((account) => ({
-          OR: [{ toAccount: { name: account } }, { fromAccount: { name: account } }],
-        })),
-      });
-    }
+      // Add AND conditions if there are any
+      if (andConditions.length > 0) {
+        updatedFilters.AND = andConditions;
+      }
 
-    // Amount as a separate condition
-    andConditions.push({
-      amount: {
-        gte: params.amountMin,
-        lte: params.amountMax,
-      },
-    });
-
-    // Add AND conditions if there are any
-    if (andConditions.length > 0) {
-      updatedFilters.AND = andConditions;
-    }
-
-    return updatedFilters;
-  }, []);
+      return updatedFilters;
+    },
+    [baseCurrency, selectedCurrency, getExchangeAmount],
+  );
 
   return (
     <GlobalFilter

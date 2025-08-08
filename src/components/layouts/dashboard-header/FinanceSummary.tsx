@@ -1,5 +1,4 @@
 import { WalletType } from '@/features/home/module/wallet/domain/enum';
-import { CURRENCY } from '@/shared/constants';
 import { COLORS } from '@/shared/constants/chart';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { useCurrencyFormatter } from '@/shared/hooks';
@@ -13,6 +12,8 @@ export default function FinanceSummary() {
   const frozenAmount = useAppSelector((state) => state.wallet.frozenAmount);
   const loading = useAppSelector((state) => state.wallet.loading);
   const router = useRouter();
+
+  const currency = useAppSelector((state) => state.settings.currency);
   const { formatCurrency } = useCurrencyFormatter();
 
   const { FBalance, FDebt } = useMemo(() => {
@@ -23,8 +24,8 @@ export default function FinanceSummary() {
         ?.filter((w) => w.type === WalletType.Debt)
         .reduce((sum, w) => sum + (w.frBalanceActive || 0), 0) || 0;
     return {
-      FBalance: formatCurrency(totalBalance, CURRENCY.FX),
-      FDebt: formatCurrency(totalDebt, CURRENCY.FX),
+      FBalance: formatCurrency(totalBalance, currency),
+      FDebt: formatCurrency(totalDebt, currency),
     };
   }, [wallets, frozenAmount]);
   const isLoading = loading || !wallets || frozenAmount === null;
