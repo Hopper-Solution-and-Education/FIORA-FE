@@ -23,13 +23,13 @@ model User {
   createdBy              String?                  @db.Uuid
   updatedBy              String?                  @db.Uuid
   role                   UserRole                 @default(User)
-  accounts               Account[]                @relation("UserAccounts")
-  birthday               DateTime?
-  address                String?
-  phone                  String?
   avatarId               String?                  @db.Uuid
-  logoId                 String?                  @db.Uuid
   isBlocked              Boolean?                 @default(false)
+  logoId                 String?                  @db.Uuid
+  birthday               DateTime?
+  phone                  String?
+  address                String?
+  accounts               Account[]                @relation("UserAccounts")
   AttachmentRelations    AttachmentRelations[]
   BankAccount            BankAccount[]
   budgetDetails          BudgetDetails[]
@@ -510,8 +510,8 @@ model EmailTemplate {
   updatedAt         DateTime            @updatedAt @db.Timestamptz(0)
   updatedBy         String?             @db.Uuid
   id                String              @id @default(uuid()) @db.Uuid
-  notifications     Notification[]
   EmailTemplateType EmailTemplateType[]
+  notifications     Notification[]
 }
 
 model EmailTemplateType {

@@ -162,7 +162,8 @@ export class ProductMapper {
   }
 
   static toUpdateProductAPIRequest(request: ProductUpdateRequest): ProductUpdateRequestDTO {
-    return {
+    const deleteItemsId = request.deletedItemsId?.filter((id) => id !== null && id !== undefined);
+    const data = {
       id: request.id ?? '',
       icon: request.icon,
       name: request.name,
@@ -175,8 +176,9 @@ export class ProductMapper {
         (item) => new ProductItem(item.itemId ?? '', item.name, item.icon, item.description ?? ''),
       ),
       currency: request.currency,
-      deleteItemsId: request.deletedItemsId,
+      deleteItemsId: deleteItemsId && deleteItemsId.length > 0 ? deleteItemsId : undefined,
     };
+    return data;
   }
 
   static toUpdateProductResponse(response: ProductUpdateResponseDTO): ProductUpdateResponse {

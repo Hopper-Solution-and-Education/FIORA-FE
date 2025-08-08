@@ -3,17 +3,17 @@ import * as yup from 'yup';
 
 const itemSchema = yup.object().shape({
   itemId: yup.string(),
-  name: yup.string().required('Item name is required').max(50, 'Maximum 50 characters'),
+  name: yup.string().transform((value) => value?.trim()).required('Item name is required').max(50, 'Maximum 50 characters'),
   icon: yup.string().required('Item icon is required'),
-  description: yup.string().max(500, 'Maximum 500 characters'),
+  description: yup.string().transform((value) => value?.trim()).max(500, 'Maximum 500 characters'),
 });
 
 // Define the form schema
 const productSchema = yup.object({
   id: yup.string(),
   icon: yup.string().required('Icon is required'),
-  name: yup.string().required('Name is required').max(50, 'Name must be less than 50 characters'),
-  description: yup.string().max(1000, 'Description must be less than 1000 characters'),
+  name: yup.string().transform((value) => value?.trim()).required('Name is required').max(50, 'Name must be less than 50 characters'),
+  description: yup.string().transform((value) => value?.trim()).max(1000, 'Description must be less than 1000 characters'),
   price: yup.number(),
   taxRate: yup
     .number()
@@ -58,3 +58,4 @@ type ProductItemSchema = yup.InferType<typeof itemSchema>;
 
 export { productSchema };
 export type { ProductFormValues, ProductItemSchema };
+
