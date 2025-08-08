@@ -1,6 +1,3 @@
-import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
-import { Response } from '@/shared/types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import {
   ContactUsRequest,
   CreateCommentRequest,
@@ -18,7 +15,10 @@ import {
   Post,
   ReactionType,
   UpdateFaqRequest,
-} from '../../domain/entities/models/faqs';
+} from '@/features/helps-center/domain/entities/models/faqs';
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { Response } from '@/shared/types';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const helpsCenterApi = createApi({
   reducerPath: 'helpsCenterApi',
@@ -114,7 +114,6 @@ export const helpsCenterApi = createApi({
         body: data,
       }),
       invalidatesTags: [{ type: 'Faqs', id: 'LIST' }],
-      transformResponse: (response: Response<{ id: string }>) => response.data,
     }),
 
     // Paginated FAQ comments endpoint

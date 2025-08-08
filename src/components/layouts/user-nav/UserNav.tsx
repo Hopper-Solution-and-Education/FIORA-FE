@@ -10,6 +10,7 @@ import { getCurrentTierAsyncThunk } from '@/store/actions';
 import { LogOut } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import {
@@ -63,7 +64,7 @@ export function UserNav({ handleSignOut }: UserNavProps) {
         onClick={() => router.push(item.url)}
         className="cursor-pointer"
       >
-        <span>{item.title}</span>
+        <Link href={item.url}>{item.title}</Link>
         <DropdownMenuShortcut>
           <Icon {...item.props} className="h-4 w-4" />
         </DropdownMenuShortcut>
