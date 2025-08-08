@@ -4,30 +4,33 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { FilterObject } from '@/shared/types/filter.types';
 import { _PaginationResponse } from '@/shared/types/httpResponse.types';
+import { SessionUser } from '@/shared/types/session';
 import { FilterBuilder } from '@/shared/utils/filterBuilder';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { DepositRequestStatus } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse) => {
-  try {
-    switch (req.method) {
-      case 'POST':
-        return POST(req, res);
-      case 'PUT':
-        return PUT(req, res);
-      default:
-        return createError(res, RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED);
+export default sessionWrapper(
+  async (req: NextApiRequest, res: NextApiResponse, userId: string, user: SessionUser) => {
+    try {
+      switch (req.method) {
+        case 'POST':
+          return POST(req, res);
+        case 'PUT':
+          return PUT(req, res, userId, user);
+        default:
+          return createError(res, RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED);
+      }
+    } catch (error: any) {
+      console.error(error);
+      return createError(
+        res,
+        RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+        error.message || Messages.INTERNAL_ERROR,
+      );
     }
-  } catch (error: any) {
-    console.error(error);
-    return createError(
-      res,
-      RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-      error.message || Messages.INTERNAL_ERROR,
-    );
-  }
-});
+  },
+);
 
 async function POST(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -65,10 +68,9 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-async function PUT(req: NextApiRequest, res: NextApiResponse) {
+async function PUT(req: NextApiRequest, res: NextApiResponse, _: string, user: SessionUser) {
   try {
     const { id, status, remark } = req.body;
-    console.log('run');
 
     if (!id || !status) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_PARAMS_INPUT);
@@ -82,7 +84,13 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_REJECTION_REASON);
     }
 
-    const updated = await walletUseCase.updateDepositRequestStatus(id, status, remark);
+    const updated = await walletUseCase.updateDepositRequestStatus(
+      id,
+      status,
+      remark,
+      undefined,
+      user,
+    );
 
     if (!updated) {
       return createError(
