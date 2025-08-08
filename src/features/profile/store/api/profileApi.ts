@@ -6,7 +6,8 @@ export type UserProfile = {
   id: string;
   name: string | null;
   email: string;
-  image: string | null;
+  avatarUrl: string | null;
+  logoUrl: string | null;
   phone?: string | null;
   address?: string | null;
   birthday?: string | null;
@@ -16,10 +17,7 @@ export const profileApi = createApi({
   reducerPath: 'profileApi',
   baseQuery: fetchBaseQuery({
     baseUrl: '/',
-    prepareHeaders: (headers) => {
-      headers.set('Content-Type', 'application/json');
-      return headers;
-    },
+    prepareHeaders: (headers) => headers,
   }),
   tagTypes: ['Profile'],
   endpoints: (builder) => ({
@@ -28,8 +26,19 @@ export const profileApi = createApi({
       transformResponse: (response: Response<UserProfile>) => response.data,
       providesTags: ['Profile'],
     }),
-    updateProfile: builder.mutation<UserProfile, Partial<UserProfile>>({
-      query: (body) => ({ url: ApiEndpointEnum.Profile, method: 'PUT', body }),
+    updateProfile: builder.mutation<
+      UserProfile,
+      FormData | Partial<Pick<UserProfile, 'name' | 'phone' | 'address' | 'birthday'>>
+    >({
+      query: (body) =>
+        body instanceof FormData
+          ? { url: ApiEndpointEnum.Profile, method: 'PUT', body }
+          : {
+              url: ApiEndpointEnum.Profile,
+              method: 'PUT',
+              body,
+              headers: { 'Content-Type': 'application/json' },
+            },
       transformResponse: (response: Response<UserProfile>) => response.data,
       invalidatesTags: ['Profile'],
     }),

@@ -24,6 +24,12 @@ model User {
   updatedBy              String?                  @db.Uuid
   role                   UserRole                 @default(User)
   accounts               Account[]                @relation("UserAccounts")
+  birthday               DateTime?
+  address                String?
+  phone                  String?    
+  avatarId               String?                  @db.Uuid
+  logoId                 String?                  @db.Uuid
+  isBlocked              Boolean?                 @default(false)
   AttachmentRelations    AttachmentRelations[]
   BankAccount            BankAccount[]
   budgetDetails          BudgetDetails[]
@@ -831,6 +837,17 @@ model eKYC {
   verifiedBy String?   @db.Uuid
   refId      String?   @db.Uuid
   User       User?     @relation(fields: [userId], references: [id])
+}
+
+model EmailTemplateType {
+  createdAt       DateTime      @default(now()) @db.Timestamptz(0)
+  createdBy       String?       @db.Uuid
+  updatedAt       DateTime      @db.Timestamptz(0)
+  updatedBy       String?       @db.Uuid
+  EmailTemplateId String        @db.Uuid
+  id              String        @id @db.Uuid
+  type            emailType
+  EmailTemplate   EmailTemplate @relation(fields: [EmailTemplateId], references: [id])
 }
 
 enum BudgetType {

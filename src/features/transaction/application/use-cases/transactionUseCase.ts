@@ -4,6 +4,7 @@ import { accountRepository } from '@/features/auth/infrastructure/repositories/a
 import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
 import { ICategoryRepository } from '@/features/setting/api/repositories/categoryRepository.interface';
 import { Messages } from '@/shared/constants/message';
+import { BadRequestError, ConflictError, InternalServerError } from '@/shared/lib';
 import { BooleanUtils } from '@/shared/lib/booleanUtils';
 import { PaginationResponse } from '@/shared/types/Common.types';
 import { TransactionGetPagination } from '@/shared/types/transaction.types';
@@ -364,7 +365,7 @@ class TransactionUseCase {
       const now = Date.now();
       const createdAt = new Date(transaction.createdAt).getTime();
       if (now - createdAt > THIRTY_DAYS_MS) {
-        throw new Error(Messages.TRANSACTION_TOO_OLD_TO_DELETE);
+        throw new ConflictError(Messages.TRANSACTION_TOO_OLD_TO_DELETE);
       }
 
       await this.revertOldTransaction(tx, transaction);
@@ -386,7 +387,7 @@ class TransactionUseCase {
     const handler = transactionHandlers[data.type as TransactionType];
 
     if (!handler) {
-      throw new Error(Messages.INVALID_TRANSACTION_TYPE);
+      throw new BadRequestError(Messages.INVALID_TRANSACTION_TYPE);
     }
 
     return handler(data);
@@ -400,7 +401,7 @@ class TransactionUseCase {
         },
       });
       if (!account) {
-        throw new Error(Messages.ACCOUNT_NOT_FOUND);
+        throw new BadRequestError(Messages.ACCOUNT_NOT_FOUND);
       }
 
       const type = account.type;
@@ -416,18 +417,18 @@ class TransactionUseCase {
             this.validateCreditCardAccount(account, data.amount as number),
         },
         () => {
-          throw new Error(Messages.UNSUPPORTED_ACCOUNT_TYPE.replace('{type}', type));
+          throw new BadRequestError(Messages.UNSUPPORTED_ACCOUNT_TYPE.replace('{type}', type));
         },
       );
 
       if (!data.toCategoryId) {
-        throw new Error(Messages.CATEGORY_NOT_FOUND);
+        throw new BadRequestError(Messages.CATEGORY_NOT_FOUND);
       }
       const category = await tx.category.findUnique({
         where: { id: data.toCategoryId as string },
       });
       if (!category || category.type !== CategoryType.Expense) {
-        throw new Error(Messages.INVALID_CATEGORY_TYPE_EXPENSE);
+        throw new BadRequestError(Messages.INVALID_CATEGORY_TYPE_EXPENSE);
       }
 
       const transaction = await tx.transaction.create({
@@ -449,7 +450,7 @@ class TransactionUseCase {
       });
 
       if (!transaction) {
-        throw new Error(Messages.CREATE_TRANSACTION_FAILED);
+        throw new InternalServerError(Messages.CREATE_TRANSACTION_FAILED);
       }
 
       await this.accountRepository.deductBalance(
@@ -513,16 +514,16 @@ class TransactionUseCase {
       });
 
       if (!category && !membershipBenefit) {
-        throw new Error(Messages.CATEGORY_NOT_FOUND);
+        throw new BadRequestError(Messages.CATEGORY_NOT_FOUND);
       }
 
       if (category && category.type !== CategoryType.Income) {
-        throw new Error(Messages.INVALID_CATEGORY_TYPE_INCOME);
+        throw new BadRequestError(Messages.INVALID_CATEGORY_TYPE_INCOME);
       }
 
       const account = await tx.account.findUnique({ where: { id: data.toAccountId as string } });
       if (!account) {
-        throw new Error(Messages.ACCOUNT_NOT_FOUND);
+        throw new BadRequestError(Messages.ACCOUNT_NOT_FOUND);
       }
 
       if (
@@ -530,7 +531,7 @@ class TransactionUseCase {
         account.type !== AccountType.CreditCard &&
         account.type !== AccountType.Debt
       ) {
-        throw new Error(Messages.INVALID_ACCOUNT_TYPE_FOR_INCOME);
+        throw new BadRequestError(Messages.INVALID_ACCOUNT_TYPE_FOR_INCOME);
       }
 
       const transaction = await tx.transaction.create({
@@ -553,7 +554,7 @@ class TransactionUseCase {
       });
 
       if (!transaction) {
-        throw new Error(Messages.CREATE_TRANSACTION_FAILED);
+        throw new InternalServerError(Messages.CREATE_TRANSACTION_FAILED);
       }
 
       await this.accountRepository.receiveBalance(
@@ -608,7 +609,7 @@ class TransactionUseCase {
             this.validateInvestAccount(fromAccount, data.amount as number),
         },
         () => {
-          throw new Error(Messages.UNSUPPORTED_ACCOUNT_TYPE.replace('{type}', type));
+          throw new BadRequestError(Messages.UNSUPPORTED_ACCOUNT_TYPE.replace('{type}', type));
         },
       );
 
@@ -631,7 +632,7 @@ class TransactionUseCase {
       });
 
       if (!transaction) {
-        throw new Error(Messages.CREATE_TRANSACTION_FAILED);
+        throw new InternalServerError(Messages.CREATE_TRANSACTION_FAILED);
       }
 
       await this.accountRepository.transferBalance(
@@ -647,7 +648,7 @@ class TransactionUseCase {
 
   private validatePaymentAccount(account: Account, amount: number) {
     if (account.balance!.toNumber() < amount) {
-      throw new Error(
+      throw new BadRequestError(
         'Payment Account must have balance equal to or greater than the transaction amount.',
       );
     }
@@ -705,19 +706,19 @@ class TransactionUseCase {
     const availableCredit = limit - balance;
 
     if (availableCredit - amount < 0) {
-      throw new Error('Credit Card does not have enough available credit limit.');
+      throw new BadRequestError('Credit Card does not have enough available credit limit.');
     }
   }
 
   private validateDebtAccount(account: Account, amount: number) {
     if (account.balance!.toNumber() >= amount) {
-      throw new Error('Debt Account must have balance below 0.');
+      throw new BadRequestError('Debt Account must have balance below 0.');
     }
   }
 
   private validateInvestAccount(account: Account, amount: number) {
     if (account.balance!.toNumber() <= amount) {
-      throw new Error('Invest Account must have balance above 0.');
+      throw new BadRequestError('Invest Account must have balance above 0.');
     }
   }
 }
