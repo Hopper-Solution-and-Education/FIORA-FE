@@ -10,7 +10,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'; // Import DropdownMenu components
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { ICON_SIZE } from '@/shared/constants/size';
 import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
@@ -149,7 +148,7 @@ export function NotificationContent({
           </CardHeader>
           <DropdownMenuSeparator className="m-0" />
           <CardContent className="p-0">
-            <ScrollArea className="max-h-[400px]">
+            <div className="max-h-[400px] overflow-y-auto">
               <div className="space-y-3 p-4">
                 {data.map((notification: Notification) => (
                   <DropdownMenuItem
@@ -176,7 +175,7 @@ export function NotificationContent({
                   </DropdownMenuItem>
                 ))}
               </div>
-            </ScrollArea>
+            </div>
           </CardContent>
         </Card>
       </DropdownMenuContent>

@@ -1,20 +1,19 @@
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
 import React from 'react';
-import type { Post } from '../../domain/entities/models/faqs';
 
-interface AboutUsHeaderProps {
-  data: Post;
+interface PostDetailHeaderProps {
+  title: string;
   canEdit: boolean;
   onEdit: () => void;
 }
 
-const AboutUsHeader: React.FC<AboutUsHeaderProps> = ({ data, canEdit, onEdit }) => {
+const PostDetailHeader: React.FC<PostDetailHeaderProps> = ({ title, canEdit, onEdit }) => {
   return (
     <>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-3xl font-bold">{data.title}</h1>
+        <h1 className="text-3xl font-bold mx-auto">{title}</h1>
         {canEdit && (
           <div className="flex items-center gap-2">
             <Button
@@ -29,14 +28,8 @@ const AboutUsHeader: React.FC<AboutUsHeaderProps> = ({ data, canEdit, onEdit }) 
           </div>
         )}
       </div>
-
-      {/* Meta information */}
-      <div className="text-sm text-gray-500 !mt-0">Posted by {data.User?.email || 'Unknown'}</div>
-      <div className="text-sm text-gray-500 !mt-1">
-        Updated {new Date(data.updatedAt || data.createdAt).toLocaleString()}
-      </div>
     </>
   );
 };
 
-export default AboutUsHeader;
+export default PostDetailHeader;

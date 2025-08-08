@@ -17,15 +17,9 @@ interface FaqsLayoutProps {
 const FaqsLayout = ({ children }: FaqsLayoutProps) => {
   const { data: session, status } = useSession() as { data: Session | null; status: string };
 
-  // const isFeatureEnabled = useFeatureIsOn(FeatureFlags.FAQ_FEATURE as any);
-
   if (status === 'loading') {
     return <Loading />;
   }
-
-  // if (!isFeatureEnabled) {
-  //   notFound();
-  // }
 
   const layoutGuest = () => {
     return (

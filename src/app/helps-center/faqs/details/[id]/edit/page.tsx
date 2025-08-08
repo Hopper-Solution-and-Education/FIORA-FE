@@ -7,7 +7,7 @@ const EditFaqPageRender = dynamic(
   () => import('@/features/helps-center/presentation/pages/EditFaqPage'),
   {
     loading: () => <Loading />,
-    ssr: true,
+    ssr: false,
   },
 );
 

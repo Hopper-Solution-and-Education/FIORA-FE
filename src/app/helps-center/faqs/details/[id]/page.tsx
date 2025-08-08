@@ -7,7 +7,7 @@ const FaqDetailPageRender = dynamic(
   () => import('@/features/helps-center/presentation/pages/FaqDetailPage'),
   {
     loading: () => <Loading />,
-    ssr: true,
+    ssr: false,
   },
 );
 

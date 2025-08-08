@@ -63,7 +63,7 @@ const ImportCompletionStatus: React.FC<ImportCompletionStatusProps> = ({
           isSubmitting={false}
           disabled={false}
           onSubmit={() => {
-            router.push('/faqs');
+            router.push('/helps-center/faqs');
             setTimeout(() => {
               onRestart();
             }, 1000);
