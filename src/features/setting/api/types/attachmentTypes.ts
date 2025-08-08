@@ -1,4 +1,4 @@
-import { AttachmentType } from '../constants/attachmentConstants';
+import { AttachmentType } from '../../data/module/attachment/constants/attachmentConstants';
 
 export interface AttachmentData {
   type: AttachmentType;

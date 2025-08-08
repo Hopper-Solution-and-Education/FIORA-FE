@@ -1,4 +1,4 @@
-import { ATTACHMENT_CONSTANTS } from '@/features/setting/api/constants/attachmentConstants';
+import { ATTACHMENT_CONSTANTS } from '@/features/setting/data/module/attachment/constants/attachmentConstants';
 import { DepositRequestStatus } from '@prisma/client';
 import { z } from 'zod';
 
