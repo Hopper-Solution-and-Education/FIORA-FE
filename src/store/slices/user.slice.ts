@@ -1,5 +1,3 @@
-'use client';
-
 import { GetCurrentTierResponse } from '@/features/home/module/membership/domain/entities';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { getCurrentTierAsyncThunk } from '../actions';

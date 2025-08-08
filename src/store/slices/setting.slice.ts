@@ -1,5 +1,3 @@
-'use client';
-
 import { Currency } from '@prisma/client';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
