@@ -22,7 +22,11 @@ const contactUsSchema = yup.object().shape({
   message: yup.string().required('Message is required'),
 });
 
-const ContactUsForm = () => {
+const ContactUsForm = ({
+  setOpenConfirmExitDialog,
+}: {
+  setOpenConfirmExitDialog: (open: boolean) => void;
+}) => {
   const router = useRouter();
   const [isFormDirty, setIsFormDirty] = useState(false);
 
@@ -73,7 +77,32 @@ const ContactUsForm = () => {
     await contactUsMutation(submitData);
     setIsFormDirty(false);
     form.reset();
+    setOpenConfirmExitDialog(false);
   };
+
+  // Warn on hard reload/tab close with native prompt
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!isFormDirty) return;
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isFormDirty]);
+
+  // Intercept F5 / Ctrl+R to show custom confirm dialog
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isFormDirty) return;
+      const isReload = e.key === 'F5' || (e.key.toLowerCase() === 'r' && (e.ctrlKey || e.metaKey));
+      if (!isReload) return;
+      e.preventDefault();
+      setOpenConfirmExitDialog(true);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFormDirty]);
 
   return (
     <>
@@ -201,7 +230,13 @@ const ContactUsForm = () => {
                   isSubmitting={isSubmitting}
                   disabled={!isValid || isSubmitting}
                   onSubmit={handleSubmit(onSubmit)}
-                  onBack={() => router.back()}
+                  onBack={() => {
+                    if (isFormDirty) {
+                      setOpenConfirmExitDialog(true);
+                    } else {
+                      router.back();
+                    }
+                  }}
                 />
               </div>
             </form>
