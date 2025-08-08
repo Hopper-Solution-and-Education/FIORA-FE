@@ -1,5 +1,6 @@
 import { prisma } from '@/config';
 import { PostType } from '@/features/helps-center/domain/entities/models/faqs';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -26,8 +27,8 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
       User: true,
     },
   });
-  return res.status(200).json({
+  return res.status(RESPONSE_CODE.OK).json({
     data: aboutUs,
-    status: 200,
+    status: RESPONSE_CODE.OK,
   });
 }

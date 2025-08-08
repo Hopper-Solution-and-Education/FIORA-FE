@@ -1,5 +1,5 @@
 import financeControlSlice from '@/features/finance/report/slices';
-import { faqsApi } from '@/features/helps-center/store/api/faqsApi';
+import { helpsCenterApi } from '@/features/helps-center/store/api/helpsCenterApi';
 import accountSlice from '@/features/home/module/account/slices';
 import { default as budgetControlSlice } from '@/features/home/module/budgets/creation-dashboard/slices';
 import budgetSummarySlice from '@/features/home/module/budgets/summary-detail/slice/budgetSummarySlice';
@@ -50,7 +50,7 @@ const reducer = {
   notificationDashboard: notificationDashboardSlice,
 
   // RTK Query API slices
-  [faqsApi.reducerPath]: faqsApi.reducer,
+  [helpsCenterApi.reducerPath]: helpsCenterApi.reducer,
 };
 
 const rootReducer = combineReducers(reducer);

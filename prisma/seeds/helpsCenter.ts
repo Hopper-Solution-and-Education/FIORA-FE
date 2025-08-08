@@ -56,7 +56,8 @@ export async function seedHelpsCenter() {
       },
       {
         title: 'Terms and Conditions',
-        content: 'Terms and Conditions',
+        content:
+          'https://firebasestorage.googleapis.com/v0/b/hopper-3d98d.firebasestorage.app/o/terms-and-conditions%2Fterms-and-conditions_1754480165072.pdf?alt=media&token=fcf3c06e-551d-43bc-91d0-1cb2becacd0a',
         type: PostType.TNC,
         userId: 'f6413727-4a29-485e-9db8-29b64aaeb36e',
         categoryId: '16ae4e36-952e-47ae-b7c4-3a88f4ff444e',

@@ -1,109 +1,41 @@
 'use client';
 
-import { InputField, SelectField } from '@/components/common/forms';
-import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
-import React from 'react';
-import { toast } from 'sonner';
-import {
-  useCreateFaqCategoryMutation,
-  useCreateFaqMutation,
-  useGetFaqCategoriesQuery,
-} from '../../store/api/faqsApi';
-import { FormField } from '../atoms';
-import { ContentEditor } from '../molecules';
+import { useEffect, useState } from 'react';
+import { useFaqUpsert } from '../../hooks/useFaqUpsert';
+import ConfirmExitDialog from '../organisms/ConfirmExitDialog';
 import FaqCategoryCreationDialog, {
   FaqCategoryFormValues,
 } from '../organisms/FaqCategoryCreationDialog';
+import FaqForm, { FaqFormValues } from '../organisms/FaqForm';
 
-const initialFormData = {
-  title: '',
-  description: '',
-  content: 'Content ',
-  categoryId: '',
-};
-
-type FormData = typeof initialFormData;
-type FormErrors = Partial<Record<keyof FormData, string>>;
-
-const CreateFaqPage: React.FC = () => {
+const CreateFaqPage = () => {
   const router = useRouter();
-  const { data: categories = [], isLoading: isCategoriesLoading } = useGetFaqCategoriesQuery();
-  const [createCategory, { isLoading: isCreatingCategory }] = useCreateFaqCategoryMutation();
-  const [createFaq, { isLoading: isCreatingFaq }] = useCreateFaqMutation();
+  const {
+    categories,
+    defaultValues,
+    isLoading,
+    isSubmitting,
+    isCreatingCategory,
+    submit,
+    handleCreateCategory,
+  } = useFaqUpsert();
 
-  const [formData, setFormData] = React.useState<FormData>(initialFormData);
-  const [errors, setErrors] = React.useState<FormErrors>({});
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = React.useState(false);
-  const [hasChanges, setHasChanges] = React.useState(false);
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [openConfirmExitDialog, setOpenConfirmExitDialog] = useState(false);
+  const [pendingExit, setPendingExit] = useState<(() => void) | null>(null);
 
   // Handlers
-  const handleFieldChange = (field: keyof FormData, value: string) => {
-    if (field === 'content' && !value) return;
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    setHasChanges(true);
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
-  };
+  const handleDirtyChange = (dirty: boolean) => setHasChanges(dirty);
 
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-    if (!formData.title.trim()) newErrors.title = 'Title is required';
-    if (!formData.categoryId) newErrors.categoryId = 'Category is required';
-    if (!formData.content.trim()) newErrors.content = 'Content is required';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleCreateCategory = async (
-    data: { name: string; description: string },
-    onSuccess: () => void,
-  ) => {
-    try {
-      await createCategory(data).unwrap();
-      toast.success('Category created successfully');
-      onSuccess();
-    } catch (error) {
-      console.error('Error creating category:', error);
-      toast.error('Failed to create category. Please try again.');
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!validateForm()) {
-      toast.error('Please fix the form errors before submitting');
-      return;
-    }
-    setIsSubmitting(true);
-    try {
-      const res = await createFaq({
-        title: formData.title.trim(),
-        description: formData.description.trim() || undefined,
-        content: formData.content.trim(),
-        categoryId: formData.categoryId,
-      }).unwrap();
-      if (!res?.id) throw new Error('Failed to create FAQ');
-      toast.success('FAQ Created Successfully');
+  const handleSubmit = async (values: FaqFormValues) => {
+    const res = await submit(values);
+    if (res) {
       setHasChanges(false);
-      setTimeout(() => {
-        router.push(`/faqs/details/${res.id}`);
-      }, 1500);
-    } catch (error) {
-      console.error('Error creating FAQ:', error);
-      toast.error('Failed to create FAQ. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+      router.push(`/helps-center/faqs/details/${res}`);
     }
-  };
-
-  const handleCancel = () => {
-    if (hasChanges) {
-      const confirmCancel = window.confirm(
-        'You have unsaved changes. Are you sure you want to cancel?',
-      );
-      if (!confirmCancel) return;
-    }
-    router.back();
   };
 
   const handleOpenCreateCategoryDialog = () => setIsCategoryDialogOpen(true);
@@ -117,94 +49,79 @@ const CreateFaqPage: React.FC = () => {
     );
   };
 
-  const isLoading = isCategoriesLoading || isSubmitting || isCreatingFaq;
-  const isFormDisabled = isLoading;
+  // Warn on hard reload/tab close with native prompt
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!hasChanges) return;
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasChanges]);
+
+  // Intercept F5 / Ctrl+R to show custom confirm dialog
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!hasChanges) return;
+      const isReload = e.key === 'F5' || (e.key.toLowerCase() === 'r' && (e.ctrlKey || e.metaKey));
+      if (!isReload) return;
+      e.preventDefault();
+      setPendingExit(() => () => window.location.reload());
+      setOpenConfirmExitDialog(true);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [hasChanges]);
 
   if (isLoading) {
     return (
-      <main className="p-6 pt-24">
-        <div className="max-w-6xl mx-auto">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-300 rounded w-1/3"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="h-10 bg-gray-300 rounded"></div>
-              <div className="h-10 bg-gray-300 rounded"></div>
-            </div>
-            <div className="h-20 bg-gray-300 rounded"></div>
-            <div className="h-96 bg-gray-300 rounded"></div>
-          </div>
-        </div>
-      </main>
+      <div className="p-6 space-y-4">
+        <Skeleton className="w-full h-96" />
+      </div>
     );
   }
 
   return (
-    <main className="px-6">
-      <div className=" mx-auto space-y-8">
-        {/* Page Header */}
+    <main className="px-8">
+      <div className="mx-auto space-y-8">
         <div className="border-b pb-4">
           <h1 className="text-2xl font-bold text-gray-900">Create FAQ</h1>
         </div>
-        {/* Form Content */}
-        <div className="space-y-8">
-          {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <InputField
-              key="title"
-              name="title"
-              label="Title"
-              value={formData.title}
-              onChange={(value) => handleFieldChange('title', value)}
-              required
-              error={errors.title as any}
-              disabled={isFormDisabled}
-            />
-            <SelectField
-              options={categories.map((item) => ({ label: item.name, value: item.id }))}
-              key="categoryId"
-              name="categoryId"
-              label="Category"
-              value={formData.categoryId}
-              onChange={(value) => handleFieldChange('categoryId', value)}
-              disabled={isFormDisabled}
-              onCustomAction={handleOpenCreateCategoryDialog}
-              customActionLabel="Add New"
-              required
-            />
-          </div>
-          {/* Description */}
-          <FormField
-            id="description"
-            label="Description"
-            type="textarea"
-            value={formData.description}
-            onChange={(value) => handleFieldChange('description', value)}
-            error={errors.description}
-            disabled={isFormDisabled}
-          />
-          {/* Content Editor */}
-          <ContentEditor
-            value={formData.content}
-            onChange={(value) => handleFieldChange('content', value)}
-            error={errors.content}
-            disabled={isFormDisabled}
-            showPreview={true}
-          />
 
-          {/* Form Actions */}
-          <DefaultSubmitButton
-            isSubmitting={isSubmitting}
-            onSubmit={handleSubmit}
-            onBack={handleCancel}
-          />
-        </div>
+        <FaqForm
+          defaultValues={defaultValues}
+          categories={categories}
+          onSubmit={handleSubmit}
+          onCancel={() => {
+            if (hasChanges) {
+              setPendingExit(() => () => router.push('/helps-center/faqs'));
+              setOpenConfirmExitDialog(true);
+            } else {
+              router.push('/helps-center/faqs');
+            }
+          }}
+          isSubmitting={isSubmitting}
+          onOpenCreateCategoryDialog={handleOpenCreateCategoryDialog}
+          onDirtyChange={handleDirtyChange}
+        />
       </div>
-      {/* Category Creation Dialog */}
+
       <FaqCategoryCreationDialog
         open={isCategoryDialogOpen}
         onOpenChange={setIsCategoryDialogOpen}
         onCategoryCreated={handleCategoryCreated}
         isSubmitting={isCreatingCategory}
+      />
+
+      <ConfirmExitDialog
+        open={openConfirmExitDialog}
+        onOpenChange={setOpenConfirmExitDialog}
+        onConfirmExit={() => {
+          setOpenConfirmExitDialog(false);
+          (pendingExit || (() => router.push('/helps-center/faqs')))();
+        }}
+        onCancelExit={() => setOpenConfirmExitDialog(false)}
       />
     </main>
   );

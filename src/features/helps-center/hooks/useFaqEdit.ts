@@ -7,7 +7,7 @@ import {
   useGetFaqCategoriesQuery,
   useGetFaqDetailQuery,
   useUpdateFaqMutation,
-} from '../store/api/faqsApi';
+} from '../store/api/helpsCenterApi';
 
 interface FormData {
   title: string;

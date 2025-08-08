@@ -1,16 +1,14 @@
 'use client';
 
-import { InputField, SelectField } from '@/components/common/forms';
-import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { notFound, useParams, useRouter } from 'next/navigation';
-import React from 'react';
-import { useFaqEdit } from '../../hooks';
-import { FormField } from '../atoms';
-import { ContentEditor } from '../molecules';
+import React, { useEffect, useState } from 'react';
+import { useFaqUpsert } from '../../hooks/useFaqUpsert';
+import ConfirmExitDialog from '../organisms/ConfirmExitDialog';
 import FaqCategoryCreationDialog, {
   FaqCategoryFormValues,
 } from '../organisms/FaqCategoryCreationDialog';
+import FaqForm, { FaqFormValues } from '../organisms/FaqForm';
 
 const EditFaqPage: React.FC = () => {
   const { id } = useParams() as { id: string };
@@ -18,29 +16,23 @@ const EditFaqPage: React.FC = () => {
   const router = useRouter();
 
   const {
-    // Data
-    faqData,
     categories,
-    formData,
-    errors,
-
-    // Loading states
+    defaultValues,
     isLoading,
-    isUpdating,
-    isFormDisabled,
+    isSubmitting,
     isCreatingCategory,
-
-    // Handlers
-    handleFieldChange,
-    handleSubmit,
-    handleCancel,
+    submit,
     handleCreateCategory,
-    // Error state
     error,
-  } = useFaqEdit({ faqId: id });
+  } = useFaqUpsert({ faqId: id });
 
   // Local state for dialog and categories
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = React.useState(false);
+  const [openConfirmExitDialog, setOpenConfirmExitDialog] = useState(false);
+  const [pendingExit, setPendingExit] = useState<(() => void) | null>(null);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  const handleDirtyChange = (dirty: boolean) => setHasChanges(dirty);
 
   // Open dialog handler
   const handleOpenCreateCategoryDialog = () => {
@@ -60,6 +52,31 @@ const EditFaqPage: React.FC = () => {
     );
   };
 
+  // Warn on hard reload/tab close with native prompt
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!hasChanges) return;
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasChanges]);
+
+  // Intercept F5 / Ctrl+R to show custom confirm dialog
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!hasChanges) return;
+      const isReload = e.key === 'F5' || (e.key.toLowerCase() === 'r' && (e.ctrlKey || e.metaKey));
+      if (!isReload) return;
+      e.preventDefault();
+      setPendingExit(() => () => window.location.reload());
+      setOpenConfirmExitDialog(true);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [hasChanges]);
+
   if (isLoading) {
     return (
       <div className="p-6 space-y-4">
@@ -68,99 +85,37 @@ const EditFaqPage: React.FC = () => {
     );
   }
 
-  if (error || !faqData) {
+  if (error) {
     return notFound();
   }
 
   return (
-    <main className="p-6">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <main className="px-8">
+      <div>
         {/* Page Header */}
         <div className="border-b pb-4">
           <h1 className="text-2xl font-bold text-gray-900">Edit FAQ</h1>
         </div>
 
-        {/* Form Content */}
-        <div>
-          {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* <FormField
-                id="title"
-                label="Title"
-                value={formData.title}
-                onChange={(value) => handleFieldChange('title', value)}
-                placeholder="Enter FAQ title"
-                required
-                error={errors.title}
-                disabled={isFormDisabled}
-              /> */}
-            <InputField
-              key="title"
-              name="title"
-              label="Title"
-              placeholder="Enter FAQ title"
-              value={formData.title}
-              onChange={(value) => handleFieldChange('title', value)}
-              required
-              error={errors.title as any}
-              disabled={isFormDisabled}
-            />
-
-            {/* <CategorySelect
-                id="categoryId"
-                label="Category"
-                value={formData.categoryId}
-                onChange={(value) => handleFieldChange('categoryId', value)}
-                categories={categories}
-                placeholder="Select category"
-                required
-                error={errors.categoryId}
-                disabled={isFormDisabled}
-                loading={isLoading}
-              /> */}
-            <SelectField
-              options={categories.map((item) => ({ label: item.name, value: item.id }))}
-              key="categoryId"
-              name="categoryId"
-              label="Category"
-              value={formData.categoryId}
-              onChange={(value) => handleFieldChange('categoryId', value)}
-              disabled={isFormDisabled}
-              onCustomAction={handleOpenCreateCategoryDialog}
-              customActionLabel="Add New"
-              required
-            />
-          </div>
-          {/* Description */}
-          <div className="mb-6">
-            <FormField
-              id="description"
-              label="Description"
-              type="textarea"
-              value={formData.description}
-              onChange={(value) => handleFieldChange('description', value)}
-              placeholder="Brief description (optional)"
-              error={errors.description}
-              disabled={isFormDisabled}
-            />
-          </div>
-
-          {/* Content Editor */}
-          <ContentEditor
-            value={formData.content}
-            onChange={(value) => handleFieldChange('content', value)}
-            error={errors.content}
-            disabled={isFormDisabled}
-            showPreview={true}
-          />
-
-          <DefaultSubmitButton
-            isSubmitting={isUpdating}
-            disabled={isFormDisabled}
-            onSubmit={() => handleSubmit(() => router.push(`/helps-center/faqs/details/${id}`))}
-            onBack={() => handleCancel(id)}
-          />
-        </div>
+        <FaqForm
+          defaultValues={defaultValues as FaqFormValues}
+          categories={categories}
+          onSubmit={async (values) => {
+            await submit(values);
+            router.push(`/helps-center/faqs/details/${id}`);
+          }}
+          onCancel={() => {
+            if (hasChanges) {
+              setPendingExit(() => () => router.push(`/helps-center/faqs/details/${id}`));
+              setOpenConfirmExitDialog(true);
+            } else {
+              router.push(`/helps-center/faqs/details/${id}`);
+            }
+          }}
+          isSubmitting={isSubmitting}
+          onOpenCreateCategoryDialog={handleOpenCreateCategoryDialog}
+          onDirtyChange={handleDirtyChange}
+        />
       </div>
       {/* Category Creation Dialog */}
       <FaqCategoryCreationDialog
@@ -168,6 +123,16 @@ const EditFaqPage: React.FC = () => {
         onOpenChange={setIsCategoryDialogOpen}
         onCategoryCreated={handleCategoryCreated}
         isSubmitting={isCreatingCategory}
+      />
+
+      <ConfirmExitDialog
+        open={openConfirmExitDialog}
+        onOpenChange={setOpenConfirmExitDialog}
+        onConfirmExit={() => {
+          setOpenConfirmExitDialog(false);
+          (pendingExit || (() => router.push('/helps-center/faqs')))();
+        }}
+        onCancelExit={() => setOpenConfirmExitDialog(false)}
       />
     </main>
   );

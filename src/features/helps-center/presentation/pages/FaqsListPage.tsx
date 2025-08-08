@@ -3,7 +3,7 @@ import { useFaqsData } from '@/features/helps-center/hooks/useFaqsData';
 import { USER_ROLES } from '@/shared/constants/featuresFlags';
 import { Session, useSession } from 'next-auth/react';
 import { PostType } from '../../domain/entities/models/faqs';
-import { useGetFaqCategoriesWithPostQuery } from '../../store/api/faqsApi';
+import { useGetFaqCategoriesWithPostQuery } from '../../store/api/helpsCenterApi';
 import CategoriesSection from '../organisms/CategoriesSection';
 import FaqsPageHeader from '../organisms/FaqsPageHeader';
 import FilteredCategoriesSection from '../organisms/FilteredCategoriesSection';

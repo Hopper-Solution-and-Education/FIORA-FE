@@ -54,7 +54,12 @@ export class FaqRepository implements IFaqRepository {
       const posts = await prisma.post.findMany({
         where: whereCondition,
         include: {
-          PostCategory: true,
+          PostCategory: {
+            select: {
+              name: true,
+              id: true,
+            },
+          },
         },
         skip: skip,
         take: limit || undefined,
@@ -68,6 +73,7 @@ export class FaqRepository implements IFaqRepository {
         description: post.description || '',
         content: post.content,
         categoryId: post.categoryId,
+        PostCategory: post.PostCategory,
         type: post.type as PostType,
         createdAt: post.createdAt,
         updatedAt: post.updatedAt || post.createdAt,

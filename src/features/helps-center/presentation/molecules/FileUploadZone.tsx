@@ -3,15 +3,22 @@
 import { Progress } from '@/components/ui/progress';
 import { Upload } from 'lucide-react';
 import { useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
+import { Accept, useDropzone } from 'react-dropzone';
 import { FAQ_IMPORT_CONSTANTS } from '../../constants';
 
 interface FileUploadZoneProps {
   isLoading?: boolean;
   onFileSelect: (file: File) => void;
+  label: string;
+  accept: Accept;
 }
 
-const FileUploadZone = ({ isLoading = false, onFileSelect }: FileUploadZoneProps) => {
+const FileUploadZone = ({
+  isLoading = false,
+  onFileSelect,
+  label,
+  accept,
+}: FileUploadZoneProps) => {
   const handleDrop = useCallback(
     (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
@@ -24,10 +31,7 @@ const FileUploadZone = ({ isLoading = false, onFileSelect }: FileUploadZoneProps
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: handleDrop,
-    accept: {
-      [FAQ_IMPORT_CONSTANTS.ALLOWED_TYPES.XLSX]: ['.xlsx'],
-      [FAQ_IMPORT_CONSTANTS.ALLOWED_TYPES.CSV]: ['.csv'],
-    },
+    accept,
     maxSize: FAQ_IMPORT_CONSTANTS.MAX_FILE_SIZE,
     maxFiles: 1,
     disabled: isLoading,
@@ -60,9 +64,7 @@ const FileUploadZone = ({ isLoading = false, onFileSelect }: FileUploadZoneProps
             </p>
             {!isLoading && <p className="text-sm text-gray-500 mt-1">or click to browse files</p>}
           </div>
-          <p className="text-xs text-gray-500">
-            Accepts CSV or Excel files (.csv, .xlsx) up to 2MB
-          </p>
+          <p className="text-xs text-gray-500">{label}</p>
         </div>
       </div>
 
@@ -70,7 +72,7 @@ const FileUploadZone = ({ isLoading = false, onFileSelect }: FileUploadZoneProps
       {isLoading && (
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span>Uploading and validating...</span>
+            <span>Uploading...</span>
           </div>
           <Progress value={75} className="w-full h-2" />
         </div>

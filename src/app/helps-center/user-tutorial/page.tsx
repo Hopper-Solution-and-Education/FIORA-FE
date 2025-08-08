@@ -6,6 +6,7 @@ const UserTutorialPageRender = dynamic(
   () => import('@/features/helps-center/presentation/pages/UserTutorialPage'),
   {
     loading: () => <Loading />,
+    ssr: false,
   },
 );
 
