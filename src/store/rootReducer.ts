@@ -9,6 +9,7 @@ import transactionSlice from '@/features/home/module/transaction/slices';
 import transactionDataSlice from '@/features/home/module/transaction/slices/transactionSlice';
 import walletSlice from '@/features/home/module/wallet/slices';
 import landingSlices from '@/features/landing/slices';
+import { profileApi } from '@/features/profile/store/api/profileApi';
 import landingSettingSlice from '@/features/setting/module/landing/slices';
 import memberShipSettingsSlice from '@/features/setting/module/membership/slices';
 import notificationDashboardSlice from '@/features/setting/module/notification-dashboard/slices';
@@ -49,6 +50,7 @@ const reducer = {
 
   // RTK Query API slices
   [helpsCenterApi.reducerPath]: helpsCenterApi.reducer,
+  [profileApi.reducerPath]: profileApi.reducer,
 };
 
 const rootReducer = combineReducers(reducer);
