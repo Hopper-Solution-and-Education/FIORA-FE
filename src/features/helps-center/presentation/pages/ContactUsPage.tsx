@@ -1,6 +1,6 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import ConfirmExitDialog from '../organisms/ConfirmExitDialog';
+import ConfirmExitDialog from '../../../../components/common/organisms/ConfirmExitDialog';
 import ContactUsForm from '../organisms/ContactUsForm';
 
 const ContactUsPage = () => {

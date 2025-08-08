@@ -28,4 +28,7 @@ export enum ApiEndpointEnum {
   HelpsCenterUserTutorial = '/api/helps-center/user-tutorial',
   HelpsCenterContactUs = '/api/helps-center/contact-us',
   HelpsCenterTermsAndConditions = '/api/helps-center/terms-and-conditions',
+
+  // Profile
+  Profile = '/api/profile',
 }

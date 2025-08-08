@@ -3,8 +3,8 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import ConfirmExitDialog from '../../../../components/common/organisms/ConfirmExitDialog';
 import { useFaqUpsert } from '../../hooks/useFaqUpsert';
-import ConfirmExitDialog from '../organisms/ConfirmExitDialog';
 import FaqCategoryCreationDialog, {
   FaqCategoryFormValues,
 } from '../organisms/FaqCategoryCreationDialog';
