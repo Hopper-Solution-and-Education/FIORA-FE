@@ -152,6 +152,11 @@ class TransactionUseCase {
         typeTransactionWhere = typeTransaction;
       }
 
+      // test with Regex-Date format YYYY-MM-DD
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD format
+      const date = new Date(typeSearchParams);
+      const isSearchDate = dateRegex.test(typeSearchParams) && !isNaN(date.getTime());
+
       where = {
         AND: [
           where,
