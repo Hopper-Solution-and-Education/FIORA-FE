@@ -5,12 +5,19 @@ import {
   useUpdateProfileMutation,
 } from '@/features/profile/store/api/profileApi';
 import HopperLogo from '@public/images/logo.jpg';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import PersonalInfoForm from '../molecules/PersonalInfoForm';
 import ProfileSidebar from '../organisms/ProfileSidebar';
 
 const ProfilePage = () => {
   const { data: profile, isLoading } = useGetProfileQuery();
-  const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
+  const [updateProfile, { isLoading: isUpdating, isSuccess }] = useUpdateProfileMutation();
+
+  const [newProfileImages, setNewProfileImages] = useState({
+    avatarImage: null as File | null,
+    logoImage: null as File | null,
+  });
 
   const handleSave = async (values: {
     name: string;
@@ -19,8 +26,22 @@ const ProfilePage = () => {
     birthday?: string;
     address?: string;
   }) => {
-    await updateProfile({ name: values.name }).unwrap();
+    const formData = new FormData();
+    if (values.name) formData.append('name', values.name);
+    if (values.phone) formData.append('phone', values.phone);
+    if (values.address) formData.append('address', values.address);
+    if (values.birthday) formData.append('birthday', values.birthday);
+    if (newProfileImages.avatarImage) formData.append('newAvatar', newProfileImages.avatarImage);
+    if (newProfileImages.logoImage) formData.append('newLogo', newProfileImages.logoImage);
+
+    await updateProfile(formData).unwrap();
   };
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success('Profile updated successfully');
+    }
+  }, [isSuccess]);
 
   return (
     <div className="px-8">
@@ -44,20 +65,32 @@ const ProfilePage = () => {
       </div>
 
       <main>
-        <div className="bg-white rounded-lg shadow-md p-6 lg:p-8 flex flex-col lg:flex-row gap-8">
-          <div className="flex-1">
-            <PersonalInfoForm
-              initialValues={{
-                name: profile?.name ?? '',
-                email: profile?.email ?? '',
+        {profile && (
+          <div className="bg-white rounded-lg shadow-md p-6 lg:p-8 flex flex-col lg:flex-row gap-8">
+            <div className="flex-1">
+              <PersonalInfoForm
+                initialValues={{
+                  name: profile?.name ?? '',
+                  email: profile?.email ?? '',
+                  birthday: profile?.birthday ?? '',
+                  address: profile?.address ?? '',
+                  phone: profile?.phone ?? '',
+                }}
+                isLoading={isUpdating || isLoading}
+                onSubmit={handleSave}
+              />
+            </div>
+
+            <ProfileSidebar
+              initialImages={{
+                avatarUrl: profile?.avatarUrl ?? HopperLogo.src,
+                logoUrl: profile?.logoUrl ?? HopperLogo.src,
               }}
-              isLoading={isUpdating || isLoading}
-              onSubmit={handleSave}
+              setNewImages={setNewProfileImages}
+              disabled={isUpdating}
             />
           </div>
-
-          <ProfileSidebar profileImageSrc={HopperLogo.src} brandLogoSrc={HopperLogo.src} />
-        </div>
+        )}
       </main>
     </div>
   );
