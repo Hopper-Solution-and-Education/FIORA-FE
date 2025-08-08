@@ -5,7 +5,7 @@ import { GlobalNavItem } from '@/shared/types/GlobalNav.types';
 export const globalNavItems: GlobalNavItem[] = [
   {
     title: 'Profile',
-    url: '#profile',
+    url: '/profile',
     icon: 'dashboard',
     props: { size: 20, strokeWidth: 1 },
     isActive: false,
