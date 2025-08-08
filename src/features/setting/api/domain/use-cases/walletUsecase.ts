@@ -311,7 +311,7 @@ class WalletUseCase {
     newStatus: DepositRequestStatus,
     remark?: string,
     currency?: Currency,
-    user?: SessionUser,
+    // user?: SessionUser,
   ) {
     const depositRequest = await this._walletRepository.findDepositRequestById(id);
 
