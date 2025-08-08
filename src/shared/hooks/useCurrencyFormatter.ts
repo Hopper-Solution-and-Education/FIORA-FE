@@ -1,3 +1,5 @@
+'use client';
+
 import useDataFetcher from '@/shared/hooks/useDataFetcher';
 import { Response } from '@/shared/types/Common.types';
 import { RootState } from '@/store';
