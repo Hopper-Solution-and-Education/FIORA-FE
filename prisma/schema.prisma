@@ -24,6 +24,12 @@ model User {
   updatedBy              String?                  @db.Uuid
   role                   UserRole                 @default(User)
   accounts               Account[]                @relation("UserAccounts")
+  birthday               DateTime?
+  address                String?
+  phone                  String?    
+  avatarId               String?                  @db.Uuid
+  logoId                 String?                  @db.Uuid
+  isBlocked              Boolean?                 @default(false)
   AttachmentRelations    AttachmentRelations[]
   BankAccount            BankAccount[]
   budgetDetails          BudgetDetails[]
@@ -496,16 +502,16 @@ model Notification {
 }
 
 model EmailTemplate {
-  name          String            @db.VarChar(255)
-  content       String
-  isActive      Boolean
-  createdAt     DateTime          @default(now()) @db.Timestamptz(0)
-  createdBy     String?           @db.Uuid
-  updatedAt     DateTime          @updatedAt @db.Timestamptz(0)
-  updatedBy     String?           @db.Uuid
-  id            String            @id @default(uuid()) @db.Uuid
-  type          EmailTemplateType @unique
-  notifications Notification[]
+  name              String              @db.VarChar(255)
+  content           String
+  isActive          Boolean
+  createdAt         DateTime            @default(now()) @db.Timestamptz(0)
+  createdBy         String?             @db.Uuid
+  updatedAt         DateTime            @updatedAt @db.Timestamptz(0)
+  updatedBy         String?             @db.Uuid
+  id                String              @id @default(uuid()) @db.Uuid
+  EmailTemplateType EmailTemplateType[]
+  notifications     Notification[]
 }
 
 model EmailNotificationLogs {
@@ -822,6 +828,17 @@ model eKYC {
   User       User?     @relation(fields: [userId], references: [id])
 }
 
+model EmailTemplateType {
+  createdAt       DateTime      @default(now()) @db.Timestamptz(0)
+  createdBy       String?       @db.Uuid
+  updatedAt       DateTime      @db.Timestamptz(0)
+  updatedBy       String?       @db.Uuid
+  EmailTemplateId String        @db.Uuid
+  id              String        @id @db.Uuid
+  type            emailType
+  EmailTemplate   EmailTemplate @relation(fields: [EmailTemplateId], references: [id])
+}
+
 enum BudgetType {
   Top
   Bot
@@ -941,13 +958,6 @@ enum NotificationType {
   PERSONAL
 }
 
-enum EmailTemplateType {
-  MEMBERSHIP
-  DEPOPSIT
-  KYC
-  DEFAULT
-}
-
 enum KYCStatus {
   PENDING
   APPROVAL
@@ -964,4 +974,14 @@ enum IdentificationType {
 enum KYCMethod {
   MANUAL
   OTP
+}
+
+enum emailType {
+  DELETE_ACCOUNT
+  INVOICE_STATUS
+  KYC_REJECT
+  KYC_SUCCESSFUL
+  OTP
+  DEPOPSIT_APPROVE
+  DEPOPSIT_REJECT
 }
