@@ -9,10 +9,6 @@ class ProfileUseCase {
     return this.repo.getById(userId);
   }
 
-  async getByEmail(email: string): Promise<UserProfile | null> {
-    return this.repo.getByEmail(email);
-  }
-
   async update(userId: string, payload: UpdateProfileRequest): Promise<UserProfile> {
     return this.repo.update(userId, payload);
   }

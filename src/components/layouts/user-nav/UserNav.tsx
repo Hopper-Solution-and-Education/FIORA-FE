@@ -2,13 +2,14 @@
 
 import { SegmentProgressBar } from '@/components/common/atoms';
 import { Icons } from '@/components/Icon';
+import { useGetProfileQuery } from '@/features/profile/store/api/profileApi';
 import { COLORS } from '@/shared/constants/chart';
 import { globalNavItems, notSignInNavItems } from '@/shared/constants/data';
 import { ICON_SIZE } from '@/shared/constants/size';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { getCurrentTierAsyncThunk } from '@/store/actions';
 import { LogOut } from 'lucide-react';
-import { signOut, useSession } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -44,7 +45,8 @@ const switchProfile = [
 
 export function UserNav({ handleSignOut }: UserNavProps) {
   const router = useRouter();
-  const { data: session } = useSession();
+  // const { data: session } = useSession();
+  const { data: profile } = useGetProfileQuery();
   const dispatch = useAppDispatch();
   const { data: userTier, isLoading: isLoadingUserTier } = useAppSelector(
     (state) => state.user.userTier,
@@ -81,35 +83,33 @@ export function UserNav({ handleSignOut }: UserNavProps) {
       <DropdownMenuTrigger asChild>
         <div className="group flex items-center space-x-2 rounded-md px-3 py-1.5 transition-all duration-200 hover:bg-accent hover:text-accent-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <div className="relative h-9 w-9 rounded-full overflow-hidden flex items-center justify-center bg-gray-200 text-gray-700 text-sm font-medium transition-transform group-hover:scale-110">
-            {session?.user?.image ? (
+            {profile?.avatarUrl ? (
               <Image
-                src={session.user.image}
-                alt={session?.user?.name || 'User Avatar'}
+                src={profile?.avatarUrl}
+                alt={profile?.name || 'User Avatar'}
                 width={36} // w-9 = 36px
                 height={36} // h-9 = 36px
                 className="object-cover"
               />
             ) : (
               // Fallback: show first two letters, capitalized
-              <span>{session?.user?.name?.slice(0, 2)?.toUpperCase() || 'CN'}</span>
+              <span>{profile?.name?.slice(0, 2)?.toUpperCase() || 'CN'}</span>
             )}
           </div>
-          {session && (
+          {profile && (
             <div className="flex flex-col items-start space-y-0.5">
               {/* truncate and max-w-32 to prevent overflow */}
               <p className="text-sm max-w-32 leading-none truncate group-hover:text-primary">
-                {session.user?.name}
+                {profile?.name}
               </p>
-              <p className="text-xs text-muted-foreground max-w-32 truncate">
-                {session.user?.email}
-              </p>
+              <p className="text-xs text-muted-foreground max-w-32 truncate">{profile?.email}</p>
             </div>
           )}
         </div>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="w-80" align="end" forceMount>
-        {session ? (
+        {profile ? (
           <>
             <DropdownMenuItem>
               <div className="w-full space-y-2 cursor-pointer" onClick={handleClickMembership}>
