@@ -23,13 +23,13 @@ model User {
   createdBy              String?                  @db.Uuid
   updatedBy              String?                  @db.Uuid
   role                   UserRole                 @default(User)
-  accounts               Account[]                @relation("UserAccounts")
-  birthday               DateTime?
-  address                String?
-  phone                  String?    
   avatarId               String?                  @db.Uuid
-  logoId                 String?                  @db.Uuid
   isBlocked              Boolean?                 @default(false)
+  logoId                 String?                  @db.Uuid
+  birthday               DateTime?
+  phone                  String?
+  address                String?
+  accounts               Account[]                @relation("UserAccounts")
   AttachmentRelations    AttachmentRelations[]
   BankAccount            BankAccount[]
   budgetDetails          BudgetDetails[]
@@ -514,6 +514,17 @@ model EmailTemplate {
   notifications     Notification[]
 }
 
+model EmailTemplateType {
+  createdAt       DateTime      @default(now()) @db.Timestamptz(0)
+  createdBy       String?       @db.Uuid
+  updatedAt       DateTime      @updatedAt @db.Timestamptz(0)
+  updatedBy       String?       @db.Uuid
+  EmailTemplateId String        @db.Uuid
+  id              String        @id @default(uuid()) @db.Uuid
+  type            emailType
+  EmailTemplate   EmailTemplate @relation(fields: [EmailTemplateId], references: [id])
+}
+
 model EmailNotificationLogs {
   status         NotificationLogType
   errorMessage   String?
@@ -826,17 +837,6 @@ model eKYC {
   verifiedBy String?   @db.Uuid
   refId      String?   @db.Uuid
   User       User?     @relation(fields: [userId], references: [id])
-}
-
-model EmailTemplateType {
-  createdAt       DateTime      @default(now()) @db.Timestamptz(0)
-  createdBy       String?       @db.Uuid
-  updatedAt       DateTime      @db.Timestamptz(0)
-  updatedBy       String?       @db.Uuid
-  EmailTemplateId String        @db.Uuid
-  id              String        @id @db.Uuid
-  type            emailType
-  EmailTemplate   EmailTemplate @relation(fields: [EmailTemplateId], references: [id])
 }
 
 enum BudgetType {
