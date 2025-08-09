@@ -253,6 +253,7 @@ export const helpsCenterApi = createApi({
         method: 'POST',
         body: data,
       }),
+      invalidatesTags: ['TermsAndConditions'],
     }),
 
     getTermsAndConditions: builder.query<Post, void>({
