@@ -71,7 +71,11 @@ const TableByDate = () => {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[25%]">
-                <Button onClick={() => handleSort('period')} variant="ghost" className="flex items-center gap-2 w-full">
+                <Button
+                  onClick={() => handleSort('period')}
+                  variant="ghost"
+                  className="flex items-center gap-2 w-full"
+                >
                   <Icons.calendar size={ICON_SIZE.SM} />
                   <span>Period</span>
                   <ArrowUpDown className="h-4 w-4" />
