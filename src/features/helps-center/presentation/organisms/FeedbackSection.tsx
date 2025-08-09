@@ -3,7 +3,7 @@ import { Session } from 'next-auth/react';
 import React from 'react';
 import { toast } from 'sonner';
 import { FaqReaction, ReactionCounts, ReactionType } from '../../domain/entities/models/faqs';
-import { useCreateReactionMutation, useGetFaqReactionsQuery } from '../../store/api/faqsApi';
+import { useCreateReactionMutation, useGetFaqReactionsQuery } from '../../store/api/helpsCenterApi';
 
 interface FeedbackSectionProps {
   faqId: string;

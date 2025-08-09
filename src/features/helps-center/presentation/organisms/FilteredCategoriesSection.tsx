@@ -20,7 +20,7 @@ const FilteredCategoriesSection = ({
 
   const groupedFaqs = categoriesWithFaqs.reduce(
     (acc, faq) => {
-      acc[faq.categoryId] = [...(acc[faq.categoryId] || []), faq];
+      acc[faq.PostCategory?.name || ''] = [...(acc[faq.PostCategory?.name || ''] || []), faq];
       return acc;
     },
     {} as Record<string, Post[]>,

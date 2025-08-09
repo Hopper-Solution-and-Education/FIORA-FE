@@ -43,7 +43,7 @@ const FaqDetailPage: React.FC = () => {
   }
 
   return (
-    <section className="max-w-4xl mx-auto px-4 py-10 text-gray-800">
+    <section className="container mx-auto px-6 space-y-6">
       {/* Header Section */}
       <FaqHeader
         data={faq}

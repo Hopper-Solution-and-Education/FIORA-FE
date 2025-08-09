@@ -1,5 +1,4 @@
 'use client';
-
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -13,7 +12,6 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import useCreatePackageFx from '../hooks/useCreatePackageFx';
 import { createPackageSchema } from '../slices/utils/formSchema';
-
 interface CreatePackageFormProps {
   open: boolean;
   onClose: () => void;

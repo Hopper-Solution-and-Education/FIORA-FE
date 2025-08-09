@@ -1,5 +1,5 @@
 import financeControlSlice from '@/features/finance/report/slices';
-import { faqsApi } from '@/features/helps-center/store/api/faqsApi';
+import { helpsCenterApi } from '@/features/helps-center/store/api/helpsCenterApi';
 import accountSlice from '@/features/home/module/account/slices';
 import { default as budgetControlSlice } from '@/features/home/module/budgets/creation-dashboard/slices';
 import budgetSummarySlice from '@/features/home/module/budgets/summary-detail/slice/budgetSummarySlice';
@@ -9,6 +9,7 @@ import transactionSlice from '@/features/home/module/transaction/slices';
 import transactionDataSlice from '@/features/home/module/transaction/slices/transactionSlice';
 import walletSlice from '@/features/home/module/wallet/slices';
 import landingSlices from '@/features/landing/slices';
+import { profileApi } from '@/features/profile/store/api/profileApi';
 import landingSettingSlice from '@/features/setting/module/landing/slices';
 import memberShipSettingsSlice from '@/features/setting/module/membership/slices';
 import notificationDashboardSlice from '@/features/setting/module/notification-dashboard/slices';
@@ -50,7 +51,8 @@ const reducer = {
   notificationDashboard: notificationDashboardSlice,
 
   // RTK Query API slices
-  [faqsApi.reducerPath]: faqsApi.reducer,
+  [helpsCenterApi.reducerPath]: helpsCenterApi.reducer,
+  [profileApi.reducerPath]: profileApi.reducer,
 };
 
 const rootReducer = combineReducers(reducer);

@@ -5,7 +5,7 @@ import {
   useCreateCommentMutation,
   useDeleteCommentMutation,
   useGetFaqCommentsQuery,
-} from '../store/api/faqsApi';
+} from '../store/api/helpsCenterApi';
 
 interface UseCommentManagerProps {
   faqId: string;

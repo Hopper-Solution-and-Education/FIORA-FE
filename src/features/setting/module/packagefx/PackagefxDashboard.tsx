@@ -20,6 +20,8 @@ import { useInfiniteObserver } from './hooks/useInfiniteObserver';
 import { usePackageFxInfiniteData } from './hooks/usePackageFxInfiniteData';
 import { usePackageFxSort } from './hooks/usePackageFxSort';
 
+type SortField = 'fxAmount' | 'createdAt';
+
 const PackageFxDashboard = () => {
   const [localItems, setLocalItems] = useState<any[]>([]);
   const [localTotal, setLocalTotal] = useState(0);
