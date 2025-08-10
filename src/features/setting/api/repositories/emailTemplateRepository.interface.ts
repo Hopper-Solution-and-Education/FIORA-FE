@@ -1,7 +1,10 @@
-import { EmailTemplate, Prisma } from '@prisma/client';
+import { EmailTemplate, EmailTemplateType, Prisma, emailType } from '@prisma/client';
 
 export interface IEmailTemplateRepository {
-  createEmailTemplate(data: Prisma.EmailTemplateCreateInput): Promise<EmailTemplate>;
+  createEmailTemplate(
+    data: Prisma.EmailTemplateCreateInput,
+    type: emailType,
+  ): Promise<EmailTemplateType>;
   getEmailTemplate(): Promise<EmailTemplate[]>;
   updateEmailTemplate(
     id: string,

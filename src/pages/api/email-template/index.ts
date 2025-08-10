@@ -67,16 +67,20 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       .status(RESPONSE_CODE.CONFLICT)
       .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.DUPLICATE_EMAIL_TEMPLATE));
   }
+  delete req.body.type;
 
-  const newEmailTemplate = await emailTemplateRepository.createEmailTemplate({
-    ...req.body,
-    isActive: false,
-    createdBy: userId,
-    updatedBy: userId,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    id: crypto.randomUUID(),
-  });
+  const newEmailTemplate = await emailTemplateRepository.createEmailTemplate(
+    {
+      ...req.body,
+      isActive: true,
+      createdBy: userId,
+      updatedBy: userId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      id: crypto.randomUUID(),
+    },
+    type,
+  );
   return res
     .status(RESPONSE_CODE.CREATED)
     .json(

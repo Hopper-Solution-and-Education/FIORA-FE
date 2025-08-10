@@ -1,14 +1,38 @@
 import { prisma } from '@/config';
 import { BadRequestError } from '@/shared/lib';
-import { EmailTemplate, EmailTemplateType, Prisma } from '@prisma/client';
+import { EmailTemplate, EmailTemplateType, Prisma, emailType } from '@prisma/client';
 import { IEmailTemplateRepository } from '../../repositories/emailTemplateRepository.interface';
 
 class EmailTemplateRepository implements IEmailTemplateRepository {
-  async createEmailTemplate(data: Prisma.EmailTemplateCreateInput): Promise<EmailTemplate> {
-    return await prisma.emailTemplate.create({ data: { ...data } });
+  async createEmailTemplate(
+    data: Prisma.EmailTemplateCreateInput,
+    type: emailType,
+  ): Promise<EmailTemplateType> {
+    return prisma.$transaction(async (tx) => {
+      const newEmailTemplateType: Prisma.EmailTemplateTypeCreateInput = {
+        createdAt: new Date(),
+        createdBy: data.createdBy,
+        updatedAt: new Date(),
+        updatedBy: null,
+        EmailTemplate: { connect: { id: String(data.id) } },
+        id: crypto.randomUUID(),
+        type: type,
+      };
+      await tx.emailTemplate.create({ data: { ...data } });
+
+      return await tx.emailTemplateType.create({
+        data: { ...newEmailTemplateType },
+        include: {
+          EmailTemplate: true,
+        },
+      });
+    });
   }
-  async getEmailTemplate(): Promise<EmailTemplate[]> {
-    return await prisma.emailTemplate.findMany({
+  async getEmailTemplate(): Promise<any[]> {
+    return await prisma.emailTemplateType.findMany({
+      include: {
+        EmailTemplate: true,
+      },
       orderBy: {
         createdAt: 'desc',
       },
@@ -22,7 +46,7 @@ class EmailTemplateRepository implements IEmailTemplateRepository {
   ): Promise<EmailTemplate> {
     const emailTemplate = await prisma.emailTemplate.findUnique({
       where: { id },
-      select: { isActive: true },
+      select: { EmailTemplateType: true, isActive: true },
     });
 
     if (!emailTemplate || emailTemplate.isActive == false) {
@@ -46,14 +70,22 @@ class EmailTemplateRepository implements IEmailTemplateRepository {
   }
 
   async findEmailTemplateByTypeOrName(
-    type: EmailTemplateType,
+    type: emailType,
     name: string,
   ): Promise<EmailTemplate | null> {
-    return await prisma.emailTemplate.findFirst({
+    const result = await prisma.emailTemplateType.findFirst({
       where: {
-        OR: [{ name }],
+        AND: [{ type }, { EmailTemplate: { name } }],
+        EmailTemplate: {
+          isActive: true,
+        },
+      },
+      include: {
+        EmailTemplate: true,
       },
     });
+
+    return result?.EmailTemplate || null;
   }
 
   async checkTemplateDefault(): Promise<EmailTemplate | null> {
