@@ -7,28 +7,31 @@ import {
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { SessionUser } from '@/shared/types/session';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { Currency } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
-  try {
-    switch (req.method) {
-      case 'GET':
-        return GET(req, res, userId);
-      case 'POST':
-        return POST(req, res, userId);
-      default:
-        return createError(res, RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED);
+export default sessionWrapper(
+  async (req: NextApiRequest, res: NextApiResponse, userId: string, user: SessionUser) => {
+    try {
+      switch (req.method) {
+        case 'GET':
+          return GET(req, res, userId);
+        case 'POST':
+          return POST(req, res, userId, user);
+        default:
+          return createError(res, RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED);
+      }
+    } catch (error: any) {
+      return createError(
+        res,
+        RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+        error.message || Messages.INTERNAL_ERROR,
+      );
     }
-  } catch (error: any) {
-    return createError(
-      res,
-      RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-      error.message || Messages.INTERNAL_ERROR,
-    );
-  }
-});
+  },
+);
 
 async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
@@ -59,7 +62,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   }
 }
 
-async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
+async function POST(req: NextApiRequest, res: NextApiResponse, userId: string, user: SessionUser) {
   try {
     const body = PostBodySchema.safeParse(req.body);
     if (!body.success) {
@@ -79,6 +82,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
         packageFXId,
         attachmentData as AttachmentData,
         currency as Currency,
+        user,
       );
 
       return res

@@ -23,6 +23,12 @@ model User {
   createdBy              String?                  @db.Uuid
   updatedBy              String?                  @db.Uuid
   role                   UserRole                 @default(User)
+  avatarId               String?                  @db.Uuid
+  isBlocked              Boolean?                 @default(false)
+  logoId                 String?                  @db.Uuid
+  birthday               DateTime?
+  phone                  String?
+  address                String?
   accounts               Account[]                @relation("UserAccounts")
   AttachmentRelations    AttachmentRelations[]
   budgetDetails          BudgetDetails[]
@@ -513,16 +519,27 @@ model Notification {
 }
 
 model EmailTemplate {
-  name          String            @db.VarChar(255)
-  content       String
-  isActive      Boolean
-  createdAt     DateTime          @default(now()) @db.Timestamptz(0)
-  createdBy     String?           @db.Uuid
-  updatedAt     DateTime          @updatedAt @db.Timestamptz(0)
-  updatedBy     String?           @db.Uuid
-  id            String            @id @default(uuid()) @db.Uuid
-  type          EmailTemplateType @unique
-  notifications Notification[]
+  name              String              @db.VarChar(255)
+  content           String
+  isActive          Boolean
+  createdAt         DateTime            @default(now()) @db.Timestamptz(0)
+  createdBy         String?             @db.Uuid
+  updatedAt         DateTime            @updatedAt @db.Timestamptz(0)
+  updatedBy         String?             @db.Uuid
+  id                String              @id @default(uuid()) @db.Uuid
+  EmailTemplateType EmailTemplateType[]
+  notifications     Notification[]
+}
+
+model EmailTemplateType {
+  createdAt       DateTime      @default(now()) @db.Timestamptz(0)
+  createdBy       String?       @db.Uuid
+  updatedAt       DateTime      @updatedAt @db.Timestamptz(0)
+  updatedBy       String?       @db.Uuid
+  EmailTemplateId String        @db.Uuid
+  id              String        @id @default(uuid()) @db.Uuid
+  type            emailType
+  EmailTemplate   EmailTemplate @relation(fields: [EmailTemplateId], references: [id])
 }
 
 model EmailNotificationLogs {
@@ -962,13 +979,6 @@ enum NotificationType {
   PERSONAL
 }
 
-enum EmailTemplateType {
-  MEMBERSHIP
-  DEPOPSIT
-  KYC
-  DEFAULT
-}
-
 enum KYCStatus {
   PENDING
   APPROVAL
@@ -985,4 +995,14 @@ enum IdentificationType {
 enum KYCMethod {
   MANUAL
   OTP
+}
+
+enum emailType {
+  DELETE_ACCOUNT
+  INVOICE_STATUS
+  KYC_REJECT
+  KYC_SUCCESSFUL
+  OTP
+  DEPOPSIT_APPROVE
+  DEPOPSIT_REJECT
 }

@@ -1,9 +1,10 @@
 'use client';
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
+import DatePicker from '@/components/modern-ui/date-picker';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { AlertCircle, Shield } from 'lucide-react';
 import { FC, useEffect, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import * as Yup from 'yup';
@@ -79,7 +80,12 @@ export const PersonalInfoForm: FC<Props> = ({ initialValues, isLoading, onSubmit
       >
         <div className="mb-8">
           <SectionHeader title="Personal Information" />
-          <p className="text-sm text-gray-500 mb-4">Update your personal details</p>
+          <p className="text-sm text-gray-500 mb-4 flex">
+            <span className="text-orange-500 mr-2" aria-hidden>
+              <AlertCircle />
+            </span>
+            Update your personal details
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={control}
@@ -102,7 +108,12 @@ export const PersonalInfoForm: FC<Props> = ({ initialValues, isLoading, onSubmit
                 <FormItem>
                   <FormLabel htmlFor="birthday">Birthday</FormLabel>
                   <FormControl>
-                    <Input id="birthday" {...field} value={field.value ?? ''} />
+                    <DatePicker
+                      date={field.value ? new Date(field.value) : undefined}
+                      setDate={(date) => field.onChange(date?.toISOString())}
+                      placeholder="Pick a date"
+                      className="!w-full"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -145,18 +156,72 @@ export const PersonalInfoForm: FC<Props> = ({ initialValues, isLoading, onSubmit
                   <FormItem>
                     <FormLabel htmlFor="address">Contact address</FormLabel>
                     <FormControl>
-                      <Textarea
-                        id="address"
-                        className="resize-none"
-                        {...field}
-                        value={field.value ?? ''}
-                      />
+                      <Input id="address" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
+
+            <div className="col-span-1 md:col-span-2">
+              <FormLabel htmlFor="referralCode">Referral Code</FormLabel>
+              <Input id="referralCode" />
+              <p className="text-sm text-gray-500 my-2 flex">
+                <span className="text-orange-500 mr-2" aria-hidden>
+                  <AlertCircle />
+                </span>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h2 className="text-lg font-semibold">Identification Document</h2>
+            <p className="text-sm text-gray-500 my-2 flex">
+              <span className="text-orange-500 mr-2" aria-hidden>
+                <AlertCircle />
+              </span>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit
+            </p>
+          </div>
+
+          <div className="bg-yellow-500 p-2 rounded " aria-hidden>
+            <Shield className="text-white" />
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h2 className="text-lg font-semibold">Tax Information</h2>
+            <p className="text-sm text-gray-500 my-2 flex">
+              <span className="text-orange-500 mr-2" aria-hidden>
+                <AlertCircle />
+              </span>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit
+            </p>
+          </div>
+
+          <div className="bg-yellow-500 p-2 rounded mb-4" aria-hidden>
+            <Shield className="text-white" />
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-lg font-semibold">Bank Account</h2>
+            <p className="text-sm text-gray-500 my-2 flex">
+              <span className="text-orange-500 mr-2" aria-hidden>
+                <AlertCircle />
+              </span>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit
+            </p>
+          </div>
+
+          <div className="bg-yellow-500 p-2 rounded " aria-hidden>
+            <Shield className="text-white" />
           </div>
         </div>
 

@@ -14,10 +14,10 @@ import { ICON_SIZE } from '@/shared/constants/size';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppSelector } from '@/store';
 import { ArrowUpDown } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type SortConfig = {
-  key: 'totalIncome' | 'totalExpense' | 'profit';
+  key: 'totalIncome' | 'totalExpense' | 'profit' | 'period';
   direction: 'asc' | 'desc';
 };
 
@@ -44,6 +44,13 @@ const TableByDate = () => {
       const profitB = b.totalIncome - b.totalExpense;
       return sortConfig.direction === 'asc' ? profitA - profitB : profitB - profitA;
     }
+
+    if (sortConfig.key === 'period') {
+      return sortConfig.direction === 'asc'
+        ? a.period.localeCompare(b.period)
+        : b.period.localeCompare(a.period);
+    }
+
     return sortConfig.direction === 'asc'
       ? a[sortConfig.key] - b[sortConfig.key]
       : b[sortConfig.key] - a[sortConfig.key];
@@ -53,6 +60,10 @@ const TableByDate = () => {
     return <TableSkeleton columns={4} rows={5} />;
   }
 
+  useEffect(() => {
+    handleSort('period');
+  }, []);
+
   return (
     <div className="space-y-2">
       <h2 className="text-xl font-semibold mt-4">Finance Data by Date</h2>
@@ -61,10 +72,15 @@ const TableByDate = () => {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[25%]">
-                <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => handleSort('period')}
+                  variant="ghost"
+                  className="flex items-center gap-2 w-full"
+                >
                   <Icons.calendar size={ICON_SIZE.SM} />
                   <span>Period</span>
-                </div>
+                  <ArrowUpDown className="h-4 w-4" />
+                </Button>
               </TableHead>
               <TableHead className="w-[25%] text-center">
                 <Button
@@ -104,7 +120,7 @@ const TableByDate = () => {
           <TableBody>
             {sortedData.map((item, index) => (
               <TableRow key={index}>
-                <TableCell className="font-medium">{item.period}</TableCell>
+                <TableCell className="font-medium text-center">{item.period}</TableCell>
                 <TableCell className="text-center" style={{ color: COLORS.DEPS_DANGER.LEVEL_2 }}>
                   {formatCurrency(item.totalExpense, currency)}
                 </TableCell>

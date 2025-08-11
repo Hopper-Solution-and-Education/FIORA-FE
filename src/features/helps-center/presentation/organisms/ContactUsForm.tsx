@@ -7,6 +7,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import * as yup from 'yup';
 import { ContactUsRequest } from '../../domain/entities/models/faqs';
 import { usePhoneFormatter } from '../../hooks/usePhoneFormatter';
@@ -76,6 +77,7 @@ const ContactUsForm = ({
 
     await contactUsMutation(submitData);
     setIsFormDirty(false);
+    toast.success('Request sent successfully');
     form.reset();
     setOpenConfirmExitDialog(false);
   };
