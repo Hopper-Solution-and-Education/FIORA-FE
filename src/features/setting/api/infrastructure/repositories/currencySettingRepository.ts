@@ -16,6 +16,13 @@ export class CurrencySettingRepository implements ICurrencySettingRepository {
   ): Promise<CurrencyExchange[]> {
     return prisma.currencyExchange.findMany({ where, ...options });
   }
+
+  async updateCurrency(
+    where: Prisma.CurrencyExchangeWhereUniqueInput,
+    data: Prisma.CurrencyExchangeUpdateInput,
+  ): Promise<CurrencyExchange> {
+    return prisma.currencyExchange.update({ where, data });
+  }
 }
 
 export const currencySettingRepository = new CurrencySettingRepository();

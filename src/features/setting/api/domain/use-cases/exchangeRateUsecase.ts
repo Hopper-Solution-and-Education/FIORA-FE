@@ -195,6 +195,22 @@ class ExchangeRateUseCase {
         };
       }>;
 
+      const updatedFromCurrency = await this.currencySettingRepository.updateCurrency(
+        { id: fromCurrency?.id as string },
+        {
+          name: data.fromCurrency,
+          symbol: data.fromSymbol as string,
+        },
+      );
+
+      const updatedToCurrency = await this.currencySettingRepository.updateCurrency(
+        { id: toCurrency?.id as string },
+        {
+          name: data.toCurrency,
+          symbol: data.toSymbol as string,
+        },
+      );
+
       return {
         id: exchangeRate.id,
         fromValue: exchangeRate.fromValue,
@@ -203,12 +219,12 @@ class ExchangeRateUseCase {
         updatedBy: exchangeRate.updatedBy,
         createdAt: exchangeRate.createdAt,
         updatedAt: exchangeRate.updatedAt,
-        fromCurrency: exchangeRate.FromCurrency.name,
-        fromCurrencyId: exchangeRate.FromCurrency.id,
-        toCurrency: exchangeRate.ToCurrency.name,
-        toCurrencyId: exchangeRate.ToCurrency.id,
-        fromSymbol: exchangeRate.FromCurrency.symbol,
-        toSymbol: exchangeRate.ToCurrency.symbol,
+        fromCurrency: updatedFromCurrency.name,
+        fromCurrencyId: updatedFromCurrency.id,
+        fromSymbol: updatedFromCurrency.symbol,
+        toCurrency: updatedToCurrency.name,
+        toCurrencyId: updatedToCurrency.id,
+        toSymbol: updatedToCurrency.symbol,
       };
     } catch (error) {
       console.log(error);

@@ -6,4 +6,8 @@ export interface ICurrencySettingRepository {
     where: Prisma.CurrencyExchangeWhereInput,
     options?: Prisma.CurrencyExchangeFindManyArgs,
   ): Promise<CurrencyExchange[]>;
+  updateCurrency(
+    where: Prisma.CurrencyExchangeWhereUniqueInput,
+    data: Prisma.CurrencyExchangeUpdateInput,
+  ): Promise<CurrencyExchange>;
 }
