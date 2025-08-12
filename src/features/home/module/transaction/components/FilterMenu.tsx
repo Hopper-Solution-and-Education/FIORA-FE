@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import DateRangeFilter from '@/components/common/filters/DateRangeFilter';
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';

@@ -77,7 +77,6 @@ const ProductCategoryForm = ({ setValue }: productCategoryFormType) => {
       });
       setIsOpenDialogDelete(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productCategories]);
 
   const onSubmit = useCallback(
@@ -135,7 +134,7 @@ const ProductCategoryForm = ({ setValue }: productCategoryFormType) => {
         toast.error('Failed');
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [ProductCategoryFormState, userData?.user.id],
   );
 

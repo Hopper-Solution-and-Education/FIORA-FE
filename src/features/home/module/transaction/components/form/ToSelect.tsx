@@ -42,7 +42,6 @@ const ToSelectField: React.FC<ToSelectProps> = ({
     if (transactionType) {
       mutate();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionType]);
 
   useEffect(() => {

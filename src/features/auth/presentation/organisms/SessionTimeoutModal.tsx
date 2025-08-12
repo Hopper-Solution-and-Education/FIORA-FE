@@ -48,7 +48,6 @@ export function SessionTimeoutModal() {
       // Dọn dẹp timer khi component unmount hoặc effect chạy lại
       return () => clearInterval(timer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, status, isVisible]);
 
   const handleRefresh = async () => {

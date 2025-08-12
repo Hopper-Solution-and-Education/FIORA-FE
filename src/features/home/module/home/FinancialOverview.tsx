@@ -74,12 +74,10 @@ export default function AccountList({ className }: AccountListProps) {
     } catch (err) {
       // alert('Error fetching data');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTriggered, accountsMap, parentAccounts, setIsTriggered, setIsCreateModalOpen]);
 
   useEffect(() => {
     fetchAccountsData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTriggered, setIsTriggered, setIsCreateModalOpen]);
 
   // only get the total balance of the parent accounts except type as 'CreditCard'
@@ -92,7 +90,7 @@ export default function AccountList({ className }: AccountListProps) {
         return acc;
       }, 0);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [isTriggered, accountsMap, parentAccounts, setIsTriggered],
   );
 
@@ -129,7 +127,6 @@ export default function AccountList({ className }: AccountListProps) {
                 isTriggered={isTriggered}
               />
             );
-            // eslint-disable-next-line react-hooks/exhaustive-deps
           }, [accountsMap, parentAccounts])}
         </div>
       </div>

@@ -21,9 +21,12 @@ import {
 import { ATTACHMENT_CONSTANTS } from '../../../data/module/attachment/constants/attachmentConstants';
 import {
   DEFAULT_WALLET_FIELDS,
+  DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID,
+  DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID,
   MAX_REF_CODE_ATTEMPTS,
   WALLET_TYPE_ICONS,
 } from '../../../data/module/wallet/constants';
+import { WalletApproveEmailPart, WalletRejectEmailPart } from '../../../data/module/wallet/types';
 import { attachmentRepository } from '../../infrastructure/repositories/attachmentRepository';
 import { walletRepository } from '../../infrastructure/repositories/walletRepository';
 import { IAttachmentRepository } from '../../repositories/attachmentRepository.interface';
@@ -396,8 +399,14 @@ class WalletUseCase {
     const userInfo = await this._userUseCase.getUserById(depositRequest.userId);
     if (!userInfo) return updatedDepositRequest;
 
-    // Create notification for user based on status
+    // Create email notification for user based on status using email templates
+    // Resolve recipient and display name (fallback to email if name is missing)
+    const userEmail = userInfo.email;
+    const recipient = userEmail;
+    const displayName = userInfo.name || userEmail;
+
     if (newStatus === DepositRequestStatus.Approved) {
+      // Send legacy in-app notification (kept for backward compatibility)
       await this._notificationUsecase.createBoxNotification({
         title: 'Deposit Request Approved',
         type: 'DEPOSIT_APPROVED',
@@ -406,7 +415,31 @@ class WalletUseCase {
         deepLink: RouteEnum.WalletDashboard,
         emails: [userInfo.email],
       });
+
+      // Load FX amount to populate template variable {{fx_amount}}
+      const fxAmount = Number(
+        (await this._walletRepository.getPackageFXById(depositRequest.packageFXId))?.fxAmount || 0,
+      );
+
+      // Build template variables matching WalletApproveEmailPart
+      const emailPart: WalletApproveEmailPart = {
+        user_id: depositRequest.userId,
+        recipient,
+        user_name: displayName,
+        user_email: userEmail,
+        fx_amount: fxAmount,
+      };
+
+      // Send email using the approved template ID
+      await this._notificationUsecase.sendNotificationWithTemplate(
+        DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID,
+        [emailPart],
+        NotificationType.PERSONAL,
+        'DEPOSIT_APPROVED',
+        'Deposit Request Approved',
+      );
     } else if (newStatus === DepositRequestStatus.Rejected) {
+      // Send legacy in-app notification (kept for backward compatibility)
       await this._notificationUsecase.createBoxNotification({
         title: 'Deposit Request Rejected',
         type: 'DEPOSIT_REJECTED',
@@ -415,6 +448,30 @@ class WalletUseCase {
         deepLink: RouteEnum.WalletDashboard,
         emails: [userInfo.email],
       });
+
+      // Load FX amount to populate template variable {{fx_amount}}
+      const fxAmount = Number(
+        (await this._walletRepository.getPackageFXById(depositRequest.packageFXId))?.fxAmount || 0,
+      );
+
+      // Build template variables matching WalletRejectEmailPart (includes {{rejection_reason}})
+      const emailPart: WalletRejectEmailPart = {
+        user_id: depositRequest.userId,
+        recipient,
+        user_name: displayName,
+        user_email: userEmail,
+        fx_amount: fxAmount,
+        rejection_reason: remark || 'No reason provided',
+      };
+
+      // Send email using the rejected template ID
+      await this._notificationUsecase.sendNotificationWithTemplate(
+        DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID,
+        [emailPart],
+        NotificationType.PERSONAL,
+        'DEPOSIT_REJECTED',
+        'Deposit Request Rejected',
+      );
     }
 
     return updatedDepositRequest;

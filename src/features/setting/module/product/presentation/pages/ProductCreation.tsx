@@ -115,7 +115,6 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
     return () => {
       dispatch(setDeletedItems([]));
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId]);
 
   const confirmDelete = async () => {
