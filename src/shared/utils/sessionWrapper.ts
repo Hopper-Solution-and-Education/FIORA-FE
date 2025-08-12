@@ -3,8 +3,14 @@ import { NextApiHandler, NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import RESPONSE_CODE from '../constants/RESPONSE_CODE';
 import { Messages } from '../constants/message';
+import { SessionUser } from '../types/session';
 
-type HandlerWithUser = (req: NextApiRequest, res: NextApiResponse, userId: string) => Promise<void>;
+type HandlerWithUser = (
+  req: NextApiRequest,
+  res: NextApiResponse,
+  userId: string,
+  user: SessionUser,
+) => Promise<void>;
 
 export function sessionWrapper(handler: HandlerWithUser): NextApiHandler {
   return async (req: NextApiRequest, res: NextApiResponse) => {
@@ -17,7 +23,7 @@ export function sessionWrapper(handler: HandlerWithUser): NextApiHandler {
     const userId = session.user.id;
 
     try {
-      return await handler(req, res, userId);
+      return await handler(req, res, userId, session.user as SessionUser);
     } catch (error: any) {
       console.error('Error in sessionWrapper:', error);
       return res

@@ -13,6 +13,7 @@ async function main() {
   // await seedProductCategory();
   // await seedProduct();
   // await seedProductTransaction();
+  // await seedHelpsCenter();
 }
 
 main()

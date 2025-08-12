@@ -23,6 +23,12 @@ model User {
   createdBy              String?                  @db.Uuid
   updatedBy              String?                  @db.Uuid
   role                   UserRole                 @default(User)
+  avatarId               String?                  @db.Uuid
+  isBlocked              Boolean?                 @default(false)
+  logoId                 String?                  @db.Uuid
+  birthday               DateTime?
+  phone                  String?
+  address                String?
   accounts               Account[]                @relation("UserAccounts")
   AttachmentRelations    AttachmentRelations[]
   BankAccount            BankAccount[]
@@ -46,6 +52,7 @@ model User {
   authentication         UserAuthentication?
   UserNotification       UserNotification[]
   wallet                 Wallet[]                 @relation("UserWallet")
+  eKYC                   eKYC[]
 
   @@index([isDeleted])
 }
@@ -194,12 +201,12 @@ model Transaction {
   toWalletId          String?              @db.Uuid
   membershipBenefitId String?              @db.Uuid
   productsRelation    ProductTransaction[] @relation("ProductTransactions")
-  fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Restrict)
+  fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
   fromCategory        Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
   fromWallet          Wallet?              @relation("FromWallet", fields: [fromWalletId], references: [id])
   MembershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
   partner             Partner?             @relation("PartnerTransactions", fields: [partnerId], references: [id])
-  toAccount           Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Restrict)
+  toAccount           Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Cascade)
   toCategory          Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
   toWallet            Wallet?              @relation("ToWallet", fields: [toWalletId], references: [id])
   user                User?                @relation("UserTransactions", fields: [userId], references: [id])
@@ -495,16 +502,27 @@ model Notification {
 }
 
 model EmailTemplate {
-  name          String            @db.VarChar(255)
-  content       String
-  isActive      Boolean
-  createdAt     DateTime          @default(now()) @db.Timestamptz(0)
-  createdBy     String?           @db.Uuid
-  updatedAt     DateTime          @updatedAt @db.Timestamptz(0)
-  updatedBy     String?           @db.Uuid
-  id            String            @id @default(uuid()) @db.Uuid
-  type          EmailTemplateType
-  notifications Notification[]
+  name              String              @db.VarChar(255)
+  content           String
+  isActive          Boolean
+  createdAt         DateTime            @default(now()) @db.Timestamptz(0)
+  createdBy         String?             @db.Uuid
+  updatedAt         DateTime            @updatedAt @db.Timestamptz(0)
+  updatedBy         String?             @db.Uuid
+  id                String              @id @default(uuid()) @db.Uuid
+  EmailTemplateType EmailTemplateType[]
+  notifications     Notification[]
+}
+
+model EmailTemplateType {
+  createdAt       DateTime      @default(now()) @db.Timestamptz(0)
+  createdBy       String?       @db.Uuid
+  updatedAt       DateTime      @updatedAt @db.Timestamptz(0)
+  updatedBy       String?       @db.Uuid
+  EmailTemplateId String        @db.Uuid
+  id              String        @id @default(uuid()) @db.Uuid
+  type            emailType
+  EmailTemplate   EmailTemplate @relation(fields: [EmailTemplateId], references: [id])
 }
 
 model EmailNotificationLogs {
@@ -768,42 +786,57 @@ model Announcement {
 }
 
 model BankAccount {
-  id            String            @id @db.Uuid
-  accountNumber String            @db.VarChar(50)
-  accountName   String            @db.VarChar(100)
-  bankName      String            @db.VarChar(100)
-  SWIFT         String            @db.VarChar(20)
-  status        BankAccountStatus
-  paymentRefId  String?           @db.Uuid
+  id            String      @id @db.Uuid
+  accountNumber String      @db.VarChar(50)
+  accountName   String      @db.VarChar(100)
+  bankName      String      @db.VarChar(100)
+  SWIFT         String      @db.VarChar(20)
+  paymentRefId  String?     @db.Uuid
   remarks       String
-  updatedAt     DateTime          @db.Timestamptz(0)
-  updatedBy     String?           @db.Uuid
-  userId        String            @db.Uuid
-  createdAt     DateTime          @default(now()) @db.Timestamptz(0)
-  createdBy     String?           @db.Uuid
-  Attachment    Attachment?       @relation(fields: [paymentRefId], references: [id])
-  User          User             @relation(fields: [userId], references: [id])
+  updatedAt     DateTime    @db.Timestamptz(0)
+  updatedBy     String?     @db.Uuid
+  userId        String      @db.Uuid
+  createdAt     DateTime    @default(now()) @db.Timestamptz(0)
+  createdBy     String?     @db.Uuid
+  status        KYCStatus
+  Attachment    Attachment? @relation(fields: [paymentRefId], references: [id])
+  User          User        @relation(fields: [userId], references: [id])
 }
 
 model IdentificationDocument {
-  id             String               @id @db.Uuid
-  createdAt      DateTime             @default(now()) @db.Timestamptz(0)
-  createdBy      String?              @db.Uuid
-  fileBackId     String?              @db.Uuid
-  fileFrontId    String?              @db.Uuid
-  fileLocationId String?              @db.Uuid
-  filePhotoId    String?              @db.Uuid
-  idAddress      String               @db.VarChar(255)
-  idNumber       String               @db.VarChar(100)
-  issuedDate     DateTime?            @db.Date
-  issuedPlace    String               @db.VarChar(255)
+  id             String             @id @db.Uuid
+  createdAt      DateTime           @default(now()) @db.Timestamptz(0)
+  createdBy      String?            @db.Uuid
+  fileBackId     String?            @db.Uuid
+  fileFrontId    String?            @db.Uuid
+  fileLocationId String?            @db.Uuid
+  filePhotoId    String?            @db.Uuid
+  idAddress      String             @db.VarChar(255)
+  idNumber       String             @db.VarChar(100)
+  issuedDate     DateTime?          @db.Date
+  issuedPlace    String             @db.VarChar(255)
   remarks        String
-  status         IdentificationStatus
   type           IdentificationType
-  updatedAt      DateTime             @db.Timestamptz(0)
-  updatedBy      String?              @db.Uuid
-  userId         String               @db.Uuid
-  User           User                 @relation(fields: [userId], references: [id])
+  updatedAt      DateTime           @db.Timestamptz(0)
+  updatedBy      String?            @db.Uuid
+  userId         String             @db.Uuid
+  status         KYCStatus
+  User           User               @relation(fields: [userId], references: [id])
+}
+
+model eKYC {
+  id         String    @id @db.Uuid
+  createdAt  DateTime  @default(now()) @db.Timestamptz(0)
+  createdBy  String?   @db.Uuid
+  fieldName  String    @db.VarChar(100)
+  status     KYCStatus
+  method     KYCMethod
+  updatedAt  DateTime  @db.Timestamptz(0)
+  updatedBy  String?   @db.Uuid
+  userId     String?   @db.Uuid
+  verifiedBy String?   @db.Uuid
+  refId      String?   @db.Uuid
+  User       User?     @relation(fields: [userId], references: [id])
 }
 
 enum BudgetType {
@@ -925,27 +958,30 @@ enum NotificationType {
   PERSONAL
 }
 
-enum EmailTemplateType {
-  MEMBERSHIP
-  DEPOPSIT
-  KYC
-}
-
-enum BankAccountStatus {
-  pending
-  approval
-  reject
-}
-
-enum IdentificationStatus {
-  pending
-  approval
-  reject
+enum KYCStatus {
+  PENDING
+  APPROVAL
+  REJECTED
 }
 
 enum IdentificationType {
-  national
-  passport
-  business
-  tax
+  NATIONAL
+  PASSPORT
+  BUSINESS
+  TAX
+}
+
+enum KYCMethod {
+  MANUAL
+  OTP
+}
+
+enum emailType {
+  DELETE_ACCOUNT
+  INVOICE_STATUS
+  KYC_REJECT
+  KYC_SUCCESSFUL
+  OTP
+  DEPOPSIT_APPROVE
+  DEPOPSIT_REJECT
 }

@@ -5,11 +5,13 @@ import { useMemo, useRef, useState } from 'react';
 interface NotificationRecipientsPopoverProps {
   recipients: string | string[];
   children: React.ReactNode;
+  showSearch?: boolean;
 }
 
 const NotificationRecipientsPopover = ({
   recipients,
   children,
+  showSearch = true,
 }: NotificationRecipientsPopoverProps) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -31,6 +33,7 @@ const NotificationRecipientsPopover = ({
     if (timerRef.current) clearTimeout(timerRef.current);
     setOpen(true);
   };
+
   const handleMouseLeave = () => {
     timerRef.current = setTimeout(() => setOpen(false), 50); // small delay for UX
   };
@@ -47,24 +50,28 @@ const NotificationRecipientsPopover = ({
         onMouseLeave={handleMouseLeave}
         align="start"
       >
-        <Input
-          placeholder="Search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="mb-2"
-        />
+        {showSearch && (
+          <Input
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="mb-2"
+          />
+        )}
         <div className="max-h-48 overflow-y-auto">
           {filtered.length > 0 ? (
             filtered.map((email, idx) => (
               <div
                 key={email + idx}
-                className="px-2 py-1 text-sm text-gray-800 hover:bg-gray-100 rounded cursor-pointer text-left"
+                className="px-2 py-1 text-sm text-foreground hover:bg-muted rounded cursor-pointer text-left"
               >
                 {email}
               </div>
             ))
           ) : (
-            <div className="text-gray-400 text-sm px-2 py-2 text-center">No recipients found</div>
+            <div className="text-muted-foreground text-sm px-2 py-2 text-center">
+              No recipients found
+            </div>
           )}
         </div>
       </PopoverContent>

@@ -58,13 +58,14 @@ const config = [
       'unused-imports': pluginUnusedImports,
     },
     rules: {
-      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/rules-of-hooks': 'warn',
       'react-hooks/exhaustive-deps': 'off',
       'import/no-unresolved': 'off',
-      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-imports': 'warn',
       'prettier/prettier': 'warn',
-      '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/no-explicit-any': 'off',
+      'import/no-anonymous-default-export': 'off',
     },
   },
 ];

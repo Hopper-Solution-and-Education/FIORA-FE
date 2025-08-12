@@ -1,0 +1,33 @@
+import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
+import { Messages } from '@/shared/constants/message';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { errorHandler } from '@/shared/lib';
+import { createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { withAuthorization } from '@/shared/utils/authorizationWrapper';
+import type { NextApiRequest, NextApiResponse } from 'next';
+
+export default withAuthorization({
+  GET: ['Admin'],
+})((req: NextApiRequest, res: NextApiResponse) =>
+  errorHandler(
+    async (request, response) => {
+      switch (request.method) {
+        case 'GET':
+          return GET(request, response);
+        default:
+          return response
+            .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+            .json({ error: 'Method is not allowed' });
+      }
+    },
+    req,
+    res,
+  ),
+);
+
+export async function GET(req: NextApiRequest, res: NextApiResponse) {
+  const result = await notificationUseCase.getNotificationFilterOptions();
+  return res
+    .status(RESPONSE_CODE.OK)
+    .json(createResponse(RESPONSE_CODE.OK, Messages.GET_NOTIFICATION_SUCCESS, result));
+}

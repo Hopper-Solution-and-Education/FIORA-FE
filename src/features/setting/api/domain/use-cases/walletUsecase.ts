@@ -1,36 +1,38 @@
 import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
+import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
+import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { FilterObject } from '@/shared/types/filter.types';
+import { SessionUser } from '@/shared/types/session';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { generateRefCode } from '@/shared/utils/stringHelper';
 import {
   Currency,
   DepositRequestStatus,
+  NotificationType,
   Prisma,
   TransactionType,
   WalletType,
 } from '@prisma/client';
-import { ATTACHMENT_CONSTANTS } from '../../constants/attachmentConstants';
+import { ATTACHMENT_CONSTANTS } from '../../../data/module/attachment/constants/attachmentConstants';
 import {
   DEFAULT_WALLET_FIELDS,
+  DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID,
+  DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID,
   MAX_REF_CODE_ATTEMPTS,
   WALLET_TYPE_ICONS,
-} from '../../constants/walletConstant';
+} from '../../../data/module/wallet/constants';
+import { WalletApproveEmailPart, WalletRejectEmailPart } from '../../../data/module/wallet/types';
 import { attachmentRepository } from '../../infrastructure/repositories/attachmentRepository';
 import { walletRepository } from '../../infrastructure/repositories/walletRepository';
 import { IAttachmentRepository } from '../../repositories/attachmentRepository.interface';
 import { IWalletRepository } from '../../repositories/walletRepository.interface';
-
-interface AttachmentData {
-  type: string;
-  size: number;
-  url: string;
-  path: string;
-}
+import { AttachmentData } from '../../types/attachmentTypes';
+import { userUseCase } from './userUsecase';
 
 class WalletUseCase {
   constructor(
@@ -38,6 +40,8 @@ class WalletUseCase {
     private _attachmentRepository: IAttachmentRepository = attachmentRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
     private _accountRepository: IAccountRepository = accountRepository,
+    private _userUseCase = userUseCase,
+    private _notificationUsecase = notificationUseCase,
   ) {}
 
   async createWallet(data: Prisma.WalletUncheckedCreateInput) {
@@ -175,6 +179,7 @@ class WalletUseCase {
     refCode: string,
     attachmentData?: AttachmentData,
     currency?: Currency,
+    user?: SessionUser,
   ) {
     const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
     if (!packageFX) {
@@ -202,7 +207,7 @@ class WalletUseCase {
       attachmentId = attachment.id;
     }
 
-    return this._walletRepository.createDepositRequest({
+    const depositRequest = await this._walletRepository.createDepositRequest({
       userId,
       packageFXId,
       refCode,
@@ -211,6 +216,26 @@ class WalletUseCase {
       createdBy: userId,
       currency,
     });
+
+    const depositBoxNotification = {
+      title: 'New Deposit Request',
+      type: 'DEPOSIT_REQUEST',
+      notifyTo: NotificationType.ROLE_ADMIN,
+      message: `User ${user?.name || user?.email || 'Unknown'} has submitted a new deposit request.`,
+      deepLink: RouteEnum.DepositFX,
+      attachmentId: attachmentId || undefined,
+    };
+
+    // Create notification for Admin role
+    await this._notificationUsecase.createBoxNotification(depositBoxNotification);
+
+    // Create notification for CS role
+    await this._notificationUsecase.createBoxNotification({
+      ...depositBoxNotification,
+      notifyTo: NotificationType.ROLE_CS,
+    });
+
+    return depositRequest;
   }
 
   async createDepositRequestWithUniqueRefCode(
@@ -218,6 +243,7 @@ class WalletUseCase {
     packageFXId: string,
     attachmentData?: AttachmentData,
     currency?: Currency,
+    user?: SessionUser,
   ) {
     let refCode = '';
     let attempts = 0;
@@ -231,7 +257,7 @@ class WalletUseCase {
       }
     } while (await this._walletRepository.isDepositRefCodeExists(refCode));
 
-    return this.createDepositRequest(userId, packageFXId, refCode, attachmentData, currency);
+    return this.createDepositRequest(userId, packageFXId, refCode, attachmentData, currency, user);
   }
 
   async getTotalRequestedDepositAmount(userId: string) {
@@ -288,6 +314,7 @@ class WalletUseCase {
     newStatus: DepositRequestStatus,
     remark?: string,
     currency?: Currency,
+    // user?: SessionUser,
   ) {
     const depositRequest = await this._walletRepository.findDepositRequestById(id);
 
@@ -361,7 +388,93 @@ class WalletUseCase {
       await this._walletRepository.increaseWalletBalance(paymentWallet.id, amount);
     }
 
-    return this._walletRepository.updateDepositRequestStatus(id, newStatus, remark);
+    // Update deposit request status
+    const updatedDepositRequest = await this._walletRepository.updateDepositRequestStatus(
+      id,
+      newStatus,
+      remark,
+    );
+
+    // Get user info for notification using user usecase
+    const userInfo = await this._userUseCase.getUserById(depositRequest.userId);
+    if (!userInfo) return updatedDepositRequest;
+
+    // Create email notification for user based on status using email templates
+    // Resolve recipient and display name (fallback to email if name is missing)
+    const userEmail = userInfo.email;
+    const recipient = userEmail;
+    const displayName = userInfo.name || userEmail;
+
+    if (newStatus === DepositRequestStatus.Approved) {
+      // Send legacy in-app notification (kept for backward compatibility)
+      await this._notificationUsecase.createBoxNotification({
+        title: 'Deposit Request Approved',
+        type: 'DEPOSIT_APPROVED',
+        notifyTo: NotificationType.PERSONAL,
+        message: `Your deposit request has been approved successfully.`,
+        deepLink: RouteEnum.WalletDashboard,
+        emails: [userInfo.email],
+      });
+
+      // Load FX amount to populate template variable {{fx_amount}}
+      const fxAmount = Number(
+        (await this._walletRepository.getPackageFXById(depositRequest.packageFXId))?.fxAmount || 0,
+      );
+
+      // Build template variables matching WalletApproveEmailPart
+      const emailPart: WalletApproveEmailPart = {
+        user_id: depositRequest.userId,
+        recipient,
+        user_name: displayName,
+        user_email: userEmail,
+        fx_amount: fxAmount,
+      };
+
+      // Send email using the approved template ID
+      await this._notificationUsecase.sendNotificationWithTemplate(
+        DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID,
+        [emailPart],
+        NotificationType.PERSONAL,
+        'DEPOSIT_APPROVED',
+        'Deposit Request Approved',
+      );
+    } else if (newStatus === DepositRequestStatus.Rejected) {
+      // Send legacy in-app notification (kept for backward compatibility)
+      await this._notificationUsecase.createBoxNotification({
+        title: 'Deposit Request Rejected',
+        type: 'DEPOSIT_REJECTED',
+        notifyTo: NotificationType.PERSONAL,
+        message: `Your deposit request has been rejected. ${remark ? `Reason: ${remark}` : ''}`,
+        deepLink: RouteEnum.WalletDashboard,
+        emails: [userInfo.email],
+      });
+
+      // Load FX amount to populate template variable {{fx_amount}}
+      const fxAmount = Number(
+        (await this._walletRepository.getPackageFXById(depositRequest.packageFXId))?.fxAmount || 0,
+      );
+
+      // Build template variables matching WalletRejectEmailPart (includes {{rejection_reason}})
+      const emailPart: WalletRejectEmailPart = {
+        user_id: depositRequest.userId,
+        recipient,
+        user_name: displayName,
+        user_email: userEmail,
+        fx_amount: fxAmount,
+        rejection_reason: remark || 'No reason provided',
+      };
+
+      // Send email using the rejected template ID
+      await this._notificationUsecase.sendNotificationWithTemplate(
+        DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID,
+        [emailPart],
+        NotificationType.PERSONAL,
+        'DEPOSIT_REJECTED',
+        'Deposit Request Rejected',
+      );
+    }
+
+    return updatedDepositRequest;
   }
 }
 

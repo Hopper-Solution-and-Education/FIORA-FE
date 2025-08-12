@@ -1,0 +1,141 @@
+'use client';
+
+import { Skeleton } from '@/components/ui/skeleton';
+import { notFound, useParams, useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import ConfirmExitDialog from '../../../../components/common/organisms/ConfirmExitDialog';
+import { useFaqUpsert } from '../../hooks/useFaqUpsert';
+import FaqCategoryCreationDialog, {
+  FaqCategoryFormValues,
+} from '../organisms/FaqCategoryCreationDialog';
+import FaqForm, { FaqFormValues } from '../organisms/FaqForm';
+
+const EditFaqPage: React.FC = () => {
+  const { id } = useParams() as { id: string };
+
+  const router = useRouter();
+
+  const {
+    categories,
+    defaultValues,
+    isLoading,
+    isSubmitting,
+    isCreatingCategory,
+    submit,
+    handleCreateCategory,
+    error,
+  } = useFaqUpsert({ faqId: id });
+
+  // Local state for dialog and categories
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = React.useState(false);
+  const [openConfirmExitDialog, setOpenConfirmExitDialog] = useState(false);
+  const [pendingExit, setPendingExit] = useState<(() => void) | null>(null);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  const handleDirtyChange = (dirty: boolean) => setHasChanges(dirty);
+
+  // Open dialog handler
+  const handleOpenCreateCategoryDialog = () => {
+    setIsCategoryDialogOpen(true);
+  };
+
+  // Add new category handler
+  const handleCategoryCreated = (newCategory: FaqCategoryFormValues) => {
+    handleCreateCategory(
+      {
+        name: newCategory.name,
+        description: newCategory.description || '',
+      },
+      () => {
+        setIsCategoryDialogOpen(false);
+      },
+    );
+  };
+
+  // Warn on hard reload/tab close with native prompt
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!hasChanges) return;
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasChanges]);
+
+  // Intercept F5 / Ctrl+R to show custom confirm dialog
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!hasChanges) return;
+      const isReload = e.key === 'F5' || (e.key.toLowerCase() === 'r' && (e.ctrlKey || e.metaKey));
+      if (!isReload) return;
+      e.preventDefault();
+      setPendingExit(() => () => window.location.reload());
+      setOpenConfirmExitDialog(true);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [hasChanges]);
+
+  if (isLoading) {
+    return (
+      <div className="p-6 space-y-4">
+        <Skeleton className="w-full h-96" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return notFound();
+  }
+
+  return (
+    <main className="px-8">
+      <div>
+        {/* Page Header */}
+        <div className="border-b pb-4">
+          <h1 className="text-2xl font-bold text-gray-900">Edit FAQ</h1>
+        </div>
+
+        <FaqForm
+          defaultValues={defaultValues as FaqFormValues}
+          categories={categories}
+          onSubmit={async (values) => {
+            await submit(values);
+            router.push(`/helps-center/faqs/details/${id}`);
+          }}
+          onCancel={() => {
+            if (hasChanges) {
+              setPendingExit(() => () => router.push(`/helps-center/faqs/details/${id}`));
+              setOpenConfirmExitDialog(true);
+            } else {
+              router.push(`/helps-center/faqs/details/${id}`);
+            }
+          }}
+          isSubmitting={isSubmitting}
+          onOpenCreateCategoryDialog={handleOpenCreateCategoryDialog}
+          onDirtyChange={handleDirtyChange}
+        />
+      </div>
+      {/* Category Creation Dialog */}
+      <FaqCategoryCreationDialog
+        open={isCategoryDialogOpen}
+        onOpenChange={setIsCategoryDialogOpen}
+        onCategoryCreated={handleCategoryCreated}
+        isSubmitting={isCreatingCategory}
+      />
+
+      <ConfirmExitDialog
+        open={openConfirmExitDialog}
+        onOpenChange={setOpenConfirmExitDialog}
+        onConfirmExit={() => {
+          setOpenConfirmExitDialog(false);
+          (pendingExit || (() => router.push('/helps-center/faqs')))();
+        }}
+        onCancelExit={() => setOpenConfirmExitDialog(false)}
+      />
+    </main>
+  );
+};
+
+export default EditFaqPage;

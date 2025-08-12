@@ -3,11 +3,11 @@
 
 import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import { Session, useSession } from 'next-auth/react';
-import { notFound } from 'next/navigation';
 import { ReactNode } from 'react';
 
 import Loading from '@/components/common/atoms/Loading';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { notFound } from 'next/navigation';
 
 interface ModuleAccessLayoutProps {
   featureFlag?: FeatureFlags;

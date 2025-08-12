@@ -9,6 +9,10 @@ import {
   GetNotificationsPaginatedUseCase,
   IGetNotificationsPaginatedUseCase,
 } from '../domain/usecase';
+import {
+  GetFilterOptionsUseCase,
+  IGetFilterOptionsUseCase,
+} from '../domain/usecase/GetFilterOptionsUseCase';
 import { NOTIFICATION_DASHBOARD_TYPES } from './notificationDashboardDIContainer.type';
 
 const notificationDashboardContainer = new Container();
@@ -38,6 +42,12 @@ notificationDashboardContainer
     NOTIFICATION_DASHBOARD_TYPES.IGetNotificationsPaginatedUseCase,
   )
   .to(GetNotificationsPaginatedUseCase)
+  .inSingletonScope();
+
+// Bind Filter Options UseCase
+notificationDashboardContainer
+  .bind<IGetFilterOptionsUseCase>(NOTIFICATION_DASHBOARD_TYPES.IGetFilterOptionsUseCase)
+  .to(GetFilterOptionsUseCase)
   .inSingletonScope();
 
 export { notificationDashboardContainer };

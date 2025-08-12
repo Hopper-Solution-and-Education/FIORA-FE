@@ -28,4 +28,6 @@ export interface INotificationRepository {
   getEmailNotificationLogs(notificationId: string): Promise<EmailNotificationLogs[]>;
   createBoxNotification(input: CreateBoxNotificationInput): Promise<Notification>;
   getNotificationFilterOptions(): Promise<NotificationFilterOptions>;
+  markReadNotification(id: string): Promise<any>;
+  checkIfNotificationBelongToUser(id: string, userId: string): Promise<boolean>;
 }

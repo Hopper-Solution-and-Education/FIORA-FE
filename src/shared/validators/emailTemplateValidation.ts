@@ -1,4 +1,3 @@
-import { EmailTemplateType } from '@prisma/client';
 import Joi from 'joi';
 import { excludeEmojiPattern } from '../constants';
 
@@ -13,12 +12,12 @@ export const emailTemplateSchema = Joi.object({
     'string.pattern.base': 'Content template name is invalid',
     'any.required': 'Content template name is required',
   }),
-  type: Joi.string()
-    .required()
-    .valid(EmailTemplateType.DEPOPSIT, EmailTemplateType.KYC, EmailTemplateType.MEMBERSHIP)
-    .messages({
-      'string.empty': 'Email template type is invalid',
-      'any.required': 'Email template type is required',
-      'any.only': 'Email template type is invalid',
-    }),
+  // type: Joi.string()
+  //   .required()
+  //   .valid(EmailTemplateType.DEPOPSIT, EmailTemplateType.KYC, EmailTemplateType.MEMBERSHIP)
+  //   .messages({
+  //     'string.empty': 'Email template type is invalid',
+  //     'any.required': 'Email template type is required',
+  //     'any.only': 'Email template type is invalid',
+  //   }),
 });

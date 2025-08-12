@@ -3,10 +3,11 @@ import { TableCell, TableRow } from '@/components/ui/table';
 import { formatDateTime } from '@/shared/lib/formatDateTime';
 import NotificationActionButton from '../atoms/NotificationActionButton';
 import NotificationChannelBadge from '../atoms/NotificationChannelBadge';
-import NotificationRecipientsPopover from '../atoms/NotificationRecipientsPopover';
+import NotificationRecipientsCell from '../atoms/NotificationRecipientsCell';
 import NotificationStatusBadge from '../atoms/NotificationStatusBadge';
 import NotificationTypeBadge from '../atoms/NotificationTypeBadge';
 import { NotificationDashboardTableData } from '../types/setting.type';
+import { getAlignClass } from '../utils/convertTableUtils';
 
 interface NotificationDashboardTableRowProps {
   data: NotificationDashboardTableData;
@@ -20,27 +21,29 @@ const NotificationDashboardTableRow = ({
   index,
 }: NotificationDashboardTableRowProps) => {
   return (
-    <TableRow className="hover:bg-gray-50 transition-colors">
+    <TableRow className="transition-colors">
       {columns.map((col) => {
+        const alignClass = getAlignClass(col);
+
         switch (col) {
           case 'No.':
             return (
               <TableCell
                 key={col}
-                className="text-center font-semibold text-blue-600 dark:text-blue-400"
+                className={`font-semibold text-blue-600 dark:text-blue-400 ${alignClass}`}
               >
                 {index + 1}
               </TableCell>
             );
           case 'Send Date':
             return (
-              <TableCell key={col} className="text-center">
+              <TableCell key={col} className={`truncate max-w-[180px] ${alignClass}`}>
                 {formatDateTime(data.sendDate)}
               </TableCell>
             );
           case 'Notify To': {
             return (
-              <TableCell key={col} className="text-center">
+              <TableCell key={col} className={alignClass}>
                 <Badge
                   variant="secondary"
                   className={`hover:bg-blue-100 bg-blue-100 text-blue-700`}
@@ -54,7 +57,7 @@ const NotificationDashboardTableRow = ({
             return (
               <TableCell
                 key={col}
-                className="text-left max-w-[180px] truncate"
+                className={`max-w-[180px] truncate ${alignClass}`}
                 title={data.subject}
               >
                 {data.subject}
@@ -62,43 +65,37 @@ const NotificationDashboardTableRow = ({
             );
           case 'Recipients':
             return (
-              <TableCell key={col} className="text-center">
-                <NotificationRecipientsPopover recipients={data.recipients}>
-                  <span className="underline underline-offset-2 cursor-pointer">
-                    {typeof data.recipients === 'string'
-                      ? data.recipients
-                      : `${data.recipients.length} emails`}
-                  </span>
-                </NotificationRecipientsPopover>
+              <TableCell key={col} className={alignClass}>
+                <NotificationRecipientsCell recipients={data.recipients} />
               </TableCell>
             );
           case 'Sender':
             return (
-              <TableCell key={col} className="text-center">
+              <TableCell key={col} className={alignClass}>
                 {data.sender}
               </TableCell>
             );
           case 'Notify Type':
             return (
-              <TableCell key={col} className="text-center">
+              <TableCell key={col} className={alignClass}>
                 <NotificationTypeBadge notifyType={data.notifyType} />
               </TableCell>
             );
           case 'Channel':
             return (
-              <TableCell key={col} className="text-center">
+              <TableCell key={col} className={alignClass}>
                 <NotificationChannelBadge channel={data.channel} />
               </TableCell>
             );
           case 'Status':
             return (
-              <TableCell key={col} className="text-center">
+              <TableCell key={col} className={alignClass}>
                 <NotificationStatusBadge status={data.status} />
               </TableCell>
             );
           case 'Action':
             return (
-              <TableCell key={col} className="text-center">
+              <TableCell key={col} className={alignClass}>
                 <NotificationActionButton notificationId={data.id} />
               </TableCell>
             );

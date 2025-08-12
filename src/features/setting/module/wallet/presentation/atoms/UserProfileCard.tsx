@@ -45,7 +45,7 @@ const UserProfileCard = ({ user, userId, className }: UserProfileCardProps) => {
         <TooltipTrigger asChild>
           <div
             className={cn(
-              'flex items-center gap-2 justify-center cursor-pointer transition-all duration-200 hover:opacity-80 group',
+              'flex items-center gap-2 cursor-pointer transition-all duration-200 hover:opacity-80 group',
               className,
             )}
           >

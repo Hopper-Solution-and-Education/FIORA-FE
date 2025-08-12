@@ -1,10 +1,11 @@
-import { AttachmentType } from '../constants/attachmentConstants';
+import { AttachmentType } from '../../data/module/attachment/constants/attachmentConstants';
 
 export interface AttachmentData {
   type: AttachmentType;
   size: number;
   url: string;
   path: string;
+  file?: File;
 }
 
 export interface CreateDepositRequestData {

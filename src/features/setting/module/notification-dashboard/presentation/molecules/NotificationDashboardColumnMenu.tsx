@@ -15,7 +15,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { resetColumns, toggleColumn, updateColumnIndex } from '../../slices';
 import { saveColumnConfigToStorage } from '../../slices/persist';
 import SortableColumnMenuItem from '../atoms/SortableColumnMenuItem';
@@ -24,6 +24,11 @@ import { NotificationDashboardTableColumnKey } from '../types/setting.type';
 const NotificationDashboardColumnMenu = () => {
   const dispatch = useAppDispatch();
   const columnConfig = useAppSelector((state) => state.notificationDashboard.columnConfig);
+
+  // Sync column config with localStorage whenever it changes
+  useEffect(() => {
+    saveColumnConfigToStorage(columnConfig);
+  }, [columnConfig]);
 
   // Compute visible columns (isVisible = true), sorted by index
   const shownColumns = useMemo(
@@ -53,26 +58,17 @@ const NotificationDashboardColumnMenu = () => {
     }),
   );
 
-  // Toggle column visibility and persist new config to localStorage
+  // Toggle column visibility
   const handleToggleColumn = (colKey: NotificationDashboardTableColumnKey) => {
     dispatch(toggleColumn(colKey));
-    setTimeout(() => {
-      saveColumnConfigToStorage({
-        ...columnConfig,
-        [colKey]: { ...columnConfig[colKey], isVisible: !columnConfig[colKey].isVisible },
-      });
-    }, 0);
   };
 
-  // Reset to default config and persist to localStorage
+  // Reset to default config
   const handleResetColumns = () => {
     dispatch(resetColumns());
-    setTimeout(() => {
-      saveColumnConfigToStorage(JSON.parse(JSON.stringify(columnConfig)));
-    }, 0);
   };
 
-  // Handle drag & drop to reorder columns, then persist new order to localStorage
+  // Handle drag & drop to reorder columns
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -88,14 +84,6 @@ const NotificationDashboardColumnMenu = () => {
     const payload = updated.map((key, idx) => ({ key, newIndex: idx }));
 
     dispatch(updateColumnIndex(payload));
-
-    setTimeout(() => {
-      const newConfig = { ...columnConfig };
-      payload.forEach(({ key, newIndex }) => {
-        newConfig[key] = { ...newConfig[key], index: newIndex };
-      });
-      saveColumnConfigToStorage(newConfig);
-    }, 0);
   };
 
   // Render the column menu UI
