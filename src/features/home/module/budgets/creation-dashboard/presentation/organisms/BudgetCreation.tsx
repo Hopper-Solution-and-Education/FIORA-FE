@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { Loading } from '@/components/common/atoms';
 import { useParams } from 'next/navigation';
 import React, { useEffect } from 'react';

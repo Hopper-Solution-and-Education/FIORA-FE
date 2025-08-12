@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { SelectField } from '@/components/common/forms';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import useDataFetch from '@/shared/hooks/useDataFetcher';

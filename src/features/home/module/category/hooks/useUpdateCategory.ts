@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { setDeleteConfirmOpen, setSelectedCategory } from '@/features/home/module/category/slices';
 import { fetchCategories } from '@/features/home/module/category/slices/actions';
 import { findCategoryById } from '@/features/home/module/category/slices/utils';

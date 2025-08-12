@@ -35,7 +35,6 @@ const AvailableLimitDisplay: React.FC<AvailableLimitDisplayProps> = ({
         trigger('availableLimit');
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [balance, limit, type]);
 
   useEffect(() => {

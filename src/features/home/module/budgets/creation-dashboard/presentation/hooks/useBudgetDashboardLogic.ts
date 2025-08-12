@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
