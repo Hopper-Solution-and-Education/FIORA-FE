@@ -1,37 +1,20 @@
 import { prisma } from '@/config';
-import { BadRequestError } from '@/shared/lib';
-import { EmailTemplate, EmailTemplateType, Prisma, emailType } from '@prisma/client';
+import { EmailTemplate, EmailTemplateType, Prisma } from '@prisma/client';
 import { IEmailTemplateRepository } from '../../repositories/emailTemplateRepository.interface';
 
 class EmailTemplateRepository implements IEmailTemplateRepository {
-  async createEmailTemplate(
-    data: Prisma.EmailTemplateCreateInput,
-    type: emailType,
-  ): Promise<EmailTemplateType> {
-    return prisma.$transaction(async (tx) => {
-      const newEmailTemplateType: Prisma.EmailTemplateTypeCreateInput = {
-        createdAt: new Date(),
-        createdBy: data.createdBy,
-        updatedAt: new Date(),
-        updatedBy: null,
-        EmailTemplate: { connect: { id: String(data.id) } },
-        id: crypto.randomUUID(),
-        type: type,
-      };
-      await tx.emailTemplate.create({ data: { ...data } });
-
-      return await tx.emailTemplateType.create({
-        data: { ...newEmailTemplateType },
-        include: {
-          EmailTemplate: true,
-        },
-      });
+  async createEmailTemplate(data: Prisma.EmailTemplateCreateInput): Promise<EmailTemplate> {
+    return await prisma.emailTemplate.create({
+      data: { ...data },
+      include: {
+        EmailTemplateType: true,
+      },
     });
   }
   async getEmailTemplate(): Promise<any[]> {
-    return await prisma.emailTemplateType.findMany({
+    return await prisma.emailTemplate.findMany({
       include: {
-        EmailTemplate: true,
+        EmailTemplateType: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -44,25 +27,28 @@ class EmailTemplateRepository implements IEmailTemplateRepository {
     userId: string,
     data: Partial<EmailTemplate>,
   ): Promise<EmailTemplate> {
-    const emailTemplate = await prisma.emailTemplate.findUnique({
-      where: { id },
-      select: { EmailTemplateType: true, isActive: true },
-    });
-
-    if (!emailTemplate || emailTemplate.isActive == false) {
-      throw new BadRequestError('Email template not found!');
-    }
-    data.updatedBy = userId;
     const updatedCategory = await prisma.emailTemplate.update({
       where: { id },
-      data,
+      data: {
+        name: data.name,
+        content: data.content,
+        updatedBy: userId,
+      },
+      include: {
+        EmailTemplateType: true,
+      },
     });
 
     return updatedCategory;
   }
 
   async findEmailTemplateById(id: string): Promise<EmailTemplate | null> {
-    return await prisma.emailTemplate.findUnique({ where: { id } });
+    return await prisma.emailTemplate.findUnique({
+      where: { id },
+      include: {
+        EmailTemplateType: true,
+      },
+    });
   }
 
   async delete(id: string): Promise<EmailTemplate | null> {
@@ -70,27 +56,38 @@ class EmailTemplateRepository implements IEmailTemplateRepository {
   }
 
   async findEmailTemplateByTypeOrName(
-    type: emailType,
+    emailTemplateType: string,
     name: string,
   ): Promise<EmailTemplate | null> {
-    const result = await prisma.emailTemplateType.findFirst({
+    const result = await prisma.emailTemplate.findFirst({
       where: {
-        AND: [{ type }, { EmailTemplate: { name } }],
-        EmailTemplate: {
-          isActive: true,
-        },
+        AND: [{ emailtemplatetypeid: emailTemplateType }, { name }],
       },
       include: {
-        EmailTemplate: true,
+        EmailTemplateType: true,
       },
     });
 
-    return result?.EmailTemplate || null;
+    return result || null;
   }
 
   async checkTemplateDefault(): Promise<EmailTemplate | null> {
     return await prisma.emailTemplate.findFirst({
       where: { isActive: true },
+    });
+  }
+
+  async checkTemplateType(id: string): Promise<EmailTemplateType | null> {
+    return await prisma.emailTemplateType.findUnique({
+      where: { id },
+    });
+  }
+
+  async getEmailTemplateType(): Promise<any[]> {
+    return await prisma.emailTemplateType.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 }
