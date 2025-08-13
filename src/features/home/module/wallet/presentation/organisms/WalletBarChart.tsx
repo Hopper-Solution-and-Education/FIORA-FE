@@ -4,6 +4,7 @@ import PositiveAndNegativeBarChartV2 from '@/components/common/charts/positive-n
 import { TwoSideBarItem } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
 import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import { Icons } from '@/components/Icon';
+import { CURRENCY } from '@/shared/constants';
 import { COLORS } from '@/shared/constants/chart';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppSelector } from '@/store';
@@ -15,6 +16,7 @@ const WalletBarChart = () => {
   const { wallets, loading, filterCriteria, frozenAmount } = useAppSelector(
     (state) => state.wallet,
   );
+
   const { filters, search } = filterCriteria;
   const { formatCurrency } = useCurrencyFormatter();
 
@@ -53,8 +55,8 @@ const WalletBarChart = () => {
       data={chartData}
       title=" "
       showTotal={false}
-      currency="FX"
-      labelFormatter={(value) => formatCurrency(value, 'FX')}
+      currency={CURRENCY.FX}
+      labelFormatter={(value) => formatCurrency(value, CURRENCY.FX)}
       legendItems={[
         { name: 'Positive', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
         { name: 'Negative', color: COLORS.DEPS_DANGER.LEVEL_1 },

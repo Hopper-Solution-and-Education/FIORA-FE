@@ -110,7 +110,7 @@ const MetricCard = ({
       </CardHeader>
       <CardContent>
         <div className={cn('text-xl sm:text-2xl font-bold', getCardColor())}>
-          {formatCurrency(value, currency || CURRENCY.USD)}
+          {formatCurrency(value, CURRENCY.FX)}
         </div>
         {(description || trend) && (
           <div className="mt-1 flex items-center text-[10px] sm:text-xs">

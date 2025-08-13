@@ -55,7 +55,9 @@ const mapAccountToBarItem = (
 
   // Convert value based on currency
   const convertedValue =
-    (getExchangeRate(account.baseCurrency || CURRENCY.USD, targetCurrency) || 1) * totalValue;
+    Number(
+      (getExchangeRate(account.baseCurrency || CURRENCY.USD, targetCurrency) || 1).toFixed(2),
+    ) * totalValue;
 
   return {
     id: account.id,
