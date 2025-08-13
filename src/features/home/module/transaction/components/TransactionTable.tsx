@@ -124,7 +124,6 @@ const TransactionTable = () => {
         observer.unobserve(currentToggleRef);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isTransactionLoading,
     paginationParams.currentPage,
@@ -137,7 +136,7 @@ const TransactionTable = () => {
       debounce((value: string) => {
         handleFilterChange({ ...filterCriteria, search: String(value).trim() });
       }, 1000),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [filterCriteria],
   );
 
@@ -169,7 +168,6 @@ const TransactionTable = () => {
         setDisplayData((prev) => [...prev, ...mappedData]);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionsResponse]);
 
   useEffect(() => {

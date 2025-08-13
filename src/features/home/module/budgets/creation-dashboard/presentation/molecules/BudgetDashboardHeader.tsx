@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { ButtonCreation } from '@/components/common/atoms';
 import { SearchBar } from '@/components/common/organisms';
 import useDebounce from '@/shared/hooks/useDebounce';

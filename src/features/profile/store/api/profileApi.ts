@@ -1,4 +1,5 @@
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { UserRole } from '@/shared/constants/userRole';
 import type { Response } from '@/shared/types/Common.types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
@@ -11,6 +12,7 @@ export type UserProfile = {
   phone?: string | null;
   address?: string | null;
   birthday?: string | null;
+  role: UserRole;
 };
 
 export const profileApi = createApi({

@@ -68,14 +68,9 @@ const ToSelectField: React.FC<ToSelectProps> = ({
     if (transactionType === 'Income' || transactionType === 'Transfer') {
       // For Income/Transfer: To should be Accounts (where money goes)
       destinationData = supportingData.toAccounts || [];
-      console.log(
-        `ToSelect ${transactionType}: Found ${destinationData.length} accounts`,
-        destinationData,
-      );
     } else if (transactionType === 'Expense') {
       // For Expense: To should be Categories (expense categories)
       destinationData = supportingData.toCategories || [];
-      console.log(`ToSelect Expense: Found ${destinationData.length} categories`, destinationData);
     }
 
     // Build options from destination data

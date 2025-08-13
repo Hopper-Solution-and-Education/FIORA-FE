@@ -41,7 +41,6 @@ const Transaction = () => {
     }
 
     dispatch(updateFilterCriteria(DEFAULT_TRANSACTION_FILTER_CRITERIA));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return <TransactionPage />;

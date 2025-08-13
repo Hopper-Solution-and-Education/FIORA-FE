@@ -34,7 +34,7 @@ export const DashboardHeading: React.FC = () => {
           );
         }
       }, 1000),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [filterCriteria, productTransaction.pageSize, userId],
   );
 

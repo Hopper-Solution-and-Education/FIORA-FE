@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import PositiveAndNegativeBarChart from '@/components/common/charts/positive-negative-bar-chart';

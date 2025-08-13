@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { uploadToFirebase } from '@/shared/lib';
 import { Currency } from '@/shared/types';
 import { useAppDispatch } from '@/store';
