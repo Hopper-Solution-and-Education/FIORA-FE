@@ -1,7 +1,6 @@
 import prisma from '@/config/prisma/prisma';
 import { exchangeRateRepository } from '@/features/setting/api/infrastructure/repositories/exchangeRateRepository';
 import { Currency, Prisma } from '@prisma/client'; // Import Prisma to use Decimal type
-import { FIXED_NUMBER_OF_DECIMALS } from '../constants';
 
 // Update convertCurrency to handle Prisma.Decimal
 export async function convertCurrency(
@@ -32,7 +31,9 @@ export async function convertCurrency(
     });
 
     if (mappingCurrency) {
-      return Number(amountAsNumber * mappingCurrency.toValue.toNumber());
+      // Use proper rounding to prevent precision loss
+      const result = amountAsNumber * mappingCurrency.toValue.toNumber();
+      return Math.round(result * 100) / 100; // Round to 2 decimal places
     }
 
     const [fromCurrencyData, toCurrencyData] = await Promise.all([
@@ -51,7 +52,8 @@ export async function convertCurrency(
     const response = await exchangeRateRepository.populateRateCache(fromCurrency);
     const conversionRates = response.conversion_rates;
 
-    return Number((amountAsNumber * conversionRates[toCurrency]).toFixed(FIXED_NUMBER_OF_DECIMALS));
+    const result = amountAsNumber * conversionRates[toCurrency];
+    return Math.round(result * 100) / 100;
   } catch (error) {
     throw new Error(error instanceof Error ? error.message : 'Failed to convert currency');
   }
