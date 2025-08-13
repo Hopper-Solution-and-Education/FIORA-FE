@@ -11,6 +11,7 @@ import {
   WalletType,
 } from '@prisma/client';
 import { IWalletRepository } from '../../repositories/walletRepository.interface';
+import { PackageFXWithAttachments } from '../../types/attachmentTypes';
 
 class WalletRepository implements IWalletRepository {
   constructor(private _prisma = prisma) {}
@@ -54,7 +55,48 @@ class WalletRepository implements IWalletRepository {
   async findAllPackageFX(): Promise<PackageFX[]> {
     return this._prisma.packageFX.findMany();
   }
-
+  async findPackageFXPaginated({
+    sortBy = { createdAt: 'desc' },
+    page,
+    limit,
+  }: {
+    sortBy?: Record<string, 'asc' | 'desc'>;
+    page?: number;
+    limit?: number;
+  }): Promise<{ data: PackageFX[]; total: number; page: number; limit: number }> {
+    const safePage = Math.max(1, Number(page) || 1);
+    const safeLimit = Math.max(1, Math.min(Number(limit) || 20, 100));
+    const orderBy: Record<string, 'asc' | 'desc'> = {};
+    Object.entries(sortBy || {}).forEach(([key, value]) => {
+      orderBy[key] = value;
+    });
+    const [packages, total] = await Promise.all([
+      this._prisma.packageFX.findMany({
+        skip: (safePage - 1) * safeLimit,
+        take: safeLimit,
+        orderBy,
+      }),
+      this._prisma.packageFX.count(),
+    ]);
+    const data: PackageFXWithAttachments[] = await Promise.all(
+      packages.map(async (pkg: PackageFX): Promise<PackageFXWithAttachments> => {
+        const attachments: { id: string; url: string }[] =
+          pkg.attachment_id && pkg.attachment_id.length > 0
+            ? await this._prisma.attachment.findMany({
+                where: { id: { in: pkg.attachment_id } },
+                select: { id: true, url: true },
+              })
+            : [];
+        return { ...pkg, attachments };
+      }),
+    );
+    return {
+      data,
+      total,
+      page: safePage,
+      limit: safeLimit,
+    };
+  }
   async getPackageFXById(id: string): Promise<(PackageFX & { attachments?: Attachment[] }) | null> {
     const packageFX = await this._prisma.packageFX.findUnique({ where: { id } });
     if (!packageFX) return null;
@@ -64,7 +106,7 @@ class WalletRepository implements IWalletRepository {
         : [];
     return { ...packageFX, attachments };
   }
-  async createPackageFX(data: Prisma.PackageFXUncheckedCreateInput): Promise<PackageFX> {
+  async createPackageFX(data: Prisma.PackageFXCreateInput): Promise<PackageFX> {
     return this._prisma.packageFX.create({ data });
   }
   async updatePackageFX(
