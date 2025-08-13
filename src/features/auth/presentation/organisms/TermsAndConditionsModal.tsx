@@ -9,10 +9,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { ParsedFaqContent } from '@/features/helps-center/presentation/atoms';
 import { useGetTermsAndConditionsQuery } from '@/features/helps-center/store/api/helpsCenterApi';
 import { DialogClose } from '@radix-ui/react-dialog';
 import { Check, CircleX, Loader2, TriangleAlert } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type TermsAndConditionModalProps = {
   isOpen: boolean;
@@ -41,33 +42,15 @@ const ErrorLoading = () => (
 );
 
 const TermsAndConditionsModal = (props: TermsAndConditionModalProps) => {
-  const { isOpen, onClose, onAccept, onDecline, pdfUrl } = props;
+  const { isOpen, onClose, onAccept, onDecline } = props;
 
   const { data, isLoading: isLoadingTermsAndConditions } = useGetTermsAndConditionsQuery();
 
-  const defaultPdfUrl =
-    'https://firebasestorage.googleapis.com/v0/b/hopper-3d98d.firebasestorage.app/o/terms-and-conditions%2Fterms-and-conditions_1754480165072.pdf?alt=media&token=fcf3c06e-551d-43bc-91d0-1cb2becacd0a';
-
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const pdfUrlToUse = pdfUrl || defaultPdfUrl;
-
-  const handleIframeLoad = () => {
-    setIsLoading(false);
-    setError(null);
-  };
-
-  const handleIframeError = () => {
-    setIsLoading(false);
-    setError('Failed to load PDF document');
-  };
 
   useEffect(() => {
     if (isOpen) {
       setError(null);
-      setIsLoading(true);
     }
   }, [isOpen]);
 
@@ -79,20 +62,11 @@ const TermsAndConditionsModal = (props: TermsAndConditionModalProps) => {
           <DialogDescription>Please read the terms and conditions carefully.</DialogDescription>
         </DialogHeader>
         <div className="h-[70vh] p-0 overflow-x-hidden relative">
-          {(isLoading || isLoadingTermsAndConditions) && <Loading />}
+          {isLoadingTermsAndConditions && <Loading />}
           {error && <ErrorLoading />}
-          <iframe
-            ref={iframeRef}
-            src={data?.content || pdfUrlToUse}
-            className="w-full border-0"
-            title="Terms and Conditions"
-            onLoad={handleIframeLoad}
-            onError={handleIframeError}
-            style={{
-              display: isLoading || isLoadingTermsAndConditions || error ? 'none' : 'block',
-              minHeight: '100%',
-            }}
-          />
+          <div className="p-4">
+            {data?.content && <ParsedFaqContent htmlContent={data?.content} />}
+          </div>
         </div>
 
         <DialogFooter className="w-full h-fit flex flex-row !justify-center items-center gap-5">

@@ -6,6 +6,7 @@ import { useGetProfileQuery } from '@/features/profile/store/api/profileApi';
 import { COLORS } from '@/shared/constants/chart';
 import { globalNavItems, notSignInNavItems } from '@/shared/constants/data';
 import { ICON_SIZE } from '@/shared/constants/size';
+import { UserRole } from '@/shared/constants/userRole';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { getCurrentTierAsyncThunk } from '@/store/actions';
 import { LogOut } from 'lucide-react';
@@ -78,6 +79,12 @@ export function UserNav({ handleSignOut }: UserNavProps) {
     router.push('/membership');
   };
 
+  const profileRole = () => {
+    return profile && profile?.role !== UserRole.USER ? (
+      <p className="text-xs text-red-500">{profile?.role}</p>
+    ) : null;
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -98,6 +105,7 @@ export function UserNav({ handleSignOut }: UserNavProps) {
           </div>
           {profile && (
             <div className="flex flex-col items-start space-y-0.5">
+              {profileRole()}
               {/* truncate and max-w-32 to prevent overflow */}
               <p className="text-sm max-w-32 leading-none truncate group-hover:text-primary">
                 {profile?.name}
