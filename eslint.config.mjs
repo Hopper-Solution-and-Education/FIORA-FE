@@ -66,7 +66,6 @@ const config = [
       '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/no-explicit-any': 'off',
       'import/no-anonymous-default-export': 'off',
-      'react-hooks/exhaustive-deps': 'off',
     },
   },
 ];

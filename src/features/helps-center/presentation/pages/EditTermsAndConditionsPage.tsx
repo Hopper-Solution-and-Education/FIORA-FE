@@ -1,76 +1,117 @@
 'use client';
 
+import { InputField, SelectField } from '@/components/common/forms';
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
-import { uploadToFirebase } from '@/shared/lib';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { useUpdateTermsAndConditionsMutation } from '../../store/api/helpsCenterApi';
-import { FileUploadZone } from '../molecules';
-import WarningDialog from '../molecules/WarningDialog';
+import { Skeleton } from '@/components/ui/skeleton';
+import { notFound, useParams, useRouter } from 'next/navigation';
+import React from 'react';
+import { PostType } from '../../domain/entities/models/faqs';
+import { useFaqEdit } from '../../hooks';
+import { FormField } from '../atoms';
+import { ContentEditor } from '../molecules';
 
-export default function EditTermsAndConditionsPage() {
+const EditTermsAndConditionsPage: React.FC = () => {
+  const { id } = useParams() as { id: string };
+
   const router = useRouter();
-  const [openWarningDialog, setOpenWarningDialog] = useState(false);
 
-  const [isUploading, setIsUploading] = useState(false);
+  const {
+    // Data
+    faqData,
+    formData,
+    errors,
 
-  const [file, setFile] = useState<File | null>(null);
+    // Loading states
+    isLoading,
+    isUpdating,
+    isFormDisabled,
 
-  const handleFileSelect = (file: File) => {
-    setFile(file);
-    setOpenWarningDialog(true);
-  };
+    // Handlers
+    handleFieldChange,
+    handleSubmit,
 
-  const [updateTermsAndConditions, { isLoading: isUpdating }] =
-    useUpdateTermsAndConditionsMutation();
+    error,
+  } = useFaqEdit({ faqId: id });
 
-  const isValidating = false;
-
-  const onSubmit = async () => {
-    try {
-      if (file) {
-        setIsUploading(true);
-        const url = await uploadToFirebase({
-          file,
-          path: 'terms-and-conditions',
-          fileName: 'terms-and-conditions',
-        });
-        updateTermsAndConditions({ url });
-        setIsUploading(false);
-        toast.success('Terms and Conditions updated successfully');
-        router.push('/helps-center/terms-and-conditions');
-      }
-    } catch (error) {
-      console.log('🚀 ~ onSubmit ~ error:', error);
-    }
-  };
-  return (
-    <div className="p-6">
-      <div className="p-6 border border-gray-500 rounded-lg">
-        <FileUploadZone
-          onFileSelect={handleFileSelect}
-          isLoading={isValidating}
-          label="Accepts PDF files up to 5MB"
-          accept={{
-            'application/pdf': ['.pdf'],
-          }}
-        />
-        <DefaultSubmitButton
-          isSubmitting={isUpdating}
-          // onSubmit={() => router.push('/helps-center/terms-and-conditions')}
-          onBack={() => router.back()}
-        />
+  if (isLoading) {
+    return (
+      <div className="p-6 space-y-4">
+        <Skeleton className="w-full h-96" />
       </div>
+    );
+  }
 
-      <WarningDialog
-        open={openWarningDialog}
-        onClose={() => setOpenWarningDialog(false)}
-        onConfirm={onSubmit}
-        isLoading={isUpdating || isUploading}
-        title="Replace Existing File"
-        content="A Terms and Conditions file already exists. Do you want to replace it with the new one?"
-      />
-    </div>
+  if (error || !faqData) {
+    return notFound();
+  }
+
+  return (
+    <main className="p-6">
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* Page Header */}
+        <div className="border-b pb-4">
+          <h1 className="text-2xl font-bold text-gray-900">Edit Terms and Conditions</h1>
+        </div>
+
+        {/* Form Content */}
+        <div>
+          {/* Basic Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <InputField
+              key="title"
+              name="title"
+              label="Title"
+              placeholder="Enter Terms and Conditions title"
+              value={formData.title}
+              onChange={(value) => handleFieldChange('title', value)}
+              required
+              error={errors.title as any}
+              disabled={isFormDisabled}
+            />
+
+            <SelectField
+              options={[{ label: 'Terms and Conditions', value: PostType.TNC }]}
+              key="categoryId"
+              name="categoryId"
+              label="Category"
+              value={PostType.TNC}
+              disabled={true}
+              required
+            />
+          </div>
+          {/* Description */}
+          <div className="mb-6">
+            <FormField
+              id="description"
+              label="Description"
+              type="textarea"
+              value={formData.description}
+              onChange={(value) => handleFieldChange('description', value)}
+              placeholder="Brief description (optional)"
+              error={errors.description}
+              disabled={isFormDisabled}
+            />
+          </div>
+
+          {/* Content Editor */}
+          <ContentEditor
+            value={formData.content}
+            onChange={(value) => handleFieldChange('content', value)}
+            error={errors.content}
+            disabled={isFormDisabled}
+            showPreview={true}
+          />
+
+          <DefaultSubmitButton
+            isSubmitting={isUpdating}
+            disabled={isFormDisabled}
+            onSubmit={() => handleSubmit(() => router.push(`/helps-center/terms-and-conditions`))}
+            onBack={() => router.push(`/helps-center/terms-and-conditions`)}
+          />
+        </div>
+      </div>
+    </main>
   );
-}
+};
+
+export default EditTermsAndConditionsPage;

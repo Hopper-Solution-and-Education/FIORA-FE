@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import { DynamicFilterGroup, DynamicFilterRule, FilterOperator } from '@/shared/types/filter.types';

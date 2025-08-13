@@ -1,3 +1,5 @@
+import { UserRole } from '@/shared/constants/userRole';
+
 export type UserProfile = {
   id: string;
   name: string | null;
@@ -7,6 +9,7 @@ export type UserProfile = {
   phone?: string | null;
   address?: string | null;
   birthday?: string | null;
+  role?: UserRole;
 };
 
 export type UpdateProfileRequest = Partial<Omit<UserProfile, 'id' | 'email'>> & {

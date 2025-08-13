@@ -64,7 +64,7 @@ export default function FinancialAccount({
 
       setIsModalOpen(true);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [setAccountsMap, accountsMap],
   );
 

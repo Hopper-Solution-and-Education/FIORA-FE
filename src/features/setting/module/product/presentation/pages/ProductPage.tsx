@@ -37,7 +37,6 @@ const ProductPage = () => {
         }),
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const confirmDelete = async () => {
@@ -59,7 +58,6 @@ const ProductPage = () => {
 
   const handleClickButtonCreation = useCallback(() => {
     router.push('/setting/product/create');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

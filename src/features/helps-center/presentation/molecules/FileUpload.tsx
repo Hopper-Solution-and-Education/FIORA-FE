@@ -185,7 +185,7 @@ const FileUpload = ({
 
             {/* Upload Zone */}
             <div
-              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+              className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
                 isDragOver
                   ? 'border-primary bg-primary/5'
                   : 'border-gray-300 hover:border-primary/50'
@@ -193,41 +193,28 @@ const FileUpload = ({
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
+              onClick={() => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.multiple = allowMultiple;
+                input.accept = acceptedTypes.join(',');
+                input.onchange = (e) => {
+                  const target = e.target as HTMLInputElement;
+                  handleFileSelect(target.files);
+                };
+                input.click();
+              }}
             >
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <div className="flex justify-center">
                   <Upload className="h-8 w-8 text-gray-400" />
                 </div>
-                <div>
-                  <p className="text-sm font-medium">
-                    {isDragOver ? 'Drop files here' : 'Drag and drop files here'}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">or click to browse files</p>
-                </div>
+                <div className="text-sm font-medium">Attachment</div>
                 <p className="text-xs text-gray-500">
                   Accepts {getAcceptedTypesText()} up to {(maxFileSize / (1024 * 1024)).toFixed(1)}
                   MB each
                   {maxFiles > 1 && ` (max ${maxFiles} files)`}
                 </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.multiple = allowMultiple;
-                    input.accept = acceptedTypes.join(',');
-                    input.onchange = (e) => {
-                      const target = e.target as HTMLInputElement;
-                      handleFileSelect(target.files);
-                    };
-                    input.click();
-                  }}
-                  disabled={disabled || files.length >= maxFiles}
-                >
-                  Choose Files
-                </Button>
               </div>
             </div>
 
