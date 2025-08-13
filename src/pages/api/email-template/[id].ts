@@ -3,7 +3,6 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
-import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { validateBody } from '@/shared/utils/validate';
 import { editEmailTemplateDto } from '@/shared/validators/emailTemplateValidation';
@@ -14,24 +13,18 @@ export const maxDuration = 30; // 30 seconds
 export default withAuthorization({
   PUT: ['Admin', 'CS'],
   DELETE: ['Admin', 'CS'],
-})((req: NextApiRequest, res: NextApiResponse, userId: string) =>
-  errorHandler(
-    async (request, response) => {
-      switch (request.method) {
-        case 'PUT':
-          return PUT(request, response, userId);
-        case 'DELETE':
-          return DELETE(request, response);
-        default:
-          return response
-            .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-            .json({ error: Messages.METHOD_NOT_ALLOWED });
-      }
-    },
-    req,
-    res,
-  ),
-);
+})((request: NextApiRequest, response: NextApiResponse, userId: string) => {
+  switch (request.method) {
+    case 'PUT':
+      return PUT(request, response, userId);
+    case 'DELETE':
+      return DELETE(request, response);
+    default:
+      return response
+        .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+        .json({ error: Messages.METHOD_NOT_ALLOWED });
+  }
+});
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
   const { isActive, content, name } = req.body;
   const { id } = req.query;

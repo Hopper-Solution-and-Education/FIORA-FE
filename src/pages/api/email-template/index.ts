@@ -3,7 +3,6 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
-import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { validateBody } from '@/shared/utils/validate';
 import { createEmailTemplateDto } from '@/shared/validators/emailTemplateValidation';
@@ -14,24 +13,18 @@ export const maxDuration = 30; // 30 seconds
 export default withAuthorization({
   GET: ['Admin', 'CS'],
   POST: ['Admin', 'CS'],
-})((req: NextApiRequest, res: NextApiResponse, userId: string) =>
-  errorHandler(
-    async (request, response) => {
-      switch (request.method) {
-        case 'POST':
-          return POST(request, response, userId);
-        case 'GET':
-          return GET(response);
-        default:
-          return response
-            .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-            .json({ error: Messages.METHOD_NOT_ALLOWED });
-      }
-    },
-    req,
-    res,
-  ),
-);
+})((request: NextApiRequest, response: NextApiResponse, userId: string) => {
+  switch (request.method) {
+    case 'POST':
+      return POST(request, response, userId);
+    case 'GET':
+      return GET(response);
+    default:
+      return response
+        .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+        .json({ error: Messages.METHOD_NOT_ALLOWED });
+  }
+});
 
 export async function GET(res: NextApiResponse) {
   const emailTemplates = await emailTemplateRepository.getEmailTemplate();
