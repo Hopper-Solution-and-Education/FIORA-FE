@@ -21,16 +21,6 @@ export const useGetIconLabel = (icon: string): string => {
   );
 };
 
-export const convertVNDToUSD = (amountVND: number): number => {
-  const exchangeRate = 25000; // 1 USD = 25000 VND
-  return amountVND / exchangeRate;
-};
-
-export const convertUSDToVND = (amountUSD: number): number => {
-  const exchangeRate = 25000; // 1 USD = 25000 VND
-  return amountUSD * exchangeRate;
-};
-
 export const calculateAvailableLimit = (limit: string, balance: string): string => {
   const limitValue = Number.parseFloat(limit) || 0;
   const balanceValue = Number.parseFloat(balance) || 0;

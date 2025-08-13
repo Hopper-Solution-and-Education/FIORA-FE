@@ -21,7 +21,8 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
   const chartRef = useRef<HTMLDivElement>(null);
   const [showNavigateDialog, setShowNavigateDialog] = useState(false);
   const { accounts, refresh, filterCriteria } = useAppSelector((state) => state.account);
-  const { formatCurrency } = useCurrencyFormatter();
+  const { currency } = useAppSelector((state) => state.settings);
+  const { formatCurrency, getExchangeRate } = useCurrencyFormatter();
 
   useEffect(() => {
     dispatch(fetchAccounts(filterCriteria));
@@ -30,7 +31,7 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
 
   const chartData: BarItem[] = useMemo(() => {
     if (!accounts.data) return [];
-    return mapAccountsToBarItems(accounts.data, accounts.data[0].currency);
+    return mapAccountsToBarItems(accounts.data, currency, getExchangeRate);
   }, [accounts.data]);
 
   type Depth = 0 | 1 | 2;
@@ -89,8 +90,12 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
           <PositiveAndNegativeBarChart
             title={module === MODULE.ACCOUNT ? 'Accounts' : undefined}
             data={chartData}
-            xAxisFormatter={(value) => formatCurrency(value, accounts.data?.[0]?.currency || '')}
-            currency={accounts.data?.[0]?.currency || ''}
+            xAxisFormatter={(value) =>
+              formatCurrency(value, currency, {
+                applyExchangeRate: false,
+              })
+            }
+            currency={currency}
             levelConfig={levelConfig}
             callback={module === MODULE.ACCOUNT ? handleDisplayDetail : undefined}
             header={
