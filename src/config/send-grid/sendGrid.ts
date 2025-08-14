@@ -169,7 +169,7 @@ export const sendEmailCronJob = async (
     return true;
   } catch (error) {
     console.error('Failed to send email', error);
-    throw new InternalServerError('Failed to send email');
+    return false;
   }
 };
 
