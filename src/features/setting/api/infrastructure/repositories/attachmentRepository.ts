@@ -1,6 +1,6 @@
-import { Prisma, Attachment } from '@prisma/client';
-import { IAttachmentRepository } from '../../repositories/attachmentRepository.interface';
 import { prisma } from '@/config';
+import { Attachment, Prisma } from '@prisma/client';
+import { IAttachmentRepository } from '../../repositories/attachmentRepository.interface';
 
 class AttachmentRepository implements IAttachmentRepository {
   private _prisma: Prisma.TransactionClient | typeof prisma;
@@ -9,8 +9,17 @@ class AttachmentRepository implements IAttachmentRepository {
     this._prisma = prismaClient || prisma;
   }
 
-  async createAttachment(data: Prisma.AttachmentUncheckedCreateInput): Promise<Attachment> {
-    return this._prisma.attachment.create({ data });
+  async createAttachment(data: any): Promise<Attachment> {
+    const shortenString = (str: string, maxLength: number) =>
+      str && str.length > maxLength ? str.slice(0, maxLength) : str;
+
+    const safeData = {
+      ...data,
+      url: shortenString(data.url, 255),
+      path: shortenString(data.path, 255),
+      type: shortenString(data.type, 50),
+    };
+    return this._prisma.attachment.create({ data: safeData });
   }
 
   async findAttachmentById(id: string): Promise<Attachment | null> {

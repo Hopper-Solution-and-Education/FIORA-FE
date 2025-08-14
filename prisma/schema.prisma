@@ -200,6 +200,7 @@ model Transaction {
   fromWalletId        String?              @db.Uuid
   toWalletId          String?              @db.Uuid
   membershipBenefitId String?              @db.Uuid
+  CronJobLog          CronJobLog[]         @relation("CronJobLogTransactions")
   productsRelation    ProductTransaction[] @relation("ProductTransactions")
   fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
   fromCategory        Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
@@ -210,7 +211,6 @@ model Transaction {
   toCategory          Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
   toWallet            Wallet?              @relation("ToWallet", fields: [toWalletId], references: [id])
   user                User?                @relation("UserTransactions", fields: [userId], references: [id])
-  CronJobLog         CronJobLog[]           @relation("CronJobLogTransactions")
 
   @@index([date])
   @@index([type])
@@ -503,27 +503,28 @@ model Notification {
 }
 
 model EmailTemplate {
-  name              String              @db.VarChar(255)
-  content           String
-  isActive          Boolean
-  createdAt         DateTime            @default(now()) @db.Timestamptz(0)
-  createdBy         String?             @db.Uuid
-  updatedAt         DateTime            @updatedAt @db.Timestamptz(0)
-  updatedBy         String?             @db.Uuid
-  id                String              @id @default(uuid()) @db.Uuid
-  EmailTemplateType EmailTemplateType[]
-  notifications     Notification[]
+  name                String            @db.VarChar(255)
+  content             String
+  isActive            Boolean
+  createdAt           DateTime          @default(now()) @db.Timestamptz(0)
+  createdBy           String?           @db.Uuid
+  updatedAt           DateTime          @updatedAt @db.Timestamptz(0)
+  updatedBy           String?           @db.Uuid
+  id                  String            @id @default(uuid()) @db.Uuid
+  emailtemplatetypeid String            @db.Uuid
+  isdefault           Boolean?          @default(false)
+  EmailTemplateType   EmailTemplateType @relation(fields: [emailtemplatetypeid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "emailtemplate_emailtemplatetype_id_fk")
+  notifications       Notification[]
 }
 
 model EmailTemplateType {
-  createdAt       DateTime      @default(now()) @db.Timestamptz(0)
-  createdBy       String?       @db.Uuid
-  updatedAt       DateTime      @updatedAt @db.Timestamptz(0)
-  updatedBy       String?       @db.Uuid
-  EmailTemplateId String        @db.Uuid
-  id              String        @id @default(uuid()) @db.Uuid
-  type            emailType
-  EmailTemplate   EmailTemplate @relation(fields: [EmailTemplateId], references: [id])
+  createdAt     DateTime        @db.Timestamptz(0)
+  createdBy     String?         @db.Uuid
+  updatedAt     DateTime        @updatedAt @db.Timestamptz(0)
+  updatedBy     String?         @db.Uuid
+  id            String          @id @default(uuid()) @db.Uuid
+  type          emailType
+  EmailTemplate EmailTemplate[]
 }
 
 model EmailNotificationLogs {
@@ -841,16 +842,16 @@ model eKYC {
 }
 
 model CronJobLog {
-  id            String      @id @db.Uuid
-  transactionId  String?     @db.Uuid
-  typeCronJob        TypeCronJob
-  executionTime     DateTime    @db.Timestamptz(0)
-  createdBy     String?     @db.Uuid
-  updatedBy  String?   @db.Uuid
-  createdAt  DateTime  @default(now()) @db.Timestamptz(0)
-    updatedAt  DateTime  @db.Timestamptz(0)
-  status     CronJobStatus
-  Transaction    Transaction?      @relation("CronJobLogTransactions",fields: [transactionId], references: [id])
+  id            String        @id @db.Uuid
+  transactionId String?       @db.Uuid
+  typeCronJob   TypeCronJob
+  executionTime DateTime      @db.Timestamptz(0)
+  createdBy     String?       @db.Uuid
+  updatedBy     String?       @db.Uuid
+  createdAt     DateTime      @default(now()) @db.Timestamptz(0)
+  updatedAt     DateTime      @db.Timestamptz(0)
+  status        CronJobStatus
+  Transaction   Transaction?  @relation("CronJobLogTransactions", fields: [transactionId], references: [id])
 }
 
 enum BudgetType {

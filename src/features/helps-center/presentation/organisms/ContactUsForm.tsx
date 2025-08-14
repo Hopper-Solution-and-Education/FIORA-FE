@@ -3,7 +3,9 @@
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { useGetProfileQuery } from '@/features/profile/store/api/profileApi';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { Session, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -31,15 +33,24 @@ const ContactUsForm = ({
   const router = useRouter();
   const [isFormDirty, setIsFormDirty] = useState(false);
 
+  const { status } = useSession() as {
+    data: Session | null;
+    status: 'loading' | 'authenticated' | 'unauthenticated';
+  };
+
+  const { data: user } = useGetProfileQuery(undefined, {
+    skip: status !== 'authenticated',
+  });
+
   const [contactUsMutation] = useContactUsMutation();
 
   const { formatPhoneNumber } = usePhoneFormatter();
 
   const defaultValues = {
-    name: '',
-    email: '',
+    name: user?.name ?? '',
+    email: user?.email ?? '',
     title: '',
-    phoneNumber: '',
+    phoneNumber: user?.phone ?? '',
     message: '',
     attachments: [],
   };

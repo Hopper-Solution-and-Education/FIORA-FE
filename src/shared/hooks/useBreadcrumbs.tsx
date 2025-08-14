@@ -152,6 +152,15 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'User Tutorial', link: '/helps-center/user-tutorial' },
     { title: 'Edit', link: '/helps-center/user-tutorial/edit/[id]' },
   ],
+  '/setting/packagefx': [{ title: 'Package FX', link: '/setting/packagefx' }],
+  '/setting/packagefx/create': [
+    { title: 'Package FX', link: '/setting/packagefx' },
+    { title: 'Create', link: '/setting/packagefx/create' },
+  ],
+  '/setting/packagefx/edit/[id]': [
+    { title: 'Package FX', link: '/setting/packagefx' },
+    { title: 'Edit', link: '' },
+  ],
 };
 
 /**

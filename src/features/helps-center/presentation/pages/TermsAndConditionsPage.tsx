@@ -4,6 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
 import { useUserSession } from '../../hooks/useUserSession';
 import { useGetTermsAndConditionsQuery } from '../../store/api/helpsCenterApi';
+import ParsedFaqContent from '../atoms/ParsedFaqContent';
 import PostDetailHeader from '../organisms/PostDetailHeader';
 
 export default function TermsAndConditionsPage() {
@@ -20,19 +21,22 @@ export default function TermsAndConditionsPage() {
     );
   }
 
-  return data?.content ? (
+  return (
     <div className="px-6 pb-6 h-full w-full ">
-      <PostDetailHeader
-        title="TERM OF USE"
-        canEdit={isAdminOrCs}
-        onEdit={() => {
-          router.push(`/helps-center/terms-and-conditions/edit`);
-        }}
-      />
-
-      <iframe src={data?.content} className="w-[90%] mx-auto !h-[70vh] "></iframe>
+      {data && (
+        <>
+          <PostDetailHeader
+            title={data.title}
+            canEdit={isAdminOrCs}
+            onEdit={() => {
+              router.push(`/helps-center/terms-and-conditions/edit/${data.id}`);
+            }}
+          />
+          <div className="border border-gray-200 p-4">
+            <ParsedFaqContent htmlContent={data.content} />
+          </div>
+        </>
+      )}
     </div>
-  ) : (
-    <></>
   );
 }
