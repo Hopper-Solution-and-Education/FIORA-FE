@@ -7,7 +7,6 @@ import { fetchCategories } from '@/features/home/module/category/slices/actions'
 import { Category } from '@/features/home/module/category/slices/types';
 import { COLORS } from '@/shared/constants/chart';
 import { useCurrencyFormatter } from '@/shared/hooks';
-// import { convertVNDToUSD } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { CategoryType } from '@prisma/client';
 import { useRouter } from 'next/navigation';
@@ -19,19 +18,53 @@ const CategoryDashboard = () => {
   const router = useRouter();
   const { categories, filterCriteria } = useAppSelector((state) => state.category);
   const { currency } = useAppSelector((state) => state.settings);
-  const { formatCurrency } = useCurrencyFormatter();
+  const { formatCurrency, getExchangeAmount } = useCurrencyFormatter();
+
+  const getBalanceAmount = (category: Category) => {
+    let balance = 0;
+    if (category.type === CategoryType.Income && category?.fromTransactions?.length) {
+      balance += category.fromTransactions.reduce(
+        (acc, transaction) =>
+          acc +
+          (transaction.isDeleted
+            ? 0
+            : getExchangeAmount({
+                amount: transaction.baseAmount,
+                fromCurrency: transaction.baseCurrency,
+                toCurrency: currency,
+              }).convertedAmount),
+        0,
+      );
+    }
+    if (category.type === CategoryType.Expense && category?.toTransactions?.length) {
+      console.table(category.toTransactions);
+
+      balance += category.toTransactions.reduce(
+        (acc, transaction) =>
+          acc +
+          (transaction.isDeleted
+            ? 0
+            : getExchangeAmount({
+                amount: transaction.baseAmount,
+                fromCurrency: transaction.baseCurrency,
+                toCurrency: currency,
+              }).convertedAmount),
+        0,
+      );
+    }
+    return balance;
+  };
 
   // * INITIALIZATION CHART DATA ZONE
   const chartData: BarItem[] = useMemo(() => {
     if (!categories.data) return [];
     return categories.data.map((category: Category) => {
-      const balance = category.balance || 0;
-      const convertedBalance = currency === 'USD' ? balance : balance;
+      const balance = getBalanceAmount(category);
 
       return {
         id: category.id,
         name: category.name,
-        value: convertedBalance,
+        value: balance,
         icon: category.icon,
         color:
           category.type === CategoryType.Expense
@@ -39,13 +72,12 @@ const CategoryDashboard = () => {
             : COLORS.DEPS_SUCCESS.LEVEL_1,
         type: category.type === CategoryType.Expense ? CategoryType.Expense : CategoryType.Income,
         children: category.subCategories?.map((subCategory) => {
-          const subBalance = subCategory.balance || 0;
-          const convertedSubBalance = currency === 'USD' ? subBalance : subBalance;
+          const subBalance = getBalanceAmount(subCategory);
 
           return {
             id: subCategory.id,
             name: subCategory.name,
-            value: convertedSubBalance,
+            value: subBalance,
             icon: subCategory.icon,
             color:
               category.type === CategoryType.Expense

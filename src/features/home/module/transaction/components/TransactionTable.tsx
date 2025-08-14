@@ -448,6 +448,7 @@ const TransactionTable = () => {
                                     {formatCurrency(
                                       transRecord.amount,
                                       transRecord.currency as Currency,
+                                      { applyExchangeRate: false },
                                     )}
                                   </span>
                                 </div>

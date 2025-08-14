@@ -90,11 +90,7 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
           <PositiveAndNegativeBarChart
             title={module === MODULE.ACCOUNT ? 'Accounts' : undefined}
             data={chartData}
-            xAxisFormatter={(value) =>
-              formatCurrency(value, currency, {
-                applyExchangeRate: false,
-              })
-            }
+            xAxisFormatter={(value) => formatCurrency(value, currency)}
             currency={currency}
             levelConfig={levelConfig}
             callback={module === MODULE.ACCOUNT ? handleDisplayDetail : undefined}

@@ -2,7 +2,6 @@ import { TwoSideBarItem } from '@/components/common/charts/positive-negative-bar
 import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
 import { generateColor } from '@/shared/lib/charts';
 import { TransactionType } from '@prisma/client';
-import { convertVNDToUSD } from '@/shared/utils';
 
 /**
  * Properly organizes partners into a hierarchical structure
@@ -78,8 +77,8 @@ const mapPartnerToTwoSideBarItem = (partner: Partner, currency: string): TwoSide
   });
 
   // Convert values based on currency
-  const convertedPositive = currency === 'USD' ? convertVNDToUSD(ownPositive) : ownPositive;
-  const convertedNegative = currency === 'USD' ? convertVNDToUSD(ownNegative) : ownNegative;
+  const convertedPositive = currency === 'USD' ? ownPositive : ownPositive;
+  const convertedNegative = currency === 'USD' ? ownNegative : ownNegative;
 
   // Total values include own transactions plus children's totals
   const totalPositive =
