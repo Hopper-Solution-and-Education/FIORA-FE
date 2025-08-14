@@ -1,14 +1,21 @@
 import { prisma } from '@/config';
-import { BadRequestError } from '@/shared/lib';
 import { EmailTemplate, EmailTemplateType, Prisma } from '@prisma/client';
 import { IEmailTemplateRepository } from '../../repositories/emailTemplateRepository.interface';
 
 class EmailTemplateRepository implements IEmailTemplateRepository {
   async createEmailTemplate(data: Prisma.EmailTemplateCreateInput): Promise<EmailTemplate> {
-    return await prisma.emailTemplate.create({ data: { ...data } });
+    return await prisma.emailTemplate.create({
+      data: { ...data },
+      include: {
+        EmailTemplateType: true,
+      },
+    });
   }
-  async getEmailTemplate(): Promise<EmailTemplate[]> {
+  async getEmailTemplate(): Promise<any[]> {
     return await prisma.emailTemplate.findMany({
+      include: {
+        EmailTemplateType: true,
+      },
       orderBy: {
         createdAt: 'desc',
       },
@@ -20,25 +27,28 @@ class EmailTemplateRepository implements IEmailTemplateRepository {
     userId: string,
     data: Partial<EmailTemplate>,
   ): Promise<EmailTemplate> {
-    const emailTemplate = await prisma.emailTemplate.findUnique({
-      where: { id },
-      select: { isActive: true },
-    });
-
-    if (!emailTemplate || emailTemplate.isActive == false) {
-      throw new BadRequestError('Email template not found!');
-    }
-    data.updatedBy = userId;
     const updatedCategory = await prisma.emailTemplate.update({
       where: { id },
-      data,
+      data: {
+        name: data.name,
+        content: data.content,
+        updatedBy: userId,
+      },
+      include: {
+        EmailTemplateType: true,
+      },
     });
 
     return updatedCategory;
   }
 
   async findEmailTemplateById(id: string): Promise<EmailTemplate | null> {
-    return await prisma.emailTemplate.findUnique({ where: { id } });
+    return await prisma.emailTemplate.findUnique({
+      where: { id },
+      include: {
+        EmailTemplateType: true,
+      },
+    });
   }
 
   async delete(id: string): Promise<EmailTemplate | null> {
@@ -46,19 +56,38 @@ class EmailTemplateRepository implements IEmailTemplateRepository {
   }
 
   async findEmailTemplateByTypeOrName(
-    type: EmailTemplateType,
+    emailTemplateType: string,
     name: string,
   ): Promise<EmailTemplate | null> {
-    return await prisma.emailTemplate.findFirst({
+    const result = await prisma.emailTemplate.findFirst({
       where: {
-        OR: [{ name }],
+        AND: [{ emailtemplatetypeid: emailTemplateType }, { name }],
+      },
+      include: {
+        EmailTemplateType: true,
       },
     });
+
+    return result || null;
   }
 
   async checkTemplateDefault(): Promise<EmailTemplate | null> {
     return await prisma.emailTemplate.findFirst({
       where: { isActive: true },
+    });
+  }
+
+  async checkTemplateType(id: string): Promise<EmailTemplateType | null> {
+    return await prisma.emailTemplateType.findUnique({
+      where: { id },
+    });
+  }
+
+  async getEmailTemplateType(): Promise<any[]> {
+    return await prisma.emailTemplateType.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 }

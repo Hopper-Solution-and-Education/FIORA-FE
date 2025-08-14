@@ -36,17 +36,35 @@ export const config = {
 
 async function GET(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const packages = await walletUseCase.getAllPackageFX();
-
-    return res
-      .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_PACKAGE_FX_SUCCESS, packages));
+    const { sortBy, page, limit } = req.query;
+    let sortObj: Record<string, 'asc' | 'desc'> = { createdAt: 'desc' };
+    if (sortBy) {
+      try {
+        sortObj = JSON.parse(sortBy as string);
+      } catch {
+        return createError(res, RESPONSE_CODE.BAD_REQUEST, 'Invalid sortBy format');
+      }
+    }
+    const safePage = page ? Number(page) : 1;
+    const safeLimit = limit ? Number(limit) : 20;
+    const result = await walletUseCase.getPackageFXPaginated({
+      sortBy: sortObj,
+      page: safePage,
+      limit: safeLimit,
+    });
+    return res.status(RESPONSE_CODE.OK).json({
+      status: RESPONSE_CODE.OK,
+      message: Messages.GET_PACKAGE_FX_SUCCESS,
+      data: result.data,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+    });
   } catch (error: any) {
     console.error(error.message);
     return createError(res, RESPONSE_CODE.INTERNAL_SERVER_ERROR, Messages.INTERNAL_ERROR);
   }
 }
-
 async function POST(req: NextApiRequest, res: NextApiResponse) {
   if (req.headers['content-type']?.includes('multipart/form-data')) {
     const busboy = Busboy({ headers: req.headers });
@@ -56,74 +74,85 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
 
     busboy.on('file', (fieldname, file, info) => {
       const { filename, mimeType } = info;
+      console.log(`[DEBUG] Nhận file:`, { fieldname, filename, mimeType });
       const buffers: Uint8Array[] = [];
       file.on('data', (data) => buffers.push(data));
       file.on('end', () => {
         const buffer = Buffer.concat(buffers);
         const blob = new Blob([buffer], { type: mimeType });
         const size = buffer.length;
-        // BỔ SUNG KIỂM TRA DUNG LƯỢNG FILE 5MB
+        console.log(`[DEBUG] File ${filename} size: ${size} bytes`);
         if (size > 5 * 1024 * 1024) {
-          // Đẩy lỗi vào mảng errors để xử lý sau khi upload xong
           if (!fields.__fileSizeError) fields.__fileSizeError = [];
           fields.__fileSizeError.push(`${filename} vượt quá 5MB`);
-          return; // Không upload file này
+          console.log(`[DEBUG] File ${filename} vượt quá 5MB`);
+          return;
         }
         const uploadPromise = uploadToFirebase({
           file: blob,
           path: `images/packagefx/${fieldname}`,
           fileName: filename,
-        }).then((firebaseUrl) => {
-          files.push({
-            url: firebaseUrl,
-            size,
-            path: `images/packagefx/${fieldname}`,
-            type: fieldname.toUpperCase(),
+        })
+          .then((firebaseUrl) => {
+            console.log(`[DEBUG] Upload thành công: ${firebaseUrl}`);
+            files.push({
+              url: firebaseUrl,
+              size,
+              path: `images/packagefx/${fieldname}`,
+              type: fieldname.toUpperCase(),
+            });
+          })
+          .catch((err) => {
+            console.error(`[DEBUG] Upload lỗi:`, err);
           });
-        });
         fileUploadPromises.push(uploadPromise);
       });
     });
 
     busboy.on('field', (fieldname, val) => {
+      console.log(`[DEBUG] Nhận field: ${fieldname} = ${val}`);
       fields[fieldname] = val;
     });
 
     busboy.on('finish', async () => {
       try {
+        console.log('[DEBUG] Bắt đầu xử lý finish');
         await Promise.all(fileUploadPromises);
-        // Kiểm tra nếu có lỗi file vượt quá 5MB
+        console.log('[DEBUG] Upload xong tất cả file:', files);
         if (fields.__fileSizeError && fields.__fileSizeError.length > 0) {
+          console.log('[DEBUG] Có lỗi file size:', fields.__fileSizeError);
           return createError(
             res,
             RESPONSE_CODE.BAD_REQUEST,
             `File size error: ${fields.__fileSizeError.join(', ')}`,
           );
         }
-        // Validate required fields
         if (!fields.fxAmount) {
+          console.log('[DEBUG] Thiếu fxAmount');
           return createError(res, RESPONSE_CODE.BAD_REQUEST, 'fxAmount are required');
         }
         const fxAmount = Number(fields.fxAmount);
         if (isNaN(fxAmount) || fxAmount < 0) {
+          console.log('[DEBUG] fxAmount không hợp lệ:', fields.fxAmount);
           return createError(
             res,
             RESPONSE_CODE.BAD_REQUEST,
             'fxAmount must be a non-negative number',
           );
         }
-        // Build data for createPackageFx
         const data = {
           fxAmount,
           files,
           createdBy: fields.createdBy || null,
         };
+        console.log('[DEBUG] Data gửi vào createPackageFx:', data);
         const result = await walletUseCase.createPackageFx(data);
+        console.log('[DEBUG] Tạo packageFX thành công:', result);
         return res
           .status(RESPONSE_CODE.CREATED)
           .json(createResponse(RESPONSE_CODE.CREATED, 'PackageFX created successfully', result));
       } catch (error: any) {
-        console.error(error.message);
+        console.error('[DEBUG] Lỗi khi tạo packageFX:', error);
         return createError(res, RESPONSE_CODE.INTERNAL_SERVER_ERROR, Messages.INTERNAL_ERROR);
       }
     });
@@ -176,7 +205,6 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
     busboy.on('finish', async () => {
       try {
         await Promise.all(fileUploadPromises);
-        // Kiểm tra nếu có lỗi file vượt quá 5MB
         if (fields.__fileSizeError && fields.__fileSizeError.length > 0) {
           return createError(
             res,
@@ -184,7 +212,6 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
             `File size error: ${fields.__fileSizeError.join(', ')}`,
           );
         }
-        // Validate required fields
         if (!fields.id) {
           return createError(res, RESPONSE_CODE.BAD_REQUEST, 'id is required');
         }
@@ -201,10 +228,19 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
           );
         }
 
-        // Update PackageFX
+        let removeAttachmentIds: string[] | undefined = undefined;
+        if (fields.removeAttachmentIds) {
+          try {
+            removeAttachmentIds = JSON.parse(fields.removeAttachmentIds);
+          } catch {
+            removeAttachmentIds = undefined;
+          }
+        }
+
         const result = await walletUseCase.updatePackageFX(fields.id, {
           fxAmount,
-          files: files.length > 0 ? files : undefined,
+          newFiles: files.length > 0 ? files : undefined,
+          removeAttachmentIds,
         });
 
         if (!result) {
@@ -239,6 +275,9 @@ async function DELETE(req: NextApiRequest, res: NextApiResponse) {
       .json(createResponse(RESPONSE_CODE.OK, 'PackageFX deleted successfully', deleted));
   } catch (error: any) {
     console.error(error.message);
-    return createError(res, RESPONSE_CODE.INTERNAL_SERVER_ERROR, Messages.INTERNAL_ERROR);
+    return res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({
+      status: RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+      message: error?.message || Messages.INTERNAL_ERROR,
+    });
   }
 }
