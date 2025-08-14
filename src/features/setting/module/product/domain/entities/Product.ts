@@ -1,9 +1,9 @@
+import { CreatedBy, FilterCriteria, UpdatedBy } from '@/shared/types';
 import { PaginationResponse } from '@/shared/types/Common.types';
 import { CategoryType, ProductType } from '@prisma/client';
 import { ProductFormValues } from '../../presentation/schema/addProduct.schema';
-import { Transaction } from './Transaction';
-import { CreatedBy, FilterCriteria, UpdatedBy } from '@/shared/types';
 import { ProductFilterResponse } from '../../slices/types';
+import { Transaction } from './Transaction';
 export class Product {
   id: string;
   name: string;
@@ -141,6 +141,8 @@ export type ProductTransactionResponse = {
     {
       id: string;
       type: CategoryType;
+      baseAmount: number;
+      baseCurrency: string;
       amount: number;
       currency: 'VND' | 'USD';
     } | null,

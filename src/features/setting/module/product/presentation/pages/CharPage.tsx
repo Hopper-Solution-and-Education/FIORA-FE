@@ -26,7 +26,7 @@ const ChartPage = () => {
   const dispatch = useAppDispatch();
   const { data: userData } = useSession();
   const currency = useAppSelector((state) => state.settings.currency);
-  const { formatCurrency } = useCurrencyFormatter();
+  const { formatCurrency, getExchangeAmount } = useCurrencyFormatter();
 
   const handleEditCategoryProduct = (categoryProduct: CategoryProduct) => {
     dispatch(setProductCategoryFormState('edit'));
@@ -40,7 +40,6 @@ const ChartPage = () => {
     if (item.type !== 'category') {
       router.push(`/setting/product/update/${item.id}`);
     } else {
-      console.log('item', item);
       const categoryProduct: CategoryProduct = {
         id: item.id ?? '',
         userId: userData?.user.id ?? '',
@@ -56,7 +55,7 @@ const ChartPage = () => {
   };
 
   const chartData = useMemo(
-    () => mapTransactionsToTwoSideBarItems(data, currency),
+    () => mapTransactionsToTwoSideBarItems(data, currency, getExchangeAmount),
     [currency, data],
   );
 

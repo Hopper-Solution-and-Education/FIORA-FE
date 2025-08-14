@@ -78,8 +78,6 @@ const PositiveAndNegativeBarChartV2 = (props: PositiveAndNegativeBarChartV2Props
   const BAR_GAP = 0;
   const BAR_CATEGORY_GAP = 10;
 
-  console.log(isMobile);
-
   const toggleExpand = useCallback(
     debounce((name: string) => {
       setExpandedItems((prev) => ({

@@ -1,13 +1,13 @@
 import { TwoSideBarItem } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
 import { generateColor } from '@/shared/lib/charts';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { ExchangeAmountParams, ExchangeAmountResult } from '@/shared/types';
 import { TransactionType } from '@prisma/client'; // Import Currency and Prisma
 import { ProductTransactionCategoryResponse } from '../../domain/entities/Product';
-import { Currency } from '@/shared/types';
 
 export const mapTransactionsToTwoSideBarItems = (
   data: ProductTransactionCategoryResponse[],
-  targetCurrency: Currency, // currency target to exchange
+  targetCurrency: string,
+  getExchangeAmount: (params: ExchangeAmountParams) => ExchangeAmountResult,
 ): TwoSideBarItem[] => {
   return data.map((categoryItem) => {
     const catId = categoryItem.category.id;
@@ -21,21 +21,23 @@ export const mapTransactionsToTwoSideBarItems = (
       item.transactions?.forEach(async (tx) => {
         // --- MODIFICATION START ---
         // Ensure tx.amount and tx.currency exist and are valid
-        if (tx?.amount !== undefined && tx?.currency !== undefined && tx?.type !== undefined) {
-          // Convert the amount to the target currency
-          const convertedAmount = await convertCurrency(
-            tx.amount, // Pass the amount (can be Decimal or number)
-            tx.currency, // Pass the original currency (assuming tx.currency exists)
-            targetCurrency, // Pass the target currency from function params
-          );
-
+        if (
+          tx?.baseAmount !== undefined &&
+          tx?.baseCurrency !== undefined &&
+          tx?.type !== undefined
+        ) {
+          const formattedAmount = getExchangeAmount({
+            amount: tx.baseAmount,
+            fromCurrency: tx.baseCurrency,
+            toCurrency: targetCurrency,
+          }).convertedAmount;
           if (tx.type === TransactionType.Income) {
-            productPositive += convertedAmount;
-            categoryPositive += convertedAmount;
+            productPositive += Number(formattedAmount || 0);
+            categoryPositive += Number(formattedAmount || 0);
           } else if (tx.type === TransactionType.Expense) {
             // For expenses, still add a negative value after conversion
-            productNegative -= convertedAmount;
-            categoryNegative -= convertedAmount;
+            productNegative -= Number(formattedAmount || 0);
+            categoryNegative -= Number(formattedAmount || 0);
           }
         }
         // --- MODIFICATION END ---

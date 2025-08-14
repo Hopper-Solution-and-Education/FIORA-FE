@@ -19,7 +19,7 @@ const PartnerSettingPage = () => {
   const { partners, isLoading } = useAppSelector((state) => state.partner);
   const { currency } = useAppSelector((state) => state.settings);
   const router = useRouter();
-  const { formatCurrency } = useCurrencyFormatter();
+  const { formatCurrency, getExchangeAmount } = useCurrencyFormatter();
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -37,7 +37,7 @@ const PartnerSettingPage = () => {
   const barData = useMemo(() => {
     // Ensure partners is an array before processing
     const partnersArray = Array.isArray(partners) ? partners : [];
-    return mapPartnersToTwoSideBarItems(partnersArray, currency);
+    return mapPartnersToTwoSideBarItems(partnersArray, currency, getExchangeAmount);
   }, [partners, currency]);
 
   const handleNavigateToUpdate = (item: TwoSideBarItem) => {
