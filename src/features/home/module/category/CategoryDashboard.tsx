@@ -7,7 +7,7 @@ import { fetchCategories } from '@/features/home/module/category/slices/actions'
 import { Category } from '@/features/home/module/category/slices/types';
 import { COLORS } from '@/shared/constants/chart';
 import { useCurrencyFormatter } from '@/shared/hooks';
-import { convertVNDToUSD } from '@/shared/utils';
+// import { convertVNDToUSD } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { CategoryType } from '@prisma/client';
 import { useRouter } from 'next/navigation';
@@ -26,7 +26,7 @@ const CategoryDashboard = () => {
     if (!categories.data) return [];
     return categories.data.map((category: Category) => {
       const balance = category.balance || 0;
-      const convertedBalance = currency === 'USD' ? convertVNDToUSD(balance) : balance;
+      const convertedBalance = currency === 'USD' ? balance : balance;
 
       return {
         id: category.id,
@@ -40,7 +40,7 @@ const CategoryDashboard = () => {
         type: category.type === CategoryType.Expense ? CategoryType.Expense : CategoryType.Income,
         children: category.subCategories?.map((subCategory) => {
           const subBalance = subCategory.balance || 0;
-          const convertedSubBalance = currency === 'USD' ? convertVNDToUSD(subBalance) : subBalance;
+          const convertedSubBalance = currency === 'USD' ? subBalance : subBalance;
 
           return {
             id: subCategory.id,
