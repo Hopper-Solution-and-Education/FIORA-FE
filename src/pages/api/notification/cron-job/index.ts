@@ -24,9 +24,10 @@ export default apiKeyWrapper(async (req: NextApiRequest, res: NextApiResponse) =
 });
 
 export async function POST(req: NextApiRequest, res: NextApiResponse) {
-  const { email } = req.body;
+  const { email, username, tier_name, user_id } = req.body;
 
   try {
+    const date = new Date();
     const data: CreateBoxNotificationInput = {
       title: 'FIORA Membership Tier Change Notification',
       type: 'MEMBERSHIP',
@@ -34,35 +35,21 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
       attachmentId: '',
       deepLink: '',
       message: 'Your FIORA Membership Tier Has Changed!',
-      emails: email,
+      emails: [email],
     };
-    const result = await notificationUseCase.createBoxNotification(data);
+    const result = await notificationUseCase.createNotificationCronjob(
+      data,
+      email,
+      username,
+      tier_name,
+      date.toString(),
+      user_id,
+    );
     return res
       .status(RESPONSE_CODE.OK)
-      .json(
-        createResponse(
-          RESPONSE_CODE.OK,
-          `Notification sent successfully. ${'result.successCount'} emails sent, ${'result.failedCount'} failed`,
-          result,
-        ),
-      );
+      .json(createResponse(RESPONSE_CODE.OK, `Notification sent successfully.`, result));
   } catch (error) {
     console.error('Error sending notification:', error);
-
-    // Handle specific error types
-    if (error instanceof Error) {
-      if (error.message.includes('Email template')) {
-        return res
-          .status(RESPONSE_CODE.NOT_FOUND)
-          .json(createError(res, RESPONSE_CODE.NOT_FOUND, error.message));
-      }
-
-      if (error.message.includes('Email parts cannot be empty')) {
-        return res
-          .status(RESPONSE_CODE.BAD_REQUEST)
-          .json(createError(res, RESPONSE_CODE.BAD_REQUEST, error.message));
-      }
-    }
 
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)

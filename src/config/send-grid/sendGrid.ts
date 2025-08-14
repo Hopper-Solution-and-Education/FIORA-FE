@@ -166,6 +166,7 @@ export const sendEmailCronJob = async (
     };
 
     await sgMail.send(msg);
+    return true;
   } catch (error) {
     console.error('Failed to send email', error);
     throw new InternalServerError('Failed to send email');
