@@ -6,7 +6,6 @@ import { FinanceReportFilterEnum } from '@/features/setting/data/module/finance/
 import { COLORS } from '@/shared/constants/chart';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { Currency } from '@/shared/types';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect, useState } from 'react';
 import { Cell } from 'recharts';
@@ -18,7 +17,7 @@ const ChartByProduct = () => {
   const selectedIds = useAppSelector((state) => state.financeControl.selectedProducts);
   const currency = useAppSelector((state) => state.settings.currency);
   const dispatch = useAppDispatch();
-  const { formatCurrency } = useCurrencyFormatter();
+  const { formatCurrency, getExchangeAmount } = useCurrencyFormatter();
   const [data, setData] = useState<any[]>([]);
 
   useEffect(() => {
@@ -39,20 +38,28 @@ const ChartByProduct = () => {
       if (Array.isArray(financeByProduct)) {
         const processedData = await Promise.all(
           financeByProduct.map(async (item) => {
-            const profit = await convertCurrency(
-              item.totalProfit,
-              item.currency as Currency,
-              currency,
-            );
+            const profit = getExchangeAmount({
+              amount: item.totalProfit,
+              fromCurrency: item.currency as Currency,
+              toCurrency: currency,
+            }).convertedAmount;
+
             return {
               name: item.name,
               icon: item.icon,
-              column1: await convertCurrency(
-                item.totalExpense,
-                item.currency as Currency,
-                currency,
-              ),
-              column2: await convertCurrency(item.totalIncome, item.currency as Currency, currency),
+
+              column1: getExchangeAmount({
+                amount: item.totalExpense,
+                fromCurrency: item.currency as Currency,
+                toCurrency: currency,
+              }).convertedAmount,
+
+              column2: getExchangeAmount({
+                amount: item.totalIncome,
+                fromCurrency: item.currency as Currency,
+                toCurrency: currency,
+              }).convertedAmount,
+
               column3: Math.abs(profit),
               profitStatus: profit < 0 ? 'negative' : 'positive',
               originalProfit: profit,

@@ -6,7 +6,6 @@ import { FinanceReportFilterEnum } from '@/features/setting/data/module/finance/
 import { COLORS } from '@/shared/constants/chart';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { Currency } from '@/shared/types';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { useAppDispatch, useAppSelector } from '@/store';
 import React, { useEffect, useState } from 'react';
 import { getFinanceByCategoryAsyncThunk } from '../../slices/actions';
@@ -17,7 +16,7 @@ const ChartByAccount = () => {
   const selectedIds = useAppSelector((state) => state.financeControl.selectedAccounts);
   const currency = useAppSelector((state) => state.settings.currency);
   const dispatch = useAppDispatch();
-  const { formatCurrency } = useCurrencyFormatter();
+  const { formatCurrency, getExchangeAmount } = useCurrencyFormatter();
   const [data, setData] = useState<any[]>([]);
 
   useEffect(() => {
@@ -40,21 +39,24 @@ const ChartByAccount = () => {
           financeByCategory.map(async (item) => ({
             icon: item.icon,
             name: item.name,
-            totalExpense: await convertCurrency(
-              item.totalExpense,
-              item.currency as Currency,
-              currency,
-            ),
-            totalIncome: await convertCurrency(
-              item.totalIncome,
-              item.currency as Currency,
-              currency,
-            ),
-            balance: await convertCurrency(
-              Number(item?.balance ?? 0),
-              item.currency as Currency,
-              currency,
-            ),
+
+            totalExpense: await getExchangeAmount({
+              amount: item.totalExpense,
+              fromCurrency: item.currency as Currency,
+              toCurrency: currency,
+            }).convertedAmount,
+
+            totalIncome: await getExchangeAmount({
+              amount: item.totalIncome,
+              fromCurrency: item.currency as Currency,
+              toCurrency: currency,
+            }).convertedAmount,
+
+            balance: await getExchangeAmount({
+              amount: Number(item?.balance ?? 0),
+              fromCurrency: item.currency as Currency,
+              toCurrency: currency,
+            }).convertedAmount,
           })),
         );
         setData(processedData);

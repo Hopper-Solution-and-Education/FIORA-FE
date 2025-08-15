@@ -30,7 +30,6 @@ const TableByPartner = () => {
   const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinance);
   const selectedIds = useAppSelector((state) => state.financeControl.selectedPartners);
   const dispatch = useAppDispatch();
-  const currency = useAppSelector((state) => state.settings.currency);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'desc' });
   const { formatCurrency } = useCurrencyFormatter();
 
@@ -129,10 +128,10 @@ const TableByPartner = () => {
                   </div>
                 </TableCell>
                 <TableCell className="text-center" style={{ color: COLORS.DEPS_DANGER.LEVEL_2 }}>
-                  {formatCurrency(item.totalExpense, currency)}
+                  {formatCurrency(item.totalExpense, item.currency)}
                 </TableCell>
                 <TableCell className="text-center" style={{ color: COLORS.DEPS_SUCCESS.LEVEL_2 }}>
-                  {formatCurrency(item.totalIncome, currency)}
+                  {formatCurrency(item.totalIncome, item.currency)}
                 </TableCell>
                 <TableCell className="text-center">
                   <span
@@ -143,7 +142,7 @@ const TableByPartner = () => {
                           : COLORS.DEPS_DANGER.LEVEL_2,
                     }}
                   >
-                    {formatCurrency(item.totalProfit, currency)}
+                    {formatCurrency(item.totalProfit, item.currency)}
                   </span>
                 </TableCell>
               </TableRow>
