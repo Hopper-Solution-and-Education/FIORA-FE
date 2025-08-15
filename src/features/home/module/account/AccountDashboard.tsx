@@ -32,7 +32,7 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
   const chartData: BarItem[] = useMemo(() => {
     if (!accounts.data) return [];
     return mapAccountsToBarItems(accounts.data, currency, getExchangeRate);
-  }, [accounts.data]);
+  }, [accounts.data, currency, getExchangeRate]);
 
   type Depth = 0 | 1 | 2;
 

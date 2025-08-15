@@ -1,6 +1,5 @@
 import { BarItem } from '@/components/common/charts/positive-negative-bar-chart/type';
 import { Account } from '@/features/home/module/account/slices/types';
-import { CURRENCY } from '@/shared/constants';
 import { generateColor } from '@/shared/lib/charts';
 
 /**
@@ -55,9 +54,7 @@ const mapAccountToBarItem = (
 
   // Convert value based on currency
   const convertedValue =
-    Number(
-      (getExchangeRate(account.baseCurrency || CURRENCY.USD, targetCurrency) || 1).toFixed(2),
-    ) * totalValue;
+    Number((getExchangeRate(account.baseCurrency, targetCurrency) || 1).toFixed(2)) * totalValue;
 
   return {
     id: account.id,
