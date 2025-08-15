@@ -3,8 +3,8 @@ import { ChartSkeleton } from '@/components/common/organisms';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { FinanceReportFilterEnum } from '@/features/setting/data/module/finance/constant/FinanceReportFilterEnum';
 import { COLORS } from '@/shared/constants/chart';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { Currency } from '@/shared/types';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { useAppDispatch, useAppSelector } from '@/store';
 import React, { useEffect, useState } from 'react';
 import { getFinanceByCategoryAsyncThunk } from '../../slices/actions/getFinanceByCategoryAsyncThunk';
@@ -16,6 +16,7 @@ const ChartByCategory = () => {
   const dispatch = useAppDispatch();
   const currency = useAppSelector((state) => state.settings.currency);
   const [data, setData] = useState<ComposedChartDataItem[]>([]);
+  const { getExchangeAmount } = useCurrencyFormatter();
 
   useEffect(() => {
     if (!isLoading) {
@@ -41,11 +42,11 @@ const ChartByCategory = () => {
             })
             .map(async (item) => ({
               name: item.name,
-              column: await convertCurrency(
-                viewChartByCategory === 'income' ? item.totalIncome : item.totalExpense,
-                item.currency as Currency,
-                currency,
-              ),
+              column: await getExchangeAmount({
+                amount: viewChartByCategory === 'income' ? item.totalIncome : item.totalExpense,
+                fromCurrency: item.currency as Currency,
+                toCurrency: currency,
+              }).convertedAmount,
               icon: item.icon ?? 'wallet',
             })),
         );

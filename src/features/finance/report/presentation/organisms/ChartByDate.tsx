@@ -1,8 +1,8 @@
 import { ComposedChart, ComposedChartDataItem } from '@/components/common/charts';
 import { ChartSkeleton } from '@/components/common/organisms';
 import { COLORS } from '@/shared/constants/chart';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { Currency } from '@/shared/types';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { useAppSelector } from '@/store';
 import { useEffect, useState } from 'react';
 
@@ -13,21 +13,32 @@ type ChartByDateProps = {
 const ChartByDate = ({ title }: ChartByDateProps) => {
   const financeByDate = useAppSelector((state) => state.financeControl.financeByDate);
   const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinance);
-  const currency = useAppSelector((state) => state.settings.currency);
   const [data, setData] = useState<ComposedChartDataItem[]>([]);
+  const currency = useAppSelector((state) => state.settings.currency);
+  const { getExchangeAmount } = useCurrencyFormatter();
 
   useEffect(() => {
     const processData = async () => {
       const chartData = await Promise.all(
         financeByDate.map(async (item) => ({
           name: item.period,
-          column1: await convertCurrency(item.totalExpense, item.currency as Currency, currency),
-          column2: await convertCurrency(item.totalIncome, item.currency as Currency, currency),
-          line: await convertCurrency(
-            item.totalIncome - item.totalExpense,
-            item.currency as Currency,
-            currency,
-          ),
+          column1: getExchangeAmount({
+            amount: item.totalExpense,
+            fromCurrency: item.currency as Currency,
+            toCurrency: currency,
+          }).convertedAmount,
+
+          column2: getExchangeAmount({
+            amount: item.totalIncome,
+            fromCurrency: item.currency as Currency,
+            toCurrency: currency,
+          }).convertedAmount,
+
+          line: getExchangeAmount({
+            amount: item.totalIncome - item.totalExpense,
+            fromCurrency: item.currency as Currency,
+            toCurrency: currency,
+          }).convertedAmount,
         })),
       );
       setData(chartData);
@@ -36,7 +47,7 @@ const ChartByDate = ({ title }: ChartByDateProps) => {
     if (financeByDate.length > 0) {
       processData();
     }
-  }, [financeByDate, currency]);
+  }, [financeByDate, getExchangeAmount, currency]);
 
   return (
     <div className="space-y-8">

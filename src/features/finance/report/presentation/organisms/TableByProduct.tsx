@@ -31,7 +31,6 @@ const TableByProduct = () => {
   const selectedIds = useAppSelector((state) => state.financeControl.selectedProducts);
   const dispatch = useAppDispatch();
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'asc' });
-  const currency = useAppSelector((state) => state.settings.currency);
   const { formatCurrency } = useCurrencyFormatter();
 
   useEffect(() => {
@@ -134,10 +133,10 @@ const TableByProduct = () => {
                   </div>
                 </TableCell>
                 <TableCell className="text-center" style={{ color: COLORS.DEPS_DANGER.LEVEL_2 }}>
-                  {formatCurrency(item.totalExpense, currency)}
+                  {formatCurrency(item.totalExpense, item.currency)}
                 </TableCell>
                 <TableCell className="text-center" style={{ color: COLORS.DEPS_SUCCESS.LEVEL_2 }}>
-                  {formatCurrency(item.totalIncome, currency)}
+                  {formatCurrency(item.totalIncome, item.currency)}
                 </TableCell>
                 <TableCell className="text-center">
                   <span
@@ -148,7 +147,7 @@ const TableByProduct = () => {
                           : COLORS.DEPS_DANGER.LEVEL_2,
                     }}
                   >
-                    {formatCurrency(item.totalProfit, currency)}
+                    {formatCurrency(item.totalProfit, item.currency)}
                   </span>
                 </TableCell>
               </TableRow>

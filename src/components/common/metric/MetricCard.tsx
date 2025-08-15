@@ -3,7 +3,6 @@ import LucieIcon from '@/features/home/module/category/components/LucieIcon';
 import { cn } from '@/lib/utils';
 import { CURRENCY } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
-import { Currency } from '@/shared/types';
 import { isImageUrl } from '@/shared/utils';
 import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
 import Image from 'next/image';
@@ -15,7 +14,7 @@ interface MetricCardProps {
   description?: string;
   icon?: string | React.ReactNode;
   className?: string;
-  currency?: Currency;
+  currency?: string;
   trend?: {
     value: string;
     isPositive: boolean;
@@ -110,7 +109,7 @@ const MetricCard = ({
       </CardHeader>
       <CardContent>
         <div className={cn('text-xl sm:text-2xl font-bold', getCardColor())}>
-          {formatCurrency(value, CURRENCY.FX)}
+          {formatCurrency(value, currency || CURRENCY.FX)}
         </div>
         {(description || trend) && (
           <div className="mt-1 flex items-center text-[10px] sm:text-xs">
