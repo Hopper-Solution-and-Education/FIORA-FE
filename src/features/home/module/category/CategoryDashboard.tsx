@@ -37,8 +37,6 @@ const CategoryDashboard = () => {
       );
     }
     if (category.type === CategoryType.Expense && category?.toTransactions?.length) {
-      console.table(category.toTransactions);
-
       balance += category.toTransactions.reduce(
         (acc, transaction) =>
           acc +

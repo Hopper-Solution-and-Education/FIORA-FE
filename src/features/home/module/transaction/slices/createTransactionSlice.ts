@@ -225,7 +225,7 @@ const createTransactionSlice = createSlice({
       state.partners.hasFetched = true;
 
       if (action.payload.length === 0) {
-        toast.info('No partners found');
+        // No partners found
       }
     });
     builder.addCase(fetchPartners.rejected, (state, action) => {
@@ -246,7 +246,7 @@ const createTransactionSlice = createSlice({
       state.products.hasFetched = true;
 
       if (action.payload.length === 0) {
-        toast.info('No products found');
+        // No products found
       }
     });
     builder.addCase(fetchProducts.rejected, (state, action) => {
