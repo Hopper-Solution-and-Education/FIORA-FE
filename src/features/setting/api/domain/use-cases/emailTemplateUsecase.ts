@@ -1,5 +1,5 @@
 import { Messages } from '@/shared/constants/message';
-import { EmailTemplate, EmailTemplateType, Prisma, emailType } from '@prisma/client';
+import { EmailTemplate, Prisma } from '@prisma/client';
 import { emailTemplateRepository } from '../../infrastructure/repositories/emailTemplateRepository';
 import { IEmailTemplateRepository } from '../../repositories/emailTemplateRepository.interface';
 
@@ -15,11 +15,8 @@ class EmailTemplateUseCase implements IEmailTemplateRepository {
   async getEmailTemplate(): Promise<EmailTemplate[]> {
     return await this.emailTemplateRepository.getEmailTemplate();
   }
-  async createEmailTemplate(
-    data: Prisma.EmailTemplateCreateInput,
-    type: emailType,
-  ): Promise<EmailTemplateType> {
-    return await this.emailTemplateRepository.createEmailTemplate(data, type);
+  async createEmailTemplate(data: Prisma.EmailTemplateCreateInput): Promise<EmailTemplate> {
+    return await this.emailTemplateRepository.createEmailTemplate(data);
   }
   async updateEmailTemplate(
     id: string,

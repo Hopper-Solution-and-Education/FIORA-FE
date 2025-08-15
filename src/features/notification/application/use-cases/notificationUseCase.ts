@@ -1,6 +1,6 @@
-import { prisma, sendBulkEmailUtility } from '@/config';
-import { Messages } from '@/shared/constants/message';
+import { prisma, sendBulkEmailUtility, sendEmailCronJob } from '@/config';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { Messages } from '@/shared/constants/message';
 import { BadRequestError } from '@/shared/lib';
 import { ChannelType, NotificationType } from '@prisma/client';
 import type {
@@ -289,6 +289,29 @@ class NotificationUseCase {
         `Failed to send notification: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
+  }
+
+  async createNotificationCronjob(
+    input: CreateBoxNotificationInput,
+    to: string,
+    username: string,
+    tier_name: string,
+    updated_at: string,
+    user_id: string,
+  ) {
+    const notification = await this.notificationRepository.createBoxNotification(input);
+    const emailResult = await sendEmailCronJob(to, username, tier_name, updated_at);
+
+    await prisma.emailNotificationLogs.create({
+      data: {
+        notificationId: notification.id,
+        userId: user_id,
+        status: emailResult ? 'SENT' : 'FAILED',
+        errorMessage: emailResult ? null : 'Email sending failed',
+        createdBy: null,
+      },
+    });
+    return notification;
   }
 }
 

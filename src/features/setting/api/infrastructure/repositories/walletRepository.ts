@@ -10,6 +10,7 @@ import {
   Wallet,
   WalletType,
 } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { IWalletRepository } from '../../repositories/walletRepository.interface';
 import { PackageFXWithAttachments } from '../../types/attachmentTypes';
 
@@ -87,11 +88,27 @@ class WalletRepository implements IWalletRepository {
                 select: { id: true, url: true },
               })
             : [];
-        return { ...pkg, attachments };
+        return {
+          ...pkg,
+          attachments,
+          fxAmount: pkg.fxAmount ? Number(pkg.fxAmount) : 0,
+          createdAt: pkg.createdAt.toISOString(),
+          updatedAt: pkg.updatedAt.toISOString(),
+          createdBy: pkg.createdBy || '',
+          updatedBy: pkg.updatedBy || '',
+        };
       }),
     );
     return {
-      data,
+      data: data.map((pkg) => ({
+        ...pkg,
+        attachment_id: pkg.attachments.map((a) => a.id),
+        createdAt: new Date(pkg.createdAt),
+        updatedAt: new Date(pkg.updatedAt),
+        createdBy: pkg.createdBy || '',
+        updatedBy: pkg.updatedBy || '',
+        fxAmount: pkg.fxAmount ? new Decimal(pkg.fxAmount) : new Decimal(0),
+      })),
       total,
       page: safePage,
       limit: safeLimit,

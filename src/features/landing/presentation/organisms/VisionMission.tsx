@@ -60,8 +60,8 @@ const VisionMission = () => {
   const embedCode = section.medias.length > 0 ? section.medias[0].embed_code : null;
 
   return (
-    <section>
-      <div className="md:mt-24 lg:mt-36 px-2 sm:px-6 md:px-10">
+    <section className="sm:pt-10 md:pt-14 lg:pt-32">
+      <div className="px-2 sm:px-6 md:px-8">
         <div className="grid items-start gap-4 sm:gap-6 lg:grid-cols-5 lg:gap-8">
           <div className="justify-center items-center px-2 sm:px-4 md:px-8 md:py-8 lg:py-16 order-2 col-span-2">
             <h1
