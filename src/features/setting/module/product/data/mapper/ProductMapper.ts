@@ -105,10 +105,10 @@ export class ProductMapper {
           id: item.category.id,
           name: item.category.name,
           icon: item.category.icon,
-          description: item.category.description ?? '', // Xử lý null
+          description: item.category.description ?? '',
           createdAt: item.category.created_at,
           updatedAt: item.category.updated_at,
-          taxRate: item.category.tax_rate ?? 0, // Xử lý null
+          taxRate: item.category.tax_rate ?? 0,
         },
         products: item.products.map((productItem) => ({
           product: {

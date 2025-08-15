@@ -144,7 +144,7 @@ export type ProductTransactionResponse = {
       baseAmount: number;
       baseCurrency: string;
       amount: number;
-      currency: 'VND' | 'USD';
+      currency: string;
     } | null,
   ];
 };

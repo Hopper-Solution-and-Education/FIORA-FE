@@ -65,7 +65,10 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       const buffer = await fs.readFile(one.filepath);
       const name = one.originalFilename || 'upload';
       const type = one.mimetype || 'application/octet-stream';
-      return new File([buffer], name, { type });
+      // Convert Buffer to Uint8Array first, then create Blob
+      const uint8Array = new Uint8Array(buffer);
+      const blob = new Blob([uint8Array], { type });
+      return new File([blob], name, { type });
     };
 
     const newAvatar = await toNodeFile(files.newAvatar);
