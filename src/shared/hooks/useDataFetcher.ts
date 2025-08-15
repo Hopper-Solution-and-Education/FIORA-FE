@@ -1,3 +1,4 @@
+'use client';
 import { RequestType, Response } from '@/shared/types/Common.types';
 import { toast } from 'sonner';
 import useSWR from 'swr';

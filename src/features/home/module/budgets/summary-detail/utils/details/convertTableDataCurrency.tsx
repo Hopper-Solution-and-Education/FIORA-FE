@@ -1,8 +1,6 @@
 import { DataSourceItemProps } from '@/components/common/tables/custom-table/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { USD_VND_RATE } from '@/shared/constants';
-import { Currency } from '@/shared/types';
-import { convertVNDToUSD } from '@/shared/utils';
+import { Currency, ExchangeAmountParams, ExchangeAmountResult } from '@/shared/types';
 import { isArray } from 'lodash';
 import { TableData } from '../../presentation/types/table.type';
 
@@ -14,6 +12,7 @@ export const convertTableDataCurrency = (
     currency: Currency,
     options?: { shouldShortened?: boolean },
   ) => string,
+  getExchangeAmount: (params: ExchangeAmountParams) => ExchangeAmountResult,
   isFullCurrencyDisplay?: boolean,
 ): TableData[] => {
   const renderRemaining = (
@@ -60,6 +59,7 @@ export const convertTableDataCurrency = (
   const transformItem = (
     item: TableData,
     baseCurrency: Currency,
+    getExchangeAmount: (params: ExchangeAmountParams) => ExchangeAmountResult,
     isFullCurrencyDisplay?: boolean,
   ): TableData => {
     const transformedItem: TableData = { ...item };
@@ -97,11 +97,11 @@ export const convertTableDataCurrency = (
 
         // Convert currency if needed
         if (baseCurrency !== userCurrency) {
-          if (baseCurrency === 'VND' && userCurrency === 'USD') {
-            originalValue = convertVNDToUSD(originalValue);
-          } else if (baseCurrency === 'USD' && userCurrency === 'VND') {
-            originalValue = originalValue * USD_VND_RATE;
-          }
+          originalValue = getExchangeAmount({
+            amount: originalValue,
+            fromCurrency: baseCurrency,
+            toCurrency: userCurrency,
+          }).convertedAmount;
         }
 
         transformedItem[field] = {
@@ -148,13 +148,16 @@ export const convertTableDataCurrency = (
 
             // Convert currency if needed
             if (baseCurrency !== userCurrency) {
-              if (baseCurrency === 'VND' && userCurrency === 'USD') {
-                bottomUpValue = convertVNDToUSD(bottomUpValue);
-                actualSumUpValue = convertVNDToUSD(actualSumUpValue);
-              } else if (baseCurrency === 'USD' && userCurrency === 'VND') {
-                bottomUpValue = bottomUpValue * USD_VND_RATE;
-                actualSumUpValue = actualSumUpValue * USD_VND_RATE;
-              }
+              bottomUpValue = getExchangeAmount({
+                amount: bottomUpValue,
+                fromCurrency: baseCurrency,
+                toCurrency: userCurrency,
+              }).convertedAmount;
+              actualSumUpValue = getExchangeAmount({
+                amount: actualSumUpValue,
+                fromCurrency: baseCurrency,
+                toCurrency: userCurrency,
+              }).convertedAmount;
             }
 
             // Calculate the remaing value
@@ -177,7 +180,7 @@ export const convertTableDataCurrency = (
 
     if (transformedItem.children) {
       transformedItem.children = transformedItem.children.map((child) =>
-        transformItem(child, baseCurrency, isFullCurrencyDisplay),
+        transformItem(child, baseCurrency, getExchangeAmount, isFullCurrencyDisplay),
       );
     }
 
@@ -188,5 +191,7 @@ export const convertTableDataCurrency = (
   const topDownItem = tableData.find((item) => item.key === 'top-down');
   const baseCurrency = (topDownItem?.currency || 'USD') as Currency;
 
-  return tableData.map((item) => transformItem(item, baseCurrency, isFullCurrencyDisplay));
+  return tableData.map((item) =>
+    transformItem(item, baseCurrency, getExchangeAmount, isFullCurrencyDisplay),
+  );
 };

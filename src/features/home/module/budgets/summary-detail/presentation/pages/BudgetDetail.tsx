@@ -3,6 +3,7 @@
 import { TableV2 } from '@/components/common/tables/custom-table';
 import ActionButton from '@/components/common/UIKit/Button/ActionButton';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
 import { cn } from '@/shared/utils';
 import { routeConfig } from '@/shared/utils/route';
@@ -21,6 +22,7 @@ interface BudgetDetailProps {
 
 const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   const { isMobile } = useMatchBreakpoint();
+  const { formatCurrency, getExchangeAmount } = useCurrencyFormatter();
 
   const {
     state: { period, periodId, activeTab, isLoading, expand },
@@ -42,6 +44,8 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     handleValueChange,
     handleCategorySelected,
     handleRemoveRow,
+    formatCurrency,
+    getExchangeAmount,
   });
 
   return (
