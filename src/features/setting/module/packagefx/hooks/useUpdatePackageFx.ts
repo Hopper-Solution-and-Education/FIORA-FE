@@ -7,7 +7,8 @@ import { updatePackageFx } from '../slices/actions';
 type UpdatePayload = {
   id: string;
   fxAmount: number;
-  attachments?: attachmentFiles[];
+  // attachments?: attachmentFiles[];
+  attachments?: any[];
   removeAttachmentIds?: string[];
 };
 

@@ -17,7 +17,7 @@ const PartnerLogo = () => {
     );
 
   return (
-    <section className="w-full sm:my-10 flex flex-col items-center px-2 sm:px-4 pt-8 sm:pt-10">
+    <section className="w-full sm:my-10 flex flex-col items-center sm:px-4 pt-8 sm:pt-10">
       <h1
         data-aos="fade-up"
         className="my-2 sm:my-10 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-pretty"
@@ -28,7 +28,7 @@ const PartnerLogo = () => {
         <div
           className="flex gap-8 animate-marquee p-4"
           style={{
-            animation: 'marquee 30s linear infinite',
+            animation: 'marquee 50s linear infinite',
             width: 'max-content',
           }}
         >
