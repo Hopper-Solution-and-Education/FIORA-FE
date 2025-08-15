@@ -27,7 +27,7 @@ class TransactionUseCase {
     private transactionRepository: ITransactionRepository,
     private accountRepository: IAccountRepository,
     private currencySettingRepository: ICurrencySettingRepository,
-  ) {}
+  ) { }
 
   async listTransactions(userId: string): Promise<Transaction[]> {
     return this.transactionRepository.getTransactionsByUserId(userId);
@@ -71,13 +71,13 @@ class TransactionUseCase {
                 : []),
               ...(isSearchDate
                 ? [
-                    {
-                      date: {
-                        gte: new Date(typeSearchParams),
-                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
-                      },
+                  {
+                    date: {
+                      gte: new Date(typeSearchParams),
+                      lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
                     },
-                  ]
+                  },
+                ]
                 : []),
             ],
           },
@@ -182,13 +182,13 @@ class TransactionUseCase {
                 : []),
               ...(isSearchDate
                 ? [
-                    {
-                      date: {
-                        gte: new Date(typeSearchParams),
-                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
-                      },
+                  {
+                    date: {
+                      gte: new Date(typeSearchParams),
+                      lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
                     },
-                  ]
+                  },
+                ]
                 : []),
             ],
           },
@@ -282,11 +282,12 @@ class TransactionUseCase {
     }
 
     const amount = transaction.amount.toNumber();
+    const baseAmount = transaction.baseAmount?.toNumber() || 0;
 
     switch (transaction.type) {
       case TransactionType.Expense:
         if (fromAccount) {
-          await this.accountRepository.receiveBalance(tx, fromAccount.id, amount);
+          await this.accountRepository.receiveBalance(tx, fromAccount.id, amount, baseAmount);
         }
         break;
 
@@ -297,7 +298,7 @@ class TransactionUseCase {
             amount,
             `Account ${toAccount.name} does not have sufficient balance to reverse the income transaction.`,
           );
-          await this.accountRepository.deductBalance(tx, toAccount.id, amount);
+          await this.accountRepository.deductBalance(tx, toAccount.id, amount, baseAmount);
         }
         break;
 
@@ -488,6 +489,7 @@ class TransactionUseCase {
         tx,
         data.fromAccountId as string,
         data.amount as number,
+        data.baseAmount as number,
       );
 
       if (Array.isArray(data.products) && data.products.length > 0) {
@@ -601,6 +603,7 @@ class TransactionUseCase {
         tx,
         data.toAccountId as string,
         data.amount as number,
+        baseAmount,
       );
 
       if (Array.isArray(data.products) && data.products.length > 0) {

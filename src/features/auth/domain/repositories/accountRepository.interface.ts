@@ -29,8 +29,18 @@ export interface IAccountRepository {
     options?: Prisma.AccountFindManyArgs,
   ): Promise<Account[] | []>;
   aggregate(options: Prisma.AccountAggregateArgs): Promise<any>;
-  deductBalance(tx: Prisma.TransactionClient, accountId: string, amount: number): Promise<void>;
-  receiveBalance(tx: Prisma.TransactionClient, accountId: string, amount: number): Promise<void>;
+  deductBalance(
+    tx: Prisma.TransactionClient,
+    accountId: string,
+    amount: number,
+    baseAmount: number,
+  ): Promise<void>;
+  receiveBalance(
+    tx: Prisma.TransactionClient,
+    accountId: string,
+    amount: number,
+    baseAmount: number,
+  ): Promise<void>;
   transferBalance(
     tx: Prisma.TransactionClient,
     fromAccountId: string,

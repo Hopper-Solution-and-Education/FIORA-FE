@@ -1,11 +1,11 @@
 // infrastructure/repositories/accountRepository.ts
+import { prisma } from '@/config';
 import { Account, Prisma } from '@prisma/client';
 import {
   IAccountRepository,
   Pagination,
   SelectOptions,
 } from '../../domain/repositories/accountRepository.interface';
-import { prisma } from '@/config';
 
 export class AccountRepository implements IAccountRepository {
   async create(account: Prisma.AccountUncheckedCreateInput): Promise<Account> {
@@ -120,23 +120,39 @@ export class AccountRepository implements IAccountRepository {
     return prisma.account.aggregate(options);
   }
 
-  async deductBalance(tx: Prisma.TransactionClient, accountId: string, amount: number) {
+  async deductBalance(
+    tx: Prisma.TransactionClient,
+    accountId: string,
+    amount: number,
+    baseAmount: number,
+  ) {
     await tx.account.update({
       where: { id: accountId },
       data: {
         balance: {
           decrement: amount,
         },
+        baseAmount: {
+          decrement: baseAmount,
+        },
       },
     });
   }
 
-  async receiveBalance(tx: Prisma.TransactionClient, accountId: string, amount: number) {
+  async receiveBalance(
+    tx: Prisma.TransactionClient,
+    accountId: string,
+    amount: number,
+    baseAmount: number,
+  ) {
     await tx.account.update({
       where: { id: accountId },
       data: {
         balance: {
           increment: amount,
+        },
+        baseAmount: {
+          increment: baseAmount,
         },
       },
     });

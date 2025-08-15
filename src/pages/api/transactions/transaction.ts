@@ -16,6 +16,8 @@ export default sessionWrapper((req, res, userId) =>
           return POST(request, response, userId);
         case 'GET':
           return GET(request, response, userId);
+        case 'DELETE':
+          return DELETE(request, response, userId);
         default:
           return response
             .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -84,7 +86,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
 }
 
 export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const { id } = req.body;
+  const { id } = req.query;
 
   if (!id) {
     return res
@@ -92,7 +94,7 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
       .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_PARAMS_INPUT + ' id', null));
   }
 
-  await transactionUseCase.removeTransaction(id, userId);
+  await transactionUseCase.removeTransaction(id as string, userId);
 
   return res
     .status(RESPONSE_CODE.OK)
