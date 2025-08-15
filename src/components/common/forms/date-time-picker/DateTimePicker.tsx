@@ -37,7 +37,6 @@ import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  ChevronUpIcon,
   Clock,
   XCircle,
 } from 'lucide-react';
@@ -124,6 +123,7 @@ export type DateTimePickerProps = {
    * Custom render function for the trigger.
    */
   renderTrigger?: (props: DateTimeRenderTriggerProps) => React.ReactNode;
+  showTodayButton?: boolean;
 };
 
 export type DateTimeRenderTriggerProps = {
@@ -150,6 +150,7 @@ export function DateTimePicker({
   timePicker,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   modal = false,
+  showTodayButton = false,
   ...props
 }: DateTimePickerProps & CalendarProps) {
   const [open, setOpen] = useState(false);
@@ -164,6 +165,17 @@ export function DateTimePicker({
   }, [month]);
   const minDate = useMemo(() => (min ? new TZDate(min, timezone) : undefined), [min, timezone]);
   const maxDate = useMemo(() => (max ? new TZDate(max, timezone) : undefined), [max, timezone]);
+
+  const isTodayDisabled = useMemo(() => {
+    const today = new Date();
+    if (min && endOfDay(today) < min) {
+      return true;
+    }
+    if (max && startOfDay(today) > max) {
+      return true;
+    }
+    return false;
+  }, [min, max]);
 
   const onDayChanged = useCallback(
     (d: Date) => {
@@ -269,6 +281,7 @@ export function DateTimePicker({
                   onChange(undefined);
                   setOpen(false);
                 }}
+                type="button"
               >
                 <XCircle className="size-4" />
               </Button>
@@ -278,6 +291,14 @@ export function DateTimePicker({
       </PopoverTrigger>
       <PopoverContent className="w-auto p-2">
         <div className="flex items-center justify-between">
+          <div className={cn('flex space-x-2', monthYearPicker ? 'hidden' : '')}>
+            <Button variant="ghost" size="icon" onClick={onPrevMonth} type="button">
+              <ChevronLeftIcon />
+            </Button>
+            {/* <Button variant="ghost" size="icon" onClick={onNextMonth}>
+                <ChevronRightIcon />
+              </Button> */}
+          </div>
           <div className="text-md font-bold ms-2 flex items-center cursor-pointer">
             <div>
               <span
@@ -292,19 +313,19 @@ export function DateTimePicker({
                 {format(month, 'yyyy')}
               </span>
             </div>
-            <Button
+            {/* <Button
               variant="ghost"
               size="icon"
               onClick={() => setMonthYearPicker(monthYearPicker ? false : 'year')}
             >
               {monthYearPicker ? <ChevronUpIcon /> : <ChevronDownIcon />}
-            </Button>
+            </Button> */}
           </div>
           <div className={cn('flex space-x-2', monthYearPicker ? 'hidden' : '')}>
-            <Button variant="ghost" size="icon" onClick={onPrevMonth}>
+            {/* <Button variant="ghost" size="icon" onClick={onPrevMonth}>
               <ChevronLeftIcon />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={onNextMonth}>
+            </Button> */}
+            <Button variant="ghost" size="icon" onClick={onNextMonth} type="button">
               <ChevronRightIcon />
             </Button>
           </div>
@@ -372,14 +393,30 @@ export function DateTimePicker({
         </div>
         <div className="flex flex-col gap-2">
           {!hideTime && (
-            <TimePicker
-              timePicker={timePicker}
-              value={date}
-              onChange={setDate}
-              use12HourFormat={use12HourFormat}
-              min={minDate}
-              max={maxDate}
-            />
+            <>
+              {showTodayButton && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    const today = new TZDate(new Date(), timezone);
+                    onDayChanged(today);
+                  }}
+                  disabled={isTodayDisabled}
+                  className="mx-auto"
+                >
+                  Today
+                </Button>
+              )}
+              <TimePicker
+                timePicker={timePicker}
+                value={date}
+                onChange={setDate}
+                use12HourFormat={use12HourFormat}
+                min={minDate}
+                max={maxDate}
+              />
+            </>
           )}
           <div className="flex flex-row-reverse items-center justify-between">
             {timezone && (
@@ -467,6 +504,7 @@ function MonthYearPicker({
                   variant={getYear(value) === year.value ? 'default' : 'ghost'}
                   className="rounded-full"
                   onClick={() => onYearChange(year)}
+                  type="button"
                 >
                   {year.label}
                 </Button>
@@ -484,6 +522,7 @@ function MonthYearPicker({
                 variant={getMonth(value) === month.value ? 'default' : 'ghost'}
                 className="rounded-full"
                 onClick={() => onChange(setMonthFns(value, month.value), 'month')}
+                type="button"
               >
                 {month.label}
               </Button>
@@ -753,7 +792,13 @@ function TimePicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" aria-expanded={open} className="justify-between">
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="justify-between"
+          type="button"
+        >
           <Clock className="mr-2 size-4" />
           {display}
           <ChevronDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
@@ -855,6 +900,7 @@ const TimeItem = ({
       className={cn('flex justify-center px-1 pe-2 ps-1', className)}
       onClick={() => onSelect(option)}
       disabled={disabled}
+      type="button"
     >
       <div className="w-4">{selected && <CheckIcon className="my-auto size-4" />}</div>
       <span className="ms-2">{option.label}</span>

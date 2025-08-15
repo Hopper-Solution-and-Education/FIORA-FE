@@ -1,6 +1,7 @@
-import CustomDateTimePicker from '@/components/common/forms/date-time-picker/CustomDateTimePicker';
+import { DateTimePicker } from '@/components/common/forms';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import React from 'react';
+import { useFormContext } from 'react-hook-form';
 
 interface TypeSelectProps {
   name: string;
@@ -9,28 +10,26 @@ interface TypeSelectProps {
   [key: string]: any;
 }
 
-const DateSelectField: React.FC<TypeSelectProps> = ({ name, startMonth, endMonth }) => {
+const DateSelectField: React.FC<TypeSelectProps> = ({ name, min, max }) => {
+  const { control } = useFormContext();
   return (
     <FormField
-      name="date"
-      render={() => (
+      name={name}
+      control={control}
+      render={({ field }) => (
         <FormItem className="w-full h-fit flex flex-col sm:flex-row justify-start items-start sm:items-center gap-4">
           <FormLabel className="text-right text-sm text-gray-700 dark:text-gray-300 sm:w-[20%]">
             Date <span className="text-red-500">*</span>
           </FormLabel>
           <div className="w-full">
-            <CustomDateTimePicker
-              key={name}
-              name={name}
-              placeholder="Select date of birth"
-              showYearDropdown
-              showMonthDropdown
+            <DateTimePicker
+              value={field.value || undefined}
+              onChange={field.onChange}
               required
-              dropdownMode="select"
-              dateFormat="dd/MM/yyyy HH:mm:ss"
-              containTimePicker
-              startMonth={startMonth}
-              endMonth={endMonth}
+              modal={true}
+              min={min}
+              max={max}
+              showTodayButton={true}
             />
           </div>
         </FormItem>
