@@ -8,9 +8,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useCurrencyFormatter } from '@/shared/hooks';
+import { ExchangeAmountParams, ExchangeAmountResult } from '@/shared/hooks';
 import { cn } from '@/shared/utils';
 import { useAppSelector } from '@/store';
+import { Currency } from '@prisma/client';
 import { useMemo } from 'react';
 import { HEIGHT_ROW } from '../../data/constants';
 import { Category } from '../../data/dto/response/CategoryResponseDTO';
@@ -24,6 +25,12 @@ interface UseBudgetColumnsProps {
   handleValueChange: (record: TableData, columnKey: string, value: number) => void;
   handleCategorySelected: (rowKey: string, category: Category) => Promise<void>;
   handleRemoveRow?: (record: TableData) => void;
+  formatCurrency: (
+    value: number,
+    currency: Currency,
+    options?: { shouldShortened?: boolean },
+  ) => string;
+  getExchangeAmount: (params: ExchangeAmountParams) => ExchangeAmountResult;
 }
 
 export function useBudgetColumns({
@@ -31,6 +38,8 @@ export function useBudgetColumns({
   handleValueChange,
   handleCategorySelected,
   handleRemoveRow,
+  formatCurrency,
+  getExchangeAmount,
 }: UseBudgetColumnsProps) {
   // Get budget detail state from context
   const {
@@ -48,12 +57,17 @@ export function useBudgetColumns({
 
   // Get currency settings from global store
   const { currency, isFullCurrencyDisplay } = useAppSelector((state) => state.settings);
-  const { formatCurrency } = useCurrencyFormatter();
 
   // Convert table data to display currency format
   const convertedTableData = useMemo(() => {
-    return convertTableDataCurrency(tableData, currency, formatCurrency, isFullCurrencyDisplay);
-  }, [tableData, currency, isFullCurrencyDisplay, formatCurrency]);
+    return convertTableDataCurrency(
+      tableData,
+      currency,
+      formatCurrency,
+      getExchangeAmount,
+      isFullCurrencyDisplay,
+    );
+  }, [tableData, currency, isFullCurrencyDisplay, formatCurrency, getExchangeAmount]);
 
   // Get columns configuration based on period type
   const updatedColumns = getColumnsByPeriod({

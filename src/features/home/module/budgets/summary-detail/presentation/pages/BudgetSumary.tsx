@@ -4,6 +4,7 @@ import { ChartSkeleton } from '@/components/common/organisms';
 import { COLORS } from '@/shared/constants/chart';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { ICON_SIZE } from '@/shared/constants/size';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { Currency } from '@/shared/types';
 import { routeConfig } from '@/shared/utils/route';
 import { useAppSelector } from '@/store';
@@ -34,6 +35,7 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { currency } = useAppSelector((state) => state.settings);
+  const { getExchangeAmount } = useCurrencyFormatter();
   const router = useRouter();
 
   const budgetSummaryUseCase = budgetSummaryDIContainer.get<IBudgetSummaryUseCase>(
@@ -70,16 +72,19 @@ const BudgetSummary = ({ year: selectedYear }: BudgetSummaryProps) => {
       topBudget,
       topBudget?.budget.currency as Currency,
       currency,
+      getExchangeAmount,
     );
     const convertedBot = convertBudgetCurrency(
       botBudget,
       botBudget?.budget.currency as Currency,
       currency,
+      getExchangeAmount,
     );
     const convertedAct = convertBudgetCurrency(
       actBudget,
       actBudget?.budget.currency as Currency,
       currency,
+      getExchangeAmount,
     );
 
     if (convertedTop?.budget && convertedBot?.budget && convertedAct?.budget) {
