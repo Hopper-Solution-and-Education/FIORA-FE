@@ -200,7 +200,7 @@ model Transaction {
   fromWalletId        String?              @db.Uuid
   toWalletId          String?              @db.Uuid
   membershipBenefitId String?              @db.Uuid
-  CronJobLog          CronJobLog[]
+  CronJobLog          CronJobLog[]         @relation("CronJobLogTransactions")
   productsRelation    ProductTransaction[] @relation("ProductTransactions")
   fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
   fromCategory        Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
@@ -853,7 +853,8 @@ model CronJobLog {
   createdAt     DateTime      @default(now()) @db.Timestamptz(0)
   updatedAt     DateTime      @db.Timestamptz(0)
   status        CronJobStatus
-  Transaction   Transaction?  @relation(fields: [transactionId], references: [id])
+
+  Transaction   Transaction?  @relation("CronJobLogTransactions", fields: [transactionId], references: [id])
 }
 
 enum BudgetType {

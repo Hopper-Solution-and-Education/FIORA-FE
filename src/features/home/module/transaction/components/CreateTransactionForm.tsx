@@ -2,6 +2,7 @@
 
 import { FormConfig } from '@/components/common/forms';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { subDays } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -68,8 +69,8 @@ const CreateTransactionForm = () => {
       key="date"
       name="date"
       required
-      endMonth={new Date(new Date().getFullYear() + 1, 11, 31)}
-      startMonth={new Date(new Date().getFullYear(), 0, 1)}
+      min={subDays(new Date(), 30)} // 30 days ago
+      max={new Date(new Date().getFullYear() + 1, 11, 31)} // 1 year from now
     />,
     <TypeSelectField key="type" name="type" required />,
     <CurrencySelectField key="currency" name="currency" required />,

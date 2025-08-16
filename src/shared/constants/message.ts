@@ -354,4 +354,7 @@ export enum Messages {
 
   //Common
   DELETE_SUCCESS = 'Delete successfully',
+
+  //Email template type
+  EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
 }

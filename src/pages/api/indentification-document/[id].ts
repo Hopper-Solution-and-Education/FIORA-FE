@@ -65,7 +65,7 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse, userId: s
       remarks,
       status,
     },
-    id,
+    String(id),
     userId,
   );
   return res
