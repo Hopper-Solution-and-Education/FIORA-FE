@@ -19,7 +19,7 @@ class PartnerUseCase {
   constructor(
     private partnerRepository: IPartnerRepository,
     private transactionRepository: ITransactionRepository,
-  ) {}
+  ) { }
 
   async listPartners(userId: string): Promise<Partner[]> {
     return this.partnerRepository.getPartnersByUserId(userId);
@@ -109,9 +109,9 @@ class PartnerUseCase {
     const finalFilteredPartners =
       typesFilter.length > 0
         ? filteredPartners.filter((partner: any) => {
-            const type = this.determinePartnerType(partner.transactions || []);
-            return typesFilter.includes(type);
-          })
+          const type = this.determinePartnerType(partner.transactions || []);
+          return typesFilter.includes(type);
+        })
         : filteredPartners;
 
     const { minIncome, maxIncome, minExpense, maxExpense } =
@@ -322,45 +322,21 @@ class PartnerUseCase {
 
   async createPartner(data: Prisma.PartnerUncheckedCreateInput): Promise<Partner> {
     return prisma.$transaction(async (tx) => {
-      const validationData: PartnerValidationData = {
-        userId: data.userId as string,
-        email: data.email as string | null,
-        phone: data.phone as string | null,
-        taxNo: data.taxNo as string | null,
-        identify: data.identify as string | null,
-        name: data.name as string,
-        description: data.description as string | null,
-        address: data.address as string | null,
-        logo: data.logo as string | null,
-        dob: data.dob ? new Date(data.dob as string | Date) : null,
-        parentId: data.parentId as string | null,
-      };
-
-      const validationErrors = await validatePartnerData(validationData, tx, false);
-
-      if (validationErrors.length > 0) {
-        const errorObject: Record<string, string> = {};
-        validationErrors.forEach((err) => {
-          errorObject[err.field] = err.message;
-        });
-        throw { validationErrors: errorObject };
-      }
-
       const partner = await tx.partner.create({
         data: {
           userId: data.userId as string,
-          email: data.email,
-          identify: data.identify,
-          description: data.description,
-          dob: data.dob,
-          logo: data.logo,
-          taxNo: data.taxNo,
-          phone: data.phone,
+          email: data.email || null,
+          identify: data.identify || null,
+          description: data.description || null,
+          dob: data.dob || null,
+          logo: data.logo || null,
+          taxNo: data.taxNo || null,
+          phone: data.phone || null,
           name: data.name,
-          address: data.address,
+          address: data.address || null,
           createdBy: data.userId as string,
           updatedBy: data.userId as string,
-          parentId: data.parentId || null,
+          ...(data.parentId && { parentId: data.parentId }),
         },
       });
 
@@ -383,15 +359,15 @@ class PartnerUseCase {
       const [createdBy, updatedBy] = await Promise.all([
         partner.createdBy
           ? prisma.user.findFirst({
-              where: { id: partner.createdBy },
-              select: { id: true, name: true, email: true, image: true },
-            })
+            where: { id: partner.createdBy },
+            select: { id: true, name: true, email: true, image: true },
+          })
           : null,
         partner.updatedBy
           ? prisma.user.findFirst({
-              where: { id: partner.updatedBy },
-              select: { id: true, name: true, email: true, image: true },
-            })
+            where: { id: partner.updatedBy },
+            select: { id: true, name: true, email: true, image: true },
+          })
           : null,
       ]);
 
