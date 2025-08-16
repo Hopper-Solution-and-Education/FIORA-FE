@@ -240,6 +240,7 @@ model Partner {
   dob          DateTime?     @db.Date
   taxNo        String?       @db.VarChar(20)
   address      String?       @db.VarChar(255)
+  bankAccount  String?       @db.VarChar(255)
   email        String?       @db.VarChar(50)
   phone        String?       @db.VarChar(50)
   description  String?       @db.VarChar(1000)
@@ -607,6 +608,7 @@ model MembershipProgress {
   createdAt      DateTime        @default(now()) @db.Timestamptz(0)
   updatedAt      DateTime        @updatedAt @db.Timestamptz(0)
   tierId         String?         @db.Uuid
+  tiersendid     String?         @db.Uuid
   tier           MembershipTier? @relation(fields: [tierId], references: [id])
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -851,6 +853,7 @@ model CronJobLog {
   createdAt     DateTime      @default(now()) @db.Timestamptz(0)
   updatedAt     DateTime      @db.Timestamptz(0)
   status        CronJobStatus
+
   Transaction   Transaction?  @relation("CronJobLogTransactions", fields: [transactionId], references: [id])
 }
 
@@ -1001,14 +1004,14 @@ enum emailType {
   DEPOPSIT_REJECT
 }
 
+enum CronJobStatus {
+  SUCCESSFUL
+  FAIL
+}
+
 enum TypeCronJob {
   MEMBERSHIP
   REFERRAL
   CASHBACK
   FLEXI_INTEREST
-}
-
-enum CronJobStatus {
-  SUCCESSFUL
-  FAIL
 }

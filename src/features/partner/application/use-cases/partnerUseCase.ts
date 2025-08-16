@@ -2,7 +2,7 @@ import { prisma } from '@/config';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { Messages } from '@/shared/constants/message';
-import { BooleanUtils } from '@/shared/lib';
+import { BadRequestError, BooleanUtils } from '@/shared/lib';
 import { GlobalFilters } from '@/shared/types';
 import { PartnerRangeFilter } from '@/shared/types/partner.types';
 import { buildWhereClause } from '@/shared/utils';
@@ -250,7 +250,7 @@ class PartnerUseCase {
         where: { id, userId },
       });
       if (!partner) {
-        throw new Error(Messages.PARTNER_NOT_FOUND);
+        throw new BadRequestError(Messages.PARTNER_NOT_FOUND);
       }
 
       const validationData: PartnerValidationData = {
@@ -289,9 +289,6 @@ class PartnerUseCase {
         if (parentPartner.id === partner.id) {
           throw new Error(Messages.INVALID_PARENT_PARTNER_SELF);
         }
-        // if (parentPartner.children && parentPartner.children.length > 0) {
-        //   throw new Error(Messages.INVALID_PARENT_HIERARCHY);
-        // }
       }
 
       const updateData = {
@@ -300,6 +297,7 @@ class PartnerUseCase {
         description: data.description,
         dob: data.dob ? new Date(data.dob as string) : undefined,
         logo: data.logo,
+        bankAccount: data.bankAccount,
         taxNo: data.taxNo,
         phone: data.phone,
         name: data.name,
@@ -325,13 +323,14 @@ class PartnerUseCase {
       const partner = await tx.partner.create({
         data: {
           userId: data.userId as string,
-          email: data.email || null,
-          identify: data.identify || null,
-          description: data.description || null,
-          dob: data.dob || null,
-          logo: data.logo || null,
-          taxNo: data.taxNo || null,
-          phone: data.phone || null,
+          email: data.email,
+          identify: data.identify,
+          description: data.description,
+          bankAccount: data.bankAccount,
+          dob: data.dob,
+          logo: data.logo,
+          taxNo: data.taxNo,
+          phone: data.phone,
           name: data.name,
           address: data.address || null,
           createdBy: data.userId as string,
