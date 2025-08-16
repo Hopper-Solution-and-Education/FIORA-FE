@@ -14,7 +14,7 @@ interface PaginatedAccountsResponse {
 }
 
 export class GetPaginatedAccountsUseCase {
-  constructor(private accountRepository: AccountRepository) { }
+  constructor(private accountRepository: AccountRepository) {}
 
   async execute({
     userId,

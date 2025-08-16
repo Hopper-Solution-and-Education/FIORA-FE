@@ -1,9 +1,11 @@
 'use client';
 
 import { FormConfig } from '@/components/common/forms';
-import { AppDispatch, RootState } from '@/store';
+import { AppDispatch } from '@/store';
+import { RootState } from '@/store/rootReducer';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { TransactionType } from '@prisma/client';
+import { subDays } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -69,8 +71,6 @@ const CreateTransactionForm = () => {
   }, [isSuccess, reset, router, dispatch]);
 
   const onSubmit = (data: any) => {
-    console.log('Form submitted with data:', data);
-
     const body: CreateTransactionBody = {
       amount: data.amount,
       currency: data.currency,
@@ -93,8 +93,8 @@ const CreateTransactionForm = () => {
       key="date"
       name="date"
       required
-      endMonth={new Date(new Date().getFullYear() + 1, 11, 31)}
-      startMonth={new Date(new Date().getFullYear(), 0, 1)}
+      min={subDays(new Date(), 30)} // 30 days ago
+      max={new Date(new Date().getFullYear() + 1, 11, 31)} // 1 year from now
     />,
     <TypeSelectField key="type" name="type" required />,
     <CurrencySelectField key="currency" name="currency" required />,

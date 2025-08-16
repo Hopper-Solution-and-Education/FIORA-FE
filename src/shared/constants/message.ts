@@ -125,6 +125,7 @@ export enum Messages {
   INVALID_ACCOUNT_TYPE_FOR_INCOME = 'Invalid account type. Only Payment accounts are allowed for income.',
   UNSUPPORTED_ACCOUNT_TYPE = 'Unsupported account type',
   INVALID_ACCOUNT_TYPE_FOR_EXPENSE = 'Invalid account type. Only Payment and CreditCard are supported.',
+  REMARK_IS_REQUIRED = 'Remark is required',
   MASTER_ACCOUNT_ALREADY_EXISTS = 'Master account already exists! You can only have one master account.',
   UNAUTHORIZED = 'Not logged in',
   UPDATE_PARENT_ACCOUNT_NOT_ALLOWED = 'Parent account balance cannot be updated',

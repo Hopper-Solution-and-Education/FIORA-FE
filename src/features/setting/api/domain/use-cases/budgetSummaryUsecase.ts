@@ -29,7 +29,7 @@ class BudgetSummaryUseCase {
     private _budgetRepository: IBudgetRepository = budgetRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
     private _categoryRepository: ICategoryRepository = categoryRepository,
-  ) { }
+  ) {}
 
   async getBudgetsByUserIdAndFiscalYear(
     userId: string,
@@ -338,10 +338,10 @@ class BudgetSummaryUseCase {
             const oldDetail = oldBudgetDetails.find((d) => d.month === i + 1);
             const value = oldDetail
               ? await convertCurrency(
-                Number(oldDetail.amount),
-                oldDetail.currency!,
-                targetCurrency!,
-              )
+                  Number(oldDetail.amount),
+                  oldDetail.currency!,
+                  targetCurrency!,
+                )
               : 0;
             return {
               amount: new Prisma.Decimal(value),
@@ -590,10 +590,10 @@ class BudgetSummaryUseCase {
 
               const oldValue = oldDetail
                 ? await convertCurrency(
-                  Number(oldDetail.amount),
-                  oldDetail.currency!,
-                  targetCurrency!,
-                )
+                    Number(oldDetail.amount),
+                    oldDetail.currency!,
+                    targetCurrency!,
+                  )
                 : 0;
 
               const newValue = monthlyBudgetDetailValues[i].bottomUp ?? 0;

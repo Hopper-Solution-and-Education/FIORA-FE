@@ -134,15 +134,15 @@ class ProductUseCase {
       const [createdBy, updatedBy] = await Promise.all([
         product.createdBy
           ? prisma.user.findFirst({
-            where: { id: product.createdBy },
-            select: { id: true, name: true, email: true, image: true },
-          })
+              where: { id: product.createdBy },
+              select: { id: true, name: true, email: true, image: true },
+            })
           : null,
         product.updatedBy
           ? prisma.user.findFirst({
-            where: { id: product.updatedBy },
-            select: { id: true, name: true, email: true, image: true },
-          })
+              where: { id: product.updatedBy },
+              select: { id: true, name: true, email: true, image: true },
+            })
           : null,
       ]);
 

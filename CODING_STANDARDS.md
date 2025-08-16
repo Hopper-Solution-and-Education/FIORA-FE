@@ -15,24 +15,20 @@ Naming conventions are a cornerstone of writing Clean Code. A well-defined and c
 These general rules apply across all naming conventions in the project:
 
 - **Clarity and Descriptive:**
-
   - **Intent-Revealing Names:** Choose names that clearly and unambiguously communicate the purpose, role, or functionality of the entity being named. Names should answer the "why" and "what" questions about the code.
   - **Avoid Abbreviations and Acronyms (Unless Widely Understood):** Favor full, descriptive words over abbreviations or acronyms that might be unclear to other developers, especially those new to the project. If abbreviations are necessary, ensure they are widely recognized within the domain.
   - **Example:** Instead of `getData`, use `fetchUserDataFromAPI`. Instead of `btn`, use `submitButton`.
 
 - **Brevity and Completeness:**
-
   - **Balance Brevity with Clarity:** Strive for names that are concise and easy to type, but not at the expense of clarity. A slightly longer, more descriptive name is preferable to a shorter, ambiguous one.
   - **Context Matters:** The appropriate length of a name can depend on its scope. Variables with a very narrow scope (e.g., within a short function) can sometimes have shorter names, while entities with broader scope should have more descriptive names.
   - **Example:** `user` is acceptable for a variable representing a user in a small function, but `currentUserProfileData` is better for a variable with wider scope or in a component managing user profiles.
 
 - **For Functions, Use Verbs or Verb Phrases:**
-
   - **Action-Oriented Names:** Function names should clearly indicate the action or operation they perform. Start function names with verbs or verb phrases to emphasize their behavior.
   - **Example:** `calculateTotalPrice()`, `validateUserInput()`, `renderUserProfile()`, `fetchData()`.
 
 - **Consistency:**
-
   - **Project-Wide Consistency:** Adhere to the established naming conventions throughout the entire project. Inconsistency makes the codebase harder to read and understand.
   - **Team Agreement:** Ensure that the entire development team agrees upon and follows these naming conventions. Use code reviews to enforce consistency.
   - **Example:** If you decide to use `PascalCase` for components, use it consistently for all components, not just some.

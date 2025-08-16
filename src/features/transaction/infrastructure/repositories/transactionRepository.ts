@@ -243,7 +243,6 @@ class TransactionRepository implements ITransactionRepository {
         prisma.account.findMany({
           where: {
             userId,
-            OR: [{ type: 'Payment' }, { type: 'CreditCard' }, { type: 'Debt' }],
           },
 
           select: {
@@ -273,14 +272,6 @@ class TransactionRepository implements ITransactionRepository {
         prisma.account.findMany({
           where: {
             userId,
-            OR: [
-              { type: 'Payment' },
-              { type: 'CreditCard' },
-              { type: 'Saving' },
-              { type: 'Lending' },
-              { type: 'Debt' },
-              { type: 'Invest' },
-            ],
           },
           select: {
             id: true,

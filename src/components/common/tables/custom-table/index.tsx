@@ -70,6 +70,7 @@ export function TableV2({
   paginationEnabled = true,
   className,
   tableContainerClassName,
+  tableHeight,
   ...rest
 }: TableProps) {
   // Header sticky
@@ -424,6 +425,7 @@ export function TableV2({
           >
             <Table
               containerClassName={tableContainerClassName}
+              tableHeight={tableHeight}
               className={cn(
                 bordered &&
                   'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
@@ -574,6 +576,7 @@ export function TableV2({
           >
             <Table
               containerClassName={tableContainerClassName}
+              tableHeight={tableHeight}
               className={cn(
                 bordered &&
                   'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
@@ -688,6 +691,7 @@ export function TableV2({
           'transition-all duration-300',
         )}
         style={{
+          height: tableHeight,
           maxWidth: scroll?.x
             ? typeof scroll.x === 'number'
               ? `${scroll.x}px`
