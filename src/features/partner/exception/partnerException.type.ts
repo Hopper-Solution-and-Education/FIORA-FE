@@ -8,6 +8,7 @@ export interface PartnerValidationData {
   email?: string | null;
   phone?: string | null;
   taxNo?: string | null;
+  bankAccount?: string | null;
   identify?: string | null;
   name?: string;
   description?: string | null;

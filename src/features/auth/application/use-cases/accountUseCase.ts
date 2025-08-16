@@ -544,22 +544,10 @@ export class AccountUseCase {
       case AccountType.Saving:
       case AccountType.Lending:
       case AccountType.Invest:
-        if (balance < 0) {
-          throw new Error('Balance must be >= 0');
-        }
-        break;
       case AccountType.Debt:
-        if (balance > 0) {
-          throw new Error('Balance must be <= 0');
-        }
-        break;
       case AccountType.CreditCard:
         if (!limit && limit !== 0) {
           throw new Error('Limit must be provided');
-        }
-
-        if (balance > 0) {
-          throw new Error('Balance must be <= 0');
         }
 
         if (limit < 0) {

@@ -200,6 +200,7 @@ model Transaction {
   fromWalletId        String?              @db.Uuid
   toWalletId          String?              @db.Uuid
   membershipBenefitId String?              @db.Uuid
+  CronJobLog          CronJobLog[]
   productsRelation    ProductTransaction[] @relation("ProductTransactions")
   fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
   fromCategory        Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
@@ -239,6 +240,7 @@ model Partner {
   dob          DateTime?     @db.Date
   taxNo        String?       @db.VarChar(20)
   address      String?       @db.VarChar(255)
+  bankAccount  String?       @db.VarChar(255)
   email        String?       @db.VarChar(50)
   phone        String?       @db.VarChar(50)
   description  String?       @db.VarChar(1000)
@@ -502,27 +504,28 @@ model Notification {
 }
 
 model EmailTemplate {
-  name              String              @db.VarChar(255)
-  content           String
-  isActive          Boolean
-  createdAt         DateTime            @default(now()) @db.Timestamptz(0)
-  createdBy         String?             @db.Uuid
-  updatedAt         DateTime            @updatedAt @db.Timestamptz(0)
-  updatedBy         String?             @db.Uuid
-  id                String              @id @default(uuid()) @db.Uuid
-  EmailTemplateType EmailTemplateType[]
-  notifications     Notification[]
+  name                String            @db.VarChar(255)
+  content             String
+  isActive            Boolean
+  createdAt           DateTime          @default(now()) @db.Timestamptz(0)
+  createdBy           String?           @db.Uuid
+  updatedAt           DateTime          @updatedAt @db.Timestamptz(0)
+  updatedBy           String?           @db.Uuid
+  id                  String            @id @default(uuid()) @db.Uuid
+  emailtemplatetypeid String            @db.Uuid
+  isdefault           Boolean?          @default(false)
+  EmailTemplateType   EmailTemplateType @relation(fields: [emailtemplatetypeid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "emailtemplate_emailtemplatetype_id_fk")
+  notifications       Notification[]
 }
 
 model EmailTemplateType {
-  createdAt       DateTime      @default(now()) @db.Timestamptz(0)
-  createdBy       String?       @db.Uuid
-  updatedAt       DateTime      @updatedAt @db.Timestamptz(0)
-  updatedBy       String?       @db.Uuid
-  EmailTemplateId String        @db.Uuid
-  id              String        @id @default(uuid()) @db.Uuid
-  type            emailType
-  EmailTemplate   EmailTemplate @relation(fields: [EmailTemplateId], references: [id])
+  createdAt     DateTime        @db.Timestamptz(0)
+  createdBy     String?         @db.Uuid
+  updatedAt     DateTime        @updatedAt @db.Timestamptz(0)
+  updatedBy     String?         @db.Uuid
+  id            String          @id @default(uuid()) @db.Uuid
+  type          emailType
+  EmailTemplate EmailTemplate[]
 }
 
 model EmailNotificationLogs {
@@ -605,6 +608,7 @@ model MembershipProgress {
   createdAt      DateTime        @default(now()) @db.Timestamptz(0)
   updatedAt      DateTime        @updatedAt @db.Timestamptz(0)
   tierId         String?         @db.Uuid
+  tiersendid     String?         @db.Uuid
   tier           MembershipTier? @relation(fields: [tierId], references: [id])
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -839,6 +843,19 @@ model eKYC {
   User       User?     @relation(fields: [userId], references: [id])
 }
 
+model CronJobLog {
+  id            String        @id @db.Uuid
+  transactionId String?       @db.Uuid
+  typeCronJob   TypeCronJob
+  executionTime DateTime      @db.Timestamptz(0)
+  createdBy     String?       @db.Uuid
+  updatedBy     String?       @db.Uuid
+  createdAt     DateTime      @default(now()) @db.Timestamptz(0)
+  updatedAt     DateTime      @db.Timestamptz(0)
+  status        CronJobStatus
+  Transaction   Transaction?  @relation(fields: [transactionId], references: [id])
+}
+
 enum BudgetType {
   Top
   Bot
@@ -984,4 +1001,16 @@ enum emailType {
   OTP
   DEPOPSIT_APPROVE
   DEPOPSIT_REJECT
+}
+
+enum CronJobStatus {
+  SUCCESSFUL
+  FAIL
+}
+
+enum TypeCronJob {
+  MEMBERSHIP
+  REFERRAL
+  CASHBACK
+  FLEXI_INTEREST
 }

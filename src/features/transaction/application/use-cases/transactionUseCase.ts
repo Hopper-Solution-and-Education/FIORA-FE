@@ -409,6 +409,10 @@ class TransactionUseCase {
         throw new Error(Messages.INVALID_ACCOUNT_TYPE_FOR_EXPENSE);
       }
 
+      if (!data.remark) {
+        throw new BadRequestError(Messages.REMARK_IS_REQUIRED);
+      }
+
       BooleanUtils.chooseByMap(
         type,
         {
@@ -517,6 +521,10 @@ class TransactionUseCase {
         throw new BadRequestError(Messages.CATEGORY_NOT_FOUND);
       }
 
+      if (!data.remark) {
+        throw new BadRequestError(Messages.REMARK_IS_REQUIRED);
+      }
+
       if (category && category.type !== CategoryType.Income) {
         throw new BadRequestError(Messages.INVALID_CATEGORY_TYPE_INCOME);
       }
@@ -590,6 +598,10 @@ class TransactionUseCase {
 
       if (!fromAccount || !toAccount) {
         throw new Error(Messages.ACCOUNT_NOT_FOUND);
+      }
+
+      if (!data.remark) {
+        throw new BadRequestError(Messages.REMARK_IS_REQUIRED);
       }
 
       const type = fromAccount.type;
