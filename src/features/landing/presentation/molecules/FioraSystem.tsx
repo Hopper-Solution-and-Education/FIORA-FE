@@ -152,15 +152,15 @@ export const FioraSystem = () => {
   const scaledCategoryLabels = categoryLabels.map((label, index) => ({
     ...label,
     radius: label.radius * scaleFactor,
-    iconSrc: section?.medias?.[index]?.media_url ?? label.iconSrc,
-    label: section?.medias?.[index]?.description ?? label.label,
-    href: section?.medias?.[index]?.redirect_url ?? label.href,
+    iconSrc: section?.medias?.[index + 1]?.media_url ?? label.iconSrc,
+    label: section?.medias?.[index + 1]?.description ?? label.label,
+    href: section?.medias?.[index + 1]?.redirect_url ?? label.href,
   }));
 
-  const fioraLogo = section?.medias?.[4]?.media_url;
+  const fioraLogo = section?.medias?.[0]?.media_url;
 
   return (
-    <section className="font-sans pt-8 sm:pt-12 md:pt-0 lg:pt-0 lg:-mt-20">
+    <section className="font-sans pt-8 sm:pt-12 md:pt-0 lg:pt-0 lg:mt-2">
       <div className="mx-auto">
         <div>
           <div className="mx-auto max-w-3xl text-center -mb-2">
