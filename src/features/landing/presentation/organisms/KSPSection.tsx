@@ -72,7 +72,7 @@ const KSPSection = () => {
         <CarouselContent className="flex" style={{ height: itemHeight }}>
           {section?.medias?.map((item, index) => (
             <CarouselItem
-              key={index}
+              key={item.id ?? index}
               style={{
                 marginRight: `${gap}px`,
                 marginLeft: `${gap}px`,

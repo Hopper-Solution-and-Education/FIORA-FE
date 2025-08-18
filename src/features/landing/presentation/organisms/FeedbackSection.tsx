@@ -101,7 +101,7 @@ export const FeedbackSection = () => {
                 {section?.medias && section.medias.length > 0 ? (
                   section.medias.map((media, index) => {
                     return (
-                      <CarouselItem key={index} className="basis-full">
+                      <CarouselItem key={media.id ?? index} className="basis-full">
                         <Card className="w-full max-w-[1300px] min-h-[350px] h-auto mx-auto shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row rounded-xl px-2 md:px-8 lg:px-16 py-4 md:py-8 gap-4 md:gap-0">
                           {/* CardContent: Reviewer info and review */}
                           <CardContent className="flex flex-col gap-4 w-full md:w-2/5 justify-center items-center md:items-start px-2 md:px-6 lg:px-10 py-4 md:py-10">
