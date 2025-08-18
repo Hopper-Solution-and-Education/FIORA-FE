@@ -351,7 +351,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
     (newFilter: FilterCriteria) => {
       // Create the GlobalFilters structure that the API expects
       const globalFilters: GlobalFilters = {
-        search: 'Expense', // Set search term to "Expense" as required
+        search: '',
         filters: newFilter.filters || {},
       };
 
