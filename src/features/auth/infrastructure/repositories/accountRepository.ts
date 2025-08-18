@@ -1,11 +1,11 @@
 // infrastructure/repositories/accountRepository.ts
+import { prisma } from '@/config';
 import { Account, Prisma } from '@prisma/client';
 import {
   IAccountRepository,
   Pagination,
   SelectOptions,
 } from '../../domain/repositories/accountRepository.interface';
-import { prisma } from '@/config';
 
 export class AccountRepository implements IAccountRepository {
   async create(account: Prisma.AccountUncheckedCreateInput): Promise<Account> {
@@ -132,6 +132,33 @@ export class AccountRepository implements IAccountRepository {
   async receiveBalance(tx: Prisma.TransactionClient, accountId: string, amount: number) {
     await tx.account.update({
       where: { id: accountId },
+      data: {
+        balance: {
+          increment: amount,
+        },
+      },
+    });
+  }
+
+  async transferBalanceDecimal(
+    tx: Prisma.TransactionClient,
+    fromAccountId: string,
+    toAccountId: string,
+    amount: Prisma.Decimal,
+  ) {
+    // Trừ tiền từ tài khoản gửi
+    await tx.account.update({
+      where: { id: fromAccountId },
+      data: {
+        balance: {
+          decrement: amount,
+        },
+      },
+    });
+
+    // Cộng tiền vào tài khoản nhận
+    await tx.account.update({
+      where: { id: toAccountId },
       data: {
         balance: {
           increment: amount,
