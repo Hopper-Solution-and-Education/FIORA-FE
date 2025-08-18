@@ -37,6 +37,13 @@ export interface IAccountRepository {
     toAccountId: string,
     amount: number,
   ): Promise<any>;
+
+  transferBalanceDecimal(
+    tx: Prisma.TransactionClient,
+    fromAccountId: string,
+    toAccountId: string,
+    amount: Prisma.Decimal,
+  ): Promise<any>;
 }
 
 export interface AccountCreation {
