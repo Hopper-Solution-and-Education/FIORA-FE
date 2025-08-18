@@ -126,20 +126,17 @@ This project is configured with an enhanced automated deployment pipeline using 
 ### Setup Instructions
 
 1. **Create a Vercel Account and Project**:
-
    - Sign up or log in to [Vercel](https://vercel.com)
    - Create a new project and import your GitHub repository
    - Complete the initial setup process
 
 2. **Obtain Vercel Deployment Tokens**:
-
    - Go to your Vercel account settings
    - Navigate to "Tokens" and create a new token with "Full Account" scope
    - Copy the token value (you'll need it for GitHub secrets)
    - In your Vercel project settings, note your "Project ID" and "Organization ID"
 
 3. **Configure GitHub Repository Secrets**:
-
    - Go to your GitHub repository
    - Navigate to "Settings" > "Secrets and variables" > "Actions"
    - Add the following secrets:
@@ -148,13 +145,11 @@ This project is configured with an enhanced automated deployment pipeline using 
      - `VERCEL_PROJECT_ID`: Your Vercel Project ID
 
 4. **Set Up Environment Variables**:
-
    - Create a `.env.production.local` file with your environment variables
    - Run `npm run setup-vercel` to sync these variables to Vercel
    - For CI/CD, the GitHub Actions workflow will automatically sync environment variables
 
 5. **Test and Deploy Your Application**:
-
    - **Local Build Testing**: Before deploying, you can test your build locally:
      - Run `npm run vercel-build` to simulate the Vercel build process locally
      - For more detailed build logs, run `npm run vercel-build:debug`

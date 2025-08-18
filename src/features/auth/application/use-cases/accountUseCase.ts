@@ -1,7 +1,7 @@
 import { prisma } from '@/config';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
-import { BooleanUtils } from '@/shared/lib';
+import { BadRequestError, BooleanUtils } from '@/shared/lib';
 import { GlobalFilters } from '@/shared/types';
 import { buildWhereClause } from '@/shared/utils';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
@@ -538,26 +538,18 @@ export class AccountUseCase {
     if (!Object.values(AccountType).includes(type)) {
       return false;
     }
+    if (type === AccountType.CreditCard) {
+      if (!limit && limit !== 0) {
+        throw new BadRequestError('Limit must be provided');
+      }
 
-    switch (type) {
-      case AccountType.Payment:
-      case AccountType.Saving:
-      case AccountType.Lending:
-      case AccountType.Invest:
-      case AccountType.Debt:
-      case AccountType.CreditCard:
-        if (!limit && limit !== 0) {
-          throw new Error('Limit must be provided');
-        }
+      if (limit < 0) {
+        throw new BadRequestError('Limit must be >= 0');
+      }
 
-        if (limit < 0) {
-          throw new Error('Limit must be >= 0');
-        }
-
-        if (limit < balance) {
-          throw new Error('Limit must be greater than balance');
-        }
-        break;
+      if (limit < balance) {
+        throw new BadRequestError('Limit must be greater than balance');
+      }
     }
     return true;
   }
