@@ -124,6 +124,10 @@ export type DateTimePickerProps = {
    */
   renderTrigger?: (props: DateTimeRenderTriggerProps) => React.ReactNode;
   showTodayButton?: boolean;
+  yearRange?: {
+    min: number;
+    max: number;
+  };
 };
 
 export type DateTimeRenderTriggerProps = {
@@ -151,6 +155,7 @@ export function DateTimePicker({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   modal = false,
   showTodayButton = false,
+  yearRange,
   ...props
 }: DateTimePickerProps & CalendarProps) {
   const [open, setOpen] = useState(false);
@@ -291,13 +296,10 @@ export function DateTimePicker({
       </PopoverTrigger>
       <PopoverContent className="w-auto p-2">
         <div className="flex items-center justify-between">
-          <div className={cn('flex space-x-2', monthYearPicker ? 'hidden' : '')}>
+          <div className={cn('flex space-x-2', monthYearPicker ? 'invisible' : '')}>
             <Button variant="ghost" size="icon" onClick={onPrevMonth} type="button">
               <ChevronLeftIcon />
             </Button>
-            {/* <Button variant="ghost" size="icon" onClick={onNextMonth}>
-                <ChevronRightIcon />
-              </Button> */}
           </div>
           <div className="text-md font-bold ms-2 flex items-center cursor-pointer">
             <div>
@@ -313,18 +315,8 @@ export function DateTimePicker({
                 {format(month, 'yyyy')}
               </span>
             </div>
-            {/* <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setMonthYearPicker(monthYearPicker ? false : 'year')}
-            >
-              {monthYearPicker ? <ChevronUpIcon /> : <ChevronDownIcon />}
-            </Button> */}
           </div>
-          <div className={cn('flex space-x-2', monthYearPicker ? 'hidden' : '')}>
-            {/* <Button variant="ghost" size="icon" onClick={onPrevMonth}>
-              <ChevronLeftIcon />
-            </Button> */}
+          <div className={cn('flex space-x-2', monthYearPicker ? 'invisible' : '')}>
             <Button variant="ghost" size="icon" onClick={onNextMonth} type="button">
               <ChevronRightIcon />
             </Button>
@@ -389,34 +381,33 @@ export function DateTimePicker({
               'absolute top-0 left-0 bottom-0 right-0',
               monthYearPicker ? '' : 'hidden',
             )}
+            yearRange={yearRange}
           />
         </div>
         <div className="flex flex-col gap-2">
-          {!hideTime && (
-            <>
-              {showTodayButton && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    const today = new TZDate(new Date(), timezone);
-                    onDayChanged(today);
-                  }}
-                  disabled={isTodayDisabled}
-                  className="mx-auto"
-                >
-                  Today
-                </Button>
-              )}
-              <TimePicker
-                timePicker={timePicker}
-                value={date}
-                onChange={setDate}
-                use12HourFormat={use12HourFormat}
-                min={minDate}
-                max={maxDate}
-              />
-            </>
+          {showTodayButton && !monthYearPicker && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                const today = new TZDate(new Date(), timezone);
+                onDayChanged(today);
+              }}
+              disabled={isTodayDisabled}
+              className="mx-auto"
+            >
+              Today
+            </Button>
+          )}
+          {!hideTime && !monthYearPicker && (
+            <TimePicker
+              timePicker={timePicker}
+              value={date}
+              onChange={setDate}
+              use12HourFormat={use12HourFormat}
+              min={minDate}
+              max={maxDate}
+            />
           )}
           <div className="flex flex-row-reverse items-center justify-between">
             {timezone && (
@@ -439,6 +430,7 @@ function MonthYearPicker({
   mode = 'month',
   onChange,
   className,
+  yearRange,
 }: {
   value: Date;
   mode: 'month' | 'year';
@@ -446,11 +438,19 @@ function MonthYearPicker({
   maxDate?: Date;
   onChange: (value: Date, mode: 'month' | 'year') => void;
   className?: string;
+  yearRange?: {
+    min: number;
+    max: number;
+  };
 }) {
   const yearRef = useRef<HTMLDivElement>(null);
   const years = useMemo(() => {
     const years: TimeOption[] = [];
-    for (let i = 1912; i < 2100; i++) {
+    for (
+      let i = yearRange?.min || new Date().getFullYear() - 10;
+      i < (yearRange?.max || new Date().getFullYear() + 10);
+      i++
+    ) {
       let disabled = false;
       const startY = startOfYear(setYear(value, i));
       const endY = endOfYear(setYear(value, i));
@@ -459,7 +459,7 @@ function MonthYearPicker({
       years.push({ value: i, label: i.toString(), disabled });
     }
     return years;
-  }, [value]);
+  }, [value, yearRange?.min, yearRange?.max]);
   const months = useMemo(() => {
     const months: TimeOption[] = [];
     for (let i = 0; i < 12; i++) {
@@ -496,7 +496,7 @@ function MonthYearPicker({
     <div className={cn(className)}>
       <ScrollArea className="h-full">
         {mode === 'year' && (
-          <div className="grid grid-cols-4">
+          <div className="grid grid-cols-3 gap-4">
             {years.map((year) => (
               <div key={year.value} ref={year.value === getYear(value) ? yearRef : undefined}>
                 <Button

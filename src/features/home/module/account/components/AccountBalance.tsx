@@ -27,10 +27,6 @@ const AccountBalanceField: React.FC<AccountBalanceFieldProps> = ({
     if (value > 0) {
       setValue('balance', -value);
     }
-  } else {
-    if (value < 0) {
-      setValue('balance', -value);
-    }
   }
 
   return (
@@ -43,6 +39,7 @@ const AccountBalanceField: React.FC<AccountBalanceFieldProps> = ({
         onChange={onChange}
         error={error}
         className={cn(value < 0 && 'text-red-500')}
+        allowNegative={true}
         {...props}
       />
     </>

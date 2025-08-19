@@ -85,6 +85,7 @@ const partnerSchema = yup.object({
       return value.length <= 500;
     }),
   parentId: yup.string().nullable().notRequired(),
+  bankAccount: yup.string().nullable().notRequired(),
 });
 
 export const defaultPartnerFormValue = {
@@ -98,6 +99,7 @@ export const defaultPartnerFormValue = {
   phone: null,
   description: null,
   parentId: null,
+  bankAccount: null,
 };
 
 export type PartnerFormValues = yup.InferType<typeof partnerSchema>;
