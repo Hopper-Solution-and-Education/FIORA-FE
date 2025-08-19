@@ -266,6 +266,7 @@ class PartnerUseCase {
         dob: data.dob ? new Date(data.dob as string | Date) : null,
         parentId: data.parentId as string | null,
         id: id,
+        bankAccount: data.bankAccount as string | null,
       };
 
       const validationErrors = await validatePartnerData(validationData, tx, true);
@@ -297,13 +298,13 @@ class PartnerUseCase {
         description: data.description,
         dob: data.dob ? new Date(data.dob as string) : undefined,
         logo: data.logo,
-        // bankAccount: data.bankAccount,
         taxNo: data.taxNo,
         phone: data.phone,
         name: data.name,
         address: data.address,
         parentId: data.parentId,
         updatedBy: data.userId || userId,
+        bankAccount: data.bankAccount as string | null,
       };
 
       const updatedPartner = await tx.partner.update({
@@ -335,6 +336,7 @@ class PartnerUseCase {
           address: data.address || null,
           createdBy: data.userId as string,
           updatedBy: data.userId as string,
+          bankAccount: data.bankAccount as string | null,
           ...(data.parentId && { parentId: data.parentId }),
         },
       });

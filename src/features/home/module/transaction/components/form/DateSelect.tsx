@@ -10,7 +10,7 @@ interface TypeSelectProps {
   [key: string]: any;
 }
 
-const DateSelectField: React.FC<TypeSelectProps> = ({ name, min, max }) => {
+const DateSelectField: React.FC<TypeSelectProps> = ({ name, min, max, yearRange }) => {
   const { control } = useFormContext();
   return (
     <FormField
@@ -30,6 +30,7 @@ const DateSelectField: React.FC<TypeSelectProps> = ({ name, min, max }) => {
               min={min}
               max={max}
               showTodayButton={true}
+              yearRange={yearRange}
             />
           </div>
         </FormItem>
