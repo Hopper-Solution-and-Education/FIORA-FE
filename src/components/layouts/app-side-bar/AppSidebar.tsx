@@ -45,6 +45,7 @@ import {
 import { SectionTypeEnum } from '@/features/landing/constants';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import { useGetProfileQuery } from '@/features/profile/store/api/profileApi';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
 import HopperLogo from '@public/images/logo.jpg';
@@ -74,8 +75,11 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   });
 
   const { data: profile, isLoading: isLoadingProfile } = useGetProfileQuery();
+  const { clearExchangeRateData } = useCurrencyFormatter();
 
   const handleLogout = async () => {
+    // Clear exchange rate data BEFORE logout to ensure data is cleared while session is still active
+    clearExchangeRateData();
     await signOut().catch(() => {});
 
     redirect('/');

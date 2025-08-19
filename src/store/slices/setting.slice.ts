@@ -38,6 +38,10 @@ const settingsSlice = createSlice({
     setFullCurrencyDisplay(state, action: PayloadAction<boolean>) {
       state.isFullCurrencyDisplay = action.payload;
     },
+    clearExchangeRateData: (state) => {
+      state.exchangeRate = {};
+      state.updatedAt = 0;
+    },
   },
 });
 
@@ -48,6 +52,7 @@ export const {
   updateExchangeRates,
   updateExchangeRatesWithTimestamp,
   setFullCurrencyDisplay,
+  clearExchangeRateData,
 } = settingsSlice.actions;
 
 export default settingsSlice.reducer;

@@ -2,13 +2,16 @@
 
 import useDataFetcher from '@/shared/hooks/useDataFetcher';
 import { Response } from '@/shared/types/Common.types';
-import { RootState } from '@/store';
-import { updateExchangeRatesWithTimestamp } from '@/store/slices/setting.slice';
+import { useAppSelector } from '@/store';
+import {
+  clearExchangeRateData,
+  updateExchangeRatesWithTimestamp,
+} from '@/store/slices/setting.slice';
 import { CurrencyObjectType, CurrencyType } from '@/store/types/setting.type';
 import { Currency } from '@prisma/client';
 import { useSession } from 'next-auth/react';
 import { useCallback, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
 import { CACHE_KEY, EXCHANGE_RATE_STALE_TIME } from '../constants/exchangeRates';
 import {
@@ -51,6 +54,7 @@ type UseCurrencyFormatterReturn = {
   // Data fetching
   mutate: () => Promise<Response<ExchangeRateResponse> | null | undefined>;
   refreshExchangeRates: () => Promise<void>;
+  clearExchangeRateData: () => void;
 
   // State
   exchangeRates: CurrencyType;
@@ -98,6 +102,18 @@ const cacheUtilities = {
   isCacheStale: (updatedAt: number): boolean => {
     const now = Date.now();
     return now - updatedAt > EXCHANGE_RATE_STALE_TIME;
+  },
+
+  /**
+   * Clears cached exchange rate data from localStorage
+   */
+  clearCachedExchangeRates: (userId: string): void => {
+    try {
+      localStorage.removeItem(`${CACHE_KEY}-${userId}`);
+    } catch {
+      // Silently ignore cache clear errors
+      console.error('Failed to clear cached exchange rates.');
+    }
   },
 };
 
@@ -292,7 +308,7 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
     baseCurrency: storeBaseCurrency,
     exchangeRate: exchangeRates,
     updatedAt: storeUpdatedAt,
-  } = useSelector((state: RootState) => state.settings);
+  } = useAppSelector((state) => state.settings);
 
   const { data: userData } = useSession();
 
@@ -354,7 +370,11 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
     }
 
     // First, check localStorage cache as primary source
-    const cachedData = cacheUtilities.getCachedExchangeRates(userData?.user?.id || '');
+    const cachedData = cacheUtilities.getCachedExchangeRates(userData?.user?.id || '') || {
+      rates: exchangeRates,
+      updatedAt: storeUpdatedAt,
+      baseCurrency: effectiveBaseCurrency,
+    };
 
     if (cachedData) {
       const isCachedDataStale = cacheUtilities.isCacheStale(cachedData.updatedAt);
@@ -760,6 +780,58 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
   }, [originalMutate, processExchangeRateResponse]);
 
   /**
+   * Clears exchange rate data from Redux store, localStorage cache, and selectively clears
+   * exchange rate related fields from redux-persist settings data (currency, baseCurrency, exchangeRate, updatedAt)
+   * Does NOT trigger automatic refresh - useful for logout or error scenarios
+   */
+  const clearExchangeRateDataHandler = useCallback((): void => {
+    try {
+      // Clear Redux store data
+      dispatch(clearExchangeRateData());
+
+      // Clear localStorage cache for exchange rates
+      const userId = userData?.user?.id || '';
+      if (userId) {
+        cacheUtilities.clearCachedExchangeRates(userId);
+      }
+
+      // Clear only exchange rate related data from redux-persist storage
+      // This selectively clears currency, baseCurrency, exchangeRate, and updatedAt fields
+      try {
+        const persistKey = 'persist:root';
+        const persistedData = localStorage.getItem(persistKey);
+
+        if (persistedData) {
+          const parsedData = JSON.parse(persistedData);
+
+          // Check if settings slice exists in persisted data
+          if (parsedData.settings) {
+            const settingsData = JSON.parse(parsedData.settings);
+
+            // Reset only exchange rate related fields to their initial values
+            settingsData.currency = 'USD'; // Reset to initial currency
+            settingsData.baseCurrency = 'USD'; // Reset to initial base currency
+            settingsData.exchangeRate = {}; // Clear exchange rate data
+            settingsData.updatedAt = 0; // Reset timestamp
+
+            // Update the settings data back to persisted storage
+            parsedData.settings = JSON.stringify(settingsData);
+            localStorage.setItem(persistKey, JSON.stringify(parsedData));
+          }
+        }
+      } catch (persistError) {
+        console.warn('Error clearing exchange rate data from redux-persist:', persistError);
+      }
+
+      // Clear any ongoing fetch promise to prevent conflicts
+      fetchingRef.current = null;
+    } catch (error) {
+      // Silently handle errors - this function should not fail
+      console.warn('Error clearing exchange rate data:', error);
+    }
+  }, [dispatch, userData?.user?.id]);
+
+  /**
    * Gets list of supported currencies
    */
   const getSupportedCurrencies = useCallback((): string[] => {
@@ -781,6 +853,7 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
     // Data fetching
     mutate,
     refreshExchangeRates,
+    clearExchangeRateData: clearExchangeRateDataHandler,
 
     // State
     exchangeRates,
