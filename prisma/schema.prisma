@@ -835,6 +835,7 @@ model eKYC {
   fieldName  String    @db.VarChar(100)
   status     KYCStatus
   method     KYCMethod
+  type       KYCType
   updatedAt  DateTime  @db.Timestamptz(0)
   updatedBy  String?   @db.Uuid
   userId     String?   @db.Uuid
@@ -977,6 +978,7 @@ enum NotificationType {
 
 enum KYCStatus {
   PENDING
+  REQUEST
   APPROVAL
   REJECTED
 }
@@ -1013,4 +1015,11 @@ enum TypeCronJob {
   REFERRAL
   CASHBACK
   FLEXI_INTEREST
+}
+
+enum KYCType {
+  IDENTIFICTION
+  CONTACT
+  TAX
+  BANK
 }

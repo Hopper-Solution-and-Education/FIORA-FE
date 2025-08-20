@@ -108,7 +108,7 @@ const PositiveNegativeStackBarChart = ({
         <div className="flex items-center gap-2 text-xs mt-3 px-2 py-1 rounded bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 border border-blue-200 dark:border-blue-700 shadow-inner">
           <span className="inline-flex items-center font-semibold text-blue-700 dark:text-blue-300">
             <Icons.cornerDownRight className="w-4 h-4 mr-1" />
-            Remaining
+            Remaining = Bottom Up - Actual Sum Up =
           </span>
           <span className="font-bold text-blue-800 dark:text-blue-200">
             {formatCurrency(remaining, currency)}
