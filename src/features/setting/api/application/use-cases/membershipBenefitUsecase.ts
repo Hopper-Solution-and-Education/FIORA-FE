@@ -252,6 +252,10 @@ class MembershipBenefitService {
         throw new InternalServerError('Failed to create MembershipBenefit');
       }
 
+      if (!tierId) {
+        throw new BadRequestError('TierId is required');
+      }
+
       const createdTierBenefit = await tx.tierBenefit.create({
         data: {
           benefitId: createdMembershipBenefit.id,
@@ -366,7 +370,7 @@ class MembershipBenefitService {
     return await prisma.$transaction(async (tx) => {
       const { tierBenefit, membershipBenefit } = payload;
 
-      const { value } = tierBenefit;
+      const { value, tierId } = tierBenefit;
       const { name, slug, description, suffix } = membershipBenefit;
 
       const foundMembershipBenefit = await tx.membershipBenefit.findUnique({
@@ -392,11 +396,15 @@ class MembershipBenefitService {
         throw new InternalServerError('Failed to update MembershipBenefit');
       }
 
+      if (!tierId) {
+        throw new BadRequestError('TierId is required');
+      }
+
       const updatedTierBenefit = await tx.tierBenefit.update({
         where: {
           tierId_benefitId: {
             benefitId: foundMembershipBenefit.id,
-            tierId: payload.tierBenefit.tierId,
+            tierId,
           },
         },
         data: {

@@ -17,7 +17,7 @@ export interface MembershipBenefit {
 }
 
 export interface TierBenefit {
-  tierId: string;
+  tierId?: string;
   value: number;
   benefitId?: string;
 }
