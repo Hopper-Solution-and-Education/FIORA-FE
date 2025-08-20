@@ -3,7 +3,7 @@
 import { FormConfig } from '@/components/common/forms';
 import { AppDispatch } from '@/store';
 import { RootState } from '@/store/rootReducer';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { TransactionType } from '@prisma/client';
 import { subDays } from 'date-fns';
 import { useRouter } from 'next/navigation';
@@ -37,7 +37,7 @@ const CreateTransactionForm = () => {
 
   // Set up form with zodResolver
   const methods = useForm<NewTransactionDefaultValues>({
-    resolver: zodResolver(validateNewTransactionSchema),
+    resolver: yupResolver(validateNewTransactionSchema),
     defaultValues: defaultNewTransactionValues,
   });
 

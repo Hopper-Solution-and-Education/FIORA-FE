@@ -177,6 +177,7 @@ export function UserNav({ handleSignOut }: UserNavProps) {
               onClick={async () => {
                 // Clear exchange rate data BEFORE logout to ensure data is cleared while session is still active
                 clearExchangeRateData();
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 handleSignOut ? handleSignOut() : await signOut();
               }}
               className="cursor-pointer"

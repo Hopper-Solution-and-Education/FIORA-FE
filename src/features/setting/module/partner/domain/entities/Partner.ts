@@ -24,6 +24,7 @@ export class Partner {
   children: Partner[];
   user: User;
   transactions: Transaction[];
+  bankAccount: string | null;
   expense: number;
   income: number;
   icon: string;
@@ -49,6 +50,7 @@ export class Partner {
     updatedBy: string | null = null,
     parentId: string | null = null,
     parent: Partner | null = null,
+    bankAccount: string | null = null,
     expense: number = 0,
     income: number = 0,
     icon: string = '',
@@ -76,6 +78,7 @@ export class Partner {
     this.expense = expense;
     this.income = income;
     this.icon = icon;
+    this.bankAccount = bankAccount;
   }
 }
 
@@ -119,5 +122,6 @@ export type PartnerTransactionResponse = {
     address: string | null;
     email: string | null;
     phone: string | null;
+    bankAccount: string | null;
   };
 };

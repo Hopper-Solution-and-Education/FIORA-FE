@@ -163,6 +163,7 @@ export class AccountRepository implements IAccountRepository {
     fromAccountId: string,
     toAccountId: string,
     amount: number,
+    baseAmount: number,
   ) {
     // Trừ tiền từ tài khoản gửi
     await tx.account.update({
@@ -170,6 +171,9 @@ export class AccountRepository implements IAccountRepository {
       data: {
         balance: {
           decrement: amount,
+        },
+        baseAmount: {
+          decrement: baseAmount,
         },
       },
     });
@@ -180,6 +184,9 @@ export class AccountRepository implements IAccountRepository {
       data: {
         balance: {
           increment: amount,
+        },
+        baseAmount: {
+          increment: baseAmount,
         },
       },
     });

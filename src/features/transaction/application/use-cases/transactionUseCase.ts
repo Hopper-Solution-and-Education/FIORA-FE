@@ -308,7 +308,13 @@ class TransactionUseCase {
             amount,
             `Account ${toAccount.name} does not have sufficient balance to refund the transfer transaction.`,
           );
-          await this.accountRepository.transferBalance(tx, toAccount.id, fromAccount.id, amount);
+          await this.accountRepository.transferBalance(
+            tx,
+            toAccount.id,
+            fromAccount.id,
+            amount,
+            baseAmount,
+          );
         }
         break;
     }
@@ -413,6 +419,390 @@ class TransactionUseCase {
     data.currencyId = foundCurrency.id;
 
     return handler(data);
+  }
+
+  async updateTransaction(data: Prisma.TransactionUncheckedCreateInput, currency: string) {
+    const foundCurrency = await this.currencySettingRepository.findFirstCurrency({
+      name: currency,
+    });
+
+    if (!foundCurrency) {
+      throw new Error(Messages.CURRENCY_NOT_FOUND);
+    }
+
+    const transactionHandlers: Record<
+      TransactionType,
+      (data: Prisma.TransactionUncheckedCreateInput) => Promise<any>
+    > = {
+      [TransactionType.Expense]: this.updateTransaction_Expense.bind(this),
+      [TransactionType.Income]: this.updateTransaction_Income.bind(this),
+      [TransactionType.Transfer]: this.updateTransaction_Transfer.bind(this),
+    };
+
+    const handler = transactionHandlers[data.type as TransactionType];
+
+    if (!handler) {
+      throw new BadRequestError(Messages.INVALID_TRANSACTION_TYPE);
+    }
+
+    data.currency = foundCurrency.name;
+    data.currencyId = foundCurrency.id;
+
+    return handler(data);
+  }
+
+  async updateTransaction_Expense(data: Prisma.TransactionUncheckedCreateInput) {
+    return prisma.$transaction(async (tx) => {
+      const account = await tx.account.findUnique({
+        where: {
+          id: data.fromAccountId as string,
+        },
+      });
+      if (!account) {
+        throw new BadRequestError(Messages.ACCOUNT_NOT_FOUND);
+      }
+
+      const type = account.type;
+      if (type !== AccountType.Payment && type !== AccountType.CreditCard) {
+        throw new Error(Messages.INVALID_ACCOUNT_TYPE_FOR_EXPENSE);
+      }
+
+      if (!data.remark) {
+        throw new BadRequestError(Messages.REMARK_IS_REQUIRED);
+      }
+
+      BooleanUtils.chooseByMap(
+        type,
+        {
+          [AccountType.Payment]: () => this.validatePaymentAccount(account, data.amount as number),
+          [AccountType.CreditCard]: () =>
+            this.validateCreditCardAccount(account, data.amount as number),
+        },
+        () => {
+          throw new BadRequestError(Messages.UNSUPPORTED_ACCOUNT_TYPE.replace('{type}', type));
+        },
+      );
+
+      if (!data.toCategoryId) {
+        throw new BadRequestError(Messages.CATEGORY_NOT_FOUND);
+      }
+      const category = await tx.category.findUnique({
+        where: { id: data.toCategoryId as string },
+      });
+      if (!category || category.type !== CategoryType.Expense) {
+        throw new BadRequestError(Messages.INVALID_CATEGORY_TYPE_EXPENSE);
+      }
+
+      const transactionUnique = await tx.transaction.findUnique({
+        where: { id: data.id as string },
+        include: {
+          productsRelation: {
+            select: {
+              productId: true,
+            },
+          },
+        },
+      });
+
+      if (!transactionUnique) {
+        throw new BadRequestError(Messages.TRANSACTION_NOT_FOUND);
+      }
+
+      await this.accountRepository.receiveBalance(
+        tx,
+        transactionUnique.fromAccountId as string,
+        data.amount as number,
+        data.baseAmount as number,
+      );
+
+      if (
+        Array.isArray(transactionUnique?.productsRelation) &&
+        transactionUnique.productsRelation.length > 0
+      ) {
+        const products = transactionUnique.productsRelation.map((p) => ({
+          id: p.productId,
+        }));
+
+        await this.rollbackProductTransaction(
+          tx,
+          transactionUnique,
+          products,
+          data.userId as string,
+        );
+      }
+
+      const baseAmount = await convertCurrency(
+        Number(data.amount),
+        data.currency as string,
+        DEFAULT_BASE_CURRENCY,
+      );
+
+      const transaction = await tx.transaction.update({
+        where: { id: data.id as string },
+        data: {
+          userId: data.userId,
+          date: data.date,
+          currency: data.currency,
+          amount: data.amount,
+          fromAccountId: data.fromAccountId,
+          fromCategoryId: data.fromCategoryId,
+          toAccountId: data.toAccountId,
+          toCategoryId: data.toCategoryId,
+          partnerId: data.partnerId,
+          remark: data.remark,
+          createdBy: data.userId as string,
+          updatedBy: data.userId,
+          baseAmount: baseAmount,
+          baseCurrency: data.baseCurrency,
+        },
+      });
+
+      if (!transaction) {
+        throw new InternalServerError(Messages.CREATE_TRANSACTION_FAILED);
+      }
+
+      await this.accountRepository.deductBalance(
+        tx,
+        data.fromAccountId as string,
+        data.amount as number,
+        data.baseAmount as number,
+      );
+
+      if (Array.isArray(data.products) && data.products.length > 0) {
+        const products = data.products as { id: string }[];
+
+        await this.createProductTransaction(
+          tx,
+          transaction,
+          products,
+          data.userId as string,
+          data.type,
+        );
+      }
+
+      return transaction;
+    });
+  }
+
+  async updateTransaction_Income(data: Prisma.TransactionUncheckedCreateInput) {
+    return prisma.$transaction(async (tx) => {
+      const category = await tx.category.findUnique({
+        where: { id: data.fromCategoryId as string },
+      });
+
+      const membershipBenefit = await tx.membershipBenefit.findUnique({
+        where: { id: data.fromCategoryId as string },
+      });
+
+      if (!category && !membershipBenefit) {
+        throw new BadRequestError(Messages.CATEGORY_NOT_FOUND);
+      }
+
+      if (!data.remark) {
+        throw new BadRequestError(Messages.REMARK_IS_REQUIRED);
+      }
+
+      if (category && category.type !== CategoryType.Income) {
+        throw new BadRequestError(Messages.INVALID_CATEGORY_TYPE_INCOME);
+      }
+
+      const account = await tx.account.findUnique({ where: { id: data.toAccountId as string } });
+      if (!account) {
+        throw new BadRequestError(Messages.ACCOUNT_NOT_FOUND);
+      }
+
+      const transactionUnique = await tx.transaction.findUnique({
+        where: { id: data.id as string },
+        include: {
+          productsRelation: {
+            select: {
+              productId: true,
+            },
+          },
+        },
+      });
+
+      if (!transactionUnique) {
+        throw new BadRequestError(Messages.TRANSACTION_NOT_FOUND);
+      }
+
+      await this.accountRepository.deductBalance(
+        tx,
+        transactionUnique.fromAccountId as string,
+        data.amount as number,
+        data.baseAmount as number,
+      );
+
+      if (
+        Array.isArray(transactionUnique?.productsRelation) &&
+        transactionUnique.productsRelation.length > 0
+      ) {
+        const products = transactionUnique.productsRelation.map((p) => ({
+          id: p.productId,
+        }));
+
+        await this.rollbackProductTransaction(
+          tx,
+          transactionUnique,
+          products,
+          data.userId as string,
+        );
+      }
+
+      const baseAmount = await convertCurrency(
+        Number(data.amount),
+        data.currency as string,
+        DEFAULT_BASE_CURRENCY,
+      );
+
+      const transaction = await tx.transaction.update({
+        where: { id: data.id as string },
+        data: {
+          userId: data.userId,
+          date: data.date,
+          currency: data.currency,
+          amount: data.amount,
+          fromAccountId: data.fromAccountId,
+          fromCategoryId: data.fromCategoryId,
+          toAccountId: data.toAccountId,
+          toCategoryId: data.toCategoryId,
+          partnerId: data.partnerId,
+          remark: data.remark,
+          createdBy: data.userId as string,
+          updatedBy: data.userId,
+          baseAmount: baseAmount,
+          baseCurrency: data.baseCurrency,
+        },
+      });
+
+      if (!transaction) {
+        throw new InternalServerError(Messages.CREATE_TRANSACTION_FAILED);
+      }
+
+      await this.accountRepository.receiveBalance(
+        tx,
+        data.toAccountId as string,
+        data.amount as number,
+        data.baseAmount as number,
+      );
+
+      if (Array.isArray(data.products) && data.products.length > 0) {
+        const products = data.products as { id: string }[];
+
+        await this.createProductTransaction(
+          tx,
+          transaction,
+          products,
+          data.userId as string,
+          data.type,
+        );
+      }
+
+      return transaction;
+    });
+  }
+
+  async updateTransaction_Transfer(data: Prisma.TransactionUncheckedCreateInput) {
+    return prisma.$transaction(async (tx) => {
+      const fromAccount = await tx.account.findUnique({
+        where: { id: data.fromAccountId as string },
+      });
+      const toAccount = await tx.account.findUnique({
+        where: { id: data.toAccountId as string },
+      });
+
+      if (!fromAccount || !toAccount) {
+        throw new Error(Messages.ACCOUNT_NOT_FOUND);
+      }
+
+      if (!data.remark) {
+        throw new BadRequestError(Messages.REMARK_IS_REQUIRED);
+      }
+
+      const transactionUnique = await tx.transaction.findUnique({
+        where: { id: data.id as string },
+        include: {
+          productsRelation: {
+            select: {
+              productId: true,
+            },
+          },
+        },
+      });
+
+      if (!transactionUnique) {
+        throw new BadRequestError(Messages.TRANSACTION_NOT_FOUND);
+      }
+
+      const baseAmount = await convertCurrency(
+        transactionUnique.amount,
+        transactionUnique.currency!,
+        DEFAULT_BASE_CURRENCY,
+      );
+
+      await this.accountRepository.transferBalance(
+        tx,
+        transactionUnique.fromAccountId as string,
+        transactionUnique.toAccountId as string,
+        transactionUnique.amount.toNumber(),
+        baseAmount,
+      );
+
+      const type = fromAccount.type;
+      BooleanUtils.chooseByMap(
+        type,
+        {
+          [AccountType.Payment]: () =>
+            this.validatePaymentAccount(fromAccount, data.amount as number),
+          [AccountType.Saving]: () =>
+            this.validatePaymentAccount(fromAccount, data.amount as number),
+          [AccountType.Lending]: () =>
+            this.validatePaymentAccount(fromAccount, data.amount as number),
+          [AccountType.CreditCard]: () =>
+            this.validateCreditCardAccount(fromAccount, data.amount as number),
+          [AccountType.Debt]: () => this.validateDebtAccount(fromAccount, data.amount as number),
+          [AccountType.Invest]: () =>
+            this.validateInvestAccount(fromAccount, data.amount as number),
+        },
+        () => {
+          throw new BadRequestError(Messages.UNSUPPORTED_ACCOUNT_TYPE.replace('{type}', type));
+        },
+      );
+
+      const transaction = await tx.transaction.update({
+        where: { id: data.id as string },
+        data: {
+          userId: data.userId,
+          date: data.date,
+          currency: data.currency,
+          amount: data.amount,
+          fromAccountId: data.fromAccountId,
+          fromCategoryId: data.fromCategoryId,
+          toAccountId: data.toAccountId,
+          toCategoryId: data.toCategoryId,
+          partnerId: data.partnerId,
+          remark: data.remark,
+          createdBy: data.userId as string,
+          updatedBy: data.userId,
+          baseAmount: baseAmount,
+          baseCurrency: data.baseCurrency,
+        },
+      });
+
+      if (!transaction) {
+        throw new InternalServerError(Messages.CREATE_TRANSACTION_FAILED);
+      }
+
+      await this.accountRepository.transferBalance(
+        tx,
+        data.fromAccountId as string,
+        data.toAccountId as string,
+        data.amount as number,
+        data.baseAmount as number,
+      );
+
+      return transaction;
+    });
   }
 
   async createTransaction_Expense(data: Prisma.TransactionUncheckedCreateInput) {
@@ -566,14 +956,6 @@ class TransactionUseCase {
         throw new BadRequestError(Messages.ACCOUNT_NOT_FOUND);
       }
 
-      if (
-        account.type !== AccountType.Payment &&
-        account.type !== AccountType.CreditCard &&
-        account.type !== AccountType.Debt
-      ) {
-        throw new BadRequestError(Messages.INVALID_ACCOUNT_TYPE_FOR_INCOME);
-      }
-
       const baseAmount = await convertCurrency(
         Number(data.amount),
         data.currency as string,
@@ -703,6 +1085,7 @@ class TransactionUseCase {
         data.fromAccountId as string,
         data.toAccountId as string,
         data.amount as number,
+        baseAmount,
       );
 
       return transaction;
@@ -714,6 +1097,59 @@ class TransactionUseCase {
       throw new BadRequestError(
         'Payment Account must have balance equal to or greater than the transaction amount.',
       );
+    }
+  }
+
+  async rollbackProductTransaction(
+    tx: Prisma.TransactionClient,
+    transaction: Transaction,
+    products: { id: string }[],
+    userId: string,
+  ) {
+    if (!products || products.length === 0) {
+      return;
+    }
+
+    const amount = transaction.amount.toNumber();
+    const baseAmount = await convertCurrency(
+      amount,
+      transaction.currency as string,
+      DEFAULT_BASE_CURRENCY,
+    );
+    const productIds = products.map((p) => p.id);
+    const splitAmount = amount / productIds.length;
+    const splitBaseAmount = baseAmount / productIds.length;
+
+    if (productIds.length === 0) {
+      return;
+    }
+
+    const existingProducts = await tx.product.findMany({
+      where: { id: { in: productIds } },
+      select: { id: true, price: true, baseAmount: true },
+    });
+
+    if (existingProducts.length !== productIds.length) {
+      throw new Error(Messages.PRODUCT_NOT_FOUND);
+    }
+
+    await tx.productTransaction.deleteMany({
+      where: {
+        transactionId: transaction.id,
+        productId: { in: productIds },
+      },
+    });
+
+    for (const product of existingProducts) {
+      const baseAmount = product.baseAmount?.toNumber() || 0;
+      await tx.product.update({
+        where: { id: product.id },
+        data: {
+          price: product.price.toNumber() - splitAmount,
+          baseAmount: baseAmount - splitBaseAmount,
+          updatedBy: userId,
+        },
+      });
     }
   }
 
@@ -730,8 +1166,14 @@ class TransactionUseCase {
     }
 
     const amount = transaction.amount.toNumber();
+    const baseAmount = await convertCurrency(
+      amount,
+      transaction.currency as string,
+      DEFAULT_BASE_CURRENCY,
+    );
     const productIds = products.map((p) => p.id);
     const splitAmount = amount / productIds.length;
+    const splitBaseAmount = baseAmount / productIds.length;
 
     if (productIds.toString() == '') {
       return;
@@ -739,10 +1181,10 @@ class TransactionUseCase {
 
     const existingProducts = await tx.product.findMany({
       where: { id: { in: productIds } },
-      select: { id: true, price: true },
+      select: { id: true, price: true, baseAmount: true },
     });
 
-    if (existingProducts.length !== productIds.length) {
+    if (existingProducts && existingProducts.length !== productIds.length) {
       throw new Error(Messages.PRODUCT_NOT_FOUND);
     }
 
@@ -756,9 +1198,13 @@ class TransactionUseCase {
     });
 
     for (const product of existingProducts) {
+      const baseAmount = product.baseAmount?.toNumber() || 0;
       await tx.product.update({
         where: { id: product.id },
-        data: { price: product.price.toNumber() + splitAmount },
+        data: {
+          price: product.price.toNumber() + splitAmount,
+          baseAmount: baseAmount + splitBaseAmount,
+        },
       });
     }
   }

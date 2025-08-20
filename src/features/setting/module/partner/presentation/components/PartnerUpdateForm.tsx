@@ -47,6 +47,7 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
       phone: initialData?.phone || null,
       description: initialData?.description || null,
       parentId: initialData?.parentId || 'none',
+      bankAccount: initialData?.bankAccount || null,
     },
     mode: 'onChange',
   });
@@ -145,6 +146,7 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
       placeholder="contact@fiora.com"
       type="email"
     />,
+    <InputField key="bankAccount" name="bankAccount" label="Bank Account" type="text" />,
   ];
 
   const handleSubmit = async (data: UpdatePartnerFormValues) => {
@@ -171,6 +173,7 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
         phone: data.phone !== undefined ? data.phone : initialData?.phone,
         description: data.description !== undefined ? data.description : initialData?.description,
         parentId: data.parentId === 'none' ? null : data.parentId || initialData?.parentId,
+        bankAccount: data.bankAccount !== undefined ? data.bankAccount : initialData?.bankAccount,
       };
 
       await dispatch(updatePartner(updateData)).unwrap();

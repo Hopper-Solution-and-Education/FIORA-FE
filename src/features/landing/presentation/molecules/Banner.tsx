@@ -54,7 +54,7 @@ export function Banner() {
           {section?.medias.map((image, index) => {
             const isFirst = index === 0;
             return (
-              <CarouselItem key={index} className="flex-[0_0_100%]">
+              <CarouselItem key={image.id ?? index} className="flex-[0_0_100%]">
                 <Card>
                   <CardContent className="p-0 relative">
                     <Link

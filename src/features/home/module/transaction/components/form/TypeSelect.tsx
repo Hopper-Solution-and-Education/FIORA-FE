@@ -8,6 +8,7 @@ interface TypeSelectProps {
   value?: string;
   onChange?: any;
   error?: FieldError;
+  disabled?: boolean;
   [key: string]: any;
 }
 
@@ -16,6 +17,7 @@ const TypeSelectField: React.FC<TypeSelectProps> = ({
   value = '',
   onChange = () => {},
   error,
+  disabled = false,
   ...props
 }) => {
   const options = [
@@ -42,6 +44,7 @@ const TypeSelectField: React.FC<TypeSelectProps> = ({
               placeholder="Select transaction type"
               error={error}
               noneValue={false}
+              disabled={disabled}
               {...props}
             />
           </div>

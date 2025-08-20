@@ -1,55 +1,41 @@
 import { TransactionType } from '@prisma/client';
-import { z } from 'zod';
-import { TransactionRecurringType } from './constants';
+import * as yup from 'yup';
+import { InferType } from 'yup';
 
-const validateNewTransactionSchema = z.object({
-  type: z.nativeEnum(TransactionType, {
-    errorMap: () => ({ message: 'Please select a valid transaction type' }),
-  }),
-  date: z.date({
-    required_error: 'Date is required',
-    invalid_type_error: 'Please provide a valid date',
-  }),
-  amount: z
-    .number({
-      required_error: 'Amount is required',
-      invalid_type_error: 'Amount must be a number',
-    })
+const validateNewTransactionSchema = yup.object({
+  type: yup
+    .mixed<TransactionType>()
+    .oneOf(Object.values(TransactionType), 'Please select a valid transaction type')
+    .required(),
+  date: yup.date().required('Date is required').typeError('Please provide a valid date'),
+  amount: yup
+    .number()
+    .required('Amount is required')
+    .typeError('Amount must be a number')
     .positive('Amount must be greater than 0'),
-  currency: z
-    .string({
-      required_error: 'Currency is required',
-      invalid_type_error: 'Currency must be a string',
-    })
+  currency: yup
+    .string()
+    .required('Currency is required')
+    .typeError('Currency must be a string')
     .min(1, 'Please select a currency')
-    .refine((value) => value !== 'none' && value.length > 0, 'Please select a valid currency'),
-  product: z
+    .test('not-none', 'Please select a valid currency', (value) => value !== 'none'),
+  product: yup
     .string()
-    .optional()
     .nullable()
     .transform((val) => val || null),
-  fromId: z
-    .string({
-      required_error: 'From account/category is required',
-    })
+  fromId: yup
+    .string()
+    .required('From account/category is required')
     .min(1, 'Please select a from account or category'),
-  toId: z
-    .string({
-      required_error: 'To account/category is required',
-    })
-    .min(1, 'Please select a to account or category'),
-  partnerId: z
+  toId: yup
     .string()
-    .optional()
+    .required('To account/category is required')
+    .min(1, 'Please select a to account or category'),
+  partnerId: yup
+    .string()
     .nullable()
     .transform((val) => val || null),
-  remark: z
-    .nativeEnum(TransactionRecurringType, {
-      errorMap: () => ({ message: 'Please select a valid recurring type' }),
-    })
-    .optional()
-    .nullable()
-    .default(TransactionRecurringType.NONE),
+  remark: yup.string().required('Description is required'),
 });
 
 const defaultNewTransactionValues: NewTransactionDefaultValues = {
@@ -61,9 +47,9 @@ const defaultNewTransactionValues: NewTransactionDefaultValues = {
   fromId: '', // From account or category ID
   toId: '', // To account or category ID
   partnerId: null,
-  remark: TransactionRecurringType.NONE,
+  remark: '',
 };
 
 export { defaultNewTransactionValues, validateNewTransactionSchema };
 
-export type NewTransactionDefaultValues = z.infer<typeof validateNewTransactionSchema>;
+export type NewTransactionDefaultValues = InferType<typeof validateNewTransactionSchema>;

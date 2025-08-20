@@ -46,6 +46,7 @@ export interface IAccountRepository {
     fromAccountId: string,
     toAccountId: string,
     amount: number,
+    baseAmount: number,
   ): Promise<any>;
 }
 
