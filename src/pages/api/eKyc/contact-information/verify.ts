@@ -5,12 +5,8 @@ import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { validateBody } from '@/shared/utils/validate';
-import { eKYCSchema } from '@/shared/validators/eKycValicator';
-import { KYCStatus } from '@prisma/client';
+import { KYCStatus, KYCType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
-
-export const maxDuration = 30; // 30 seconds
 
 export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId: string) =>
   errorHandler(
@@ -18,8 +14,6 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
       switch (request.method) {
         case 'POST':
           return POST(request, response, userId);
-        case 'GET':
-          return GET(response, userId);
         default:
           return response
             .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -31,30 +25,22 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
   ),
 );
 
-export async function GET(res: NextApiResponse, userId: string) {
-  const kyc = await eKycRepository.getById(userId);
-
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
-  res.setHeader('Surrogate-Control', 'no-store');
-
-  return res
-    .status(RESPONSE_CODE.OK)
-    .json(createResponse(RESPONSE_CODE.OK, Messages.GET_KYC_SUCCESS, kyc));
-}
-
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const { error } = validateBody(eKYCSchema, req.body);
-  if (error) {
+  const { otp } = req.body;
+  if (!otp) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, 'Otp is required'));
   }
-  const newKyc = await eKycRepository.create({
-    type: req.body.type,
+  if (otp !== '123456') {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR));
+  }
+  await eKycRepository.create({
+    type: KYCType.CONTACT,
     fieldName: req.body.fieldName,
-    status: KYCStatus.PENDING,
+    status: KYCStatus.APPROVAL,
     createdBy: userId.toString(),
     userId: userId.toString(),
     createdAt: new Date(),
@@ -63,5 +49,5 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
   });
   return res
     .status(RESPONSE_CODE.CREATED)
-    .json(createResponse(RESPONSE_CODE.CREATED, Messages.CREATE_KYC_SUCCESS, newKyc));
+    .json(createResponse(RESPONSE_CODE.CREATED, Messages.VERIFY_SUCCESS));
 }
