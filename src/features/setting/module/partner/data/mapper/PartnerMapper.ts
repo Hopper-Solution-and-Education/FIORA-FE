@@ -83,6 +83,7 @@ export class PartnerMapper {
       dto.data.updatedBy,
       dto.data.parentId === 'none' ? null : dto.data.parentId,
       dto.data.parent,
+      dto.data.bankAccount,
     );
   }
 }

@@ -1,12 +1,12 @@
-import { IPartnerAPI } from '../api/partnerApi';
-import { Partner } from '../../domain/entities/Partner';
-import { PartnerMapper } from '../mapper/PartnerMapper';
-import { GetPartnerAPIRequestDTO } from '../dto/request/GetPartnerAPIRequestDTO';
-import { CreatePartnerAPIRequestDTO } from '../dto/request/CreatePartnerAPIRequestDTO';
-import { UpdatePartnerAPIRequestDTO } from '../dto/request/UpdatePartnerAPIRequestDTO';
 import { Response } from '@/shared/types/Common.types';
-import { PartnerResponse } from '../../slices/types';
 import { toast } from 'sonner';
+import { Partner } from '../../domain/entities/Partner';
+import { PartnerResponse } from '../../slices/types';
+import { IPartnerAPI } from '../api/partnerApi';
+import { CreatePartnerAPIRequestDTO } from '../dto/request/CreatePartnerAPIRequestDTO';
+import { GetPartnerAPIRequestDTO } from '../dto/request/GetPartnerAPIRequestDTO';
+import { UpdatePartnerAPIRequestDTO } from '../dto/request/UpdatePartnerAPIRequestDTO';
+import { PartnerMapper } from '../mapper/PartnerMapper';
 
 // In the IPartnerRepository interface
 export interface IPartnerRepository {

@@ -36,6 +36,60 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     .json(createResponse(RESPONSE_CODE.OK, Messages.GET_TRANSACTION_SUCCESS, transactions));
 }
 
+export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  const {
+    fromAccountId,
+    toCategoryId,
+    amount,
+    products,
+    partnerId,
+    remark,
+    date,
+    fromCategoryId,
+    toAccountId,
+    currency,
+  } = req.body;
+
+  if (![Currency.VND, Currency.USD].includes(currency)) {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_CURRENCY, null));
+  }
+
+  // Validate date should be in range 30 days in the past from now. Not allowed to be in the future
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const nextYear = new Date(now.getFullYear() + 1, 11, 31);
+
+  if ((date && new Date(date) < thirtyDaysAgo) || new Date(date) > nextYear) {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(
+        createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_DATE_RANGE_INPUT_30_DAYS, null),
+      );
+  }
+
+  const transactionData = {
+    userId: userId,
+    amount: parseFloat(amount),
+    fromAccountId: fromAccountId as UUID,
+    toAccountId: toAccountId as UUID,
+    toCategoryId: toCategoryId as UUID,
+    fromCategoryId: fromCategoryId as UUID,
+    currency: currency,
+    ...(products && { products }),
+    ...(partnerId && { partnerId }),
+    ...(remark && { remark }),
+    ...(date && { date: new Date(date) }),
+  };
+
+  const updateTransaction = await transactionUseCase.updateTransaction(transactionData);
+
+  return res
+    .status(RESPONSE_CODE.OK)
+    .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_TRANSACTION_SUCCESS, updateTransaction));
+}
+
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   const {
     fromAccountId,

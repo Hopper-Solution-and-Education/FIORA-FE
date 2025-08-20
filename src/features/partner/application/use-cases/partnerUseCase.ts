@@ -19,7 +19,7 @@ class PartnerUseCase {
   constructor(
     private partnerRepository: IPartnerRepository,
     private transactionRepository: ITransactionRepository,
-  ) { }
+  ) {}
 
   async listPartners(userId: string): Promise<Partner[]> {
     return this.partnerRepository.getPartnersByUserId(userId);
@@ -109,9 +109,9 @@ class PartnerUseCase {
     const finalFilteredPartners =
       typesFilter.length > 0
         ? filteredPartners.filter((partner: any) => {
-          const type = this.determinePartnerType(partner.transactions || []);
-          return typesFilter.includes(type);
-        })
+            const type = this.determinePartnerType(partner.transactions || []);
+            return typesFilter.includes(type);
+          })
         : filteredPartners;
 
     const { minIncome, maxIncome, minExpense, maxExpense } =
@@ -266,6 +266,7 @@ class PartnerUseCase {
         dob: data.dob ? new Date(data.dob as string | Date) : null,
         parentId: data.parentId as string | null,
         id: id,
+        bankAccount: data.bankAccount as string | null,
       };
 
       const validationErrors = await validatePartnerData(validationData, tx, true);
@@ -297,13 +298,13 @@ class PartnerUseCase {
         description: data.description,
         dob: data.dob ? new Date(data.dob as string) : undefined,
         logo: data.logo,
-        bankAccount: data.bankAccount,
         taxNo: data.taxNo,
         phone: data.phone,
         name: data.name,
         address: data.address,
         parentId: data.parentId,
         updatedBy: data.userId || userId,
+        bankAccount: data.bankAccount as string | null,
       };
 
       const updatedPartner = await tx.partner.update({
@@ -326,7 +327,7 @@ class PartnerUseCase {
           email: data.email,
           identify: data.identify,
           description: data.description,
-          bankAccount: data.bankAccount,
+          // bankAccount: data.bankAccount,
           dob: data.dob,
           logo: data.logo,
           taxNo: data.taxNo,
@@ -335,6 +336,7 @@ class PartnerUseCase {
           address: data.address || null,
           createdBy: data.userId as string,
           updatedBy: data.userId as string,
+          bankAccount: data.bankAccount as string | null,
           ...(data.parentId && { parentId: data.parentId }),
         },
       });
@@ -358,15 +360,15 @@ class PartnerUseCase {
       const [createdBy, updatedBy] = await Promise.all([
         partner.createdBy
           ? prisma.user.findFirst({
-            where: { id: partner.createdBy },
-            select: { id: true, name: true, email: true, image: true },
-          })
+              where: { id: partner.createdBy },
+              select: { id: true, name: true, email: true, image: true },
+            })
           : null,
         partner.updatedBy
           ? prisma.user.findFirst({
-            where: { id: partner.updatedBy },
-            select: { id: true, name: true, email: true, image: true },
-          })
+              where: { id: partner.updatedBy },
+              select: { id: true, name: true, email: true, image: true },
+            })
           : null,
       ]);
 

@@ -1,6 +1,6 @@
 import { TransactionType } from '@prisma/client';
 import * as yup from 'yup';
-import { TransactionCurrency, TransactionRecurringType } from './constants';
+import { TransactionCurrency } from './constants';
 
 const validateNewTransactionSchema = yup.object({
   type: yup.mixed<TransactionType>().oneOf(Object.values(TransactionType)).required(),
@@ -11,10 +11,7 @@ const validateNewTransactionSchema = yup.object({
   fromId: yup.string().required(),
   toId: yup.string().required(),
   partner: yup.string().nullable(),
-  remark: yup
-    .mixed<TransactionRecurringType>()
-    .oneOf(Object.values(TransactionRecurringType))
-    .nullable(),
+  remark: yup.string().required('Description is required'),
 });
 
 const defaultNewTransactionValues: NewTransactionDefaultValues = {
@@ -26,7 +23,7 @@ const defaultNewTransactionValues: NewTransactionDefaultValues = {
   fromId: '', // From account or category ID
   toId: '', // To account or category ID
   partner: undefined,
-  remark: TransactionRecurringType.NONE,
+  remark: '',
 };
 
 export { defaultNewTransactionValues, validateNewTransactionSchema };
