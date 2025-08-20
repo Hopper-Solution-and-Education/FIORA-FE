@@ -48,3 +48,55 @@ export const membershipTierSchema = Joi.object({
     'array.max': 'Membership tier key value must be at most 10',
   }),
 });
+
+export const updateMembershipTierThresholdSchema = Joi.object({
+  axis: Joi.string().valid('spent', 'balance').required().messages({
+    'string.base': 'Axis is required',
+    'any.only': 'Axis must be either "spent" or "balance"',
+  }),
+  oldMin: Joi.number().min(0).required().messages({
+    'number.base': 'Old minimum threshold is required',
+    'number.min': 'Old minimum threshold must be at least 0',
+  }),
+  oldMax: Joi.number().min(0).required().messages({
+    'number.base': 'Old maximum threshold is required',
+    'number.min': 'Old maximum threshold must be at least 0',
+  }),
+  newMin: Joi.number().min(0).optional().messages({
+    'number.base': 'New minimum threshold must be a number',
+    'number.min': 'New minimum threshold must be at least 0',
+  }),
+  newMax: Joi.number().min(0).optional().messages({
+    'number.base': 'New maximum threshold must be a number',
+    'number.min': 'New maximum threshold must be at least 0',
+  }),
+})
+  .custom((value, helpers) => {
+    // Validate that oldMin < oldMax
+    if (value.oldMin >= value.oldMax) {
+      return helpers.error('custom.oldMinMax', {
+        message: 'Old minimum must be less than old maximum',
+      });
+    }
+
+    // Validate that newMin < newMax (if both provided)
+    if (value.newMin !== undefined && value.newMax !== undefined && value.newMin >= value.newMax) {
+      return helpers.error('custom.newMinMax', {
+        message: 'New minimum must be less than new maximum',
+      });
+    }
+
+    // At least one of newMin or newMax must be provided
+    if (value.newMin === undefined && value.newMax === undefined) {
+      return helpers.error('custom.noNewValues', {
+        message: 'At least one of newMin or newMax must be provided',
+      });
+    }
+
+    return value;
+  })
+  .messages({
+    'custom.oldMinMax': 'Old minimum must be less than old maximum',
+    'custom.newMinMax': 'New minimum must be less than new maximum',
+    'custom.noNewValues': 'At least one of newMin or newMax must be provided',
+  });

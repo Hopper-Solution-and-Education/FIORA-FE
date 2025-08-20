@@ -854,7 +854,7 @@ model CronJobLog {
   updatedAt     DateTime      @db.Timestamptz(0)
   status        CronJobStatus
 
-  Transaction   Transaction?  @relation("CronJobLogTransactions", fields: [transactionId], references: [id])
+  Transaction Transaction? @relation("CronJobLogTransactions", fields: [transactionId], references: [id])
 }
 
 enum BudgetType {
