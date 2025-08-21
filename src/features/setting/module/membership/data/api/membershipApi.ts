@@ -59,7 +59,23 @@ class MembershipAPI implements IMembershipAPI {
   async deleteBenefitTier(
     request: DeleteBenefitTierRequestDTO,
   ): Promise<DeleteBenefitTierResponseDTO> {
-    return await httpClient.post('/api/memberships/benefit', request);
+    let payload: Partial<DeleteBenefitTierRequestDTO>;
+
+    if (request.mode === ProcessMembershipMode.DELETE_ALL) {
+      payload = {
+        slug: request.slug,
+        mode: request.mode,
+      };
+    } else {
+      payload = {
+        slug: request.slug,
+        mode: request.mode,
+        membershipTierId: request.membershipTierId,
+        membershipBenefitId: request.membershipBenefitId,
+      };
+    }
+
+    return await httpClient.post('/api/memberships/benefit', payload);
   }
 
   async editThresholdBenefit(

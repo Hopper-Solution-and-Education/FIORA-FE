@@ -3,8 +3,8 @@ import { ProcessMembershipMode } from '../api';
 
 export type DeleteBenefitTierRequestDTO = {
   slug: string;
-  membershipTierId: string;
-  membershipBenefitId: string;
+  membershipTierId?: string;
+  membershipBenefitId?: string;
   mode: ProcessMembershipMode;
 };
 

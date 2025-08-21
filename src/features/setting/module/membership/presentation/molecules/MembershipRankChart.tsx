@@ -16,6 +16,7 @@ const MembershipRankChart = () => {
   const [isShowDialogEditThresholdBenefitTier, setIsShowDialogEditThresholdBenefitTier] =
     useState(false);
   const dispatch = useAppDispatch();
+  const [axis, setAxis] = useState<'balance' | 'spent'>('balance');
 
   const handleTierClick = useCallback(
     (balanceTier: Tier, spentTier: Tier, item?: any) => {
@@ -57,10 +58,12 @@ const MembershipRankChart = () => {
 
   const handleClickYAxisRange = (tier: Tier, index: number) => {
     setIsShowDialogEditThresholdBenefitTier(true);
+    setAxis('balance');
   };
 
   const handleClickXAxisRange = (tier: Tier, index: number) => {
     setIsShowDialogEditThresholdBenefitTier(true);
+    setAxis('spent');
   };
 
   return (
@@ -96,6 +99,7 @@ const MembershipRankChart = () => {
       <DialogEditThresholdBenefitTier
         open={isShowDialogEditThresholdBenefitTier}
         onOpenChange={setIsShowDialogEditThresholdBenefitTier}
+        axis={axis}
       />
     </div>
   );

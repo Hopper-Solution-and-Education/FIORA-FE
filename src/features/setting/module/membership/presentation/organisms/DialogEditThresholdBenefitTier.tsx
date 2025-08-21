@@ -5,6 +5,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { editThresholdBenefitAsyncThunk, getListMembershipAsyncThunk } from '../../slices/actions';
 
+import { useEffect } from 'react';
 import EditThresholdBenefitForm from '../molecules/EditThresholdBenefitForm';
 import {
   defaultEditThresholdTierValue,
@@ -15,6 +16,7 @@ import {
 type DialogEditThresholdBenefitTierProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  axis: 'balance' | 'spent';
 };
 
 /*
@@ -24,11 +26,16 @@ type DialogEditThresholdBenefitTierProps = {
 const DialogEditThresholdBenefitTier = ({
   open,
   onOpenChange,
+  axis,
 }: DialogEditThresholdBenefitTierProps) => {
   const methods = useForm<EditThresholdTierFormValues>({
     resolver: yupResolver(editThresholdTierSchema),
     defaultValues: defaultEditThresholdTierValue,
   });
+
+  useEffect(() => {
+    methods.setValue('axis', axis);
+  }, [axis]);
 
   const selectMembershipBenefit = useAppSelector(
     (state) => state.memberShipSettings.selectedMembership,

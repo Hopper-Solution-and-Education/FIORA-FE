@@ -14,30 +14,7 @@ const useEditThresholdBenefitTierConfig = () => {
   );
 
   const fields = [
-    <InputField
-      key="axis"
-      name="axis"
-      label="Axis"
-      placeholder="Axis"
-      required
-      disabled={isSubmitting || isLoadingAddUpdateBenefitTier}
-    />,
-    <InputField
-      key="oldMin"
-      name="oldMin"
-      placeholder="Old Min"
-      label="Old Min"
-      required
-      disabled={isSubmitting || isLoadingAddUpdateBenefitTier}
-    />,
-    <InputField
-      key="oldMax"
-      name="oldMax"
-      placeholder="Old Max"
-      label="Old Max"
-      required
-      disabled={isSubmitting || isLoadingAddUpdateBenefitTier}
-    />,
+    <InputField key="axis" name="axis" label="Axis" placeholder="Axis" required disabled={true} />,
     <InputField
       key="newMin"
       name="newMin"
