@@ -19,6 +19,8 @@ const ScatterRankingChart = ({
   isLoading = false,
   currentId,
   isDisabled = false,
+  onClickXAxisRange,
+  onClickYAxisRange,
 }: ScatterChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [chartDimensions, setChartDimensions] = useState({ width: 0, height: 0 });
@@ -433,6 +435,12 @@ const ScatterRankingChart = ({
                 onMouseMove={handleXHoverMove}
                 onMouseLeave={handleXHoverLeave}
                 onMouseEnter={handleXHoverMove}
+                onClick={() => {
+                  if (hoveredXIndex !== null && onClickXAxisRange) {
+                    const tier = spentTiers[hoveredXIndex];
+                    if (tier) onClickXAxisRange(tier, hoveredXIndex);
+                  }
+                }}
               >
                 {/* Background bar */}
                 <div className="absolute left-0 flex items-center w-[calc(100%-10px)] z-10">
@@ -486,6 +494,12 @@ const ScatterRankingChart = ({
                 onMouseMove={handleYHoverMove}
                 onMouseLeave={handleYHoverLeave}
                 onMouseEnter={handleYHoverMove}
+                onClick={() => {
+                  if (hoveredYIndex !== null && onClickYAxisRange) {
+                    const tier = balanceTiers[hoveredYIndex];
+                    if (tier) onClickYAxisRange(tier, hoveredYIndex);
+                  }
+                }}
               >
                 {/* Arrow head for Y-axis */}
                 {chartDimensions.height && (

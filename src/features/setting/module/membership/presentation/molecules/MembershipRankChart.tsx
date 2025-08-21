@@ -53,6 +53,14 @@ const MembershipRankChart = () => {
     }
   }, [memberships]);
 
+  const handleClickYAxisRange = (tier: Tier, index: number) => {
+    console.log(tier, index);
+  };
+
+  const handleClickXAxisRange = (tier: Tier, index: number) => {
+    console.log(tier, index);
+  };
+
   return (
     <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-7 rounded-lg">
       <ScatterRankingChart
@@ -80,6 +88,8 @@ const MembershipRankChart = () => {
         combinedTierIcons={combinedTierIcons}
         isLoading={isLoadingGetMemberships}
         currentId={selectedMembership?.id}
+        onClickXAxisRange={handleClickXAxisRange}
+        onClickYAxisRange={handleClickYAxisRange}
       />
     </div>
   );
