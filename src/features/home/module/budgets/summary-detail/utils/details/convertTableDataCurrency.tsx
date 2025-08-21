@@ -4,6 +4,7 @@ import { USD_VND_RATE } from '@/shared/constants';
 import { Currency } from '@/shared/types';
 import { convertVNDToUSD, formatCurrency } from '@/shared/utils';
 import { isArray } from 'lodash';
+import { BudgetDetailFilterEnum } from '../../data/constants';
 import { TableData } from '../../presentation/types/table.type';
 
 export const formatCurrencyValue = (
@@ -21,22 +22,30 @@ export const convertTableDataCurrency = (
   tableData: TableData[],
   userCurrency: Currency,
   isFullCurrencyDisplay?: boolean,
+  activeTab?: string,
 ): TableData[] => {
   const renderRemaining = (
     bottomUpValue: number,
     actualSumUpValue: number,
     userCurrency: Currency,
     isFullCurrencyDisplay?: boolean,
+    activeTab?: string,
   ) => (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <p className="cursor-pointer px-3 py-2">
-            {formatCurrencyValue(
-              bottomUpValue - actualSumUpValue,
-              userCurrency,
-              isFullCurrencyDisplay,
-            )}
+            {activeTab === BudgetDetailFilterEnum.EXPENSE
+              ? formatCurrencyValue(
+                bottomUpValue - actualSumUpValue,
+                userCurrency,
+                isFullCurrencyDisplay,
+              )
+              : formatCurrencyValue(
+                actualSumUpValue - bottomUpValue,
+                userCurrency,
+                isFullCurrencyDisplay,
+              )}
           </p>
         </TooltipTrigger>
         <TooltipContent
@@ -44,13 +53,21 @@ export const convertTableDataCurrency = (
           style={{ zIndex: 70 }}
         >
           <div>
-            <span>
-              Remaining = Bottom Up - Actual Sum Up
-              {'\n'}
-              {formatCurrencyValue(bottomUpValue - actualSumUpValue, userCurrency)} ={' '}
-              {formatCurrencyValue(bottomUpValue, userCurrency)} -{' '}
-              {formatCurrencyValue(actualSumUpValue, userCurrency)}
-            </span>
+            {activeTab === BudgetDetailFilterEnum.EXPENSE ? (
+              <span>
+                Remaining = Bottom Up - Actual Sum Up{'\n'}
+                {formatCurrencyValue(bottomUpValue - actualSumUpValue, userCurrency)} ={' '}
+                {formatCurrencyValue(bottomUpValue, userCurrency)} -{' '}
+                {formatCurrencyValue(actualSumUpValue, userCurrency)}
+              </span>
+            ) : (
+              <span>
+                Remaining = Actual Sum Up - Bottom Up{'\n'}
+                {formatCurrencyValue(actualSumUpValue - bottomUpValue, userCurrency)} ={' '}
+                {formatCurrencyValue(actualSumUpValue, userCurrency)} -{' '}
+                {formatCurrencyValue(bottomUpValue, userCurrency)}
+              </span>
+            )}
           </div>
         </TooltipContent>
       </Tooltip>
@@ -131,18 +148,18 @@ export const convertTableDataCurrency = (
             // Get value of Bottom Up
             let bottomUpValue =
               bottomUp &&
-              bottomUp[field] &&
-              typeof bottomUp[field] === 'object' &&
-              'value' in bottomUp[field]
+                bottomUp[field] &&
+                typeof bottomUp[field] === 'object' &&
+                'value' in bottomUp[field]
                 ? Number((bottomUp[field] as DataSourceItemProps).value)
                 : 0;
 
             // Get value of Actual Sum Up
             let actualSumUpValue =
               actualSumUp &&
-              actualSumUp[field] &&
-              typeof actualSumUp[field] === 'object' &&
-              'value' in actualSumUp[field]
+                actualSumUp[field] &&
+                typeof actualSumUp[field] === 'object' &&
+                'value' in actualSumUp[field]
                 ? Number((actualSumUp[field] as DataSourceItemProps).value)
                 : 0;
 
@@ -165,6 +182,7 @@ export const convertTableDataCurrency = (
                 actualSumUpValue,
                 userCurrency,
                 isFullCurrencyDisplay,
+                activeTab,
               ),
             };
           } else {

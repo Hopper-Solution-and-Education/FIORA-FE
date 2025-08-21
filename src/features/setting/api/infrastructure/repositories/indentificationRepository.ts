@@ -1,37 +1,40 @@
 import { prisma } from '@/config';
+import { SessionUser } from '@/shared/types/session';
 import {
+  ChannelType,
   IdentificationDocument,
   IdentificationType,
   KYCMethod,
   KYCStatus,
   KYCType,
+  NotificationType,
   Prisma,
 } from '@prisma/client';
 
 class IdentificationRepository {
-  async create(data: Prisma.IdentificationDocumentCreateInput, userid: string): Promise<any> {
+  async create(data: Prisma.IdentificationDocumentCreateInput, user: SessionUser): Promise<any> {
     try {
       return prisma.$transaction(async (tx) => {
         let type;
         let fieldName = '';
         if (data.type == IdentificationType.TAX) {
           type = KYCType.TAX;
-          fieldName = 'TAX';
+          fieldName = 'tax';
         } else {
           type = KYCType.IDENTIFICATION;
-          fieldName = 'IDENTIFICATION';
+          fieldName = 'identification';
         }
 
         const identification = await tx.identificationDocument.create({
-          data: { ...data, createdBy: userid },
+          data: { ...data, createdBy: user.id },
         });
         await tx.eKYC.create({
           data: {
             type: type,
             fieldName: fieldName,
             status: KYCStatus.PENDING,
-            createdBy: userid.toString(),
-            userId: userid.toString(),
+            createdBy: user.id.toString(),
+            userId: user.id.toString(),
             createdAt: new Date(),
             updatedAt: new Date(),
             id: crypto.randomUUID(),
@@ -39,7 +42,18 @@ class IdentificationRepository {
             method: KYCMethod.MANUAL,
           },
         });
-
+        await tx.notification.create({
+          data: {
+            title: `Verify ${fieldName} !`,
+            message: `User ${user.email} has submitted a new verify ${fieldName}.`,
+            channel: ChannelType.BOX,
+            notifyTo: NotificationType.ADMIN_CS,
+            type: 'BANK',
+            emails: [user.email],
+            emailTemplateId: null,
+            createdBy: null,
+          },
+        });
         return identification;
       });
     } catch (error) {
