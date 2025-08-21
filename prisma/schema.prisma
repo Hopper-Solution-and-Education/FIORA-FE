@@ -835,12 +835,12 @@ model eKYC {
   fieldName  String    @db.VarChar(100)
   status     KYCStatus
   method     KYCMethod
-  type       KYCType
   updatedAt  DateTime  @db.Timestamptz(0)
   updatedBy  String?   @db.Uuid
   userId     String?   @db.Uuid
   verifiedBy String?   @db.Uuid
   refId      String?   @db.Uuid
+  type       KYCType?
   User       User?     @relation(fields: [userId], references: [id])
 }
 
@@ -1018,7 +1018,7 @@ enum TypeCronJob {
 }
 
 enum KYCType {
-  IDENTIFICTION
+  IDENTIFICATION
   CONTACT
   TAX
   BANK
