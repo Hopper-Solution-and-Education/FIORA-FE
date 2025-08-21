@@ -4,6 +4,7 @@ import { Messages } from '@/shared/constants/message';
 import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
+import { SessionUser } from '@/shared/types/session';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { validateBody } from '@/shared/utils/validate';
 import { identificationDocumentSchema } from '@/shared/validators/identificationValidator';
@@ -12,23 +13,24 @@ import { NextApiRequest, NextApiResponse } from 'next';
 
 export const maxDuration = 30; // 30 seconds
 
-export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId: string) =>
-  errorHandler(
-    async (request, response) => {
-      switch (request.method) {
-        case 'POST':
-          return POST(request, response, userId);
-        case 'GET':
-          return GET(response, userId);
-        default:
-          return response
-            .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-            .json({ error: Messages.METHOD_NOT_ALLOWED });
-      }
-    },
-    req,
-    res,
-  ),
+export default sessionWrapper(
+  (req: NextApiRequest, res: NextApiResponse, userId: string, user: SessionUser) =>
+    errorHandler(
+      async (request, response) => {
+        switch (request.method) {
+          case 'POST':
+            return POST(request, response, userId, user);
+          case 'GET':
+            return GET(response, userId);
+          default:
+            return response
+              .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+              .json({ error: Messages.METHOD_NOT_ALLOWED });
+        }
+      },
+      req,
+      res,
+    ),
 );
 
 export async function GET(res: NextApiResponse, userId: string) {
@@ -44,8 +46,13 @@ export async function GET(res: NextApiResponse, userId: string) {
     .json(createResponse(RESPONSE_CODE.OK, Messages.GET_IDENTIFICATION_SUCCESS, identification));
 }
 
-export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const { error } = validateBody(identificationDocumentSchema, req.body);
+export async function POST(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  userId: string,
+  user: SessionUser,
+) {
+  const { error, value } = validateBody(identificationDocumentSchema, req.body);
   if (error) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
@@ -53,7 +60,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
   }
   const newIdentification = await identificationRepository.create(
     {
-      ...req.body,
+      ...value,
       status: KYCStatus.PENDING,
       userId: userId,
       createdAt: new Date(),
@@ -61,14 +68,14 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       remarks: '',
       id: crypto.randomUUID(),
     },
-    userId,
+    user,
   );
   return res
     .status(RESPONSE_CODE.CREATED)
     .json(
       createResponse(
         RESPONSE_CODE.CREATED,
-        Messages.CREATE_BANK_ACCOUNT_SUCCESS,
+        Messages.CREATE_IDENTIFICATION_SUCCESS,
         newIdentification,
       ),
     );

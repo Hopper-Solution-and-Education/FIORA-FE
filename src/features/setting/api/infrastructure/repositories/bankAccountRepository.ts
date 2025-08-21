@@ -1,8 +1,17 @@
 import { prisma } from '@/config';
-import { BankAccount, KYCMethod, KYCStatus, KYCType, Prisma } from '@prisma/client';
+import { SessionUser } from '@/shared/types/session';
+import {
+  BankAccount,
+  ChannelType,
+  KYCMethod,
+  KYCStatus,
+  KYCType,
+  NotificationType,
+  Prisma,
+} from '@prisma/client';
 
 class BankAccountRepository {
-  async create(data: Prisma.BankAccountCreateInput, userId: string): Promise<any> {
+  async create(data: Prisma.BankAccountCreateInput, user: SessionUser): Promise<any> {
     try {
       return prisma.$transaction(async (tx) => {
         const bankAccount = await prisma.bankAccount.create({ data: { ...data } });
@@ -12,13 +21,25 @@ class BankAccountRepository {
             type: KYCType.BANK,
             fieldName: 'BANK',
             status: KYCStatus.PENDING,
-            createdBy: userId.toString(),
-            userId: userId.toString(),
+            createdBy: user.id.toString(),
+            userId: user.id.toString(),
             createdAt: new Date(),
             updatedAt: new Date(),
             id: crypto.randomUUID(),
             refId: bankAccount.id,
             method: KYCMethod.MANUAL,
+          },
+        });
+        await tx.notification.create({
+          data: {
+            title: `Verify new bank account!`,
+            message: `User ${user.email} has submitted a new verify bank account.`,
+            channel: ChannelType.BOX,
+            notifyTo: NotificationType.ADMIN_CS,
+            type: 'BANK',
+            emails: [user.email],
+            emailTemplateId: null,
+            createdBy: null,
           },
         });
         return bankAccount;
