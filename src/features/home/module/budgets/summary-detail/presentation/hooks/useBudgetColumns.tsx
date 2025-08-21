@@ -50,8 +50,8 @@ export function useBudgetColumns({
 
   // Convert table data to display currency format
   const convertedTableData = useMemo(() => {
-    return convertTableDataCurrency(tableData, currency, isFullCurrencyDisplay);
-  }, [tableData, currency, isFullCurrencyDisplay]);
+    return convertTableDataCurrency(tableData, currency, isFullCurrencyDisplay, activeTab);
+  }, [tableData, currency, isFullCurrencyDisplay, activeTab]);
 
   // Get columns configuration based on period type
   const updatedColumns = getColumnsByPeriod({
