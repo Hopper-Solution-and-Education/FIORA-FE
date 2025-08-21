@@ -3,9 +3,27 @@ import { profileApi } from '@/features/profile/store/api/profileApi';
 import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { PersistConfig, persistReducer, persistStore } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
 import apiMiddleware from './middleware/apiMiddleware';
 import rootReducer from './rootReducer';
+// Use guarded storage to avoid SSR warning: redux-persist failed to create sync storage
+const createNoopStorage = () => {
+  return {
+    getItem(_key: string) {
+      return Promise.resolve(null);
+    },
+    setItem(_key: string, value: string) {
+      return Promise.resolve(value);
+    },
+    removeItem(_key: string) {
+      return Promise.resolve();
+    },
+  };
+};
+
+const storage =
+  typeof window !== 'undefined'
+    ? (await import('redux-persist/lib/storage')).default
+    : createNoopStorage();
 
 // for redux persist - use it later
 const persistConfig: PersistConfig<ReturnType<typeof rootReducer>> = {
