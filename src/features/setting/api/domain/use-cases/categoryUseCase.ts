@@ -240,12 +240,12 @@ class CategoryUseCase {
       const toTransactions = category.toTransactions ?? [];
 
       const totalIncome = fromTransactions.reduce(
-        (sum: number, tx: any) => sum + Number(tx.amount),
+        (sum: number, tx: any) => sum + Number(tx.baseAmount),
         0,
       );
 
       const totalExpense = toTransactions.reduce(
-        (sum: number, tx: any) => sum + Number(tx.amount),
+        (sum: number, tx: any) => sum + Number(tx.baseAmount),
         0,
       );
 
