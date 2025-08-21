@@ -724,7 +724,7 @@ class BudgetUseCase {
         },
         type: { in: [TransactionType.Income, TransactionType.Expense] },
       },
-      { select: { id: true, date: true, type: true, amount: true, currencyId: true } },
+      { select: { id: true, date: true, type: true, amount: true, currency: true } },
     );
 
     // Step 6: Process transactions to calculate tentative income/expense per year
