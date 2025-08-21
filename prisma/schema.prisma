@@ -974,6 +974,7 @@ enum NotificationType {
   ROLE_CS
   ROLE_USER
   PERSONAL
+  ADMIN_CS
 }
 
 enum KYCStatus {
