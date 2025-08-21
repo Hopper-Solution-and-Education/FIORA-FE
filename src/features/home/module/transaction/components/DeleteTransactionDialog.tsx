@@ -3,10 +3,10 @@ import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/shared/utils';
-import { formatCurrency } from '../hooks/formatCurrency';
-import { formatDate } from '../hooks/formatDate';
 import { IRelationalTransaction } from '../types';
 import { TRANSACTION_TYPE, TransactionCurrency } from '../utils/constants';
+import { formatCurrency } from '../utils/formatCurrency';
+import { formatDate } from '../utils/formatDate';
 
 type DeleteAccountDialogProps = {
   open: boolean;
