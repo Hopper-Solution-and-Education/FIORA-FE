@@ -1,7 +1,6 @@
-'use client';
-
-import { Icons } from '@/components/Icon';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+"use client"
+import { Icons } from "@/components/Icon";
+import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setFullCurrencyDisplay } from '@/store/slices/setting.slice';
 
@@ -10,30 +9,34 @@ interface CurrencyDisplayToggleProps {
 }
 
 const CurrencyDisplayToggle = ({ className }: CurrencyDisplayToggleProps) => {
-  const { isFullCurrencyDisplay } = useAppSelector((state) => state.settings);
   const dispatch = useAppDispatch();
-
-  const handleValueChange = (value: string) => {
-    dispatch(setFullCurrencyDisplay(value === 'full'));
+  const { isFullCurrencyDisplay } = useAppSelector((state) => state.settings);
+  const handleValueChange = () => {
+    dispatch(setFullCurrencyDisplay(!isFullCurrencyDisplay))
   };
 
   return (
-    <Tabs
-      value={isFullCurrencyDisplay ? 'full' : 'short'}
-      onValueChange={handleValueChange}
-      className={className}
-    >
-      <TabsList className="w-full grid grid-cols-2 rounded-lg bg-muted/30">
-        <TabsTrigger value="full" className="flex items-center gap-1 px-2 py-1 text-xs">
-          <Icons.eye size={16} className="text-primary" />
-          1K | 1M | 1B
-        </TabsTrigger>
-        <TabsTrigger value="short" className="flex items-center gap-1 px-2 py-1 text-xs">
-          <Icons.eyeOff size={16} className="text-muted-foreground" />K | M | B
-        </TabsTrigger>
-      </TabsList>
-    </Tabs>
-  );
-};
+    <div className={`flex items-center gap-3 ${className}`}>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleValueChange}
+        className="flex items-center gap-2 px-3 py-1.5 h-auto bg-transparent hover:bg-muted/50 transition-colors"
+      >
+        {isFullCurrencyDisplay ? (
+          <>
+            <Icons.eye size={14} className="text-primary" />
+            <span className="text-xs font-medium">Show Full (1,000)</span>
+          </>
+        ) : (
+          <>
+            <Icons.eyeOff size={14} className="text-muted-foreground" />
+            <span className="text-xs font-medium">Show Short (1K)</span>
+          </>
+        )}
+      </Button>
+    </div>
+  )
+}
 
-export default CurrencyDisplayToggle;
+export default CurrencyDisplayToggle
