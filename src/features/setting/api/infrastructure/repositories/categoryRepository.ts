@@ -125,6 +125,9 @@ class CategoryRepository implements ICategoryRepository {
       },
       include: {
         fromTransactions: {
+          where: {
+            isDeleted: false,
+          },
           select: {
             baseAmount: true,
             baseCurrency: true,
@@ -134,6 +137,9 @@ class CategoryRepository implements ICategoryRepository {
           },
         },
         toTransactions: {
+          where: {
+            isDeleted: false,
+          },
           select: {
             baseAmount: true,
             baseCurrency: true,

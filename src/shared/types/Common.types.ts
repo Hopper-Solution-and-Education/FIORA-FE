@@ -1,7 +1,7 @@
-import { ComponentType } from 'react';
-import { AnySchema } from 'yup';
 import { Icon } from '@/components/Icon';
 import { Prisma } from '@prisma/client';
+import { ComponentType } from 'react';
+import { AnySchema } from 'yup';
 export interface Response<T> {
   message: string;
   data: T;
@@ -18,6 +18,14 @@ export interface GlobalFilters {
   search?: string;
   sort?: string;
   filters: any;
+}
+
+export interface CategoryFilters {
+  types?: string[];
+  search?: string;
+  sort?: string;
+  filters: any;
+  rate: number;
 }
 
 export interface Option {

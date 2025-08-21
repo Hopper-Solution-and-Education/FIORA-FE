@@ -211,6 +211,7 @@ model Transaction {
   isMarked            Boolean              @default(false)
   isExpired           Boolean              @default(false)
   membershipBenefitId String?              @db.Uuid
+  CronJobLog          CronJobLog[]         @relation("CronJobLogTransactions")
   productsRelation    ProductTransaction[] @relation("ProductTransactions")
   currencyExchange    CurrencyExchange?    @relation(fields: [currencyId], references: [id])
   fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
@@ -222,7 +223,6 @@ model Transaction {
   toCategory          Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
   toWallet            Wallet?              @relation("ToWallet", fields: [toWalletId], references: [id])
   user                User?                @relation("UserTransactions", fields: [userId], references: [id])
-  CronJobLog          CronJobLog[]         @relation("CronJobLogTransactions")
 
   @@index([date])
   @@index([type])
