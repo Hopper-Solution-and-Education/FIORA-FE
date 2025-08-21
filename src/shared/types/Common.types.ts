@@ -25,7 +25,6 @@ export interface CategoryFilters {
   search?: string;
   sort?: string;
   filters: any;
-  rate: number;
 }
 
 export interface Option {

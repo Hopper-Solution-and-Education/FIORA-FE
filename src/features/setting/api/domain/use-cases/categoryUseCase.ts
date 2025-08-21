@@ -184,11 +184,7 @@ class CategoryUseCase {
 
     const transactionRangeFilters = this.extractTransactionRangeFilters(params.filters);
 
-    categories = this.filterCategoriesByTransactionRange(
-      categories,
-      transactionRangeFilters,
-      params.rate,
-    );
+    categories = this.filterCategoriesByTransactionRange(categories, transactionRangeFilters);
 
     const calculateBalance = (category: CategoryExtras): number => {
       if (category.type === CategoryType.Expense.valueOf()) {
@@ -231,7 +227,7 @@ class CategoryUseCase {
     };
   }
 
-  private filterCategoriesByTransactionRange(categories: any[], filters: any, rate: number): any[] {
+  private filterCategoriesByTransactionRange(categories: any[], filters: any): any[] {
     const {
       totalIncomeMin = 0,
       totalIncomeMax = Number.MAX_SAFE_INTEGER,
@@ -243,18 +239,15 @@ class CategoryUseCase {
       const fromTransactions = category.fromTransactions ?? [];
       const toTransactions = category.toTransactions ?? [];
 
-      let totalIncome = fromTransactions.reduce(
+      const totalIncome = fromTransactions.reduce(
         (sum: number, tx: any) => sum + Number(tx.amount),
         0,
       );
 
-      let totalExpense = toTransactions.reduce(
+      const totalExpense = toTransactions.reduce(
         (sum: number, tx: any) => sum + Number(tx.amount),
         0,
       );
-
-      totalExpense = totalExpense * rate;
-      totalIncome = totalIncome * rate;
 
       const isValidIncome =
         category.type === 'Income' &&
@@ -266,29 +259,6 @@ class CategoryUseCase {
         totalExpense >= totalExpenseMin &&
         totalExpense <= totalExpenseMax;
 
-      if (category.name == 'Saving') {
-        console.log(
-          '🚀 ~ CategoryUseCase ~ filterCategoriesByTransactionRange ~ category:',
-          category,
-        );
-
-        console.log(
-          '🚀 ~ CategoryUseCase ~ filterCategoriesByTransactionRange ~ totalExpense:',
-          totalExpense,
-        );
-        console.log(
-          '🚀 ~ CategoryUseCase ~ filterCategoriesByTransactionRange ~ totalIncome:',
-          totalIncome,
-        );
-        console.log(
-          '🚀 ~ CategoryUseCase ~ filterCategoriesByTransactionRange ~ isValidIncome:',
-          isValidIncome,
-        );
-        console.log(
-          '🚀 ~ CategoryUseCase ~ filterCategoriesByTransactionRange ~ isValidExpense:',
-          isValidExpense,
-        );
-      }
       return isValidIncome || isValidExpense;
     });
   }
