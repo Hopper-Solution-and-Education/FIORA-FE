@@ -63,7 +63,7 @@ const SettingTierAndStory = ({ dynamicTierFields }: SettingTierAndStoryProps) =>
       </div>
 
       {/* Story Section */}
-      <div className="rounded-lg shadow p-4">
+      <div className="rounded-lg shadow">
         <h2 className="text-xl font-bold mb-4">Story</h2>
         <StoryTierInputFieldConfig />
       </div>

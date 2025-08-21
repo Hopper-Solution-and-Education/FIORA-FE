@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import ItemRankChart from './ItemRankChart';
 import ScatterRankingChartSkeleton from './ScatterRankingChartSkeleton';
 import { defaultBarColors, ScatterChartProps } from './types';
@@ -66,6 +66,20 @@ const ScatterRankingChart = ({
 
   const userBalanceRank = getBalanceRank(balance, balanceTiers);
   const userSpentRank = getSpentRank(spent, spentTiers);
+
+  // Hover tooltips for axis progress bars
+  const [hoverX, setHoverX] = useState<{ visible: boolean; left: number; value: number }>({
+    visible: false,
+    left: 0,
+    value: 0,
+  });
+  const [hoverY, setHoverY] = useState<{ visible: boolean; bottom: number; value: number }>({
+    visible: false,
+    bottom: 0,
+    value: 0,
+  });
+  const [hoveredXIndex, setHoveredXIndex] = useState<number | null>(null);
+  const [hoveredYIndex, setHoveredYIndex] = useState<number | null>(null);
 
   // Helper: Calculate pixel position of currentValue on X-axis (Spent)
   const getXAxisPosition = (value: number) => {
@@ -142,6 +156,76 @@ const ScatterRankingChart = ({
       }
     }
     return pos;
+  };
+
+  // Threshold positions for tooltips (0 and all tier minimums)
+  const xThresholds = useMemo(() => {
+    if (!chartDimensions.width) return [] as { pos: number; value: number }[];
+    const thresholds: { pos: number; value: number }[] = [{ pos: 0, value: 0 }];
+    spentTiers.slice(1).forEach((tier) => {
+      thresholds.push({ pos: getXAxisPosition(tier.min), value: tier.min });
+    });
+    return thresholds;
+  }, [chartDimensions.width, spentTiers]);
+
+  const yThresholds = useMemo(() => {
+    if (!chartDimensions.height) return [] as { pos: number; value: number }[];
+    const thresholds: { pos: number; value: number }[] = [{ pos: 0, value: 0 }];
+    balanceTiers.slice(1).forEach((tier) => {
+      thresholds.push({ pos: getYAxisPosition(tier.min), value: tier.min });
+    });
+    return thresholds;
+  }, [chartDimensions.height, balanceTiers]);
+
+  const handleXHoverMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!xThresholds.length) return;
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const segmentWidth = rect.width / spentTiers.length;
+    let index = Math.floor(x / Math.max(segmentWidth, 1));
+    index = Math.max(0, Math.min(index, spentTiers.length - 1));
+    setHoveredXIndex(index);
+
+    const center = index * segmentWidth + segmentWidth / 2;
+    setHoverX({
+      visible: true,
+      left: Math.min(Math.max(center, 0), rect.width),
+      value: spentTiers[index]?.min ?? 0,
+    });
+  };
+  const handleXHoverLeave = () => {
+    setHoverX((prev) => ({ ...prev, visible: false }));
+    setHoveredXIndex(null);
+  };
+
+  const handleYHoverMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!yThresholds.length) return;
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+    const xFromLeft = e.clientX - rect.left;
+    // Only activate when hovering near the vertical bar (within 20px from the left edge)
+    if (xFromLeft > 20) {
+      setHoverY((prev) => ({ ...prev, visible: false }));
+      setHoveredYIndex(null);
+      return;
+    }
+    const yFromTop = e.clientY - rect.top;
+    const height = rect.height;
+    const yFromBottom = height - yFromTop;
+    const segmentHeight = height / balanceTiers.length;
+    let index = Math.floor(yFromBottom / Math.max(segmentHeight, 1));
+    index = Math.max(0, Math.min(index, balanceTiers.length - 1));
+    setHoveredYIndex(index);
+
+    const center = index * segmentHeight + segmentHeight / 2;
+    setHoverY({
+      visible: true,
+      bottom: Math.min(Math.max(center, 0), height),
+      value: balanceTiers[index]?.min ?? 0,
+    });
+  };
+  const handleYHoverLeave = () => {
+    setHoverY((prev) => ({ ...prev, visible: false }));
+    setHoveredYIndex(null);
   };
 
   // X-axis (Spent)
@@ -256,16 +340,6 @@ const ScatterRankingChart = ({
                 })}
               </div>
 
-              {/* X-axis Legend (centered below chart grid)
-              {!isMobile && (
-                <div
-                  className="absolute left-1/2"
-                  style={{ transform: 'translateX(-50%)', bottom: '0px', zIndex: 2 }}
-                >
-                  <LegendXAxis items={xLegend?.items || []} />
-                </div>
-              )} */}
-
               {/* Chart Grid Area */}
               <div
                 className="absolute top-0 left-[80px] w-[calc(100%-100px)] h-[calc(100%-80px)] grid"
@@ -274,6 +348,28 @@ const ScatterRankingChart = ({
                   gridTemplateColumns: `repeat(${spentTiers.length}, 1fr)`,
                 }}
               >
+                {/* Highlight hovered column from X-axis bar */}
+                {chartDimensions.width && hoveredXIndex !== null && (
+                  <div
+                    className="absolute top-0 h-full pointer-events-none z-[6]"
+                    style={{
+                      left: `${(hoveredXIndex * chartDimensions.width - 22 * hoveredXIndex) / spentTiers.length}px`,
+                      width: `${chartDimensions.width / spentTiers.length - 2}px`,
+                      background: 'rgba(59,130,246,0.12)',
+                    }}
+                  />
+                )}
+                {/* Highlight hovered row from Y-axis bar */}
+                {chartDimensions.height && hoveredYIndex !== null && (
+                  <div
+                    className="absolute left-0 w-full pointer-events-none z-[6]"
+                    style={{
+                      bottom: `${(hoveredYIndex * chartDimensions.height) / balanceTiers.length}px`,
+                      height: `${chartDimensions.height / balanceTiers.length}px`,
+                      background: 'rgba(34,197,94,0.12)',
+                    }}
+                  />
+                )}
                 {/* Render background grid lines */}
                 {balanceTiers
                   .slice(0, -1)
@@ -332,11 +428,26 @@ const ScatterRankingChart = ({
               </div>
 
               {/* Progress Bar Chart for XAxis and YAxis */}
-              <div className="absolute bottom-20 left-[70px] w-[calc(100%-90px)]">
+              <div
+                className="absolute bottom-20 left-[70px] w-[calc(100%-90px)]"
+                onMouseMove={handleXHoverMove}
+                onMouseLeave={handleXHoverLeave}
+                onMouseEnter={handleXHoverMove}
+              >
                 {/* Background bar */}
                 <div className="absolute left-0 flex items-center w-[calc(100%-10px)] z-10">
                   <div className="w-full h-2.5" style={{ background: colors.xBg }} />
                 </div>
+                {/* Highlight hovered column segment */}
+                {hoveredXIndex !== null && (
+                  <div
+                    className="absolute top-0 h-2.5 z-[11] pointer-events-none"
+                    style={{
+                      left: `calc(${(100 * hoveredXIndex) / spentTiers.length}% )`,
+                      width: `calc(${100 / spentTiers.length}% - 0px)`,
+                    }}
+                  />
+                )}
                 {/* Arrow head for X-axis */}
                 {chartDimensions.width && (
                   <div
@@ -352,6 +463,18 @@ const ScatterRankingChart = ({
                     background: colors.x,
                   }}
                 />
+                {hoverX.visible && (
+                  <div
+                    className="absolute z-[20] px-2 py-1 text-[10px] bg-black text-white rounded pointer-events-none"
+                    style={{
+                      left: `${hoverX.left}px`,
+                      bottom: '14px',
+                      transform: 'translateX(-50%)',
+                    }}
+                  >
+                    {hoverX.value.toLocaleString()}
+                  </div>
+                )}
               </div>
 
               <div
@@ -360,6 +483,9 @@ const ScatterRankingChart = ({
                   h-[calc(100%-70px)]
                   ${chartDimensions.height ? 'block' : 'hidden'}
                 `}
+                onMouseMove={handleYHoverMove}
+                onMouseLeave={handleYHoverLeave}
+                onMouseEnter={handleYHoverMove}
               >
                 {/* Arrow head for Y-axis */}
                 {chartDimensions.height && (
@@ -385,6 +511,16 @@ const ScatterRankingChart = ({
                 >
                   <div className="h-full w-2.5" style={{ background: colors.yBg }} />
                 </div>
+                {/* Highlight hovered row segment */}
+                {hoveredYIndex !== null && (
+                  <div
+                    className="absolute left-0 w-2.5 z-[11] pointer-events-none"
+                    style={{
+                      bottom: `calc(${(100 * hoveredYIndex) / balanceTiers.length}% + 0px)`,
+                      height: `calc(${100 / balanceTiers.length}% - 0px)`,
+                    }}
+                  />
+                )}
                 {/* Current value bar */}
                 <div
                   className="w-2.5 absolute left-0 bottom-0 transition-all duration-700 z-[12]"
@@ -393,6 +529,18 @@ const ScatterRankingChart = ({
                     background: colors.y,
                   }}
                 />
+                {hoverY.visible && (
+                  <div
+                    className="absolute z-[20] px-2 py-1 text-[10px] bg-black text-white rounded pointer-events-none"
+                    style={{
+                      left: '14px',
+                      bottom: `${hoverY.bottom}px`,
+                      transform: 'translateY(50%)',
+                    }}
+                  >
+                    {hoverY.value.toLocaleString()}
+                  </div>
+                )}
               </div>
             </div>
           )}
