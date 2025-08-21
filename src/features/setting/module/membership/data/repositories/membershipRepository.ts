@@ -1,7 +1,7 @@
 import { decorate, injectable } from 'inversify';
 import {
-  AddBenefitTierRequest,
-  AddBenefitTierResponse,
+  AddUpdateBenefitTierRequest,
+  AddUpdateBenefitTierResponse,
   DeleteBenefitTierRequest,
   DeleteBenefitTierResponse,
   GetListMembershipsRequest,
@@ -15,7 +15,7 @@ import { MemberMapper } from '../mapper';
 export interface IMembershipRepository {
   getListMemberships(request: GetListMembershipsRequest): Promise<GetListMembershipsResponse>;
   upsertMembership(request: UpsertMembershipRequest): Promise<UpsertMembershipResponse>;
-  addBenefitTier(request: AddBenefitTierRequest): Promise<AddBenefitTierResponse>;
+  addBenefitTier(request: AddUpdateBenefitTierRequest): Promise<AddUpdateBenefitTierResponse>;
   deleteBenefitTier(request: DeleteBenefitTierRequest): Promise<DeleteBenefitTierResponse>;
 }
 
@@ -36,9 +36,11 @@ export class MembershipRepository implements IMembershipRepository {
     return MemberMapper.toUpsertMembershipResponse(response);
   }
 
-  async addBenefitTier(request: AddBenefitTierRequest): Promise<AddBenefitTierResponse> {
+  async addBenefitTier(
+    request: AddUpdateBenefitTierRequest,
+  ): Promise<AddUpdateBenefitTierResponse> {
     const requestDTO = MemberMapper.toAddBenefitTierRequest(request);
-    const response = await this.membershipAPI.addBenefitTier(requestDTO);
+    const response = await this.membershipAPI.addUpdateBenefitTier(requestDTO);
     return MemberMapper.toAddBenefitTierResponse(response);
   }
 

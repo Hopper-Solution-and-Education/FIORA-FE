@@ -1,7 +1,10 @@
 import { HttpResponse } from '@/shared/types';
+import { ProcessMembershipMode } from '../api';
 
 export type DeleteBenefitTierRequestDTO = {
-  id: string;
+  slug: string;
+  tierId: string;
+  mode: ProcessMembershipMode;
 };
 
 export type DeleteBenefitTierResponseDTO = HttpResponse<boolean>;

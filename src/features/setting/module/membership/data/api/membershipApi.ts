@@ -1,8 +1,8 @@
 import { httpClient } from '@/config/http-client/HttpClient';
 import { decorate, injectable } from 'inversify';
 import {
-  AddBenefitTierRequestDTO,
-  AddBenefitTierResponseDTO,
+  AddUpdateBenefitTierRequestDTO,
+  AddUpdateBenefitTierResponseDTO,
   DeleteBenefitTierRequestDTO,
   DeleteBenefitTierResponseDTO,
   GetListMembershipsRequestDTO,
@@ -14,8 +14,19 @@ import {
 export interface IMembershipAPI {
   getListMemberships(request: GetListMembershipsRequestDTO): Promise<GetListMembershipsResponseDTO>;
   upsertMembership(request: UpsertMembershipRequestDTO): Promise<UpsertMembershipResponseDTO>;
-  addBenefitTier(request: AddBenefitTierRequestDTO): Promise<AddBenefitTierResponseDTO>;
+  addUpdateBenefitTier(
+    request: AddUpdateBenefitTierRequestDTO,
+  ): Promise<AddUpdateBenefitTierResponseDTO>;
   deleteBenefitTier(request: DeleteBenefitTierRequestDTO): Promise<DeleteBenefitTierResponseDTO>;
+}
+
+export enum ProcessMembershipMode {
+  CREATE = 'create',
+  CREATE_ALL = 'create-all',
+  UPDATE = 'update',
+  UPDATE_ALL = 'update-all',
+  DELETE = 'delete',
+  DELETE_ALL = 'delete-all',
 }
 
 class MembershipAPI implements IMembershipAPI {
@@ -32,14 +43,16 @@ class MembershipAPI implements IMembershipAPI {
     return await httpClient.put(`/api/memberships`, request);
   }
 
-  async addBenefitTier(request: AddBenefitTierRequestDTO): Promise<AddBenefitTierResponseDTO> {
+  async addUpdateBenefitTier(
+    request: AddUpdateBenefitTierRequestDTO,
+  ): Promise<AddUpdateBenefitTierResponseDTO> {
     return await httpClient.post('/api/memberships/benefit', request);
   }
 
   async deleteBenefitTier(
     request: DeleteBenefitTierRequestDTO,
   ): Promise<DeleteBenefitTierResponseDTO> {
-    return await httpClient.delete(`/api/memberships/benefit?id=${request.id}`);
+    return await httpClient.post('/api/memberships/benefit', request);
   }
 }
 

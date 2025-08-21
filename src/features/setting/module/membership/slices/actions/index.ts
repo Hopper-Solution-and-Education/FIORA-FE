@@ -1,4 +1,4 @@
-export * from './addNewBenefitAsyncThunk';
+export * from './addUpdateNewBenefitAsyncThunk';
 export * from './deleteBenefitAsyncThunk';
 export * from './getMemberShipAsyncThunk';
 export * from './upsertMembershipAsyncThunk';

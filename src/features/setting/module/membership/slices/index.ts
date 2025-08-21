@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 import { Membership } from '../domain/entities';
 import {
-  addNewBenefitAsyncThunk,
+  addUpdateNewBenefitAsyncThunk,
   deleteBenefitAsyncThunk,
   getListMembershipAsyncThunk,
   upsertMembershipAsyncThunk,
@@ -54,15 +54,15 @@ const membershipSlice = createSlice({
       });
 
     builder
-      .addCase(addNewBenefitAsyncThunk.pending, (state) => {
-        state.isLoadingAddBenefitTier = true;
+      .addCase(addUpdateNewBenefitAsyncThunk.pending, (state) => {
+        state.isLoadingAddUpdateBenefitTier = true;
       })
-      .addCase(addNewBenefitAsyncThunk.fulfilled, (state, action) => {
-        state.isLoadingAddBenefitTier = false;
+      .addCase(addUpdateNewBenefitAsyncThunk.fulfilled, (state, action) => {
+        state.isLoadingAddUpdateBenefitTier = false;
         toast.success(action.payload.message);
       })
-      .addCase(addNewBenefitAsyncThunk.rejected, (state) => {
-        state.isLoadingAddBenefitTier = false;
+      .addCase(addUpdateNewBenefitAsyncThunk.rejected, (state) => {
+        state.isLoadingAddUpdateBenefitTier = false;
       });
 
     builder

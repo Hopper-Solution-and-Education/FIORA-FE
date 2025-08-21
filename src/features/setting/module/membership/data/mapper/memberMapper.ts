@@ -1,6 +1,6 @@
 import {
-  AddBenefitTierRequest,
-  AddBenefitTierResponse,
+  AddUpdateBenefitTierRequest,
+  AddUpdateBenefitTierResponse,
   DeleteBenefitTierRequest,
   DeleteBenefitTierResponse,
   GetListMembershipsRequest,
@@ -10,8 +10,8 @@ import {
   UpsertMembershipResponse,
 } from '../../domain/entities';
 import {
-  AddBenefitTierRequestDTO,
-  AddBenefitTierResponseDTO,
+  AddUpdateBenefitTierRequestDTO,
+  AddUpdateBenefitTierResponseDTO,
   DeleteBenefitTierRequestDTO,
   DeleteBenefitTierResponseDTO,
   GetListMembershipsRequestDTO,
@@ -84,7 +84,9 @@ export class MemberMapper {
     };
   }
 
-  static toAddBenefitTierRequest(data: AddBenefitTierRequest): AddBenefitTierRequestDTO {
+  static toAddBenefitTierRequest(
+    data: AddUpdateBenefitTierRequest,
+  ): AddUpdateBenefitTierRequestDTO {
     return {
       tierBenefit: {
         tierId: data.tierBenefit.tierId,
@@ -97,10 +99,13 @@ export class MemberMapper {
         suffix: data.membershipBenefit.suffix,
         userId: data.membershipBenefit.userId,
       },
+      mode: data.mode,
     };
   }
 
-  static toAddBenefitTierResponse(data: AddBenefitTierResponseDTO): AddBenefitTierResponse {
+  static toAddBenefitTierResponse(
+    data: AddUpdateBenefitTierResponseDTO,
+  ): AddUpdateBenefitTierResponse {
     return {
       data: {
         id: data.data.id,
@@ -120,7 +125,9 @@ export class MemberMapper {
 
   static toDeleteBenefitTierRequest(data: DeleteBenefitTierRequest): DeleteBenefitTierRequestDTO {
     return {
-      id: data.id,
+      slug: data.slug,
+      tierId: data.tierId,
+      mode: data.mode,
     };
   }
 

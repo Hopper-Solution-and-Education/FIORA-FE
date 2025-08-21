@@ -1,9 +1,20 @@
 'use client';
 
-import { InputField, TextareaField } from '@/components/common/forms';
+import { InputField, SelectField, TextareaField } from '@/components/common/forms';
+import { useAppSelector } from '@/store';
 import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
+import { ProcessMembershipMode } from '../../data/api';
+
+export const formatLabel = (mode: string) => {
+  return mode
+    .split('-') // tách theo dấu -
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' '); // nối lại bằng khoảng trắng
+};
+
+const createMemberShipMode = [ProcessMembershipMode.CREATE, ProcessMembershipMode.CREATE_ALL];
 
 const useAddBenefitTierFieldConfig = () => {
   const {
@@ -11,6 +22,10 @@ const useAddBenefitTierFieldConfig = () => {
     watch,
     setValue,
   } = useFormContext();
+
+  const isLoadingAddUpdateBenefitTier = useAppSelector(
+    (state) => state.memberShipSettings.isLoadingAddUpdateBenefitTier,
+  );
 
   useEffect(() => {
     if (watch('name')) {
@@ -27,14 +42,14 @@ const useAddBenefitTierFieldConfig = () => {
       label="Name"
       placeholder="Benefit Tier Name"
       required
-      disabled={isSubmitting}
+      disabled={isSubmitting || isLoadingAddUpdateBenefitTier}
     />,
     <TextareaField
       key="description"
       name="description"
       label="Description"
       placeholder="Benefit Tier Description"
-      disabled={isSubmitting}
+      disabled={isSubmitting || isLoadingAddUpdateBenefitTier}
     />,
     <InputField
       key="suffix"
@@ -42,7 +57,20 @@ const useAddBenefitTierFieldConfig = () => {
       placeholder="Suffix"
       label="Suffix"
       required
-      disabled={isSubmitting}
+      disabled={isSubmitting || isLoadingAddUpdateBenefitTier}
+    />,
+    <SelectField
+      key="mode"
+      name="mode"
+      label="Mode"
+      placeholder="Mode"
+      required
+      options={createMemberShipMode.map((mode) => ({
+        label: formatLabel(mode),
+        value: mode,
+      }))}
+      noneValue={false}
+      disabled={isSubmitting || isLoadingAddUpdateBenefitTier}
     />,
   ];
 
