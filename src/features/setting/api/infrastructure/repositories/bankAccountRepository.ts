@@ -1,14 +1,26 @@
 import { prisma } from '@/config';
-import { BankAccount, KYCStatus, Prisma } from '@prisma/client';
+import { BankAccount, KYCMethod, KYCStatus, KYCType, Prisma } from '@prisma/client';
 
 class BankAccountRepository {
-  async create(data: Prisma.BankAccountCreateInput, kycId: string): Promise<any> {
+  async create(data: Prisma.BankAccountCreateInput, userId: string): Promise<any> {
     try {
       return prisma.$transaction(async (tx) => {
         const bankAccount = await prisma.bankAccount.create({ data: { ...data } });
 
-        await tx.eKYC.update({ where: { id: kycId }, data: { refId: bankAccount?.id || null } });
-
+        await tx.eKYC.create({
+          data: {
+            type: KYCType.BANK,
+            fieldName: 'BANK',
+            status: KYCStatus.PENDING,
+            createdBy: userId.toString(),
+            userId: userId.toString(),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            id: crypto.randomUUID(),
+            refId: bankAccount.id,
+            method: KYCMethod.MANUAL,
+          },
+        });
         return bankAccount;
       });
     } catch (error) {

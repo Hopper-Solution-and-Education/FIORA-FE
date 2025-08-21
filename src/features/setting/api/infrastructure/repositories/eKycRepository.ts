@@ -1,8 +1,9 @@
 import { prisma } from '@/config';
-import { KYCMethod } from '@prisma/client';
+import { KYCMethod, KYCType } from '@prisma/client';
 
 class EKycRepository {
   async create(kyc: {
+    type: KYCType;
     fieldName: string;
     status: any;
     createdBy: string;
@@ -14,6 +15,7 @@ class EKycRepository {
     try {
       return await prisma.eKYC.create({
         data: {
+          type: kyc.type,
           method: KYCMethod.MANUAL,
           refId: null,
           fieldName: kyc.fieldName,
@@ -29,6 +31,15 @@ class EKycRepository {
       return error;
     }
   }
+
+  async getByUser(userId: string) {
+    return await prisma.eKYC.findMany({
+      where: {
+        userId,
+      },
+    });
+  }
+
   async getById(id: string) {
     return await prisma.eKYC.findFirst({
       where: {

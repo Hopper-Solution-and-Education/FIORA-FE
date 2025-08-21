@@ -5,7 +5,8 @@ export interface MembershipBenefitCreatePayload {
   membershipBenefit: MembershipBenefit;
   mode: Mode;
   slug?: string;
-  tierId?: string;
+  membershipTierId?: string;
+  membershipBenefitId?: string;
 }
 
 export interface MembershipBenefit {
@@ -33,5 +34,6 @@ export interface MembershipBenefitCreateUpdateAllPayload {
 
 export interface MembershipBenefitDeletePayload {
   slug: string;
-  tierId: string;
+  membershipTierId?: string;
+  membershipBenefitId?: string;
 }

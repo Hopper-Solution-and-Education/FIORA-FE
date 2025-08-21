@@ -33,10 +33,17 @@ export const membershipBenefitCreateSchema = Joi.object({
     otherwise: Joi.required(),
   }),
   tierBenefit: Joi.object({
-    tierId: Joi.string().uuid().required().messages({
-      'string.guid': 'Tier ID must be a valid UUID',
-      'any.required': 'Tier ID is required',
-    }),
+    tierId: Joi.string()
+      .uuid()
+      .messages({
+        'string.guid': 'Tier ID must be a valid UUID',
+        'any.required': 'Tier ID is required',
+      })
+      .when(Joi.ref('/mode'), {
+        is: Joi.valid('create', 'update'),
+        then: Joi.required(),
+        otherwise: Joi.optional(),
+      }),
     value: Joi.number().required().messages({
       'number.base': 'Value must be a number',
       'any.required': 'Value is required',
@@ -58,11 +65,14 @@ export const membershipBenefitCreateSchema = Joi.object({
     then: Joi.required(),
     otherwise: Joi.optional(),
   }),
-  tierId: Joi.string()
-    .uuid()
-    .when(Joi.ref('/mode'), {
-      is: Joi.valid('delete', 'delete-all'),
-      then: Joi.required(),
-      otherwise: Joi.optional(),
-    }),
+  membershipTierId: Joi.string().when(Joi.ref('/mode'), {
+    is: Joi.valid('delete'),
+    then: Joi.required(),
+    otherwise: Joi.optional(),
+  }),
+  membershipBenefitId: Joi.string().when(Joi.ref('/mode'), {
+    is: Joi.valid('delete'),
+    then: Joi.required(),
+    otherwise: Joi.optional(),
+  }),
 });

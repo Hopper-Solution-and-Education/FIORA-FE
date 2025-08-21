@@ -117,7 +117,7 @@ class MembershipBenefitService {
   }
 
   async deleteMembershipBenefit(payload: MembershipBenefitDeletePayload) {
-    const { slug } = payload;
+    const { slug, membershipTierId, membershipBenefitId } = payload;
 
     return await prisma.$transaction(async (tx) => {
       const foundMembershipBenefit = await tx.membershipBenefit.findUnique({
@@ -126,6 +126,23 @@ class MembershipBenefitService {
 
       if (!foundMembershipBenefit) {
         throw new BadRequestError('MembershipBenefit not found');
+      }
+
+      if (!membershipTierId || !membershipBenefitId) {
+        throw new BadRequestError('MembershipTierId and MembershipBenefitId are required');
+      }
+
+      const foundTierBenefit = await tx.tierBenefit.findUnique({
+        where: {
+          tierId_benefitId: {
+            tierId: membershipTierId,
+            benefitId: membershipBenefitId,
+          },
+        },
+      });
+
+      if (!foundTierBenefit) {
+        throw new BadRequestError('TierBenefit not found with given tierId and benefitId');
       }
 
       const foundMembershipTransactionExists = await tx.transaction.findFirst({
@@ -141,22 +158,27 @@ class MembershipBenefitService {
         );
       }
 
-      const deletedMembershipBenefit = await tx.membershipBenefit.delete({
-        where: { slug },
+      const deletedTierBenefit = await tx.tierBenefit.delete({
+        where: {
+          tierId_benefitId: {
+            tierId: membershipTierId,
+            benefitId: membershipBenefitId,
+          },
+        },
       });
 
-      if (!deletedMembershipBenefit) {
-        throw new InternalServerError('Failed to delete MembershipBenefit');
+      if (!deletedTierBenefit) {
+        throw new InternalServerError('Failed to delete TierBenefit');
       }
 
       return {
         message: 'MembershipBenefit deleted tier successfully',
         data: {
-          deletedMembershipBenefit,
+          deletedTierBenefit,
         },
       } as {
         message: string;
-        data: { deletedMembershipBenefit: typeof deletedMembershipBenefit };
+        data: { deletedTierBenefit: typeof deletedTierBenefit };
       };
     });
   }
@@ -166,6 +188,13 @@ class MembershipBenefitService {
       const { tierBenefit, membershipBenefit } = payload;
       const { name, slug, description, suffix } = membershipBenefit;
       const { value } = tierBenefit;
+
+      // get all membership tiers
+      const membershipTiers = await tx.membershipTier.findMany();
+
+      if (!membershipTiers) {
+        throw new BadRequestError('Failed to get MembershipTiers');
+      }
 
       const createdMembershipBenefit = await tx.membershipBenefit.create({
         data: {
@@ -184,13 +213,6 @@ class MembershipBenefitService {
         throw new InternalServerError('Failed to create MembershipBenefit');
       }
 
-      // get all membership tiers
-      const membershipTiers = await tx.membershipTier.findMany();
-
-      if (!membershipTiers) {
-        throw new BadRequestError('Failed to get MembershipTiers');
-      }
-
       // create tier benefit for each membership tier
       const createdTierBenefits = await tx.tierBenefit.createManyAndReturn({
         data: membershipTiers.map((membershipTier) => ({
@@ -202,7 +224,6 @@ class MembershipBenefitService {
           createdAt: new Date(),
           updatedAt: new Date(),
         })),
-        skipDuplicates: true, // skip if tier benefit already exists
       });
 
       if (!createdTierBenefits) {
@@ -454,12 +475,14 @@ class MembershipBenefitService {
       case 'delete':
         return await this.deleteMembershipBenefit({
           slug: payload.slug!,
-          tierId: payload.tierId!,
+          membershipTierId: payload.membershipTierId!,
+          membershipBenefitId: payload.membershipBenefitId!,
         });
       case 'delete-all':
         return await this.deleteMembershipBenefitAll({
           slug: payload.slug!,
-          tierId: payload.tierId!,
+          membershipTierId: payload.membershipTierId!,
+          membershipBenefitId: payload.membershipBenefitId!,
         });
     }
   }

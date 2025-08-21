@@ -840,6 +840,7 @@ model eKYC {
   userId     String?   @db.Uuid
   verifiedBy String?   @db.Uuid
   refId      String?   @db.Uuid
+  type       KYCType?
   User       User?     @relation(fields: [userId], references: [id])
 }
 
@@ -977,6 +978,7 @@ enum NotificationType {
 
 enum KYCStatus {
   PENDING
+  REQUEST
   APPROVAL
   REJECTED
 }
@@ -1013,4 +1015,11 @@ enum TypeCronJob {
   REFERRAL
   CASHBACK
   FLEXI_INTEREST
+}
+
+enum KYCType {
+  IDENTIFICATION
+  CONTACT
+  TAX
+  BANK
 }
