@@ -211,6 +211,7 @@ model Transaction {
   isMarked            Boolean              @default(false)
   isExpired           Boolean              @default(false)
   membershipBenefitId String?              @db.Uuid
+  CronJobLog          CronJobLog[]         @relation("CronJobLogTransactions")
   productsRelation    ProductTransaction[] @relation("ProductTransactions")
   currencyExchange    CurrencyExchange?    @relation(fields: [currencyId], references: [id])
   fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
@@ -222,7 +223,6 @@ model Transaction {
   toCategory          Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
   toWallet            Wallet?              @relation("ToWallet", fields: [toWalletId], references: [id])
   user                User?                @relation("UserTransactions", fields: [userId], references: [id])
-  CronJobLog          CronJobLog[]         @relation("CronJobLogTransactions")
 
   @@index([date])
   @@index([type])
@@ -861,6 +861,7 @@ model eKYC {
   userId     String?   @db.Uuid
   verifiedBy String?   @db.Uuid
   refId      String?   @db.Uuid
+  type       KYCType?
   User       User?     @relation(fields: [userId], references: [id])
 }
 
@@ -998,6 +999,7 @@ enum NotificationType {
 
 enum KYCStatus {
   PENDING
+  REQUEST
   APPROVAL
   REJECTED
 }
@@ -1034,4 +1036,11 @@ enum TypeCronJob {
   REFERRAL
   CASHBACK
   FLEXI_INTEREST
+}
+
+enum KYCType {
+  IDENTIFICATION
+  CONTACT
+  TAX
+  BANK
 }

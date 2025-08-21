@@ -33,11 +33,6 @@ const baseSchema = Joi.object({
     'any.required': 'Address is required',
   }),
 
-  kycId: Joi.string().uuid().required().messages({
-    'string.guid': 'refId must be a valid UUID',
-    'string.empty': 'Address is required',
-  }),
-
   remarks: Joi.string().allow('', null).optional(),
 
   fileFrontId: Joi.string().uuid().optional().allow(null),

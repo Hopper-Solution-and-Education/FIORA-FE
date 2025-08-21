@@ -178,6 +178,7 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
     // List all the fields that represent financial values to be zeroed out
     const financialFieldsToZero: string[] = [];
     const budgetType = [BudgetType.Top, BudgetType.Bot];
+    const budgetTypeAll = [BudgetType.Top, BudgetType.Bot, BudgetType.Act];
     const types = ['exp', 'inc'];
 
     // Add total fields
@@ -211,21 +212,38 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
     );
 
     // Perform the update operation
-    // This will set all fields listed in financialFieldsToZero to 0
-    await Promise.all(
-      budgetType.map(async (type) => {
-        await prisma.budgetsTable.update({
-          where: {
-            fiscalYear_type_userId: {
-              fiscalYear: budgetYear.toString(),
-              type: type as BudgetType,
-              userId,
+    // If budgetYear is current year, then set all fields listed in financialFieldsToZero to 0
+    // Else delete the budget
+    if (budgetYear.toString() === new Date().getFullYear().toString()) {
+      await Promise.all(
+        budgetType.map(async (type) => {
+          await prisma.budgetsTable.update({
+            where: {
+              fiscalYear_type_userId: {
+                fiscalYear: budgetYear.toString(),
+                type: type as BudgetType,
+                userId,
+              },
             },
-          },
-          data: updateData,
-        });
-      }),
-    );
+            data: updateData,
+          });
+        }),
+      );
+    } else {
+      await Promise.all(
+        budgetTypeAll.map(async (type) => {
+          await prisma.budgetsTable.delete({
+            where: {
+              fiscalYear_type_userId: {
+                fiscalYear: budgetYear.toString(),
+                type: type as BudgetType,
+                userId,
+              },
+            },
+          });
+        }),
+      );
+    }
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.BUDGET_DELETE_SUCCESS, null));

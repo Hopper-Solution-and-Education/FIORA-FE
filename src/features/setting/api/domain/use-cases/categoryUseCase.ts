@@ -2,9 +2,10 @@ import { prisma } from '@/config';
 import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { BooleanUtils } from '@/shared/lib';
-import { GlobalFilters } from '@/shared/types';
+import { CategoryFilters } from '@/shared/types';
 import { FetchTransactionResponse } from '@/shared/types/budget.types';
 import { CategoryExtras, CategoryWithBudgetDetails } from '@/shared/types/category.types';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
@@ -21,7 +22,6 @@ import {
 import { budgetDetailRepository } from '../../infrastructure/repositories/budgetDetailRepository';
 import { IBudgetDetailRepository } from '../../repositories/budgetDetailRepository';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
-import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 
 class CategoryUseCase {
   private categoryRepository: ICategoryRepository;
@@ -137,7 +137,7 @@ class CategoryUseCase {
 
   async getCategoriesFilter(
     userId: string,
-    params: GlobalFilters,
+    params: CategoryFilters,
   ): Promise<{
     data: any[];
     minAmount: number;
@@ -162,10 +162,10 @@ class CategoryUseCase {
           rawCategories.map(async (category: any) => {
             const [toTransactions, fromTransactions] = await Promise.all([
               prisma.transaction.findMany({
-                where: { toCategoryId: category.id },
+                where: { toCategoryId: category.id, isDeleted: false },
               }),
               prisma.transaction.findMany({
-                where: { fromCategoryId: category.id },
+                where: { fromCategoryId: category.id, isDeleted: false },
               }),
             ]);
             return { ...category, toTransactions, fromTransactions };
@@ -183,6 +183,7 @@ class CategoryUseCase {
     }
 
     const transactionRangeFilters = this.extractTransactionRangeFilters(params.filters);
+
     categories = this.filterCategoriesByTransactionRange(categories, transactionRangeFilters);
 
     const calculateBalance = (category: CategoryExtras): number => {
@@ -239,12 +240,12 @@ class CategoryUseCase {
       const toTransactions = category.toTransactions ?? [];
 
       const totalIncome = fromTransactions.reduce(
-        (sum: number, tx: any) => sum + Number(tx.amount),
+        (sum: number, tx: any) => sum + Number(tx.baseAmount),
         0,
       );
 
       const totalExpense = toTransactions.reduce(
-        (sum: number, tx: any) => sum + Number(tx.amount),
+        (sum: number, tx: any) => sum + Number(tx.baseAmount),
         0,
       );
 
@@ -271,13 +272,22 @@ class CategoryUseCase {
     const result: any = {};
 
     const transactionsFilter = filters?.transactions?.some?.OR ?? [];
+
     transactionsFilter.forEach((condition: any) => {
       if (condition.type === 'Income') {
-        result.totalIncomeMin = condition.amount?.gte ?? 0;
-        result.totalIncomeMax = condition.amount?.lte ?? Number.MAX_SAFE_INTEGER;
+        result.totalIncomeMin = condition.AND.at(0).baseAmount.gte
+          ? condition.AND.at(0).baseAmount.gte
+          : 0;
+        result.totalIncomeMax = condition.AND.at(0).baseAmount.lte
+          ? condition.AND.at(0).baseAmount.lte
+          : Number.MAX_SAFE_INTEGER;
       } else if (condition.type === 'Expense') {
-        result.totalExpenseMin = condition.amount?.gte ?? 0;
-        result.totalExpenseMax = condition.amount?.lte ?? Number.MAX_SAFE_INTEGER;
+        result.totalExpenseMin = condition.AND.at(0).baseAmount.gte
+          ? condition.AND.at(0).baseAmount.gte
+          : 0;
+        result.totalExpenseMax = condition.AND.at(0).baseAmount.lte
+          ? condition.AND.at(0).baseAmount.lte
+          : Number.MAX_SAFE_INTEGER;
       }
     });
 

@@ -1,4 +1,3 @@
-import { eKycRepository } from '@/features/setting/api/infrastructure/repositories/eKycRepository';
 import { identificationRepository } from '@/features/setting/api/infrastructure/repositories/indentificationRepository';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
@@ -52,19 +51,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       .status(RESPONSE_CODE.BAD_REQUEST)
       .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
   }
-  const { kycId } = req.body;
-  const checkKyc = await eKycRepository.getById(kycId);
-  if (!checkKyc) {
-    return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, Messages.KYC_NOT_FOUND, error));
-  }
-  if (checkKyc.refId) {
-    return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.KYC_CHECK, error));
-  }
-  delete req.body.kycId;
   const newIdentification = await identificationRepository.create(
     {
       ...req.body,
@@ -75,7 +61,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       remarks: '',
       id: crypto.randomUUID(),
     },
-    kycId,
     userId,
   );
   return res
