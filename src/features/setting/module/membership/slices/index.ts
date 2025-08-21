@@ -4,6 +4,7 @@ import { Membership } from '../domain/entities';
 import {
   addUpdateNewBenefitAsyncThunk,
   deleteBenefitAsyncThunk,
+  editThresholdBenefitAsyncThunk,
   getListMembershipAsyncThunk,
   upsertMembershipAsyncThunk,
 } from './actions';
@@ -75,6 +76,19 @@ const membershipSlice = createSlice({
       })
       .addCase(deleteBenefitAsyncThunk.rejected, (state, action) => {
         state.isLoadingDeleteBenefitTier = false;
+        toast.error(action.payload);
+      });
+
+    builder
+      .addCase(editThresholdBenefitAsyncThunk.pending, (state) => {
+        state.isLoadingEditThresholdBenefit = true;
+      })
+      .addCase(editThresholdBenefitAsyncThunk.fulfilled, (state, action) => {
+        state.isLoadingEditThresholdBenefit = false;
+        toast.success(action.payload.message);
+      })
+      .addCase(editThresholdBenefitAsyncThunk.rejected, (state, action) => {
+        state.isLoadingEditThresholdBenefit = false;
         toast.error(action.payload);
       });
   },

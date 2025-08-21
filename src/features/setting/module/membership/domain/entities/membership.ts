@@ -109,12 +109,26 @@ export type NewBenefitTier = {
 
 export type DeleteBenefitTierRequest = {
   slug: string;
-  tierId: string;
+  membershipTierId: string;
+  membershipBenefitId: string;
   mode: ProcessMembershipMode;
 };
 
 export type DeleteBenefitTierResponse = {
   data: boolean;
+  message: string;
+};
+
+export type EditThresholdBenefitRequest = {
+  axis: string;
+  oldMin: number;
+  oldMax: number;
+  newMin: number;
+  newMax: number;
+};
+
+export type EditThresholdBenefitResponse = {
+  data: Membership;
   message: string;
 };
 

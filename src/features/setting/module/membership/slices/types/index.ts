@@ -8,6 +8,7 @@ interface MembershipState {
   isShowDialogAddBenefitTier: boolean;
   isLoadingAddUpdateBenefitTier: boolean;
   isLoadingDeleteBenefitTier: boolean;
+  isLoadingEditThresholdBenefit: boolean;
 }
 
 export const initialMembershipState: MembershipState = {
@@ -18,4 +19,5 @@ export const initialMembershipState: MembershipState = {
   isShowDialogAddBenefitTier: false,
   isLoadingAddUpdateBenefitTier: false,
   isLoadingDeleteBenefitTier: false,
+  isLoadingEditThresholdBenefit: false,
 };

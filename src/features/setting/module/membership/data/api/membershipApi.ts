@@ -10,6 +10,10 @@ import {
   UpsertMembershipRequestDTO,
   UpsertMembershipResponseDTO,
 } from '../dto';
+import {
+  EditThresholdBenefitRequestDTO,
+  EditThresholdBenefitResponseDTO,
+} from '../dto/editThresholdBenefitDTO';
 
 export interface IMembershipAPI {
   getListMemberships(request: GetListMembershipsRequestDTO): Promise<GetListMembershipsResponseDTO>;
@@ -18,6 +22,9 @@ export interface IMembershipAPI {
     request: AddUpdateBenefitTierRequestDTO,
   ): Promise<AddUpdateBenefitTierResponseDTO>;
   deleteBenefitTier(request: DeleteBenefitTierRequestDTO): Promise<DeleteBenefitTierResponseDTO>;
+  editThresholdBenefit(
+    request: EditThresholdBenefitRequestDTO,
+  ): Promise<EditThresholdBenefitResponseDTO>;
 }
 
 export enum ProcessMembershipMode {
@@ -53,6 +60,12 @@ class MembershipAPI implements IMembershipAPI {
     request: DeleteBenefitTierRequestDTO,
   ): Promise<DeleteBenefitTierResponseDTO> {
     return await httpClient.post('/api/memberships/benefit', request);
+  }
+
+  async editThresholdBenefit(
+    request: EditThresholdBenefitRequestDTO,
+  ): Promise<EditThresholdBenefitResponseDTO> {
+    return await httpClient.put('/api/memberships/benefit-tier', request);
   }
 }
 

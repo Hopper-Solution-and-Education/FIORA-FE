@@ -176,7 +176,8 @@ const SettingTierInputFieldConfig = ({
                     dispatch(
                       deleteBenefitAsyncThunk({
                         slug: slugToDelete || '',
-                        tierId: idTierToDelete,
+                        membershipTierId: idTierToDelete,
+                        membershipBenefitId: selectedMembership?.id || '',
                         mode: deleteMode,
                       }),
                     )

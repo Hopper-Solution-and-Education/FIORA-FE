@@ -3,6 +3,8 @@ import {
   AddUpdateBenefitTierResponse,
   DeleteBenefitTierRequest,
   DeleteBenefitTierResponse,
+  EditThresholdBenefitRequest,
+  EditThresholdBenefitResponse,
   GetListMembershipsRequest,
   GetListMembershipsResponse,
   Membership,
@@ -19,6 +21,10 @@ import {
   UpsertMembershipRequestDTO,
   UpsertMembershipResponseDTO,
 } from '../dto';
+import {
+  EditThresholdBenefitRequestDTO,
+  EditThresholdBenefitResponseDTO,
+} from '../dto/editThresholdBenefitDTO';
 
 export enum TierBenefitName {
   REFERRAL_BONUS = 'referral-bonus',
@@ -126,7 +132,8 @@ export class MemberMapper {
   static toDeleteBenefitTierRequest(data: DeleteBenefitTierRequest): DeleteBenefitTierRequestDTO {
     return {
       slug: data.slug,
-      tierId: data.tierId,
+      membershipTierId: data.membershipTierId,
+      membershipBenefitId: data.membershipBenefitId,
       mode: data.mode,
     };
   }
@@ -136,6 +143,27 @@ export class MemberMapper {
   ): DeleteBenefitTierResponse {
     return {
       data: data.data,
+      message: data.message,
+    };
+  }
+
+  static toEditThresholdBenefitRequest(
+    data: EditThresholdBenefitRequest,
+  ): EditThresholdBenefitRequestDTO {
+    return {
+      axis: data.axis,
+      oldMin: data.oldMin,
+      oldMax: data.oldMax,
+      newMin: data.newMin,
+      newMax: data.newMax,
+    };
+  }
+
+  static toEditThresholdBenefitResponse(
+    data: EditThresholdBenefitResponseDTO,
+  ): EditThresholdBenefitResponse {
+    return {
+      data: new Membership(data.data),
       message: data.message,
     };
   }

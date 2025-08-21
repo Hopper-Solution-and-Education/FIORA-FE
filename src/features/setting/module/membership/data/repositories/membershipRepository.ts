@@ -4,6 +4,8 @@ import {
   AddUpdateBenefitTierResponse,
   DeleteBenefitTierRequest,
   DeleteBenefitTierResponse,
+  EditThresholdBenefitRequest,
+  EditThresholdBenefitResponse,
   GetListMembershipsRequest,
   GetListMembershipsResponse,
   UpsertMembershipRequest,
@@ -17,6 +19,7 @@ export interface IMembershipRepository {
   upsertMembership(request: UpsertMembershipRequest): Promise<UpsertMembershipResponse>;
   addBenefitTier(request: AddUpdateBenefitTierRequest): Promise<AddUpdateBenefitTierResponse>;
   deleteBenefitTier(request: DeleteBenefitTierRequest): Promise<DeleteBenefitTierResponse>;
+  editThresholdBenefit(request: EditThresholdBenefitRequest): Promise<EditThresholdBenefitResponse>;
 }
 
 export class MembershipRepository implements IMembershipRepository {
@@ -48,6 +51,14 @@ export class MembershipRepository implements IMembershipRepository {
     const requestDTO = MemberMapper.toDeleteBenefitTierRequest(request);
     const response = await this.membershipAPI.deleteBenefitTier(requestDTO);
     return MemberMapper.toDeleteBenefitTierResponse(response);
+  }
+
+  async editThresholdBenefit(
+    request: EditThresholdBenefitRequest,
+  ): Promise<EditThresholdBenefitResponse> {
+    const requestDTO = MemberMapper.toEditThresholdBenefitRequest(request);
+    const response = await this.membershipAPI.editThresholdBenefit(requestDTO);
+    return MemberMapper.toEditThresholdBenefitResponse(response);
   }
 }
 

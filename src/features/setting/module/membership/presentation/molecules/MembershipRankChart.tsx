@@ -4,6 +4,7 @@ import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { setSelectedMembership } from '../../slices';
+import DialogEditThresholdBenefitTier from '../organisms/DialogEditThresholdBenefitTier';
 import { createCombinedTierIcons, transformToBalanceTiers, transformToSpentTiers } from '../utils';
 
 const MembershipRankChart = () => {
@@ -12,7 +13,8 @@ const MembershipRankChart = () => {
     (state) => state.memberShipSettings.isLoadingGetMemberships,
   );
   const selectedMembership = useAppSelector((state) => state.memberShipSettings.selectedMembership);
-
+  const [isShowDialogEditThresholdBenefitTier, setIsShowDialogEditThresholdBenefitTier] =
+    useState(false);
   const dispatch = useAppDispatch();
 
   const handleTierClick = useCallback(
@@ -54,11 +56,11 @@ const MembershipRankChart = () => {
   }, [memberships]);
 
   const handleClickYAxisRange = (tier: Tier, index: number) => {
-    console.log(tier, index);
+    setIsShowDialogEditThresholdBenefitTier(true);
   };
 
   const handleClickXAxisRange = (tier: Tier, index: number) => {
-    console.log(tier, index);
+    setIsShowDialogEditThresholdBenefitTier(true);
   };
 
   return (
@@ -90,6 +92,10 @@ const MembershipRankChart = () => {
         currentId={selectedMembership?.id}
         onClickXAxisRange={handleClickXAxisRange}
         onClickYAxisRange={handleClickYAxisRange}
+      />
+      <DialogEditThresholdBenefitTier
+        open={isShowDialogEditThresholdBenefitTier}
+        onOpenChange={setIsShowDialogEditThresholdBenefitTier}
       />
     </div>
   );
