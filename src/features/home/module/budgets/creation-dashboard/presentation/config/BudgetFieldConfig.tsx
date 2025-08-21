@@ -19,10 +19,10 @@ const useBudgetFieldConfig = () => {
     formState: { isSubmitting },
     watch,
   } = useFormContext<BudgetCreationFormValues>();
+  const { year: budgetYear } = useParams() as { year: string };
   const isLoadingCreateBudget = useAppSelector((state) => state.budgetControl.isCreatingBudget);
   const isDisabledField = isSubmitting || isLoadingCreateBudget;
   const currentYear = new Date().getFullYear();
-  const { year: budgetYear } = useParams() as { year: string };
 
   const { exchangeRates } = useCurrencyFormatter();
   // Generate options from fetched data or fallback to default
@@ -58,7 +58,7 @@ const useBudgetFieldConfig = () => {
       name="currency"
       label="Currency"
       placeholder="Select Currency"
-      disabled
+      disabled={isDisabledField || !!budgetYear}
       noneValue={false}
     />,
     <InputCurrency

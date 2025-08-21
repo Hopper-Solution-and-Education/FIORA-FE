@@ -1,19 +1,44 @@
 import { prisma } from '@/config';
-import { IdentificationDocument, KYCStatus, Prisma } from '@prisma/client';
+import {
+  IdentificationDocument,
+  IdentificationType,
+  KYCMethod,
+  KYCStatus,
+  KYCType,
+  Prisma,
+} from '@prisma/client';
 
 class IdentificationRepository {
-  async create(
-    data: Prisma.IdentificationDocumentCreateInput,
-    kycId: string,
-    userid: string,
-  ): Promise<any> {
+  async create(data: Prisma.IdentificationDocumentCreateInput, userid: string): Promise<any> {
     try {
       return prisma.$transaction(async (tx) => {
+        let type;
+        let fieldName = '';
+        if (data.type == IdentificationType.TAX) {
+          type = KYCType.TAX;
+          fieldName = 'TAX';
+        } else {
+          type = KYCType.IDENTIFICATION;
+          fieldName = 'IDENTIFICATION';
+        }
+
         const identification = await tx.identificationDocument.create({
           data: { ...data, createdBy: userid },
         });
-
-        await tx.eKYC.update({ where: { id: kycId }, data: { refId: identification?.id || null } });
+        await tx.eKYC.create({
+          data: {
+            type: type,
+            fieldName: fieldName,
+            status: KYCStatus.PENDING,
+            createdBy: userid.toString(),
+            userId: userid.toString(),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            id: crypto.randomUUID(),
+            refId: identification.id,
+            method: KYCMethod.MANUAL,
+          },
+        });
 
         return identification;
       });

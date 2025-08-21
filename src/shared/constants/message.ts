@@ -360,6 +360,8 @@ export enum Messages {
 
   //Common
   DELETE_SUCCESS = 'Delete successfully',
+  SEND_SUCCESS = 'Send successfully',
+  VERIFY_SUCCESS = 'Verify successfully',
 
   //Email template type
   EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
