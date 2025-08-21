@@ -43,6 +43,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
     amount,
     products,
     partnerId,
+    type,
     remark,
     date,
     fromCategoryId,
@@ -72,6 +73,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   const transactionData = {
     userId: userId,
     amount: parseFloat(amount),
+    type: type,
     fromAccountId: fromAccountId as UUID,
     toAccountId: toAccountId as UUID,
     toCategoryId: toCategoryId as UUID,

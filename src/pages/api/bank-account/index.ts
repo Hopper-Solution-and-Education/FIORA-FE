@@ -1,5 +1,4 @@
 import { bankAccountRepository } from '@/features/setting/api/infrastructure/repositories/bankAccountRepository';
-import { eKycRepository } from '@/features/setting/api/infrastructure/repositories/eKycRepository';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createErrorResponse } from '@/shared/lib';
@@ -52,8 +51,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       .status(RESPONSE_CODE.BAD_REQUEST)
       .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
   }
-  const { kycId } = req.body;
-  const checkKyc = await eKycRepository.getById(kycId);
+
   const existingTemplate = await bankAccountRepository.checkBankAccount(req.body);
   if (existingTemplate) {
     return res
@@ -61,19 +59,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.EXIT_BANK_ACCOUNT));
   }
 
-  if (!checkKyc) {
-    return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, Messages.KYC_NOT_FOUND, error));
-  }
-
-  if (checkKyc.refId) {
-    return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.KYC_CHECK, error));
-  }
-
-  delete req.body.kycId;
   const newBankAccount = await bankAccountRepository.create(
     {
       ...req.body,
@@ -85,7 +70,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       paymentRefId: req.body?.paymentRefId || null,
       id: crypto.randomUUID(),
     },
-    kycId,
+    userId,
   );
   return res
     .status(RESPONSE_CODE.CREATED)
