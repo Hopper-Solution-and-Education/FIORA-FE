@@ -54,4 +54,3 @@ type BudgetCreationFormValues = yup.InferType<typeof budgetCreationSchema>;
 
 export { budgetCreationSchema };
 export type { BudgetCreationFormValues };
-

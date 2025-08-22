@@ -4,6 +4,7 @@ import { Messages } from '@/shared/constants/message';
 import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
+import { SessionUser } from '@/shared/types/session';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { validateBody } from '@/shared/utils/validate';
 import { bankAccountSchema } from '@/shared/validators/bankAccountValidator';
@@ -12,23 +13,24 @@ import { NextApiRequest, NextApiResponse } from 'next';
 
 export const maxDuration = 30; // 30 seconds
 
-export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId: string) =>
-  errorHandler(
-    async (request, response) => {
-      switch (request.method) {
-        case 'POST':
-          return POST(request, response, userId);
-        case 'GET':
-          return GET(response, userId);
-        default:
-          return response
-            .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-            .json({ error: Messages.METHOD_NOT_ALLOWED });
-      }
-    },
-    req,
-    res,
-  ),
+export default sessionWrapper(
+  (req: NextApiRequest, res: NextApiResponse, userId: string, user: SessionUser) =>
+    errorHandler(
+      async (request, response) => {
+        switch (request.method) {
+          case 'POST':
+            return POST(request, response, user);
+          case 'GET':
+            return GET(response, userId);
+          default:
+            return response
+              .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+              .json({ error: Messages.METHOD_NOT_ALLOWED });
+        }
+      },
+      req,
+      res,
+    ),
 );
 
 export async function GET(res: NextApiResponse, userId: string) {
@@ -44,7 +46,7 @@ export async function GET(res: NextApiResponse, userId: string) {
     .json(createResponse(RESPONSE_CODE.OK, Messages.GET_BANK_ACCOUNT_SUCCESS, bankAccounts));
 }
 
-export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function POST(req: NextApiRequest, res: NextApiResponse, user: SessionUser) {
   const { error } = validateBody(bankAccountSchema, req.body);
   if (error) {
     return res
@@ -63,14 +65,14 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     {
       ...req.body,
       status: KYCStatus.PENDING,
-      userId: userId,
+      userId: user.id,
       createdAt: new Date(),
       updatedAt: new Date(),
       remarks: '',
       paymentRefId: req.body?.paymentRefId || null,
       id: crypto.randomUUID(),
     },
-    userId,
+    user,
   );
   return res
     .status(RESPONSE_CODE.CREATED)

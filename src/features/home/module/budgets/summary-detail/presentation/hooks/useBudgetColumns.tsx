@@ -66,8 +66,9 @@ export function useBudgetColumns({
       formatCurrency,
       getExchangeAmount,
       isFullCurrencyDisplay,
+      activeTab,
     );
-  }, [tableData, currency, isFullCurrencyDisplay, formatCurrency, getExchangeAmount]);
+  }, [tableData, currency, isFullCurrencyDisplay, formatCurrency, getExchangeAmount, activeTab]);
 
   // Get columns configuration based on period type
   const updatedColumns = getColumnsByPeriod({

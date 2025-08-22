@@ -22,6 +22,7 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
   ),
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   const data = {
     otp: '123456',

@@ -14,20 +14,26 @@ export const convertTableDataCurrency = (
   ) => string,
   getExchangeAmount: (params: ExchangeAmountParams) => ExchangeAmountResult,
   isFullCurrencyDisplay?: boolean,
+  activeTab?: string,
 ): TableData[] => {
   const renderRemaining = (
     bottomUpValue: number,
     actualSumUpValue: number,
     userCurrency: Currency,
     isFullCurrencyDisplay?: boolean,
+    activeTab?: string,
   ) => (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <p className="cursor-pointer px-3 py-2">
-            {formatCurrency(bottomUpValue - actualSumUpValue, userCurrency, {
-              shouldShortened: isFullCurrencyDisplay,
-            })}
+            {formatCurrency(
+              activeTab === 'EXPENSE'
+                ? bottomUpValue - actualSumUpValue
+                : actualSumUpValue - bottomUpValue,
+              userCurrency,
+              { shouldShortened: isFullCurrencyDisplay },
+            )}
           </p>
         </TooltipTrigger>
         <TooltipContent
@@ -35,21 +41,37 @@ export const convertTableDataCurrency = (
           style={{ zIndex: 70 }}
         >
           <div>
-            <span>
-              Remaining = Bottom Up - Actual Sum Up
-              {'\n'}
-              {formatCurrency(bottomUpValue - actualSumUpValue, userCurrency, {
-                shouldShortened: isFullCurrencyDisplay,
-              })}{' '}
-              ={' '}
-              {formatCurrency(bottomUpValue, userCurrency, {
-                shouldShortened: isFullCurrencyDisplay,
-              })}{' '}
-              -{' '}
-              {formatCurrency(actualSumUpValue, userCurrency, {
-                shouldShortened: isFullCurrencyDisplay,
-              })}
-            </span>
+            {activeTab === 'EXPENSE' ? (
+              <span>
+                Remaining = Bottom Up - Actual Sum Up{'\n'}
+                {formatCurrency(bottomUpValue - actualSumUpValue, userCurrency, {
+                  shouldShortened: isFullCurrencyDisplay,
+                })}{' '}
+                ={' '}
+                {formatCurrency(bottomUpValue, userCurrency, {
+                  shouldShortened: isFullCurrencyDisplay,
+                })}{' '}
+                -{' '}
+                {formatCurrency(actualSumUpValue, userCurrency, {
+                  shouldShortened: isFullCurrencyDisplay,
+                })}
+              </span>
+            ) : (
+              <span>
+                Remaining = Actual Sum Up - Bottom Up{'\n'}
+                {formatCurrency(actualSumUpValue - bottomUpValue, userCurrency, {
+                  shouldShortened: isFullCurrencyDisplay,
+                })}{' '}
+                ={' '}
+                {formatCurrency(actualSumUpValue, userCurrency, {
+                  shouldShortened: isFullCurrencyDisplay,
+                })}{' '}
+                -{' '}
+                {formatCurrency(bottomUpValue, userCurrency, {
+                  shouldShortened: isFullCurrencyDisplay,
+                })}
+              </span>
+            )}
           </div>
         </TooltipContent>
       </Tooltip>
@@ -168,6 +190,7 @@ export const convertTableDataCurrency = (
                 actualSumUpValue,
                 userCurrency,
                 isFullCurrencyDisplay,
+                activeTab,
               ),
             };
           } else {

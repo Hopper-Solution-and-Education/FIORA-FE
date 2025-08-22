@@ -6,9 +6,9 @@ import useCurrencyFormatter from '@/shared/hooks/useCurrencyFormatter';
 import { cn } from '@/shared/utils';
 import { RootState } from '@/store/rootReducer';
 import { useSelector } from 'react-redux';
-import { formatDate } from '../hooks/formatDate';
 import { IRelationalTransaction } from '../types';
 import { TRANSACTION_TYPE } from '../utils/constants';
+import { formatDate } from '../utils/formatDate';
 
 type DeleteAccountDialogProps = {
   open: boolean;

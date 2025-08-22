@@ -22,7 +22,6 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { formatDate } from '../hooks/formatDate';
 import { updateAmountRange, updateFilterCriteria } from '../slices';
 import { IRelationalTransaction, TransactionColumn, TransactionTableColumnKey } from '../types';
 import {
@@ -30,6 +29,7 @@ import {
   TRANSACTION_TYPE,
   TransactionTableToEntity,
 } from '../utils/constants';
+import { formatDate } from '../utils/formatDate';
 import DeleteTransactionDialog from './DeleteTransactionDialog';
 import FilterMenu from './FilterMenu';
 import SettingsMenu from './SettingMenu';

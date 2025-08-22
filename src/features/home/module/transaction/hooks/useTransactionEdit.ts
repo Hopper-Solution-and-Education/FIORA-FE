@@ -64,6 +64,7 @@ export const useTransactionEdit = ({ transactionId, onSuccess }: UseTransactionE
     try {
       const body = {
         ...data,
+        id: transactionId,
         product: undefined,
         [`from${data.type === 'Income' ? 'Category' : 'Account'}Id`]: data.fromId,
         [`to${data.type === 'Expense' ? 'Category' : 'Account'}Id`]: data.toId,
@@ -71,7 +72,7 @@ export const useTransactionEdit = ({ transactionId, onSuccess }: UseTransactionE
         date: data.date.toISOString(),
       };
 
-      const response = await fetch(`/api/transactions/${transactionId}`, {
+      const response = await fetch(`/api/transactions/transaction`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

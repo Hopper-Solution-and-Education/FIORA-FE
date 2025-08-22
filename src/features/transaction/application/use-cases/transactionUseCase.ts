@@ -628,7 +628,7 @@ class TransactionUseCase {
 
       await this.accountRepository.deductBalance(
         tx,
-        transactionUnique.fromAccountId as string,
+        transactionUnique.toAccountId as string,
         data.amount as number,
         data.baseAmount as number,
       );
