@@ -140,7 +140,6 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
                 route={routeConfig(RouteEnum.BudgetDetail, {}, { period, periodId })}
               />
 
-
               {isMobile && <CurrencyDisplayToggle className="ml-2 min-w-[120px]" />}
               {isMobile && (
                 <ActionButton
@@ -154,7 +153,6 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
             <BudgetDetailPeriodSelect periodId={periodId} onPeriodChange={handlePeriodChange} />
             <BudgetDetailTabs activeTab={activeTab} onTabChange={handleTabChange} />
           </div>
-
 
           {!isMobile && (
             <div className="flex items-center gap-2">
