@@ -861,6 +861,7 @@ model eKYC {
   userId     String?   @db.Uuid
   verifiedBy String?   @db.Uuid
   refId      String?   @db.Uuid
+  type       KYCType?
   User       User?     @relation(fields: [userId], references: [id])
 }
 
@@ -1034,4 +1035,11 @@ enum TypeCronJob {
   REFERRAL
   CASHBACK
   FLEXI_INTEREST
+}
+
+enum KYCType {
+  IDENTIFICATION
+  CONTACT
+  TAX
+  BANK
 }
