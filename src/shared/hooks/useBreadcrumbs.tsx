@@ -35,6 +35,15 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Finance', link: '/finance/report' },
     { title: 'Transaction', link: '/transaction' },
   ],
+  '/profile': [
+    { title: 'Finance', link: '/finance/report' },
+    { title: 'Profile', link: '/profile' },
+  ],
+  '/profile/ekyc': [
+    { title: 'Finance', link: '/finance/report' },
+    { title: 'Profile', link: '/profile' },
+    { title: 'eKYC', link: '/profile/ekyc' },
+  ],
   '/transaction/create': [
     { title: 'Finance', link: '/finance/report' },
     { title: 'Transaction', link: '/transaction' },

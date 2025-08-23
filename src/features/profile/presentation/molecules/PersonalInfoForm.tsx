@@ -5,9 +5,11 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { AlertCircle, Shield } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { FC, useEffect, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import * as Yup from 'yup';
+import { KYCPageType } from '../../modules/types';
 import SectionHeader from '../atoms/SectionHeader';
 
 export type PersonalInfo = {
@@ -38,6 +40,8 @@ const personalInfoSchema = Yup.object({
 });
 
 export const PersonalInfoForm: FC<Props> = ({ initialValues, isLoading, onSubmit }) => {
+  const router = useRouter();
+
   const defaults = useMemo<PersonalInfo>(
     () => ({
       name: initialValues?.name ?? '',
@@ -67,6 +71,10 @@ export const PersonalInfoForm: FC<Props> = ({ initialValues, isLoading, onSubmit
 
   const handleSubmitForm = (values: PersonalInfo) => {
     onSubmit(values);
+  };
+
+  const handleNavigateToKYC = (id: KYCPageType) => {
+    router.push(`/profile/ekyc?id=${id}`);
   };
 
   return (
@@ -188,7 +196,11 @@ export const PersonalInfoForm: FC<Props> = ({ initialValues, isLoading, onSubmit
             </p>
           </div>
 
-          <div className="bg-yellow-500 p-2 rounded " aria-hidden>
+          <div
+            className="bg-yellow-500 p-2 rounded cursor-pointer hover:bg-yellow-600"
+            aria-hidden
+            onClick={() => handleNavigateToKYC('identification-document')}
+          >
             <Shield className="text-white" />
           </div>
         </div>
@@ -204,7 +216,11 @@ export const PersonalInfoForm: FC<Props> = ({ initialValues, isLoading, onSubmit
             </p>
           </div>
 
-          <div className="bg-yellow-500 p-2 rounded mb-4" aria-hidden>
+          <div
+            className="bg-yellow-500 p-2 rounded mb-4 cursor-pointer hover:bg-yellow-600"
+            aria-hidden
+            onClick={() => handleNavigateToKYC('tax-information')}
+          >
             <Shield className="text-white" />
           </div>
         </div>
@@ -220,7 +236,11 @@ export const PersonalInfoForm: FC<Props> = ({ initialValues, isLoading, onSubmit
             </p>
           </div>
 
-          <div className="bg-yellow-500 p-2 rounded " aria-hidden>
+          <div
+            className="bg-yellow-500 p-2 rounded cursor-pointer hover:bg-yellow-600"
+            aria-hidden
+            onClick={() => handleNavigateToKYC('bank-account')}
+          >
             <Shield className="text-white" />
           </div>
         </div>
