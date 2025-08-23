@@ -3,13 +3,13 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/shared/utils';
-import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { KYC_TABS } from '../constant';
 import BankAccountForm from './bank-account';
 import ContactInformationForm from './contact-information';
 import IdentificationDocumentForm from './identification-document';
 import TaxInformationForm from './tax-information';
-import { KYCPageType } from './types';
 
 const tabItems = [
   {
@@ -56,9 +56,16 @@ const getStatusIcon = (status: string) => {
 };
 
 const KYCPage = () => {
-  const searchParams = useSearchParams();
-  const id = searchParams?.get('id') as KYCPageType | null;
-  const [activeTab, setActiveTab] = useState<string>(id || 'identification-document');
+  const [activeTab, setActiveTab] = useState<string>(KYC_TABS.IDENTIFICATION_DOCUMENT);
+
+  const params = useParams();
+  const id = params?.id as string;
+
+  useEffect(() => {
+    if (id) {
+      setActiveTab(id as string);
+    }
+  }, [id]);
 
   return (
     <div className="min-h-screen bg-background">

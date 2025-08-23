@@ -1,28 +1,67 @@
 'use client';
 
+import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Clock, HelpCircle, Mail, Phone } from 'lucide-react';
-import { useState } from 'react';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { useSendOTPMutation, useVerifyOTPMutation } from '@/features/profile/store/api/profileApi';
+import { Phone } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
+import OtpVerificationModal from './components/OtpVerificationModal';
 
 const ContactInformationForm = () => {
-  const [emailOtpSent, setEmailOtpSent] = useState(false);
-  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const [sendOTP, { isLoading: isSendingOtp }] = useSendOTPMutation();
 
-  const handleSendEmailOtp = () => {
-    setEmailOtpSent(true);
-    // Simulate OTP sending
-    setTimeout(() => setEmailOtpSent(false), 3000);
-  };
+  const [verifyOTP] = useVerifyOTPMutation();
 
-  const handleSendPhoneOtp = () => {
-    setPhoneOtpSent(true);
-    // Simulate OTP sending
-    setTimeout(() => setPhoneOtpSent(false), 3000);
-  };
+  const [otpModal, setOtpModal] = useState({
+    isOpen: false,
+    type: 'email' as 'email' | 'phone',
+    otpValue: '',
+    countdown: 120,
+  });
+
+  const handleCloseOtpModal = useCallback(() => {
+    setOtpModal((prev) => ({ ...prev, isOpen: false }));
+  }, []);
+
+  const handleVerifyOtp = useCallback(
+    async (otp: string) => {
+      // const res = await verifyOTP({ otp }).unwrap();
+      if (otp === '123456') {
+        handleCloseOtpModal();
+        toast.success('OTP verified successfully');
+      } else {
+        toast.error('OTP is incorrect');
+      }
+      // if (res.status === 201) {
+      // } else {
+      //   toast.error('Something went wrong');
+      // }
+    },
+    [handleCloseOtpModal, verifyOTP],
+  );
+
+  const handleOtpModalChange = useCallback((modal: typeof otpModal) => {
+    setOtpModal(modal);
+  }, []);
+
+  const onSendOtp = useCallback(async (type: 'email' | 'phone') => {
+    const res = await sendOTP().unwrap();
+    console.log('🚀 ~ ContactInformationForm ~ res:', res);
+    if (res.status === 201) {
+      setOtpModal({
+        isOpen: true,
+        type,
+        otpValue: '',
+        countdown: 120,
+      });
+    } else {
+      toast.error('Something went wrong');
+    }
+  }, []);
 
   return (
     <TooltipProvider>
@@ -43,118 +82,64 @@ const ContactInformationForm = () => {
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="space-y-4 sm:space-y-6">
-          {/* Email Card */}
-          <Card>
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-2">
-                <Mail className="h-5 w-5 text-blue-600" />
-                <CardTitle className="text-base sm:text-lg">Email Address</CardTitle>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Your primary email for account notifications and security alerts</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium">
-                  Email Address <span className="text-red-500">*</span>
-                </Label>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter your email address"
-                      defaultValue="voanhphi@gmail.com"
-                      className="h-11"
-                    />
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="px-6 h-11"
-                    onClick={handleSendEmailOtp}
-                    disabled={emailOtpSent}
-                  >
-                    {emailOtpSent ? (
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        Sent
-                      </div>
-                    ) : (
-                      'Send OTP'
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <div className="flex gap-2">
+            <Input
+              id="email"
+              type="email"
+              placeholder="voanhphi@gmail.com"
+              value="voanhphi@gmail.com"
+              className="flex-1"
+              readOnly
+            />
 
-          {/* Phone Card */}
-          <Card>
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-2">
-                <Phone className="h-5 w-5 text-blue-600" />
-                <CardTitle className="text-base sm:text-lg">Phone Number</CardTitle>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Your mobile number for SMS notifications and two-factor authentication</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-sm font-medium">
-                  Phone Number <span className="text-red-500">*</span>
-                </Label>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <Input
-                      id="phone"
-                      placeholder="Enter your phone number"
-                      defaultValue="0317109704"
-                      className="h-11"
-                    />
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="px-6 h-11"
-                    onClick={handleSendPhoneOtp}
-                    disabled={phoneOtpSent}
-                  >
-                    {phoneOtpSent ? (
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        Sent
-                      </div>
-                    ) : (
-                      'Send OTP'
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            <Button
+              onClick={() => onSendOtp('email')}
+              variant="outline"
+              size="sm"
+              className="px-6 py-4 min-w-28"
+              // disabled={disabled || isSubmitting}
+              // className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              {isSendingOtp ? <Icons.spinner className="animate-spin h-5 w-5" /> : 'Send OTP'}
+            </Button>
+          </div>
+        </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            <Button className="flex-1 sm:flex-none sm:px-8 h-11">Save & Continue</Button>
-            <Button variant="outline" className="flex-1 sm:flex-none sm:px-8 h-11">
-              Save as Draft
+        <div className="space-y-2">
+          <Label htmlFor="phone">Phone</Label>
+          <div className="flex gap-2">
+            <Input
+              id="phone"
+              placeholder="0317109704"
+              value="0317109704"
+              className="flex-1"
+              readOnly
+            />
+            <Button
+              // onClick={() => onSendOtp('email')}
+              variant="outline"
+              size="sm"
+              className="px-6 py-4 min-w-28"
+              // disabled={disabled || isSubmitting}
+              // className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              {isSendingOtp ? <Icons.spinner className="animate-spin h-5 w-5" /> : 'Send OTP'}
             </Button>
           </div>
         </div>
       </div>
+
+      <OtpVerificationModal
+        otpModal={otpModal}
+        onOtpModalChange={handleOtpModalChange}
+        onClose={handleCloseOtpModal}
+        onVerify={handleVerifyOtp}
+      />
     </TooltipProvider>
   );
 };

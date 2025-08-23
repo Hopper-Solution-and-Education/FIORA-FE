@@ -10,6 +10,15 @@ export type UserProfile = {
   address?: string | null;
   birthday?: string | null;
   role?: UserRole;
+  eKYC?: eKYC[];
+};
+
+export type eKYC = {
+  id: string;
+  name: string;
+  dob: string;
+  address: string;
+  phone: string;
 };
 
 export type UpdateProfileRequest = Partial<Omit<UserProfile, 'id' | 'email'>> & {

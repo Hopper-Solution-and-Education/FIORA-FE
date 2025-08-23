@@ -21,7 +21,7 @@ export const profileApi = createApi({
     baseUrl: '/',
     prepareHeaders: (headers) => headers,
   }),
-  tagTypes: ['Profile'],
+  tagTypes: ['Profile', 'eKYC'],
   endpoints: (builder) => ({
     getProfile: builder.query<UserProfile, void>({
       query: () => ({ url: ApiEndpointEnum.Profile, method: 'GET' }),
@@ -44,7 +44,30 @@ export const profileApi = createApi({
       transformResponse: (response: Response<UserProfile>) => response.data,
       invalidatesTags: ['Profile'],
     }),
+
+    // eKYC api
+    getEKYC: builder.query<any[], void>({
+      query: () => ({ url: ApiEndpointEnum.eKYC, method: 'GET' }),
+      transformResponse: (response: Response<any[]>) => response.data,
+      providesTags: ['eKYC'],
+    }),
+    // eKYC contact verify
+    sendOTP: builder.mutation<any, void>({
+      query: () => ({ url: ApiEndpointEnum.sendOTP, method: 'POST' }),
+      invalidatesTags: ['eKYC'],
+    }),
+    verifyOTP: builder.mutation<any, { otp: string }>({
+      query: (body) => ({ url: ApiEndpointEnum.verifyOTP, method: 'POST', body }),
+      transformResponse: (response: Response<any>) => response.data,
+      invalidatesTags: ['eKYC'],
+    }),
   }),
 });
 
-export const { useGetProfileQuery, useUpdateProfileMutation } = profileApi;
+export const {
+  useGetProfileQuery,
+  useUpdateProfileMutation,
+  useGetEKYCQuery,
+  useVerifyOTPMutation,
+  useSendOTPMutation,
+} = profileApi;
