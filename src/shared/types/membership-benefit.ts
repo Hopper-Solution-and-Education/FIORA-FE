@@ -1,6 +1,12 @@
+export type Mode = 'create-all' | 'create' | 'update' | 'update-all' | 'delete' | 'delete-all';
+
 export interface MembershipBenefitCreatePayload {
   tierBenefit: TierBenefit;
   membershipBenefit: MembershipBenefit;
+  mode: Mode;
+  slug?: string;
+  membershipTierId?: string;
+  membershipBenefitId?: string;
 }
 
 export interface MembershipBenefit {
@@ -12,11 +18,22 @@ export interface MembershipBenefit {
 }
 
 export interface TierBenefit {
-  tierId: string;
+  tierId?: string;
   value: number;
-  benefitId: string;
+  benefitId?: string;
 }
 
 export interface MembershipBenefitUpdatePayload extends MembershipBenefitCreatePayload {
   id: string;
+}
+
+export interface MembershipBenefitCreateUpdateAllPayload {
+  membershipBenefit: MembershipBenefit;
+  tierBenefit: Pick<TierBenefit, 'value'>;
+}
+
+export interface MembershipBenefitDeletePayload {
+  slug: string;
+  membershipTierId?: string;
+  membershipBenefitId?: string;
 }

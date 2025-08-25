@@ -4,11 +4,15 @@ import SubmitButton from '@/components/common/atoms/SubmitButton';
 import { useAppDispatch, useAppSelector } from '@/store';
 import React, { useEffect } from 'react';
 import { FormProvider } from 'react-hook-form';
-import { setIsShowDialogAddBenefitTier } from '../../slices';
+import {
+  setIsShowDialogAddBenefitTier,
+  setIsShowDialogEditThresholdBenefitTier,
+} from '../../slices';
 import { getListMembershipAsyncThunk } from '../../slices/actions';
 import { useMembershipSettingPage } from '../hooks';
 import { IconUploadList, MembershipRankChart, SettingTierAndStory } from '../molecules';
 import { DialogAddBenefitTier } from '../organisms';
+import DialogEditThresholdBenefitTier from '../organisms/DialogEditThresholdBenefitTier';
 
 const MembershipSettingPage = () => {
   const dispatch = useAppDispatch();
@@ -18,7 +22,9 @@ const MembershipSettingPage = () => {
   const isShowDialogAddBenefitTier = useAppSelector(
     (state) => state.memberShipSettings.isShowDialogAddBenefitTier,
   );
-
+  const isShowDialogEditThresholdBenefitTier = useAppSelector(
+    (state) => state.memberShipSettings.isDialogEditThresholdBenefitOpen,
+  );
   const { methods, handleSubmit, dynamicTierFields } = useMembershipSettingPage();
 
   useEffect(() => {
@@ -62,6 +68,10 @@ const MembershipSettingPage = () => {
       <DialogAddBenefitTier
         open={isShowDialogAddBenefitTier}
         onOpenChange={() => dispatch(setIsShowDialogAddBenefitTier(!isShowDialogAddBenefitTier))}
+      />
+      <DialogEditThresholdBenefitTier
+        open={isShowDialogEditThresholdBenefitTier}
+        onOpenChange={(open) => dispatch(setIsShowDialogEditThresholdBenefitTier(open))}
       />
     </React.Fragment>
   );

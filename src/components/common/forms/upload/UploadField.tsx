@@ -227,7 +227,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
                     'object-cover border border-primary/10 transition-all duration-300 transform group-hover:scale-105',
                     'shadow-[0_4px_20px_rgba(0,0,0,0.08)] w-full h-full',
                   )}
-                  style={{ objectFit: 'cover' }}
+                  style={{ objectFit: 'contain' }}
                 />
               </div>
               <div

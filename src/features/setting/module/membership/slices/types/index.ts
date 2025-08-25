@@ -1,3 +1,4 @@
+import { Tier } from '@/components/common/charts/scatter-rank-chart/types';
 import { Membership } from '../../domain/entities';
 
 interface MembershipState {
@@ -6,8 +7,16 @@ interface MembershipState {
   selectedMembership: Membership | null;
   isLoadingUpsertMembership: boolean;
   isShowDialogAddBenefitTier: boolean;
-  isLoadingAddBenefitTier: boolean;
+  isLoadingAddUpdateBenefitTier: boolean;
   isLoadingDeleteBenefitTier: boolean;
+  isLoadingEditThresholdBenefit: boolean;
+  isDialogEditThresholdBenefitOpen: boolean;
+  tierToEdit: {
+    axis: 'balance' | 'spent';
+    selectedTier: Tier | null;
+    nextTier: Tier | null;
+    previousTier: Tier | null;
+  };
 }
 
 export const initialMembershipState: MembershipState = {
@@ -16,6 +25,14 @@ export const initialMembershipState: MembershipState = {
   selectedMembership: null,
   isLoadingUpsertMembership: false,
   isShowDialogAddBenefitTier: false,
-  isLoadingAddBenefitTier: false,
+  isLoadingAddUpdateBenefitTier: false,
   isLoadingDeleteBenefitTier: false,
+  isLoadingEditThresholdBenefit: false,
+  isDialogEditThresholdBenefitOpen: false,
+  tierToEdit: {
+    axis: 'balance',
+    selectedTier: null,
+    nextTier: null,
+    previousTier: null,
+  },
 };

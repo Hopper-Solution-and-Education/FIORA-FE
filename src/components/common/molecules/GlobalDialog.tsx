@@ -35,6 +35,7 @@ type GlobalDialogProps = {
   customLeftButton?: ReactNode;
   customRightButton?: ReactNode;
   isLoading?: boolean;
+  renderContent?: () => ReactNode;
 };
 
 const VARIANT_BORDER_MAP: Record<DialogVariant, string> = {
@@ -83,6 +84,7 @@ export const GlobalDialog = ({
   customLeftButton,
   customRightButton,
   isLoading,
+  renderContent,
 }: GlobalDialogProps) => {
   return (
     <Dialog
@@ -102,7 +104,7 @@ export const GlobalDialog = ({
           </div>
         </DialogHeader>
 
-        {children && <div className="mt-4">{children}</div>}
+        {renderContent ? renderContent() : <div className="mt-4">{children}</div>}
 
         {footer ? (
           footer

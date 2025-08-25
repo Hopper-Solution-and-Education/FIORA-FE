@@ -17,7 +17,7 @@ export default withAuthorization({
 })(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   switch (req.method) {
     case 'POST':
-      return createMembershipBenefit(req, res, userId);
+      return processMembershipBenefit(req, res, userId);
     case 'DELETE':
       return deleteMembershipBenefit(req, res);
     default:
@@ -27,7 +27,7 @@ export default withAuthorization({
   }
 });
 
-async function createMembershipBenefit(req: NextApiRequest, res: NextApiResponse, userId: string) {
+async function processMembershipBenefit(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const payload = req.body as MembershipBenefitCreatePayload;
     const { error } = validateBody(membershipBenefitCreateSchema, req.body);
@@ -36,11 +36,11 @@ async function createMembershipBenefit(req: NextApiRequest, res: NextApiResponse
         .status(RESPONSE_CODE.BAD_REQUEST)
         .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
     }
-    const newBenefit = await membershipBenefitService.create(payload, userId);
+    const newBenefit = await membershipBenefitService.processMembershipBenefit(payload, userId);
 
     return res
       .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, 'Created successfully', newBenefit));
+      .json(createResponse(RESPONSE_CODE.CREATED, newBenefit.message, newBenefit.data));
   } catch (error) {
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)

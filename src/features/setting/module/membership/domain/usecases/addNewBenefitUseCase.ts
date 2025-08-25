@@ -1,9 +1,9 @@
 import { decorate, injectable } from 'inversify';
 import { IMembershipRepository } from '../../data/repositories';
-import { AddBenefitTierRequest, AddBenefitTierResponse } from '../entities';
+import { AddUpdateBenefitTierRequest, AddUpdateBenefitTierResponse } from '../entities';
 
 export interface IAddNewBenefitUseCase {
-  execute(params: AddBenefitTierRequest): Promise<AddBenefitTierResponse>;
+  execute(params: AddUpdateBenefitTierRequest): Promise<AddUpdateBenefitTierResponse>;
 }
 
 export class addNewBenefitUseCase implements IAddNewBenefitUseCase {
@@ -13,7 +13,7 @@ export class addNewBenefitUseCase implements IAddNewBenefitUseCase {
     this.membershipRepository = membershipRepository;
   }
 
-  execute(params: AddBenefitTierRequest): Promise<AddBenefitTierResponse> {
+  execute(params: AddUpdateBenefitTierRequest): Promise<AddUpdateBenefitTierResponse> {
     return this.membershipRepository.addBenefitTier(params);
   }
 }
