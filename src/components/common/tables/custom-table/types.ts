@@ -43,12 +43,12 @@ export interface DataSourceProps {
   parentName?: string;
   onClick?: () => void;
   [key: string]:
-    | DataSourceItemProps
-    | React.ReactNode
-    | DataSourceProps[]
-    | Record<string, DataSourceItemProps | React.ReactNode>
-    | (() => void)
-    | undefined;
+  | DataSourceItemProps
+  | React.ReactNode
+  | DataSourceProps[]
+  | Record<string, DataSourceItemProps | React.ReactNode>
+  | (() => void)
+  | undefined;
 }
 
 export interface TablePaginationProps {
@@ -171,4 +171,5 @@ export interface TableProps extends React.HTMLAttributes<HTMLDivElement> {
   showPagination?: boolean;
   paginationEnabled?: boolean;
   tableContainerClassName?: string;
+  tableHeight?: string;
 }

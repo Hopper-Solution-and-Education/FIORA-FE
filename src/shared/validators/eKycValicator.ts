@@ -1,4 +1,4 @@
-import { KYCMethod } from '@prisma/client';
+import { KYCMethod, KYCType } from '@prisma/client';
 import Joi from 'joi';
 
 export const eKYCSchema = Joi.object({
@@ -18,4 +18,6 @@ export const eKYCSchema = Joi.object({
   verifiedBy: Joi.string().uuid().optional().messages({
     'string.guid': 'verifiedBy must be a valid UUID',
   }),
+
+  type: Joi.string().valid(...Object.values(KYCType)),
 });

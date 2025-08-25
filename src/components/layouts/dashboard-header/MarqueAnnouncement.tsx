@@ -40,8 +40,9 @@ const MarqueeAnnouncement: React.FC<MarqueeProps> = ({ children, speed = 90, cla
                 whiteSpace: 'nowrap',
                 animation: `marquee ${animationDuration}s linear infinite`,
                 willChange: 'transform',
+                marginLeft: 0,
               }
-            : { whiteSpace: 'nowrap' }
+            : { whiteSpace: 'nowrap', marginLeft: 8 }
         }
       >
         {children}

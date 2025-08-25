@@ -15,13 +15,11 @@ import { FilterCriteria, OrderType } from '@/shared/types';
 import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { debounce } from 'lodash';
-import { FileText, Loader2, Search, Trash } from 'lucide-react';
+import { Edit, FileText, Loader2, Search, Trash } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { formatCurrency } from '../hooks/formatCurrency';
-import { formatDate } from '../hooks/formatDate';
 import { updateAmountRange, updateFilterCriteria } from '../slices';
 import { IRelationalTransaction, TransactionColumn, TransactionTableColumnKey } from '../types';
 import {
@@ -30,6 +28,8 @@ import {
   TransactionCurrency,
   TransactionTableToEntity,
 } from '../utils/constants';
+import { formatCurrency } from '../utils/formatCurrency';
+import { formatDate } from '../utils/formatDate';
 import DeleteTransactionDialog from './DeleteTransactionDialog';
 import FilterMenu from './FilterMenu';
 import SettingsMenu from './SettingMenu';
@@ -251,6 +251,14 @@ const TransactionTable = () => {
     threeMonthsAgo.setMonth(currentDate.getMonth() - 3);
 
     return transactionDate < threeMonthsAgo;
+  };
+
+  const isEditAllowed = (date: string | Date): boolean => {
+    const transactionDate = new Date(date);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+
+    return transactionDate >= thirtyDaysAgo;
   };
 
   const tableVisibleColumns: TransactionTableColumnKey = useMemo((): TransactionTableColumnKey => {
@@ -541,6 +549,47 @@ const TransactionTable = () => {
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
+
+                            {/* Edit Button - Only show for transactions within 30 days */}
+                            {/* Logic: Edit button is only enabled for transactions within the last 30 days */}
+                            {isEditAllowed(recordDate) ? (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      className="hover:bg-blue-200 px-3 py-2"
+                                      onClick={() =>
+                                        router.push(`/transaction/edit/${transRecord.id}`)
+                                      }
+                                    >
+                                      <Edit size={18} color="#2563eb" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Edit Transaction</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            ) : (
+                              // Show disabled edit button with tooltip for older transactions
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      className="opacity-50 cursor-not-allowed px-3 py-2"
+                                      disabled
+                                    >
+                                      <Edit size={18} color="#9ca3af" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Can&apos;t edit transactions older than 30 days</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
 
                             <TooltipProvider>
                               <Tooltip>

@@ -240,7 +240,6 @@ model Partner {
   dob          DateTime?     @db.Date
   taxNo        String?       @db.VarChar(20)
   address      String?       @db.VarChar(255)
-  bankAccount  String?       @db.VarChar(255)
   email        String?       @db.VarChar(50)
   phone        String?       @db.VarChar(50)
   description  String?       @db.VarChar(1000)
@@ -249,6 +248,7 @@ model Partner {
   createdBy    String?       @db.Uuid
   updatedBy    String?       @db.Uuid
   parentId     String?       @db.Uuid
+  bankAccount  String?       @db.VarChar(255)
   parent       Partner?      @relation("ParentChildPartners", fields: [parentId], references: [id])
   children     Partner[]     @relation("ParentChildPartners")
   user         User          @relation("UserPartners", fields: [userId], references: [id])
@@ -840,6 +840,7 @@ model eKYC {
   userId     String?   @db.Uuid
   verifiedBy String?   @db.Uuid
   refId      String?   @db.Uuid
+  type       KYCType?
   User       User?     @relation(fields: [userId], references: [id])
 }
 
@@ -853,7 +854,6 @@ model CronJobLog {
   createdAt     DateTime      @default(now()) @db.Timestamptz(0)
   updatedAt     DateTime      @db.Timestamptz(0)
   status        CronJobStatus
-
   Transaction   Transaction?  @relation("CronJobLogTransactions", fields: [transactionId], references: [id])
 }
 
@@ -974,10 +974,12 @@ enum NotificationType {
   ROLE_CS
   ROLE_USER
   PERSONAL
+  ADMIN_CS
 }
 
 enum KYCStatus {
   PENDING
+  REQUEST
   APPROVAL
   REJECTED
 }
@@ -1014,4 +1016,11 @@ enum TypeCronJob {
   REFERRAL
   CASHBACK
   FLEXI_INTEREST
+}
+
+enum KYCType {
+  IDENTIFICATION
+  CONTACT
+  TAX
+  BANK
 }

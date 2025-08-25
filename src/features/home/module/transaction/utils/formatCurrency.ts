@@ -1,10 +1,10 @@
-import { TransactionCurrency } from '../utils/constants';
 import {
+  FIORANumberFormat,
   formatFIORACurrency,
   getCurrencySymbol,
-  FIORANumberFormat,
 } from '@/config/FIORANumberFormat';
 import { Currency } from '@/shared/types';
+import { TransactionCurrency } from './constants';
 
 export const formatCurrency = (
   num: number,

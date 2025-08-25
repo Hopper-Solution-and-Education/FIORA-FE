@@ -16,6 +16,8 @@ export default sessionWrapper((req, res, userId) =>
           return POST(request, response, userId);
         case 'GET':
           return GET(request, response, userId);
+        case 'PUT':
+          return PUT(request, response, userId);
         case 'DELETE':
           return DELETE(request, response, userId);
         default:
@@ -38,11 +40,13 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
   const {
+    id,
     fromAccountId,
     toCategoryId,
     amount,
     products,
     partnerId,
+    type,
     remark,
     date,
     fromCategoryId,
@@ -70,8 +74,10 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   }
 
   const transactionData = {
+    id: id as UUID,
     userId: userId,
     amount: parseFloat(amount),
+    type: type,
     fromAccountId: fromAccountId as UUID,
     toAccountId: toAccountId as UUID,
     toCategoryId: toCategoryId as UUID,

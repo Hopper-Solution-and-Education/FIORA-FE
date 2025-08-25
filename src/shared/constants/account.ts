@@ -1,4 +1,4 @@
-import { Banknote, CreditCard, PiggyBank, TrendingDown, Wallet, TrendingUp } from 'lucide-react';
+import { Banknote, CreditCard, PiggyBank, TrendingDown, TrendingUp, Wallet } from 'lucide-react';
 
 // Define account types and their rules
 const ACCOUNT_TYPES = {
@@ -13,14 +13,14 @@ const ACCOUNT_TYPES = {
 // Define account type validation rules
 const ACCOUNT_RULES = {
   [ACCOUNT_TYPES.PAYMENT]: {
-    minBalance: 0,
+    minBalance: null,
     maxBalance: null,
-    description: 'Use to record daily payment and transfer transactions. Balance must be >= 0.',
+    description: 'Use to record daily payment and transfer transactions.',
   },
   [ACCOUNT_TYPES.SAVING]: {
-    minBalance: 0,
+    minBalance: null,
     maxBalance: null,
-    description: 'Use to record saving transactions and interest only. Balance must be >= 0.',
+    description: 'Use to record saving transactions and interest only.',
   },
   [ACCOUNT_TYPES.CREDIT_CARD]: {
     minBalance: null,
@@ -34,14 +34,14 @@ const ACCOUNT_RULES = {
     description: 'Use to record loan transactions only. Balance must be <= 0.',
   },
   [ACCOUNT_TYPES.LENDING]: {
-    minBalance: 0,
+    minBalance: null,
     maxBalance: null,
-    description: 'Use to record lending transactions only. Balance must be >= 0.',
+    description: 'Use to record lending transactions only.',
   },
   [ACCOUNT_TYPES.INVEST]: {
-    minBalance: 0,
+    minBalance: null,
     maxBalance: null,
-    description: 'Use to record invest transactions only. Balance must be >= 0.',
+    description: 'Use to record invest transactions only.',
   },
 };
 
@@ -65,4 +65,4 @@ const PARENT_ACCOUNTS = [
   { id: '6', name: 'My Investments', type: ACCOUNT_TYPES.INVEST },
 ];
 
-export { ACCOUNT_TYPES, ACCOUNT_RULES, ACCOUNT_ICONS, PARENT_ACCOUNTS };
+export { ACCOUNT_ICONS, ACCOUNT_RULES, ACCOUNT_TYPES, PARENT_ACCOUNTS };

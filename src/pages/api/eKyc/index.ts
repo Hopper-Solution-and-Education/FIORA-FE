@@ -52,6 +52,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
   }
   const newKyc = await eKycRepository.create({
+    type: req.body.type,
     fieldName: req.body.fieldName,
     status: KYCStatus.PENDING,
     createdBy: userId.toString(),
