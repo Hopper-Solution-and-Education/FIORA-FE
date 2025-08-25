@@ -73,10 +73,10 @@ export class BadRequestError extends AppError {
 
 // Centralized error handler for API routes
 export const errorHandler = async (
-  handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>,
+  handler: (req: NextApiRequest, res: NextApiResponse) => Promise<any>,
   req: NextApiRequest,
   res: NextApiResponse,
-): Promise<void> => {
+): Promise<any> => {
   try {
     await handler(req, res);
   } catch (error) {
