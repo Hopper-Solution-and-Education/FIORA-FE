@@ -472,7 +472,7 @@ class TransactionUseCase {
       await this.accountRepository.receiveBalance(
         tx,
         transactionUnique.fromAccountId as string,
-        data.amount as number,
+        Number(transactionUnique.amount),
       );
 
       if (
@@ -580,7 +580,7 @@ class TransactionUseCase {
       await this.accountRepository.deductBalance(
         tx,
         transactionUnique.toAccountId as string,
-        data.amount as number,
+        Number(transactionUnique.amount),
       );
 
       if (
