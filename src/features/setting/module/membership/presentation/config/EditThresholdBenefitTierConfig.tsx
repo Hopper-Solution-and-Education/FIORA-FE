@@ -11,8 +11,8 @@ const useEditThresholdBenefitTierConfig = () => {
     watch,
   } = useFormContext<EditThresholdTierFormValues>();
 
-  const isLoadingAddUpdateBenefitTier = useAppSelector(
-    (state) => state.memberShipSettings.isLoadingAddUpdateBenefitTier,
+  const isLoadingEditThresholdBenefit = useAppSelector(
+    (state) => state.memberShipSettings.isLoadingEditThresholdBenefit,
   );
 
   const fields = [
@@ -23,7 +23,7 @@ const useEditThresholdBenefitTierConfig = () => {
       placeholder="New Min"
       label="Min"
       required
-      disabled={isSubmitting || isLoadingAddUpdateBenefitTier || watch('newMin') === Infinity}
+      disabled={isSubmitting || isLoadingEditThresholdBenefit || watch('newMin') === Infinity}
     />,
     <InputField
       key="newMax"
@@ -31,7 +31,7 @@ const useEditThresholdBenefitTierConfig = () => {
       placeholder="New Max"
       label="Max"
       required
-      disabled={isSubmitting || isLoadingAddUpdateBenefitTier || watch('newMax') === Infinity}
+      disabled={isSubmitting || isLoadingEditThresholdBenefit || watch('newMax') === Infinity}
     />,
   ];
 

@@ -18,7 +18,7 @@ type DialogEditThresholdBenefitTierProps = {
 
 export const transformInfinityToZero = (value: number) => {
   if (value === Infinity) {
-    return 9999999999;
+    return 99999999998;
   }
   return value;
 };
