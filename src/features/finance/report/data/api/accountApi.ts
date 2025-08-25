@@ -8,9 +8,6 @@ export interface IAccountAPI {
 
 class AccountAPI implements IAccountAPI {
   async getListAccount(request: GetListAccountRequestDTO): Promise<GetListAccountResponseDTO> {
-    console.log('====================================');
-    console.log(request);
-    console.log('====================================');
     return await httpClient.get('/api/accounts/all');
   }
 }

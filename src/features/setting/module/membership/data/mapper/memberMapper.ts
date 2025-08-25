@@ -1,8 +1,10 @@
 import {
-  AddBenefitTierRequest,
-  AddBenefitTierResponse,
+  AddUpdateBenefitTierRequest,
+  AddUpdateBenefitTierResponse,
   DeleteBenefitTierRequest,
   DeleteBenefitTierResponse,
+  EditThresholdBenefitRequest,
+  EditThresholdBenefitResponse,
   GetListMembershipsRequest,
   GetListMembershipsResponse,
   Membership,
@@ -10,8 +12,8 @@ import {
   UpsertMembershipResponse,
 } from '../../domain/entities';
 import {
-  AddBenefitTierRequestDTO,
-  AddBenefitTierResponseDTO,
+  AddUpdateBenefitTierRequestDTO,
+  AddUpdateBenefitTierResponseDTO,
   DeleteBenefitTierRequestDTO,
   DeleteBenefitTierResponseDTO,
   GetListMembershipsRequestDTO,
@@ -19,6 +21,10 @@ import {
   UpsertMembershipRequestDTO,
   UpsertMembershipResponseDTO,
 } from '../dto';
+import {
+  EditThresholdBenefitRequestDTO,
+  EditThresholdBenefitResponseDTO,
+} from '../dto/editThresholdBenefitDTO';
 
 export enum TierBenefitName {
   REFERRAL_BONUS = 'referral-bonus',
@@ -84,7 +90,9 @@ export class MemberMapper {
     };
   }
 
-  static toAddBenefitTierRequest(data: AddBenefitTierRequest): AddBenefitTierRequestDTO {
+  static toAddBenefitTierRequest(
+    data: AddUpdateBenefitTierRequest,
+  ): AddUpdateBenefitTierRequestDTO {
     return {
       tierBenefit: {
         tierId: data.tierBenefit.tierId,
@@ -97,10 +105,13 @@ export class MemberMapper {
         suffix: data.membershipBenefit.suffix,
         userId: data.membershipBenefit.userId,
       },
+      mode: data.mode,
     };
   }
 
-  static toAddBenefitTierResponse(data: AddBenefitTierResponseDTO): AddBenefitTierResponse {
+  static toAddBenefitTierResponse(
+    data: AddUpdateBenefitTierResponseDTO,
+  ): AddUpdateBenefitTierResponse {
     return {
       data: {
         id: data.data.id,
@@ -120,7 +131,10 @@ export class MemberMapper {
 
   static toDeleteBenefitTierRequest(data: DeleteBenefitTierRequest): DeleteBenefitTierRequestDTO {
     return {
-      id: data.id,
+      slug: data.slug,
+      membershipTierId: data.membershipTierId,
+      membershipBenefitId: data.membershipBenefitId,
+      mode: data.mode,
     };
   }
 
@@ -129,6 +143,27 @@ export class MemberMapper {
   ): DeleteBenefitTierResponse {
     return {
       data: data.data,
+      message: data.message,
+    };
+  }
+
+  static toEditThresholdBenefitRequest(
+    data: EditThresholdBenefitRequest,
+  ): EditThresholdBenefitRequestDTO {
+    return {
+      axis: data.axis,
+      oldMin: data.oldMin,
+      oldMax: data.oldMax,
+      newMin: data.newMin,
+      newMax: data.newMax,
+    };
+  }
+
+  static toEditThresholdBenefitResponse(
+    data: EditThresholdBenefitResponseDTO,
+  ): EditThresholdBenefitResponse {
+    return {
+      data: new Membership(data.data),
       message: data.message,
     };
   }

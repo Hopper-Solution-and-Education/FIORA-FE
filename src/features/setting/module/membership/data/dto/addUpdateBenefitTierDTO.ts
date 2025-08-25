@@ -4,10 +4,12 @@ import {
   AddTierBenefitPayload,
   NewBenefitTier,
 } from '../../domain/entities';
+import { ProcessMembershipMode } from '../api/membershipApi';
 
-export interface AddBenefitTierRequestDTO {
+export interface AddUpdateBenefitTierRequestDTO {
   tierBenefit: AddTierBenefitPayload;
   membershipBenefit: AddMembershipBenefitPayload;
+  mode: ProcessMembershipMode;
 }
 
-export type AddBenefitTierResponseDTO = HttpResponse<NewBenefitTier>;
+export type AddUpdateBenefitTierResponseDTO = HttpResponse<NewBenefitTier>;
