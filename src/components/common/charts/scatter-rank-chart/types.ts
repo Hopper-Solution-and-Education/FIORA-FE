@@ -33,8 +33,8 @@ export interface ScatterChartProps {
   isLoading?: boolean;
   currentId?: string;
   isDisabled?: boolean;
-  onClickXAxisRange?: (tier: Tier, index: number) => void;
-  onClickYAxisRange?: (tier: Tier, index: number) => void;
+  onClickXAxisRange?: (tier: Tier, previousTier: Tier, nextTier: Tier, index: number) => void;
+  onClickYAxisRange?: (tier: Tier, previousTier: Tier, nextTier: Tier, index: number) => void;
 }
 
 export interface Tier {

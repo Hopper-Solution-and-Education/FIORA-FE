@@ -40,7 +40,6 @@ class MembershipAPI implements IMembershipAPI {
   async getListMemberships(
     request: GetListMembershipsRequestDTO,
   ): Promise<GetListMembershipsResponseDTO> {
-    console.log(request);
     return await httpClient.get('/api/memberships');
   }
 

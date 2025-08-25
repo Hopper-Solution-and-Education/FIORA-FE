@@ -3,8 +3,11 @@ import { Tier } from '@/components/common/charts/scatter-rank-chart/types';
 import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { setSelectedMembership } from '../../slices';
-import DialogEditThresholdBenefitTier from '../organisms/DialogEditThresholdBenefitTier';
+import {
+  setIsShowDialogEditThresholdBenefitTier,
+  setSelectedMembership,
+  setTierToEdit,
+} from '../../slices';
 import { createCombinedTierIcons, transformToBalanceTiers, transformToSpentTiers } from '../utils';
 
 const MembershipRankChart = () => {
@@ -13,10 +16,8 @@ const MembershipRankChart = () => {
     (state) => state.memberShipSettings.isLoadingGetMemberships,
   );
   const selectedMembership = useAppSelector((state) => state.memberShipSettings.selectedMembership);
-  const [isShowDialogEditThresholdBenefitTier, setIsShowDialogEditThresholdBenefitTier] =
-    useState(false);
+
   const dispatch = useAppDispatch();
-  const [axis, setAxis] = useState<'balance' | 'spent'>('balance');
 
   const handleTierClick = useCallback(
     (balanceTier: Tier, spentTier: Tier, item?: any) => {
@@ -41,6 +42,7 @@ const MembershipRankChart = () => {
     return createCombinedTierIcons(balanceTiers, spentTiers, memberships, handleTierClick);
   }, [balanceTiers, spentTiers, memberships]);
 
+  // select item to view in chart
   const [selectedItem, setSelectedItem] = useState<{ balance: number; spent: number } | null>(
     selectedMembership
       ? {
@@ -50,20 +52,35 @@ const MembershipRankChart = () => {
       : null,
   );
 
+  // initial load data when page load
   useEffect(() => {
     if (memberships.length > 0) {
       dispatch(setSelectedMembership(memberships[0]));
     }
   }, [memberships]);
 
-  const handleClickYAxisRange = (tier: Tier, index: number) => {
-    setIsShowDialogEditThresholdBenefitTier(true);
-    setAxis('balance');
+  // handle click spent and balance to edit membership threshold benefit tier
+  const handleClickYAxisRange = (tier: Tier, previousTier: Tier, nextTier: Tier, index: number) => {
+    dispatch(
+      setTierToEdit({
+        selectedTier: tier,
+        nextTier,
+        previousTier,
+        axis: 'balance',
+      }),
+    );
+    dispatch(setIsShowDialogEditThresholdBenefitTier(true));
   };
-
-  const handleClickXAxisRange = (tier: Tier, index: number) => {
-    setIsShowDialogEditThresholdBenefitTier(true);
-    setAxis('spent');
+  const handleClickXAxisRange = (tier: Tier, previousTier: Tier, nextTier: Tier, index: number) => {
+    dispatch(
+      setTierToEdit({
+        selectedTier: tier,
+        nextTier,
+        previousTier,
+        axis: 'spent',
+      }),
+    );
+    dispatch(setIsShowDialogEditThresholdBenefitTier(true));
   };
 
   return (
@@ -95,11 +112,6 @@ const MembershipRankChart = () => {
         currentId={selectedMembership?.id}
         onClickXAxisRange={handleClickXAxisRange}
         onClickYAxisRange={handleClickYAxisRange}
-      />
-      <DialogEditThresholdBenefitTier
-        open={isShowDialogEditThresholdBenefitTier}
-        onOpenChange={setIsShowDialogEditThresholdBenefitTier}
-        axis={axis}
       />
     </div>
   );

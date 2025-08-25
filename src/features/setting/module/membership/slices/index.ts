@@ -1,3 +1,4 @@
+import { Tier } from '@/components/common/charts/scatter-rank-chart/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 import { Membership } from '../domain/entities';
@@ -23,6 +24,20 @@ const membershipSlice = createSlice({
     },
     setIsShowDialogAddBenefitTier: (state, action: PayloadAction<boolean>) => {
       state.isShowDialogAddBenefitTier = action.payload;
+    },
+    setIsShowDialogEditThresholdBenefitTier: (state, action: PayloadAction<boolean>) => {
+      state.isDialogEditThresholdBenefitOpen = action.payload;
+    },
+    setTierToEdit: (
+      state,
+      action: PayloadAction<{
+        selectedTier: Tier;
+        nextTier: Tier;
+        previousTier: Tier;
+        axis: 'balance' | 'spent';
+      }>,
+    ) => {
+      state.tierToEdit = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -100,5 +115,7 @@ export const {
   setSelectedMembership,
   setMemberships,
   setIsShowDialogAddBenefitTier,
+  setTierToEdit,
+  setIsShowDialogEditThresholdBenefitTier,
 } = membershipSlice.actions;
 export default membershipSlice.reducer;

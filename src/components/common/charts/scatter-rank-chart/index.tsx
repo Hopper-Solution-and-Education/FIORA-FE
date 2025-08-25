@@ -70,15 +70,27 @@ const ScatterRankingChart = ({
   const userSpentRank = getSpentRank(spent, spentTiers);
 
   // Hover tooltips for axis progress bars
-  const [hoverX, setHoverX] = useState<{ visible: boolean; left: number; value: number }>({
+  const [hoverX, setHoverX] = useState<{
+    visible: boolean;
+    left: number;
+    label: string;
+    labelName: string;
+  }>({
     visible: false,
     left: 0,
-    value: 0,
+    label: '',
+    labelName: '',
   });
-  const [hoverY, setHoverY] = useState<{ visible: boolean; bottom: number; value: number }>({
+  const [hoverY, setHoverY] = useState<{
+    visible: boolean;
+    bottom: number;
+    label: string;
+    labelName: string;
+  }>({
     visible: false,
     bottom: 0,
-    value: 0,
+    label: '',
+    labelName: '',
   });
   const [hoveredXIndex, setHoveredXIndex] = useState<number | null>(null);
   const [hoveredYIndex, setHoveredYIndex] = useState<number | null>(null);
@@ -189,10 +201,28 @@ const ScatterRankingChart = ({
     setHoveredXIndex(index);
 
     const center = index * segmentWidth + segmentWidth / 2;
+    const currentTier = spentTiers[index];
+    const nextTier = spentTiers[index + 1];
+
+    // Calculate range between current tier and next tier
+    let xLabel = '0';
+    if (currentTier && nextTier) {
+      const startValue = currentTier.min;
+      const endValue = nextTier.min;
+      xLabel = `${startValue.toLocaleString()} - ${endValue.toLocaleString()}`;
+    } else if (currentTier) {
+      // For the last tier, show from current min to infinity
+      xLabel =
+        currentTier.max === Infinity
+          ? `${currentTier.min.toLocaleString()}+`
+          : `${currentTier.min.toLocaleString()} - ${currentTier.max.toLocaleString()}`;
+    }
+
     setHoverX({
       visible: true,
       left: Math.min(Math.max(center, 0), rect.width),
-      value: spentTiers[index]?.min ?? 0,
+      label: xLabel,
+      labelName: currentTier?.label,
     });
   };
   const handleXHoverLeave = () => {
@@ -204,8 +234,8 @@ const ScatterRankingChart = ({
     if (!yThresholds.length) return;
     const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
     const xFromLeft = e.clientX - rect.left;
-    // Only activate when hovering near the vertical bar (within 20px from the left edge)
-    if (xFromLeft > 20) {
+    // Only activate when hovering near the vertical bar (within 24px from the left edge)
+    if (xFromLeft > 24) {
       setHoverY((prev) => ({ ...prev, visible: false }));
       setHoveredYIndex(null);
       return;
@@ -219,10 +249,28 @@ const ScatterRankingChart = ({
     setHoveredYIndex(index);
 
     const center = index * segmentHeight + segmentHeight / 2;
+    const currentTier = balanceTiers[index];
+    const nextTier = balanceTiers[index + 1];
+
+    // Calculate range between current tier and next tier
+    let yLabel = '0';
+    if (currentTier && nextTier) {
+      const startValue = currentTier.min;
+      const endValue = nextTier.min;
+      yLabel = `${startValue.toLocaleString()} - ${endValue.toLocaleString()}`;
+    } else if (currentTier) {
+      // For the last tier, show from current min to infinity
+      yLabel =
+        currentTier.max === Infinity
+          ? `${currentTier.min.toLocaleString()}+`
+          : `${currentTier.min.toLocaleString()} - ${currentTier.max.toLocaleString()}`;
+    }
+
     setHoverY({
       visible: true,
       bottom: Math.min(Math.max(center, 0), height),
-      value: balanceTiers[index]?.min ?? 0,
+      label: yLabel,
+      labelName: currentTier?.label,
     });
   };
   const handleYHoverLeave = () => {
@@ -431,14 +479,16 @@ const ScatterRankingChart = ({
 
               {/* Progress Bar Chart for XAxis and YAxis */}
               <div
-                className="absolute bottom-20 left-[70px] w-[calc(100%-90px)]"
+                className="absolute bottom-20 left-[70px] w-[calc(100%-90px)] cursor-pointer"
                 onMouseMove={handleXHoverMove}
                 onMouseLeave={handleXHoverLeave}
                 onMouseEnter={handleXHoverMove}
                 onClick={() => {
                   if (hoveredXIndex !== null && onClickXAxisRange) {
                     const tier = spentTiers[hoveredXIndex];
-                    if (tier) onClickXAxisRange(tier, hoveredXIndex);
+                    const previousTier = spentTiers[hoveredXIndex - 1];
+                    const nextTier = spentTiers[hoveredXIndex + 1];
+                    if (tier) onClickXAxisRange(tier, previousTier, nextTier, hoveredXIndex);
                   }
                 }}
               >
@@ -473,14 +523,20 @@ const ScatterRankingChart = ({
                 />
                 {hoverX.visible && (
                   <div
-                    className="absolute z-[20] px-2 py-1 text-[10px] bg-black text-white rounded pointer-events-none"
+                    className="absolute z-[20] px-3 py-2 text-[11px] font-medium bg-popover text-popover-foreground border border-border rounded-md shadow-lg pointer-events-none"
                     style={{
                       left: `${hoverX.left}px`,
                       bottom: '14px',
                       transform: 'translateX(-50%)',
+                      whiteSpace: 'nowrap',
                     }}
                   >
-                    {hoverX.value.toLocaleString()}
+                    <span className="block">{hoverX.label}</span>
+                    {hoverX.labelName && (
+                      <span className="block text-muted-foreground text-[10px]">
+                        {hoverX.labelName}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -490,6 +546,7 @@ const ScatterRankingChart = ({
                   absolute top-0 left-[70px] 
                   h-[calc(100%-70px)]
                   ${chartDimensions.height ? 'block' : 'hidden'}
+                  cursor-pointer
                 `}
                 onMouseMove={handleYHoverMove}
                 onMouseLeave={handleYHoverLeave}
@@ -497,7 +554,9 @@ const ScatterRankingChart = ({
                 onClick={() => {
                   if (hoveredYIndex !== null && onClickYAxisRange) {
                     const tier = balanceTiers[hoveredYIndex];
-                    if (tier) onClickYAxisRange(tier, hoveredYIndex);
+                    const previousTier = balanceTiers[hoveredYIndex - 1];
+                    const nextTier = balanceTiers[hoveredYIndex + 1];
+                    if (tier) onClickYAxisRange(tier, previousTier, nextTier, hoveredYIndex);
                   }
                 }}
               >
@@ -545,14 +604,20 @@ const ScatterRankingChart = ({
                 />
                 {hoverY.visible && (
                   <div
-                    className="absolute z-[20] px-2 py-1 text-[10px] bg-black text-white rounded pointer-events-none"
+                    className="absolute z-[20] px-3 py-2 text-[11px] font-medium bg-popover text-popover-foreground border border-border rounded-md shadow-lg pointer-events-none transition-opacity duration-200"
                     style={{
                       left: '14px',
                       bottom: `${hoverY.bottom}px`,
                       transform: 'translateY(50%)',
+                      whiteSpace: 'nowrap',
                     }}
                   >
-                    {hoverY.value.toLocaleString()}
+                    <span className="block">{hoverY.label}</span>
+                    {hoverY.labelName && (
+                      <span className="block text-muted-foreground text-[10px]">
+                        {hoverY.labelName}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>

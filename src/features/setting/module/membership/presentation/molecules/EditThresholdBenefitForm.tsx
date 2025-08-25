@@ -4,8 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
-import { setIsShowDialogAddBenefitTier } from '../../slices';
+import { toast } from 'sonner';
+import { setIsShowDialogEditThresholdBenefitTier } from '../../slices';
+import { editThresholdBenefitAsyncThunk, getListMembershipAsyncThunk } from '../../slices/actions';
 import useEditThresholdBenefitTierConfig from '../config/EditThresholdBenefitTierConfig';
+import { transformInfinityToZero } from '../organisms/DialogEditThresholdBenefitTier';
 import { EditThresholdTierFormValues } from '../schema/editThresholdTier.schema';
 
 const EditThresholdBenefitForm = () => {
@@ -16,10 +19,65 @@ const EditThresholdBenefitForm = () => {
     (state) => state.memberShipSettings.isLoadingAddUpdateBenefitTier,
   );
 
+  const { handleSubmit } = methods;
+  const tierToEdit = useAppSelector((state) => state.memberShipSettings.tierToEdit);
+
+  const selectMembershipBenefit = useAppSelector(
+    (state) => state.memberShipSettings.selectedMembership,
+  );
+
   const dispatch = useAppDispatch();
 
   const handleCloseDialog = () => {
-    dispatch(setIsShowDialogAddBenefitTier(false));
+    dispatch(setIsShowDialogEditThresholdBenefitTier(false));
+  };
+
+  console.log('tierToEdit', tierToEdit);
+  const onSubmit = (data: EditThresholdTierFormValues) => {
+    if (!selectMembershipBenefit) {
+      toast.error('Please select a membership benefit');
+      return;
+    }
+
+    if (tierToEdit.previousTier) {
+      if (data.newMin < tierToEdit.previousTier.min) {
+        console.log('error new min');
+        methods.setError('newMin', {
+          message: 'New min must be greater than previous tier min',
+        });
+
+        return;
+      }
+    }
+
+    if (tierToEdit.nextTier) {
+      if (data.newMax > tierToEdit.nextTier.max) {
+        console.log('error new max');
+        methods.setError('newMax', {
+          message: 'New max must be less than next tier max',
+        });
+        return;
+      }
+    }
+
+    dispatch(
+      editThresholdBenefitAsyncThunk({
+        axis: data.axis,
+        oldMin: transformInfinityToZero(data.oldMin),
+        oldMax: transformInfinityToZero(data.oldMax),
+        newMin: transformInfinityToZero(data.newMin),
+        newMax: transformInfinityToZero(data.newMax),
+      }),
+    )
+      .unwrap()
+      .then(() => {
+        methods.reset();
+        dispatch(getListMembershipAsyncThunk({ page: 1, limit: 10 }));
+        handleCloseDialog();
+      })
+      .catch((error) => {
+        console.log('error', error);
+      });
   };
 
   const renderSubmitButtonDefault = () => (
@@ -65,7 +123,13 @@ const EditThresholdBenefitForm = () => {
   );
 
   return (
-    <FormConfig fields={config} methods={methods} renderSubmitButton={renderSubmitButtonDefault} />
+    <form data-test="dialog-edit-threshold-benefit-tier" onSubmit={handleSubmit(onSubmit)}>
+      <FormConfig
+        fields={config}
+        methods={methods}
+        renderSubmitButton={renderSubmitButtonDefault}
+      />
+    </form>
   );
 };
 

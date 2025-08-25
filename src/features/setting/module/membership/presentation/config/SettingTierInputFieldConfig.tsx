@@ -55,13 +55,6 @@ const SettingTierInputFieldConfig = ({
 
   const { data: session } = useSession();
 
-  // Debug logs
-  console.log('🔍 Debug - SettingTierInputFieldConfig render:', {
-    dynamicTierFields,
-    fieldsCount: dynamicTierFields.length,
-    formValues: methods.getValues(),
-  });
-
   const handleOpenDialogAddBenefitTier = () => {
     dispatch(setIsShowDialogAddBenefitTier(true));
   };
@@ -69,12 +62,6 @@ const SettingTierInputFieldConfig = ({
   // Render dynamic fields based on configuration
   const fields = dynamicTierFields.map((field) => {
     const fieldValue = typeof watch(field.key) === 'number' ? (watch(field.key) as number) : 0;
-    console.log('🔍 Debug - Rendering field:', {
-      key: field.key,
-      label: field.label,
-      value: fieldValue,
-      suffix: field.suffix,
-    });
 
     return (
       <SettingTierInputField

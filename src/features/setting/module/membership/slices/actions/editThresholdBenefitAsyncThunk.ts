@@ -18,6 +18,6 @@ export const editThresholdBenefitAsyncThunk = createAsyncThunk<
   } catch (error: any) {
     console.log(error);
 
-    return rejectWithValue(error || 'Failed to edit threshold benefit');
+    return rejectWithValue(error.message || 'Failed to edit threshold benefit');
   }
 });

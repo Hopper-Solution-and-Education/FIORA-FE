@@ -3,33 +3,35 @@
 import { InputField } from '@/components/common/forms';
 import { useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
+import { EditThresholdTierFormValues } from '../schema/editThresholdTier.schema';
 
 const useEditThresholdBenefitTierConfig = () => {
   const {
     formState: { isSubmitting },
-  } = useFormContext();
+    watch,
+  } = useFormContext<EditThresholdTierFormValues>();
 
   const isLoadingAddUpdateBenefitTier = useAppSelector(
     (state) => state.memberShipSettings.isLoadingAddUpdateBenefitTier,
   );
 
   const fields = [
-    <InputField key="axis" name="axis" label="Axis" placeholder="Axis" required disabled={true} />,
+    // <InputField key="axis" name="axis" label="Axis" placeholder="Axis" required disabled={true} />,
     <InputField
       key="newMin"
       name="newMin"
       placeholder="New Min"
-      label="New Min"
+      label="Min"
       required
-      disabled={isSubmitting || isLoadingAddUpdateBenefitTier}
+      disabled={isSubmitting || isLoadingAddUpdateBenefitTier || watch('newMin') === Infinity}
     />,
     <InputField
       key="newMax"
       name="newMax"
       placeholder="New Max"
-      label="New Max"
+      label="Max"
       required
-      disabled={isSubmitting || isLoadingAddUpdateBenefitTier}
+      disabled={isSubmitting || isLoadingAddUpdateBenefitTier || watch('newMax') === Infinity}
     />,
   ];
 
