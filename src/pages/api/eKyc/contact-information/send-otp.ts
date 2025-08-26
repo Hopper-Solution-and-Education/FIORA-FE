@@ -1,8 +1,10 @@
+import { eKycRepository } from '@/features/setting/api/infrastructure/repositories/eKycRepository';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { OtpType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId: string) =>
@@ -23,11 +25,8 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
 );
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const data = {
-    otp: '123456',
-    duration: 120,
-  };
+  await eKycRepository.sendOtp(userId, OtpType.CONTACT, '120');
   return res
     .status(RESPONSE_CODE.CREATED)
-    .json(createResponse(RESPONSE_CODE.CREATED, Messages.SEND_SUCCESS, data));
+    .json(createResponse(RESPONSE_CODE.CREATED, Messages.SEND_SUCCESS));
 }

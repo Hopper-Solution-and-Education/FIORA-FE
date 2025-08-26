@@ -17,3 +17,6 @@ export function sanitizeDateFilters(filters: any) {
 
   return cloned;
 }
+export function generateSixDigitNumber() {
+  return Math.floor(100000 + Math.random() * 900000);
+}
