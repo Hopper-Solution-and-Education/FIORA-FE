@@ -1,6 +1,6 @@
-# 📖 Guide to Hopper Dashboard
+# 📖 Guide to FIORA-FE
 
-Welcome to the **Hopper Dashboard**!  
+Welcome to the **FIORA-FE**!  
 This is a powerful frontend project built with **Next.js**, designed with a feature-based architecture to optimize developer experience (DX) and performance for administrative, reporting, transactional, and settings modules.
 
 ---
@@ -33,7 +33,7 @@ Ensure you have the following installed:
 ### 2️⃣ Installation
 ```bash
 git clone <repo_url>
-cd FIORA-FE-DEV
+cd FIORA-FE
 npm install  # or bun install / pnpm install / yarn install
 ```
 
