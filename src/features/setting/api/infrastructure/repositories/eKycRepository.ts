@@ -1,5 +1,6 @@
 import { prisma } from '@/config';
-import { KYCMethod, KYCType } from '@prisma/client';
+import { generateSixDigitNumber } from '@/shared/utils/common';
+import { KYCMethod, KYCType, OtpType } from '@prisma/client';
 
 class EKycRepository {
   async create(kyc: {
@@ -13,7 +14,7 @@ class EKycRepository {
     id: string;
   }): Promise<any> {
     try {
-      return await prisma.eKYC.create({
+      const newKyc = await prisma.eKYC.create({
         data: {
           type: kyc.type,
           method: KYCMethod.MANUAL,
@@ -27,7 +28,9 @@ class EKycRepository {
           id: kyc.id, // UUID
         },
       });
+      return newKyc;
     } catch (error) {
+      console.log(error);
       return error;
     }
   }
@@ -45,6 +48,38 @@ class EKycRepository {
       where: {
         id,
       },
+    });
+  }
+
+  async getByType(userId: string, type: KYCType) {
+    return await prisma.eKYC.findFirst({
+      where: {
+        userId,
+        type,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async sendOtp(userId: string, type: OtpType, duration: string) {
+    const random6Digits = generateSixDigitNumber();
+    // await sendOtpVerify(userId, random6Digits.toString());
+    return await prisma.otp.create({
+      data: {
+        type: type,
+        duration: duration,
+        otp: random6Digits.toString(),
+        userId: userId,
+        createdAt: new Date(),
+        id: crypto.randomUUID(),
+      },
+    });
+  }
+
+  async checkOtp(userId: string, type: OtpType) {
+    return await prisma.otp.findFirst({
+      where: { userId, type },
+      orderBy: { createdAt: 'desc' },
     });
   }
 }
