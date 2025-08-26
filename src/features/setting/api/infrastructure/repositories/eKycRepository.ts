@@ -1,4 +1,5 @@
-import { prisma } from '@/config';
+import { prisma, sendOtpVerify } from '@/config';
+import { SessionUser } from '@/shared/types/session';
 import { generateSixDigitNumber } from '@/shared/utils/common';
 import { KYCMethod, KYCType, OtpType } from '@prisma/client';
 
@@ -61,15 +62,15 @@ class EKycRepository {
     });
   }
 
-  async sendOtp(userId: string, type: OtpType, duration: string) {
+  async sendOtp(user: SessionUser, type: OtpType, duration: string) {
     const random6Digits = generateSixDigitNumber();
-    // await sendOtpVerify(userId, random6Digits.toString());
+    await sendOtpVerify(user.email, random6Digits.toString());
     return await prisma.otp.create({
       data: {
         type: type,
         duration: duration,
         otp: random6Digits.toString(),
-        userId: userId,
+        userId: user.id,
         createdAt: new Date(),
         id: crypto.randomUUID(),
       },
