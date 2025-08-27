@@ -1,177 +1,229 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertCircle, FileText, Upload } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { CheckCircle, CreditCard, FileText, HelpCircle, Upload, User } from 'lucide-react';
 import { useState } from 'react';
 
 const IdentificationDocumentForm = () => {
-  const [documentType, setDocumentType] = useState('');
   const [frontImage, setFrontImage] = useState<File | null>(null);
   const [backImage, setBackImage] = useState<File | null>(null);
+  const [facePhoto, setFacePhoto] = useState<File | null>(null);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, side: 'front' | 'back') => {
+  const handleFileUpload = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    type: 'front' | 'back' | 'face',
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (side === 'front') {
+      if (type === 'front') {
         setFrontImage(file);
-      } else {
+      } else if (type === 'back') {
         setBackImage(file);
+      } else {
+        setFacePhoto(file);
       }
     }
   };
 
-  return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Identification Document</h1>
-        <div className="flex items-center gap-2 text-amber-600">
-          <AlertCircle className="h-4 w-4" />
-          <p className="text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
-        </div>
-      </div>
-
-      <div className="space-y-6">
-        <p className="text-sm text-muted-foreground">
-          In order to complete, please upload any of the following personal document.
-        </p>
-
-        {/* Document Type Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button
-            className="flex items-center gap-3 p-4 border-2 border-green-200 bg-green-50 rounded-lg text-left hover:bg-green-100 transition-colors"
-            onClick={() => setDocumentType('national-id')}
-          >
-            <FileText className="h-6 w-6 text-green-600" />
-            <span className="font-medium text-green-800">National card</span>
-          </button>
-
-          <button
-            className="flex items-center gap-3 p-4 border-2 border-gray-200 bg-white rounded-lg text-left hover:bg-gray-50 transition-colors"
-            onClick={() => setDocumentType('passport')}
-          >
-            <FileText className="h-6 w-6 text-gray-600" />
-            <span className="font-medium">Passport</span>
-          </button>
-
-          <button
-            className="flex items-center gap-3 p-4 border-2 border-gray-200 bg-white rounded-lg text-left hover:bg-gray-50 transition-colors"
-            onClick={() => setDocumentType('business-license')}
-          >
-            <FileText className="h-6 w-6 text-gray-600" />
-            <span className="font-medium">business license</span>
-          </button>
-        </div>
-
-        {/* Document Details */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="id-number">ID number</Label>
-            <Input
-              id="id-number"
-              placeholder="013837612892"
-              value="013837612892"
-              className="font-mono"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="issued-date">Issued Date</Label>
-            <Input id="issued-date" placeholder="08/04/2021" value="08/04/2021" />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="place-issuance">Place of Issuance</Label>
-          <Input
-            id="place-issuance"
-            placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="address">Address</Label>
-          <Input
-            id="address"
-            placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-          />
-        </div>
-
-        {/* Important Notice */}
-        <div className="space-y-4">
-          <p className="font-semibold">
-            To avoid delays when verifying account, Please make sure bellow
-          </p>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>Document should be good condition and clearly visible.</p>
-            <p>Make sure that there is no light glare on the card.</p>
-            <p>Do not use screenshots or photocopies</p>
-          </div>
-        </div>
-
-        {/* Document Upload Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Front Side */}
-          <div className="space-y-4">
-            <Label className="text-base font-medium">Front side of the ID card</Label>
-            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-12 text-center hover:border-muted-foreground/50 transition-colors">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileUpload(e, 'front')}
-                className="hidden"
-                id="front-upload"
-              />
-              <label htmlFor="front-upload" className="cursor-pointer">
-                <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Upload the front side of your National ID</p>
-                  <p className="text-xs text-muted-foreground">(JPG, PNG, or PDF, max 5MB)</p>
-                </div>
-              </label>
+  const renderUploadArea = (
+    id: string,
+    title: string,
+    file: File | null,
+    type: 'front' | 'back' | 'face',
+    className: string = '',
+  ) => (
+    <div className={`space-y-4 ${className}`}>
+      <Label className="text-base font-medium">{title}</Label>
+      <div
+        className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center transition-all duration-200 ${
+          file
+            ? 'border-green-300 bg-green-50'
+            : 'border-muted-foreground/25 hover:border-muted-foreground/50 hover:bg-muted/20'
+        }`}
+      >
+        <input
+          type="file"
+          accept="image/*,.pdf"
+          onChange={(e) => handleFileUpload(e, type)}
+          className="hidden"
+          id={id}
+        />
+        <label htmlFor={id} className="cursor-pointer">
+          {file ? (
+            <div className="space-y-3">
+              <CheckCircle className="h-8 w-8 sm:h-12 sm:w-12 mx-auto text-green-600" />
+              <div>
+                <p className="text-sm font-medium text-green-800">File uploaded successfully!</p>
+                <p className="text-xs text-green-600 mt-1 truncate">{file.name}</p>
+              </div>
+              <Button variant="outline" size="sm" className="mt-2">
+                Replace File
+              </Button>
             </div>
-          </div>
-
-          {/* Back Side */}
-          <div className="space-y-4">
-            <Label className="text-base font-medium">Back side of the ID card</Label>
-            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-12 text-center hover:border-muted-foreground/50 transition-colors">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileUpload(e, 'back')}
-                className="hidden"
-                id="back-upload"
-              />
-              <label htmlFor="back-upload" className="cursor-pointer">
-                <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Upload the back side of your National ID</p>
-                  <p className="text-xs text-muted-foreground">(JPG, PNG, or PDF, max 5MB)</p>
-                </div>
-              </label>
+          ) : (
+            <div className="space-y-3">
+              <Upload className="h-8 w-8 sm:h-12 sm:w-12 mx-auto text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">Upload {title.toLowerCase()}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Drag and drop or click to browse (JPG, PNG, or PDF, max 5MB)
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Face Photo */}
-        <div className="space-y-4">
-          <Label className="text-base font-medium">Face photo</Label>
-          <div className="max-w-md">
-            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-12 text-center hover:border-muted-foreground/50 transition-colors">
-              <input type="file" accept="image/*" className="hidden" id="face-upload" />
-              <label htmlFor="face-upload" className="cursor-pointer">
-                <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Please upload a portrait photo of yourself</p>
-                  <p className="text-xs text-muted-foreground">(JPG or PNG, max 5MB)</p>
-                </div>
-              </label>
-            </div>
-          </div>
-        </div>
+          )}
+        </label>
       </div>
     </div>
+  );
+
+  return (
+    <TooltipProvider>
+      <div className="w-full max-w-5xl mx-auto">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <User className="h-6 w-6 text-purple-600" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                Identity Verification
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Upload your identification documents for account verification
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4 sm:space-y-6">
+          {/* Document Details */}
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5 text-purple-600" />
+                <CardTitle className="text-base sm:text-lg">Document Information</CardTitle>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      Your documents are encrypted and securely processed. We use this information
+                      only for identity verification as required by law.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="id-number" className="text-sm font-medium">
+                    Document Number <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="id-number"
+                    placeholder="Enter document number"
+                    defaultValue="013837612892"
+                    className="font-mono h-11"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="issued-date" className="text-sm font-medium">
+                    Issue Date <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="issued-date"
+                    placeholder="MM/DD/YYYY"
+                    defaultValue="08/04/2021"
+                    className="h-11"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="place-issuance" className="text-sm font-medium">
+                  Place of Issuance <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="place-issuance"
+                  placeholder="Enter the issuing authority or location"
+                  className="h-11"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="address" className="text-sm font-medium">
+                  Address on Document <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="address"
+                  placeholder="Enter address as shown on document"
+                  className="h-11"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Document Upload Sections */}
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-green-600" />
+                <CardTitle className="text-base sm:text-lg">Document Images</CardTitle>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="space-y-1">
+                      <p>Document Requirements:</p>
+                      <ul className="text-xs space-y-1">
+                        <li>• Document should be in good condition and clearly visible</li>
+                        <li>• Ensure there is no light glare, shadows, or reflections</li>
+                        <li>• Do not use screenshots or photocopies</li>
+                        <li>• All text and details must be readable</li>
+                        <li>• File size should not exceed 5MB per document</li>
+                      </ul>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-8">
+                {/* Front and Back Side */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                  {renderUploadArea('front-upload', 'Front Side of Document', frontImage, 'front')}
+                  {renderUploadArea('back-upload', 'Back Side of Document', backImage, 'back')}
+                </div>
+
+                {/* Face Photo */}
+                <div className="max-w-md mx-auto xl:mx-0">
+                  {renderUploadArea('face-upload', 'Portrait Photo', facePhoto, 'face')}
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                    Upload a clear portrait photo for identity verification
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 pb-4 ">
+            <Button className="flex-1 sm:flex-none sm:px-8 h-11">Save & Continue</Button>
+            <Button variant="outline" className="flex-1 sm:flex-none sm:px-8 h-11">
+              Save as Draft
+            </Button>
+          </div>
+        </div>
+      </div>
+    </TooltipProvider>
   );
 };
 

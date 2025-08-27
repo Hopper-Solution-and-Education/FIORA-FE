@@ -4,8 +4,9 @@ import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { useSendOTPMutation, useVerifyOTPMutation } from '@/features/profile/store/api/profileApi';
-import { AlertCircle } from 'lucide-react';
+import { Phone } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import OtpVerificationModal from './components/OtpVerificationModal';
@@ -63,12 +64,23 @@ const ContactInformationForm = () => {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Contact Info</h1>
-        <div className="flex items-center gap-2 text-amber-600">
-          <AlertCircle className="h-4 w-4" />
-          <p className="text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+    <TooltipProvider>
+      <div className="w-full max-w-5xl mx-auto">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <Phone className="h-6 w-6 text-green-600" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                Contact Information
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Verify your contact details for secure communication
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -128,7 +140,7 @@ const ContactInformationForm = () => {
         onClose={handleCloseOtpModal}
         onVerify={handleVerifyOtp}
       />
-    </div>
+    </TooltipProvider>
   );
 };
 
