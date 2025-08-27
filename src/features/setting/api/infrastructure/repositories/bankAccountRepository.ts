@@ -78,6 +78,9 @@ class BankAccountRepository {
       where: {
         userId: id,
       },
+      include: {
+        Attachment: true,
+      },
     });
   }
 
