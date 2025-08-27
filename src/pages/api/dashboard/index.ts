@@ -1,4 +1,5 @@
-import { eKycRepository } from '@/features/setting/api/infrastructure/repositories/eKycRepository';
+import { dashboardRepository } from '@/features/setting/api/infrastructure/repositories/dashboardRepository';
+import { DashboardFilterParams } from '@/features/setting/api/infrastructure/types/dashboard.types';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
@@ -11,7 +12,7 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
     async (request, response) => {
       switch (request.method) {
         case 'GET':
-          return GET(response, userId);
+          return GET(request, response, userId);
         default:
           return response
             .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -23,15 +24,99 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
   ),
 );
 
-export async function GET(res: NextApiResponse, userId: string) {
-  const kyc = await eKycRepository.getById(userId);
+export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  try {
+    const {
+      status,
+      userIds,
+      updatedBy,
+      fromDate,
+      toDate,
+      page = 1,
+      limit = 10,
+    } = req.query as DashboardFilterParams;
 
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
-  res.setHeader('Surrogate-Control', 'no-store');
+    const pageNum = Math.max(1, Number(page));
+    const limitNum = Math.min(100, Math.max(1, Number(limit)));
 
-  return res
-    .status(RESPONSE_CODE.OK)
-    .json(createResponse(RESPONSE_CODE.OK, Messages.GET_KYC_SUCCESS, kyc));
+    const filters: any = {};
+
+    if (status) {
+      const validStatuses = ['SUCCESSFUL', 'FAIL'];
+      if (Array.isArray(status)) {
+        const validStatusArray = status.filter((s) => validStatuses.includes(s));
+        if (validStatusArray.length > 0) {
+          filters.status = { in: validStatusArray };
+        }
+      } else if (validStatuses.includes(status)) {
+        filters.status = status;
+      }
+    }
+
+    if (userIds) {
+      const userIdArray =
+        typeof userIds === 'string' ? userIds.split(',').filter((id) => id.trim()) : userIds;
+      if (userIdArray.length > 0 && userIdArray.length <= 50) {
+        // Limit to 50 users max
+        filters.createdBy = { in: userIdArray };
+      }
+    }
+
+    if (updatedBy) {
+      const updatedByArray =
+        typeof updatedBy === 'string' ? updatedBy.split(',').filter((id) => id.trim()) : updatedBy;
+      if (updatedByArray.length > 0 && updatedByArray.length <= 50) {
+        filters.updatedBy = { in: updatedByArray };
+      }
+    }
+
+    if (fromDate || toDate) {
+      filters.createdAt = {};
+      if (fromDate) {
+        const fromDateObj = new Date(fromDate);
+        if (!isNaN(fromDateObj.getTime())) {
+          filters.createdAt.gte = fromDateObj;
+        }
+      }
+      if (toDate) {
+        const toDateObj = new Date(toDate);
+        if (!isNaN(toDateObj.getTime())) {
+          filters.createdAt.lte = toDateObj;
+        }
+      }
+    }
+
+    const skip = (pageNum - 1) * limitNum;
+
+    const [result, counts] = await Promise.all([
+      dashboardRepository.getWithFilters(filters, skip, limitNum),
+      dashboardRepository.getCount(filters),
+    ]);
+
+    const { filteredCount, statusCounts } = counts;
+    const totalPages = Math.ceil(filteredCount / limitNum);
+
+    return res.status(RESPONSE_CODE.OK).json(
+      createResponse(RESPONSE_CODE.OK, Messages.GET_SUCCESS, {
+        data: result,
+        pagination: {
+          currentPage: pageNum,
+          totalPages,
+          totalCount: filteredCount,
+          limit: limitNum,
+          hasNextPage: pageNum < totalPages,
+          hasPrevPage: pageNum > 1,
+        },
+        statistics: {
+          statusCounts,
+          filteredCount,
+        },
+      }),
+    );
+  } catch (error) {
+    console.error('Dashboard API Error:', error);
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, 'Failed to fetch dashboard data'));
+  }
 }
