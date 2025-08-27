@@ -1,6 +1,5 @@
 'use client';
 
-import SubmitButton from '@/components/common/atoms/SubmitButton';
 import { useAppDispatch, useAppSelector } from '@/store';
 import React, { useEffect } from 'react';
 import { FormProvider } from 'react-hook-form';
@@ -10,7 +9,7 @@ import {
 } from '../../slices';
 import { getListMembershipAsyncThunk } from '../../slices/actions';
 import { useMembershipSettingPage } from '../hooks';
-import { IconUploadList, MembershipRankChart, SettingTierAndStory } from '../molecules';
+import { MembershipRankChart, SettingTierAndStory } from '../molecules';
 import { DialogAddBenefitTier } from '../organisms';
 import DialogEditThresholdBenefitTier from '../organisms/DialogEditThresholdBenefitTier';
 
@@ -49,19 +48,14 @@ const MembershipSettingPage = () => {
               <SettingTierAndStory dynamicTierFields={dynamicTierFields} />
             </div>
 
-            {/* Bottom Row: Icon Upload List */}
-            <div className="mt-6">
-              <IconUploadList />
-            </div>
-
             {/* Footer Button */}
-            <div className="flex justify-end">
+            {/* <div className="flex justify-end">
               <SubmitButton
                 isDisabled={isLoadingUpsertMembership}
                 formState={methods.formState}
                 isLoading={methods.formState.isSubmitting || isLoadingUpsertMembership}
               />
-            </div>
+            </div> */}
           </div>
         </form>
       </FormProvider>

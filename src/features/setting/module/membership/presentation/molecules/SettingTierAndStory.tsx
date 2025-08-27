@@ -1,10 +1,11 @@
 'use client';
 
-import { FormConfig, InputField, UploadImageField } from '@/components/common/forms';
+import { FormConfig, InputField } from '@/components/common/forms';
 import { useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
 import { SettingTierInputFieldConfig, StoryTierInputFieldConfig } from '../config';
 import { DynamicFieldTier, EditMemberShipFormValues } from '../schema/editMemberShip.schema';
+import IconUploadList from './IconUploadList';
 
 const renderEmptySubmitButton = () => {
   return <></>;
@@ -21,21 +22,10 @@ const SettingTierAndStory = ({ dynamicTierFields }: SettingTierAndStoryProps) =>
     (state) => state.memberShipSettings.isLoadingUpsertMembership,
   );
 
-  const renderMainIcon = () => {
-    return (
-      <UploadImageField
-        name="mainIcon"
-        label="Main Icon"
-        required
-        disabled={isLoadingUpsertMembership}
-      />
-    );
-  };
-
   return (
     <div className="space-y-6 col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-5 shadow rounded-lg">
       {/* Settings Panel */}
-      <div className="p-4">
+      <div className="px-2">
         <div className="flex justify-start items-start gap-4">
           <h2 className="sm:text-sm md:text-lg lg:text-xl font-bold mb-3 w-1/2">Setting Tier</h2>
           <div className="w-full">
@@ -47,26 +37,22 @@ const SettingTierAndStory = ({ dynamicTierFields }: SettingTierAndStoryProps) =>
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-5">
-            <FormConfig
-              fields={[renderMainIcon()]}
-              methods={methods}
-              renderSubmitButton={renderEmptySubmitButton}
-            />
+        <div className="grid grid-cols-12 gap-2">
+          <div className="col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-6">
+            <IconUploadList />
           </div>
 
-          <div className="col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-7">
-            <SettingTierInputFieldConfig dynamicTierFields={dynamicTierFields} />
+          <div className="col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-6">
+            <div className="rounded-lg">
+              <h2 className="text-base font-bold mb-2">Story</h2>
+              <StoryTierInputFieldConfig />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Story Section */}
-      <div className="rounded-lg shadow p-2">
-        <h2 className="text-xl font-bold mb-2">Story</h2>
-        <StoryTierInputFieldConfig />
-      </div>
+      <SettingTierInputFieldConfig dynamicTierFields={dynamicTierFields} />
     </div>
   );
 };

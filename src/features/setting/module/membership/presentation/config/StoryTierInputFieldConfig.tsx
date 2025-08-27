@@ -16,7 +16,7 @@ const StoryTierInputFieldConfig = () => {
       key="story"
       name="story"
       className={cn(
-        'h-full min-h-32',
+        'h-72',
         'text-sm',
         'sm:text-sm',
         'md:text-base',

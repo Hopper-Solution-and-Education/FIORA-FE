@@ -30,6 +30,12 @@ const ImageUploadListFieldConfig = () => {
       label: 'Theme Icon',
       placeholder: 'Choose Theme Icon',
     },
+    {
+      id: 'mainIcon',
+      name: 'Main Icon',
+      label: 'Main Icon',
+      placeholder: 'Choose Main Icon',
+    },
   ];
 
   const renderSubmitButton = () => <></>;
@@ -42,6 +48,8 @@ const ImageUploadListFieldConfig = () => {
       required
       previewShape="square"
       disabled={isLoadingUpsertMembership}
+      className="h-32 w-full"
+      containerClassName="h-36 w-full"
     />
   ));
 

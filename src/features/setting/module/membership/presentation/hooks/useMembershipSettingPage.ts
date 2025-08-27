@@ -22,6 +22,7 @@ export const useMembershipSettingPage = () => {
         key: benefit.slug,
         label: benefit.name,
         suffix: benefit.suffix,
+        value: benefit.value,
       })) ?? [],
     [selectedMembership?.tierBenefits],
   );

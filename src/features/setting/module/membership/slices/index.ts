@@ -2,6 +2,7 @@ import { Tier } from '@/components/common/charts/scatter-rank-chart/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 import { Membership } from '../domain/entities';
+import { DynamicFieldTier } from '../presentation/schema';
 import {
   addUpdateNewBenefitAsyncThunk,
   deleteBenefitAsyncThunk,
@@ -27,6 +28,27 @@ const membershipSlice = createSlice({
     },
     setIsShowDialogEditThresholdBenefitTier: (state, action: PayloadAction<boolean>) => {
       state.isDialogEditThresholdBenefitOpen = action.payload;
+    },
+    setIsShowDialogDeleteBenefitTier: (state, action: PayloadAction<boolean>) => {
+      state.deleteBenefitTier.isShowDialogDeleteBenefitTier = action.payload;
+    },
+    setIdTierToDelete: (state, action: PayloadAction<string | null>) => {
+      state.deleteBenefitTier.idTierToDelete = action.payload;
+    },
+    setSlugTierToDelete: (state, action: PayloadAction<string | null>) => {
+      state.deleteBenefitTier.slugTierToDelete = action.payload;
+    },
+    setIsShowDialogEditBenefitTier: (state, action: PayloadAction<boolean>) => {
+      state.editBenefitTier.isShowDialogEditBenefitTier = action.payload;
+    },
+    setIdTierToEdit: (state, action: PayloadAction<string | null>) => {
+      state.editBenefitTier.idTierToEdit = action.payload;
+    },
+    setBenefitTierToEdit: (state, action: PayloadAction<DynamicFieldTier | null>) => {
+      state.editBenefitTier.benefitTierToEdit = action.payload;
+    },
+    setEditValue: (state, action: PayloadAction<number>) => {
+      state.editBenefitTier.editValue = action.payload;
     },
     setTierToEdit: (
       state,
@@ -117,5 +139,12 @@ export const {
   setIsShowDialogAddBenefitTier,
   setTierToEdit,
   setIsShowDialogEditThresholdBenefitTier,
+  setIsShowDialogDeleteBenefitTier,
+  setIdTierToDelete,
+  setSlugTierToDelete,
+  setIsShowDialogEditBenefitTier,
+  setIdTierToEdit,
+  setEditValue,
+  setBenefitTierToEdit,
 } = membershipSlice.actions;
 export default membershipSlice.reducer;

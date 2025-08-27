@@ -168,13 +168,17 @@ const UploadField: React.FC<UploadFieldProps> = ({
   };
 
   return (
-    <div className={cn('space-y-3', className)}>
+    <div className="space-y-3">
       {label && <GlobalLabel text={label} required={required} htmlFor={id} />}
       <div
         className={cn(
-          'relative overflow-hidden border-2 border-dashed rounded-lg ',
+          'relative overflow-hidden border-2 border-dashed rounded-lg',
+          // Default sizes
           size === 'small' && 'h-32 w-32',
-          size === 'large' && 'h-100 w-100',
+          size === 'medium' && 'h-48 w-48',
+          size === 'large' && 'h-72 w-full',
+          // Allow className to override sizes
+          className,
         )}
       >
         <label
@@ -207,6 +211,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
             <div
               className={cn(
                 'relative w-full h-full',
+                // Default preview sizes
                 size === 'small' && 'w-32 h-32',
                 size === 'medium' && 'w-48 h-48',
                 size === 'large' && 'w-full h-72',
