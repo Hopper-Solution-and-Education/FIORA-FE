@@ -27,7 +27,7 @@ class TransactionUseCase {
     private transactionRepository: ITransactionRepository,
     private accountRepository: IAccountRepository,
     private currencySettingRepository: ICurrencySettingRepository,
-  ) {}
+  ) { }
 
   async listTransactions(userId: string): Promise<Transaction[]> {
     return this.transactionRepository.getTransactionsByUserId(userId);
@@ -71,13 +71,13 @@ class TransactionUseCase {
                 : []),
               ...(isSearchDate
                 ? [
-                    {
-                      date: {
-                        gte: new Date(typeSearchParams),
-                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
-                      },
+                  {
+                    date: {
+                      gte: new Date(typeSearchParams),
+                      lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
                     },
-                  ]
+                  },
+                ]
                 : []),
             ],
           },
@@ -182,13 +182,13 @@ class TransactionUseCase {
                 : []),
               ...(isSearchDate
                 ? [
-                    {
-                      date: {
-                        gte: new Date(typeSearchParams),
-                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
-                      },
+                  {
+                    date: {
+                      gte: new Date(typeSearchParams),
+                      lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
                     },
-                  ]
+                  },
+                ]
                 : []),
             ],
           },
@@ -511,7 +511,7 @@ class TransactionUseCase {
       await this.accountRepository.receiveBalance(
         tx,
         transactionUnique.fromAccountId as string,
-        data.amount as number,
+        transactionUnique.amount.toNumber(),
         data.baseAmount as number,
       );
 
@@ -629,7 +629,7 @@ class TransactionUseCase {
       await this.accountRepository.deductBalance(
         tx,
         transactionUnique.toAccountId as string,
-        data.amount as number,
+        transactionUnique.amount.toNumber(),
         data.baseAmount as number,
       );
 

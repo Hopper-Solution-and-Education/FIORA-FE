@@ -2,15 +2,15 @@ import { setErrorsFromObject } from '@/shared/lib/forms/setErrorsFromObject';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { UseFormSetError } from 'react-hook-form';
 import { membershipDIContainer, TYPES } from '../../di';
-import { AddBenefitTierRequest, AddBenefitTierResponse } from '../../domain/entities';
+import { AddUpdateBenefitTierRequest, AddUpdateBenefitTierResponse } from '../../domain/entities';
 import { IAddNewBenefitUseCase } from '../../domain/usecases/addNewBenefitUseCase';
 import { AddBenefitTierFormValues } from '../../presentation/schema';
 
-export const addNewBenefitAsyncThunk = createAsyncThunk<
-  AddBenefitTierResponse,
-  { data: AddBenefitTierRequest; setError: UseFormSetError<AddBenefitTierFormValues> },
+export const addUpdateNewBenefitAsyncThunk = createAsyncThunk<
+  AddUpdateBenefitTierResponse,
+  { data: AddUpdateBenefitTierRequest; setError: UseFormSetError<AddBenefitTierFormValues> },
   { rejectValue: string }
->('membership/addNewBenefit', async ({ data, setError }, { rejectWithValue }) => {
+>('membership/addUpdateNewBenefit', async ({ data, setError }, { rejectWithValue }) => {
   try {
     const addNewBenefitUseCase = membershipDIContainer.get<IAddNewBenefitUseCase>(
       TYPES.IAddNewBenefitUseCase,

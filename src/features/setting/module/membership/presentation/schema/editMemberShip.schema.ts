@@ -2,6 +2,7 @@ import * as yup from 'yup';
 
 export type DynamicFieldTier = {
   id: string;
+  slug: string;
   key: string;
   label: string;
   suffix?: string;
@@ -18,6 +19,7 @@ export function buildDynamicTierSchema(fields: DynamicFieldTier[]) {
   });
   return yup.object({
     id: yup.string().optional(),
+    slug: yup.string().optional(),
     tier: yup.string().required('Tier is required'),
     ...shape,
     story: yup.string().required('Story is required'),

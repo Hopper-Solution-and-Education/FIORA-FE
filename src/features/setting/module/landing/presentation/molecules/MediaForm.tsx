@@ -170,40 +170,38 @@ export default function MediaItem({
         </div>
 
         <div className="flex items-center space-x-1">
-          {sectionType !== SectionTypeEnum.SYSTEM && (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onMoveUp}
-                disabled={isFirst}
-                className="h-7 w-7 p-0"
-                aria-label="Move up"
-              >
-                <ArrowUp className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onMoveDown}
-                disabled={isLast}
-                className="h-7 w-7 p-0"
-                aria-label="Move down"
-              >
-                <ArrowDown className="h-4 w-4" />
-              </Button>
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onMoveUp}
+              disabled={isFirst}
+              className="h-7 w-7 p-0"
+              aria-label="Move up"
+            >
+              <ArrowUp className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onMoveDown}
+              disabled={isLast}
+              className="h-7 w-7 p-0"
+              aria-label="Move down"
+            >
+              <ArrowDown className="h-4 w-4" />
+            </Button>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onDelete}
-                className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                aria-label="Delete"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </>
-          )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDelete}
+              className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+              aria-label="Delete"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </>
         </div>
       </div>
 

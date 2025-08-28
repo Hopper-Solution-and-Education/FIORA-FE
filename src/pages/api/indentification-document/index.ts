@@ -53,16 +53,50 @@ export async function POST(
   user: SessionUser,
 ) {
   const { error, value } = validateBody(identificationDocumentSchema, req.body);
+  const {
+    fileFrontId,
+    fileBackId,
+    idAddress,
+    issuedDate,
+    type,
+    idNumber,
+    filePhotoId,
+    issuedPlace,
+  } = value;
   if (error) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
       .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
   }
+  const checkVerify = await identificationRepository.getByType(userId, type);
+  if (checkVerify) {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VERIFY_EXIT));
+  }
+
+  const checkIdentification = await identificationRepository.checkIdentification(
+    type,
+    idNumber,
+    userId,
+  );
+  if (checkIdentification) {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VERIFY_EXIT));
+  }
   const newIdentification = await identificationRepository.create(
     {
-      ...value,
+      filePhotoId: filePhotoId || null,
+      idNumber: idNumber || null,
+      type: type,
+      idAddress: idAddress || '',
+      issuedDate: issuedDate || null,
+      fileBackId: fileBackId || null,
+      fileFrontId: fileFrontId || null,
+      issuedPlace: issuedPlace || '',
       status: KYCStatus.PENDING,
-      userId: userId,
+      User: { connect: { id: userId } },
       createdAt: new Date(),
       updatedAt: new Date(),
       remarks: '',

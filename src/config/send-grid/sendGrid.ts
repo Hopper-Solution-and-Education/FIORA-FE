@@ -36,6 +36,23 @@ export const sendOtp = async (to: string, otp: string) => {
   }
 };
 
+export const sendOtpVerify = async (to: string, otp: string) => {
+  try {
+    const msg = {
+      to,
+      from: process.env.SENDER_EMAIL || 'tribui.it.work@gmail.com',
+      subject: 'Verify Your Email - Hopper',
+      html: `<p>Your OTP to verify account is: <strong>${otp}</strong></p>`,
+    };
+
+    await sgMail.send(msg);
+    return otp;
+  } catch (error) {
+    console.error(error);
+    throw new InternalServerError('Failed to send email');
+  }
+};
+
 export const sendBulkEmailUtility = async (
   recipients: string[],
   subject: string,

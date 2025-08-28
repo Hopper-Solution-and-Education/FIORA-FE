@@ -74,6 +74,7 @@ const ItemRankChart = ({
                       src={tierIcon.mainIcon || ''}
                       alt={combinedKey}
                       fill
+                      sizes="(max-width: 640px) 40px, (max-width: 768px) 56px, (max-width: 1024px) 72px, 85px"
                       className="object-contain transition-transform duration-200 scale-110"
                     />
                   ) : tierIcon.isPassed ? (
@@ -81,6 +82,7 @@ const ItemRankChart = ({
                       src={tierIcon.passedIcon || ''}
                       alt={combinedKey}
                       fill
+                      sizes="(max-width: 640px) 40px, (max-width: 768px) 56px, (max-width: 1024px) 72px, 85px"
                       className="object-contain transition-transform duration-200 scale-100"
                     />
                   ) : (
@@ -88,6 +90,7 @@ const ItemRankChart = ({
                       src={tierIcon.inActiveIcon || ''}
                       alt={combinedKey}
                       fill
+                      sizes="(max-width: 640px) 40px, (max-width: 768px) 56px, (max-width: 1024px) 72px, 85px"
                       className="object-contain transition-transform duration-200 scale-100"
                     />
                   )}

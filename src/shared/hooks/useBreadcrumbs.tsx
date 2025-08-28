@@ -35,6 +35,15 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Finance', link: '/finance/report' },
     { title: 'Transaction', link: '/transaction' },
   ],
+  '/profile': [
+    { title: 'Finance', link: '/finance/report' },
+    { title: 'Profile', link: '/profile' },
+  ],
+  '/profile/ekyc': [
+    { title: 'Finance', link: '/finance/report' },
+    { title: 'Profile', link: '/profile' },
+    { title: 'eKYC', link: '/profile/ekyc' },
+  ],
   '/transaction/create': [
     { title: 'Finance', link: '/finance/report' },
     { title: 'Transaction', link: '/transaction' },
@@ -44,6 +53,11 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Finance', link: '/finance/report' },
     { title: 'Transaction', link: '/transaction' },
     { title: 'Details', link: '/transaction/details/[id]' },
+  ],
+  '/transaction/edit/[id]': [
+    { title: 'Finance', link: '/finance/report' },
+    { title: 'Transaction', link: '/transaction' },
+    { title: 'Edit', link: '/transaction/details/edit/[id]' },
   ],
   '/category': [
     { title: 'Finance', link: '/finance/report' },
@@ -151,6 +165,10 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
   '/helps-center/user-tutorial/edit/[id]': [
     { title: 'User Tutorial', link: '/helps-center/user-tutorial' },
     { title: 'Edit', link: '/helps-center/user-tutorial/edit/[id]' },
+  ],
+  '/helps-center/terms-and-conditions/edit/[id]': [
+    { title: 'Terms and Conditions', link: '/helps-center/terms-and-conditions' },
+    { title: 'Edit', link: '/helps-center/terms-and-conditions/edit/[id]' },
   ],
   '/setting/packagefx': [{ title: 'Package FX', link: '/setting/packagefx' }],
   '/setting/packagefx/create': [

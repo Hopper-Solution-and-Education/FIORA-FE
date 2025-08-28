@@ -18,6 +18,7 @@ export const useMembershipSettingPage = () => {
     () =>
       selectedMembership?.tierBenefits.map((benefit) => ({
         id: benefit.id,
+        slug: benefit.slug,
         key: benefit.slug,
         label: benefit.name,
         suffix: benefit.suffix,

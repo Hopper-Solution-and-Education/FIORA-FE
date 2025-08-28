@@ -3,7 +3,9 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/shared/utils';
-import { useState } from 'react';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { KYC_TABS } from '../constant';
 import BankAccountForm from './bank-account';
 import ContactInformationForm from './contact-information';
 import IdentificationDocumentForm from './identification-document';
@@ -53,36 +55,41 @@ const getStatusIcon = (status: string) => {
   return '';
 };
 
-type KYCPageProps = {
-  type?: 'bank-account' | 'contact-information' | 'identification-document' | 'tax-information';
-};
+const KYCPage = () => {
+  const [activeTab, setActiveTab] = useState<string>(KYC_TABS.IDENTIFICATION_DOCUMENT);
 
-const KYCPage = ({ type }: KYCPageProps) => {
-  const [activeTab, setActiveTab] = useState<string>(type || 'identification-document');
+  const params = useParams();
+  const id = params?.id as string;
+
+  useEffect(() => {
+    if (id) {
+      setActiveTab(id as string);
+    }
+  }, [id]);
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-[2vw] relative">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
           orientation="vertical"
           className="w-full"
         >
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
             {/* Vertical Tabs List */}
-            <div className="w-full lg:w-80 lg:flex-shrink-0 lg:sticky lg:top-4 lg:self-start z-10">
-              <Card>
-                <CardContent className="p-4">
+            <div className="w-full lg:w-64 xl:w-72 lg:flex-shrink-0 lg:sticky lg:top-4 lg:self-start z-10">
+              <Card className="shadow-sm">
+                <CardContent className="p-3 sm:p-4">
                   <TabsList className="h-auto w-full bg-transparent p-0 flex-col justify-start">
-                    <div className="space-y-2 w-full">
+                    <div className="space-y-1 sm:space-y-2 w-full">
                       {tabItems.map((tab, index) => (
                         <div key={tab.id} className="relative">
                           {/* Timeline connector line */}
                           {index < tabItems.length - 1 && (
                             <div
                               className={cn(
-                                'absolute left-[35px] top-12 w-0.5 h-11',
+                                'absolute left-[23px] sm:left-[32px] top-10 sm:top-12 w-0.5 h-8 sm:h-10',
                                 tab.status === 'completed' ? 'bg-green-500' : 'bg-border',
                               )}
                             />
@@ -96,18 +103,18 @@ const KYCPage = ({ type }: KYCPageProps) => {
                               'data-[state=active]:bg-primary/10 data-[state=active]:text-primary',
                             )}
                           >
-                            <div className="flex items-center space-x-4 p-3 w-full">
+                            <div className="flex items-center space-x-3 p-2 sm:p-3 w-full">
                               {/* Step number circle */}
                               <div
                                 className={cn(
-                                  'flex items-center justify-center w-12 h-12 rounded-full border-2 text-sm font-semibold transition-all duration-200 flex-shrink-0',
+                                  'flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 text-xs sm:text-sm font-semibold transition-all duration-200 flex-shrink-0',
                                   getStatusColor(tab.id, tab.status, activeTab),
                                 )}
                               >
                                 {getStatusIcon(tab.status) || String(index + 1).padStart(2, '0')}
                               </div>
 
-                              <span className="font-semibold text-base mb-1 leading-tight">
+                              <span className="font-medium sm:font-semibold text-sm leading-tight">
                                 {tab.label}
                               </span>
                             </div>

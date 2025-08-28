@@ -36,11 +36,6 @@ export default sessionWrapper(
 export async function GET(res: NextApiResponse, userId: string) {
   const bankAccounts = await bankAccountRepository.getByUserId(userId);
 
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
-  res.setHeader('Surrogate-Control', 'no-store');
-
   return res
     .status(RESPONSE_CODE.OK)
     .json(createResponse(RESPONSE_CODE.OK, Messages.GET_BANK_ACCOUNT_SUCCESS, bankAccounts));

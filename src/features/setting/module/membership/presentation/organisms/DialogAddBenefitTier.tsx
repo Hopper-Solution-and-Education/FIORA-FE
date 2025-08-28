@@ -4,8 +4,9 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useSession } from 'next-auth/react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { ProcessMembershipMode } from '../../data/api';
 import { setIsShowDialogAddBenefitTier } from '../../slices';
-import { addNewBenefitAsyncThunk, getListMembershipAsyncThunk } from '../../slices/actions';
+import { addUpdateNewBenefitAsyncThunk, getListMembershipAsyncThunk } from '../../slices/actions';
 import { AddBenefitForm } from '../molecules';
 import {
   AddBenefitTierFormValues,
@@ -43,7 +44,7 @@ const DialogAddBenefitTier = ({ open, onOpenChange }: DialogAddBenefitTierProps)
     }
 
     dispatch(
-      addNewBenefitAsyncThunk({
+      addUpdateNewBenefitAsyncThunk({
         data: {
           tierBenefit: {
             tierId: selectMembershipBenefit?.id || '',
@@ -56,6 +57,7 @@ const DialogAddBenefitTier = ({ open, onOpenChange }: DialogAddBenefitTierProps)
             description: data.description || '',
             suffix: data.suffix,
           },
+          mode: data.mode as ProcessMembershipMode,
         },
         setError: methods.setError,
       }),

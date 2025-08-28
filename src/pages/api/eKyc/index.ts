@@ -48,7 +48,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
   const { error } = validateBody(eKYCSchema, req.body);
   if (error) {
     return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
+      .status(RESPONSE_CODE.CONFLICT)
       .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
   }
   const newKyc = await eKycRepository.create({

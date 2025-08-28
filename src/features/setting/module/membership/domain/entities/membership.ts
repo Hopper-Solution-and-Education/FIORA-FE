@@ -1,3 +1,4 @@
+import { ProcessMembershipMode } from '../../data/api';
 import { EditMemberShipFormValues } from '../../presentation/schema/editMemberShip.schema';
 
 export class Membership {
@@ -69,9 +70,10 @@ export type UpsertMembershipResponse = {
   message: string;
 };
 
-export type AddBenefitTierRequest = {
+export type AddUpdateBenefitTierRequest = {
   tierBenefit: AddTierBenefitPayload;
   membershipBenefit: AddMembershipBenefitPayload;
+  mode: ProcessMembershipMode;
 };
 
 export interface AddMembershipBenefitPayload {
@@ -87,7 +89,7 @@ export interface AddTierBenefitPayload {
   value: number;
 }
 
-export type AddBenefitTierResponse = {
+export type AddUpdateBenefitTierResponse = {
   data: NewBenefitTier;
   message: string;
 };
@@ -106,11 +108,27 @@ export type NewBenefitTier = {
 };
 
 export type DeleteBenefitTierRequest = {
-  id: string;
+  slug: string;
+  membershipTierId: string;
+  membershipBenefitId: string;
+  mode: ProcessMembershipMode;
 };
 
 export type DeleteBenefitTierResponse = {
   data: boolean;
+  message: string;
+};
+
+export type EditThresholdBenefitRequest = {
+  axis: string;
+  oldMin: number;
+  oldMax: number;
+  newMin: number;
+  newMax: number;
+};
+
+export type EditThresholdBenefitResponse = {
+  data: Membership;
   message: string;
 };
 
