@@ -1,19 +1,7 @@
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
-import { UserRole } from '@/shared/constants/userRole';
 import type { Response } from '@/shared/types/Common.types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-
-export type UserProfile = {
-  id: string;
-  name: string | null;
-  email: string;
-  avatarUrl: string | null;
-  logoUrl: string | null;
-  phone?: string | null;
-  address?: string | null;
-  birthday?: string | null;
-  role: UserRole;
-};
+import { UserProfile } from '../../domain/entities/models/profile';
 
 export const profileApi = createApi({
   reducerPath: 'profileApi',

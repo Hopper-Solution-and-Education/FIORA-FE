@@ -6,7 +6,7 @@ import {
 import HopperLogo from '@public/images/logo.jpg';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { PersonalInfo } from '../molecules/PersonalInfoForm';
+import { PersonalInfo } from '../../../schema/personalInfoSchema';
 import ProfileTab from '../organisms/ProfileTab';
 import SettingTab from '../organisms/SettingTab';
 import ProfileTabsContainer from '../templates/ProfileTabsContainer';
@@ -18,9 +18,6 @@ const ProfilePage = () => {
     avatarImage: null as File | null,
     logoImage: null as File | null,
   });
-
-  const { data: eKYCData } = useGetEKYCQuery();
-  console.log('🚀 ~ ProfilePage ~ eKYCData:', eKYCData);
 
   const handleSave = async (values: PersonalInfo) => {
     const formData = new FormData();

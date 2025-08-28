@@ -4,21 +4,21 @@ import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  useGetProfileQuery,
-  useSendOTPMutation,
-  useVerifyOTPMutation,
-} from '@/features/profile/store/api/profileApi';
-import { AlertCircle } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { UserProfile } from '@/features/profile/domain/entities/models/profile';
+import { useSendOTPMutation, useVerifyOTPMutation } from '@/features/profile/store/api/profileApi';
+import { AlertCircle, CheckCircle } from 'lucide-react';
+import { FC, useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { OTP_COUNTDOWN_TIME, OtpModalState } from '../types';
 import OtpVerificationModal from './components/OtpVerificationModal';
 
-const ContactInformationForm = () => {
-  const [sendOTP, { isLoading: isSendingOtp }] = useSendOTPMutation();
+type Props = {
+  profile: UserProfile;
+  isVerified: boolean;
+};
 
-  const { data: profile } = useGetProfileQuery();
+const ContactInformationForm: FC<Props> = ({ profile, isVerified }) => {
+  const [sendOTP, { isLoading: isSendingOtp }] = useSendOTPMutation();
 
   const [verifyOTP] = useVerifyOTPMutation();
 
@@ -80,10 +80,17 @@ const ContactInformationForm = () => {
     <div className="max-w-4xl mx-auto p-6 space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Contact Info</h1>
-        <div className="flex items-center gap-2 text-amber-600">
-          <AlertCircle className="h-4 w-4" />
-          <p className="text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
-        </div>
+        {isVerified ? (
+          <div className="flex items-center gap-2 text-green-600">
+            <CheckCircle className="h-4 w-4" />
+            <p className="text-sm">Verified</p>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-amber-600">
+            <AlertCircle className="h-4 w-4" />
+            <p className="text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+          </div>
+        )}
       </div>
 
       <div className="space-y-6">
@@ -96,7 +103,8 @@ const ContactInformationForm = () => {
               onClick={() => onSendOtp('email')}
               variant="outline"
               size="sm"
-              className="px-6 py-4 min-w-28"
+              className="px-6 py-4 min-w-28 disabled:bg-gray-200 disabled:cursor-not-allowed"
+              disabled={isVerified}
             >
               {isSendingOtp ? <Icons.spinner className="animate-spin h-5 w-5" /> : 'Send OTP'}
             </Button>

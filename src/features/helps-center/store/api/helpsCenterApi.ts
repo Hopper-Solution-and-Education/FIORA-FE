@@ -93,6 +93,9 @@ export const helpsCenterApi = createApi({
       invalidatesTags: (result, error, { faqId }) => [
         { type: 'FaqDetails', id: faqId },
         { type: 'Faqs', id: 'LIST' },
+        { type: 'AboutUs' },
+        { type: 'UserTutorial' },
+        { type: 'TermsAndConditions' },
       ],
     }),
 

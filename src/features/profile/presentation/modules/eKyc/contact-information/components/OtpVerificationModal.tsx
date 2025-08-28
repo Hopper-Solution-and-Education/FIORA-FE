@@ -55,7 +55,7 @@ const OtpVerificationModal: FC<OtpVerificationModalProps> = ({
             Verify your {otpModal.type === 'email' ? 'email address' : 'phone number'}
           </DialogTitle>
           <DialogDescription className="text-center">
-            We&apos;ve sent a verification code to your{' '}
+            We&apos;ve sent a verification code to{' '}
             {otpModal.type === 'email' ? otpModal.email : otpModal.phone}. Please enter code below
             to confirm your {otpModal.type === 'email' ? 'email' : 'phone number'}.
           </DialogDescription>
