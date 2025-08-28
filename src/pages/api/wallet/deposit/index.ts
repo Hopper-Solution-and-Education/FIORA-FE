@@ -9,7 +9,6 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { SessionUser } from '@/shared/types/session';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { Currency } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(
@@ -81,7 +80,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string, u
         userId,
         packageFXId,
         attachmentData as AttachmentData,
-        currency as Currency,
+        currency,
         user,
       );
 

@@ -3,15 +3,15 @@ import { accountRepository } from '@/features/auth/infrastructure/repositories/a
 import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
-import { CURRENCY } from '@/shared/constants';
+import { CURRENCY, DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
+import { BadRequestError, NotFoundError } from '@/shared/lib';
 import { FilterObject } from '@/shared/types/filter.types';
 import { SessionUser } from '@/shared/types/session';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { generateRefCode } from '@/shared/utils/stringHelper';
 import {
-  Currency,
   DepositRequestStatus,
   NotificationType,
   Prisma,
@@ -46,7 +46,7 @@ class WalletUseCase {
     // private _notificationUsecase = notificationUseCase,
     private _userUseCase = userUseCase,
     private _notificationUsecase = notificationUseCase,
-  ) {}
+  ) { }
 
   async createWallet(data: Prisma.WalletUncheckedCreateInput) {
     return this._walletRepository.createWallet(data);
@@ -199,7 +199,7 @@ class WalletUseCase {
     packageFXId: string,
     refCode: string,
     attachmentData?: AttachmentData,
-    currency?: Currency,
+    currency?: string,
     user?: SessionUser,
   ) {
     const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
@@ -228,6 +228,11 @@ class WalletUseCase {
       attachmentId = attachment.id;
     }
 
+    const foundCurrency = await this._currencyRepository.findFirstCurrency({
+      name: currency,
+    });
+    if (!foundCurrency) throw new Error(Messages.CURRENCY_NOT_FOUND);
+
     const depositRequest = await this._walletRepository.createDepositRequest({
       userId,
       packageFXId,
@@ -235,7 +240,7 @@ class WalletUseCase {
       attachmentId,
       status: 'Requested',
       createdBy: userId,
-      currency,
+      currency: foundCurrency.name,
     });
 
     const depositBoxNotification = {
@@ -263,7 +268,7 @@ class WalletUseCase {
     userId: string,
     packageFXId: string,
     attachmentData?: AttachmentData,
-    currency?: Currency,
+    currency?: string,
     user?: SessionUser,
   ) {
     let refCode = '';
@@ -334,7 +339,7 @@ class WalletUseCase {
     id: string,
     newStatus: DepositRequestStatus,
     remark?: string,
-    currency?: Currency,
+    currency: string = 'VND',
     // user?: SessionUser,
   ) {
     const depositRequest = await this._walletRepository.findDepositRequestById(id);
@@ -345,22 +350,15 @@ class WalletUseCase {
       const { userId, packageFXId } = depositRequest;
       const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
 
-      if (!packageFX) throw new Error(Messages.PACKAGE_FX_NOT_FOUND);
+      if (!packageFX) throw new NotFoundError(Messages.PACKAGE_FX_NOT_FOUND);
       const amount = Number(packageFX.fxAmount);
 
-      const foundCurrency = await this._currencyRepository.findFirstCurrency({
-        name: currency,
-      });
-
-      if (!foundCurrency) throw new Error(Messages.CURRENCY_NOT_FOUND);
       // Update currency for depositRequest if not set
       if (!depositRequest.currency && currency) {
         await this._walletRepository.updateDepositRequestCurrency(id, currency);
-
-        depositRequest.currencyId = foundCurrency.id;
       }
       let txCurrency = depositRequest.currency || currency;
-      if (!txCurrency) throw new Error(Messages.CURRENCY_IS_REQUIRED);
+      if (!txCurrency) throw new BadRequestError(Messages.CURRENCY_IS_REQUIRED);
       // If FX, treat as USD
       if (txCurrency === 'FX') txCurrency = 'USD';
 
@@ -382,34 +380,50 @@ class WalletUseCase {
         });
       }
 
-      // create transaction from payment account (for record, still use txCurrency)
-      await this._transactionRepository.createTransaction({
-        userId,
-        fromAccountId: paymentAccount.id,
-        amount,
-        currency: txCurrency,
-        type: TransactionType.Transfer,
-        createdBy: userId,
-      });
-
-      const deductAmount = await convertCurrency(amount, CURRENCY.USD, paymentAccount.currency!);
-
-      if (deductAmount > 0) {
-        const newBalance = Number(paymentAccount.balance ?? 0) - deductAmount;
-
-        await this._accountRepository.update(paymentAccount.id, {
-          balance: newBalance,
-        });
-      }
-
       let paymentWallet = await this._walletRepository.findWalletByType(WalletType.Payment, userId);
-
       if (!paymentWallet) {
         paymentWallet = await this._walletRepository.createWallet({
           userId,
           type: WalletType.Payment,
           icon: WALLET_TYPE_ICONS[WalletType.Payment],
           ...DEFAULT_WALLET_FIELDS,
+        });
+      }
+      // convert amount to base currency
+      const baseTransactionAmount = await convertCurrency(
+        amount,
+        DEFAULT_BASE_CURRENCY,
+        CURRENCY.FX,
+      );
+
+      // convert from txCurrency (packageFX) to base currency
+      const amountConvert = await convertCurrency(amount, DEFAULT_BASE_CURRENCY, txCurrency);
+
+      // create transaction from payment account (for record, still use txCurrency)
+      await this._transactionRepository.createTransaction({
+        userId,
+        fromAccountId: paymentAccount.id,
+        toWalletId: paymentWallet.id,
+        amount: amountConvert,
+        currency: txCurrency,
+        type: TransactionType.Transfer,
+        createdBy: userId,
+        baseAmount: baseTransactionAmount,
+        baseCurrency: DEFAULT_BASE_CURRENCY,
+        remark: `Deposit request approved`,
+      });
+
+      const deductAmount = await convertCurrency(amount, CURRENCY.USD, paymentAccount.currency!);
+      if (deductAmount > 0) {
+        await this._accountRepository.update(paymentAccount.id, {
+          balance: {
+            decrement: deductAmount,
+          },
+          baseAmount: {
+            decrement: amount,
+          },
+          baseCurrency: DEFAULT_BASE_CURRENCY,
+          updatedBy: userId,
         });
       }
 
