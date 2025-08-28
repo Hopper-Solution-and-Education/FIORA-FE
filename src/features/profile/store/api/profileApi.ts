@@ -54,12 +54,10 @@ export const profileApi = createApi({
     // eKYC contact verify
     sendOTP: builder.mutation<any, void>({
       query: () => ({ url: ApiEndpointEnum.sendOTP, method: 'POST' }),
-      invalidatesTags: ['eKYC'],
     }),
     verifyOTP: builder.mutation<any, { otp: string }>({
       query: (body) => ({ url: ApiEndpointEnum.verifyOTP, method: 'POST', body }),
       transformResponse: (response: Response<any>) => response.data,
-      invalidatesTags: ['eKYC'],
     }),
   }),
 });

@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { FC, useEffect, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import { KYCPageType } from '../../modules/types';
+import { KYCPageType } from '../../eKyc/types';
 import SectionHeader from '../atoms/SectionHeader';
 
 export type PersonalInfo = {

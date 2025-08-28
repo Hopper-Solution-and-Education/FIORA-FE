@@ -5,33 +5,33 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/shared/utils';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { KYC_TABS } from '../constant';
 import BankAccountForm from './bank-account';
 import ContactInformationForm from './contact-information';
 import IdentificationDocumentForm from './identification-document';
 import TaxInformationForm from './tax-information';
+import { KYCPageType } from './types';
 
 const tabItems = [
   {
-    id: 'identification-document',
+    id: KYCPageType.identificationDocument,
     label: 'Identification Document',
     component: IdentificationDocumentForm,
     status: 'completed' as const,
   },
   {
-    id: 'contact-information',
+    id: KYCPageType.contactInformation,
     label: 'Contact Information',
     component: ContactInformationForm,
     status: 'completed' as const,
   },
   {
-    id: 'tax-information',
+    id: KYCPageType.taxInformation,
     label: 'Tax Information',
     component: TaxInformationForm,
     status: 'completed' as const,
   },
   {
-    id: 'bank-account',
+    id: KYCPageType.bankAccount,
     label: 'Bank Accounts',
     component: BankAccountForm,
     status: 'pending' as const,
@@ -56,16 +56,16 @@ const getStatusIcon = (status: string) => {
 };
 
 const KYCPage = () => {
-  const [activeTab, setActiveTab] = useState<string>(KYC_TABS.IDENTIFICATION_DOCUMENT);
+  const [activeTab, setActiveTab] = useState<string>(KYCPageType.identificationDocument);
 
   const params = useParams();
-  const id = params?.id as string;
+  console.log('🚀 ~ KYCPage ~ params:', params);
 
   useEffect(() => {
-    if (id) {
-      setActiveTab(id as string);
+    if (params?.id) {
+      setActiveTab(params?.id as string);
     }
-  }, [id]);
+  }, [params]);
 
   return (
     <div className="min-h-screen bg-background">

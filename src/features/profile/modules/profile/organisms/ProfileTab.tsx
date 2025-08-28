@@ -3,7 +3,7 @@ import { FC } from 'react';
 import PersonalInfoForm, { PersonalInfo } from '../molecules/PersonalInfoForm';
 import ProfileSidebar from './ProfileSidebar';
 
-import { UserProfile } from '../../store/api/profileApi';
+import { UserProfile } from '../../../store/api/profileApi';
 
 type ProfileTabProps = {
   profile: UserProfile | null | undefined;
