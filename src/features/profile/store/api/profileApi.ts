@@ -1,19 +1,7 @@
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
-import { UserRole } from '@/shared/constants/userRole';
 import type { Response } from '@/shared/types/Common.types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-
-export type UserProfile = {
-  id: string;
-  name: string | null;
-  email: string;
-  avatarUrl: string | null;
-  logoUrl: string | null;
-  phone?: string | null;
-  address?: string | null;
-  birthday?: string | null;
-  role: UserRole;
-};
+import { UserProfile } from '../../domain/entities/models/profile';
 
 export const profileApi = createApi({
   reducerPath: 'profileApi',
@@ -54,12 +42,10 @@ export const profileApi = createApi({
     // eKYC contact verify
     sendOTP: builder.mutation<any, void>({
       query: () => ({ url: ApiEndpointEnum.sendOTP, method: 'POST' }),
-      invalidatesTags: ['eKYC'],
     }),
     verifyOTP: builder.mutation<any, { otp: string }>({
       query: (body) => ({ url: ApiEndpointEnum.verifyOTP, method: 'POST', body }),
       transformResponse: (response: Response<any>) => response.data,
-      invalidatesTags: ['eKYC'],
     }),
   }),
 });
