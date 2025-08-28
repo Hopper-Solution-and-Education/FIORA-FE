@@ -291,9 +291,13 @@ class NotificationRepository implements INotificationRepository {
   }
 
   // Lấy 20 UserNotification chưa đọc gần nhất theo userId, include notification và các bảng liên quan
-  async getUserNotificationsUnread(userId: string, take: number = 20): Promise<any[]> {
+  async getUserNotificationsUnread(
+    userId: string,
+    channel: ChannelType,
+    take: number = 20,
+  ): Promise<any[]> {
     return prisma.userNotification.findMany({
-      where: { userId, isRead: false },
+      where: { userId, isRead: false, AND: { notification: { channel: channel } } },
       orderBy: { createdAt: 'desc' },
       take,
       include: {

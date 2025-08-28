@@ -242,7 +242,7 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
             },
           });
         }),
-      )
+      );
     }
     return res
       .status(RESPONSE_CODE.OK)
