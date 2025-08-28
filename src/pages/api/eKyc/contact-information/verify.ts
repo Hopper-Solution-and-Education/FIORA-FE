@@ -73,6 +73,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     id: crypto.randomUUID(),
   });
   return res
-    .status(RESPONSE_CODE.CREATED)
+    .status(RESPONSE_CODE.OK)
     .json(createResponse(RESPONSE_CODE.CREATED, Messages.VERIFY_SUCCESS));
 }
