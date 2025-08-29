@@ -12,10 +12,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { UserProfile } from '@/features/profile/domain/entities/models/profile';
 import { Building2, CheckCircle, CreditCard, FileText, HelpCircle, Upload } from 'lucide-react';
-import { useState } from 'react';
+import { FC, useState } from 'react';
 
-const BankAccountForm = () => {
+type Props = {
+  profile: UserProfile;
+  isVerified: boolean;
+};
+
+const BankAccountForm: FC<Props> = ({ profile, isVerified }) => {
   const [accountType, setAccountType] = useState('');
   const [bankName, setBankName] = useState('');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);

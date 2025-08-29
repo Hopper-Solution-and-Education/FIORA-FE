@@ -5,10 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { UserProfile } from '@/features/profile/domain/entities/models/profile';
 import { CheckCircle, CreditCard, FileText, HelpCircle, Upload, User } from 'lucide-react';
-import { useState } from 'react';
+import { FC, useState } from 'react';
 
-const IdentificationDocumentForm = () => {
+type Props = {
+  profile: UserProfile;
+};
+
+const IdentificationDocumentForm: FC<Props> = ({ profile }) => {
   const [frontImage, setFrontImage] = useState<File | null>(null);
   const [backImage, setBackImage] = useState<File | null>(null);
   const [facePhoto, setFacePhoto] = useState<File | null>(null);

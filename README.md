@@ -6,9 +6,11 @@ This is a powerful frontend project built with **Next.js**, designed with a feat
 ---
 
 ## 🛠 Project Overview
+
 The Hopper Dashboard is a modern, scalable frontend application tailored for efficient management and visualization of data. It leverages a robust tech stack to ensure type safety, responsive UI, and seamless state management.
 
 **Key Technologies:**
+
 - **Framework:** Next.js 15 (React 19) 🚀
 - **Language:** TypeScript 🛡️
 - **UI/Styling:** Tailwind CSS, shadcn/ui, Radix UI 🎨
@@ -25,12 +27,15 @@ The Hopper Dashboard is a modern, scalable frontend application tailored for eff
 ## 🚀 Getting Started
 
 ### 1️⃣ Prerequisites
+
 Ensure you have the following installed:
+
 - Node.js (v18 or higher recommended) 🟢
 - bun (preferred) or pnpm/npm/yarn 📦
 - Git 🌿
 
 ### 2️⃣ Installation
+
 ```bash
 git clone <repo_url>
 cd FIORA-FE
@@ -38,36 +43,45 @@ npm install  # or bun install / pnpm install / yarn install
 ```
 
 ### 3️⃣ Environment Setup
+
 You can use either `.env` or `.env.development.local` for environment variables.
 
 **Option 1:** `.env`
+
 ```bash
 cp .env.example .env.local
 ```
+
 **Option 2:** `.env.development.local`
 If you want to use `.env.development.local`, install `dotenv-cli` globally:
+
 ```bash
 npm install -g dotenv-cli
 cp .env.example .env.development.local
 ```
 
 ### 4️⃣ Prisma Setup
+
 ```bash
 npx prisma db pull && npx prisma generate
 ```
 
 ### 5️⃣ Running the Development Server
+
 ```bash
 npm run dev
 ```
+
 App runs at: <a>http://localhost:3000</a>
 
 ## 🏗️ Building the Application
+
 ```bash
 npm run build
 ```
 
 ## 🧹 Code Formatting & Linting
+
 ```bash
 npm run format   # Format code
 npm run check    # Check formatting
@@ -75,12 +89,15 @@ npm run lint     # Lint code
 ```
 
 ## 🗑️ Cleaning the Project
+
 ```bash
 npm run clean
 ```
 
 ## 🌍 Environment Variables
+
 Example `.env.example`:
+
 ```bash
 NODE_ENV='development'
 AUTH_SECRET=
@@ -118,16 +135,21 @@ EXCHANGE_RATE_API_KEY=
 ```
 
 ## 🛠 Troubleshooting
+
 ### Build issues:
+
 ```bash
 npm run clean
 npm install
 ```
 
 ### Prisma issues:
+
 - Ensure `DATABASE_URL` is set
 - Verify keys in .env / .env.development.local
+
 ```bash
 npx prisma db pull && npx prisma generate
 ```
+
 ### Happy coding! 🚀

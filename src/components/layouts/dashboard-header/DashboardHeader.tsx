@@ -28,7 +28,7 @@ export default function Header() {
   const { announcement, isLoading, show: showAnnouncement, handleClose } = useAnnouncementManager();
 
   const { data: notification, mutate: mutateNotification } = useDataFetch({
-    endpoint: '/api/notification/user',
+    endpoint: '/api/notification/user?unread=true&channel=BOX',
     method: 'GET',
   });
 
