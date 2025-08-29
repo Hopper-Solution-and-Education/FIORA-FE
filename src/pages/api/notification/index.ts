@@ -13,6 +13,8 @@ export default withAuthorization({
   errorHandler(
     async (request, response) => {
       switch (request.method) {
+        case 'GET':
+          return GET(request, response);
         case 'POST':
           return POST(request, response);
         default:
