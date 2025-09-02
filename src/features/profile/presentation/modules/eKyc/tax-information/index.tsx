@@ -5,10 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { UserProfile } from '@/features/profile/domain/entities/models/profile';
 import { Calculator, CheckCircle, FileText, HelpCircle, Upload } from 'lucide-react';
-import { useState } from 'react';
+import { FC, useState } from 'react';
 
-const TaxInformationForm = () => {
+type Props = {
+  profile: UserProfile;
+  isVerified: boolean;
+};
+
+const TaxInformationForm: FC<Props> = ({ profile, isVerified }) => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {

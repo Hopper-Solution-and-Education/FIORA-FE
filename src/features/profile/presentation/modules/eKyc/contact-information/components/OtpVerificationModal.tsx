@@ -10,20 +10,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Check } from 'lucide-react';
 import { FC, useEffect } from 'react';
-
-type OtpModalState = {
-  isOpen: boolean;
-  type: 'email' | 'phone';
-  otpValue: string;
-  countdown: number;
-};
+import { OtpModalState } from '../../types';
 
 type OtpVerificationModalProps = {
   otpModal: OtpModalState;
   onOtpModalChange: (modal: OtpModalState) => void;
   onClose: () => void;
   onVerify: (otp: string) => void;
-  onResend?: () => void;
+  onResend?: (type: 'email' | 'phone') => void;
 };
 
 const OtpVerificationModal: FC<OtpVerificationModalProps> = ({
@@ -48,8 +42,7 @@ const OtpVerificationModal: FC<OtpVerificationModalProps> = ({
   }, [otpModal, onOtpModalChange]);
 
   const handleResend = () => {
-    onOtpModalChange({ ...otpModal, countdown: 120, otpValue: '' });
-    onResend?.();
+    onResend?.(otpModal.type as 'email' | 'phone');
   };
 
   const isResendEnabled = otpModal.countdown === 0;
@@ -62,8 +55,8 @@ const OtpVerificationModal: FC<OtpVerificationModalProps> = ({
             Verify your {otpModal.type === 'email' ? 'email address' : 'phone number'}
           </DialogTitle>
           <DialogDescription className="text-center">
-            We&apos;ve sent a verification code to your{' '}
-            {otpModal.type === 'email' ? 'email address' : 'phone number'}. Please enter code below
+            We&apos;ve sent a verification code to{' '}
+            {otpModal.type === 'email' ? otpModal.email : otpModal.phone}. Please enter code below
             to confirm your {otpModal.type === 'email' ? 'email' : 'phone number'}.
           </DialogDescription>
         </DialogHeader>

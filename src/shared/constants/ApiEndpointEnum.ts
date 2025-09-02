@@ -32,6 +32,6 @@ export enum ApiEndpointEnum {
   // Profile
   Profile = '/api/profile',
   eKYC = '/api/eKyc',
-  verifyOTP = '/api/eKyc/contact-information/verify-otp',
+  verifyOTP = '/api/eKyc/contact-information/verify',
   sendOTP = '/api/eKyc/contact-information/send-otp',
 }

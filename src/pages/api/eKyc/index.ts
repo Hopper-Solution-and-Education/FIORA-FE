@@ -32,7 +32,7 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
 );
 
 export async function GET(res: NextApiResponse, userId: string) {
-  const kyc = await eKycRepository.getById(userId);
+  const kyc = await eKycRepository.getByUser(userId);
 
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');

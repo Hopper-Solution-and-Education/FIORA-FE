@@ -578,20 +578,24 @@ model UserNotification {
 }
 
 model Attachment {
-  id                  String                @id @default(uuid()) @db.Uuid
-  type                String                @db.VarChar(10)
-  size                Decimal               @default(0)
-  url                 String
-  path                String                @db.VarChar(255)
-  createdAt           DateTime              @default(now()) @db.Timestamptz(0)
-  updatedAt           DateTime              @updatedAt @db.Timestamptz(0)
-  createdBy           String?               @db.Uuid
-  updatedBy           String?               @db.Uuid
-  notificationId      String?               @db.Uuid
-  Notification        Notification?         @relation(fields: [notificationId], references: [id])
-  AttachmentRelations AttachmentRelations[]
-  BankAccount         BankAccount[]
-  depositRequests     DepositRequest?
+  id                                                                       String                   @id @default(uuid()) @db.Uuid
+  type                                                                     String                   @db.VarChar(10)
+  size                                                                     Decimal                  @default(0)
+  url                                                                      String
+  path                                                                     String                   @db.VarChar(255)
+  createdAt                                                                DateTime                 @default(now()) @db.Timestamptz(0)
+  updatedAt                                                                DateTime                 @updatedAt @db.Timestamptz(0)
+  createdBy                                                                String?                  @db.Uuid
+  updatedBy                                                                String?                  @db.Uuid
+  notificationId                                                           String?                  @db.Uuid
+  Notification                                                             Notification?            @relation(fields: [notificationId], references: [id])
+  AttachmentRelations                                                      AttachmentRelations[]
+  BankAccount                                                              BankAccount[]
+  depositRequests                                                          DepositRequest?
+  IdentificationDocument_IdentificationDocument_fileBackIdToAttachment     IdentificationDocument[] @relation("IdentificationDocument_fileBackIdToAttachment")
+  IdentificationDocument_IdentificationDocument_fileFrontIdToAttachment    IdentificationDocument[] @relation("IdentificationDocument_fileFrontIdToAttachment")
+  IdentificationDocument_IdentificationDocument_fileLocationIdToAttachment IdentificationDocument[] @relation("IdentificationDocument_fileLocationIdToAttachment")
+  IdentificationDocument_IdentificationDocument_filePhotoIdToAttachment    IdentificationDocument[] @relation("IdentificationDocument_filePhotoIdToAttachment")
 
   @@index([url])
   @@index([path])
@@ -846,6 +850,10 @@ model IdentificationDocument {
   updatedBy      String?            @db.Uuid
   userId         String             @db.Uuid
   status         KYCStatus
+  fileBack       Attachment?        @relation("IdentificationDocument_fileBackIdToAttachment", fields: [fileBackId], references: [id])
+  fileFront      Attachment?        @relation("IdentificationDocument_fileFrontIdToAttachment", fields: [fileFrontId], references: [id])
+  fileLocation   Attachment?        @relation("IdentificationDocument_fileLocationIdToAttachment", fields: [fileLocationId], references: [id])
+  filePhoto      Attachment?        @relation("IdentificationDocument_filePhotoIdToAttachment", fields: [filePhotoId], references: [id])
   User           User               @relation(fields: [userId], references: [id])
 }
 

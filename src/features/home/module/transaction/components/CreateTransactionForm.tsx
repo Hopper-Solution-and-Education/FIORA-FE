@@ -27,7 +27,7 @@ import DateSelectField from './form/DateSelect';
 import FromSelectField from './form/FromSelect';
 import PartnerSelectField from './form/PartnerSelect';
 import ProductsSelectField from './form/ProductsSelect';
-import RecurringSelectField from './form/RecurringSelect';
+import RemarkField from './form/RemarkField';
 import ToSelectField from './form/ToSelect';
 import TypeSelectField from './form/TypeSelect';
 
@@ -103,7 +103,7 @@ const CreateTransactionForm = () => {
     <ToSelectField key="toId" name="toId" required />,
     <PartnerSelectField key="partnerId" name="partnerId" />,
     <ProductsSelectField key="product" name="product" />,
-    <RecurringSelectField key="remark" name="remark" />,
+    <RemarkField key="remark" name="remark" label="Description" />,
   ];
 
   return (
