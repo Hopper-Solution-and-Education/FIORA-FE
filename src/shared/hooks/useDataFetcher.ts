@@ -29,7 +29,7 @@ const useDataFetcher = <T = any>(props: DataFetcherProps) => {
 
   const { data, isLoading, isValidating, error, mutate } = useSWR(endpoint, fetchData, {
     shouldRetryOnError: false,
-    revalidateOnMount: false,
+    revalidateOnMount: true,
     revalidateOnFocus: false,
     revalidateIfError: false,
     refreshInterval,
