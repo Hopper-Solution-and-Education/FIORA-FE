@@ -1,5 +1,6 @@
 'use client';
 
+import { useIdle } from '@/shared/hooks/useIdle';
 import { signOut, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
@@ -11,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog';
-import { useIdle } from '@/shared/hooks/useIdle';
 
 export function SessionTimeoutModal() {
   const { data: session, status, update } = useSession();
