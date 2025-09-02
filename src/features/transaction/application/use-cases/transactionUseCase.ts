@@ -214,6 +214,8 @@ class TransactionUseCase {
           toAccount: true,
           toCategory: true,
           partner: true,
+          toWallet: true,
+          fromWallet: true,
         },
       },
     );
@@ -333,6 +335,7 @@ class TransactionUseCase {
       accounts: filterOptions.accounts ?? [],
       categories: filterOptions.categories ?? [],
       partners: filterOptions.partners ?? [],
+      wallets: filterOptions.wallets ?? [],
       amountMin: amountRange.min,
       amountMax: amountRange.max,
     };

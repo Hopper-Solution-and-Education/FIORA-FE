@@ -23,7 +23,14 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { updateAmountRange, updateFilterCriteria } from '../slices';
-import { IRelationalTransaction, TransactionColumn, TransactionTableColumnKey } from '../types';
+import {
+  IRelationalTransaction,
+  TransactionAccount,
+  TransactionCategory,
+  TransactionColumn,
+  TransactionTableColumnKey,
+  TransactionWallet,
+} from '../types';
 import {
   DEFAULT_TRANSACTION_TABLE_COLUMNS,
   TRANSACTION_TYPE,
@@ -57,9 +64,8 @@ const SortArrowBtn = ({
   isActivated: boolean;
 }) => (
   <div
-    className={` h-fit transition-transform duration-300 overflow-visible ${
-      isActivated && !(sortOrder === 'asc' || sortOrder === 'none') ? 'rotate-0' : 'rotate-180'
-    }`}
+    className={` h-fit transition-transform duration-300 overflow-visible ${isActivated && !(sortOrder === 'asc' || sortOrder === 'none') ? 'rotate-0' : 'rotate-180'
+      }`}
   >
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
@@ -257,23 +263,42 @@ const TransactionTable = () => {
     return transactionDate < threeMonthsAgo;
   };
 
-  const isEditAllowed = (date: string | Date): boolean => {
+  const isEditAllowed = (date: string | Date, transaction: IRelationalTransaction): boolean => {
     const transactionDate = new Date(date);
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(currentDate.getDate() - 30);
 
+    if (transaction.isMarked || transaction.isExpired) {
+      return false;
+    }
+
     return transactionDate >= thirtyDaysAgo;
+  };
+
+  const _renderToTransaction = (
+    toAccount: TransactionAccount | null | undefined,
+    toCategory: TransactionCategory | null | undefined,
+    toWallet: TransactionWallet | null | undefined,
+  ) => {
+    if (toAccount) {
+      return toAccount.name;
+    } else if (toCategory) {
+      return toCategory.name;
+    } else if (toWallet) {
+      return toWallet.type + ' Wallet';
+    }
+    return 'Unknown';
   };
 
   const tableVisibleColumns: TransactionTableColumnKey = useMemo((): TransactionTableColumnKey => {
     const columns =
       Object.keys(visibleColumns).length > 0
         ? Object.keys(visibleColumns)?.reduce((acc, key) => {
-            if (visibleColumns[key as TransactionColumn].index >= 0) {
-              acc[key as TransactionColumn] = visibleColumns[key as TransactionColumn];
-            }
-            return acc;
-          }, {} as TransactionTableColumnKey)
+          if (visibleColumns[key as TransactionColumn].index >= 0) {
+            acc[key as TransactionColumn] = visibleColumns[key as TransactionColumn];
+          }
+          return acc;
+        }, {} as TransactionTableColumnKey)
         : DEFAULT_TRANSACTION_TABLE_COLUMNS;
 
     return Object.fromEntries(
@@ -501,7 +526,9 @@ const TransactionTable = () => {
                                 key={columnKey}
                                 className={cn(
                                   'cursor-default',
-                                  transRecord.toAccountId || transRecord.toCategoryId
+                                  transRecord.toAccountId ||
+                                    transRecord.toCategoryId ||
+                                    transRecord.toWalletId
                                     ? 'underline cursor-pointer'
                                     : 'text-gray-500',
                                 )}
@@ -510,19 +537,27 @@ const TransactionTable = () => {
                                     currentFilter: filterCriteria,
                                     callBack: handleFilterChange,
                                     target:
-                                      transRecord.type === 'Expense' ? 'toCategory' : 'toAccount',
-                                    subTarget: 'name',
+                                      transRecord.type === 'Expense'
+                                        ? 'toCategory'
+                                        : transRecord.toAccountId
+                                          ? 'toAccount' // if toAccountId is not null, then it is an account
+                                          : 'toWallet', // if toWalletId is not null, then it is a wallet
+                                    subTarget: transRecord.toWalletId ? 'type' : 'name',
                                     comparator: 'AND',
                                     value:
                                       transRecord.type === 'Expense'
                                         ? (transRecord.toCategory?.name ?? '')
-                                        : (transRecord.toAccount?.name ?? ''),
+                                        : (transRecord.toAccount?.name ??
+                                          transRecord.toWallet?.type ??
+                                          ''),
                                   })
                                 }
                               >
-                                {transRecord.toAccount?.name ??
-                                  transRecord.toCategory?.name ??
-                                  'Unknown'}
+                                {_renderToTransaction(
+                                  transRecord.toAccount,
+                                  transRecord.toCategory,
+                                  transRecord.toWallet,
+                                )}
                               </TableCell>
                             );
                           case 'Partner':
@@ -573,7 +608,7 @@ const TransactionTable = () => {
 
                                 {/* Edit Button - Only show for transactions within 30 days */}
                                 {/* Logic: Edit button is only enabled for transactions within the last 30 days */}
-                                {isEditAllowed(recordDate) ? (
+                                {isEditAllowed(recordDate, transRecord) ? (
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger asChild>

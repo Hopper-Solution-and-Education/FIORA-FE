@@ -878,15 +878,6 @@ model CronJobLog {
   Transaction   Transaction?  @relation("CronJobLogTransactions", fields: [transactionId], references: [id])
 }
 
-model Otp {
-  id        String   @id @db.Uuid
-  createdAt DateTime @default(now()) @db.Timestamptz(0)
-  duration  String
-  otp       String
-  userId    String?  @db.Uuid
-  type      OtpType?
-}
-
 enum BudgetType {
   Top
   Bot
@@ -1052,8 +1043,4 @@ enum KYCType {
   CONTACT
   TAX
   BANK
-}
-
-enum OtpType {
-  CONTACT
 }

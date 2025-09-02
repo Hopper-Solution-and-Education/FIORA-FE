@@ -45,6 +45,15 @@ interface AccountCondition {
   };
 }
 
+interface WalletCondition {
+  toWallet?: {
+    type?: string;
+  };
+  fromWallet?: {
+    type?: string;
+  };
+}
+
 interface CategoryCondition {
   toCategory?: {
     name?: string;
@@ -59,7 +68,7 @@ interface TypeCondition {
 }
 
 interface NestedOrCondition {
-  OR?: (AccountCondition | CategoryCondition)[];
+  OR?: (AccountCondition | CategoryCondition | WalletCondition)[];
 }
 
 interface FilterAndCondition {
@@ -78,6 +87,12 @@ interface FilterAndCondition {
   };
   toAccount?: {
     name?: string;
+  };
+  toWallet?: {
+    type?: string;
+  };
+  fromWallet?: {
+    type?: string;
   };
   amount?: AmountCondition;
   baseAmount?: BaseAmountCondition;
@@ -101,6 +116,7 @@ type FilterParams = {
   partners: string[];
   categories: string[];
   accounts: string[];
+  wallets: string[];
   amountMin: number;
   amountMax: number;
 };
@@ -113,6 +129,7 @@ const filterParamsInitState: FilterParams = {
   accounts: [],
   amountMin: 0,
   amountMax: DEFAULT_MAX_AMOUNT,
+  wallets: [],
 };
 
 type FilterMenuProps<T> = {
@@ -179,6 +196,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
       const partners: Set<string> = new Set();
       const categories: Set<string> = new Set();
       const accounts: Set<string> = new Set();
+      const wallets: Set<string> = new Set();
       let currentAmountMin = amountMin;
       let currentAmountMax = amountMax;
       let dateFrom: Date | undefined;
@@ -214,6 +232,8 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
           if (condition.toCategory?.name) categories.add(condition.toCategory.name);
           if (condition.fromAccount?.name) accounts.add(condition.fromAccount.name);
           if (condition.toAccount?.name) accounts.add(condition.toAccount.name);
+          if (condition.toWallet?.type) wallets.add(condition.toWallet.type);
+          if (condition.fromWallet?.type) wallets.add(condition.fromWallet.type);
 
           // Handle baseAmount conditions (prioritize over amount)
           if (condition.baseAmount) {
@@ -336,6 +356,32 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
             });
           }
 
+          // Handle OR conditions for wallets with special nested structure
+          if (
+            Array.isArray(condition.OR) &&
+            condition.OR.some(
+              (c) =>
+                'OR' in c &&
+                Array.isArray(c.OR) &&
+                c.OR.some(
+                  (n) =>
+                    ('toWallet' in n && n.toWallet?.type !== undefined) ||
+                    ('fromWallet' in n && n.fromWallet?.type !== undefined),
+                ),
+            )
+          ) {
+            condition.OR.forEach((orGroup) => {
+              if ('OR' in orGroup && Array.isArray(orGroup.OR)) {
+                orGroup.OR.forEach((nestedOrCondition) => {
+                  if ('toWallet' in nestedOrCondition && nestedOrCondition.toWallet?.type)
+                    wallets.add(nestedOrCondition.toWallet.type);
+                  if ('fromWallet' in nestedOrCondition && nestedOrCondition.fromWallet?.type)
+                    wallets.add(nestedOrCondition.fromWallet.type);
+                });
+              }
+            });
+          }
+
           // Handle OR conditions for categories with special nested structure
           if (
             Array.isArray(condition.OR) &&
@@ -403,6 +449,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         partners: Array.from(partners),
         categories: Array.from(categories),
         accounts: Array.from(accounts),
+        wallets: Array.from(wallets),
         amountMin: currentAmountMin,
         amountMax: currentAmountMax,
         dateRange: dateFrom || dateTo ? { from: dateFrom, to: dateTo } : undefined,
@@ -453,6 +500,17 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
     }
 
     return data.data.categories.map((option: string) => ({
+      value: option,
+      label: option,
+    }));
+  }, [data]);
+
+  const walletOptions = useMemo(() => {
+    if (!data?.data?.wallets) {
+      return [{ label: 'No option available', value: 'none', disabled: true }];
+    }
+
+    return data.data.wallets.map((option: string) => ({
       value: option,
       label: option,
     }));
@@ -529,6 +587,17 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
       />
     );
 
+    const walletFilterComponent = (
+      <MultiSelectFilter
+        options={walletOptions || []}
+        selectedValues={filterParams.wallets}
+        onChange={(values) => handleEditFilter('wallets', values)}
+        label="Wallets"
+        placeholder="Select wallets"
+        disabled={isLoading}
+      />
+    );
+
     return [
       {
         key: 'typeFilter',
@@ -565,6 +634,12 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         component: partnerFilterComponent,
         column: FilterColumn.RIGHT,
         order: 2,
+      },
+      {
+        key: 'walletFilter',
+        component: walletFilterComponent,
+        column: FilterColumn.LEFT,
+        order: 0,
       },
     ];
   }, [
@@ -619,6 +694,15 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         andConditions.push({
           OR: params.accounts.map((account) => ({
             OR: [{ toAccount: { name: account } }, { fromAccount: { name: account } }],
+          })),
+        });
+      }
+
+      // Wallets OR group
+      if (params.wallets?.length) {
+        andConditions.push({
+          OR: params.wallets.map((wallet) => ({
+            OR: [{ toWallet: { type: wallet } }, { fromWallet: { type: wallet } }],
           })),
         });
       }

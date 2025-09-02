@@ -65,15 +65,15 @@ class TransactionRepository implements ITransactionRepository {
     const [createdBy, updatedBy] = await Promise.all([
       transaction.createdBy
         ? prisma.user.findUnique({
-            where: { id: transaction.createdBy },
-            select: { id: true, name: true, email: true, image: true },
-          })
+          where: { id: transaction.createdBy },
+          select: { id: true, name: true, email: true, image: true },
+        })
         : null,
       transaction.updatedBy
         ? prisma.user.findUnique({
-            where: { id: transaction.updatedBy },
-            select: { id: true, name: true, email: true, image: true },
-          })
+          where: { id: transaction.updatedBy },
+          select: { id: true, name: true, email: true, image: true },
+        })
         : null,
     ]);
 
@@ -175,7 +175,7 @@ class TransactionRepository implements ITransactionRepository {
   }
 
   async getFilterOptions(userId: string) {
-    const [accounts, categories, partners] = await Promise.all([
+    const [accounts, categories, partners, wallets] = await Promise.all([
       prisma.account.findMany({
         where: { userId },
         select: { name: true },
@@ -188,12 +188,17 @@ class TransactionRepository implements ITransactionRepository {
         where: { userId },
         select: { name: true },
       }),
+      prisma.wallet.findMany({
+        where: { userId },
+        select: { type: true },
+      }),
     ]);
 
     return {
       accounts: accounts.map((a) => a.name),
       categories: categories.map((c) => c.name),
       partners: partners.map((p) => p.name),
+      wallets: wallets.map((w) => w.type),
     };
   }
 

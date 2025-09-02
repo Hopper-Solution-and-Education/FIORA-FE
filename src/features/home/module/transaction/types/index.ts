@@ -84,6 +84,21 @@ export type TransactionCategory = {
   tax_rate: string | null;
 };
 
+export type TransactionWallet = {
+  id: string;
+  userId: string;
+  icon: string;
+  type: string;
+  frBalanceActive: string;
+  frBalanceFrozen: string;
+  creditLimit: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string | null;
+  updatedBy: string | null;
+  name: string | null;
+};
+
 export type TransactionSubjectStamp = {
   id: string;
   name: string;
@@ -117,6 +132,7 @@ export interface IRelationalTransaction extends Transaction {
   fromCategory?: TransactionCategory | null;
   toAccount?: TransactionAccount | null;
   toCategory?: TransactionCategory | null;
+  toWallet?: TransactionWallet | null;
   partner?: TransactionPartner | null;
 }
 
@@ -152,6 +168,7 @@ export type TransactionFilterOptionResponse = {
   accounts: string[];
   categories: string[];
   partners: string[];
+  wallets: string[];
   amountMin: number;
   amountMax: number;
 };
@@ -182,3 +199,4 @@ export enum TransactionType {
 }
 
 export * from './getSupportDataResponse';
+

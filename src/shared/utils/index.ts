@@ -130,8 +130,17 @@ export function buildOrderByTransactionV2(
   const orderByObj = Object.entries(orderBy).reduce((acc, [key, value]) => {
     if (!value) return acc;
 
-    if (key === 'fromAccount' || key === 'toAccount') {
-      acc[key] = { name: value };
+    if (
+      key === 'fromAccount' ||
+      key === 'toAccount' ||
+      key === 'fromWallet' ||
+      key === 'toWallet'
+    ) {
+      if (key === 'fromWallet' || key === 'toWallet') {
+        acc[key] = { type: value };
+      } else {
+        acc[key] = { name: value };
+      }
     } else {
       acc[key as keyof typeof Prisma.TransactionOrderByRelevanceFieldEnum] = value;
     }

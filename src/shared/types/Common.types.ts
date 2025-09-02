@@ -62,6 +62,8 @@ export type OrderByFields = {
   type?: Prisma.SortOrder;
   fromAccount?: Prisma.SortOrder;
   toAccount?: Prisma.SortOrder;
+  fromWallet?: Prisma.SortOrder;
+  toWallet?: Prisma.SortOrder;
   partner?: Prisma.SortOrder;
   amount?: Prisma.SortOrder;
 };

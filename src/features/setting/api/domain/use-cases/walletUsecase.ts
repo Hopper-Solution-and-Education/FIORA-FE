@@ -411,6 +411,7 @@ class WalletUseCase {
         baseAmount: baseTransactionAmount,
         baseCurrency: DEFAULT_BASE_CURRENCY,
         remark: `Deposit request approved`,
+        isMarked: true,
       });
 
       const deductAmount = await convertCurrency(amount, CURRENCY.USD, paymentAccount.currency!);
