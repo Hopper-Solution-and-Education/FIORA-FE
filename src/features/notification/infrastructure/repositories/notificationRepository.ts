@@ -120,27 +120,30 @@ class NotificationRepository implements INotificationRepository {
     filters: Record<string, any> = {},
   ): Promise<any[]> {
     const dbFilters = mapDashboardFilterToDB(filters);
+
     const query: any = {
       skip,
       orderBy: { createdAt: 'desc' },
-      where: dbFilters,
+      where: {
+        ...dbFilters,
+        userNotifications: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
       include: {
         userNotifications: true,
         emailLogs: true,
         emailTemplate: true,
       },
     };
+
     if (typeof take === 'number' && take > 0) {
       query.take = take;
     }
-    const notifications = (await prisma.notification.findMany({
-      where: {
-        userNotifications: {
-          userId: userId,
-          ...query,
-        },
-      },
-    })) as any[];
+
+    const notifications = (await prisma.notification.findMany(query)) as any[];
 
     const userIds = Array.from(new Set(notifications.map((n) => n.createdBy).filter(Boolean)));
     const users = userIds.length

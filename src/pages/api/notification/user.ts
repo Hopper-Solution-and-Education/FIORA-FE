@@ -29,7 +29,8 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
   const { unread, channel } = req.query;
   if (unread === 'true') {
     const notifications = await notificationRepository.getUserNotificationsUnread(
-      userId, (channel as ChannelType) || ChannelType.BOX,
+      userId,
+      (channel as ChannelType) || ChannelType.BOX,
       20,
     );
     return res

@@ -7,6 +7,7 @@ export interface INotificationDashboardRepository {
     page: number,
     pageSize: number,
     filter?: NotificationDashboardFilterRequest,
+    personal?: boolean,
   ): Promise<NotificationDashboardListPaginated>;
 
   getFilterOptions(): Promise<NotificationFilterOptions>;

@@ -18,11 +18,13 @@ export class NotificationDashboardRepository implements INotificationDashboardRe
     page: number,
     pageSize: number,
     filter?: NotificationDashboardFilterRequest,
+    personal?: boolean,
   ): Promise<NotificationDashboardListPaginated> {
     const response = await this.notificationDashboardApi.getNotificationsPaginated(
       page,
       pageSize,
       filter,
+      personal,
     );
 
     return NotificationDashboardMapper.toNotificationListPaginated(response);
