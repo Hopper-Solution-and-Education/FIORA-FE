@@ -61,13 +61,20 @@ const WalletPaymentDetail = ({ className }: WalletPaymentDetailProps) => {
 
       <CardContent className="flex flex-col items-center gap-4 h-[500px] overflow-y-auto">
         <div className="w-full bg-muted rounded-xl p-6 flex flex-col items-center">
-          <div className="text-3xl font-bold">{formatCurrency(fxAmount, CURRENCY.FX)}</div>
+          <div className="text-3xl font-bold">
+            {formatCurrency(fxAmount, CURRENCY.FX, {
+              applyExchangeRate: false,
+            })}
+          </div>
           <div className="text-xl text-muted-foreground font-semibold">
             {formatCurrency(actualAmount, currency)}
           </div>
           <div className="text-sm text-muted-foreground">
-            Rate: {formatCurrency(applyingRate.originalAmount, applyingRate.fromCurrency)} ={' '}
-            {formatCurrency(applyingRate.convertedAmount, applyingRate.toCurrency)}
+            Rate:{' '}
+            {formatCurrency(applyingRate.originalAmount, applyingRate.fromCurrency, {
+              applyExchangeRate: false,
+            })}{' '}
+            = {formatCurrency(applyingRate.convertedAmount, applyingRate.toCurrency)}
           </div>
         </div>
         <div className="flex flex-col items-center gap-2">

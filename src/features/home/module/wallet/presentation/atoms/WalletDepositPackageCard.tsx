@@ -34,9 +34,8 @@ const WalletDepositPackageCard: React.FC<WalletDepositPackageCardProps> = ({
 
   return (
     <Card
-      className={`flex items-center gap-4 p-4 cursor-pointer border-2 transition-all ${
-        selected ? 'border-blue-500 shadow-lg' : 'border-border hover:border-primary/60'
-      }`}
+      className={`flex items-center gap-4 p-4 cursor-pointer border-2 transition-all ${selected ? 'border-blue-500 shadow-lg' : 'border-border hover:border-primary/60'
+        }`}
       onClick={() => onSelect?.(packageFX.id)}
     >
       <Icons.walletPackageCard className="w-12 h-12" />
@@ -44,7 +43,9 @@ const WalletDepositPackageCard: React.FC<WalletDepositPackageCardProps> = ({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-base">
-            {formatCurrency(packageFX.fxAmount, CURRENCY.FX)}
+            {formatCurrency(packageFX.fxAmount, CURRENCY.FX, {
+              applyExchangeRate: false,
+            })}
           </span>
           {isPopular && (
             <Badge className="bg-orange-100 text-orange-700 font-medium">Popular</Badge>
