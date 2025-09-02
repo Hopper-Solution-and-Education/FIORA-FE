@@ -51,6 +51,8 @@ class TransactionRepository implements ITransactionRepository {
         toAccount: true,
         fromCategory: true,
         toCategory: true,
+        toWallet: true,
+        fromWallet: true,
         productsRelation: {
           include: {
             product: true,

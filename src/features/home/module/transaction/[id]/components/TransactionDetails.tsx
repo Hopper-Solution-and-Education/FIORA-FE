@@ -167,7 +167,7 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
 
               <Separator />
 
-              {/* From Account/Category */}
+              {/* From Account/Category/Wallet */}
               <div className="space-y-2">
                 <h3 className="font-medium text-md">From</h3>
                 {data.fromAccount && (
@@ -224,7 +224,34 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                   </div>
                 )}
 
-                {!data.fromAccount && !data.fromCategory && (
+                {data.fromWallet && (
+                  <div className="w-full flex justify-between items-center">
+                    <div className="text-sm text-muted-foreground">Wallet</div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                            {data.fromWallet.icon && (
+                              <LucieIcon
+                                icon={data.fromWallet.icon}
+                                className="w-4 h-4 border-1 border-gray-500"
+                              />
+                            )}
+
+                            <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                              {data.fromWallet.type}
+                            </h3>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{data.fromWallet.type}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                )}
+
+                {!data.fromAccount && !data.fromCategory && !data.fromWallet && (
                   <div className="w-full flex justify-between items-center">
                     <div className="text-sm text-muted-foreground">Source</div>
                     <div className="text-gray-500 italic">Unknown</div>
@@ -234,7 +261,7 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
 
               <Separator />
 
-              {/* To Account/Category */}
+              {/* To Account/Category/Wallet */}
               <div className="space-y-2">
                 <h3 className="font-medium text-lg">To</h3>
                 {data.toAccount && (
@@ -291,7 +318,34 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                   </div>
                 )}
 
-                {!data.toAccount && !data.toCategory && (
+                {data.toWallet && (
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-muted-foreground">Wallet</div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                            {data.toWallet.icon && (
+                              <LucieIcon
+                                icon={data.toWallet.icon}
+                                className="w-4 h-4 border-1 border-gray-500"
+                              />
+                            )}
+
+                            <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                              {data.toWallet.type}
+                            </h3>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{data.toWallet.type}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                )}
+
+                {!data.toAccount && !data.toCategory && !data.toWallet && (
                   <div className="flex justify-between items-center">
                     <div className="text-sm text-muted-foreground">Destination</div>
                     <div className="text-gray-500 italic">Unknown</div>
@@ -370,12 +424,12 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                                 (
                                 {data?.productsRelation?.[0]?.product?.currency
                                   ? formatCurrency(
-                                      Number(product.price),
-                                      data.productsRelation?.[0]?.product?.currency,
-                                      {
-                                        applyExchangeRate: false,
-                                      },
-                                    )
+                                    Number(product.price),
+                                    data.productsRelation?.[0]?.product?.currency,
+                                    {
+                                      applyExchangeRate: false,
+                                    },
+                                  )
                                   : 'Unknown'}
                                 )
                               </div>
