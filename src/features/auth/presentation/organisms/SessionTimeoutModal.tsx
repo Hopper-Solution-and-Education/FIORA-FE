@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -18,6 +19,7 @@ export function SessionTimeoutModal() {
   const [isVisible, setIsVisible] = useState(false);
   const [countdown, setCountdown] = useState(30); // Đếm ngược 30 giây
   const router = useRouter();
+  const { clearExchangeRateData } = useCurrencyFormatter();
 
   useEffect(() => {
     // Nếu đang tải session hoặc không có session, không làm gì
@@ -60,13 +62,23 @@ export function SessionTimeoutModal() {
     }
   };
 
-  const handleLogout = () => {
-    // Gọi API để đăng xuất
-    fetch('/api/auth/logout', { method: 'POST' }).then(() => {
+  const handleLogout = async () => {
+    try {
+      // Clear exchange rate data BEFORE logout to ensure data is cleared while session is still active
+      clearExchangeRateData();
       localStorage.removeItem('isLogged'); // Xóa trạng thái đăng nhập
+
+      // Gọi API để đăng xuất
+      await fetch('/api/auth/logout', { method: 'POST' });
+
       setIsVisible(false); // Ẩn modal
       router.push('/'); // Chuyển hướng về trang chủ
-    });
+    } catch (error) {
+      console.warn('Error during logout:', error);
+      // Even if logout API fails, still redirect to home page
+      setIsVisible(false);
+      router.push('/');
+    }
   };
 
   // Không hiển thị modal nếu không cần

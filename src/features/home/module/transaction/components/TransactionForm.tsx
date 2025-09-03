@@ -38,16 +38,14 @@ interface TransactionFormProps {
 const TransactionForm = ({
   mode,
   initialData,
-  onSuccess,
   onSubmit,
   isExternalLoading = false,
 }: TransactionFormProps) => {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
   // Use external loading state if provided, otherwise use internal state
-  const isFormLoading = isExternalLoading || isLoading;
+  const isFormLoading = isExternalLoading;
 
   const methods = useForm<NewTransactionDefaultValues>({
     resolver: yupResolver(validateNewTransactionSchema),

@@ -50,7 +50,9 @@ export type ProductTransactionResponse = {
       id: string;
       type: CategoryType;
       amount: number;
-      currency: 'VND' | 'USD';
+      baseAmount: number;
+      baseCurrency: string;
+      currency: string;
     } | null,
   ];
 };

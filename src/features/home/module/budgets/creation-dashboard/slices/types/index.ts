@@ -27,7 +27,7 @@ export const initialBudgetControlState: BudgetControlState = {
     nextCursor: null,
     budgets: [],
     isLast: false,
-    currency: Currency.VND,
+    currency: 'VND',
   },
 
   isDeletingBudget: false,

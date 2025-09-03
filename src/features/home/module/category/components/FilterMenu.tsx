@@ -1,5 +1,6 @@
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { GlobalFilters } from '@/shared/types';
 import { FilterColumn, FilterCriteria } from '@/shared/types/filter.types';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -44,6 +45,8 @@ interface FilterMenuProps {
 const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
   // Get min/max values from Redux state (calculated by the API)
   const { minBalance, maxBalance } = useAppSelector((state) => state.category);
+  const { currency: selectedCurrency, baseCurrency } = useAppSelector((state) => state.settings);
+  const { getExchangeAmount } = useCurrencyFormatter();
   const { data: session } = useSession();
   const userId = session?.user?.id || '';
   const dispatch = useAppDispatch();
@@ -84,15 +87,50 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         if (filters.transactions && typeof filters.transactions === 'object') {
           const transactionsFilter = filters.transactions as { some?: { OR?: any[] } };
           if (transactionsFilter.some?.OR && Array.isArray(transactionsFilter.some.OR)) {
-            // Look for the first OR condition that has an amount (both Income and Expense should have the same range)
+            // Look for the first OR condition that has baseAmount in AND array
             const firstConditionWithAmount = transactionsFilter.some.OR.find((orCondition) => {
-              return orCondition && typeof orCondition === 'object' && orCondition.amount;
+              return (
+                orCondition &&
+                typeof orCondition === 'object' &&
+                (orCondition.amount || (orCondition.AND && Array.isArray(orCondition.AND)))
+              );
             });
 
-            if (firstConditionWithAmount && firstConditionWithAmount.amount) {
-              const amount = firstConditionWithAmount.amount as RangeCondition;
-              if (typeof amount.gte === 'number') currentAmountMin = amount.gte;
-              if (typeof amount.lte === 'number') currentAmountMax = amount.lte;
+            if (firstConditionWithAmount) {
+              // Check for new baseAmount structure in AND array
+              if (firstConditionWithAmount.AND && Array.isArray(firstConditionWithAmount.AND)) {
+                const baseAmountCondition = firstConditionWithAmount.AND.find(
+                  (andCondition: any) =>
+                    andCondition && typeof andCondition === 'object' && andCondition.baseAmount,
+                );
+
+                if (baseAmountCondition && baseAmountCondition.baseAmount) {
+                  const baseAmount = baseAmountCondition.baseAmount as RangeCondition;
+                  // Convert from base currency to selected currency for display
+                  if (typeof baseAmount.gte === 'number') {
+                    const convertedMin = getExchangeAmount({
+                      amount: baseAmount.gte,
+                      fromCurrency: baseCurrency,
+                      toCurrency: selectedCurrency,
+                    });
+                    currentAmountMin = convertedMin.convertedAmount;
+                  }
+                  if (typeof baseAmount.lte === 'number') {
+                    const convertedMax = getExchangeAmount({
+                      amount: baseAmount.lte,
+                      fromCurrency: baseCurrency,
+                      toCurrency: selectedCurrency,
+                    });
+                    currentAmountMax = convertedMax.convertedAmount;
+                  }
+                }
+              }
+              // Fallback to old amount structure
+              else if (firstConditionWithAmount.amount) {
+                const amount = firstConditionWithAmount.amount as RangeCondition;
+                if (typeof amount.gte === 'number') currentAmountMin = amount.gte;
+                if (typeof amount.lte === 'number') currentAmountMax = amount.lte;
+              }
             }
           }
         }
@@ -111,7 +149,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         };
       }
     },
-    [categoryStatistics],
+    [categoryStatistics, baseCurrency, selectedCurrency, getExchangeAmount],
   );
 
   // Check if filter criteria is reset to default (empty filters)
@@ -230,7 +268,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         onValueChange={(target, value) =>
           handleEditFilter(target === 'minValue' ? 'amountMin' : 'amountMax', value)
         }
-        label="Amount Range"
+        label={`Amount Range (${selectedCurrency})`}
         minLabel="Min Amount"
         maxLabel="Max Amount"
         step={DEFAULT_SLIDER_STEP}
@@ -245,31 +283,58 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         order: 0,
       },
     ];
-  }, [filterParams, categoryStatistics]);
+  }, [filterParams, categoryStatistics, selectedCurrency]);
 
   // Create filter structure from UI state
   const createFilterStructure = useCallback(
     (params: CategoryFilterParams): Record<string, unknown> => {
       const result: Record<string, unknown> = {};
 
+      // Convert amount from selected currency to base currency for API
+      const minAmountInBaseCurrency = getExchangeAmount({
+        amount: params.amountMin,
+        fromCurrency: selectedCurrency,
+        toCurrency: baseCurrency,
+      });
+
+      const maxAmountInBaseCurrency = getExchangeAmount({
+        amount: params.amountMax,
+        fromCurrency: selectedCurrency,
+        toCurrency: baseCurrency,
+      });
+
       // Always add transactions filter with both Income and Expense types
-      // Apply the same amount range to both types
+      // Apply the same baseAmount range to both types
       result.transactions = {
         some: {
           OR: [
             {
               type: 'Expense',
-              amount: {
-                gte: params.amountMin,
-                lte: params.amountMax,
-              },
+              AND: [
+                {
+                  baseAmount: {
+                    gte: minAmountInBaseCurrency.convertedAmount,
+                    lte: maxAmountInBaseCurrency.convertedAmount,
+                  },
+                },
+                {
+                  baseCurrency: baseCurrency,
+                },
+              ],
             },
             {
               type: 'Income',
-              amount: {
-                gte: params.amountMin,
-                lte: params.amountMax,
-              },
+              AND: [
+                {
+                  baseAmount: {
+                    gte: minAmountInBaseCurrency.convertedAmount,
+                    lte: maxAmountInBaseCurrency.convertedAmount,
+                  },
+                },
+                {
+                  baseCurrency: baseCurrency,
+                },
+              ],
             },
           ],
         },
@@ -278,7 +343,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
       // Return the flat structure - GlobalFilter will wrap it in filters
       return result;
     },
-    [categoryStatistics],
+    [baseCurrency, selectedCurrency, getExchangeAmount],
   );
 
   // Handler to fetch filtered data
@@ -286,7 +351,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
     (newFilter: FilterCriteria) => {
       // Create the GlobalFilters structure that the API expects
       const globalFilters: GlobalFilters = {
-        search: 'Expense', // Set search term to "Expense" as required
+        search: '',
         filters: newFilter.filters || {},
       };
 

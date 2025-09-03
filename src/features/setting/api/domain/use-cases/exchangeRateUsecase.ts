@@ -1,20 +1,26 @@
 import { Messages } from '@/shared/constants/message';
 import { ExchangeRateSetting, Prisma } from '@prisma/client';
+import { currencySettingRepository } from '../../infrastructure/repositories/currencySettingRepository';
 import { exchangeRateRepository } from '../../infrastructure/repositories/exchangeRateRepository';
+import { ICurrencySettingRepository } from '../../repositories/currencySettingRepository.interface';
 import {
   IExchangeRateInclude,
   IExchangeRateRepository,
   IUpsertExchangeRateSetting,
 } from '../../repositories/exchangeRateRepository.interface';
-
 class ExchangeRateUseCase {
   private exchangeRateRepository: IExchangeRateRepository;
+  private currencySettingRepository: ICurrencySettingRepository;
 
-  constructor(exchangeRateRepository: IExchangeRateRepository) {
+  constructor(
+    exchangeRateRepository: IExchangeRateRepository,
+    currencySettingRepository: ICurrencySettingRepository,
+  ) {
     this.exchangeRateRepository = exchangeRateRepository;
+    this.currencySettingRepository = currencySettingRepository;
   }
 
-  async getAllExchangeRate() {
+  async getAllExchangeRateSetting() {
     try {
       const exchangeRateList =
         ((await this.exchangeRateRepository.findManyExchangeRate(
@@ -41,15 +47,12 @@ class ExchangeRateUseCase {
 
       return exchangeRateList.map((exchangeRate) => ({
         id: exchangeRate.id,
-        fromValue: Number(exchangeRate.fromValue.toFixed(2)),
-        toValue: Number(exchangeRate.toValue.toFixed(2)),
-        authorId: exchangeRate.authorId,
         fromCurrencyId: exchangeRate.fromCurrencyId,
         toCurrencyId: exchangeRate.toCurrencyId,
+        fromValue: Number(exchangeRate.fromValue.toFixed(2)),
+        toValue: Number(exchangeRate.toValue.toFixed(2)),
         createdAt: exchangeRate.createdAt,
         updatedAt: exchangeRate.updatedAt,
-        createdBy: exchangeRate.createdBy,
-        updatedBy: exchangeRate.updatedBy,
         fromCurrency: exchangeRate.FromCurrency.name,
         toCurrency: exchangeRate.ToCurrency.name,
         fromSymbol: exchangeRate.FromCurrency.symbol,
@@ -60,15 +63,26 @@ class ExchangeRateUseCase {
     }
   }
 
+  async getAllCurrencyExchangeName() {
+    try {
+      const currencyExchangeList = await this.currencySettingRepository.findManyCurrency({});
+      return currencyExchangeList.map((currencyExchange) => ({
+        id: currencyExchange.id,
+        name: currencyExchange.name,
+        symbol: currencyExchange.symbol,
+      }));
+    } catch (error: any) {
+      throw new Error(error.message || Messages.GET_EXCHANGE_RATE_FAILED);
+    }
+  }
+
   async updateExchangeRate(
     data: Prisma.ExchangeRateSettingUncheckedUpdateInput,
-    authorId: string,
   ): Promise<ExchangeRateSetting> {
     try {
       const foundExchangeRate = await this.exchangeRateRepository.findFirstExchangeRate({
         fromCurrencyId: data.fromCurrencyId as string,
         toCurrencyId: data.toCurrencyId as string,
-        authorId,
       });
 
       if (!foundExchangeRate) {
@@ -144,7 +158,6 @@ class ExchangeRateUseCase {
           toCurrencyId: toCurrency?.id as string,
           fromValue: data.fromValue,
           toValue: data.toValue,
-          authorId,
           createdBy: authorId,
         },
         {
@@ -182,21 +195,36 @@ class ExchangeRateUseCase {
         };
       }>;
 
+      const updatedFromCurrency = await this.currencySettingRepository.updateCurrency(
+        { id: fromCurrency?.id as string },
+        {
+          name: data.fromCurrency,
+          symbol: data.fromSymbol as string,
+        },
+      );
+
+      const updatedToCurrency = await this.currencySettingRepository.updateCurrency(
+        { id: toCurrency?.id as string },
+        {
+          name: data.toCurrency,
+          symbol: data.toSymbol as string,
+        },
+      );
+
       return {
         id: exchangeRate.id,
         fromValue: exchangeRate.fromValue,
         toValue: exchangeRate.toValue,
-        authorId: exchangeRate.authorId,
         createdBy: exchangeRate.createdBy,
         updatedBy: exchangeRate.updatedBy,
         createdAt: exchangeRate.createdAt,
         updatedAt: exchangeRate.updatedAt,
-        fromCurrency: exchangeRate.FromCurrency.name,
-        fromCurrencyId: exchangeRate.FromCurrency.id,
-        toCurrency: exchangeRate.ToCurrency.name,
-        toCurrencyId: exchangeRate.ToCurrency.id,
-        fromSymbol: exchangeRate.FromCurrency.symbol,
-        toSymbol: exchangeRate.ToCurrency.symbol,
+        fromCurrency: updatedFromCurrency.name,
+        fromCurrencyId: updatedFromCurrency.id,
+        fromSymbol: updatedFromCurrency.symbol,
+        toCurrency: updatedToCurrency.name,
+        toCurrencyId: updatedToCurrency.id,
+        toSymbol: updatedToCurrency.symbol,
       };
     } catch (error) {
       console.log(error);
@@ -208,6 +236,34 @@ class ExchangeRateUseCase {
       throw new Error(Messages.UPDATE_EXCHANGE_RATE_FAILED);
     }
   }
+
+  async fetchCurrencyFromBaseCurrency(baseCurrency: string) {
+    try {
+      const currency = await this.exchangeRateRepository.findFirstCurrency({
+        name: baseCurrency,
+      });
+
+      if (!currency) {
+        throw new Error(Messages.CURRENCY_NOT_FOUND);
+      }
+
+      const [currencyAbbreviation, response] = await Promise.all([
+        this.exchangeRateRepository.populateCurrencyAbbreviation(),
+        this.exchangeRateRepository.populateRateCache(baseCurrency),
+      ]);
+
+      return {
+        ...response,
+        currency_suffix: currencyAbbreviation,
+      };
+    } catch (error: any) {
+      console.log(error);
+      throw new Error(error.message || Messages.GET_CURRENCY_FAILED);
+    }
+  }
 }
 
-export const exchangeRateUseCase = new ExchangeRateUseCase(exchangeRateRepository);
+export const exchangeRateUseCase = new ExchangeRateUseCase(
+  exchangeRateRepository,
+  currencySettingRepository,
+);

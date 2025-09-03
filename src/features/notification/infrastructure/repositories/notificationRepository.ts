@@ -105,9 +105,9 @@ class NotificationRepository implements INotificationRepository {
     const userIds = Array.from(new Set(notifications.map((n) => n.createdBy).filter(Boolean)));
     const users = userIds.length
       ? await prisma.user.findMany({
-          where: { id: { in: userIds } },
-          select: { id: true, email: true, name: true },
-        })
+        where: { id: { in: userIds } },
+        select: { id: true, email: true, name: true },
+      })
       : [];
     const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
     return notifications.map((n) => mapNotificationDashboardItem(n, userMap));
@@ -282,7 +282,9 @@ class NotificationRepository implements INotificationRepository {
       });
     } else if (notifyTo === 'PERSONAL') {
       if (!emails || emails.length === 0) {
-        throw new AppError(400, 'No email provided for PERSONAL notification');
+        console.log('No email provided for PERSONAL notification');
+        return;
+        // throw new AppError(400, 'No email provided for PERSONAL notification');
       }
       users = await prisma.user.findMany({
         where: { isDeleted: false, email: { in: emails } },
@@ -290,7 +292,9 @@ class NotificationRepository implements INotificationRepository {
       });
     }
     if (!users || users.length === 0) {
-      throw new AppError(400, 'No user found for this role or email');
+      console.log('No user found for this role or email');
+      return;
+      // throw new AppError(400, 'No user found for this role or email');
     }
     return await prisma.$transaction(async (tx) => {
       // 1. Tạo notification trước

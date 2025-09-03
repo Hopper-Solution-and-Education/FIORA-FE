@@ -1,45 +1,50 @@
 import { CustomBarItem } from '@/components/common/charts/stacked-bar-chart/type';
 import { COLORS, STACK_TYPE } from '@/shared/constants/chart';
-import { Currency } from '@/shared/types';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { Currency, ExchangeAmountParams, ExchangeAmountResult } from '@/shared/types';
 import { BudgetGetDataResponse } from '../domain/entities/Budget';
 
 export const mapBudgetToData = (
   budget: BudgetGetDataResponse,
   budgetCurrency: Currency,
   targetCurrency: Currency,
+  getExchangeRateAmount: (params: ExchangeAmountParams) => ExchangeAmountResult,
 ): CustomBarItem[] => {
   // Use convertCurrency for each budget value
-  const convertedActExpense = convertCurrency(
-    budget.budgetActExpense,
-    budgetCurrency,
-    targetCurrency,
-  );
-  const convertedTopExpense = convertCurrency(
-    budget.budgetTopExpense,
-    budgetCurrency,
-    targetCurrency,
-  );
-  const convertedBotExpense = convertCurrency(
-    budget.budgetBotExpense,
-    budgetCurrency,
-    targetCurrency,
-  );
-  const convertedActIncome = convertCurrency(
-    budget.budgetActIncome,
-    budgetCurrency,
-    targetCurrency,
-  );
-  const convertedTopIncome = convertCurrency(
-    budget.budgetTopIncome,
-    budgetCurrency,
-    targetCurrency,
-  );
-  const convertedBotIncome = convertCurrency(
-    budget.budgetBotIncome,
-    budgetCurrency,
-    targetCurrency,
-  );
+  const convertedActExpense = getExchangeRateAmount({
+    amount: budget.budgetActExpense,
+    fromCurrency: budgetCurrency,
+    toCurrency: targetCurrency,
+  }).convertedAmount;
+
+  const convertedTopExpense = getExchangeRateAmount({
+    amount: budget.budgetTopExpense,
+    fromCurrency: budgetCurrency,
+    toCurrency: targetCurrency,
+  }).convertedAmount;
+
+  const convertedBotExpense = getExchangeRateAmount({
+    amount: budget.budgetBotExpense,
+    fromCurrency: budgetCurrency,
+    toCurrency: targetCurrency,
+  }).convertedAmount;
+
+  const convertedActIncome = getExchangeRateAmount({
+    amount: budget.budgetActIncome,
+    fromCurrency: budgetCurrency,
+    toCurrency: targetCurrency,
+  }).convertedAmount;
+
+  const convertedTopIncome = getExchangeRateAmount({
+    amount: budget.budgetTopIncome,
+    fromCurrency: budgetCurrency,
+    toCurrency: targetCurrency,
+  }).convertedAmount;
+
+  const convertedBotIncome = getExchangeRateAmount({
+    amount: budget.budgetBotIncome,
+    fromCurrency: budgetCurrency,
+    toCurrency: targetCurrency,
+  }).convertedAmount;
 
   // Calculate profit using the converted values
   const convertedActProfit = convertedActIncome - convertedActExpense;

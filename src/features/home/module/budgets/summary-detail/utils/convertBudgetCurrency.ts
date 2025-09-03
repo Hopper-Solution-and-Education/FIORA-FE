@@ -1,6 +1,6 @@
-import { Currency } from '@/shared/types';
+import { Currency, ExchangeAmountParams, ExchangeAmountResult } from '@/shared/types';
 import { BudgetSummaryByType } from '../domain/entities/BudgetSummaryByType';
-import { convertVNDToUSD } from '@/shared/utils';
+// import { convertVNDToUSD } from '@/shared/utils';
 
 const BUDGET_FIELDS = [
   'm1Exp',
@@ -47,6 +47,7 @@ export const convertBudgetCurrency = (
   budget: BudgetSummaryByType | null,
   fromCurrency: Currency,
   toCurrency: Currency,
+  getExchangeAmount: (params: ExchangeAmountParams) => ExchangeAmountResult,
 ): BudgetSummaryByType | null => {
   if (!budget?.budget) return null;
 
@@ -62,14 +63,11 @@ export const convertBudgetCurrency = (
     let numValue = 0;
     if (value !== undefined && (typeof value === 'string' || typeof value === 'number')) {
       numValue = typeof value === 'string' ? parseFloat(value) : value;
-      if (fromCurrency === 'VND' && toCurrency === 'USD') {
-        (budgetData as any)[field] = convertVNDToUSD(numValue);
-      } else if (fromCurrency === 'USD' && toCurrency === 'VND') {
-        (budgetData as any)[field] = numValue * 25000;
-      } else {
-        // currency giống nhau, vẫn ép về number
-        (budgetData as any)[field] = numValue;
-      }
+      (budgetData as any)[field] = getExchangeAmount({
+        amount: numValue,
+        fromCurrency,
+        toCurrency,
+      }).convertedAmount;
     }
   });
 

@@ -1,5 +1,5 @@
 import { TableCell, TableRow } from '@/components/ui/table';
-import { formatFIORACurrency } from '@/config/FIORANumberFormat';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { formatDateTime } from '@/shared/lib/formatDateTime';
 import {
   UserProfileCard,
@@ -16,6 +16,7 @@ interface WalletSettingTableRowProps {
 }
 
 const WalletSettingTableRow = ({ data, columns }: WalletSettingTableRowProps) => {
+  const { formatCurrency } = useCurrencyFormatter();
   const getAlignClass = (col: string) => {
     const side =
       WALLET_SETTING_TABLE_COLUMN_CONFIG[col as keyof typeof WALLET_SETTING_TABLE_COLUMN_CONFIG]
@@ -54,7 +55,7 @@ const WalletSettingTableRow = ({ data, columns }: WalletSettingTableRowProps) =>
           case 'Amount':
             return (
               <TableCell key={col} className={alignClass}>
-                {formatFIORACurrency(data.fxAmount, 'FX')}
+                {formatCurrency(data.fxAmount, 'FX')}
               </TableCell>
             );
           case 'Request Date':

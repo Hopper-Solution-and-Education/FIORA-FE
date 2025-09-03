@@ -16,6 +16,9 @@ export interface RawCategory {
   updatedAt?: string;
   createdBy?: string;
   updatedBy?: string;
+
+  fromTransactions?: CategoryTransaction[];
+  toTransactions?: CategoryTransaction[];
 }
 
 export type CategoryFilterResponse = {
@@ -24,6 +27,14 @@ export type CategoryFilterResponse = {
   maxBalance?: number;
   minAmount?: number;
   maxAmount?: number;
+};
+
+export type CategoryTransaction = {
+  amount: number;
+  currency: string;
+  baseAmount: number;
+  baseCurrency: string;
+  isDeleted: boolean;
 };
 
 export interface Category {
@@ -43,6 +54,9 @@ export interface Category {
   updatedBy?: string;
 
   subCategories: Category[];
+
+  fromTransactions: CategoryTransaction[];
+  toTransactions: CategoryTransaction[];
 }
 
 export interface CategoryState {

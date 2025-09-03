@@ -1,5 +1,34 @@
 import { OrderType } from '@/shared/types';
-import { Transaction } from '@prisma/client';
+
+export type Transaction = {
+  id: string;
+  userId: string | null;
+  date: Date;
+  type: 'Expense' | 'Income' | 'Transfer';
+  amount: number;
+  fromAccountId: string | null;
+  fromCategoryId: string | null;
+  toAccountId: string | null;
+  toCategoryId: string | null;
+  products: any;
+  partnerId: string | null;
+  remark: string | null;
+  isDeleted: boolean;
+  deletedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  updatedBy: string | null;
+  createdBy: string | null;
+  currencyId: string | null;
+  isMarked: boolean;
+  isExpired: boolean;
+  currency: string | null;
+  fromWalletId: string | null;
+  toWalletId: string | null;
+  membershipBenefitId: string | null;
+  baseCurrency: string | null;
+  baseAmount: string | null;
+};
 
 export type TransactionPartner = {
   id: string;
@@ -55,6 +84,21 @@ export type TransactionCategory = {
   tax_rate: string | null;
 };
 
+export type TransactionWallet = {
+  id: string;
+  userId: string;
+  icon: string;
+  type: string;
+  frBalanceActive: string;
+  frBalanceFrozen: string;
+  creditLimit: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string | null;
+  updatedBy: string | null;
+  name: string | null;
+};
+
 export type TransactionSubjectStamp = {
   id: string;
   name: string;
@@ -75,10 +119,20 @@ export interface IRelationalTransaction extends Transaction {
   updatedAt: Date;
   createdBy: any;
   updatedBy: any;
+  currencyId: string | null;
+  isMarked: boolean;
+  isExpired: boolean;
+  currency: string | null;
+  fromWalletId: string | null;
+  toWalletId: string | null;
+  membershipBenefitId: string | null;
+  baseCurrency: string | null;
+  baseAmount: string | null;
   fromAccount?: TransactionAccount | null;
   fromCategory?: TransactionCategory | null;
   toAccount?: TransactionAccount | null;
   toCategory?: TransactionCategory | null;
+  toWallet?: TransactionWallet | null;
   partner?: TransactionPartner | null;
 }
 
@@ -114,6 +168,7 @@ export type TransactionFilterOptionResponse = {
   accounts: string[];
   categories: string[];
   partners: string[];
+  wallets: string[];
   amountMin: number;
   amountMax: number;
 };
@@ -144,3 +199,4 @@ export enum TransactionType {
 }
 
 export * from './getSupportDataResponse';
+
