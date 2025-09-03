@@ -1,3 +1,4 @@
+import { prisma } from '@/config';
 import { identificationRepository } from '@/features/setting/api/infrastructure/repositories/indentificationRepository';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
@@ -62,6 +63,7 @@ export async function POST(
     idNumber,
     filePhotoId,
     issuedPlace,
+    fileLocationId,
   } = value;
   if (error) {
     return res
@@ -85,15 +87,32 @@ export async function POST(
       .status(RESPONSE_CODE.BAD_REQUEST)
       .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VERIFY_EXIT));
   }
+
+  const attachmentIdsToValidate = [filePhotoId, fileBackId, fileFrontId, fileLocationId].filter(
+    Boolean,
+  ) as string[];
+  if (attachmentIdsToValidate.length > 0) {
+    const found = await prisma.attachment.findMany({
+      where: { id: { in: attachmentIdsToValidate } },
+    });
+    const foundIds = new Set(found.map((a) => a.id));
+    const missing = attachmentIdsToValidate.filter((id) => !foundIds.has(id));
+    if (missing.length > 0) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, 'Invalid attachment id(s)'));
+    }
+  }
   const newIdentification = await identificationRepository.create(
     {
-      filePhotoId: filePhotoId || null,
-      idNumber: idNumber || null,
+      filePhoto: filePhotoId ? { connect: { id: filePhotoId } } : undefined,
+      fileBack: fileBackId ? { connect: { id: fileBackId } } : undefined,
+      fileFront: fileFrontId ? { connect: { id: fileFrontId } } : undefined,
+      fileLocation: fileLocationId ? { connect: { id: fileLocationId } } : undefined,
+      idNumber: idNumber,
       type: type,
       idAddress: idAddress || '',
       issuedDate: issuedDate || null,
-      fileBackId: fileBackId || null,
-      fileFrontId: fileFrontId || null,
       issuedPlace: issuedPlace || '',
       status: KYCStatus.PENDING,
       User: { connect: { id: userId } },

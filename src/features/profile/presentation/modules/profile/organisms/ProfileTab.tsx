@@ -1,9 +1,10 @@
 'use client';
 import { FC } from 'react';
-import PersonalInfoForm, { PersonalInfo } from '../molecules/PersonalInfoForm';
+import PersonalInfoForm from './PersonalInfoForm';
 import ProfileSidebar from './ProfileSidebar';
 
-import { UserProfile } from '../../store/api/profileApi';
+import { UserProfile } from '@/features/profile/domain/entities/models/profile';
+import { PersonalInfo } from '../../../schema/personalInfoSchema';
 
 type ProfileTabProps = {
   profile: UserProfile | null | undefined;
@@ -31,17 +32,7 @@ const ProfileTab: FC<ProfileTabProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-md p-6 lg:p-8 flex flex-col lg:flex-row gap-8">
       <div className="flex-1">
-        <PersonalInfoForm
-          initialValues={{
-            name: profile?.name ?? '',
-            email: profile?.email ?? '',
-            birthday: profile?.birthday ?? '',
-            address: profile?.address ?? '',
-            phone: profile?.phone ?? '',
-          }}
-          isLoading={isUpdating || isLoading}
-          onSubmit={onSave}
-        />
+        <PersonalInfoForm isLoading={isUpdating || isLoading} onSubmit={onSave} profile={profile} />
       </div>
 
       <ProfileSidebar

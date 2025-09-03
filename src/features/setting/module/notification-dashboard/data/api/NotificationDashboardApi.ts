@@ -20,12 +20,19 @@ class NotificationDashboardApi implements INotificationDashboardApi {
     page: number,
     pageSize: number,
     filter?: NotificationDashboardFilterRequest,
+    personal?: boolean,
   ): Promise<NotificationPaginatedResponse> {
     // Use mapper to convert filter to search parameters
     const searchParams = NotificationDashboardMapper.toSearchParams(page, pageSize, filter);
 
     // Build the URL with query parameters
-    const baseUrl = routeConfig(ApiEndpointEnum.Notification);
+    let baseUrl;
+    console.log('getNotificationsPaginated personal: ', personal);
+    if (personal) {
+      baseUrl = routeConfig(ApiEndpointEnum.NotificationPersonal);
+    } else {
+      baseUrl = routeConfig(ApiEndpointEnum.Notification);
+    }
     const url = `${baseUrl}?${searchParams.toString()}`;
 
     return this.httpClient.get(url);

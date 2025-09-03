@@ -1,7 +1,7 @@
 import { prisma } from '@/config';
 import { UserRole } from '@/shared/constants/userRole';
 import { removeFromFirebase, uploadToFirebase } from '@/shared/lib';
-import type { UpdateProfileRequest, UserProfile } from '../../domain/entities/models/profile';
+import type { eKYC, UpdateProfileRequest, UserProfile } from '../../domain/entities/models/profile';
 import type { IProfileRepository } from '../../domain/repositories/profileRepository.interface';
 
 class ProfileRepository implements IProfileRepository {
@@ -18,6 +18,7 @@ class ProfileRepository implements IProfileRepository {
         logoId: true,
         address: true,
         role: true,
+        eKYC: true,
       },
     });
     let avatarUrl = null;
@@ -50,6 +51,7 @@ class ProfileRepository implements IProfileRepository {
       address: user.address ?? null,
       birthday: user.birthday ? user.birthday.toISOString() : null,
       role: user.role as UserRole,
+      eKYC: user.eKYC as unknown as eKYC[],
     };
   }
 

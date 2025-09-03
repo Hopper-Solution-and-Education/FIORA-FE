@@ -1,3 +1,5 @@
+import { signOut } from 'next-auth/react';
+
 export interface IHttpClient {
   /**
    * Thiết lập interceptor cho request.
@@ -134,6 +136,10 @@ class HttpClient implements IHttpClient {
       const response = await fetch(fullUrl, config);
 
       if (!response.ok) {
+        // If response status is 403, log out
+        if (response.status === 403) {
+          await signOut();
+        }
         // get response error from server
         const errorText = await response.text();
         throw new Error(errorText, { cause: 'Error' });

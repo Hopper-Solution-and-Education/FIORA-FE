@@ -15,10 +15,13 @@ export type UserProfile = {
 
 export type eKYC = {
   id: string;
-  name: string;
-  dob: string;
-  address: string;
-  phone: string;
+  type: EKYCType;
+  fieldName: string;
+  status: EKYCStatus;
+  createdBy: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type UpdateProfileRequest = Partial<Omit<UserProfile, 'id' | 'email'>> & {
@@ -32,3 +35,17 @@ export type UpdateProfileRequest = Partial<Omit<UserProfile, 'id' | 'email'>> & 
   newAvatar?: File | null;
   newLogo?: File | null;
 };
+
+export enum EKYCStatus {
+  PENDING = 'PENDING',
+  REQUEST = 'REQUEST',
+  APPROVAL = 'APPROVAL',
+  REJECTED = 'REJECTED',
+}
+
+export enum EKYCType {
+  BANK_ACCOUNT = 'BANK_ACCOUNT',
+  CONTACT_INFORMATION = 'CONTACT',
+  IDENTIFICATION_DOCUMENT = 'IDENTIFICATION_DOCUMENT',
+  TAX_INFORMATION = 'TAX_INFORMATION',
+}
