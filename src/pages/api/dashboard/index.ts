@@ -95,17 +95,19 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 
     const { filteredCount, statusCounts } = counts;
     const totalPages = Math.ceil(filteredCount / limitNum);
-
     return res.status(RESPONSE_CODE.OK).json({
       status: RESPONSE_CODE.OK,
       message: Messages.GET_SUCCESS,
       data: result,
-      total: totalPages,
+      totalPage: totalPages,
       page: pageNum,
-      limit: limitNum,
+      pageSize: limitNum,
+      total: filteredCount,
       statistics: {
-        statusCounts,
-        filteredCount,
+        statusCounts: {
+          successful: statusCounts.successful,
+          fail: statusCounts.fail,
+        },
       },
     });
   } catch (error) {
