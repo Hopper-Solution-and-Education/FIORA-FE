@@ -361,4 +361,15 @@ export enum Messages {
 
   //Email template type
   EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
+
+  //News
+  GET_LISTNEW_SUCCESS = 'Get list news success',
+  CREATE_NEWS_SUCCESS = 'Create news successfully',
+  NEWS_TITLE_ALREADY_EXISTS = 'NEWS title already exists',
+  DELETE_NEWS_SUCCESS = 'Delete News successfully',
+  DELETE_NEWS_ERROR = 'Delete News error',
+  POST_CATEGORY_NOT_FOUND = 'POST category not found',
+
+  //User
+  USER_NOT_FOUND = 'User not found',
 }
