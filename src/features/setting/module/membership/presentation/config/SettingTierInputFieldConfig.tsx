@@ -1,10 +1,8 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/store';
-import { useFormContext } from 'react-hook-form';
 import {
   setBenefitTierToEdit,
-  setEditValue,
   setIdTierToDelete,
   setIdTierToEdit,
   setIsShowDialogAddBenefitTier,
@@ -15,14 +13,13 @@ import {
 import { TierBenefitTable } from '../molecules';
 import { DialogDeleteBenefitTier } from '../organisms';
 import DialogEditBenefitTier from '../organisms/DialogEditBenefitTier';
-import { DynamicFieldTier, EditMemberShipFormValues } from '../schema/editMemberShip.schema';
+import { DynamicFieldTier } from '../schema/editMemberShip.schema';
 
 const SettingTierInputFieldConfig = ({
   dynamicTierFields,
 }: {
   dynamicTierFields: DynamicFieldTier[];
 }) => {
-  const methods = useFormContext<EditMemberShipFormValues>();
   const dispatch = useAppDispatch();
 
   const handleOpenDialogAddBenefitTier = () => {
@@ -34,7 +31,7 @@ const SettingTierInputFieldConfig = ({
     return (
       <Button
         type="button"
-        className="w-full mt-10"
+        className="w-full"
         variant="outline"
         onClick={handleOpenDialogAddBenefitTier}
       >
@@ -53,8 +50,6 @@ const SettingTierInputFieldConfig = ({
             dispatch(setIsShowDialogEditBenefitTier(true));
             dispatch(setIdTierToEdit(item.id));
             dispatch(setBenefitTierToEdit(item));
-            const current = methods.getValues()[item.key];
-            dispatch(setEditValue(typeof current === 'number' ? (current as number) : 0));
           }}
           onDeleteBenefitTier={(item) => {
             dispatch(setIsShowDialogDeleteBenefitTier(true));

@@ -33,7 +33,6 @@ interface MembershipState {
     idTierToEdit: string | null;
     isShowDialogEditBenefitTier: boolean;
     benefitTierToEdit: DynamicFieldTier | null;
-    editValue: number;
   };
 }
 
@@ -62,6 +61,5 @@ export const initialMembershipState: MembershipState = {
     idTierToEdit: null,
     isShowDialogEditBenefitTier: false,
     benefitTierToEdit: null,
-    editValue: 0,
   },
 };

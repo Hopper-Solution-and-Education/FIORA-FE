@@ -8,8 +8,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import DialogIconInfo from '@public/icons/dialog-icon-info.svg';
 import clsx from 'clsx';
 import { Check, X } from 'lucide-react';
+import Image from 'next/image';
 import { ReactNode } from 'react';
 
 type DialogVariant = 'default' | 'info' | 'success' | 'warning' | 'danger';
@@ -94,8 +96,13 @@ export const GlobalDialog = ({
       <DialogContent
         className={clsx('sm:max-w-lg flex flex-col', VARIANT_BORDER_MAP[variant], className)}
       >
-        <DialogHeader className="flex items-start">
+        <DialogHeader className="flex items-center">
           <div className="text-center">
+            <div className="flex items-center justify-center">
+              <div className="w-16">
+                <Image src={DialogIconInfo} alt="logo" width={60} height={60} />
+              </div>
+            </div>
             {title && <DialogTitle className="text-xl font-bold mb-3">{title}</DialogTitle>}
             <div className="text-left flex flex-col gap-2">
               {heading && <DialogTitle className="font-normal text-md">{heading}</DialogTitle>}
