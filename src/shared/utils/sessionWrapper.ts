@@ -1,5 +1,5 @@
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import { NextApiHandler, NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import RESPONSE_CODE from '../constants/RESPONSE_CODE';
 import { Messages } from '../constants/message';
@@ -10,10 +10,10 @@ type HandlerWithUser = (
   res: NextApiResponse,
   userId: string,
   user: SessionUser,
-) => Promise<void>;
+) => Promise<any>;
 
-export function sessionWrapper(handler: HandlerWithUser): NextApiHandler {
-  return async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
+export function sessionWrapper(handler: HandlerWithUser): any {
+  return async (req: NextApiRequest, res: NextApiResponse): Promise<any> => {
     const session = await getServerSession(req, res, authOptions);
 
     if (!session || !session.user?.id) {
