@@ -2,6 +2,10 @@ import { httpClient } from '@/config';
 import { Container } from 'inversify';
 import { IMembershipCronjobDashboardApi, MembershipCronjobDashboardApi } from '../data/api';
 import { IMembershipCronjobRepository, MembershipCronjobRepository } from '../data/repository';
+import {
+  GetMembershipCronjobsPaginatedUseCase,
+  IGetMembershipCronjobsPaginatedUseCase,
+} from '../domain/usecase/GetMembershipCronjobsPaginatedUseCase';
 import { MEMBERSHIP_CRONJOB_TYPES } from './membershipCronjobDashboardDI.type';
 
 const membershipCronjobContainer = new Container();
@@ -19,6 +23,14 @@ membershipCronjobContainer
 membershipCronjobContainer
   .bind<IMembershipCronjobRepository>(MEMBERSHIP_CRONJOB_TYPES.IMembershipCronjobRepository)
   .to(MembershipCronjobRepository)
+  .inSingletonScope();
+
+// Bind UseCases
+membershipCronjobContainer
+  .bind<IGetMembershipCronjobsPaginatedUseCase>(
+    MEMBERSHIP_CRONJOB_TYPES.IGetMembershipCronjobsPaginatedUseCase,
+  )
+  .to(GetMembershipCronjobsPaginatedUseCase)
   .inSingletonScope();
 
 export { membershipCronjobContainer };

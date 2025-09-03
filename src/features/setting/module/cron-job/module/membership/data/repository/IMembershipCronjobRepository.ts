@@ -1,1 +1,10 @@
-export interface IMembershipCronjobRepository {}
+import { MembershipCronjobFilterRequest } from '../dto/request/MembershipCronjobFilterRequest';
+import { MembershipCronjobPaginatedResponse } from '../dto/response/MembershipCronjobResponse';
+
+export interface IMembershipCronjobRepository {
+  getMembershipCronjobsPaginated(
+    page: number,
+    pageSize: number,
+    filter?: MembershipCronjobFilterRequest,
+  ): Promise<MembershipCronjobPaginatedResponse>;
+}

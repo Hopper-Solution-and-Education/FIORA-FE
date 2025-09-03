@@ -10,6 +10,7 @@ import transactionDataSlice from '@/features/home/module/transaction/slices/tran
 import walletSlice from '@/features/home/module/wallet/slices';
 import landingSlices from '@/features/landing/slices';
 import { profileApi } from '@/features/profile/store/api/profileApi';
+import membershipCronjobSlice from '@/features/setting/module/cron-job/module/membership/slices';
 import landingSettingSlice from '@/features/setting/module/landing/slices';
 import memberShipSettingsSlice from '@/features/setting/module/membership/slices';
 import notificationDashboardSlice from '@/features/setting/module/notification-dashboard/slices';
@@ -49,6 +50,7 @@ const reducer = {
   faqsImport: faqsImportSlice,
   budgetDetail: budgetDetailSlice,
   notificationDashboard: notificationDashboardSlice,
+  membershipCronjob: membershipCronjobSlice,
 
   // RTK Query API slices
   [helpsCenterApi.reducerPath]: helpsCenterApi.reducer,

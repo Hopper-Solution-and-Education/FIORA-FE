@@ -14,6 +14,9 @@ export enum ApiEndpointEnum {
   WalletFrozenAmount = '/api/wallet/deposit/frozen-amount',
   WalletSetting = '/api/wallet/setting',
 
+  // Cronjob Dashboard
+  CronjobDashboard = '/api/dashboard',
+
   // Notification
   Notification = '/api/notification',
   NotificationFilterOptions = '/api/notification/options',

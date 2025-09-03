@@ -11,4 +11,7 @@ export enum RouteEnum {
   // Notification
   NotificationDashboard = '/setting/notification',
   NotificationDetail = '/setting/notification/details/{id}',
+
+  // Cronjob dashboard
+  CronjobMembership = '/setting/cron-job/membership',
 }
