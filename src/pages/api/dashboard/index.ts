@@ -96,23 +96,18 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     const { filteredCount, statusCounts } = counts;
     const totalPages = Math.ceil(filteredCount / limitNum);
 
-    return res.status(RESPONSE_CODE.OK).json(
-      createResponse(RESPONSE_CODE.OK, Messages.GET_SUCCESS, {
-        data: result,
-        pagination: {
-          currentPage: pageNum,
-          totalPages,
-          totalCount: filteredCount,
-          limit: limitNum,
-          hasNextPage: pageNum < totalPages,
-          hasPrevPage: pageNum > 1,
-        },
-        statistics: {
-          statusCounts,
-          filteredCount,
-        },
-      }),
-    );
+    return res.status(RESPONSE_CODE.OK).json({
+      status: RESPONSE_CODE.OK,
+      message: Messages.GET_SUCCESS,
+      data: result,
+      total: totalPages,
+      page: pageNum,
+      limit: limitNum,
+      statistics: {
+        statusCounts,
+        filteredCount,
+      },
+    });
   } catch (error) {
     console.error('Dashboard API Error:', error);
     return res
