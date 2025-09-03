@@ -6,6 +6,7 @@ import budgetSummarySlice from '@/features/home/module/budgets/summary-detail/sl
 import categorySlice from '@/features/home/module/category/slices';
 import membershipSlice from '@/features/home/module/membership/slices';
 import transactionSlice from '@/features/home/module/transaction/slices';
+import createTransactionSlice from '@/features/home/module/transaction/slices/createTransactionSlice';
 import transactionDataSlice from '@/features/home/module/transaction/slices/transactionSlice';
 import walletSlice from '@/features/home/module/wallet/slices';
 import landingSlices from '@/features/landing/slices';
@@ -41,6 +42,7 @@ const reducer = {
   partner: partnerManagementSlice,
   transaction: transactionSlice,
   transactionData: transactionDataSlice,
+  createTransaction: createTransactionSlice,
   module: moduleReducer,
   financeControl: financeControlSlice,
   memberShipSettings: memberShipSettingsSlice,

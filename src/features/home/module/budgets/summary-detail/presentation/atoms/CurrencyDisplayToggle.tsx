@@ -1,6 +1,6 @@
-"use client"
-import { Icons } from "@/components/Icon";
-import { Button } from "@/components/ui/button";
+'use client';
+import { Icons } from '@/components/Icon';
+import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setFullCurrencyDisplay } from '@/store/slices/setting.slice';
 
@@ -12,7 +12,7 @@ const CurrencyDisplayToggle = ({ className }: CurrencyDisplayToggleProps) => {
   const dispatch = useAppDispatch();
   const { isFullCurrencyDisplay } = useAppSelector((state) => state.settings);
   const handleValueChange = () => {
-    dispatch(setFullCurrencyDisplay(!isFullCurrencyDisplay))
+    dispatch(setFullCurrencyDisplay(!isFullCurrencyDisplay));
   };
 
   return (
@@ -36,7 +36,7 @@ const CurrencyDisplayToggle = ({ className }: CurrencyDisplayToggleProps) => {
         )}
       </Button>
     </div>
-  )
-}
+  );
+};
 
-export default CurrencyDisplayToggle
+export default CurrencyDisplayToggle;

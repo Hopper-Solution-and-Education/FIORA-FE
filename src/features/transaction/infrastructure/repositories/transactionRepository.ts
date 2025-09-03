@@ -16,6 +16,7 @@ interface EnhancedTransaction extends Transaction {
   createdBy: any | null;
   updatedBy: any | null;
   products: any; // Override the JsonValue type with any for flexibility
+  currency: string | null;
 }
 
 class TransactionRepository implements ITransactionRepository {
@@ -50,6 +51,8 @@ class TransactionRepository implements ITransactionRepository {
         toAccount: true,
         fromCategory: true,
         toCategory: true,
+        toWallet: true,
+        fromWallet: true,
         productsRelation: {
           include: {
             product: true,
@@ -64,15 +67,15 @@ class TransactionRepository implements ITransactionRepository {
     const [createdBy, updatedBy] = await Promise.all([
       transaction.createdBy
         ? prisma.user.findUnique({
-            where: { id: transaction.createdBy },
-            select: { id: true, name: true, email: true, image: true },
-          })
+          where: { id: transaction.createdBy },
+          select: { id: true, name: true, email: true, image: true },
+        })
         : null,
       transaction.updatedBy
         ? prisma.user.findUnique({
-            where: { id: transaction.updatedBy },
-            select: { id: true, name: true, email: true, image: true },
-          })
+          where: { id: transaction.updatedBy },
+          select: { id: true, name: true, email: true, image: true },
+        })
         : null,
     ]);
 
@@ -89,6 +92,7 @@ class TransactionRepository implements ITransactionRepository {
     // Create enhanced transaction object
     const enhancedTransaction: EnhancedTransaction = {
       ...transaction,
+      currency: transaction.currency,
       createdBy,
       updatedBy,
       partner: transaction.partner ? { ...transaction.partner } : null,
@@ -173,7 +177,7 @@ class TransactionRepository implements ITransactionRepository {
   }
 
   async getFilterOptions(userId: string) {
-    const [accounts, categories, partners] = await Promise.all([
+    const [accounts, categories, partners, wallets] = await Promise.all([
       prisma.account.findMany({
         where: { userId },
         select: { name: true },
@@ -186,12 +190,17 @@ class TransactionRepository implements ITransactionRepository {
         where: { userId },
         select: { name: true },
       }),
+      prisma.wallet.findMany({
+        where: { userId },
+        select: { type: true },
+      }),
     ]);
 
     return {
       accounts: accounts.map((a) => a.name),
       categories: categories.map((c) => c.name),
       partners: partners.map((p) => p.name),
+      wallets: wallets.map((w) => w.type),
     };
   }
 
@@ -339,6 +348,7 @@ class TransactionRepository implements ITransactionRepository {
         toAccount: true,
         fromCategory: true,
         toCategory: true,
+        currencyExchange: true,
       },
       orderBy: { createdAt: 'desc' },
     })) as unknown as TransactionWithProducts[];

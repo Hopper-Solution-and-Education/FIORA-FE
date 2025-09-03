@@ -1,3 +1,4 @@
+'use client';
 import useSWR, { SWRConfiguration } from 'swr';
 
 /**
@@ -24,7 +25,6 @@ export const swrOptions: SWRConfiguration = {
   revalidateOnReconnect: true, // Refetch khi kết nối mạng lại
   shouldRetryOnError: true, // Thử lại khi có lỗi
 };
-
 /**
  * Custom SWR Hook với cấu hình mặc định.
  */

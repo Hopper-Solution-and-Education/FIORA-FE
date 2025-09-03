@@ -4,12 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import {
-  FIORANumberFormat,
-  formatFIORACurrency,
-  getCurrencySymbol,
-} from '@/config/FIORANumberFormat';
-import { Currency } from '@/shared/types';
+import { CURRENCY } from '@/shared/constants';
+import useCurrencyFormatter from '@/shared/hooks/useCurrencyFormatter';
 import { format } from 'date-fns';
 import { Trash } from 'lucide-react';
 import Image from 'next/image';
@@ -18,43 +14,18 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import LucieIcon from '../../../category/components/LucieIcon';
 import DeleteTransactionDialog from '../../components/DeleteTransactionDialog';
-import { IRelationalTransaction } from '../../types';
-import { TransactionCurrency } from '../../utils/constants';
-
-// Custom formatCurrency function using FIORANumberFormat
-const formatCurrency = (
-  num: number,
-  currency: TransactionCurrency,
-  shouldShortened?: boolean,
-): string => {
-  const currencySymbol = getCurrencySymbol(currency as Currency);
-
-  if (num >= 1000000 && shouldShortened) {
-    const inMillions = num / 1000000;
-    // Use FIORANumberFormat for decimal formatting with consistent locale
-    const numberFormatter = new FIORANumberFormat(currency as Currency, {
-      style: 'decimal',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 1,
-    });
-    const formatted = numberFormatter.format(inMillions);
-
-    return currency === 'VND'
-      ? `${formatted}M ${currencySymbol}`
-      : `${currencySymbol} ${formatted}M`;
-  }
-
-  return formatFIORACurrency(num, currency as Currency);
-};
 
 type TransactionDetailsProps = {
-  data: IRelationalTransaction;
+  data: any;
 };
 
 const TransactionDetails = ({ data }: TransactionDetailsProps) => {
   // Format the date to a readable format
   const formattedDate = data.date ? format(new Date(data.date), 'Ppp') : 'Unknown';
   const router = useRouter();
+
+  // Initialize currency formatter hook
+  const { formatCurrency } = useCurrencyFormatter();
 
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
@@ -72,12 +43,6 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
         return 'bg-gray-500';
     }
   };
-
-  // Format the amount with currency
-  const formattedAmount = formatCurrency(
-    Number(data.amount),
-    (data.currency as TransactionCurrency) || TransactionCurrency.VND,
-  );
 
   const handleOpenDeleteModal = () => {
     setIsDeleteModalOpen(true);
@@ -172,9 +137,28 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                   </div>
 
                   <div className="text-sm text-muted-foreground">Amount</div>
-                  <div className="font-medium text-right">{formattedAmount}</div>
+                  <div className="font-medium text-right">
+                    <div className="space-y-1">
+                      {data && (
+                        <>
+                          <div>
+                            {formatCurrency(data.amount, data.currency ?? CURRENCY.USD, {
+                              applyExchangeRate: true,
+                            })}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            (
+                            {formatCurrency(data.amount, data.currency ?? CURRENCY.USD, {
+                              applyExchangeRate: false,
+                            })}
+                            )
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
 
-                  <div className="text-sm text-muted-foreground">Remark</div>
+                  <div className="text-sm text-muted-foreground">Description</div>
                   <div className={`text-right ${!data.remark ? 'text-gray-500 italic' : ''}`}>
                     {data.remark || 'Unknown'}
                   </div>
@@ -183,7 +167,7 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
 
               <Separator />
 
-              {/* From Account/Category */}
+              {/* From Account/Category/Wallet */}
               <div className="space-y-2">
                 <h3 className="font-medium text-md">From</h3>
                 {data.fromAccount && (
@@ -240,7 +224,34 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                   </div>
                 )}
 
-                {!data.fromAccount && !data.fromCategory && (
+                {data.fromWallet && (
+                  <div className="w-full flex justify-between items-center">
+                    <div className="text-sm text-muted-foreground">Wallet</div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                            {data.fromWallet.icon && (
+                              <LucieIcon
+                                icon={data.fromWallet.icon}
+                                className="w-4 h-4 border-1 border-gray-500"
+                              />
+                            )}
+
+                            <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                              {data.fromWallet.type}
+                            </h3>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{data.fromWallet.type}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                )}
+
+                {!data.fromAccount && !data.fromCategory && !data.fromWallet && (
                   <div className="w-full flex justify-between items-center">
                     <div className="text-sm text-muted-foreground">Source</div>
                     <div className="text-gray-500 italic">Unknown</div>
@@ -250,7 +261,7 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
 
               <Separator />
 
-              {/* To Account/Category */}
+              {/* To Account/Category/Wallet */}
               <div className="space-y-2">
                 <h3 className="font-medium text-lg">To</h3>
                 {data.toAccount && (
@@ -307,7 +318,34 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                   </div>
                 )}
 
-                {!data.toAccount && !data.toCategory && (
+                {data.toWallet && (
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-muted-foreground">Wallet</div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                            {data.toWallet.icon && (
+                              <LucieIcon
+                                icon={data.toWallet.icon}
+                                className="w-4 h-4 border-1 border-gray-500"
+                              />
+                            )}
+
+                            <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                              {data.toWallet.type}
+                            </h3>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{data.toWallet.type}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                )}
+
+                {!data.toAccount && !data.toCategory && !data.toWallet && (
                   <div className="flex justify-between items-center">
                     <div className="text-sm text-muted-foreground">Destination</div>
                     <div className="text-gray-500 italic">Unknown</div>
@@ -370,16 +408,36 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                         <span className={!product?.name ? 'text-gray-500 italic' : ''}>
                           {product?.name || 'Unknown'}
                         </span>
-                        <span>
+                        <div className="text-right">
                           {product?.price ? (
-                            formatCurrency(
-                              Number(product.price),
-                              (data.currency as TransactionCurrency) || TransactionCurrency.VND,
-                            )
+                            <div className="space-y-1">
+                              <div>
+                                {formatCurrency(
+                                  Number(product.price),
+                                  data.currency ?? CURRENCY.USD,
+                                  {
+                                    applyExchangeRate: true,
+                                  },
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                (
+                                {data?.productsRelation?.[0]?.product?.currency
+                                  ? formatCurrency(
+                                    Number(product.price),
+                                    data.productsRelation?.[0]?.product?.currency,
+                                    {
+                                      applyExchangeRate: false,
+                                    },
+                                  )
+                                  : 'Unknown'}
+                                )
+                              </div>
+                            </div>
                           ) : (
                             <span className="text-gray-500 italic">Unknown</span>
                           )}
-                        </span>
+                        </div>
                       </div>
                     ))
                   ) : (

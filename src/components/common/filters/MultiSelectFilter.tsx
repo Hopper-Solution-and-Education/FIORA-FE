@@ -28,7 +28,7 @@ const MultiSelectFilter = ({
   disabled = false,
 }: MultiSelectFilterProps) => {
   return (
-    <div className="w-full flex flex-col gap-2">
+    <div className="w-full max-w-full flex flex-col gap-2">
       {label && <Label>{label}</Label>}
       <MultiSelect
         className="w-full px-4 py-[7px]"

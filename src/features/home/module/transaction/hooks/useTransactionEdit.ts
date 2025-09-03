@@ -54,7 +54,7 @@ export const useTransactionEdit = ({ transactionId, onSuccess }: UseTransactionE
       product: transaction.products?.[0]?.id || '',
       fromId: transaction.fromAccountId || transaction.fromCategoryId || '',
       toId: transaction.toAccountId || transaction.toCategoryId || '',
-      partner: transaction.partnerId || undefined,
+      partnerId: transaction.partnerId || undefined,
       remark: transaction.remark || 'NONE',
     };
   };

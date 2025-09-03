@@ -1,16 +1,14 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CURRENCY } from '@/shared/constants';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { cn } from '@/shared/utils';
-import { EXCHANGE_RATES_TO_USD } from '@/shared/utils/currencyExchange';
 import { useAppSelector } from '@/store';
 import { useQRCode } from 'next-qrcode';
 import { FRONTEND_ATTACHMENT_CONSTANTS } from '../../data';
 import { PackageFX } from '../../domain';
 import { WalletUploadProof } from '../molecules';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
-import { CURRENCY } from '@/shared/constants';
-import { formatFIORACurrency } from '@/config/FIORANumberFormat';
 
 interface WalletPaymentDetailProps {
   className?: string;
@@ -22,6 +20,7 @@ const WalletPaymentDetail = ({ className }: WalletPaymentDetailProps) => {
   const packageFX = useAppSelector((state) => state.wallet.packageFX);
   const selectedPackage = packageFX?.find((pkg: PackageFX) => pkg.id === selectedPackageId);
   const currency = useAppSelector((state) => state.settings.currency);
+  const { formatCurrency, getExchangeAmount } = useCurrencyFormatter();
 
   if (!selectedPackage) {
     return (
@@ -37,10 +36,19 @@ const WalletPaymentDetail = ({ className }: WalletPaymentDetailProps) => {
   }
 
   const { fxAmount, id } = selectedPackage;
-  const usdAmount = fxAmount / EXCHANGE_RATES_TO_USD.FX;
-  const rate = EXCHANGE_RATES_TO_USD.FX;
+  const { convertedAmount: actualAmount, exchangeRate: rate } = getExchangeAmount({
+    amount: fxAmount,
+    fromCurrency: CURRENCY.FX,
+    toCurrency: currency,
+  });
 
-  const qrValue = JSON.stringify({ fxAmount, usdAmount, rate, id });
+  const applyingRate = getExchangeAmount({
+    amount: 1,
+    fromCurrency: CURRENCY.FX,
+    toCurrency: currency,
+  });
+
+  const qrValue = JSON.stringify({ fxAmount, usdAmount: actualAmount, rate, id });
 
   return (
     <Card className={cn('w-full', className)}>
@@ -53,13 +61,20 @@ const WalletPaymentDetail = ({ className }: WalletPaymentDetailProps) => {
 
       <CardContent className="flex flex-col items-center gap-4 h-[500px] overflow-y-auto">
         <div className="w-full bg-muted rounded-xl p-6 flex flex-col items-center">
-          <div className="text-3xl font-bold">{formatFIORACurrency(fxAmount, CURRENCY.FX)}</div>
+          <div className="text-3xl font-bold">
+            {formatCurrency(fxAmount, CURRENCY.FX, {
+              applyExchangeRate: false,
+            })}
+          </div>
           <div className="text-xl text-muted-foreground font-semibold">
-            {formatFIORACurrency(convertCurrency(usdAmount, CURRENCY.USD, currency), currency)}
+            {formatCurrency(actualAmount, currency)}
           </div>
           <div className="text-sm text-muted-foreground">
-            Rate: {formatFIORACurrency(convertCurrency(1, CURRENCY.USD, currency), currency)} ={' '}
-            {formatFIORACurrency(rate, CURRENCY.FX)}
+            Rate:{' '}
+            {formatCurrency(applyingRate.originalAmount, applyingRate.fromCurrency, {
+              applyExchangeRate: false,
+            })}{' '}
+            = {formatCurrency(applyingRate.convertedAmount, applyingRate.toCurrency)}
           </div>
         </div>
         <div className="flex flex-col items-center gap-2">
@@ -67,8 +82,7 @@ const WalletPaymentDetail = ({ className }: WalletPaymentDetailProps) => {
             <SVG text={qrValue} options={{ width: 160, margin: 2 }} />
           </div>
           <div className="text-xs text-muted-foreground">
-            QR Code for{' '}
-            {formatFIORACurrency(convertCurrency(usdAmount, CURRENCY.USD, currency), currency)}
+            QR Code for {formatCurrency(actualAmount, currency)}
           </div>
         </div>
 

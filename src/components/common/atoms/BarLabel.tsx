@@ -1,4 +1,6 @@
-import { formatCurrency } from '@/shared/utils';
+import { useCurrencyFormatter } from '@/shared/hooks';
+import { useAppSelector } from '@/store';
+import { RootState } from '@/store/rootReducer';
 import { memo } from 'react';
 
 interface BarLabelProps {
@@ -28,6 +30,9 @@ const BarLabel = ({
   showShadow = true,
   minWidth = 60,
 }: BarLabelProps) => {
+  const { currency } = useAppSelector((state: RootState) => state.settings);
+  const { formatCurrency } = useCurrencyFormatter();
+
   if (width < minWidth) return null;
 
   return (
@@ -42,7 +47,7 @@ const BarLabel = ({
         pointerEvents: 'none',
       }}
     >
-      {renderValue ? renderValue : formatCurrency(value)}
+      {renderValue ? renderValue : formatCurrency(value, currency)}
     </text>
   );
 };
