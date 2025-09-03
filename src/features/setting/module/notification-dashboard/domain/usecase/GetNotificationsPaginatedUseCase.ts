@@ -9,6 +9,7 @@ export interface IGetNotificationsPaginatedUseCase {
     page: number,
     pageSize: number,
     filter?: NotificationDashboardFilterRequest,
+    personal?: boolean,
   ): Promise<NotificationDashboardListPaginated>;
 }
 
@@ -23,8 +24,14 @@ export class GetNotificationsPaginatedUseCase implements IGetNotificationsPagina
     page: number,
     pageSize: number,
     filter?: NotificationDashboardFilterRequest,
+    personal?: boolean,
   ): Promise<NotificationDashboardListPaginated> {
-    return this.notificationDashboardRepository.getNotificationsPaginated(page, pageSize, filter);
+    return this.notificationDashboardRepository.getNotificationsPaginated(
+      page,
+      pageSize,
+      filter,
+      personal,
+    );
   }
 }
 

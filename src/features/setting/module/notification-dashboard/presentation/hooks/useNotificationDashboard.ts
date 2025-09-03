@@ -1,5 +1,6 @@
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useReducer, useRef } from 'react';
+import useNotificationDashboardMode from '.';
 import { notificationDashboardContainer } from '../../di/notificationDashboardDIContainer';
 import { NOTIFICATION_DASHBOARD_TYPES } from '../../di/notificationDashboardDIContainer.type';
 import { IGetNotificationsPaginatedUseCase } from '../../domain/usecase/GetNotificationsPaginatedUseCase';
@@ -14,7 +15,7 @@ import { cleanFilter, convertToTableData } from '../utils';
 export const useNotificationDashboard = () => {
   const dispatch = useAppDispatch();
   const { filter } = useAppSelector((state) => state.notificationDashboard);
-
+  const { isPersonalNotificationDashboard } = useNotificationDashboardMode();
   // Local table state management using reducer
   const [state, dispatchTable] = useReducer(tableReducer, initialState);
 
@@ -29,7 +30,7 @@ export const useNotificationDashboard = () => {
    * @param isLoadMore - Whether this is a load more operation (append vs replace)
    */
   const fetchData = useCallback(
-    async (page: number, pageSize: number, isLoadMore = false) => {
+    async (page: number, pageSize: number, isLoadMore = false, personal?: boolean) => {
       if (isFetching.current) return; // Prevent concurrent API calls
       isFetching.current = true;
 
@@ -48,7 +49,7 @@ export const useNotificationDashboard = () => {
 
         // Clean filter and fetch data
         const clean = cleanFilter(filter);
-        const response = await useCase.execute(page, pageSize, clean);
+        const response = await useCase.execute(page, pageSize, clean, personal);
 
         // Convert response to table data format
         const tableData = response.items.map(convertToTableData);
@@ -91,7 +92,7 @@ export const useNotificationDashboard = () => {
   // Initial data load on component mount
   useEffect(() => {
     if (isInitialLoad.current) {
-      fetchData(1, state.pagination.pageSize, false);
+      fetchData(1, state.pagination.pageSize, false, isPersonalNotificationDashboard);
       isInitialLoad.current = false;
     }
   }, [fetchData]);
@@ -102,7 +103,7 @@ export const useNotificationDashboard = () => {
       dispatchTable({ type: 'SET_PAGE', payload: 1 });
       dispatchTable({ type: 'SET_DATA', payload: [] });
       dispatchTable({ type: 'SET_HAS_MORE', payload: true });
-      fetchData(1, state.pagination.pageSize, false);
+      fetchData(1, state.pagination.pageSize, false, isPersonalNotificationDashboard);
     }
   }, [filter, fetchData]);
 
@@ -113,13 +114,14 @@ export const useNotificationDashboard = () => {
   const loadMore = useCallback(async () => {
     if (!state.hasMore || state.isLoadingMore || isFetching.current) return;
     const nextPage = state.pagination.current + 1;
-    await fetchData(nextPage, state.pagination.pageSize, true);
+    await fetchData(nextPage, state.pagination.pageSize, true, isPersonalNotificationDashboard);
   }, [
     state.hasMore,
     state.isLoadingMore,
     state.pagination.current,
     state.pagination.pageSize,
     fetchData,
+    isPersonalNotificationDashboard,
   ]);
 
   return {
