@@ -39,7 +39,7 @@ const TextareaField: React.FC<TextareaFieldProps> = ({
     <div className="space-y-2 mb-4">
       {label &&
         (typeof label === 'string' ? (
-          <GlobalLabel className="text-base" text={label} required={required} htmlFor={id} />
+          <GlobalLabel className="text-sm" text={label} required={required} htmlFor={id} />
         ) : (
           label
         ))}

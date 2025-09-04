@@ -3,7 +3,11 @@ import { ProcessMembershipMode } from '../../data/api';
 
 export const editTierBenefitSchema = yup.object({
   name: yup.string().required('Name is required'),
-  value: yup.number().required('Value is required'),
+  value: yup
+    .number()
+    .min(0, 'Value must be greater than 0')
+    .positive('Value must be positive')
+    .required('Value is required'),
   unit: yup.string().required('Unit is required'),
   mode: yup.string().required('Mode is required').oneOf(Object.values(ProcessMembershipMode)),
 });

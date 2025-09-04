@@ -11,8 +11,6 @@ import {
   setSlugTierToDelete,
 } from '../../slices';
 import { TierBenefitTable } from '../molecules';
-import { DialogDeleteBenefitTier } from '../organisms';
-import DialogEditBenefitTier from '../organisms/DialogEditBenefitTier';
 import { DynamicFieldTier } from '../schema/editMemberShip.schema';
 
 const SettingTierInputFieldConfig = ({
@@ -42,7 +40,7 @@ const SettingTierInputFieldConfig = ({
 
   return (
     <div className="relative">
-      <div className="max-h-[400px] overflow-y-auto pr-2">
+      <div className="pr-2">
         {/* <FormConfig fields={fields} methods={methods} renderSubmitButton={() => null} /> */}
         <TierBenefitTable
           dynamicTierFields={dynamicTierFields}
@@ -59,12 +57,6 @@ const SettingTierInputFieldConfig = ({
         />
       </div>
       {renderSubmitButton()}
-
-      {/* Dialog Delete Benefit Tier */}
-      <DialogDeleteBenefitTier />
-
-      {/* Dialog Edit Benefit Tier */}
-      <DialogEditBenefitTier />
     </div>
   );
 };

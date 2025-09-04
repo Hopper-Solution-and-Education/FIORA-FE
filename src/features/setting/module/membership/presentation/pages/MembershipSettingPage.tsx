@@ -10,14 +10,12 @@ import {
 import { getListMembershipAsyncThunk } from '../../slices/actions';
 import { useMembershipSettingPage } from '../hooks';
 import { MembershipRankChart, SettingTierAndStory } from '../molecules';
-import { DialogAddBenefitTier } from '../organisms';
+import { DialogAddBenefitTier, DialogDeleteBenefitTier } from '../organisms';
+import DialogEditBenefitTier from '../organisms/DialogEditBenefitTier';
 import DialogEditThresholdBenefitTier from '../organisms/DialogEditThresholdBenefitTier';
 
 const MembershipSettingPage = () => {
   const dispatch = useAppDispatch();
-  const isLoadingUpsertMembership = useAppSelector(
-    (state) => state.memberShipSettings.isLoadingUpsertMembership,
-  );
   const isShowDialogAddBenefitTier = useAppSelector(
     (state) => state.memberShipSettings.isShowDialogAddBenefitTier,
   );
@@ -47,18 +45,13 @@ const MembershipSettingPage = () => {
               {/* Right Section: Settings and Story col-2 */}
               <SettingTierAndStory dynamicTierFields={dynamicTierFields} />
             </div>
-
-            {/* Footer Button */}
-            {/* <div className="flex justify-end">
-              <SubmitButton
-                isDisabled={isLoadingUpsertMembership}
-                formState={methods.formState}
-                isLoading={methods.formState.isSubmitting || isLoadingUpsertMembership}
-              />
-            </div> */}
           </div>
         </form>
       </FormProvider>
+
+      {/* Dialog Edit Benefit Tier */}
+      <DialogEditBenefitTier />
+
       <DialogAddBenefitTier
         open={isShowDialogAddBenefitTier}
         onOpenChange={() => dispatch(setIsShowDialogAddBenefitTier(!isShowDialogAddBenefitTier))}
@@ -67,6 +60,8 @@ const MembershipSettingPage = () => {
         open={isShowDialogEditThresholdBenefitTier}
         onOpenChange={(open) => dispatch(setIsShowDialogEditThresholdBenefitTier(open))}
       />
+      {/* Dialog Delete Benefit Tier */}
+      <DialogDeleteBenefitTier />
     </React.Fragment>
   );
 };

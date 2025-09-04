@@ -23,9 +23,11 @@ const EditTierBenefitForm = () => {
     (state) => state.memberShipSettings.editBenefitTier.idTierToEdit,
   );
 
-  const { handleSubmit } = methods;
+  const isLoadingAddUpdateBenefitTier = useAppSelector(
+    (state) => state.memberShipSettings.isLoadingAddUpdateBenefitTier,
+  );
 
-  console.log('data', methods.formState.isValid);
+  const { handleSubmit } = methods;
 
   const onSubmit = (data: EditTierBenefitFormValues) => {
     if (idTierToEdit) {
@@ -38,10 +40,10 @@ const EditTierBenefitForm = () => {
               value: Number(data.value || 0),
             },
             membershipBenefit: {
-              name: benefitTierToEdit?.label || '',
-              slug: benefitTierToEdit?.slug || benefitTierToEdit?.key || '',
+              name: data.name || '',
+              slug: benefitTierToEdit?.slug || '',
               description: '',
-              suffix: benefitTierToEdit?.suffix,
+              suffix: data.unit,
               userId: session?.user?.id || '',
             },
           },
@@ -68,6 +70,7 @@ const EditTierBenefitForm = () => {
         onBack={() => dispatch(setIsShowDialogEditBenefitTier(false))}
         gridLayout
         gridGap="gap-4"
+        isLoading={isLoadingAddUpdateBenefitTier}
       />
     </form>
   );

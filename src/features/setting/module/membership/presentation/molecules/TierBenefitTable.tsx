@@ -21,8 +21,11 @@ const TierBenefitTable = ({
   onEditBenefitTier,
   onDeleteBenefitTier,
 }: TierBenefitTableProps) => {
+  console.log('TierBenefitTable - dynamicTierFields:', dynamicTierFields);
+  console.log('TierBenefitTable - total items:', dynamicTierFields.length);
+
   return (
-    <div className="h-full max-h-[448px] overflow-hidden">
+    <div className="h-full max-h-[500px] overflow-y-auto">
       <Table className="w-full table-fixed">
         {/* Định nghĩa độ rộng cột */}
         <colgroup>
@@ -47,7 +50,7 @@ const TierBenefitTable = ({
 
         <TableBody>
           {dynamicTierFields.map((item, index) => (
-            <TableRow key={item.label} className="h-14">
+            <TableRow key={item.id} className="h-14">
               <TableCell className="hidden sm:table-cell text-center font-bold text-blue-400 py-3">
                 {index + 1}
               </TableCell>

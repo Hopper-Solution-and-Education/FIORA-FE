@@ -1,13 +1,23 @@
 import { GlobalDialog } from '@/components/common/molecules';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect } from 'react';
-import { FormProvider, useFormContext } from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
+import { ProcessMembershipMode } from '../../data/api';
 import { setIsShowDialogEditBenefitTier } from '../../slices';
 import { EditTierBenefitForm } from '../molecules';
-import { EditTierBenefitFormValues } from '../schema';
+import {
+  defaultEditTierBenefitValue,
+  EditTierBenefitFormValues,
+  editTierBenefitSchema,
+} from '../schema';
 
 const DialogEditBenefitTier = () => {
-  const methods = useFormContext<EditTierBenefitFormValues>();
+  const methods = useForm<EditTierBenefitFormValues>({
+    resolver: yupResolver(editTierBenefitSchema),
+    defaultValues: defaultEditTierBenefitValue,
+    mode: 'onBlur',
+  });
   const isShowDialogEditBenefitTier = useAppSelector(
     (state) => state.memberShipSettings.editBenefitTier.isShowDialogEditBenefitTier,
   );
@@ -26,9 +36,10 @@ const DialogEditBenefitTier = () => {
         name: benefitTierToEdit?.label || '',
         value: benefitTierToEdit?.value || 0,
         unit: benefitTierToEdit?.suffix || '',
+        mode: ProcessMembershipMode.UPDATE, // Default mode
       });
     }
-  }, [benefitTierToEdit]);
+  }, [benefitTierToEdit, methods]);
 
   return (
     <GlobalDialog
@@ -45,6 +56,7 @@ const DialogEditBenefitTier = () => {
       customLeftButton={<></>}
       customRightButton={<></>}
       isLoading={isLoadingAddUpdateBenefitTier}
+      type="info"
     />
   );
 };

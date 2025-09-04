@@ -92,6 +92,7 @@ const DialogDeleteBenefitTier = () => {
                     .then(() => {
                       dispatch(getListMembershipAsyncThunk({ page: 1, limit: 10 }));
                       dispatch(setIsShowDialogDeleteBenefitTier(false));
+                      setDeleteMode(ProcessMembershipMode.DELETE);
                     })
                     .catch((error) => {
                       toast.error(error);

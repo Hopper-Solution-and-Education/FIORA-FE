@@ -14,18 +14,23 @@ export const useMembershipSettingPage = () => {
 
   const selectedMembership = useAppSelector((state) => state.memberShipSettings.selectedMembership);
 
-  const dynamicTierFields = useMemo(
-    () =>
+  const dynamicTierFields = useMemo(() => {
+    console.log('selectedMembership:', selectedMembership);
+    console.log('tierBenefits:', selectedMembership?.tierBenefits);
+
+    const fields =
       selectedMembership?.tierBenefits.map((benefit) => ({
         id: benefit.id,
         slug: benefit.slug,
         key: benefit.slug,
         label: benefit.name,
         suffix: benefit.suffix,
-        value: benefit.value,
-      })) ?? [],
-    [selectedMembership?.tierBenefits],
-  );
+        value: Number(benefit.value) || 0,
+      })) ?? [];
+
+    console.log('dynamicTierFields:', fields);
+    return fields;
+  }, [selectedMembership?.tierBenefits]);
 
   const editMemberShipSchema = useMemo(
     () => buildDynamicTierSchema(dynamicTierFields),
