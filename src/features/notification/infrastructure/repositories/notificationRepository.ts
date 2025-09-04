@@ -100,7 +100,6 @@ class NotificationRepository implements INotificationRepository {
       query.take = take;
     }
     const notifications = (await prisma.notification.findMany(query)) as any[];
-
     const userIds = Array.from(new Set(notifications.map((n) => n.createdBy).filter(Boolean)));
     const users = userIds.length
       ? await prisma.user.findMany({
@@ -260,24 +259,27 @@ class NotificationRepository implements INotificationRepository {
 
   async createBoxNotification(input: CreateBoxNotificationInput): Promise<any> {
     const { title, type, attachmentId, deepLink, message, emails, notifyTo } = input;
-    let users: { id: string }[] = [];
+    let users: { id: string; email: string }[] = [];
 
     if (notifyTo === 'ALL') {
-      users = await prisma.user.findMany({ where: { isDeleted: false }, select: { id: true } });
+      users = await prisma.user.findMany({
+        where: { isDeleted: false },
+        select: { id: true, email: true },
+      });
     } else if (notifyTo === 'ROLE_ADMIN') {
       users = await prisma.user.findMany({
         where: { isDeleted: false, role: 'Admin' },
-        select: { id: true },
+        select: { id: true, email: true },
       });
     } else if (notifyTo === 'ROLE_CS') {
       users = await prisma.user.findMany({
         where: { isDeleted: false, role: 'CS' },
-        select: { id: true },
+        select: { id: true, email: true },
       });
     } else if (notifyTo === 'ROLE_USER') {
       users = await prisma.user.findMany({
         where: { isDeleted: false, role: 'User' },
-        select: { id: true },
+        select: { id: true, email: true },
       });
     } else if (notifyTo === 'PERSONAL') {
       if (!emails || emails.length === 0) {
@@ -287,7 +289,7 @@ class NotificationRepository implements INotificationRepository {
       }
       users = await prisma.user.findMany({
         where: { isDeleted: false, email: { in: emails } },
-        select: { id: true },
+        select: { id: true, email: true },
       });
     }
     if (!users || users.length === 0) {
@@ -297,7 +299,25 @@ class NotificationRepository implements INotificationRepository {
     }
     return await prisma.$transaction(async (tx) => {
       // 1. Tạo notification trước
-      const notification = await tx.notification.create({
+      let notification = null;
+      if (notifyTo === 'ROLE_CS' || notifyTo === 'ROLE_ADMIN') {
+        const emailsHighRole = users.map((u) => u.email);
+        notification = await tx.notification.create({
+          data: {
+            notifyTo: notifyTo,
+            emails: emailsHighRole || [],
+            emailTemplateId: null,
+            attachmentId: attachmentId || null,
+            title,
+            message,
+            type: type,
+            deepLink: deepLink || null,
+            channel: ChannelType.BOX,
+            createdAt: new Date(),
+          },
+        });
+      }
+      notification = await tx.notification.create({
         data: {
           notifyTo: notifyTo,
           emails: emails || [],
