@@ -1,3 +1,5 @@
+import { useGetProfileQuery } from '@/features/profile/store/api/profileApi';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import ConfirmExitDialog from '../../../../components/common/organisms/ConfirmExitDialog';
@@ -7,9 +9,24 @@ const ContactUsPage = () => {
   const router = useRouter();
   const [openConfirmExitDialog, setOpenConfirmExitDialog] = useState(false);
 
+  // Get user session
+  const { status } = useSession() as {
+    data: any;
+    status: 'loading' | 'authenticated' | 'unauthenticated';
+  };
+
+  // Get user profile data
+  const { data: user, isLoading } = useGetProfileQuery(undefined, {
+    skip: status !== 'authenticated',
+  });
+
   return (
     <div className="container mx-auto px-6 space-y-6">
-      <ContactUsForm setOpenConfirmExitDialog={setOpenConfirmExitDialog} />
+      {isLoading ? (
+        <></>
+      ) : (
+        <ContactUsForm setOpenConfirmExitDialog={setOpenConfirmExitDialog} user={user} />
+      )}
 
       <ConfirmExitDialog
         open={openConfirmExitDialog}

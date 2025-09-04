@@ -424,12 +424,12 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                                 (
                                 {data?.productsRelation?.[0]?.product?.currency
                                   ? formatCurrency(
-                                    Number(product.price),
-                                    data.productsRelation?.[0]?.product?.currency,
-                                    {
-                                      applyExchangeRate: false,
-                                    },
-                                  )
+                                      Number(product.price),
+                                      data.productsRelation?.[0]?.product?.currency,
+                                      {
+                                        applyExchangeRate: false,
+                                      },
+                                    )
                                   : 'Unknown'}
                                 )
                               </div>

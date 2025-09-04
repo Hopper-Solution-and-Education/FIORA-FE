@@ -46,7 +46,7 @@ class WalletUseCase {
     // private _notificationUsecase = notificationUseCase,
     private _userUseCase = userUseCase,
     private _notificationUsecase = notificationUseCase,
-  ) { }
+  ) {}
 
   async createWallet(data: Prisma.WalletUncheckedCreateInput) {
     return this._walletRepository.createWallet(data);

@@ -1,5 +1,4 @@
 import { prisma } from '@/config';
-import { AppError } from '@/shared/lib/responseUtils/errors';
 import {
   ChannelType,
   Notification,
@@ -105,9 +104,9 @@ class NotificationRepository implements INotificationRepository {
     const userIds = Array.from(new Set(notifications.map((n) => n.createdBy).filter(Boolean)));
     const users = userIds.length
       ? await prisma.user.findMany({
-        where: { id: { in: userIds } },
-        select: { id: true, email: true, name: true },
-      })
+          where: { id: { in: userIds } },
+          select: { id: true, email: true, name: true },
+        })
       : [];
     const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
     return notifications.map((n) => mapNotificationDashboardItem(n, userMap));

@@ -199,4 +199,3 @@ export enum TransactionType {
 }
 
 export * from './getSupportDataResponse';
-

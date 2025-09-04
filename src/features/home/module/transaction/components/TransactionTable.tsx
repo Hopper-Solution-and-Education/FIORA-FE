@@ -64,8 +64,9 @@ const SortArrowBtn = ({
   isActivated: boolean;
 }) => (
   <div
-    className={` h-fit transition-transform duration-300 overflow-visible ${isActivated && !(sortOrder === 'asc' || sortOrder === 'none') ? 'rotate-0' : 'rotate-180'
-      }`}
+    className={` h-fit transition-transform duration-300 overflow-visible ${
+      isActivated && !(sortOrder === 'asc' || sortOrder === 'none') ? 'rotate-0' : 'rotate-180'
+    }`}
   >
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
@@ -294,11 +295,11 @@ const TransactionTable = () => {
     const columns =
       Object.keys(visibleColumns).length > 0
         ? Object.keys(visibleColumns)?.reduce((acc, key) => {
-          if (visibleColumns[key as TransactionColumn].index >= 0) {
-            acc[key as TransactionColumn] = visibleColumns[key as TransactionColumn];
-          }
-          return acc;
-        }, {} as TransactionTableColumnKey)
+            if (visibleColumns[key as TransactionColumn].index >= 0) {
+              acc[key as TransactionColumn] = visibleColumns[key as TransactionColumn];
+            }
+            return acc;
+          }, {} as TransactionTableColumnKey)
         : DEFAULT_TRANSACTION_TABLE_COLUMNS;
 
     return Object.fromEntries(
