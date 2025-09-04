@@ -28,7 +28,7 @@ function mapNotificationDashboardItem(n: any, userMap: Record<string, any>): any
     id: n.id,
     sendDate: n.createdAt,
     notifyTo: n.notifyTo,
-    subject: n.message,
+    subject: n.title,
     recipients: n.emails,
     sender: n.createdBy ? userMap[n.createdBy]?.email || n.createdBy : 'System',
     notifyType: getNotificationStatus(n.channel, n.emailLogs),
