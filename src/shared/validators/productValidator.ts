@@ -1,4 +1,3 @@
-import { Currency } from '@prisma/client';
 import Joi from 'joi';
 import { excludeEmojiPattern } from '../constants';
 
@@ -39,7 +38,7 @@ export const productBodySchema = Joi.object({
   type: Joi.string().required().messages({
     'any.required': 'Product type is required',
   }),
-  currency: Joi.string().valid(Currency.VND, Currency.USD).optional().messages({
+  currency: Joi.string().optional().messages({
     'any.only': 'Product currency must be either VND or USD',
   }),
   price: Joi.number().required().messages({

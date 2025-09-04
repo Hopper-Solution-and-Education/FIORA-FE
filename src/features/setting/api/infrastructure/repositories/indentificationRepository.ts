@@ -102,6 +102,12 @@ class IdentificationRepository {
       where: {
         userId: id,
       },
+      include: {
+        fileBack: true,
+        fileFront: true,
+        fileLocation: true,
+        filePhoto: true,
+      },
     });
   }
 

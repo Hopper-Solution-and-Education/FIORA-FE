@@ -35,7 +35,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   try {
     const { categoryId, fiscalYear, type, bottomUpPlan, actualSumUpPlan } = req.body;
 
-    const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
+    const currency = (req.headers['x-user-currency'] as string) ?? Currency.USD;
 
     if (!fiscalYear) {
       return res.status(RESPONSE_CODE.BAD_REQUEST).json(

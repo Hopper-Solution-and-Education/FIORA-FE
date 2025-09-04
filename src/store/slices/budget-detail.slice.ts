@@ -1,5 +1,3 @@
-'use client';
-
 import { Category } from '@/features/home/module/budgets/summary-detail/data/dto/response/CategoryResponseDTO';
 import { TableData } from '@/features/home/module/budgets/summary-detail/presentation/types/table.type';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';

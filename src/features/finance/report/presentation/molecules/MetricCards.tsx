@@ -1,7 +1,7 @@
 import { MetricCard } from '@/components/common/metric';
 import { Skeleton } from '@/components/ui/skeleton';
+import useCurrencyFormatter from '@/shared/hooks/useCurrencyFormatter';
 import { Currency } from '@/shared/types';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { useAppSelector } from '@/store';
 import { ArrowDownIcon, ArrowUpIcon, TrendingUpIcon } from 'lucide-react';
 import { FinanceByDate, FinanceResult } from '../../domain/entities';
@@ -15,6 +15,7 @@ const MetricCards = () => {
   const financeByPartner = useAppSelector((state) => state.financeControl.financeByPartner);
   const isLoading = useAppSelector((state) => state.financeControl.isLoadingGetFinance);
   const currency = useAppSelector((state) => state.settings.currency);
+  const { getExchangeAmount } = useCurrencyFormatter();
 
   const calculateTotals = (data: FinanceResult[] | FinanceByDate[]) => {
     const totals = {
@@ -25,10 +26,18 @@ const MetricCards = () => {
 
     data.forEach((item) => {
       if ('totalIncome' in item) {
-        const income =
-          convertCurrency(Number(item.totalIncome), item.currency as Currency, currency) || 0;
-        const expense =
-          convertCurrency(Number(item.totalExpense), item.currency as Currency, currency) || 0;
+        const income = getExchangeAmount({
+          amount: Number(item.totalIncome),
+          fromCurrency: item.currency as Currency,
+          toCurrency: currency,
+        }).convertedAmount;
+
+        const expense = getExchangeAmount({
+          amount: Number(item.totalExpense),
+          fromCurrency: item.currency as Currency,
+          toCurrency: currency,
+        }).convertedAmount;
+
         const total = income - expense;
 
         totals.income += income;

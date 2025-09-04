@@ -155,7 +155,7 @@ export function TableV2({
       getCanMultiSelect: () => false,
       getCanExpand: () => false,
       getIsExpanded: () => false,
-      getToggleExpandedHandler: () => () => { },
+      getToggleExpandedHandler: () => () => {},
       getLeafRows: () => [],
       table,
     } as unknown as Row<any>;
@@ -328,9 +328,9 @@ export function TableV2({
                   const selectedRows = value
                     ? [...table.getSelectedRowModel().rows.map((r) => r.original)]
                     : table
-                      .getSelectedRowModel()
-                      .rows.filter((r) => r.id !== row.id)
-                      .map((r) => r.original);
+                        .getSelectedRowModel()
+                        .rows.filter((r) => r.id !== row.id)
+                        .map((r) => r.original);
                   const selectedKeys = selectedRows.map((row) => row[rowKey] as string | number);
                   rowSelection.onSelect?.(row.original, !!value, selectedRows);
                   rowSelection.onChange?.(selectedKeys, selectedRows);
@@ -425,9 +425,10 @@ export function TableV2({
           >
             <Table
               containerClassName={tableContainerClassName}
+              tableHeight={tableHeight}
               className={cn(
                 bordered &&
-                'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
+                  'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
                 size === 'small' ? 'text-sm' : '',
                 'w-full',
               )}
@@ -454,9 +455,9 @@ export function TableV2({
                               size === 'small' ? 'h-8 px-2' : 'h-10 px-4',
                               'font-medium',
                               meta?.fixed === 'left' &&
-                              'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border border-r border-border',
+                                'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border border-r border-border',
                               meta?.fixed === 'right' &&
-                              'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border border-l border-border',
+                                'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border border-l border-border',
                             )}
                           >
                             {flexRender(header.column.columnDef.header, header.getContext())}
@@ -490,9 +491,9 @@ export function TableV2({
                             meta?.align === 'center' && 'text-center',
                             meta?.align === 'right' && 'text-right',
                             meta?.fixed === 'left' &&
-                            'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border border-r border-border',
+                              'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border border-r border-border',
                             meta?.fixed === 'right' &&
-                            'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border border-l border-border',
+                              'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border border-l border-border',
                           )}
                           style={{
                             width: meta?.width,
@@ -575,9 +576,10 @@ export function TableV2({
           >
             <Table
               containerClassName={tableContainerClassName}
+              tableHeight={tableHeight}
               className={cn(
                 bordered &&
-                'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
+                  'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
                 size === 'small' ? 'text-sm' : '',
                 'w-full',
               )}
@@ -603,9 +605,9 @@ export function TableV2({
                             meta?.align === 'center' && 'text-center',
                             meta?.align === 'right' && 'text-right',
                             meta?.fixed === 'left' &&
-                            'sticky left-0 z-10 bg-muted/30 shadow-[1px_0_0_0] shadow-border border-r border-border',
+                              'sticky left-0 z-10 bg-muted/30 shadow-[1px_0_0_0] shadow-border border-r border-border',
                             meta?.fixed === 'right' &&
-                            'sticky right-0 z-10 bg-muted/30 shadow-[-1px_0_0_0] shadow-border border-l border-border',
+                              'sticky right-0 z-10 bg-muted/30 shadow-[-1px_0_0_0] shadow-border border-l border-border',
                           )}
                         >
                           {flexRender(column.header, {} as any)}
@@ -708,7 +710,7 @@ export function TableV2({
           containerClassName={tableContainerClassName}
           className={cn(
             bordered &&
-            'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
+              'border-collapse [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border',
             size === 'small' && 'p-2',
             'w-full',
           )}
@@ -728,18 +730,19 @@ export function TableV2({
                         width: (header.column.columnDef.meta as TableV2Meta)?.width,
                       }}
                       className={cn(
-                        `h-10 px-4 text-muted-foreground font-medium ${(header.column.columnDef.meta as TableV2Meta)?.bgColorClassName
+                        `h-10 px-4 text-muted-foreground font-medium ${
+                          (header.column.columnDef.meta as TableV2Meta)?.bgColorClassName
                         }`,
                         (header.column.columnDef.meta as TableV2Meta)?.headerAlign === 'center' &&
-                        'text-center' &&
-                        'justify-items-center',
+                          'text-center' &&
+                          'justify-items-center',
                         (header.column.columnDef.meta as TableV2Meta)?.headerAlign === 'right' &&
-                        'text-right' &&
-                        'justify-items-end',
+                          'text-right' &&
+                          'justify-items-end',
                         (header.column.columnDef.meta as TableV2Meta)?.fixed === 'left' &&
-                        'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border border-r border-border',
+                          'sticky left-0 z-10 bg-background shadow-[1px_0_0_0] shadow-border border-r border-border',
                         (header.column.columnDef.meta as TableV2Meta)?.fixed === 'right' &&
-                        'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border border-l border-border',
+                          'sticky right-0 z-10 bg-background shadow-[-1px_0_0_0] shadow-border border-l border-border',
                       )}
                     >
                       {header.isPlaceholder
@@ -780,9 +783,9 @@ export function TableV2({
                     rowHover && 'hover:bg-muted/20',
                     rowCursor && 'cursor-pointer',
                     parentRowWithChildren.fixed === 'top' &&
-                    'sticky-top bg-white dark:bg-gray-900 hover:bg-white dark:hover:bg-gray-900',
+                      'sticky-top bg-white dark:bg-gray-900 hover:bg-white dark:hover:bg-gray-900',
                     parentRowWithChildren.fixed === 'bottom' &&
-                    'sticky-bottom bg-white dark:bg-gray-900 hover:bg-white dark:hover:bg-gray-900',
+                      'sticky-bottom bg-white dark:bg-gray-900 hover:bg-white dark:hover:bg-gray-900',
                     isLastFixedTop && 'fixed-top-shadow-bottom',
                     isFirstFixedBottom && 'fixed-bottom-shadow-top',
                   )}
@@ -828,9 +831,9 @@ export function TableV2({
                           columnMeta?.align === 'center' && 'text-center',
                           columnMeta?.align === 'right' && 'text-right',
                           columnMeta?.fixed === 'left' &&
-                          'sticky left-0 z-30 bg-background shadow-[1px_0_0_0] shadow-border border-r border-border',
+                            'sticky left-0 z-30 bg-background shadow-[1px_0_0_0] shadow-border border-r border-border',
                           columnMeta?.fixed === 'right' &&
-                          'sticky right-0 z-30 bg-background shadow-[-1px_0_0_0] shadow-border border-l border-border',
+                            'sticky right-0 z-30 bg-background shadow-[-1px_0_0_0] shadow-border border-l border-border',
                         )}
                         style={{
                           width: columnMeta?.width,
@@ -860,7 +863,7 @@ export function TableV2({
                         rowCursor && 'cursor-pointer',
                         child.fixed === 'top' && 'sticky top-0 z-20 bg-white dark:bg-gray-900',
                         child.fixed === 'bottom' &&
-                        'sticky bottom-0 z-20 bg-white dark:bg-gray-900',
+                          'sticky bottom-0 z-20 bg-white dark:bg-gray-900',
                       )}
                       onClick={() =>
                         onRowClick?.({
@@ -900,9 +903,9 @@ export function TableV2({
                               columnMeta?.align === 'right' && 'text-right',
                               columnMeta?.bgColorClassName,
                               columnMeta?.fixed === 'left' &&
-                              'sticky left-0 z-30 bg-background shadow-[1px_0_0_0] shadow-border border-r border-border',
+                                'sticky left-0 z-30 bg-background shadow-[1px_0_0_0] shadow-border border-r border-border',
                               columnMeta?.fixed === 'right' &&
-                              'sticky right-0 z-30 bg-background shadow-[-1px_0_0_0] shadow-border border-l border-border',
+                                'sticky right-0 z-30 bg-background shadow-[-1px_0_0_0] shadow-border border-l border-border',
                               'text-gray-700 dark:text-gray-300',
                             )}
                             style={{

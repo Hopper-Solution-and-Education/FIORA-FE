@@ -9,7 +9,7 @@ export const maxDuration = 30; // 30 seconds
 
 export default withAuthorization({
   GET: ['Admin', 'CS'],
-})((request: NextApiRequest, response: NextApiResponse, userId: string) => {
+})((request: NextApiRequest, response: NextApiResponse) => {
   switch (request.method) {
     case 'GET':
       return GET(response);

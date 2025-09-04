@@ -120,6 +120,59 @@ class NotificationUseCase {
     };
   }
 
+  async getNotificationsPaginationByUser({
+    page = 1,
+    pageSize = 20,
+    filters = {},
+    search = '',
+    userId,
+  }: {
+    page?: number;
+    pageSize?: number;
+    filters?: any;
+    search?: string;
+    userId: string;
+  }): Promise<{
+    data: NotificationDashboardItem[];
+    total: number;
+    totalPage: number;
+    page: number;
+    pageSize: number;
+  }> {
+    let notifications = (await this.notificationRepository.getNotificationsPaginationByUser(
+      userId,
+      0,
+      10000,
+      filters,
+    )) as unknown as NotificationDashboardItem[];
+
+    if (filters && filters.status) {
+      const statusArr = Array.isArray(filters.status) ? filters.status : [filters.status];
+      notifications = notifications.filter((n) => statusArr.includes(n.status));
+    }
+
+    if (search) {
+      const searchLower = search.toLowerCase();
+      notifications = notifications.filter((n) =>
+        DASHBOARD_FIELDS.filter((field) => n[field] !== undefined && n[field] !== null).some(
+          (field) => String(n[field]).toLowerCase().includes(searchLower),
+        ),
+      );
+    }
+
+    const total = notifications.length;
+    const totalPage = Math.ceil(total / pageSize);
+    const data = notifications.slice((page - 1) * pageSize, page * pageSize);
+
+    return {
+      data,
+      total,
+      totalPage,
+      page,
+      pageSize,
+    };
+  }
+
   async createBoxNotification(input: CreateBoxNotificationInput) {
     return this.notificationRepository.createBoxNotification(input);
   }

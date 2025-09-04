@@ -30,4 +30,10 @@ export interface INotificationRepository {
   getNotificationFilterOptions(): Promise<NotificationFilterOptions>;
   markReadNotification(id: string): Promise<any>;
   checkIfNotificationBelongToUser(id: string, userId: string): Promise<boolean>;
+  getNotificationsPaginationByUser(
+    userId: string,
+    skip: number,
+    take: number,
+    filters?: Record<string, any>,
+  ): Promise<Notification[]>;
 }

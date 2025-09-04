@@ -12,7 +12,7 @@ import {
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default withAuthorization({
-  GET: ['Admin'],
+  GET: ['User', 'Admin'],
   POST: ['Admin'],
   PUT: ['Admin'],
   DELETE: ['Admin'],
@@ -33,7 +33,7 @@ export default withAuthorization({
 
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const exchangeRateList = await exchangeRateUseCase.getAllExchangeRate();
+    const exchangeRateList = await exchangeRateUseCase.getAllExchangeRateSetting();
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.GET_EXCHANGE_RATE_SUCCESS, exchangeRateList));

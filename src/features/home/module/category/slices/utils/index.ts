@@ -23,6 +23,9 @@ export const transformCategories = (rawCategories: RawCategory[]): Category[] =>
 
       createdBy: raw.createdBy,
       updatedBy: raw.updatedBy,
+
+      fromTransactions: raw.fromTransactions ?? [],
+      toTransactions: raw.toTransactions ?? [],
     };
     categoryMap.set(raw.id, category);
   });

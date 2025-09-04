@@ -1,9 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatFIORACurrency } from '@/config/FIORANumberFormat';
 import LucieIcon from '@/features/home/module/category/components/LucieIcon';
 import { cn } from '@/lib/utils';
 import { CURRENCY } from '@/shared/constants';
-import { Currency } from '@/shared/types';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { isImageUrl } from '@/shared/utils';
 import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
 import Image from 'next/image';
@@ -15,7 +14,7 @@ interface MetricCardProps {
   description?: string;
   icon?: string | React.ReactNode;
   className?: string;
-  currency?: Currency;
+  currency?: string;
   trend?: {
     value: string;
     isPositive: boolean;
@@ -32,6 +31,7 @@ const MetricCard = ({
   trend,
   currency,
 }: MetricCardProps) => {
+  const { formatCurrency } = useCurrencyFormatter();
   const getCardColor = () => {
     switch (type) {
       case 'income':
@@ -109,7 +109,7 @@ const MetricCard = ({
       </CardHeader>
       <CardContent>
         <div className={cn('text-xl sm:text-2xl font-bold', getCardColor())}>
-          {formatFIORACurrency(value, currency || CURRENCY.FX)}
+          {formatCurrency(value, currency || CURRENCY.FX)}
         </div>
         {(description || trend) && (
           <div className="mt-1 flex items-center text-[10px] sm:text-xs">

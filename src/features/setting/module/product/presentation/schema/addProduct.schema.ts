@@ -1,4 +1,5 @@
-import { Currency, ProductType } from '@prisma/client';
+import { CURRENCY } from '@/shared/constants';
+import { ProductType } from '@prisma/client';
 import * as yup from 'yup';
 
 const itemSchema = yup.object().shape({
@@ -61,7 +62,7 @@ export const defaultProductFormValue: any = {
   type: 'Product',
   catId: '',
   items: [],
-  currency: Currency.VND,
+  currency: CURRENCY.USD,
   // startDate: new Date(),
   // endDate: new Date(),
 };

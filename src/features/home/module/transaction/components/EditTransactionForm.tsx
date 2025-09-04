@@ -11,6 +11,7 @@ interface EditTransactionFormProps {
   onSuccess?: () => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const EditTransactionForm = ({ initialData, onSuccess }: EditTransactionFormProps) => {
   const params = useParams();
   const transactionId = params?.id as string;

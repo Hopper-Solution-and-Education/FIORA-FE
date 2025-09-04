@@ -1,13 +1,15 @@
 'use client';
 
-import { StackedBarChartSkeleton } from '@/components/common/organisms';
 import PositiveNegativeStackBarChart from '@/components/common/charts/positive-negative-stack-bar-chart';
+import { StackedBarChartSkeleton } from '@/components/common/organisms';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppSelector } from '@/store';
 import { legendItems, mapBudgetToData } from '../../utils';
 import { useBudgetDashboardLogic } from '../hooks';
 
 const BudgetDashboard = () => {
   const currency = useAppSelector((state) => state.settings.currency);
+  const { getExchangeAmount } = useCurrencyFormatter();
   const {
     budgets,
     isLoading,
@@ -36,7 +38,7 @@ const BudgetDashboard = () => {
         ) : (
           // Render budget charts
           budgets.map((budgetItem) => {
-            const data = mapBudgetToData(budgetItem, budgetCurrency, currency);
+            const data = mapBudgetToData(budgetItem, budgetCurrency, currency, getExchangeAmount);
             return (
               <div
                 key={budgetItem.year}

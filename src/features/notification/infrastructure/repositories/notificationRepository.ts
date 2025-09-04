@@ -1,5 +1,4 @@
 import { prisma } from '@/config';
-import { AppError } from '@/shared/lib/responseUtils/errors';
 import {
   ChannelType,
   Notification,
@@ -80,6 +79,7 @@ class NotificationRepository implements INotificationRepository {
   updateNotification(): Promise<Notification> {
     throw new Error('Method not implemented.');
   }
+
   async getNotificationsPagination(
     skip: number,
     take?: number | null,
@@ -99,6 +99,49 @@ class NotificationRepository implements INotificationRepository {
     if (typeof take === 'number' && take > 0) {
       query.take = take;
     }
+    const notifications = (await prisma.notification.findMany(query)) as any[];
+
+    const userIds = Array.from(new Set(notifications.map((n) => n.createdBy).filter(Boolean)));
+    const users = userIds.length
+      ? await prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: { id: true, email: true, name: true },
+        })
+      : [];
+    const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
+    return notifications.map((n) => mapNotificationDashboardItem(n, userMap));
+  }
+
+  async getNotificationsPaginationByUser(
+    userId: string,
+    skip: number,
+    take?: number | null,
+    filters: Record<string, any> = {},
+  ): Promise<any[]> {
+    const dbFilters = mapDashboardFilterToDB(filters);
+
+    const query: any = {
+      skip,
+      orderBy: { createdAt: 'desc' },
+      where: {
+        ...dbFilters,
+        userNotifications: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+      include: {
+        userNotifications: true,
+        emailLogs: true,
+        emailTemplate: true,
+      },
+    };
+
+    if (typeof take === 'number' && take > 0) {
+      query.take = take;
+    }
+
     const notifications = (await prisma.notification.findMany(query)) as any[];
 
     const userIds = Array.from(new Set(notifications.map((n) => n.createdBy).filter(Boolean)));
@@ -238,7 +281,9 @@ class NotificationRepository implements INotificationRepository {
       });
     } else if (notifyTo === 'PERSONAL') {
       if (!emails || emails.length === 0) {
-        throw new AppError(400, 'No email provided for PERSONAL notification');
+        console.log('No email provided for PERSONAL notification');
+        return;
+        // throw new AppError(400, 'No email provided for PERSONAL notification');
       }
       users = await prisma.user.findMany({
         where: { isDeleted: false, email: { in: emails } },
@@ -246,7 +291,9 @@ class NotificationRepository implements INotificationRepository {
       });
     }
     if (!users || users.length === 0) {
-      throw new AppError(400, 'No user found for this role or email');
+      console.log('No user found for this role or email');
+      return;
+      // throw new AppError(400, 'No user found for this role or email');
     }
     return await prisma.$transaction(async (tx) => {
       // 1. Tạo notification trước
@@ -291,9 +338,13 @@ class NotificationRepository implements INotificationRepository {
   }
 
   // Lấy 20 UserNotification chưa đọc gần nhất theo userId, include notification và các bảng liên quan
-  async getUserNotificationsUnread(userId: string, take: number = 20): Promise<any[]> {
+  async getUserNotificationsUnread(
+    userId: string,
+    channel: ChannelType,
+    take: number = 20,
+  ): Promise<any[]> {
     return prisma.userNotification.findMany({
-      where: { userId, isRead: false },
+      where: { userId, isRead: false, AND: { notification: { channel: channel } } },
       orderBy: { createdAt: 'desc' },
       take,
       include: {

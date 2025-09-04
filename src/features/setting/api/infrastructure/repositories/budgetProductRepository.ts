@@ -1,7 +1,7 @@
 import { prisma } from '@/config';
 import { FetchTransactionResponse } from '@/shared/types/budget.types';
 import { BudgetDetails, BudgetsTable, Prisma, TransactionType } from '@prisma/client';
-import { IBudgetRepository } from '../../repositories/budgetRepository';
+import { IBudgetRepository } from '../../repositories/budgetRepository.interface';
 
 class BudgetRepository implements IBudgetRepository {
   async createBudget(
