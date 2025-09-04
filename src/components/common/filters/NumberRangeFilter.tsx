@@ -3,7 +3,10 @@
 import InputCurrency from '@/components/common/forms/input/InputCurrency';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { CURRENCY } from '@/shared/constants';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { cn } from '@/shared/utils';
+import { useAppSelector } from '@/store';
 import { renderRangeSlider } from './renderRangeSlider';
 
 interface NumberRangeFilterProps {
@@ -15,29 +18,36 @@ interface NumberRangeFilterProps {
   label?: string;
   minLabel?: string;
   maxLabel?: string;
-  tooltipFormat?: (value: number) => string;
+  tooltipFormat?: (value: number, currency: string) => string;
   step?: number;
   currency?: string;
 }
 
-const NumberRangeFilter = ({
-  minValue,
-  maxValue,
-  minRange,
-  maxRange,
-  onValueChange,
-  label = 'Range',
-  minLabel = 'Min',
-  maxLabel = 'Max',
-  tooltipFormat,
-  step = 1,
-  currency = 'USD',
-}: NumberRangeFilterProps) => {
-  // Calculate an appropriate step based on the range size if not provided
-  const calculatedStep =
-    step === 1 && maxRange - minRange > 1000
-      ? Math.pow(10, Math.floor(Math.log10((maxRange - minRange) / 100)))
-      : step;
+const NumberRangeFilter = (props: NumberRangeFilterProps) => {
+  const { currency: settingCurrency } = useAppSelector((state) => state.settings);
+  const { formatCurrency, getExchangeRate } = useCurrencyFormatter();
+
+  const {
+    minValue: baseCurrencyMinValue,
+    maxValue: baseCurrencyMaxValue,
+    minRange: baseCurrencyMinRange,
+    maxRange: baseCurrencyMaxRange,
+    onValueChange,
+    label = 'Range',
+    minLabel = 'Min',
+    maxLabel = 'Max',
+    tooltipFormat = formatCurrency,
+    step = 1, // eslint-disable-line @typescript-eslint/no-unused-vars
+    currency = CURRENCY.USD,
+  } = props;
+
+  // Convert values from baseCurrency to settingCurrency
+  const exchangeRate = getExchangeRate(currency, settingCurrency) || 1;
+
+  const minValue = baseCurrencyMinValue * exchangeRate;
+  const maxValue = baseCurrencyMaxValue * exchangeRate;
+  const minRange = baseCurrencyMinRange * exchangeRate;
+  const maxRange = baseCurrencyMaxRange * exchangeRate;
 
   const validateAndUpdateValue = (target: 'minValue' | 'maxValue', inputValue: number) => {
     let validatedValue = inputValue;
@@ -58,7 +68,9 @@ const NumberRangeFilter = ({
       }
     }
 
-    onValueChange(target, validatedValue);
+    // Convert back to baseCurrency before calling onValueChange
+    const baseCurrencyValue = validatedValue / exchangeRate;
+    onValueChange(target, baseCurrencyValue);
   };
 
   const handleMinValueChange = (value: number) => {
@@ -71,9 +83,9 @@ const NumberRangeFilter = ({
 
   const getTooltipContent = (value: number) => {
     if (tooltipFormat) {
-      return tooltipFormat(value);
+      return tooltipFormat(value, settingCurrency);
     }
-    return value.toLocaleString();
+    return formatCurrency(value, settingCurrency, { applyExchangeRate: false });
   };
 
   return (
@@ -88,7 +100,7 @@ const NumberRangeFilter = ({
                   value={minValue}
                   onChange={handleMinValueChange}
                   placeholder={minLabel}
-                  currency={currency}
+                  currency={settingCurrency}
                   showSuggestion={false}
                   mode="onChange"
                   classContainer="mb-0"
@@ -112,7 +124,7 @@ const NumberRangeFilter = ({
                   value={maxValue}
                   onChange={handleMaxValueChange}
                   placeholder={maxLabel}
-                  currency={currency}
+                  currency={settingCurrency}
                   showSuggestion={false}
                   mode="onChange"
                   classContainer="mb-0"
@@ -132,9 +144,14 @@ const NumberRangeFilter = ({
         maxValue,
         minRange,
         maxRange,
-        handleUpdate: onValueChange,
-        step: calculatedStep,
-        formatValue: tooltipFormat,
+        handleUpdate: (target: 'minValue' | 'maxValue', value: number) => {
+          // Convert back to baseCurrency before calling onValueChange
+          const baseCurrencyValue = value / exchangeRate;
+          onValueChange(target, baseCurrencyValue);
+        },
+        step: 1, // Always use step of 1 for converted currency values
+        formatValue: (value: number) =>
+          formatCurrency(value, settingCurrency, { applyExchangeRate: false }),
       })}
     </div>
   );

@@ -19,3 +19,18 @@ export interface IProductItemsRepository {
   groupBy(options: Prisma.ProductItemsGroupByArgs): Promise<any>;
   count(options: Prisma.ProductItemsCountArgs): Promise<number>;
 }
+
+export type ProductItemTransaction = Prisma.ProductTransactionGetPayload<{
+  select: {
+    productId: true;
+    transaction: {
+      select: {
+        id: true;
+        userId: true;
+        type: true;
+        amount: true;
+        currency: true;
+      };
+    };
+  };
+}>;

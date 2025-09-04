@@ -48,7 +48,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     const { cursor, take, search, filters } = req.body; // Cursor will be a year (e.g., 2023)
     // take default take when its not given
     const takeValue = take ? Number(take) : 3; // Default to 10 if not provided
-    const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
+    const currency = (req.headers['x-user-currency'] as string) ?? Currency.USD;
 
     await budgetUseCase.updateActBudgetTransaction(userId, currency);
     const budgets = await budgetUseCase.getAnnualBudgetByYears({

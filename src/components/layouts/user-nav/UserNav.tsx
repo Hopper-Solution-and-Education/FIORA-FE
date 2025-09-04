@@ -7,6 +7,7 @@ import { COLORS } from '@/shared/constants/chart';
 import { globalNavItems, notSignInNavItems } from '@/shared/constants/data';
 import { ICON_SIZE } from '@/shared/constants/size';
 import { UserRole } from '@/shared/constants/userRole';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { getCurrentTierAsyncThunk } from '@/store/actions';
 import { LogOut } from 'lucide-react';
@@ -48,6 +49,7 @@ export function UserNav({ handleSignOut }: UserNavProps) {
   const router = useRouter();
   // const { data: session } = useSession();
   const { data: profile } = useGetProfileQuery();
+  const { clearExchangeRateData } = useCurrencyFormatter();
   const dispatch = useAppDispatch();
   const { data: userTier, isLoading: isLoadingUserTier } = useAppSelector(
     (state) => state.user.userTier,
@@ -172,7 +174,12 @@ export function UserNav({ handleSignOut }: UserNavProps) {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem
-              onClick={() => (handleSignOut ? handleSignOut() : signOut())}
+              onClick={async () => {
+                // Clear exchange rate data BEFORE logout to ensure data is cleared while session is still active
+                clearExchangeRateData();
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                handleSignOut ? handleSignOut() : await signOut();
+              }}
               className="cursor-pointer"
             >
               <div className="flex items-center gap-2 justify-between w-full">

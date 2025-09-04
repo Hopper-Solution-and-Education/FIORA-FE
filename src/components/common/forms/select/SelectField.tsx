@@ -182,7 +182,8 @@ const SelectField: React.FC<SelectFieldProps> = ({
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="animate-spin w-4 h-4 text-muted-foreground" />
                 </div>
-              ) : internalOptions.length === 0 ? (
+              ) : internalOptions.length === 0 ||
+                (internalOptions.length === 1 && noneValue && internalOptions[0].value === '') ? (
                 customRenderEmpty || <CommandEmpty>No option found.</CommandEmpty>
               ) : (
                 <CommandGroup>

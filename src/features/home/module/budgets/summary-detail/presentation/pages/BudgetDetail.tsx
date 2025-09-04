@@ -3,6 +3,7 @@
 import { TableV2 } from '@/components/common/tables/custom-table';
 import ActionButton from '@/components/common/UIKit/Button/ActionButton';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
 import { cn } from '@/shared/utils';
 import { routeConfig } from '@/shared/utils/route';
@@ -20,10 +21,16 @@ interface BudgetDetailProps {
   year: number;
 }
 
+/**
+ * Table height:
+ * - expand=true  → auto
+ * - expand=false → auto if content fits, else fixed to remaining viewport
+ */
 const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
   const headerRef = useRef<HTMLDivElement>(null); // watch header size changes
   const tableWrapperRef = useRef<HTMLDivElement>(null); // anchor to measure remaining viewport
   const { isMobile } = useMatchBreakpoint();
+  const { formatCurrency, getExchangeAmount } = useCurrencyFormatter();
   const [compactHeight, setCompactHeight] = useState<number | string>('');
 
   const {
@@ -46,6 +53,8 @@ const BudgetDetail = ({ year: initialYear }: BudgetDetailProps) => {
     handleValueChange,
     handleCategorySelected,
     handleRemoveRow,
+    formatCurrency,
+    getExchangeAmount,
   });
 
   // Watch table content size; trigger recalculation when content changes

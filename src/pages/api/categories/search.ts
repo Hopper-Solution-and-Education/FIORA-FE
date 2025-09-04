@@ -2,7 +2,7 @@ import { categoryUseCase } from '@/features/setting/api/domain/use-cases/categor
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
-import { GlobalFilters } from '@/shared/types';
+import { CategoryFilters } from '@/shared/types';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -20,7 +20,7 @@ export default sessionWrapper(async (req, res, userId) => {
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const params = req.body as GlobalFilters;
+    const params = req.body as CategoryFilters;
     const categories = await categoryUseCase.getCategoriesFilter(userId, params);
     return res
       .status(RESPONSE_CODE.OK)

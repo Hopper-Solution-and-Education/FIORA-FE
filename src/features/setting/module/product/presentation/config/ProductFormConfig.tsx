@@ -9,9 +9,12 @@ import {
   TextareaField,
 } from '@/components/common/forms';
 import IconSelectUpload from '@/components/common/forms/select/IconSelectUpload';
+import { CURRENCY } from '@/shared/constants';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { Currency, ProductType } from '@prisma/client';
-import { useCallback } from 'react';
+import { RootState } from '@/store/rootReducer';
+import { ProductType } from '@prisma/client';
+import { useCallback, useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import {
   setDeletedItems,
@@ -26,9 +29,26 @@ const useProductFormConfig = () => {
     watch,
   } = useFormContext();
 
-  const { data } = useAppSelector((state) => state.productManagement.categories);
-  const deletedItems = useAppSelector((state) => state.productManagement.deletedItems);
+  const { data } = useAppSelector((state: RootState) => state.productManagement.categories);
+  const deletedItems = useAppSelector((state: RootState) => state.productManagement.deletedItems);
   const dispatch = useAppDispatch();
+
+  const { exchangeRates } = useCurrencyFormatter();
+  // Generate options from fetched data or fallback to default
+  const currencyOptions = useMemo(() => {
+    if (Object.keys(exchangeRates).length > 0) {
+      // Map the fetched data to the expected format using the correct API structure
+      return Object.keys(exchangeRates)
+        .filter((currency) => currency !== 'FX')
+        .map((currency) => ({
+          value: currency, // Use 'name' field (USD, VND, FX)
+          label: `${currency} (${exchangeRates[currency].suffix})`, // Show both name and symbol
+        }));
+    }
+
+    // Fallback to default options if data is not available
+    return [{ value: 'none', label: 'No currencies available', disabled: true }];
+  }, [exchangeRates]);
 
   const handleOpenDialog = () => {
     dispatch(setIsOpenDialogAddCategory(true));
@@ -78,7 +98,7 @@ const useProductFormConfig = () => {
       disabled={isSubmitting}
     />,
     <SelectField
-      options={Object.entries(Currency).map(([key, value]) => ({ label: key, value }))}
+      options={currencyOptions}
       key="currency"
       name="currency"
       label="Currency"
@@ -90,7 +110,8 @@ const useProductFormConfig = () => {
       key="price"
       name="price"
       label="Price"
-      currency={watch('currency') || 'VND'}
+      currency={watch('currency') || CURRENCY.USD}
+      required
       disabled={isSubmitting}
     />,
     <TextareaField

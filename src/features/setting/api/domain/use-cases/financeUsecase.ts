@@ -14,13 +14,14 @@ import {
 } from '@/features/setting/data/module/finance/dto/response/GetFinanceReportResponse';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
+import { Messages } from '@/shared/constants/message';
+import { formatMessage } from '@/shared/utils/messageUtils';
 import { CategoryType, Currency, TransactionType } from '@prisma/client';
 import { categoryRepository } from '../../infrastructure/repositories/categoryRepository';
 import { productRepository } from '../../infrastructure/repositories/productRepository';
 import { ICategoryRepository } from '../../repositories/categoryRepository.interface';
 import { IProductRepository } from '../../repositories/productRepository.interface';
-import { Messages } from '@/shared/constants/message';
-import { formatMessage } from '@/shared/utils/messageUtils';
 
 export class FinanceUseCase {
   constructor(
@@ -51,12 +52,12 @@ export class FinanceUseCase {
   private async getAccountReport(
     userId: string,
   ): Promise<GetFinanceReportResponse<AccountFinanceReportResponse>> {
-    const allAccounts = await this._accountRepository.findMany({ userId }, {});
+    const allAccounts = await this._accountRepository.findMany({ userId });
 
-    const result: AccountFinanceReportResponse[] = allAccounts.map((account) => {
-      const balance = Number(account.balance || 0);
-      const totalIncome = balance > 0 ? balance : 0;
-      const totalExpense = balance < 0 ? -balance : 0;
+    const result: AccountFinanceReportResponse[] = allAccounts.map(({ currency, ...account }) => {
+      const baseAmount = Number(account.baseAmount || 0);
+      const totalIncome = baseAmount > 0 ? baseAmount : 0;
+      const totalExpense = baseAmount < 0 ? -baseAmount : 0;
       const totalProfit = 0;
 
       return {
@@ -64,7 +65,7 @@ export class FinanceUseCase {
         totalIncome,
         totalExpense,
         totalProfit,
-        currency: account.currency,
+        currency: (currency as Currency) || Currency.VND,
       };
     });
 
@@ -100,12 +101,12 @@ export class FinanceUseCase {
       if (!transaction.partnerId || !partnerTotalMap.has(transaction.partnerId)) return;
 
       const totals = partnerTotalMap.get(transaction.partnerId)!;
-      const amount = Number(transaction.amount);
+      const baseAmount = Number(transaction.baseAmount);
 
       if (transaction.type === TransactionType.Expense) {
-        totals.expense += amount;
+        totals.expense += baseAmount;
       } else if (transaction.type === TransactionType.Income) {
-        totals.income += amount;
+        totals.income += baseAmount;
       }
     });
 
@@ -118,7 +119,7 @@ export class FinanceUseCase {
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: Currency.VND,
+        currency: 'VND',
       };
     });
 
@@ -146,17 +147,17 @@ export class FinanceUseCase {
         if (!productTotalMap.has(relation.productId)) return;
 
         const totals = productTotalMap.get(relation.productId)!;
-        const amount = Number(pt.amount);
+        const baseAmount = Number(pt.baseAmount);
 
         if (pt.type === TransactionType.Expense) {
-          totals.expense += amount;
+          totals.expense += baseAmount;
         } else if (pt.type === TransactionType.Income) {
-          totals.income += amount;
+          totals.income += baseAmount;
         }
       });
     });
 
-    const result: ProductFinanceReportResponse[] = allProducts.map((product) => {
+    const result: ProductFinanceReportResponse[] = allProducts.map(({ currency, ...product }) => {
       const totals = productTotalMap.get(product.id) || { expense: 0, income: 0 };
       const totalProfit = totals.income - totals.expense;
 
@@ -165,7 +166,7 @@ export class FinanceUseCase {
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: product.currency,
+        currency: (currency as Currency) || Currency.VND,
       };
     });
 
@@ -192,13 +193,13 @@ export class FinanceUseCase {
 
       if (category.type === CategoryType.Expense) {
         const expenseAmount = (category.toTransactions || []).reduce(
-          (sum, tx) => sum + Number(tx.amount),
+          (sum, tx) => sum + Number(tx.baseAmount),
           0,
         );
         totals.expense += expenseAmount;
       } else if (category.type === CategoryType.Income) {
         const incomeAmount = (category.fromTransactions || []).reduce(
-          (sum, tx) => sum + Number(tx.amount),
+          (sum, tx) => sum + Number(tx.baseAmount),
           0,
         );
         totals.income += incomeAmount;
@@ -214,7 +215,7 @@ export class FinanceUseCase {
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: Currency.VND,
+        currency: 'VND',
       };
     });
 
@@ -255,15 +256,12 @@ export class FinanceUseCase {
     userId: string,
     accountIds: string[],
   ): Promise<GetFinanceReportResponse<AccountFinanceReportResponse>> {
-    const allAccounts = await this._accountRepository.findMany(
-      { userId, id: { in: accountIds } },
-      {},
-    );
+    const allAccounts = await this._accountRepository.findMany({ userId, id: { in: accountIds } });
 
-    const result: AccountFinanceReportResponse[] = allAccounts.map((account) => {
-      const balance = Number(account.balance || 0);
-      const totalIncome = balance > 0 ? balance : 0;
-      const totalExpense = balance < 0 ? -balance : 0;
+    const result: AccountFinanceReportResponse[] = allAccounts.map(({ currency, ...account }) => {
+      const baseAmount = Number(account.baseAmount || 0);
+      const totalIncome = baseAmount > 0 ? baseAmount : 0;
+      const totalExpense = baseAmount < 0 ? -baseAmount : 0;
       const totalProfit = 0;
 
       return {
@@ -271,7 +269,7 @@ export class FinanceUseCase {
         totalIncome,
         totalExpense,
         totalProfit,
-        currency: account.currency,
+        currency: (currency as Currency) || Currency.VND,
       };
     });
 
@@ -312,12 +310,12 @@ export class FinanceUseCase {
       if (!transaction.partnerId || !partnerTotalMap.has(transaction.partnerId)) return;
 
       const totals = partnerTotalMap.get(transaction.partnerId)!;
-      const amount = Number(transaction.amount);
+      const baseAmount = Number(transaction.baseAmount);
 
       if (transaction.type === TransactionType.Expense) {
-        totals.expense += amount;
+        totals.expense += baseAmount;
       } else if (transaction.type === TransactionType.Income) {
-        totals.income += amount;
+        totals.income += baseAmount;
       }
     });
 
@@ -330,7 +328,7 @@ export class FinanceUseCase {
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: Currency.VND,
+        currency: DEFAULT_BASE_CURRENCY,
       };
     });
 
@@ -362,17 +360,17 @@ export class FinanceUseCase {
         if (!productTotalMap.has(relation.productId)) return;
 
         const totals = productTotalMap.get(relation.productId)!;
-        const amount = Number(pt.amount);
+        const baseAmount = Number(pt.baseAmount);
 
         if (pt.type === TransactionType.Expense) {
-          totals.expense += amount;
+          totals.expense += baseAmount;
         } else if (pt.type === TransactionType.Income) {
-          totals.income += amount;
+          totals.income += baseAmount;
         }
       });
     });
 
-    const result: ProductFinanceReportResponse[] = allProducts.map((product) => {
+    const result: ProductFinanceReportResponse[] = allProducts.map(({ currency, ...product }) => {
       const totals = productTotalMap.get(product.id) || { expense: 0, income: 0 };
       const totalProfit = totals.income - totals.expense;
 
@@ -381,7 +379,7 @@ export class FinanceUseCase {
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: product.currency,
+        currency: (currency as Currency) || Currency.VND,
       };
     });
 

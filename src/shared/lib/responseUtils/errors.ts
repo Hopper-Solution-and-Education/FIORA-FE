@@ -76,7 +76,7 @@ export const errorHandler = async (
   handler: (req: NextApiRequest, res: NextApiResponse) => Promise<any>,
   req: NextApiRequest,
   res: NextApiResponse,
-) => {
+): Promise<any> => {
   try {
     await handler(req, res);
   } catch (error) {

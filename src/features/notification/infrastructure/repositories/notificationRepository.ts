@@ -1,5 +1,4 @@
 import { prisma } from '@/config';
-import { AppError } from '@/shared/lib/responseUtils/errors';
 import {
   ChannelType,
   Notification,
@@ -282,7 +281,9 @@ class NotificationRepository implements INotificationRepository {
       });
     } else if (notifyTo === 'PERSONAL') {
       if (!emails || emails.length === 0) {
-        throw new AppError(400, 'No email provided for PERSONAL notification');
+        console.log('No email provided for PERSONAL notification');
+        return;
+        // throw new AppError(400, 'No email provided for PERSONAL notification');
       }
       users = await prisma.user.findMany({
         where: { isDeleted: false, email: { in: emails } },
@@ -290,7 +291,9 @@ class NotificationRepository implements INotificationRepository {
       });
     }
     if (!users || users.length === 0) {
-      throw new AppError(400, 'No user found for this role or email');
+      console.log('No user found for this role or email');
+      return;
+      // throw new AppError(400, 'No user found for this role or email');
     }
     return await prisma.$transaction(async (tx) => {
       // 1. Tạo notification trước

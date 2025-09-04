@@ -1,11 +1,12 @@
-export * from './Common.types';
-export * from './GlobalNav.types';
 export * from './category.types';
+export * from './Common.types';
+export * from './exchangeRate';
+export * from './filter.types';
 export * from './formsheet.type';
+export * from './GlobalNav.types';
+export * from './httpResponse.types';
 export * from './product.types';
 export * from './transaction.types';
-export * from './filter.types';
-export * from './httpResponse.types';
 
 export type Currency = 'VND' | 'USD' | 'FX';
 

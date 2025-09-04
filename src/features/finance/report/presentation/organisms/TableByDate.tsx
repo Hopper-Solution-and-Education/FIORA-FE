@@ -11,8 +11,7 @@ import {
 } from '@/components/ui/table';
 import { COLORS } from '@/shared/constants/chart';
 import { ICON_SIZE } from '@/shared/constants/size';
-import { Currency } from '@/shared/types';
-import { convertCurrency, formatCurrency } from '@/shared/utils/convertCurrency';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppSelector } from '@/store';
 import { ArrowUpDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -29,7 +28,8 @@ const TableByDate = () => {
     key: 'totalIncome',
     direction: 'asc',
   });
-  const currency = useAppSelector((state) => state.settings.currency);
+  const { formatCurrency } = useCurrencyFormatter();
+
   const handleSort = (key: SortConfig['key']) => {
     setSortConfig((current) => ({
       key,
@@ -55,13 +55,13 @@ const TableByDate = () => {
       : b[sortConfig.key] - a[sortConfig.key];
   });
 
-  if (isLoading) {
-    return <TableSkeleton columns={4} rows={5} />;
-  }
-
   useEffect(() => {
     handleSort('period');
   }, []);
+
+  if (isLoading) {
+    return <TableSkeleton columns={4} rows={5} />;
+  }
 
   return (
     <div className="space-y-2">
@@ -121,16 +121,10 @@ const TableByDate = () => {
               <TableRow key={index}>
                 <TableCell className="font-medium text-center">{item.period}</TableCell>
                 <TableCell className="text-center" style={{ color: COLORS.DEPS_DANGER.LEVEL_2 }}>
-                  {formatCurrency(
-                    convertCurrency(item.totalExpense, item.currency as Currency, currency),
-                    currency,
-                  )}
+                  {formatCurrency(item.totalExpense, item.currency)}
                 </TableCell>
                 <TableCell className="text-center" style={{ color: COLORS.DEPS_SUCCESS.LEVEL_2 }}>
-                  {formatCurrency(
-                    convertCurrency(item.totalIncome, item.currency as Currency, currency),
-                    currency,
-                  )}
+                  {formatCurrency(item.totalIncome, item.currency)}
                 </TableCell>
                 <TableCell className="text-center">
                   <span
@@ -141,14 +135,7 @@ const TableByDate = () => {
                           : COLORS.DEPS_WARNING.LEVEL_2,
                     }}
                   >
-                    {formatCurrency(
-                      convertCurrency(
-                        item.totalIncome - item.totalExpense,
-                        item.currency as Currency,
-                        currency,
-                      ),
-                      currency,
-                    )}
+                    {formatCurrency(item.totalIncome - item.totalExpense, item.currency)}
                   </span>
                 </TableCell>
               </TableRow>
