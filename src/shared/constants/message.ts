@@ -233,6 +233,7 @@ export enum Messages {
   GET_DEPOSIT_REQUEST_SUCCESS = 'Get deposit requests successfully.',
   CREATE_DEPOSIT_REQUEST_SUCCESS = 'Create deposit request successfully.',
   UPDATE_DEPOSIT_REQUEST_STATUS_SUCCESS = 'Update deposit request status successfully.',
+  USER_WALLET_NOT_FOUND = 'User wallet not found.',
 
   // WALLET FAID
   INVALID_DEPOSIT_REQUEST_TYPE = 'Invalid deposit request type.',
