@@ -18,6 +18,7 @@ const useHeaderUploadImageConfig = (mediaPath: string) => {
       label="Upload Header Image"
       disabled={isSubmitting || isLoadingSaveChange}
       required
+      className="h-100 w-100"
     />,
   ];
 

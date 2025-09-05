@@ -1,11 +1,4 @@
-import {
-  BudgetsTable,
-  Category,
-  CategoryType,
-  Currency,
-  Transaction,
-  TransactionType,
-} from '@prisma/client';
+import { BudgetsTable, Category, CategoryType, Transaction, TransactionType } from '@prisma/client';
 import _ from 'lodash';
 import { BudgetAllocation, FetchTransactionResponse, SumUpAllocation } from '../types/budget.types';
 import { convertCurrency } from './convertCurrency';
@@ -47,14 +40,14 @@ export const MONTH_MAPPING = {
   ],
 };
 
-export function applyUpdates(
+export async function applyUpdates(
   monthlyValues: number[],
   updates: Record<string, number>,
   type: 'exp' | 'inc',
   affectedFields: Map<string, boolean>,
-  targetCurrency: Currency,
-  storedCurrency: Currency,
-): number[] {
+  targetCurrency: string,
+  storedCurrency: string,
+): Promise<number[]> {
   const result = [...monthlyValues];
 
   for (const [key, value] of Object.entries(updates)) {
@@ -63,7 +56,7 @@ export function applyUpdates(
 
       // Ensure value is a number before conversion
       const numericValue = typeof value === 'string' ? parseFloat(value) : value;
-      const convertedValue = convertCurrency(numericValue, targetCurrency, storedCurrency);
+      const convertedValue = await convertCurrency(numericValue, targetCurrency, storedCurrency);
 
       result[monthIndex] = convertedValue;
       affectedFields.set(key, true);
@@ -127,12 +120,12 @@ export function calculateBudgetAllocation(
   };
 }
 
-export function calculateSumUpAllocationByType(
+export async function calculateSumUpAllocationByType(
   transactions: Transaction[],
   year: number,
   foundCategory: Category,
-  currency: Currency,
-): SumUpAllocation {
+  currency: string,
+): Promise<SumUpAllocation> {
   const { type } = foundCategory;
 
   const suffix = type === CategoryType.Expense ? 'exp' : 'inc';
@@ -148,18 +141,26 @@ export function calculateSumUpAllocationByType(
 
   const monthFields: Record<string, number> = {};
 
-  months.forEach((month) => {
-    const monthTransactions = transactions.filter((t) => {
-      const transactionMonth = new Date(t.date).getMonth() + 1; // 0-based to 1-based
-      return transactionMonth === month && new Date(t.date).getFullYear() === year;
-    });
-    const total = monthTransactions.reduce((sum, t) => {
-      const amountInCurrency = convertCurrency(t.amount, t.currency, currency);
-      return sum + amountInCurrency;
-    }, 0);
+  // Process all transactions in parallel
+  await Promise.all(
+    months.map(async (month) => {
+      // Filter transactions for this month and year
+      const monthTransactions = transactions.filter((t) => {
+        const date = new Date(t.date);
+        return date.getMonth() + 1 === month && date.getFullYear() === year;
+      });
 
-    monthFields[`m${month}_${suffix}`] = Number(total.toFixed(2));
-  });
+      // Convert all amounts in parallel
+      const convertedAmounts = await Promise.all(
+        monthTransactions.map((t) => convertCurrency(t.amount.toNumber(), t.currency!, currency)),
+      );
+
+      // Sum up the converted amounts
+      const total = convertedAmounts.reduce((sum, amount) => sum + amount, 0);
+
+      monthFields[`m${month}_${suffix}`] = Number(total.toFixed(2));
+    }),
+  );
 
   const quarterFields: Record<string, number> = {};
   Object.entries(quarters).forEach(([q, ms]) => {
@@ -188,11 +189,11 @@ export function calculateSumUpAllocationByType(
   };
 }
 
-export function calculateSumUpAllocation(
+export async function calculateSumUpAllocation(
   transactions: FetchTransactionResponse[],
-  currency: Currency,
+  currency: string,
   budget?: BudgetsTable,
-): SumUpAllocation {
+): Promise<SumUpAllocation> {
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
   const quarters = {
@@ -204,35 +205,53 @@ export function calculateSumUpAllocation(
 
   const monthFields: Record<string, number> = {};
 
-  months.forEach((month) => {
+  // Refactored to process months sequentially and handle async/await properly
+  for (const month of months) {
     const monthTransactions = transactions.filter((t) => {
       const transactionMonth = new Date(t.date).getMonth() + 1; // 0-based to 1-based
       return transactionMonth === month;
     });
 
-    // if there are transactions in the month, then calculate the amount
     if (monthTransactions.length > 0) {
+      // Group transactions by type for this month
+      const groupedByType: { [key: string]: typeof monthTransactions } = {
+        exp: [],
+        inc: [],
+      };
       monthTransactions.forEach((t) => {
         const suffix = t.type === TransactionType.Expense ? 'exp' : 'inc';
-        const monthKey = `m${month}_${suffix}`;
-        const amountInCurrency = convertCurrency(t.amount, t.currency, currency);
-
-        if (budget) {
-          const accumulatedAmount = budget[monthKey as keyof BudgetsTable] || 0;
-          const convertedAmount = convertCurrency(
-            Number(accumulatedAmount),
-            budget?.currency,
-            currency,
-          );
-
-          monthFields[monthKey] = Number(convertedAmount) + amountInCurrency;
-        } else {
-          monthFields[monthKey] = amountInCurrency || 0;
-        }
+        groupedByType[suffix].push(t);
       });
+
+      for (const suffix of ['exp', 'inc'] as const) {
+        const monthKey = `m${month}_${suffix}`;
+        const relevantTransactions = groupedByType[suffix];
+
+        if (relevantTransactions.length > 0) {
+          // Sum all converted amounts for this type in this month
+          const amounts = await Promise.all(
+            relevantTransactions.map((t) =>
+              convertCurrency(t.amount.toNumber(), t.currency!, currency),
+            ),
+          );
+          const totalAmount = amounts.reduce((sum, val) => sum + val, 0);
+
+          if (budget && budget.currency) {
+            const accumulatedAmount = budget[monthKey as keyof BudgetsTable] || 0;
+            const convertedAccumulated = await convertCurrency(
+              Number(accumulatedAmount),
+              budget.currency!,
+              currency,
+            );
+            monthFields[monthKey] = Number(convertedAccumulated) + totalAmount;
+          } else {
+            monthFields[monthKey] = totalAmount || 0;
+          }
+        }
+      }
     }
 
-    // if there are no transactions in the month, then set the amount to 0
+    // If there are no transactions in the month, then set the amount to 0 or use budget if available
     if (budget) {
       const monthKeyInc = `m${month}_inc`;
       const monthKeyExp = `m${month}_exp`;
@@ -240,7 +259,7 @@ export function calculateSumUpAllocation(
       monthFields[monthKeyInc] = Number(budget[monthKeyInc as keyof BudgetsTable] || 0);
       monthFields[monthKeyExp] = Number(budget[monthKeyExp as keyof BudgetsTable] || 0);
     }
-  });
+  }
 
   const quarterFields: Record<string, number> = {};
 

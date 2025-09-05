@@ -5,6 +5,7 @@ import {
 import { FilterCriteria } from '@/shared/types';
 import { Response } from '@/shared/types/Common.types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { transactionInitialState } from '../constants';
 import {
   deleteTransaction,
   fetchTransactions,
@@ -12,37 +13,9 @@ import {
   updateTransaction,
 } from './actions';
 
-interface TransactionState {
-  transactions: {
-    data: ITransactionPaginatedResponse | null;
-    isLoading: boolean;
-    error: string | null;
-  };
-  maxBalance: number;
-  filterCriteria: FilterCriteria;
-  deleteConfirmOpen: boolean;
-  selectedTransaction: IRelationalTransaction | null;
-}
-
 const transactionSlice = createSlice({
   name: 'transactionData',
-  initialState: {
-    transactions: {
-      data: null,
-      isLoading: false,
-      error: null,
-    },
-    maxBalance: 0,
-    filterCriteria: {
-      filters: {},
-      userId: '',
-      page: 1,
-      pageSize: 10,
-      sortBy: {},
-    },
-    deleteConfirmOpen: false,
-    selectedTransaction: null,
-  } as TransactionState,
+  initialState: transactionInitialState,
   reducers: {
     setTransactions(state, action: PayloadAction<Response<ITransactionPaginatedResponse>>) {
       state.transactions.data = action.payload.data;
@@ -62,8 +35,6 @@ const transactionSlice = createSlice({
       filterCriteria: {
         filters: {},
         userId: '',
-        page: 1,
-        pageSize: 10,
         sortBy: {},
       },
       deleteConfirmOpen: false,

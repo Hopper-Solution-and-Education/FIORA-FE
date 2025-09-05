@@ -3,18 +3,26 @@ import { FilterCriteria } from '@/shared/types';
 export interface Account {
   id: string;
   userId: string;
+  baseAmount: number;
   icon?: string;
   name: string;
-  description?: string;
+  description?: string | null;
   type: AccountType;
-  currency: Currency;
-  limit?: number;
-  balance: number;
+  currencyId: string;
+  currency: string;
+  baseCurrency: string;
+  limit?: string;
+  balance: string;
   parentId?: string | null;
   parent?: Account | null;
   children?: Account[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy?: string | null;
+  color?: string | null;
+  toTransactions?: any[];
+  fromTransactions?: any[];
 }
 
 export type AccountFilterResponse = {
@@ -79,6 +87,7 @@ export enum AccountType {
 export enum Currency {
   USD = 'USD',
   VND = 'VND',
+  JYB = 'JYB',
 }
 
 export interface CreateAccountModalProps {

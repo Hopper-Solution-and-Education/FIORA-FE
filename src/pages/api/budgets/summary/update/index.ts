@@ -29,7 +29,7 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse, 
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const { updateTopBudget, type, fiscalYear } = req.body;
-    const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
+    const currency = (req.headers['x-user-currency'] as string) ?? Currency.VND;
 
     if (!fiscalYear) {
       return res.status(RESPONSE_CODE.BAD_REQUEST).json(

@@ -84,6 +84,7 @@ class CategoryProductsUseCase {
       return await this.categoryProductRepository.createCategoryProduct({
         ...data,
         ...(data.tax_rate ? { tax_rate: new Prisma.Decimal(data.tax_rate) } : { tax_rate: 0 }), // Default tax rate to 0 if not provided
+        createdBy: data.userId,
       });
     } catch (error: any) {
       throw new Error('Failed to create category product ' + error.message);

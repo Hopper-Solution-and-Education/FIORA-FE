@@ -1,3 +1,4 @@
+'use client';
 import useSWR from 'swr';
 import { SectionTypeEnum } from '../constants';
 import { landingDIContainer } from '../di/landingDIContainer';
