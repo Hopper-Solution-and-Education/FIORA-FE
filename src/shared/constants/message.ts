@@ -367,4 +367,24 @@ export enum Messages {
 
   //Email template type
   EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
+
+  //News
+  GET_LISTNEW_SUCCESS = 'Get list news success',
+  CREATE_NEWS_SUCCESS = 'Create news successfully',
+  NEWS_TITLE_ALREADY_EXISTS = 'NEWS title already exists',
+  DELETE_NEWS_SUCCESS = 'Delete News successfully',
+  DELETE_NEWS_ERROR = 'Delete News error',
+  POST_CATEGORY_NOT_FOUND = 'POST category not found',
+  GET_LIST_COMMENT_NEWS_SUCCESS = 'Get list comment news successfully',
+  COMMENT_NEWS_SUCCESS = 'Comment news successfully',
+  UPDATE_COMMENT_NEWS_SUCCESS = 'Update comment news successfully',
+  DELETE_COMMENT_NEWS_SUCCESS = 'Delete comment news successfully',
+  REACT_NEWS_SUCCESS = 'React news successfully',
+  UNREACT_NEWS_SUCCESS = 'Un react news successfully',
+  GET_NEWS_DETAIL_SECCESS = 'Get news detail successfully',
+  CREATE_COMMENT_NEWS_SUCCESS = 'Create comment news successfully',
+  GET_LIST_POST_TYPE_SUCCESS = 'Get list post type successfully',
+
+  //User
+  USER_NOT_FOUND = 'User not found',
 }
