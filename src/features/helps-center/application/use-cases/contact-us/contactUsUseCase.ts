@@ -2,7 +2,6 @@ import { prisma } from '@/config';
 import { ContactUsRequest } from '@/features/helps-center/domain/entities/models/faqs';
 import { IFaqRepository } from '@/features/helps-center/domain/repositories';
 import { faqRepository } from '../../../infrastructure/repositories';
-import { sendContactUsEmail } from '../../../infrastructure/services/contactUsEmailService';
 
 export class ContactUsUseCase {
   constructor(private faqsRepository: IFaqRepository) {}
@@ -21,17 +20,17 @@ export class ContactUsUseCase {
       }
 
       // send email to all admin users
-      for (const adminUser of adminUsers) {
-        await sendContactUsEmail({
-          to: adminUser.email,
-          adminName: adminUser.name || 'Admin',
-          name: params.name,
-          email: params.email,
-          phone: params.phoneNumber,
-          message: params.message,
-          attachments: params.attachments,
-        });
-      }
+      // for (const adminUser of adminUsers) {
+      //   await sendContactUsEmail({
+      //     to: adminUser.email,
+      //     adminName: adminUser.name || 'Admin',
+      //     name: params.name,
+      //     email: params.email,
+      //     phone: params.phoneNumber,
+      //     message: params.message,
+      //     attachments: params.attachments,
+      //   });
+      // }
 
       return {
         message: 'Contact us request sent to all admin users',
@@ -42,4 +41,4 @@ export class ContactUsUseCase {
   }
 }
 
-export const createFaqUseCase = new ContactUsUseCase(faqRepository);
+export const contactUsUseCase = new ContactUsUseCase(faqRepository);

@@ -2,6 +2,7 @@ import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
 import { getProductTransactionAsyncThunk } from '@/features/setting/module/product/slices/actions';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { FilterColumn, FilterCriteria } from '@/shared/types/filter.types';
 import { DropdownOption } from '@/shared/types/transaction.types';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -59,6 +60,8 @@ interface FilterMenuProps {
 const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
   // Get min/max values from Redux state
   const productTransaction = useAppSelector((state) => state.productManagement.productTransaction);
+  const { currency: selectedCurrency, baseCurrency } = useAppSelector((state) => state.settings);
+  const { getExchangeAmount } = useCurrencyFormatter();
   const { data: session } = useSession();
   const userId = session?.user?.id || '';
   const dispatch = useAppDispatch();
@@ -69,19 +72,58 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
   // Initialize filter params with values from Redux when they change
   useEffect(() => {
     if (productTransaction) {
+      // Convert price values from base currency to selected currency for display
+      const convertedMinPrice = getExchangeAmount({
+        amount: productTransaction.minPrice || 0,
+        fromCurrency: baseCurrency,
+        toCurrency: selectedCurrency,
+      });
+
+      const convertedMaxPrice = getExchangeAmount({
+        amount: productTransaction.maxPrice || 0,
+        fromCurrency: baseCurrency,
+        toCurrency: selectedCurrency,
+      });
+
+      // Convert expense values from base currency to selected currency for display
+      const convertedMinExpense = getExchangeAmount({
+        amount: productTransaction.minExpense || 0,
+        fromCurrency: baseCurrency,
+        toCurrency: selectedCurrency,
+      });
+
+      const convertedMaxExpense = getExchangeAmount({
+        amount: productTransaction.maxExpense || 0,
+        fromCurrency: baseCurrency,
+        toCurrency: selectedCurrency,
+      });
+
+      // Convert income values from base currency to selected currency for display
+      const convertedMinIncome = getExchangeAmount({
+        amount: productTransaction.minIncome || 0,
+        fromCurrency: baseCurrency,
+        toCurrency: selectedCurrency,
+      });
+
+      const convertedMaxIncome = getExchangeAmount({
+        amount: productTransaction.maxIncome || 0,
+        fromCurrency: baseCurrency,
+        toCurrency: selectedCurrency,
+      });
+
       setFilterParams((prev) => ({
         ...prev,
-        priceMin: productTransaction.minPrice || 0,
-        priceMax: productTransaction.maxPrice || 0,
+        priceMin: convertedMinPrice.convertedAmount,
+        priceMax: convertedMaxPrice.convertedAmount,
         taxRateMin: productTransaction.minTaxRate || 0,
         taxRateMax: productTransaction.maxTaxRate || 0,
-        expenseMin: productTransaction.minExpense || 0,
-        expenseMax: productTransaction.maxExpense || 0,
-        incomeMin: productTransaction.minIncome || 0,
-        incomeMax: productTransaction.maxIncome || 0,
+        expenseMin: convertedMinExpense.convertedAmount,
+        expenseMax: convertedMaxExpense.convertedAmount,
+        incomeMin: convertedMinIncome.convertedAmount,
+        incomeMax: convertedMaxIncome.convertedAmount,
       }));
     }
-  }, [productTransaction]);
+  }, [productTransaction, baseCurrency, selectedCurrency, getExchangeAmount]);
 
   // Extract filter data from filters object
   const extractFilterData = useCallback(
@@ -99,10 +141,37 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         }
       }
 
-      // Extract price range
+      // Extract price range from AND array or fallback to price property
       let currentPriceMin = productTransaction.minPrice || 0;
       let currentPriceMax = productTransaction.maxPrice || 0;
-      if (filters.price && typeof filters.price === 'object') {
+
+      // Check AND array for baseAmount
+      if (Array.isArray(filters.AND)) {
+        filters.AND.forEach((condition: any) => {
+          if (condition.baseAmount) {
+            if (condition.baseAmount.gte !== undefined) {
+              // Convert from base currency to selected currency for display
+              const convertedMin = getExchangeAmount({
+                amount: condition.baseAmount.gte,
+                fromCurrency: baseCurrency,
+                toCurrency: selectedCurrency,
+              });
+              currentPriceMin = convertedMin.convertedAmount;
+            }
+            if (condition.baseAmount.lte !== undefined) {
+              // Convert from base currency to selected currency for display
+              const convertedMax = getExchangeAmount({
+                amount: condition.baseAmount.lte,
+                fromCurrency: baseCurrency,
+                toCurrency: selectedCurrency,
+              });
+              currentPriceMax = convertedMax.convertedAmount;
+            }
+          }
+        });
+      }
+      // Fallback to price property
+      else if (filters.price && typeof filters.price === 'object') {
         const priceFilter = filters.price as RangeCondition;
         if (priceFilter.gte !== undefined) currentPriceMin = priceFilter.gte;
         if (priceFilter.lte !== undefined) currentPriceMax = priceFilter.lte;
@@ -118,7 +187,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         if (taxRateFilter.lte !== undefined) currentTaxRateMax = taxRateFilter.lte * 100;
       }
 
-      // Extract expense and income from transactions
+      // Extract expense and income from transactions with new baseAmount structure
       let currentExpenseMin = productTransaction.minExpense || 0;
       let currentExpenseMax = productTransaction.maxExpense || 0;
       let currentIncomeMin = productTransaction.minIncome || 0;
@@ -130,12 +199,74 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
           // Process each transaction type
           transactionsFilter.some.OR.forEach((orCondition) => {
             if (orCondition.transaction) {
-              if (orCondition.transaction.type === 'Expense' && orCondition.transaction.amount) {
+              // Handle new baseAmount structure with AND array
+              if (
+                orCondition.transaction.type === 'Expense' &&
+                Array.isArray(orCondition.transaction.AND)
+              ) {
+                orCondition.transaction.AND.forEach((andCondition: any) => {
+                  if (andCondition.baseAmount) {
+                    if (andCondition.baseAmount.gte !== undefined) {
+                      // Convert from base currency to selected currency for display
+                      const convertedMin = getExchangeAmount({
+                        amount: andCondition.baseAmount.gte,
+                        fromCurrency: baseCurrency,
+                        toCurrency: selectedCurrency,
+                      });
+                      currentExpenseMin = convertedMin.convertedAmount;
+                    }
+                    if (andCondition.baseAmount.lte !== undefined) {
+                      // Convert from base currency to selected currency for display
+                      const convertedMax = getExchangeAmount({
+                        amount: andCondition.baseAmount.lte,
+                        fromCurrency: baseCurrency,
+                        toCurrency: selectedCurrency,
+                      });
+                      currentExpenseMax = convertedMax.convertedAmount;
+                    }
+                  }
+                });
+              }
+              // Handle new baseAmount structure with AND array for Income
+              else if (
+                orCondition.transaction.type === 'Income' &&
+                Array.isArray(orCondition.transaction.AND)
+              ) {
+                orCondition.transaction.AND.forEach((andCondition: any) => {
+                  if (andCondition.baseAmount) {
+                    if (andCondition.baseAmount.gte !== undefined) {
+                      // Convert from base currency to selected currency for display
+                      const convertedMin = getExchangeAmount({
+                        amount: andCondition.baseAmount.gte,
+                        fromCurrency: baseCurrency,
+                        toCurrency: selectedCurrency,
+                      });
+                      currentIncomeMin = convertedMin.convertedAmount;
+                    }
+                    if (andCondition.baseAmount.lte !== undefined) {
+                      // Convert from base currency to selected currency for display
+                      const convertedMax = getExchangeAmount({
+                        amount: andCondition.baseAmount.lte,
+                        fromCurrency: baseCurrency,
+                        toCurrency: selectedCurrency,
+                      });
+                      currentIncomeMax = convertedMax.convertedAmount;
+                    }
+                  }
+                });
+              }
+              // Fallback to old amount structure for backward compatibility
+              else if (
+                orCondition.transaction.type === 'Expense' &&
+                orCondition.transaction.amount
+              ) {
                 const amount = orCondition.transaction.amount as RangeCondition;
                 if (amount.gte !== undefined) currentExpenseMin = amount.gte;
                 if (amount.lte !== undefined) currentExpenseMax = amount.lte;
-              }
-              if (orCondition.transaction.type === 'Income' && orCondition.transaction.amount) {
+              } else if (
+                orCondition.transaction.type === 'Income' &&
+                orCondition.transaction.amount
+              ) {
                 const amount = orCondition.transaction.amount as RangeCondition;
                 if (amount.gte !== undefined) currentIncomeMin = amount.gte;
                 if (amount.lte !== undefined) currentIncomeMax = amount.lte;
@@ -157,7 +288,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         incomeMax: currentIncomeMax,
       };
     },
-    [productTransaction],
+    [productTransaction, baseCurrency, selectedCurrency, getExchangeAmount],
   );
 
   // Sync filter params when filter criteria changes
@@ -200,7 +331,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         onValueChange={(target, value) =>
           handleEditFilter(target === 'minValue' ? 'expenseMin' : 'expenseMax', value)
         }
-        label="Expense Range"
+        label={`Expense Range (${selectedCurrency})`}
         minLabel="Min Expense"
         maxLabel="Max Expense"
         step={DEFAULT_SLIDER_STEP}
@@ -217,7 +348,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         onValueChange={(target, value) =>
           handleEditFilter(target === 'minValue' ? 'priceMin' : 'priceMax', value)
         }
-        label="Price Range"
+        label={`Price Range (${selectedCurrency})`}
         minLabel="Min Price"
         maxLabel="Max Price"
         step={DEFAULT_SLIDER_STEP}
@@ -252,7 +383,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         onValueChange={(target, value) =>
           handleEditFilter(target === 'minValue' ? 'incomeMin' : 'incomeMax', value)
         }
-        label="Income Range"
+        label={`Income Range (${selectedCurrency})`}
         minLabel="Min Income"
         maxLabel="Max Income"
         step={DEFAULT_SLIDER_STEP}
@@ -291,12 +422,13 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         order: 1,
       },
     ];
-  }, [filterParams, productTransaction]);
+  }, [filterParams, productTransaction, selectedCurrency]);
 
   // Create filter structure from UI state
   const createFilterStructure = useCallback(
     (params: ExtendedFilterParams): Record<string, unknown> => {
       const updatedFilters: Record<string, unknown> = {};
+      const andConditions: any[] = [];
 
       // Add type filter if selected using the new 'in' operator format
       if (params.types.length > 1) {
@@ -307,17 +439,30 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         updatedFilters.type = params.types[0];
       }
 
-      // Add price range filter only if different from default values
-      const isPriceDefault =
-        params.priceMin === (productTransaction.minPrice || 0) &&
-        params.priceMax === (productTransaction.maxPrice || 0);
+      // Add price range filter with base currency conversion
+      const convertedMinPrice = getExchangeAmount({
+        amount: params.priceMin,
+        fromCurrency: selectedCurrency,
+        toCurrency: baseCurrency,
+      });
 
-      if (!isPriceDefault) {
-        updatedFilters.price = {
-          gte: params.priceMin,
-          lte: params.priceMax,
-        };
-      }
+      const convertedMaxPrice = getExchangeAmount({
+        amount: params.priceMax,
+        fromCurrency: selectedCurrency,
+        toCurrency: baseCurrency,
+      });
+
+      // Add baseCurrency and baseAmount to AND array
+      andConditions.push({
+        baseCurrency: baseCurrency,
+      });
+
+      andConditions.push({
+        baseAmount: {
+          gte: convertedMinPrice.convertedAmount,
+          lte: convertedMaxPrice.convertedAmount,
+        },
+      });
 
       // Add tax rate filter only if different from default values
       const isTaxRateDefault =
@@ -344,28 +489,66 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
       if (!isExpenseDefault || !isIncomeDefault) {
         const transactionConditions = [];
 
-        // Add expense filter if different from default
+        // Add expense filter if different from default with new baseAmount structure
         if (!isExpenseDefault) {
+          const convertedMinExpense = getExchangeAmount({
+            amount: params.expenseMin,
+            fromCurrency: selectedCurrency,
+            toCurrency: baseCurrency,
+          });
+
+          const convertedMaxExpense = getExchangeAmount({
+            amount: params.expenseMax,
+            fromCurrency: selectedCurrency,
+            toCurrency: baseCurrency,
+          });
+
           transactionConditions.push({
             transaction: {
               type: 'Expense',
-              amount: {
-                gte: params.expenseMin,
-                lte: params.expenseMax,
-              },
+              AND: [
+                {
+                  baseCurrency: baseCurrency,
+                },
+                {
+                  baseAmount: {
+                    gte: convertedMinExpense.convertedAmount,
+                    lte: convertedMaxExpense.convertedAmount,
+                  },
+                },
+              ],
             },
           });
         }
 
-        // Add income filter if different from default
+        // Add income filter if different from default with new baseAmount structure
         if (!isIncomeDefault) {
+          const convertedMinIncome = getExchangeAmount({
+            amount: params.incomeMin,
+            fromCurrency: selectedCurrency,
+            toCurrency: baseCurrency,
+          });
+
+          const convertedMaxIncome = getExchangeAmount({
+            amount: params.incomeMax,
+            fromCurrency: selectedCurrency,
+            toCurrency: baseCurrency,
+          });
+
           transactionConditions.push({
             transaction: {
               type: 'Income',
-              amount: {
-                gte: params.incomeMin,
-                lte: params.incomeMax,
-              },
+              AND: [
+                {
+                  baseCurrency: baseCurrency,
+                },
+                {
+                  baseAmount: {
+                    gte: convertedMinIncome.convertedAmount,
+                    lte: convertedMaxIncome.convertedAmount,
+                  },
+                },
+              ],
             },
           });
         }
@@ -380,9 +563,14 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         }
       }
 
+      // Add AND conditions if there are any
+      if (andConditions.length > 0) {
+        updatedFilters.AND = andConditions;
+      }
+
       return updatedFilters;
     },
-    [productTransaction],
+    [productTransaction, baseCurrency, selectedCurrency, getExchangeAmount],
   );
 
   // Handler to fetch filtered data

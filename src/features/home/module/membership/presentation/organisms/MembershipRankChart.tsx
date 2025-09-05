@@ -1,29 +1,25 @@
 import ScatterRankingChart from '@/components/common/charts/scatter-rank-chart';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { COLORS } from '@/shared/constants/chart';
-import { useAppSelector } from '@/store';
-import { useMemo, useState } from 'react';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { useMemo } from 'react';
 import { Membership } from '../../domain/entities';
+import { setSelectedTier } from '../../slices';
 import {
   createCombinedTierIcons,
-  mapTierBenefits,
   transformToBalanceTiers,
   transformToSpentTiers,
 } from '../../utils';
-import CurrentTierMembership from './CurrentTierMembership';
 
 const MembershipRankChart = () => {
+  const dispatch = useAppDispatch();
   const memberships = useAppSelector((state) => state.membership.memberships);
   const isLoadingGetMemberships = useAppSelector(
     (state) => state.membership.isLoadingGetMemberships,
   );
 
   const currentUserTier = useAppSelector((state) => state.user.userTier);
-  const [showCurrentTier, setShowCurrentTier] = useState(false);
-  const [selectedTier, setSelectedTier] = useState<Membership | null>(null);
   const handleShowCurrentTier = (tier: Membership) => {
-    setSelectedTier(tier);
-    setShowCurrentTier(true);
+    dispatch(setSelectedTier(tier));
   };
 
   // Transform API data into balance tiers
@@ -49,18 +45,7 @@ const MembershipRankChart = () => {
   }, [balanceTiers, spentTiers, memberships]);
 
   return (
-    <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-8 rounded-lg p-2 dark:border dark:border-gray-700">
-      <Dialog open={showCurrentTier} onOpenChange={setShowCurrentTier} modal>
-        <DialogContent className="sm:max-w-[725px]">
-          <DialogTitle className="sr-only">Tier Information</DialogTitle>
-          <CurrentTierMembership
-            label={selectedTier?.tierName ?? ''}
-            icon={selectedTier?.mainIconUrl}
-            tierRanks={mapTierBenefits(selectedTier?.tierBenefits ?? [])}
-            loading={isLoadingGetMemberships}
-          />
-        </DialogContent>
-      </Dialog>
+    <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-7 rounded-lg p-2 dark:border dark:border-gray-700 min-h-[500px]">
       <ScatterRankingChart
         currentTier={{
           balance: currentUserTier?.data?.currentBalance ?? 0,
@@ -89,6 +74,7 @@ const MembershipRankChart = () => {
         }}
         combinedTierIcons={combinedTierIcons}
         isLoading={isLoadingGetMemberships}
+        className="h-full"
       />
     </div>
   );

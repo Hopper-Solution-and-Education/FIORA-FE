@@ -1,7 +1,7 @@
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import type { Response } from '@/shared/types/Common.types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { UserProfile } from '../../domain/entities/models/profile';
+import { IdentificationDocumentPayload, UserProfile } from '../../domain/entities/models/profile';
 
 export const profileApi = createApi({
   reducerPath: 'profileApi',
@@ -47,6 +47,70 @@ export const profileApi = createApi({
       query: (body) => ({ url: ApiEndpointEnum.verifyOTP, method: 'POST', body }),
       transformResponse: (response: Response<any>) => response.data,
     }),
+
+    // Identification Document API
+    getIdentificationDocument: builder.query<any, void>({
+      query: () => ({ url: '/api/indentification-document', method: 'GET' }),
+      transformResponse: (response: Response<any>) => response.data,
+      providesTags: ['eKYC'],
+    }),
+
+    submitIdentificationDocument: builder.mutation<any, IdentificationDocumentPayload>({
+      query: (body) => ({
+        url: '/api/indentification-document',
+        method: 'POST',
+        body,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+      invalidatesTags: ['eKYC'],
+    }),
+
+    // Upload Attachment
+    uploadAttachment: builder.mutation<any, { url: string; path: string; type: string }>({
+      query: (body) => ({
+        url: '/api/attachment',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+    }),
+
+    // Tax Information API
+    getTaxInformation: builder.query<any, void>({
+      query: () => ({ url: '/api/tax-information', method: 'GET' }),
+      transformResponse: (response: Response<any>) => response.data,
+      providesTags: ['eKYC'],
+    }),
+
+    // Bank Account API
+    getBankAccount: builder.query<any, void>({
+      query: () => ({ url: '/api/bank-account', method: 'GET' }),
+      transformResponse: (response: Response<any>) => response.data,
+      providesTags: ['eKYC'],
+    }),
+
+    submitBankAccount: builder.mutation<
+      any,
+      {
+        accountHolderName: string;
+        bankName: string;
+        accountNumber: string;
+        routingNumber: string;
+        accountType: string;
+        documentId?: string;
+        status?: 'DRAFT' | 'COMPLETED';
+      }
+    >({
+      query: (body) => ({
+        url: '/api/bank-account',
+        method: 'POST',
+        body,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+      invalidatesTags: ['eKYC'],
+    }),
   }),
 });
 
@@ -56,4 +120,10 @@ export const {
   useGetEKYCQuery,
   useVerifyOTPMutation,
   useSendOTPMutation,
+  useGetIdentificationDocumentQuery,
+  useSubmitIdentificationDocumentMutation,
+  useUploadAttachmentMutation,
+  useGetTaxInformationQuery,
+  useGetBankAccountQuery,
+  useSubmitBankAccountMutation,
 } = profileApi;

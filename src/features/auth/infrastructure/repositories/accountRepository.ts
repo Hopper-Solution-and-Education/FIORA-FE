@@ -13,7 +13,9 @@ export class AccountRepository implements IAccountRepository {
   }
 
   async findById(id: string): Promise<Account | null> {
-    return prisma.account.findUnique({ where: { id } });
+    return prisma.account.findUnique({
+      where: { id },
+    });
   }
 
   async findAll(): Promise<Account[]> {
@@ -118,50 +120,39 @@ export class AccountRepository implements IAccountRepository {
     return prisma.account.aggregate(options);
   }
 
-  async deductBalance(tx: Prisma.TransactionClient, accountId: string, amount: number) {
-    await tx.account.update({
-      where: { id: accountId },
-      data: {
-        balance: {
-          decrement: amount,
-        },
-      },
-    });
-  }
-
-  async receiveBalance(tx: Prisma.TransactionClient, accountId: string, amount: number) {
-    await tx.account.update({
-      where: { id: accountId },
-      data: {
-        balance: {
-          increment: amount,
-        },
-      },
-    });
-  }
-
-  async transferBalanceDecimal(
+  async deductBalance(
     tx: Prisma.TransactionClient,
-    fromAccountId: string,
-    toAccountId: string,
-    amount: Prisma.Decimal,
+    accountId: string,
+    amount: number,
+    baseAmount: number,
   ) {
-    // Trừ tiền từ tài khoản gửi
     await tx.account.update({
-      where: { id: fromAccountId },
+      where: { id: accountId },
       data: {
         balance: {
           decrement: amount,
         },
+        baseAmount: {
+          decrement: baseAmount,
+        },
       },
     });
+  }
 
-    // Cộng tiền vào tài khoản nhận
+  async receiveBalance(
+    tx: Prisma.TransactionClient,
+    accountId: string,
+    amount: number,
+    baseAmount: number,
+  ) {
     await tx.account.update({
-      where: { id: toAccountId },
+      where: { id: accountId },
       data: {
         balance: {
           increment: amount,
+        },
+        baseAmount: {
+          increment: baseAmount,
         },
       },
     });
@@ -172,6 +163,7 @@ export class AccountRepository implements IAccountRepository {
     fromAccountId: string,
     toAccountId: string,
     amount: number,
+    baseAmount: number,
   ) {
     // Trừ tiền từ tài khoản gửi
     await tx.account.update({
@@ -179,6 +171,9 @@ export class AccountRepository implements IAccountRepository {
       data: {
         balance: {
           decrement: amount,
+        },
+        baseAmount: {
+          decrement: baseAmount,
         },
       },
     });
@@ -189,6 +184,9 @@ export class AccountRepository implements IAccountRepository {
       data: {
         balance: {
           increment: amount,
+        },
+        baseAmount: {
+          increment: baseAmount,
         },
       },
     });

@@ -1,11 +1,20 @@
 'use client';
 
 import { FormConfig } from '@/components/common/forms';
+import { AppDispatch } from '@/store';
+import { RootState } from '@/store/rootReducer';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { TransactionType } from '@prisma/client';
 import { subDays } from 'date-fns';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  createTransaction,
+  fetchSupportingData,
+  resetCreateTransactionStatus,
+} from '../slices/createTransactionSlice';
 import { CreateTransactionBody } from '../types';
 import {
   defaultNewTransactionValues,
@@ -24,44 +33,59 @@ import TypeSelectField from './form/TypeSelect';
 
 const CreateTransactionForm = () => {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
 
+  // Set up form with zodResolver
   const methods = useForm<NewTransactionDefaultValues>({
     resolver: yupResolver(validateNewTransactionSchema),
     defaultValues: defaultNewTransactionValues,
-    mode: 'onChange',
   });
 
-  const onSubmit = async (data: any) => {
-    const body: CreateTransactionBody = {
-      ...data,
-      product: undefined,
-      [`from${data.type === 'Income' ? 'Category' : 'Account'}Id`]: data.fromId,
-      [`to${data.type === 'Expense' ? 'Category' : 'Account'}Id`]: data.toId,
-      products: [{ id: data.product }],
-      date: data.date.toISOString(),
-    };
-    try {
-      const response = await fetch('/api/transactions/transaction', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ...body, date: body.date }),
-      });
+  const { watch, reset } = methods;
+  const transactionType = watch('type') || 'Expense';
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create transaction');
-      }
+  const { lastFetchedType, hasFetched, isLoading } = useSelector(
+    (state: RootState) => state.createTransaction.supportingData,
+  );
 
-      const res = await response.json();
+  const { isLoading: isCreating, isSuccess } = useSelector(
+    (state: RootState) => state.createTransaction.createTransaction,
+  );
 
-      methods.reset();
-      router.replace('/transaction');
-      toast.success(res.message || 'Transaction created successfully!');
-    } catch (error: any) {
-      toast.error(error.message || 'An error occurred');
+  // Centralized fetch logic - triggers only once when transaction type changes
+  useEffect(() => {
+    const needsRefetch = !hasFetched || lastFetchedType !== transactionType;
+
+    if (needsRefetch && !isLoading) {
+      dispatch(fetchSupportingData(transactionType as TransactionType));
     }
+  }, [dispatch, transactionType, hasFetched, lastFetchedType, isLoading]);
+
+  // Handle success state
+  useEffect(() => {
+    if (isSuccess) {
+      reset();
+      router.replace('/transaction');
+      dispatch(resetCreateTransactionStatus());
+    }
+  }, [isSuccess, reset, router, dispatch]);
+
+  const onSubmit = (data: any) => {
+    const body: CreateTransactionBody = {
+      amount: data.amount,
+      currency: data.currency,
+      type: data.type,
+      partnerId: data.partnerId,
+      remark: data.remark,
+      products: data.product ? [{ id: data.product }] : [],
+      date: data.date.toISOString(),
+      fromAccountId: data.type === 'Income' ? null : data.fromId,
+      fromCategoryId: data.type === 'Income' ? data.fromId : null,
+      toAccountId: data.type === 'Expense' ? null : data.toId,
+      toCategoryId: data.type === 'Expense' ? data.toId : null,
+    };
+
+    dispatch(createTransaction(body));
   };
 
   const fields = [
@@ -84,12 +108,13 @@ const CreateTransactionForm = () => {
 
   return (
     <FormProvider {...methods}>
-      <form
-        data-test="create-transaction-form"
-        onSubmit={methods.handleSubmit(onSubmit)}
-        className="space-y-4"
-      >
-        <FormConfig fields={fields} methods={methods} onBack={() => window.history.back()} />
+      <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
+        <FormConfig
+          fields={fields}
+          methods={methods}
+          onBack={() => window.history.back()}
+          isLoading={isCreating}
+        />
       </form>
     </FormProvider>
   );

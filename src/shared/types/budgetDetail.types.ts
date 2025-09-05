@@ -1,4 +1,4 @@
-import { BudgetDetailType, Currency } from '@prisma/client';
+import { BudgetDetailType } from '@prisma/client';
 
 export interface BudgetDetailCategoryCreationParams {
   userId: string;
@@ -7,7 +7,7 @@ export interface BudgetDetailCategoryCreationParams {
   type: BudgetDetailType;
   bottomUpPlan: Record<string, number>;
   actualSumUpPlan: Record<string, number>;
-  currency: Currency;
+  currency: string;
 }
 
 export type BudgetDetailCategoryUpdateParams = Omit<

@@ -1,46 +1,64 @@
-import { formatFIORACurrency } from '@/config/FIORANumberFormat';
+import prisma from '@/config/prisma/prisma';
+import { exchangeRateRepository } from '@/features/setting/api/infrastructure/repositories/exchangeRateRepository';
 import { Currency, Prisma } from '@prisma/client'; // Import Prisma to use Decimal type
 
-type ExchangeRates = Record<Currency, number>;
-
-const EXCHANGE_RATES_TO_USD: ExchangeRates = {
-  [Currency.USD]: 1,
-  [Currency.VND]: 25000,
-  [Currency.FX]: 1, // FX has same rate as USD
-};
-
 // Update convertCurrency to handle Prisma.Decimal
-export const convertCurrency = (
-  amount: number | Prisma.Decimal, // Allow both number and Decimal
-  fromCurrency: Currency,
-  toCurrency: Currency,
-): number => {
-  // Convert Decimal to number if necessary
-  const amountAsNumber = typeof amount === 'number' ? amount : amount.toNumber();
+export async function convertCurrency(
+  amount: number | Prisma.Decimal,
+  fromCurrency: string,
+  toCurrency: string,
+): Promise<number> {
+  try {
+    const amountAsNumber = typeof amount === 'number' ? amount : amount.toNumber();
 
-  if (fromCurrency === toCurrency) return amountAsNumber;
+    if (fromCurrency === toCurrency) {
+      return amountAsNumber;
+    }
+    // Validate currencies
+    const mappingCurrency = await prisma.exchangeRateSetting.findFirst({
+      where: {
+        FromCurrency: {
+          name: fromCurrency,
+        },
+        ToCurrency: {
+          name: toCurrency,
+        },
+      },
+      select: {
+        fromValue: true,
+        toValue: true,
+      },
+    });
 
-  const amountInUSD =
-    fromCurrency === Currency.USD
-      ? amountAsNumber
-      : amountAsNumber / EXCHANGE_RATES_TO_USD[fromCurrency];
+    if (mappingCurrency) {
+      // Use proper rounding to prevent precision loss
+      const result = amountAsNumber * mappingCurrency.toValue.toNumber();
+      return Math.round(result * 100) / 100; // Round to 2 decimal places
+    }
 
-  const convertedAmount =
-    toCurrency === Currency.USD ? amountInUSD : amountInUSD * EXCHANGE_RATES_TO_USD[toCurrency];
+    const [fromCurrencyData, toCurrencyData] = await Promise.all([
+      prisma.currencyExchange.findFirst({
+        where: { name: fromCurrency },
+      }),
+      prisma.currencyExchange.findFirst({
+        where: { name: toCurrency },
+      }),
+    ]);
 
-  return Number(convertedAmount.toFixed(2));
-};
+    if (!fromCurrencyData || !toCurrencyData) {
+      throw new Error(`Invalid currency: ${!fromCurrencyData ? fromCurrency : toCurrency}`);
+    }
+
+    const response = await exchangeRateRepository.populateRateCache(fromCurrency);
+    const conversionRates = response.conversion_rates;
+
+    const result = amountAsNumber * conversionRates[toCurrency];
+    return Math.round(result * 100) / 100;
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : 'Failed to convert currency');
+  }
+}
 
 export const isValidCurrency = (currency: string): currency is Currency => {
   return Object.values(Currency).includes(currency as Currency);
 };
-
-/**
- * Format a number to currency string.
- * @param value - The numeric value to format.
- * @param currency - The ISO 4217 currency code (e.g. 'USD', 'VND', 'FX').
- * @returns A formatted currency string.
- */
-export function formatCurrency(value: number, currency: Currency): string {
-  return formatFIORACurrency(value, currency);
-}

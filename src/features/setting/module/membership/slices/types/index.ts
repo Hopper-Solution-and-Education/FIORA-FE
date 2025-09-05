@@ -1,5 +1,12 @@
 import { Tier } from '@/components/common/charts/scatter-rank-chart/types';
+import { ProcessMembershipMode } from '../../data/api';
 import { Membership } from '../../domain/entities';
+import { DynamicFieldTier } from '../../presentation/schema';
+
+export enum DeleteMode {
+  DELETE = ProcessMembershipMode.DELETE,
+  DELETE_ALL = ProcessMembershipMode.DELETE_ALL,
+}
 
 interface MembershipState {
   isLoadingGetMemberships: boolean;
@@ -16,6 +23,16 @@ interface MembershipState {
     selectedTier: Tier | null;
     nextTier: Tier | null;
     previousTier: Tier | null;
+  };
+  deleteBenefitTier: {
+    idTierToDelete: string | null;
+    slugTierToDelete: string | null;
+    isShowDialogDeleteBenefitTier: boolean;
+  };
+  editBenefitTier: {
+    idTierToEdit: string | null;
+    isShowDialogEditBenefitTier: boolean;
+    benefitTierToEdit: DynamicFieldTier | null;
   };
 }
 
@@ -34,5 +51,15 @@ export const initialMembershipState: MembershipState = {
     selectedTier: null,
     nextTier: null,
     previousTier: null,
+  },
+  deleteBenefitTier: {
+    idTierToDelete: null,
+    isShowDialogDeleteBenefitTier: false,
+    slugTierToDelete: null,
+  },
+  editBenefitTier: {
+    idTierToEdit: null,
+    isShowDialogEditBenefitTier: false,
+    benefitTierToEdit: null,
   },
 };

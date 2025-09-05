@@ -309,11 +309,11 @@ const ScatterRankingChart = ({
   }
 
   return (
-    <div className={`w-full rounded-lg p-2 ${className}`}>
+    <div className={`w-full rounded-lg p-2 h-full ${className}`}>
       <div className="p-4 pb-7 font-bold text-lg">{title}</div>
-      <div className="flex justify-end">
+      <div className="flex justify-end h-[calc(100%-64px)]">
         <div
-          className="relative w-full min-h-[400px] md:min-h-[650px] overflow-hidden"
+          className="relative w-full h-full overflow-hidden"
           ref={chartContainerRef}
           style={isDisabled ? { pointerEvents: 'none' } : {}}
         >

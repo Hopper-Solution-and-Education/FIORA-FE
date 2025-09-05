@@ -2,9 +2,10 @@ import { prisma } from '@/config';
 import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
+import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { BooleanUtils } from '@/shared/lib';
-import { GlobalFilters } from '@/shared/types';
+import { CategoryFilters } from '@/shared/types';
 import { FetchTransactionResponse } from '@/shared/types/budget.types';
 import { CategoryExtras, CategoryWithBudgetDetails } from '@/shared/types/category.types';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
@@ -14,7 +15,6 @@ import {
   BudgetType,
   Category,
   CategoryType,
-  Currency,
   Prisma,
   Transaction,
   TransactionType,
@@ -100,12 +100,14 @@ class CategoryUseCase {
     const calculateBalance = (category: CategoryExtras): number => {
       if (category.type === CategoryType.Expense.valueOf()) {
         return (category.toTransactions ?? []).reduce(
-          (sum: any, tx: any) => sum + Number(tx.amount),
+          // Get baseAmount from transaction
+          (sum: any, tx: any) => sum + Number(tx.baseAmount),
           0,
         );
       } else if (category.type === CategoryType.Income.valueOf()) {
         return (category.fromTransactions ?? []).reduce(
-          (sum: any, tx: any) => sum + Number(tx.amount),
+          // Get baseAmount from transaction
+          (sum: any, tx: any) => sum + Number(tx.baseAmount),
           0,
         );
       }
@@ -117,6 +119,7 @@ class CategoryUseCase {
       categoryMap.set(category.id, {
         ...category,
         balance: calculateBalance(category),
+        currency: DEFAULT_BASE_CURRENCY,
       });
     });
 
@@ -134,7 +137,7 @@ class CategoryUseCase {
 
   async getCategoriesFilter(
     userId: string,
-    params: GlobalFilters,
+    params: CategoryFilters,
   ): Promise<{
     data: any[];
     minAmount: number;
@@ -159,10 +162,10 @@ class CategoryUseCase {
           rawCategories.map(async (category: any) => {
             const [toTransactions, fromTransactions] = await Promise.all([
               prisma.transaction.findMany({
-                where: { toCategoryId: category.id },
+                where: { toCategoryId: category.id, isDeleted: false },
               }),
               prisma.transaction.findMany({
-                where: { fromCategoryId: category.id },
+                where: { fromCategoryId: category.id, isDeleted: false },
               }),
             ]);
             return { ...category, toTransactions, fromTransactions };
@@ -180,17 +183,18 @@ class CategoryUseCase {
     }
 
     const transactionRangeFilters = this.extractTransactionRangeFilters(params.filters);
+
     categories = this.filterCategoriesByTransactionRange(categories, transactionRangeFilters);
 
     const calculateBalance = (category: CategoryExtras): number => {
       if (category.type === CategoryType.Expense.valueOf()) {
         return (category.toTransactions ?? []).reduce(
-          (sum: any, tx: any) => sum + Number(tx.amount),
+          (sum: any, tx: any) => sum + Number(tx.baseAmount),
           0,
         );
       } else if (category.type === CategoryType.Income.valueOf()) {
         return (category.fromTransactions ?? []).reduce(
-          (sum: any, tx: any) => sum + Number(tx.amount),
+          (sum: any, tx: any) => sum + Number(tx.baseAmount),
           0,
         );
       }
@@ -236,12 +240,12 @@ class CategoryUseCase {
       const toTransactions = category.toTransactions ?? [];
 
       const totalIncome = fromTransactions.reduce(
-        (sum: number, tx: any) => sum + Number(tx.amount),
+        (sum: number, tx: any) => sum + Number(tx.baseAmount),
         0,
       );
 
       const totalExpense = toTransactions.reduce(
-        (sum: number, tx: any) => sum + Number(tx.amount),
+        (sum: number, tx: any) => sum + Number(tx.baseAmount),
         0,
       );
 
@@ -268,13 +272,22 @@ class CategoryUseCase {
     const result: any = {};
 
     const transactionsFilter = filters?.transactions?.some?.OR ?? [];
+
     transactionsFilter.forEach((condition: any) => {
       if (condition.type === 'Income') {
-        result.totalIncomeMin = condition.amount?.gte ?? 0;
-        result.totalIncomeMax = condition.amount?.lte ?? Number.MAX_SAFE_INTEGER;
+        result.totalIncomeMin = condition.AND.at(0).baseAmount.gte
+          ? condition.AND.at(0).baseAmount.gte
+          : 0;
+        result.totalIncomeMax = condition.AND.at(0).baseAmount.lte
+          ? condition.AND.at(0).baseAmount.lte
+          : Number.MAX_SAFE_INTEGER;
       } else if (condition.type === 'Expense') {
-        result.totalExpenseMin = condition.amount?.gte ?? 0;
-        result.totalExpenseMax = condition.amount?.lte ?? Number.MAX_SAFE_INTEGER;
+        result.totalExpenseMin = condition.AND.at(0).baseAmount.gte
+          ? condition.AND.at(0).baseAmount.gte
+          : 0;
+        result.totalExpenseMax = condition.AND.at(0).baseAmount.lte
+          ? condition.AND.at(0).baseAmount.lte
+          : Number.MAX_SAFE_INTEGER;
       }
     });
 
@@ -309,17 +322,25 @@ class CategoryUseCase {
     return { minAmount, maxAmount };
   }
 
-  private calculateActualTotals(
+  private async calculateActualTotals(
     transactions: FetchTransactionResponse[] | [],
-    currency: Currency,
-  ): { totalExpenseAct: number; totalIncomeAct: number } {
-    const totalExpenseAct = transactions
-      .filter((t) => t.type === TransactionType.Expense)
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+    currency: string,
+  ): Promise<{ totalExpenseAct: number; totalIncomeAct: number }> {
+    const expenseTransactions = transactions.filter((t) => t.type === TransactionType.Expense);
+    const incomeTransactions = transactions.filter((t) => t.type === TransactionType.Income);
 
-    const totalIncomeAct = transactions
-      .filter((t) => t.type === TransactionType.Income)
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+    const totalExpenseAct = (
+      await Promise.all(
+        expenseTransactions.map((t) => convertCurrency(t.amount.toNumber(), t.currency!, currency)),
+      )
+    ).reduce((sum, amount) => sum + amount, 0);
+
+    const totalIncomeAct = (
+      await Promise.all(
+        incomeTransactions.map((t) => convertCurrency(t.amount.toNumber(), t.currency!, currency)),
+      )
+    ).reduce((sum, amount) => sum + amount, 0);
+
     return { totalExpenseAct, totalIncomeAct };
   }
 
@@ -327,7 +348,7 @@ class CategoryUseCase {
     categoryId: string,
     year: number,
     userId: string,
-    currency: Currency,
+    currency: string,
   ) {
     // checked if categoryId is valid
     const foundCategory = await this.categoryRepository.findFirstCategory({
@@ -353,12 +374,12 @@ class CategoryUseCase {
         : { fromCategoryId: foundCategory.id }),
     });
 
-    const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
+    const { totalExpenseAct, totalIncomeAct } = await this.calculateActualTotals(
       foundTransactions,
       currency,
     );
 
-    const { monthFields, quarterFields, halfYearFields } = calculateSumUpAllocationByType(
+    const { monthFields, quarterFields, halfYearFields } = await calculateSumUpAllocationByType(
       foundTransactions,
       year,
       foundCategory,
@@ -373,17 +394,12 @@ class CategoryUseCase {
       ...quarterFields,
       ...halfYearFields,
       [`total_${suffix}`]: totalMapping,
-      currency,
+      currency: currency,
       type: foundCategory.type,
     };
   }
 
-  async getListCategoryByType(
-    userId: string,
-    type: CategoryType,
-    fiscalYear: string,
-    currency: Currency,
-  ) {
+  async getListCategoryByType(userId: string, type: CategoryType, fiscalYear: string) {
     if (!Object.values(CategoryType).includes(type)) {
       throw new Error(Messages.INVALID_CATEGORY_TYPE);
     }
@@ -461,7 +477,7 @@ class CategoryUseCase {
       (category: CategoryWithBudgetDetails) => {
         const suffix = category.type === CategoryType.Expense ? 'exp' : 'inc';
         const bottomUpPlan: Record<string, number> = {};
-        const actualTransaction: Record<string, number | Currency | TransactionType> = {};
+        const actualTransaction: Record<string, number | string | TransactionType> = {};
 
         // Initialize all months with 0
         for (let i = 1; i <= 12; i++) {
@@ -478,22 +494,18 @@ class CategoryUseCase {
         });
 
         // Map actual transaction to corresponding months
-        categoryFoundWithTransactions.forEach((item: any) => {
+        categoryFoundWithTransactions.forEach(async (item: any) => {
           if (item.id === category.id) {
             actualTransaction[`total_${suffix}`] = 0;
-            actualTransaction[`currency`] = currency;
+            actualTransaction[`currency`] = item.currency;
             actualTransaction[`type`] = item.type as TransactionType;
-            item.transactions.forEach((transaction: Transaction) => {
+            item.transactions.forEach(async (transaction: Transaction) => {
               const monthKey = `m${transaction.date.getMonth() + 1}_${suffix}`; // Get month key from transaction date
-              const convertedMonthAmount = convertCurrency(
-                transaction.amount,
-                transaction.currency as Currency,
-                currency,
-              );
+
               actualTransaction[monthKey] =
-                Number(actualTransaction[monthKey]) + convertedMonthAmount; // Sum up amount of transaction in the month
+                Number(actualTransaction[monthKey]) + Number(transaction.amount); // Sum up amount of transaction in the month
               actualTransaction[`total_${suffix}`] =
-                Number(actualTransaction[`total_${suffix}`]) + convertedMonthAmount; // Sum up amount of transaction in the year
+                Number(actualTransaction[`total_${suffix}`]) + Number(transaction.amount); // Sum up amount of transaction in the year
             });
           }
         });
@@ -507,7 +519,6 @@ class CategoryUseCase {
             ...actualTransaction,
           },
           isCreated: budgetDetails.length > 0 || Number(actualTransaction[`total_${suffix}`]) > 0,
-          ...(currency && { currency }),
         };
       },
     );

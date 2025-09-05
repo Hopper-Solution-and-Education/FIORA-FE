@@ -2,58 +2,46 @@
 
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { useGetProfileQuery } from '@/features/profile/store/api/profileApi';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Session, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import * as yup from 'yup';
 import { ContactUsRequest } from '../../domain/entities/models/faqs';
+import { contactUsSchema } from '../../domain/schemas/contactUsValidationSchemas';
 import { usePhoneFormatter } from '../../hooks/usePhoneFormatter';
 import { useContactUsMutation } from '../../store/api/helpsCenterApi';
-import { FloatingLabelInput } from '../atoms/FloatingLabelInput';
+import ContactFormItem from '../atoms/ContactFormItem';
 import FileUpload from '../molecules/FileUpload';
 
-const contactUsSchema = yup.object().shape({
-  name: yup.string().required('Name is required'),
-  email: yup.string().email('Invalid email').required('Email is required'),
-  phoneNumber: yup.string().required('Phone number is required'),
-  title: yup.string().required('Title is required'),
-  message: yup.string().required('Message is required'),
-});
-
-const ContactUsForm = ({
-  setOpenConfirmExitDialog,
-}: {
+type ContactUsFormProps = {
   setOpenConfirmExitDialog: (open: boolean) => void;
-}) => {
+  user?: {
+    name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  };
+};
+
+const ContactUsForm = ({ setOpenConfirmExitDialog, user }: ContactUsFormProps) => {
   const router = useRouter();
   const [isFormDirty, setIsFormDirty] = useState(false);
-
-  const { status } = useSession() as {
-    data: Session | null;
-    status: 'loading' | 'authenticated' | 'unauthenticated';
-  };
-
-  const { data: user } = useGetProfileQuery(undefined, {
-    skip: status !== 'authenticated',
-  });
 
   const [contactUsMutation] = useContactUsMutation();
 
   const { formatPhoneNumber } = usePhoneFormatter();
 
-  const defaultValues = {
-    name: user?.name ?? '',
-    email: user?.email ?? '',
-    title: '',
-    phoneNumber: user?.phone ?? '',
-    message: '',
-    attachments: [],
-  };
+  const defaultValues = useMemo(
+    () => ({
+      name: user?.name ?? '',
+      email: user?.email ?? '',
+      title: '',
+      phoneNumber: user?.phone ?? '',
+      message: '',
+      attachments: [],
+    }),
+    [user],
+  );
 
   // Setup form with react-hook-form directly (similar to GlobalForm's approach)
   const form = useForm<ContactUsRequest>({
@@ -126,100 +114,27 @@ const ContactUsForm = ({
         <CardContent>
           <FormProvider {...form}>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem className="mb-2">
-                    <FloatingLabelInput
-                      label="Name"
-                      {...field}
-                      value={field.value ?? ''}
-                      required
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <ContactFormItem control={form.control} name="name" label="Name" required />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="mb-2">
-                      <FormControl>
-                        <FloatingLabelInput
-                          label="Email"
-                          {...field}
-                          value={field.value ?? ''}
-                          required
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <ContactFormItem control={form.control} name="email" label="Email" required />
 
-                <FormField
+                <ContactFormItem
                   control={form.control}
                   name="phoneNumber"
-                  render={({ field: { onChange, ...field } }) => (
-                    <FormItem className="mb-2">
-                      <FormControl>
-                        <FloatingLabelInput
-                          label="Phone Number"
-                          {...field}
-                          value={field.value ?? ''}
-                          required
-                          onChange={(e) => {
-                            const formattedValue = formatPhoneNumber(e.target.value);
-                            onChange(formattedValue);
-                          }}
-                          maxLength={12}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Phone Number"
+                  required
+                  maxLength={12}
+                  onChange={(e) => {
+                    const formattedValue = formatPhoneNumber(e.target.value);
+                    form.setValue('phoneNumber', formattedValue);
+                  }}
                 />
               </div>
 
-              <div>
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem className="mb-2">
-                      <FloatingLabelInput
-                        label="Title"
-                        {...field}
-                        value={field.value ?? ''}
-                        required
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <ContactFormItem control={form.control} name="title" label="Title" required />
 
-              <FormField
-                control={form.control}
-                name="message"
-                render={({ field }) => (
-                  <FormItem className="mb-2">
-                    <FormControl>
-                      <FloatingLabelInput
-                        label="Message"
-                        {...field}
-                        value={field.value ?? ''}
-                        required
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <ContactFormItem control={form.control} name="message" label="Message" required />
 
               {/* File Upload Section */}
               <FileUpload

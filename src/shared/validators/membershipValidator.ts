@@ -42,11 +42,16 @@ export const membershipTierSchema = Joi.object({
     'string.empty': 'Membership tier story is invalid',
     'string.max': 'Membership tier story must be at most 10000 characters',
   }),
-  tierBenefits: Joi.array().items(membershipKeyValSchema).required().min(1).max(10).messages({
-    'array.base': 'Membership tier key value is required',
-    'array.min': 'Membership tier key value must be at least 1',
-    'array.max': 'Membership tier key value must be at most 10',
-  }),
+  tierBenefits: Joi.array()
+    .items(membershipKeyValSchema)
+    .required()
+    .min(0)
+    .max(99999999999)
+    .messages({
+      'array.base': 'Membership tier key value is required',
+      'array.min': 'Membership tier key value must be at least 1',
+      'array.max': 'Membership tier key value must be at most 99999999999',
+    }),
 });
 
 export const updateMembershipTierThresholdSchema = Joi.object({

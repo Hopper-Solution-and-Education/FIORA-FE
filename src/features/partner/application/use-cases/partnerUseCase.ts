@@ -137,11 +137,11 @@ class PartnerUseCase {
     return partners.filter((partner) => {
       const totalExpense = partner.transactions
         .filter((t: Transaction) => t.type === 'Expense')
-        .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
+        .reduce((sum: number, t: Transaction) => sum + Number(t.baseAmount), 0);
 
       const totalIncome = partner.transactions
         .filter((t: Transaction) => t.type === 'Income')
-        .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
+        .reduce((sum: number, t: Transaction) => sum + Number(t.baseAmount), 0);
 
       const isValidExpense = totalExpense >= totalExpenseMin && totalExpense <= totalExpenseMax;
       const isValidIncome = totalIncome >= totalIncomeMin && totalIncome <= totalIncomeMax;

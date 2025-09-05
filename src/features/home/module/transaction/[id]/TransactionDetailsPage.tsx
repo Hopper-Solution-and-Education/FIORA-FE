@@ -7,7 +7,6 @@ import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { FileX } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { IRelationalTransaction } from '../types';
 import TransactionDetails from './components/TransactionDetails';
 
 type TransactionDetailsPageProps = {
@@ -21,7 +20,7 @@ const TransactionDetailsPage = ({ id }: TransactionDetailsPageProps) => {
     method: 'GET',
   });
 
-  const [transaction, setTransaction] = useState<IRelationalTransaction | null>(null);
+  const [transaction, setTransaction] = useState<any | null>(null);
 
   useEffect(() => {
     if (data && data.data) {

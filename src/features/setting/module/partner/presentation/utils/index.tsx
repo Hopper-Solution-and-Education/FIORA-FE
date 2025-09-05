@@ -1,8 +1,8 @@
 import { TwoSideBarItem } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
 import { Partner } from '@/features/setting/module/partner/domain/entities/Partner';
 import { generateColor } from '@/shared/lib/charts';
+import { ExchangeAmountParams, ExchangeAmountResult } from '@/shared/types';
 import { TransactionType } from '@prisma/client';
-import { convertVNDToUSD } from '@/shared/utils';
 
 /**
  * Properly organizes partners into a hierarchical structure
@@ -55,10 +55,14 @@ const organizePartnerHierarchy = (partners: Partner[]): Partner[] => {
  * @param currency The current currency setting
  * @returns A TwoSideBarItem representing the partner and its children
  */
-const mapPartnerToTwoSideBarItem = (partner: Partner, currency: string): TwoSideBarItem => {
+const mapPartnerToTwoSideBarItem = (
+  partner: Partner,
+  currency: string,
+  getExchangeAmount: (params: ExchangeAmountParams) => ExchangeAmountResult,
+): TwoSideBarItem => {
   // Recursively map children
   const childrenItems = (partner.children || []).map((child) =>
-    mapPartnerToTwoSideBarItem(child, currency),
+    mapPartnerToTwoSideBarItem(child, currency, getExchangeAmount),
   );
 
   // Calculate the partner's own positive and negative values from its transactions
@@ -67,19 +71,28 @@ const mapPartnerToTwoSideBarItem = (partner: Partner, currency: string): TwoSide
 
   (partner.transactions || []).forEach((tx) => {
     if (!tx.isDeleted) {
-      const amount = parseFloat(String(tx?.amount));
+      const baseAmount = parseFloat(String(tx?.baseAmount));
       // Only include non-deleted transactions
       if (tx.type === TransactionType.Income) {
-        ownPositive += amount;
+        ownPositive += baseAmount;
       } else if (tx.type === TransactionType.Expense) {
-        ownNegative -= amount;
+        ownNegative -= baseAmount;
       }
     }
   });
 
   // Convert values based on currency
-  const convertedPositive = currency === 'USD' ? convertVNDToUSD(ownPositive) : ownPositive;
-  const convertedNegative = currency === 'USD' ? convertVNDToUSD(ownNegative) : ownNegative;
+  const convertedPositive = getExchangeAmount({
+    amount: ownPositive,
+    fromCurrency: partner?.transactions?.[0]?.baseCurrency || 'USD',
+    toCurrency: currency,
+  }).convertedAmount;
+
+  const convertedNegative = getExchangeAmount({
+    amount: ownNegative,
+    fromCurrency: partner?.transactions?.[0]?.baseCurrency || 'USD',
+    toCurrency: currency,
+  }).convertedAmount;
 
   // Total values include own transactions plus children's totals
   const totalPositive =
@@ -111,6 +124,7 @@ const mapPartnerToTwoSideBarItem = (partner: Partner, currency: string): TwoSide
 export const mapPartnersToTwoSideBarItems = (
   data: Partner[],
   currency: string,
+  getExchangeAmount: (params: ExchangeAmountParams) => ExchangeAmountResult,
 ): TwoSideBarItem[] => {
   // Guard clause: return empty array if data is not a valid array
   if (!data || !Array.isArray(data)) {
@@ -121,5 +135,7 @@ export const mapPartnersToTwoSideBarItems = (
   const rootPartners = organizePartnerHierarchy(data);
 
   // Then map the properly structured data to chart items
-  return rootPartners.map((partner) => mapPartnerToTwoSideBarItem(partner, currency));
+  return rootPartners.map((partner) =>
+    mapPartnerToTwoSideBarItem(partner, currency, getExchangeAmount),
+  );
 };

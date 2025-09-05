@@ -18,8 +18,9 @@ import {
   MIN_CHART_HEIGHT,
   STACK_TYPE,
 } from '@/shared/constants/chart';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
-import { cn, formatCurrency } from '@/shared/utils';
+import { cn } from '@/shared/utils';
 import { getChartMargins, useWindowSize } from '@/shared/utils/device';
 import { memo, useEffect, useMemo, useState } from 'react';
 import {
@@ -34,7 +35,6 @@ import {
   YAxis,
 } from 'recharts';
 import { CustomBarItem, StackBarDisplay, StackedBarProps, TooltipProps } from './type';
-import { formatter } from '@/shared/lib/charts';
 
 const largestKey = (item: CustomBarItem): string => {
   const largestValue = Math.max(item.A, item.B, item.T);
@@ -66,7 +66,7 @@ const StackedBarChart = ({
   currency = DEFAULT_CURRENCY,
   callback,
   className,
-  xAxisFormatter = (value) => formatCurrency(value, currency),
+  xAxisFormatter,
   tutorialText,
   legendItems,
   showButton,
@@ -78,6 +78,7 @@ const StackedBarChart = ({
   const { width } = useWindowSize();
   const chartMargins = useMemo(() => getChartMargins(width), [width]);
   const isMobile = useIsMobile();
+  const { formatCurrency } = useCurrencyFormatter();
 
   const processedData = useMemo(() => calculateDisplayValues(data), [data]);
 
@@ -236,7 +237,7 @@ const StackedBarChart = ({
                 <BarLabel
                   {...props}
                   fontSize="text-xs"
-                  renderValue={formatter(key, props.value, currency)}
+                  renderValue={formatCurrency(props.value, currency)}
                 />
               )}
               onClick={(props) => callback && callback(props.payload)}

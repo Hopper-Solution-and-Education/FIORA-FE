@@ -1,4 +1,4 @@
-import { Currency, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 export interface TransactionFilters {
   date?: Date | { from?: Date; to?: Date }; // Support exact date or range
@@ -14,8 +14,11 @@ export interface TransactionType {
   userId: string | null;
   type: string;
   amount: number;
-  currency: Currency;
+  currency: string;
+  baseCurrency: string;
+  baseAmount: number;
 }
+
 export interface TransactionGetPagination {
   page: number;
   pageSize: number;
