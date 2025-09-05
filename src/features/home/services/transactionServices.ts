@@ -1,8 +1,19 @@
 import { httpClient } from '@/config/http-client/HttpClient';
-import { ITransactionPaginatedResponse } from '@/features/home/module/transaction/types';
+import {
+  CreateTransactionBody,
+  ITransactionPaginatedResponse,
+} from '@/features/home/module/transaction/types';
 import { Transaction } from '@/features/setting/module/product/domain/entities/Transaction';
 import { FilterCriteria } from '@/shared/types';
 import { Response } from '@/shared/types/Common.types';
+import { Partner, Product, TransactionType } from '@prisma/client';
+
+// Currency type based on API response
+interface Currency {
+  id: string;
+  name: string;
+  symbol: string;
+}
 
 const expenseIncomeServices = {
   getFilteredTransactions: async (
@@ -21,6 +32,37 @@ const expenseIncomeServices = {
     data: Partial<Transaction>,
   ): Promise<Response<Transaction>> => {
     return httpClient.put<Response<Transaction>>(`/api/transactions/${id}`, data);
+  },
+  getPartners: async (): Promise<Response<Partner[]>> => {
+    return httpClient.get<Response<Partner[]>>('/api/partners');
+  },
+  getProducts: async (): Promise<Response<{ data: Product[] }>> => {
+    return httpClient.get<Response<{ data: Product[] }>>('/api/products');
+  },
+  getSupportingData: async (
+    type: TransactionType,
+  ): Promise<
+    Response<{
+      fromAccounts: Array<{ id: string; name: string; type: string }>;
+      toAccounts: Array<{ id: string; name: string; type: string }>;
+      fromCategories: Array<{ id: string; name: string }>;
+      toCategories: Array<{ id: string; name: string }>;
+    }>
+  > => {
+    return httpClient.get<
+      Response<{
+        fromAccounts: Array<{ id: string; name: string; type: string }>;
+        toAccounts: Array<{ id: string; name: string; type: string }>;
+        fromCategories: Array<{ id: string; name: string }>;
+        toCategories: Array<{ id: string; name: string }>;
+      }>
+    >(`/api/transactions/supporting-data?type=${type}`);
+  },
+  getCurrencies: async (): Promise<Response<Currency[]>> => {
+    return httpClient.get<Response<Currency[]>>('/api/setting/exchange-currency');
+  },
+  createTransaction: async (data: CreateTransactionBody): Promise<Response<Transaction>> => {
+    return httpClient.post<Response<Transaction>>('/api/transactions/transaction', data);
   },
 };
 

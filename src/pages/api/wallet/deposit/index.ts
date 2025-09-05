@@ -1,6 +1,5 @@
 import { walletUseCase } from '@/features/setting/api/domain/use-cases/walletUsecase';
 import { AttachmentData } from '@/features/setting/api/types/attachmentTypes';
-import { ALLOWED_CURRENCIES } from '@/features/setting/data/module/wallet/constants';
 import {
   DepositRequestStatusSchema,
   PostBodySchema,
@@ -10,7 +9,6 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { SessionUser } from '@/shared/types/session';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { Currency } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default sessionWrapper(
@@ -73,7 +71,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string, u
 
     // Get currency from header
     const currency = req.headers['x-user-currency'] as string;
-    if (!currency || !ALLOWED_CURRENCIES.includes(currency)) {
+    if (!currency) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_CURRENCY);
     }
 
@@ -82,7 +80,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse, userId: string, u
         userId,
         packageFXId,
         attachmentData as AttachmentData,
-        currency as Currency,
+        currency,
         user,
       );
 

@@ -19,6 +19,7 @@ const useReviewUploadImageConfig = (mediaPath: string, mediaType: MediaTypeEnum)
       label="Upload Review User"
       disabled={isSubmitting || isLoadingSaveChange}
       required
+      className="h-100 w-100"
     />,
   ];
 
@@ -31,6 +32,7 @@ const useReviewUploadImageConfig = (mediaPath: string, mediaType: MediaTypeEnum)
         disabled={isSubmitting || isLoadingSaveChange}
         required
         size="large"
+        className="h-100 w-100"
       />,
       ...fields,
     ];

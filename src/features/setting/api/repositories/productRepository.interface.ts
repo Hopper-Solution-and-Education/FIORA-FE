@@ -1,4 +1,4 @@
-import { Currency, Prisma, Product, ProductType } from '@prisma/client';
+import { Prisma, Product, ProductType } from '@prisma/client';
 import { JsonArray, JsonObject } from '@prisma/client/runtime/library';
 
 export declare type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
@@ -33,7 +33,7 @@ export interface ProductCreation {
   type: ProductType;
   category_id: string;
   items?: Items[] | null;
-  currency?: Currency;
+  currency?: string;
 }
 
 export interface ProductUpdate {
@@ -47,7 +47,7 @@ export interface ProductUpdate {
   type?: ProductType;
   category_id?: string;
   items?: Items[] | null;
-  currency?: Currency;
+  currency?: string;
   deleteItemsId?: string[];
 }
 

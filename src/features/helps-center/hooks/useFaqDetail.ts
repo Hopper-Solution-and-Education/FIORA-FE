@@ -33,7 +33,7 @@ export const useFaqDetail = (id: string) => {
       setShowDeleteFaqDialog(false);
       toast.success(`"${faq.title}" has been deleted successfully`);
       setTimeout(() => {
-        router.push('/faqs');
+        router.push('/helps-center/faqs');
       }, 1000);
     } catch (error) {
       console.error('Error deleting FAQ:', error);

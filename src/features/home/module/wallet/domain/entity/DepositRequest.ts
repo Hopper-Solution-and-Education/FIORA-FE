@@ -10,6 +10,7 @@ export type DepositRequest = {
   remark?: string;
   createdAt: string;
   updatedAt: string;
+  currency?: string;
   attachment?: {
     id: string;
     type: string;

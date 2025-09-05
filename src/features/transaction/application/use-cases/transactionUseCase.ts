@@ -1,14 +1,16 @@
 import { prisma } from '@/config';
 import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
-import { categoryRepository } from '@/features/setting/api/infrastructure/repositories/categoryRepository';
-import { ICategoryRepository } from '@/features/setting/api/repositories/categoryRepository.interface';
+import { currencySettingRepository } from '@/features/setting/api/infrastructure/repositories/currencySettingRepository';
+import { ICurrencySettingRepository } from '@/features/setting/api/repositories/currencySettingRepository.interface';
+import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { BadRequestError, ConflictError, InternalServerError } from '@/shared/lib';
 import { BooleanUtils } from '@/shared/lib/booleanUtils';
 import { PaginationResponse } from '@/shared/types/Common.types';
 import { TransactionGetPagination } from '@/shared/types/transaction.types';
 import { buildOrderByTransactionV2, buildWhereClause } from '@/shared/utils';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
 import {
   AccountType,
   CategoryType,
@@ -24,7 +26,7 @@ class TransactionUseCase {
   constructor(
     private transactionRepository: ITransactionRepository,
     private accountRepository: IAccountRepository,
-    private categoryRepository: ICategoryRepository,
+    private currencySettingRepository: ICurrencySettingRepository,
   ) {}
 
   async listTransactions(userId: string): Promise<Transaction[]> {
@@ -131,7 +133,7 @@ class TransactionUseCase {
 
   async getTransactionsPagination(
     params: TransactionGetPagination,
-  ): Promise<PaginationResponse<Transaction> & { amountMin?: number; amountMax?: number }> {
+  ): Promise<PaginationResponse<any> & { amountMin?: number; amountMax?: number }> {
     const { page = 1, pageSize = 20, searchParams = '', filters, sortBy = {}, userId } = params;
     const take = pageSize;
     const skip = (page - 1) * pageSize;
@@ -164,7 +166,15 @@ class TransactionUseCase {
               { toAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
               { partner: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
               {
-                amount: { gte: Number(typeSearchParams) || 0, lte: Number(typeSearchParams) || 0 },
+                AND: [
+                  {
+                    baseAmount: {
+                      gte: Number(typeSearchParams),
+                      lte: Number(typeSearchParams),
+                    },
+                    baseCurrency: { equals: 'USD' },
+                  },
+                ],
               },
               // adding typeTransactionWhere to where clause if exists
               ...(typeTransactionWhere
@@ -204,6 +214,8 @@ class TransactionUseCase {
           toAccount: true,
           toCategory: true,
           partner: true,
+          toWallet: true,
+          fromWallet: true,
         },
       },
     );
@@ -214,12 +226,13 @@ class TransactionUseCase {
     });
     // getting amountMax from transactions
     const amountMaxAwaited = this.transactionRepository.aggregate({
-      where: { userId },
-      _max: { amount: true },
+      where: { userId, baseCurrency: DEFAULT_BASE_CURRENCY },
+      _max: { baseAmount: true },
     });
+
     const amountMinAwaited = this.transactionRepository.aggregate({
-      where: { userId },
-      _min: { amount: true },
+      where: { userId, baseCurrency: DEFAULT_BASE_CURRENCY },
+      _min: { baseAmount: true },
     });
 
     const [transactions, total, amountMax, amountMin] = await Promise.all([
@@ -232,12 +245,12 @@ class TransactionUseCase {
     const totalPage = Math.ceil(total / pageSize);
 
     return {
-      data: transactions,
+      data: transactions as any,
       totalPage,
       page,
       pageSize,
-      amountMax: Number(amountMax['_max']?.amount) || 0,
-      amountMin: Number(amountMin['_min']?.amount) || 0,
+      amountMax: Number(amountMax['_max']?.baseAmount) || 0,
+      amountMin: Number(amountMin['_min']?.baseAmount) || 0,
       total,
     };
   }
@@ -271,11 +284,11 @@ class TransactionUseCase {
     }
 
     const amount = transaction.amount.toNumber();
-
+    const baseAmount = transaction.baseAmount?.toNumber() || 0;
     switch (transaction.type) {
       case TransactionType.Expense:
         if (fromAccount) {
-          await this.accountRepository.receiveBalance(tx, fromAccount.id, amount);
+          await this.accountRepository.receiveBalance(tx, fromAccount.id, amount, baseAmount);
         }
         break;
 
@@ -286,7 +299,7 @@ class TransactionUseCase {
             amount,
             `Account ${toAccount.name} does not have sufficient balance to reverse the income transaction.`,
           );
-          await this.accountRepository.deductBalance(tx, toAccount.id, amount);
+          await this.accountRepository.deductBalance(tx, toAccount.id, amount, baseAmount);
         }
         break;
 
@@ -297,7 +310,13 @@ class TransactionUseCase {
             amount,
             `Account ${toAccount.name} does not have sufficient balance to refund the transfer transaction.`,
           );
-          await this.accountRepository.transferBalance(tx, toAccount.id, fromAccount.id, amount);
+          await this.accountRepository.transferBalance(
+            tx,
+            toAccount.id,
+            fromAccount.id,
+            amount,
+            baseAmount,
+          );
         }
         break;
     }
@@ -316,6 +335,7 @@ class TransactionUseCase {
       accounts: filterOptions.accounts ?? [],
       categories: filterOptions.categories ?? [],
       partners: filterOptions.partners ?? [],
+      wallets: filterOptions.wallets ?? [],
       amountMin: amountRange.min,
       amountMax: amountRange.max,
     };
@@ -374,7 +394,15 @@ class TransactionUseCase {
     });
   }
 
-  async createTransaction(data: Prisma.TransactionUncheckedCreateInput) {
+  async createTransaction(data: Prisma.TransactionUncheckedCreateInput, currency: string) {
+    const foundCurrency = await this.currencySettingRepository.findFirstCurrency({
+      name: currency,
+    });
+
+    if (!foundCurrency) {
+      throw new Error(Messages.CURRENCY_NOT_FOUND);
+    }
+
     const transactionHandlers: Record<
       TransactionType,
       (data: Prisma.TransactionUncheckedCreateInput) => Promise<any>
@@ -390,10 +418,21 @@ class TransactionUseCase {
       throw new BadRequestError(Messages.INVALID_TRANSACTION_TYPE);
     }
 
+    data.currency = foundCurrency.name;
+    data.currencyId = foundCurrency.id;
+
     return handler(data);
   }
 
-  async updateTransaction(data: Prisma.TransactionUncheckedCreateInput) {
+  async updateTransaction(data: Prisma.TransactionUncheckedCreateInput, currency: string) {
+    const foundCurrency = await this.currencySettingRepository.findFirstCurrency({
+      name: currency,
+    });
+
+    if (!foundCurrency) {
+      throw new Error(Messages.CURRENCY_NOT_FOUND);
+    }
+
     const transactionHandlers: Record<
       TransactionType,
       (data: Prisma.TransactionUncheckedCreateInput) => Promise<any>
@@ -408,6 +447,9 @@ class TransactionUseCase {
     if (!handler) {
       throw new BadRequestError(Messages.INVALID_TRANSACTION_TYPE);
     }
+
+    data.currency = foundCurrency.name;
+    data.currencyId = foundCurrency.id;
 
     return handler(data);
   }
@@ -472,7 +514,8 @@ class TransactionUseCase {
       await this.accountRepository.receiveBalance(
         tx,
         transactionUnique.fromAccountId as string,
-        Number(transactionUnique.amount),
+        transactionUnique.amount.toNumber(),
+        data.baseAmount as number,
       );
 
       if (
@@ -491,6 +534,12 @@ class TransactionUseCase {
         );
       }
 
+      const baseAmount = await convertCurrency(
+        Number(data.amount),
+        data.currency as string,
+        DEFAULT_BASE_CURRENCY,
+      );
+
       const transaction = await tx.transaction.update({
         where: { id: data.id as string },
         data: {
@@ -506,6 +555,8 @@ class TransactionUseCase {
           remark: data.remark,
           createdBy: data.userId as string,
           updatedBy: data.userId,
+          baseAmount: baseAmount,
+          baseCurrency: data.baseCurrency,
         },
       });
 
@@ -517,6 +568,7 @@ class TransactionUseCase {
         tx,
         data.fromAccountId as string,
         data.amount as number,
+        data.baseAmount as number,
       );
 
       if (Array.isArray(data.products) && data.products.length > 0) {
@@ -580,7 +632,8 @@ class TransactionUseCase {
       await this.accountRepository.deductBalance(
         tx,
         transactionUnique.toAccountId as string,
-        Number(transactionUnique.amount),
+        transactionUnique.amount.toNumber(),
+        data.baseAmount as number,
       );
 
       if (
@@ -599,6 +652,12 @@ class TransactionUseCase {
         );
       }
 
+      const baseAmount = await convertCurrency(
+        Number(data.amount),
+        data.currency as string,
+        DEFAULT_BASE_CURRENCY,
+      );
+
       const transaction = await tx.transaction.update({
         where: { id: data.id as string },
         data: {
@@ -614,6 +673,8 @@ class TransactionUseCase {
           remark: data.remark,
           createdBy: data.userId as string,
           updatedBy: data.userId,
+          baseAmount: baseAmount,
+          baseCurrency: data.baseCurrency,
         },
       });
 
@@ -625,6 +686,7 @@ class TransactionUseCase {
         tx,
         data.toAccountId as string,
         data.amount as number,
+        data.baseAmount as number,
       );
 
       if (Array.isArray(data.products) && data.products.length > 0) {
@@ -675,11 +737,18 @@ class TransactionUseCase {
         throw new BadRequestError(Messages.TRANSACTION_NOT_FOUND);
       }
 
-      await this.accountRepository.transferBalanceDecimal(
+      const baseAmount = await convertCurrency(
+        transactionUnique.amount,
+        transactionUnique.currency!,
+        DEFAULT_BASE_CURRENCY,
+      );
+
+      await this.accountRepository.transferBalance(
         tx,
         transactionUnique.fromAccountId as string,
         transactionUnique.toAccountId as string,
-        transactionUnique.amount,
+        transactionUnique.amount.toNumber(),
+        baseAmount,
       );
 
       const type = fromAccount.type;
@@ -718,6 +787,8 @@ class TransactionUseCase {
           remark: data.remark,
           createdBy: data.userId as string,
           updatedBy: data.userId,
+          baseAmount: baseAmount,
+          baseCurrency: data.baseCurrency,
         },
       });
 
@@ -730,6 +801,7 @@ class TransactionUseCase {
         data.fromAccountId as string,
         data.toAccountId as string,
         data.amount as number,
+        data.baseAmount as number,
       );
 
       return transaction;
@@ -778,10 +850,17 @@ class TransactionUseCase {
         throw new BadRequestError(Messages.INVALID_CATEGORY_TYPE_EXPENSE);
       }
 
+      const baseAmount = await convertCurrency(
+        Number(data.amount),
+        data.currency as string,
+        DEFAULT_BASE_CURRENCY,
+      );
+
       const transaction = await tx.transaction.create({
         data: {
           userId: data.userId,
           date: data.date,
+          currencyId: data.currencyId,
           currency: data.currency,
           type: data.type,
           amount: data.amount,
@@ -793,6 +872,8 @@ class TransactionUseCase {
           remark: data.remark,
           createdBy: data.userId as string,
           updatedBy: data.userId,
+          baseAmount: baseAmount,
+          baseCurrency: data.baseCurrency,
         },
       });
 
@@ -804,6 +885,7 @@ class TransactionUseCase {
         tx,
         data.fromAccountId as string,
         data.amount as number,
+        baseAmount,
       );
 
       if (Array.isArray(data.products) && data.products.length > 0) {
@@ -877,12 +959,19 @@ class TransactionUseCase {
         throw new BadRequestError(Messages.ACCOUNT_NOT_FOUND);
       }
 
+      const baseAmount = await convertCurrency(
+        Number(data.amount),
+        data.currency as string,
+        DEFAULT_BASE_CURRENCY,
+      );
+
       const transaction = await tx.transaction.create({
         data: {
           userId: data.userId,
           date: data.date,
           type: data.type,
           amount: data.amount,
+          currencyId: data.currencyId,
           currency: data.currency,
           fromAccountId: data.fromAccountId,
           fromCategoryId: category ? category.id : null,
@@ -893,6 +982,8 @@ class TransactionUseCase {
           remark: data.remark,
           createdBy: data.userId as string,
           updatedBy: data.userId,
+          baseAmount: baseAmount,
+          baseCurrency: data.baseCurrency,
         },
       });
 
@@ -904,6 +995,7 @@ class TransactionUseCase {
         tx,
         data.toAccountId as string,
         data.amount as number,
+        baseAmount,
       );
 
       if (Array.isArray(data.products) && data.products.length > 0) {
@@ -960,6 +1052,12 @@ class TransactionUseCase {
         },
       );
 
+      const baseAmount = await convertCurrency(
+        Number(data.amount),
+        data.currency as string,
+        DEFAULT_BASE_CURRENCY,
+      );
+
       const transaction = await tx.transaction.create({
         data: {
           userId: data.userId,
@@ -968,6 +1066,7 @@ class TransactionUseCase {
           amount: data.amount,
           fromAccountId: data.fromAccountId,
           fromCategoryId: data.fromCategoryId,
+          currencyId: data.currencyId,
           currency: data.currency,
           toAccountId: data.toAccountId,
           toCategoryId: data.toCategoryId,
@@ -975,6 +1074,8 @@ class TransactionUseCase {
           remark: data.remark,
           createdBy: data.userId as string,
           updatedBy: data.userId,
+          baseAmount: baseAmount,
+          baseCurrency: data.baseCurrency,
         },
       });
 
@@ -987,6 +1088,7 @@ class TransactionUseCase {
         data.fromAccountId as string,
         data.toAccountId as string,
         data.amount as number,
+        baseAmount,
       );
 
       return transaction;
@@ -1012,8 +1114,14 @@ class TransactionUseCase {
     }
 
     const amount = transaction.amount.toNumber();
+    const baseAmount = await convertCurrency(
+      amount,
+      transaction.currency as string,
+      DEFAULT_BASE_CURRENCY,
+    );
     const productIds = products.map((p) => p.id);
     const splitAmount = amount / productIds.length;
+    const splitBaseAmount = baseAmount / productIds.length;
 
     if (productIds.length === 0) {
       return;
@@ -1021,7 +1129,7 @@ class TransactionUseCase {
 
     const existingProducts = await tx.product.findMany({
       where: { id: { in: productIds } },
-      select: { id: true, price: true },
+      select: { id: true, price: true, baseAmount: true },
     });
 
     if (existingProducts.length !== productIds.length) {
@@ -1036,10 +1144,12 @@ class TransactionUseCase {
     });
 
     for (const product of existingProducts) {
+      const baseAmount = product.baseAmount?.toNumber() || 0;
       await tx.product.update({
         where: { id: product.id },
         data: {
           price: product.price.toNumber() - splitAmount,
+          baseAmount: baseAmount - splitBaseAmount,
           updatedBy: userId,
         },
       });
@@ -1059,8 +1169,14 @@ class TransactionUseCase {
     }
 
     const amount = transaction.amount.toNumber();
+    const baseAmount = await convertCurrency(
+      amount,
+      transaction.currency as string,
+      DEFAULT_BASE_CURRENCY,
+    );
     const productIds = products.map((p) => p.id);
     const splitAmount = amount / productIds.length;
+    const splitBaseAmount = baseAmount / productIds.length;
 
     if (productIds.toString() == '') {
       return;
@@ -1068,10 +1184,10 @@ class TransactionUseCase {
 
     const existingProducts = await tx.product.findMany({
       where: { id: { in: productIds } },
-      select: { id: true, price: true },
+      select: { id: true, price: true, baseAmount: true },
     });
 
-    if (existingProducts.length !== productIds.length) {
+    if (existingProducts && existingProducts.length !== productIds.length) {
       throw new Error(Messages.PRODUCT_NOT_FOUND);
     }
 
@@ -1085,9 +1201,13 @@ class TransactionUseCase {
     });
 
     for (const product of existingProducts) {
+      const baseAmount = product.baseAmount?.toNumber() || 0;
       await tx.product.update({
         where: { id: product.id },
-        data: { price: product.price.toNumber() + splitAmount },
+        data: {
+          price: product.price.toNumber() + splitAmount,
+          baseAmount: baseAmount + splitBaseAmount,
+        },
       });
     }
   }
@@ -1118,5 +1238,5 @@ class TransactionUseCase {
 export const transactionUseCase = new TransactionUseCase(
   transactionRepository,
   accountRepository,
-  categoryRepository,
+  currencySettingRepository,
 );

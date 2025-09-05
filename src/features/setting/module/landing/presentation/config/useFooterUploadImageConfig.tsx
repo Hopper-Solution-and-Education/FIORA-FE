@@ -18,6 +18,7 @@ const useFooterUploadImageConfig = (mediaPath: string) => {
       label="Upload Footer Image"
       disabled={isSubmitting || isLoadingSaveChange}
       required
+      className="h-100 w-100"
     />,
   ];
 

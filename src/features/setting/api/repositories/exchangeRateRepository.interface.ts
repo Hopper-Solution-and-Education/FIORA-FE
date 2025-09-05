@@ -1,3 +1,4 @@
+import { ExchangeRateResponse } from '@/shared/types/exchangeRate';
 import { CurrencyExchange, ExchangeRateSetting, Prisma } from '@prisma/client';
 
 export interface IExchangeRateRepository {
@@ -24,6 +25,9 @@ export interface IExchangeRateRepository {
   ): Promise<ExchangeRateSetting>;
   findFirstCurrency(where: Prisma.CurrencyExchangeWhereInput): Promise<CurrencyExchange | null>;
   createCurrency(data: Prisma.CurrencyExchangeUncheckedCreateInput): Promise<CurrencyExchange>;
+  getLatestUpdateTimestamp(): Promise<Date>;
+  populateRateCache(baseCurrency: string): Promise<ExchangeRateResponse>;
+  populateCurrencyAbbreviation(): Promise<{ [key: string]: string }>;
 }
 
 export interface IUpsertExchangeRateSetting {
@@ -51,3 +55,17 @@ export type IExchangeRateInclude = {
     };
   };
 };
+
+export type ExchangeRateRepositoryType = Prisma.ExchangeRateSettingGetPayload<{
+  include: {
+    FromCurrency: { select: { name: true } };
+    ToCurrency: { select: { name: true } };
+  };
+}>;
+
+export type DirectRateRepositoryType = Prisma.ExchangeRateSettingGetPayload<{
+  include: {
+    FromCurrency: { select: { name: true } };
+    ToCurrency: { select: { name: true } };
+  };
+}>;

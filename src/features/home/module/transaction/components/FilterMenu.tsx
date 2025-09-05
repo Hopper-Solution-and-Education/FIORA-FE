@@ -2,6 +2,7 @@ import DateRangeFilter from '@/components/common/filters/DateRangeFilter';
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { FilterColumn, FilterComponentConfig, FilterCriteria } from '@/shared/types/filter.types';
 import { useAppSelector } from '@/store';
@@ -24,6 +25,11 @@ interface AmountCondition {
   lte?: number;
 }
 
+interface BaseAmountCondition {
+  gte?: number;
+  lte?: number;
+}
+
 interface PartnerCondition {
   partner?: {
     name?: string;
@@ -36,6 +42,15 @@ interface AccountCondition {
   };
   fromAccount?: {
     name?: string;
+  };
+}
+
+interface WalletCondition {
+  toWallet?: {
+    type?: string;
+  };
+  fromWallet?: {
+    type?: string;
   };
 }
 
@@ -53,7 +68,7 @@ interface TypeCondition {
 }
 
 interface NestedOrCondition {
-  OR?: (AccountCondition | CategoryCondition)[];
+  OR?: (AccountCondition | CategoryCondition | WalletCondition)[];
 }
 
 interface FilterAndCondition {
@@ -73,15 +88,26 @@ interface FilterAndCondition {
   toAccount?: {
     name?: string;
   };
+  toWallet?: {
+    type?: string;
+  };
+  fromWallet?: {
+    type?: string;
+  };
   amount?: AmountCondition;
+  baseAmount?: BaseAmountCondition;
+  baseCurrency?: string;
   date?: string | DateCondition;
   OR?: (TypeCondition | PartnerCondition | NestedOrCondition)[];
+  AND?: FilterAndCondition[];
 }
 
 interface FilterStructure {
   AND?: FilterAndCondition[];
   date?: string | DateCondition;
   amount?: AmountCondition;
+  baseAmount?: BaseAmountCondition;
+  baseCurrency?: string;
 }
 
 type FilterParams = {
@@ -90,6 +116,7 @@ type FilterParams = {
   partners: string[];
   categories: string[];
   accounts: string[];
+  wallets: string[];
   amountMin: number;
   amountMax: number;
 };
@@ -102,6 +129,7 @@ const filterParamsInitState: FilterParams = {
   accounts: [],
   amountMin: 0,
   amountMax: DEFAULT_MAX_AMOUNT,
+  wallets: [],
 };
 
 type FilterMenuProps<T> = {
@@ -119,6 +147,8 @@ const options = [
 const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>) => {
   const { callBack, components } = props;
   const { amountMin, amountMax, filterCriteria } = useAppSelector((state) => state.transaction);
+  const { currency: selectedCurrency, baseCurrency } = useAppSelector((state) => state.settings);
+  const { getExchangeAmount } = useCurrencyFormatter();
 
   // State for managing filter parameters
   const [filterParams, setFilterParams] = useState<FilterParams>({
@@ -128,21 +158,36 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
   });
 
   // Fetch filter options
-  const { data, isLoading } = useDataFetch<TransactionFilterOptionResponse>({
+  const { data, isLoading, mutate } = useDataFetch<TransactionFilterOptionResponse>({
     endpoint: '/api/transactions/options',
     method: 'GET',
+    refreshInterval: 1000 * 60 * 5,
   });
 
   // Update filter params when server data is loaded
   useEffect(() => {
+    mutate();
     if (data?.data?.amountMin !== undefined && data?.data?.amountMax !== undefined) {
+      // Server returns amounts in base currency, convert to selected currency for display
+      const convertedMin = getExchangeAmount({
+        amount: data.data.amountMin,
+        fromCurrency: baseCurrency,
+        toCurrency: selectedCurrency,
+      });
+
+      const convertedMax = getExchangeAmount({
+        amount: data.data.amountMax,
+        fromCurrency: baseCurrency,
+        toCurrency: selectedCurrency,
+      });
+
       setFilterParams((prev) => ({
         ...prev,
-        amountMin: Math.max(prev.amountMin, data.data.amountMin),
-        amountMax: Math.min(prev.amountMax, data.data.amountMax),
+        amountMin: convertedMin.convertedAmount,
+        amountMax: convertedMax.convertedAmount,
       }));
     }
-  }, [data]);
+  }, [data, baseCurrency, selectedCurrency, getExchangeAmount, mutate]);
 
   // Extract filter data from complex filter structure
   const extractFilterData = useCallback(
@@ -151,6 +196,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
       const partners: Set<string> = new Set();
       const categories: Set<string> = new Set();
       const accounts: Set<string> = new Set();
+      const wallets: Set<string> = new Set();
       let currentAmountMin = amountMin;
       let currentAmountMax = amountMax;
       let dateFrom: Date | undefined;
@@ -186,11 +232,60 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
           if (condition.toCategory?.name) categories.add(condition.toCategory.name);
           if (condition.fromAccount?.name) accounts.add(condition.fromAccount.name);
           if (condition.toAccount?.name) accounts.add(condition.toAccount.name);
+          if (condition.toWallet?.type) wallets.add(condition.toWallet.type);
+          if (condition.fromWallet?.type) wallets.add(condition.fromWallet.type);
 
-          // Handle amount conditions
-          if (condition.amount) {
+          // Handle baseAmount conditions (prioritize over amount)
+          if (condition.baseAmount) {
+            if (condition.baseAmount.gte !== undefined) {
+              // Convert from base currency (USD) to selected currency for display
+              const convertedMin = getExchangeAmount({
+                amount: condition.baseAmount.gte,
+                fromCurrency: baseCurrency,
+                toCurrency: selectedCurrency,
+              });
+              currentAmountMin = convertedMin.convertedAmount;
+            }
+            if (condition.baseAmount.lte !== undefined) {
+              // Convert from base currency (USD) to selected currency for display
+              const convertedMax = getExchangeAmount({
+                amount: condition.baseAmount.lte,
+                fromCurrency: baseCurrency,
+                toCurrency: selectedCurrency,
+              });
+              currentAmountMax = convertedMax.convertedAmount;
+            }
+          }
+          // Fallback to amount conditions if baseAmount is not present
+          else if (condition.amount) {
             if (condition.amount.gte !== undefined) currentAmountMin = condition.amount.gte;
             if (condition.amount.lte !== undefined) currentAmountMax = condition.amount.lte;
+          }
+
+          // Handle nested AND conditions for baseAmount and baseCurrency
+          if (Array.isArray(condition.AND)) {
+            condition.AND.forEach((nestedCondition) => {
+              if (nestedCondition.baseAmount) {
+                if (nestedCondition.baseAmount.gte !== undefined) {
+                  // Convert from base currency (USD) to selected currency for display
+                  const convertedMin = getExchangeAmount({
+                    amount: nestedCondition.baseAmount.gte,
+                    fromCurrency: baseCurrency,
+                    toCurrency: selectedCurrency,
+                  });
+                  currentAmountMin = convertedMin.convertedAmount;
+                }
+                if (nestedCondition.baseAmount.lte !== undefined) {
+                  // Convert from base currency (USD) to selected currency for display
+                  const convertedMax = getExchangeAmount({
+                    amount: nestedCondition.baseAmount.lte,
+                    fromCurrency: baseCurrency,
+                    toCurrency: selectedCurrency,
+                  });
+                  currentAmountMax = convertedMax.convertedAmount;
+                }
+              }
+            });
           }
 
           // Handle date range in AND conditions (though less common)
@@ -261,6 +356,32 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
             });
           }
 
+          // Handle OR conditions for wallets with special nested structure
+          if (
+            Array.isArray(condition.OR) &&
+            condition.OR.some(
+              (c) =>
+                'OR' in c &&
+                Array.isArray(c.OR) &&
+                c.OR.some(
+                  (n) =>
+                    ('toWallet' in n && n.toWallet?.type !== undefined) ||
+                    ('fromWallet' in n && n.fromWallet?.type !== undefined),
+                ),
+            )
+          ) {
+            condition.OR.forEach((orGroup) => {
+              if ('OR' in orGroup && Array.isArray(orGroup.OR)) {
+                orGroup.OR.forEach((nestedOrCondition) => {
+                  if ('toWallet' in nestedOrCondition && nestedOrCondition.toWallet?.type)
+                    wallets.add(nestedOrCondition.toWallet.type);
+                  if ('fromWallet' in nestedOrCondition && nestedOrCondition.fromWallet?.type)
+                    wallets.add(nestedOrCondition.fromWallet.type);
+                });
+              }
+            });
+          }
+
           // Handle OR conditions for categories with special nested structure
           if (
             Array.isArray(condition.OR) &&
@@ -293,8 +414,29 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
       if (!Array.isArray(filters?.AND) && typeof filters === 'object' && filters) {
         const flatFilters = filters;
 
-        // Process amount range
-        if (flatFilters.amount) {
+        // Process baseAmount range (prioritize over amount)
+        if (flatFilters.baseAmount) {
+          if (flatFilters.baseAmount.gte !== undefined) {
+            // Convert from base currency to selected currency for display
+            const convertedMin = getExchangeAmount({
+              amount: flatFilters.baseAmount.gte,
+              fromCurrency: baseCurrency,
+              toCurrency: selectedCurrency,
+            });
+            currentAmountMin = convertedMin.convertedAmount;
+          }
+          if (flatFilters.baseAmount.lte !== undefined) {
+            // Convert from base currency to selected currency for display
+            const convertedMax = getExchangeAmount({
+              amount: flatFilters.baseAmount.lte,
+              fromCurrency: baseCurrency,
+              toCurrency: selectedCurrency,
+            });
+            currentAmountMax = convertedMax.convertedAmount;
+          }
+        }
+        // Fallback to amount range
+        else if (flatFilters.amount) {
           currentAmountMin =
             flatFilters.amount.gte !== undefined ? flatFilters.amount.gte : amountMin;
           currentAmountMax =
@@ -307,12 +449,13 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         partners: Array.from(partners),
         categories: Array.from(categories),
         accounts: Array.from(accounts),
+        wallets: Array.from(wallets),
         amountMin: currentAmountMin,
         amountMax: currentAmountMax,
         dateRange: dateFrom || dateTo ? { from: dateFrom, to: dateTo } : undefined,
       };
     },
-    [amountMin, amountMax],
+    [amountMin, amountMax, baseCurrency, selectedCurrency, getExchangeAmount],
   );
 
   // Sync filter params when filter criteria changes
@@ -362,6 +505,17 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
     }));
   }, [data]);
 
+  const walletOptions = useMemo(() => {
+    if (!data?.data?.wallets) {
+      return [{ label: 'No option available', value: 'none', disabled: true }];
+    }
+
+    return data.data.wallets.map((option: string) => ({
+      value: option,
+      label: option,
+    }));
+  }, [data]);
+
   // Create filter components configuration - each component is memoized
   const filterComponents = useMemo(() => {
     // Create memoized filter components
@@ -396,7 +550,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         onValueChange={(target, value) =>
           handleEditFilter(target === 'minValue' ? 'amountMin' : 'amountMax', value)
         }
-        label="Amount"
+        label={`Amount (${selectedCurrency})`}
         minLabel="Min Amount"
         maxLabel="Max Amount"
         step={1000}
@@ -429,6 +583,17 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         onChange={(values) => handleEditFilter('partners', values)}
         label="Partners"
         placeholder="Select partners"
+        disabled={isLoading}
+      />
+    );
+
+    const walletFilterComponent = (
+      <MultiSelectFilter
+        options={walletOptions || []}
+        selectedValues={filterParams.wallets}
+        onChange={(values) => handleEditFilter('wallets', values)}
+        label="Wallets"
+        placeholder="Select wallets"
         disabled={isLoading}
       />
     );
@@ -470,69 +635,114 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         column: FilterColumn.RIGHT,
         order: 2,
       },
-    ];
-  }, [filterParams, categoryOptions, accountOptions, partnerOptions, isLoading, handleEditFilter]);
-
-  const createFilterStructure = useCallback((params: FilterParams): Record<string, any> => {
-    const updatedFilters: Record<string, any> = {};
-
-    const andConditions: any[] = [];
-
-    // Handle date range - always place at top level
-    if (params.dateRange?.from || params.dateRange?.to) {
-      updatedFilters.date = {
-        gte: params.dateRange?.from ? params.dateRange.from.toISOString() : null,
-        lte: params.dateRange?.to ? params.dateRange.to.toISOString() : null,
-      };
-    }
-
-    // Types OR group
-    if (params.types?.length) {
-      andConditions.push({
-        OR: params.types.map((type) => ({ type })),
-      });
-    }
-
-    // Partners OR group
-    if (params.partners?.length) {
-      andConditions.push({
-        OR: params.partners.map((partner) => ({ partner: { name: partner } })),
-      });
-    }
-
-    // Categories OR group
-    if (params.categories?.length) {
-      andConditions.push({
-        OR: params.categories.map((category) => ({
-          OR: [{ toCategory: { name: category } }, { fromCategory: { name: category } }],
-        })),
-      });
-    }
-
-    // Accounts OR group
-    if (params.accounts?.length) {
-      andConditions.push({
-        OR: params.accounts.map((account) => ({
-          OR: [{ toAccount: { name: account } }, { fromAccount: { name: account } }],
-        })),
-      });
-    }
-
-    // Amount as a separate condition
-    andConditions.push({
-      amount: {
-        gte: params.amountMin,
-        lte: params.amountMax,
+      {
+        key: 'walletFilter',
+        component: walletFilterComponent,
+        column: FilterColumn.LEFT,
+        order: 0,
       },
-    });
+    ];
+  }, [
+    filterParams,
+    categoryOptions,
+    accountOptions,
+    partnerOptions,
+    isLoading,
+    handleEditFilter,
+    selectedCurrency,
+  ]);
 
-    // Add AND conditions if there are any
-    if (andConditions.length > 0) {
-      updatedFilters.AND = andConditions;
-    }
+  const createFilterStructure = useCallback(
+    (params: FilterParams): Record<string, any> => {
+      const updatedFilters: Record<string, any> = {};
 
-    return updatedFilters;
-  }, []);
+      const andConditions: any[] = [];
+
+      // Handle date range - always place at top level
+      if (params.dateRange?.from || params.dateRange?.to) {
+        updatedFilters.date = {
+          gte: params.dateRange?.from ? params.dateRange.from.toISOString() : null,
+          lte: params.dateRange?.to ? params.dateRange.to.toISOString() : null,
+        };
+      }
+
+      // Types OR group
+      if (params.types?.length) {
+        andConditions.push({
+          OR: params.types.map((type) => ({ type })),
+        });
+      }
+
+      // Partners OR group
+      if (params.partners?.length) {
+        andConditions.push({
+          OR: params.partners.map((partner) => ({ partner: { name: partner } })),
+        });
+      }
+
+      // Categories OR group
+      if (params.categories?.length) {
+        andConditions.push({
+          OR: params.categories.map((category) => ({
+            OR: [{ toCategory: { name: category } }, { fromCategory: { name: category } }],
+          })),
+        });
+      }
+
+      // Accounts OR group
+      if (params.accounts?.length) {
+        andConditions.push({
+          OR: params.accounts.map((account) => ({
+            OR: [{ toAccount: { name: account } }, { fromAccount: { name: account } }],
+          })),
+        });
+      }
+
+      // Wallets OR group
+      if (params.wallets?.length) {
+        andConditions.push({
+          OR: params.wallets.map((wallet) => ({
+            OR: [{ toWallet: { type: wallet } }, { fromWallet: { type: wallet } }],
+          })),
+        });
+      }
+
+      // Amount with base currency conversion
+      const minAmountInBaseCurrency = getExchangeAmount({
+        amount: params.amountMin,
+        fromCurrency: selectedCurrency,
+        toCurrency: baseCurrency,
+      });
+
+      const maxAmountInBaseCurrency = getExchangeAmount({
+        amount: params.amountMax,
+        fromCurrency: selectedCurrency,
+        toCurrency: baseCurrency,
+      });
+
+      andConditions.push({
+        AND: [
+          {
+            baseAmount: {
+              gte: minAmountInBaseCurrency.convertedAmount,
+              lte: maxAmountInBaseCurrency.convertedAmount,
+            },
+          },
+          {
+            baseCurrency: baseCurrency,
+          },
+        ],
+      });
+
+      // Add AND conditions if there are any
+      if (andConditions.length > 0) {
+        updatedFilters.AND = andConditions;
+      }
+
+      return updatedFilters;
+    },
+    [baseCurrency, selectedCurrency, getExchangeAmount],
+  );
 
   return (
     <GlobalFilter

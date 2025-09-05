@@ -1,4 +1,4 @@
-import { BudgetsTable, BudgetType, Currency, Prisma } from '@prisma/client';
+import { BudgetsTable, BudgetType, Prisma } from '@prisma/client';
 
 export interface BudgetCreationParams {
   userId: string;
@@ -7,7 +7,8 @@ export interface BudgetCreationParams {
   estimatedTotalExpense: number;
   estimatedTotalIncome: number;
   icon: string;
-  currency: Currency;
+  currency: string;
+  currencyId?: string;
   isSystemGenerated?: boolean;
   type?: BudgetsTable['type'];
   skipActCalculation?: boolean;
@@ -23,7 +24,8 @@ export interface BudgetUpdateParams {
   estimatedTotalExpense: number;
   estimatedTotalIncome: number;
   icon: string;
-  currency: Currency;
+  currencyId?: string;
+  currency: string;
   type: BudgetType;
 }
 
@@ -61,7 +63,7 @@ export interface BudgetGetAnnualYearParams {
   userId: string;
   cursor?: number;
   take: number;
-  currency: Currency;
+  currency: string;
   search?: string;
   filters?: any;
 }
@@ -81,7 +83,8 @@ export type BudgetSummaryByYear = Record<
     {
       total_inc: Prisma.Decimal;
       total_exp: Prisma.Decimal;
-      currency: Currency;
+      currency: string;
+      currencyId: string;
       icon: string;
     }
   >

@@ -2,38 +2,43 @@ import { Messages } from '@/shared/constants/message';
 
 import { prisma } from '@/config';
 import { GlobalFilters, PaginationResponse, ProductItem, TransactionType } from '@/shared/types';
-import { convertCurrency } from '@/shared/utils/exchangeRate';
 import { Currency, Prisma, Product, ProductType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
+import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { BooleanUtils } from '@/shared/lib';
 import { buildWhereClause } from '@/shared/utils';
+import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { normalizeVietnamese, safeString } from '@/shared/utils/ExStringUtils';
+import { NextApiRequest } from 'next';
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
+import { currencySettingRepository } from '../../infrastructure/repositories/currencySettingRepository';
 import { productRepository } from '../../infrastructure/repositories/productRepository';
 import { productItemsRepository } from '../../infrastructure/repositories/productRepositoryItem';
 import { ICategoryProductRepository } from '../../repositories/categoryProductRepository.interface';
+import { ICurrencySettingRepository } from '../../repositories/currencySettingRepository.interface';
 import { IProductItemsRepository } from '../../repositories/productItemRepository.interface';
 import {
   IProductRepository,
   ProductCreation,
   ProductUpdate,
 } from '../../repositories/productRepository.interface';
-import { NextApiRequest } from 'next';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
   private productItemsRepository: IProductItemsRepository;
   private categoryProductRepository: ICategoryProductRepository;
-
+  private currencySettingRepository: ICurrencySettingRepository;
   constructor(
     productRepository: IProductRepository,
     productItemsRepository: IProductItemsRepository,
     categoryProductRepository: ICategoryProductRepository,
+    currencySettingRepository: ICurrencySettingRepository,
   ) {
     this.productRepository = productRepository;
     this.productItemsRepository = productItemsRepository;
     this.categoryProductRepository = categoryProductRepository;
+    this.currencySettingRepository = currencySettingRepository;
   }
 
   async getAllProducts(params: { userId: string }): Promise<Product[]> {
@@ -53,13 +58,15 @@ class ProductUseCase {
     userId: string;
     page?: number;
     pageSize?: number;
-    currency?: Currency;
   }): Promise<PaginationResponse<Product>> {
     try {
-      const { userId, page = 1, pageSize = 20, currency = 'VND' } = params;
+      const { userId, page = 1, pageSize = 20 } = params;
       const productsAwaited = this.productRepository.findManyProducts(
         { userId },
-        { skip: (page - 1) * pageSize, take: pageSize },
+        {
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        },
       );
 
       const countAwaited = this.productRepository.count({
@@ -72,29 +79,14 @@ class ProductUseCase {
 
       const totalPage = Math.ceil(count / pageSize);
 
-      // Transform the product price to the user's target currency if needed
-      const transformedProductsAwaited = products.map(async (product) => {
-        const transformedPrice =
-          (await convertCurrency(product.price, product.currency, currency)) ||
-          product.price.toNumber();
-
-        return {
-          ...product,
-          price: transformedPrice,
-          currency: currency,
-        };
-      });
-
-      const transformedProducts = await Promise.all(transformedProductsAwaited);
-
       return {
-        data: transformedProducts,
+        data: products,
         page,
         pageSize,
         totalPage,
       };
     } catch (error: any) {
-      throw new Error('Failed to get all products ', error.message);
+      throw new Error('Failed to get all products1 ', error.message);
     }
   }
 
@@ -176,16 +168,22 @@ class ProductUseCase {
         type,
         category_id,
         items,
-        currency = Currency.VND,
+        currency,
       } = params;
 
       const category = await this.categoryProductRepository.findUniqueCategoryProduct({
         id: category_id,
         userId,
       });
-
       if (!category) {
         throw new Error(Messages.CATEGORY_PRODUCT_NOT_FOUND);
+      }
+
+      const foundCurrency = await this.currencySettingRepository.findFirstCurrency({
+        name: currency,
+      });
+      if (!foundCurrency) {
+        throw new Error(Messages.CURRENCY_NOT_FOUND);
       }
 
       const result = await prisma.$transaction(async (tx) => {
@@ -199,10 +197,11 @@ class ProductUseCase {
             },
           },
         });
-
         if (foundTenantProduct) {
           throw new Error(Messages.DUPLICATE_PRODUCT_TENANT_ERROR);
         }
+
+        const baseAmount = await convertCurrency(price, currency!, DEFAULT_BASE_CURRENCY);
 
         // Create the product
         const product = await tx.product.create({
@@ -215,8 +214,10 @@ class ProductUseCase {
             type,
             catId: category_id,
             createdBy: userId,
-            currency: currency,
+            currencyId: foundCurrency.id,
+            currency: foundCurrency.name,
             ...(description && { description }),
+            baseAmount: new Decimal(baseAmount),
           },
           include: {
             items: true,
@@ -330,22 +331,37 @@ class ProductUseCase {
       throw new Error(Messages.PRODUCT_NOT_FOUND);
     }
 
+    const foundCurrency = await this.currencySettingRepository.findFirstCurrency({
+      name: currency,
+    });
+    if (!foundCurrency) {
+      throw new Error(Messages.CURRENCY_NOT_FOUND);
+    }
+
+    const updatedBody = {
+      ...(category && { catId: category_id }),
+      ...(icon && { icon }),
+      ...(name && { name }),
+      ...(description && { description }),
+      ...(type && { type }),
+      ...(currency && { currencyId: foundCurrency.id }),
+      ...(currency && { currency: foundCurrency.name }),
+      taxRate: new Decimal(tax_rate),
+      updatedBy: userId,
+    } as Prisma.ProductUpdateInput;
+
+    if (price) {
+      const updatedBaseAmount = await convertCurrency(price, currency!, DEFAULT_BASE_CURRENCY);
+      updatedBody.baseAmount = new Decimal(updatedBaseAmount);
+      updatedBody.price = new Decimal(price);
+    }
+
     const updatedProduct = await this.productRepository.updateProduct(
       {
         id,
         userId,
       },
-      {
-        ...(category && { catId: category_id }),
-        ...(icon && { icon }),
-        ...(name && { name }),
-        ...(description && { description }),
-        ...(price && { price }),
-        ...(type && { type }),
-        ...(currency && { currency }),
-        taxRate: new Decimal(tax_rate),
-        updatedBy: userId,
-      },
+      updatedBody,
     );
 
     if (!updatedProduct) {
@@ -378,7 +394,7 @@ class ProductUseCase {
       }
 
       // delete product items
-      if (deleteItemsId && Array.isArray(deleteItemsId)) {
+      if (deleteItemsId && Array.isArray(deleteItemsId) && deleteItemsId.length > 0) {
         for await (const itemId of deleteItemsId) {
           await this.productItemsRepository.deleteProductItems({ id: itemId, userId });
         }
@@ -493,6 +509,7 @@ class ProductUseCase {
     const take = Number(pageSize);
     const params = req.body as GlobalFilters;
     const searchParams = safeString(params.search);
+
     let where: Prisma.ProductWhereInput = {};
     let products: any[] = [];
     let categories: any[] = [];
@@ -614,6 +631,8 @@ class ProductUseCase {
         catId: true,
         icon: true,
         currency: true,
+        baseCurrency: true,
+        baseAmount: true,
         items: {
           select: {
             id: true,
@@ -626,39 +645,39 @@ class ProductUseCase {
     });
 
     const productIds = products.map((product) => product.id);
-    const productTransactions =
-      productIds.length > 0
-        ? await prisma.productTransaction.findMany({
-            where: {
-              productId: { in: productIds },
-              transaction: { userId },
-            },
-            select: {
-              productId: true,
-              transaction: {
-                select: {
-                  id: true,
-                  userId: true,
-                  type: true,
-                  amount: true,
-                  currency: true,
-                },
-              },
-            },
-          })
-        : [];
+    const foundProduct = await prisma.productTransaction.findMany({
+      where: {
+        productId: { in: productIds },
+        transaction: { userId },
+      },
+      select: {
+        productId: true,
+        transaction: {
+          select: {
+            id: true,
+            userId: true,
+            type: true,
+            amount: true,
+            currency: true,
+            baseCurrency: true,
+            baseAmount: true,
+          },
+        },
+      },
+    });
+
+    const productTransactions = productIds.length > 0 ? foundProduct : [];
 
     const creatorIds = categories.map((cat) => cat.createdBy).filter(Boolean) as string[];
     const updatorIds = categories.map((cat) => cat.updatedBy).filter(Boolean) as string[];
     const uniqueUserIds = Array.from(new Set([...creatorIds, ...updatorIds]));
 
-    const users =
-      uniqueUserIds.length > 0
-        ? await prisma.user.findMany({
-            where: { id: { in: uniqueUserIds } },
-            select: { id: true, name: true, email: true, image: true },
-          })
-        : [];
+    const foundUsers = await prisma.user.findMany({
+      where: { id: { in: uniqueUserIds } },
+      select: { id: true, name: true, email: true, image: true },
+    });
+
+    const users = uniqueUserIds.length > 0 ? foundUsers : [];
 
     const userMap = users.reduce(
       (acc, user) => {
@@ -679,7 +698,9 @@ class ProductUseCase {
           userId: pt.transaction.userId,
           type: pt.transaction.type,
           amount: pt.transaction.amount.toNumber(),
-          currency: pt.transaction.currency,
+          currency: pt.transaction.currency!,
+          baseCurrency: pt.transaction.baseCurrency || DEFAULT_BASE_CURRENCY,
+          baseAmount: pt.transaction.baseAmount?.toNumber() || 0,
         });
         return acc;
       },
@@ -692,10 +713,11 @@ class ProductUseCase {
         if (catId) {
           if (!acc[catId]) acc[catId] = [];
           const transactions = productTransactionMap[product.id] || [];
+
           acc[catId].push({
             product: {
               id: product.id,
-              price: product.price.toNumber(),
+              price: product.price,
               name: product.name,
               type: product.type,
               description: product.description,
@@ -704,6 +726,8 @@ class ProductUseCase {
               catId: product.catId,
               icon: product.icon,
               currency: product.currency,
+              baseCurrency: product.baseCurrency || DEFAULT_BASE_CURRENCY,
+              baseAmount: product.baseAmount?.toNumber() || 0,
             },
             transactions,
           });
@@ -717,6 +741,7 @@ class ProductUseCase {
       const createdBy = category.createdBy ? userMap[category.createdBy] || null : null;
       const updatedBy = category.updatedBy ? userMap[category.updatedBy] || null : null;
       const categoryProducts = productsByCategory[category.id] || [];
+
       return {
         category: {
           id: category.id,
@@ -742,17 +767,18 @@ class ProductUseCase {
 
     for (const category of transformedData) {
       for (const item of category.products) {
-        const { price, taxRate } = item.product;
-        priceList.push(price);
+        const { taxRate, baseAmount } = item.product;
+
+        priceList.push(baseAmount || 0);
         taxRateList.push(taxRate);
 
         const transactions = item.transactions;
         const totalIncome = transactions
           .filter((tx: any) => tx.type === 'Income')
-          .reduce((sum: any, tx: any) => sum + tx.amount, 0);
+          .reduce((sum: any, tx: any) => sum + tx.baseAmount, 0);
         const totalExpense = transactions
           .filter((tx: any) => tx.type === 'Expense')
-          .reduce((sum: any, tx: any) => sum + tx.amount, 0);
+          .reduce((sum: any, tx: any) => sum + tx.baseAmount, 0);
 
         incomeTotals.push(totalIncome);
         expenseTotals.push(totalExpense);
@@ -794,4 +820,5 @@ export const productUseCase = new ProductUseCase(
   productRepository,
   productItemsRepository,
   categoryProductRepository,
+  currencySettingRepository,
 );

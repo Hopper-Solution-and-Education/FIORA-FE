@@ -24,11 +24,6 @@ export const DEFAULT_TRANSACTION_FILTER_CRITERIA: FilterCriteria = {
   filters: {},
 };
 
-export enum TransactionCurrency {
-  USD = 'USD',
-  VND = 'VND',
-}
-
 export enum TransactionRecurringType {
   NONE = 'None',
   DAILY = 'Daily',

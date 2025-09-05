@@ -1,21 +1,15 @@
-import { Account, Currency, Prisma } from '@prisma/client';
+import { Account, Prisma } from '@prisma/client';
 import { AccountRepository } from '../../infrastructure/repositories/accountRepository';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
 
 interface GetPaginatedAccountsParams {
   userId: string;
-  currency: Currency;
   page: number;
   pageSize: number;
   search?: string;
 }
 
-interface AccountWithConvertedBalance extends Omit<Account, 'balance'> {
-  balance: string;
-}
-
 interface PaginatedAccountsResponse {
-  accounts: AccountWithConvertedBalance[];
+  accounts: Account[];
   total: number;
 }
 
@@ -24,7 +18,6 @@ export class GetPaginatedAccountsUseCase {
 
   async execute({
     userId,
-    currency,
     page,
     pageSize,
     search,
@@ -55,23 +48,8 @@ export class GetPaginatedAccountsUseCase {
       },
     });
 
-    // Convert balances to requested currency
-    const accountsWithConvertedBalance = accounts.map((account) => {
-      const convertedBalance = convertCurrency(
-        account.balance?.toNumber() || 0,
-        account.currency,
-        currency,
-      );
-
-      return {
-        ...account,
-        balance: convertedBalance.toString(),
-        currency,
-      };
-    });
-
     return {
-      accounts: accountsWithConvertedBalance,
+      accounts,
       total,
     };
   }

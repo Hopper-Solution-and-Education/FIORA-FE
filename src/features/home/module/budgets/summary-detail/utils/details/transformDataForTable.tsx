@@ -7,7 +7,7 @@ import {
 import { Category } from '@/features/home/module/budgets/summary-detail/data/dto/response/CategoryResponseDTO';
 import { Currency } from '@/shared/types';
 import { ComparisonProps } from '@/shared/types/chart.type';
-import { cn, formatCurrency } from '@/shared/utils';
+import { cn } from '@/shared/utils';
 import CategorySelect from '../../../../category/components/CategorySelect';
 import {
   BudgetDetailFilterEnum,
@@ -188,6 +188,7 @@ export const getColumnsByPeriod = ({
   tableData = [],
   activeTab = BudgetDetailFilterEnum.EXPENSE,
   isFullCurrencyDisplay,
+  formatCurrency,
 }: GetColumnsByPeriodParams): ColumnProps[] => {
   const renderEditableCell = (text: any, record: TableData, index: number, column: ColumnProps) => {
     const isDisableEdited = !PERIOD_CONFIG.months.some((item) => item.key === column.key);
@@ -216,7 +217,9 @@ export const getColumnsByPeriod = ({
     }
     return (
       <p className={cn(`px-3 py-2 cursor-default ${column.className}`, isDisableEdited)}>
-        {formatCurrency(text?.value, currency, isFullCurrencyDisplay)}
+        {formatCurrency(text?.value, currency, {
+          shouldShortened: isFullCurrencyDisplay,
+        })}
       </p>
     );
   };

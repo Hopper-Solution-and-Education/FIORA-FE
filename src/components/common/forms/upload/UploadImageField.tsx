@@ -14,6 +14,8 @@ interface UploadImageFieldProps {
   label?: string;
   placeholder?: string;
   size?: 'small' | 'medium' | 'large';
+  className?: string;
+  containerClassName?: string;
 }
 
 const UploadImageField = ({
@@ -27,6 +29,8 @@ const UploadImageField = ({
   label = 'Upload Image',
   placeholder = 'Choose image',
   size = 'medium',
+  className,
+  containerClassName,
 }: UploadImageFieldProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -60,7 +64,7 @@ const UploadImageField = ({
   }, [file, stableOnChange]);
 
   return (
-    <FormItem>
+    <FormItem className={containerClassName}>
       {label && (
         <label className="block text-sm font-medium mb-2">
           {label} {required && <span className="text-red-500">*</span>}
@@ -84,6 +88,7 @@ const UploadImageField = ({
         accept="image/*"
         placeholder={placeholder}
         size={size}
+        className={className}
       />
     </FormItem>
   );

@@ -74,7 +74,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
   const { cursor, take, search } = req.query; // Cursor will be a year (e.g., 2023)
   // take default take when its not given
   const takeValue = take ? Number(take) : 3; // Default to 10 if not provided
-  const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
+  const currency = (req.headers['x-user-currency'] as string) ?? Currency.VND;
 
   const budgets = await budgetUseCase.getAnnualBudgetByYears({
     userId,
@@ -90,9 +90,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 }
 
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const currency = (req.headers['x-user-currency'] as string as Currency) ?? Currency.VND;
-
-  const updatedRes = await budgetUseCase.updateActBudgetTotalYears(userId, currency);
+  const updatedRes = await budgetUseCase.updateActBudgetTotalYears(userId);
 
   return res
     .status(RESPONSE_CODE.CREATED)

@@ -1,10 +1,10 @@
-import { NextApiHandler, NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
 import RESPONSE_CODE from '../constants/RESPONSE_CODE';
 import { Messages } from '../constants/message';
 
 type HandlerWithApiKey = (req: NextApiRequest, res: NextApiResponse) => Promise<void>;
 
-export function apiKeyWrapper(handler: HandlerWithApiKey): NextApiHandler {
+export function apiKeyWrapper(handler: HandlerWithApiKey): any {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       const apiKey = req.headers['x-api-key'] || req.query.apiKey;

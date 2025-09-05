@@ -6,7 +6,7 @@ import { ChartSkeleton } from '@/components/common/organisms';
 import { mapPartnersToTwoSideBarItems } from '@/features/setting/module/partner/presentation/utils';
 import { fetchPartners } from '@/features/setting/module/partner/slices/actions/fetchPartnersAsyncThunk';
 import { COLORS } from '@/shared/constants/chart';
-import { formatCurrency } from '@/shared/utils';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -19,6 +19,7 @@ const PartnerSettingPage = () => {
   const { partners, isLoading } = useAppSelector((state) => state.partner);
   const { currency } = useAppSelector((state) => state.settings);
   const router = useRouter();
+  const { formatCurrency, getExchangeAmount } = useCurrencyFormatter();
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -36,7 +37,7 @@ const PartnerSettingPage = () => {
   const barData = useMemo(() => {
     // Ensure partners is an array before processing
     const partnersArray = Array.isArray(partners) ? partners : [];
-    return mapPartnersToTwoSideBarItems(partnersArray, currency);
+    return mapPartnersToTwoSideBarItems(partnersArray, currency, getExchangeAmount);
   }, [partners, currency]);
 
   const handleNavigateToUpdate = (item: TwoSideBarItem) => {
