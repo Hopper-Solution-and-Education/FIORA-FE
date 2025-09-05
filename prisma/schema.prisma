@@ -38,7 +38,7 @@ model User {
   categoryProducts       CategoryProducts[]
   Comment                Comment[]
   depositRequests        DepositRequest[]         @relation("UserDepositRequest")
-  exchangeRateSetting    ExchangeRateSetting[]
+  ExchangeRateSetting    ExchangeRateSetting[]
   IdentificationDocument IdentificationDocument[]
   MembershipProgress     MembershipProgress[]
   MembershipTier         MembershipTier[]
