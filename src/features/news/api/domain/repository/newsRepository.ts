@@ -8,6 +8,8 @@ import {
 
 export interface INewsRepository {
   getAll(params: NewsQueryParams): Promise<ListNewsResponse>;
+  getNewsById(newsId: string): Promise<Post | null>;
+  increaseView(newsId: string): Promise<boolean>;
   create(post: NewsCreationRequest): Promise<Post>;
   updateNews(post: NewsUpdateRequest, id: string): Promise<Post>;
   delete(postId: string): Promise<void>;

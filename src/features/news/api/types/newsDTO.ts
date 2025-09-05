@@ -1,7 +1,7 @@
-import { Post } from '@prisma/client';
+import { PostType } from '@prisma/client';
 
 export interface ListNewsResponse {
-  news: Post[];
+  news: NewsResponse[];
   currentPage?: number;
   limit?: number;
 }
@@ -36,6 +36,16 @@ export interface NewsUpdateRequest {
   description?: string;
   content: string;
   type: string;
+  categoryId: string;
+  userId: string;
+}
+
+export interface NewsResponse {
+  id: string;
+  title: string;
+  description?: string | null;
+  content: string;
+  type: PostType;
   categoryId: string;
   userId: string;
 }

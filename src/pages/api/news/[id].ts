@@ -17,6 +17,8 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
   errorHandler(
     async (request, response) => {
       switch (request.method) {
+        case 'GET':
+          return GET(request, response);
         case 'PUT':
           return withAuthorization({ PUT: [UserRole.ADMIN] })(UPDATE)(request, response);
         case 'DELETE':
@@ -132,4 +134,28 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
       .status(RESPONSE_CODE.BAD_REQUEST)
       .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.DELETE_NEWS_ERROR));
   }
+}
+
+export async function GET(req: NextApiRequest, res: NextApiResponse) {
+  const { id } = req.query;
+  const errorValidation = validateVariable(postIdSchema, id);
+  //validation query string
+  if (errorValidation.error) {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(
+        createErrorResponse(
+          RESPONSE_CODE.BAD_REQUEST,
+          Messages.VALIDATION_ERROR,
+          errorValidation.error,
+        ),
+      );
+  }
+  const newsId = id as 'string';
+
+  const newsDetail = await newsUsercase.getNewsById(newsId);
+
+  return res
+    .status(RESPONSE_CODE.OK)
+    .json(createResponse(RESPONSE_CODE.OK, Messages.GET_NEWS_DETAIL_SECCESS, newsDetail));
 }

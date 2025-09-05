@@ -7,9 +7,30 @@ import {
   ListNewsResponse,
   NewsCreationRequest,
   NewsQueryParams,
+  NewsResponse,
   NewsUpdateRequest,
 } from '../../types/newsDTO';
 export class NewsRepository implements INewsRepository {
+  async getNewsById(newsId: string): Promise<Post | null> {
+    return prisma.post.findUnique({
+      where: {
+        id: newsId,
+      },
+    });
+  }
+  async increaseView(newsId: string): Promise<boolean> {
+    const result = await prisma.post.update({
+      where: {
+        id: newsId,
+      },
+      data: {
+        views: {
+          increment: 1,
+        },
+      },
+    });
+    return !!result;
+  }
   async updateNews(post: NewsUpdateRequest, id: string): Promise<Post> {
     const resultUpdate = await prisma.post.update({
       where: {
@@ -136,11 +157,21 @@ export class NewsRepository implements INewsRepository {
         ];
       }
 
-      const posts: Post[] = await prisma.post.findMany({
+      const posts: NewsResponse[] = await prisma.post.findMany({
         where: whereClause,
         skip: skip,
         take: limit,
         orderBy: { [orderBy]: orderDirection },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          content: true,
+          views: true,
+          userId: true,
+          type: true,
+          categoryId: true,
+        },
       });
       const response: ListNewsResponse = {
         news: posts,

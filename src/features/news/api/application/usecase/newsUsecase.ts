@@ -13,6 +13,14 @@ class NewsUsercase {
     return this.newsRepo.getAll(queryParam);
   }
 
+  async getNewsById(newsId: string): Promise<Post | null> {
+    //get detail
+    const result: Post | null = await this.newsRepo.getNewsById(newsId);
+    //increase view
+    await this.newsRepo.increaseView(newsId);
+    return result;
+  }
+
   async createNews(createParam: NewsCreationRequest): Promise<Post> {
     return await newsRepository.create(createParam);
   }
