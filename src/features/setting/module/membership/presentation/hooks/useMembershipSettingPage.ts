@@ -4,7 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { setSelectedMembership } from '../../slices';
+import { setIsLoadingUpsertMembership, setSelectedMembership } from '../../slices';
 import { getListMembershipAsyncThunk } from '../../slices/actions/getMemberShipAsyncThunk';
 import { upsertMembershipAsyncThunk } from '../../slices/actions/upsertMembershipAsyncThunk';
 import { buildDynamicTierSchema, EditMemberShipFormValues } from '../schema/editMemberShip.schema';
@@ -15,9 +15,6 @@ export const useMembershipSettingPage = () => {
   const selectedMembership = useAppSelector((state) => state.memberShipSettings.selectedMembership);
 
   const dynamicTierFields = useMemo(() => {
-    console.log('selectedMembership:', selectedMembership);
-    console.log('tierBenefits:', selectedMembership?.tierBenefits);
-
     const fields =
       selectedMembership?.tierBenefits.map((benefit) => ({
         id: benefit.id,
@@ -27,8 +24,6 @@ export const useMembershipSettingPage = () => {
         suffix: benefit.suffix,
         value: Number(benefit.value) || 0,
       })) ?? [];
-
-    console.log('dynamicTierFields:', fields);
     return fields;
   }, [selectedMembership?.tierBenefits]);
 
@@ -81,32 +76,33 @@ export const useMembershipSettingPage = () => {
 
   //   handle submit form
   const handleSubmit = async (data: EditMemberShipFormValues) => {
-    // Keep track of uploaded URLs to rollback on failure
-    const uploadedUrls: string[] = [];
-
-    const uploadIconIfNeeded = async (iconUrl: string, tierName: string): Promise<string> => {
-      if (iconUrl && iconUrl.startsWith('blob:')) {
-        const response = await fetch(iconUrl);
-        const blob = await response.blob();
-
-        const fileName = `${tierName.replace(/\s+/g, '_').toLowerCase()}_${Date.now()}`;
-        const file = new File([blob], fileName, { type: blob.type });
-
-        const firebaseUrl = await uploadToFirebase({
-          file,
-          path: 'images/membership_icons',
-          fileName,
-        });
-
-        // Track uploaded file for rollback if needed
-        uploadedUrls.push(firebaseUrl);
-
-        return firebaseUrl;
-      }
-      return iconUrl;
-    };
-
     try {
+      dispatch(setIsLoadingUpsertMembership(true));
+      // Keep track of uploaded URLs to rollback on failure
+      const uploadedUrls: string[] = [];
+
+      const uploadIconIfNeeded = async (iconUrl: string, tierName: string): Promise<string> => {
+        if (iconUrl && iconUrl.startsWith('blob:')) {
+          const response = await fetch(iconUrl);
+          const blob = await response.blob();
+
+          const fileName = `${tierName.replace(/\s+/g, '_').toLowerCase()}_${Date.now()}`;
+          const file = new File([blob], fileName, { type: blob.type });
+
+          const firebaseUrl = await uploadToFirebase({
+            file,
+            path: 'images/membership_icons',
+            fileName,
+          });
+
+          // Track uploaded file for rollback if needed
+          uploadedUrls.push(firebaseUrl);
+
+          return firebaseUrl;
+        }
+        return iconUrl;
+      };
+
       // upload icon if needed
       const [updatedActiveIcon, updatedInActiveIcon, updatedThemeIcon, updatedMainIcon] =
         await Promise.all([
@@ -158,11 +154,13 @@ export const useMembershipSettingPage = () => {
               );
             })
             .catch(async (error) => {
+              dispatch(setIsLoadingUpsertMembership(false));
               await Promise.all(uploadedUrls.map((url) => removeFromFirebase(url)));
               throw error;
             });
         })
         .catch(async (error) => {
+          dispatch(setIsLoadingUpsertMembership(false));
           await Promise.all(uploadedUrls.map((url) => removeFromFirebase(url)));
           throw error;
         });

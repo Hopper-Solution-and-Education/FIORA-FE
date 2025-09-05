@@ -45,18 +45,7 @@ const MembershipRankChart = () => {
   }, [balanceTiers, spentTiers, memberships]);
 
   return (
-    <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-7 rounded-lg p-2 dark:border dark:border-gray-700 h-full">
-      {/* <Dialog open={showCurrentTier} onOpenChange={setShowCurrentTier} modal>
-        <DialogContent className="sm:max-w-[725px]">
-          <DialogTitle className="sr-only">Tier Information</DialogTitle>
-          <CurrentTierMembership
-            label={selectedTier?.tierName ?? ''}
-            icon={selectedTier?.mainIconUrl}
-            tierRanks={mapTierBenefits(selectedTier?.tierBenefits ?? [])}
-            loading={isLoadingGetMemberships}
-          />
-        </DialogContent>
-      </Dialog> */}
+    <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-7 rounded-lg p-2 dark:border dark:border-gray-700 min-h-[500px]">
       <ScatterRankingChart
         currentTier={{
           balance: currentUserTier?.data?.currentBalance ?? 0,

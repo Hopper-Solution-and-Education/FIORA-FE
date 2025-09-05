@@ -47,6 +47,9 @@ const membershipSlice = createSlice({
     setBenefitTierToEdit: (state, action: PayloadAction<DynamicFieldTier | null>) => {
       state.editBenefitTier.benefitTierToEdit = action.payload;
     },
+    setIsLoadingUpsertMembership: (state, action: PayloadAction<boolean>) => {
+      state.isLoadingUpsertMembership = action.payload;
+    },
     setTierToEdit: (
       state,
       action: PayloadAction<{
@@ -142,5 +145,6 @@ export const {
   setIsShowDialogEditBenefitTier,
   setIdTierToEdit,
   setBenefitTierToEdit,
+  setIsLoadingUpsertMembership,
 } = membershipSlice.actions;
 export default membershipSlice.reducer;
