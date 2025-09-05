@@ -27,6 +27,7 @@ const DialogAddBenefitTier = ({ open, onOpenChange }: DialogAddBenefitTierProps)
   const methods = useForm<AddBenefitTierFormValues>({
     resolver: yupResolver(addBenefitTierSchema),
     defaultValues: defaultAddBenefitTierValue,
+    mode: 'onBlur',
   });
 
   const selectMembershipBenefit = useAppSelector(
