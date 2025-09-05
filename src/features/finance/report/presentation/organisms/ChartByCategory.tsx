@@ -1,12 +1,12 @@
-import { ComposedChart } from '@/components/common/charts';
+import { ComposedChart, ComposedChartDataItem } from '@/components/common/charts';
 import { ChartSkeleton } from '@/components/common/organisms';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { FinanceReportFilterEnum } from '@/features/setting/data/module/finance/constant/FinanceReportFilterEnum';
 import { COLORS } from '@/shared/constants/chart';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { Currency } from '@/shared/types';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { useAppDispatch, useAppSelector } from '@/store';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getFinanceByCategoryAsyncThunk } from '../../slices/actions/getFinanceByCategoryAsyncThunk';
 
 const ChartByCategory = () => {
@@ -15,6 +15,8 @@ const ChartByCategory = () => {
   const viewChartByCategory = useAppSelector((state) => state.financeControl.viewChartByCategory);
   const dispatch = useAppDispatch();
   const currency = useAppSelector((state) => state.settings.currency);
+  const [data, setData] = useState<ComposedChartDataItem[]>([]);
+  const { getExchangeAmount } = useCurrencyFormatter();
 
   useEffect(() => {
     if (!isLoading) {
@@ -27,25 +29,32 @@ const ChartByCategory = () => {
     }
   }, [dispatch]);
 
-  // data showing when income and data showing when expense
-  const data = Array.isArray(financeByCategory)
-    ? financeByCategory
-        .filter((item) => {
-          if (viewChartByCategory === 'income') {
-            return item.totalIncome > 0;
-          }
-          return item.totalExpense > 0;
-        })
-        .map((item) => ({
-          name: item.name,
-          column: convertCurrency(
-            viewChartByCategory === 'income' ? item.totalIncome : item.totalExpense,
-            item.currency as Currency,
-            currency,
-          ),
-          icon: item.icon ?? 'wallet',
-        }))
-    : [];
+  useEffect(() => {
+    const processData = async () => {
+      if (Array.isArray(financeByCategory)) {
+        const chartData = await Promise.all(
+          financeByCategory
+            .filter((item) => {
+              if (viewChartByCategory === 'income') {
+                return item.totalIncome > 0;
+              }
+              return item.totalExpense > 0;
+            })
+            .map(async (item) => ({
+              name: item.name,
+              column: await getExchangeAmount({
+                amount: viewChartByCategory === 'income' ? item.totalIncome : item.totalExpense,
+                fromCurrency: item.currency as Currency,
+                toCurrency: currency,
+              }).convertedAmount,
+              icon: item.icon ?? 'wallet',
+            })),
+        );
+        setData(chartData);
+      }
+    };
+    processData();
+  }, [financeByCategory, viewChartByCategory, currency]);
 
   return (
     <div className="space-y-8">

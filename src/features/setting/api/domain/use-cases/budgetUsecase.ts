@@ -31,7 +31,7 @@ import _ from 'lodash';
 import { budgetDetailRepository } from '../../infrastructure/repositories/budgetDetailRepository';
 import { budgetRepository } from '../../infrastructure/repositories/budgetProductRepository';
 import { IBudgetDetailRepository } from '../../repositories/budgetDetailRepository';
-import { IBudgetRepository } from '../../repositories/budgetRepository';
+import { IBudgetRepository } from '../../repositories/budgetRepository.interface';
 
 class BudgetUseCase {
   private budgetRepository: IBudgetRepository;
@@ -84,13 +84,21 @@ class BudgetUseCase {
       { select: { type: true, amount: true, currency: true } },
     );
 
-    const totalExpense = transactions
+    const totalExpense = await transactions
       .filter((t) => t.type === TransactionType.Expense)
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+      .reduce(
+        async (sum, t) =>
+          (await sum) + (await convertCurrency(t.amount.toNumber(), t.currency!, currency)),
+        Promise.resolve(0),
+      );
 
-    const totalIncome = transactions
+    const totalIncome = await transactions
       .filter((t) => t.type === TransactionType.Income)
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+      .reduce(
+        async (sum, t) =>
+          (await sum) + (await convertCurrency(t.amount.toNumber(), t.currency!, currency)),
+        Promise.resolve(0),
+      );
 
     return { totalExpense, totalIncome };
   }
@@ -105,11 +113,11 @@ class BudgetUseCase {
     transactions?: FetchTransactionResponse[],
   ): Promise<BudgetsTable> {
     const { type, totalExpense, totalIncome } = budgetTypeData;
-    const { description, icon, currency, isSystemGenerated } = budgetCreationParams;
+    const { description, icon, isSystemGenerated, currency, currencyId } = budgetCreationParams;
 
     const { monthFields, quarterFields, halfYearFields } =
       type === BudgetType.Act
-        ? calculateSumUpAllocation(transactions || [], currency!)
+        ? await calculateSumUpAllocation(transactions || [], currency!)
         : calculateBudgetAllocation(totalExpense, totalIncome);
 
     const newBudget = await prisma.budgetsTable.create({
@@ -125,6 +133,7 @@ class BudgetUseCase {
         ...monthFields,
         createdBy: !isSystemGenerated ? userId : undefined,
         description,
+        currencyId,
         currency,
       },
     });
@@ -136,41 +145,56 @@ class BudgetUseCase {
     return newBudget;
   }
 
-  private calculateActualTotals(
+  private async calculateActualTotals(
     transactions: FetchTransactionResponse[] | [],
-    currency: Currency,
-  ): { totalExpenseAct: number; totalIncomeAct: number } {
-    const totalExpenseAct = transactions
-      .filter((t) => t.type === TransactionType.Expense)
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+    currency: string,
+  ): Promise<{ totalExpenseAct: number; totalIncomeAct: number }> {
+    // Helper to sum converted amounts for a given transaction type
+    const sumConvertedAmounts = async (type: TransactionType) => {
+      const filtered = transactions.filter((t) => t.type === type);
+      const convertedAmounts = await Promise.all(
+        filtered.map((t) => convertCurrency(t.amount.toNumber(), t.currency!, currency)),
+      );
+      return convertedAmounts.reduce((sum, val) => sum + val, 0);
+    };
 
-    const totalIncomeAct = transactions
-      .filter((t) => t.type === TransactionType.Income)
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+    const [totalExpenseAct, totalIncomeAct] = await Promise.all([
+      sumConvertedAmounts(TransactionType.Expense),
+      sumConvertedAmounts(TransactionType.Income),
+    ]);
+
     return { totalExpenseAct, totalIncomeAct };
   }
 
-  private calculateActualBudgetAccumulatedTotals(
+  private async calculateActualBudgetAccumulatedTotals(
     transactions: FetchTransactionResponse[] | [],
-    currency: Currency,
+    currency: string,
     budget: BudgetsTable,
-  ): { totalExpenseAct: number; totalIncomeAct: number } {
-    const totalExpenseActAppend = transactions
-      .filter((t) => t.type === TransactionType.Expense)
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+  ): Promise<{ totalExpenseAct: number; totalIncomeAct: number }> {
+    // Refactored to use Promise.all for clarity and efficiency
+    const expenseTransactions = transactions.filter((t) => t.type === TransactionType.Expense);
+    const incomeTransactions = transactions.filter((t) => t.type === TransactionType.Income);
 
-    const totalIncomeActAppend = transactions
-      .filter((t) => t.type === TransactionType.Income)
-      .reduce((sum, t) => sum + convertCurrency(t.amount, t.currency as Currency, currency), 0);
+    const totalExpenseActAppend = (
+      await Promise.all(
+        expenseTransactions.map((t) => convertCurrency(t.amount.toNumber(), t.currency!, currency)),
+      )
+    ).reduce((sum, val) => sum + val, 0);
 
-    const totalExpenseActAccumulated = convertCurrency(
-      budget.total_exp,
-      budget.currency as Currency,
+    const totalIncomeActAppend = (
+      await Promise.all(
+        incomeTransactions.map((t) => convertCurrency(t.amount.toNumber(), t.currency!, currency)),
+      )
+    ).reduce((sum, val) => sum + val, 0);
+
+    const totalExpenseActAccumulated = await convertCurrency(
+      budget.total_exp.toNumber(),
+      budget.currency!,
       currency,
     );
-    const totalIncomeActAccumulated = convertCurrency(
-      budget.total_inc,
-      budget.currency as Currency,
+    const totalIncomeActAccumulated = await convertCurrency(
+      budget.total_inc.toNumber(),
+      budget.currency!,
       currency,
     );
 
@@ -200,6 +224,15 @@ class BudgetUseCase {
       throw new Error(Messages.BUDGET_PAST_YEAR_NOT_ALLOWED);
     }
 
+    const foundCurrency = await prisma.currencyExchange.findUnique({
+      where: {
+        name: currency,
+      },
+    });
+    if (!foundCurrency) {
+      throw new Error(Messages.CURRENCY_NOT_FOUND);
+    }
+
     return await prisma.$transaction(async (prisma) => {
       const { yearStart, effectiveEndDate } = calculateTransactionRange(fiscalYear);
 
@@ -210,7 +243,7 @@ class BudgetUseCase {
         prisma,
       );
 
-      const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
+      const { totalExpenseAct, totalIncomeAct } = await this.calculateActualTotals(
         transactions || [],
         currency,
       );
@@ -227,7 +260,8 @@ class BudgetUseCase {
         const restParams = {
           description,
           icon,
-          currency,
+          currencyId: foundCurrency?.id,
+          currency: foundCurrency?.name,
           isSystemGenerated,
         };
 
@@ -283,58 +317,28 @@ class BudgetUseCase {
       // { type: 'Act', totalExpense: totalExpenseAct, totalIncome: totalIncomeAct },
     ];
 
-    // update budget
+    const foundCurrency = await prisma.currencyExchange.findUnique({
+      where: {
+        name: currency,
+      },
+    });
+    if (!foundCurrency) {
+      throw new Error(Messages.CURRENCY_NOT_FOUND);
+    }
 
+    // update budget with currency
     const updatedBudgets = await Promise.all(
       budgetTypeData.map((budgetTypeData) =>
         this.updateSingleBudget(prisma, userId, fiscalYear, budgetId, budgetTypeData, {
           description,
           icon,
-          currency,
+          currencyId: foundCurrency.id,
+          currency: foundCurrency.name,
         }),
       ),
     );
     // return budget
     return updatedBudgets;
-    // update budget top bot
-    // return await prisma.$transaction(async (prisma) => {
-    //   // calculate transaction range
-    //   const { yearStart, effectiveEndDate } = this.calculateTransactionRange(fiscalYear);
-
-    //   // fetch transactions
-    //   const transactions = await this.this.budgetRepository.(
-    //     userId,
-    //     yearStart,
-    //     effectiveEndDate,
-    //     prisma,
-    //   );
-
-    //   // calculate actual totals
-    //   const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
-    //     transactions || [],
-    //     currency,
-    //   );
-
-    //   // calculate budget type data
-    //   const budgetTypeData: BudgetTypeData[] = [
-    //     { type: 'Top', totalExpense: estimatedTotalExpense, totalIncome: estimatedTotalIncome },
-    //     // { type: 'Act', totalExpense: totalExpenseAct, totalIncome: totalIncomeAct },
-    //   ];
-
-    //   // update budget
-
-    //   const updatedBudgets = await Promise.all(
-    //     budgetTypeData.map((budgetTypeData) =>
-    //       this.updateSingleBudget(prisma, userId, fiscalYear, budgetId, budgetTypeData, {
-    //         description,
-    //         icon,
-    //         currency,
-    //       }),
-    //     ),
-    //   );
-    //   // return budget
-    //   return updatedBudgets;
-    // });
   }
 
   private async updateSingleBudget(
@@ -343,13 +347,14 @@ class BudgetUseCase {
     fiscalYear: number,
     budgetId: string,
     { type, totalExpense, totalIncome }: BudgetTypeData,
-    { description, icon, currency }: Partial<BudgetCreationParams>,
+    { description, icon, currencyId, currency }: Partial<BudgetCreationParams>,
   ) {
     // Check if budget exists
     const existingBudget = await prisma.budgetsTable.findUnique({
       where: {
         id: budgetId,
         type: type as BudgetType,
+        fiscalYear: fiscalYear.toString(),
       },
     });
 
@@ -375,6 +380,7 @@ class BudgetUseCase {
         ...monthFields,
         description,
         icon,
+        currencyId,
         currency,
         updatedBy: userId,
       },
@@ -397,6 +403,7 @@ class BudgetUseCase {
       estimatedTotalIncome,
       icon,
       currency,
+      currencyId,
       isSystemGenerated = false,
       type,
       transactions = [],
@@ -409,7 +416,7 @@ class BudgetUseCase {
 
       const { monthFields, quarterFields, halfYearFields } =
         type === BudgetType.Act
-          ? calculateSumUpAllocation(transactions || [], currency!)
+          ? await calculateSumUpAllocation(transactions || [], currency!)
           : calculateBudgetAllocation(totalExpense, totalIncome);
 
       const newBudget = await prisma.budgetsTable.upsert({
@@ -426,6 +433,7 @@ class BudgetUseCase {
           ...halfYearFields,
           ...quarterFields,
           ...monthFields,
+          currencyId,
           currency,
           updatedBy: !isSystemGenerated ? userId : undefined,
         },
@@ -441,6 +449,7 @@ class BudgetUseCase {
           ...monthFields,
           createdBy: !isSystemGenerated ? userId : undefined,
           description,
+          currencyId,
           currency,
         },
       });
@@ -514,7 +523,7 @@ class BudgetUseCase {
     return where;
   }
 
-  async upsertBudget(currency: Currency, userId: string) {
+  async upsertBudget(currency: string, userId: string) {
     const currentYear = new Date().getFullYear();
 
     const defaultIcon = 'banknote';
@@ -522,7 +531,23 @@ class BudgetUseCase {
 
     let actEstimatedTotalExpense = 0;
     let actEstimatedTotalIncome = 0;
-    let budgetCopyCurrency = currency;
+
+    // find default currency
+    const foundDefaultCurrency = await prisma.currencyExchange.findFirst({
+      where: {
+        name: currency,
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+    if (!foundDefaultCurrency) {
+      throw new Error('Default currency not found');
+    }
+
+    let budgetCopyCurrencyId = foundDefaultCurrency.id;
+    let budgetCopyCurrency = foundDefaultCurrency.name;
 
     let budgetCopyDescription = defaultDescription;
     let budgetCopyIcon = defaultIcon;
@@ -581,7 +606,8 @@ class BudgetUseCase {
           fiscalYear: currentYear.toString(),
         });
 
-        budgetCopyCurrency = latestCopyActBudget.currency;
+        budgetCopyCurrency = latestCopyActBudget.currency!;
+        budgetCopyCurrencyId = latestCopyActBudget.currencyId!;
         budgetCopyDescription = latestCopyActBudget.description || defaultDescription;
         budgetCopyIcon = latestCopyActBudget.icon || defaultIcon;
 
@@ -593,7 +619,7 @@ class BudgetUseCase {
         const transactions = await this.fetchTransactions(userId, yearStart, effectiveEndDate);
 
         if (transactions.length > 0) {
-          const { totalExpenseAct, totalIncomeAct } = this.calculateActualTotals(
+          const { totalExpenseAct, totalIncomeAct } = await this.calculateActualTotals(
             transactions,
             budgetCopyCurrency,
           );
@@ -621,6 +647,7 @@ class BudgetUseCase {
       estimatedTotalExpense: 0,
       estimatedTotalIncome: 0,
       description: defaultDescription,
+      currencyId: budgetCopyCurrencyId,
       currency: budgetCopyCurrency,
       icon: defaultIcon,
       isSystemGenerated: true,
@@ -633,6 +660,7 @@ class BudgetUseCase {
       estimatedTotalExpense: 0,
       estimatedTotalIncome: 0,
       description: defaultDescription,
+      currencyId: budgetCopyCurrencyId,
       currency: budgetCopyCurrency,
       icon: defaultIcon,
       isSystemGenerated: true,
@@ -649,13 +677,13 @@ class BudgetUseCase {
         effectiveEndDate,
       );
 
-      const currentYearTotals = this.calculateActualTotals(
+      const { totalExpenseAct, totalIncomeAct } = await this.calculateActualTotals(
         currentYearTransactions,
         budgetCopyCurrency,
       );
 
-      actEstimatedTotalExpense += currentYearTotals.totalExpenseAct;
-      actEstimatedTotalIncome += currentYearTotals.totalIncomeAct;
+      actEstimatedTotalExpense += totalExpenseAct;
+      actEstimatedTotalIncome += totalIncomeAct;
 
       // Đánh dấu giao dịch năm 2025 đã được tính
       const currentYearTransactionIds = currentYearTransactions.map((t) => t.id);
@@ -671,6 +699,7 @@ class BudgetUseCase {
         estimatedTotalExpense: actEstimatedTotalExpense,
         estimatedTotalIncome: actEstimatedTotalIncome,
         description: budgetCopyDescription,
+        currencyId: budgetCopyCurrencyId,
         currency: budgetCopyCurrency,
         icon: budgetCopyIcon,
         isSystemGenerated: true,
@@ -681,7 +710,7 @@ class BudgetUseCase {
     }
   }
 
-  async calculateTentativeBudget(userId: string, currency: Currency) {
+  async calculateTentativeBudget(userId: string, currency: string) {
     const now = new Date();
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
@@ -699,33 +728,33 @@ class BudgetUseCase {
     );
 
     // Step 6: Process transactions to calculate tentative income/expense per year
-    const tentativeTotalsByYear = tentativeTransactions.reduce(
-      (
-        acc: Record<string, { currency: string; total_exp: number; total_inc: number }>,
-        transaction,
-      ) => {
-        const year = transaction.date.getFullYear();
-        const key = `${year}-${transaction.currency}`;
-        if (!acc[key]) {
-          acc[key] = { currency: transaction.currency, total_exp: 0, total_inc: 0 };
-        }
-        if (transaction.type === TransactionType.Expense) {
-          acc[key].total_exp += convertCurrency(
-            transaction.amount,
-            transaction.currency as Currency,
-            currency,
-          );
-        } else if (transaction.type === TransactionType.Income) {
-          acc[key].total_inc += convertCurrency(
-            transaction.amount,
-            transaction.currency as Currency,
-            currency,
-          );
-        }
-        return acc;
-      },
-      {},
-    );
+    // Refactored to handle async currency conversion properly
+    const tentativeTotalsByYear: Record<
+      string,
+      { currency: string; total_exp: number; total_inc: number }
+    > = {};
+
+    for (const transaction of tentativeTransactions) {
+      const year = transaction.date.getFullYear();
+      const key = `${year}-${transaction.currency}`;
+      if (!tentativeTotalsByYear[key]) {
+        tentativeTotalsByYear[key] = {
+          currency: transaction.currency!,
+          total_exp: 0,
+          total_inc: 0,
+        };
+      }
+      const convertedAmount = await convertCurrency(
+        transaction.amount.toNumber(),
+        transaction.currency!,
+        currency,
+      );
+      if (transaction.type === TransactionType.Expense) {
+        tentativeTotalsByYear[key].total_exp += convertedAmount;
+      } else if (transaction.type === TransactionType.Income) {
+        tentativeTotalsByYear[key].total_inc += convertedAmount;
+      }
+    }
 
     return tentativeTotalsByYear;
   }
@@ -769,6 +798,7 @@ class BudgetUseCase {
         fiscalYear: true,
         total_inc: true,
         total_exp: true,
+        currencyId: true,
         currency: true,
         createdAt: true,
         type: true,
@@ -786,52 +816,119 @@ class BudgetUseCase {
       acc[budget.fiscalYear][budget.type] = {
         total_inc: budget.total_inc,
         total_exp: budget.total_exp,
-        currency: budget.currency,
+        currency: budget.currency!,
+        currencyId: budget.currencyId!,
         icon: budget.icon || '',
       };
       return acc;
     }, {});
 
-    // Step 6: Prepare response data
-    const response = years.map((year) => {
-      const budgetData = budgetsByYear[year] || {};
-
-      const defaultBudgetData = {
-        total_inc: 0,
-        total_exp: 0,
-        currency: Currency.VND as Currency,
-        icon: budgetsByYear[year].icon || '',
-      };
-
-      const topData = budgetData[BudgetType.Top] || defaultBudgetData;
-      const botData = budgetData[BudgetType.Bot] || defaultBudgetData;
-      const actData = budgetData[BudgetType.Act] || defaultBudgetData;
-
-      const tentativeKey = `${year}-${actData.currency}`;
-
-      const tentativeTotals = tentativeTotalsByYear[tentativeKey] || {
-        total_exp: 0,
-        total_inc: 0,
-        currency: actData.currency,
-      };
-
-      const combinedActIncome =
-        convertCurrency(actData.total_inc, actData.currency, currency) + tentativeTotals.total_inc;
-
-      const combinedActExpense =
-        convertCurrency(actData.total_exp, actData.currency, currency) + tentativeTotals.total_exp;
-
-      return {
-        icon: topData.icon,
-        year,
-        budgetTopIncome: convertCurrency(topData.total_inc, topData.currency, currency),
-        budgetTopExpense: convertCurrency(topData.total_exp, topData.currency, currency),
-        budgetBotIncome: convertCurrency(botData.total_inc, botData.currency, currency),
-        budgetBotExpense: convertCurrency(botData.total_exp, botData.currency, currency),
-        budgetActIncome: combinedActIncome,
-        budgetActExpense: combinedActExpense,
-      };
+    const foundDefaultCurrency = await prisma.currencyExchange.findFirst({
+      where: {
+        OR: [{ name: 'VND' }, { name: 'USD' }],
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 1,
     });
+
+    // Step 6: Prepare response data
+    const response = await Promise.all(
+      years.map(async (year) => {
+        const budgetData = budgetsByYear[year] || {};
+
+        const defaultBudgetData = {
+          total_inc: 0,
+          total_exp: 0,
+          currencyId: foundDefaultCurrency?.id || '',
+          currency: foundDefaultCurrency?.name || '',
+          icon: budgetsByYear[year]?.icon || '',
+        };
+
+        const topData = budgetData[BudgetType.Top] || defaultBudgetData;
+        const botData = budgetData[BudgetType.Bot] || defaultBudgetData;
+        const actData = budgetData[BudgetType.Act] || defaultBudgetData;
+
+        const tentativeKey = `${year}-${actData.currency}`;
+
+        const tentativeTotals = tentativeTotalsByYear[tentativeKey] || {
+          total_exp: 0,
+          total_inc: 0,
+          currency: actData.currency,
+        };
+
+        const [
+          actIncomeConverted,
+          actExpenseConverted,
+          topIncomeConverted,
+          topExpenseConverted,
+          botIncomeConverted,
+          botExpenseConverted,
+        ] = await Promise.all([
+          convertCurrency(
+            typeof actData.total_inc === 'number'
+              ? actData.total_inc
+              : (actData.total_inc?.toNumber?.() ?? 0),
+            actData.currency,
+            currency,
+          ),
+          convertCurrency(
+            typeof actData.total_exp === 'number'
+              ? actData.total_exp
+              : (actData.total_exp?.toNumber?.() ?? 0),
+            actData.currency,
+            currency,
+          ),
+          convertCurrency(
+            typeof topData.total_inc === 'number'
+              ? topData.total_inc
+              : (topData.total_inc?.toNumber?.() ?? 0),
+            topData.currency,
+            currency,
+          ),
+          convertCurrency(
+            typeof topData.total_exp === 'number'
+              ? topData.total_exp
+              : (topData.total_exp?.toNumber?.() ?? 0),
+            topData.currency,
+            currency,
+          ),
+          convertCurrency(
+            typeof botData.total_inc === 'number'
+              ? botData.total_inc
+              : (botData.total_inc?.toNumber?.() ?? 0),
+            botData.currency,
+            currency,
+          ),
+          convertCurrency(
+            typeof botData.total_exp === 'number'
+              ? botData.total_exp
+              : (botData.total_exp?.toNumber?.() ?? 0),
+            botData.currency,
+            currency,
+          ),
+        ]);
+
+        const combinedActIncome = actIncomeConverted + tentativeTotals.total_inc;
+        const combinedActExpense = actExpenseConverted + tentativeTotals.total_exp;
+
+        return {
+          icon: topData.icon,
+          year,
+          budgetTopIncome: topIncomeConverted,
+          budgetTopExpense: topExpenseConverted,
+          budgetBotIncome: botIncomeConverted,
+          budgetBotExpense: botExpenseConverted,
+          budgetActIncome: combinedActIncome,
+          budgetActExpense: combinedActExpense,
+        };
+      }),
+    );
 
     // Step 7: Include the next cursor in the response
     const nextCursor = response.length === take ? response[response.length - 1].year : null;
@@ -862,7 +959,7 @@ class BudgetUseCase {
     return _.flatMap(budgets, (b) => b.fiscalYear);
   }
 
-  async updateActBudgetTotalYears(userId: string, currency: Currency) {
+  async updateActBudgetTotalYears(userId: string) {
     const now = new Date();
     const currentYear = now.getFullYear();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // Cách hiện tại 30 ngày
@@ -945,8 +1042,12 @@ class BudgetUseCase {
       let newExpense = 0;
       let newIncome = 0;
 
-      newTransactions.forEach((t) => {
-        const amount = convertCurrency(t.amount, t.currency as Currency, existingBudget.currency);
+      newTransactions.forEach(async (t) => {
+        const amount = await convertCurrency(
+          t.amount.toNumber(),
+          t.currency!,
+          existingBudget.currency!,
+        );
         if (t.type === TransactionType.Expense) newExpense += amount;
         else if (t.type === TransactionType.Income) newIncome += amount;
       });
@@ -1020,8 +1121,8 @@ class BudgetUseCase {
           h2_inc,
           ...quarterFields,
           ...monthFields,
-          currency,
           updatedBy: userId,
+          currency: existingBudget.currency!,
         },
       );
 
@@ -1031,7 +1132,7 @@ class BudgetUseCase {
     }
   }
 
-  async updateActBudgetTransaction(userId: string, currency: Currency): Promise<void> {
+  async updateActBudgetTransaction(userId: string, currency: string): Promise<void> {
     return await prisma.$transaction(async (prisma) => {
       const years = await this.getAllTransactionGroupByFiscalYears(prisma, userId);
       if (years.length === 0) return;
@@ -1070,7 +1171,7 @@ class BudgetUseCase {
     prisma: PrismaClient,
     userId: string,
     fiscalYear: number,
-    currency: Currency,
+    currency: string,
     transactions: FetchTransactionResponse[],
   ): Promise<void> {
     const foundBudget = await prisma.budgetsTable.findUnique({
@@ -1087,13 +1188,13 @@ class BudgetUseCase {
       return;
     }
 
-    const { monthFields, quarterFields, halfYearFields } = calculateSumUpAllocation(
+    const { monthFields, quarterFields, halfYearFields } = await calculateSumUpAllocation(
       transactions,
       currency,
       foundBudget,
     );
 
-    const { totalExpenseAct, totalIncomeAct } = this.calculateActualBudgetAccumulatedTotals(
+    const { totalExpenseAct, totalIncomeAct } = await this.calculateActualBudgetAccumulatedTotals(
       transactions,
       currency,
       foundBudget,
@@ -1128,7 +1229,7 @@ class BudgetUseCase {
     prisma: any,
     userId: string,
     fiscalYear: number,
-    currency: Currency,
+    currency: string,
   ): Promise<void> {
     const now = new Date();
     const currentYear = now.getFullYear();

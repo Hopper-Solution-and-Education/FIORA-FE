@@ -13,7 +13,7 @@ export interface SelectOptions {
 
 export interface IAccountRepository {
   create(account: Prisma.AccountUncheckedCreateInput): Promise<Account>;
-  findById(id: string): Promise<Account | null>;
+  findById(id: string, options?: Prisma.AccountFindUniqueArgs): Promise<Account | null>;
   findAll(): Promise<Account[] | []>;
   findMany(
     where: Prisma.AccountWhereInput,
@@ -29,20 +29,24 @@ export interface IAccountRepository {
     options?: Prisma.AccountFindManyArgs,
   ): Promise<Account[] | []>;
   aggregate(options: Prisma.AccountAggregateArgs): Promise<any>;
-  deductBalance(tx: Prisma.TransactionClient, accountId: string, amount: number): Promise<void>;
-  receiveBalance(tx: Prisma.TransactionClient, accountId: string, amount: number): Promise<void>;
+  deductBalance(
+    tx: Prisma.TransactionClient,
+    accountId: string,
+    amount: number,
+    baseAmount: number,
+  ): Promise<void>;
+  receiveBalance(
+    tx: Prisma.TransactionClient,
+    accountId: string,
+    amount: number,
+    baseAmount: number,
+  ): Promise<void>;
   transferBalance(
     tx: Prisma.TransactionClient,
     fromAccountId: string,
     toAccountId: string,
     amount: number,
-  ): Promise<any>;
-
-  transferBalanceDecimal(
-    tx: Prisma.TransactionClient,
-    fromAccountId: string,
-    toAccountId: string,
-    amount: Prisma.Decimal,
+    baseAmount: number,
   ): Promise<any>;
 }
 

@@ -2,6 +2,7 @@
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
+import Image from 'next/image';
 import Link from 'next/link';
 import { ChannelType, NotificationStatus, type INotificationDetails } from '../../domain/entity';
 
@@ -25,7 +26,7 @@ export function NotificationDetails({
       case ATTACHMENT_TYPES.IMAGE:
       case ATTACHMENT_TYPES.WEBP:
       case ATTACHMENT_TYPES.QR:
-        return <img src={data?.attachment?.url} alt="attachment" width={100} height={100} />;
+        return <Image src={data?.attachment?.url} alt="attachment" width={100} height={100} />;
 
       default:
         return <div>Attachment</div>;
@@ -41,7 +42,7 @@ export function NotificationDetails({
 
       <div className="grid grid-cols-2 gap-y-6 gap-x-10">
         <div>
-          <b>Title</b>
+          <b>Subject</b>
           <p className="text-sm ">{data?.title}</p>
         </div>
         <div>

@@ -6,6 +6,7 @@ export type DynamicFieldTier = {
   key: string;
   label: string;
   suffix?: string;
+  value: number;
 };
 
 export function buildDynamicTierSchema(fields: DynamicFieldTier[]) {
@@ -15,7 +16,7 @@ export function buildDynamicTierSchema(fields: DynamicFieldTier[]) {
       .number()
       .required(`${field.label} is required`)
       .min(0, `${field.label} must be positive`)
-      .max(100, `${field.label} must be less than 100`);
+      .max(99999999999, `${field.label} must be less than 99999999999`);
   });
   return yup.object({
     id: yup.string().optional(),

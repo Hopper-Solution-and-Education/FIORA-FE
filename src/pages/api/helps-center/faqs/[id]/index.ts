@@ -6,6 +6,7 @@ import { getFaqDetailUseCase } from '@/features/helps-center/application/use-cas
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../auth/[...nextauth]';
@@ -15,9 +16,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     case 'GET':
       return GET(req, res);
     case 'PUT':
-      return PUT(req, res);
+      return withAuthorization({ PUT: ['Admin', 'CS'] })(PUT)(req, res);
     case 'DELETE':
-      return DELETE(req, res);
+      return withAuthorization({ DELETE: ['Admin', 'CS'] })(DELETE)(req, res);
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)

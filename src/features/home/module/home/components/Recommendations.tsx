@@ -1,7 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { cn, formatCurrency } from '@/shared/utils';
+import { useCurrencyFormatter } from '@/shared/hooks';
+import { cn } from '@/shared/utils';
 import { useAppSelector } from '@/store';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -58,6 +59,7 @@ function RecommendationSkeleton() {
 export default function Recommendations() {
   const [isShowDialog, setIsShowDialog] = useState(false);
   const selectedCurrency = useAppSelector((state) => state.settings.currency);
+  const { formatCurrency } = useCurrencyFormatter();
 
   // Static exchange rates (replace with API in production)
   const exchangeRates: Record<string, number> = {

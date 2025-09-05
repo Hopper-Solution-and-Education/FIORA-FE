@@ -4,7 +4,7 @@ import { cn } from '@/shared/utils';
 
 const Table = React.forwardRef<
   HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement> & { containerClassName?: string }
+  React.HTMLAttributes<HTMLTableElement> & { containerClassName?: string; tableHeight?: string }
 >(({ className, containerClassName, ...props }, ref) => {
   return (
     <div className={cn('relative w-full overflow-auto', containerClassName)}>

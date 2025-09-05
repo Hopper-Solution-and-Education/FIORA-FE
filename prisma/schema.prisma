@@ -88,7 +88,7 @@ model Account {
   createdBy        String?           @db.Uuid
   updatedBy        String?           @db.Uuid
   color            String?
-  CurrencyExchange CurrencyExchange? @relation(fields: [currencyId], references: [id])
+  currencyExchange CurrencyExchange? @relation(fields: [currencyId], references: [id])
   parent           Account?          @relation("ChildAccounts", fields: [parentId], references: [id])
   children         Account[]         @relation("ChildAccounts")
   user             User              @relation("UserAccounts", fields: [userId], references: [id])
@@ -140,7 +140,7 @@ model Product {
   baseCurrency     String?              @default("USD")
   baseAmount       Decimal?             @db.Decimal(13, 2)
   category         CategoryProducts?    @relation(fields: [catId], references: [id])
-  CurrencyExchange CurrencyExchange?    @relation(fields: [currencyId], references: [id])
+  currencyExchange CurrencyExchange?    @relation(fields: [currencyId], references: [id])
   user             User                 @relation("UserProducts", fields: [userId], references: [id])
   items            ProductItems[]
   transactions     ProductTransaction[] @relation("ProductTransactions")
@@ -213,7 +213,7 @@ model Transaction {
   membershipBenefitId String?              @db.Uuid
   CronJobLog          CronJobLog[]         @relation("CronJobLogTransactions")
   productsRelation    ProductTransaction[] @relation("ProductTransactions")
-  CurrencyExchange    CurrencyExchange?    @relation(fields: [currencyId], references: [id])
+  currencyExchange    CurrencyExchange?    @relation(fields: [currencyId], references: [id])
   fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
   fromCategory        Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
   fromWallet          Wallet?              @relation("FromWallet", fields: [fromWalletId], references: [id])
@@ -406,7 +406,7 @@ model BudgetsTable {
   currencyId       String?           @db.Uuid
   currency         String?
   budgetDetail     BudgetDetails[]
-  CurrencyExchange CurrencyExchange? @relation(fields: [currencyId], references: [id])
+  currencyExchange CurrencyExchange? @relation(fields: [currencyId], references: [id])
   user             User              @relation(fields: [userId], references: [id])
 
   @@unique([fiscalYear, type, userId])
@@ -431,7 +431,7 @@ model BudgetDetails {
   currency         String?
   budget           BudgetsTable      @relation(fields: [budgetId], references: [id], onDelete: Cascade)
   category         Category?         @relation(fields: [categoryId], references: [id])
-  CurrencyExchange CurrencyExchange? @relation(fields: [currencyId], references: [id])
+  currencyExchange CurrencyExchange? @relation(fields: [currencyId], references: [id])
   user             User              @relation(fields: [userId], references: [id])
 
   @@unique([month, categoryId, type, budgetId, userId])
@@ -799,7 +799,7 @@ model CurrencyExchange {
   fromExchangeRateSetting ExchangeRateSetting[] @relation("FromCurrency")
   toExchangeRateSetting   ExchangeRateSetting[] @relation("ToCurrency")
   Product                 Product[]
-  Transaction             Transaction[]
+  transaction             Transaction[]
 }
 
 model Announcement {

@@ -121,7 +121,8 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
                 sectionType === SectionTypeEnum.KPS ||
                 sectionType === SectionTypeEnum.PARTNER_LOGO ||
                 sectionType === SectionTypeEnum.FOOTER ||
-                sectionType === SectionTypeEnum.REVIEW) && (
+                sectionType === SectionTypeEnum.REVIEW ||
+                sectionType === SectionTypeEnum.SYSTEM) && (
                 <Button
                   type="button"
                   variant="outline"

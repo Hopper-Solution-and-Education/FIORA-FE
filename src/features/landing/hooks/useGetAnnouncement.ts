@@ -1,3 +1,4 @@
+'use client';
 import { adminContainer } from '@/features/setting/module/landing/di/adminDIContainer';
 import { GetAnnouncementUseCase } from '@/features/setting/module/landing/domain/usecases/GetAnnoucementUseCase';
 import useSWR, { SWRConfiguration } from 'swr';

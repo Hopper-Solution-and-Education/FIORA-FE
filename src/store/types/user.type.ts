@@ -1,5 +1,3 @@
-'use client';
-
 import { GetCurrentTierResponse } from '@/features/home/module/membership/domain/entities';
 
 interface UserStateType {
