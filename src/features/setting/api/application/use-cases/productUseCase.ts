@@ -13,6 +13,7 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
 import { productRepository } from '../../infrastructure/repositories/productRepository';
 import { ICategoryProductRepository } from '../../repositories/categoryProductRepository.interface';
+import { BadRequestError } from '@/shared/lib';
 
 class ProductUseCase {
   private productRepository: IProductRepository;
@@ -55,7 +56,7 @@ class ProductUseCase {
         totalPage,
       };
     } catch (error: any) {
-      throw new Error('Failed to get all products ', error.message);
+      throw new BadRequestError('Failed to get all products ', error.message);
     }
   }
 
@@ -73,7 +74,7 @@ class ProductUseCase {
 
       return products;
     } catch (error: any) {
-      throw new Error('Failed to get products by type', error.message);
+      throw new BadRequestError('Failed to get products by type', error.message);
     }
   }
 
@@ -94,12 +95,12 @@ class ProductUseCase {
       );
 
       if (!product) {
-        throw new Error(Messages.PRODUCT_NOT_FOUND);
+        throw new BadRequestError(Messages.PRODUCT_NOT_FOUND);
       }
 
       return product;
     } catch (error: any) {
-      throw new Error(error.message || Messages.GET_PRODUCT_FAILED);
+      throw new BadRequestError(error.message || Messages.GET_PRODUCT_FAILED);
     }
   }
 
@@ -123,7 +124,7 @@ class ProductUseCase {
       });
 
       if (!category) {
-        throw new Error(Messages.CATEGORY_PRODUCT_NOT_FOUND);
+        throw new BadRequestError(Messages.CATEGORY_PRODUCT_NOT_FOUND);
       }
 
       const result = await prisma.$transaction(async (tx) => {
@@ -168,7 +169,7 @@ class ProductUseCase {
 
       return result;
     } catch (error: any) {
-      throw new Error(error.message || Messages.CREATE_PRODUCT_FAILED);
+      throw new BadRequestError(error.message || Messages.CREATE_PRODUCT_FAILED);
     }
   }
 
@@ -193,17 +194,17 @@ class ProductUseCase {
         userId,
       });
       if (!category) {
-        throw new Error(Messages.CATEGORY_PRODUCT_NOT_FOUND);
+        throw new BadRequestError(Messages.CATEGORY_PRODUCT_NOT_FOUND);
       }
     }
 
     if (!id) {
-      throw new Error(Messages.MISSING_PARAMS_INPUT + ' id');
+      throw new BadRequestError(Messages.MISSING_PARAMS_INPUT + ' id');
     }
 
     const foundProduct = await this.productRepository.findProductById({ id });
     if (!foundProduct) {
-      throw new Error(Messages.PRODUCT_NOT_FOUND);
+      throw new BadRequestError(Messages.PRODUCT_NOT_FOUND);
     }
 
     const updatedProduct = await this.productRepository.updateProduct(
@@ -237,7 +238,7 @@ class ProductUseCase {
     );
 
     if (!updatedProduct) {
-      throw new Error(Messages.UPDATE_PRODUCT_FAILED);
+      throw new BadRequestError(Messages.UPDATE_PRODUCT_FAILED);
     }
 
     return updatedProduct;
@@ -256,16 +257,16 @@ class ProductUseCase {
     }>;
 
     if (!foundProduct) {
-      throw new Error(Messages.PRODUCT_NOT_FOUND);
+      throw new BadRequestError(Messages.PRODUCT_NOT_FOUND);
     }
 
     if (foundProduct.transactions.length > 0) {
-      throw new Error(Messages.TRANSACTION_DELETE_FAILED_CONSTRAINT);
+      throw new BadRequestError(Messages.TRANSACTION_DELETE_FAILED_CONSTRAINT);
     }
 
     const deletedProduct = await this.productRepository.deleteProduct({ id, userId });
     if (!deletedProduct) {
-      throw new Error(Messages.DELETE_PRODUCT_FAILED);
+      throw new BadRequestError(Messages.DELETE_PRODUCT_FAILED);
     }
 
     return deletedProduct;
@@ -274,22 +275,22 @@ class ProductUseCase {
   async transferProductTransaction(params: { sourceId: string; targetId: string; userId: string }) {
     const { sourceId, targetId, userId } = params;
     if (!sourceId || !targetId) {
-      throw new Error(Messages.MISSING_PARAMS_INPUT + ' sourceId or targetId');
+      throw new BadRequestError(Messages.MISSING_PARAMS_INPUT + ' sourceId or targetId');
     }
 
     // Checking existence of source and target products
     const sourceProduct = await this.productRepository.findProductById({ id: sourceId });
     if (!sourceProduct) {
-      throw new Error(Messages.SOURCE_PRODUCT_NOT_FOUND);
+      throw new BadRequestError(Messages.SOURCE_PRODUCT_NOT_FOUND);
     }
 
     const targetProduct = await this.productRepository.findProductById({ id: targetId });
     if (!targetProduct) {
-      throw new Error(Messages.TARGET_PRODUCT_NOT_FOUND);
+      throw new BadRequestError(Messages.TARGET_PRODUCT_NOT_FOUND);
     }
 
     if (sourceProduct === targetProduct) {
-      throw new Error(Messages.SOURCE_PRODUCT_TRANSFER_SELF_FAILED);
+      throw new BadRequestError(Messages.SOURCE_PRODUCT_TRANSFER_SELF_FAILED);
     }
 
     // Start a transaction
@@ -326,7 +327,7 @@ class ProductUseCase {
       });
 
       if (remainingTransactions > 0) {
-        throw new Error(Messages.TRANSFER_TRANSACTION_FAILED);
+        throw new BadRequestError(Messages.TRANSFER_TRANSACTION_FAILED);
       }
 
       // 4. Delete the source product

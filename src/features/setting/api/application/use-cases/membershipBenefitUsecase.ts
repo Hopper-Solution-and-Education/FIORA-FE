@@ -79,7 +79,7 @@ class MembershipBenefitService {
       });
 
       if (!deletedMembershipBenefit) {
-        throw new InternalServerError('Failed to delete MembershipBenefit');
+        throw new BadRequestError('Failed to delete MembershipBenefit');
       }
 
       /// get all membership tiers
@@ -98,7 +98,7 @@ class MembershipBenefitService {
       });
 
       if (!deletedTierBenefits) {
-        throw new InternalServerError('Failed to delete TierBenefit');
+        throw new BadRequestError('Failed to delete TierBenefit');
       }
 
       const data = {
@@ -168,7 +168,7 @@ class MembershipBenefitService {
       });
 
       if (!deletedTierBenefit) {
-        throw new InternalServerError('Failed to delete TierBenefit');
+        throw new BadRequestError('Failed to delete TierBenefit');
       }
 
       return {
@@ -210,7 +210,7 @@ class MembershipBenefitService {
       });
 
       if (!membershipBenefit) {
-        throw new InternalServerError('Failed to create MembershipBenefit');
+        throw new BadRequestError('Failed to create MembershipBenefit');
       }
 
       // create tier benefit for each membership tier
@@ -227,7 +227,7 @@ class MembershipBenefitService {
       });
 
       if (!createdTierBenefits) {
-        throw new InternalServerError('Failed to create TierBenefit');
+        throw new BadRequestError('Failed to create TierBenefit');
       }
 
       const data = {
@@ -270,7 +270,7 @@ class MembershipBenefitService {
       });
 
       if (!createdMembershipBenefit) {
-        throw new InternalServerError('Failed to create MembershipBenefit');
+        throw new BadRequestError('Failed to create MembershipBenefit');
       }
 
       if (!tierId) {
@@ -290,7 +290,7 @@ class MembershipBenefitService {
       });
 
       if (!createdTierBenefit) {
-        throw new InternalServerError('Failed to create TierBenefit');
+        throw new BadRequestError('Failed to create TierBenefit');
       }
 
       const data = {
@@ -341,7 +341,7 @@ class MembershipBenefitService {
       });
 
       if (!updatedMembershipBenefit) {
-        throw new InternalServerError('Failed to update MembershipBenefit');
+        throw new BadRequestError('Failed to update MembershipBenefit');
       }
 
       // get all membership tiers
@@ -366,7 +366,7 @@ class MembershipBenefitService {
       });
 
       if (!updatedTierBenefits) {
-        throw new InternalServerError('Failed to update TierBenefit');
+        throw new BadRequestError('Failed to update TierBenefit');
       }
 
       const data = {
@@ -414,7 +414,7 @@ class MembershipBenefitService {
       });
 
       if (!updatedMembershipBenefit) {
-        throw new InternalServerError('Failed to update MembershipBenefit');
+        throw new BadRequestError('Failed to update MembershipBenefit');
       }
 
       if (!tierId) {
@@ -435,7 +435,7 @@ class MembershipBenefitService {
       });
 
       if (!updatedTierBenefit) {
-        throw new InternalServerError('Failed to update TierBenefit');
+        throw new BadRequestError('Failed to update TierBenefit');
       }
 
       const data = {
