@@ -32,16 +32,22 @@ export const useMembershipCronjobDashboard = () => {
         );
         const res = await useCase.execute(page, pageSize, {
           status: filter?.status || [],
-          typeCronJob: filter?.typeCronJob || [],
+          typeCronJob: undefined,
           search: filter?.search || '',
           fromDate: filter?.fromDate || '',
           toDate: filter?.toDate || '',
         });
 
+        console.log(res);
+
         const rows = res.data.data.map((it: MembershipCronjobItem) => ({
           id: it.id,
+          email: it.Transaction?.user?.email || 'N/A',
           executionTime: it.executionTime,
-          typeCronJob: it.typeCronJob,
+          fromTier: it.Transaction?.user?.MembershipProgress?.[0]?.tier?.tierName || 'N/A',
+          spent: it.Transaction?.user?.MembershipProgress?.[0]?.currentSpent || '0',
+          balance: it.Transaction?.user?.MembershipProgress?.[0]?.currentBalance || '0',
+          toTier: it.Transaction?.user?.MembershipProgress?.[0]?.tier?.tierName || 'N/A',
           status: it.status,
           createdBy: it.createdBy,
           transactionId: it.transactionId,

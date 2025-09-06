@@ -20,10 +20,13 @@ const membershipCronjobSlice = createSlice({
     setStatistics: (state, action: PayloadAction<MembershipCronjobState['statistics']>) => {
       state.statistics = action.payload;
     },
+    clearFilter: (state) => {
+      state.filter = initialState.filter;
+    },
   },
 });
 
-export const { setLoading, setError, setFilter, setSearch, setStatistics } =
+export const { setLoading, setError, setFilter, setSearch, setStatistics, clearFilter } =
   membershipCronjobSlice.actions;
 
 export default membershipCronjobSlice.reducer;

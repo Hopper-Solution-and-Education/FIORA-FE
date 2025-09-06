@@ -3,8 +3,8 @@ import {
   ColumnConfigMap,
   CommonTableColumn,
 } from '@/components/common/organisms/CommonTable/types';
-import { formatDateTime } from '@/shared/lib/formatDateTime';
 import { useMemo, useState } from 'react';
+import { MembershipActionButton, MembershipIdCell, MembershipStatusBadge } from '../atoms';
 import { MembershipCronjobTableData } from '../types/membership.type';
 
 interface Props {
@@ -36,15 +36,68 @@ const MembershipCronjobCommonTable = ({
         render: (_r) => null, // will be set via data mapping
       },
       {
-        key: 'executionTime',
-        title: 'Execution Time',
+        key: 'id',
+        title: 'ID',
         align: 'left',
-        render: (r) => formatDateTime(r.executionTime),
+        render: (r) => <MembershipIdCell id={r.id} executionTime={r.executionTime} />,
       },
-      { key: 'typeCronJob', title: 'Type', align: 'center' },
-      { key: 'status', title: 'Status', align: 'center' },
-      { key: 'createdBy', title: 'Created By', align: 'left' },
-      { key: 'transactionId', title: 'Transaction Id', align: 'left' },
+      {
+        key: 'email',
+        title: 'Email',
+        align: 'left',
+        render: (r) => <span className="text-sm font-medium">{r.email}</span>,
+      },
+      {
+        key: 'executionTime',
+        title: 'Datetime',
+        align: 'left',
+        render: (r) => <span className="text-sm text-muted-foreground">{r.executionTime}</span>,
+      },
+      {
+        key: 'fromTier',
+        title: 'From Tier',
+        align: 'center',
+        render: (r) => <span className="text-sm font-medium">{r.fromTier}</span>,
+      },
+      {
+        key: 'spent',
+        title: 'Spent',
+        align: 'right',
+        render: (r) => <span className="text-sm font-mono">{r.spent} FX</span>,
+      },
+      {
+        key: 'balance',
+        title: 'Balance',
+        align: 'right',
+        render: (r) => <span className="text-sm font-mono">{r.balance} FX</span>,
+      },
+      {
+        key: 'toTier',
+        title: 'To Tier',
+        align: 'center',
+        render: (r) => <span className="text-sm font-medium">{r.toTier}</span>,
+      },
+      {
+        key: 'status',
+        title: 'Status',
+        align: 'center',
+        render: (r) => <MembershipStatusBadge status={r.status} />,
+      },
+      {
+        key: 'action',
+        title: 'Action',
+        align: 'center',
+        render: (r) => (
+          <MembershipActionButton
+            status={r.status}
+            toTier={r.toTier}
+            onRetry={(id) => {
+              console.log('Retry membership:', id);
+              // TODO: Implement retry logic
+            }}
+          />
+        ),
+      },
     ],
     [],
   );

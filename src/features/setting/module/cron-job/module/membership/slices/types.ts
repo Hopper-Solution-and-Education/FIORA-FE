@@ -1,6 +1,5 @@
 export interface MembershipCronjobFilterState {
   status?: string[] | null;
-  typeCronJob?: string[] | null;
   search?: string | null;
   fromDate: Date | null;
   toDate: Date | null;
@@ -18,7 +17,6 @@ export const initialState: MembershipCronjobState = {
   error: null,
   filter: {
     status: null,
-    typeCronJob: ['MEMBERSHIP'],
     search: null,
     fromDate: null,
     toDate: null,

@@ -13,7 +13,6 @@ const MembershipCronjobChart = () => {
   return (
     <ComposedChartComponent
       data={data}
-      title="Membership Jobs Overview"
       columns={[
         { key: 'successful', name: 'Successful', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
         { key: 'fail', name: 'Failed', color: COLORS.DEPS_DANGER.LEVEL_1 },
