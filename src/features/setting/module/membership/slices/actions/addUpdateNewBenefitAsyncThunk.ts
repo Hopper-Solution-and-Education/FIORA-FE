@@ -4,11 +4,10 @@ import { UseFormSetError } from 'react-hook-form';
 import { membershipDIContainer, TYPES } from '../../di';
 import { AddUpdateBenefitTierRequest, AddUpdateBenefitTierResponse } from '../../domain/entities';
 import { IAddNewBenefitUseCase } from '../../domain/usecases/addNewBenefitUseCase';
-import { AddBenefitTierFormValues } from '../../presentation/schema';
 
 export const addUpdateNewBenefitAsyncThunk = createAsyncThunk<
   AddUpdateBenefitTierResponse,
-  { data: AddUpdateBenefitTierRequest; setError: UseFormSetError<AddBenefitTierFormValues> },
+  { data: AddUpdateBenefitTierRequest; setError: UseFormSetError<any> },
   { rejectValue: string }
 >('membership/addUpdateNewBenefit', async ({ data, setError }, { rejectWithValue }) => {
   try {

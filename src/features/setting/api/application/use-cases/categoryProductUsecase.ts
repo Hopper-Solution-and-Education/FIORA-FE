@@ -9,6 +9,7 @@ import {
   ICategoryProductRepository,
 } from '../../repositories/categoryProductRepository.interface';
 import { IProductRepository } from '../../repositories/productRepository.interface';
+import { BadRequestError } from '@/shared/lib';
 
 class CategoryProductsUseCase {
   private categoryProductRepository: ICategoryProductRepository;
@@ -55,7 +56,7 @@ class CategoryProductsUseCase {
         totalPage,
       };
     } catch (error: any) {
-      throw new Error('Failed to get all category products ' + error.message);
+      throw new BadRequestError('Failed to get all category products ' + error.message);
     }
   }
 
@@ -69,13 +70,13 @@ class CategoryProductsUseCase {
       });
 
       if (!categoryProduct) {
-        throw new Error(Messages.CATEGORY_NOT_FOUND);
+        throw new BadRequestError(Messages.CATEGORY_NOT_FOUND);
       }
 
       return categoryProduct;
     } catch (error: any) {
       console.log(error);
-      throw new Error('Failed to get category product by id ' + error.message);
+      throw new BadRequestError('Failed to get category product by id ' + error.message);
     }
   }
 
@@ -86,7 +87,7 @@ class CategoryProductsUseCase {
         ...(data.tax_rate ? { tax_rate: new Prisma.Decimal(data.tax_rate) } : { tax_rate: 0 }), // Default tax rate to 0 if not provided
       });
     } catch (error: any) {
-      throw new Error('Failed to create category product ' + error.message);
+      throw new BadRequestError('Failed to create category product ' + error.message);
     }
   }
 
@@ -103,7 +104,7 @@ class CategoryProductsUseCase {
       });
 
       if (!foundCategoryProduct) {
-        throw new Error(Messages.CATEGORY_PRODUCT_NOT_FOUND);
+        throw new BadRequestError(Messages.CATEGORY_PRODUCT_NOT_FOUND);
       }
 
       return await this.categoryProductRepository.updateCategoryProduct(
@@ -114,7 +115,7 @@ class CategoryProductsUseCase {
         },
       );
     } catch (error: any) {
-      throw new Error('Failed to update category product ' + error.message);
+      throw new BadRequestError('Failed to update category product ' + error.message);
     }
   }
 
@@ -133,16 +134,16 @@ class CategoryProductsUseCase {
       });
 
       if (foundProductMapped.length > 0) {
-        throw new Error(Messages.CATEGORY_PRODUCT_STILL_HAS_PRODUCTS);
+        throw new BadRequestError(Messages.CATEGORY_PRODUCT_STILL_HAS_PRODUCTS);
       }
 
       if (!foundCategoryProduct) {
-        throw new Error(Messages.CATEGORY_PRODUCT_NOT_FOUND);
+        throw new BadRequestError(Messages.CATEGORY_PRODUCT_NOT_FOUND);
       }
 
       return await this.categoryProductRepository.deleteCategoryProduct({ id, userId });
     } catch (error: any) {
-      throw new Error('Failed to delete category product ' + error.message);
+      throw new BadRequestError('Failed to delete category product ' + error.message);
     }
   }
 }

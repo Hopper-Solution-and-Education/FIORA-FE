@@ -1,4 +1,5 @@
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { toast } from 'sonner';
 import { storage } from './firebase.config';
 
 // Interface cho options của upload
@@ -34,12 +35,56 @@ export const uploadToFirebase = async ({
 
 export const removeFromFirebase = async (fileUrl: string): Promise<void> => {
   try {
-    // Tạo reference từ URL
-    const storageRef = ref(storage, fileUrl);
+    if (!isFirebaseUrlOfProject(fileUrl)) {
+      console.warn('Ignored non-Firebase or wrong project URL:', fileUrl);
+      return;
+    }
 
-    // Xóa file
+    // Tách path từ downloadURL
+    const getPathFromDownloadURL = (url: string): string | null => {
+      try {
+        const u = new URL(url);
+        const match = u.pathname.match(/\/o\/([^?]+)/); // lấy phần sau /o/
+        return match ? decodeURIComponent(match[1]) : null;
+      } catch {
+        return null;
+      }
+    };
+
+    const path = getPathFromDownloadURL(fileUrl);
+    if (!path) {
+      console.warn('Invalid Firebase URL format:', fileUrl);
+      return;
+    }
+
+    const storageRef = ref(storage, path);
     await deleteObject(storageRef);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error removing from Firebase:', error);
+    toast.error('Error removing from Firebase', {
+      description: error.message,
+    });
+  }
+};
+
+const isFirebaseUrlOfProject = (url: string): boolean => {
+  try {
+    const u = new URL(url);
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+
+    // Kiểm tra trong path có chứa bucket/projectId không
+    // Thường nằm sau `/v0/b/`
+    if (u.hostname === 'firebasestorage.googleapis.com') {
+      return u.pathname.includes(projectId!);
+    }
+
+    // Ngoài ra check các domain kiểu *.appspot.com hoặc *.firebasestorage.app
+    if (u.hostname.includes(projectId!)) {
+      return true;
+    }
+
+    return false;
+  } catch {
+    return false;
   }
 };
