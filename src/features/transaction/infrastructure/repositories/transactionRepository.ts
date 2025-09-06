@@ -67,15 +67,15 @@ class TransactionRepository implements ITransactionRepository {
     const [createdBy, updatedBy] = await Promise.all([
       transaction.createdBy
         ? prisma.user.findUnique({
-          where: { id: transaction.createdBy },
-          select: { id: true, name: true, email: true, image: true },
-        })
+            where: { id: transaction.createdBy },
+            select: { id: true, name: true, email: true, image: true },
+          })
         : null,
       transaction.updatedBy
         ? prisma.user.findUnique({
-          where: { id: transaction.updatedBy },
-          select: { id: true, name: true, email: true, image: true },
-        })
+            where: { id: transaction.updatedBy },
+            select: { id: true, name: true, email: true, image: true },
+          })
         : null,
     ]);
 

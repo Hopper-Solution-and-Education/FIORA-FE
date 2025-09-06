@@ -18,6 +18,7 @@ const useKSPUploadImageConfig = (mediaPath: string) => {
       label="Upload Image"
       disabled={isSubmitting || isLoadingSaveChange}
       required
+      className="h-100 w-100"
     />,
 
     <UploadImageField
@@ -26,6 +27,7 @@ const useKSPUploadImageConfig = (mediaPath: string) => {
       label="Upload Image Flip Back"
       disabled={isSubmitting || isLoadingSaveChange}
       required
+      className="h-100 w-100"
     />,
   ];
 

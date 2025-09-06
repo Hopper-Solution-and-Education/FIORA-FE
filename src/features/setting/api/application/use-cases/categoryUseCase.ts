@@ -7,6 +7,7 @@ import { Messages } from '@/shared/constants/message';
 import { categoryRepository } from '../../infrastructure/repositories/categoryRepository';
 import { buildWhereClause } from '@/shared/utils';
 import { GlobalFilters } from '@/shared/types';
+import { BadRequestError } from '@/shared/lib';
 
 class CategoryUseCase {
   private categoryRepository: ICategoryRepository;
@@ -27,10 +28,10 @@ class CategoryUseCase {
   }): Promise<Category> {
     const { userId, type, icon, name, description, parentId } = params;
     if (!Object.values(CategoryType).includes(type)) {
-      throw new Error(Messages.INVALID_CATEGORY_TYPE);
+      throw new BadRequestError(Messages.INVALID_CATEGORY_TYPE);
     }
     if (!name || !icon) {
-      throw new Error(Messages.INVALID_CATEGORY_REQUIRED);
+      throw new BadRequestError(Messages.INVALID_CATEGORY_REQUIRED);
     }
     return this.categoryRepository.createCategory({
       userId,
@@ -48,10 +49,10 @@ class CategoryUseCase {
   async updateCategory(id: string, userId: string, data: Partial<Category>): Promise<Category> {
     const category = await this.categoryRepository.findCategoryById(id);
     if (!category || category.userId !== userId) {
-      throw new Error(Messages.CATEGORY_NOT_FOUND);
+      throw new BadRequestError(Messages.CATEGORY_NOT_FOUND);
     }
     if (data.type && !Object.values(CategoryType).includes(data.type)) {
-      throw new Error(Messages.INVALID_CATEGORY_TYPE);
+      throw new BadRequestError(Messages.INVALID_CATEGORY_TYPE);
     }
     return this.categoryRepository.updateCategory(id, { ...data, updatedBy: userId });
   }
@@ -59,13 +60,13 @@ class CategoryUseCase {
   async deleteCategory(id: string, userId: string, newId?: string): Promise<void> {
     const category = await this.categoryRepository.findCategoryById(id);
     if (!category || category.userId !== userId) {
-      throw new Error(Messages.CATEGORY_NOT_FOUND);
+      throw new BadRequestError(Messages.CATEGORY_NOT_FOUND);
     }
 
     if (newId) {
       const newCategory = await this.categoryRepository.findCategoryById(newId);
       if (!newCategory || newCategory.userId !== userId) {
-        throw new Error(Messages.CATEGORY_NOT_FOUND);
+        throw new BadRequestError(Messages.CATEGORY_NOT_FOUND);
       }
       await this.transactionRepository.updateTransactionsCategory(id, newId);
     }
