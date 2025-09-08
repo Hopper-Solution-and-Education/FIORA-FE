@@ -1,5 +1,7 @@
 import { Icon } from '@/components/common/atoms';
 import { TableSkeleton } from '@/components/common/organisms';
+import { Icons } from '@/components/Icon';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -10,17 +12,13 @@ import {
 } from '@/components/ui/table';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { FinanceReportFilterEnum } from '@/features/setting/data/module/finance/constant/FinanceReportFilterEnum';
+import { COLORS } from '@/shared/constants/chart';
+import { ICON_SIZE } from '@/shared/constants/size';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { ArrowUpDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getFinanceByCategoryAsyncThunk } from '../../slices/actions';
-import { Icons } from '@/components/Icon';
-import { ICON_SIZE } from '@/shared/constants/size';
-import { ArrowUpDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { COLORS } from '@/shared/constants/chart';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
-import { formatCurrency } from '@/shared/utils/convertCurrency';
-import { Currency } from '@/shared/types';
 
 type SortConfig = {
   key: 'name' | 'totalIncome' | 'totalExpense';
@@ -33,7 +31,8 @@ const TableByAccount = () => {
   const selectedIds = useAppSelector((state) => state.financeControl.selectedAccounts);
   const dispatch = useAppDispatch();
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'asc' });
-  const currency = useAppSelector((state) => state.settings.currency);
+  const { formatCurrency } = useCurrencyFormatter();
+
   useEffect(() => {
     if (!isLoading) {
       if (selectedIds.length === 0) {
@@ -119,17 +118,11 @@ const TableByAccount = () => {
                 </TableCell>
 
                 <TableCell className="text-center " style={{ color: COLORS.DEPS_SUCCESS.LEVEL_2 }}>
-                  {formatCurrency(
-                    convertCurrency(item.totalIncome, item.currency as Currency, currency),
-                    currency,
-                  )}
+                  {formatCurrency(item.totalIncome, item.currency)}
                 </TableCell>
 
                 <TableCell className="text-center " style={{ color: COLORS.DEPS_DANGER.LEVEL_2 }}>
-                  {formatCurrency(
-                    convertCurrency(item.totalExpense, item.currency as Currency, currency),
-                    currency,
-                  )}
+                  {formatCurrency(item.totalExpense, item.currency)}
                 </TableCell>
               </TableRow>
             ))}

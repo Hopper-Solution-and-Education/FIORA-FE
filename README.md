@@ -1,209 +1,155 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/9113740/201498864-2a900c64-d88f-4ed4-b5cf-770bcb57e1f5.png">
-  <source media="(prefers-color-scheme: light)" srcset="https://user-images.githubusercontent.com/9113740/201498152-b171abb8-9225-487a-821c-6ff49ee48579.png">
-</picture>
+# 📖 Guide to FIORA-FE
 
-<div align="center"><strong>Hopper Dashboard</strong></div>
-<div align="center">Built with the Next.js 15 App Router</div>
-<br />
-<div align="center">
-<a href="https://dub.sh/shadcn-dashboard">View Demo</a>
-<span>
-</div>
+Welcome to the **FIORA-FE**!  
+This is a powerful frontend project built with **Next.js**, designed with a feature-based architecture to optimize developer experience (DX) and performance for administrative, reporting, transactional, and settings modules.
 
-## Overview
+---
 
-This is a starter template using the following stack:
+## 🛠 Project Overview
 
-- Framework - [Next.js 15](https://nextjs.org/13)
-- Language - [TypeScript](https://www.typescriptlang.org)
-- Styling - [Tailwind CSS](https://tailwindcss.com)
-- Components - [Shadcn-ui](https://ui.shadcn.com)
-- Schema Validations - [yup](https://zod.dev)
-- State Management - [Redux](https://zustand-demo.pmnd.rs)
-- Auth - [Auth.js](https://authjs.dev/)
-- Tables - [Tanstack Tables](https://ui.shadcn.com/docs/components/data-table)
-- Forms - [React Hook Form](https://ui.shadcn.com/docs/components/form)
-- Command+k interface - [kbar](https://kbar.vercel.app/)
-- Linting - [ESLint](https://eslint.org)
-- Pre-commit Hooks - [Husky](https://typicode.github.io/husky/)
-- Formatting - [Prettier](https://prettier.io)
+The Hopper Dashboard is a modern, scalable frontend application tailored for efficient management and visualization of data. It leverages a robust tech stack to ensure type safety, responsive UI, and seamless state management.
 
-_If you are looking for a React admin dashboard starter, here is the [repo](https://github.com/Kiranism/react-shadcn-dashboard-starter)._
+**Key Technologies:**
 
-## Pages
+- **Framework:** Next.js 15 (React 19) 🚀
+- **Language:** TypeScript 🛡️
+- **UI/Styling:** Tailwind CSS, shadcn/ui, Radix UI 🎨
+- **State Management:** Redux Toolkit, Redux Persist 🗃️
+- **Authentication:** Auth.js (NextAuth) 🔐
+- **Forms:** React Hook Form, Yup/Zod 📝
+- **Data Tables:** TanStack Table 📊
+- **Data & Utilities:** SWR, date-fns, lodash, kbar, recharts ⚙️
+- **Code Quality:** ESLint, Prettier, Husky, lint-staged ✅
+- **ORM:** Prisma (database pull/generate) 🗄️
 
-| Pages                                                                                 | Specifications                                                                                                                                                 |
-| :------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Signup](https://next-shadcn-dashboard-starter.vercel.app/)                           | Authentication with **NextAuth** supports Social logins and email logins (Enter dummy email for demo).                                                         |
-| [Dashboard (Overview)](https://next-shadcn-dashboard-starter.vercel.app/dashboard)    | Cards with recharts graphs for analytics.Parallel routes in the overview sections with independent loading, error handling, and isolated component rendering . |
-| [Product](https://next-shadcn-dashboard-starter.vercel.app/dashboard/product)         | Tanstack tables with server side searching, filter, pagination by Nuqs which is a Type-safe search params state manager in nextjs                              |
-| [Product/new](https://next-shadcn-dashboard-starter.vercel.app/dashboard/product/new) | A Product Form with shadcn form (react-hook-form + zod).                                                                                                       |
-| [Profile](https://next-shadcn-dashboard-starter.vercel.app/dashboard/profile)         | Mutistep dynamic forms using react-hook-form and zod for form validation.                                                                                      |
-| [Kanban Board](https://next-shadcn-dashboard-starter.vercel.app/dashboard/kanban)     | A Drag n Drop task management board with dnd-kit and zustand to persist state locally.                                                                         |
-| [Not Found](https://next-shadcn-dashboard-starter.vercel.app/dashboard/notfound)      | Not Found Page Added in the root level                                                                                                                         |
-| -                                                                                     | -                                                                                                                                                              |
+---
 
-## Feature based organization
+## 🚀 Getting Started
 
-```plaintext
-src/
-├── app/ # Next.js App Router directory
-│ ├── (client)/ # Auth route group
-│ │ ├── (signin)/
-│ ├── (dashboard)/ # Dashboard route group
-│ │ ├── layout.tsx
-│ │ ├── loading.tsx
-│ │ └── page.tsx
-│ └── api/ # API routes
-│
-├── components/ # Shared components
-│ ├── ui/ # UI components (buttons, inputs, etc.)
-│ └── layout/ # Layout components (header, sidebar, etc.)
-│
-├── features/ # Feature-based modules
-│ ├── feature/
-│ │ ├── components/ # Feature-specific components
-│ │ ├── actions/ # Server actions
-│ │ ├── schemas/ # Form validation schemas
-│ │ └── utils/ # Feature-specific utilities
-│ │
-├── lib/ # Core utilities and configurations
-│ ├── auth/ # Auth configuration
-│ ├── db/ # Database utilities
-│ └── utils/ # Shared utilities
-│
-├── hooks/ # Custom hooks
-│ └── use-debounce.ts
-│
-├── stores/ # Zustand stores
-│ └── dashboard-store.ts
-│
-└── types/ # TypeScript types
-└── index.ts
+### 1️⃣ Prerequisites
+
+Ensure you have the following installed:
+
+- Node.js (v18 or higher recommended) 🟢
+- bun (preferred) or pnpm/npm/yarn 📦
+- Git 🌿
+
+### 2️⃣ Installation
+
+```bash
+git clone <repo_url>
+cd FIORA-FE
+npm install  # or bun install / pnpm install / yarn install
 ```
 
-## Getting Started
+### 3️⃣ Environment Setup
 
-> [!NOTE]  
-> We are using **Next 15** with **React 19**, follow these steps:
+You can use either `.env` or `.env.development.local` for environment variables.
 
-Clone the repo:
+**Option 1:** `.env`
 
+```bash
+cp .env.example .env.local
 ```
-git clone https://github.com/Kiranism/next-shadcn-dashboard-starter.git
+
+**Option 2:** `.env.development.local`
+If you want to use `.env.development.local`, install `dotenv-cli` globally:
+
+```bash
+npm install -g dotenv-cli
+cp .env.example .env.development.local
 ```
 
-- `pnpm install` ( we have legacy-peer-deps=true added in the .npmrc)
-- Create a `.env.local` file by copying the example environment file:
-  `cp env.example.txt .env.local`
-- Add the required environment variables to the `.env.local` file.
-- `pnpm run dev`
+### 4️⃣ Prisma Setup
 
-You should now be able to access the application at http://localhost:3000.
+```bash
+npx prisma db pull && npx prisma generate
+```
 
-> [!WARNING]
-> After cloning or forking the repository, be cautious when pulling or syncing with the latest changes, as this may result in breaking conflicts.
+### 5️⃣ Running the Development Server
 
-> [!NOTE]
-> This project uses Husky for git hooks, but it's configured to skip installation in CI environments to prevent deployment issues. The `prepare` script in package.json checks for the `CI` environment variable before running Husky with `npx`.
+```bash
+npm run dev
+```
 
-Cheers! 🥂
+App runs at: <a>http://localhost:3000</a>
 
-## Automated Deployment with Vercel and GitHub Actions
+## 🏗️ Building the Application
 
-This project is configured with an enhanced automated deployment pipeline using GitHub Actions and Vercel. The setup provides a seamless workflow for deploying your application to different environments.
+```bash
+npm run build
+```
 
-### Key Features
+## 🧹 Code Formatting & Linting
 
-- **Fully Automated Deployment**: Push to designated branches to trigger automatic deployments
-- **Environment-Based Deployments**: Different branches deploy to different environments
-- **Manual Deployment Option**: Trigger deployments manually with environment selection
-- **Prisma Schema Change Detection**: Automatically handles database schema changes
-- **Deployment Status Comments**: Automatically adds comments to PRs and commits with deployment status and preview URLs
-- **Linting and Quality Checks**: Runs linting before deployment to ensure code quality
+```bash
+npm run format   # Format code
+npm run check    # Check formatting
+npm run lint     # Lint code
+```
 
-### Setup Instructions
+## 🗑️ Cleaning the Project
 
-1. **Create a Vercel Account and Project**:
+```bash
+npm run clean
+```
 
-   - Sign up or log in to [Vercel](https://vercel.com)
-   - Create a new project and import your GitHub repository
-   - Complete the initial setup process
+## 🌍 Environment Variables
 
-2. **Obtain Vercel Deployment Tokens**:
+Example `.env.example`:
 
-   - Go to your Vercel account settings
-   - Navigate to "Tokens" and create a new token with "Full Account" scope
-   - Copy the token value (you'll need it for GitHub secrets)
-   - In your Vercel project settings, note your "Project ID" and "Organization ID"
+```bash
+NODE_ENV='development'
+AUTH_SECRET=
+AUTH_GOOGLE_ID=
+AUTH_GOOGLE_SECRET=
+NEXTAUTH_URL=http://localhost:3000/
 
-3. **Configure GitHub Repository Secrets**:
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
 
-   - Go to your GitHub repository
-   - Navigate to "Settings" > "Secrets and variables" > "Actions"
-   - Add the following secrets:
-     - `VERCEL_TOKEN`: Your Vercel token
-     - `VERCEL_ORG_ID`: Your Vercel Organization ID
-     - `VERCEL_PROJECT_ID`: Your Vercel Project ID
+# DATABASE_URL=
 
-4. **Set Up Environment Variables**:
+SENDGRID_API_KEY=
+SENDER_EMAIL=
+REDIS_URL=
+NEXT_PUBLIC_SENTRY_DSN=
+NEXT_PUBLIC_AMPLITUDE_API_KEY=
 
-   - Create a `.env.production.local` file with your environment variables
-   - Run `npm run setup-vercel` to sync these variables to Vercel
-   - For CI/CD, the GitHub Actions workflow will automatically sync environment variables
+NEXT_PRIVATE_GROWTHBOOK_API_KEY=
+NEXT_DECRYPTION_GROWTHBOOK_KEY=
+NEXT_PUBLIC_GROWTHBOOK_API_HOST=
+NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=
+NEXT_PUBLIC_GROWTHBOOK_API_ENDPOINT=
 
-5. **Test and Deploy Your Application**:
+# Firebase
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=
 
-   - **Local Build Testing**: Before deploying, you can test your build locally:
-     - Run `npm run vercel-build` to simulate the Vercel build process locally
-     - For more detailed build logs, run `npm run vercel-build:debug`
-     - This helps identify build issues before deploying to Vercel
-     - If you encounter path alias issues (e.g., with `@/` imports):
-       - Run `npm run check-paths` to scan for path alias issues in your codebase
-       - Run `npm run fix-paths` to automatically fix path alias issues
-       - Ensure your tsconfig.json paths are correctly configured
-   - **Automatic Deployment**: Push to one of the deployment branches:
-     - `main`: Deploys to production environment
-     - `staging`: Deploys to staging environment
-     - `develop`: Deploys to development environment
-   - **Manual Deployment**: Go to the "Actions" tab in your GitHub repository, select the "Deploy to Vercel" workflow, click "Run workflow", and select the environment you want to deploy to.
-   - **Manual Deployment via CLI**: You can also deploy directly using the provided scripts:
-     - `npm run deploy:dev` - Deploy to development environment
-     - `npm run deploy:staging` - Deploy to staging environment
-     - `npm run deploy:prod` - Deploy to production environment
+# Other APIs
+EXCHANGE_RATE_API_KEY=
+```
 
-### How It Works
+## 🛠 Troubleshooting
 
-The deployment process is organized into modular stages for better maintainability and visibility:
+### Build issues:
 
-#### Stage 1: Setup and Environment Configuration
+```bash
+npm run clean
+npm install
+```
 
-- Determines the target environment based on the branch or manual selection
-- Sets environment variables for subsequent stages
-- Branch mapping:
-  - `main` → production
-  - `staging` → staging
-  - `develop` → development
+### Prisma issues:
 
-#### Stage 2: Lint and Check
+- Ensure `DATABASE_URL` is set
+- Verify keys in .env / .env.development.local
 
-- Checks out the code and sets up Node.js
-- Installs dependencies with `--ignore-scripts` flag and CI environment variable to skip husky installation
-- Detects and handles Prisma schema changes
-- Runs linting to ensure code quality
+```bash
+npx prisma db pull && npx prisma generate
+```
 
-#### Stage 3: Deploy to Vercel
-
-- Uses Vercel CLI for deployments
-- Automatically handles authentication with Vercel token
-- Deploys to the appropriate environment based on branch or manual selection
-- Production deployments use the `--prod` flag for Vercel
-
-#### Stage 4: Post-Deployment Notifications
-
-- Adds a comment to the PR or commit with the deployment status
-- Includes the preview URL for easy access to the deployed application
-- Provides environment information and deployment status
-
-This modular pipeline ensures consistent, reliable deployments across all environments with immediate feedback on deployment status directly in GitHub. Each stage has a clear responsibility, making the workflow easier to maintain and troubleshoot.
+### Happy coding! 🚀

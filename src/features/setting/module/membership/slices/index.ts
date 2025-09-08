@@ -1,9 +1,12 @@
+import { Tier } from '@/components/common/charts/scatter-rank-chart/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 import { Membership } from '../domain/entities';
+import { DynamicFieldTier } from '../presentation/schema';
 import {
-  addNewBenefitAsyncThunk,
+  addUpdateNewBenefitAsyncThunk,
   deleteBenefitAsyncThunk,
+  editThresholdBenefitAsyncThunk,
   getListMembershipAsyncThunk,
   upsertMembershipAsyncThunk,
 } from './actions';
@@ -22,6 +25,41 @@ const membershipSlice = createSlice({
     },
     setIsShowDialogAddBenefitTier: (state, action: PayloadAction<boolean>) => {
       state.isShowDialogAddBenefitTier = action.payload;
+    },
+    setIsShowDialogEditThresholdBenefitTier: (state, action: PayloadAction<boolean>) => {
+      state.isDialogEditThresholdBenefitOpen = action.payload;
+    },
+    setIsShowDialogDeleteBenefitTier: (state, action: PayloadAction<boolean>) => {
+      state.deleteBenefitTier.isShowDialogDeleteBenefitTier = action.payload;
+    },
+    setIdTierToDelete: (state, action: PayloadAction<string | null>) => {
+      state.deleteBenefitTier.idTierToDelete = action.payload;
+    },
+    setSlugTierToDelete: (state, action: PayloadAction<string | null>) => {
+      state.deleteBenefitTier.slugTierToDelete = action.payload;
+    },
+    setIsShowDialogEditBenefitTier: (state, action: PayloadAction<boolean>) => {
+      state.editBenefitTier.isShowDialogEditBenefitTier = action.payload;
+    },
+    setIdTierToEdit: (state, action: PayloadAction<string | null>) => {
+      state.editBenefitTier.idTierToEdit = action.payload;
+    },
+    setBenefitTierToEdit: (state, action: PayloadAction<DynamicFieldTier | null>) => {
+      state.editBenefitTier.benefitTierToEdit = action.payload;
+    },
+    setIsLoadingUpsertMembership: (state, action: PayloadAction<boolean>) => {
+      state.isLoadingUpsertMembership = action.payload;
+    },
+    setTierToEdit: (
+      state,
+      action: PayloadAction<{
+        selectedTier: Tier;
+        nextTier: Tier;
+        previousTier: Tier;
+        axis: 'balance' | 'spent';
+      }>,
+    ) => {
+      state.tierToEdit = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -54,15 +92,15 @@ const membershipSlice = createSlice({
       });
 
     builder
-      .addCase(addNewBenefitAsyncThunk.pending, (state) => {
-        state.isLoadingAddBenefitTier = true;
+      .addCase(addUpdateNewBenefitAsyncThunk.pending, (state) => {
+        state.isLoadingAddUpdateBenefitTier = true;
       })
-      .addCase(addNewBenefitAsyncThunk.fulfilled, (state, action) => {
-        state.isLoadingAddBenefitTier = false;
+      .addCase(addUpdateNewBenefitAsyncThunk.fulfilled, (state, action) => {
+        state.isLoadingAddUpdateBenefitTier = false;
         toast.success(action.payload.message);
       })
-      .addCase(addNewBenefitAsyncThunk.rejected, (state) => {
-        state.isLoadingAddBenefitTier = false;
+      .addCase(addUpdateNewBenefitAsyncThunk.rejected, (state) => {
+        state.isLoadingAddUpdateBenefitTier = false;
       });
 
     builder
@@ -77,6 +115,19 @@ const membershipSlice = createSlice({
         state.isLoadingDeleteBenefitTier = false;
         toast.error(action.payload);
       });
+
+    builder
+      .addCase(editThresholdBenefitAsyncThunk.pending, (state) => {
+        state.isLoadingEditThresholdBenefit = true;
+      })
+      .addCase(editThresholdBenefitAsyncThunk.fulfilled, (state, action) => {
+        state.isLoadingEditThresholdBenefit = false;
+        toast.success(action.payload.message);
+      })
+      .addCase(editThresholdBenefitAsyncThunk.rejected, (state, action) => {
+        state.isLoadingEditThresholdBenefit = false;
+        toast.error(action.payload);
+      });
   },
 });
 
@@ -86,5 +137,14 @@ export const {
   setSelectedMembership,
   setMemberships,
   setIsShowDialogAddBenefitTier,
+  setTierToEdit,
+  setIsShowDialogEditThresholdBenefitTier,
+  setIsShowDialogDeleteBenefitTier,
+  setIdTierToDelete,
+  setSlugTierToDelete,
+  setIsShowDialogEditBenefitTier,
+  setIdTierToEdit,
+  setBenefitTierToEdit,
+  setIsLoadingUpsertMembership,
 } = membershipSlice.actions;
 export default membershipSlice.reducer;

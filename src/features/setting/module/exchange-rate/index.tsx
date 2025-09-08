@@ -3,10 +3,12 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import ExchangeRateItem from './presentation/components/ExchangeRateItem';
+import ExchangeRateItemSkeleton from './presentation/components/ExchangeRateItemSkeleton';
 import {
   ExchangeRateDeleteType,
   ExchangeRateObjectType,
@@ -26,10 +28,12 @@ const ExchangeRateSettingPage = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [exchangeRates, setExchangeRates] = useState<ExchangeRateType[]>([]);
+  const { mutate: refreshExchangeRates } = useCurrencyFormatter();
 
-  const { data, mutate } = useDataFetch<ExchangeRateType[]>({
+  const { data, mutate, isLoading } = useDataFetch<ExchangeRateType[]>({
     endpoint: '/api/setting/currency-setting',
     method: 'GET',
+    refreshInterval: 1000,
   });
 
   useEffect(() => {
@@ -38,6 +42,13 @@ const ExchangeRateSettingPage = () => {
     }
   }, [data]);
 
+  const handleCompleteAction = async (message?: string) => {
+    await refreshExchangeRates();
+    toast.success(message || 'Exchange rate added successfully');
+    setIsAdding(false); // Close the create UI
+    setEditingId(null); // Reset editing state
+    mutate(); // Refresh the data
+  };
   const handleAddRate = async (newRate: ExchangeRateObjectType) => {
     const response = await fetch(`/api/setting/currency-setting`, {
       method: 'PUT',
@@ -49,9 +60,7 @@ const ExchangeRateSettingPage = () => {
     const data = await response.json();
 
     if (response.ok) {
-      toast.success(data.message || 'Exchange rate added successfully');
-      setIsAdding(false); // Close the create UI
-      mutate(); // Refresh the data
+      handleCompleteAction(data?.message);
     } else {
       toast.error(data.message || 'Failed to add exchange rate');
     }
@@ -67,8 +76,7 @@ const ExchangeRateSettingPage = () => {
     });
     const data = await response.json();
     if (response.ok) {
-      toast.success(data.message || 'Exchange rate deleted successfully');
-      mutate();
+      handleCompleteAction(data?.message);
     } else {
       toast.error(data.message || 'Failed to delete exchange rate');
     }
@@ -84,8 +92,7 @@ const ExchangeRateSettingPage = () => {
     });
     const data = await response.json();
     if (response.ok) {
-      toast.success(data.message || 'Exchange rate updated successfully');
-      mutate();
+      handleCompleteAction(data?.message);
     } else {
       toast.error(data.message || 'Failed to update exchange rate');
     }
@@ -136,24 +143,28 @@ const ExchangeRateSettingPage = () => {
               />
             )}
 
-            {exchangeRates?.map((rate) => {
-              const isEditing = editingId === rate.id;
+            {isLoading && !exchangeRates.length ? (
+              <ExchangeRateItemSkeleton count={3} />
+            ) : (
+              exchangeRates?.map((rate) => {
+                const isEditing = editingId === rate.id;
 
-              return (
-                <ExchangeRateItem
-                  key={rate.id}
-                  mode={isEditing ? 'updating' : 'existing'}
-                  rate={rate}
-                  existingRates={exchangeRates}
-                  onSave={handleSaveEdit}
-                  onCancel={handleCancelEdit}
-                  onEdit={handleEditRate}
-                  onEditStart={() => handleEditStart(rate.id)}
-                  onDelete={handleDeleteRate}
-                  disabled={isAdding}
-                />
-              );
-            })}
+                return (
+                  <ExchangeRateItem
+                    key={rate.id}
+                    mode={isEditing ? 'updating' : 'existing'}
+                    rate={rate}
+                    existingRates={exchangeRates}
+                    onSave={handleSaveEdit}
+                    onCancel={handleCancelEdit}
+                    onEdit={handleEditRate}
+                    onEditStart={() => handleEditStart(rate.id)}
+                    onDelete={handleDeleteRate}
+                    disabled={isAdding}
+                  />
+                );
+              })
+            )}
           </div>
         </CardContent>
       </Card>

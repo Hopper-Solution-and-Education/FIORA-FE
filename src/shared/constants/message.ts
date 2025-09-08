@@ -125,6 +125,7 @@ export enum Messages {
   INVALID_ACCOUNT_TYPE_FOR_INCOME = 'Invalid account type. Only Payment accounts are allowed for income.',
   UNSUPPORTED_ACCOUNT_TYPE = 'Unsupported account type',
   INVALID_ACCOUNT_TYPE_FOR_EXPENSE = 'Invalid account type. Only Payment and CreditCard are supported.',
+  REMARK_IS_REQUIRED = 'Remark is required',
   MASTER_ACCOUNT_ALREADY_EXISTS = 'Master account already exists! You can only have one master account.',
   UNAUTHORIZED = 'Not logged in',
   UPDATE_PARENT_ACCOUNT_NOT_ALLOWED = 'Parent account balance cannot be updated',
@@ -282,6 +283,12 @@ export enum Messages {
   INVALID_PHONE = 'Invalid phone number.',
   INVALID_DOB = 'Invalid date of birth.',
 
+  // CURRENCY SUCCESS
+  GET_CURRENCY_SUCCESS = 'Get currency successfully.',
+  CREATE_CURRENCY_SUCCESS = 'Create currency successfully.',
+  // CURRENCY ERROR
+  CURRENCY_NOT_FOUND = 'Currency not found',
+  GET_CURRENCY_FAILED = 'Failed to get currency.',
   // FAQ
   IMPORT_FAQS_SUCCESS = 'Import FAQs successfully',
   IMPORT_FAQS_FAILED = 'Import FAQs failed',
@@ -353,4 +360,11 @@ export enum Messages {
 
   //Common
   DELETE_SUCCESS = 'Delete successfully',
+  SEND_SUCCESS = 'Send successfully',
+  VERIFY_SUCCESS = 'Verify successfully',
+  VERIFY_EXIT = 'Verify already exists',
+  GET_SUCCESS = 'Get successfully',
+
+  //Email template type
+  EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
 }

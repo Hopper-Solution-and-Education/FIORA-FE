@@ -7,7 +7,7 @@ import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default withAuthorization({
-  GET: ['Admin'],
+  GET: ['Admin', 'CS', 'User'],
 })((req: NextApiRequest, res: NextApiResponse) =>
   errorHandler(
     async (request, response) => {

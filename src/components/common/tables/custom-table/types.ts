@@ -171,4 +171,5 @@ export interface TableProps extends React.HTMLAttributes<HTMLDivElement> {
   showPagination?: boolean;
   paginationEnabled?: boolean;
   tableContainerClassName?: string;
+  tableHeight?: string;
 }

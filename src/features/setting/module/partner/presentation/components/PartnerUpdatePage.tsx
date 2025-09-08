@@ -6,7 +6,7 @@ import { Partner } from '@/features/setting/module/partner/domain/entities/Partn
 import PartnerUpdateForm from '@/features/setting/module/partner/presentation/components/PartnerUpdateForm';
 import { fetchPartnerById } from '@/features/setting/module/partner/slices/actions/fetchPartnerByIdAsyncThunk';
 import { useAppDispatch } from '@/store';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import DeletePartnerButton from './DeletePartnerButton';
 
@@ -24,6 +24,7 @@ export default function PartnerUpdatePage() {
       try {
         setLoading(true);
         const result = await dispatch(fetchPartnerById(id)).unwrap();
+        console.log('🚀 ~ getPartner ~ result:', result);
         setPartner(result);
       } catch (err) {
         setError(err as string);

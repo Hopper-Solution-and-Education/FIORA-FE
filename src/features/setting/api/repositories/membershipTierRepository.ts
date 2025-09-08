@@ -6,7 +6,7 @@ export interface IMembershipTierRepository {
     prismaTx?: Prisma.TransactionClient,
   ): Promise<MembershipTier>;
   findMembershipTierById(id: string): Promise<MembershipTier | null>;
-  updateMembershipTier(id: string, data: Partial<MembershipTier>): Promise<MembershipTier>;
+  updateMembershipTier(id: string, data: Prisma.MembershipTierUpdateInput): Promise<MembershipTier>;
   deleteMembershipTier(id: string): Promise<void>;
   findMembershipTiersDashboard(
     where?: Prisma.MembershipTierWhereInput,
@@ -36,6 +36,15 @@ export interface MembershipTierCreation {
   balanceMaxThreshold: number;
   story?: string;
   tierBenefits: TierBenefitCreation[];
+}
+
+export interface MembershipTierUpdate {
+  axis: 'spent' | 'balance';
+  // identify the tier by old range (exact)
+  oldMin: number; // old minimum threshold
+  oldMax: number; // old maximum threshold
+  newMin: number; // new minimum threshold
+  newMax: number; // new maximum threshold
 }
 
 export interface TierBenefitCreation {
@@ -68,3 +77,9 @@ export type MembershipTierWithBenefit = Prisma.MembershipTierGetPayload<{
   };
   orderBy: [{ balanceMinThreshold: 'asc' }, { spentMinThreshold: 'asc' }];
 }>;
+
+export type Axis = 'spent' | 'balance';
+export type RangeKeys =
+  | { minKey: 'spentMinThreshold'; maxKey: 'spentMaxThreshold' }
+  | { minKey: 'balanceMinThreshold'; maxKey: 'balanceMaxThreshold' };
+export type Range = { min: number; max: number };

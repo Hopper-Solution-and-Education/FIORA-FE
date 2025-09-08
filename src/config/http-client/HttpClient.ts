@@ -1,3 +1,5 @@
+import { signOut } from 'next-auth/react';
+
 export interface IHttpClient {
   /**
    * Thiết lập interceptor cho request.
@@ -114,13 +116,17 @@ class HttpClient implements IHttpClient {
           ? Object.fromEntries(options.headers)
           : options.headers || {};
 
-    let config: RequestInit = {
-      ...options,
-      headers: new Headers({
+    let config: RequestInit = { ...options };
+
+    // Nếu body là FormData thì KHÔNG merge defaultHeaders (để trình duyệt tự set Content-Type)
+    if (options.body instanceof FormData) {
+      config.headers = new Headers({ ...customHeaders });
+    } else {
+      config.headers = new Headers({
         ...this.defaultHeaders,
         ...customHeaders,
-      }),
-    };
+      });
+    }
 
     if (this.interceptors.request) {
       config = await this.interceptors.request(config);
@@ -130,6 +136,10 @@ class HttpClient implements IHttpClient {
       const response = await fetch(fullUrl, config);
 
       if (!response.ok) {
+        // If response status is 403, log out
+        if (response.status === 403 || response.status === 500) {
+          await signOut();
+        }
         // get response error from server
         const errorText = await response.text();
         throw new Error(errorText, { cause: 'Error' });
@@ -154,19 +164,35 @@ class HttpClient implements IHttpClient {
   }
 
   public post<T>(url: string, body: any, headers: HeadersInit = {}): Promise<T> {
-    return this.request<T>(url, {
-      method: 'POST',
-      body: JSON.stringify(body),
-      headers,
-    });
+    const options: RequestInit = { method: 'POST', headers };
+
+    if (body instanceof FormData) {
+      options.body = body;
+      if (headers && (headers as any)['Content-Type']) {
+        delete (headers as any)['Content-Type'];
+      }
+    } else {
+      options.body = JSON.stringify(body);
+      (headers as any)['Content-Type'] = 'application/json';
+    }
+
+    return this.request<T>(url, options);
   }
 
   public put<T>(url: string, body: any, headers: HeadersInit = {}): Promise<T> {
-    return this.request<T>(url, {
-      method: 'PUT',
-      body: JSON.stringify(body),
-      headers,
-    });
+    const options: RequestInit = { method: 'PUT', headers };
+
+    if (body instanceof FormData) {
+      options.body = body;
+      if (headers && (headers as any)['Content-Type']) {
+        delete (headers as any)['Content-Type'];
+      }
+    } else {
+      options.body = JSON.stringify(body);
+      (headers as any)['Content-Type'] = 'application/json';
+    }
+
+    return this.request<T>(url, options);
   }
 
   public delete<T>(url: string, headers: HeadersInit = {}): Promise<T> {

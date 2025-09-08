@@ -19,9 +19,14 @@ export interface IWalletRepository {
   deleteWallet(where: Prisma.WalletWhereUniqueInput): Promise<Wallet>;
   findWalletByType(type: WalletType, userId: string): Promise<Wallet | null>;
   findAllWalletsByUser(userId: string): Promise<Wallet[]>;
+  findPackageFXPaginated(params: {
+    sortBy?: Record<string, 'asc' | 'desc'>;
+    page?: number;
+    limit?: number;
+  }): Promise<any>;
   findAllPackageFX(): Promise<PackageFX[]>;
   getPackageFXById(id: string): Promise<PackageFX | null>;
-  createPackageFX(data: Prisma.PackageFXUncheckedCreateInput): Promise<PackageFX>;
+  createPackageFX(data: Prisma.PackageFXCreateInput): Promise<PackageFX>;
   updatePackageFX(
     id: string,
     data: { fxAmount: number; attachment_id?: string[] },

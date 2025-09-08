@@ -1,18 +1,49 @@
 import { prisma } from '@/config';
 import { Messages } from '@/shared/constants/message';
-import { MembershipTier, Prisma } from '@prisma/client';
+import { BadRequestError, ConflictError } from '@/shared/lib';
+import { Prisma } from '@prisma/client';
 import { membershipTierRepository } from '../../infrastructure/repositories/membershipTierRepository';
+import { userRepository } from '../../infrastructure/repositories/userRepository';
 import {
+  Axis,
   IMembershipTierRepository,
   MembershipTierCreation,
+  MembershipTierUpdate,
   MembershipTierWithBenefit,
+  Range,
+  RangeKeys,
 } from '../../repositories/membershipTierRepository';
+import { IUserRepository } from '../../repositories/userRepository.interface';
+
+function axisKeys(axis: Axis): RangeKeys {
+  return axis === 'spent'
+    ? { minKey: 'spentMinThreshold', maxKey: 'spentMaxThreshold' }
+    : { minKey: 'balanceMinThreshold', maxKey: 'balanceMaxThreshold' };
+}
+
+function overlapWhere(axis: Axis, newMin: number, newMax: number) {
+  const { minKey, maxKey } = axisKeys(axis);
+  return {
+    NOT: {
+      OR: [
+        { [minKey]: { gt: new Prisma.Decimal(newMax) } }, // entirely right
+        { [maxKey]: { lt: new Prisma.Decimal(newMin) } }, // entirely left
+      ],
+    },
+  } as any;
+}
+
+const rng = (min: any, max: any): Range => ({ min: Number(min), max: Number(max) });
 
 class MembershipSettingUseCase {
   private readonly membershipTierRepository: IMembershipTierRepository;
-
-  constructor(membershipTierRepository: IMembershipTierRepository) {
+  private readonly userRepository: IUserRepository;
+  constructor(
+    membershipTierRepository: IMembershipTierRepository,
+    userRepository: IUserRepository,
+  ) {
     this.membershipTierRepository = membershipTierRepository;
+    this.userRepository = userRepository;
   }
 
   async upsertMembershipTier(data: MembershipTierCreation, userId: string) {
@@ -79,7 +110,7 @@ class MembershipSettingUseCase {
           });
 
           if (!updatedMembershipTier) {
-            throw new Error(Messages.MEMBERSHIP_TIER_CREATE_FAILED);
+            throw new BadRequestError(Messages.MEMBERSHIP_TIER_CREATE_FAILED);
           }
 
           // Create many - many table relationship of tierBenefits with membershipBenefit
@@ -91,7 +122,7 @@ class MembershipSettingUseCase {
               });
 
               if (!membershipBenefit) {
-                throw new Error(Messages.MEMBERSHIP_BENEFIT_SLUG_NAME_NOT_FOUND);
+                throw new BadRequestError(Messages.MEMBERSHIP_BENEFIT_SLUG_NAME_NOT_FOUND);
               }
 
               const newTierBenefit = await tx.tierBenefit.upsert({
@@ -125,11 +156,11 @@ class MembershipSettingUseCase {
               });
 
               if (!newTierBenefit) {
-                throw new Error(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
+                throw new BadRequestError(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
               }
 
               if (!newTierBenefit) {
-                throw new Error(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
+                throw new BadRequestError(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
               }
 
               const newTierBenefitWithBenefit = {
@@ -156,12 +187,12 @@ class MembershipSettingUseCase {
     } catch (error: any) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new Error(Messages.MEMBERSHIP_TIER_ALREADY_EXISTS);
+          throw new BadRequestError(Messages.MEMBERSHIP_TIER_ALREADY_EXISTS);
         } else {
-          throw new Error(error.message || Messages.INTERNAL_ERROR);
+          throw new BadRequestError(error.message || Messages.INTERNAL_ERROR);
         }
       }
-      throw new Error(error.message || Messages.INTERNAL_ERROR);
+      throw new BadRequestError(error.message || Messages.INTERNAL_ERROR);
     }
   }
 
@@ -214,20 +245,12 @@ class MembershipSettingUseCase {
 
       return memberShipListWithBenefit;
     } catch (error) {
-      throw new Error(error instanceof Error ? error.message : Messages.INTERNAL_ERROR);
+      throw new BadRequestError(error instanceof Error ? error.message : Messages.INTERNAL_ERROR);
     }
   }
 
   async getMembershipTierById(id: string) {
     return this.membershipTierRepository.findMembershipTierById(id);
-  }
-
-  async updateMembershipTier(id: string, data: Partial<MembershipTier>) {
-    if (!id) {
-      throw new Error('Id is required');
-    }
-
-    return this.membershipTierRepository.updateMembershipTier(id, data);
   }
 
   async deleteMembershipTier(id: string) {
@@ -382,7 +405,7 @@ class MembershipSettingUseCase {
         nextBalanceTier: nextBalanceTierWithBenefit ?? [],
       };
     } catch (error) {
-      throw new Error(error instanceof Error ? error.message : Messages.INTERNAL_ERROR);
+      throw new BadRequestError(error instanceof Error ? error.message : Messages.INTERNAL_ERROR);
     }
   }
 
@@ -396,6 +419,153 @@ class MembershipSettingUseCase {
       },
     });
   }
+
+  async updateMembershipThreshold(data: MembershipTierUpdate, userId: string) {
+    const FLOOR = 0;
+    const CEILING = 99999999999;
+
+    const { axis, oldMin, oldMax, newMin, newMax } = data;
+    const { minKey, maxKey } = axisKeys(axis);
+
+    const dOldMin = new Prisma.Decimal(oldMin);
+    const dOldMax = new Prisma.Decimal(oldMax);
+    const dNewMin = new Prisma.Decimal(newMin);
+    const dNewMax = new Prisma.Decimal(newMax);
+
+    const dFloor = new Prisma.Decimal(FLOOR);
+    const dCeil = new Prisma.Decimal(CEILING);
+
+    if (dOldMin.lt(dFloor) || dOldMax.gt(dCeil)) {
+      throw new BadRequestError(
+        'Old min must be greater than 0 and old max must be less than 99999999999',
+      );
+    }
+
+    const targetCount = await prisma.membershipTier.count({
+      where: { [minKey]: dOldMin, [maxKey]: dOldMax } as any,
+    });
+
+    if (targetCount === 0) {
+      throw new BadRequestError('Membership tier not found (old range)');
+    }
+
+    // Find overlap tier ranges & exclude the current target tier
+    const overlapTiers = await prisma.membershipTier.findMany({
+      where: {
+        ...overlapWhere(axis, newMin, newMax),
+      },
+      select: { [minKey]: true, [maxKey]: true },
+      distinct: [minKey, maxKey], // unique axis pairs only
+      orderBy: { [minKey]: 'asc' },
+    });
+
+    // If it would touch > 1 distinct neighbor tiers (on the same axis)
+    if (overlapTiers.length > 3) {
+      throw new BadRequestError('Change would affect more than one neighboring tier; rejected.');
+    }
+
+    // Identify immediate neighbors by current edges
+    const nextMinOld = oldMax + 1;
+    const prevMaxOld = oldMin - 1;
+
+    // Fetch immediate neighbors
+    const [nextNeighbor, prevNeighbor] = await Promise.all([
+      prisma.membershipTier.findFirst({
+        where: { [minKey]: new Prisma.Decimal(nextMinOld) },
+        select: { [minKey]: true, [maxKey]: true },
+        orderBy: { [maxKey]: 'desc' }, // not strictly needed, but deterministic
+      }),
+      prevMaxOld >= 0
+        ? prisma.membershipTier.findFirst({
+          where: { [maxKey]: new Prisma.Decimal(prevMaxOld) },
+          select: { [minKey]: true, [maxKey]: true },
+          orderBy: { [minKey]: 'asc' },
+        })
+        : Promise.resolve(null),
+    ]);
+
+    // 2) Validate snaps don’t invert neighbors or ripple past the second neighbor
+    //    - Next: min becomes newMax+1, must be <= its max and < secondNext.min
+    //    - Prev: max becomes newMin-1, must be >= its min and > secondPrev.max
+    if (nextNeighbor) {
+      const next = rng((nextNeighbor as any)[minKey], (nextNeighbor as any)[maxKey]);
+      const snappedNextMin = newMax + 1;
+      if (snappedNextMin > next.max) {
+        throw new ConflictError('Next tier would become invalid after snap (min > max).');
+      }
+      // second next (smallest min greater than next.min)
+      const secondNext = await prisma.membershipTier.findFirst({
+        where: {
+          [minKey]: { gt: new Prisma.Decimal(next.min) },
+        } as any,
+        select: { [minKey]: true },
+        orderBy: { [minKey]: 'asc' } as any,
+      });
+      if (secondNext) {
+        const secondNextMin = Number((secondNext as any)[minKey]);
+        if (snappedNextMin >= secondNextMin) {
+          throw new ConflictError('Change would ripple beyond the immediate next tier; rejected.');
+        }
+      }
+    }
+
+    if (prevNeighbor) {
+      const prev = rng((prevNeighbor as any)[minKey], (prevNeighbor as any)[maxKey]);
+      const snappedPrevMax = newMin - 1;
+      if (snappedPrevMax < prev.min) {
+        throw new ConflictError('Previous tier would become invalid after snap (max < min).');
+      }
+      // second prev (largest max smaller than prev.max)
+      const secondPrev = await prisma.membershipTier.findFirst({
+        where: {
+          [maxKey]: { lt: new Prisma.Decimal(prev.max) },
+        } as any,
+        select: { [maxKey]: true },
+        orderBy: { [maxKey]: 'desc' } as any,
+      });
+      if (secondPrev) {
+        const secondPrevMax = Number((secondPrev as any)[maxKey]);
+        if (snappedPrevMax <= secondPrevMax) {
+          throw new ConflictError(
+            'Change would ripple beyond the immediate previous tier; rejected.',
+          );
+        }
+      }
+
+      return await prisma.$transaction(async (tx) => {
+        const updated = await tx.membershipTier.updateMany({
+          where: { [minKey]: dOldMin, [maxKey]: dOldMax },
+          data: { [minKey]: dNewMin, [maxKey]: dNewMax, updatedBy: userId },
+        });
+
+        if (updated.count === 0) {
+          return { updated: 0, snappedNext: 0, snappedPrev: 0 };
+        }
+
+        const snapNext = await tx.membershipTier.updateMany({
+          where: { [minKey]: new Prisma.Decimal(nextMinOld) },
+          data: { [minKey]: dNewMax.add(1), updatedBy: userId },
+        });
+
+        const snapPrev =
+          oldMin > 0
+            ? await tx.membershipTier.updateMany({
+              where: { [maxKey]: new Prisma.Decimal(prevMaxOld) },
+              data: { [maxKey]: dNewMin.sub(1), updatedBy: userId },
+            })
+            : { count: 0 };
+
+        return {
+          updated: updated.count,
+          snapNext: snapNext.count,
+          snapPrev: snapPrev.count,
+        };
+      });
+    }
+  }
 }
 
-export const membershipSettingUseCase = new MembershipSettingUseCase(membershipTierRepository);
+export const membershipSettingUseCase = new MembershipSettingUseCase(
+  membershipTierRepository,
+  userRepository,
+);

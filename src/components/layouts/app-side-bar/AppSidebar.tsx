@@ -45,6 +45,7 @@ import {
 import { SectionTypeEnum } from '@/features/landing/constants';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import { useGetProfileQuery } from '@/features/profile/store/api/profileApi';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
 import HopperLogo from '@public/images/logo.jpg';
@@ -74,8 +75,11 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
   });
 
   const { data: profile, isLoading: isLoadingProfile } = useGetProfileQuery();
+  const { clearExchangeRateData } = useCurrencyFormatter();
 
   const handleLogout = async () => {
+    // Clear exchange rate data BEFORE logout to ensure data is cleared while session is still active
+    clearExchangeRateData();
     await signOut().catch(() => {});
 
     redirect('/');
@@ -132,7 +136,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
               {isMobile ? (
                 <div className={`relative transition-all duration-300 overflow-hidden h-35 w-full`}>
                   <Image
-                    src={profile?.logoUrl || section?.medias[0]?.media_url || HopperLogo}
+                    src={section?.medias[0]?.media_url || profile?.logoUrl || HopperLogo}
                     alt="FIORA"
                     width={250}
                     height={250}
@@ -146,7 +150,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                     ${open ? 'w-full h-35 ' : 'w-full h-14 md:h-18'}`}
                 >
                   <Image
-                    src={profile?.logoUrl || section?.medias[0]?.media_url || HopperLogo}
+                    src={section?.medias[0]?.media_url || profile?.logoUrl || HopperLogo}
                     alt="FIORA"
                     width={250}
                     height={250}

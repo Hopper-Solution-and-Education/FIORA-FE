@@ -7,6 +7,7 @@ import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAppSelector } from '@/store';
+import { RootState } from '@/store/rootReducer';
 import { useRouter } from 'next/navigation';
 import useProductFormConfig from '../config/ProductFormConfig';
 import { type ProductFormValues } from '../schema';
@@ -14,14 +15,18 @@ import { type ProductFormValues } from '../schema';
 const ProductForm = () => {
   const router = useRouter();
   const method = useFormContext<ProductFormValues>();
-  const productDetail = useAppSelector((state) => state.productManagement.productDetail);
+  const productDetail = useAppSelector((state: RootState) => state.productManagement.productDetail);
 
   const {
     formState: { isValid, isSubmitting },
   } = method;
 
-  const isUpdatingProduct = useAppSelector((state) => state.productManagement.isUpdatingProduct);
-  const isCreatingProduct = useAppSelector((state) => state.productManagement.isCreatingProduct);
+  const isUpdatingProduct = useAppSelector(
+    (state: RootState) => state.productManagement.isUpdatingProduct,
+  );
+  const isCreatingProduct = useAppSelector(
+    (state: RootState) => state.productManagement.isCreatingProduct,
+  );
 
   const fields = useProductFormConfig();
 

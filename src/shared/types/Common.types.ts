@@ -1,7 +1,7 @@
-import { ComponentType } from 'react';
-import { AnySchema } from 'yup';
 import { Icon } from '@/components/Icon';
 import { Prisma } from '@prisma/client';
+import { ComponentType } from 'react';
+import { AnySchema } from 'yup';
 export interface Response<T> {
   message: string;
   data: T;
@@ -14,6 +14,13 @@ export interface IconsOptions {
 }
 
 export interface GlobalFilters {
+  types?: string[];
+  search?: string;
+  sort?: string;
+  filters: any;
+}
+
+export interface CategoryFilters {
   types?: string[];
   search?: string;
   sort?: string;
@@ -55,6 +62,8 @@ export type OrderByFields = {
   type?: Prisma.SortOrder;
   fromAccount?: Prisma.SortOrder;
   toAccount?: Prisma.SortOrder;
+  fromWallet?: Prisma.SortOrder;
+  toWallet?: Prisma.SortOrder;
   partner?: Prisma.SortOrder;
   amount?: Prisma.SortOrder;
 };

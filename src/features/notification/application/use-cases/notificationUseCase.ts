@@ -1,6 +1,6 @@
-import { prisma, sendBulkEmailUtility } from '@/config';
-import { Messages } from '@/shared/constants/message';
+import { prisma, sendBulkEmailUtility, sendEmailCronJob } from '@/config';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { Messages } from '@/shared/constants/message';
 import { BadRequestError } from '@/shared/lib';
 import { ChannelType, NotificationType } from '@prisma/client';
 import type {
@@ -88,6 +88,59 @@ class NotificationUseCase {
     pageSize: number;
   }> {
     let notifications = (await this.notificationRepository.getNotificationsPagination(
+      0,
+      10000,
+      filters,
+    )) as unknown as NotificationDashboardItem[];
+
+    if (filters && filters.status) {
+      const statusArr = Array.isArray(filters.status) ? filters.status : [filters.status];
+      notifications = notifications.filter((n) => statusArr.includes(n.status));
+    }
+
+    if (search) {
+      const searchLower = search.toLowerCase();
+      notifications = notifications.filter((n) =>
+        DASHBOARD_FIELDS.filter((field) => n[field] !== undefined && n[field] !== null).some(
+          (field) => String(n[field]).toLowerCase().includes(searchLower),
+        ),
+      );
+    }
+
+    const total = notifications.length;
+    const totalPage = Math.ceil(total / pageSize);
+    const data = notifications.slice((page - 1) * pageSize, page * pageSize);
+
+    return {
+      data,
+      total,
+      totalPage,
+      page,
+      pageSize,
+    };
+  }
+
+  async getNotificationsPaginationByUser({
+    page = 1,
+    pageSize = 20,
+    filters = {},
+    search = '',
+    userId,
+  }: {
+    page?: number;
+    pageSize?: number;
+    filters?: any;
+    search?: string;
+    userId: string;
+  }): Promise<{
+    data: NotificationDashboardItem[];
+    total: number;
+    totalPage: number;
+    page: number;
+    pageSize: number;
+  }> {
+    let notifications = (await this.notificationRepository.getNotificationsPaginationByUser(
+      userId,
       0,
       10000,
       filters,
@@ -289,6 +342,29 @@ class NotificationUseCase {
         `Failed to send notification: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
+  }
+
+  async createNotificationCronjob(
+    input: CreateBoxNotificationInput,
+    to: string,
+    username: string,
+    tier_name: string,
+    updated_at: string,
+    user_id: string,
+  ) {
+    const notification = await this.notificationRepository.createBoxNotification(input);
+    const emailResult = await sendEmailCronJob(to, username, tier_name, updated_at);
+
+    await prisma.emailNotificationLogs.create({
+      data: {
+        notificationId: notification.id,
+        userId: user_id,
+        status: emailResult ? 'SENT' : 'FAILED',
+        errorMessage: emailResult ? null : 'Email sending failed',
+        createdBy: null,
+      },
+    });
+    return notification;
   }
 }
 

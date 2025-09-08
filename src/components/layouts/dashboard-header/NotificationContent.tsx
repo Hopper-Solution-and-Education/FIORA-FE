@@ -140,7 +140,7 @@ export function NotificationContent({
       <DropdownMenuContent className="w-80 md:w-96 p-0" align="end" forceMount>
         <Card className="shadow-none border-0">
           <CardHeader className="flex flex-row items-center justify-end pb-2">
-            <Link href="/setting/notification" passHref>
+            <Link href="/notification" passHref>
               <Button variant="link" className="text-sm p-0 h-auto">
                 View All
               </Button>

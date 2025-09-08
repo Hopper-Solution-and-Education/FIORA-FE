@@ -3,7 +3,11 @@ import { Tier } from '@/components/common/charts/scatter-rank-chart/types';
 import { COLORS } from '@/shared/constants/chart';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { setSelectedMembership } from '../../slices';
+import {
+  setIsShowDialogEditThresholdBenefitTier,
+  setSelectedMembership,
+  setTierToEdit,
+} from '../../slices';
 import { createCombinedTierIcons, transformToBalanceTiers, transformToSpentTiers } from '../utils';
 
 const MembershipRankChart = () => {
@@ -38,6 +42,7 @@ const MembershipRankChart = () => {
     return createCombinedTierIcons(balanceTiers, spentTiers, memberships, handleTierClick);
   }, [balanceTiers, spentTiers, memberships]);
 
+  // select item to view in chart
   const [selectedItem, setSelectedItem] = useState<{ balance: number; spent: number } | null>(
     selectedMembership
       ? {
@@ -47,14 +52,39 @@ const MembershipRankChart = () => {
       : null,
   );
 
+  // initial load data when page load
   useEffect(() => {
     if (memberships.length > 0) {
       dispatch(setSelectedMembership(memberships[0]));
     }
   }, [memberships]);
 
+  // handle click spent and balance to edit membership threshold benefit tier
+  const handleClickYAxisRange = (tier: Tier, previousTier: Tier, nextTier: Tier, index: number) => {
+    dispatch(
+      setTierToEdit({
+        selectedTier: tier,
+        nextTier,
+        previousTier,
+        axis: 'balance',
+      }),
+    );
+    dispatch(setIsShowDialogEditThresholdBenefitTier(true));
+  };
+  const handleClickXAxisRange = (tier: Tier, previousTier: Tier, nextTier: Tier, index: number) => {
+    dispatch(
+      setTierToEdit({
+        selectedTier: tier,
+        nextTier,
+        previousTier,
+        axis: 'spent',
+      }),
+    );
+    dispatch(setIsShowDialogEditThresholdBenefitTier(true));
+  };
+
   return (
-    <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-7 rounded-lg">
+    <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-7 rounded-lg min-h-[500px]">
       <ScatterRankingChart
         currentTier={selectedItem || { balance: 0, spent: 0 }}
         balanceTiers={balanceTiers}
@@ -80,6 +110,8 @@ const MembershipRankChart = () => {
         combinedTierIcons={combinedTierIcons}
         isLoading={isLoadingGetMemberships}
         currentId={selectedMembership?.id}
+        onClickXAxisRange={handleClickXAxisRange}
+        onClickYAxisRange={handleClickYAxisRange}
       />
     </div>
   );

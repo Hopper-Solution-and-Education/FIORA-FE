@@ -1,6 +1,7 @@
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { FilterColumn, FilterCriteria } from '@/shared/types/filter.types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
@@ -35,8 +36,24 @@ interface RangeCondition {
   lte?: number;
 }
 
+interface BaseAmountCondition {
+  gte?: number;
+  lte?: number;
+}
+
 interface TypeCondition {
   in?: string[];
+}
+
+interface FilterAndCondition {
+  baseAmount?: BaseAmountCondition;
+  baseCurrency?: string;
+}
+
+interface FilterStructure {
+  type?: TypeCondition;
+  balance?: RangeCondition;
+  AND?: FilterAndCondition[];
 }
 
 // Local FilterParams interface for account filtering
@@ -60,6 +77,8 @@ interface FilterMenuProps {
 const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
   // Get min/max balance values from Redux state (calculated by the API)
   const { minBalance, maxBalance } = useAppSelector((state) => state.account);
+  const { currency: selectedCurrency, baseCurrency } = useAppSelector((state) => state.settings);
+  const { getExchangeAmount } = useCurrencyFormatter();
   const { data: session } = useSession();
   const userId = session?.user?.id || '';
   const dispatch = useAppDispatch();
@@ -95,7 +114,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         }
 
         // Get the nested filters object
-        const filters = (filterCriteria.filters as Record<string, unknown>) || {};
+        const filters = (filterCriteria.filters as FilterStructure) || {};
 
         // Extract account types from filters.type.in
         if (filters.type && typeof filters.type === 'object') {
@@ -122,7 +141,34 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
           ) as string[];
         }
 
-        // Extract balance range
+        // Handle AND array structure for balance (now baseAmount)
+        if (Array.isArray(filters.AND)) {
+          filters.AND.forEach((condition: FilterAndCondition) => {
+            // Handle baseAmount conditions
+            if (condition.baseAmount) {
+              if (condition.baseAmount.gte !== undefined) {
+                // Convert from base currency to selected currency for display
+                const convertedMin = getExchangeAmount({
+                  amount: condition.baseAmount.gte,
+                  fromCurrency: baseCurrency,
+                  toCurrency: selectedCurrency,
+                });
+                currentBalanceMin = convertedMin.convertedAmount;
+              }
+              if (condition.baseAmount.lte !== undefined) {
+                // Convert from base currency to selected currency for display
+                const convertedMax = getExchangeAmount({
+                  amount: condition.baseAmount.lte,
+                  fromCurrency: baseCurrency,
+                  toCurrency: selectedCurrency,
+                });
+                currentBalanceMax = convertedMax.convertedAmount;
+              }
+            }
+          });
+        }
+
+        // Fallback: Extract balance range from old structure (for backward compatibility)
         if (filters.balance && typeof filters.balance === 'object') {
           const balanceFilter = filters.balance as RangeCondition;
           if (typeof balanceFilter.gte === 'number') currentBalanceMin = balanceFilter.gte;
@@ -145,7 +191,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         };
       }
     },
-    [accountStatistics],
+    [accountStatistics, baseCurrency, selectedCurrency, getExchangeAmount],
   );
 
   // Debug function to validate and log filter criteria structure
@@ -277,7 +323,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         onValueChange={(target, value) =>
           handleEditFilter(target === 'minValue' ? 'balanceMin' : 'balanceMax', value)
         }
-        label="Balance Range"
+        label={`Balance Range (${selectedCurrency})`}
         minLabel="Min Balance"
         maxLabel="Max Balance"
         step={DEFAULT_SLIDER_STEP}
@@ -319,16 +365,37 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
 
       // Only add balance filter if different from default
       if (!isBalanceDefault) {
-        result.balance = {
-          gte: params.balanceMin,
-          lte: params.balanceMax,
-        };
+        // Convert balance range to base currency for storage
+        const minBalanceInBaseCurrency = getExchangeAmount({
+          amount: params.balanceMin,
+          fromCurrency: selectedCurrency,
+          toCurrency: baseCurrency,
+        });
+
+        const maxBalanceInBaseCurrency = getExchangeAmount({
+          amount: params.balanceMax,
+          fromCurrency: selectedCurrency,
+          toCurrency: baseCurrency,
+        });
+
+        // Create AND structure with baseAmount and baseCurrency
+        result.AND = [
+          {
+            baseAmount: {
+              gte: minBalanceInBaseCurrency.convertedAmount,
+              lte: maxBalanceInBaseCurrency.convertedAmount,
+            },
+          },
+          {
+            baseCurrency: baseCurrency,
+          },
+        ];
       }
 
       // Return the flat structure - GlobalFilter will wrap it in filters
       return result;
     },
-    [accountStatistics],
+    [accountStatistics, baseCurrency, selectedCurrency, getExchangeAmount],
   );
 
   // Handler to fetch filtered data

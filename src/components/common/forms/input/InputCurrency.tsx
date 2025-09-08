@@ -1,11 +1,18 @@
 import GlobalLabel from '@/components/common/atoms/GlobalLabel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Currency } from '@/shared/types';
-import { cn, formatCurrency } from '@/shared/utils';
-import React, { memo, useEffect, useState } from 'react';
+import { useCurrencyFormatter } from '@/shared/hooks';
+import { cn } from '@/shared/utils';
+import {
+  applyRounding,
+  CURRENCY_CONSTANTS,
+  formatCurrencyNumber,
+  isValidCurrencyAmount,
+  RoundingMode,
+  validateCurrencyInput,
+} from '@/shared/utils/currencyFormat';
+import React, { memo, useState } from 'react';
 import { FieldError } from 'react-hook-form';
-import { formatSuggestionValue } from './utils';
 
 interface InputCurrencyProps {
   value?: number;
@@ -24,7 +31,10 @@ interface InputCurrencyProps {
   classContainer?: string;
   className?: string;
   isFullCurrencyDisplay?: boolean;
+  roundingMode?: RoundingMode;
+  allowNegative?: boolean;
   [key: string]: any;
+  applyExchangeRate?: boolean;
 }
 
 const InputCurrency: React.FC<InputCurrencyProps> = ({
@@ -42,19 +52,17 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   mode = 'onBlur',
   classContainer,
   className,
-  isFullCurrencyDisplay,
+  applyExchangeRate = false,
+  roundingMode = RoundingMode.NORMAL,
+  allowNegative = false,
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
-  const [localValue, setLocalValue] = useState(value ? value.toString() : '');
   const [showSuggestionValue, setShowSuggestionValue] = useState(showSuggestion);
-
-  // Sync local value with form value when not focused
-  useEffect(() => {
-    if (!isFocused) {
-      setLocalValue(value ? formatCurrency(value, currency) : '');
-    }
-  }, [value, currency, isFocused]);
+  const { formatCurrency } = useCurrencyFormatter();
+  const [localValue, setLocalValue] = useState(
+    formatCurrency(value, currency, { applyExchangeRate }),
+  );
 
   const handleFocus = () => {
     setIsFocused(true);
@@ -63,22 +71,43 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Only allow up to 11 digits
-    const newValue = e.target.value.replace(/[^\d.]/g, '');
-    if (newValue.length > 11) return;
+    const inputValue = e.target.value;
 
-    // Update local value as the user types
-    setLocalValue(newValue);
+    // Use helper function to validate and format input
+    const { isValid, formatted } = validateCurrencyInput(inputValue, allowNegative);
+
+    // If input is invalid (exceeds limits), don't update
+    if (!isValid && inputValue !== '') {
+      return;
+    }
+
+    // Update local value with formatted input
+    setLocalValue(formatted);
+
+    // Handle real-time validation and onChange mode
     if (mode === 'onChange') {
-      const parsedValue = parseFloat(newValue);
-      onChange(isNaN(parsedValue) ? 0 : parsedValue);
-    }
-    if (value > 0) {
-      setShowSuggestionValue(true);
-    }
+      const parsedValue = parseFloat(formatted);
+      let finalValue = isNaN(parsedValue) ? 0 : parsedValue;
 
-    if (value >= 1000000000) {
-      setShowSuggestionValue(false);
+      // Additional validation: ensure the number is within valid range
+      if (!isValidCurrencyAmount(finalValue, allowNegative)) {
+        return;
+      }
+
+      // Apply rounding if the input has more than 2 decimal places
+      const decimalPlaces = (formatted.split('.')[1] || '').length;
+      if (decimalPlaces > CURRENCY_CONSTANTS.MAX_DECIMAL_DIGITS) {
+        finalValue = applyRounding(finalValue, roundingMode);
+      }
+
+      onChange(finalValue);
+
+      // Show/hide suggestions based on value (only for positive values)
+      if (finalValue > 0 && finalValue < 1000000000) {
+        setShowSuggestionValue(true);
+      } else {
+        setShowSuggestionValue(false);
+      }
     }
   };
 
@@ -89,10 +118,26 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
 
   const handleBlur = () => {
     setIsFocused(false);
-    // Parse the input to a number
+
+    // Parse the input to a number and validate
     const parsedValue = parseFloat(localValue);
-    // Pass parsed number to form (NaN if invalid, validation will handle it)
-    onChange(isNaN(parsedValue) ? 0 : parsedValue);
+    const finalValue = isNaN(parsedValue) ? 0 : parsedValue;
+
+    // Format the final value to ensure it meets our requirements
+    if (finalValue !== 0 && isValidCurrencyAmount(finalValue, allowNegative)) {
+      // Use helper function to format the number properly with rounding
+      const formattedNumber = formatCurrencyNumber(finalValue, roundingMode);
+      const numericValue = parseFloat(formattedNumber);
+
+      // Update both local value and form value
+      setLocalValue(formattedNumber);
+      onChange(numericValue);
+    } else {
+      // Handle zero or invalid values
+      setLocalValue('');
+      onChange(0);
+    }
+
     if (onBlur) onBlur();
   };
 
@@ -105,7 +150,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
           label
         ))}
       <Input
-        value={isFocused ? localValue : formatCurrency(value, currency, isFullCurrencyDisplay)}
+        value={isFocused ? localValue : formatCurrency(value, currency, { applyExchangeRate })}
         onChange={handleChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
@@ -140,7 +185,10 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
                   className="w-full h-full"
                   onClick={() => handleSuggestionClick(suggestionValue)}
                 >
-                  {formatSuggestionValue(suggestionValue, currency as Currency, true)}
+                  {formatCurrency(suggestionValue, currency, {
+                    shouldShortened: true,
+                    applyExchangeRate,
+                  })}
                 </Button>
               );
             })}

@@ -6,6 +6,7 @@ import budgetSummarySlice from '@/features/home/module/budgets/summary-detail/sl
 import categorySlice from '@/features/home/module/category/slices';
 import membershipSlice from '@/features/home/module/membership/slices';
 import transactionSlice from '@/features/home/module/transaction/slices';
+import createTransactionSlice from '@/features/home/module/transaction/slices/createTransactionSlice';
 import transactionDataSlice from '@/features/home/module/transaction/slices/transactionSlice';
 import walletSlice from '@/features/home/module/wallet/slices';
 import landingSlices from '@/features/landing/slices';
@@ -13,6 +14,7 @@ import { profileApi } from '@/features/profile/store/api/profileApi';
 import landingSettingSlice from '@/features/setting/module/landing/slices';
 import memberShipSettingsSlice from '@/features/setting/module/membership/slices';
 import notificationDashboardSlice from '@/features/setting/module/notification-dashboard/slices';
+import packageFxSlice from '@/features/setting/module/packagefx/slices';
 import partnerManagementSlice from '@/features/setting/module/partner/slices';
 import productManagementSlice from '@/features/setting/module/product/slices';
 import walletSettingSlice from '@/features/setting/module/wallet/slices';
@@ -34,10 +36,12 @@ const reducer = {
   budgetSummary: budgetSummarySlice,
   productManagement: productManagementSlice,
   category: categorySlice,
+  packageFx: packageFxSlice,
   account: accountSlice,
   partner: partnerManagementSlice,
   transaction: transactionSlice,
   transactionData: transactionDataSlice,
+  createTransaction: createTransactionSlice,
   module: moduleReducer,
   financeControl: financeControlSlice,
   memberShipSettings: memberShipSettingsSlice,

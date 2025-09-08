@@ -1,8 +1,8 @@
 import { DEFAULT_CURRENCY } from '@/shared/constants/chart';
+import { useCurrencyFormatter } from '@/shared/hooks';
+import { Currency } from '@/shared/types';
 import { memo } from 'react';
 import { BarItem } from '../charts/nested-bar-chart/type';
-import { formatFIORACurrency } from '@/config/FIORANumberFormat';
-import { Currency } from '@/shared/types';
 
 interface CustomTooltipProps {
   active?: boolean;
@@ -17,7 +17,9 @@ const CustomTooltip = ({
   currency = DEFAULT_CURRENCY,
   tutorialText,
 }: CustomTooltipProps) => {
-  if (!active || !payload || !payload.length) return null;
+  const { formatCurrency } = useCurrencyFormatter();
+
+  if (!active || !payload || !payload.length || !payload[0]?.payload) return null;
 
   const item: BarItem = payload[0].payload;
 
@@ -26,7 +28,7 @@ const CustomTooltip = ({
       <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{item.name}</p>
       <p className="text-xs text-gray-600 dark:text-gray-400">
         {item.type}:{' '}
-        <span className="font-bold">{formatFIORACurrency(item.value, currency as Currency)}</span>
+        <span className="font-bold">{formatCurrency(item.value, currency as Currency)}</span>
       </p>
       {item.parent && (
         <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">

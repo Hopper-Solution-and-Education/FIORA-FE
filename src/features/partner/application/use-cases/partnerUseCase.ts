@@ -2,7 +2,7 @@ import { prisma } from '@/config';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { Messages } from '@/shared/constants/message';
-import { BooleanUtils } from '@/shared/lib';
+import { BadRequestError, BooleanUtils } from '@/shared/lib';
 import { GlobalFilters } from '@/shared/types';
 import { PartnerRangeFilter } from '@/shared/types/partner.types';
 import { buildWhereClause } from '@/shared/utils';
@@ -137,11 +137,11 @@ class PartnerUseCase {
     return partners.filter((partner) => {
       const totalExpense = partner.transactions
         .filter((t: Transaction) => t.type === 'Expense')
-        .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
+        .reduce((sum: number, t: Transaction) => sum + Number(t.baseAmount), 0);
 
       const totalIncome = partner.transactions
         .filter((t: Transaction) => t.type === 'Income')
-        .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
+        .reduce((sum: number, t: Transaction) => sum + Number(t.baseAmount), 0);
 
       const isValidExpense = totalExpense >= totalExpenseMin && totalExpense <= totalExpenseMax;
       const isValidIncome = totalIncome >= totalIncomeMin && totalIncome <= totalIncomeMax;
@@ -250,7 +250,7 @@ class PartnerUseCase {
         where: { id, userId },
       });
       if (!partner) {
-        throw new Error(Messages.PARTNER_NOT_FOUND);
+        throw new BadRequestError(Messages.PARTNER_NOT_FOUND);
       }
 
       const validationData: PartnerValidationData = {
@@ -266,6 +266,7 @@ class PartnerUseCase {
         dob: data.dob ? new Date(data.dob as string | Date) : null,
         parentId: data.parentId as string | null,
         id: id,
+        bankAccount: data.bankAccount as string | null,
       };
 
       const validationErrors = await validatePartnerData(validationData, tx, true);
@@ -289,9 +290,6 @@ class PartnerUseCase {
         if (parentPartner.id === partner.id) {
           throw new Error(Messages.INVALID_PARENT_PARTNER_SELF);
         }
-        // if (parentPartner.children && parentPartner.children.length > 0) {
-        //   throw new Error(Messages.INVALID_PARENT_HIERARCHY);
-        // }
       }
 
       const updateData = {
@@ -306,6 +304,7 @@ class PartnerUseCase {
         address: data.address,
         parentId: data.parentId,
         updatedBy: data.userId || userId,
+        bankAccount: data.bankAccount as string | null,
       };
 
       const updatedPartner = await tx.partner.update({
@@ -322,45 +321,23 @@ class PartnerUseCase {
 
   async createPartner(data: Prisma.PartnerUncheckedCreateInput): Promise<Partner> {
     return prisma.$transaction(async (tx) => {
-      const validationData: PartnerValidationData = {
-        userId: data.userId as string,
-        email: data.email as string | null,
-        phone: data.phone as string | null,
-        taxNo: data.taxNo as string | null,
-        identify: data.identify as string | null,
-        name: data.name as string,
-        description: data.description as string | null,
-        address: data.address as string | null,
-        logo: data.logo as string | null,
-        dob: data.dob ? new Date(data.dob as string | Date) : null,
-        parentId: data.parentId as string | null,
-      };
-
-      const validationErrors = await validatePartnerData(validationData, tx, false);
-
-      if (validationErrors.length > 0) {
-        const errorObject: Record<string, string> = {};
-        validationErrors.forEach((err) => {
-          errorObject[err.field] = err.message;
-        });
-        throw { validationErrors: errorObject };
-      }
-
       const partner = await tx.partner.create({
         data: {
           userId: data.userId as string,
           email: data.email,
           identify: data.identify,
           description: data.description,
+          // bankAccount: data.bankAccount,
           dob: data.dob,
           logo: data.logo,
           taxNo: data.taxNo,
           phone: data.phone,
           name: data.name,
-          address: data.address,
+          address: data.address || null,
           createdBy: data.userId as string,
           updatedBy: data.userId as string,
-          parentId: data.parentId || null,
+          bankAccount: data.bankAccount as string | null,
+          ...(data.parentId && { parentId: data.parentId }),
         },
       });
 

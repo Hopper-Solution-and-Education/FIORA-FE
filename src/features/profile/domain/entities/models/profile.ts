@@ -1,3 +1,5 @@
+import { UserRole } from '@/shared/constants/userRole';
+
 export type UserProfile = {
   id: string;
   name: string | null;
@@ -7,6 +9,19 @@ export type UserProfile = {
   phone?: string | null;
   address?: string | null;
   birthday?: string | null;
+  role?: UserRole;
+  eKYC?: eKYC[];
+};
+
+export type eKYC = {
+  id: string;
+  type: EKYCType;
+  fieldName: string;
+  status: EKYCStatus;
+  createdBy: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type UpdateProfileRequest = Partial<Omit<UserProfile, 'id' | 'email'>> & {
@@ -20,3 +35,48 @@ export type UpdateProfileRequest = Partial<Omit<UserProfile, 'id' | 'email'>> & 
   newAvatar?: File | null;
   newLogo?: File | null;
 };
+
+export enum EKYCStatus {
+  PENDING = 'PENDING',
+  REQUEST = 'REQUEST',
+  APPROVAL = 'APPROVAL',
+  REJECTED = 'REJECTED',
+}
+
+export enum EKYCType {
+  BANK_ACCOUNT = 'BANK_ACCOUNT',
+  CONTACT_INFORMATION = 'CONTACT',
+  IDENTIFICATION_DOCUMENT = 'IDENTIFICATION_DOCUMENT',
+  TAX_INFORMATION = 'TAX_INFORMATION',
+}
+
+// Identification Document Types
+export enum IdentificationDocumentType {
+  PASSPORT = 'PASSPORT',
+  NATIONAL = 'NATIONAL',
+  BUSINESS = 'BUSINESS',
+  TAX = 'TAX',
+}
+
+export interface IdentificationDocumentFormData {
+  idNumber: string;
+  issuedDate: string;
+  issuedPlace: string;
+  idAddress: string;
+  type: IdentificationDocumentType;
+}
+
+export interface IdentificationDocumentPayload {
+  fileFrontId?: string;
+  fileBackId?: string;
+  idAddress?: string;
+  issuedDate?: string;
+  type: IdentificationDocumentType;
+  idNumber: string;
+  filePhotoId?: string;
+  issuedPlace?: string;
+}
+
+export interface IdentificationDocumentProps {
+  isVerified: boolean;
+}

@@ -32,7 +32,7 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
 );
 
 export async function GET(res: NextApiResponse, userId: string) {
-  const kyc = await eKycRepository.getById(userId);
+  const kyc = await eKycRepository.getByUser(userId);
 
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
@@ -48,10 +48,11 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
   const { error } = validateBody(eKYCSchema, req.body);
   if (error) {
     return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
+      .status(RESPONSE_CODE.CONFLICT)
       .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
   }
   const newKyc = await eKycRepository.create({
+    type: req.body.type,
     fieldName: req.body.fieldName,
     status: KYCStatus.PENDING,
     createdBy: userId.toString(),

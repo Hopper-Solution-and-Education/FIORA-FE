@@ -4,9 +4,9 @@ import { ChartLegend, IconDisplay, PositiveAndNegativeV2BarLabel } from '@/compo
 import StackYAxisTick from '@/components/common/atoms/StackYAxisTick';
 import { Icons } from '@/components/Icon';
 import { COLORS, DEFAULT_BUDGET_ICON, DEFAULT_CURRENCY, STACK_KEY } from '@/shared/constants/chart';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
-import { formatter } from '@/shared/lib/charts';
-import { cn, formatCurrency } from '@/shared/utils';
+import { cn } from '@/shared/utils';
 import { useWindowSize } from '@/shared/utils/device';
 import {
   Bar,
@@ -23,20 +23,22 @@ import { StackBarDisplay, TooltipProps } from '../stacked-bar-chart/type';
 import { PositiveNegativeStackBarChartProps } from './type';
 import { processChartData } from './utils';
 
-const PositiveNegativeStackBarChart = ({
-  data = [],
-  title,
-  icon = DEFAULT_BUDGET_ICON,
-  currency = DEFAULT_CURRENCY,
-  callback,
-  className,
-  xAxisFormatter = (value) => formatCurrency(value, currency),
-  tutorialText,
-  legendItems,
-  onClickTitle,
-}: PositiveNegativeStackBarChartProps) => {
+const PositiveNegativeStackBarChart = (props: PositiveNegativeStackBarChartProps) => {
   const { width } = useWindowSize();
   const isMobile = useIsMobile();
+  const { formatCurrency } = useCurrencyFormatter();
+  const {
+    data = [],
+    title,
+    icon = DEFAULT_BUDGET_ICON,
+    currency = DEFAULT_CURRENCY,
+    callback,
+    className,
+    xAxisFormatter = (value) => formatCurrency(value, currency),
+    tutorialText,
+    legendItems,
+    onClickTitle,
+  } = props;
 
   // Process chart data using utility function
   const {
@@ -108,7 +110,7 @@ const PositiveNegativeStackBarChart = ({
         <div className="flex items-center gap-2 text-xs mt-3 px-2 py-1 rounded bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 border border-blue-200 dark:border-blue-700 shadow-inner">
           <span className="inline-flex items-center font-semibold text-blue-700 dark:text-blue-300">
             <Icons.cornerDownRight className="w-4 h-4 mr-1" />
-            Remaining
+            Remaining = Bottom Up - Actual Sum Up =
           </span>
           <span className="font-bold text-blue-800 dark:text-blue-200">
             {formatCurrency(remaining, currency)}
@@ -231,7 +233,7 @@ const PositiveNegativeStackBarChart = ({
                         <PositiveAndNegativeV2BarLabel
                           {...props}
                           entry={entry}
-                          renderValue={formatter(key, displayValue, currency)}
+                          renderValue={formatCurrency(displayValue, currency)}
                         />
                       );
                     }}
@@ -296,7 +298,7 @@ const PositiveNegativeStackBarChart = ({
                         <PositiveAndNegativeV2BarLabel
                           {...props}
                           entry={entry}
-                          renderValue={formatter(key, displayValue, currency)}
+                          renderValue={formatCurrency(displayValue, currency)}
                         />
                       );
                     }}
@@ -368,7 +370,7 @@ const PositiveNegativeStackBarChart = ({
                     <PositiveAndNegativeV2BarLabel
                       {...props}
                       entry={entry}
-                      renderValue={formatter(key, displayValue, currency)}
+                      renderValue={formatCurrency(displayValue, currency)}
                     />
                   );
                 }}

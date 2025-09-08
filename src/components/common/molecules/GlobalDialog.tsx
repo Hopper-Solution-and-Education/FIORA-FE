@@ -8,8 +8,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import DialogIconInfo from '@public/icons/dialog-icon-info.svg';
 import clsx from 'clsx';
 import { Check, X } from 'lucide-react';
+import Image from 'next/image';
 import { ReactNode } from 'react';
 
 type DialogVariant = 'default' | 'info' | 'success' | 'warning' | 'danger';
@@ -35,6 +37,8 @@ type GlobalDialogProps = {
   customLeftButton?: ReactNode;
   customRightButton?: ReactNode;
   isLoading?: boolean;
+  renderContent?: () => ReactNode;
+  type?: 'default' | 'info' | 'success' | 'warning' | 'danger';
 };
 
 const VARIANT_BORDER_MAP: Record<DialogVariant, string> = {
@@ -83,7 +87,24 @@ export const GlobalDialog = ({
   customLeftButton,
   customRightButton,
   isLoading,
+  renderContent,
+  type = 'default',
 }: GlobalDialogProps) => {
+  const Icon = () => {
+    switch (type) {
+      case 'info':
+        return <Image src={DialogIconInfo} alt="logo" width={60} height={60} />;
+      case 'success':
+        return null;
+      case 'warning':
+        return null;
+      case 'danger':
+        return null;
+      default:
+        return null;
+    }
+  };
+
   return (
     <Dialog
       open={open}
@@ -92,17 +113,22 @@ export const GlobalDialog = ({
       <DialogContent
         className={clsx('sm:max-w-lg flex flex-col', VARIANT_BORDER_MAP[variant], className)}
       >
-        <DialogHeader className="flex items-start">
+        <DialogHeader className="flex items-center">
           <div className="text-center">
+            <div className="flex items-center justify-center">
+              <div className="w-16">
+                <Icon />
+              </div>
+            </div>
             {title && <DialogTitle className="text-xl font-bold mb-3">{title}</DialogTitle>}
-            <div className="text-left flex flex-col gap-2">
+            <div className="text-center flex flex-col gap-2">
               {heading && <DialogTitle className="font-normal text-md">{heading}</DialogTitle>}
               {description && <DialogDescription>{description}</DialogDescription>}
             </div>
           </div>
         </DialogHeader>
 
-        {children && <div className="mt-4">{children}</div>}
+        {renderContent ? renderContent() : <div className="mt-4">{children}</div>}
 
         {footer ? (
           footer

@@ -28,7 +28,7 @@ export default function Header() {
   const { announcement, isLoading, show: showAnnouncement, handleClose } = useAnnouncementManager();
 
   const { data: notification, mutate: mutateNotification } = useDataFetch({
-    endpoint: '/api/notification/user',
+    endpoint: '/api/notification/user?unread=true&channel=BOX',
     method: 'GET',
   });
 
@@ -42,7 +42,7 @@ export default function Header() {
       {/* Announcement */}
       {showAnnouncement && announcement?.data?.[0]?.content && !isLoading && (
         <div className="flex items-center justify-between w-full">
-          <MarqueeAnnouncement className="text-sm w-full">
+          <MarqueeAnnouncement className="text-sm w-full text-red-700">
             {announcement?.data?.[0]?.content}
           </MarqueeAnnouncement>
           <Button variant="ghost" size="icon" onClick={handleClose}>

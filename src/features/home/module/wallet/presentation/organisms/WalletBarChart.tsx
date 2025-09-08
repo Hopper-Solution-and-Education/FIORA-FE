@@ -4,8 +4,9 @@ import PositiveAndNegativeBarChartV2 from '@/components/common/charts/positive-n
 import { TwoSideBarItem } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
 import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import { Icons } from '@/components/Icon';
-import { formatFIORACurrency } from '@/config/FIORANumberFormat';
+import { CURRENCY } from '@/shared/constants';
 import { COLORS } from '@/shared/constants/chart';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppSelector } from '@/store';
 import { useMemo } from 'react';
 import { WalletType } from '../../domain/enum';
@@ -15,7 +16,9 @@ const WalletBarChart = () => {
   const { wallets, loading, filterCriteria, frozenAmount } = useAppSelector(
     (state) => state.wallet,
   );
+
   const { filters, search } = filterCriteria;
+  const { formatCurrency } = useCurrencyFormatter();
 
   const filteredWallets = useMemo(() => {
     return filterWallets(wallets || [], filters, search);
@@ -52,8 +55,8 @@ const WalletBarChart = () => {
       data={chartData}
       title=" "
       showTotal={false}
-      currency="FX"
-      labelFormatter={(value) => formatFIORACurrency(value, 'FX')}
+      currency={CURRENCY.FX}
+      labelFormatter={(value) => formatCurrency(value, CURRENCY.FX)}
       legendItems={[
         { name: 'Positive', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
         { name: 'Negative', color: COLORS.DEPS_DANGER.LEVEL_1 },
@@ -76,7 +79,7 @@ const WalletBarChart = () => {
                   color: isPositive ? COLORS.DEPS_SUCCESS.LEVEL_1 : COLORS.DEPS_DANGER.LEVEL_1,
                 }}
               >
-                {formatFIORACurrency(amount, 'FX')}
+                {formatCurrency(amount, 'FX')}
               </span>
             </p>
 
@@ -89,7 +92,7 @@ const WalletBarChart = () => {
                     color: COLORS.DEPS_DISABLE.LEVEL_1,
                   }}
                 >
-                  {formatFIORACurrency(frozenAmount ?? 0, 'FX')}
+                  {formatCurrency(frozenAmount ?? 0, 'FX')}
                 </span>
               </p>
             )}

@@ -1,10 +1,11 @@
-import { eKycRepository } from '@/features/setting/api/infrastructure/repositories/eKycRepository';
+import { prisma } from '@/config';
 import { identificationRepository } from '@/features/setting/api/infrastructure/repositories/indentificationRepository';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
+import { SessionUser } from '@/shared/types/session';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { validateBody } from '@/shared/utils/validate';
 import { identificationDocumentSchema } from '@/shared/validators/identificationValidator';
@@ -13,23 +14,24 @@ import { NextApiRequest, NextApiResponse } from 'next';
 
 export const maxDuration = 30; // 30 seconds
 
-export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId: string) =>
-  errorHandler(
-    async (request, response) => {
-      switch (request.method) {
-        case 'POST':
-          return POST(request, response, userId);
-        case 'GET':
-          return GET(response, userId);
-        default:
-          return response
-            .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-            .json({ error: Messages.METHOD_NOT_ALLOWED });
-      }
-    },
-    req,
-    res,
-  ),
+export default sessionWrapper(
+  (req: NextApiRequest, res: NextApiResponse, userId: string, user: SessionUser) =>
+    errorHandler(
+      async (request, response) => {
+        switch (request.method) {
+          case 'POST':
+            return POST(request, response, userId, user);
+          case 'GET':
+            return GET(response, userId);
+          default:
+            return response
+              .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+              .json({ error: Messages.METHOD_NOT_ALLOWED });
+        }
+      },
+      req,
+      res,
+    ),
 );
 
 export async function GET(res: NextApiResponse, userId: string) {
@@ -45,45 +47,88 @@ export async function GET(res: NextApiResponse, userId: string) {
     .json(createResponse(RESPONSE_CODE.OK, Messages.GET_IDENTIFICATION_SUCCESS, identification));
 }
 
-export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const { error } = validateBody(identificationDocumentSchema, req.body);
+export async function POST(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  userId: string,
+  user: SessionUser,
+) {
+  const { error, value } = validateBody(identificationDocumentSchema, req.body);
+  const {
+    fileFrontId,
+    fileBackId,
+    idAddress,
+    issuedDate,
+    type,
+    idNumber,
+    filePhotoId,
+    issuedPlace,
+    fileLocationId,
+  } = value;
   if (error) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
       .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
   }
-  const { kycId } = req.body;
-  const checkKyc = await eKycRepository.getById(kycId);
-  if (!checkKyc) {
+  const checkVerify = await identificationRepository.getByType(userId, type);
+  if (checkVerify) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, Messages.KYC_NOT_FOUND, error));
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VERIFY_EXIT));
   }
-  if (checkKyc.refId) {
+
+  const checkIdentification = await identificationRepository.checkIdentification(
+    type,
+    idNumber,
+    userId,
+  );
+  if (checkIdentification) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.KYC_CHECK, error));
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VERIFY_EXIT));
   }
-  delete req.body.kycId;
+
+  const attachmentIdsToValidate = [filePhotoId, fileBackId, fileFrontId, fileLocationId].filter(
+    Boolean,
+  ) as string[];
+  if (attachmentIdsToValidate.length > 0) {
+    const found = await prisma.attachment.findMany({
+      where: { id: { in: attachmentIdsToValidate } },
+    });
+    const foundIds = new Set(found.map((a) => a.id));
+    const missing = attachmentIdsToValidate.filter((id) => !foundIds.has(id));
+    if (missing.length > 0) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, 'Invalid attachment id(s)'));
+    }
+  }
   const newIdentification = await identificationRepository.create(
     {
-      ...req.body,
+      filePhoto: filePhotoId ? { connect: { id: filePhotoId } } : undefined,
+      fileBack: fileBackId ? { connect: { id: fileBackId } } : undefined,
+      fileFront: fileFrontId ? { connect: { id: fileFrontId } } : undefined,
+      fileLocation: fileLocationId ? { connect: { id: fileLocationId } } : undefined,
+      idNumber: idNumber,
+      type: type,
+      idAddress: idAddress || '',
+      issuedDate: issuedDate || null,
+      issuedPlace: issuedPlace || '',
       status: KYCStatus.PENDING,
-      userId: userId,
+      User: { connect: { id: userId } },
       createdAt: new Date(),
       updatedAt: new Date(),
       remarks: '',
       id: crypto.randomUUID(),
     },
-    kycId,
-    userId,
+    user,
   );
   return res
     .status(RESPONSE_CODE.CREATED)
     .json(
       createResponse(
         RESPONSE_CODE.CREATED,
-        Messages.CREATE_BANK_ACCOUNT_SUCCESS,
+        Messages.CREATE_IDENTIFICATION_SUCCESS,
         newIdentification,
       ),
     );

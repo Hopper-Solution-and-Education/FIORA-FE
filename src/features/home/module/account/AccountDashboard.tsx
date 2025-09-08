@@ -9,7 +9,7 @@ import { fetchAccounts, fetchParents } from '@/features/home/module/account/slic
 import { mapAccountsToBarItems } from '@/features/home/module/account/utils';
 import { MODULE } from '@/shared/constants';
 import { COLORS } from '@/shared/constants/chart';
-import { formatCurrency } from '@/shared/utils';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -22,6 +22,7 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
   const [showNavigateDialog, setShowNavigateDialog] = useState(false);
   const { accounts, refresh, filterCriteria } = useAppSelector((state) => state.account);
   const { currency } = useAppSelector((state) => state.settings);
+  const { formatCurrency, getExchangeRate } = useCurrencyFormatter();
 
   useEffect(() => {
     dispatch(fetchAccounts(filterCriteria));
@@ -30,8 +31,8 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
 
   const chartData: BarItem[] = useMemo(() => {
     if (!accounts.data) return [];
-    return mapAccountsToBarItems(accounts.data, currency);
-  }, [accounts.data, currency]);
+    return mapAccountsToBarItems(accounts.data, currency, getExchangeRate);
+  }, [accounts.data, currency, getExchangeRate]);
 
   type Depth = 0 | 1 | 2;
 

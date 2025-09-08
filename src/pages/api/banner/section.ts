@@ -269,10 +269,12 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
       }
     }
 
-    // Fetch the updated section with its medias
+    // Fetch the updated section with its medias in a stable order
     return await prisma.section.findUnique({
       where: { id },
-      include: { medias: { include: { mediaReviewUser: true } } },
+      include: {
+        medias: { include: { mediaReviewUser: true }, orderBy: { media_order: 'asc' } },
+      },
     });
   });
 

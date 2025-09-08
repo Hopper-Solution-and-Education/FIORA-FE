@@ -18,6 +18,7 @@ const usePartnerUploadImageConfig = (mediaPath: string) => {
       label="Upload Partner Image"
       disabled={isSubmitting || isLoadingSaveChange}
       required
+      className="h-100 w-100"
     />,
   ];
 

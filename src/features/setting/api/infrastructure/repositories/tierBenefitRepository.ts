@@ -11,6 +11,10 @@ class TierBenefitRepository implements ITierBenefitRepository {
   }
 
   async createTierBenefit(tierBenefit: TierBenefitScheme, userId: string): Promise<TierBenefit> {
+    if (!tierBenefit.tierId || !tierBenefit.benefitId) {
+      throw new Error('tierId and benefitId are required');
+    }
+
     return prisma.tierBenefit.create({
       data: {
         tierId: tierBenefit.tierId,

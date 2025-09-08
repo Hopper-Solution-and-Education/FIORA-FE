@@ -11,6 +11,9 @@ const membershipSlice = createSlice({
     setMemberships: (state, action: PayloadAction<Membership[]>) => {
       state.memberships = action.payload;
     },
+    setSelectedTier: (state, action: PayloadAction<Membership | null>) => {
+      state.selectedTier = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -28,5 +31,5 @@ const membershipSlice = createSlice({
 });
 
 export * from './types';
-export const { resetMembershipState, setMemberships } = membershipSlice.actions;
+export const { resetMembershipState, setMemberships, setSelectedTier } = membershipSlice.actions;
 export default membershipSlice.reducer;

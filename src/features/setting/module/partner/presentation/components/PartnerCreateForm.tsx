@@ -110,6 +110,7 @@ export default function PartnerCreateForm() {
       placeholder="contact@fiora.com"
       type="email"
     />,
+    <InputField key="bankAccount" name="bankAccount" label="Bank Account" type="text" />,
   ];
 
   const handleSubmit = async (data: PartnerFormValues) => {

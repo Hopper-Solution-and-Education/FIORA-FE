@@ -16,9 +16,8 @@ export class GetSectionUseCase {
   }
 
   private handleProcessResponse(data: ISection): ISection {
-    data.medias.sort((a, b) => {
-      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-    });
+    // Preserve the explicit order set by the user
+    data.medias.sort((a, b) => a.media_order - b.media_order);
     return data;
   }
 }

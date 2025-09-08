@@ -123,9 +123,21 @@ export const FioraSystem = () => {
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
-  const baseSystemWidth = 1200;
+  // Chỉ render component khi đã fetch xong data
+  if (isLoading || !section) {
+    return null;
+  }
 
-  const scaleFactor = containerSize > 0 ? containerSize / baseSystemWidth : 1;
+  const baseSystemWidth = 1200;
+  const maxOrbitRadius = 500; // Radius lớn nhất từ orbitLevels
+  const padding = 40; // Padding để tránh sát mép màn hình
+
+  // Tính toán scale factor để đảm bảo tất cả orbits vừa trong màn hình
+  const maxRequiredWidth = maxOrbitRadius * 2 + padding;
+  const scaleFactor =
+    containerSize > 0
+      ? Math.min(containerSize / baseSystemWidth, (containerSize - padding) / maxRequiredWidth)
+      : 1;
 
   const scaledOrbitLevels = orbitLevels.map((orbit) => ({
     ...orbit,
@@ -140,23 +152,21 @@ export const FioraSystem = () => {
   const scaledCategoryLabels = categoryLabels.map((label, index) => ({
     ...label,
     radius: label.radius * scaleFactor,
-    iconSrc: section?.medias?.[index]?.media_url ?? label.iconSrc,
-    label: section?.medias?.[index]?.description ?? label.label,
-    href: section?.medias?.[index]?.redirect_url ?? label.href,
+    iconSrc: section?.medias?.[index + 1]?.media_url ?? label.iconSrc,
+    label: section?.medias?.[index + 1]?.description ?? label.label,
+    href: section?.medias?.[index + 1]?.redirect_url ?? label.href,
   }));
 
+  const fioraLogo = section?.medias?.[0]?.media_url;
+
   return (
-    <section className="mx-auto font-sans">
+    <section className="font-sans pt-8 sm:pt-12 md:pt-0 lg:pt-0 lg:mt-2">
       <div className="mx-auto">
-        <div className="pt-20 sm:pt-10 md:pt-14 lg:pt-20">
-          <div className="mx-auto max-w-3xl text-center">
-            {isLoading ? (
-              <div className="h-10 sm:h-12 w-3/4 mx-auto bg-gray-200 rounded animate-pulse" />
-            ) : (
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">
-                {section?.name}
-              </h1>
-            )}
+        <div>
+          <div className="mx-auto max-w-3xl text-center -mb-2">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">
+              {section?.name}
+            </h1>
           </div>
 
           <div className="flex justify-center relative">
@@ -175,13 +185,27 @@ export const FioraSystem = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
               >
-                <Image
-                  src="https://cdn.pixabay.com/photo/2017/09/12/06/26/home-2741413_960_720.png"
-                  alt="Fiora Logo"
-                  width={100 * scaleFactor}
-                  height={100 * scaleFactor}
-                  className="rounded-full object-contain"
-                />
+                {fioraLogo ? (
+                  fioraLogo.startsWith('http') ? (
+                    <Image
+                      src={fioraLogo}
+                      alt="Fiora Logo"
+                      width={120 * scaleFactor}
+                      height={120 * scaleFactor}
+                      className="rounded-full object-contain"
+                    />
+                  ) : (
+                    <Icons.dashboard className="w-[100%] h-[100%] text-white" />
+                  )
+                ) : (
+                  <Image
+                    src="https://cdn.pixabay.com/photo/2017/09/12/06/26/home-2741413_960_720.png"
+                    alt="Fiora Logo"
+                    width={120 * scaleFactor}
+                    height={120 * scaleFactor}
+                    className="rounded-full object-contain"
+                  />
+                )}
               </motion.div>
 
               {scaledOrbitLevels.map((orbit) => {

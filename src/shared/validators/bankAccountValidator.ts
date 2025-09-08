@@ -31,11 +31,6 @@ export const bankAccountSchema = Joi.object({
   }),
 
   remarks: Joi.string().optional().messages({}),
-
-  kycId: Joi.string().uuid().required().messages({
-    'string.guid': 'refId must be a valid UUID',
-    'string.empty': 'Address is required',
-  }),
 });
 
 export const editBankAccountSchema = Joi.object({

@@ -1,4 +1,3 @@
-import { Currency } from '@prisma/client';
 import Joi from 'joi';
 import { excludeEmojiPattern } from '../constants';
 
@@ -39,14 +38,14 @@ export const productBodySchema = Joi.object({
   type: Joi.string().required().messages({
     'any.required': 'Product type is required',
   }),
-  currency: Joi.string().valid(Currency.VND, Currency.USD).optional().messages({
+  currency: Joi.string().optional().messages({
     'any.only': 'Product currency must be either VND or USD',
   }),
-  price: Joi.number().min(0).required().messages({
+  price: Joi.number().required().messages({
     'number.base': 'Price must be a number',
     'any.required': 'Price is required',
   }),
-  tax_rate: Joi.number().optional().allow(null).min(0).max(100).messages({
+  tax_rate: Joi.number().optional().allow(null).max(100).messages({
     'number.base': 'Tax rate must be a number',
     'number.min': 'Tax rate must be greater than 0',
     'number.max': 'Tax rate must be smaller than or equal 100',
@@ -80,11 +79,11 @@ export const productUpdateBodySchema = Joi.object({
   type: Joi.string().optional().messages({
     'any.required': 'Product type is required',
   }),
-  price: Joi.number().min(0).optional().messages({
+  price: Joi.number().optional().messages({
     'number.base': 'Price must be a number',
     'any.required': 'Price is required',
   }),
-  tax_rate: Joi.number().optional().allow('').min(0).max(100).messages({
+  tax_rate: Joi.number().optional().allow('').max(100).messages({
     'number.base': 'Tax rate must be a number',
     'number.min': 'Tax rate must be greater than 0',
     'number.max': 'Tax rate must be smaller than or equal 100',

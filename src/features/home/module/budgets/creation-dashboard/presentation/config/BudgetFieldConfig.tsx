@@ -7,9 +7,10 @@ import {
   TextareaField,
 } from '@/components/common/forms';
 import IconSelectUpload from '@/components/common/forms/select/IconSelectUpload';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppSelector } from '@/store';
-import { Currency } from '@prisma/client';
 import { useParams } from 'next/navigation';
+import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { BudgetCreationFormValues } from '../schema';
 
@@ -18,10 +19,27 @@ const useBudgetFieldConfig = () => {
     formState: { isSubmitting },
     watch,
   } = useFormContext<BudgetCreationFormValues>();
+  const { year: budgetYear } = useParams() as { year: string };
   const isLoadingCreateBudget = useAppSelector((state) => state.budgetControl.isCreatingBudget);
   const isDisabledField = isSubmitting || isLoadingCreateBudget;
   const currentYear = new Date().getFullYear();
-  const { year: budgetYear } = useParams() as { year: string };
+
+  const { exchangeRates } = useCurrencyFormatter();
+  // Generate options from fetched data or fallback to default
+  const currencyOptions = useMemo(() => {
+    if (Object.keys(exchangeRates).length > 0) {
+      // Map the fetched data to the expected format using the correct API structure
+      return Object.keys(exchangeRates)
+        .filter((currency) => currency !== 'FX')
+        .map((currency) => ({
+          value: currency, // Use 'name' field (USD, VND, FX)
+          label: `${currency} (${exchangeRates[currency].suffix})`, // Show both name and symbol
+        }));
+    }
+
+    // Fallback to default options if data is not available
+    return [{ value: 'none', label: 'No currencies available', disabled: true }];
+  }, [exchangeRates]);
 
   const fields = [
     <IconSelectUpload key="icon" name="icon" required disabled={isDisabledField} />,
@@ -35,14 +53,12 @@ const useBudgetFieldConfig = () => {
       isYearDisabled={(year) => (budgetYear ? false : year < currentYear)}
     />,
     <SelectField
-      options={Object.entries(Currency)
-        .filter(([key]) => key !== 'FX')
-        .map(([key, value]) => ({ label: key, value }))}
+      options={currencyOptions}
       key="currency"
       name="currency"
       label="Currency"
       placeholder="Select Currency"
-      disabled
+      disabled={isDisabledField}
       noneValue={false}
     />,
     <InputCurrency

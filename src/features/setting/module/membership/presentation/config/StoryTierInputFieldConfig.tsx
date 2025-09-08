@@ -1,8 +1,8 @@
 import { FormConfig, TextareaField } from '@/components/common/forms';
 import { cn } from '@/shared/utils';
+import { useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
 import { EditMemberShipFormValues } from '../schema/editMemberShip.schema';
-import { useAppSelector } from '@/store';
 
 const StoryTierInputFieldConfig = () => {
   const methods = useFormContext<EditMemberShipFormValues>();
@@ -15,14 +15,7 @@ const StoryTierInputFieldConfig = () => {
     <TextareaField
       key="story"
       name="story"
-      className={cn(
-        'h-full min-h-44',
-        'text-sm',
-        'sm:text-sm',
-        'md:text-base',
-        'lg:text-md',
-        methods.formState.errors?.story && 'border-red-500',
-      )}
+      className={cn('h-72', 'text-sm', methods.formState.errors?.story && 'border-red-500')}
       placeholder="Tier story"
       disabled={isLoadingUpsertMembership}
     />,

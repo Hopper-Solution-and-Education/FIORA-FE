@@ -33,11 +33,6 @@ const baseSchema = Joi.object({
     'any.required': 'Address is required',
   }),
 
-  kycId: Joi.string().uuid().required().messages({
-    'string.guid': 'refId must be a valid UUID',
-    'string.empty': 'Address is required',
-  }),
-
   remarks: Joi.string().allow('', null).optional(),
 
   fileFrontId: Joi.string().uuid().optional().allow(null),
@@ -85,6 +80,25 @@ export const identificationDocumentSchema = baseSchema
       fileLocationId: Joi.string().uuid().required().messages({
         'any.required': 'At least one office address photo is required',
       }),
+    }),
+  })
+  .when(Joi.object({ type: IdentificationType.TAX }).unknown(), {
+    then: Joi.object({
+      idNumber: Joi.string().max(100).required().messages({
+        'string.empty': 'ID number is required',
+        'string.max': 'ID number must be at most 100 characters',
+        'any.required': 'ID number is required',
+      }),
+      filePhotoId: Joi.string().uuid().required().messages({
+        'any.required': 'Portrait photo is required',
+      }),
+      // For TAX identification, other fields are not needed
+      issuedDate: Joi.any().optional().strip(),
+      issuedPlace: Joi.any().optional().strip(),
+      idAddress: Joi.any().optional().strip(),
+      fileFrontId: Joi.any().optional().strip(),
+      fileBackId: Joi.any().optional().strip(),
+      fileLocationId: Joi.any().optional().strip(),
     }),
   });
 

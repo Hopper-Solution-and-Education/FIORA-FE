@@ -85,6 +85,7 @@ export const updatePartnerSchema = yup.object({
       return value.length <= 500;
     }),
   parentId: yup.string().nullable().notRequired(),
+  bankAccount: yup.string().nullable().notRequired(),
 });
 
 export const defaultUpdatePartnerFormValue = {
@@ -98,6 +99,7 @@ export const defaultUpdatePartnerFormValue = {
   phone: null,
   description: null,
   parentId: null,
+  bankAccount: null,
 };
 
 export type UpdatePartnerFormValues = yup.InferType<typeof updatePartnerSchema>;

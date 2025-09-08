@@ -1,9 +1,11 @@
 import { decorate, injectable } from 'inversify';
 import {
-  AddBenefitTierRequest,
-  AddBenefitTierResponse,
+  AddUpdateBenefitTierRequest,
+  AddUpdateBenefitTierResponse,
   DeleteBenefitTierRequest,
   DeleteBenefitTierResponse,
+  EditThresholdBenefitRequest,
+  EditThresholdBenefitResponse,
   GetListMembershipsRequest,
   GetListMembershipsResponse,
   UpsertMembershipRequest,
@@ -15,8 +17,9 @@ import { MemberMapper } from '../mapper';
 export interface IMembershipRepository {
   getListMemberships(request: GetListMembershipsRequest): Promise<GetListMembershipsResponse>;
   upsertMembership(request: UpsertMembershipRequest): Promise<UpsertMembershipResponse>;
-  addBenefitTier(request: AddBenefitTierRequest): Promise<AddBenefitTierResponse>;
+  addBenefitTier(request: AddUpdateBenefitTierRequest): Promise<AddUpdateBenefitTierResponse>;
   deleteBenefitTier(request: DeleteBenefitTierRequest): Promise<DeleteBenefitTierResponse>;
+  editThresholdBenefit(request: EditThresholdBenefitRequest): Promise<EditThresholdBenefitResponse>;
 }
 
 export class MembershipRepository implements IMembershipRepository {
@@ -36,9 +39,11 @@ export class MembershipRepository implements IMembershipRepository {
     return MemberMapper.toUpsertMembershipResponse(response);
   }
 
-  async addBenefitTier(request: AddBenefitTierRequest): Promise<AddBenefitTierResponse> {
+  async addBenefitTier(
+    request: AddUpdateBenefitTierRequest,
+  ): Promise<AddUpdateBenefitTierResponse> {
     const requestDTO = MemberMapper.toAddBenefitTierRequest(request);
-    const response = await this.membershipAPI.addBenefitTier(requestDTO);
+    const response = await this.membershipAPI.addUpdateBenefitTier(requestDTO);
     return MemberMapper.toAddBenefitTierResponse(response);
   }
 
@@ -46,6 +51,14 @@ export class MembershipRepository implements IMembershipRepository {
     const requestDTO = MemberMapper.toDeleteBenefitTierRequest(request);
     const response = await this.membershipAPI.deleteBenefitTier(requestDTO);
     return MemberMapper.toDeleteBenefitTierResponse(response);
+  }
+
+  async editThresholdBenefit(
+    request: EditThresholdBenefitRequest,
+  ): Promise<EditThresholdBenefitResponse> {
+    const requestDTO = MemberMapper.toEditThresholdBenefitRequest(request);
+    const response = await this.membershipAPI.editThresholdBenefit(requestDTO);
+    return MemberMapper.toEditThresholdBenefitResponse(response);
   }
 }
 

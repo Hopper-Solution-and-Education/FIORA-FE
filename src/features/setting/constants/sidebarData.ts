@@ -42,4 +42,10 @@ export const settingNavItems: NavItem[] = [
     icon: 'bell',
     isActive: false,
   },
+  {
+    title: 'Package FX',
+    url: '/setting/packagefx',
+    icon: 'package',
+    isActive: false,
+  },
 ];
