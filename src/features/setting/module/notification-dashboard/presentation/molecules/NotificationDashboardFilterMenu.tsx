@@ -205,7 +205,7 @@ const NotificationDashboardFilterMenu = ({
             placeholder="Select notify to"
           />
         ),
-        column: FilterColumn.LEFT,
+        column: FilterColumn.RIGHT,
         order: 3,
       },
       {
@@ -222,44 +222,6 @@ const NotificationDashboardFilterMenu = ({
         ),
         column: FilterColumn.RIGHT,
         order: 0,
-      },
-      {
-        key: 'sender',
-        component: (
-          <MultiSelectFilter
-            options={
-              filterOptions?.sender.map((item) => ({
-                label: item,
-                value: item,
-              })) || []
-            }
-            selectedValues={localFilter.sender}
-            onChange={(values) => handleLocalFilterChange('sender', values)}
-            label="Sender"
-            placeholder="Select sender"
-          />
-        ),
-        column: FilterColumn.RIGHT,
-        order: 1,
-      },
-      {
-        key: 'recipients',
-        component: (
-          <MultiSelectFilter
-            options={
-              filterOptions?.recipient.map((item) => ({
-                label: item,
-                value: item,
-              })) || []
-            }
-            selectedValues={localFilter.recipients}
-            onChange={(values) => handleLocalFilterChange('recipients', values)}
-            label="Recipients"
-            placeholder="Select recipients"
-          />
-        ),
-        column: FilterColumn.RIGHT,
-        order: 2,
       },
     ],
     [localFilter, dateRange, handleLocalFilterChange, handleDateRangeChange, filterOptions],
