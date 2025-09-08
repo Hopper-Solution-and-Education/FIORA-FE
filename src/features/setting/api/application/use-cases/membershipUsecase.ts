@@ -110,7 +110,7 @@ class MembershipSettingUseCase {
           });
 
           if (!updatedMembershipTier) {
-            throw new Error(Messages.MEMBERSHIP_TIER_CREATE_FAILED);
+            throw new BadRequestError(Messages.MEMBERSHIP_TIER_CREATE_FAILED);
           }
 
           // Create many - many table relationship of tierBenefits with membershipBenefit
@@ -122,7 +122,7 @@ class MembershipSettingUseCase {
               });
 
               if (!membershipBenefit) {
-                throw new Error(Messages.MEMBERSHIP_BENEFIT_SLUG_NAME_NOT_FOUND);
+                throw new BadRequestError(Messages.MEMBERSHIP_BENEFIT_SLUG_NAME_NOT_FOUND);
               }
 
               const newTierBenefit = await tx.tierBenefit.upsert({
@@ -156,11 +156,11 @@ class MembershipSettingUseCase {
               });
 
               if (!newTierBenefit) {
-                throw new Error(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
+                throw new BadRequestError(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
               }
 
               if (!newTierBenefit) {
-                throw new Error(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
+                throw new BadRequestError(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
               }
 
               const newTierBenefitWithBenefit = {
@@ -187,12 +187,12 @@ class MembershipSettingUseCase {
     } catch (error: any) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new Error(Messages.MEMBERSHIP_TIER_ALREADY_EXISTS);
+          throw new BadRequestError(Messages.MEMBERSHIP_TIER_ALREADY_EXISTS);
         } else {
-          throw new Error(error.message || Messages.INTERNAL_ERROR);
+          throw new BadRequestError(error.message || Messages.INTERNAL_ERROR);
         }
       }
-      throw new Error(error.message || Messages.INTERNAL_ERROR);
+      throw new BadRequestError(error.message || Messages.INTERNAL_ERROR);
     }
   }
 
@@ -245,7 +245,7 @@ class MembershipSettingUseCase {
 
       return memberShipListWithBenefit;
     } catch (error) {
-      throw new Error(error instanceof Error ? error.message : Messages.INTERNAL_ERROR);
+      throw new BadRequestError(error instanceof Error ? error.message : Messages.INTERNAL_ERROR);
     }
   }
 
@@ -405,7 +405,7 @@ class MembershipSettingUseCase {
         nextBalanceTier: nextBalanceTierWithBenefit ?? [],
       };
     } catch (error) {
-      throw new Error(error instanceof Error ? error.message : Messages.INTERNAL_ERROR);
+      throw new BadRequestError(error instanceof Error ? error.message : Messages.INTERNAL_ERROR);
     }
   }
 
@@ -461,7 +461,7 @@ class MembershipSettingUseCase {
 
     // If it would touch > 1 distinct neighbor tiers (on the same axis)
     if (overlapTiers.length > 3) {
-      throw new ConflictError('Change would affect more than one neighboring tier; rejected.');
+      throw new BadRequestError('Change would affect more than one neighboring tier; rejected.');
     }
 
     // Identify immediate neighbors by current edges

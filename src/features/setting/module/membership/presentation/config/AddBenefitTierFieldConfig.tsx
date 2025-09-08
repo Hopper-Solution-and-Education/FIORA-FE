@@ -1,6 +1,7 @@
 'use client';
 
-import { InputField, SelectField, TextareaField } from '@/components/common/forms';
+import { InputField, TextareaField } from '@/components/common/forms';
+import { RadioField } from '@/components/common/forms/radio';
 import { useAppSelector } from '@/store';
 import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -44,6 +45,16 @@ const useAddBenefitTierFieldConfig = () => {
       required
       disabled={isSubmitting || isLoadingAddUpdateBenefitTier}
     />,
+    <InputField
+      key="value"
+      name="value"
+      label="Value"
+      placeholder="Benefit Tier Value"
+      required
+      type="number"
+      maxLength={11}
+      disabled={isSubmitting || isLoadingAddUpdateBenefitTier}
+    />,
     <TextareaField
       key="description"
       name="description"
@@ -54,16 +65,17 @@ const useAddBenefitTierFieldConfig = () => {
     <InputField
       key="suffix"
       name="suffix"
-      placeholder="Suffix"
-      label="Suffix"
+      placeholder="Benefit Unit"
+      label="Benefit Unit"
       required
       disabled={isSubmitting || isLoadingAddUpdateBenefitTier}
     />,
-    <SelectField
+    <RadioField
       key="mode"
       name="mode"
-      label="Mode"
-      placeholder="Mode"
+      label="Create Mode"
+      placeholder="Create Mode"
+      orientation="horizontal"
       required
       options={createMemberShipMode.map((mode) => ({
         label: formatLabel(mode),

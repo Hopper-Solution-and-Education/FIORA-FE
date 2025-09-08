@@ -42,7 +42,7 @@ export function NotificationDetails({
 
       <div className="grid grid-cols-2 gap-y-6 gap-x-10">
         <div>
-          <b>Title</b>
+          <b>Subject</b>
           <p className="text-sm ">{data?.title}</p>
         </div>
         <div>

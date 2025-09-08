@@ -28,6 +28,7 @@ interface UploadFieldProps {
   className?: string;
   disabled?: boolean;
   size?: 'small' | 'medium' | 'large';
+  containerClassName?: string;
   [key: string]: any;
 }
 
@@ -47,7 +48,8 @@ const UploadField: React.FC<UploadFieldProps> = ({
   maxSize = 5, // Default to 5MB
   className,
   disabled,
-  size = 'medium',
+  size = 'large',
+  containerClassName,
   ...props
 }) => {
   const [preview, setPreview] = useState<string | null>(null);
@@ -168,13 +170,15 @@ const UploadField: React.FC<UploadFieldProps> = ({
   };
 
   return (
-    <div className={cn('space-y-3', className)}>
+    <div className={cn('space-y-3', containerClassName)}>
       {label && <GlobalLabel text={label} required={required} htmlFor={id} />}
       <div
         className={cn(
-          'relative overflow-hidden border-2 border-dashed rounded-lg ',
+          'relative overflow-hidden border-2 border-dashed rounded-lg',
           size === 'small' && 'h-32 w-32',
+          size === 'medium' && 'h-48 w-48',
           size === 'large' && 'h-100 w-100',
+          className,
         )}
       >
         <label
@@ -206,7 +210,8 @@ const UploadField: React.FC<UploadFieldProps> = ({
           {preview ? (
             <div
               className={cn(
-                'relative w-full h-full',
+                'relative w-full h-full flex items-center justify-center',
+                // Default preview sizes
                 size === 'small' && 'w-32 h-32',
                 size === 'medium' && 'w-48 h-48',
                 size === 'large' && 'w-full h-72',
@@ -214,7 +219,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
             >
               <div
                 className={cn(
-                  'w-full h-full overflow-hidden',
+                  'relative max-w-full max-h-full',
                   currentShape === 'circle' ? 'rounded-full' : 'rounded-md',
                 )}
               >
@@ -224,10 +229,17 @@ const UploadField: React.FC<UploadFieldProps> = ({
                   width={260}
                   height={260}
                   className={cn(
-                    'object-cover border border-primary/10 transition-all duration-300 transform group-hover:scale-105',
-                    'shadow-[0_4px_20px_rgba(0,0,0,0.08)] w-full h-full',
+                    'object-contain border border-primary/10 transition-all duration-300 transform group-hover:scale-105',
+                    'shadow-[0_4px_20px_rgba(0,0,0,0.08)]',
+                    // Ensure image fits within container
+                    'max-w-full max-h-full',
                   )}
-                  style={{ objectFit: 'contain' }}
+                  style={{
+                    width: 'auto',
+                    height: 'auto',
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                  }}
                 />
               </div>
               {!disabled && (
