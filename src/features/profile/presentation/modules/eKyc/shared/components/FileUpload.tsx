@@ -14,6 +14,7 @@ interface FileUploadProps {
   isLoading?: boolean;
   placeholder?: string;
   maxSizeText?: string;
+  filePhotoUrl?: string | null;
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({
@@ -28,6 +29,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   isLoading = false,
   placeholder = 'Upload your document',
   maxSizeText = 'Drag and drop or click to browse (JPG, PNG, or PDF, max 5MB)',
+  filePhotoUrl,
 }) => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -65,7 +67,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         <div className="max-w-full">
           <div
             className={`border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 ${
-              uploadedFile
+              uploadedFile || filePhotoUrl
                 ? 'border-green-300 bg-green-50'
                 : 'border-muted-foreground/25 hover:border-muted-foreground/50 hover:bg-muted/20'
             }`}
@@ -82,14 +84,16 @@ const FileUpload: React.FC<FileUploadProps> = ({
               htmlFor={`file-upload-${title.toLowerCase().replace(/\s+/g, '-')}`}
               className="cursor-pointer"
             >
-              {uploadedFile ? (
+              {uploadedFile || filePhotoUrl ? (
                 <div className="space-y-3">
                   <CheckCircle className="h-12 w-12 mx-auto text-green-600" />
                   <div>
                     <p className="text-sm font-medium text-green-800">
                       File uploaded successfully!
                     </p>
-                    <p className="text-xs text-green-600 mt-1">{uploadedFile.name}</p>
+                    <p className="text-xs text-green-600 mt-1">
+                      {uploadedFile?.name || filePhotoUrl}
+                    </p>
                   </div>
                   <Button variant="outline" size="sm" className="mt-2" disabled={isLoading}>
                     Replace File

@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { FormField } from '@/features/profile/shared/components';
+import { FormField } from '@/features/profile/presentation/modules/eKyc/shared/components';
 import { FileText, HelpCircle } from 'lucide-react';
 
 interface TaxDetailsFormProps {

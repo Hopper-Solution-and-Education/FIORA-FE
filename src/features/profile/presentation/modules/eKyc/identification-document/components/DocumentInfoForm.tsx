@@ -24,6 +24,7 @@ interface DocumentInfoFormProps {
   isLoading: boolean;
   isSubmitting: boolean;
   isLoadingData: boolean;
+  disabled?: boolean;
 }
 
 const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({
@@ -32,6 +33,7 @@ const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({
   isLoading,
   isSubmitting,
   isLoadingData,
+  disabled = false,
 }) => {
   return (
     <Card>
@@ -61,7 +63,7 @@ const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({
           <Select
             value={formData.type}
             onValueChange={(value: IdentificationDocumentType) => onInputChange('type', value)}
-            disabled={isSubmitting || isLoadingData}
+            disabled={isSubmitting || isLoadingData || disabled}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select document type" />
@@ -84,7 +86,7 @@ const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({
               placeholder="Enter document number"
               value={formData.idNumber}
               onChange={(e) => onInputChange('idNumber', e.target.value)}
-              disabled={isLoading}
+              disabled={isLoading || disabled}
             />
           </div>
           <div className="space-y-2">
@@ -95,7 +97,7 @@ const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({
               required
               value={formData.issuedDate ? new Date(formData.issuedDate) : undefined}
               onChange={(e) => onInputChange('issuedDate', e?.toISOString() || '')}
-              disabled={isLoading}
+              disabled={isLoading || disabled}
             />
           </div>
         </div>
@@ -109,7 +111,7 @@ const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({
             placeholder="Enter the issuing authority or location"
             value={formData.issuedPlace}
             onChange={(e) => onInputChange('issuedPlace', e.target.value)}
-            disabled={isLoading}
+            disabled={isLoading || disabled}
           />
         </div>
 
@@ -122,7 +124,7 @@ const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({
             placeholder="Enter address as shown on document"
             value={formData.idAddress}
             onChange={(e) => onInputChange('idAddress', e.target.value)}
-            disabled={isLoading}
+            disabled={isLoading || disabled}
           />
         </div>
       </CardContent>

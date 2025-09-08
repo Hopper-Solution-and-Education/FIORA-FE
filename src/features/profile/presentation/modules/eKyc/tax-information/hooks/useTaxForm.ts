@@ -1,8 +1,11 @@
 'use client';
 
-import { IdentificationDocumentType } from '@/features/profile/domain/entities/models/profile';
 import {
-  useGetTaxInformationQuery,
+  eKYC,
+  IdentificationDocumentType,
+} from '@/features/profile/domain/entities/models/profile';
+import {
+  useGetIdentificationDocumentQuery,
   useSubmitIdentificationDocumentMutation,
   useUploadAttachmentMutation,
 } from '@/features/profile/store/api/profileApi';
@@ -11,15 +14,22 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface UseTaxFormProps {
-  isVerified: boolean;
+  eKYCData: eKYC;
+  setImageUrlState: (key: string, url: string | null) => void;
 }
 
-export const useTaxForm = ({ isVerified }: UseTaxFormProps) => {
+export const useTaxForm = ({ eKYCData, setImageUrlState }: UseTaxFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [taxId, setTaxId] = useState('');
 
   // RTK Query hooks
-  const { data: existingData, isLoading: isLoadingData } = useGetTaxInformationQuery();
+  const { data: existingData, isLoading: isLoadingData } = useGetIdentificationDocumentQuery(
+    undefined,
+    {
+      skip: !eKYCData,
+    },
+  );
+
   const [uploadAttachmentMutation] = useUploadAttachmentMutation();
   const [submitDocument, { isLoading: isSubmitting }] = useSubmitIdentificationDocumentMutation();
 
@@ -30,13 +40,19 @@ export const useTaxForm = ({ isVerified }: UseTaxFormProps) => {
 
   // Populate form with existing data when loaded
   useEffect(() => {
-    if (existingData && !isVerified) {
+    if (existingData && existingData.length > 0 && eKYCData) {
       // Pre-populate form with existing data if available
-      if (existingData.taxId) {
-        setTaxId(existingData.taxId);
+      const taxInformation = existingData.find(
+        (item: any) => item.type === IdentificationDocumentType.TAX,
+      );
+      if (taxInformation?.idNumber) {
+        setTaxId(taxInformation.idNumber);
+        if (taxInformation?.filePhotoId) {
+          setImageUrlState('filePhotoUrl', taxInformation.filePhoto.url);
+        }
       }
     }
-  }, [existingData, isVerified]);
+  }, [existingData, eKYCData]);
 
   // Upload file helper
   const uploadFileHelper = async (file: File): Promise<string | null> => {
@@ -58,11 +74,9 @@ export const useTaxForm = ({ isVerified }: UseTaxFormProps) => {
     }
   };
 
-  // Submit tax information
   const submitTaxInformation = async (documentId?: string) => {
     setIsLoading(true);
     try {
-      // Validate required fields
       if (!taxId) {
         toast.error('Please enter your tax identification number');
         return;
@@ -74,7 +88,7 @@ export const useTaxForm = ({ isVerified }: UseTaxFormProps) => {
         filePhotoId: documentId || '',
       };
 
-      await submitDocument(payload).unwrap(); // using same api with identification document
+      await submitDocument(payload).unwrap();
 
       toast.success('Tax information submitted successfully');
     } catch (error: any) {

@@ -1,17 +1,20 @@
 'use client';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { UserProfile } from '@/features/profile/domain/entities/models/profile';
-import { FC } from 'react';
+import { eKYC } from '@/features/profile/domain/entities/models/profile';
+import { FC, useState } from 'react';
 import { TaxActions, TaxDetailsForm, TaxDocumentUpload, TaxInfoHeader } from './components';
 import { useTaxForm, useTaxUpload } from './hooks';
 
 type Props = {
-  profile: UserProfile;
-  isVerified: boolean;
+  eKYCData: eKYC;
 };
 
-const TaxInformationForm: FC<Props> = ({ isVerified }) => {
+const TaxInformationForm: FC<Props> = ({ eKYCData }) => {
+  const [imageUrlState, setImageUrlState] = useState<{ filePhoto: string | null }>({
+    filePhoto: null,
+  });
+
   const {
     taxId,
     handleTaxIdChange,
@@ -20,7 +23,10 @@ const TaxInformationForm: FC<Props> = ({ isVerified }) => {
     submitTaxInformation,
     uploadFileHelper,
     uploadAttachmentMutation,
-  } = useTaxForm({ isVerified });
+  } = useTaxForm({
+    eKYCData,
+    setImageUrlState: (key, url) => setImageUrlState((prev) => ({ ...prev, [key]: url })),
+  });
 
   const { uploadedFile, handleFileUpload } = useTaxUpload();
 
@@ -59,6 +65,7 @@ const TaxInformationForm: FC<Props> = ({ isVerified }) => {
             uploadedFile={uploadedFile}
             onFileUpload={handleFileUpload}
             isLoading={isLoading || isSubmitting}
+            filePhotoUrl={imageUrlState.filePhoto}
           />
 
           <TaxActions onSubmit={handleSaveContinue} isLoading={isLoading || isSubmitting} />

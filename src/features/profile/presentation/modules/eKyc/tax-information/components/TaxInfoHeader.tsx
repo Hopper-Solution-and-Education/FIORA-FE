@@ -1,6 +1,6 @@
 'use client';
 
-import { FormHeader } from '@/features/profile/shared/components';
+import { FormHeader } from '@/features/profile/presentation/modules/eKyc/shared/components';
 import { Calculator } from 'lucide-react';
 
 const TaxInfoHeader = () => {

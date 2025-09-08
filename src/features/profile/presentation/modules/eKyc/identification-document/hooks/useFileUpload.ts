@@ -5,9 +5,11 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 export const useFileUpload = () => {
-  const [frontImageUrl, setFrontImageUrl] = useState<string | null>(null);
-  const [backImageUrl, setBackImageUrl] = useState<string | null>(null);
-  const [facePhotoUrl, setFacePhotoUrl] = useState<string | null>(null);
+  const [imageUrlState, setImageUrlState] = useState({
+    frontImageUrl: null,
+    backImageUrl: null,
+    facePhotoUrl: null,
+  });
 
   // File upload helper using Firebase - convert blob URL to file and upload
   const uploadFileHelper = async (
@@ -50,9 +52,9 @@ export const useFileUpload = () => {
         !formData.issuedDate ||
         !formData.issuedPlace ||
         !formData.idAddress ||
-        !frontImageUrl ||
-        !backImageUrl ||
-        !facePhotoUrl
+        !imageUrlState.frontImageUrl ||
+        !imageUrlState.backImageUrl ||
+        !imageUrlState.facePhotoUrl
       ) {
         toast.error('Please fill in all required fields');
         return;
@@ -63,19 +65,19 @@ export const useFileUpload = () => {
       let fileBackId = null;
       let filePhotoId = null;
 
-      fileFrontId = await uploadFileHelper(frontImageUrl, 'front');
+      fileFrontId = await uploadFileHelper(imageUrlState.frontImageUrl, 'front');
       if (!fileFrontId) {
         toast.error('Failed to upload front document image');
         return;
       }
 
-      fileBackId = await uploadFileHelper(backImageUrl, 'back');
+      fileBackId = await uploadFileHelper(imageUrlState.backImageUrl, 'back');
       if (!fileBackId) {
         toast.error('Failed to upload back document image');
         return;
       }
 
-      filePhotoId = await uploadFileHelper(facePhotoUrl, 'face');
+      filePhotoId = await uploadFileHelper(imageUrlState.facePhotoUrl, 'face');
       if (!filePhotoId) {
         toast.error('Failed to upload portrait photo');
         return;
@@ -122,12 +124,8 @@ export const useFileUpload = () => {
   };
 
   return {
-    frontImageUrl,
-    setFrontImageUrl,
-    backImageUrl,
-    setBackImageUrl,
-    facePhotoUrl,
-    setFacePhotoUrl,
+    imageUrlState,
+    setImageUrlState,
     uploadFileHelper,
     submitIdentificationDocument,
   };

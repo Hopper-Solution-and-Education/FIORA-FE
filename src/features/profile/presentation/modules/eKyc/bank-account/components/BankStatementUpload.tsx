@@ -1,6 +1,6 @@
 'use client';
 
-import { FileUpload } from '@/features/profile/shared/components';
+import { FileUpload } from '@/features/profile/presentation/modules/eKyc/shared/components';
 
 interface BankStatementUploadProps {
   uploadedFile: File | null;

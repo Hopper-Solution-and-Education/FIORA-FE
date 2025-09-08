@@ -1,5 +1,6 @@
 'use client';
 
+import { BankAccountFormData, eKYC } from '@/features/profile/domain/entities/models/profile';
 import {
   useGetBankAccountQuery,
   useSubmitBankAccountMutation,
@@ -9,30 +10,24 @@ import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-interface BankAccountFormData {
-  accountHolderName: string;
-  bankName: string;
-  accountNumber: string;
-  routingNumber: string;
-  accountType: string;
-}
-
 interface UseBankAccountFormProps {
-  isVerified: boolean;
+  eKYCData: eKYC;
 }
 
-export const useBankAccountForm = ({ isVerified }: UseBankAccountFormProps) => {
+export const useBankAccountForm = ({ eKYCData }: UseBankAccountFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<BankAccountFormData>({
-    accountHolderName: '',
-    bankName: '',
     accountNumber: '',
-    routingNumber: '',
-    accountType: '',
+    accountName: '',
+    bankName: '',
+    SWIFT: '',
   });
 
   // RTK Query hooks
-  const { data: existingData, isLoading: isLoadingData } = useGetBankAccountQuery();
+  const { data: existingData, isLoading: isLoadingData } = useGetBankAccountQuery(undefined, {
+    skip: !eKYCData,
+  });
+
   const [submitBankAccount, { isLoading: isSubmitting }] = useSubmitBankAccountMutation();
   const [uploadAttachmentMutation] = useUploadAttachmentMutation();
 
@@ -46,20 +41,18 @@ export const useBankAccountForm = ({ isVerified }: UseBankAccountFormProps) => {
 
   // Populate form with existing data when loaded
   useEffect(() => {
-    if (existingData && !isVerified) {
+    if (existingData && eKYCData) {
       // Pre-populate form with existing data if available
-      if (existingData.accountHolderName) {
-        setFormData((prev) => ({
-          ...prev,
-          accountHolderName: existingData.accountHolderName || '',
-          bankName: existingData.bankName || '',
-          accountNumber: existingData.accountNumber || '',
-          routingNumber: existingData.routingNumber || '',
-          accountType: existingData.accountType || '',
-        }));
-      }
+
+      setFormData((prev) => ({
+        ...prev,
+        accountNumber: existingData.accountNumber || '',
+        accountName: existingData.accountName || '',
+        bankName: existingData.bankName || '',
+        SWIFT: existingData.SWIFT || '',
+      }));
     }
-  }, [existingData, isVerified]);
+  }, [existingData, eKYCData]);
 
   // Upload file helper
   const uploadFileHelper = async (file: File): Promise<string | null> => {
@@ -82,41 +75,32 @@ export const useBankAccountForm = ({ isVerified }: UseBankAccountFormProps) => {
   };
 
   // Submit bank account information
-  const submitBankAccountInfo = async (
-    documentId?: string,
-    status: 'DRAFT' | 'COMPLETED' = 'COMPLETED',
-  ) => {
+  const submitBankAccountInfo = async (documentId?: string) => {
     setIsLoading(true);
     try {
       // Validate required fields
       if (
-        !formData.accountHolderName ||
-        !formData.bankName ||
         !formData.accountNumber ||
-        !formData.routingNumber ||
-        !formData.accountType
+        !formData.bankName ||
+        !formData.accountName ||
+        !formData.SWIFT
       ) {
         toast.error('Please fill in all required fields');
         return;
       }
 
       const payload = {
-        accountHolderName: formData.accountHolderName,
-        bankName: formData.bankName,
         accountNumber: formData.accountNumber,
-        routingNumber: formData.routingNumber,
-        accountType: formData.accountType,
+        accountName: formData.accountName,
+        bankName: formData.bankName,
+        SWIFT: formData.SWIFT,
         ...(documentId && { documentId }),
-        status,
+        status: eKYCData.status,
       };
 
       await submitBankAccount(payload).unwrap();
 
-      toast.success(
-        status === 'DRAFT'
-          ? 'Bank account information saved as draft'
-          : 'Bank account information submitted successfully',
-      );
+      toast.success('Bank account information submitted successfully');
     } catch (error: any) {
       console.error('Error submitting bank account information:', error);
       toast.error(error?.message || 'Failed to submit bank account information');

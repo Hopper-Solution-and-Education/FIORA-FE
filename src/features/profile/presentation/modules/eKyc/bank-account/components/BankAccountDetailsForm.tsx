@@ -1,25 +1,11 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { FormField } from '@/features/profile/shared/components';
-import { Building2, CreditCard, FileText, HelpCircle } from 'lucide-react';
 
-interface BankAccountFormData {
-  accountHolderName: string;
-  bankName: string;
-  accountNumber: string;
-  routingNumber: string;
-  accountType: string;
-}
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { BankAccountFormData } from '@/features/profile/domain/entities/models/profile';
+import { FormField } from '@/features/profile/presentation/modules/eKyc/shared/components';
+import { CreditCard, HelpCircle } from 'lucide-react';
 
 interface BankAccountDetailsFormProps {
   formData: BankAccountFormData;
@@ -55,10 +41,10 @@ const BankAccountDetailsForm: React.FC<BankAccountDetailsFormProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <FormField
             id="account-holder"
-            label="Account Holder Name"
-            placeholder="Enter full name as on bank account"
-            value={formData.accountHolderName}
-            onChange={(e) => onInputChange('accountHolderName', e.target.value)}
+            label="Swift Code"
+            placeholder="Enter your swift code"
+            value={formData.SWIFT}
+            onChange={(e) => onInputChange('SWIFT', e.target.value)}
             disabled={isLoading}
             required
           />
@@ -77,61 +63,24 @@ const BankAccountDetailsForm: React.FC<BankAccountDetailsFormProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <FormField
             id="account-number"
-            label="Account Number"
+            label="Bank Account Number"
+            type="password"
             placeholder="Enter your account number"
             value={formData.accountNumber}
             onChange={(e) => onInputChange('accountNumber', e.target.value)}
             disabled={isLoading}
             required
-            type="password"
-            className="font-mono"
           />
 
           <FormField
             id="routing-number"
-            label="Routing Number"
+            label="Bank Account Name"
             placeholder="Enter routing/sort code"
-            value={formData.routingNumber}
-            onChange={(e) => onInputChange('routingNumber', e.target.value)}
+            value={formData.accountName}
+            onChange={(e) => onInputChange('accountName', e.target.value)}
             disabled={isLoading}
             required
-            className="font-mono"
           />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="account-type" className="text-sm font-medium">
-            Account Type <span className="text-red-500">*</span>
-          </Label>
-          <Select
-            value={formData.accountType}
-            onValueChange={(value) => onInputChange('accountType', value)}
-            disabled={isLoading}
-          >
-            <SelectTrigger className="h-11">
-              <SelectValue placeholder="Select your account type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="checking">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4" />
-                  Checking Account
-                </div>
-              </SelectItem>
-              <SelectItem value="savings">
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4" />
-                  Savings Account
-                </div>
-              </SelectItem>
-              <SelectItem value="business">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Business Account
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </CardContent>
     </Card>

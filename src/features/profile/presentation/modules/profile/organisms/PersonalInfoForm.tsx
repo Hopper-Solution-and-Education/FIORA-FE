@@ -1,10 +1,6 @@
 'use client';
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
-import {
-  EKYCStatus,
-  EKYCType,
-  UserProfile,
-} from '@/features/profile/domain/entities/models/profile';
+import { EKYCType, UserProfile } from '@/features/profile/domain/entities/models/profile';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'next/navigation';
 import { FC, useEffect, useMemo } from 'react';
@@ -17,9 +13,10 @@ type Props = {
   isLoading?: boolean;
   onSubmit: (values: PersonalInfo) => void;
   profile: UserProfile;
+  isImageUpdated: boolean;
 };
 
-export const PersonalInfoForm: FC<Props> = ({ isLoading, onSubmit, profile }) => {
+export const PersonalInfoForm: FC<Props> = ({ isLoading, onSubmit, profile, isImageUpdated }) => {
   const router = useRouter();
 
   const defaults = useMemo<PersonalInfo>(
@@ -42,7 +39,7 @@ export const PersonalInfoForm: FC<Props> = ({ isLoading, onSubmit, profile }) =>
   const {
     control,
     reset,
-    formState: { isSubmitting, isValid },
+    formState: { isSubmitting, isDirty },
     getValues,
   } = form;
 
@@ -58,19 +55,9 @@ export const PersonalInfoForm: FC<Props> = ({ isLoading, onSubmit, profile }) =>
     router.push(`/profile/ekyc?id=${id}`);
   };
 
-  const eKYCVerified = useMemo(() => {
-    const isVerified = (type: EKYCType) => {
-      return profile?.eKYC?.some(
-        (item) => item.type === type && item.status === EKYCStatus.APPROVAL,
-      );
-    };
-    return {
-      contactInformation: isVerified(EKYCType.CONTACT_INFORMATION),
-      identificationDocument: isVerified(EKYCType.IDENTIFICATION_DOCUMENT),
-      taxInformation: isVerified(EKYCType.TAX_INFORMATION),
-      bankAccount: isVerified(EKYCType.BANK_ACCOUNT),
-    };
-  }, [profile]);
+  const getEKYCStatus = (type: EKYCType) => {
+    return profile?.eKYC?.find((item) => item.type === type)?.status;
+  };
 
   return (
     <FormProvider {...form}>
@@ -86,7 +73,7 @@ export const PersonalInfoForm: FC<Props> = ({ isLoading, onSubmit, profile }) =>
           description="Update your personal details"
           kycType="contact-information"
           onNavigateToKYC={handleNavigateToKYC}
-          isVerified={eKYCVerified.contactInformation}
+          status={getEKYCStatus(EKYCType.CONTACT_INFORMATION)}
         />
 
         <PersonalInfoFields control={control} />
@@ -96,6 +83,7 @@ export const PersonalInfoForm: FC<Props> = ({ isLoading, onSubmit, profile }) =>
           description="Verify your identity with government-issued documents to unlock full account features and ensure security"
           kycType="identification-document"
           onNavigateToKYC={handleNavigateToKYC}
+          status={getEKYCStatus(EKYCType.IDENTIFICATION_DOCUMENT)}
         />
 
         <KYCSection
@@ -104,6 +92,7 @@ export const PersonalInfoForm: FC<Props> = ({ isLoading, onSubmit, profile }) =>
           kycType="tax-information"
           onNavigateToKYC={handleNavigateToKYC}
           className="mb-4"
+          status={getEKYCStatus(EKYCType.TAX_INFORMATION)}
         />
 
         <KYCSection
@@ -111,11 +100,12 @@ export const PersonalInfoForm: FC<Props> = ({ isLoading, onSubmit, profile }) =>
           description="Connect your bank account for secure transactions, instant transfers, and seamless financial management"
           kycType="bank-account"
           onNavigateToKYC={handleNavigateToKYC}
+          status={getEKYCStatus(EKYCType.BANK_ACCOUNT)}
         />
 
         <DefaultSubmitButton
           isSubmitting={isLoading || isSubmitting}
-          disabled={!isValid || isSubmitting || isLoading}
+          disabled={isSubmitting || isLoading || (!isDirty && !isImageUpdated)}
           onSubmit={() => handleSubmitForm(getValues())}
           onBack={() => history.back()}
         />

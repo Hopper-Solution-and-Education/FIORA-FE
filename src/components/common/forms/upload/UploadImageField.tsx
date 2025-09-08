@@ -21,7 +21,7 @@ const UploadImageField = ({
   onChange,
   name,
   onBlur,
-  disabled,
+  disabled = false,
   required,
   previewShape = 'square',
   label = 'Upload Image',

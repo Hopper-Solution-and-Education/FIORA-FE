@@ -1,7 +1,7 @@
 'use client';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { IdentificationDocumentProps } from '@/features/profile/domain/entities/models/profile';
+import { eKYC } from '@/features/profile/domain/entities/models/profile';
 import { FC } from 'react';
 import {
   DocumentImagesForm,
@@ -11,7 +11,11 @@ import {
 } from './components';
 import { useFileUpload, useIdentificationForm } from './hooks';
 
-const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ isVerified }) => {
+interface IdentificationDocumentProps {
+  eKYCData: eKYC;
+}
+
+const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData }) => {
   const {
     formData,
     handleInputChange,
@@ -21,17 +25,12 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ isVerifie
     isLoadingData,
     submitDocument,
     uploadAttachmentMutation,
-  } = useIdentificationForm({ isVerified });
+  } = useIdentificationForm({
+    eKYCData,
+    setImageUrlState: (key, url) => setImageUrlState((prev) => ({ ...prev, [key]: url })),
+  });
 
-  const {
-    frontImageUrl,
-    setFrontImageUrl,
-    backImageUrl,
-    setBackImageUrl,
-    facePhotoUrl,
-    setFacePhotoUrl,
-    submitIdentificationDocument,
-  } = useFileUpload();
+  const { imageUrlState, setImageUrlState, submitIdentificationDocument } = useFileUpload();
 
   const handleSubmit = () => {
     submitIdentificationDocument(formData, uploadAttachmentMutation, submitDocument, setIsLoading);
@@ -40,7 +39,7 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ isVerifie
   return (
     <TooltipProvider>
       <div className="w-full max-w-5xl mx-auto mb-10">
-        <IdentificationHeader />
+        <IdentificationHeader status={eKYCData?.status} />
 
         <div className="space-y-4 sm:space-y-6">
           <DocumentInfoForm
@@ -49,20 +48,21 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ isVerifie
             isLoading={isLoading}
             isSubmitting={isSubmitting}
             isLoadingData={isLoadingData}
+            disabled={!!eKYCData}
           />
 
           <DocumentImagesForm
-            frontImageUrl={frontImageUrl}
-            backImageUrl={backImageUrl}
-            facePhotoUrl={facePhotoUrl}
-            onFrontImageChange={setFrontImageUrl}
-            onBackImageChange={setBackImageUrl}
-            onFacePhotoChange={setFacePhotoUrl}
+            imageUrlState={imageUrlState}
+            setImageUrlState={(key, url) => setImageUrlState((prev) => ({ ...prev, [key]: url }))}
             isSubmitting={isSubmitting}
             isLoadingData={isLoadingData}
+            disabled={!!eKYCData}
           />
 
-          <IdentificationActions isLoading={isLoading} onSubmit={handleSubmit} />
+          <IdentificationActions
+            isLoading={isLoading}
+            onSubmit={eKYCData ? undefined : handleSubmit}
+          />
         </div>
       </div>
     </TooltipProvider>

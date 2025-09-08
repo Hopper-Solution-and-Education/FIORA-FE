@@ -1,5 +1,8 @@
 'use client';
 
+import { STATUS_COLOR } from '@/features/profile/constant';
+import { EKYCStatus } from '@/features/profile/domain/entities/models/profile';
+import { cn } from '@/shared/lib';
 import { LucideIcon } from 'lucide-react';
 
 interface FormHeaderProps {
@@ -7,6 +10,7 @@ interface FormHeaderProps {
   title: string;
   description: string;
   iconColor?: string;
+  status?: EKYCStatus;
 }
 
 const FormHeader: React.FC<FormHeaderProps> = ({
@@ -14,9 +18,26 @@ const FormHeader: React.FC<FormHeaderProps> = ({
   title,
   description,
   iconColor = 'text-blue-600',
+  status,
 }) => {
+  const renderStatusBadge = () => {
+    if (!status) {
+      return null;
+    }
+    return (
+      <div
+        className={cn(
+          'rounded-md px-4 py-2',
+          STATUS_COLOR[status].color,
+          STATUS_COLOR[status].textColor,
+        )}
+      >
+        {status.toUpperCase()}
+      </div>
+    );
+  };
   return (
-    <div className="mb-8">
+    <div className="mb-8 flex justify-between">
       <div className="flex items-center gap-3 mb-3">
         <div className={`p-2 bg-${iconColor.split('-')[1]}-100 rounded-lg`}>
           <Icon className={`h-6 w-6 ${iconColor}`} />
@@ -26,6 +47,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">{description}</p>
         </div>
       </div>
+      <div>{renderStatusBadge()}</div>
     </div>
   );
 };

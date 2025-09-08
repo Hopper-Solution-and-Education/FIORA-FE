@@ -1,5 +1,5 @@
 'use client';
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import PersonalInfoForm from './PersonalInfoForm';
 import ProfileSidebar from './ProfileSidebar';
 
@@ -25,6 +25,8 @@ const ProfileTab: FC<ProfileTabProps> = ({
   onSave,
   onNewImagesChange,
 }) => {
+  const [isImageUpdated, setIsImageUpdated] = useState(false);
+
   if (!profile) {
     return null;
   }
@@ -32,7 +34,15 @@ const ProfileTab: FC<ProfileTabProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-md p-6 lg:p-8 flex flex-col lg:flex-row gap-8">
       <div className="flex-1">
-        <PersonalInfoForm isLoading={isUpdating || isLoading} onSubmit={onSave} profile={profile} />
+        <PersonalInfoForm
+          isLoading={isUpdating || isLoading}
+          onSubmit={async (values) => {
+            onSave(values);
+            setIsImageUpdated(false);
+          }}
+          profile={profile}
+          isImageUpdated={isImageUpdated}
+        />
       </div>
 
       <ProfileSidebar
@@ -42,6 +52,7 @@ const ProfileTab: FC<ProfileTabProps> = ({
         }}
         setNewImages={onNewImagesChange}
         disabled={isUpdating}
+        setIsImageUpdated={setIsImageUpdated}
       />
     </div>
   );

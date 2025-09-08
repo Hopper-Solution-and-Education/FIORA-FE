@@ -20,6 +20,7 @@ type Props = {
   };
   setNewImages: Dispatch<SetStateAction<NewImages>>;
   disabled?: boolean;
+  setIsImageUpdated: Dispatch<SetStateAction<boolean>>;
 };
 
 type NewImages = {
@@ -27,7 +28,12 @@ type NewImages = {
   logoImage: File | null;
 };
 
-export default function ProfileSidebar({ initialImages, setNewImages, disabled = false }: Props) {
+export default function ProfileSidebar({
+  initialImages,
+  setNewImages,
+  disabled = false,
+  setIsImageUpdated,
+}: Props) {
   const [currentImages, setCurrentImages] = useState(initialImages);
 
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
@@ -89,6 +95,7 @@ export default function ProfileSidebar({ initialImages, setNewImages, disabled =
         });
         setNewImages((prev) => ({ ...prev, logoImage: file }));
       }
+      setIsImageUpdated(true);
       e.target.value = '';
     },
     [validateImageFile, setNewImages],

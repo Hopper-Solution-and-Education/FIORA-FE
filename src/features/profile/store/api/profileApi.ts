@@ -1,7 +1,11 @@
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import type { Response } from '@/shared/types/Common.types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { IdentificationDocumentPayload, UserProfile } from '../../domain/entities/models/profile';
+import {
+  BankAccountFormData,
+  IdentificationDocumentPayload,
+  UserProfile,
+} from '../../domain/entities/models/profile';
 
 export const profileApi = createApi({
   reducerPath: 'profileApi',
@@ -50,7 +54,7 @@ export const profileApi = createApi({
 
     // Identification Document API
     getIdentificationDocument: builder.query<any, void>({
-      query: () => ({ url: '/api/indentification-document', method: 'GET' }),
+      query: () => ({ url: `/api/indentification-document`, method: 'GET' }),
       transformResponse: (response: Response<any>) => response.data,
       providesTags: ['eKYC'],
     }),
@@ -90,18 +94,7 @@ export const profileApi = createApi({
       providesTags: ['eKYC'],
     }),
 
-    submitBankAccount: builder.mutation<
-      any,
-      {
-        accountHolderName: string;
-        bankName: string;
-        accountNumber: string;
-        routingNumber: string;
-        accountType: string;
-        documentId?: string;
-        status?: 'DRAFT' | 'COMPLETED';
-      }
-    >({
+    submitBankAccount: builder.mutation<any, BankAccountFormData>({
       query: (body) => ({
         url: '/api/bank-account',
         method: 'POST',

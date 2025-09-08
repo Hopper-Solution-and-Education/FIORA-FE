@@ -230,16 +230,18 @@ const UploadField: React.FC<UploadFieldProps> = ({
                   style={{ objectFit: 'contain' }}
                 />
               </div>
-              <div
-                className={cn(
-                  'absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center',
-                  currentShape === 'circle' ? 'rounded-full' : 'rounded-md',
-                )}
-              >
-                <span className="text-white text-sm font-medium px-3 py-1 rounded-full bg-black/40 backdrop-blur-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                  Change Image
-                </span>
-              </div>
+              {!disabled && (
+                <div
+                  className={cn(
+                    'absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center',
+                    currentShape === 'circle' ? 'rounded-full' : 'rounded-md',
+                  )}
+                >
+                  <span className="text-white text-sm font-medium px-3 py-1 rounded-full bg-black/40 backdrop-blur-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                    Change Image
+                  </span>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center space-y-2 p-6 rounded-lg">
@@ -260,7 +262,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
           )}
         </label>
 
-        {preview && (
+        {preview && !disabled && (
           <div className="absolute top-3 right-3 flex space-x-2">
             <button
               data-test="upload-field-toggle-shape"

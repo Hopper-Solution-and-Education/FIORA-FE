@@ -1,7 +1,7 @@
 'use client';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { UserProfile } from '@/features/profile/domain/entities/models/profile';
+import { eKYC } from '@/features/profile/domain/entities/models/profile';
 import { FC } from 'react';
 import {
   BankAccountActions,
@@ -12,11 +12,10 @@ import {
 import { useBankAccountForm, useBankAccountUpload } from './hooks';
 
 type Props = {
-  profile: UserProfile;
-  isVerified: boolean;
+  eKYCData: eKYC;
 };
 
-const BankAccountForm: FC<Props> = ({ isVerified }) => {
+const BankAccountForm: FC<Props> = ({ eKYCData }) => {
   const {
     formData,
     handleInputChange,
@@ -25,7 +24,7 @@ const BankAccountForm: FC<Props> = ({ isVerified }) => {
     submitBankAccountInfo,
     uploadFileHelper,
     uploadAttachmentMutation,
-  } = useBankAccountForm({ isVerified });
+  } = useBankAccountForm({ eKYCData });
 
   const { uploadedFile, handleFileUpload } = useBankAccountUpload();
 
@@ -45,7 +44,7 @@ const BankAccountForm: FC<Props> = ({ isVerified }) => {
       }
     }
 
-    await submitBankAccountInfo(documentId, 'COMPLETED');
+    await submitBankAccountInfo(documentId);
   };
 
   return (

@@ -1,6 +1,8 @@
 'use client';
 
 import {
+  eKYC,
+  EKYCType,
   IdentificationDocumentFormData,
   IdentificationDocumentType,
 } from '@/features/profile/domain/entities/models/profile';
@@ -12,10 +14,14 @@ import {
 import { useEffect, useState } from 'react';
 
 interface UseIdentificationFormProps {
-  isVerified: boolean;
+  eKYCData: eKYC;
+  setImageUrlState: (key: string, url: string | null) => void;
 }
 
-export const useIdentificationForm = ({ isVerified }: UseIdentificationFormProps) => {
+export const useIdentificationForm = ({
+  eKYCData,
+  setImageUrlState,
+}: UseIdentificationFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<IdentificationDocumentFormData>({
     idNumber: '',
@@ -25,8 +31,13 @@ export const useIdentificationForm = ({ isVerified }: UseIdentificationFormProps
     type: IdentificationDocumentType.NATIONAL,
   });
 
-  // RTK Query hooks
-  const { data: existingData, isLoading: isLoadingData } = useGetIdentificationDocumentQuery();
+  const { data: existingData, isLoading: isLoadingData } = useGetIdentificationDocumentQuery(
+    undefined,
+    {
+      skip: !eKYCData,
+    },
+  );
+
   const [submitDocument, { isLoading: isSubmitting }] = useSubmitIdentificationDocumentMutation();
   const [uploadAttachmentMutation] = useUploadAttachmentMutation();
 
@@ -40,22 +51,33 @@ export const useIdentificationForm = ({ isVerified }: UseIdentificationFormProps
 
   // Populate form with existing data when loaded
   useEffect(() => {
-    if (existingData && !isVerified) {
-      // Pre-populate form with existing data if available
-      if (existingData.idNumber) {
-        setFormData((prev) => ({
-          ...prev,
-          idNumber: existingData.idNumber || '',
-          issuedDate: existingData.issuedDate
-            ? new Date(existingData.issuedDate).toISOString().split('T')[0]
-            : '',
-          issuedPlace: existingData.issuedPlace || '',
-          idAddress: existingData.idAddress || '',
-          type: existingData.type || IdentificationDocumentType.NATIONAL,
-        }));
+    if (existingData && existingData.length > 0 && eKYCData) {
+      const identificationDocument = existingData.find(
+        (item: any) => item.type !== EKYCType.TAX_INFORMATION,
+      );
+
+      setFormData((prev) => ({
+        ...prev,
+        idNumber: identificationDocument?.idNumber || '',
+        issuedDate: identificationDocument.issuedDate
+          ? new Date(identificationDocument.issuedDate).toISOString().split('T')[0]
+          : '',
+        issuedPlace: identificationDocument?.issuedPlace || '',
+        idAddress: identificationDocument?.idAddress || '',
+        type: identificationDocument?.type || IdentificationDocumentType.NATIONAL,
+      }));
+
+      if (identificationDocument?.fileFrontId) {
+        setImageUrlState('frontImageUrl', identificationDocument.filePhoto.url);
+      }
+      if (identificationDocument?.fileBackId) {
+        setImageUrlState('backImageUrl', identificationDocument.fileBack.url);
+      }
+      if (identificationDocument?.filePhotoId) {
+        setImageUrlState('facePhotoUrl', identificationDocument.filePhoto.url);
       }
     }
-  }, [existingData, isVerified]);
+  }, [existingData, eKYCData]);
 
   return {
     formData,

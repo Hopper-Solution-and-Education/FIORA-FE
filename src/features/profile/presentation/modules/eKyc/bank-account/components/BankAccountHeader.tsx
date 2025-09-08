@@ -1,6 +1,6 @@
 'use client';
 
-import { FormHeader } from '@/features/profile/shared/components';
+import { FormHeader } from '@/features/profile/presentation/modules/eKyc/shared/components';
 import { Building2 } from 'lucide-react';
 
 const BankAccountHeader = () => {

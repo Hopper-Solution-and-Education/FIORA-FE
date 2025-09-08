@@ -1,17 +1,19 @@
 'use client';
 
-import { FileUpload } from '@/features/profile/shared/components';
+import { FileUpload } from '@/features/profile/presentation/modules/eKyc/shared/components';
 
 interface TaxDocumentUploadProps {
   uploadedFile: File | null;
   onFileUpload: (file: File | null) => void;
   isLoading?: boolean;
+  filePhotoUrl: string | null;
 }
 
 const TaxDocumentUpload: React.FC<TaxDocumentUploadProps> = ({
   uploadedFile,
   onFileUpload,
   isLoading = false,
+  filePhotoUrl,
 }) => {
   return (
     <FileUpload
@@ -27,6 +29,7 @@ const TaxDocumentUpload: React.FC<TaxDocumentUploadProps> = ({
       ]}
       placeholder="Upload your tax registration certificate"
       isLoading={isLoading}
+      filePhotoUrl={filePhotoUrl}
     />
   );
 };

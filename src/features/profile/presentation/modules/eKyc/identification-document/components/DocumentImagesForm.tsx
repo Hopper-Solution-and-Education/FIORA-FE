@@ -6,25 +6,23 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { FileText, HelpCircle } from 'lucide-react';
 
 interface DocumentImagesFormProps {
-  frontImageUrl: string | null;
-  backImageUrl: string | null;
-  facePhotoUrl: string | null;
-  onFrontImageChange: (url: string | null) => void;
-  onBackImageChange: (url: string | null) => void;
-  onFacePhotoChange: (url: string | null) => void;
+  imageUrlState: {
+    frontImageUrl: string | null;
+    backImageUrl: string | null;
+    facePhotoUrl: string | null;
+  };
+  setImageUrlState: (key: string, url: string | null) => void;
   isSubmitting: boolean;
   isLoadingData: boolean;
+  disabled?: boolean;
 }
 
 const DocumentImagesForm: React.FC<DocumentImagesFormProps> = ({
-  frontImageUrl,
-  backImageUrl,
-  facePhotoUrl,
-  onFrontImageChange,
-  onBackImageChange,
-  onFacePhotoChange,
+  imageUrlState,
+  setImageUrlState,
   isSubmitting,
   isLoadingData,
+  disabled = false,
 }) => {
   return (
     <Card>
@@ -59,19 +57,20 @@ const DocumentImagesForm: React.FC<DocumentImagesFormProps> = ({
               name="front-document"
               label="Front Side of Document"
               placeholder="Choose front side image"
-              value={frontImageUrl || undefined}
-              onChange={onFrontImageChange}
-              disabled={isSubmitting || isLoadingData}
+              value={imageUrlState.frontImageUrl || undefined}
+              onChange={(url) => setImageUrlState('frontImageUrl', url)}
+              disabled={isSubmitting || isLoadingData || disabled}
               required
               size="large"
             />
+
             <UploadImageField
               name="back-document"
               label="Back Side of Document"
               placeholder="Choose back side image"
-              value={backImageUrl || undefined}
-              onChange={onBackImageChange}
-              disabled={isSubmitting || isLoadingData}
+              value={imageUrlState.backImageUrl || undefined}
+              onChange={(url) => setImageUrlState('backImageUrl', url)}
+              disabled={isSubmitting || isLoadingData || disabled}
               required
               size="large"
             />
@@ -83,9 +82,9 @@ const DocumentImagesForm: React.FC<DocumentImagesFormProps> = ({
               name="face-photo"
               label="Portrait Photo"
               placeholder="Choose portrait photo"
-              value={facePhotoUrl || undefined}
-              onChange={onFacePhotoChange}
-              disabled={isSubmitting || isLoadingData}
+              value={imageUrlState.facePhotoUrl || undefined}
+              onChange={(url) => setImageUrlState('facePhotoUrl', url)}
+              disabled={isSubmitting || isLoadingData || disabled}
               required
               size="large"
             />
