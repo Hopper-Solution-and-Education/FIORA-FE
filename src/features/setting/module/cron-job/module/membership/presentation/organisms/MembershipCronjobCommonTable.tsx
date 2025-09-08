@@ -4,7 +4,9 @@ import {
   CommonTableColumn,
 } from '@/components/common/organisms/CommonTable/types';
 import { useMemo, useState } from 'react';
-import { MembershipActionButton, MembershipIdCell, MembershipStatusBadge } from '../atoms';
+import MembershipActionButton from '../atoms/MembershipActionButton';
+import MembershipIdCell from '../atoms/MembershipIdCell';
+import MembershipStatusBadge from '../atoms/MembershipStatusBadge';
 import { MembershipCronjobTableData } from '../types/membership.type';
 
 interface Props {
@@ -104,7 +106,9 @@ const MembershipCronjobCommonTable = ({
 
   const initialConfig: ColumnConfigMap = useMemo(() => {
     return columns.reduce((acc, c, idx) => {
-      acc[c.key as string] = { isVisible: true, index: idx, align: c.align };
+      if (c.key) {
+        acc[c.key as string] = { isVisible: true, index: idx, align: c.align };
+      }
       return acc;
     }, {} as ColumnConfigMap);
   }, [columns]);

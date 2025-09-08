@@ -12,7 +12,7 @@ export class MembershipCronjobMapper {
   ): URLSearchParams {
     const params = new URLSearchParams();
     params.append('page', page.toString());
-    params.append('limit', pageSize.toString());
+    params.append('lmit', pageSize.toString());
 
     if (!filter) return params;
 

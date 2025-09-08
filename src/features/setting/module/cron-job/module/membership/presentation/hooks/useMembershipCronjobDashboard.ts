@@ -40,7 +40,7 @@ export const useMembershipCronjobDashboard = () => {
 
         console.log(res);
 
-        const rows = res.data.data.map((it: MembershipCronjobItem) => ({
+        const rows = (res.data.data || []).map((it: MembershipCronjobItem) => ({
           id: it.id,
           email: it.Transaction?.user?.email || 'N/A',
           executionTime: it.executionTime,

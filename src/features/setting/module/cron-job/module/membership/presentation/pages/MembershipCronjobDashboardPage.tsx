@@ -3,7 +3,7 @@
 import { DispatchTableProvider } from '../context/DispatchTableContext';
 import { TableProvider } from '../context/TableContext';
 import { useMembershipCronjobDashboard } from '../hooks/useMembershipCronjobDashboard';
-import { MembershipTopBarAction } from '../molecules';
+import MembershipTopBarAction from '../molecules/MembershipTopBarAction';
 import MembershipCronjobChart from '../organisms/MembershipCronjobChart';
 import MembershipCronjobCommonTable from '../organisms/MembershipCronjobCommonTable';
 

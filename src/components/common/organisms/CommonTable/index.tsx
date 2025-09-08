@@ -35,7 +35,11 @@ export default function CommonTable<T>({
   const shownColumns = useMemo(() => {
     return columns
       .filter((c) => columnConfig[c.key]?.isVisible !== false)
-      .sort((a, b) => (columnConfig[a.key].index ?? 0) - (columnConfig[b.key].index ?? 0));
+      .sort((a, b) => {
+        const aIndex = columnConfig[a.key]?.index ?? 0;
+        const bIndex = columnConfig[b.key]?.index ?? 0;
+        return aIndex - bIndex;
+      });
   }, [columns, columnConfig]);
 
   const getAlignClass = (align?: 'left' | 'center' | 'right') => {

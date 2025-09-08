@@ -23,6 +23,7 @@ export class MembershipCronjobDashboardApi implements IMembershipCronjobDashboar
     const searchParams = MembershipCronjobMapper.toSearchParams(page, pageSize, filter);
     const baseUrl = routeConfig(ApiEndpointEnum.CronjobDashboard);
     const url = `${baseUrl}?${searchParams.toString()}`;
+
     return this.httpClient.get(url);
   }
 }
