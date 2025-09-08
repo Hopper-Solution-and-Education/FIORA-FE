@@ -73,10 +73,20 @@ export default function SettingCenter() {
     <TooltipProvider>
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <Settings
-            size={ICON_SIZE.MD}
-            className="transition-all duration-200 hover:scale-110 cursor-pointer"
-          />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex flex-col gap-1 justify-center items-center">
+                <Settings
+                  size={ICON_SIZE.MD}
+                  className="transition-all duration-200 hover:scale-110 cursor-pointer"
+                />
+                <span className="text-sm">Settings</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Settings</p>
+            </TooltipContent>
+          </Tooltip>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
