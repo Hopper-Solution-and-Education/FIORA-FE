@@ -12,7 +12,7 @@ const NotificationActionButton = ({ notificationId }: NotificationActionButtonPr
   const router = useRouter();
 
   const onClick = () => {
-    router.push(routeConfig(RouteEnum.NotificationDetail, { id: notificationId }));
+    router.push(routeConfig(RouteEnum.UserNotificationDetail, { id: notificationId }));
   };
 
   return (
