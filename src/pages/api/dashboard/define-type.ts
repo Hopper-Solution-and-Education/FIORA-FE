@@ -1,0 +1,40 @@
+import { dashboardRepository } from '@/features/setting/api/infrastructure/repositories/dashboardRepository';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { Messages } from '@/shared/constants/message';
+import { createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { errorHandler } from '@/shared/lib/responseUtils/errors';
+import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { NextApiRequest, NextApiResponse } from 'next';
+
+export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId: string) =>
+  errorHandler(
+    async (request, response) => {
+      switch (request.method) {
+        case 'GET':
+          return GET(request, response, userId);
+        default:
+          return response
+            .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+            .json({ error: Messages.METHOD_NOT_ALLOWED });
+      }
+    },
+    req,
+    res,
+  ),
+);
+
+export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  try {
+    const getAllTypeDefines = await dashboardRepository.getAllTypeDefines();
+    return res.status(RESPONSE_CODE.OK).json({
+      status: RESPONSE_CODE.OK,
+      message: Messages.GET_SUCCESS,
+      data: getAllTypeDefines,
+    });
+  } catch (error) {
+    console.error('Dashboard API Error:', error);
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, 'Failed to fetch dashboard data'));
+  }
+}
