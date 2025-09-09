@@ -1,5 +1,7 @@
 import { prisma } from '@/config';
-import { TypeCronJob } from '@prisma/client';
+import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
+import { CreateBoxNotificationInput } from '@/features/notification/domain/repositories/notificationRepository.interface';
+import { CronJobLog, CronJobStatus, TypeCronJob } from '@prisma/client';
 
 class DashboardRepository {
   async getWithFilters(
@@ -158,6 +160,92 @@ class DashboardRepository {
       (grouped[item.typeCronJob] ??= []).push(item);
     }
     return grouped;
+  }
+
+  async changeCronjob(cronjobData: CronJobLog, userId: string) {
+    const existing = await prisma.membershipProgress.findFirst({
+      where: { userId },
+      include: {
+        tier: true,
+        user: true,
+      },
+    });
+
+    if (
+      !existing ||
+      cronjobData.typeCronJob !== TypeCronJob.MEMBERSHIP ||
+      !this.shouldUpdateTier(cronjobData, existing)
+    ) {
+      return null;
+    }
+
+    const { email, name, id: user_id } = existing.user;
+    const tier_name = existing.tier?.tierName || '';
+    const newTierId = (cronjobData.dynamicValue as any)?.['toTier'] as string;
+
+    const updatedProgress = await prisma.membershipProgress.update({
+      where: { id: existing.id },
+      data: {
+        updatedBy: userId,
+        updatedAt: new Date(),
+        tierId: newTierId,
+        tiersendid: newTierId,
+      },
+    });
+
+    const status = updatedProgress ? CronJobStatus.SUCCESSFUL : CronJobStatus.FAIL;
+
+    if (status === CronJobStatus.SUCCESSFUL) {
+      await this.sendMembershipNotification(email, name || '', tier_name, user_id);
+    }
+
+    return prisma.cronJobLog.update({
+      where: { id: cronjobData.id },
+      data: {
+        updatedBy: userId,
+        updatedAt: new Date(),
+        status,
+      },
+    });
+  }
+
+  private shouldUpdateTier(cronjobData: CronJobLog, existing: any): boolean {
+    const newTierId = (cronjobData.dynamicValue as any)?.['toTier']?.toString();
+    const currentTierId = existing.tierId?.toString();
+    return newTierId && newTierId !== currentTierId;
+  }
+
+  private async sendMembershipNotification(
+    email: string,
+    username: string,
+    tier_name: string,
+    user_id: string,
+  ) {
+    const notificationData: CreateBoxNotificationInput = {
+      title: 'FIORA Membership Tier Change Notification',
+      type: 'MEMBERSHIP',
+      notifyTo: 'ROLE_USER',
+      attachmentId: '',
+      deepLink: '',
+      message: 'Your FIORA Membership Tier Has Changed!',
+      emails: [email],
+    };
+
+    await notificationUseCase.createNotificationCronjob(
+      notificationData,
+      email,
+      username,
+      tier_name,
+      new Date().toString(),
+      user_id,
+    );
+  }
+
+  async getCronjob(id: string) {
+    const cronjob = await prisma.cronJobLog.findFirst({
+      where: { id },
+    });
+    return cronjob;
   }
 }
 
