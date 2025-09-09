@@ -2,7 +2,7 @@ import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { routeConfig } from '@/shared/utils/route';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 interface NotificationActionButtonProps {
   notificationId: string;
@@ -10,9 +10,16 @@ interface NotificationActionButtonProps {
 
 const NotificationActionButton = ({ notificationId }: NotificationActionButtonProps) => {
   const router = useRouter();
+  const path = usePathname();
+  const isSettingDashboard = !!path?.includes('setting');
 
   const onClick = () => {
-    router.push(routeConfig(RouteEnum.NotificationDetail, { id: notificationId }));
+    router.push(
+      routeConfig(
+        isSettingDashboard ? RouteEnum.NotificationDetail : RouteEnum.UserNotificationDetail,
+        { id: notificationId },
+      ),
+    );
   };
 
   return (
