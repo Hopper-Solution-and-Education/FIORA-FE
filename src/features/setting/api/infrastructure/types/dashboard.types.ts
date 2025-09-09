@@ -4,6 +4,8 @@ export interface DashboardFilterParams {
   status?: CronJobStatus | CronJobStatus[];
   typeCronJob?: TypeCronJob | TypeCronJob[];
   search?: string;
+  fromTier?: string;
+  toTier?: string;
   fromDate?: string;
   toDate?: string;
   createdBy?: string | string[];
