@@ -26,12 +26,12 @@ class PaymentWalletUseCase {
   ) { }
 
   async fetchPaymentWallet(userId: string, params: FetchPaymentWalletParams) {
-    const { filters, lastCursor, page, pageSize, searchParams = '' } = params;
+    const { filters, lastCursor, page, pageSize, searchParams } = params;
 
-    const transactions = transactionUseCaseImported.getTransactionsPagination({
+    const transactions = await transactionUseCaseImported.getTransactionsPagination({
       filters,
       lastCursor,
-      page,
+      page: page || 1,
       pageSize,
       userId,
       isInfinityScroll: true,
@@ -147,15 +147,16 @@ class PaymentWalletUseCase {
     const totalFrozen = Number(foundUserWallet.frBalanceFrozen) + totalWithdrawalAmount;
 
     const totalBalance = totalAvailableBalance + totalFrozen;
+    const accumulatedEarn = Number(foundUserWallet.accumulatedEarn) || 0;
 
     return {
       totalMovedIn,
       totalMovedOut,
       annualFlexInterest,
-      totalWithdrawalAmount,
+      totalBalance,
       totalAvailableBalance,
       totalFrozen,
-      totalBalance,
+      accumulatedEarn,
     };
   }
 }

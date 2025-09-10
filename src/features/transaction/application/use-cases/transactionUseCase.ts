@@ -138,10 +138,12 @@ class TransactionUseCase {
     const regex = new RegExp('^' + typeSearchParams, 'i'); // ^: start with, i: ignore case
     const typeTransaction = Object.values(TransactionType).find((type) => regex.test(type));
 
-    let typeTransactionWhere = '';
+    let typeTransactionWhere = {};
 
     if (typeTransaction) {
-      typeTransactionWhere = typeTransaction;
+      typeTransactionWhere = {
+        type: { equals: typeTransaction },
+      };
     }
 
     where = {
@@ -149,21 +151,8 @@ class TransactionUseCase {
         { fromAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
         { toAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
         { partner: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
-        {
-          AND: [
-            {
-              baseAmount: {
-                gte: Number(typeSearchParams),
-                lte: Number(typeSearchParams),
-              },
-              baseCurrency: { equals: 'USD' },
-            },
-          ],
-        },
         // adding typeTransactionWhere to where clause if exists
-        ...(typeTransactionWhere
-          ? [{ type: typeTransactionWhere as unknown as TransactionType }]
-          : []),
+        typeTransactionWhere,
       ],
     };
 
@@ -185,13 +174,13 @@ class TransactionUseCase {
     } = params;
 
     const take = pageSize;
-    const skip = isInfinityScroll ? 1 : (page - 1) * pageSize;
+    const skip = lastCursor ? 1 : (page - 1) * pageSize;
 
     let where = buildWhereClause(filters) as Prisma.TransactionWhereInput;
 
     if (searchParams) {
       where = {
-        AND: [where, this.searchTransactionBuildWhereClause(searchParams)],
+        AND: [this.searchTransactionBuildWhereClause(searchParams)],
       };
     }
 
@@ -222,7 +211,8 @@ class TransactionUseCase {
 
     const totalTransactionAwaited = this.transactionRepository.count({
       ...where,
-      AND: [{ isDeleted: false }, { userId }],
+      isDeleted: false,
+      userId,
     });
     // getting amountMax from transactions
     const amountMaxAwaited = this.transactionRepository.aggregate({

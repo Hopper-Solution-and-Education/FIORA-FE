@@ -41,13 +41,12 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 }
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const { filters, page, pageSize, searchParams, lastCursor } = req.body;
+  const { filters, pageSize, search, lastCursor } = req.body;
 
   const fetchPaymentWallet = await paymentWalletUseCase.fetchPaymentWallet(userId, {
-    page,
     pageSize,
     filters,
-    searchParams,
+    searchParams: search,
     lastCursor,
   });
 
