@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { BadRequestError, InternalServerError } from '@/shared/lib';
+import { BadRequestError } from '@/shared/lib';
 import {
   MembershipBenefitCreatePayload,
   MembershipBenefitCreateUpdateAllPayload,
