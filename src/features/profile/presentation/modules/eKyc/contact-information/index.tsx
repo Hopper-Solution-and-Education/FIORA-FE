@@ -1,5 +1,6 @@
 'use client';
 
+import { Card } from '@/components/ui/card';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { eKYC } from '@/features/profile/domain/entities/models/profile';
 import { FC } from 'react';
@@ -30,20 +31,20 @@ const ContactInformationForm: FC<Props> = ({ eKYCData }) => {
 
   return (
     <TooltipProvider>
-      <div className="w-full max-w-5xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <ContactInfoHeader status={eKYCData?.status} />
 
-        <div className="space-y-4 sm:space-y-6">
-          <ContactInfoForm
-            profile={profile}
-            isSendingOtp={isSendingOtp}
-            isLoadingProfile={isLoadingProfile}
-            eKYCData={eKYCData}
-            onSendOtp={onSendOtp}
-          />
-
-          <ContactInfoActions isLoading={isSendingOtp} />
-        </div>
+        <Card>
+          <div className="space-y-4 sm:space-y-6 p-6">
+            <ContactInfoForm
+              profile={profile}
+              isSendingOtp={isSendingOtp}
+              isLoadingProfile={isLoadingProfile}
+              eKYCData={eKYCData}
+              onSendOtp={onSendOtp}
+            />
+          </div>
+        </Card>
 
         <OtpVerificationModal
           otpModal={otpModal}
@@ -53,6 +54,7 @@ const ContactInformationForm: FC<Props> = ({ eKYCData }) => {
           onResend={onResendOtp}
         />
       </div>
+      <ContactInfoActions isLoading={isSendingOtp} />
     </TooltipProvider>
   );
 };

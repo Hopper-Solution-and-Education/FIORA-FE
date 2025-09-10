@@ -16,6 +16,7 @@ interface UploadImageFieldProps {
   size?: 'small' | 'medium' | 'large';
   className?: string;
   containerClassName?: string;
+  canChangeShape?: boolean;
 }
 
 const UploadImageField = ({
@@ -31,6 +32,7 @@ const UploadImageField = ({
   size = 'medium',
   className,
   containerClassName,
+  canChangeShape = true,
 }: UploadImageFieldProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -89,6 +91,7 @@ const UploadImageField = ({
         placeholder={placeholder}
         size={size}
         className={className}
+        canChangeShape={canChangeShape}
       />
     </FormItem>
   );

@@ -12,29 +12,32 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import {
-  IdentificationDocumentFormData,
-  IdentificationDocumentType,
-} from '@/features/profile/domain/entities/models/profile';
+import { IdentificationDocumentType } from '@/features/profile/domain/entities/models/profile';
 import { CreditCard, HelpCircle } from 'lucide-react';
+import { UseFormReturn } from 'react-hook-form';
+import { IdentificationDocument } from '../../../../schema/personalInfoSchema';
 
 interface DocumentInfoFormProps {
-  formData: IdentificationDocumentFormData;
-  onInputChange: (field: keyof IdentificationDocumentFormData, value: string) => void;
-  isLoading: boolean;
-  isSubmitting: boolean;
+  form: UseFormReturn<IdentificationDocument>;
   isLoadingData: boolean;
   disabled?: boolean;
 }
 
 const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({
-  formData,
-  onInputChange,
-  isLoading,
-  isSubmitting,
+  form,
   isLoadingData,
   disabled = false,
 }) => {
+  const {
+    register,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = form;
+
+  const watchedValues = watch();
+  const currentType = watch('type');
+
   return (
     <Card>
       <CardHeader className="pb-4">
@@ -61,19 +64,23 @@ const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({
             Document Type <span className="text-red-500">*</span>
           </Label>
           <Select
-            value={formData.type}
-            onValueChange={(value: IdentificationDocumentType) => onInputChange('type', value)}
+            key={`select-${currentType || 'empty'}`}
+            value={currentType || ''}
+            onValueChange={(value: IdentificationDocumentType) => {
+              setValue('type', value);
+            }}
             disabled={isSubmitting || isLoadingData || disabled}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select document type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="NATIONAL">National ID</SelectItem>
-              <SelectItem value="PASSPORT">Passport</SelectItem>
-              <SelectItem value="BUSINESS">Business License</SelectItem>
+              <SelectItem value={IdentificationDocumentType.NATIONAL}>National ID</SelectItem>
+              <SelectItem value={IdentificationDocumentType.PASSPORT}>Passport</SelectItem>
+              <SelectItem value={IdentificationDocumentType.BUSINESS}>Business License</SelectItem>
             </SelectContent>
           </Select>
+          {errors.type && <p className="text-sm text-red-500">{errors.type.message}</p>}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -84,10 +91,10 @@ const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({
             <Input
               id="id-number"
               placeholder="Enter document number"
-              value={formData.idNumber}
-              onChange={(e) => onInputChange('idNumber', e.target.value)}
-              disabled={isLoading || disabled}
+              {...register('idNumber', { required: 'Document number is required' })}
+              disabled={isSubmitting || disabled}
             />
+            {errors.idNumber && <p className="text-sm text-red-500">{errors.idNumber.message}</p>}
           </div>
           <div className="space-y-2">
             <Label htmlFor="issued-date" className="text-sm font-medium">
@@ -95,10 +102,13 @@ const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({
             </Label>
             <DateTimePicker
               required
-              value={formData.issuedDate ? new Date(formData.issuedDate) : undefined}
-              onChange={(e) => onInputChange('issuedDate', e?.toISOString() || '')}
-              disabled={isLoading || disabled}
+              value={watchedValues.issuedDate ? new Date(watchedValues.issuedDate) : undefined}
+              onChange={(date) => setValue('issuedDate', date?.toISOString().split('T')[0] || '')}
+              disabled={isSubmitting || disabled}
             />
+            {errors.issuedDate && (
+              <p className="text-sm text-red-500">{errors.issuedDate.message}</p>
+            )}
           </div>
         </div>
 
@@ -109,10 +119,12 @@ const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({
           <Input
             id="place-issuance"
             placeholder="Enter the issuing authority or location"
-            value={formData.issuedPlace}
-            onChange={(e) => onInputChange('issuedPlace', e.target.value)}
-            disabled={isLoading || disabled}
+            {...register('issuedPlace', { required: 'Place of issuance is required' })}
+            disabled={isSubmitting || disabled}
           />
+          {errors.issuedPlace && (
+            <p className="text-sm text-red-500">{errors.issuedPlace.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -122,10 +134,10 @@ const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({
           <Input
             id="address"
             placeholder="Enter address as shown on document"
-            value={formData.idAddress}
-            onChange={(e) => onInputChange('idAddress', e.target.value)}
-            disabled={isLoading || disabled}
+            {...register('idAddress', { required: 'Address is required' })}
+            disabled={isSubmitting || disabled}
           />
+          {errors.idAddress && <p className="text-sm text-red-500">{errors.idAddress.message}</p>}
         </div>
       </CardContent>
     </Card>

@@ -1,7 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
 import { useRouter } from 'next/navigation';
 
 interface ContactInfoActionsProps {
@@ -12,17 +11,12 @@ const ContactInfoActions: React.FC<ContactInfoActionsProps> = ({ isLoading = fal
   const router = useRouter();
 
   return (
-    <div className="flex justify-start pt-6">
-      <Button
-        variant="outline"
-        onClick={() => router.push('/profile/')}
-        disabled={isLoading}
-        className="flex items-center gap-2"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Profile
-      </Button>
-    </div>
+    <DefaultSubmitButton
+      isSubmitting={isLoading}
+      disabled={isLoading}
+      onBack={() => router.push(`/profile/`)}
+      backTooltip="Back to Profile"
+    />
   );
 };
 

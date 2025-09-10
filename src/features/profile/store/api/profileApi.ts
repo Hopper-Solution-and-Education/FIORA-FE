@@ -13,7 +13,7 @@ export const profileApi = createApi({
     baseUrl: '/',
     prepareHeaders: (headers) => headers,
   }),
-  tagTypes: ['Profile', 'eKYC'],
+  tagTypes: ['Profile', 'eKYC', 'BankAccount', 'IdentificationDocument'],
   endpoints: (builder) => ({
     getProfile: builder.query<UserProfile, void>({
       query: () => ({ url: ApiEndpointEnum.Profile, method: 'GET' }),
@@ -56,7 +56,7 @@ export const profileApi = createApi({
     getIdentificationDocument: builder.query<any, void>({
       query: () => ({ url: `/api/indentification-document`, method: 'GET' }),
       transformResponse: (response: Response<any>) => response.data,
-      providesTags: ['eKYC'],
+      providesTags: ['IdentificationDocument'],
     }),
 
     submitIdentificationDocument: builder.mutation<any, IdentificationDocumentPayload>({
@@ -67,11 +67,14 @@ export const profileApi = createApi({
         headers: { 'Content-Type': 'application/json' },
       }),
       transformResponse: (response: Response<any>) => response.data,
-      invalidatesTags: ['eKYC'],
+      invalidatesTags: ['IdentificationDocument'],
     }),
 
     // Upload Attachment
-    uploadAttachment: builder.mutation<any, { url: string; path: string; type: string }>({
+    uploadAttachment: builder.mutation<
+      any,
+      { url: string; path: string; type: string; size?: number }
+    >({
       query: (body) => ({
         url: '/api/attachment',
         method: 'POST',
@@ -80,18 +83,11 @@ export const profileApi = createApi({
       transformResponse: (response: Response<any>) => response.data,
     }),
 
-    // Tax Information API
-    getTaxInformation: builder.query<any, void>({
-      query: () => ({ url: '/api/tax-information', method: 'GET' }),
-      transformResponse: (response: Response<any>) => response.data,
-      providesTags: ['eKYC'],
-    }),
-
     // Bank Account API
     getBankAccount: builder.query<any, void>({
       query: () => ({ url: '/api/bank-account', method: 'GET' }),
       transformResponse: (response: Response<any>) => response.data,
-      providesTags: ['eKYC'],
+      providesTags: ['BankAccount'],
     }),
 
     submitBankAccount: builder.mutation<any, BankAccountFormData>({
@@ -102,7 +98,7 @@ export const profileApi = createApi({
         headers: { 'Content-Type': 'application/json' },
       }),
       transformResponse: (response: Response<any>) => response.data,
-      invalidatesTags: ['eKYC'],
+      invalidatesTags: ['BankAccount'],
     }),
   }),
 });
@@ -116,7 +112,6 @@ export const {
   useGetIdentificationDocumentQuery,
   useSubmitIdentificationDocumentMutation,
   useUploadAttachmentMutation,
-  useGetTaxInformationQuery,
   useGetBankAccountQuery,
   useSubmitBankAccountMutation,
 } = profileApi;

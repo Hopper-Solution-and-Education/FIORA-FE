@@ -29,6 +29,7 @@ interface UploadFieldProps {
   disabled?: boolean;
   size?: 'small' | 'medium' | 'large';
   containerClassName?: string;
+  canChangeShape?: boolean;
   [key: string]: any;
 }
 
@@ -50,6 +51,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
   disabled,
   size = 'large',
   containerClassName,
+  canChangeShape = true,
   ...props
 }) => {
   const [preview, setPreview] = useState<string | null>(null);
@@ -276,19 +278,21 @@ const UploadField: React.FC<UploadFieldProps> = ({
 
         {preview && !disabled && (
           <div className="absolute top-3 right-3 flex space-x-2">
-            <button
-              data-test="upload-field-toggle-shape"
-              type="button"
-              onClick={toggleShape}
-              className="w-8 h-8 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80 text-primary rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 hover:scale-105 border border-primary/10 hover:border-primary/20"
-              aria-label="Toggle shape"
-            >
-              {currentShape === 'square' ? (
-                <Circle className="h-4 w-4" />
-              ) : (
-                <Square className="h-4 w-4" />
-              )}
-            </button>
+            {canChangeShape && (
+              <button
+                data-test="upload-field-toggle-shape"
+                type="button"
+                onClick={toggleShape}
+                className="w-8 h-8 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80 text-primary rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 hover:scale-105 border border-primary/10 hover:border-primary/20"
+                aria-label="Toggle shape"
+              >
+                {currentShape === 'square' ? (
+                  <Circle className="h-4 w-4" />
+                ) : (
+                  <Square className="h-4 w-4" />
+                )}
+              </button>
+            )}
 
             <button
               data-test="upload-field-clear-image"

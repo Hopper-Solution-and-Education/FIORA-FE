@@ -43,7 +43,7 @@ export enum EKYCStatus {
 }
 
 export enum EKYCType {
-  BANK_ACCOUNT = 'BANK_ACCOUNT',
+  BANK_ACCOUNT = 'BANK',
   CONTACT_INFORMATION = 'CONTACT',
   IDENTIFICATION_DOCUMENT = 'IDENTIFICATION',
   TAX_INFORMATION = 'TAX',
@@ -81,14 +81,7 @@ export interface BankAccountFormData {
   accountName: string;
   bankName: string;
   SWIFT: string;
-}
-
-// Identification Document Types
-export enum IdentificationDocumentType {
-  PASSPORT = 'PASSPORT',
-  NATIONAL = 'NATIONAL',
-  BUSINESS = 'BUSINESS',
-  TAX = 'TAX',
+  paymentRefId: string;
 }
 
 export interface IdentificationDocumentFormData {
