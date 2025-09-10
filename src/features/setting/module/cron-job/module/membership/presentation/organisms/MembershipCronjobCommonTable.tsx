@@ -3,10 +3,11 @@ import {
   ColumnConfigMap,
   CommonTableColumn,
 } from '@/components/common/organisms/CommonTable/types';
+import { formatDateTime } from '@/shared/lib/formatDateTime';
 import { useMemo, useState } from 'react';
 import MembershipActionButton from '../atoms/MembershipActionButton';
-import MembershipIdCell from '../atoms/MembershipIdCell';
 import MembershipStatusBadge from '../atoms/MembershipStatusBadge';
+import MembershipTopBarAction from '../molecules/MembershipTopBarAction';
 import { MembershipCronjobTableData } from '../types/membership.type';
 
 interface Props {
@@ -28,62 +29,67 @@ const MembershipCronjobCommonTable = ({
   onLoadMore,
   className,
 }: Props) => {
-  const columns: CommonTableColumn<MembershipCronjobTableData & { index?: number }>[] = useMemo(
+  const columns: CommonTableColumn<MembershipCronjobTableData>[] = useMemo(
     () => [
-      {
-        key: 'index',
-        title: 'No.',
-        width: 80,
-        align: 'center',
-        render: (_r) => null, // will be set via data mapping
-      },
       {
         key: 'id',
         title: 'ID',
         align: 'left',
-        render: (r) => <MembershipIdCell id={r.id} executionTime={r.executionTime} />,
+        className: 'max-w-[200px] truncate',
+        render: (r) => (
+          <span className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 truncase">
+            {r.id}
+          </span>
+        ),
       },
       {
         key: 'email',
         title: 'Email',
         align: 'left',
-        render: (r) => <span className="text-sm font-medium">{r.email}</span>,
+        render: (r) => <span className="text-sm">{r.email}</span>,
       },
       {
         key: 'executionTime',
         title: 'Datetime',
         align: 'left',
-        render: (r) => <span className="text-sm text-muted-foreground">{r.executionTime}</span>,
+        render: (r) => <span className="text-sm">{formatDateTime(r.executionTime)}</span>,
       },
       {
         key: 'fromTier',
         title: 'From Tier',
         align: 'center',
-        render: (r) => <span className="text-sm font-medium">{r.fromTier}</span>,
+        render: (r) => <span className="text-sm">{r.fromTier}</span>,
       },
       {
         key: 'spent',
         title: 'Spent',
         align: 'right',
-        render: (r) => <span className="text-sm font-mono">{r.spent} FX</span>,
+        render: (r) => <span className="text-sm">{r.spent} FX</span>,
       },
       {
         key: 'balance',
         title: 'Balance',
         align: 'right',
-        render: (r) => <span className="text-sm font-mono">{r.balance} FX</span>,
+        render: (r) => <span className="text-sm">{r.balance} FX</span>,
       },
       {
         key: 'toTier',
         title: 'To Tier',
         align: 'center',
-        render: (r) => <span className="text-sm font-medium">{r.toTier}</span>,
+        render: (r) => <span className="text-sm">{r.toTier}</span>,
       },
       {
         key: 'status',
         title: 'Status',
         align: 'center',
         render: (r) => <MembershipStatusBadge status={r.status} />,
+      },
+      {
+        key: 'updatedBy',
+        title: 'Updated By',
+        align: 'left',
+        className: 'max-w-[200px] truncate',
+        render: (r) => <span className="text-sm truncate">{r.createdBy || 'System'}</span>,
       },
       {
         key: 'action',
@@ -115,17 +121,10 @@ const MembershipCronjobCommonTable = ({
 
   const [columnConfig, setColumnConfig] = useState<ColumnConfigMap>(initialConfig);
 
-  const rowsWithIndex = useMemo(() => data.map((row, idx) => ({ ...row, index: idx + 1 })), [data]);
-
-  const columnsWithIndexRender = useMemo(
-    () => columns.map((c) => (c.key === 'index' ? { ...c, render: (r: any) => r.index } : c)),
-    [columns],
-  );
-
   return (
     <CommonTable
-      data={rowsWithIndex as any}
-      columns={columnsWithIndexRender as any}
+      data={data}
+      columns={columns}
       columnConfig={columnConfig}
       onColumnConfigChange={setColumnConfig}
       storageKey={STORAGE_KEY}
@@ -134,6 +133,7 @@ const MembershipCronjobCommonTable = ({
       isLoadingMore={isLoadingMore}
       onLoadMore={onLoadMore}
       className={className}
+      leftHeaderNode={<MembershipTopBarAction />}
     />
   );
 };

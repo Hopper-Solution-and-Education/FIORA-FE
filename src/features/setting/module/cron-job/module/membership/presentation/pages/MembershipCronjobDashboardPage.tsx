@@ -3,11 +3,8 @@
 import { DispatchTableProvider } from '../context/DispatchTableContext';
 import { TableProvider } from '../context/TableContext';
 import { useMembershipCronjobDashboard } from '../hooks/useMembershipCronjobDashboard';
-import MembershipTopBarAction from '../molecules/MembershipTopBarAction';
 import MembershipCronjobChart from '../organisms/MembershipCronjobChart';
 import MembershipCronjobCommonTable from '../organisms/MembershipCronjobCommonTable';
-
-const STORAGE_KEY = 'membership-cronjob:table-config';
 
 const MembershipCronjobDashboardPage = () => {
   const { tableData, loading, loadMore, dispatchTable } = useMembershipCronjobDashboard();
@@ -22,10 +19,6 @@ const MembershipCronjobDashboardPage = () => {
             <MembershipCronjobChart />
 
             <div className="space-y-4 border p-4 rounded-2xl">
-              {/* Top bar with search and filters */}
-              <MembershipTopBarAction />
-
-              {/* Table component */}
               <MembershipCronjobCommonTable
                 data={tableData.data}
                 loading={loading}

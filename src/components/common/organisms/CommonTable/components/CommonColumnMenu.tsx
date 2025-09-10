@@ -65,7 +65,7 @@ export default function CommonColumnMenu<T>({
       columns
         .map((c) => c.key)
         .filter((key) => config[key]?.isVisible)
-        .sort((a, b) => (config[a].index ?? 0) - (config[b].index ?? 0)),
+        .sort((a, b) => (config[a]?.index ?? 0) - (config[b]?.index ?? 0)),
     [columns, config],
   );
 
@@ -74,7 +74,7 @@ export default function CommonColumnMenu<T>({
       columns
         .map((c) => c.key)
         .filter((key) => !config[key]?.isVisible)
-        .sort((a, b) => (config[a].index ?? 0) - (config[b].index ?? 0)),
+        .sort((a, b) => (config[a]?.index ?? 0) - (config[b]?.index ?? 0)),
     [columns, config],
   );
 
@@ -98,9 +98,10 @@ export default function CommonColumnMenu<T>({
   };
 
   const toggle = (key: string) => {
+    const current = config[key] ?? { isVisible: false, index: shown.length, align: undefined };
     const next: ColumnConfigMap = {
       ...config,
-      [key]: { ...config[key], isVisible: !config[key].isVisible },
+      [key]: { ...current, isVisible: !current.isVisible },
     };
     onChange(next);
   };

@@ -33,11 +33,18 @@ export default function CommonTable<T>({
   });
 
   const shownColumns = useMemo(() => {
+    // Merge runtime columns with config to ensure every column has a config entry
+    const mergedConfig: ColumnConfigMap = columns.reduce((acc, c, idx) => {
+      const existing = columnConfig[c.key];
+      acc[c.key] = existing ?? { isVisible: true, index: idx, align: c.align };
+      return acc;
+    }, {} as ColumnConfigMap);
+
     return columns
-      .filter((c) => columnConfig[c.key]?.isVisible !== false)
+      .filter((c) => mergedConfig[c.key]?.isVisible !== false)
       .sort((a, b) => {
-        const aIndex = columnConfig[a.key]?.index ?? 0;
-        const bIndex = columnConfig[b.key]?.index ?? 0;
+        const aIndex = mergedConfig[a.key]?.index ?? 0;
+        const bIndex = mergedConfig[b.key]?.index ?? 0;
         return aIndex - bIndex;
       });
   }, [columns, columnConfig]);
@@ -49,15 +56,28 @@ export default function CommonTable<T>({
   };
 
   const handleConfigChange = (cfg: ColumnConfigMap) => {
-    onColumnConfigChange?.(cfg);
-    saveColumnConfigToStorage(storageKey, cfg);
+    // Normalize config to include all current columns and drop stale ones
+    const normalized: ColumnConfigMap = columns.reduce((acc, c, idx) => {
+      const entry = cfg[c.key] ?? { isVisible: true, index: idx, align: c.align };
+      // keep align from column if not explicitly set
+      acc[c.key] = { ...entry, align: entry.align ?? c.align };
+      return acc;
+    }, {} as ColumnConfigMap);
+
+    onColumnConfigChange?.(normalized);
+    saveColumnConfigToStorage(storageKey, normalized);
   };
 
-  // initial load from storage
+  // initial load from storage (merge with defaults to protect against schema drift)
   useEffect(() => {
     const loaded = loadColumnConfigFromStorage(storageKey);
     if (loaded && onColumnConfigChange) {
-      onColumnConfigChange(loaded);
+      const merged = columns.reduce((acc, c, idx) => {
+        const entry = loaded[c.key] ?? { isVisible: true, index: idx, align: c.align };
+        acc[c.key] = { ...entry, align: entry.align ?? c.align };
+        return acc;
+      }, {} as ColumnConfigMap);
+      onColumnConfigChange(merged);
     } else if (storageKey && onColumnConfigChange) {
       // persist current config as default
       saveColumnConfigToStorage(storageKey, columnConfig);
