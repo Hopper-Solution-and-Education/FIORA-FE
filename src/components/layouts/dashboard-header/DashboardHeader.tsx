@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ICON_SIZE } from '@/shared/constants/size';
 import useAnnouncementManager from '@/shared/hooks/useAnnouncementManager';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
@@ -76,12 +77,22 @@ export default function Header() {
           />
 
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Gift
-                size={ICON_SIZE.MD}
-                className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
-              />
-            </DropdownMenuTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <div className="flex flex-col gap-1 justify-center items-center">
+                    <Gift
+                      size={ICON_SIZE.MD}
+                      className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+                    />
+                    <span className="text-sm">Rewards</span>
+                  </div>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Rewards</p>
+              </TooltipContent>
+            </Tooltip>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>Check your rewards</DropdownMenuItem>
             </DropdownMenuContent>

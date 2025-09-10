@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-export const useTaxUpload = () => {
+export const useFileUpload = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   const handleFileUpload = (file: File | null) => {
