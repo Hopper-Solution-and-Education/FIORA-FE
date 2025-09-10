@@ -7,40 +7,36 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ICON_SIZE } from '@/shared/constants/size';
-import { HelpCircleIcon } from 'lucide-react';
+import { NewspaperIcon } from 'lucide-react';
 import Link from 'next/link';
-import { helpItems } from './utils';
+import { newsItems } from './utils';
 
-type HelpCenterProps = {
-  isShowingText?: boolean;
-};
-
-export default function HelpCenter({ isShowingText = true }: HelpCenterProps) {
+export default function NewsCenter() {
   return (
     <TooltipProvider>
       <DropdownMenu modal={false}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger asChild>
+          <Tooltip>
+            <TooltipTrigger asChild>
               <div className="flex flex-col gap-1 justify-center items-center">
-                <HelpCircleIcon
+                <NewspaperIcon
                   size={ICON_SIZE.MD}
                   className="transition-all duration-200 hover:scale-110 cursor-pointer"
                 />
-                {isShowingText && <span className="text-sm">Helps</span>}
+                <span className="text-sm">News</span>
               </div>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Helps</p>
-          </TooltipContent>
-        </Tooltip>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>News</p>
+            </TooltipContent>
+          </Tooltip>
+        </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
           sideOffset={8}
           className="p-4 grid grid-cols-5 gap-4 border shadow-md w-[300px]"
         >
-          {helpItems.map((item, index) => (
+          {newsItems.map((item, index) => (
             <Tooltip key={index}>
               <TooltipTrigger asChild>
                 <Link
