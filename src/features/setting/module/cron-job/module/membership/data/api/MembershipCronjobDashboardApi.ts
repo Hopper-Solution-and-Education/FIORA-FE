@@ -26,6 +26,10 @@ export class MembershipCronjobDashboardApi implements IMembershipCronjobDashboar
 
     return this.httpClient.get(url);
   }
+
+  async getMembershipDynamicValue() {
+    return this.httpClient.get(routeConfig(ApiEndpointEnum.CronjobDashboardDefineType));
+  }
 }
 
 decorate(injectable(), MembershipCronjobDashboardApi);

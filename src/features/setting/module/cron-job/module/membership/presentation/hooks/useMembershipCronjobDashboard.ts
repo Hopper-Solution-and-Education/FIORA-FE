@@ -1,6 +1,8 @@
+import { CronJobType } from '@/shared/constants/cron-job';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { MembershipCronjobItem } from '../../data/dto/response/MembershipCronjobResponse';
+import { MembershipCronjobMapper } from '../../data/mapper';
 import { membershipCronjobContainer } from '../../di/membershipCronjobDashboardDI';
 import { MEMBERSHIP_CRONJOB_TYPES } from '../../di/membershipCronjobDashboardDI.type';
 import { IGetMembershipCronjobsPaginatedUseCase } from '../../domain/usecase/GetMembershipCronjobsPaginatedUseCase';
@@ -30,28 +32,44 @@ export const useMembershipCronjobDashboard = () => {
         const useCase = membershipCronjobContainer.get<IGetMembershipCronjobsPaginatedUseCase>(
           MEMBERSHIP_CRONJOB_TYPES.IGetMembershipCronjobsPaginatedUseCase,
         );
+
         const res = await useCase.execute(page, pageSize, {
           status: filter?.status || [],
-          typeCronJob: undefined,
+          typeCronJob: CronJobType.Membership,
           search: filter?.search || '',
           fromDate: filter?.fromDate || '',
           toDate: filter?.toDate || '',
         });
 
-        console.log(res);
+        const list = MembershipCronjobMapper.toList(res);
 
-        const rows = (res.data.data || []).map((it: MembershipCronjobItem) => ({
-          id: it.id,
-          email: it.Transaction?.user?.email || 'N/A',
-          executionTime: it.executionTime,
-          fromTier: it.Transaction?.user?.MembershipProgress?.[0]?.tier?.tierName || 'N/A',
-          spent: it.Transaction?.user?.MembershipProgress?.[0]?.currentSpent || '0',
-          balance: it.Transaction?.user?.MembershipProgress?.[0]?.currentBalance || '0',
-          toTier: it.Transaction?.user?.MembershipProgress?.[0]?.tier?.tierName || 'N/A',
-          status: it.status,
-          createdBy: it.createdBy,
-          transactionId: it.transactionId,
-        }));
+        const rows = (list.data || []).map((it: MembershipCronjobItem) => {
+          const dynamicKeys = Object.keys(it.dynamicValue || {});
+          const firstKey = dynamicKeys[0];
+          const secondKey = dynamicKeys[1];
+
+          const fromTier =
+            (firstKey ? it.dynamicValue?.[firstKey] : undefined) ||
+            it.updatedBy?.MembershipProgress?.[0]?.tier?.tierName ||
+            'N/A';
+          const toTier =
+            (secondKey ? it.dynamicValue?.[secondKey] : undefined) ||
+            it.updatedBy?.MembershipProgress?.[0]?.tier?.tierName ||
+            'N/A';
+
+          return {
+            id: it.id,
+            email: it.updatedBy?.email || 'N/A',
+            executionTime: it.executionTime,
+            fromTier,
+            spent: it.spent || it.updatedBy?.MembershipProgress?.[0]?.currentSpent || '0',
+            balance: it.balance || it.updatedBy?.MembershipProgress?.[0]?.currentBalance || '0',
+            toTier,
+            status: it.status,
+            createdBy: it.createdBy,
+            transactionId: it.transactionId,
+          };
+        });
 
         if (isLoadMore) {
           dispatchTable({ type: 'APPEND_DATA', payload: rows });
@@ -62,17 +80,16 @@ export const useMembershipCronjobDashboard = () => {
         dispatchTable({
           type: 'SET_PAGINATION',
           payload: {
-            current: res.data.page,
-            pageSize: res.data.pageSize,
-            total: res.data.total ?? 0,
+            current: list.page,
+            pageSize: list.pageSize,
+            total: list.total ?? 0,
           },
         });
 
         const hasMore =
-          res.data.page <
-          (res.data.totalPage ?? Math.ceil((res.data.total ?? 0) / res.data.pageSize));
+          list.page < (list.totalPage ?? Math.ceil((list.total ?? 0) / list.pageSize));
         dispatchTable({ type: 'SET_HAS_MORE', payload: hasMore });
-        dispatch(setStatistics(res.data.statistics));
+        dispatch(setStatistics(list.statistics));
       } finally {
         if (isLoadMore) {
           dispatchTable({ type: 'SET_IS_LOADING_MORE', payload: false });

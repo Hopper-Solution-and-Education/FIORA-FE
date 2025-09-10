@@ -6,6 +6,10 @@ import {
   GetMembershipCronjobsPaginatedUseCase,
   IGetMembershipCronjobsPaginatedUseCase,
 } from '../domain/usecase/GetMembershipCronjobsPaginatedUseCase';
+import {
+  GetMembershipDynamicFieldsUseCase,
+  IGetMembershipDynamicFieldsUseCase,
+} from '../domain/usecase/GetMembershipDynamicFieldsUseCase';
 import { MEMBERSHIP_CRONJOB_TYPES } from './membershipCronjobDashboardDI.type';
 
 const membershipCronjobContainer = new Container();
@@ -31,6 +35,13 @@ membershipCronjobContainer
     MEMBERSHIP_CRONJOB_TYPES.IGetMembershipCronjobsPaginatedUseCase,
   )
   .to(GetMembershipCronjobsPaginatedUseCase)
+  .inSingletonScope();
+
+membershipCronjobContainer
+  .bind<IGetMembershipDynamicFieldsUseCase>(
+    MEMBERSHIP_CRONJOB_TYPES.IGetMembershipDynamicFieldsUseCase,
+  )
+  .to(GetMembershipDynamicFieldsUseCase)
   .inSingletonScope();
 
 export { membershipCronjobContainer };

@@ -446,7 +446,7 @@ model Wallet {
   userId           String        @db.Uuid
   icon             String?
   type             WalletType
-  frBalanceActive  Decimal       @default(0) @db.Decimal(12, 2)
+  frBalanceActive  Decimal       @default(0) @db.Decimal(13, 2)
   frBalanceFrozen  Decimal       @default(0)
   creditLimit      Decimal?      @default(0)
   createdAt        DateTime      @default(now()) @db.Timestamptz(0)

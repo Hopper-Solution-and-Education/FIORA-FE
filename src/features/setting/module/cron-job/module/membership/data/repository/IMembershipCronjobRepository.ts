@@ -7,4 +7,5 @@ export interface IMembershipCronjobRepository {
     pageSize: number,
     filter?: MembershipCronjobFilterRequest,
   ): Promise<MembershipCronjobPaginatedResponse>;
+  getMembershipDynamicValue(): Promise<string[]>;
 }

@@ -7,4 +7,6 @@ export interface IMembershipCronjobDashboardApi {
     pageSize: number,
     filter?: MembershipCronjobFilterRequest,
   ): Promise<MembershipCronjobPaginatedResponse>;
+
+  getMembershipDynamicValue() : Promise<any>;
 }

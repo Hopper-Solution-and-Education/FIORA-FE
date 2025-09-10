@@ -7,6 +7,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useEffect, useState } from 'react';
+import { membershipCronjobContainer } from '../../di/membershipCronjobDashboardDI';
+import { MEMBERSHIP_CRONJOB_TYPES } from '../../di/membershipCronjobDashboardDI.type';
+import { IGetMembershipDynamicFieldsUseCase } from '../../domain/usecase/GetMembershipDynamicFieldsUseCase';
 
 interface MembershipActionButtonProps {
   status: string;
@@ -26,6 +30,18 @@ const MembershipActionButton = ({
     return null;
   }
 
+  const [options, setOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    const useCase = membershipCronjobContainer.get<IGetMembershipDynamicFieldsUseCase>(
+      MEMBERSHIP_CRONJOB_TYPES.IGetMembershipDynamicFieldsUseCase,
+    );
+    useCase
+      .execute()
+      .then(setOptions)
+      .catch(() => setOptions([]));
+  }, []);
+
   const handleRetry = () => {
     if (onRetry) {
       // TODO: Get the actual membership ID from context or props
@@ -40,10 +56,11 @@ const MembershipActionButton = ({
           <SelectValue placeholder="Select tier" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="titan-phoenix">Titan Phoenix</SelectItem>
-          <SelectItem value="gold-tortoise">Gold Tortoise</SelectItem>
-          <SelectItem value="silver-egg">Silver Egg</SelectItem>
-          <SelectItem value="platinum-qili">Platinum Qili</SelectItem>
+          {options.map((opt) => (
+            <SelectItem key={opt} value={opt}>
+              {opt}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
       <Button

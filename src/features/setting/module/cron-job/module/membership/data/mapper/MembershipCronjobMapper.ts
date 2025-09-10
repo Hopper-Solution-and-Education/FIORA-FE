@@ -12,7 +12,7 @@ export class MembershipCronjobMapper {
   ): URLSearchParams {
     const params = new URLSearchParams();
     params.append('page', page.toString());
-    params.append('lmit', pageSize.toString());
+    params.append('pageSize', pageSize.toString());
 
     if (!filter) return params;
 
@@ -45,12 +45,18 @@ export class MembershipCronjobMapper {
 
   static toList(response: MembershipCronjobPaginatedResponse) {
     return {
-      data: response.data.data as MembershipCronjobItem[],
-      page: response.data.page,
-      pageSize: response.data.pageSize ?? 10,
-      totalPage: response.data.totalPage,
-      total: response.data.total,
-      statistics: response.data.statistics ?? undefined,
+      data: (response.data as MembershipCronjobItem[]) || [],
+      page: response.page ?? 1,
+      pageSize: response.pageSize ?? 10,
+      totalPage: response.totalPage ?? 1,
+      total: response.total ?? (response.data as MembershipCronjobItem[])?.length ?? 0,
+      statistics: response.statistics ?? undefined,
     };
+  }
+
+  static toDynamicValue<T = any>(response: { data: Record<string, T[]> }) {
+    const firstTypeKey = Object.keys(response?.data || {})[0];
+    const items = (firstTypeKey ? (response.data as any)[firstTypeKey] : []) as Array<any>;
+    return items.map((item) => item?.field).filter(Boolean);
   }
 }

@@ -8,4 +8,5 @@ export const MEMBERSHIP_CRONJOB_TYPES = {
   IMembershipCronjobRepository: Symbol.for('MembershipCronjobRepository'),
   // Usecases
   IGetMembershipCronjobsPaginatedUseCase: Symbol.for('GetMembershipCronjobsPaginatedUseCase'),
+  IGetMembershipDynamicFieldsUseCase: Symbol.for('GetMembershipDynamicFieldsUseCase'),
 };
