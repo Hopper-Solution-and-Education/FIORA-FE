@@ -11,26 +11,30 @@ import { HelpCircleIcon } from 'lucide-react';
 import Link from 'next/link';
 import { helpItems } from './utils';
 
-export default function HelpCenter() {
+type HelpCenterProps = {
+  isShowingText?: boolean;
+};
+
+export default function HelpCenter({ isShowingText = true }: HelpCenterProps) {
   return (
     <TooltipProvider>
       <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <Tooltip>
-            <TooltipTrigger asChild>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
               <div className="flex flex-col gap-1 justify-center items-center">
                 <HelpCircleIcon
                   size={ICON_SIZE.MD}
                   className="transition-all duration-200 hover:scale-110 cursor-pointer"
                 />
-                <span className="text-sm">Helps</span>
+                {isShowingText && <span className="text-sm">Helps</span>}
               </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Helps</p>
-            </TooltipContent>
-          </Tooltip>
-        </DropdownMenuTrigger>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Helps</p>
+          </TooltipContent>
+        </Tooltip>
         <DropdownMenuContent
           align="end"
           sideOffset={8}

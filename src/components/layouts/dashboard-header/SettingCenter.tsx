@@ -24,7 +24,11 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { filterMenuItems, MenuSettingItem, menuSettingItems } from './utils';
 
-export default function SettingCenter() {
+type SettingCenterProps = {
+  isShowingText?: boolean;
+};
+
+export default function SettingCenter({ isShowingText = true }: SettingCenterProps) {
   const { theme, setTheme } = useTheme();
   const { currency, language } = useAppSelector((state) => state.settings);
   const dispatch = useAppDispatch();
@@ -72,22 +76,22 @@ export default function SettingCenter() {
   return (
     <TooltipProvider>
       <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <Tooltip>
-            <TooltipTrigger asChild>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
               <div className="flex flex-col gap-1 justify-center items-center">
                 <Settings
                   size={ICON_SIZE.MD}
                   className="transition-all duration-200 hover:scale-110 cursor-pointer"
                 />
-                <span className="text-sm">Settings</span>
+                {isShowingText && <span className="text-sm">Settings</span>}
               </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Settings</p>
-            </TooltipContent>
-          </Tooltip>
-        </DropdownMenuTrigger>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Settings</p>
+          </TooltipContent>
+        </Tooltip>
 
         <DropdownMenuContent
           align="end"
