@@ -4,6 +4,7 @@ import { newsRepository } from '../../infrashtructure/repositories/newsRepositor
 import {
   ListNewsResponse,
   NewsCreationRequest,
+  NewsDetailResponse,
   NewsQueryParams,
   NewsUpdateRequest,
 } from '../../types/newsDTO';
@@ -13,12 +14,19 @@ class NewsUsercase {
     return this.newsRepo.getAll(queryParam);
   }
 
-  async getNewsById(newsId: string): Promise<Post | null> {
+  async getNewsByIdAndIncrease(newsId: string, userId: string): Promise<NewsDetailResponse | null> {
     //get detail
-    const result: Post | null = await this.newsRepo.getNewsById(newsId);
+    const result: NewsDetailResponse | null = await this.newsRepo.getNewsByIdAndUserId(
+      newsId,
+      userId,
+    );
     //increase view
     await this.newsRepo.increaseView(newsId);
     return result;
+  }
+
+  async getNewsById(newsId: string): Promise<Post | null> {
+    return await this.newsRepo.getNewsById(newsId);
   }
 
   async createNews(createParam: NewsCreationRequest): Promise<Post> {

@@ -378,12 +378,15 @@ export enum Messages {
   GET_LIST_COMMENT_NEWS_SUCCESS = 'Get list comment news successfully',
   COMMENT_NEWS_SUCCESS = 'Comment news successfully',
   UPDATE_COMMENT_NEWS_SUCCESS = 'Update comment news successfully',
+  UPDATE_COMMENT_NEWS_ERROR = 'Update comment news error',
   DELETE_COMMENT_NEWS_SUCCESS = 'Delete comment news successfully',
   REACT_NEWS_SUCCESS = 'React news successfully',
   UNREACT_NEWS_SUCCESS = 'Un react news successfully',
   GET_NEWS_DETAIL_SECCESS = 'Get news detail successfully',
+  NEWS_NOT_FOUND = 'News not found',
   CREATE_COMMENT_NEWS_SUCCESS = 'Create comment news successfully',
   GET_LIST_POST_TYPE_SUCCESS = 'Get list post type successfully',
+  DELETE_COMMENT_SUCESS = 'Delete news comment successfully',
 
   //User
   USER_NOT_FOUND = 'User not found',
