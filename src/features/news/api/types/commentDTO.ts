@@ -1,8 +1,8 @@
 export interface commentCreationNews {
   content: string;
-  postId: string;
+  newsId: string;
   userId: string;
-  repLyComment?: string;
+  replyComment?: string;
 }
 
 export interface commentUpdationNews {
@@ -11,17 +11,28 @@ export interface commentUpdationNews {
 }
 
 export interface getCommentRequest {
-  postId: string;
+  newsId: string;
   page: number;
   limit: number;
   orderBy: string;
   orderDirection: string;
 }
 
-export interface CommentResponse {
+export interface CommentResponseRepo {
   id: string;
   content: string;
   postId: string;
+  createdAt: Date;
+  User: {
+    id: string;
+    email: string;
+    avatarId: string | null;
+  };
+}
+export interface CommentResponse {
+  id: string;
+  content: string;
+  newsId: string;
   createdAt: Date;
   User: {
     id: string;

@@ -9,7 +9,11 @@ import { createErrorResponse, errorHandler } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { validateBody, validateVariable } from '@/shared/utils/validate';
-import { postIdSchema, updateNewsSchema } from '@/shared/validators/newsValidation';
+import {
+  commetCreateRequestSchema,
+  postIdSchema,
+  updateNewsSchema,
+} from '@/shared/validators/newsValidation';
 import { User } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -137,8 +141,9 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
 }
 
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.query;
-  const errorValidation = validateVariable(postIdSchema, id);
+  const { id, userId } = req.query;
+
+  const errorValidation = validateVariable(commetCreateRequestSchema, { id, userId });
   //validation query string
   if (errorValidation.error) {
     return res
@@ -151,11 +156,17 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
         ),
       );
   }
-  const newsId = id as 'string';
 
-  const newsDetail = await newsUsercase.getNewsById(newsId);
-
-  return res
-    .status(RESPONSE_CODE.OK)
-    .json(createResponse(RESPONSE_CODE.OK, Messages.GET_NEWS_DETAIL_SECCESS, newsDetail));
+  const newsIdParam = String(id);
+  const userIdParam = String(userId);
+  try {
+    const newsDetail = await newsUsercase.getNewsByIdAndIncrease(newsIdParam, userIdParam);
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_NEWS_DETAIL_SECCESS, newsDetail));
+  } catch (error) {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.NEWS_NOT_FOUND));
+  }
 }
