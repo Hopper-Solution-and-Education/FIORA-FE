@@ -33,18 +33,19 @@ export default (req: NextApiRequest, res: NextApiResponse) =>
 
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
   const {
-    page,
-    limit,
+    page = 1,
+    limit = 0,
     filters = { search: '', categories: [] },
-    orderBy,
-    orderDirection,
-  } = req.body;
+    orderBy = 'views',
+    orderDirection = 'desc',
+  } = req.query;
+
   const queryParams: NewsQueryParams = {
-    page,
-    limit,
-    filters,
-    orderBy,
-    orderDirection,
+    page: Number(page),
+    limit: Number(limit),
+    filters: typeof filters === 'string' ? JSON.parse(filters) : filters,
+    orderBy: String(orderBy),
+    orderDirection: String(orderDirection),
   };
   console.log('log', queryParams);
   const result = await newsUsercase.getAll(queryParams);

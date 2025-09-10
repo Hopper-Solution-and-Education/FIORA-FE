@@ -3,20 +3,20 @@ import { Comment } from '@prisma/client';
 import { ICommentNewsRepository } from '../../domain/repository/commentNewsRepository';
 import {
   commentCreationNews,
-  CommentResponse,
+  CommentResponseRepo,
   commentUpdationNews,
   getCommentRequest,
 } from '../../types/commentDTO';
 
 class CommentNewsRepository implements ICommentNewsRepository {
-  async getCommentNews(queryParam: getCommentRequest): Promise<CommentResponse[]> {
-    console.log(queryParam.postId);
+  async getCommentNews(queryParam: getCommentRequest): Promise<CommentResponseRepo[]> {
+    console.log(queryParam.newsId);
 
     const skip = (queryParam.page - 1) * queryParam.limit;
 
     return prisma.comment.findMany({
       where: {
-        postId: queryParam.postId,
+        postId: queryParam.newsId,
       },
       skip: skip,
       orderBy: {
@@ -45,10 +45,11 @@ class CommentNewsRepository implements ICommentNewsRepository {
     });
   }
   async createCommentNews(dto: commentCreationNews): Promise<Comment> {
+    console.log('dto: ', dto);
     return prisma.comment.create({
       data: {
         content: dto.content,
-        postId: dto.postId,
+        postId: dto.newsId,
         userId: dto.userId,
         createdBy: dto.userId,
       },

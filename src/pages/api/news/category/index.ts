@@ -26,7 +26,7 @@ export default (req: NextApiRequest, res: NextApiResponse) =>
   );
 
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
-  const { type } = req.body;
+  const { type } = req.query;
 
   const result: PostCategoryResponse[] = await postCategoryUsecase.getAllByType(type as PostType);
   return res
