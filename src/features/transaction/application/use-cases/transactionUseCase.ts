@@ -176,7 +176,7 @@ class TransactionUseCase {
     const {
       page = 1,
       pageSize = 20,
-      searchParams = '',
+      searchParams,
       filters,
       sortBy = {},
       userId,
@@ -252,7 +252,7 @@ class TransactionUseCase {
       amountMax: Number(amountMax['_max']?.baseAmount) || 0,
       amountMin: Number(amountMin['_min']?.baseAmount) || 0,
       total,
-      lastCursor: transactions[transactions.length - 1]?.id,
+      ...(isInfinityScroll && { lastCursor: transactions[transactions.length - 1]?.id }),
     };
   }
 

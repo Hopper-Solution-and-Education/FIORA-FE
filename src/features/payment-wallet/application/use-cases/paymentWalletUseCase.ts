@@ -26,7 +26,7 @@ class PaymentWalletUseCase {
   ) { }
 
   async fetchPaymentWallet(userId: string, params: FetchPaymentWalletParams) {
-    const { filters, lastCursor, page, pageSize, searchParams } = params;
+    const { filters, lastCursor, page, pageSize, searchParams = '' } = params;
 
     const transactions = transactionUseCaseImported.getTransactionsPagination({
       filters,
@@ -55,14 +55,8 @@ class PaymentWalletUseCase {
       throw new BadRequestError(Messages.USER_WALLET_NOT_FOUND);
     }
 
-    const currentMembership = await this.membershipProgressRepository.getCurrentMembershipProgress(
-      userId,
-      {
-        select: {
-          tier: {},
-        },
-      },
-    );
+    const currentMembership =
+      await this.membershipProgressRepository.getCurrentMembershipProgress(userId);
 
     if (!currentMembership) {
       throw new BadRequestError(Messages.MEMBERSHIP_PROGRESS_OF_CURRENT_USER_NOT_FOUND);
@@ -71,7 +65,7 @@ class PaymentWalletUseCase {
     const flexInterestBenefitAwaited =
       await this.membershipBenefitRepository.fetchMembershipBenefit(
         {
-          name: 'flexi-interest',
+          slug: 'flexi-interest',
         },
         {
           select: {
@@ -142,9 +136,9 @@ class PaymentWalletUseCase {
       totalMovedOutAggregateAwaited,
     ]);
 
-    const totalMovedIn = totalMovedInResult['_sum']['amount'];
-    const totalMovedOut = totalMovedOutResult['_sum']['amount'];
-    const annualFlexInterest = flexInterestTierBenefitAwaited.value;
+    const totalMovedIn = Number(totalMovedInResult['_sum']['amount']) || 0;
+    const totalMovedOut = Number(totalMovedOutResult['_sum']['amount']) || 0;
+    const annualFlexInterest = Number(flexInterestTierBenefitAwaited.value) || 0;
 
     // TODO: get total withdrawal amount
     const totalWithdrawalAmount = 0;

@@ -372,4 +372,8 @@ export enum Messages {
 
   //Email template type
   EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
+
+  //Payment Wallet
+  GET_PAYMENT_WALLET_DETAILS_SUCCESS = 'Get payment wallet details successfully',
+  FETCH_PAYMENT_WALLET_DASHBOARD_METRICS_SUCCESS = 'Fetch payment wallet dashboard metrics successfully',
 }

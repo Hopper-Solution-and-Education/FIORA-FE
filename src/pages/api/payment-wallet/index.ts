@@ -14,6 +14,8 @@ export default sessionWrapper((req, res, userId) =>
       switch (request.method) {
         case 'POST':
           return POST(request, response, userId);
+        case 'GET':
+          return GET(request, response, userId);
         default:
           return response
             .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -25,17 +27,37 @@ export default sessionWrapper((req, res, userId) =>
   ),
 );
 
-export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const { filters, page, pageSize, search } = req.body;
+export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  const fetchPaymentWallet = await paymentWalletUseCase.fetchPaymentWalletDashboardMetrics(userId);
+  return res
+    .status(RESPONSE_CODE.OK)
+    .json(
+      createResponse(
+        RESPONSE_CODE.OK,
+        Messages.FETCH_PAYMENT_WALLET_DASHBOARD_METRICS_SUCCESS,
+        fetchPaymentWallet,
+      ),
+    );
+}
 
-  const fetchPaymentWallet = await paymentWalletUseCase.fetchPaymentWallet({
+export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  const { filters, page, pageSize, searchParams, lastCursor } = req.body;
+
+  const fetchPaymentWallet = await paymentWalletUseCase.fetchPaymentWallet(userId, {
     page,
     pageSize,
     filters,
-    searchParams: search,
+    searchParams,
+    lastCursor,
   });
 
   return res
-    .status(RESPONSE_CODE.CREATED)
-    .json(createResponse(RESPONSE_CODE.CREATED, Messages.GET_TRANSACTION_SUCCESS, transactions));
+    .status(RESPONSE_CODE.OK)
+    .json(
+      createResponse(
+        RESPONSE_CODE.OK,
+        Messages.GET_PAYMENT_WALLET_DETAILS_SUCCESS,
+        fetchPaymentWallet,
+      ),
+    );
 }
