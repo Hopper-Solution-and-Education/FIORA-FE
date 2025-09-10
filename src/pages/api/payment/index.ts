@@ -1,3 +1,4 @@
+import { paymentWalletUseCase } from '@/features/payment-wallet/application/use-cases/paymentWalletUseCase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { errorHandler } from '@/shared/lib';
@@ -16,7 +17,7 @@ export default sessionWrapper((req, res, userId) =>
         default:
           return response
             .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-            .json({ error: 'Phương thức không được hỗ trợ' });
+            .json({ error: Messages.METHOD_NOT_ALLOWED });
       }
     },
     req,
@@ -31,8 +32,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
     page,
     pageSize,
     filters,
-    sortBy,
-    userId,
     searchParams: search,
   });
 

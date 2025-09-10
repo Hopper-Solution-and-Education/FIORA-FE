@@ -1,30 +1,51 @@
+import { membershipBenefitRepository } from '@/features/setting/api/infrastructure/repositories/memBenefitRepository';
+import { tierBenefitRepository } from '@/features/setting/api/infrastructure/repositories/tierBenefitRepository';
+import { membershipProgressRepository } from '@/features/setting/api/infrastructure/repositories/TierMembershipRepository';
+import { walletRepository } from '@/features/setting/api/infrastructure/repositories/walletRepository';
+import { IMembershipBenefitRepository } from '@/features/setting/api/repositories/memBenefitRepository.interface';
 import { IMembershipProgressRepository } from '@/features/setting/api/repositories/membershipProgress.interface';
-import { IMembershipTierRepository } from '@/features/setting/api/repositories/membershipTierRepository';
+import { ITierBenefitRepository } from '@/features/setting/api/repositories/tierBenefitRepository.interface';
+import { IWalletRepository } from '@/features/setting/api/repositories/walletRepository.interface';
+import { transactionUseCase } from '@/features/transaction/application/use-cases/transactionUseCase';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { Messages } from '@/shared/constants/message';
 import { BadRequestError } from '@/shared/lib';
-import { IWalletRepository } from '@/features/setting/api/repositories/walletRepository.interface';
 import { WalletType } from '@prisma/client';
-import { buildWhereClause } from '@/shared/utils';
-import { membershipTierRepository } from '@/features/setting/api/infrastructure/repositories/membershipTierRepository';
-import { walletRepository } from '@/features/setting/api/infrastructure/repositories/walletRepository';
-import { membershipProgressRepository } from '@/features/setting/api/infrastructure/repositories/TierMembershipRepository';
+import { FetchPaymentWalletParams } from '../../infrastructure/types/paymentWallet.types';
+
+const transactionUseCaseImported = transactionUseCase;
 
 class PaymentWalletUseCase {
   constructor(
     private membershipProgressRepository: IMembershipProgressRepository,
     private transactionRepository: ITransactionRepository,
-    private membershipTierRepository: IMembershipTierRepository,
     private walletRepository: IWalletRepository,
+    private membershipBenefitRepository: IMembershipBenefitRepository,
+    private tierBenefitRepository: ITierBenefitRepository,
   ) { }
 
-  async fetchPaymentWallet(
-    userId: string,
-    searchParam: string,
-    filters: any,
-    last: string,
-  ): Promise<any> {
+  async fetchPaymentWallet(userId: string, params: FetchPaymentWalletParams) {
+    const { filters, lastCursor, page, pageSize, searchParams } = params;
+
+    const transactions = transactionUseCaseImported.getTransactionsPagination({
+      filters,
+      lastCursor,
+      page,
+      pageSize,
+      userId,
+      isInfinityScroll: true,
+      searchParams,
+    });
+
+    if (!transactions) {
+      throw new BadRequestError(Messages.TRANSACTION_WALLET_NOT_FOUND);
+    }
+
+    return transactions;
+  }
+
+  async fetchPaymentWalletDashboardMetrics(userId: string): Promise<any> {
     const foundUserWallet = await this.walletRepository.findWalletByType(
       WalletType.Payment,
       userId,
@@ -34,41 +55,121 @@ class PaymentWalletUseCase {
       throw new BadRequestError(Messages.USER_WALLET_NOT_FOUND);
     }
 
-    const whereClause = buildWhereClause(filters);
-
-    const transactions = await this.transactionRepository.findManyTransactions(
+    const currentMembership = await this.membershipProgressRepository.getCurrentMembershipProgress(
+      userId,
       {
-        OR: [
-          {
-            fromWalletId: foundUserWallet.id,
-          },
-          {
-            toWalletId: foundUserWallet.id,
-          },
-        ],
-        ...whereClause,
-      },
-      {
-        cursor: last ? { id: last } : undefined,
-        take: 10,
-        skip: last ? 1 : 0,
-        orderBy: {
-          createdBy: 'desc',
+        select: {
+          tier: {},
         },
       },
     );
 
-    if (!transactions) {
-      throw new BadRequestError(Messages.TRANSACTION_NOT_FOUND);
+    if (!currentMembership) {
+      throw new BadRequestError(Messages.MEMBERSHIP_PROGRESS_OF_CURRENT_USER_NOT_FOUND);
     }
 
-    return { transactions };
+    const flexInterestBenefitAwaited =
+      await this.membershipBenefitRepository.fetchMembershipBenefit(
+        {
+          name: 'flexi-interest',
+        },
+        {
+          select: {
+            id: true,
+          },
+        },
+      );
+
+    if (!flexInterestBenefitAwaited) {
+      throw new BadRequestError(Messages.MEMBERSHIP_BENEFIT_NOT_FOUND);
+    }
+
+    const flexInterestTierBenefitAwaited = await this.tierBenefitRepository.findTierBenefit(
+      {
+        benefitId: flexInterestBenefitAwaited.id!,
+        tierId: currentMembership.tierId!,
+      },
+      {
+        select: {
+          value: true,
+        },
+      },
+    );
+
+    if (!flexInterestTierBenefitAwaited) {
+      throw new BadRequestError(Messages.MEMBERSHIP_TIER_BENEFIT_NOT_FOUND);
+    }
+
+    const totalMovedInAggregateAwaited = this.transactionRepository.aggregate({
+      _sum: {
+        amount: true,
+      },
+      where: {
+        OR: [
+          {
+            type: 'Income',
+            toWalletId: foundUserWallet.id,
+          },
+          {
+            type: 'Transfer',
+            toWalletId: foundUserWallet.id,
+          },
+        ],
+      },
+    });
+
+    const totalMovedOutAggregateAwaited = this.transactionRepository.aggregate({
+      _sum: {
+        amount: true,
+      },
+      where: {
+        OR: [
+          {
+            type: 'Expense',
+            fromWalletId: foundUserWallet.id,
+          },
+          {
+            type: 'Transfer',
+            fromWalletId: foundUserWallet.id,
+          },
+        ],
+        fromWalletId: foundUserWallet.id,
+      },
+    });
+
+    const [totalMovedInResult, totalMovedOutResult] = await Promise.all([
+      totalMovedInAggregateAwaited,
+      totalMovedOutAggregateAwaited,
+    ]);
+
+    const totalMovedIn = totalMovedInResult['_sum']['amount'];
+    const totalMovedOut = totalMovedOutResult['_sum']['amount'];
+    const annualFlexInterest = flexInterestTierBenefitAwaited.value;
+
+    // TODO: get total withdrawal amount
+    const totalWithdrawalAmount = 0;
+
+    const totalAvailableBalance = Number(foundUserWallet.frBalanceActive) - totalWithdrawalAmount;
+    const totalFrozen = Number(foundUserWallet.frBalanceFrozen) + totalWithdrawalAmount;
+
+    const totalBalance = totalAvailableBalance + totalFrozen;
+
+    return {
+      totalMovedIn,
+      totalMovedOut,
+      annualFlexInterest,
+      totalWithdrawalAmount,
+      totalAvailableBalance,
+      totalFrozen,
+      totalBalance,
+    };
   }
 }
 
 export const paymentWalletUseCase = new PaymentWalletUseCase(
   membershipProgressRepository,
   transactionRepository,
-  membershipTierRepository,
   walletRepository,
+  membershipBenefitRepository,
+  tierBenefitRepository,
 );

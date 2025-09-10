@@ -117,6 +117,7 @@ export enum Messages {
   // Transaction-related errors
   CREATE_TRANSACTION_FAILED = 'Failed to create transaction',
   TRANSACTION_NOT_FOUND = 'Transaction not found',
+  TRANSACTION_WALLET_NOT_FOUND = 'Transaction wallet not found',
   UPDATE_TRANSACTION_FAILED = 'Failed to update transaction',
   TRANSACTION_TOO_OLD_TO_DELETE = 'Cannot delete a transaction older than 30 days',
 
@@ -205,6 +206,8 @@ export enum Messages {
   MEMBERSHIP_TIER_NOT_FOUND = 'Membership tier not found',
   MEMBERSHIP_BENEFIT_SLUG_NAME_NOT_FOUND = 'Membership benefit slug-name not found',
   MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED = 'Failed to create membership tier benefit',
+  MEMBERSHIP_TIER_BENEFIT_NOT_FOUND = 'Membership tier benefit not found',
+  MEMBERSHIP_BENEFIT_NOT_FOUND = 'Membership benefit not found',
   // Membership Tier Dashboard
   GET_MEMBERSHIP_TIERS_DASHBOARD_SUCCESS = 'Membership tiers dashboard retrieved successfully',
 

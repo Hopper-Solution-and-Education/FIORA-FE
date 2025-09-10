@@ -1,5 +1,8 @@
-import { MembershipProgress } from '@prisma/client';
+import { MembershipProgress, Prisma } from '@prisma/client';
 
 export interface IMembershipProgressRepository {
-  getCurrentMembershipProgress(userId: string): Promise<MembershipProgress>;
+  getCurrentMembershipProgress(
+    userId: string,
+    options?: Prisma.MembershipProgressFindFirstArgs,
+  ): Promise<MembershipProgress>;
 }

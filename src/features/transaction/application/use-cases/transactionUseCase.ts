@@ -27,7 +27,7 @@ class TransactionUseCase {
     private transactionRepository: ITransactionRepository,
     private accountRepository: IAccountRepository,
     private currencySettingRepository: ICurrencySettingRepository,
-  ) {}
+  ) { }
 
   async listTransactions(userId: string): Promise<Transaction[]> {
     return this.transactionRepository.getTransactionsByUserId(userId);
@@ -71,13 +71,13 @@ class TransactionUseCase {
                 : []),
               ...(isSearchDate
                 ? [
-                    {
-                      date: {
-                        gte: new Date(typeSearchParams),
-                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
-                      },
+                  {
+                    date: {
+                      gte: new Date(typeSearchParams),
+                      lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
                     },
-                  ]
+                  },
+                ]
                 : []),
             ],
           },
@@ -131,68 +131,67 @@ class TransactionUseCase {
     };
   }
 
+  searchTransactionBuildWhereClause(searchParams: string) {
+    let where = {};
+    const typeSearchParams = searchParams.toLowerCase();
+    // test with Regex-Type Transaction
+    const regex = new RegExp('^' + typeSearchParams, 'i'); // ^: start with, i: ignore case
+    const typeTransaction = Object.values(TransactionType).find((type) => regex.test(type));
+
+    let typeTransactionWhere = '';
+
+    if (typeTransaction) {
+      typeTransactionWhere = typeTransaction;
+    }
+
+    where = {
+      OR: [
+        { fromAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+        { toAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+        { partner: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+        {
+          AND: [
+            {
+              baseAmount: {
+                gte: Number(typeSearchParams),
+                lte: Number(typeSearchParams),
+              },
+              baseCurrency: { equals: 'USD' },
+            },
+          ],
+        },
+        // adding typeTransactionWhere to where clause if exists
+        ...(typeTransactionWhere
+          ? [{ type: typeTransactionWhere as unknown as TransactionType }]
+          : []),
+      ],
+    };
+
+    return where;
+  }
+
   async getTransactionsPagination(
     params: TransactionGetPagination,
   ): Promise<PaginationResponse<any> & { amountMin?: number; amountMax?: number }> {
-    const { page = 1, pageSize = 20, searchParams = '', filters, sortBy = {}, userId } = params;
+    const {
+      page = 1,
+      pageSize = 20,
+      searchParams = '',
+      filters,
+      sortBy = {},
+      userId,
+      isInfinityScroll,
+      lastCursor,
+    } = params;
+
     const take = pageSize;
-    const skip = (page - 1) * pageSize;
+    const skip = isInfinityScroll ? 1 : (page - 1) * pageSize;
 
     let where = buildWhereClause(filters) as Prisma.TransactionWhereInput;
 
     if (searchParams) {
-      const typeSearchParams = searchParams.toLowerCase();
-      // test with Regex-Type Transaction
-      const regex = new RegExp('^' + typeSearchParams, 'i'); // ^: start with, i: ignore case
-      const typeTransaction = Object.values(TransactionType).find((type) => regex.test(type));
-
-      let typeTransactionWhere = '';
-
-      if (typeTransaction) {
-        typeTransactionWhere = typeTransaction;
-      }
-
-      // test with Regex-Date format YYYY-MM-DD
-      const dateRegex = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD format
-      const date = new Date(typeSearchParams);
-      const isSearchDate = dateRegex.test(typeSearchParams) && !isNaN(date.getTime());
-
       where = {
-        AND: [
-          where,
-          {
-            OR: [
-              { fromAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
-              { toAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
-              { partner: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
-              {
-                AND: [
-                  {
-                    baseAmount: {
-                      gte: Number(typeSearchParams),
-                      lte: Number(typeSearchParams),
-                    },
-                    baseCurrency: { equals: 'USD' },
-                  },
-                ],
-              },
-              // adding typeTransactionWhere to where clause if exists
-              ...(typeTransactionWhere
-                ? [{ type: typeTransactionWhere as unknown as TransactionType }]
-                : []),
-              ...(isSearchDate
-                ? [
-                    {
-                      date: {
-                        gte: new Date(typeSearchParams),
-                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
-                      },
-                    },
-                  ]
-                : []),
-            ],
-          },
-        ],
+        AND: [where, this.searchTransactionBuildWhereClause(searchParams)],
       };
     }
 
@@ -207,6 +206,7 @@ class TransactionUseCase {
       {
         skip,
         take,
+        cursor: lastCursor ? { id: lastCursor } : undefined,
         orderBy,
         include: {
           fromAccount: true,
@@ -252,6 +252,7 @@ class TransactionUseCase {
       amountMax: Number(amountMax['_max']?.baseAmount) || 0,
       amountMin: Number(amountMin['_min']?.baseAmount) || 0,
       total,
+      lastCursor: transactions[transactions.length - 1]?.id,
     };
   }
 

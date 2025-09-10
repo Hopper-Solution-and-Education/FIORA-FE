@@ -448,6 +448,7 @@ model Wallet {
   type             WalletType
   frBalanceActive  Decimal       @default(0) @db.Decimal(12, 2)
   frBalanceFrozen  Decimal       @default(0)
+  accumulatedEarn  Decimal       @default(0) @db.Decimal(13, 2)
   creditLimit      Decimal?      @default(0)
   createdAt        DateTime      @default(now()) @db.Timestamptz(0)
   updatedAt        DateTime      @updatedAt @db.Timestamptz(0)
@@ -883,6 +884,7 @@ model CronJobLog {
   createdAt     DateTime      @default(now()) @db.Timestamptz(0)
   updatedAt     DateTime      @db.Timestamptz(0)
   status        CronJobStatus
+  dynamicValue  Json?
   Transaction   Transaction?  @relation("CronJobLogTransactions", fields: [transactionId], references: [id])
 }
 
@@ -893,6 +895,14 @@ model Otp {
   otp       String
   userId    String?  @db.Uuid
   type      OtpType?
+}
+
+model CronjobTypeDefine {
+  id          String      @id @db.Uuid
+  typeCronJob TypeCronJob
+  field       String      @db.VarChar(30)
+  updatedAt   DateTime    @db.Timestamptz(0)
+  createdAt   DateTime    @default(now()) @db.Timestamptz(0)
 }
 
 enum BudgetType {
