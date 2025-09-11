@@ -98,7 +98,7 @@ export interface ContactUsRequest {
   phoneNumber: string;
   title: string;
   message: string;
-  attachments?: File[];
+  attachments?: File[] | undefined;
 }
 
 // ============================================================================

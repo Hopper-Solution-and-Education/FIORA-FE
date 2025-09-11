@@ -2,7 +2,6 @@ import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import { Response } from '@/shared/types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import {
-  ContactUsRequest,
   CreateCommentRequest,
   FaqComment,
   FaqDetail,
@@ -24,7 +23,9 @@ export const helpsCenterApi = createApi({
   reducerPath: 'helpsCenterApi',
   baseQuery: fetchBaseQuery({
     prepareHeaders: (headers, { endpoint }) => {
-      if (endpoint !== 'validateImportFile') {
+      // Do not set JSON content-type for FormData endpoints
+      const skipContentType = endpoint === 'validateImportFile' || endpoint === 'contactUs';
+      if (!skipContentType) {
         headers.set('Content-Type', 'application/json');
       }
       return headers;
@@ -242,11 +243,11 @@ export const helpsCenterApi = createApi({
       providesTags: ['UserTutorial'],
     }),
 
-    contactUs: builder.mutation<void, ContactUsRequest>({
-      query: (data) => ({
+    contactUs: builder.mutation<void, FormData>({
+      query: (formData) => ({
         url: ApiEndpointEnum.HelpsCenterContactUs,
         method: 'POST',
-        body: data,
+        body: formData,
       }),
     }),
 
