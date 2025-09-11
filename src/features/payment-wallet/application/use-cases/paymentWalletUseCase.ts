@@ -11,7 +11,7 @@ import { ITransactionRepository } from '@/features/transaction/domain/repositori
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { Messages } from '@/shared/constants/message';
 import { BadRequestError } from '@/shared/lib';
-import { WalletType } from '@prisma/client';
+import { Prisma, WalletType } from '@prisma/client';
 import { FetchPaymentWalletParams } from '../../infrastructure/types/paymentWallet.types';
 
 const transactionUseCaseImported = transactionUseCase;
@@ -28,8 +28,27 @@ class PaymentWalletUseCase {
   async fetchPaymentWallet(userId: string, params: FetchPaymentWalletParams) {
     const { filters, lastCursor, page, pageSize, searchParams } = params;
 
+    const prefetchFilters: Prisma.TransactionWhereInput = {
+      OR: [
+        {
+          fromWalletId: {
+            not: null,
+          },
+        },
+        {
+          toWalletId: {
+            not: null,
+          },
+        },
+      ],
+    };
+
+    const filtersWithPrefetch = {
+      AND: [filters, prefetchFilters],
+    };
+
     const transactions = await transactionUseCaseImported.getTransactionsPagination({
-      filters,
+      filters: filtersWithPrefetch,
       lastCursor,
       page: page || 1,
       pageSize,

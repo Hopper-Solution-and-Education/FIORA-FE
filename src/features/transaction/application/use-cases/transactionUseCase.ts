@@ -180,7 +180,7 @@ class TransactionUseCase {
 
     if (searchParams) {
       where = {
-        AND: [this.searchTransactionBuildWhereClause(searchParams)],
+        AND: [where, this.searchTransactionBuildWhereClause(searchParams)],
       };
     }
 
