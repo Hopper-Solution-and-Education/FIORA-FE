@@ -1,4 +1,4 @@
-import { newsUsercase } from '@/features/news/api/application/usecase/newsUsecase';
+import { newsUsecase } from '@/features/news/api/application/usecase/newsUsecase';
 import { postCategoryUsecase } from '@/features/news/api/application/usecase/postCategoryUsecase';
 import { NewsUpdateRequest } from '@/features/news/api/types/newsDTO';
 import { userUseCase } from '@/features/setting/api/domain/use-cases/userUsecase';
@@ -10,7 +10,7 @@ import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { validateBody, validateVariable } from '@/shared/utils/validate';
 import {
-  commetCreateRequestSchema,
+  newsCreateRequestSchema,
   postIdSchema,
   updateNewsSchema,
 } from '@/shared/validators/newsValidation';
@@ -87,7 +87,7 @@ export async function UPDATE(req: NextApiRequest, res: NextApiResponse) {
   }
 
   //check title exists
-  const titleExists = await newsUsercase.titleExists(requestParam.title);
+  const titleExists = await newsUsecase.titleExists(requestParam.title);
   if (titleExists) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
@@ -104,7 +104,7 @@ export async function UPDATE(req: NextApiRequest, res: NextApiResponse) {
 
   //UPdate news
 
-  const result = await newsUsercase.updateNews(requestParam, postId);
+  const result = await newsUsecase.updateNews(requestParam, postId);
 
   return res
     .status(RESPONSE_CODE.OK)
@@ -128,7 +128,7 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
   }
 
   try {
-    await newsUsercase.deleteNews(postId);
+    await newsUsecase.deleteNews(postId);
 
     return res
       .status(RESPONSE_CODE.OK)
@@ -143,7 +143,7 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
   const { id, userId } = req.query;
 
-  const errorValidation = validateVariable(commetCreateRequestSchema, { id, userId });
+  const errorValidation = validateBody(newsCreateRequestSchema, { id, userId });
   //validation query string
   if (errorValidation.error) {
     return res
@@ -160,7 +160,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
   const newsIdParam = String(id);
   const userIdParam = String(userId);
   try {
-    const newsDetail = await newsUsercase.getNewsByIdAndIncrease(newsIdParam, userIdParam);
+    const newsDetail = await newsUsecase.getNewsByIdAndIncrease(newsIdParam, userIdParam);
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.GET_NEWS_DETAIL_SECCESS, newsDetail));

@@ -1,4 +1,4 @@
-import { newsUsercase } from '@/features/news/api/application/usecase/newsUsecase';
+import { newsUsecase } from '@/features/news/api/application/usecase/newsUsecase';
 import { postCategoryUsecase } from '@/features/news/api/application/usecase/postCategoryUsecase';
 import { NewsCreationRequest, NewsQueryParams } from '@/features/news/api/types/newsDTO';
 import { userUseCase } from '@/features/setting/api/domain/use-cases/userUsecase';
@@ -48,7 +48,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
     orderDirection: String(orderDirection),
   };
   console.log('log', queryParams);
-  const result = await newsUsercase.getAll(queryParams);
+  const result = await newsUsecase.getAll(queryParams);
   return res
     .status(RESPONSE_CODE.OK)
     .json(createResponse(RESPONSE_CODE.OK, Messages.GET_LISTNEW_SUCCESS, result));
@@ -84,7 +84,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
   }
 
   //check title exists
-  const titleExists = await newsUsercase.titleExists(request.title);
+  const titleExists = await newsUsecase.titleExists(request.title);
   if (titleExists) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
@@ -100,7 +100,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
   }
 
   //Creation
-  const result = await newsUsercase.createNews(request);
+  const result = await newsUsecase.createNews(request);
   return res
     .status(RESPONSE_CODE.OK)
     .json(createResponse(RESPONSE_CODE.OK, Messages.CREATE_NEWS_SUCCESS, result));

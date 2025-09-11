@@ -1,6 +1,6 @@
 import { accountUsecase } from '@/features/news/api/application/usecase/accountUsecase';
 import { commentUsecase } from '@/features/news/api/application/usecase/commentUsecase';
-import { newsUsercase } from '@/features/news/api/application/usecase/newsUsecase';
+import { newsUsecase } from '@/features/news/api/application/usecase/newsUsecase';
 import { commentCreationNews, getCommentRequest } from '@/features/news/api/types/commentDTO';
 import { userUseCase } from '@/features/setting/api/domain/use-cases/userUsecase';
 import { Messages } from '@/shared/constants/message';
@@ -69,7 +69,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
   }
 
   //check news
-  const news: Post | null = await newsUsercase.getNewsById(param.newsId);
+  const news: Post | null = await newsUsecase.getNewsById(param.newsId);
   if (!news) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
