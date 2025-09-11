@@ -65,7 +65,12 @@ const AddBenefitForm = () => {
   );
 
   return (
-    <FormConfig fields={config} methods={methods} renderSubmitButton={renderSubmitButtonDefault} />
+    <FormConfig
+      fields={config}
+      methods={methods}
+      renderSubmitButton={renderSubmitButtonDefault}
+      isShowSubmitButtonInstruction={true}
+    />
   );
 };
 
