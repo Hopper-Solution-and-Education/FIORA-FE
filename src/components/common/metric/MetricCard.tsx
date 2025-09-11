@@ -10,7 +10,7 @@ import Image from 'next/image';
 interface MetricCardProps {
   title: string;
   value: number;
-  type: 'income' | 'expense' | 'total';
+  type: 'income' | 'expense' | 'total' | 'neutral';
   description?: string;
   icon?: string | React.ReactNode;
   className?: string;
@@ -44,6 +44,8 @@ const MetricCard = ({
         } else {
           return 'text-yellow-600 dark:text-yellow-400';
         }
+      case 'neutral':
+        return 'text-gray-600 dark:text-gray-400';
       default:
         return 'text-gray-600 dark:text-gray-400';
     }

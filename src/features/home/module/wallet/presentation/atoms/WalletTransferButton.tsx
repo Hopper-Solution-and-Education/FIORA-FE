@@ -6,7 +6,7 @@ import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
 
-const WalletDepositButton = () => {
+const WalletTransferButton = () => {
   const router = useRouter();
 
   const handleDeposit = useCallback(() => {
@@ -19,11 +19,11 @@ const WalletDepositButton = () => {
       size="icon"
       aria-label="Deposit"
       onClick={handleDeposit}
-      className="h-fit w-fit !px-4 !py-2"
+      className="h-fit w-fit !px-[1.20rem] !py-2.5"
     >
-      <Icons.banknoteArrowUp className="!h-6 !w-6 text-green-600" />
+      <Icons.arrowLeftRight className="!h-5 !w-5 text-orange-600" />
     </Button>
   );
 };
 
-export default WalletDepositButton;
+export default WalletTransferButton;
