@@ -1,16 +1,16 @@
-export interface commentCreationNews {
+export interface CommentCreationNews {
   content: string;
   newsId: string;
   userId: string;
   replyComment?: string;
 }
 
-export interface commentUpdationNews {
+export interface CommentUpdationNews {
   content: string;
   userId: string;
 }
 
-export interface getCommentRequest {
+export interface GetCommentRequest {
   newsId: string;
   page: number;
   limit: number;

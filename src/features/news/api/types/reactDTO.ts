@@ -1,6 +1,6 @@
 import { ReactionType } from '@/features/helps-center/domain/entities/models/faqs';
 
-export interface reactCreationRequest {
+export interface ReactCreationRequest {
   userId: string;
   newsId: string;
   reactType: ReactionType;

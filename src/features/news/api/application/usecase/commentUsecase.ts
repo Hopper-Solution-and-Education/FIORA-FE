@@ -4,17 +4,17 @@ import { ICommentNewsRepository } from '../../domain/repository/commentNewsRepos
 import { accountRepository } from '../../infrashtructure/repositories/accountReposotory';
 import { commentNewsRepository } from '../../infrashtructure/repositories/commentNewsRepository';
 import {
-  commentCreationNews,
+  CommentCreationNews,
   CommentResponse,
-  commentUpdationNews,
-  getCommentRequest,
+  CommentUpdationNews,
+  GetCommentRequest,
 } from '../../types/commentDTO';
 class CommentUsecase {
   constructor(
     private commentNewsRepo: ICommentNewsRepository,
     private accountRepo: IAccountRepository,
   ) {}
-  async getListByPostId(queryParam: getCommentRequest): Promise<CommentResponse[]> {
+  async getListByPostId(queryParam: GetCommentRequest): Promise<CommentResponse[]> {
     const response = await this.commentNewsRepo.getCommentNews(queryParam);
     return response.map((result) => {
       const { postId, ...rest } = result;
@@ -25,7 +25,7 @@ class CommentUsecase {
     });
   }
 
-  async createComment(param: commentCreationNews): Promise<Comment> {
+  async createComment(param: CommentCreationNews): Promise<Comment> {
     if (param.replyComment) {
       param.content = `@${param.replyComment} ${param.content}`;
     }
@@ -33,7 +33,7 @@ class CommentUsecase {
     return this.commentNewsRepo.createCommentNews(param);
   }
 
-  async updateComment(param: commentUpdationNews, commentId: string): Promise<Comment> {
+  async updateComment(param: CommentUpdationNews, commentId: string): Promise<Comment> {
     return this.commentNewsRepo.updateCommentNews(param, commentId);
   }
 
