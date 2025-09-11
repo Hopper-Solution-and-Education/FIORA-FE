@@ -8,7 +8,7 @@ import {
   NewsQueryParams,
   NewsUpdateRequest,
 } from '../../types/newsDTO';
-class NewsUsercase {
+class NewsUsecase {
   constructor(private newsRepo: INewsRepository) {}
   async getAll(queryParam: NewsQueryParams): Promise<ListNewsResponse | null> {
     return this.newsRepo.getAll(queryParam);
@@ -45,4 +45,4 @@ class NewsUsercase {
     return await newsRepository.delete(postId);
   }
 }
-export const newsUsercase = new NewsUsercase(newsRepository);
+export const newsUsecase = new NewsUsecase(newsRepository);

@@ -65,6 +65,19 @@ export const newsIdSchema = Joi.string().uuid().required().messages({
   'string.uuid': 'News must be a valid UUID format',
 });
 
+export const newsCreateRequestSchema = Joi.object({
+  id: Joi.string().uuid().required().messages({
+    'string.empty': 'NewsId is required',
+    'any.required': 'NewsId is required',
+    'string.uuid': 'User ID must be a valid UUID format',
+  }),
+  userId: Joi.string().uuid().required().messages({
+    'string.empty': 'UserId is required',
+    'any.required': 'UserId is required',
+    'string.uuid': 'User ID must be a valid UUID format',
+  }),
+});
+
 //comment
 export const commetCreateRequestSchema = Joi.object({
   newsId: Joi.string().uuid().required().messages({
