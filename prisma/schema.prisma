@@ -453,7 +453,7 @@ model Wallet {
   icon             String?
   type             WalletType
   frBalanceActive  Decimal       @default(0) @db.Decimal(13, 2)
-  frBalanceFrozen  Decimal       @default(0) @db.Decimal(13, 2)
+  frBalanceFrozen  Decimal       @default(0)
   creditLimit      Decimal?      @default(0)
   createdAt        DateTime      @default(now()) @db.Timestamptz(0)
   updatedAt        DateTime      @updatedAt @db.Timestamptz(0)
