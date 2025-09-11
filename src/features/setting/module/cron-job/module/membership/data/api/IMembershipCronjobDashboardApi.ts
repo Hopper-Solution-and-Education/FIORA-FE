@@ -8,5 +8,5 @@ export interface IMembershipCronjobDashboardApi {
     filter?: MembershipCronjobFilterRequest,
   ): Promise<MembershipCronjobPaginatedResponse>;
 
-  getMembershipDynamicValue() : Promise<any>;
+  getMembershipDynamicValue(): Promise<any>;
 }

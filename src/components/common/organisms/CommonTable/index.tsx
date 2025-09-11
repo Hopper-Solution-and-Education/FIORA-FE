@@ -82,7 +82,6 @@ export default function CommonTable<T>({
       // persist current config as default
       saveColumnConfigToStorage(storageKey, columnConfig);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKey]);
 
   const renderHeader = () => (
