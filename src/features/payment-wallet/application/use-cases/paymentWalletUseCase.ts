@@ -146,7 +146,6 @@ class PaymentWalletUseCase {
             fromWalletId: foundUserWallet.id,
           },
         ],
-        fromWalletId: foundUserWallet.id,
       },
     });
 
