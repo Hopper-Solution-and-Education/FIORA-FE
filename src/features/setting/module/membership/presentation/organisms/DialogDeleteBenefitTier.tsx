@@ -1,4 +1,4 @@
-import { SelectField } from '@/components/common/forms';
+import { RadioField } from '@/components/common/forms/radio';
 import { GlobalDialog } from '@/components/common/molecules';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
@@ -9,9 +9,6 @@ import { toast } from 'sonner';
 import { ProcessMembershipMode } from '../../data/api';
 import { setIsShowDialogDeleteBenefitTier } from '../../slices';
 import { deleteBenefitAsyncThunk, getListMembershipAsyncThunk } from '../../slices/actions';
-import { formatLabel } from '../config/AddBenefitTierFieldConfig';
-
-const deleteModes = [ProcessMembershipMode.DELETE, ProcessMembershipMode.DELETE_ALL];
 
 const DialogDeleteBenefitTier = () => {
   const isShowDialogDeleteBenefitTier = useAppSelector(
@@ -41,11 +38,8 @@ const DialogDeleteBenefitTier = () => {
           <div className="flex flex-col gap-2">
             <p>Are you sure you want to delete this benefit tier?</p>
             <p>This action cannot be undone.</p>
-            <p>
-              <span className="font-bold">Delete Mode:</span> {formatLabel(deleteMode)}
-            </p>
           </div>
-          <SelectField
+          {/* <SelectField
             options={deleteModes.map((mode) => ({
               label: formatLabel(mode),
               value: mode,
@@ -54,7 +48,36 @@ const DialogDeleteBenefitTier = () => {
             required
             noneValue={false}
             onChange={(value) => setDeleteMode(value as ProcessMembershipMode)}
+          /> */}
+          <RadioField
+            key="deleteMode"
+            name="deleteMode"
+            options={[
+              {
+                label: 'This Tier Only',
+                value: ProcessMembershipMode.DELETE,
+              },
+              {
+                label: 'All Tier',
+                value: ProcessMembershipMode.DELETE_ALL,
+              },
+            ]}
+            value={deleteMode}
+            onChange={(value) => setDeleteMode(value as ProcessMembershipMode)}
+            orientation="horizontal"
+            variant="card"
+            equalWidth
           />
+          <div className="space-y-1 text-center">
+            <p className="text-base">
+              Click <Icons.circleArrowLeft className="inline h-4 w-4 text-blue-600 align-[-2px]" />{' '}
+              to stay back
+            </p>
+            <p className="text-base">
+              Or click <Icons.check className="inline h-4 w-4 text-green-600 align-[-2px]" /> to
+              confirm
+            </p>
+          </div>
         </div>
       )}
       customLeftButton={

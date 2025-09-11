@@ -1,5 +1,6 @@
 import { NavItem } from '@/features/home/types/Nav.types';
 import { MODULE } from '@/shared/constants';
+import { RouteEnum } from '@/shared/constants/RouteEnum';
 
 //Info: The following data is used for the sidebar navigation and Cmd K bar.
 export const settingNavItems: NavItem[] = [
@@ -47,5 +48,17 @@ export const settingNavItems: NavItem[] = [
     url: '/setting/packagefx',
     icon: 'package',
     isActive: false,
+  },
+  {
+    title: 'Cron Job',
+    url: RouteEnum.CronjobMembership,
+    icon: 'pickaxe',
+    items: [
+      {
+        title: 'Membership',
+        url: RouteEnum.CronjobMembership,
+        icon: 'users',
+      },
+    ],
   },
 ];
