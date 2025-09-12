@@ -131,7 +131,7 @@ export function UserNav({ handleSignOut }: UserNavProps) {
                   color={COLORS.DEPS_INFO.LEVEL_1}
                   className="w-full"
                   min={userTier?.currentTier?.balanceMinThreshold}
-                  max={userTier?.currentTier?.balanceMaxThreshold}
+                  max={userTier?.nextBalanceTier?.balanceMinThreshold}
                 />
                 <SegmentProgressBar
                   leftLabel={userTier?.currentTier?.tierName || ''}
@@ -140,7 +140,7 @@ export function UserNav({ handleSignOut }: UserNavProps) {
                   color={COLORS.DEPS_SUCCESS.LEVEL_1}
                   className="w-full"
                   min={userTier?.currentTier?.spentMinThreshold}
-                  max={userTier?.currentTier?.spentMaxThreshold}
+                  max={userTier?.nextSpendingTier?.spentMinThreshold}
                 />
               </div>
             </DropdownMenuItem>
