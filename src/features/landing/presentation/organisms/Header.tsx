@@ -10,6 +10,7 @@ import { useState } from 'react';
 
 import HelpCenter from '@/components/layouts/dashboard-header/HelpCenter';
 import MarqueeAnnouncement from '@/components/layouts/dashboard-header/MarqueAnnouncement';
+import NewsCenter from '@/components/layouts/dashboard-header/NewsCenter';
 import {
   default as SettingCenter,
   default as ThemeToggle,
@@ -84,20 +85,25 @@ export default function Header() {
                 <nav className="hidden md:flex items-center gap-8 px-8">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div>
-                        <HelpCenter />
-                      </div>
+                      <NewsCenter />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Help Center</p>
+                      <p>News</p>
                     </TooltipContent>
                   </Tooltip>
 
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div>
-                        <SettingCenter />
-                      </div>
+                      <HelpCenter />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Helps</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SettingCenter />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Settings</p>
@@ -107,9 +113,7 @@ export default function Header() {
                   {data?.user ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div>
-                          <UserNav />
-                        </div>
+                        <UserNav />
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>User Menu</p>
@@ -119,11 +123,14 @@ export default function Header() {
                     <>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <UserPlus
-                            onClick={handleSignUp}
-                            size={ICON_SIZE.MD}
-                            className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
-                          />
+                          <div className="flex flex-col gap-1 justify-center items-center">
+                            <UserPlus
+                              onClick={handleSignUp}
+                              size={ICON_SIZE.MD}
+                              className="transition-all duration-200 hover:scale-110 cursor-pointer"
+                            />
+                            <span className="text-sm">Sign Up</span>
+                          </div>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Sign Up</p>
@@ -132,11 +139,14 @@ export default function Header() {
 
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <LogInIcon
-                            onClick={handleSignIn}
-                            size={ICON_SIZE.MD}
-                            className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
-                          />
+                          <div className="flex flex-col gap-1 justify-center items-center">
+                            <LogInIcon
+                              onClick={handleSignIn}
+                              size={ICON_SIZE.MD}
+                              className="transition-all duration-200 hover:scale-110 cursor-pointer"
+                            />
+                            <span className="text-sm">Sign In</span>
+                          </div>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Sign In</p>

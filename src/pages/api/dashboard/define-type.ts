@@ -26,6 +26,7 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
     const getAllTypeDefines = await dashboardRepository.getAllTypeDefines();
+
     return res.status(RESPONSE_CODE.OK).json({
       status: RESPONSE_CODE.OK,
       message: Messages.GET_SUCCESS,

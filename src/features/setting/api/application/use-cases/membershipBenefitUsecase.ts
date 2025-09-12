@@ -1,5 +1,6 @@
 import { prisma } from '@/config';
-import { BadRequestError, InternalServerError } from '@/shared/lib';
+import { Messages } from '@/shared/constants/message';
+import { BadRequestError } from '@/shared/lib';
 import {
   MembershipBenefitCreatePayload,
   MembershipBenefitCreateUpdateAllPayload,
@@ -11,7 +12,6 @@ import { tierBenefitRepository } from '../../infrastructure/repositories/tierBen
 
 class MembershipBenefitService {
   async create(payload: MembershipBenefitCreatePayload, userId: string) {
-    payload.membershipBenefit.slug = `${payload.membershipBenefit.slug}-${Date.now()}`;
     const membershipBenefit = await membershipBenefitRepository.createMembershipBenefit({
       id: uuid(),
       ...payload.membershipBenefit,
@@ -457,10 +457,16 @@ class MembershipBenefitService {
   }
 
   async processMembershipBenefit(payload: MembershipBenefitCreatePayload, userId: string) {
-    const { mode } = payload;
+    const { mode, slug } = payload;
 
-    if (mode === 'create' || mode === 'create-all') {
-      payload.membershipBenefit!.slug = `${payload.membershipBenefit!.slug}-${Date.now()}`;
+    if (mode === 'create' || mode === 'update' || mode === 'update-all' || mode === 'create-all') {
+      const foundMembershipBenefit = await membershipBenefitRepository.findMembershipBenefitBySlug(
+        slug!,
+      );
+
+      if (foundMembershipBenefit) {
+        throw new BadRequestError(Messages.MEMBERSHIP_BENEFIT_SLUG_NAME_ALREADY_EXISTS);
+      }
     }
 
     switch (mode) {

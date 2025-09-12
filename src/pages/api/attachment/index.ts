@@ -23,14 +23,14 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
 );
 
 async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const { url, path, type } = req.body;
+  const { url, path, type, size } = req.body;
   if (!url || !path || !type) {
     return res.status(RESPONSE_CODE.BAD_REQUEST).json({ error: 'No file provided' });
   }
 
   try {
     const attachment = await prisma.attachment.create({
-      data: { url, path, type },
+      data: { url, path, type, size },
     });
     return res.status(RESPONSE_CODE.OK).json({ data: attachment, status: RESPONSE_CODE.OK });
   } catch (error) {

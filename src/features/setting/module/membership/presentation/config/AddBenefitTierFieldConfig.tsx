@@ -15,8 +15,6 @@ export const formatLabel = (mode: string) => {
     .join(' '); // nối lại bằng khoảng trắng
 };
 
-const createMemberShipMode = [ProcessMembershipMode.CREATE, ProcessMembershipMode.CREATE_ALL];
-
 const useAddBenefitTierFieldConfig = () => {
   const {
     formState: { isSubmitting },
@@ -74,15 +72,23 @@ const useAddBenefitTierFieldConfig = () => {
       key="mode"
       name="mode"
       label="Create Mode"
-      placeholder="Create Mode"
-      orientation="horizontal"
       required
-      options={createMemberShipMode.map((mode) => ({
-        label: formatLabel(mode),
-        value: mode,
-      }))}
+      options={[
+        {
+          label: 'This Tier Only',
+          value: ProcessMembershipMode.CREATE,
+        },
+        {
+          label: 'All Tier',
+          value: ProcessMembershipMode.CREATE_ALL,
+        },
+      ]}
       noneValue={false}
       disabled={isSubmitting || isLoadingAddUpdateBenefitTier}
+      orientation="horizontal"
+      variant="card"
+      equalWidth
+      gridClassName="col-span-12"
     />,
   ];
 

@@ -14,6 +14,10 @@ export enum ApiEndpointEnum {
   WalletFrozenAmount = '/api/wallet/deposit/frozen-amount',
   WalletSetting = '/api/wallet/setting',
 
+  // Cronjob Dashboard
+  CronjobDashboard = '/api/dashboard',
+  CronjobDashboardDefineType = '/api/dashboard/define-type',
+
   // Notification
   Notification = '/api/notification',
   NotificationFilterOptions = '/api/notification/options',
@@ -35,4 +39,8 @@ export enum ApiEndpointEnum {
   eKYC = '/api/eKyc',
   verifyOTP = '/api/eKyc/contact-information/verify',
   sendOTP = '/api/eKyc/contact-information/send-otp',
+  // Identification Document
+  IdentificationDocument = '/api/indentification-document',
+  // Bank Account
+  BankAccount = '/api/bank-account',
 }

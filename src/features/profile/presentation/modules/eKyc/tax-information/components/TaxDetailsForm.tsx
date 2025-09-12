@@ -1,21 +1,28 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { FormField } from '@/features/profile/shared/components';
 import { FileText, HelpCircle } from 'lucide-react';
+import { UseFormReturn } from 'react-hook-form';
+import { TaxInformation } from '../../../../schema/personalInfoSchema';
 
 interface TaxDetailsFormProps {
-  taxId: string;
-  onTaxIdChange: (value: string) => void;
-  isLoading?: boolean;
+  form: UseFormReturn<TaxInformation>;
+  isLoadingData: boolean;
+  disabled?: boolean;
 }
 
 const TaxDetailsForm: React.FC<TaxDetailsFormProps> = ({
-  taxId,
-  onTaxIdChange,
-  isLoading = false,
+  form,
+  isLoadingData,
+  disabled = false,
 }) => {
+  const {
+    register,
+    formState: { errors, isSubmitting },
+  } = form;
   return (
     <Card>
       <CardHeader className="pb-4">
@@ -36,16 +43,18 @@ const TaxDetailsForm: React.FC<TaxDetailsFormProps> = ({
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <FormField
-          id="tax-code"
-          label="Tax Identification Number"
-          placeholder="Enter your tax ID number"
-          value={taxId}
-          onChange={(e) => onTaxIdChange(e.target.value)}
-          disabled={isLoading}
-          required
-          tooltip="This could be your SSN, TIN, or equivalent tax identifier"
-        />
+        <div className="space-y-2">
+          <Label htmlFor="tax-code" className="text-sm font-medium">
+            Tax Identification Number <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="tax-code"
+            placeholder="Enter your tax ID number"
+            {...register('taxId', { required: 'Tax identification number is required' })}
+            disabled={isSubmitting || isLoadingData || disabled}
+          />
+          {errors.taxId && <p className="text-sm text-red-500">{errors.taxId.message}</p>}
+        </div>
       </CardContent>
     </Card>
   );

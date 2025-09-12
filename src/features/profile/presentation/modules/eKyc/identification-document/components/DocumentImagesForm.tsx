@@ -1,31 +1,28 @@
 'use client';
 
-import UploadImageField from '@/components/common/forms/upload/UploadImageField';
+import { UploadField } from '@/components/common/forms';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { FileText, HelpCircle } from 'lucide-react';
+import { Controller, UseFormReturn } from 'react-hook-form';
+import { IdentificationDocument } from '../../../../schema/personalInfoSchema';
+
+type FormData = IdentificationDocument;
 
 interface DocumentImagesFormProps {
-  frontImageUrl: string | null;
-  backImageUrl: string | null;
-  facePhotoUrl: string | null;
-  onFrontImageChange: (url: string | null) => void;
-  onBackImageChange: (url: string | null) => void;
-  onFacePhotoChange: (url: string | null) => void;
-  isSubmitting: boolean;
+  form: UseFormReturn<FormData>;
   isLoadingData: boolean;
+  disabled?: boolean;
 }
 
 const DocumentImagesForm: React.FC<DocumentImagesFormProps> = ({
-  frontImageUrl,
-  backImageUrl,
-  facePhotoUrl,
-  onFrontImageChange,
-  onBackImageChange,
-  onFacePhotoChange,
-  isSubmitting,
+  form,
   isLoadingData,
+  disabled = false,
 }) => {
+  const {
+    formState: { errors, isSubmitting },
+  } = form;
   return (
     <Card>
       <CardHeader className="pb-4">
@@ -54,41 +51,81 @@ const DocumentImagesForm: React.FC<DocumentImagesFormProps> = ({
       <CardContent>
         <div className="space-y-8">
           {/* Front and Back Side */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <UploadImageField
-              name="front-document"
-              label="Front Side of Document"
-              placeholder="Choose front side image"
-              value={frontImageUrl || undefined}
-              onChange={onFrontImageChange}
-              disabled={isSubmitting || isLoadingData}
-              required
-              size="large"
-            />
-            <UploadImageField
-              name="back-document"
-              label="Back Side of Document"
-              placeholder="Choose back side image"
-              value={backImageUrl || undefined}
-              onChange={onBackImageChange}
-              disabled={isSubmitting || isLoadingData}
-              required
-              size="large"
-            />
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Controller
+                name="frontImage"
+                control={form.control}
+                render={({ field }) => (
+                  <UploadField
+                    name={field.name}
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    label="Front Side of Document"
+                    placeholder="Choose front side image"
+                    disabled={isSubmitting || isLoadingData || disabled}
+                    initialImageUrl={form.watch('initialFrontImage')}
+                    required
+                    size="large"
+                  />
+                )}
+              />
+              {errors.frontImage && (
+                <p className="text-sm text-red-500">{errors.frontImage.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Controller
+                name="backImage"
+                control={form.control}
+                render={({ field }) => (
+                  <UploadField
+                    name={field.name}
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    label="Back Side of Document"
+                    placeholder="Choose back side image"
+                    disabled={isSubmitting || isLoadingData || disabled}
+                    required
+                    size="large"
+                    initialImageUrl={form.watch('initialBackImage')}
+                  />
+                )}
+              />
+              {errors.backImage && (
+                <p className="text-sm text-red-500">{errors.backImage.message}</p>
+              )}
+            </div>
           </div>
 
           {/* Face Photo */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <UploadImageField
-              name="face-photo"
-              label="Portrait Photo"
-              placeholder="Choose portrait photo"
-              value={facePhotoUrl || undefined}
-              onChange={onFacePhotoChange}
-              disabled={isSubmitting || isLoadingData}
-              required
-              size="large"
-            />
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Controller
+                name="facePhoto"
+                control={form.control}
+                render={({ field }) => (
+                  <UploadField
+                    name={field.name}
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    label="Portrait Photo"
+                    placeholder="Choose portrait photo"
+                    disabled={isSubmitting || isLoadingData || disabled}
+                    size="large"
+                    initialImageUrl={form.watch('initialFacePhoto')}
+                    required
+                  />
+                )}
+              />
+              {errors.facePhoto && (
+                <p className="text-sm text-red-500">{errors.facePhoto.message}</p>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>

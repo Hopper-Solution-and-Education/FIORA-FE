@@ -1,7 +1,14 @@
 import { Icons } from '@/components/Icon';
 import { FeatureFlags } from '@/shared/constants/featuresFlags';
 import { GrowthBook } from '@growthbook/growthbook';
-import { BookIcon, InfoIcon, MailIcon, PlayCircleIcon, ScrollTextIcon } from 'lucide-react';
+import {
+  BookIcon,
+  InfoIcon,
+  MailIcon,
+  NewspaperIcon,
+  PlayCircleIcon,
+  ScrollTextIcon,
+} from 'lucide-react';
 
 export type Language = 'vi' | 'en';
 export type Currency = 'vnd' | 'usd';
@@ -42,6 +49,8 @@ export const helpItems = [
     url: '/helps-center/terms-and-conditions',
   },
 ];
+
+export const newsItems = [{ label: 'News', icon: NewspaperIcon, url: '/news-center/news' }];
 
 export const filterMenuItems = (
   items: MenuSettingItem[],

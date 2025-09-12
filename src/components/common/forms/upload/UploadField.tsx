@@ -29,6 +29,7 @@ interface UploadFieldProps {
   disabled?: boolean;
   size?: 'small' | 'medium' | 'large';
   containerClassName?: string;
+  canChangeShape?: boolean;
   [key: string]: any;
 }
 
@@ -50,6 +51,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
   disabled,
   size = 'large',
   containerClassName,
+  canChangeShape = true,
   ...props
 }) => {
   const [preview, setPreview] = useState<string | null>(null);
@@ -242,17 +244,18 @@ const UploadField: React.FC<UploadFieldProps> = ({
                   }}
                 />
               </div>
-
-              <div
-                className={cn(
-                  'absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center',
-                  currentShape === 'circle' ? 'rounded-full' : 'rounded-md',
-                )}
-              >
-                <span className="text-white text-sm font-medium px-3 py-1 rounded-full bg-black/40 backdrop-blur-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                  Change Image
-                </span>
-              </div>
+              {!disabled && (
+                <div
+                  className={cn(
+                    'absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center',
+                    currentShape === 'circle' ? 'rounded-full' : 'rounded-md',
+                  )}
+                >
+                  <span className="text-white text-sm font-medium px-3 py-1 rounded-full bg-black/40 backdrop-blur-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                    Change Image
+                  </span>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center space-y-2 p-6 rounded-lg">
@@ -273,21 +276,23 @@ const UploadField: React.FC<UploadFieldProps> = ({
           )}
         </label>
 
-        {preview && (
+        {preview && !disabled && (
           <div className="absolute top-3 right-3 flex space-x-2">
-            <button
-              data-test="upload-field-toggle-shape"
-              type="button"
-              onClick={toggleShape}
-              className="w-8 h-8 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80 text-primary rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 hover:scale-105 border border-primary/10 hover:border-primary/20"
-              aria-label="Toggle shape"
-            >
-              {currentShape === 'square' ? (
-                <Circle className="h-4 w-4" />
-              ) : (
-                <Square className="h-4 w-4" />
-              )}
-            </button>
+            {canChangeShape && (
+              <button
+                data-test="upload-field-toggle-shape"
+                type="button"
+                onClick={toggleShape}
+                className="w-8 h-8 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80 text-primary rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 hover:scale-105 border border-primary/10 hover:border-primary/20"
+                aria-label="Toggle shape"
+              >
+                {currentShape === 'square' ? (
+                  <Circle className="h-4 w-4" />
+                ) : (
+                  <Square className="h-4 w-4" />
+                )}
+              </button>
+            )}
 
             <button
               data-test="upload-field-clear-image"
