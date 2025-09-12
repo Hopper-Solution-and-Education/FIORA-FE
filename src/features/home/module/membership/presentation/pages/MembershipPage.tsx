@@ -2,7 +2,7 @@
 
 import { useAppDispatch, useAppSelector } from '@/store';
 import { getCurrentTierAsyncThunk } from '@/store/actions';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { setSelectedTier } from '../../slices';
 import { getListMembershipAsyncThunk } from '../../slices/actions';
 import { CurrentTierMembership, MembershipRankChart } from '../organisms';
@@ -33,6 +33,10 @@ const MembershipPage = () => {
 
   const currentTierName = selectedTier?.tierName;
 
+  const isUserCurrentTier = useMemo(() => {
+    return userTier?.currentTier.id === selectedTier?.id;
+  }, [userTier?.currentTier, selectedTier]);
+
   return (
     <div className="min-h-screen px-4">
       {/* Main container with two rows */}
@@ -42,7 +46,7 @@ const MembershipPage = () => {
 
         {/* Right Section: Settings and Story col-2 */}
         <CurrentTierMembership
-          label={`Your Tier: ${currentTierName}`}
+          label={`${isUserCurrentTier ? 'Your Tier' : 'Selected Tier'}: ${currentTierName}`}
           loading={isLoadingUserTier}
         />
       </div>
