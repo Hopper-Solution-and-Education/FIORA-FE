@@ -77,8 +77,7 @@ const MembershipCronjobCommonTable = ({
         key: 'updatedBy',
         title: 'Updated By',
         align: 'left',
-        className: 'max-w-[200px] truncate',
-        render: (r) => <span className="text-sm truncate">{r.updatedBy.email || 'System'}</span>,
+        render: (r) => <span className="text-sm">{r.updatedBy.email || 'System'}</span>,
       },
       {
         key: 'action',
