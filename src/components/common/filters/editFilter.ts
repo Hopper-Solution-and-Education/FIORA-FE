@@ -4,7 +4,7 @@ import { FilterOperator } from '../../../shared/types/filter.types';
 export type FilterEditorProps<T = any> = {
   currentFilter: T;
   target: string;
-  value: string | number | boolean;
+  value: string | number | boolean | undefined;
   comparator: string;
   callBack: (newFilter: T) => void;
   subTarget?: string;
