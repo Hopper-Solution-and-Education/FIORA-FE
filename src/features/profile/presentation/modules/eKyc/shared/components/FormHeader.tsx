@@ -24,6 +24,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({
     if (!status) {
       return null;
     }
+    const statusLable = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
     return (
       <div
         className={cn(
@@ -32,7 +33,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({
           STATUS_COLOR[status].textColor,
         )}
       >
-        {status.toUpperCase()}
+        {statusLable}
       </div>
     );
   };

@@ -101,7 +101,7 @@ const normalizeError = (error: unknown): AppError => {
     error instanceof Prisma.PrismaClientInitializationError ||
     error instanceof Prisma.PrismaClientValidationError
   ) {
-    return new InternalServerError('A system error occurred. Please try again later.');
+    return new ConflictError('A system error occurred. Please try again later.');
   }
   //   if (error instanceof z.ZodError) return new ValidationError('Validation failed', error.errors);
   console.log({ error });
