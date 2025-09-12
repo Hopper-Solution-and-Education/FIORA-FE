@@ -6,7 +6,7 @@ import { transactionRepository } from '@/features/transaction/infrastructure/rep
 import { CURRENCY, DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
-import { BadRequestError, NotFoundError } from '@/shared/lib';
+import { BadRequestError, ConflictError, NotFoundError } from '@/shared/lib';
 import { FilterObject } from '@/shared/types/filter.types';
 import { SessionUser } from '@/shared/types/session';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
@@ -46,7 +46,7 @@ class WalletUseCase {
     // private _notificationUsecase = notificationUseCase,
     private _userUseCase = userUseCase,
     private _notificationUsecase = notificationUseCase,
-  ) {}
+  ) { }
 
   async createWallet(data: Prisma.WalletUncheckedCreateInput) {
     return this._walletRepository.createWallet(data);
@@ -202,9 +202,15 @@ class WalletUseCase {
     currency?: string,
     user?: SessionUser,
   ) {
+    // get user wallet
+    const userWallet = await this._walletRepository.findWalletByType(WalletType.Payment, userId);
+    if (!userWallet) {
+      throw new BadRequestError(Messages.USER_WALLET_NOT_FOUND);
+    }
+
     const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
     if (!packageFX) {
-      throw new Error('PackageFX not found');
+      throw new BadRequestError(Messages.PACKAGE_FX_NOT_FOUND);
     }
 
     let attachmentId: string | undefined;
@@ -213,7 +219,7 @@ class WalletUseCase {
     if (attachmentData) {
       // Validate attachment size
       if (attachmentData.size > ATTACHMENT_CONSTANTS.MAX_FILE_SIZE) {
-        throw new Error(
+        throw new ConflictError(
           `File size exceeds maximum limit of ${ATTACHMENT_CONSTANTS.MAX_FILE_SIZE / (1024 * 1024)}MB`,
         );
       }
@@ -242,6 +248,18 @@ class WalletUseCase {
       createdBy: userId,
       currency: foundCurrency.name,
     });
+
+    // Update wallet fields
+    await this._walletRepository.updateWallet(
+      {
+        id: userWallet.id,
+      },
+      {
+        frBalanceActive: {
+          increment: packageFX.fxAmount,
+        },
+      },
+    );
 
     const depositBoxNotification = {
       title: 'New Deposit Request',

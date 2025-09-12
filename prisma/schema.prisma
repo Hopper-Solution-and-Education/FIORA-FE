@@ -223,12 +223,12 @@ model Transaction {
   fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
   fromCategory        Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
   fromWallet          Wallet?              @relation("FromWallet", fields: [fromWalletId], references: [id])
-  MembershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
   partner             Partner?             @relation("PartnerTransactions", fields: [partnerId], references: [id])
   toAccount           Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Cascade)
   toCategory          Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
   toWallet            Wallet?              @relation("ToWallet", fields: [toWalletId], references: [id])
   user                User?                @relation("UserTransactions", fields: [userId], references: [id])
+  MembershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
 
   @@index([date])
   @@index([type])
@@ -627,18 +627,19 @@ model MembershipBenefit {
 }
 
 model MembershipProgress {
-  id             String          @id @default(uuid()) @db.Uuid
-  userId         String          @db.Uuid
-  currentSpent   Decimal         @default(0) @db.Decimal(13, 2)
-  currentBalance Decimal         @default(0) @db.Decimal(13, 2)
-  createdBy      String?         @db.Uuid
-  updatedBy      String?         @db.Uuid
-  createdAt      DateTime        @default(now()) @db.Timestamptz(0)
-  updatedAt      DateTime        @updatedAt @db.Timestamptz(0)
-  tierId         String?         @db.Uuid
-  tiersendid     String?         @db.Uuid
-  tier           MembershipTier? @relation(fields: [tierId], references: [id])
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String          @id @default(uuid()) @db.Uuid
+  userId           String          @db.Uuid
+  currentSpent     Decimal         @default(0) @db.Decimal(13, 2)
+  currentBalance   Decimal         @default(0) @db.Decimal(13, 2)
+  createdBy        String?         @db.Uuid
+  updatedBy        String?         @db.Uuid
+  createdAt        DateTime        @default(now()) @db.Timestamptz(0)
+  updatedAt        DateTime        @updatedAt @db.Timestamptz(0)
+  tierId           String?         @db.Uuid
+  tiersendid       String?         @db.Uuid
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  MembershipTier   MembershipTier? @relation(fields: [membershipTierId], references: [id])
+  membershipTierId String?         @db.Uuid
 
   @@index([userId])
   @@index([tierId])

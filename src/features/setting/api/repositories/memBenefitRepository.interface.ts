@@ -12,5 +12,12 @@ export interface IMembershipBenefitRepository {
 
   existsTransactionUsingBenefit(benefitId: string): Promise<boolean>;
 
+  fetchMembershipBenefit(
+    where: Prisma.MembershipBenefitWhereInput,
+    options?: Prisma.MembershipBenefitFindFirstArgs,
+  ): Promise<MembershipBenefit | null>;
+
   deleteMembershipBenefit(id: string): Promise<MembershipBenefit>;
+
+  findMembershipBenefitBySlug(slug: string): Promise<MembershipBenefit | null>;
 }

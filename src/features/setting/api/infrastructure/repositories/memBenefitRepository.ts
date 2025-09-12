@@ -32,6 +32,17 @@ class MembershipBenefitRepository implements IMembershipBenefitRepository {
       where: { id },
     });
   }
+
+  async fetchMembershipBenefit(
+    where: Prisma.MembershipBenefitWhereInput,
+    options?: Prisma.MembershipBenefitFindFirstArgs,
+  ): Promise<MembershipBenefit | null> {
+    return prisma.membershipBenefit.findFirst({ where, ...options });
+  }
+
+  async findMembershipBenefitBySlug(slug: string): Promise<MembershipBenefit | null> {
+    return prisma.membershipBenefit.findUnique({ where: { slug } });
+  }
 }
 
 export const membershipBenefitRepository = new MembershipBenefitRepository();
