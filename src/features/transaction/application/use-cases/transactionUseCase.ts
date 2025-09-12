@@ -216,6 +216,7 @@ class TransactionUseCase {
           partner: true,
           toWallet: true,
           fromWallet: true,
+          membershipBenefit: true,
         },
       },
     );
