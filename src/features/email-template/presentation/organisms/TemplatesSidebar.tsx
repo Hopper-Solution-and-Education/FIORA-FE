@@ -1,11 +1,12 @@
 'use client';
 
+import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EMAIL_TEMPLATES } from '@/features/email-template/constants';
 import { useEmailModal } from '@/features/email-template/hooks/useEmailModal';
 import { getTemplateTypeColor } from '@/features/email-template/utils/emailHelpers';
-import { MoreHorizontal, RefreshCw, Search } from 'lucide-react';
+import { MoreHorizontal, Search } from 'lucide-react';
 
 export default function TemplatesSidebar() {
   const { handleOpenModal, selectedTemplate } = useEmailModal();
@@ -15,18 +16,21 @@ export default function TemplatesSidebar() {
       {/* Header */}
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-medium text-gray-900 flex items-center gap-2">
-            <span>📧</span>
-            Templates (8)
-          </h3>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <RefreshCw className="h-4 w-4" />
+          <h3 className="font-medium text-gray-900 flex items-center gap-2">Templates (8)</h3>
+          <Button size="icon" variant="outline">
+            <Icons.mailPlus className="h-4 w-4" />
           </Button>
         </div>
 
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input placeholder="Search templates..." className="pl-10 border-gray-200 bg-gray-50" />
+          <Input
+            title="Search"
+            placeholder="Search templates..."
+            className="w-full"
+            onChange={() => {}}
+            onBlur={() => {}}
+          />
+          <Search size={15} className="absolute top-[50%] right-2 -translate-y-[50%] opacity-50" />
         </div>
       </div>
 

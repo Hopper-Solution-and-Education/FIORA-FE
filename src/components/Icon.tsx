@@ -65,6 +65,7 @@ import {
   LucideProps,
   LucideShoppingBag,
   Mail,
+  MailPlus,
   Minus,
   Moon,
   MoreVertical,
@@ -336,4 +337,5 @@ export const Icons = {
   book: Book,
   graduationCap: GraduationCap,
   eyeOff: EyeOff,
+  mailPlus: MailPlus,
 };
