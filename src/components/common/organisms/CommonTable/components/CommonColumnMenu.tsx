@@ -118,43 +118,51 @@ export default function CommonColumnMenu<T>({
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <SortableContext items={shown} strategy={verticalListSortingStrategy}>
           <div className="flex flex-col gap-1 mb-3">
-            {shown.map((key) => (
-              <SortableItem key={key} id={key}>
-                <div
-                  className={cn(
-                    'flex items-center justify-between rounded-md px-2 py-1 border transition text-sm font-medium bg-background border-transparent hover:bg-muted',
-                  )}
-                >
-                  <span className="cursor-grab mr-2 flex items-center" style={{ minWidth: 20 }}>
-                    <Icons.gripVertical className="w-4 h-4 text-muted-foreground" />
-                  </span>
-                  <span className="flex-1 truncate text-foreground">{key}</span>
-                  <Switch checked onCheckedChange={() => toggle(key)} className="z-10 scale-90" />
-                </div>
-              </SortableItem>
-            ))}
+            {shown.map((key) => {
+              const column = columns.find((c) => c.key === key);
+              const title = column?.title || key;
+              return (
+                <SortableItem key={key} id={key}>
+                  <div
+                    className={cn(
+                      'flex items-center justify-between rounded-md px-2 py-1 border transition text-sm font-medium bg-background border-transparent hover:bg-muted',
+                    )}
+                  >
+                    <span className="cursor-grab mr-2 flex items-center" style={{ minWidth: 20 }}>
+                      <Icons.gripVertical className="w-4 h-4 text-muted-foreground" />
+                    </span>
+                    <span className="flex-1 truncate text-foreground">{title}</span>
+                    <Switch checked onCheckedChange={() => toggle(key)} className="z-10 scale-90" />
+                  </div>
+                </SortableItem>
+              );
+            })}
           </div>
         </SortableContext>
       </DndContext>
 
       <div className="mt-1">
         {hidden.length > 0 ? (
-          hidden.map((key) => (
-            <div
-              key={key}
-              className="flex items-center justify-between px-2 py-1 rounded-md hover:bg-muted transition text-sm"
-            >
-              <span className="flex items-center gap-2 text-muted-foreground">
-                <Icons.gripVertical className="w-4 h-4" />
-                <span className="font-normal truncate">{key}</span>
-              </span>
-              <Switch
-                checked={false}
-                onCheckedChange={() => toggle(key)}
-                className="z-10 scale-90"
-              />
-            </div>
-          ))
+          hidden.map((key) => {
+            const column = columns.find((c) => c.key === key);
+            const title = column?.title || key;
+            return (
+              <div
+                key={key}
+                className="flex items-center justify-between px-2 py-1 rounded-md hover:bg-muted transition text-sm"
+              >
+                <span className="flex items-center gap-2 text-muted-foreground">
+                  <Icons.gripVertical className="w-4 h-4" />
+                  <span className="font-normal truncate">{title}</span>
+                </span>
+                <Switch
+                  checked={false}
+                  onCheckedChange={() => toggle(key)}
+                  className="z-10 scale-90"
+                />
+              </div>
+            );
+          })
         ) : (
           <div className="text-xs text-center pt-2 text-muted-foreground italic px-2">
             No hidden columns

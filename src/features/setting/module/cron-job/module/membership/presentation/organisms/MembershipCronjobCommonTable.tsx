@@ -32,24 +32,13 @@ const MembershipCronjobCommonTable = ({
   const columns: CommonTableColumn<MembershipCronjobTableData>[] = useMemo(
     () => [
       {
-        key: 'id',
-        title: 'ID',
-        align: 'left',
-        className: 'max-w-[200px] truncate',
-        render: (r) => (
-          <span className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 truncase">
-            {r.id}
-          </span>
-        ),
-      },
-      {
         key: 'email',
         title: 'Email',
         align: 'left',
         render: (r) => <span className="text-sm">{r.email}</span>,
       },
       {
-        key: 'executionTime',
+        key: 'datetime',
         title: 'Datetime',
         align: 'left',
         render: (r) => <span className="text-sm">{formatDateTime(r.executionTime)}</span>,
@@ -89,7 +78,7 @@ const MembershipCronjobCommonTable = ({
         title: 'Updated By',
         align: 'left',
         className: 'max-w-[200px] truncate',
-        render: (r) => <span className="text-sm truncate">{r.createdBy || 'System'}</span>,
+        render: (r) => <span className="text-sm truncate">{r.updatedBy.email || 'System'}</span>,
       },
       {
         key: 'action',

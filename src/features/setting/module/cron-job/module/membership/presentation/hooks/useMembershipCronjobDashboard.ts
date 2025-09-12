@@ -1,4 +1,3 @@
-import { CronJobType } from '@/shared/constants/cron-job';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { MembershipCronjobItem } from '../../data/dto/response/MembershipCronjobResponse';
@@ -35,7 +34,6 @@ export const useMembershipCronjobDashboard = () => {
 
         const res = await useCase.execute(page, pageSize, {
           status: filter?.status || [],
-          typeCronJob: CronJobType.Membership,
           search: filter?.search || '',
           fromDate: filter?.fromDate || '',
           toDate: filter?.toDate || '',
@@ -66,7 +64,10 @@ export const useMembershipCronjobDashboard = () => {
             balance: it.balance || it.updatedBy?.MembershipProgress?.[0]?.currentBalance || '0',
             toTier,
             status: it.status,
-            createdBy: it.createdBy,
+            updatedBy: {
+              id: it.updatedBy?.id || '',
+              email: it.updatedBy?.email || 'N/A',
+            },
             transactionId: it.transactionId,
           };
         });

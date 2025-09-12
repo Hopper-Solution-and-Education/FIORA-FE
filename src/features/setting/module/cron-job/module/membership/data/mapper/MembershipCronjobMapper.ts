@@ -1,3 +1,4 @@
+import { CronJobType } from '@/shared/constants/cron-job';
 import { MembershipCronjobFilterRequest } from '../dto/request/MembershipCronjobFilterRequest';
 import {
   MembershipCronjobItem,
@@ -23,7 +24,7 @@ export class MembershipCronjobMapper {
     };
 
     append('status', filter.status as any);
-    append('typeCronJob', filter.typeCronJob as any);
+    append('typeCronJob', CronJobType.Membership);
     if (filter.search) params.append('search', filter.search);
     if (filter.fromDate)
       params.append(
