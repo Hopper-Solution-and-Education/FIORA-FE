@@ -1,6 +1,6 @@
 import { reactUsecase } from '@/features/news/api/application/usecase/reactUsecase';
-import { commentUpdationNews } from '@/features/news/api/types/commentDTO';
-import { reactCreationRequest } from '@/features/news/api/types/reactDTO';
+import { CommentUpdationNews } from '@/features/news/api/types/commentDTO';
+import { ReactCreationRequest } from '@/features/news/api/types/reactDTO';
 import { userUseCase } from '@/features/setting/api/domain/use-cases/userUsecase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
@@ -60,16 +60,16 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
 
 export async function POST(req: NextApiRequest, res: NextApiResponse) {
   const { newsId, userId, reactType } = req.body;
-  const param: reactCreationRequest = { newsId, userId, reactType };
+  const param: ReactCreationRequest = { newsId, userId, reactType };
   const result = await reactUsecase.createReact(param);
   return res
     .status(RESPONSE_CODE.OK)
-    .json(createResponse(RESPONSE_CODE.OK, Messages.CREATE_COMMENT_NEWS_SUCCESS, result));
+    .json(createResponse(RESPONSE_CODE.OK, Messages.REACT_NEWS_SUCCESS, result));
 }
 export async function PUT(req: NextApiRequest, res: NextApiResponse) {
   const { content, userId } = req.body;
-  const param: commentUpdationNews = { content, userId };
+  const param: CommentUpdationNews = { content, userId };
   return res
     .status(RESPONSE_CODE.OK)
-    .json(createErrorResponse(RESPONSE_CODE.OK, Messages.GET_LISTNEW_SUCCESS));
+    .json(createErrorResponse(RESPONSE_CODE.OK, Messages.REACT_NEWS_SUCCESS));
 }

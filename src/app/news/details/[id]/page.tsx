@@ -4,7 +4,7 @@ import Loading from '@/components/common/atoms/Loading';
 import dynamic from 'next/dynamic';
 
 const NewsDetailPageRender = dynamic(
-  () => import('@/features/helps-center/presentation/pages/FaqDetailPage'),
+  () => import('@/features/news/presentation/pages/NewsDetailPage'),
   {
     loading: () => <Loading />,
     ssr: false,

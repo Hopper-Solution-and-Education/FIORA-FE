@@ -11,7 +11,10 @@ import {
   NewsUpdateRequest,
 } from '../../types/newsDTO';
 export class NewsRepository implements INewsRepository {
-  async getNewsByIdAndUserId(newsId: string, userId: string): Promise<NewsDetailResponse | null> {
+  async getNewsByIdAndUserId(
+    newsId: string,
+    userId: string | undefined,
+  ): Promise<NewsDetailResponse | null> {
     const result = await prisma.post.findUnique({
       where: {
         id: newsId,
@@ -23,16 +26,22 @@ export class NewsRepository implements INewsRepository {
       return null;
     }
 
-    //kiểm tra xem người dùng đã thả cảm xúc chưa
-    const reaction = await prisma.reaction.findFirst({
-      where: {
-        postId: newsId,
-        userId: userId,
-      },
-      select: {
-        reactionType: true,
-      },
-    });
+    let reaction;
+    if (typeof userId !== 'undefined' && userId.trim().length !== 0) {
+      console.log(userId);
+      //kiểm tra xem người dùng đã thả cảm xúc chưa
+      reaction = await prisma.reaction.findFirst({
+        where: {
+          postId: newsId,
+          userId: userId,
+        },
+        select: {
+          reactionType: true,
+        },
+      });
+    } else {
+      reaction = { reactionType: '' };
+    }
 
     // Lấy reaction của user (nếu có)
 

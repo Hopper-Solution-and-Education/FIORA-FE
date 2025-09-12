@@ -1,4 +1,4 @@
-import { newsUsercase } from '@/features/news/api/application/usecase/newsUsecase';
+import { newsUsecase } from '@/features/news/api/application/usecase/newsUsecase';
 import { postCategoryUsecase } from '@/features/news/api/application/usecase/postCategoryUsecase';
 import { NewsUpdateRequest } from '@/features/news/api/types/newsDTO';
 import { userUseCase } from '@/features/setting/api/domain/use-cases/userUsecase';
@@ -9,11 +9,7 @@ import { createErrorResponse, errorHandler } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { validateBody, validateVariable } from '@/shared/utils/validate';
-import {
-  commetCreateRequestSchema,
-  postIdSchema,
-  updateNewsSchema,
-} from '@/shared/validators/newsValidation';
+import { postIdSchema, updateNewsSchema } from '@/shared/validators/newsValidation';
 import { User } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -86,12 +82,24 @@ export async function UPDATE(req: NextApiRequest, res: NextApiResponse) {
       );
   }
 
-  //check title exists
-  const titleExists = await newsUsercase.titleExists(requestParam.title);
-  if (titleExists) {
+  const post = await newsUsecase.getNewsById(postId);
+
+  if (post === null) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.NEWS_TITLE_ALREADY_EXISTS));
+      .json(
+        createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.NEWS_NOT_FOUND, validation.error),
+      );
+  }
+
+  //check title exists
+  if (post.title !== requestParam.title) {
+    const titleExists = await newsUsecase.titleExists(requestParam.title);
+    if (titleExists) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.NEWS_TITLE_ALREADY_EXISTS));
+    }
   }
 
   //check category
@@ -104,7 +112,7 @@ export async function UPDATE(req: NextApiRequest, res: NextApiResponse) {
 
   //UPdate news
 
-  const result = await newsUsercase.updateNews(requestParam, postId);
+  const result = await newsUsecase.updateNews(requestParam, postId);
 
   return res
     .status(RESPONSE_CODE.OK)
@@ -128,7 +136,7 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
   }
 
   try {
-    await newsUsercase.deleteNews(postId);
+    await newsUsecase.deleteNews(postId);
 
     return res
       .status(RESPONSE_CODE.OK)
@@ -143,28 +151,31 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
   const { id, userId } = req.query;
 
-  const errorValidation = validateVariable(commetCreateRequestSchema, { id, userId });
-  //validation query string
-  if (errorValidation.error) {
-    return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(
-        createErrorResponse(
-          RESPONSE_CODE.BAD_REQUEST,
-          Messages.VALIDATION_ERROR,
-          errorValidation.error,
-        ),
-      );
-  }
+  // const errorValidation = validateBody(newsCreateRequestSchema, { id, userId });
+  // const errorValidation = validateBody(newsCreateRequestSchema, { id });
+  // //validation query string
+  // if (errorValidation.error) {
+  //   return res
+  //     .status(RESPONSE_CODE.BAD_REQUEST)
+  //     .json(
+  //       createErrorResponse(
+  //         RESPONSE_CODE.BAD_REQUEST,
+  //         Messages.VALIDATION_ERROR,
+  //         errorValidation.error,
+  //       ),
+  //     );
+  // }
 
   const newsIdParam = String(id);
-  const userIdParam = String(userId);
+  const userIdParam = typeof userId !== 'undefined' ? String(userId) : '';
   try {
-    const newsDetail = await newsUsercase.getNewsByIdAndIncrease(newsIdParam, userIdParam);
+    const newsDetail = await newsUsecase.getNewsByIdAndIncrease(newsIdParam, userIdParam);
+    // const newsDetail = await newsUsecase.getNewsById(newsIdParam);
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.GET_NEWS_DETAIL_SECCESS, newsDetail));
   } catch (error) {
+    console.error(error);
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
       .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.NEWS_NOT_FOUND));
