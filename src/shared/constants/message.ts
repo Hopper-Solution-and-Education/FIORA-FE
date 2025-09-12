@@ -208,6 +208,7 @@ export enum Messages {
   MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED = 'Failed to create membership tier benefit',
   MEMBERSHIP_TIER_BENEFIT_NOT_FOUND = 'Membership tier benefit not found',
   MEMBERSHIP_BENEFIT_NOT_FOUND = 'Membership benefit not found',
+  MEMBERSHIP_BENEFIT_SLUG_NAME_ALREADY_EXISTS = 'Membership benefit slug name already exists',
   // Membership Tier Dashboard
   GET_MEMBERSHIP_TIERS_DASHBOARD_SUCCESS = 'Membership tiers dashboard retrieved successfully',
 

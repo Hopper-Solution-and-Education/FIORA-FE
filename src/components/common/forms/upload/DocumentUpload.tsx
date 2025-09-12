@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { HelpCircle, LucideIcon } from 'lucide-react';
 import Image from 'next/image';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import DocumentPreview from './DocumentPreview';
 
 // Uploaded Document Display Component
@@ -42,6 +42,18 @@ const UploadedDocumentDisplay: React.FC<UploadedDocumentDisplayProps> = ({
   };
 
   const isImage = document.type.startsWith('image/');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isImage && document) {
+      const url = URL.createObjectURL(document);
+      setPreviewUrl(url);
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    }
+    setPreviewUrl(null);
+  }, [document, isImage]);
 
   return (
     <Card>
@@ -126,14 +138,14 @@ const UploadedDocumentDisplay: React.FC<UploadedDocumentDisplayProps> = ({
                   {formatFileSize(document.size)}
                 </span>
               </div>
-              {isImage && (
+              {isImage && previewUrl && (
                 <div
                   className="flex justify-center items-center cursor-pointer transition-transform duration-200 hover:scale-105"
                   onClick={onPreview}
                   title="Click to preview"
                 >
                   <Image
-                    src={URL.createObjectURL(document)}
+                    src={previewUrl}
                     alt={document.name}
                     className="rounded-lg shadow-md max-h-20 sm:max-h-28 md:max-h-32 w-auto max-w-[90px] sm:max-w-[120px] md:max-w-[160px] object-contain border border-green-200 bg-white transition-all duration-200"
                     style={{ display: 'block', margin: '0 auto' }}

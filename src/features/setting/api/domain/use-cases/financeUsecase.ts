@@ -30,7 +30,7 @@ export class FinanceUseCase {
     private _productRepository: IProductRepository = productRepository,
     private _partnerRepository: IPartnerRepository = partnerRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
-  ) { }
+  ) {}
 
   async getReport({ request, userId }: { request: GetFinanceReportRequest; userId: string }) {
     const { type, filter = FinanceReportFilterEnum.ALL } = request;

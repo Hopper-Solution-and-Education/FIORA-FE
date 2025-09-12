@@ -65,16 +65,22 @@ const ContactUsForm = ({ setOpenConfirmExitDialog, user }: ContactUsFormProps) =
   const onSubmit = async (values: ContactUsRequest) => {
     const formattedPhone = values.phoneNumber?.replace(/\D/g, '') || '';
 
-    const submitData: ContactUsRequest = {
-      name: values.name,
-      email: values.email,
-      phoneNumber: formattedPhone,
-      title: values.title,
-      message: values.message,
-      attachments: values.attachments,
-    };
+    // Build multipart form data to support attachments
+    const formData = new FormData();
+    formData.append('name', values.name);
+    formData.append('email', values.email);
+    formData.append('phoneNumber', formattedPhone);
+    formData.append('title', values.title);
+    formData.append('message', values.message);
+    if (Array.isArray(values.attachments)) {
+      values.attachments.forEach((file) => {
+        if (file instanceof File) {
+          formData.append('attachments', file, file.name);
+        }
+      });
+    }
 
-    await contactUsMutation(submitData);
+    await contactUsMutation(formData);
     setIsFormDirty(false);
     toast.success('Request sent successfully');
     form.reset();

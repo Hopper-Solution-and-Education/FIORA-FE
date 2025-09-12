@@ -5,6 +5,7 @@ import {
   BankAccountFormData,
   IdentificationDocumentPayload,
   UserProfile,
+  eKYC,
 } from '../../domain/entities/models/profile';
 
 export const profileApi = createApi({
@@ -38,9 +39,9 @@ export const profileApi = createApi({
     }),
 
     // eKYC api
-    getEKYC: builder.query<any[], void>({
+    getEKYC: builder.query<eKYC[], void>({
       query: () => ({ url: ApiEndpointEnum.eKYC, method: 'GET' }),
-      transformResponse: (response: Response<any[]>) => response.data,
+      transformResponse: (response: Response<eKYC[]>) => response.data,
       providesTags: ['eKYC'],
     }),
     // eKYC contact verify
@@ -54,20 +55,20 @@ export const profileApi = createApi({
 
     // Identification Document API
     getIdentificationDocument: builder.query<any, void>({
-      query: () => ({ url: `/api/indentification-document`, method: 'GET' }),
+      query: () => ({ url: ApiEndpointEnum.IdentificationDocument, method: 'GET' }),
       transformResponse: (response: Response<any>) => response.data,
       providesTags: ['IdentificationDocument'],
     }),
 
     submitIdentificationDocument: builder.mutation<any, IdentificationDocumentPayload>({
       query: (body) => ({
-        url: '/api/indentification-document',
+        url: ApiEndpointEnum.IdentificationDocument,
         method: 'POST',
         body,
         headers: { 'Content-Type': 'application/json' },
       }),
       transformResponse: (response: Response<any>) => response.data,
-      invalidatesTags: ['IdentificationDocument'],
+      invalidatesTags: ['IdentificationDocument', 'eKYC'],
     }),
 
     // Upload Attachment
@@ -85,20 +86,20 @@ export const profileApi = createApi({
 
     // Bank Account API
     getBankAccount: builder.query<any, void>({
-      query: () => ({ url: '/api/bank-account', method: 'GET' }),
+      query: () => ({ url: ApiEndpointEnum.BankAccount, method: 'GET' }),
       transformResponse: (response: Response<any>) => response.data,
       providesTags: ['BankAccount'],
     }),
 
     submitBankAccount: builder.mutation<any, BankAccountFormData>({
       query: (body) => ({
-        url: '/api/bank-account',
+        url: ApiEndpointEnum.BankAccount,
         method: 'POST',
         body,
         headers: { 'Content-Type': 'application/json' },
       }),
       transformResponse: (response: Response<any>) => response.data,
-      invalidatesTags: ['BankAccount'],
+      invalidatesTags: ['BankAccount', 'eKYC'],
     }),
   }),
 });
