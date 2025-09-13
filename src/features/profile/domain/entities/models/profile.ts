@@ -84,25 +84,6 @@ export interface BankAccountFormData {
   paymentRefId: string;
 }
 
-export interface IdentificationDocumentFormData {
-  idNumber: string;
-  issuedDate: string;
-  issuedPlace: string;
-  idAddress: string;
-  type: IdentificationDocumentType;
-}
-
-export interface IdentificationDocumentPayload {
-  fileFrontId?: string;
-  fileBackId?: string;
-  idAddress?: string;
-  issuedDate?: string;
-  type: IdentificationDocumentType;
-  idNumber: string;
-  filePhotoId?: string;
-  issuedPlace?: string;
-}
-
 export interface IdentificationDocumentProps {
   isVerified: boolean;
 }

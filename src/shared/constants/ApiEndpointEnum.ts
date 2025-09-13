@@ -39,4 +39,8 @@ export enum ApiEndpointEnum {
   eKYC = '/api/eKyc',
   verifyOTP = '/api/eKyc/contact-information/verify',
   sendOTP = '/api/eKyc/contact-information/send-otp',
+  // Identification Document
+  IdentificationDocument = '/api/indentification-document',
+  // Bank Account
+  BankAccount = '/api/bank-account',
 }

@@ -90,6 +90,19 @@ class EmailTemplateRepository implements IEmailTemplateRepository {
       },
     });
   }
+
+  async getEmailTemplateField() {
+    const result = await prisma.emailTemplateField.findMany({
+      orderBy: { type: 'asc' },
+      select: { type: true, id: true, name: true, createdAt: true, updatedAt: true },
+    });
+
+    const grouped: Record<string, any[]> = {};
+    for (const item of result) {
+      (grouped[item.type] ??= []).push(item);
+    }
+    return grouped;
+  }
 }
 
 export const emailTemplateRepository = new EmailTemplateRepository();
