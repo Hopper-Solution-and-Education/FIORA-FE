@@ -109,8 +109,7 @@ export function UserNav({ handleSignOut }: UserNavProps) {
             <div className="flex flex-col items-start min-w-28">
               {profileRole()}
               {/* truncate and max-w-32 to prevent overflow */}
-              <p className="text-xs text-muted-foreground max-w-32 truncate">{profile?.role}</p>
-              <p className="text-xs text-muted-foreground max-w-32 truncate">{profile?.name}</p>
+              <p className="text-xs text-muted-foreground max-w-32 truncate">{profile?.email}</p>
               <p className="text-xs text-muted-foreground max-w-32 truncate">
                 {userTier?.currentTier?.tierName}
               </p>
