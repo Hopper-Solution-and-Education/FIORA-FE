@@ -368,4 +368,8 @@ export enum Messages {
 
   //Email template type
   EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
+
+  // Flexi Interest
+  GET_FLEXI_INTEREST_SUCCESS = 'Get flexi interest list successfully',
+  GET_FLEXI_NO_CONTENT = 'No content found for flexi interest',
 }
