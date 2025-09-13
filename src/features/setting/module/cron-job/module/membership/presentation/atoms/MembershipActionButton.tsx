@@ -58,7 +58,6 @@ const MembershipActionButton = ({
     setReason('');
   };
 
-  // Show disabled button for successful status
   if (status.toLowerCase() === 'successful') {
     return (
       <Button
@@ -72,23 +71,20 @@ const MembershipActionButton = ({
     );
   }
 
-  // Show action button for failed status
   if (status.toLowerCase() !== 'fail') {
     return null;
   }
 
   return (
     <>
-      <div className={`flex items-center gap-2 ${className || ''}`}>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={handleRetry}
-          className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-        >
-          <Icons.edit className="w-4 h-4" />
-        </Button>
-      </div>
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={handleRetry}
+        className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+      >
+        <Icons.edit className="w-4 h-4" />
+      </Button>
 
       <GlobalDialog
         open={isModalOpen}
@@ -108,10 +104,12 @@ const MembershipActionButton = ({
               <label className="text-sm font-medium">
                 Select new Tier <span className="text-red-500">*</span>
               </label>
+
               <Select value={selectedTier} onValueChange={setSelectedTier}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select tier" />
                 </SelectTrigger>
+
                 <SelectContent>
                   {mockTierOptions.map((tier) => (
                     <SelectItem key={tier} value={tier}>
@@ -126,6 +124,7 @@ const MembershipActionButton = ({
               <label className="text-sm font-medium">
                 Provide a Reason <span className="text-red-500">*</span>
               </label>
+
               <Textarea
                 placeholder="Type your message here"
                 value={reason}
@@ -138,6 +137,7 @@ const MembershipActionButton = ({
               <p className="flex items-center gap-1">
                 Click <Icons.arrowLeft className="w-4 h-4 text-blue-600" /> to stay back
               </p>
+
               <p className="flex items-center gap-1">
                 Or click <Icons.check className="w-4 h-4 text-green-600" /> to confirm
               </p>
@@ -154,6 +154,7 @@ const MembershipActionButton = ({
             >
               <Icons.arrowLeft className="w-4 h-4 text-black" />
             </Button>
+
             <Button
               type="button"
               onClick={handleConfirm}
