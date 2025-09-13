@@ -29,9 +29,9 @@ model User {
   isBlocked                 Boolean?                 @default(false)
   logoId                    String?                  @db.Uuid
   phone                     String?
-  kyc_levels                String[]
   is_referral_bonus_paid    Boolean?                 @default(false)
   is_referral_campaign_paid Boolean?                 @default(false)
+  kyc_levels                String[]
   referral_code             String?                  @unique @db.VarChar(15)
   referrer_code             String?                  @db.VarChar(15)
   accounts                  Account[]                @relation("UserAccounts")
@@ -223,7 +223,7 @@ model Transaction {
   fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
   fromCategory        Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
   fromWallet          Wallet?              @relation("FromWallet", fields: [fromWalletId], references: [id])
-  MembershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
+  membershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
   partner             Partner?             @relation("PartnerTransactions", fields: [partnerId], references: [id])
   toAccount           Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Cascade)
   toCategory          Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
@@ -911,6 +911,16 @@ model CronjobTypeDefine {
   createdAt   DateTime    @default(now()) @db.Timestamptz(0)
 }
 
+model EmailTemplateField {
+  id        String    @id @db.Uuid
+  name      String    @db.VarChar(30)
+  type      emailType
+  createdAt DateTime  @default(now()) @db.Timestamptz(0)
+  createdBy String?   @db.Uuid
+  updatedAt DateTime  @db.Timestamptz(0)
+  updatedBy String?   @db.Uuid
+}
+
 model Referral {
   id           String         @id @db.Uuid
   userId       String         @db.Uuid
@@ -923,16 +933,6 @@ model Referral {
   User         User           @relation(fields: [userId], references: [id])
 
   @@index([userId])
-}
-
-model EmailTemplateField {
-  id        String    @id @db.Uuid
-  name      String    @db.VarChar(30)
-  type      emailType
-  createdAt DateTime  @default(now()) @db.Timestamptz(0)
-  createdBy String?   @db.Uuid
-  updatedAt DateTime  @db.Timestamptz(0)
-  updatedBy String?   @db.Uuid
 }
 
 enum BudgetType {
