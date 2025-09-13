@@ -1,5 +1,4 @@
 import { prisma } from '@/config';
-import { Messages } from '@/shared/constants/message';
 import { BadRequestError } from '@/shared/lib';
 import {
   MembershipBenefitCreatePayload,
@@ -457,17 +456,7 @@ class MembershipBenefitService {
   }
 
   async processMembershipBenefit(payload: MembershipBenefitCreatePayload, userId: string) {
-    const { mode, slug } = payload;
-
-    if (mode === 'create' || mode === 'update' || mode === 'update-all' || mode === 'create-all') {
-      const foundMembershipBenefit = await membershipBenefitRepository.findMembershipBenefitBySlug(
-        slug!,
-      );
-
-      if (foundMembershipBenefit) {
-        throw new BadRequestError(Messages.MEMBERSHIP_BENEFIT_SLUG_NAME_ALREADY_EXISTS);
-      }
-    }
+    const { mode } = payload;
 
     switch (mode) {
       case 'create':
