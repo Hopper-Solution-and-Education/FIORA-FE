@@ -1,0 +1,143 @@
+import { CommonTable } from '@/components/common/organisms';
+import {
+  ColumnConfigMap,
+  CommonTableColumn,
+} from '@/components/common/organisms/CommonTable/types';
+import { formatDateTime } from '@/shared/lib';
+import React, { useMemo, useState } from 'react';
+import FlexiInterestActionButton from '../atoms/FlexiInterestActionButton';
+import FlexiInterestStatusBadge from '../atoms/FlexiInterestStatusBadge';
+import FlexiInterestHeaderTopLeft from '../molecules/FlexiInterestHeaderTopLeft';
+import { FlexiInterestCronjobTableData } from '../types/flexi-interest.type';
+
+interface FlexiInterestCronJobTableProps {
+  data: FlexiInterestCronjobTableData[];
+  loading: boolean;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  onLoadingMore?: boolean;
+  onLoadMore?: () => void;
+  className?: string;
+}
+
+const STORAGE_KEY = 'flexi-interest-cronjob:table';
+
+const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
+  data,
+  loading,
+  hasMore,
+  isLoadingMore,
+  onLoadMore,
+  className,
+}) => {
+  const columns: CommonTableColumn<FlexiInterestCronjobTableData>[] = useMemo(
+    () => [
+      {
+        key: 'id',
+        title: 'ID',
+        align: 'center',
+        className: 'max-w-[200px] truncate',
+        render: (r) => (
+          <span className="text-blue-600 dark-text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 truncate">
+            {r.id}
+          </span>
+        ),
+      },
+      {
+        key: 'email',
+        title: 'Email',
+        align: 'left',
+        render: (r) => <span className="text-sm">{r.email}</span>,
+      },
+      {
+        key: 'executionTime',
+        title: 'Datetime',
+        align: 'left',
+        render: (r) => <span className="text-sm">{formatDateTime(r.executionTime)}</span>,
+      },
+      {
+        key: 'tier',
+        title: 'Membership Tier',
+        align: 'right',
+        render: (r) => <span className="text-sm">{r.tier}</span>,
+      },
+      {
+        key: 'rate',
+        title: 'Flexi Interest Rate',
+        align: 'right',
+        render: (r) => <span className="text-sm">{r.rate}</span>,
+      },
+      {
+        key: 'activeBalance',
+        title: 'Active Balance',
+        align: 'right',
+        render: (r) => <span className="text-sm">{r.activeBalance}</span>,
+      },
+      {
+        key: 'amount',
+        title: 'Flexi Interest Amount',
+        align: 'right',
+        render: (r) => <span className="text-sm">{r.amount}</span>,
+      },
+      {
+        key: 'status',
+        title: 'Status',
+        align: 'left',
+        render: (r) => <FlexiInterestStatusBadge status={r.status} />,
+      },
+      {
+        key: 'updatedBy',
+        title: 'Updated By',
+        align: 'left',
+        className: 'max-w-[200px] truncate',
+        render: (r) => <span className="text-sm truncate">{r.updateBy}</span>,
+      },
+      {
+        key: 'reason',
+        title: 'Reason',
+        align: 'left',
+        render: (r) => <span className="text-sm">{r.reason || 'None'}</span>,
+      },
+      {
+        key: 'action',
+        title: 'Action',
+        align: 'center',
+        render: (r) => <FlexiInterestActionButton status={r.status} />,
+      },
+    ],
+    [],
+  );
+
+  const initialConfig: ColumnConfigMap = useMemo(() => {
+    return columns.reduce((acc, c, idx) => {
+      if (c.key) {
+        acc[c.key as string] = {
+          isVisible: true,
+          index: idx,
+          align: c.align,
+        };
+      }
+      return acc;
+    }, {} as ColumnConfigMap);
+  }, [columns]);
+
+  const [columnConfig, setColumnConfig] = useState<ColumnConfigMap>(initialConfig);
+
+  return (
+    <CommonTable
+      data={data}
+      columns={columns}
+      columnConfig={columnConfig}
+      onColumnConfigChange={setColumnConfig}
+      storageKey={STORAGE_KEY}
+      loading={loading}
+      hasMore={hasMore}
+      isLoadingMore={isLoadingMore}
+      onLoadMore={onLoadMore}
+      className={className}
+      leftHeaderNode={<FlexiInterestHeaderTopLeft />}
+    />
+  );
+};
+
+export default FlexiInterestCronJobTable;
