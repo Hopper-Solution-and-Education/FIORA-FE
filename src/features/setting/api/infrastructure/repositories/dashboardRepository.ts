@@ -1,31 +1,21 @@
 import { prisma } from '@/config';
 import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { CreateBoxNotificationInput } from '@/features/notification/domain/repositories/notificationRepository.interface';
-import { CronJobLog, CronJobStatus, TypeCronJob } from '@prisma/client';
+import { applyJsonInFilter, normalizeToArray } from '@/shared/utils/filterUtils';
+import { CronJobLog, CronJobStatus, MembershipTier, TypeCronJob } from '@prisma/client';
 
 class DashboardRepository {
   async getWithFilters(
     filters: any,
     skip: number,
     take: number,
-    tierFilters?: { fromTier?: string; toTier?: string },
+    tierFilters?: { fromTier?: string | string[]; toTier?: string | string[] },
   ) {
     if (tierFilters?.fromTier || tierFilters?.toTier) {
-      if (tierFilters.fromTier) {
-        filters.dynamicValue = {
-          ...filters.dynamicValue,
-          path: ['fromTier'],
-          equals: tierFilters.fromTier,
-        };
-      }
-
-      if (tierFilters.toTier) {
-        filters.dynamicValue = {
-          ...filters.dynamicValue,
-          path: ['toTier'],
-          equals: tierFilters.toTier,
-        };
-      }
+      const fromArray = normalizeToArray(tierFilters.fromTier);
+      const toArray = normalizeToArray(tierFilters.toTier);
+      applyJsonInFilter(filters, 'fromTier', fromArray);
+      applyJsonInFilter(filters, 'toTier', toArray);
     }
 
     const logs = await prisma.cronJobLog.findMany({
@@ -109,6 +99,7 @@ class DashboardRepository {
         balance: creatorMap.get(log.createdBy ?? '')?.MembershipProgress[0]?.currentBalance || 0,
         spent: creatorMap.get(log.createdBy ?? '')?.MembershipProgress[0]?.currentSpent || 0,
         updatedBy: creatorMap.get(log.updatedBy ?? '') || null,
+        createdBy: creatorMap.get(log?.createdBy ?? '') || null,
       };
     });
   }
@@ -162,58 +153,70 @@ class DashboardRepository {
     return grouped;
   }
 
-  async changeCronjob(cronjobData: CronJobLog, userId: string) {
-    const existing = await prisma.membershipProgress.findFirst({
-      where: { userId },
-      include: {
-        tier: true,
-        user: true,
-      },
-    });
+  async changeCronjob(cronjobData: CronJobLog, userId: string, tier: MembershipTier) {
+    return await prisma.$transaction(async (tx) => {
+      const existing = await tx.membershipProgress.findFirst({
+        where: { userId: cronjobData?.createdBy || '' },
+        include: {
+          tier: true,
+          user: true,
+        },
+      });
 
-    if (
-      !existing ||
-      cronjobData.typeCronJob !== TypeCronJob.MEMBERSHIP ||
-      !this.shouldUpdateTier(cronjobData, existing)
-    ) {
-      return null;
-    }
+      if (
+        !existing ||
+        cronjobData.typeCronJob !== TypeCronJob.MEMBERSHIP
+        //  ||  !this.shouldUpdateTier(cronjobData, existing)
+      ) {
+        return null;
+      }
 
-    const { email, name, id: user_id } = existing.user;
-    const tier_name = existing.tier?.tierName || '';
-    const newTierId = (cronjobData.dynamicValue as any)?.['toTier'] as string;
+      const { email, name, id: user_id } = existing.user;
+      const tier_name = tier?.tierName || '';
+      // const newTierId = (cronjobData.dynamicValue as any)?.['toTier'] as string;
 
-    const updatedProgress = await prisma.membershipProgress.update({
-      where: { id: existing.id },
-      data: {
-        updatedBy: userId,
-        updatedAt: new Date(),
-        tierId: newTierId,
-        tiersendid: newTierId,
-      },
-    });
+      const updatedProgress = await tx.membershipProgress.update({
+        where: { id: existing?.id },
+        data: {
+          updatedBy: userId,
+          updatedAt: new Date(),
+          tierId: tier.id,
+          tiersendid: tier.id,
+        },
+      });
 
-    const status = updatedProgress ? CronJobStatus.SUCCESSFUL : CronJobStatus.FAIL;
+      const status = updatedProgress ? CronJobStatus.SUCCESSFUL : CronJobStatus.FAIL;
 
-    if (status === CronJobStatus.SUCCESSFUL) {
-      await this.sendMembershipNotification(email, name || '', tier_name, user_id);
-    }
+      const updatedCronJobLog = await tx.cronJobLog.update({
+        where: { id: cronjobData.id },
+        data: {
+          updatedBy: userId,
+          updatedAt: new Date(),
+          status,
+          dynamicValue: {
+            fromTier: (cronjobData.dynamicValue as any)?.['fromTier'] as string,
+            toTier: tier?.id,
+          },
+        },
+      });
 
-    return prisma.cronJobLog.update({
-      where: { id: cronjobData.id },
-      data: {
-        updatedBy: userId,
-        updatedAt: new Date(),
-        status,
-      },
+      if (status === CronJobStatus.SUCCESSFUL) {
+        setImmediate(() => {
+          this.sendMembershipNotification(email, name || '', tier_name, user_id).catch((error) => {
+            console.error('Failed to send membership notification:', error);
+          });
+        });
+      }
+
+      return updatedCronJobLog;
     });
   }
 
-  private shouldUpdateTier(cronjobData: CronJobLog, existing: any): boolean {
-    const newTierId = (cronjobData.dynamicValue as any)?.['toTier']?.toString();
-    const currentTierId = existing.tierId?.toString();
-    return newTierId && newTierId !== currentTierId;
-  }
+  // private shouldUpdateTier(cronjobData: CronJobLog, existing: any): boolean {
+  //   const newTierId = (cronjobData.dynamicValue as any)?.['toTier']?.toString();
+  //   const currentTierId = existing.tierId?.toString();
+  //   return newTierId && newTierId !== currentTierId;
+  // }
 
   private async sendMembershipNotification(
     email: string,
@@ -246,6 +249,163 @@ class DashboardRepository {
       where: { id },
     });
     return cronjob;
+  }
+
+  async getTier(id: string) {
+    const cronjob = await prisma.membershipTier.findFirst({
+      where: { id },
+    });
+    return cronjob;
+  }
+
+  async getMembershipChart(
+    filters?: any,
+    // tierFilters?: { fromTier?: string | string[]; toTier?: string | string[] },
+  ) {
+    const cronJobWhere: any = {
+      typeCronJob: 'MEMBERSHIP',
+    };
+
+    if (filters) {
+      if (filters.createdAt) {
+        cronJobWhere.createdAt = filters.createdAt;
+      } else {
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const endOfToday = new Date();
+        endOfToday.setHours(23, 59, 59, 999);
+        cronJobWhere.createdAt = {
+          gte: startOfToday,
+          lte: endOfToday,
+        };
+      }
+
+      if (filters.status) {
+        cronJobWhere.status = filters.status;
+      }
+
+      // if (filters.createdBy) {
+      //   cronJobWhere.createdBy = filters.createdBy;
+      // }
+
+      // if (filters.updatedBy) {
+      //   cronJobWhere.updatedBy = filters.updatedBy;
+      // }
+
+      if (filters.typeCronJob) {
+        cronJobWhere.typeCronJob = filters.typeCronJob;
+      }
+
+      if (filters.OR) {
+        cronJobWhere.OR = filters.OR;
+      }
+    } else {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999);
+      cronJobWhere.createdAt = {
+        gte: startOfToday,
+        lte: endOfToday,
+      };
+    }
+
+    // if (tierFilters?.fromTier || tierFilters?.toTier) {
+    //   const fromArray = normalizeToArray(tierFilters.fromTier);
+    //   const toArray = normalizeToArray(tierFilters.toTier);
+    //   applyJsonInFilter(cronJobWhere, 'fromTier', fromArray);
+    //   applyJsonInFilter(cronJobWhere, 'toTier', toArray);
+    // }
+
+    const cronJobLogs = await prisma.cronJobLog.findMany({
+      where: cronJobWhere,
+      select: {
+        dynamicValue: true,
+      },
+    });
+
+    const tierIds = cronJobLogs
+      .map((log) => (log.dynamicValue as any)?.toTier)
+      .filter((id): id is string => id !== null && id !== undefined);
+
+    if (tierIds.length === 0) {
+      return { total: 0, items: [] };
+    }
+
+    const tierCounts = new Map<string, number>();
+    tierIds.forEach((tierId) => {
+      tierCounts.set(tierId, (tierCounts.get(tierId) || 0) + 1);
+    });
+
+    const tiers = await prisma.membershipTier.findMany({
+      where: {
+        id: { in: Array.from(tierCounts.keys()) },
+      },
+      select: {
+        id: true,
+        tierName: true,
+      },
+    });
+
+    const tierMap = new Map(tiers.map((tier) => [tier.id, tier.tierName]));
+
+    const items = Array.from(tierCounts.entries()).map(([tierId, count]) => ({
+      tierId,
+      tierName: tierMap.get(tierId) || tierId,
+      count,
+    }));
+
+    const total = items.reduce((sum, item) => sum + item.count, 0);
+
+    return { total, items };
+  }
+
+  async searchFilter(search: string) {
+    const filters: any = {};
+    if (search && search.trim().length > 0) {
+      const q = search.trim();
+      const qUpper = q.toUpperCase();
+      const statusMatches: string[] = ['SUCCESSFUL', 'FAIL'].filter((s) => s.includes(qUpper));
+      const typeMatches: string[] = ['MEMBERSHIP', 'REFERRAL', 'CASHBACK', 'FLEXI_INTEREST'].filter(
+        (s) => s.includes(qUpper),
+      );
+
+      const [matchedTiers, matchedUsers] = await Promise.all([
+        prisma.membershipTier.findMany({
+          where: { tierName: { contains: q, mode: 'insensitive' } },
+          select: { id: true },
+        }),
+        prisma.user.findMany({
+          where: {
+            OR: [
+              { name: { contains: q, mode: 'insensitive' } },
+              { email: { contains: q, mode: 'insensitive' } },
+            ],
+          },
+          select: { id: true },
+        }),
+      ]);
+
+      const tierIds = matchedTiers.map((t) => t.id);
+      const userIds = matchedUsers.map((u) => u.id);
+
+      const orClauses: any[] = [];
+      if (statusMatches.length > 0) orClauses.push({ status: { in: statusMatches as any } });
+      if (typeMatches.length > 0) orClauses.push({ typeCronJob: { in: typeMatches as any } });
+      if (tierIds.length > 0) {
+        orClauses.push({ dynamicValue: { path: ['fromTier'], in: tierIds } });
+        orClauses.push({ dynamicValue: { path: ['toTier'], in: tierIds } });
+      }
+      if (userIds.length > 0) {
+        orClauses.push({ createdBy: { in: userIds } });
+        orClauses.push({ updatedBy: { in: userIds } });
+      }
+
+      if (orClauses.length > 0) {
+        filters.OR = [...(filters.OR ?? []), ...orClauses];
+      }
+      return filters;
+    }
   }
 }
 
