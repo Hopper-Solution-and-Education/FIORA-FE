@@ -14,9 +14,9 @@ const ProfileTabsContainer: FC<ProfileTabsContainerProps> = ({
   settingContent,
 }) => {
   return (
-    <div className="bg-white shadow-sm border-b border-gray-200">
+    <div className="bg-white shadow-sm ">
       <Tabs defaultValue={defaultValue}>
-        <TabsList className="bg-transparent border-b-2 border-gray-200 h-auto p-0">
+        <TabsList className="bg-transparent h-auto p-0">
           <TabsTrigger
             value="profile"
             className="text-base font-semibold text-gray-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none  data-[state=active]:border-b-2  rounded-none pb-2"

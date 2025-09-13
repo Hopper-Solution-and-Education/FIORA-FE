@@ -32,6 +32,8 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       updatedBy,
       fromDate,
       toDate,
+      fromTier,
+      toTier,
       page = 1,
       limit = 10,
     } = req.query as DashboardFilterParams;
@@ -57,7 +59,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       const userIdArray =
         typeof userIds === 'string' ? userIds.split(',').filter((id) => id.trim()) : userIds;
       if (userIdArray.length > 0 && userIdArray.length <= 50) {
-        // Limit to 50 users max
         filters.createdBy = { in: userIdArray };
       }
     }
@@ -88,8 +89,10 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
 
     const skip = (pageNum - 1) * limitNum;
 
+    const tierFilters = fromTier || toTier ? { fromTier, toTier } : undefined;
+
     const [result, counts] = await Promise.all([
-      dashboardRepository.getWithFilters(filters, skip, limitNum),
+      dashboardRepository.getWithFilters(filters, skip, limitNum, tierFilters),
       dashboardRepository.getCount(filters),
     ]);
 

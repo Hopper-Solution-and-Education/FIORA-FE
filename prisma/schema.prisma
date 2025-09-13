@@ -10,49 +10,55 @@ datasource db {
 }
 
 model User {
-  id                     String                   @id @default(uuid()) @db.Uuid
-  name                   String?
-  email                  String                   @unique
-  password               String?
-  emailVerified          Boolean?                 @default(false)
-  image                  String?
-  isDeleted              Boolean                  @default(false)
-  deletedAt              DateTime?                @db.Timestamptz(0)
-  createdAt              DateTime                 @default(now()) @db.Timestamptz(0)
-  updatedAt              DateTime                 @updatedAt @db.Timestamptz(0)
-  createdBy              String?                  @db.Uuid
-  updatedBy              String?                  @db.Uuid
-  role                   UserRole                 @default(User)
-  address                String?
-  avatarId               String?                  @db.Uuid
-  birthday               DateTime?
-  isBlocked              Boolean?                 @default(false)
-  logoId                 String?                  @db.Uuid
-  phone                  String?
-  accounts               Account[]                @relation("UserAccounts")
-  AttachmentRelations    AttachmentRelations[]
-  BankAccount            BankAccount[]
-  budgetDetails          BudgetDetails[]
-  budgetControl          BudgetsTable[]
-  categories             Category[]               @relation("UserCategories")
-  categoryProducts       CategoryProducts[]
-  Comment                Comment[]
-  depositRequests        DepositRequest[]         @relation("UserDepositRequest")
-  exchangeRateSetting    ExchangeRateSetting[]
-  IdentificationDocument IdentificationDocument[]
-  MembershipProgress     MembershipProgress[]
-  MembershipTier         MembershipTier[]
-  partners               Partner[]                @relation("UserPartners")
-  Post                   Post[]
-  products               Product[]                @relation("UserProducts")
-  productItems           ProductItems[]
-  Reaction               Reaction[]
-  sessions               Session[]
-  transactions           Transaction[]            @relation("UserTransactions")
-  authentication         UserAuthentication?
-  UserNotification       UserNotification[]
-  wallet                 Wallet[]                 @relation("UserWallet")
-  eKYC                   eKYC[]
+  id                        String                   @id @default(uuid()) @db.Uuid
+  name                      String?
+  email                     String                   @unique
+  password                  String?
+  emailVerified             Boolean?                 @default(false)
+  image                     String?
+  isDeleted                 Boolean                  @default(false)
+  deletedAt                 DateTime?                @db.Timestamptz(0)
+  createdAt                 DateTime                 @default(now()) @db.Timestamptz(0)
+  updatedAt                 DateTime                 @updatedAt @db.Timestamptz(0)
+  createdBy                 String?                  @db.Uuid
+  updatedBy                 String?                  @db.Uuid
+  role                      UserRole                 @default(User)
+  address                   String?
+  avatarId                  String?                  @db.Uuid
+  birthday                  DateTime?
+  isBlocked                 Boolean?                 @default(false)
+  logoId                    String?                  @db.Uuid
+  phone                     String?
+  is_referral_bonus_paid    Boolean?                 @default(false)
+  is_referral_campaign_paid Boolean?                 @default(false)
+  kyc_levels                String[]
+  referral_code             String?                  @unique @db.VarChar(15)
+  referrer_code             String?                  @db.VarChar(15)
+  accounts                  Account[]                @relation("UserAccounts")
+  AttachmentRelations       AttachmentRelations[]
+  BankAccount               BankAccount[]
+  budgetDetails             BudgetDetails[]
+  budgetControl             BudgetsTable[]
+  categories                Category[]               @relation("UserCategories")
+  categoryProducts          CategoryProducts[]
+  Comment                   Comment[]
+  depositRequests           DepositRequest[]         @relation("UserDepositRequest")
+  exchangeRateSetting       ExchangeRateSetting[]
+  IdentificationDocument    IdentificationDocument[]
+  MembershipProgress        MembershipProgress[]
+  MembershipTier            MembershipTier[]
+  partners                  Partner[]                @relation("UserPartners")
+  Post                      Post[]
+  products                  Product[]                @relation("UserProducts")
+  productItems              ProductItems[]
+  Reaction                  Reaction[]
+  Referral                  Referral[]
+  sessions                  Session[]
+  transactions              Transaction[]            @relation("UserTransactions")
+  authentication            UserAuthentication?
+  UserNotification          UserNotification[]
+  wallet                    Wallet[]                 @relation("UserWallet")
+  eKYC                      eKYC[]
 
   @@index([isDeleted])
 }
@@ -217,7 +223,7 @@ model Transaction {
   fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
   fromCategory        Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
   fromWallet          Wallet?              @relation("FromWallet", fields: [fromWalletId], references: [id])
-  MembershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
+  membershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
   partner             Partner?             @relation("PartnerTransactions", fields: [partnerId], references: [id])
   toAccount           Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Cascade)
   toCategory          Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
@@ -446,14 +452,15 @@ model Wallet {
   userId           String        @db.Uuid
   icon             String?
   type             WalletType
-  frBalanceActive  Decimal       @default(0) @db.Decimal(12, 2)
-  frBalanceFrozen  Decimal       @default(0)
+  frBalanceActive  Decimal       @default(0) @db.Decimal(13, 2)
+  frBalanceFrozen  Decimal       @default(0) @db.Decimal(13, 2)
   creditLimit      Decimal?      @default(0)
   createdAt        DateTime      @default(now()) @db.Timestamptz(0)
   updatedAt        DateTime      @updatedAt @db.Timestamptz(0)
   createdBy        String?       @db.Uuid
   updatedBy        String?       @db.Uuid
   name             String?       @db.VarChar(50)
+  accumulatedEarn  Decimal       @default(0) @db.Decimal(13, 2)
   fromTransactions Transaction[] @relation("FromWallet")
   toTransactions   Transaction[] @relation("ToWallet")
   user             User          @relation("UserWallet", fields: [userId], references: [id])
@@ -602,18 +609,18 @@ model Attachment {
 }
 
 model MembershipBenefit {
-  id           String        @id @db.Uuid
-  name         String        @db.VarChar(255)
-  slug         String        @unique @db.VarChar(255)
-  description  String?       @db.VarChar(1000)
-  suffix       String?       @db.VarChar(255)
-  createdAt    DateTime      @default(now()) @db.Timestamptz(0)
-  updatedAt    DateTime      @db.Timestamptz(0)
-  createdBy    String?       @db.Uuid
-  updatedBy    String?       @db.Uuid
-  userId       String        @db.Uuid
-  TierBenefit  TierBenefit[]
-  transactions Transaction[]
+  id          String        @id @db.Uuid
+  name        String        @db.VarChar(255)
+  slug        String        @unique @db.VarChar(255)
+  description String?       @db.VarChar(1000)
+  suffix      String?       @db.VarChar(255)
+  createdAt   DateTime      @default(now()) @db.Timestamptz(0)
+  updatedAt   DateTime      @db.Timestamptz(0)
+  createdBy   String?       @db.Uuid
+  updatedBy   String?       @db.Uuid
+  userId      String        @db.Uuid
+  TierBenefit TierBenefit[]
+  Transaction Transaction[]
 
   @@index([slug])
   @@index([userId])
@@ -654,7 +661,7 @@ model MembershipTier {
   createdBy           String?              @db.Uuid
   updatedBy           String?              @db.Uuid
   userId              String               @db.Uuid
-  membershipProgress  MembershipProgress[]
+  MembershipProgress  MembershipProgress[]
   user                User                 @relation(fields: [userId], references: [id])
   tierBenefits        TierBenefit[]
 
@@ -883,6 +890,7 @@ model CronJobLog {
   createdAt     DateTime      @default(now()) @db.Timestamptz(0)
   updatedAt     DateTime      @db.Timestamptz(0)
   status        CronJobStatus
+  dynamicValue  Json?
   Transaction   Transaction?  @relation("CronJobLogTransactions", fields: [transactionId], references: [id])
 }
 
@@ -893,6 +901,38 @@ model Otp {
   otp       String
   userId    String?  @db.Uuid
   type      OtpType?
+}
+
+model CronjobTypeDefine {
+  id          String      @id @db.Uuid
+  typeCronJob TypeCronJob
+  field       String      @db.VarChar(30)
+  updatedAt   DateTime    @db.Timestamptz(0)
+  createdAt   DateTime    @default(now()) @db.Timestamptz(0)
+}
+
+model EmailTemplateField {
+  id        String    @id @db.Uuid
+  name      String    @db.VarChar(30)
+  type      emailType
+  createdAt DateTime  @default(now()) @db.Timestamptz(0)
+  createdBy String?   @db.Uuid
+  updatedAt DateTime  @db.Timestamptz(0)
+  updatedBy String?   @db.Uuid
+}
+
+model Referral {
+  id           String         @id @db.Uuid
+  userId       String         @db.Uuid
+  refereeEmail String
+  status       ReferralStatus
+  createdAt    DateTime       @default(now()) @db.Timestamptz(0)
+  createdBy    String?        @db.Uuid
+  updatedAt    DateTime       @db.Timestamptz(0)
+  updatedBy    String?        @db.Uuid
+  User         User           @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 enum BudgetType {
@@ -1064,4 +1104,10 @@ enum KYCType {
 
 enum OtpType {
   CONTACT
+}
+
+enum ReferralStatus {
+  INVITED
+  REGISTERED
+  eKYC_COMPLETED
 }

@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { BadRequestError, InternalServerError } from '@/shared/lib';
+import { BadRequestError } from '@/shared/lib';
 import {
   MembershipBenefitCreatePayload,
   MembershipBenefitCreateUpdateAllPayload,
@@ -11,7 +11,6 @@ import { tierBenefitRepository } from '../../infrastructure/repositories/tierBen
 
 class MembershipBenefitService {
   async create(payload: MembershipBenefitCreatePayload, userId: string) {
-    payload.membershipBenefit.slug = `${payload.membershipBenefit.slug}-${Date.now()}`;
     const membershipBenefit = await membershipBenefitRepository.createMembershipBenefit({
       id: uuid(),
       ...payload.membershipBenefit,
@@ -458,10 +457,6 @@ class MembershipBenefitService {
 
   async processMembershipBenefit(payload: MembershipBenefitCreatePayload, userId: string) {
     const { mode } = payload;
-
-    if (mode === 'create' || mode === 'create-all') {
-      payload.membershipBenefit!.slug = `${payload.membershipBenefit!.slug}-${Date.now()}`;
-    }
 
     switch (mode) {
       case 'create':

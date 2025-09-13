@@ -1,5 +1,6 @@
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAppSelector } from '@/store';
+import { usePathname } from 'next/navigation';
 import { useMemo } from 'react';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import NotificationDashboardTableRow from '../molecules/NotificationDashboardTableRow';
@@ -29,10 +30,14 @@ const NotificationDashboardTable = ({
 }: NotificationDashboardTableProps) => {
   const columnConfig = useAppSelector((state) => state.notificationDashboard.columnConfig);
 
+  const path = usePathname();
+  const isSettingDashboard = !!path?.includes('setting');
+  const SETTING_COLUMN = isSettingDashboard ? [] : ['Recipients', 'Sender'];
+
   const shownColumns = useMemo(
     () =>
       (Object.keys(columnConfig) as NotificationDashboardTableColumnKey[])
-        .filter((key) => columnConfig[key].isVisible)
+        .filter((key) => columnConfig[key].isVisible && !SETTING_COLUMN.includes(key))
         .sort((a, b) => columnConfig[a].index - columnConfig[b].index),
     [columnConfig],
   );

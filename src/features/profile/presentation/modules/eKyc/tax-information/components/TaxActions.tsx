@@ -4,7 +4,7 @@ import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButt
 import { useRouter } from 'next/navigation';
 
 interface TaxActionsProps {
-  onSubmit: () => void;
+  onSubmit?: () => void;
   isLoading?: boolean;
 }
 

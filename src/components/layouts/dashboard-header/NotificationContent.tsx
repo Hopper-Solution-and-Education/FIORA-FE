@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'; // Import DropdownMenu components
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ICON_SIZE } from '@/shared/constants/size';
 import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
@@ -123,62 +124,74 @@ export function NotificationContent({
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <div className="relative">
-          <Bell
-            size={ICON_SIZE.MD}
-            className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
-          />
-          {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
-              {unreadCount}
-            </span>
-          )}
-        </div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80 md:w-96 p-0" align="end" forceMount>
-        <Card className="shadow-none border-0">
-          <CardHeader className="flex flex-row items-center justify-end pb-2">
-            <Link href="/notification" passHref>
-              <Button variant="link" className="text-sm p-0 h-auto">
-                View All
-              </Button>
-            </Link>
-          </CardHeader>
-          <DropdownMenuSeparator className="m-0" />
-          <CardContent className="p-0">
-            <div className="max-h-[400px] overflow-y-auto">
-              <div className="space-y-3 p-4">
-                {data.map((notification: Notification) => (
-                  <DropdownMenuItem
-                    key={notification.id}
-                    asChild
-                    className="p-0 focus:bg-transparent cursor-pointer"
-                  >
-                    {notification?.notification?.deepLink ? (
-                      <Link href={notification?.notification?.deepLink} target="_blank">
-                        <div onClick={() => handleNotificationClick(notification)}>
-                          <NotificationItem
-                            isRead={notification.isRead}
-                            data={notification?.notification}
-                          />
-                        </div>
-                      </Link>
-                    ) : (
-                      <NotificationItem
-                        isRead={notification.isRead}
-                        data={notification?.notification}
-                        onClick={() => handleNotificationClick(notification)}
-                      />
-                    )}
-                  </DropdownMenuItem>
-                ))}
+    <TooltipProvider>
+      <DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <div className="flex flex-col gap-1 justify-center items-center">
+                <div className="relative">
+                  <Bell
+                    size={ICON_SIZE.MD}
+                    className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+                  />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
+                <span className="text-sm">Notifications</span>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </DropdownMenuContent>
-    </DropdownMenu>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Notifications</p>
+          </TooltipContent>
+        </Tooltip>
+        <DropdownMenuContent className="w-80 md:w-96 p-0" align="end" forceMount>
+          <Card className="shadow-none border-0">
+            <CardHeader className="flex flex-row items-center justify-end pb-2">
+              <Link href="/notification" passHref>
+                <Button variant="link" className="text-sm p-0 h-auto">
+                  View All
+                </Button>
+              </Link>
+            </CardHeader>
+            <DropdownMenuSeparator className="m-0" />
+            <CardContent className="p-0">
+              <div className="max-h-[400px] overflow-y-auto">
+                <div className="space-y-3 p-4">
+                  {data.map((notification: Notification) => (
+                    <DropdownMenuItem
+                      key={notification.id}
+                      asChild
+                      className="p-0 focus:bg-transparent cursor-pointer"
+                    >
+                      {notification?.notification?.deepLink ? (
+                        <Link href={notification?.notification?.deepLink} target="_blank">
+                          <div onClick={() => handleNotificationClick(notification)}>
+                            <NotificationItem
+                              isRead={notification.isRead}
+                              data={notification?.notification}
+                            />
+                          </div>
+                        </Link>
+                      ) : (
+                        <NotificationItem
+                          isRead={notification.isRead}
+                          data={notification?.notification}
+                          onClick={() => handleNotificationClick(notification)}
+                        />
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </TooltipProvider>
   );
 }

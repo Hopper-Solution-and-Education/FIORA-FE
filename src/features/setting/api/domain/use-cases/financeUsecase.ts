@@ -215,7 +215,7 @@ export class FinanceUseCase {
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: 'VND',
+        currency: DEFAULT_BASE_CURRENCY,
       };
     });
 

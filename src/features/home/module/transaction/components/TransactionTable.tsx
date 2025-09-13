@@ -28,6 +28,7 @@ import {
   TransactionAccount,
   TransactionCategory,
   TransactionColumn,
+  TransactionMembershipBenefit,
   TransactionTableColumnKey,
   TransactionWallet,
 } from '../types';
@@ -280,6 +281,7 @@ const TransactionTable = () => {
     toAccount: TransactionAccount | null | undefined,
     toCategory: TransactionCategory | null | undefined,
     toWallet: TransactionWallet | null | undefined,
+    toMembershipBenefit: TransactionMembershipBenefit | null | undefined,
   ) => {
     if (toAccount) {
       return toAccount.name;
@@ -287,6 +289,26 @@ const TransactionTable = () => {
       return toCategory.name;
     } else if (toWallet) {
       return toWallet.type + ' Wallet';
+    } else if (toMembershipBenefit) {
+      return toMembershipBenefit.name;
+    }
+    return 'Unknown';
+  };
+
+  const _renderFromTransaction = (
+    fromAccount: TransactionAccount | null | undefined,
+    fromCategory: TransactionCategory | null | undefined,
+    fromWallet: TransactionWallet | null | undefined,
+    fromMembershipBenefit: TransactionMembershipBenefit | null | undefined,
+  ) => {
+    if (fromAccount) {
+      return fromAccount.name;
+    } else if (fromCategory) {
+      return fromCategory.name;
+    } else if (fromWallet) {
+      return fromWallet.type + ' Wallet';
+    } else if (fromMembershipBenefit) {
+      return fromMembershipBenefit.name;
     }
     return 'Unknown';
   };
@@ -495,7 +517,9 @@ const TransactionTable = () => {
                                 key={columnKey}
                                 className={cn(
                                   'cursor-default',
-                                  transRecord.fromAccountId || transRecord.fromCategoryId
+                                  transRecord.fromAccountId ||
+                                    transRecord.fromCategoryId ||
+                                    transRecord.membershipBenefitId
                                     ? 'underline cursor-pointer'
                                     : 'text-gray-500',
                                 )}
@@ -511,14 +535,19 @@ const TransactionTable = () => {
                                     comparator: 'AND',
                                     value:
                                       transRecord.type === 'Income'
-                                        ? (transRecord.fromCategory?.name ?? '')
-                                        : (transRecord.fromAccount?.name ?? ''),
+                                        ? (transRecord.fromCategory?.name ?? undefined)
+                                        : (transRecord.fromAccount?.name ??
+                                          transRecord.membershipBenefit?.name ??
+                                          undefined),
                                   })
                                 }
                               >
-                                {transRecord.fromAccount?.name ??
-                                  transRecord.fromCategory?.name ??
-                                  'Unknown'}
+                                {_renderFromTransaction(
+                                  transRecord.fromAccount,
+                                  transRecord.fromCategory,
+                                  transRecord.fromWallet,
+                                  transRecord.membershipBenefit,
+                                )}
                               </TableCell>
                             );
                           case 'To':
@@ -529,7 +558,8 @@ const TransactionTable = () => {
                                   'cursor-default',
                                   transRecord.toAccountId ||
                                     transRecord.toCategoryId ||
-                                    transRecord.toWalletId
+                                    transRecord.toWalletId ||
+                                    transRecord.membershipBenefitId
                                     ? 'underline cursor-pointer'
                                     : 'text-gray-500',
                                 )}
@@ -547,10 +577,11 @@ const TransactionTable = () => {
                                     comparator: 'AND',
                                     value:
                                       transRecord.type === 'Expense'
-                                        ? (transRecord.toCategory?.name ?? '')
+                                        ? (transRecord.toCategory?.name ?? undefined)
                                         : (transRecord.toAccount?.name ??
                                           transRecord.toWallet?.type ??
-                                          ''),
+                                          transRecord.membershipBenefit?.name ??
+                                          undefined),
                                   })
                                 }
                               >
@@ -558,6 +589,7 @@ const TransactionTable = () => {
                                   transRecord.toAccount,
                                   transRecord.toCategory,
                                   transRecord.toWallet,
+                                  transRecord.membershipBenefit,
                                 )}
                               </TableCell>
                             );
@@ -578,7 +610,7 @@ const TransactionTable = () => {
                                     target: 'partner',
                                     subTarget: 'name',
                                     comparator: 'AND',
-                                    value: transRecord.partner?.name ?? '',
+                                    value: transRecord.partner?.name ?? undefined,
                                   })
                                 }
                               >
