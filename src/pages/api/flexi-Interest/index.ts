@@ -28,10 +28,8 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
   });
   if (flexiInterest.items.length === 0) {
     return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(
-        createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.GET_FLEXI_NO_CONTENT, flexiInterest),
-      );
+      .status(RESPONSE_CODE.NO_CONTENT)
+      .json(createResponse(RESPONSE_CODE.NO_CONTENT, Messages.GET_FLEXI_NO_CONTENT, flexiInterest));
   }
   return res
     .status(RESPONSE_CODE.OK)
