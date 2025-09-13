@@ -55,14 +55,14 @@ const MembershipCronjobCommonTable = ({
       {
         key: 'spent',
         title: 'Spent',
-        align: 'right',
+        align: 'center',
         width: '9%',
         render: (r) => <span className="text-sm block">{r.spent} FX</span>,
       },
       {
         key: 'balance',
         title: 'Balance',
-        align: 'right',
+        align: 'center',
         width: '9%',
         render: (r) => <span className="text-sm block">{r.balance} FX</span>,
       },
@@ -78,11 +78,7 @@ const MembershipCronjobCommonTable = ({
         title: 'Status',
         align: 'center',
         width: '12%',
-        render: (r) => (
-          <div className="flex items-center justify-center">
-            <MembershipStatusBadge status={r.status} />
-          </div>
-        ),
+        render: (r) => <MembershipStatusBadge status={r.status} />,
       },
       {
         key: 'updatedBy',
