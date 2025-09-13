@@ -2,10 +2,8 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { EMAIL_TEMPLATES } from '@/features/email-template/constants';
 import { useEmailModal } from '@/features/email-template/hooks/useEmailModal';
-import { getTemplateTypeColor } from '@/features/email-template/utils/emailHelpers';
-import { MoreHorizontal, RefreshCw, Search } from 'lucide-react';
+import { RefreshCw, Search } from 'lucide-react';
 
 export default function TemplatesSidebar() {
   const { handleOpenModal, selectedTemplate } = useEmailModal();
@@ -31,8 +29,8 @@ export default function TemplatesSidebar() {
       </div>
 
       {/* Templates List */}
-      <div className="h-[calc(100vh-200px)] flex-1 overflow-y-auto">
-        {EMAIL_TEMPLATES.map((template) => (
+      <div className="flex-1 overflow-y-auto">
+        {/* {EMAIL_TEMPLATES.map((template) => (
           <div
             key={template.id}
             className={`p-4 border-b border-gray-200 cursor-pointer hover:bg-white transition-colors ${
@@ -64,7 +62,7 @@ export default function TemplatesSidebar() {
               </Button>
             </div>
           </div>
-        ))}
+        ))} */}
       </div>
 
       {/* Send Mail Button */}

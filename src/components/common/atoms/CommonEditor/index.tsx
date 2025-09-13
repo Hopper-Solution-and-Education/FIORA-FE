@@ -1,8 +1,12 @@
 'use client';
 
+import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { type DeviceType, useDeviceDetect } from '@/shared/hooks/useIsMobile';
 import { cn } from '@/shared/lib';
-import React, { useCallback, useEffect, useState } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import RichTextEditor from 'reactjs-tiptap-editor';
 import {
   BubbleMenuDrawer,
@@ -13,12 +17,14 @@ import {
 } from 'reactjs-tiptap-editor/bubble-extra';
 import { locale } from 'reactjs-tiptap-editor/locale-bundle';
 import { defaultExtensions } from './constants';
-import { RichTextEditorProps } from './types';
+import { commonEditorStyles as styles } from './styles';
+import type { RichTextEditorProps } from './types';
 
 interface CommonEditorProps extends RichTextEditorProps {
   wrapperClassName?: string;
   headerActions?: boolean;
   isFullHeight?: boolean;
+  scroll?: number;
 }
 
 function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
@@ -37,11 +43,14 @@ const CommonEditor: React.FC<CommonEditorProps> = ({
   content,
   onChangeContent,
   headerActions = true,
-  isFullHeight = true,
+  isFullHeight,
+  scroll,
   ...rest
 }) => {
+  const { type } = useDeviceDetect();
+  const [mode, setMode] = useState<DeviceType | 'full' | 'small' | 'medium' | 'large'>(type);
+  const [customScroll, setCustomScroll] = useState<number | null>(null);
   const [disable, setDisable] = useState(false);
-  const [contentClass, setContentClass] = useState('');
 
   const debouncedOnChangeContent = useCallback(
     debounce((value: any) => {
@@ -50,34 +59,165 @@ const CommonEditor: React.FC<CommonEditorProps> = ({
     [onChangeContent],
   );
 
+  const handleReview = () => {
+    if (disable) {
+      setMode(type);
+      setDisable(false);
+    } else {
+      setMode('full');
+      setDisable(true);
+    }
+  };
+
   useEffect(() => {
-    let contentClass = '';
-    if (isFullHeight) {
-      contentClass = 'h-[calc(100vh-25rem)] overflow-auto';
-    }
-    if (headerActions) {
-      contentClass = 'h-[calc(100vh-28em)] overflow-auto';
-    }
-    if (rest.contentClass) {
-      contentClass = cn(contentClass, rest.contentClass);
-    }
-    setContentClass(contentClass);
-  }, [isFullHeight]);
+    if (scroll) return;
+    if (isFullHeight && !scroll) setMode('full');
+    else setMode(type);
+  }, [type, scroll]);
 
   return (
-    <div className={cn('w-full h-full', wrapperClassName)}>
+    <div className={cn(styles.wrapper(), wrapperClassName)}>
       {headerActions && (
-        <div className="buttonWrap" style={{ display: 'flex', gap: '12px', marginBottom: 10 }}>
-          <Button className="bg-blue-500 hover:bg-blue-700" onClick={() => locale.setLang('vi')}>
-            Vietnamese
-          </Button>
-          <Button className="bg-blue-500 hover:bg-blue-700" onClick={() => locale.setLang('en')}>
-            English
-          </Button>
-          <Button className="bg-blue-500 hover:bg-blue-700" onClick={() => setDisable(!disable)}>
-            {disable ? 'Editable' : 'Readonly'}
-          </Button>
-        </div>
+        <TooltipProvider>
+          <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg border mb-4">
+            {/* Size Controls */}
+            <div className="flex items-center gap-1 border-r pr-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={mode === type ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setMode(type)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Icons.monitorSmartphone className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Default View</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={mode === 'small' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setMode('small')}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Icons.smartphone className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Small view</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={mode === 'medium' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setMode('medium')}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Icons.tablet className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Medium view</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={mode === 'large' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setMode('large')}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Icons.monitor className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Large view</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={mode === 'full' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setMode('full')}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Icons.screenShare className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Full view</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+
+            {/* Language Controls */}
+            <div className="flex items-center gap-1 border-r pr-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => locale.setLang('vi')}
+                    className="h-8 px-2 text-xs font-medium"
+                  >
+                    <Icons.languages className="h-3 w-3 mr-1" />
+                    VI
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Tiếng Việt</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => locale.setLang('en')}
+                    className="h-8 px-2 text-xs font-medium"
+                  >
+                    <Icons.languages className="h-3 w-3 mr-1" />
+                    EN
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>English</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+
+            {/* Edit Mode Toggle */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={disable ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={handleReview}
+                  className="h-8 w-8 p-0"
+                >
+                  {disable ? (
+                    <Icons.eye className="h-4 w-4" />
+                  ) : (
+                    <Icons.edit3 className="h-4 w-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{disable ? 'Switch to editable mode' : 'Switch to readonly mode'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
       )}
 
       <RichTextEditor
@@ -86,7 +226,13 @@ const CommonEditor: React.FC<CommonEditorProps> = ({
         extensions={extensions}
         content={content}
         onChangeContent={debouncedOnChangeContent}
-        contentClass={contentClass}
+        contentClass={cn(
+          styles.content({
+            height: scroll ? 'custom' : mode,
+          }),
+          scroll && `h-[${scroll}px]`,
+          rest.contentClass,
+        )}
         disabled={disable}
         bubbleMenu={{
           render({ extensionsNames, editor, disabled }, bubbleDefaultDom) {

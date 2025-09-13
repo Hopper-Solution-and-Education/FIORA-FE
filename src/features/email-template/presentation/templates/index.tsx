@@ -7,7 +7,7 @@ import TemplatesSidebar from '@/features/email-template/presentation/organisms/T
 
 export default function EmailTemplate() {
   return (
-    <div className="flex gap-4 mx-4">
+    <div className="flex gap-4 mx-4 h-full">
       <Card>
         <TemplateEditor />
       </Card>
