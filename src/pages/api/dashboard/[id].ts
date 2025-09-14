@@ -28,19 +28,32 @@ export default sessionWrapper(
 
 export async function PATCH(req: NextApiRequest, res: NextApiResponse, userId: string) {
   const { id } = req.query;
+  const { tierId } = req.body;
+
+  if (!tierId) {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, 'You must input tier id!'));
+  }
+
   if (!id) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
       .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, 'You must input cronjob id!'));
   }
   const cronjob = await dashboardRepository.getCronjob(id as string);
-
+  const tier = await dashboardRepository.getTier(tierId as string);
+  if (!tier) {
+    return res
+      .status(RESPONSE_CODE.NOT_FOUND)
+      .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, 'Membership tier not found!'));
+  }
   if (!cronjob) {
     return res
       .status(RESPONSE_CODE.NOT_FOUND)
       .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, 'Cron job not found!'));
   }
-  await dashboardRepository.changeCronjob(cronjob, userId);
+  await dashboardRepository.changeCronjob(cronjob, userId, tier);
   return res
     .status(RESPONSE_CODE.OK)
     .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_SUCCESS));

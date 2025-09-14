@@ -27,27 +27,15 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
 
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const {
-      status,
-      userIds,
-      updatedBy,
-      fromDate,
-      toDate,
-      fromTier,
-      toTier,
-      typeCronJob,
-      search,
-      page = 1,
-      limit = 10,
-    } = req.query as DashboardFilterParams;
-
-    const pageNum = Math.max(1, Number(page));
-    const limitNum = Math.min(100, Math.max(1, Number(limit)));
+    const { status, userIds, updatedBy, fromDate, toDate, fromTier, toTier, typeCronJob, search } =
+      req.query as DashboardFilterParams;
 
     const filters: any = {};
+
     if (typeCronJob) {
       filters.typeCronJob = typeCronJob;
     }
+
     if (status) {
       const validStatuses = ['SUCCESSFUL', 'FAIL'];
       const statusArray = normalizeToArray(status as any).filter((s) => validStatuses.includes(s));
@@ -56,19 +44,19 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       }
     }
 
-    if (userIds) {
-      const userIdArray = normalizeToArray(userIds as any);
-      if (userIdArray.length > 0 && userIdArray.length <= 50) {
-        filters.createdBy = { in: userIdArray };
-      }
-    }
+    // if (userIds) {
+    //   const userIdArray = normalizeToArray(userIds as any);
+    //   if (userIdArray.length > 0 && userIdArray.length <= 50) {
+    //     filters.createdBy = { in: userIdArray };
+    //   }
+    // }
 
-    if (updatedBy) {
-      const updatedByArray = normalizeToArray(updatedBy as any);
-      if (updatedByArray.length > 0 && updatedByArray.length <= 50) {
-        filters.updatedBy = { in: updatedByArray };
-      }
-    }
+    // if (updatedBy) {
+    //   const updatedByArray = normalizeToArray(updatedBy as any);
+    //   if (updatedByArray.length > 0 && updatedByArray.length <= 50) {
+    //     filters.updatedBy = { in: updatedByArray };
+    //   }
+    // }
 
     if (fromDate || toDate) {
       filters.createdAt = {};
@@ -91,34 +79,19 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       };
     }
 
-    const skip = (pageNum - 1) * limitNum;
-
-    const tierFilters = fromTier || toTier ? { fromTier, toTier } : undefined;
     const searchFilter = await dashboardRepository.searchFilter(search as string);
     if (searchFilter) {
       filters.OR = [...(filters.OR ?? []), ...(searchFilter.OR ?? [])];
     }
-    const [result, counts] = await Promise.all([
-      dashboardRepository.getWithFilters(filters, skip, limitNum, tierFilters),
-      dashboardRepository.getCount(filters),
-    ]);
 
-    const { filteredCount, statusCounts } = counts;
-    const totalPages = Math.ceil(filteredCount / limitNum);
+    // const tierFilters = fromTier || toTier ? { fromTier, toTier } : undefined;
+
+    const getAllTypeDefines = await dashboardRepository.getMembershipChart(filters);
+
     return res.status(RESPONSE_CODE.OK).json({
       status: RESPONSE_CODE.OK,
       message: Messages.GET_SUCCESS,
-      data: result,
-      totalPage: totalPages,
-      page: pageNum,
-      pageSize: limitNum,
-      total: filteredCount,
-      statistics: {
-        statusCounts: {
-          successful: statusCounts.successful,
-          fail: statusCounts.fail,
-        },
-      },
+      data: getAllTypeDefines,
     });
   } catch (error) {
     console.error('Dashboard API Error:', error);
