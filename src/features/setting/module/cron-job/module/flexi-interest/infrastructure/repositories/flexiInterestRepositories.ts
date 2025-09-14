@@ -29,6 +29,14 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
         gte: new Date(filter.fromDate + 'T00:00:00.000Z'),
         lte: new Date(filter.toDate + 'T23:59:59.999Z'),
       };
+    } else if (filter?.fromDate) {
+      where.createdAt = {
+        gte: new Date(filter.fromDate + 'T00:00:00.000Z'),
+      };
+    } else if (filter?.toDate) {
+      where.createdAt = {
+        lte: new Date(filter.toDate + 'T23:59:59.999Z'),
+      };
     }
     if (filter?.email) {
       if (Array.isArray(filter.email)) {

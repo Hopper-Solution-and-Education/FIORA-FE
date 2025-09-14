@@ -26,11 +26,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
     filter: filters,
     search: String(search),
   });
-  if (flexiInterest.items.length === 0) {
-    return res
-      .status(RESPONSE_CODE.NO_CONTENT)
-      .json(createResponse(RESPONSE_CODE.NO_CONTENT, Messages.GET_FLEXI_NO_CONTENT, flexiInterest));
-  }
   return res
     .status(RESPONSE_CODE.OK)
     .json(createResponse(RESPONSE_CODE.OK, Messages.GET_FLEXI_INTEREST_SUCCESS, flexiInterest));
