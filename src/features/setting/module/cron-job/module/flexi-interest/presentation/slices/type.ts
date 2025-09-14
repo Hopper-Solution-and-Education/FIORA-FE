@@ -1,7 +1,7 @@
 export interface FlexiInterestCronjobFilterState {
   status?: string[] | null;
   search?: string | null;
-  tier?: string[] | null;
+  membershipTier?: string[] | null;
   email?: string[] | null;
   updatedBy?: string[] | null;
   fromDate: Date | null;

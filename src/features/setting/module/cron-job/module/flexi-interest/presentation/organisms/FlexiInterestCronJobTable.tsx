@@ -32,17 +32,17 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
 }) => {
   const columns: CommonTableColumn<FlexiInterestCronjobTableData>[] = useMemo(
     () => [
-      {
-        key: 'id',
-        title: 'ID',
-        align: 'center',
-        className: 'max-w-[200px] truncate',
-        render: (r) => (
-          <span className="text-blue-600 dark-text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 truncate">
-            {r.id}
-          </span>
-        ),
-      },
+      // {
+      //   key: 'id',
+      //   title: 'ID',
+      //   align: 'center',
+      //   className: 'max-w-[200px] truncate',
+      //   render: (r) => (
+      //     <span className="text-blue-600 dark-text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 truncate">
+      //       {r.id}
+      //     </span>
+      //   ),
+      // },
       {
         key: 'email',
         title: 'Email',
@@ -53,31 +53,31 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
         key: 'executionTime',
         title: 'Datetime',
         align: 'left',
-        render: (r) => <span className="text-sm">{formatDateTime(r.executionTime)}</span>,
+        render: (r) => <span className="text-sm">{formatDateTime(r.dateTime)}</span>,
       },
       {
         key: 'tier',
         title: 'Membership Tier',
         align: 'right',
-        render: (r) => <span className="text-sm">{r.tier}</span>,
+        render: (r) => <span className="text-sm">{r.membershipTier || '-'}</span>,
       },
       {
         key: 'rate',
         title: 'Flexi Interest Rate',
         align: 'right',
-        render: (r) => <span className="text-sm">{r.rate}</span>,
+        render: (r) => <span className="text-sm">{r.flexiInterestRate || '-'}</span>,
       },
       {
         key: 'activeBalance',
         title: 'Active Balance',
         align: 'right',
-        render: (r) => <span className="text-sm">{r.activeBalance}</span>,
+        render: (r) => <span className="text-sm">{r.activeBalance || '-'}</span>,
       },
       {
         key: 'amount',
         title: 'Flexi Interest Amount',
         align: 'right',
-        render: (r) => <span className="text-sm">{r.amount}</span>,
+        render: (r) => <span className="text-sm">{r.flexiInterestAmount || '-'}</span>,
       },
       {
         key: 'status',

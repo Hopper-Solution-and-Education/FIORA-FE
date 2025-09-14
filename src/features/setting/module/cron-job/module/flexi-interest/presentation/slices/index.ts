@@ -8,7 +8,7 @@ export const initialState: FlexiInterestCronjobState = {
     status: null,
     search: null,
     email: null,
-    tier: null,
+    membershipTier: null,
     updatedBy: null,
     fromDate: null,
     toDate: null,

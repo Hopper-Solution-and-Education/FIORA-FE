@@ -1,14 +1,14 @@
-export type FlexiInterestCronjobTableStatusType = 'successful' | 'fail';
+export type FlexiInterestCronjobTableStatusType = 'SUCCESSFUL' | 'FAIL';
 
 export type FlexiInterestCronjobTableData = {
   id: string;
-  email: string;
-  executionTime: string;
-  tier: string;
-  rate: number;
-  activeBalance: number;
-  amount: number;
+  email?: string;
+  dateTime: string;
+  membershipTier?: string;
+  flexiInterestRate?: number;
+  activeBalance?: number;
+  flexiInterestAmount?: number;
   status: FlexiInterestCronjobTableStatusType;
-  updateBy: string;
+  updateBy?: string;
   reason?: string;
 };
