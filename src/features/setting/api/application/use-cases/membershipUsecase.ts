@@ -12,6 +12,8 @@ import {
   MembershipTierWithBenefit,
   Range,
   RangeKeys,
+  TierInfinityParams,
+  UserInfinityResult,
 } from '../../repositories/membershipTierRepository';
 import { IUserRepository } from '../../repositories/userRepository.interface';
 
@@ -562,6 +564,43 @@ class MembershipSettingUseCase {
         };
       });
     }
+  }
+
+  async getTierInfinity(params: TierInfinityParams): Promise<UserInfinityResult> {
+    const { limit = 20, search, page } = params;
+
+    const whereClause: any = {};
+
+    if (search && search.trim().length > 0) {
+      whereClause.email = {
+        contains: search.trim(),
+        mode: 'insensitive',
+      };
+    }
+
+    const total = await prisma.user.count({
+      where: whereClause,
+    });
+    const tiers = await prisma.membershipTier.findMany({
+      where: whereClause,
+      skip: (Number(page) - 1) * limit,
+      take: limit,
+      orderBy: {
+        id: 'desc',
+      },
+      select: {
+        id: true,
+        tierName: true,
+      },
+    });
+
+    const hasMore = tiers.length > limit;
+    const actualTiers = hasMore ? tiers.slice(0, limit) : tiers;
+    const totalPages = Math.ceil(total / limit);
+    return {
+      tiers: actualTiers as any,
+      hasMore: Number(page) < totalPages,
+    };
   }
 }
 
