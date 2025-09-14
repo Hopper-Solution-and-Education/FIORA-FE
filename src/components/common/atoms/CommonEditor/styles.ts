@@ -9,20 +9,21 @@ export const commonEditorStyles = {
     base: 'overflow-auto',
     variants: {
       height: {
-        mobile: 'h-[150px]',
-        tablet: 'h-[180px]',
-        smallLaptop: 'h-[200px]',
-        laptop: 'h-[220px]',
-        desktop: 'h-[230px]',
-        small: 'h-[250px]',
-        medium: 'h-[270px]',
-        large: 'h-[290px]',
+        mobile: 'h-[150px]', // <640px
+        tablet: 'h-[180px]', // 640–767px
+        smallLaptop: 'h-[220px]', // 768–1023px
+        mediumLaptop: 'h-[300px]', // 1024–1439px
+        largeLaptop: 'h-[450px]', // 1440–1919px
+        extraLarge: 'h-[700px]', // >=1920px
+        small: 'h-[150px]', // manual override
+        medium: 'h-[300px]',
+        large: 'h-[600px]',
         full: 'h-full',
         custom: '',
       },
     },
     defaultVariants: {
-      height: 'desktop',
+      height: 'mediumLaptop',
     },
   }),
 };
