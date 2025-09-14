@@ -2,7 +2,23 @@
 import * as React from 'react';
 
 const MOBILE_BREAKPOINT = 768;
-export type DeviceType = 'mobile' | 'tablet' | 'smallLaptop' | 'laptop' | 'desktop';
+export type DeviceType =
+  | 'mobile'
+  | 'tablet'
+  | 'smallLaptop'
+  | 'mediumLaptop'
+  | 'largeLaptop'
+  | 'extraLarge';
+
+interface DeviceInfo {
+  type: DeviceType;
+  isMobile: boolean;
+  isTablet: boolean;
+  isSmallLaptop: boolean;
+  isMediumLaptop: boolean;
+  isLargeLaptop: boolean;
+  isExtraLarge: boolean;
+}
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
@@ -19,21 +35,14 @@ export function useIsMobile() {
 
   return !!isMobile;
 }
-interface DeviceInfo {
-  type: DeviceType;
-  isMobile: boolean;
-  isTablet: boolean;
-  isSmallLaptop: boolean;
-  isLaptop: boolean;
-  isDesktop: boolean;
-}
 
 const getDeviceType = (width: number): DeviceType => {
   if (width < 640) return 'mobile';
   if (width < 768) return 'tablet';
   if (width < 1024) return 'smallLaptop';
-  if (width < 1280) return 'laptop';
-  return 'desktop';
+  if (width < 1440) return 'mediumLaptop';
+  if (width < 1920) return 'largeLaptop';
+  return 'extraLarge';
 };
 
 export const useDeviceDetect = (): DeviceInfo => {
@@ -42,12 +51,8 @@ export const useDeviceDetect = (): DeviceInfo => {
   );
 
   React.useEffect(() => {
-    const handleResize = () => {
-      setDeviceType(getDeviceType(window.innerWidth));
-    };
-
+    const handleResize = () => setDeviceType(getDeviceType(window.innerWidth));
     window.addEventListener('resize', handleResize);
-    handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -56,7 +61,8 @@ export const useDeviceDetect = (): DeviceInfo => {
     isMobile: deviceType === 'mobile',
     isTablet: deviceType === 'tablet',
     isSmallLaptop: deviceType === 'smallLaptop',
-    isLaptop: deviceType === 'laptop',
-    isDesktop: deviceType === 'desktop',
+    isMediumLaptop: deviceType === 'mediumLaptop',
+    isLargeLaptop: deviceType === 'largeLaptop',
+    isExtraLarge: deviceType === 'extraLarge',
   };
 };
