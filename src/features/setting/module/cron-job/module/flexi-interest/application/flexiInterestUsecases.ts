@@ -14,13 +14,17 @@ class FlexiInterestUsecases {
     filter?: Record<string, any>;
     search?: string;
   }) {
-    const { items, total } = await this._flexiInterestRepo.getFlexiInterestPaginated(
+    const { items, total, totalSuccess, totalFailed } =
+      await this._flexiInterestRepo.getFlexiInterestPaginated(page, pageSize, filter, search);
+    return {
+      items,
+      total,
       page,
       pageSize,
-      filter,
-      search,
-    );
-    return { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
+      totalPages: Math.ceil(total / pageSize),
+      totalSuccess,
+      totalFailed,
+    };
   }
 }
 export const flexiInterestUsecases = new FlexiInterestUsecases();
