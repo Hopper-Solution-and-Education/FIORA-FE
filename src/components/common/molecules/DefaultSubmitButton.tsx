@@ -3,6 +3,7 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/shared/utils';
 
 interface DefaultSubmitButtonProps {
   isSubmitting?: boolean;
@@ -11,6 +12,7 @@ interface DefaultSubmitButtonProps {
   onSubmit?: () => void;
   backTooltip?: string;
   submitTooltip?: string;
+  className?: string;
 }
 
 const DefaultSubmitButton = ({
@@ -20,10 +22,11 @@ const DefaultSubmitButton = ({
   onSubmit,
   backTooltip,
   submitTooltip,
+  className,
 }: DefaultSubmitButtonProps) => {
   return (
     <TooltipProvider>
-      <div className="flex justify-between gap-4 mt-6">
+      <div className={cn('flex justify-between gap-4 mt-6', className)}>
         {onBack ? (
           <Tooltip>
             <TooltipTrigger asChild>

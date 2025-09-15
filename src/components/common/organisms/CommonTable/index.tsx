@@ -13,18 +13,18 @@ export default function CommonTable<T>({
   data,
   columns,
   columnConfig,
-  onColumnConfigChange,
   storageKey,
   loading = false,
   hasMore = false,
   isLoadingMore = false,
-  onLoadMore,
-  className,
   rightHeaderNode,
   leftHeaderNode,
   emptyState,
   skeletonRows,
   loadingMoreRows = 3,
+  className,
+  onColumnConfigChange,
+  onLoadMore,
 }: CommonTableProps<T>) {
   const { containerRef, sentinelRef } = useCommonInfiniteScroll({
     onLoadMore: onLoadMore || (() => {}),
@@ -40,13 +40,38 @@ export default function CommonTable<T>({
       return acc;
     }, {} as ColumnConfigMap);
 
-    return columns
+    const visibleColumns = columns
       .filter((c) => mergedConfig[c.key]?.isVisible !== false)
       .sort((a, b) => {
         const aIndex = mergedConfig[a.key]?.index ?? 0;
         const bIndex = mergedConfig[b.key]?.index ?? 0;
         return aIndex - bIndex;
       });
+
+    // Auto-calculate column widths if not specified
+    const totalVisibleColumns = visibleColumns.length;
+    const columnsWithWidth = visibleColumns.filter((col) => col.width);
+    const columnsWithoutWidth = visibleColumns.filter((col) => !col.width);
+
+    if (columnsWithoutWidth.length > 0) {
+      // Calculate remaining percentage for columns without width
+      const usedPercentage = columnsWithWidth.reduce((sum, col) => {
+        const width = col.width || '';
+        const widthStr = typeof width === 'string' ? width : String(width);
+        const percentage = parseFloat(widthStr.replace('%', ''));
+        return sum + (isNaN(percentage) ? 0 : percentage);
+      }, 0);
+
+      const remainingPercentage = Math.max(0, 100 - usedPercentage);
+      const autoWidth = `${(remainingPercentage / columnsWithoutWidth.length).toFixed(1)}%`;
+
+      return visibleColumns.map((col) => ({
+        ...col,
+        width: col.width || autoWidth,
+      }));
+    }
+
+    return visibleColumns;
   }, [columns, columnConfig]);
 
   const getAlignClass = (align?: 'left' | 'center' | 'right') => {
@@ -90,6 +115,7 @@ export default function CommonTable<T>({
 
       <div className="flex items-center gap-2">
         {rightHeaderNode}
+
         {onColumnConfigChange && (
           <Popover>
             <PopoverTrigger asChild>
@@ -140,14 +166,15 @@ export default function CommonTable<T>({
   return (
     <div className={`space-y-4 ${className || ''}`}>
       {renderHeader()}
-      <div ref={containerRef} className="rounded-md border max-h-[600px] overflow-y-auto relative">
-        <Table>
-          <TableHeader className="sticky top-0 bg-background z-10">
+
+      <div ref={containerRef} className="rounded-md border max-h-[600px] overflow-auto relative">
+        <Table className="min-w-full table-fixed w-full">
+          <TableHeader className="sticky top-0 bg-background">
             <TableRow>
               {shownColumns.map((col) => (
                 <TableHead
                   key={col.key}
-                  className={`${getAlignClass(col.align)} truncate ${col.headClassName || ''}`}
+                  className={`${getAlignClass(col.align)} truncate p-3 ${col.headClassName || ''}`}
                   style={{ width: col.width }}
                 >
                   {col.title}
@@ -155,6 +182,7 @@ export default function CommonTable<T>({
               ))}
             </TableRow>
           </TableHeader>
+
           <TableBody>
             {loading || (data && data.length === 0) ? (
               emptyState ? (
@@ -169,7 +197,7 @@ export default function CommonTable<T>({
                     {shownColumns.map((col) => (
                       <td
                         key={`${col.key}-${rowIdx}`}
-                        className={`${getAlignClass(col.align)} p-3 ${col.className || ''}`}
+                        className={`${getAlignClass(col.align)} p-3  overflow-hidden`}
                         style={{ width: col.width }}
                       >
                         {col.render ? col.render(item) : (item as any)[col.key]}
