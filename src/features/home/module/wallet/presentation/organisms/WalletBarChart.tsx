@@ -8,11 +8,14 @@ import { CURRENCY } from '@/shared/constants';
 import { COLORS } from '@/shared/constants/chart';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppSelector } from '@/store';
+import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import { WalletType } from '../../domain/enum';
 import { filterWallets, transformWalletsToChartData } from '../../utils';
 
 const WalletBarChart = () => {
+  const router = useRouter();
+
   const { wallets, loading, filterCriteria, frozenAmount } = useAppSelector(
     (state) => state.wallet,
   );
@@ -32,6 +35,12 @@ const WalletBarChart = () => {
   if (loading) {
     return <ChartSkeleton />;
   }
+
+  const handlePaymentWalletClick = (item: TwoSideBarItem) => {
+    if (item.type === WalletType.Payment) {
+      router.push('/wallet/payment');
+    }
+  };
 
   if (!loading && (!wallets || wallets.length === 0)) {
     return (
@@ -61,6 +70,7 @@ const WalletBarChart = () => {
         { name: 'Positive', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
         { name: 'Negative', color: COLORS.DEPS_DANGER.LEVEL_1 },
       ]}
+      callback={handlePaymentWalletClick}
       tooltipContent={({ payload }) => {
         if (!payload || !payload.length) return null;
         const item = payload[0].payload;

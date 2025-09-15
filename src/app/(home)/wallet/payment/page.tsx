@@ -2,16 +2,15 @@
 import Loading from '@/components/common/atoms/Loading';
 import dynamic from 'next/dynamic';
 
-const WalletPaymentDetailsPage = dynamic(
-  () =>
-    import('@/features/home/module/wallet/presentation/pages').then((mod) => mod.WalletDetailsPage),
+const WalletPaymentPage = dynamic(
+  () => import('@/features/payment-wallet/presentation/pages').then((mod) => mod.PaymentWalletPage),
   {
     loading: () => <Loading />,
   },
 );
 
-const WalletPaymentPage = () => {
-  return <WalletPaymentDetailsPage />;
+const PaymentWalletPage = () => {
+  return <WalletPaymentPage />;
 };
 
-export default WalletPaymentPage;
+export default PaymentWalletPage;

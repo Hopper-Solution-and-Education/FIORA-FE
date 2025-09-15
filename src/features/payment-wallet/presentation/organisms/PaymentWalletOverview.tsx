@@ -3,54 +3,48 @@
 import { Loading } from '@/components/common/atoms';
 import MetricCard from '@/components/common/metric/MetricCard';
 import { CURRENCY } from '@/shared/constants';
-import { useAppSelector } from '@/store';
 import { useMemo } from 'react';
 import { WalletDepositButton, WalletTransferButton, WalletWithdrawButton } from '../atoms';
+import { usePaymentWalletDashboard } from '../hooks';
 
-type WalletDetailsOverviewProps = {
+type PaymentWalletOverviewProps = {
   enableDeposit?: boolean;
   enableWithdraw?: boolean;
   enableTransfer?: boolean;
 };
 
-const WalletDetailsOverview = ({
+const PaymentWalletOverview = ({
   enableDeposit = true,
   enableWithdraw = true,
   enableTransfer = true,
-}: WalletDetailsOverviewProps) => {
-  const wallets = useAppSelector((state) => state.wallet.wallets);
-  const loading = useAppSelector((state) => state.wallet.loading);
+}: PaymentWalletOverviewProps) => {
+  const { dashboardMetrics, dashboardLoading } = usePaymentWalletDashboard();
 
-  // Calculate metrics based on the photo design
   const metrics = useMemo(() => {
-    if (!wallets || wallets.length === 0) {
+    if (!dashboardMetrics) {
       return {
-        totalFXMovedIn: 300000,
-        totalFXMovedOut: 200000,
-        annualFlexiInterest: 0.5,
-        totalBalance: 200000,
-        totalAvailable: 100000,
-        totalFrozen: 100000,
-        accumulatedEarn: 1000,
+        totalFXMovedIn: 0,
+        totalFXMovedOut: 0,
+        totalBalance: 0,
+        totalAvailableBalance: 0,
+        totalFrozen: 0,
+        accumulatedEarn: 0,
+        annualFlexInterest: 0,
       };
     }
 
-    const totalBalance = wallets.reduce((sum, w) => sum + w.frBalanceActive, 0);
-    const totalFrozen = wallets.reduce((sum, w) => sum + w.frBalanceFrozen, 0);
-    const totalAvailable = totalBalance - totalFrozen;
-
     return {
-      totalFXMovedIn: 300000, // Mock data - would come from transaction history
-      totalFXMovedOut: 200000, // Mock data - would come from transaction history
-      annualFlexiInterest: 0.5, // Mock data - would come from settings/config
-      totalBalance,
-      totalAvailable,
-      totalFrozen,
-      accumulatedEarn: 1000, // Mock data - would come from rewards/earnings
+      totalFXMovedIn: dashboardMetrics.totalMovedIn,
+      totalFXMovedOut: dashboardMetrics.totalMovedOut,
+      totalBalance: dashboardMetrics.totalBalance,
+      totalAvailableBalance: dashboardMetrics.totalAvailableBalance,
+      totalFrozen: dashboardMetrics.totalFrozen,
+      accumulatedEarn: dashboardMetrics.accumulatedEarn,
+      annualFlexInterest: dashboardMetrics.annualFlexInterest,
     };
-  }, [wallets]);
+  }, [dashboardMetrics]);
 
-  if (loading) {
+  if (dashboardLoading) {
     return <Loading />;
   }
 
@@ -73,7 +67,12 @@ const WalletDetailsOverview = ({
           currency={CURRENCY.FX}
         />
 
-        <MetricCard title="Annual Flexi Interest" value={0.5} type="income" />
+        <MetricCard
+          title="Annual Flexi Interest"
+          value={metrics.annualFlexInterest}
+          type="income"
+          suffix="%"
+        />
 
         <div className="flex justify-end gap-4">
           {enableDeposit && <WalletDepositButton />}
@@ -89,37 +88,32 @@ const WalletDetailsOverview = ({
         <MetricCard
           title="Total Balance"
           value={metrics.totalBalance}
-          type="total"
-          icon="wallet"
-          description="Total FX Balance"
-          currency={CURRENCY.FX}
-        />
-
-        <MetricCard
-          title="Total Available"
-          value={metrics.totalAvailable}
-          type="income"
-          icon="arrowLeftRight"
-          description="Total available FX for trading"
-          currency={CURRENCY.FX}
-        />
-
-        <MetricCard
-          title="Total Frozen"
-          value={metrics.totalFrozen}
           type="neutral"
-          icon="snowflake"
-          description="Total FX being processed"
+          icon="wallet"
           currency={CURRENCY.FX}
-          className="!opacity-75"
+        />
+
+        <MetricCard
+          title="Available Balance"
+          value={metrics.totalAvailableBalance}
+          type="income"
+          icon="banknote"
+          currency={CURRENCY.FX}
+        />
+
+        <MetricCard
+          title="Frozen"
+          value={metrics.totalFrozen}
+          type="expense"
+          icon="lock"
+          currency={CURRENCY.FX}
         />
 
         <MetricCard
           title="Accumulated Earn"
           value={metrics.accumulatedEarn}
           type="income"
-          icon="piggyBank"
-          description="Accumulated Reward Earned"
+          icon="trendingUp"
           currency={CURRENCY.FX}
         />
       </div>
@@ -127,4 +121,4 @@ const WalletDetailsOverview = ({
   );
 };
 
-export default WalletDetailsOverview;
+export default PaymentWalletOverview;
