@@ -1,4 +1,5 @@
 import { MembershipCronjobFilterRequest } from '../dto/request/MembershipCronjobFilterRequest';
+import { MembershipChartResponse } from '../dto/response/MembershipChartResponse';
 import { MembershipCronjobPaginatedResponse } from '../dto/response/MembershipCronjobResponse';
 
 export interface IMembershipCronjobDashboardApi {
@@ -9,4 +10,6 @@ export interface IMembershipCronjobDashboardApi {
   ): Promise<MembershipCronjobPaginatedResponse>;
 
   getMembershipDynamicValue(): Promise<any>;
+
+  getMembershipChartData(filter?: MembershipCronjobFilterRequest): Promise<MembershipChartResponse>;
 }

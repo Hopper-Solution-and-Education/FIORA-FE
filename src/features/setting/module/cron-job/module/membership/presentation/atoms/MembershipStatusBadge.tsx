@@ -18,7 +18,7 @@ export const MembershipStatusBadge = ({ status, className }: MembershipStatusBad
     'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 ';
 
   return (
-    <Badge variant="secondary" className={`${color} ${className || ''} font-medium`}>
+    <Badge variant="secondary" className={`${color} ${className || ''} font-semibold`}>
       {status}
     </Badge>
   );

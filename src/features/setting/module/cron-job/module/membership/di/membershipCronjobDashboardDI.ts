@@ -3,6 +3,10 @@ import { Container } from 'inversify';
 import { IMembershipCronjobDashboardApi, MembershipCronjobDashboardApi } from '../data/api';
 import { IMembershipCronjobRepository, MembershipCronjobRepository } from '../data/repository';
 import {
+  GetMembershipChartDataUseCase,
+  IGetMembershipChartDataUseCase,
+} from '../domain/usecase/GetMembershipChartDataUseCase';
+import {
   GetMembershipCronjobsPaginatedUseCase,
   IGetMembershipCronjobsPaginatedUseCase,
 } from '../domain/usecase/GetMembershipCronjobsPaginatedUseCase';
@@ -42,6 +46,11 @@ membershipCronjobContainer
     MEMBERSHIP_CRONJOB_TYPES.IGetMembershipDynamicFieldsUseCase,
   )
   .to(GetMembershipDynamicFieldsUseCase)
+  .inSingletonScope();
+
+membershipCronjobContainer
+  .bind<IGetMembershipChartDataUseCase>(MEMBERSHIP_CRONJOB_TYPES.IGetMembershipChartDataUseCase)
+  .to(GetMembershipChartDataUseCase)
   .inSingletonScope();
 
 export { membershipCronjobContainer };

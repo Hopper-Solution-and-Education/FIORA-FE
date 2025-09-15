@@ -13,18 +13,18 @@ export default function CommonTable<T>({
   data,
   columns,
   columnConfig,
-  onColumnConfigChange,
   storageKey,
   loading = false,
   hasMore = false,
   isLoadingMore = false,
-  onLoadMore,
-  className,
   rightHeaderNode,
   leftHeaderNode,
   emptyState,
   skeletonRows,
   loadingMoreRows = 3,
+  className,
+  onColumnConfigChange,
+  onLoadMore,
 }: CommonTableProps<T>) {
   const { containerRef, sentinelRef } = useCommonInfiniteScroll({
     onLoadMore: onLoadMore || (() => {}),
@@ -115,6 +115,7 @@ export default function CommonTable<T>({
 
       <div className="flex items-center gap-2">
         {rightHeaderNode}
+
         {onColumnConfigChange && (
           <Popover>
             <PopoverTrigger asChild>
@@ -165,9 +166,10 @@ export default function CommonTable<T>({
   return (
     <div className={`space-y-4 ${className || ''}`}>
       {renderHeader()}
+
       <div ref={containerRef} className="rounded-md border max-h-[600px] overflow-auto relative">
         <Table className="min-w-full table-fixed w-full">
-          <TableHeader className="sticky top-0 bg-background z-10">
+          <TableHeader className="sticky top-0 bg-background">
             <TableRow>
               {shownColumns.map((col) => (
                 <TableHead
@@ -180,6 +182,7 @@ export default function CommonTable<T>({
               ))}
             </TableRow>
           </TableHeader>
+
           <TableBody>
             {loading || (data && data.length === 0) ? (
               emptyState ? (
@@ -194,7 +197,7 @@ export default function CommonTable<T>({
                     {shownColumns.map((col) => (
                       <td
                         key={`${col.key}-${rowIdx}`}
-                        className={`${getAlignClass(col.align)} p-3 ${col.className || ''} overflow-hidden`}
+                        className={`${getAlignClass(col.align)} p-3  overflow-hidden`}
                         style={{ width: col.width }}
                       >
                         {col.render ? col.render(item) : (item as any)[col.key]}

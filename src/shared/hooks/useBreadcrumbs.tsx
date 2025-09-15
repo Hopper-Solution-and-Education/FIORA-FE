@@ -179,6 +179,10 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Package FX', link: '/setting/packagefx' },
     { title: 'Edit', link: '' },
   ],
+  '/setting/cron-job/membership': [
+    { title: 'Cron Job', link: '/setting/cron-job' },
+    { title: 'Membership', link: '/setting/cron-job/membership' },
+  ],
 };
 
 /**
