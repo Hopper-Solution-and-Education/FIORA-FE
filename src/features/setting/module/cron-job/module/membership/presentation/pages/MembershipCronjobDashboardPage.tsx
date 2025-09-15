@@ -7,14 +7,15 @@ import MembershipCronjobChart from '../organisms/MembershipCronjobChart';
 import MembershipCronjobCommonTable from '../organisms/MembershipCronjobCommonTable';
 
 const MembershipCronjobDashboardPage = () => {
-  const { tableData, loading, loadMore, dispatchTable } = useMembershipCronjobDashboard();
+  const { tableData, loading, loadMore, dispatchTable, chartData, chartLoading } =
+    useMembershipCronjobDashboard();
 
   return (
     <DispatchTableProvider value={{ dispatchTable }}>
       <TableProvider value={{ table: tableData }}>
         <section className="sm:px-6 lg:px-8">
           <div className="space-y-6 mb-12">
-            <MembershipCronjobChart />
+            <MembershipCronjobChart chartData={chartData} chartLoading={chartLoading} />
 
             <div className="space-y-4 border p-4 rounded-2xl">
               <MembershipCronjobCommonTable

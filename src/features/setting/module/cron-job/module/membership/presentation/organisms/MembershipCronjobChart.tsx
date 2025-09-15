@@ -1,10 +1,13 @@
 import ComposedChartComponent from '@/components/common/charts/composed-chart';
 import { COLORS } from '@/shared/constants/chart';
-import { useMembershipCronjobDashboard } from '../hooks/useMembershipCronjobDashboard';
+import { MembershipChartItem } from '../../data/dto/response/MembershipChartResponse';
 
-const MembershipCronjobChart = () => {
-  const { chartData, chartLoading } = useMembershipCronjobDashboard();
+interface MembershipCronjobChartProps {
+  chartData: MembershipChartItem[];
+  chartLoading: boolean;
+}
 
+const MembershipCronjobChart = ({ chartData, chartLoading }: MembershipCronjobChartProps) => {
   const data = chartData.map((item) => ({
     name: item.tierName,
     count: Number(item.count),
