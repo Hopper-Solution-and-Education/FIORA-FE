@@ -47,7 +47,7 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
         key: 'email',
         title: 'Email',
         align: 'left',
-        render: (r) => <span className="text-sm">{r.email}</span>,
+        render: (r) => <span className="text-sm">{r.email || '-'}</span>,
       },
       {
         key: 'executionTime',

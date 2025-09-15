@@ -12,6 +12,7 @@ import transactionDataSlice from '@/features/home/module/transaction/slices/tran
 import walletSlice from '@/features/home/module/wallet/slices';
 import landingSlices from '@/features/landing/slices';
 import { profileApi } from '@/features/profile/store/api/profileApi';
+import { flexiInterestApi } from '@/features/setting/module/cron-job/module/flexi-interest/presentation/services/flexi-interest.service';
 import flexiInterestCronjobSlice from '@/features/setting/module/cron-job/module/flexi-interest/presentation/slices';
 import membershipCronjobSlice from '@/features/setting/module/cron-job/module/membership/slices';
 import landingSettingSlice from '@/features/setting/module/landing/slices';
@@ -61,6 +62,7 @@ const reducer = {
   // RTK Query API slices
   [helpsCenterApi.reducerPath]: helpsCenterApi.reducer,
   [profileApi.reducerPath]: profileApi.reducer,
+  [flexiInterestApi.reducerPath]: flexiInterestApi.reducer,
 };
 
 const rootReducer = combineReducers(reducer);

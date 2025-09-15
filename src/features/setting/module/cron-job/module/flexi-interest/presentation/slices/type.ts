@@ -4,8 +4,8 @@ export interface FlexiInterestCronjobFilterState {
   membershipTier?: string[] | null;
   email?: string[] | null;
   updatedBy?: string[] | null;
-  fromDate: Date | null;
-  toDate: Date | null;
+  fromDate: Date | string | null;
+  toDate: Date | string | null;
 }
 
 export interface FlexiInterestCronjobState {

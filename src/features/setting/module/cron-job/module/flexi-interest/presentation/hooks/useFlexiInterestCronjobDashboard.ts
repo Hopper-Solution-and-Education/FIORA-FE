@@ -1,83 +1,10 @@
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useReducer, useRef } from 'react';
+import { formatObjUtil } from '../../utils/format-obj.util';
 import { initialState, tableReducer } from '../reducers/table-reducer.reducer';
+import { useLazyGetFlexiInterestQuery } from '../services/flexi-interest.service';
 import { setLoading } from '../slices';
 import { FlexiInterestCronjobTableData } from '../types/flexi-interest.type';
-
-const mockData: FlexiInterestCronjobTableData[] = [
-  {
-    id: '000001',
-    email: 'userA@gmail.com',
-    executionTime: '2025-06-24T22:06:19Z',
-    tier: 'Platinum Qiii',
-    rate: 15,
-    activeBalance: 100000.0,
-    amount: 0.0,
-    status: 'fail',
-    updateBy: 'System',
-    reason: 'None',
-  },
-  {
-    id: '000002',
-    email: 'userB@gmail.com',
-    executionTime: '2025-06-24T22:06:19Z',
-    tier: 'Diamond Dragon',
-    rate: 20,
-    activeBalance: 150000.0,
-    amount: 10.0,
-    status: 'successful',
-    updateBy: 'System',
-    reason: 'None',
-  },
-  {
-    id: '000003',
-    email: 'userC@gmail.com',
-    executionTime: '2025-06-24T22:06:19Z',
-    tier: 'Titan Phoenix',
-    rate: 5,
-    activeBalance: 100000.0,
-    amount: 5000.0,
-    status: 'successful',
-    updateBy: 'System',
-    reason: 'None',
-  },
-  {
-    id: '000004',
-    email: 'userD@gmail.com',
-    executionTime: '2025-06-24T22:06:19Z',
-    tier: 'Silver Egg',
-    rate: 2,
-    activeBalance: 15000.0,
-    amount: 300.0,
-    status: 'successful',
-    updateBy: 'System',
-    reason: 'None',
-  },
-  {
-    id: '000005',
-    email: 'userE@gmail.com',
-    executionTime: '2025-06-24T22:06:19Z',
-    tier: 'Titan Phoenix',
-    rate: 5,
-    activeBalance: 100000.0,
-    amount: 0.0,
-    status: 'fail',
-    updateBy: 'System',
-    reason: 'None',
-  },
-  {
-    id: '000006',
-    email: 'userF@gmail.com',
-    executionTime: '2025-06-24T22:06:19Z',
-    tier: 'Gold Tortoise',
-    rate: 8,
-    activeBalance: 0.0,
-    amount: 0.0,
-    status: 'fail',
-    updateBy: 'System',
-    reason: 'None',
-  },
-];
 
 export const useFlexiInterestCronjobDashboard = () => {
   const dispatch = useAppDispatch();
@@ -87,6 +14,8 @@ export const useFlexiInterestCronjobDashboard = () => {
 
   const isInitialLoad = useRef(true);
   const isFetching = useRef(false);
+
+  const [triggerGetFlexiInterest] = useLazyGetFlexiInterestQuery();
 
   const fetchData = useCallback(
     async (page: number, pageSize: number, isLoadMore = false) => {
@@ -101,10 +30,28 @@ export const useFlexiInterestCronjobDashboard = () => {
       }
 
       try {
+        const localFilter = { ...filter };
+
+        if (localFilter.fromDate) {
+          localFilter.fromDate = new Date(localFilter.fromDate).toISOString().split('T')[0];
+        }
+
+        if (localFilter.toDate) {
+          localFilter.toDate = new Date(localFilter.toDate).toISOString().split('T')[0];
+        }
+
+        const formattedFilter = formatObjUtil(localFilter);
+
         // TODO: Call API lấy data
+        const response = await triggerGetFlexiInterest({
+          page,
+          pageSize,
+          filter: JSON.stringify(formattedFilter),
+        }).unwrap();
+        console.log('🚀 ~ fetchData ~ response:', response);
 
         // MOCK DATA
-        const rows: FlexiInterestCronjobTableData[] = mockData;
+        const rows: FlexiInterestCronjobTableData[] = response?.items || [];
 
         // Nếu tải thêm data --> append
         // else lần đầu tải --> set data

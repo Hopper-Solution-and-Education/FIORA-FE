@@ -22,7 +22,9 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
       ];
     }
     if (filter?.status) {
-      where.status = filter.status;
+      where.status = {
+        in: Array.isArray(filter.status) ? filter.status : [filter.status],
+      };
     }
     if (filter?.fromDate && filter?.toDate) {
       where.createdAt = {
@@ -65,9 +67,9 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
 
     // tổng số record
     const total = await this._prisma.cronJobLog.count({ where });
-    if (filter?.status) {
-      where.status = filter.status;
-    }
+    // if (filter?.status) {
+    //   where.status = filter.status;
+    // }
 
     // map dữ liệu ra object FE cần
     const items = logs.map((log) => {
