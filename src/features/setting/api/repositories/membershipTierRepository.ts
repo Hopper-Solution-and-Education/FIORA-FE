@@ -94,7 +94,3 @@ export interface OutputTierInfinity {
   name?: string;
   email?: string;
 }
-export interface UserInfinityResult {
-  tiers: OutputTierInfinity[];
-  hasMore: boolean;
-}
