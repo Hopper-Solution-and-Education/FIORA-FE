@@ -1,7 +1,7 @@
 import { accountUsecase } from '@/features/news/api/application/usecase/accountUsecase';
 import { commentUsecase } from '@/features/news/api/application/usecase/commentUsecase';
-import { newsUsercase } from '@/features/news/api/application/usecase/newsUsecase';
-import { commentCreationNews, getCommentRequest } from '@/features/news/api/types/commentDTO';
+import { newsUsecase } from '@/features/news/api/application/usecase/newsUsecase';
+import { CommentCreationNews, GetCommentRequest } from '@/features/news/api/types/commentDTO';
 import { userUseCase } from '@/features/setting/api/domain/use-cases/userUsecase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
@@ -38,7 +38,7 @@ export default (req: NextApiRequest, res: NextApiResponse, userId: string) =>
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
   const { newsId, page = 1, limit = 0, orderBy = 'createdAt', orderDirection = 'desc' } = req.query;
 
-  const param: getCommentRequest = {
+  const param: GetCommentRequest = {
     newsId: String(newsId),
     page: Number(page),
     limit: Number(limit),
@@ -54,7 +54,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
 
 export async function POST(req: NextApiRequest, res: NextApiResponse) {
   const { newsId, content, userId, replyComment } = req.body;
-  const param: commentCreationNews = { newsId, content, userId };
+  const param: CommentCreationNews = { newsId, content, userId };
   if (replyComment) {
     param.replyComment = replyComment;
   }
@@ -69,7 +69,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
   }
 
   //check news
-  const news: Post | null = await newsUsercase.getNewsById(param.newsId);
+  const news: Post | null = await newsUsecase.getNewsById(param.newsId);
   if (!news) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)

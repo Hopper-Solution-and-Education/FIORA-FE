@@ -1,5 +1,6 @@
 import { prisma } from '@/config';
 import { Messages } from '@/shared/constants/message';
+import { InfinityParams, InfinityResult } from '@/shared/dtos/base-api-response.dto';
 import { BadRequestError, ConflictError } from '@/shared/lib';
 import { Prisma } from '@prisma/client';
 import { membershipTierRepository } from '../../infrastructure/repositories/membershipTierRepository';
@@ -10,10 +11,9 @@ import {
   MembershipTierCreation,
   MembershipTierUpdate,
   MembershipTierWithBenefit,
+  OutputTierInfinity,
   Range,
   RangeKeys,
-  TierInfinityParams,
-  UserInfinityResult,
 } from '../../repositories/membershipTierRepository';
 import { IUserRepository } from '../../repositories/userRepository.interface';
 
@@ -571,7 +571,7 @@ class MembershipSettingUseCase {
     }
   }
 
-  async getTierInfinity(params: TierInfinityParams): Promise<UserInfinityResult> {
+  async getTierInfinity(params: InfinityParams): Promise<InfinityResult<OutputTierInfinity>> {
     const { limit = 20, search, page } = params;
 
     const whereClause: any = {};
@@ -603,7 +603,7 @@ class MembershipSettingUseCase {
     const actualTiers = hasMore ? tiers.slice(0, limit) : tiers;
     const totalPages = Math.ceil(total / limit);
     return {
-      tiers: actualTiers as any,
+      items: actualTiers as any,
       hasMore: Number(page) < totalPages,
     };
   }

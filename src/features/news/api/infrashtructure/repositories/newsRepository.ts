@@ -52,7 +52,7 @@ export class NewsRepository implements INewsRepository {
       categoryId: result.categoryId,
       userId: result.userId,
       Reaction: {
-        reactionType: reaction?.reactionType || '',
+        reactionType: reaction?.reactionType || 'null',
       },
     };
 

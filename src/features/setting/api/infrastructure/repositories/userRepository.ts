@@ -1,10 +1,7 @@
 import prisma from '@/config/prisma/prisma';
+import { InfinityParams, InfinityResult } from '@/shared/dtos/base-api-response.dto';
 import { User } from '@prisma/client';
-import {
-  IUserRepository,
-  UserInfinityParams,
-  UserInfinityResult,
-} from '../../repositories/userRepository.interface';
+import { IUserRepository, OutputUserInfinity } from '../../repositories/userRepository.interface';
 
 class UserRepository implements IUserRepository {
   async findUserById(id: string): Promise<User | null> {
@@ -36,7 +33,7 @@ class UserRepository implements IUserRepository {
     });
   }
 
-  async getUserInfinity(params: UserInfinityParams): Promise<UserInfinityResult> {
+  async getUserInfinity(params: InfinityParams): Promise<InfinityResult<OutputUserInfinity>> {
     const { limit = 20, search, page } = params;
 
     const whereClause: any = {
@@ -73,7 +70,7 @@ class UserRepository implements IUserRepository {
     const totalPages = Math.ceil(total / limit);
 
     return {
-      users: actualUsers as any,
+      items: actualUsers as unknown as OutputUserInfinity[],
       hasMore: Number(page) < totalPages,
     };
   }

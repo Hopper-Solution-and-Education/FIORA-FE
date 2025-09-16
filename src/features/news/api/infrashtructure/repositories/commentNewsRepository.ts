@@ -2,14 +2,14 @@ import { prisma } from '@/config';
 import { Comment } from '@prisma/client';
 import { ICommentNewsRepository } from '../../domain/repository/commentNewsRepository';
 import {
-  commentCreationNews,
+  CommentCreationNews,
   CommentResponseRepo,
-  commentUpdationNews,
-  getCommentRequest,
+  CommentUpdationNews,
+  GetCommentRequest,
 } from '../../types/commentDTO';
 
 class CommentNewsRepository implements ICommentNewsRepository {
-  async getCommentNews(queryParam: getCommentRequest): Promise<CommentResponseRepo[]> {
+  async getCommentNews(queryParam: GetCommentRequest): Promise<CommentResponseRepo[]> {
     console.log(queryParam.newsId);
 
     const skip = (queryParam.page - 1) * queryParam.limit;
@@ -44,7 +44,7 @@ class CommentNewsRepository implements ICommentNewsRepository {
       },
     });
   }
-  async createCommentNews(dto: commentCreationNews): Promise<Comment> {
+  async createCommentNews(dto: CommentCreationNews): Promise<Comment> {
     console.log('dto: ', dto);
     return prisma.comment.create({
       data: {
@@ -55,7 +55,7 @@ class CommentNewsRepository implements ICommentNewsRepository {
       },
     });
   }
-  async updateCommentNews(dto: commentUpdationNews, commentId: string): Promise<Comment> {
+  async updateCommentNews(dto: CommentUpdationNews, commentId: string): Promise<Comment> {
     return prisma.comment.update({
       where: {
         id: commentId,
