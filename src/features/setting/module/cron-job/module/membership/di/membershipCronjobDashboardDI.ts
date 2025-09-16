@@ -22,6 +22,10 @@ import {
   GetMembershipUsersUseCase,
   IGetMembershipUsersUseCase,
 } from '../domain/usecase/GetMembershipUsersUseCase';
+import {
+  IResendMembershipUseCase,
+  ResendMembershipUseCase,
+} from '../domain/usecase/ResendMembershipUseCase';
 import { MEMBERSHIP_CRONJOB_TYPES } from './membershipCronjobDashboardDI.type';
 
 const membershipCronjobContainer = new Container();
@@ -69,6 +73,11 @@ membershipCronjobContainer
 membershipCronjobContainer
   .bind<IGetMembershipUsersUseCase>(MEMBERSHIP_CRONJOB_TYPES.IGetMembershipUsersUseCase)
   .to(GetMembershipUsersUseCase)
+  .inSingletonScope();
+
+membershipCronjobContainer
+  .bind<IResendMembershipUseCase>(MEMBERSHIP_CRONJOB_TYPES.IResendMembershipUseCase)
+  .to(ResendMembershipUseCase)
   .inSingletonScope();
 
 export { membershipCronjobContainer };

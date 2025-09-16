@@ -1,11 +1,9 @@
 import { useAppDispatch, useAppSelector } from '@/store';
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import { MembershipChartItem } from '../../data/dto/response/MembershipChartResponse';
+import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { MembershipCronjobItem } from '../../data/dto/response/MembershipCronjobResponse';
 import { MembershipCronjobMapper } from '../../data/mapper';
 import { membershipCronjobContainer } from '../../di/membershipCronjobDashboardDI';
 import { MEMBERSHIP_CRONJOB_TYPES } from '../../di/membershipCronjobDashboardDI.type';
-import { IGetMembershipChartDataUseCase } from '../../domain/usecase/GetMembershipChartDataUseCase';
 import { IGetMembershipCronjobsPaginatedUseCase } from '../../domain/usecase/GetMembershipCronjobsPaginatedUseCase';
 import { setLoading, setStatistics } from '../../slices';
 import { initialState, tableReducer } from '../types/tableReducer.type';
@@ -15,44 +13,11 @@ export const useMembershipCronjobDashboard = () => {
   const { filter } = useAppSelector((s) => s.membershipCronjob);
 
   const [state, dispatchTable] = useReducer(tableReducer, initialState);
-  const [chartData, setChartData] = useState<MembershipChartItem[]>([]);
-  const [chartLoading, setChartLoading] = useState(false);
 
   const isInitialLoad = useRef(true);
   const isFetching = useRef(false);
 
-  const lastChartParamsRef = useRef<string | null>(null);
-  const isChartFetchingRef = useRef(false);
-
-  const fetchChartData = useCallback(async () => {
-    const params = {
-      status: filter?.status || [],
-      search: filter?.search || '',
-      fromDate: filter?.fromDate || '',
-      toDate: filter?.toDate || '',
-    };
-    const key = JSON.stringify(params);
-    if (isChartFetchingRef.current || lastChartParamsRef.current === key) return;
-    isChartFetchingRef.current = true;
-    lastChartParamsRef.current = key;
-    setChartLoading(true);
-    try {
-      const useCase = membershipCronjobContainer.get<IGetMembershipChartDataUseCase>(
-        MEMBERSHIP_CRONJOB_TYPES.IGetMembershipChartDataUseCase,
-      );
-
-      const res = await useCase.execute(params);
-      setChartData(res.data?.items || []);
-    } catch (error) {
-      console.error('Error fetching chart data:', error);
-      setChartData([]);
-      // reset key so a later attempt can retry
-      lastChartParamsRef.current = null;
-    } finally {
-      setChartLoading(false);
-      isChartFetchingRef.current = false;
-    }
-  }, [filter]);
+  // Chart fetching moved into MembershipCronjobChart component.
 
   const fetchData = useCallback(
     async (page: number, pageSize: number, isLoadMore = false) => {
@@ -80,23 +45,25 @@ export const useMembershipCronjobDashboard = () => {
 
         const rows = (list.data || []).map((it: MembershipCronjobItem) => {
           const fromTierVal =
-            (it.dynamicValue as any)?.fromTier ??
-            it.updatedBy?.MembershipProgress?.[0]?.tier?.tierName ??
+            (it.dynamicValue as any)?.fromTier ||
+            it.updatedBy?.MembershipProgress?.[0]?.tier?.tierName ||
             'N/A';
+
           const toTierVal =
-            (it.dynamicValue as any)?.toTier ??
-            it.updatedBy?.MembershipProgress?.[0]?.tier?.tierName ??
+            (it.dynamicValue as any)?.toTier ||
+            it.updatedBy?.MembershipProgress?.[0]?.tier?.tierName ||
             'N/A';
 
           return {
             id: it.id,
-            email: it.updatedBy?.email || 'N/A',
+            email: it.createdBy?.email || 'N/A',
             executionTime: it.executionTime,
             fromTier: fromTierVal,
             spent: it.spent || it.updatedBy?.MembershipProgress?.[0]?.currentSpent || '0',
             balance: it.balance || it.updatedBy?.MembershipProgress?.[0]?.currentBalance || '0',
             toTier: toTierVal,
             status: it.status,
+            reason: (it as any)?.reason || undefined,
             updatedBy: {
               id: it.updatedBy?.id || '',
               email: it.updatedBy?.email || 'N/A',
@@ -139,11 +106,10 @@ export const useMembershipCronjobDashboard = () => {
   useEffect(() => {
     if (isInitialLoad.current) {
       fetchData(1, state.pagination.pageSize, false);
-      fetchChartData();
 
       isInitialLoad.current = false;
     }
-  }, [fetchData, fetchChartData]);
+  }, [fetchData]);
 
   useEffect(() => {
     if (!isInitialLoad.current) {
@@ -152,9 +118,9 @@ export const useMembershipCronjobDashboard = () => {
       dispatchTable({ type: 'SET_HAS_MORE', payload: true });
 
       fetchData(1, state.pagination.pageSize, false);
-      fetchChartData();
+      // Chart is independent; don't refetch on table filter changes
     }
-  }, [filter, fetchData, fetchChartData]);
+  }, [filter, fetchData]);
 
   const loadMore = useCallback(async () => {
     if (!state.hasMore || state.isLoadingMore || isFetching.current) return;
@@ -167,7 +133,5 @@ export const useMembershipCronjobDashboard = () => {
     loading: useAppSelector((s) => s.membershipCronjob.loading),
     loadMore,
     dispatchTable,
-    chartData,
-    chartLoading,
   };
 };

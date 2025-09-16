@@ -2,6 +2,7 @@ import { decorate, inject, injectable } from 'inversify';
 import { MEMBERSHIP_CRONJOB_TYPES } from '../../di/membershipCronjobDashboardDI.type';
 import { IMembershipCronjobDashboardApi } from '../api';
 import { MembershipCronjobFilterRequest } from '../dto/request/MembershipCronjobFilterRequest';
+import { MembershipResendRequest } from '../dto/request/MembershipResendRequest';
 import { MembershipChartResponse } from '../dto/response/MembershipChartResponse';
 import { MembershipCronjobPaginatedResponse } from '../dto/response/MembershipCronjobResponse';
 import { MembershipTierListResponse } from '../dto/response/MembershipTierResponse';
@@ -43,6 +44,10 @@ export class MembershipCronjobRepository implements IMembershipCronjobRepository
 
   async getMembershipUsers(page: number, pageSize: number): Promise<MembershipUserListResponse> {
     return this.api.getMembershipUsers(page, pageSize);
+  }
+
+  async resendMembership(id: string, body: MembershipResendRequest): Promise<any> {
+    return this.api.resendMembership(id, body);
   }
 }
 

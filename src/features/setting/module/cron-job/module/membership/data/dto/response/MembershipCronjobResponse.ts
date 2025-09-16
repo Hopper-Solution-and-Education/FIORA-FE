@@ -5,7 +5,9 @@ export interface MembershipCronjobItem {
   transactionId: string | null;
   typeCronJob: string;
   executionTime: string;
-  createdBy: string | null;
+  createdBy: {
+    email: string | null;
+  };
   updatedBy: null | {
     id: string;
     name: string | null;

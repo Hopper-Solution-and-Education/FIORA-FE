@@ -1,4 +1,5 @@
 import { MembershipCronjobFilterRequest } from '../dto/request/MembershipCronjobFilterRequest';
+import { MembershipResendRequest } from '../dto/request/MembershipResendRequest';
 import { MembershipChartResponse } from '../dto/response/MembershipChartResponse';
 import { MembershipCronjobPaginatedResponse } from '../dto/response/MembershipCronjobResponse';
 import { MembershipTierListResponse } from '../dto/response/MembershipTierResponse';
@@ -18,4 +19,6 @@ export interface IMembershipCronjobDashboardApi {
   getMembershipTiers(page: number, pageSize: number): Promise<MembershipTierListResponse>;
 
   getMembershipUsers(page: number, pageSize: number): Promise<MembershipUserListResponse>;
+
+  resendMembership(id: string, body: MembershipResendRequest): Promise<any>;
 }
