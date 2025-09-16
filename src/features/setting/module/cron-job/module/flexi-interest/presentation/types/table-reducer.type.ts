@@ -9,6 +9,12 @@ export interface TableState {
   };
   hasMore: boolean;
   isLoadingMore: boolean;
+  extraData: {
+    currentItemCount: number;
+    totalItems: number;
+    totalSuccess: number;
+    totalFailed: number;
+  };
 }
 
 export type TableAction =
@@ -17,4 +23,13 @@ export type TableAction =
   | { type: 'SET_PAGINATION'; payload: { current: number; pageSize: number; total: number } }
   | { type: 'SET_PAGE'; payload: number }
   | { type: 'SET_HAS_MORE'; payload: boolean }
-  | { type: 'SET_IS_LOADING_MORE'; payload: boolean };
+  | { type: 'SET_IS_LOADING_MORE'; payload: boolean }
+  | {
+      type: 'SET_EXTRA_DATA';
+      payload: {
+        currentItemCount: number;
+        totalItems: number;
+        totalSuccess: number;
+        totalFailed: number;
+      };
+    };

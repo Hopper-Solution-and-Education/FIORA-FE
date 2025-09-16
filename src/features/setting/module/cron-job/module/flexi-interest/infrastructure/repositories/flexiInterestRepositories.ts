@@ -8,7 +8,7 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
     page: number,
     pageSize: number,
     filter?: any,
-    search?: string,
+    // search?: string,
   ): Promise<{ items: any[]; total: number; totalSuccess: number; totalFailed: number }> {
     const skip = (page - 1) * pageSize;
     // query danh sách log
@@ -16,10 +16,16 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
       typeCronJob: TypeCronJob.FLEXI_INTEREST,
     };
     const orFilter: any[] = [];
-    if (search) {
+    if (filter?.search) {
       where.OR = [
-        { dynamicValue: { path: ['email'], string_contains: search, mode: 'insensitive' } },
-        { dynamicValue: { path: ['tierName'], string_contains: search, mode: 'insensitive' } },
+        { dynamicValue: { path: ['email'], string_contains: filter?.search, mode: 'insensitive' } },
+        {
+          dynamicValue: {
+            path: ['tierName'],
+            string_contains: filter?.search,
+            mode: 'insensitive',
+          },
+        },
       ];
     }
     if (filter?.status) {

@@ -50,7 +50,6 @@ export const useFlexiInterestCronjobDashboard = () => {
         }).unwrap();
         console.log('🚀 ~ fetchData ~ response:', response);
 
-        // MOCK DATA
         const rows: FlexiInterestCronjobTableData[] = response?.items || [];
 
         // Nếu tải thêm data --> append
@@ -68,6 +67,16 @@ export const useFlexiInterestCronjobDashboard = () => {
             current: 1,
             pageSize: 20,
             total: 0,
+          },
+        });
+
+        dispatchTable({
+          type: 'SET_EXTRA_DATA',
+          payload: {
+            currentItemCount: rows.length,
+            totalItems: response?.total || 0,
+            totalSuccess: response?.totalSuccess || 0,
+            totalFailed: response?.totalFailed || 0,
           },
         });
 

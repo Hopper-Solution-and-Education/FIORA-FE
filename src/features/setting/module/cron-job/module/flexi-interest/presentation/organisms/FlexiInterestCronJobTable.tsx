@@ -8,7 +8,15 @@ import React, { useMemo, useState } from 'react';
 import FlexiInterestActionButton from '../atoms/FlexiInterestActionButton';
 import FlexiInterestStatusBadge from '../atoms/FlexiInterestStatusBadge';
 import FlexiInterestHeaderTopLeft from '../molecules/FlexiInterestHeaderTopLeft';
+import FlexiInterestHeaderTopRight from '../molecules/FlexiInterestHeaderTopRight';
 import { FlexiInterestCronjobTableData } from '../types/flexi-interest.type';
+
+type ExtraDataTableType = {
+  currentItemCount: number;
+  totalItems: number;
+  totalSuccess: number;
+  totalFailed: number;
+};
 
 interface FlexiInterestCronJobTableProps {
   data: FlexiInterestCronjobTableData[];
@@ -18,6 +26,7 @@ interface FlexiInterestCronJobTableProps {
   onLoadingMore?: boolean;
   onLoadMore?: () => void;
   className?: string;
+  extraData?: ExtraDataTableType;
 }
 
 const STORAGE_KEY = 'flexi-interest-cronjob:table';
@@ -29,6 +38,7 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
   isLoadingMore,
   onLoadMore,
   className,
+  extraData,
 }) => {
   const columns: CommonTableColumn<FlexiInterestCronjobTableData>[] = useMemo(
     () => [
@@ -140,6 +150,16 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
       onLoadMore={onLoadMore}
       className={className}
       leftHeaderNode={<FlexiInterestHeaderTopLeft />}
+      rightHeaderNode={
+        extraData && (
+          <FlexiInterestHeaderTopRight
+            current={extraData.currentItemCount}
+            total={extraData.totalItems}
+            totalFailed={extraData.totalFailed}
+            totalSuccess={extraData.totalSuccess}
+          />
+        )
+      }
     />
   );
 };
