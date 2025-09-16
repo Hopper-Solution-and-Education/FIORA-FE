@@ -42,21 +42,11 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
 }) => {
   const columns: CommonTableColumn<FlexiInterestCronjobTableData>[] = useMemo(
     () => [
-      // {
-      //   key: 'id',
-      //   title: 'ID',
-      //   align: 'center',
-      //   className: 'max-w-[200px] truncate',
-      //   render: (r) => (
-      //     <span className="text-blue-600 dark-text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 truncate">
-      //       {r.id}
-      //     </span>
-      //   ),
-      // },
       {
         key: 'email',
         title: 'Email',
         align: 'left',
+        width: '18%',
         render: (r) => <span className="text-sm">{r.email || '-'}</span>,
       },
       {
