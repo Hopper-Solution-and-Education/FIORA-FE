@@ -1,3 +1,4 @@
+import { CronJobType } from '@/shared/constants/cron-job';
 import { MembershipCronjobFilterRequest } from '../dto/request/MembershipCronjobFilterRequest';
 import {
   MembershipCronjobItem,
@@ -23,7 +24,7 @@ export class MembershipCronjobMapper {
     };
 
     append('status', filter.status as any);
-    append('typeCronJob', filter.typeCronJob as any);
+    append('typeCronJob', CronJobType.Membership);
     if (filter.search) params.append('search', filter.search);
     if (filter.fromDate)
       params.append(
@@ -58,5 +59,41 @@ export class MembershipCronjobMapper {
     const firstTypeKey = Object.keys(response?.data || {})[0];
     const items = (firstTypeKey ? (response.data as any)[firstTypeKey] : []) as Array<any>;
     return items.map((item) => item?.field).filter(Boolean);
+  }
+
+  static toChartSearchParams(filter?: MembershipCronjobFilterRequest): URLSearchParams {
+    const params = new URLSearchParams();
+
+    // Add default parameters for chart
+    params.append('page', '1');
+    params.append('pageSize', '10');
+    params.append('typeCronJob', CronJobType.Membership);
+
+    if (!filter) return params;
+
+    const append = (name: string, value?: string | string[] | null) => {
+      if (value == null) return;
+      if (Array.isArray(value)) value.forEach((v) => params.append(name, v));
+      else params.append(name, value);
+    };
+
+    append('status', filter.status as any);
+    if (filter.search) params.append('search', filter.search);
+    if (filter.fromDate)
+      params.append(
+        'fromDate',
+        typeof filter.fromDate === 'string'
+          ? filter.fromDate
+          : filter.fromDate.toISOString().split('T')[0],
+      );
+    if (filter.toDate)
+      params.append(
+        'toDate',
+        typeof filter.toDate === 'string'
+          ? filter.toDate
+          : filter.toDate.toISOString().split('T')[0],
+      );
+
+    return params;
   }
 }

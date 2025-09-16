@@ -4,6 +4,7 @@ import { routeConfig } from '@/shared/utils/route';
 import { decorate, inject, injectable } from 'inversify';
 import { MEMBERSHIP_CRONJOB_TYPES } from '../../di/membershipCronjobDashboardDI.type';
 import { MembershipCronjobFilterRequest } from '../dto/request/MembershipCronjobFilterRequest';
+import { MembershipChartResponse } from '../dto/response/MembershipChartResponse';
 import { MembershipCronjobPaginatedResponse } from '../dto/response/MembershipCronjobResponse';
 import { MembershipCronjobMapper } from '../mapper';
 import { IMembershipCronjobDashboardApi } from './IMembershipCronjobDashboardApi';
@@ -29,6 +30,16 @@ export class MembershipCronjobDashboardApi implements IMembershipCronjobDashboar
 
   async getMembershipDynamicValue() {
     return this.httpClient.get(routeConfig(ApiEndpointEnum.CronjobDashboardDefineType));
+  }
+
+  async getMembershipChartData(
+    filter?: MembershipCronjobFilterRequest,
+  ): Promise<MembershipChartResponse> {
+    const searchParams = MembershipCronjobMapper.toChartSearchParams(filter);
+    const baseUrl = routeConfig(ApiEndpointEnum.CronjobChart);
+    const url = `${baseUrl}?${searchParams.toString()}`;
+
+    return this.httpClient.get(url);
   }
 }
 

@@ -12,6 +12,8 @@ export const EMAIL_TEMPLATES = [
   { id: 'referral-bonus', name: 'Referral Bonus', type: 'Marketing', color: 'purple' },
   { id: 'invitation-new-customer', name: 'Invitation New Customer', type: '', color: '' },
   { id: 'account-verification', name: 'Account Verification', type: 'System', color: 'green' },
+  { id: 'account-verification-2', name: 'Account Verification', type: 'System', color: 'green' },
+  { id: 'account-verification-3', name: 'Account Verification', type: 'System', color: 'green' },
 ] as const;
 
 export const TEMPLATE_TYPES = ['Deposit', 'Withdrawal', 'KYC', 'Marketing', 'System'] as const;

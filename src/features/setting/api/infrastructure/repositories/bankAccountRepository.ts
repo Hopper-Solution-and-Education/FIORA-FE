@@ -105,7 +105,23 @@ class BankAccountRepository {
             updatedBy: userId,
           },
         });
+        const user = await tx.user.findFirst({
+          where: { id: bankAccount.userId },
+          select: { id: true, kyc_levels: true },
+        });
+        const updatedKycLevels = user?.kyc_levels || [];
 
+        if (!updatedKycLevels.includes('2')) {
+          updatedKycLevels.push('2');
+        }
+        await tx.user.update({
+          where: { id: user?.id },
+          data: {
+            kyc_levels: updatedKycLevels,
+            updatedAt: new Date(),
+            updatedBy: userId,
+          },
+        });
         await tx.eKYC.update({
           where: { id: kycId, refId: bankAccountId },
           data: { updatedAt: new Date(), updatedBy: userId, status: status, verifiedBy: userId },

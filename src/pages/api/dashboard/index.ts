@@ -4,6 +4,7 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
+import { normalizeToArray } from '@/shared/utils/filterUtils';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -34,6 +35,8 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       toDate,
       fromTier,
       toTier,
+      typeCronJob,
+      search,
       page = 1,
       limit = 10,
     } = req.query as DashboardFilterParams;
@@ -42,30 +45,26 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     const limitNum = Math.min(100, Math.max(1, Number(limit)));
 
     const filters: any = {};
-
+    if (typeCronJob) {
+      filters.typeCronJob = typeCronJob;
+    }
     if (status) {
       const validStatuses = ['SUCCESSFUL', 'FAIL'];
-      if (Array.isArray(status)) {
-        const validStatusArray = status.filter((s) => validStatuses.includes(s));
-        if (validStatusArray.length > 0) {
-          filters.status = { in: validStatusArray };
-        }
-      } else if (validStatuses.includes(status)) {
-        filters.status = status;
+      const statusArray = normalizeToArray(status as any).filter((s) => validStatuses.includes(s));
+      if (statusArray.length > 0) {
+        filters.status = { in: statusArray };
       }
     }
 
     if (userIds) {
-      const userIdArray =
-        typeof userIds === 'string' ? userIds.split(',').filter((id) => id.trim()) : userIds;
+      const userIdArray = normalizeToArray(userIds as any);
       if (userIdArray.length > 0 && userIdArray.length <= 50) {
         filters.createdBy = { in: userIdArray };
       }
     }
 
     if (updatedBy) {
-      const updatedByArray =
-        typeof updatedBy === 'string' ? updatedBy.split(',').filter((id) => id.trim()) : updatedBy;
+      const updatedByArray = normalizeToArray(updatedBy as any);
       if (updatedByArray.length > 0 && updatedByArray.length <= 50) {
         filters.updatedBy = { in: updatedByArray };
       }
@@ -85,12 +84,20 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
           filters.createdAt.lte = toDateObj;
         }
       }
+    } else {
+      filters.createdAt = {
+        gte: new Date(new Date().setHours(0, 0, 0, 0)),
+        lte: new Date(new Date().setHours(23, 59, 59, 999)),
+      };
     }
 
     const skip = (pageNum - 1) * limitNum;
 
     const tierFilters = fromTier || toTier ? { fromTier, toTier } : undefined;
-
+    const searchFilter = await dashboardRepository.searchFilter(search as string);
+    if (searchFilter) {
+      filters.OR = [...(filters.OR ?? []), ...(searchFilter.OR ?? [])];
+    }
     const [result, counts] = await Promise.all([
       dashboardRepository.getWithFilters(filters, skip, limitNum, tierFilters),
       dashboardRepository.getCount(filters),

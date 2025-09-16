@@ -2,6 +2,7 @@ import { decorate, inject, injectable } from 'inversify';
 import { MEMBERSHIP_CRONJOB_TYPES } from '../../di/membershipCronjobDashboardDI.type';
 import { IMembershipCronjobDashboardApi } from '../api';
 import { MembershipCronjobFilterRequest } from '../dto/request/MembershipCronjobFilterRequest';
+import { MembershipChartResponse } from '../dto/response/MembershipChartResponse';
 import { MembershipCronjobPaginatedResponse } from '../dto/response/MembershipCronjobResponse';
 import { MembershipCronjobMapper } from '../mapper';
 import { IMembershipCronjobRepository } from './IMembershipCronjobRepository';
@@ -26,6 +27,12 @@ export class MembershipCronjobRepository implements IMembershipCronjobRepository
   async getMembershipDynamicValue(): Promise<string[]> {
     const res = await this.api.getMembershipDynamicValue();
     return MembershipCronjobMapper.toDynamicValue(res);
+  }
+
+  async getMembershipChartData(
+    filter?: MembershipCronjobFilterRequest,
+  ): Promise<MembershipChartResponse> {
+    return this.api.getMembershipChartData(filter);
   }
 }
 

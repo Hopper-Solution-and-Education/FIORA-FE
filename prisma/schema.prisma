@@ -228,7 +228,7 @@ model Transaction {
   toCategory          Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
   toWallet            Wallet?              @relation("ToWallet", fields: [toWalletId], references: [id])
   user                User?                @relation("UserTransactions", fields: [userId], references: [id])
-  MembershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
+  membershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
 
   @@index([date])
   @@index([type])
@@ -569,16 +569,16 @@ model EmailNotificationLogs {
 }
 
 model UserNotification {
-  id             String       @id @default(uuid()) @db.Uuid
-  userId         String       @db.Uuid
-  notificationId String       @db.Uuid
-  isRead         Boolean      @default(false)
-  createdAt      DateTime     @default(now()) @db.Timestamptz(0)
-  updatedAt      DateTime     @updatedAt @db.Timestamptz(0)
-  createdBy      String?      @db.Uuid
-  updatedBy      String?      @db.Uuid
-  notification   Notification @relation(fields: [notificationId], references: [id])
-  User           User         @relation(fields: [userId], references: [id])
+  id             String        @id @default(uuid()) @db.Uuid
+  userId         String        @db.Uuid
+  notificationId String        @db.Uuid
+  isRead         Boolean       @default(false)
+  createdAt      DateTime      @default(now()) @db.Timestamptz(0)
+  updatedAt      DateTime      @updatedAt @db.Timestamptz(0)
+  createdBy      String?       @db.Uuid
+  updatedBy      String?       @db.Uuid
+  User           User?         @relation(fields: [userId], references: [id])
+  notification   Notification? @relation(fields: [notificationId], references: [id])
 
   @@index([userId])
   @@index([notificationId])
@@ -627,19 +627,18 @@ model MembershipBenefit {
 }
 
 model MembershipProgress {
-  id               String          @id @default(uuid()) @db.Uuid
-  userId           String          @db.Uuid
-  currentSpent     Decimal         @default(0) @db.Decimal(13, 2)
-  currentBalance   Decimal         @default(0) @db.Decimal(13, 2)
-  createdBy        String?         @db.Uuid
-  updatedBy        String?         @db.Uuid
-  createdAt        DateTime        @default(now()) @db.Timestamptz(0)
-  updatedAt        DateTime        @updatedAt @db.Timestamptz(0)
-  tierId           String?         @db.Uuid
-  tiersendid       String?         @db.Uuid
-  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  MembershipTier   MembershipTier? @relation(fields: [membershipTierId], references: [id])
-  membershipTierId String?         @db.Uuid
+  id             String          @id @default(uuid()) @db.Uuid
+  userId         String          @db.Uuid
+  currentSpent   Decimal         @default(0) @db.Decimal(13, 2)
+  currentBalance Decimal         @default(0) @db.Decimal(13, 2)
+  createdBy      String?         @db.Uuid
+  updatedBy      String?         @db.Uuid
+  createdAt      DateTime        @default(now()) @db.Timestamptz(0)
+  updatedAt      DateTime        @updatedAt @db.Timestamptz(0)
+  tierId         String?         @db.Uuid
+  tiersendid     String?         @db.Uuid
+  tier           MembershipTier? @relation(fields: [tierId], references: [id], onDelete: Cascade)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([tierId])
@@ -892,6 +891,7 @@ model CronJobLog {
   updatedAt     DateTime      @db.Timestamptz(0)
   status        CronJobStatus
   dynamicValue  Json?
+  reason        String?       @db.VarChar(100)
   Transaction   Transaction?  @relation("CronJobLogTransactions", fields: [transactionId], references: [id])
 }
 
@@ -912,6 +912,16 @@ model CronjobTypeDefine {
   createdAt   DateTime    @default(now()) @db.Timestamptz(0)
 }
 
+model EmailTemplateField {
+  id        String    @id @db.Uuid
+  name      String    @db.VarChar(30)
+  type      emailType
+  createdAt DateTime  @default(now()) @db.Timestamptz(0)
+  createdBy String?   @db.Uuid
+  updatedAt DateTime  @db.Timestamptz(0)
+  updatedBy String?   @db.Uuid
+}
+
 model Referral {
   id           String         @id @db.Uuid
   userId       String         @db.Uuid
@@ -924,16 +934,6 @@ model Referral {
   User         User           @relation(fields: [userId], references: [id])
 
   @@index([userId])
-}
-
-model EmailTemplateField {
-  id        String    @id @db.Uuid
-  name      String    @db.VarChar(30)
-  type      emailType
-  createdAt DateTime  @default(now()) @db.Timestamptz(0)
-  createdBy String?   @db.Uuid
-  updatedAt DateTime  @db.Timestamptz(0)
-  updatedBy String?   @db.Uuid
 }
 
 enum BudgetType {
@@ -1091,7 +1091,9 @@ enum CronJobStatus {
 
 enum TypeCronJob {
   MEMBERSHIP
-  REFERRAL
+  REFERRAL_CAMPAIGN
+  REFERRAL_BONUS
+  REFERRAL_KICKBACK
   CASHBACK
   FLEXI_INTEREST
 }

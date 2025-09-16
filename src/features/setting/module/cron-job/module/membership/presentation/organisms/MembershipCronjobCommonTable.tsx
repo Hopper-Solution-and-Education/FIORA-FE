@@ -32,78 +32,79 @@ const MembershipCronjobCommonTable = ({
   const columns: CommonTableColumn<MembershipCronjobTableData>[] = useMemo(
     () => [
       {
-        key: 'id',
-        title: 'ID',
-        align: 'left',
-        className: 'max-w-[200px] truncate',
-        render: (r) => (
-          <span className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 truncase">
-            {r.id}
-          </span>
-        ),
-      },
-      {
         key: 'email',
         title: 'Email',
         align: 'left',
-        render: (r) => <span className="text-sm">{r.email}</span>,
+        width: '18%',
+        render: (r) => <span className="text-sm truncate block">{r.email}</span>,
       },
       {
-        key: 'executionTime',
+        key: 'datetime',
         title: 'Datetime',
         align: 'left',
-        render: (r) => <span className="text-sm">{formatDateTime(r.executionTime)}</span>,
+        width: '14%',
+        render: (r) => <span className="text-sm block">{formatDateTime(r.executionTime)}</span>,
       },
       {
         key: 'fromTier',
         title: 'From Tier',
         align: 'center',
-        render: (r) => <span className="text-sm">{r.fromTier}</span>,
+        width: '11%',
+        render: (r) => <span className="text-sm block">{r.fromTier}</span>,
       },
       {
         key: 'spent',
         title: 'Spent',
-        align: 'right',
-        render: (r) => <span className="text-sm">{r.spent} FX</span>,
+        align: 'center',
+        width: '9%',
+        render: (r) => <span className="text-sm block">{r.spent} FX</span>,
       },
       {
         key: 'balance',
         title: 'Balance',
-        align: 'right',
-        render: (r) => <span className="text-sm">{r.balance} FX</span>,
+        align: 'center',
+        width: '9%',
+        render: (r) => <span className="text-sm block">{r.balance} FX</span>,
       },
       {
         key: 'toTier',
         title: 'To Tier',
         align: 'center',
-        render: (r) => <span className="text-sm">{r.toTier}</span>,
+        width: '11%',
+        render: (r) => <span className="text-sm block">{r.toTier}</span>,
       },
       {
         key: 'status',
         title: 'Status',
         align: 'center',
+        width: '12%',
         render: (r) => <MembershipStatusBadge status={r.status} />,
       },
       {
         key: 'updatedBy',
         title: 'Updated By',
         align: 'left',
-        className: 'max-w-[200px] truncate',
-        render: (r) => <span className="text-sm truncate">{r.createdBy || 'System'}</span>,
+        width: '18%',
+        render: (r) => (
+          <span className="text-sm truncate block">{r.updatedBy.email || 'System'}</span>
+        ),
       },
       {
         key: 'action',
         title: 'Action',
         align: 'center',
+        width: '8%',
         render: (r) => (
-          <MembershipActionButton
-            status={r.status}
-            toTier={r.toTier}
-            onRetry={(id) => {
-              console.log('Retry membership:', id);
-              // TODO: Implement retry logic
-            }}
-          />
+          <div className="flex items-center justify-center">
+            <MembershipActionButton
+              status={r.status}
+              toTier={r.toTier}
+              onRetry={(id) => {
+                console.log('Retry membership:', id);
+                // TODO: Implement retry logic
+              }}
+            />
+          </div>
         ),
       },
     ],

@@ -1,24 +1,24 @@
 import ComposedChartComponent from '@/components/common/charts/composed-chart';
 import { COLORS } from '@/shared/constants/chart';
-import { useAppSelector } from '@/store';
+import { useMembershipCronjobDashboard } from '../hooks/useMembershipCronjobDashboard';
 
 const MembershipCronjobChart = () => {
-  const { statistics } = useAppSelector((s) => s.membershipCronjob);
+  const { chartData, chartLoading } = useMembershipCronjobDashboard();
 
-  const successful = statistics?.statusCounts?.successful || 0;
-  const fail = statistics?.statusCounts?.fail || 0;
-
-  const data = [{ name: 'Status', successful, fail }];
+  const data = chartData.map((item) => ({
+    name: item.tierName,
+    count: Number(item.count),
+  }));
 
   return (
     <ComposedChartComponent
       data={data}
-      columns={[
-        { key: 'successful', name: 'Successful', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
-        { key: 'fail', name: 'Failed', color: COLORS.DEPS_DANGER.LEVEL_1 },
-      ]}
-      height={280}
+      columns={[{ key: 'count', name: 'Count', color: COLORS.DEPS_SUCCESS.LEVEL_1 }]}
+      height={400}
       showLegend={true}
+      isLoading={chartLoading}
+      yAxisFormatter={(value) => value.toString()}
+      currency=""
     />
   );
 };

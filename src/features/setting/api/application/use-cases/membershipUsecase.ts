@@ -1,5 +1,6 @@
 import { prisma } from '@/config';
 import { Messages } from '@/shared/constants/message';
+import { InfinityParams, InfinityResult } from '@/shared/dtos/base-api-response.dto';
 import { BadRequestError, ConflictError } from '@/shared/lib';
 import { Prisma } from '@prisma/client';
 import { membershipTierRepository } from '../../infrastructure/repositories/membershipTierRepository';
@@ -10,6 +11,7 @@ import {
   MembershipTierCreation,
   MembershipTierUpdate,
   MembershipTierWithBenefit,
+  OutputTierInfinity,
   Range,
   RangeKeys,
 } from '../../repositories/membershipTierRepository';
@@ -441,6 +443,11 @@ class MembershipSettingUseCase {
       );
     }
 
+    // Not allowed to update new min to be less than old min
+    if (dNewMin.lt(dOldMin)) {
+      throw new BadRequestError('New min must be greater than old min');
+    }
+
     const targetCount = await prisma.membershipTier.count({
       where: { [minKey]: dOldMin, [maxKey]: dOldMax } as any,
     });
@@ -562,6 +569,43 @@ class MembershipSettingUseCase {
         };
       });
     }
+  }
+
+  async getTierInfinity(params: InfinityParams): Promise<InfinityResult<OutputTierInfinity>> {
+    const { limit = 20, search, page } = params;
+
+    const whereClause: any = {};
+
+    if (search && search.trim().length > 0) {
+      whereClause.email = {
+        contains: search.trim(),
+        mode: 'insensitive',
+      };
+    }
+
+    const total = await prisma.user.count({
+      where: whereClause,
+    });
+    const tiers = await prisma.membershipTier.findMany({
+      where: whereClause,
+      skip: (Number(page) - 1) * limit,
+      take: limit,
+      orderBy: {
+        id: 'desc',
+      },
+      select: {
+        id: true,
+        tierName: true,
+      },
+    });
+
+    const hasMore = tiers.length > limit;
+    const actualTiers = hasMore ? tiers.slice(0, limit) : tiers;
+    const totalPages = Math.ceil(total / limit);
+    return {
+      items: actualTiers as any,
+      hasMore: Number(page) < totalPages,
+    };
   }
 }
 

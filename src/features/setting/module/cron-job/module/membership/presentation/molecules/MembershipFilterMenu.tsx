@@ -11,6 +11,10 @@ import { MembershipCronjobFilterState } from '../../slices/types';
 // Local filter state type for managing filter changes before applying
 interface LocalFilterState {
   status: string[];
+  fromTier: string[];
+  toTier: string[];
+  email: string[];
+  updatedBy: string[];
   search: string;
   fromDate: Date | null;
   toDate: Date | null;
@@ -19,6 +23,10 @@ interface LocalFilterState {
 // Initialize local filter state
 const getInitialLocalFilterState = (): LocalFilterState => ({
   status: [],
+  fromTier: [],
+  toTier: [],
+  email: [],
+  updatedBy: [],
   search: '',
   fromDate: null,
   toDate: null,
@@ -26,10 +34,19 @@ const getInitialLocalFilterState = (): LocalFilterState => ({
 
 // Status filter options
 const STATUS_OPTIONS = [
-  { value: 'successful', label: 'Successful' },
-  { value: 'fail', label: 'Failed' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'processing', label: 'Processing' },
+  { value: 'SUCCESSFUL', label: 'SUCCESSFUL' },
+  { value: 'FAIL', label: 'FAIL' },
+];
+
+// Tier filter options - mock data for now
+const TIER_OPTIONS = [
+  { value: 'platinum-qili', label: 'Platinum Qili' },
+  { value: 'gold-qili', label: 'Gold Qili' },
+  { value: 'silver-qili', label: 'Silver Qili' },
+  { value: 'bronze-qili', label: 'Bronze Qili' },
+  { value: 'titan-egg', label: 'Titan Egg' },
+  { value: 'diamond-egg', label: 'Diamond Egg' },
+  { value: 'diamond-dragon', label: 'Diamond Dragon' },
 ];
 
 interface MembershipFilterMenuProps {
@@ -46,6 +63,10 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
     // Initialize local filter from Redux state
     return {
       status: value.status || [],
+      fromTier: value.fromTier || [],
+      toTier: value.toTier || [],
+      email: value.email || [],
+      updatedBy: value.updatedBy || [],
       search: value.search || '',
       fromDate: value.fromDate,
       toDate: value.toDate,
@@ -56,6 +77,10 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
   useEffect(() => {
     setLocalFilter({
       status: reduxFilter.status || [],
+      fromTier: reduxFilter.fromTier || [],
+      toTier: reduxFilter.toTier || [],
+      email: reduxFilter.email || [],
+      updatedBy: reduxFilter.updatedBy || [],
       search: reduxFilter.search || '',
       fromDate: reduxFilter.fromDate,
       toDate: reduxFilter.toDate,
@@ -76,7 +101,13 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
   // Check if any filter is applied (excluding search)
   const isFilterApplied = useMemo(() => {
     return (
-      localFilter.status.length > 0 || localFilter.fromDate !== null || localFilter.toDate !== null
+      localFilter.status.length > 0 ||
+      localFilter.fromTier.length > 0 ||
+      localFilter.toTier.length > 0 ||
+      localFilter.email.length > 0 ||
+      localFilter.updatedBy.length > 0 ||
+      localFilter.fromDate !== null ||
+      localFilter.toDate !== null
     );
   }, [localFilter]);
 
@@ -101,6 +132,10 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
   const handleApplyFilters = useCallback(() => {
     const newFilter: MembershipCronjobFilterState = {
       status: localFilter.status.length > 0 ? localFilter.status : null,
+      fromTier: localFilter.fromTier.length > 0 ? localFilter.fromTier : null,
+      toTier: localFilter.toTier.length > 0 ? localFilter.toTier : null,
+      email: localFilter.email.length > 0 ? localFilter.email : null,
+      updatedBy: localFilter.updatedBy.length > 0 ? localFilter.updatedBy : null,
       search: localFilter.search || null,
       fromDate: localFilter.fromDate,
       toDate: localFilter.toDate,
@@ -118,6 +153,7 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
   // Filter components configuration
   const filterComponents: FilterComponentConfig[] = useMemo(
     () => [
+      // LEFT COLUMN
       {
         key: 'status',
         component: (
@@ -133,6 +169,34 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
         order: 0,
       },
       {
+        key: 'fromTier',
+        component: (
+          <MultiSelectFilter
+            options={TIER_OPTIONS}
+            selectedValues={localFilter.fromTier}
+            onChange={(values) => handleLocalFilterChange('fromTier', values)}
+            label="From Tier"
+            placeholder="Select from tier"
+          />
+        ),
+        column: FilterColumn.LEFT,
+        order: 1,
+      },
+      {
+        key: 'toTier',
+        component: (
+          <MultiSelectFilter
+            options={TIER_OPTIONS}
+            selectedValues={localFilter.toTier}
+            onChange={(values) => handleLocalFilterChange('toTier', values)}
+            label="To Tier"
+            placeholder="Select to tier"
+          />
+        ),
+        column: FilterColumn.LEFT,
+        order: 2,
+      },
+      {
         key: 'dateRange',
         component: (
           <DateRangeFilter
@@ -141,11 +205,39 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
             label="Execution Date Range"
             colorScheme="default"
             disableFuture={true}
-            pastDaysLimit={365} // Allow filtering up to 1 year ago
+            pastDaysLimit={365}
           />
         ),
         column: FilterColumn.RIGHT,
         order: 0,
+      },
+      {
+        key: 'email',
+        component: (
+          <MultiSelectFilter
+            options={[]}
+            selectedValues={localFilter.email}
+            onChange={(values) => handleLocalFilterChange('email', values)}
+            label="Email"
+            placeholder="Select email"
+          />
+        ),
+        column: FilterColumn.RIGHT,
+        order: 1,
+      },
+      {
+        key: 'updatedBy',
+        component: (
+          <MultiSelectFilter
+            options={[]}
+            selectedValues={localFilter.updatedBy}
+            onChange={(values) => handleLocalFilterChange('updatedBy', values)}
+            label="Updated By"
+            placeholder="Select updated by"
+          />
+        ),
+        column: FilterColumn.RIGHT,
+        order: 2,
       },
     ],
     [localFilter, dateRange, handleLocalFilterChange, handleDateRangeChange],

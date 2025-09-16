@@ -39,7 +39,6 @@ class MembershipBenefitRepository implements IMembershipBenefitRepository {
   ): Promise<MembershipBenefit | null> {
     return prisma.membershipBenefit.findFirst({ where, ...options });
   }
-
   async findMembershipBenefitBySlug(slug: string): Promise<MembershipBenefit | null> {
     return prisma.membershipBenefit.findUnique({ where: { slug } });
   }

@@ -9,12 +9,10 @@ import MembershipCronjobCommonTable from '../organisms/MembershipCronjobCommonTa
 const MembershipCronjobDashboardPage = () => {
   const { tableData, loading, loadMore, dispatchTable } = useMembershipCronjobDashboard();
 
-  console.log('tableData', tableData);
-
   return (
     <DispatchTableProvider value={{ dispatchTable }}>
       <TableProvider value={{ table: tableData }}>
-        <section className="container mx-auto sm:px-6 lg:px-8">
+        <section className="sm:px-6 lg:px-8">
           <div className="space-y-6 mb-12">
             <MembershipCronjobChart />
 
