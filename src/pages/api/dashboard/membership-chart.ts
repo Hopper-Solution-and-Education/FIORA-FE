@@ -27,8 +27,7 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
 
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   try {
-    const { status, userIds, updatedBy, fromDate, toDate, fromTier, toTier, typeCronJob, search } =
-      req.query as DashboardFilterParams;
+    const { status, typeCronJob } = req.query as DashboardFilterParams;
 
     const filters: any = {};
 
@@ -43,48 +42,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
         filters.status = { in: statusArray };
       }
     }
-
-    // if (userIds) {
-    //   const userIdArray = normalizeToArray(userIds as any);
-    //   if (userIdArray.length > 0 && userIdArray.length <= 50) {
-    //     filters.createdBy = { in: userIdArray };
-    //   }
-    // }
-
-    // if (updatedBy) {
-    //   const updatedByArray = normalizeToArray(updatedBy as any);
-    //   if (updatedByArray.length > 0 && updatedByArray.length <= 50) {
-    //     filters.updatedBy = { in: updatedByArray };
-    //   }
-    // }
-
-    if (fromDate || toDate) {
-      filters.createdAt = {};
-      if (fromDate) {
-        const fromDateObj = new Date(fromDate);
-        if (!isNaN(fromDateObj.getTime())) {
-          filters.createdAt.gte = fromDateObj;
-        }
-      }
-      if (toDate) {
-        const toDateObj = new Date(toDate);
-        if (!isNaN(toDateObj.getTime())) {
-          filters.createdAt.lte = toDateObj;
-        }
-      }
-    } else {
-      filters.createdAt = {
-        gte: new Date(new Date().setHours(0, 0, 0, 0)),
-        lte: new Date(new Date().setHours(23, 59, 59, 999)),
-      };
-    }
-
-    const searchFilter = await dashboardRepository.searchFilter(search as string);
-    if (searchFilter) {
-      filters.OR = [...(filters.OR ?? []), ...(searchFilter.OR ?? [])];
-    }
-
-    // const tierFilters = fromTier || toTier ? { fromTier, toTier } : undefined;
 
     const getAllTypeDefines = await dashboardRepository.getMembershipChart(filters);
 
