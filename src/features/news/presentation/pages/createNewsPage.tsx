@@ -1,14 +1,16 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { useFaqUpsert } from '@/features/helps-center/hooks/useFaqUpsert';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import ConfirmExitDialog from '../../../../components/common/organisms/ConfirmExitDialog';
+import { useNewsUpsert } from '../../hooks/useNewsUpsert';
+import { useUserSession } from '../../hooks/useUserSession';
 import NewsCategoryCreationDialog, {
   NewsCategoryFormValues,
 } from '../organisms/NewsCategoryCreationDialog';
 import NewsForm, { NewsFormValues } from '../organisms/NewsForm';
+
 const CreateNewsPage = () => {
   const router = useRouter();
   const {
@@ -19,7 +21,9 @@ const CreateNewsPage = () => {
     isCreatingCategory,
     submit,
     handleCreateCategory,
-  } = useFaqUpsert();
+  } = useNewsUpsert();
+
+  const { session } = useUserSession();
 
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
@@ -30,6 +34,8 @@ const CreateNewsPage = () => {
   const handleDirtyChange = (dirty: boolean) => setHasChanges(dirty);
 
   const handleSubmit = async (values: NewsFormValues) => {
+    if (typeof session?.user === 'undefined') return;
+    values.userId = session?.user.id;
     const res = await submit(values);
     if (res) {
       setHasChanges(false);
@@ -39,10 +45,13 @@ const CreateNewsPage = () => {
 
   const handleOpenCreateCategoryDialog = () => setIsCategoryDialogOpen(true);
   const handleCategoryCreated = (newCategory: NewsCategoryFormValues) => {
+    if (typeof session?.user === 'undefined') return;
     handleCreateCategory(
       {
         name: newCategory.name,
         description: newCategory.description || '',
+        type: 'NEWS',
+        userId: session?.user.id,
       },
       () => setIsCategoryDialogOpen(false),
     );
@@ -53,7 +62,6 @@ const CreateNewsPage = () => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (!hasChanges) return;
       e.preventDefault();
-      e.returnValue = '';
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -85,7 +93,7 @@ const CreateNewsPage = () => {
     <main className="px-8">
       <div className="mx-auto space-y-8">
         <div className="border-b pb-4">
-          <h1 className="text-2xl font-bold text-gray-900">Create News</h1>
+          <h1 className="text-2xl font-bold text-foreground">Create News</h1>
         </div>
 
         <NewsForm

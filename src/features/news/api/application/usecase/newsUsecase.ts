@@ -4,21 +4,29 @@ import { newsRepository } from '../../infrashtructure/repositories/newsRepositor
 import {
   ListNewsResponse,
   NewsCreationRequest,
+  NewsDetailResponse,
   NewsQueryParams,
   NewsUpdateRequest,
 } from '../../types/newsDTO';
-class NewsUsercase {
+class NewsUsecase {
   constructor(private newsRepo: INewsRepository) {}
   async getAll(queryParam: NewsQueryParams): Promise<ListNewsResponse | null> {
     return this.newsRepo.getAll(queryParam);
   }
 
-  async getNewsById(newsId: string): Promise<Post | null> {
+  async getNewsByIdAndIncrease(newsId: string, userId: string): Promise<NewsDetailResponse | null> {
     //get detail
-    const result: Post | null = await this.newsRepo.getNewsById(newsId);
+    const result: NewsDetailResponse | null = await this.newsRepo.getNewsByIdAndUserId(
+      newsId,
+      userId,
+    );
     //increase view
     await this.newsRepo.increaseView(newsId);
     return result;
+  }
+
+  async getNewsById(newsId: string): Promise<Post | null> {
+    return await this.newsRepo.getNewsById(newsId);
   }
 
   async createNews(createParam: NewsCreationRequest): Promise<Post> {
@@ -37,4 +45,4 @@ class NewsUsercase {
     return await newsRepository.delete(postId);
   }
 }
-export const newsUsercase = new NewsUsercase(newsRepository);
+export const newsUsecase = new NewsUsecase(newsRepository);

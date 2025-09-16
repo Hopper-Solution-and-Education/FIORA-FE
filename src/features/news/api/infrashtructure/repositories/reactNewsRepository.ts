@@ -1,10 +1,10 @@
 import { prisma } from '@/config';
 import { Reaction } from '@prisma/client';
 import { IReactNewsRepository } from '../../domain/repository/reactNewsRepository';
-import { reactCreationRequest } from '../../types/reactDTO';
+import { ReactCreationRequest } from '../../types/reactDTO';
 
 class ReactNewsRepository implements IReactNewsRepository {
-  async createReact(reactParam: reactCreationRequest): Promise<Reaction> {
+  async createReact(reactParam: ReactCreationRequest): Promise<Reaction> {
     //find
     const existing = await prisma.reaction.findFirst({
       where: {

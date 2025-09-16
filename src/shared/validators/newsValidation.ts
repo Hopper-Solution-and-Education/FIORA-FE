@@ -58,3 +58,54 @@ export const postIdSchema = Joi.string().uuid().required().messages({
   'any.required': 'PostId is required',
   'string.uuid': 'PostId must be a valid UUID format',
 });
+
+export const newsIdSchema = Joi.string().uuid().required().messages({
+  'string.empty': 'News is required',
+  'any.required': 'News is required',
+  'string.uuid': 'News must be a valid UUID format',
+});
+
+export const newsCreateRequestSchema = Joi.object({
+  id: Joi.string().uuid().required().messages({
+    'string.empty': 'NewsId is required',
+    'any.required': 'NewsId is required',
+    'string.uuid': 'User ID must be a valid UUID format',
+  }),
+  // userId: Joi.string().uuid().required().messages({
+  //   'string.empty': 'UserId is required',
+  //   'any.required': 'UserId is required',
+  //   'string.uuid': 'User ID must be a valid UUID format',
+  // }),
+});
+
+//comment
+export const commetCreateRequestSchema = Joi.object({
+  newsId: Joi.string().uuid().required().messages({
+    'string.empty': 'NewsId is required',
+    'any.required': 'NewsId is required',
+    'string.uuid': 'User ID must be a valid UUID format',
+  }),
+  userId: Joi.string().uuid().required().messages({
+    'string.empty': 'UserId is required',
+    'any.required': 'UserId is required',
+    'string.uuid': 'User ID must be a valid UUID format',
+  }),
+});
+
+export const commetUpdateRequestSchema = Joi.object({
+  userId: Joi.string().uuid().required().messages({
+    'string.empty': 'UserId is required',
+    'any.required': 'UserId is required',
+    'string.uuid': 'User ID must be a valid UUID format',
+  }),
+  content: Joi.string().required().messages({
+    'string.empty': 'commentId is required',
+    'any.required': 'commentId is required',
+  }),
+});
+
+export const commentIdSchema = Joi.string().uuid().required().messages({
+  'string.empty': 'CommentId is required',
+  'any.required': 'CommentId is required',
+  'string.uuid': 'CommentId must be a valid UUID format',
+});

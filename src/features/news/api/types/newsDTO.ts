@@ -49,3 +49,15 @@ export interface NewsResponse {
   categoryId: string;
   userId: string;
 }
+export interface NewsDetailResponse {
+  id: string;
+  title: string;
+  description?: string | null;
+  content: string;
+  type: PostType;
+  categoryId: string;
+  userId: string;
+  Reaction: {
+    reactionType: string;
+  };
+}

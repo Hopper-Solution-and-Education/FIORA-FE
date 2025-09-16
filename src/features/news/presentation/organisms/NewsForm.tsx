@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { ContentEditor } from '@/features/helps-center/presentation/molecules';
-import { FaqFormValues } from '@/features/helps-center/presentation/organisms/FaqForm';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Plus } from 'lucide-react';
 import { useEffect } from 'react';
@@ -20,8 +19,9 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import type { AnyObject, ObjectSchema } from 'yup';
 import * as yup from 'yup';
+import { NewsUpdateRequest } from '../../api/types/newsDTO';
 
-export type NewsFormValues = FaqFormValues;
+export type NewsFormValues = NewsUpdateRequest;
 
 type CategoryOption = { id: string; name: string };
 
@@ -41,6 +41,8 @@ const schema: ObjectSchema<NewsFormValues, AnyObject> = yup
     description: yup.string().optional(),
     content: yup.string().trim().required('Content is required'),
     categoryId: yup.string().trim().required('Category is required'),
+    // userId: yup.string().trim().required('userId is required'),
+    type: yup.string().trim().required('Post type is required'),
   })
   .required();
 
@@ -89,7 +91,7 @@ const NewsForm = ({
           handleSubmit(form.getValues());
         }}
         className="space-y-8"
-        aria-label="FAQ form"
+        aria-label="News form"
       >
         {/* Basic Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

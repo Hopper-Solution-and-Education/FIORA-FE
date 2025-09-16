@@ -1,14 +1,14 @@
 import { Comment } from '@prisma/client';
 import {
-  commentCreationNews,
-  CommentResponse,
-  commentUpdationNews,
-  getCommentRequest,
+  CommentCreationNews,
+  CommentResponseRepo,
+  CommentUpdationNews,
+  GetCommentRequest,
 } from '../../types/commentDTO';
 
 export interface ICommentNewsRepository {
-  createCommentNews(dto: commentCreationNews): Promise<Comment>;
-  updateCommentNews(dto: commentUpdationNews, commentId: string): Promise<Comment>;
+  createCommentNews(dto: CommentCreationNews): Promise<Comment>;
+  updateCommentNews(dto: CommentUpdationNews, commentId: string): Promise<Comment>;
   deleteCommentNews(commentId: string): Promise<void>;
-  getCommentNews(queryParam: getCommentRequest): Promise<CommentResponse[]>;
+  getCommentNews(queryParam: GetCommentRequest): Promise<CommentResponseRepo[]>;
 }

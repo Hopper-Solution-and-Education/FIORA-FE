@@ -2,9 +2,10 @@
 
 import ConfirmExitDialog from '@/components/common/organisms/ConfirmExitDialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useFaqUpsert } from '@/features/helps-center/hooks/useFaqUpsert';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import { useNewsUpsert } from '../../hooks/useNewsUpsert';
+import { useUserSession } from '../../hooks/useUserSession';
 import NewsCategoryCreationDialog, {
   NewsCategoryFormValues,
 } from '../organisms/NewsCategoryCreationDialog';
@@ -12,6 +13,7 @@ import NewsForm, { NewsFormValues } from '../organisms/NewsForm';
 
 const EditNewsPage: React.FC = () => {
   const { id } = useParams() as { id: string };
+  const { session } = useUserSession();
 
   const router = useRouter();
 
@@ -24,7 +26,7 @@ const EditNewsPage: React.FC = () => {
     submit,
     handleCreateCategory,
     error,
-  } = useFaqUpsert({ faqId: id });
+  } = useNewsUpsert({ newsId: id });
 
   // Local state for dialog and categories
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = React.useState(false);
@@ -41,10 +43,13 @@ const EditNewsPage: React.FC = () => {
 
   // Add new category handler
   const handleCategoryCreated = (newCategory: NewsCategoryFormValues) => {
+    if (typeof session?.user === 'undefined') return;
     handleCreateCategory(
       {
         name: newCategory.name,
         description: newCategory.description || '',
+        type: 'NEWS',
+        userId: session.user.id,
       },
       () => {
         setIsCategoryDialogOpen(false);
@@ -57,7 +62,6 @@ const EditNewsPage: React.FC = () => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (!hasChanges) return;
       e.preventDefault();
-      e.returnValue = '';
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -101,6 +105,8 @@ const EditNewsPage: React.FC = () => {
           defaultValues={defaultValues as NewsFormValues}
           categories={categories}
           onSubmit={async (values) => {
+            if (typeof session?.user === 'undefined') return;
+            values.userId = session.user.id;
             await submit(values);
             router.push(`/news/details/${id}`);
           }}

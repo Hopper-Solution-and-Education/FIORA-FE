@@ -35,4 +35,9 @@ export enum ApiEndpointEnum {
   eKYC = '/api/eKyc',
   verifyOTP = '/api/eKyc/contact-information/verify',
   sendOTP = '/api/eKyc/contact-information/send-otp',
+
+  // News
+  News = '/api/news',
+  NewsCategories = '/api/news/categories',
+  NewsReaction = '/api/news/react',
 }

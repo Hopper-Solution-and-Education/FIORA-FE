@@ -1,16 +1,65 @@
 import { prisma } from '@/config';
-import { Messages } from '@/shared/constants/message';
 import { AppError } from '@/shared/lib';
 import { Post, PostType, Prisma } from '@prisma/client';
 import { INewsRepository } from '../../domain/repository/newsRepository';
 import {
   ListNewsResponse,
   NewsCreationRequest,
+  NewsDetailResponse,
   NewsQueryParams,
   NewsResponse,
   NewsUpdateRequest,
 } from '../../types/newsDTO';
 export class NewsRepository implements INewsRepository {
+  async getNewsByIdAndUserId(
+    newsId: string,
+    userId: string | undefined,
+  ): Promise<NewsDetailResponse | null> {
+    const result = await prisma.post.findUnique({
+      where: {
+        id: newsId,
+      },
+    });
+
+    // Kiểm tra null trước khi xử lý
+    if (!result) {
+      return null;
+    }
+
+    let reaction;
+    if (typeof userId !== 'undefined' && userId.trim().length !== 0) {
+      console.log(userId);
+      //kiểm tra xem người dùng đã thả cảm xúc chưa
+      reaction = await prisma.reaction.findFirst({
+        where: {
+          postId: newsId,
+          userId: userId,
+        },
+        select: {
+          reactionType: true,
+        },
+      });
+    } else {
+      reaction = { reactionType: '' };
+    }
+
+    // Lấy reaction của user (nếu có)
+
+    const response: NewsDetailResponse = {
+      id: result.id,
+      title: result.title,
+      description: result.description,
+      content: result.content,
+      type: result.type,
+      categoryId: result.categoryId,
+      userId: result.userId,
+      Reaction: {
+        reactionType: String(reaction?.reactionType),
+      },
+    };
+
+    return response;
+  }
   async getNewsById(newsId: string): Promise<Post | null> {
     return prisma.post.findUnique({
       where: {
@@ -65,35 +114,6 @@ export class NewsRepository implements INewsRepository {
   }
 
   async create(postCreationParam: NewsCreationRequest) {
-    //check account
-    const accountExists = await prisma.account.findFirst({
-      where: {
-        userId: postCreationParam.userId,
-      },
-    });
-
-    if (!accountExists) throw new AppError(400, Messages.ACCOUNT_NOT_FOUND);
-
-    //check category
-    const categoryExists = await prisma.postCategory.findFirst({
-      where: {
-        id: postCreationParam.categoryId,
-      },
-    });
-
-    if (!categoryExists) {
-      throw new AppError(400, Messages.CATEGORY_NOT_FOUND);
-    }
-
-    //check title
-    const titleExists = await prisma.post.findFirst({
-      where: {
-        title: postCreationParam.title,
-      },
-    });
-
-    if (titleExists) throw new AppError(400, Messages.FAQ_TITLE_ALREADY_EXISTS);
-
     try {
       const post = await prisma.post.create({
         data: {
@@ -173,6 +193,9 @@ export class NewsRepository implements INewsRepository {
           categoryId: true,
         },
       });
+
+      console.log('Query result: ', posts);
+
       const response: ListNewsResponse = {
         news: posts,
         currentPage: page,
