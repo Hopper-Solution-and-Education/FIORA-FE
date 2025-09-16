@@ -9,11 +9,7 @@ import { createErrorResponse, errorHandler } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { validateBody, validateVariable } from '@/shared/utils/validate';
-import {
-  commetCreateRequestSchema,
-  postIdSchema,
-  updateNewsSchema,
-} from '@/shared/validators/newsValidation';
+import { postIdSchema, updateNewsSchema } from '@/shared/validators/newsValidation';
 import { User } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -143,22 +139,8 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
   const { id, userId } = req.query;
 
-  const errorValidation = validateVariable(commetCreateRequestSchema, { id, userId });
-  //validation query string
-  if (errorValidation.error) {
-    return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(
-        createErrorResponse(
-          RESPONSE_CODE.BAD_REQUEST,
-          Messages.VALIDATION_ERROR,
-          errorValidation.error,
-        ),
-      );
-  }
-
   const newsIdParam = String(id);
-  const userIdParam = String(userId);
+  const userIdParam = userId === undefined ? undefined : String(userId);
   try {
     const newsDetail = await newsUsercase.getNewsByIdAndIncrease(newsIdParam, userIdParam);
     return res

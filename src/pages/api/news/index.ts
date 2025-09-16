@@ -76,7 +76,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
 
   //check userId exists
   const user: User | null = await userUseCase.getUserById(request.userId);
-  console.log('user: ', user);
   if (!user) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
