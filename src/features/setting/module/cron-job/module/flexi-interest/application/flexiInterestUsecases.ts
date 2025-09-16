@@ -31,6 +31,14 @@ class FlexiInterestUsecases {
     try {
       const data = await this._flexiInterestRepo.getFlexiInterestStatistics();
 
+      if (!data || !data.tierInterestAmount || !Array.isArray(data.tierInterestAmount)) {
+        console.warn('Invalid data structure received:', data);
+        return {
+          chartData: [],
+          totalAmount: 0,
+        };
+      }
+
       const chartData = data.tierInterestAmount.map((item) => ({
         name: item.tierName,
         amount: parseFloat(item.interestAmount) || 0,

@@ -115,13 +115,13 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
 
   async getFlexiInterestStatistics() {
     try {
-      const response = await fetch('http://localhost:3000/api/dashboard/chart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        '/api/dashboard/flexiinterest-chart?typeCronJob=FLEXI_INTEREST',
+        {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
         },
-        body: JSON.stringify({ typeCronJob: 'FLEXI_INTEREST' }),
-      });
+      );
 
       const result = await response.json();
 
