@@ -70,7 +70,7 @@ class UserRepository implements IUserRepository {
     const totalPages = Math.ceil(total / limit);
 
     return {
-      items: actualUsers as any,
+      items: actualUsers as unknown as OutputUserInfinity[],
       hasMore: Number(page) < totalPages,
     };
   }

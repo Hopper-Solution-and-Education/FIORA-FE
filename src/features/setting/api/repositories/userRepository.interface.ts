@@ -2,9 +2,9 @@ import { InfinityParams, InfinityResult } from '@/shared/dtos/base-api-response.
 import { User } from '@prisma/client';
 
 export interface OutputUserInfinity {
-  id?: number;
-  name?: string;
-  email?: string;
+  id?: string;
+  name?: string | null;
+  email?: string | null;
 }
 
 export interface IUserRepository {
