@@ -14,10 +14,14 @@ export enum ApiEndpointEnum {
   WalletFrozenAmount = '/api/wallet/deposit/frozen-amount',
   WalletSetting = '/api/wallet/setting',
 
-  // Cronjob Dashboard
+  // Cronjob Dashboard Membership
   CronjobDashboard = '/api/dashboard',
   CronjobDashboardDefineType = '/api/dashboard/define-type',
   CronjobChart = '/api/dashboard/membership-chart',
+
+  // Cronjob Dashboard Referral
+  CronjobDashboardReferral = '/api/dashboard/referral',
+  CronjobChartReferral = '/api/dashboard/referral-chart',
 
   // Notification
   Notification = '/api/notification',
