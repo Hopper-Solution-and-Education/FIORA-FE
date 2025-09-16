@@ -11,7 +11,6 @@ export interface CommonTableColumn<T> {
   title: ReactNode;
   width?: number | string;
   align?: TableAlign;
-  className?: string;
   headClassName?: string;
   render?: ColumnRenderer<T>;
 }

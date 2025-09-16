@@ -1,9 +1,11 @@
 import { useAppDispatch, useAppSelector } from '@/store';
-import { useCallback, useEffect, useReducer, useRef } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { MembershipChartItem } from '../../data/dto/response/MembershipChartResponse';
 import { MembershipCronjobItem } from '../../data/dto/response/MembershipCronjobResponse';
 import { MembershipCronjobMapper } from '../../data/mapper';
 import { membershipCronjobContainer } from '../../di/membershipCronjobDashboardDI';
 import { MEMBERSHIP_CRONJOB_TYPES } from '../../di/membershipCronjobDashboardDI.type';
+import { IGetMembershipChartDataUseCase } from '../../domain/usecase/GetMembershipChartDataUseCase';
 import { IGetMembershipCronjobsPaginatedUseCase } from '../../domain/usecase/GetMembershipCronjobsPaginatedUseCase';
 import { setLoading, setStatistics } from '../../slices';
 import { initialState, tableReducer } from '../types/tableReducer.type';
@@ -13,9 +15,35 @@ export const useMembershipCronjobDashboard = () => {
   const { filter } = useAppSelector((s) => s.membershipCronjob);
 
   const [state, dispatchTable] = useReducer(tableReducer, initialState);
+  const [chartData, setChartData] = useState<MembershipChartItem[]>([]);
+  const [chartLoading, setChartLoading] = useState(false);
 
   const isInitialLoad = useRef(true);
   const isFetching = useRef(false);
+
+  const fetchChartData = useCallback(async () => {
+    setChartLoading(true);
+    try {
+      const useCase = membershipCronjobContainer.get<IGetMembershipChartDataUseCase>(
+        MEMBERSHIP_CRONJOB_TYPES.IGetMembershipChartDataUseCase,
+      );
+
+      const res = await useCase.execute({
+        status: filter?.status || [],
+        search: filter?.search || '',
+        fromDate: filter?.fromDate || '',
+        toDate: filter?.toDate || '',
+      });
+
+      console.log('Chart API response:', res); // Debug log
+      setChartData(res.data?.items || []);
+    } catch (error) {
+      console.error('Error fetching chart data:', error);
+      setChartData([]);
+    } finally {
+      setChartLoading(false);
+    }
+  }, [filter]);
 
   const fetchData = useCallback(
     async (page: number, pageSize: number, isLoadMore = false) => {
@@ -106,18 +134,22 @@ export const useMembershipCronjobDashboard = () => {
   useEffect(() => {
     if (isInitialLoad.current) {
       fetchData(1, state.pagination.pageSize, false);
+      fetchChartData();
+
       isInitialLoad.current = false;
     }
-  }, [fetchData]);
+  }, [fetchData, fetchChartData]);
 
   useEffect(() => {
     if (!isInitialLoad.current) {
       dispatchTable({ type: 'SET_PAGE', payload: 1 });
       dispatchTable({ type: 'SET_DATA', payload: [] });
       dispatchTable({ type: 'SET_HAS_MORE', payload: true });
+
       fetchData(1, state.pagination.pageSize, false);
+      fetchChartData();
     }
-  }, [filter, fetchData]);
+  }, [filter, fetchData, fetchChartData]);
 
   const loadMore = useCallback(async () => {
     if (!state.hasMore || state.isLoadingMore || isFetching.current) return;
@@ -130,5 +162,7 @@ export const useMembershipCronjobDashboard = () => {
     loading: useAppSelector((s) => s.membershipCronjob.loading),
     loadMore,
     dispatchTable,
+    chartData,
+    chartLoading,
   };
 };

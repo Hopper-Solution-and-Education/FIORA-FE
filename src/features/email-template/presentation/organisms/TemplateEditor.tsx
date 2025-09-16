@@ -27,7 +27,9 @@ export default function TemplateEditor() {
       {/* Header */}
       <div className="flex items-center gap-4">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+            Name
+          </label>
           <Input
             value={templateName}
             onChange={(e) => dispatch(setTemplateName(e.target.value))}
@@ -35,7 +37,9 @@ export default function TemplateEditor() {
           />
         </div>
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Template Type</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+            Template Type
+          </label>
           <Select value={templateType} onValueChange={(value) => dispatch(setTemplateType(value))}>
             <SelectTrigger className="border-gray-200">
               <SelectValue />

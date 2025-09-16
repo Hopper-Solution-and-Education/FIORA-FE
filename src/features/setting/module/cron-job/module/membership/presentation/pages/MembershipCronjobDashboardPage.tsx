@@ -9,8 +9,6 @@ import MembershipCronjobCommonTable from '../organisms/MembershipCronjobCommonTa
 const MembershipCronjobDashboardPage = () => {
   const { tableData, loading, loadMore, dispatchTable } = useMembershipCronjobDashboard();
 
-  console.log('tableData', tableData);
-
   return (
     <DispatchTableProvider value={{ dispatchTable }}>
       <TableProvider value={{ table: tableData }}>
