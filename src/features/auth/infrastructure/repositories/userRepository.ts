@@ -52,8 +52,6 @@ class UserRepository implements IUserRepository {
   async findById(id: string): Promise<User | null> {
     return prisma.user.findUnique({ where: { id } });
   }
-
-  async getUserInfinity(limit: string, page: string, search: string) {}
 }
 
 export const userRepository = new UserRepository();

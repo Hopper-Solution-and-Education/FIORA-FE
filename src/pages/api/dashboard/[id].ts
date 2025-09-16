@@ -28,7 +28,7 @@ export default sessionWrapper(
 
 export async function PATCH(req: NextApiRequest, res: NextApiResponse, userId: string) {
   const { id } = req.query;
-  const { tierId } = req.body;
+  const { tierId, reason } = req.body;
 
   if (!tierId) {
     return res
@@ -53,7 +53,7 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse, userId: s
       .status(RESPONSE_CODE.NOT_FOUND)
       .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, 'Cron job not found!'));
   }
-  await dashboardRepository.changeCronjob(cronjob, userId, tier);
+  await dashboardRepository.changeCronjob(cronjob, userId, tier, reason);
   return res
     .status(RESPONSE_CODE.OK)
     .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_SUCCESS));
