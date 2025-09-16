@@ -14,6 +14,11 @@ export enum ApiEndpointEnum {
   WalletFrozenAmount = '/api/wallet/deposit/frozen-amount',
   WalletSetting = '/api/wallet/setting',
 
+  // Cronjob Dashboard
+  CronjobDashboard = '/api/dashboard',
+  CronjobDashboardDefineType = '/api/dashboard/define-type',
+  CronjobChart = '/api/dashboard/membership-chart',
+
   // Notification
   Notification = '/api/notification',
   NotificationFilterOptions = '/api/notification/options',
@@ -40,4 +45,8 @@ export enum ApiEndpointEnum {
   News = '/api/news',
   NewsCategories = '/api/news/categories',
   NewsReaction = '/api/news/react',
+  // Identification Document
+  IdentificationDocument = '/api/indentification-document',
+  // Bank Account
+  BankAccount = '/api/bank-account',
 }

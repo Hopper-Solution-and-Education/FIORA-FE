@@ -8,9 +8,10 @@ type DataFetcherProps = {
   method: RequestType;
   body?: any;
   refreshInterval?: number;
+  isEnabled?: boolean;
 };
 const useDataFetcher = <T = any>(props: DataFetcherProps) => {
-  const { endpoint, method, body, refreshInterval = 0 } = props;
+  const { endpoint, method, body, refreshInterval = 0, isEnabled = true } = props;
 
   async function fetchData(url: string) {
     const response = await fetch(url, {
@@ -27,16 +28,20 @@ const useDataFetcher = <T = any>(props: DataFetcherProps) => {
     return data as Response<T>;
   }
 
-  const { data, isLoading, isValidating, error, mutate } = useSWR(endpoint, fetchData, {
-    shouldRetryOnError: false,
-    revalidateOnMount: true,
-    revalidateOnFocus: false,
-    revalidateIfError: false,
-    refreshInterval,
-    onError: (error: any) => {
-      toast.error(error.message || 'Something went wrong!');
+  const { data, isLoading, isValidating, error, mutate } = useSWR(
+    isEnabled ? endpoint : null,
+    fetchData,
+    {
+      shouldRetryOnError: false,
+      revalidateOnMount: true,
+      revalidateOnFocus: false,
+      revalidateIfError: false,
+      refreshInterval,
+      onError: (error: any) => {
+        toast.error(error.message || 'Something went wrong!');
+      },
     },
-  });
+  );
 
   return { data, isLoading, isValidating, error, mutate };
 };

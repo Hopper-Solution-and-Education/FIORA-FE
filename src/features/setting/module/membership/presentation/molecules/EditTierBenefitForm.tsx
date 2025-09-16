@@ -71,6 +71,7 @@ const EditTierBenefitForm = () => {
         gridLayout
         gridGap="gap-4"
         isLoading={isLoadingAddUpdateBenefitTier}
+        isShowSubmitButtonInstruction={true}
       />
     </form>
   );

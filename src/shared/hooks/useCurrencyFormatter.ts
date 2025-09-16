@@ -310,7 +310,8 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
     updatedAt: storeUpdatedAt,
   } = useAppSelector((state) => state.settings);
 
-  const { data: userData } = useSession();
+  const { data: userData, status: sessionStatus } = useSession();
+  const isAuthenticated = sessionStatus === 'authenticated' && userData?.user?.id;
 
   const effectiveBaseCurrency = baseCurrency || storeBaseCurrency;
 
@@ -322,6 +323,7 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
   } = useDataFetcher<ExchangeRateResponse>({
     endpoint: API_ENDPOINT,
     method: 'GET',
+    isEnabled: !!isAuthenticated,
   });
 
   // Ref to track ongoing API requests and prevent concurrent calls
@@ -343,10 +345,16 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
 
   /**
    * Enhanced mutate function that always forces a fresh fetch and replaces old data
+   * Requires user authentication before making API calls
    */
   const mutate = useCallback(async (): Promise<
     Response<ExchangeRateResponse> | null | undefined
   > => {
+    // Return null if user is not authenticated - no API calls allowed
+    if (!isAuthenticated) {
+      return null;
+    }
+
     // Clear any existing fetch promise to force a fresh request
     fetchingRef.current = null;
 
@@ -357,13 +365,19 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
     }
 
     return response;
-  }, [originalMutate, processExchangeRateResponse]);
+  }, [isAuthenticated, originalMutate, processExchangeRateResponse]);
 
   /**
    * Checks if exchange rate data is valid and triggers refresh if needed
    * Prioritizes localStorage cache over Redux store data
+   * Requires user authentication before making API calls
    */
   const ensureExchangeRateData = useCallback(async (): Promise<boolean> => {
+    // Return false if user is not authenticated - no API calls allowed
+    if (!isAuthenticated) {
+      return false;
+    }
+
     // Return existing promise if already fetching to prevent concurrent calls
     if (fetchingRef.current) {
       return fetchingRef.current;
@@ -443,7 +457,14 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
     // Store the promise to prevent concurrent calls
     fetchingRef.current = fetchPromise;
     return fetchPromise;
-  }, [exchangeRates, storeUpdatedAt, originalMutate, dispatch, processExchangeRateResponse]);
+  }, [
+    isAuthenticated,
+    exchangeRates,
+    storeUpdatedAt,
+    originalMutate,
+    dispatch,
+    processExchangeRateResponse,
+  ]);
 
   /**
    * Gets exchange rate between two currencies
@@ -454,8 +475,10 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
       // Compare currency suffixes instead of object references
       if (fromCurrency === toCurrency) return 1;
 
-      // First, try to get rates from localStorage cache
-      const cachedData = cacheUtilities.getCachedExchangeRates(userData?.user?.id || '');
+      // First, try to get rates from localStorage cache (only if authenticated)
+      const cachedData = isAuthenticated
+        ? cacheUtilities.getCachedExchangeRates(userData?.user?.id || '')
+        : null;
       if (cachedData?.rates && !cacheUtilities.isCacheStale(cachedData.updatedAt)) {
         const cachedFromRate = cachedData.rates[fromCurrency];
         const cachedToRate = cachedData.rates[toCurrency];
@@ -492,8 +515,8 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
         return 1 / storedFromRate.rate;
       }
 
-      // Final fallback: try to use stale cached data if store doesn't have data
-      if (cachedData?.rates) {
+      // Final fallback: try to use stale cached data if store doesn't have data (only if authenticated)
+      if (isAuthenticated && cachedData?.rates) {
         const cachedFromRate = cachedData.rates[fromCurrency];
         const cachedToRate = cachedData.rates[toCurrency];
 
@@ -512,8 +535,8 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
       }
 
       // If we have partial data from either source, try to use it
-      const finalFromRate = storedFromRate || cachedData?.rates[fromCurrency];
-      const finalToRate = storedToRate || cachedData?.rates[toCurrency];
+      const finalFromRate = storedFromRate || (isAuthenticated && cachedData?.rates[fromCurrency]);
+      const finalToRate = storedToRate || (isAuthenticated && cachedData?.rates[toCurrency]);
 
       if (finalFromRate && finalToRate) {
         return finalToRate.rate / finalFromRate.rate;
@@ -521,7 +544,7 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
 
       return null;
     },
-    [exchangeRates, effectiveBaseCurrency],
+    [isAuthenticated, exchangeRates, effectiveBaseCurrency, userData?.user?.id],
   );
 
   /**
@@ -568,7 +591,9 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
         }
 
         // Check if we have exchange rate data available, prioritizing cache over store
+        // Only attempt to fetch if user is authenticated
         if (
+          isAuthenticated &&
           dataUtilities.shouldFetchExchangeRates(
             userData?.user?.id || '',
             exchangeRates,
@@ -636,7 +661,14 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
         return numberUtilities.formatWithPrecision(fallbackAmount);
       }
     },
-    [ensureExchangeRateData, exchangeRates, selectedCurrency, getExchangeRate, storeUpdatedAt],
+    [
+      isAuthenticated,
+      ensureExchangeRateData,
+      exchangeRates,
+      selectedCurrency,
+      getExchangeRate,
+      storeUpdatedAt,
+    ],
   );
 
   /**
@@ -653,7 +685,9 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
         const amount = numberUtilities.toSafeNumber(inputAmount);
 
         // Check if we have exchange rate data available, prioritizing cache over store
+        // Only attempt to fetch if user is authenticated
         if (
+          isAuthenticated &&
           dataUtilities.shouldFetchExchangeRates(
             userData?.user?.id || '',
             exchangeRates,
@@ -753,15 +787,28 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
         };
       }
     },
-    [formatCurrency, getExchangeRate, ensureExchangeRateData, exchangeRates, storeUpdatedAt],
+    [
+      isAuthenticated,
+      formatCurrency,
+      getExchangeRate,
+      ensureExchangeRateData,
+      exchangeRates,
+      storeUpdatedAt,
+    ],
   );
 
   /**
    * Refreshes exchange rates from API and updates store
    * Always forces a fresh fetch and replaces old data
+   * Requires user authentication before making API calls
    */
   const refreshExchangeRates = useCallback(async (): Promise<void> => {
     try {
+      // Check authentication before making API calls
+      if (!isAuthenticated) {
+        return;
+      }
+
       // Clear the ref to force a fresh fetch even if data exists
       fetchingRef.current = null;
 
@@ -777,7 +824,7 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
       toast.error('Failed to refresh exchange rates. Please check your connection and try again.');
       throw error; // Re-throw to allow error handling in calling functions
     }
-  }, [originalMutate, processExchangeRateResponse]);
+  }, [isAuthenticated, originalMutate, processExchangeRateResponse]);
 
   /**
    * Clears exchange rate data from Redux store, localStorage cache, and selectively clears

@@ -205,6 +205,7 @@ export enum Messages {
   MEMBERSHIP_TIER_NOT_FOUND = 'Membership tier not found',
   MEMBERSHIP_BENEFIT_SLUG_NAME_NOT_FOUND = 'Membership benefit slug-name not found',
   MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED = 'Failed to create membership tier benefit',
+  MEMBERSHIP_BENEFIT_SLUG_NAME_ALREADY_EXISTS = 'Membership benefit slug name already exists',
   // Membership Tier Dashboard
   GET_MEMBERSHIP_TIERS_DASHBOARD_SUCCESS = 'Membership tiers dashboard retrieved successfully',
 
@@ -364,6 +365,7 @@ export enum Messages {
   VERIFY_SUCCESS = 'Verify successfully',
   VERIFY_EXIT = 'Verify already exists',
   GET_SUCCESS = 'Get successfully',
+  UPDATE_SUCCESS = 'Update successfully',
 
   //Email template type
   EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',

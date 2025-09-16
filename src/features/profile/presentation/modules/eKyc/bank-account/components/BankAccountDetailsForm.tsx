@@ -1,37 +1,29 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { FormField } from '@/features/profile/shared/components';
-import { Building2, CreditCard, FileText, HelpCircle } from 'lucide-react';
-
-interface BankAccountFormData {
-  accountHolderName: string;
-  bankName: string;
-  accountNumber: string;
-  routingNumber: string;
-  accountType: string;
-}
+import { CreditCard, HelpCircle } from 'lucide-react';
+import { UseFormReturn } from 'react-hook-form';
+import { BankAccount } from '../../../../schema/personalInfoSchema';
 
 interface BankAccountDetailsFormProps {
-  formData: BankAccountFormData;
-  onInputChange: (field: keyof BankAccountFormData, value: string) => void;
-  isLoading?: boolean;
+  form: UseFormReturn<BankAccount>;
+  isLoadingData: boolean;
+  disabled?: boolean;
 }
 
 const BankAccountDetailsForm: React.FC<BankAccountDetailsFormProps> = ({
-  formData,
-  onInputChange,
-  isLoading = false,
+  form,
+  isLoadingData,
+  disabled = false,
 }) => {
+  const {
+    register,
+    formState: { errors, isSubmitting },
+  } = form;
+
   return (
     <Card>
       <CardHeader className="pb-4">
@@ -53,85 +45,63 @@ const BankAccountDetailsForm: React.FC<BankAccountDetailsFormProps> = ({
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <FormField
-            id="account-holder"
-            label="Account Holder Name"
-            placeholder="Enter full name as on bank account"
-            value={formData.accountHolderName}
-            onChange={(e) => onInputChange('accountHolderName', e.target.value)}
-            disabled={isLoading}
-            required
-          />
+          <div className="space-y-2">
+            <Label htmlFor="swift-code" className="text-sm font-medium">
+              SWIFT Code <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="swift-code"
+              placeholder="Enter your SWIFT code"
+              {...register('SWIFT', { required: 'SWIFT code is required' })}
+              disabled={isSubmitting || isLoadingData || disabled}
+            />
+            {errors.SWIFT && <p className="text-sm text-red-500">{errors.SWIFT.message}</p>}
+          </div>
 
-          <FormField
-            id="bank-name"
-            label="Bank Name"
-            placeholder="Enter your bank name"
-            value={formData.bankName}
-            onChange={(e) => onInputChange('bankName', e.target.value)}
-            disabled={isLoading}
-            required
-          />
+          <div className="space-y-2">
+            <Label htmlFor="bank-name" className="text-sm font-medium">
+              Bank Name <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="bank-name"
+              placeholder="Enter your bank name"
+              {...register('bankName', { required: 'Bank name is required' })}
+              disabled={isSubmitting || isLoadingData || disabled}
+            />
+            {errors.bankName && <p className="text-sm text-red-500">{errors.bankName.message}</p>}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <FormField
-            id="account-number"
-            label="Account Number"
-            placeholder="Enter your account number"
-            value={formData.accountNumber}
-            onChange={(e) => onInputChange('accountNumber', e.target.value)}
-            disabled={isLoading}
-            required
-            type="password"
-            className="font-mono"
-          />
+          <div className="space-y-2">
+            <Label htmlFor="account-number" className="text-sm font-medium">
+              Bank Account Number <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="account-number"
+              placeholder="Enter your account number"
+              {...register('accountNumber', { required: 'Account number is required' })}
+              disabled={isSubmitting || isLoadingData || disabled}
+            />
+            {errors.accountNumber && (
+              <p className="text-sm text-red-500">{errors.accountNumber.message}</p>
+            )}
+          </div>
 
-          <FormField
-            id="routing-number"
-            label="Routing Number"
-            placeholder="Enter routing/sort code"
-            value={formData.routingNumber}
-            onChange={(e) => onInputChange('routingNumber', e.target.value)}
-            disabled={isLoading}
-            required
-            className="font-mono"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="account-type" className="text-sm font-medium">
-            Account Type <span className="text-red-500">*</span>
-          </Label>
-          <Select
-            value={formData.accountType}
-            onValueChange={(value) => onInputChange('accountType', value)}
-            disabled={isLoading}
-          >
-            <SelectTrigger className="h-11">
-              <SelectValue placeholder="Select your account type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="checking">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4" />
-                  Checking Account
-                </div>
-              </SelectItem>
-              <SelectItem value="savings">
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4" />
-                  Savings Account
-                </div>
-              </SelectItem>
-              <SelectItem value="business">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Business Account
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="space-y-2">
+            <Label htmlFor="account-name" className="text-sm font-medium">
+              Bank Account Name <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="account-name"
+              placeholder="Enter account holder name"
+              {...register('accountName', { required: 'Account name is required' })}
+              disabled={isSubmitting || isLoadingData || disabled}
+            />
+            {errors.accountName && (
+              <p className="text-sm text-red-500">{errors.accountName.message}</p>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>

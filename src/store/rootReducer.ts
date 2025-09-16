@@ -1,3 +1,4 @@
+import emailSlice from '@/features/email-template/store/slices/emailSlice';
 import financeControlSlice from '@/features/finance/report/slices';
 import { helpsCenterApi } from '@/features/helps-center/store/api/helpsCenterApi';
 import accountSlice from '@/features/home/module/account/slices';
@@ -12,6 +13,7 @@ import walletSlice from '@/features/home/module/wallet/slices';
 import landingSlices from '@/features/landing/slices';
 import { newsApi } from '@/features/news/store/api/newsApi';
 import { profileApi } from '@/features/profile/store/api/profileApi';
+import membershipCronjobSlice from '@/features/setting/module/cron-job/module/membership/slices';
 import landingSettingSlice from '@/features/setting/module/landing/slices';
 import memberShipSettingsSlice from '@/features/setting/module/membership/slices';
 import notificationDashboardSlice from '@/features/setting/module/notification-dashboard/slices';
@@ -52,6 +54,8 @@ const reducer = {
   faqsImport: faqsImportSlice,
   budgetDetail: budgetDetailSlice,
   notificationDashboard: notificationDashboardSlice,
+  membershipCronjob: membershipCronjobSlice,
+  email: emailSlice,
 
   // RTK Query API slices
   [helpsCenterApi.reducerPath]: helpsCenterApi.reducer,

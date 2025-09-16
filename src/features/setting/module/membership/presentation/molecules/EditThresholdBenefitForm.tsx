@@ -128,6 +128,7 @@ const EditThresholdBenefitForm = () => {
         fields={config}
         methods={methods}
         renderSubmitButton={renderSubmitButtonDefault}
+        isShowSubmitButtonInstruction={true}
       />
     </form>
   );

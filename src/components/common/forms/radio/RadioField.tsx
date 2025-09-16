@@ -142,7 +142,7 @@ const RadioField: React.FC<RadioFieldProps> = ({
         disabled={disabled}
         className={cn(
           'flex',
-          orientation === 'horizontal' ? 'flex-row flex-wrap' : 'flex-col',
+          orientation === 'horizontal' ? 'flex-row' : 'flex-col',
           sizeClasses.container,
         )}
         aria-labelledby={label ? id : undefined}
@@ -150,25 +150,29 @@ const RadioField: React.FC<RadioFieldProps> = ({
         aria-invalid={error ? 'true' : 'false'}
         {...props}
       >
+        {/** Determine if we should enforce 50% width for exactly two options */}
         {options.map((option) => {
           const optionId = `${name || id}-${option.value}`;
+          const isTwoOptionsLayout =
+            orientation === 'horizontal' && equalWidth && options.length === 2;
           const isSelected = value === option.value;
 
           return (
             <div
               key={option.value}
               className={cn(
-                'flex items-start space-x-2',
-                orientation === 'horizontal' ? 'mr-6 mb-2' : 'mb-2',
+                'flex items-start',
+                orientation === 'horizontal' ? 'mb-2' : 'mb-2',
+                isTwoOptionsLayout && 'basis-1/2',
                 (disabled || option.disabled) && 'opacity-50 cursor-not-allowed',
-                variant === 'card' &&
-                  'rounded-lg border bg-background px-4 py-3 transition-colors hover:bg-accent data-[state=checked]:bg-accent/40',
                 option.className,
               )}
               style={{
                 flexGrow:
                   orientation === 'horizontal'
-                    ? (option.flex ?? (equalWidth ? 1 : undefined))
+                    ? isTwoOptionsLayout
+                      ? undefined
+                      : (option.flex ?? (equalWidth ? 1 : undefined))
                     : undefined,
               }}
             >
@@ -176,28 +180,68 @@ const RadioField: React.FC<RadioFieldProps> = ({
                 value={option.value}
                 id={optionId}
                 disabled={disabled || option.disabled}
-                className={cn('mt-0.5', sizeClasses.radio, error && 'border-red-500')}
+                className={cn(
+                  variant === 'card' ? 'sr-only peer' : 'mt-0.5',
+                  variant !== 'card' && sizeClasses.radio,
+                  error && 'border-red-500',
+                )}
                 data-test={props['data-test'] ? `${props['data-test']}-${option.value}` : undefined}
               />
               <Label
                 htmlFor={optionId}
                 className={cn(
-                  'cursor-pointer flex-1',
+                  'cursor-pointer flex-1 w-full',
                   sizeClasses.label,
                   (disabled || option.disabled) && 'cursor-not-allowed',
                   error && 'text-red-600',
+                  // Card-like option styling
+                  variant === 'card' &&
+                    cn(
+                      'flex items-center gap-3 rounded-xl border bg-background px-3 py-2 shadow-sm transition-colors hover:bg-accent/40',
+                      isSelected ? 'border-primary bg-accent/30 shadow-md' : 'border-gray-200',
+                    ),
                 )}
               >
-                <div
-                  className={cn('flex items-center gap-2', variant === 'card' && 'font-semibold')}
-                >
-                  {option.icon && renderIconOrImage(option.icon)}
-                  <span className="font-medium text-sm">{option.label}</span>
-                </div>
-                {option.description && (
-                  <p className={cn('text-gray-600 mt-1', sizeClasses.description)}>
-                    {option.description}
-                  </p>
+                {variant === 'card' ? (
+                  <div className="flex items-center gap-3">
+                    {/* Custom radio indicator */}
+                    <span
+                      className={cn(
+                        'relative inline-flex items-center justify-center w-5 h-5 aspect-square shrink-0 rounded-full border-2',
+                        isSelected ? 'border-primary' : 'border-gray-300',
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          'w-3 h-3 aspect-square shrink-0 rounded-full transition-colors',
+                          isSelected ? 'bg-primary' : 'bg-transparent',
+                        )}
+                      />
+                    </span>
+                    {option.icon && renderIconOrImage(option.icon)}
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold whitespace-nowrap">
+                        {option.label}
+                      </span>
+                      {option.description && (
+                        <span className={cn('text-gray-600 mt-0.5', sizeClasses.description)}>
+                          {option.description}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className={cn('flex items-center gap-2')}>
+                      {option.icon && renderIconOrImage(option.icon)}
+                      <span className="font-medium text-sm whitespace-nowrap">{option.label}</span>
+                    </div>
+                    {option.description && (
+                      <p className={cn('text-gray-600 mt-1', sizeClasses.description)}>
+                        {option.description}
+                      </p>
+                    )}
+                  </>
                 )}
               </Label>
             </div>

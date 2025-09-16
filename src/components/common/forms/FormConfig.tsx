@@ -32,6 +32,7 @@ interface GlobalFormProps<T extends yup.AnyObject> {
   updatedAt?: string | null;
   createdBy?: CreatedBy | null;
   updatedBy?: UpdatedBy | null;
+  isShowSubmitButtonInstruction?: boolean;
 }
 
 // Generic GlobalForm component to manage and render forms
@@ -48,6 +49,7 @@ const FormConfig = <T extends yup.AnyObject>({
   updatedAt,
   createdBy,
   updatedBy,
+  isShowSubmitButtonInstruction = false,
 }: GlobalFormProps<T>): JSX.Element => {
   const router = useRouter();
   const { control, formState } = methods;
@@ -164,7 +166,18 @@ const FormConfig = <T extends yup.AnyObject>({
           className="w-full"
         />
       )}
-
+      {isShowSubmitButtonInstruction && (
+        <div className="space-y-1 text-center">
+          <p className="text-base">
+            Click <Icons.circleArrowLeft className="inline h-4 w-4 text-blue-600 align-[-2px]" /> to
+            stay back
+          </p>
+          <p className="text-base">
+            Or click <Icons.check className="inline h-4 w-4 text-green-600 align-[-2px]" /> to
+            confirm
+          </p>
+        </div>
+      )}
       {/* Conditionally render custom submit button or default button */}
       {renderSubmitButton ? renderSubmitButton(formState) : renderSubmitButtonDefault()}
     </>
