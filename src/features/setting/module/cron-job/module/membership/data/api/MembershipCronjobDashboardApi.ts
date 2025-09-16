@@ -6,6 +6,8 @@ import { MEMBERSHIP_CRONJOB_TYPES } from '../../di/membershipCronjobDashboardDI.
 import { MembershipCronjobFilterRequest } from '../dto/request/MembershipCronjobFilterRequest';
 import { MembershipChartResponse } from '../dto/response/MembershipChartResponse';
 import { MembershipCronjobPaginatedResponse } from '../dto/response/MembershipCronjobResponse';
+import { MembershipTierListResponse } from '../dto/response/MembershipTierResponse';
+import { MembershipUserListResponse } from '../dto/response/MembershipUserResponse';
 import { MembershipCronjobMapper } from '../mapper';
 import { IMembershipCronjobDashboardApi } from './IMembershipCronjobDashboardApi';
 
@@ -39,6 +41,24 @@ export class MembershipCronjobDashboardApi implements IMembershipCronjobDashboar
     const baseUrl = routeConfig(ApiEndpointEnum.CronjobChart);
     const url = `${baseUrl}?${searchParams.toString()}`;
 
+    return this.httpClient.get(url);
+  }
+
+  async getMembershipTiers(page: number, pageSize: number): Promise<MembershipTierListResponse> {
+    const baseUrl = routeConfig(ApiEndpointEnum.MembershipTiers);
+    const params = new URLSearchParams();
+    params.append('page', String(page));
+    params.append('pageSize', String(pageSize));
+    const url = `${baseUrl}?${params.toString()}`;
+    return this.httpClient.get(url);
+  }
+
+  async getMembershipUsers(page: number, pageSize: number): Promise<MembershipUserListResponse> {
+    const baseUrl = routeConfig(ApiEndpointEnum.Users);
+    const params = new URLSearchParams();
+    params.append('page', String(page));
+    params.append('pageSize', String(pageSize));
+    const url = `${baseUrl}?${params.toString()}`;
     return this.httpClient.get(url);
   }
 }

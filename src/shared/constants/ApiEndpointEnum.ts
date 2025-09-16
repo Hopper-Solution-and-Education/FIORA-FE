@@ -19,6 +19,10 @@ export enum ApiEndpointEnum {
   CronjobDashboardDefineType = '/api/dashboard/define-type',
   CronjobChart = '/api/dashboard/membership-chart',
 
+  // Membership
+  MembershipTiers = '/api/memberships/benefit-tier',
+  Users = '/api/users',
+
   // Notification
   Notification = '/api/notification',
   NotificationFilterOptions = '/api/notification/options',

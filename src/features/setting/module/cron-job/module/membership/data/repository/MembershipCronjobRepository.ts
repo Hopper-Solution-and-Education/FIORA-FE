@@ -4,6 +4,8 @@ import { IMembershipCronjobDashboardApi } from '../api';
 import { MembershipCronjobFilterRequest } from '../dto/request/MembershipCronjobFilterRequest';
 import { MembershipChartResponse } from '../dto/response/MembershipChartResponse';
 import { MembershipCronjobPaginatedResponse } from '../dto/response/MembershipCronjobResponse';
+import { MembershipTierListResponse } from '../dto/response/MembershipTierResponse';
+import { MembershipUserListResponse } from '../dto/response/MembershipUserResponse';
 import { MembershipCronjobMapper } from '../mapper';
 import { IMembershipCronjobRepository } from './IMembershipCronjobRepository';
 
@@ -33,6 +35,14 @@ export class MembershipCronjobRepository implements IMembershipCronjobRepository
     filter?: MembershipCronjobFilterRequest,
   ): Promise<MembershipChartResponse> {
     return this.api.getMembershipChartData(filter);
+  }
+
+  async getMembershipTiers(page: number, pageSize: number): Promise<MembershipTierListResponse> {
+    return this.api.getMembershipTiers(page, pageSize);
+  }
+
+  async getMembershipUsers(page: number, pageSize: number): Promise<MembershipUserListResponse> {
+    return this.api.getMembershipUsers(page, pageSize);
   }
 }
 

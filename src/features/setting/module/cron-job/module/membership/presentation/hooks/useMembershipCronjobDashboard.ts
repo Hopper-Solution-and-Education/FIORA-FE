@@ -21,27 +21,36 @@ export const useMembershipCronjobDashboard = () => {
   const isInitialLoad = useRef(true);
   const isFetching = useRef(false);
 
+  const lastChartParamsRef = useRef<string | null>(null);
+  const isChartFetchingRef = useRef(false);
+
   const fetchChartData = useCallback(async () => {
+    const params = {
+      status: filter?.status || [],
+      search: filter?.search || '',
+      fromDate: filter?.fromDate || '',
+      toDate: filter?.toDate || '',
+    };
+    const key = JSON.stringify(params);
+    if (isChartFetchingRef.current || lastChartParamsRef.current === key) return;
+    isChartFetchingRef.current = true;
+    lastChartParamsRef.current = key;
     setChartLoading(true);
     try {
       const useCase = membershipCronjobContainer.get<IGetMembershipChartDataUseCase>(
         MEMBERSHIP_CRONJOB_TYPES.IGetMembershipChartDataUseCase,
       );
 
-      const res = await useCase.execute({
-        status: filter?.status || [],
-        search: filter?.search || '',
-        fromDate: filter?.fromDate || '',
-        toDate: filter?.toDate || '',
-      });
-
-      console.log('Chart API response:', res); // Debug log
+      const res = await useCase.execute(params);
       setChartData(res.data?.items || []);
     } catch (error) {
       console.error('Error fetching chart data:', error);
       setChartData([]);
+      // reset key so a later attempt can retry
+      lastChartParamsRef.current = null;
     } finally {
       setChartLoading(false);
+      isChartFetchingRef.current = false;
     }
   }, [filter]);
 
@@ -70,27 +79,23 @@ export const useMembershipCronjobDashboard = () => {
         const list = MembershipCronjobMapper.toList(res);
 
         const rows = (list.data || []).map((it: MembershipCronjobItem) => {
-          const dynamicKeys = Object.keys(it.dynamicValue || {});
-          const firstKey = dynamicKeys[0];
-          const secondKey = dynamicKeys[1];
-
-          const fromTier =
-            (firstKey ? it.dynamicValue?.[firstKey] : undefined) ||
-            it.updatedBy?.MembershipProgress?.[0]?.tier?.tierName ||
+          const fromTierVal =
+            (it.dynamicValue as any)?.fromTier ??
+            it.updatedBy?.MembershipProgress?.[0]?.tier?.tierName ??
             'N/A';
-          const toTier =
-            (secondKey ? it.dynamicValue?.[secondKey] : undefined) ||
-            it.updatedBy?.MembershipProgress?.[0]?.tier?.tierName ||
+          const toTierVal =
+            (it.dynamicValue as any)?.toTier ??
+            it.updatedBy?.MembershipProgress?.[0]?.tier?.tierName ??
             'N/A';
 
           return {
             id: it.id,
             email: it.updatedBy?.email || 'N/A',
             executionTime: it.executionTime,
-            fromTier,
+            fromTier: fromTierVal,
             spent: it.spent || it.updatedBy?.MembershipProgress?.[0]?.currentSpent || '0',
             balance: it.balance || it.updatedBy?.MembershipProgress?.[0]?.currentBalance || '0',
-            toTier,
+            toTier: toTierVal,
             status: it.status,
             updatedBy: {
               id: it.updatedBy?.id || '',

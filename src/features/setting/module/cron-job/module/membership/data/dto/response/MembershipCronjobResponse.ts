@@ -1,4 +1,4 @@
-import { HttpResponse } from '@/shared/types';
+import { _PaginationResponse } from '@/shared/types/httpResponse.types';
 
 export interface MembershipCronjobItem {
   id: string;
@@ -32,12 +32,9 @@ export interface MembershipCronjobItem {
 
 // The backend returns pagination fields at the root alongside data
 // Example: { status, message, data: [...], totalPage, page, pageSize, total, statistics }
-export type MembershipCronjobPaginatedResponse = HttpResponse<MembershipCronjobItem[]> & {
-  totalPage?: number;
-  page?: number;
-  pageSize?: number;
-  total?: number;
-  statistics?: {
-    statusCounts?: { successful?: number; fail?: number };
-  };
-};
+export type MembershipCronjobPaginatedResponse = _PaginationResponse<MembershipCronjobItem> &
+  Partial<{
+    statistics: {
+      statusCounts?: { successful?: number; fail?: number };
+    };
+  }>;
