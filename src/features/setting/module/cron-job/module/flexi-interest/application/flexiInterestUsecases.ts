@@ -22,5 +22,24 @@ class FlexiInterestUsecases {
     );
     return { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
   }
+
+  async getFlexiInterestStatistics() {
+    try {
+      const data = await this._flexiInterestRepo.getFlexiInterestStatistics();
+
+      const chartData = data.tierInterestAmount.map((item) => ({
+        name: item.tierName,
+        amount: parseFloat(item.interestAmount) || 0,
+      }));
+
+      return {
+        chartData,
+        totalAmount: parseFloat(data.totalInterestAmount) || 0,
+      };
+    } catch (error) {
+      console.error('Error fetching flexi interest statistics:', error);
+      throw error;
+    }
+  }
 }
 export const flexiInterestUsecases = new FlexiInterestUsecases();

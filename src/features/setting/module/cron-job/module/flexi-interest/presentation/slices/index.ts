@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { FlexiInterestCronjobFilterState, FlexiInterestCronjobState } from './type';
+import { FlexiInterestCronjobFilterState, FlexiInterestCronjobState, FlexiInterestStatistics } from './type';
 
 export const initialState: FlexiInterestCronjobState = {
   loading: false,
@@ -13,6 +13,7 @@ export const initialState: FlexiInterestCronjobState = {
     fromDate: null,
     toDate: null,
   },
+  statistics: null,
 };
 
 const flexiInterestCronjobSlice = createSlice({
@@ -34,10 +35,16 @@ const flexiInterestCronjobSlice = createSlice({
     clearFilter: (state) => {
       state.filter = initialState.filter;
     },
+    setStatistics: (state, action: PayloadAction<FlexiInterestStatistics>) => {
+      state.statistics = action.payload;
+    },
+    clearStatistics: (state) => {
+      state.statistics = null;
+    }
   },
 });
 
-export const { setLoading, setError, setFilter, setSearch, clearFilter } =
+export const { setLoading, setError, setFilter, setSearch, clearFilter, setStatistics, clearStatistics } =
   flexiInterestCronjobSlice.actions;
 
 export default flexiInterestCronjobSlice.reducer;

@@ -8,8 +8,17 @@ export interface FlexiInterestCronjobFilterState {
   toDate: Date | null;
 }
 
+export interface FlexiInterestStatistics {
+  chartData: Array<{
+    name: string;
+    amount: number;
+  }>
+  totalAmount: number;
+}
+
 export interface FlexiInterestCronjobState {
   loading: boolean;
   error: string | null;
   filter: FlexiInterestCronjobFilterState;
+  statistics?: FlexiInterestStatistics | null;
 }
