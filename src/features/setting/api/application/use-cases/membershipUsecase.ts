@@ -443,6 +443,11 @@ class MembershipSettingUseCase {
       );
     }
 
+    // Not allowed to update new min to be less than old min
+    if (dNewMin.lt(dOldMin)) {
+      throw new BadRequestError('New min must be greater than old min');
+    }
+
     const targetCount = await prisma.membershipTier.count({
       where: { [minKey]: dOldMin, [maxKey]: dOldMax } as any,
     });
@@ -479,10 +484,10 @@ class MembershipSettingUseCase {
       }),
       prevMaxOld >= 0
         ? prisma.membershipTier.findFirst({
-            where: { [maxKey]: new Prisma.Decimal(prevMaxOld) },
-            select: { [minKey]: true, [maxKey]: true },
-            orderBy: { [minKey]: 'asc' },
-          })
+          where: { [maxKey]: new Prisma.Decimal(prevMaxOld) },
+          select: { [minKey]: true, [maxKey]: true },
+          orderBy: { [minKey]: 'asc' },
+        })
         : Promise.resolve(null),
     ]);
 
@@ -552,9 +557,9 @@ class MembershipSettingUseCase {
         const snapPrev =
           oldMin > 0
             ? await tx.membershipTier.updateMany({
-                where: { [maxKey]: new Prisma.Decimal(prevMaxOld) },
-                data: { [maxKey]: dNewMin.sub(1), updatedBy: userId },
-              })
+              where: { [maxKey]: new Prisma.Decimal(prevMaxOld) },
+              data: { [maxKey]: dNewMin.sub(1), updatedBy: userId },
+            })
             : { count: 0 };
 
         return {
