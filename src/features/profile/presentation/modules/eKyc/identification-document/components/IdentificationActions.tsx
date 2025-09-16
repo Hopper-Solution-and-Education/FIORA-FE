@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 interface IdentificationActionsProps {
   isLoading: boolean;
-  onSubmit: () => void;
+  onSubmit?: () => void;
 }
 
 const IdentificationActions: React.FC<IdentificationActionsProps> = ({ isLoading, onSubmit }) => {

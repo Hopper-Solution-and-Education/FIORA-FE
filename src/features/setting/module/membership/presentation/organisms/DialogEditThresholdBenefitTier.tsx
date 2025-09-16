@@ -50,9 +50,7 @@ const DialogEditThresholdBenefitTier = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            Edit Threshold Benefit Tier {tierToEdit.selectedTier?.label || ''}
-          </DialogTitle>
+          <DialogTitle>Edit {tierToEdit.selectedTier?.label || ''} Threshold</DialogTitle>
         </DialogHeader>
 
         <FormProvider {...methods}>

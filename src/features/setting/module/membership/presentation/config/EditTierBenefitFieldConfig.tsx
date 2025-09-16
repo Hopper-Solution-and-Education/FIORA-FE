@@ -61,6 +61,8 @@ const useEditTierBenefitFieldConfig = () => {
       ]}
       value={watch('mode')}
       orientation="horizontal"
+      variant="card"
+      equalWidth
       gridClassName="col-span-12"
     />,
   ];

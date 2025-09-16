@@ -83,3 +83,18 @@ export type RangeKeys =
   | { minKey: 'spentMinThreshold'; maxKey: 'spentMaxThreshold' }
   | { minKey: 'balanceMinThreshold'; maxKey: 'balanceMaxThreshold' };
 export type Range = { min: number; max: number };
+
+export interface TierInfinityParams {
+  limit?: number;
+  search?: string;
+  page?: string;
+}
+export interface OutputTierInfinity {
+  id?: number;
+  name?: string;
+  email?: string;
+}
+export interface UserInfinityResult {
+  tiers: OutputTierInfinity[];
+  hasMore: boolean;
+}

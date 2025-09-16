@@ -12,6 +12,8 @@ import {
   MembershipTierWithBenefit,
   Range,
   RangeKeys,
+  TierInfinityParams,
+  UserInfinityResult,
 } from '../../repositories/membershipTierRepository';
 import { IUserRepository } from '../../repositories/userRepository.interface';
 
@@ -110,7 +112,7 @@ class MembershipSettingUseCase {
           });
 
           if (!updatedMembershipTier) {
-            throw new Error(Messages.MEMBERSHIP_TIER_CREATE_FAILED);
+            throw new BadRequestError(Messages.MEMBERSHIP_TIER_CREATE_FAILED);
           }
 
           // Create many - many table relationship of tierBenefits with membershipBenefit
@@ -122,7 +124,7 @@ class MembershipSettingUseCase {
               });
 
               if (!membershipBenefit) {
-                throw new Error(Messages.MEMBERSHIP_BENEFIT_SLUG_NAME_NOT_FOUND);
+                throw new BadRequestError(Messages.MEMBERSHIP_BENEFIT_SLUG_NAME_NOT_FOUND);
               }
 
               const newTierBenefit = await tx.tierBenefit.upsert({
@@ -156,11 +158,11 @@ class MembershipSettingUseCase {
               });
 
               if (!newTierBenefit) {
-                throw new Error(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
+                throw new BadRequestError(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
               }
 
               if (!newTierBenefit) {
-                throw new Error(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
+                throw new BadRequestError(Messages.MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED);
               }
 
               const newTierBenefitWithBenefit = {
@@ -187,12 +189,12 @@ class MembershipSettingUseCase {
     } catch (error: any) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new Error(Messages.MEMBERSHIP_TIER_ALREADY_EXISTS);
+          throw new BadRequestError(Messages.MEMBERSHIP_TIER_ALREADY_EXISTS);
         } else {
-          throw new Error(error.message || Messages.INTERNAL_ERROR);
+          throw new BadRequestError(error.message || Messages.INTERNAL_ERROR);
         }
       }
-      throw new Error(error.message || Messages.INTERNAL_ERROR);
+      throw new BadRequestError(error.message || Messages.INTERNAL_ERROR);
     }
   }
 
@@ -245,7 +247,7 @@ class MembershipSettingUseCase {
 
       return memberShipListWithBenefit;
     } catch (error) {
-      throw new Error(error instanceof Error ? error.message : Messages.INTERNAL_ERROR);
+      throw new BadRequestError(error instanceof Error ? error.message : Messages.INTERNAL_ERROR);
     }
   }
 
@@ -405,7 +407,7 @@ class MembershipSettingUseCase {
         nextBalanceTier: nextBalanceTierWithBenefit ?? [],
       };
     } catch (error) {
-      throw new Error(error instanceof Error ? error.message : Messages.INTERNAL_ERROR);
+      throw new BadRequestError(error instanceof Error ? error.message : Messages.INTERNAL_ERROR);
     }
   }
 
@@ -441,6 +443,11 @@ class MembershipSettingUseCase {
       );
     }
 
+    // Not allowed to update new min to be less than old min
+    if (dNewMin.lt(dOldMin)) {
+      throw new BadRequestError('New min must be greater than old min');
+    }
+
     const targetCount = await prisma.membershipTier.count({
       where: { [minKey]: dOldMin, [maxKey]: dOldMax } as any,
     });
@@ -461,7 +468,7 @@ class MembershipSettingUseCase {
 
     // If it would touch > 1 distinct neighbor tiers (on the same axis)
     if (overlapTiers.length > 3) {
-      throw new ConflictError('Change would affect more than one neighboring tier; rejected.');
+      throw new BadRequestError('Change would affect more than one neighboring tier; rejected.');
     }
 
     // Identify immediate neighbors by current edges
@@ -562,6 +569,43 @@ class MembershipSettingUseCase {
         };
       });
     }
+  }
+
+  async getTierInfinity(params: TierInfinityParams): Promise<UserInfinityResult> {
+    const { limit = 20, search, page } = params;
+
+    const whereClause: any = {};
+
+    if (search && search.trim().length > 0) {
+      whereClause.email = {
+        contains: search.trim(),
+        mode: 'insensitive',
+      };
+    }
+
+    const total = await prisma.user.count({
+      where: whereClause,
+    });
+    const tiers = await prisma.membershipTier.findMany({
+      where: whereClause,
+      skip: (Number(page) - 1) * limit,
+      take: limit,
+      orderBy: {
+        id: 'desc',
+      },
+      select: {
+        id: true,
+        tierName: true,
+      },
+    });
+
+    const hasMore = tiers.length > limit;
+    const actualTiers = hasMore ? tiers.slice(0, limit) : tiers;
+    const totalPages = Math.ceil(total / limit);
+    return {
+      tiers: actualTiers as any,
+      hasMore: Number(page) < totalPages,
+    };
   }
 }
 

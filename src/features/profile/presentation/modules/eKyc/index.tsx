@@ -1,107 +1,103 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  EKYCStatus,
-  EKYCType,
-  UserProfile,
-} from '@/features/profile/domain/entities/models/profile';
-import { useGetProfileQuery } from '@/features/profile/store/api/profileApi';
+import { STATUS_COLOR } from '@/features/profile/constant';
+import { eKYC, EKYCStatus, EKYCType } from '@/features/profile/domain/entities/models/profile';
+import { useGetEKYCQuery } from '@/features/profile/store/api/profileApi';
 import { cn } from '@/shared/utils';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import BankAccountForm from './bank-account';
 import ContactInformationForm from './contact-information';
 import IdentificationDocumentForm from './identification-document';
 import TaxInformationForm from './tax-information';
 import { KYCPageType } from './types';
 
-const getStatusCircle = (tabId: string, status: string, activeTab: string) => {
-  if (activeTab === tabId) {
-    return 'border-blue-500 text-blue-700 bg-blue-50';
-  }
-  if (status === EKYCStatus.APPROVAL) {
-    return 'border-green-500 text-green-700 bg-green-50';
-  }
-  return 'border-muted-foreground/30 text-muted-foreground bg-background';
-};
-
-const getStatusColor = (status: string) => {
-  if (status === EKYCStatus.APPROVAL) {
-    return 'bg-green-500';
-  }
-
-  if (status === EKYCStatus.PENDING) {
-    return 'bg-orange-500';
-  }
-
-  if (status === EKYCStatus.REJECTED) {
-    return 'bg-red-500';
-  }
-
-  return 'bg-gray-200';
-};
-
-const getStatusIcon = (status: string, index: number) => {
-  if (status === EKYCStatus.APPROVAL || status === EKYCStatus.PENDING) {
-    return <CheckCircle className="h-4 w-4" />;
-  }
-
-  if (status === EKYCStatus.REJECTED) {
-    return <XCircle className="h-4 w-4" />;
-  }
-
-  return '0' + (index + 1);
-};
-
 const KYCPage = () => {
   const router = useRouter();
   const params = useSearchParams();
   const id = params?.get('id') ?? KYCPageType.identificationDocument;
-  const { data: profile } = useGetProfileQuery();
+  const { data: eKYCDataResponse, isLoading: isLoadingEKYCData } = useGetEKYCQuery();
 
-  const eKYCStatus = useMemo(() => {
-    const getStatus = (type: EKYCType): string => {
-      return profile?.eKYC?.find((item) => item.type === type)?.status || '';
+  const eKYCData = useMemo(() => {
+    const getData = (type: EKYCType): eKYC | null => {
+      return eKYCDataResponse?.find((item: eKYC) => item.type === type) || null;
     };
     return {
-      contactInformation: getStatus(EKYCType.CONTACT_INFORMATION),
-      identificationDocument: getStatus(EKYCType.IDENTIFICATION_DOCUMENT),
-      taxInformation: getStatus(EKYCType.TAX_INFORMATION),
-      bankAccount: getStatus(EKYCType.BANK_ACCOUNT),
+      contactInformation: getData(EKYCType.CONTACT_INFORMATION),
+      identificationDocument: getData(EKYCType.IDENTIFICATION_DOCUMENT),
+      taxInformation: getData(EKYCType.TAX_INFORMATION),
+      bankAccount: getData(EKYCType.BANK_ACCOUNT),
     };
-  }, [profile]);
+  }, [eKYCDataResponse]);
 
-  console.log('🚀 ~ KYCPage ~ eKYCStatus:', eKYCStatus);
+  const getStatusCircle = useCallback((status: EKYCStatus | undefined) => {
+    if (!status) {
+      return 'border-muted-foreground/30 text-muted-foreground bg-background';
+    }
+
+    return `${STATUS_COLOR[status].color} ${STATUS_COLOR[status].borderColor} ${STATUS_COLOR[status].textColor}`;
+  }, []);
+
+  const getStatusColor = useCallback((status?: EKYCStatus) => {
+    if (!status) {
+      return 'bg-gray-200';
+    }
+
+    return STATUS_COLOR[status].color;
+  }, []);
+
+  const getStatusIcon = useCallback((status: string, index: number) => {
+    if (status === EKYCStatus.APPROVAL || status === EKYCStatus.PENDING) {
+      return <CheckCircle className="h-4 w-4" />;
+    }
+
+    if (status === EKYCStatus.REJECTED) {
+      return <XCircle className="h-4 w-4" />;
+    }
+
+    return '0' + (index + 1);
+  }, []);
 
   const tabItems = [
     {
       id: KYCPageType.identificationDocument,
       label: 'Identification Document',
       component: IdentificationDocumentForm,
-      status: eKYCStatus.identificationDocument,
+      eKYCData: eKYCData.identificationDocument,
     },
     {
       id: KYCPageType.contactInformation,
       label: 'Contact Information',
       component: ContactInformationForm,
-      status: eKYCStatus.contactInformation,
+      eKYCData: eKYCData.contactInformation,
     },
     {
       id: KYCPageType.taxInformation,
       label: 'Tax Information',
       component: TaxInformationForm,
-      status: eKYCStatus.taxInformation,
+      eKYCData: eKYCData.taxInformation,
     },
     {
       id: KYCPageType.bankAccount,
       label: 'Bank Accounts',
       component: BankAccountForm,
-      status: eKYCStatus.bankAccount,
+      eKYCData: eKYCData.bankAccount,
     },
   ];
+
+  if (isLoadingEKYCData) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+          <Skeleton className="w-full h-full" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -128,7 +124,7 @@ const KYCPage = () => {
                             <div
                               className={cn(
                                 'absolute left-[23px] sm:left-[32px] top-10 sm:top-12 w-0.5 h-8 sm:h-10',
-                                getStatusColor(tab.status as string),
+                                getStatusColor(tab.eKYCData?.status as EKYCStatus | undefined),
                               )}
                             />
                           )}
@@ -146,10 +142,10 @@ const KYCPage = () => {
                               <div
                                 className={cn(
                                   'flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 text-xs sm:text-sm font-semibold transition-all duration-200 flex-shrink-0',
-                                  getStatusCircle(tab.id, tab.status as string, id),
+                                  getStatusCircle(tab.eKYCData?.status as EKYCStatus | undefined),
                                 )}
                               >
-                                {getStatusIcon(tab.status as string, index)}
+                                {getStatusIcon(tab.eKYCData?.status as string, index)}
                               </div>
 
                               <span className="font-medium sm:font-semibold text-sm leading-tight">
@@ -175,10 +171,7 @@ const KYCPage = () => {
                     value={tab.id}
                     className="m-0 focus-visible:outline-none"
                   >
-                    <Component
-                      profile={profile as UserProfile}
-                      isVerified={tab.status === EKYCStatus.APPROVAL}
-                    />
+                    <Component eKYCData={tab.eKYCData as eKYC} />
                   </TabsContent>
                 );
               })}

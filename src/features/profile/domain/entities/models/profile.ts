@@ -38,16 +38,15 @@ export type UpdateProfileRequest = Partial<Omit<UserProfile, 'id' | 'email'>> & 
 
 export enum EKYCStatus {
   PENDING = 'PENDING',
-  REQUEST = 'REQUEST',
   APPROVAL = 'APPROVAL',
   REJECTED = 'REJECTED',
 }
 
 export enum EKYCType {
-  BANK_ACCOUNT = 'BANK_ACCOUNT',
+  BANK_ACCOUNT = 'BANK',
   CONTACT_INFORMATION = 'CONTACT',
-  IDENTIFICATION_DOCUMENT = 'IDENTIFICATION_DOCUMENT',
-  TAX_INFORMATION = 'TAX_INFORMATION',
+  IDENTIFICATION_DOCUMENT = 'IDENTIFICATION',
+  TAX_INFORMATION = 'TAX',
 }
 
 // Identification Document Types
@@ -75,6 +74,14 @@ export interface IdentificationDocumentPayload {
   idNumber: string;
   filePhotoId?: string;
   issuedPlace?: string;
+}
+
+export interface BankAccountFormData {
+  accountNumber: string;
+  accountName: string;
+  bankName: string;
+  SWIFT: string;
+  paymentRefId: string;
 }
 
 export interface IdentificationDocumentProps {

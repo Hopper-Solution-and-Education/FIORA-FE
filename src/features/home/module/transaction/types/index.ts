@@ -99,6 +99,19 @@ export type TransactionWallet = {
   name: string | null;
 };
 
+export type TransactionMembershipBenefit = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  suffix: string;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  updatedBy: string;
+  userId: string;
+};
+
 export type TransactionSubjectStamp = {
   id: string;
   name: string;
@@ -133,7 +146,9 @@ export interface IRelationalTransaction extends Transaction {
   toAccount?: TransactionAccount | null;
   toCategory?: TransactionCategory | null;
   toWallet?: TransactionWallet | null;
+  fromWallet?: TransactionWallet | null;
   partner?: TransactionPartner | null;
+  membershipBenefit?: TransactionMembershipBenefit | null;
 }
 
 export type TransactionTableColumn = {

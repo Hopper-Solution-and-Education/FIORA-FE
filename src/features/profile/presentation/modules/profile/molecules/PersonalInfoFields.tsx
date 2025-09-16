@@ -102,7 +102,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ control 
           <FormLabel htmlFor="referralCode">Referral Code</FormLabel>
           <Input id="referralCode" />
           <p className="text-xs text-gray-500 my-2 flex items-center">
-            <span className="text-orange-500 mr-2" aria-hidden>
+            <span className="text-yellow-400 mr-2" aria-hidden>
               <AlertCircle />
             </span>
             Enter your referral code to earn rewards and get exclusive benefits when you invite

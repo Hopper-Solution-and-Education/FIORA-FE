@@ -13,4 +13,6 @@ export interface IMembershipBenefitRepository {
   existsTransactionUsingBenefit(benefitId: string): Promise<boolean>;
 
   deleteMembershipBenefit(id: string): Promise<MembershipBenefit>;
+
+  findMembershipBenefitBySlug(slug: string): Promise<MembershipBenefit | null>;
 }

@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { BadRequestError, InternalServerError } from '@/shared/lib';
+import { BadRequestError } from '@/shared/lib';
 import {
   MembershipBenefitCreatePayload,
   MembershipBenefitCreateUpdateAllPayload,
@@ -11,7 +11,6 @@ import { tierBenefitRepository } from '../../infrastructure/repositories/tierBen
 
 class MembershipBenefitService {
   async create(payload: MembershipBenefitCreatePayload, userId: string) {
-    payload.membershipBenefit.slug = `${payload.membershipBenefit.slug}-${Date.now()}`;
     const membershipBenefit = await membershipBenefitRepository.createMembershipBenefit({
       id: uuid(),
       ...payload.membershipBenefit,
@@ -79,7 +78,7 @@ class MembershipBenefitService {
       });
 
       if (!deletedMembershipBenefit) {
-        throw new InternalServerError('Failed to delete MembershipBenefit');
+        throw new BadRequestError('Failed to delete MembershipBenefit');
       }
 
       /// get all membership tiers
@@ -98,7 +97,7 @@ class MembershipBenefitService {
       });
 
       if (!deletedTierBenefits) {
-        throw new InternalServerError('Failed to delete TierBenefit');
+        throw new BadRequestError('Failed to delete TierBenefit');
       }
 
       const data = {
@@ -168,7 +167,7 @@ class MembershipBenefitService {
       });
 
       if (!deletedTierBenefit) {
-        throw new InternalServerError('Failed to delete TierBenefit');
+        throw new BadRequestError('Failed to delete TierBenefit');
       }
 
       return {
@@ -210,7 +209,7 @@ class MembershipBenefitService {
       });
 
       if (!membershipBenefit) {
-        throw new InternalServerError('Failed to create MembershipBenefit');
+        throw new BadRequestError('Failed to create MembershipBenefit');
       }
 
       // create tier benefit for each membership tier
@@ -227,7 +226,7 @@ class MembershipBenefitService {
       });
 
       if (!createdTierBenefits) {
-        throw new InternalServerError('Failed to create TierBenefit');
+        throw new BadRequestError('Failed to create TierBenefit');
       }
 
       const data = {
@@ -270,7 +269,7 @@ class MembershipBenefitService {
       });
 
       if (!createdMembershipBenefit) {
-        throw new InternalServerError('Failed to create MembershipBenefit');
+        throw new BadRequestError('Failed to create MembershipBenefit');
       }
 
       if (!tierId) {
@@ -290,7 +289,7 @@ class MembershipBenefitService {
       });
 
       if (!createdTierBenefit) {
-        throw new InternalServerError('Failed to create TierBenefit');
+        throw new BadRequestError('Failed to create TierBenefit');
       }
 
       const data = {
@@ -341,7 +340,7 @@ class MembershipBenefitService {
       });
 
       if (!updatedMembershipBenefit) {
-        throw new InternalServerError('Failed to update MembershipBenefit');
+        throw new BadRequestError('Failed to update MembershipBenefit');
       }
 
       // get all membership tiers
@@ -366,7 +365,7 @@ class MembershipBenefitService {
       });
 
       if (!updatedTierBenefits) {
-        throw new InternalServerError('Failed to update TierBenefit');
+        throw new BadRequestError('Failed to update TierBenefit');
       }
 
       const data = {
@@ -414,7 +413,7 @@ class MembershipBenefitService {
       });
 
       if (!updatedMembershipBenefit) {
-        throw new InternalServerError('Failed to update MembershipBenefit');
+        throw new BadRequestError('Failed to update MembershipBenefit');
       }
 
       if (!tierId) {
@@ -435,7 +434,7 @@ class MembershipBenefitService {
       });
 
       if (!updatedTierBenefit) {
-        throw new InternalServerError('Failed to update TierBenefit');
+        throw new BadRequestError('Failed to update TierBenefit');
       }
 
       const data = {
@@ -458,10 +457,6 @@ class MembershipBenefitService {
 
   async processMembershipBenefit(payload: MembershipBenefitCreatePayload, userId: string) {
     const { mode } = payload;
-
-    if (mode === 'create' || mode === 'create-all') {
-      payload.membershipBenefit!.slug = `${payload.membershipBenefit!.slug}-${Date.now()}`;
-    }
 
     switch (mode) {
       case 'create':

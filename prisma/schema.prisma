@@ -43,7 +43,7 @@ model User {
   categoryProducts          CategoryProducts[]
   Comment                   Comment[]
   depositRequests           DepositRequest[]         @relation("UserDepositRequest")
-  ExchangeRateSetting       ExchangeRateSetting[]
+  exchangeRateSetting       ExchangeRateSetting[]
   IdentificationDocument    IdentificationDocument[]
   MembershipProgress        MembershipProgress[]
   MembershipTier            MembershipTier[]
@@ -623,40 +623,42 @@ model MembershipBenefit {
 }
 
 model MembershipProgress {
-  id             String   @id @default(uuid()) @db.Uuid
-  userId         String   @db.Uuid
-  currentSpent   Decimal  @default(0) @db.Decimal(13, 2)
-  currentBalance Decimal  @default(0) @db.Decimal(13, 2)
-  createdBy      String?  @db.Uuid
-  updatedBy      String?  @db.Uuid
-  createdAt      DateTime @default(now()) @db.Timestamptz(0)
-  updatedAt      DateTime @updatedAt @db.Timestamptz(0)
-  tierId         String?  @db.Uuid
-  tiersendid     String?  @db.Uuid
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String          @id @default(uuid()) @db.Uuid
+  userId         String          @db.Uuid
+  currentSpent   Decimal         @default(0) @db.Decimal(13, 2)
+  currentBalance Decimal         @default(0) @db.Decimal(13, 2)
+  createdBy      String?         @db.Uuid
+  updatedBy      String?         @db.Uuid
+  createdAt      DateTime        @default(now()) @db.Timestamptz(0)
+  updatedAt      DateTime        @updatedAt @db.Timestamptz(0)
+  tierId         String?         @db.Uuid
+  tiersendid     String?         @db.Uuid
+  MembershipTier MembershipTier? @relation(fields: [tierId], references: [id], onDelete: Cascade)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([tierId])
 }
 
 model MembershipTier {
-  id                  String        @id @default(uuid()) @db.Uuid
-  tierName            String?       @unique @db.VarChar(500)
+  id                  String               @id @default(uuid()) @db.Uuid
+  tierName            String?              @unique @db.VarChar(500)
   mainIconUrl         String?
   passedIconUrl       String?
   inactiveIconUrl     String?
   themeIconUrl        String?
-  spentMinThreshold   Decimal       @db.Decimal(13, 2)
-  spentMaxThreshold   Decimal       @db.Decimal(13, 2)
-  balanceMinThreshold Decimal       @db.Decimal(13, 2)
-  balanceMaxThreshold Decimal       @db.Decimal(13, 2)
+  spentMinThreshold   Decimal              @db.Decimal(13, 2)
+  spentMaxThreshold   Decimal              @db.Decimal(13, 2)
+  balanceMinThreshold Decimal              @db.Decimal(13, 2)
+  balanceMaxThreshold Decimal              @db.Decimal(13, 2)
   story               String?
-  createdAt           DateTime      @default(now()) @db.Timestamptz(0)
-  updatedAt           DateTime      @updatedAt @db.Timestamptz(0)
-  createdBy           String?       @db.Uuid
-  updatedBy           String?       @db.Uuid
-  userId              String        @db.Uuid
-  user                User          @relation(fields: [userId], references: [id])
+  createdAt           DateTime             @default(now()) @db.Timestamptz(0)
+  updatedAt           DateTime             @updatedAt @db.Timestamptz(0)
+  createdBy           String?              @db.Uuid
+  updatedBy           String?              @db.Uuid
+  userId              String               @db.Uuid
+  MembershipProgress  MembershipProgress[]
+  user                User                 @relation(fields: [userId], references: [id])
   tierBenefits        TierBenefit[]
 
   @@unique([spentMinThreshold, spentMaxThreshold, balanceMinThreshold, balanceMaxThreshold])
@@ -885,6 +887,7 @@ model CronJobLog {
   updatedAt     DateTime      @db.Timestamptz(0)
   status        CronJobStatus
   dynamicValue  Json?
+  reason        String?       @db.VarChar(100)
   Transaction   Transaction?  @relation("CronJobLogTransactions", fields: [transactionId], references: [id])
 }
 
@@ -1070,7 +1073,9 @@ enum CronJobStatus {
 
 enum TypeCronJob {
   MEMBERSHIP
-  REFERRAL
+  REFERRAL_CAMPAIGN
+  REFERRAL_BONUS
+  REFERRAL_KICKBACK
   CASHBACK
   FLEXI_INTEREST
 }
