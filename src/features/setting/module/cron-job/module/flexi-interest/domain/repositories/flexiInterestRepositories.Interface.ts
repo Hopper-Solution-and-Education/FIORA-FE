@@ -4,5 +4,5 @@ export interface IFlexiInterestRepository {
     pageSize: number,
     filter?: any,
     search?: string,
-  ): Promise<{ items: any[]; total: number }>;
+  ): Promise<{ items: any[]; total: number; totalSuccess: number; totalFailed: number }>;
 }

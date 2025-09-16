@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { TypeCronJob } from '@prisma/client';
+import { CronJobStatus, TypeCronJob } from '@prisma/client';
 import { IFlexiInterestRepository } from '../../domain/repositories/flexiInterestRepositories.Interface';
 
 class flexiInterestRepositories implements IFlexiInterestRepository {
@@ -9,12 +9,13 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
     pageSize: number,
     filter?: any,
     search?: string,
-  ): Promise<{ items: any[]; total: number }> {
+  ): Promise<{ items: any[]; total: number; totalSuccess: number; totalFailed: number }> {
     const skip = (page - 1) * pageSize;
     // query danh sách log
     const where: any = {
       typeCronJob: TypeCronJob.FLEXI_INTEREST,
     };
+    const orFilter: any[] = [];
     if (search) {
       where.OR = [
         { dynamicValue: { path: ['email'], string_contains: search, mode: 'insensitive' } },
@@ -42,22 +43,35 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
     }
     if (filter?.email) {
       if (Array.isArray(filter.email)) {
-        where.OR = filter.email.map((e: string) => ({
-          dynamicValue: { path: ['email'], equals: e },
-        }));
+        orFilter.push(
+          ...filter.email.map((email: string) => ({
+            dynamicValue: { path: ['email'], equals: email },
+          })),
+        );
       } else {
         where.dynamicValue = { path: ['email'], equals: filter.email };
       }
     }
     if (filter?.membershipTier) {
       if (Array.isArray(filter.membershipTier)) {
-        where.OR = filter.membershipTier.map((mt: string) => ({
-          dynamicValue: { path: ['tierName'], equals: mt },
-        }));
+        orFilter.push(
+          ...filter.membershipTier.map((tierName: string) => ({
+            dynamicValue: { path: ['tierName'], equals: tierName },
+          })),
+        );
       } else {
-        where.dynamicValue = { path: ['tierName'], equals: filter.membershipTier };
+        orFilter.push({ dynamicValue: { path: ['tierName'], equals: filter.membershipTier } });
       }
     }
+
+    if (orFilter.length > 0) {
+      if (where.OR) {
+        where.OR = [...where.OR, ...orFilter];
+      } else {
+        where.OR = orFilter;
+      }
+    }
+
     const logs = await this._prisma.cronJobLog.findMany({
       skip,
       take: pageSize,
@@ -67,11 +81,13 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
 
     // tổng số record
     const total = await this._prisma.cronJobLog.count({ where });
-    // if (filter?.status) {
-    //   where.status = filter.status;
-    // }
 
-    // map dữ liệu ra object FE cần
+    const totalSuccess = await this._prisma.cronJobLog.count({
+      where: { ...where, status: CronJobStatus.SUCCESSFUL },
+    });
+    const totalFailed = await this._prisma.cronJobLog.count({
+      where: { ...where, status: CronJobStatus.FAIL },
+    });
     const items = logs.map((log) => {
       const dv = log.dynamicValue as any;
       return {
@@ -88,7 +104,7 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
       };
     });
 
-    return { items, total };
+    return { items, total, totalSuccess, totalFailed };
   }
 }
 
