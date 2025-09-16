@@ -34,10 +34,8 @@ const getInitialLocalFilterState = (): LocalFilterState => ({
 
 // Status filter options
 const STATUS_OPTIONS = [
-  { value: 'successful', label: 'Successful' },
-  { value: 'fail', label: 'Failed' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'processing', label: 'Processing' },
+  { value: 'SUCCESSFUL', label: 'SUCCESSFUL' },
+  { value: 'FAIL', label: 'FAIL' },
 ];
 
 // Tier filter options - mock data for now

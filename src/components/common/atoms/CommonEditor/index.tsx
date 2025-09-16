@@ -1,8 +1,9 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { type DeviceType, useDeviceDetect } from '@/shared/hooks/useIsMobile';
 import { cn } from '@/shared/lib';
-import React, { useCallback, useEffect, useState } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import RichTextEditor from 'reactjs-tiptap-editor';
 import {
   BubbleMenuDrawer,
@@ -11,14 +12,18 @@ import {
   BubbleMenuMermaid,
   BubbleMenuTwitter,
 } from 'reactjs-tiptap-editor/bubble-extra';
-import { locale } from 'reactjs-tiptap-editor/locale-bundle';
+import HeaderActions from './components/HeaderAction';
 import { defaultExtensions } from './constants';
-import { RichTextEditorProps } from './types';
+import { commonEditorStyles as styles } from './styles';
+import type { RichTextEditorProps } from './types';
 
 interface CommonEditorProps extends RichTextEditorProps {
   wrapperClassName?: string;
   headerActions?: boolean;
   isFullHeight?: boolean;
+  scroll?: number;
+  onChangeDisable?: (disable: boolean) => void;
+  onChangeMode?: (mode: DeviceType | 'full' | 'small' | 'medium' | 'large') => void;
 }
 
 function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
@@ -37,11 +42,15 @@ const CommonEditor: React.FC<CommonEditorProps> = ({
   content,
   onChangeContent,
   headerActions = true,
-  isFullHeight = true,
+  isFullHeight,
+  scroll,
+  onChangeDisable,
+  onChangeMode,
   ...rest
 }) => {
+  const { type } = useDeviceDetect();
+  const [mode, setMode] = useState<DeviceType | 'full' | 'small' | 'medium' | 'large'>(type);
   const [disable, setDisable] = useState(false);
-  const [contentClass, setContentClass] = useState('');
 
   const debouncedOnChangeContent = useCallback(
     debounce((value: any) => {
@@ -50,34 +59,46 @@ const CommonEditor: React.FC<CommonEditorProps> = ({
     [onChangeContent],
   );
 
+  const handleReview = () => {
+    if (disable) {
+      setMode(type);
+      onChangeMode?.(type);
+      setDisable(false);
+      onChangeDisable?.(false);
+    } else {
+      setMode('full');
+      onChangeMode?.('full');
+      setDisable(true);
+      onChangeDisable?.(true);
+    }
+  };
+
+  const handleMode = (mode: DeviceType | 'full' | 'small' | 'medium' | 'large') => {
+    setMode(mode);
+    onChangeMode?.(mode);
+  };
+
   useEffect(() => {
-    let contentClass = '';
-    if (isFullHeight) {
-      contentClass = 'h-[calc(100vh-25rem)] overflow-auto';
+    if (scroll) return;
+    if (isFullHeight && !scroll) {
+      setMode('full');
+      onChangeMode?.('full');
+    } else {
+      setMode(type);
+      onChangeMode?.(type);
     }
-    if (headerActions) {
-      contentClass = 'h-[calc(100vh-28em)] overflow-auto';
-    }
-    if (rest.contentClass) {
-      contentClass = cn(contentClass, rest.contentClass);
-    }
-    setContentClass(contentClass);
-  }, [isFullHeight]);
+  }, [type, scroll]);
 
   return (
-    <div className={cn('w-full h-full', wrapperClassName)}>
+    <div className={cn(styles.wrapper(), wrapperClassName)}>
       {headerActions && (
-        <div className="buttonWrap" style={{ display: 'flex', gap: '12px', marginBottom: 10 }}>
-          <Button className="bg-blue-500 hover:bg-blue-700" onClick={() => locale.setLang('vi')}>
-            Vietnamese
-          </Button>
-          <Button className="bg-blue-500 hover:bg-blue-700" onClick={() => locale.setLang('en')}>
-            English
-          </Button>
-          <Button className="bg-blue-500 hover:bg-blue-700" onClick={() => setDisable(!disable)}>
-            {disable ? 'Editable' : 'Readonly'}
-          </Button>
-        </div>
+        <HeaderActions
+          mode={mode}
+          type={type}
+          disable={disable}
+          setMode={handleMode}
+          handleReview={handleReview}
+        />
       )}
 
       <RichTextEditor
@@ -86,7 +107,13 @@ const CommonEditor: React.FC<CommonEditorProps> = ({
         extensions={extensions}
         content={content}
         onChangeContent={debouncedOnChangeContent}
-        contentClass={contentClass}
+        contentClass={cn(
+          styles.content({
+            height: scroll ? 'custom' : mode,
+          }),
+          scroll && `h-[${scroll}px]`,
+          rest.contentClass,
+        )}
         disabled={disable}
         bubbleMenu={{
           render({ extensionsNames, editor, disabled }, bubbleDefaultDom) {

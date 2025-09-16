@@ -32,58 +32,38 @@ export default withAuthorization({
 });
 
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    const memberShipList = await membershipSettingUseCase.getMembershipTiersDashboard();
+  const memberShipList = await membershipSettingUseCase.getMembershipTiersDashboard();
 
-    return res
-      .status(RESPONSE_CODE.OK)
-      .json(
-        createResponse(
-          RESPONSE_CODE.OK,
-          Messages.GET_MEMBERSHIP_TIERS_DASHBOARD_SUCCESS,
-          memberShipList,
-        ),
-      );
-  } catch (error) {
-    return res
-      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createError(
-          res,
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error instanceof Error ? error.message : Messages.INTERNAL_ERROR,
-        ),
-      );
-  }
+  return res
+    .status(RESPONSE_CODE.OK)
+    .json(
+      createResponse(
+        RESPONSE_CODE.OK,
+        Messages.GET_MEMBERSHIP_TIERS_DASHBOARD_SUCCESS,
+        memberShipList,
+      ),
+    );
 }
 
 // Membership Tier Upsert
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  try {
-    const { error } = validateBody(membershipTierSchema, req.body);
-    if (error) {
-      return res
-        .status(RESPONSE_CODE.BAD_REQUEST)
-        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
-    }
-    const newMembershipTier = await membershipSettingUseCase.upsertMembershipTier(req.body, userId);
-
+  const { error } = validateBody(membershipTierSchema, req.body);
+  if (error) {
     return res
-      .status(RESPONSE_CODE.CREATED)
-      .json(
-        createResponse(
-          RESPONSE_CODE.CREATED,
-          Messages.UPSERT_MEMBERSHIP_TIER_SUCCESS,
-          newMembershipTier,
-        ),
-      );
-  } catch (error: any) {
-    return createError(
-      res,
-      RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-      error.message || Messages.INTERNAL_ERROR,
-    );
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
   }
+  const newMembershipTier = await membershipSettingUseCase.upsertMembershipTier(req.body, userId);
+
+  return res
+    .status(RESPONSE_CODE.CREATED)
+    .json(
+      createResponse(
+        RESPONSE_CODE.CREATED,
+        Messages.UPSERT_MEMBERSHIP_TIER_SUCCESS,
+        newMembershipTier,
+      ),
+    );
 }
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
