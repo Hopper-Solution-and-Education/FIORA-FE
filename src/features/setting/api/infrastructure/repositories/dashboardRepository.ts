@@ -153,7 +153,12 @@ class DashboardRepository {
     return grouped;
   }
 
-  async changeCronjob(cronjobData: CronJobLog, userId: string, tier: MembershipTier) {
+  async changeCronjob(
+    cronjobData: CronJobLog,
+    userId: string,
+    tier: MembershipTier,
+    reason?: string,
+  ) {
     return await prisma.$transaction(async (tx) => {
       const existing = await tx.membershipProgress.findFirst({
         where: { userId: cronjobData?.createdBy || '' },
@@ -197,6 +202,7 @@ class DashboardRepository {
             fromTier: (cronjobData.dynamicValue as any)?.['fromTier'] as string,
             toTier: tier?.id,
           },
+          reason: reason || '',
         },
       });
 
