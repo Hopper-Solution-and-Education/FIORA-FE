@@ -11,6 +11,10 @@ interface MultiSelectFilterProps {
   searchPlaceholder?: string;
   noResultsText?: string;
   disabled?: boolean;
+  onScrollEnd?: () => void;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const DEFAULT_OPTION: DropdownOption = {
@@ -26,18 +30,32 @@ const MultiSelectFilter = ({
   label = 'Select',
   placeholder = 'Select options',
   disabled = false,
+  onScrollEnd,
+  hasMore,
+  isLoadingMore,
+  onOpenChange,
 }: MultiSelectFilterProps) => {
   return (
     <div className="w-full max-w-full flex flex-col gap-2">
       {label && <Label>{label}</Label>}
-      <MultiSelect
-        className="w-full px-4 py-[7px]"
-        options={options.length > 0 ? options : [...options, DEFAULT_OPTION]}
-        selected={selectedValues}
-        onChange={onChange}
-        placeholder={placeholder}
-        disabled={disabled}
-      />
+      {(() => {
+        const resolvedOptions =
+          options.length > 0 ? options : isLoadingMore ? [] : [...options, DEFAULT_OPTION];
+        return (
+          <MultiSelect
+            className="w-full px-4 py-[7px]"
+            options={resolvedOptions}
+            selected={selectedValues}
+            onChange={onChange}
+            placeholder={placeholder}
+            disabled={disabled}
+            onScrollEnd={onScrollEnd}
+            hasMore={hasMore}
+            isLoadingMore={isLoadingMore}
+            onOpenChange={onOpenChange}
+          />
+        );
+      })()}
     </div>
   );
 };

@@ -1,8 +1,16 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useCommonInfiniteScroll } from '@/shared/hooks/useCommonInfiniteScroll';
+import { cn } from '@/shared/lib';
 import { useEffect, useMemo } from 'react';
 import CommonColumnMenu from './components/CommonColumnMenu';
 import CommonTableLoadingState from './components/CommonTableLoadingState';
@@ -75,9 +83,9 @@ export default function CommonTable<T>({
   }, [columns, columnConfig]);
 
   const getAlignClass = (align?: 'left' | 'center' | 'right') => {
-    if (align === 'left') return 'text-left';
-    if (align === 'right') return 'text-right';
-    return 'text-center';
+    if (align === 'left') return 'text-left justify-start';
+    if (align === 'right') return 'text-right justify-end';
+    return 'text-center justify-center';
   };
 
   const handleConfigChange = (cfg: ColumnConfigMap) => {
@@ -195,16 +203,24 @@ export default function CommonTable<T>({
                 {data.map((item, rowIdx) => (
                   <TableRow key={rowIdx}>
                     {shownColumns.map((col) => (
-                      <td
+                      <TableCell
                         key={`${col.key}-${rowIdx}`}
-                        className={`${getAlignClass(col.align)} p-3  overflow-hidden`}
+                        className="p-0"
                         style={{ width: col.width }}
                       >
-                        {col.render ? col.render(item) : (item as any)[col.key]}
-                      </td>
+                        <div
+                          className={cn(
+                            'flex p-3 overflow-hidden text-ellipsis',
+                            getAlignClass(col.align),
+                          )}
+                        >
+                          {col.render ? col.render(item) : (item as any)[col.key]}
+                        </div>
+                      </TableCell>
                     ))}
                   </TableRow>
                 ))}
+
                 {isLoadingMore && (
                   <>
                     {Array.from({ length: loadingMoreRows }).map((_, idx) => (
@@ -222,9 +238,9 @@ export default function CommonTable<T>({
                 )}
                 {(hasMore || isLoadingMore) && (
                   <TableRow>
-                    <td colSpan={shownColumns.length}>
+                    <TableCell colSpan={shownColumns.length}>
                       <div ref={sentinelRef} />
-                    </td>
+                    </TableCell>
                   </TableRow>
                 )}
               </>
