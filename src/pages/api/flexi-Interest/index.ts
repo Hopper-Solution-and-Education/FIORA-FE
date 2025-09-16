@@ -19,11 +19,14 @@ export default withAuthorization({
 });
 
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
-  const { page = 1, pagesize = 20, search = '', ...filters } = req.query;
+  const { page = 1, pagesize = 20, search = '', filter } = req.query;
+  const filterConverted = typeof filter === 'string' ? JSON.parse(filter) : {};
+  console.log('🚀 ~ GET ~ filterConverted:', filterConverted);
+
   const flexiInterest = await flexiInterestUsecases.getFlexiInterestPaginated({
     page: Number(page),
     pageSize: Number(pagesize),
-    filter: filters,
+    filter: filterConverted,
     search: String(search),
   });
   return res

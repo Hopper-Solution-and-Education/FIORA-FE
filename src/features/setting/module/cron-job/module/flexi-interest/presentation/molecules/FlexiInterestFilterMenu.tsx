@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { FilterColumn, FilterComponentConfig } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { useGetMembershipTierQuery } from '../services/flexi-interest.service';
 import { clearFilter } from '../slices';
 import { FlexiInterestCronjobFilterState } from '../slices/type';
 
@@ -32,6 +33,7 @@ interface FlexiInterestFilterMenuProps {
 const FlexiInterestFilterMenu: FC<FlexiInterestFilterMenuProps> = ({ value, onFilterChange }) => {
   const dispatch = useAppDispatch();
   const { filter: reduxFilter } = useAppSelector((state) => state.flexiInterestCronjob);
+  const { data: membershipTierData } = useGetMembershipTierQuery();
 
   const [localFilter, setLocalFilter] = useState<FlexiInterestCronjobFilterState>(() => ({
     status: value?.status || [],
@@ -42,6 +44,16 @@ const FlexiInterestFilterMenu: FC<FlexiInterestFilterMenuProps> = ({ value, onFi
     fromDate: value?.fromDate || null,
     toDate: value?.toDate || null,
   }));
+
+  const membershipTierOptions = useMemo(() => {
+    if (!membershipTierData) return [];
+    // console.log('membershipTierData:', membershipTierData )
+
+    return membershipTierData.map((tier: any) => ({
+      value: tier.tierName,
+      label: tier.tierName,
+    }));
+  }, [membershipTierData]);
 
   useEffect(() => {
     setLocalFilter({
@@ -57,14 +69,14 @@ const FlexiInterestFilterMenu: FC<FlexiInterestFilterMenuProps> = ({ value, onFi
 
   const isFilterApplied = useMemo(() => {
     return (
-      (localFilter.status?.length ?? 0) > 0 ||
-      (localFilter.email?.length ?? 0) > 0 ||
-      (localFilter.membershipTier?.length ?? 0) > 0 ||
-      (localFilter.updatedBy?.length ?? 0) > 0 ||
-      localFilter.fromDate !== null ||
-      localFilter.toDate !== null
+      (reduxFilter.status?.length ?? 0) > 0 ||
+      (reduxFilter.email?.length ?? 0) > 0 ||
+      (reduxFilter.membershipTier?.length ?? 0) > 0 ||
+      (reduxFilter.updatedBy?.length ?? 0) > 0 ||
+      reduxFilter.fromDate !== null ||
+      reduxFilter.toDate !== null
     );
-  }, [localFilter]);
+  }, [reduxFilter]);
 
   const handleLocalFilterChange = useCallback(
     (key: keyof FlexiInterestCronjobFilterState, newValue: any) => {
@@ -125,6 +137,8 @@ const FlexiInterestFilterMenu: FC<FlexiInterestFilterMenuProps> = ({ value, onFi
           <div className="w-full max-w-full flex flex-col gap-2">
             <Label>From Date</Label>
             <DateTimePicker
+              hideTime
+              max={localFilter.toDate as Date | undefined}
               value={localFilter.fromDate as Date | undefined}
               onChange={(values) => handleLocalFilterChange('fromDate', values)}
             />
@@ -137,7 +151,7 @@ const FlexiInterestFilterMenu: FC<FlexiInterestFilterMenuProps> = ({ value, onFi
         key: 'membershipTier',
         component: (
           <MultiSelectFilter
-            options={[]}
+            options={membershipTierOptions}
             selectedValues={localFilter.membershipTier as string[]}
             onChange={(values) => handleLocalFilterChange('membershipTier', values)}
             label="Membership Tier"
@@ -167,6 +181,7 @@ const FlexiInterestFilterMenu: FC<FlexiInterestFilterMenuProps> = ({ value, onFi
           <div className="w-full max-w-full flex flex-col gap-2">
             <Label>To Date</Label>
             <DateTimePicker
+              hideTime
               min={localFilter.fromDate as Date | undefined}
               value={localFilter.toDate as Date | undefined}
               onChange={(values) => handleLocalFilterChange('toDate', values)}
@@ -177,7 +192,7 @@ const FlexiInterestFilterMenu: FC<FlexiInterestFilterMenuProps> = ({ value, onFi
         order: 1,
       },
     ],
-    [localFilter, handleLocalFilterChange],
+    [localFilter, handleLocalFilterChange, membershipTierOptions],
   );
 
   return (

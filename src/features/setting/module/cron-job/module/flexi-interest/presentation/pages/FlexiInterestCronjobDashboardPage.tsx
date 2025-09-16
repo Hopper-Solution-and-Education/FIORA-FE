@@ -18,6 +18,7 @@ function FlexiInterestCronjobDashboardPage() {
       <div className="my-6"></div>
       <div className="space-y-4 mx-4 border p-4 rounded-2xl">
         <FlexiInterestCronJobTable
+          extraData={tableData.extraData}
           data={tableData.data}
           loading={loading}
           hasMore={tableData.hasMore}

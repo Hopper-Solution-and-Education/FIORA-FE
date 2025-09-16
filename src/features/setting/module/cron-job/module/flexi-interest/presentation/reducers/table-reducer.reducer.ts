@@ -18,6 +18,8 @@ export const tableReducer = (state: TableState, action: TableAction): TableState
       return { ...state, hasMore: action.payload };
     case 'SET_IS_LOADING_MORE':
       return { ...state, isLoadingMore: action.payload };
+    case 'SET_EXTRA_DATA':
+      return { ...state, extraData: action.payload };
     default:
       return state;
   }
@@ -32,4 +34,10 @@ export const initialState: TableState = {
   },
   hasMore: true,
   isLoadingMore: false,
+  extraData: {
+    currentItemCount: 0,
+    totalItems: 0,
+    totalSuccess: 0,
+    totalFailed: 0,
+  },
 };
