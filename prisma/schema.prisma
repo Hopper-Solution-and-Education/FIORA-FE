@@ -577,8 +577,8 @@ model UserNotification {
   updatedAt      DateTime     @updatedAt @db.Timestamptz(0)
   createdBy      String?      @db.Uuid
   updatedBy      String?      @db.Uuid
-  notification   Notification @relation(fields: [notificationId], references: [id])
-  User           User         @relation(fields: [userId], references: [id])
+  User           User?         @relation(fields: [userId], references: [id])
+  notification   Notification? @relation(fields: [notificationId], references: [id])
 
   @@index([userId])
   @@index([notificationId])
@@ -637,7 +637,7 @@ model MembershipProgress {
   updatedAt      DateTime        @updatedAt @db.Timestamptz(0)
   tierId         String?         @db.Uuid
   tiersendid     String?         @db.Uuid
-  tier           MembershipTier? @relation(fields: [tierId], references: [id])
+  tier           MembershipTier? @relation(fields: [tierId], references: [id], onDelete: Cascade)
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -891,6 +891,7 @@ model CronJobLog {
   updatedAt     DateTime      @db.Timestamptz(0)
   status        CronJobStatus
   dynamicValue  Json?
+  reason        String?       @db.VarChar(100)
   Transaction   Transaction?  @relation("CronJobLogTransactions", fields: [transactionId], references: [id])
 }
 
@@ -1090,7 +1091,9 @@ enum CronJobStatus {
 
 enum TypeCronJob {
   MEMBERSHIP
-  REFERRAL
+  REFERRAL_CAMPAIGN
+  REFERRAL_BONUS
+  REFERRAL_KICKBACK
   CASHBACK
   FLEXI_INTEREST
 }

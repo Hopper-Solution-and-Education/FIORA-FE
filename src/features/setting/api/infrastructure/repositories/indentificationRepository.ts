@@ -132,7 +132,23 @@ class IdentificationRepository {
             updatedBy: userId,
           },
         });
+        const user = await tx.user.findFirst({
+          where: { id: identification.userId },
+          select: { id: true, kyc_levels: true },
+        });
+        const updatedKycLevels = user?.kyc_levels || [];
+        if (!updatedKycLevels.includes('1')) {
+          updatedKycLevels.push('1');
+        }
 
+        await tx.user.update({
+          where: { id: user?.id },
+          data: {
+            kyc_levels: updatedKycLevels,
+            updatedAt: new Date(),
+            updatedBy: userId,
+          },
+        });
         await tx.eKYC.update({
           where: { id: kycId, refId: identificationId },
           data: { updatedAt: new Date(), updatedBy: userId, status: status, verifiedBy: userId },
