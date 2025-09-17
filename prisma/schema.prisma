@@ -577,14 +577,14 @@ model EmailNotificationLogs {
 }
 
 model UserNotification {
-  id             String       @id @default(uuid()) @db.Uuid
-  userId         String       @db.Uuid
-  notificationId String       @db.Uuid
-  isRead         Boolean      @default(false)
-  createdAt      DateTime     @default(now()) @db.Timestamptz(0)
-  updatedAt      DateTime     @updatedAt @db.Timestamptz(0)
-  createdBy      String?      @db.Uuid
-  updatedBy      String?      @db.Uuid
+  id             String        @id @default(uuid()) @db.Uuid
+  userId         String        @db.Uuid
+  notificationId String        @db.Uuid
+  isRead         Boolean       @default(false)
+  createdAt      DateTime      @default(now()) @db.Timestamptz(0)
+  updatedAt      DateTime      @updatedAt @db.Timestamptz(0)
+  createdBy      String?       @db.Uuid
+  updatedBy      String?       @db.Uuid
   notification   Notification @relation(fields: [notificationId], references: [id])
   User           User         @relation(fields: [userId], references: [id])
 
@@ -1127,6 +1127,7 @@ enum TypeCronJob {
   CASHBACK
   FLEXI_INTEREST
   SMART_SAVING_INTEREST
+  SMART_SAVING
 }
 
 enum KYCType {
