@@ -1,11 +1,11 @@
 'use client';
 
+import { IconDisplay } from '@/components/common/atoms/IconDisplay';
+import { DropdownOption } from '@/shared/types';
 import { cn } from '@/shared/utils';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { Check, ChevronDown, X } from 'lucide-react';
 import * as React from 'react';
-import { IconDisplay } from '@/components/common/atoms/IconDisplay';
-import { DropdownOption } from '@/shared/types';
 
 interface MultiSelectProps {
   options: DropdownOption[];
@@ -14,13 +14,37 @@ interface MultiSelectProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  onScrollEnd?: () => void;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
   (
-    { options, selected, onChange, placeholder = 'Select options', className, disabled = false },
+    {
+      options,
+      selected,
+      onChange,
+      placeholder = 'Select options',
+      className,
+      disabled = false,
+      onScrollEnd,
+      hasMore = false,
+      isLoadingMore = false,
+      onOpenChange,
+    },
     ref,
   ) => {
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+      if (!hasMore || isLoadingMore) return;
+      const target = e.currentTarget;
+      const threshold = 24; // px from bottom
+      const distanceFromBottom = target.scrollHeight - target.scrollTop - target.clientHeight;
+      if (distanceFromBottom <= threshold) {
+        onScrollEnd?.();
+      }
+    };
     const [open, setOpen] = React.useState(false);
     const containerRef = React.useRef<HTMLDivElement>(null);
     const [visibleTags, setVisibleTags] = React.useState<string[]>([]);
@@ -87,8 +111,13 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
       };
     }, [selected, options]);
 
+    const handleOpenChange = (next: boolean) => {
+      setOpen(next);
+      onOpenChange?.(next);
+    };
+
     return (
-      <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
+      <PopoverPrimitive.Root open={open} onOpenChange={handleOpenChange}>
         <PopoverPrimitive.Trigger
           ref={ref}
           className={cn(
@@ -151,8 +180,16 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
             'max-h-[25vh] overflow-y-scroll no-scrollbar',
           )}
           align="start"
+          onScroll={handleScroll}
         >
           <div className="p-1">
+            {options.length === 0 && isLoadingMore && (
+              <div className="space-y-2 p-2">
+                <div className="h-4 w-40 bg-muted animate-pulse rounded" />
+                <div className="h-4 w-48 bg-muted animate-pulse rounded" />
+                <div className="h-4 w-32 bg-muted animate-pulse rounded" />
+              </div>
+            )}
             {options.map((option) => (
               <div
                 key={option.value}
@@ -177,6 +214,12 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                 </span>
               </div>
             ))}
+            {isLoadingMore && options.length > 0 && (
+              <div className="space-y-2 p-2">
+                <div className="h-4 w-40 bg-muted animate-pulse rounded" />
+                <div className="h-4 w-48 bg-muted animate-pulse rounded" />
+              </div>
+            )}
           </div>
         </PopoverPrimitive.Content>
       </PopoverPrimitive.Root>
