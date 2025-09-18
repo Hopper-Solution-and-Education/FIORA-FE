@@ -41,10 +41,19 @@ export const useNewsUpsert = ({ newsId }: UseNewsUpsertOptions = {}) => {
         content: newsData.content ?? '',
         categoryId: newsData.categoryId ?? '',
         type: 'NEWS',
-        userId: newsData.User?.id ?? '',
+        userId: newsData.userId ?? '',
+        thumbnail: newsData.thumbnail ?? '',
       };
     }
-    return { title: '', description: '', content: ' ', categoryId: '', type: 'NEWS', userId: '' };
+    return {
+      title: '',
+      description: '',
+      content: ' ',
+      categoryId: '',
+      type: 'NEWS',
+      userId: '',
+      thumbnail: '',
+    };
   }, [newsData, newsId]);
 
   const isLoading = (newsId ? isNewsLoading : false) || isCategoriesLoading;
@@ -54,6 +63,8 @@ export const useNewsUpsert = ({ newsId }: UseNewsUpsertOptions = {}) => {
   const submit = async (values: NewsFormValues): Promise<string | undefined> => {
     try {
       if (newsId) {
+        console.log('values update news', values);
+
         await updateNews({
           newsId,
           updateData: {
@@ -63,6 +74,7 @@ export const useNewsUpsert = ({ newsId }: UseNewsUpsertOptions = {}) => {
             categoryId: values.categoryId,
             type: values.type,
             userId: values.userId,
+            thumbnail: values.thumbnail,
           },
         }).unwrap();
         toast.success('Updated Successfully');
@@ -75,6 +87,7 @@ export const useNewsUpsert = ({ newsId }: UseNewsUpsertOptions = {}) => {
         categoryId: values.categoryId,
         type: 'NEWS',
         userId: values.userId,
+        thumbnail: values.thumbnail,
       }).unwrap();
       toast.success('News Created Successfully');
       return res.id;

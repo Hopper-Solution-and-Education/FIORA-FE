@@ -37,7 +37,7 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
 export async function UPDATE(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
   const postId: string = id as 'string';
-  const { title, description, content, type, categoryId, userId } = req.body;
+  const { title, description, content, type, categoryId, userId, thumbnail } = req.body;
 
   const requestParam: NewsUpdateRequest = {
     title,
@@ -46,6 +46,7 @@ export async function UPDATE(req: NextApiRequest, res: NextApiResponse) {
     type,
     categoryId,
     userId,
+    thumbnail,
   };
 
   //Validation

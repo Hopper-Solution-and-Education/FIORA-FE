@@ -19,6 +19,23 @@ export class NewsRepository implements INewsRepository {
       where: {
         id: newsId,
       },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        content: true,
+        type: true,
+        categoryId: true,
+        userId: true,
+        thumbnail: true,
+        createdAt: true,
+        updatedAt: true,
+        User: {
+          select: {
+            email: true,
+          },
+        },
+      },
     });
 
     // Kiểm tra null trước khi xử lý
@@ -51,6 +68,12 @@ export class NewsRepository implements INewsRepository {
       type: result.type,
       categoryId: result.categoryId,
       userId: result.userId,
+      thumbnail: result.thumbnail || null,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt || null,
+      User: {
+        email: result.User.email,
+      },
       Reaction: {
         reactionType: reaction?.reactionType || 'null',
       },
@@ -88,10 +111,10 @@ export class NewsRepository implements INewsRepository {
         description: post.description,
         content: post.content,
         categoryId: post.categoryId,
+        thumbnail: post.thumbnail,
         updatedBy: post.userId,
       },
     });
-    console.log('Kết quả: ', resultUpdate);
     return resultUpdate;
   }
   async delete(postId: string): Promise<void> {
@@ -113,6 +136,8 @@ export class NewsRepository implements INewsRepository {
 
   async create(postCreationParam: NewsCreationRequest) {
     try {
+      const thumnailCreation = postCreationParam.thumbnail ? postCreationParam.thumbnail : null;
+
       const post = await prisma.post.create({
         data: {
           title: postCreationParam.title,
@@ -122,6 +147,7 @@ export class NewsRepository implements INewsRepository {
           type: PostType.NEWS,
           categoryId: postCreationParam.categoryId,
           createdBy: postCreationParam.userId,
+          thumbnail: thumnailCreation,
         },
       });
       return post;
@@ -186,9 +212,15 @@ export class NewsRepository implements INewsRepository {
           description: true,
           content: true,
           views: true,
+          thumbnail: true,
           userId: true,
           type: true,
-          categoryId: true,
+          PostCategory: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       });
 

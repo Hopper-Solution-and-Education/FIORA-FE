@@ -2,6 +2,7 @@
 
 import ConfirmExitDialog from '@/components/common/organisms/ConfirmExitDialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { uploadToFirebase } from '@/shared/lib';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { useNewsUpsert } from '../../hooks/useNewsUpsert';
@@ -107,6 +108,24 @@ const EditNewsPage: React.FC = () => {
           onSubmit={async (values) => {
             if (typeof session?.user === 'undefined') return;
             values.userId = session.user.id;
+
+            // Convert blob URL to Firebase URL if needed
+            const convertToFile = async (url: string) => {
+              const response = await fetch(url);
+              const blob = await response.blob();
+              const file = new File([blob], 'thumbnailEdit.jpg', { type: blob.type });
+              return file;
+            };
+
+            if (values.thumbnail && values.thumbnail.startsWith('blob:')) {
+              const file = await convertToFile(values.thumbnail);
+              values.thumbnail = await uploadToFirebase({
+                file,
+                path: 'images/news/thumbnails',
+                fileName: `news-${Date.now()}`,
+              });
+            }
+
             await submit(values);
             router.push(`/news/details/${id}`);
           }}

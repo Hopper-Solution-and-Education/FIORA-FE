@@ -28,9 +28,9 @@ const NewsCommentsSection: React.FC<FaqCommentsProps> = ({
 
   const { data: comments, isLoading: isLoadingPage } = useGetNewsCommentsQuery({
     newsId,
-    limit: 12,
-    orderBy: 'createdAt',
     page: 1,
+    limit: 10,
+    orderBy: 'createdAt',
     orderDirection: 'desc',
   });
   const [createComment, { isLoading: isCreatingComment }] = useCreateCommentMutation();

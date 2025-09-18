@@ -732,6 +732,7 @@ model Post {
   createdBy           String                @db.Uuid
   updatedAt           DateTime?             @updatedAt @db.Timestamptz(0)
   updatedBy           String?               @db.Uuid
+  thumbnail           String?               @db.VarChar(500)
   AttachmentRelations AttachmentRelations[]
   Comment             Comment[]
   PostCategory        PostCategory          @relation(fields: [categoryId], references: [id])

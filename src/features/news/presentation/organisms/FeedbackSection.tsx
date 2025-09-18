@@ -6,7 +6,7 @@ import {
 import { useGetFaqReactionsQuery } from '@/features/helps-center/store/api/helpsCenterApi';
 import { Frown, Meh, Smile, type LucideIcon } from 'lucide-react';
 import { Session } from 'next-auth/react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useCreateReactionMutation } from '../../store/api/newsApi';
 
@@ -60,7 +60,7 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
   const { data: reactions, isLoading: isGettingReactions } = useGetFaqReactionsQuery(newsId);
   const [createReaction, { isLoading: isCreatingReaction }] = useCreateReactionMutation();
   const isLoadingReactions = isGettingReactions || isCreatingReaction;
-
+  const [userReaction, setUserReaction] = useState<ReactionType | null>(null);
   // Compute counts and user reaction
   const reactionCounts: ReactionCounts = React.useMemo(() => {
     const counts: ReactionCounts = {
@@ -73,8 +73,11 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
     });
     return counts;
   }, [reactions]);
-  const userReaction =
-    reactions?.find((reaction) => reaction.userId === session?.user?.id)?.reactionType || null;
+  useEffect(() => {
+    setUserReaction(
+      reactions?.find((reaction) => reaction.userId === session?.user?.id)?.reactionType || null,
+    );
+  }, [reactions, session?.user?.id]);
 
   // Reaction handler
   const handleReaction = async (type: ReactionType) => {
@@ -91,12 +94,20 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
         reactionType: type,
         userId: session?.user?.id,
       });
-      await createReaction({
+      createReaction({
         newsId,
         reaction: type,
         userId: session.user.id,
         tempReactions,
       }).unwrap();
+
+      reactionCounts[type]++;
+      if (userReaction !== null && userReaction !== type) {
+        if (reactionCounts[userReaction] > 0) {
+          reactionCounts[userReaction]--;
+        }
+      }
+      setUserReaction(type);
     } catch (error) {
       console.error('Error creating reaction:', error);
       toast.error('Failed to react. Please try again.');

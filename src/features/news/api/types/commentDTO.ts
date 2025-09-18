@@ -12,10 +12,10 @@ export interface CommentUpdationNews {
 
 export interface GetCommentRequest {
   newsId: string;
-  page: number;
-  limit: number;
-  orderBy: string;
-  orderDirection: string;
+  page?: number;
+  limit?: number;
+  orderBy?: string;
+  orderDirection?: string;
 }
 
 export interface CommentResponseRepo {

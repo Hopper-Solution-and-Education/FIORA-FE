@@ -1,5 +1,6 @@
 'use client';
 
+import UploadImageField from '@/components/common/forms/upload/UploadImageField';
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -15,7 +16,7 @@ import { ContentEditor } from '@/features/helps-center/presentation/molecules';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Plus } from 'lucide-react';
 import { useEffect } from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import type { AnyObject, ObjectSchema } from 'yup';
 import * as yup from 'yup';
@@ -41,6 +42,7 @@ const schema: ObjectSchema<NewsFormValues, AnyObject> = yup
     description: yup.string().optional(),
     content: yup.string().trim().required('Content is required'),
     categoryId: yup.string().trim().required('Category is required'),
+    thumbnail: yup.string().required('Thumbnail is required'),
     // userId: yup.string().trim().required('userId is required'),
     type: yup.string().trim().required('Post type is required'),
   })
@@ -75,7 +77,7 @@ const NewsForm = ({
     if (onDirtyChange) onDirtyChange(isDirty);
   }, [isDirty, onDirtyChange]);
 
-  const handleSubmit = (values: NewsFormValues) => {
+  const handleSubmit = async (values: NewsFormValues) => {
     if (values.content === '<p></p>') {
       toast.error('Content is required');
       return;
@@ -172,27 +174,53 @@ const NewsForm = ({
           />
         </div>
 
-        {/* Description */}
-        <FormField
-          control={control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel htmlFor="description">Description</FormLabel>
-              <FormControl>
-                <Textarea
-                  id="description"
-                  placeholder="Brief description (optional)"
-                  {...field}
-                  value={field.value ?? ''}
-                  disabled={isSubmitting}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Description */}
+          <FormField
+            control={control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel htmlFor="description">Description</FormLabel>
+                <FormControl>
+                  <Textarea
+                    id="description"
+                    placeholder="Brief description (optional)"
+                    {...field}
+                    value={field.value ?? ''}
+                    disabled={isSubmitting}
+                    rows={7}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
+          {/* Thumbnail Upload */}
+          <Controller
+            name="thumbnail"
+            control={control}
+            render={({ field }) => (
+              <FormItem>
+                <UploadImageField
+                  name={field.name}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  label="Thumbnail"
+                  placeholder="Choose thumbnail"
+                  previewShape="square"
+                  size="medium"
+                  disabled={isSubmitting}
+                  containerClassName="max-w-md"
+                  canChangeShape={false}
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         {/* Content Editor */}
         <FormField
           control={control}
@@ -218,7 +246,7 @@ const NewsForm = ({
           isSubmitting={isSubmitting}
           disabled={!isValid || isSubmitting}
           onSubmit={() => {
-            handleSubmit(form.getValues());
+            // Submit được handle bởi form onSubmit, không cần gọi lại
           }}
           onBack={onCancel}
         />

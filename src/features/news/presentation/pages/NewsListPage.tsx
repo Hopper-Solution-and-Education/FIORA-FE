@@ -36,7 +36,6 @@ const NewsListPage = () => {
   const { data: session } = useSession() as { data: Session | null };
 
   const isAdmin = session?.user?.role?.toUpperCase() === USER_ROLES.ADMIN;
-
   return (
     <div className="w-full px-6 space-y-8 mb-6">
       <NewsPageHeader
@@ -47,7 +46,7 @@ const NewsListPage = () => {
         isAdmin={isAdmin}
       />
       <main className="min-h-screen bg-secondary px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-5xl">
           <CardList
             newsList={allNews}
             isLoading={isLoading}

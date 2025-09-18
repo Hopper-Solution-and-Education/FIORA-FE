@@ -55,7 +55,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
 }
 
 export async function POST(req: NextApiRequest, res: NextApiResponse) {
-  const { title, description, content, userId, type, categoryId } = req.body;
+  const { title, description, content, userId, type, categoryId, thumbnail } = req.body;
 
   const request: NewsCreationRequest = {
     title,
@@ -64,6 +64,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
     userId,
     type,
     categoryId,
+    thumbnail,
   };
   const validation = validateBody(createNewsSchema, request);
   if (validation.error) {
@@ -99,6 +100,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
   }
 
   //Creation
+  console.log('request', request);
   const result = await newsUsecase.createNews(request);
   return res
     .status(RESPONSE_CODE.OK)

@@ -43,7 +43,7 @@ export enum ApiEndpointEnum {
 
   // News
   News = '/api/news',
-  NewsCategories = '/api/news/categories',
+  NewsCategories = '/api/news/categories?type=NEWS',
   NewsReaction = '/api/news/react',
   // Identification Document
   IdentificationDocument = '/api/indentification-document',

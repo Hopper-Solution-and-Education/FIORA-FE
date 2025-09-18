@@ -1,4 +1,5 @@
-import { PostType } from '@prisma/client';
+import { Post, PostType } from '@prisma/client';
+import { ReactCreationRequest } from './reactDTO';
 
 export interface ListNewsResponse {
   news: NewsResponse[];
@@ -29,6 +30,7 @@ export interface NewsCreationRequest {
   userId: string;
   type: string;
   categoryId: string;
+  thumbnail?: string;
 }
 
 export interface NewsUpdateRequest {
@@ -38,6 +40,7 @@ export interface NewsUpdateRequest {
   type: string;
   categoryId: string;
   userId: string;
+  thumbnail?: string;
 }
 
 export interface NewsResponse {
@@ -46,8 +49,12 @@ export interface NewsResponse {
   description?: string | null;
   content: string;
   type: PostType;
-  categoryId: string;
+  thumbnail: string | null;
   userId: string;
+  PostCategory: {
+    id: string;
+    name: string;
+  };
 }
 export interface NewsDetailResponse {
   id: string;
@@ -57,7 +64,19 @@ export interface NewsDetailResponse {
   type: PostType;
   categoryId: string;
   userId: string;
+  thumbnail: string | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+  User: {
+    email: string;
+  };
   Reaction: {
     reactionType: string;
   };
+}
+export interface NewsDetail extends Post {
+  Comment?: NewsResponse[];
+  Reaction?: ReactCreationRequest[];
+  // Optional related articles when using ?include=related
+  relatedArticles?: Post[];
 }

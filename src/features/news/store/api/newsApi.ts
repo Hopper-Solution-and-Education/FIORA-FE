@@ -2,7 +2,6 @@ import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import { Response } from '@/shared/types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import {
-  FaqDetail as NewsDetail,
   FaqReaction as NewsReaction,
   ReactionType,
 } from '../../../helps-center/domain/entities/models/faqs';
@@ -11,7 +10,12 @@ import {
   CommentResponse,
   GetCommentRequest,
 } from '../../api/types/commentDTO';
-import { ListNewsResponse, NewsQueryParams, NewsUpdateRequest } from '../../api/types/newsDTO';
+import {
+  ListNewsResponse,
+  NewsDetail,
+  NewsQueryParams,
+  NewsUpdateRequest,
+} from '../../api/types/newsDTO';
 import { CreatePostCategoryRequest, PostCategoryResponse } from '../../api/types/postCategoryDTO';
 
 export const newsApi = createApi({
@@ -100,6 +104,7 @@ export const newsApi = createApi({
         categoryId: string;
         userId: string;
         type: string;
+        thumbnail?: string;
       }
     >({
       query: (data) => {
@@ -116,7 +121,16 @@ export const newsApi = createApi({
 
     // Paginated News comments endpoint
     getNewsComments: builder.query<CommentResponse[], GetCommentRequest>({
-      query: () => `${ApiEndpointEnum.News}/comment`,
+      query: ({ newsId, page = 1, limit = 10, orderBy = 'createdAt', orderDirection = 'desc' }) => {
+        const params = new URLSearchParams({
+          newsId,
+          page: page.toString(),
+          limit: limit.toString(),
+          ...(orderBy && { orderBy }),
+          ...(orderDirection && { orderDirection }),
+        });
+        return `${ApiEndpointEnum.News}/comment?${params.toString()}`;
+      },
       providesTags: (result, error, { newsId }) => [{ type: 'NewsComments', id: newsId }],
       transformResponse: (response: Response<CommentResponse[]>) => response.data,
     }),
@@ -166,21 +180,21 @@ export const newsApi = createApi({
         };
       },
       invalidatesTags: (result, error, { newsId }) => [{ type: 'NewsReactions', id: newsId }],
-      // Optimistic update
-      async onQueryStarted({ newsId, tempReactions }, { dispatch, queryFulfilled }) {
-        // Optimistically update the reactions list
-        const patchResult = dispatch(
-          newsApi.util.updateQueryData('getNewsReactions', newsId, (draft) => {
-            if (!draft) return;
-            draft.splice(0, draft.length, ...tempReactions);
-          }),
-        );
-        try {
-          await queryFulfilled;
-        } catch {
-          patchResult.undo();
-        }
-      },
+      // // Optimistic update
+      // async onQueryStarted({ newsId, tempReactions }, { dispatch, queryFulfilled }) {
+      //   // Optimistically update the reactions list
+      //   const patchResult = dispatch(
+      //     newsApi.util.updateQueryData('getNewsReactions', newsId, (draft) => {
+      //       if (!draft) return;
+      //       draft.splice(0, draft.length, ...tempReactions);
+      //     }),
+      //   );
+      //   try {
+      //     await queryFulfilled;
+      //   } catch {
+      //     patchResult.undo();
+      //   }
+      // },
     }),
 
     // Category endpoints

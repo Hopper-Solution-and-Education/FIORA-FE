@@ -1,6 +1,7 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
+import { uploadToFirebase } from '@/shared/lib';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import ConfirmExitDialog from '../../../../components/common/organisms/ConfirmExitDialog';
@@ -36,6 +37,23 @@ const CreateNewsPage = () => {
   const handleSubmit = async (values: NewsFormValues) => {
     if (typeof session?.user === 'undefined') return;
     values.userId = session?.user.id;
+
+    const convertToFile = async (url: string) => {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const file = new File([blob], 'thumbnailCreation.jpg', { type: blob.type });
+      return file;
+    };
+
+    if (values.thumbnail && values.thumbnail.startsWith('blob:')) {
+      const file = await convertToFile(values.thumbnail);
+      values.thumbnail = await uploadToFirebase({
+        file,
+        path: 'images/news/thumbnails',
+        fileName: `news-${Date.now()}`,
+      });
+    }
+
     const res = await submit(values);
     if (res) {
       setHasChanges(false);

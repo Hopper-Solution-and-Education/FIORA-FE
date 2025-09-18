@@ -16,7 +16,7 @@ export const useNewsData = () => {
   // accumulated list of news (infinite scroll)
   const [allNews, setAllNews] = useState<NewsResponse[]>([]);
   const [page, setPage] = useState<number>(1);
-  const limit = 1;
+  const limit = 10;
   const [activeFilters, setActiveFilters] = useState<NewsFilterValues>({
     search: '',
     categories: [],
