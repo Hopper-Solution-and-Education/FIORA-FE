@@ -1,14 +1,36 @@
 import ComposedChartComponent from '@/components/common/charts/composed-chart';
 import { COLORS } from '@/shared/constants/chart';
-import { useMembershipCronjobDashboard } from '../hooks/useMembershipCronjobDashboard';
+import { useEffect, useState } from 'react';
+import { membershipCronjobContainer } from '../../di/membershipCronjobDashboardDI';
+import { MEMBERSHIP_CRONJOB_TYPES } from '../../di/membershipCronjobDashboardDI.type';
+import { IGetMembershipChartDataUseCase } from '../../domain/usecase/GetMembershipChartDataUseCase';
 
 const MembershipCronjobChart = () => {
-  const { chartData, chartLoading } = useMembershipCronjobDashboard();
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<{ name: string; count: number }[]>([]);
 
-  const data = chartData.map((item) => ({
-    name: item.tierName,
-    count: Number(item.count),
-  }));
+  useEffect(() => {
+    let mounted = true;
+    const fetchChart = async () => {
+      setLoading(true);
+      try {
+        const useCase = membershipCronjobContainer.get<IGetMembershipChartDataUseCase>(
+          MEMBERSHIP_CRONJOB_TYPES.IGetMembershipChartDataUseCase,
+        );
+        const res = await useCase.execute(undefined);
+        const items = res.data?.items || [];
+        if (mounted) {
+          setData(items.map((it) => ({ name: it.tierName, count: Number(it.count) })));
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    fetchChart();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <ComposedChartComponent
@@ -16,7 +38,7 @@ const MembershipCronjobChart = () => {
       columns={[{ key: 'count', name: 'Count', color: COLORS.DEPS_SUCCESS.LEVEL_1 }]}
       height={400}
       showLegend={true}
-      isLoading={chartLoading}
+      isLoading={loading}
       yAxisFormatter={(value) => value.toString()}
       currency=""
     />

@@ -31,11 +31,13 @@ const DialogEditBenefitTier = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
+    console.log('benefitTierToEdit', benefitTierToEdit);
     if (benefitTierToEdit) {
       methods.reset({
         name: benefitTierToEdit?.label || '',
         value: benefitTierToEdit?.value || 0,
         unit: benefitTierToEdit?.suffix || '',
+        description: benefitTierToEdit?.description || '',
         mode: ProcessMembershipMode.UPDATE, // Default mode
       });
     }

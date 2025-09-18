@@ -1,3 +1,4 @@
+import { LoadingIndicator } from '@/components/common/atoms';
 import { GlobalDialog } from '@/components/common/molecules/GlobalDialog';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
@@ -9,44 +10,55 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { membershipCronjobContainer } from '../../di/membershipCronjobDashboardDI';
+import { MEMBERSHIP_CRONJOB_TYPES } from '../../di/membershipCronjobDashboardDI.type';
+import { IGetMembershipTiersUseCase } from '../../domain/usecase/GetMembershipTiersUseCase';
+import { IResendMembershipUseCase } from '../../domain/usecase/ResendMembershipUseCase';
+import { DispatchTableContext } from '../context/DispatchTableContext';
 
 interface MembershipActionButtonProps {
+  id: string;
   status: string;
-  toTier?: string;
-  onRetry?: (id: string) => void;
   className?: string;
 }
 
-const MembershipActionButton = ({
-  status,
-  toTier,
-  onRetry,
-  className,
-}: MembershipActionButtonProps) => {
+const MembershipActionButton = ({ id, status, className }: MembershipActionButtonProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTier, setSelectedTier] = useState(toTier || '');
+  const [selectedTier, setSelectedTier] = useState('');
   const [reason, setReason] = useState('');
+  const [tierOptions, setTierOptions] = useState<{ value: string; label: string }[]>([]);
+  const [loadingTiers, setLoadingTiers] = useState(false);
+  const { dispatchTable } = useContext(DispatchTableContext)!;
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Mock tier options - replace with actual API call later
-  const mockTierOptions = [
-    'Platinum Qili',
-    'Gold Qili',
-    'Silver Qili',
-    'Bronze Qili',
-    'Titan Egg',
-    'Diamond Egg',
-  ];
+  const selectedTierLabel = useMemo(
+    () => tierOptions.find((t) => t.value === selectedTier)?.label || '',
+    [selectedTier, tierOptions],
+  );
 
   const handleRetry = () => {
     setIsModalOpen(true);
   };
 
-  const handleConfirm = () => {
-    if (onRetry) {
-      // TODO: Get the actual membership ID from context or props
-      onRetry('membership-id');
+  const handleConfirm = async () => {
+    if (!selectedTier || !reason) return;
+    const useCase = membershipCronjobContainer.get<IResendMembershipUseCase>(
+      MEMBERSHIP_CRONJOB_TYPES.IResendMembershipUseCase,
+    );
+    setIsLoading(true);
+    try {
+      await useCase.execute(id, { tierId: selectedTier, reason });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
     }
+
+    dispatchTable({
+      type: 'UPDATE_ROW',
+      payload: { id, updates: { status: 'SUCCESSFUL', toTier: selectedTierLabel } },
+    });
     setIsModalOpen(false);
     setSelectedTier('');
     setReason('');
@@ -54,9 +66,28 @@ const MembershipActionButton = ({
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    setSelectedTier(toTier || '');
+    setSelectedTier('');
     setReason('');
   };
+
+  useEffect(() => {
+    if (!isModalOpen) return;
+    if (tierOptions.length > 0 || loadingTiers) return;
+    const fetchTiers = async () => {
+      setLoadingTiers(true);
+      try {
+        const useCase = membershipCronjobContainer.get<IGetMembershipTiersUseCase>(
+          MEMBERSHIP_CRONJOB_TYPES.IGetMembershipTiersUseCase,
+        );
+        const res = await useCase.execute(1, 20);
+        const items = res.data?.items || [];
+        setTierOptions(items.map((t) => ({ value: t.id, label: t.tierName })));
+      } finally {
+        setLoadingTiers(false);
+      }
+    };
+    fetchTiers();
+  }, [isModalOpen, tierOptions.length, loadingTiers]);
 
   if (status.toLowerCase() === 'successful') {
     return (
@@ -111,9 +142,9 @@ const MembershipActionButton = ({
                 </SelectTrigger>
 
                 <SelectContent>
-                  {mockTierOptions.map((tier) => (
-                    <SelectItem key={tier} value={tier}>
-                      {tier}
+                  {tierOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -151,6 +182,7 @@ const MembershipActionButton = ({
               variant="outline"
               onClick={handleCancel}
               className="bg-white border-gray-300 hover:bg-gray-50 rounded-lg px-4 py-2 w-full"
+              disabled={isLoading}
             >
               <Icons.arrowLeft className="w-4 h-4 text-black" />
             </Button>
@@ -159,8 +191,9 @@ const MembershipActionButton = ({
               type="button"
               onClick={handleConfirm}
               className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 w-full"
+              disabled={!selectedTier || !reason || isLoading}
             >
-              <Icons.check className="w-4 h-4 text-white" />
+              {isLoading ? <LoadingIndicator /> : <Icons.check className="w-4 h-4 text-white" />}
             </Button>
           </div>
         }
