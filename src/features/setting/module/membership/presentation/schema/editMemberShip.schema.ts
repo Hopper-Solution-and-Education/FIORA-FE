@@ -7,6 +7,7 @@ export type DynamicFieldTier = {
   label: string;
   suffix?: string;
   value: number;
+  description?: string;
 };
 
 export function buildDynamicTierSchema(fields: DynamicFieldTier[]) {

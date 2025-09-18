@@ -49,7 +49,7 @@ const DialogAddBenefitTier = ({ open, onOpenChange }: DialogAddBenefitTierProps)
         data: {
           tierBenefit: {
             tierId: selectMembershipBenefit?.id || '',
-            value: 0,
+            value: data.value,
           },
           membershipBenefit: {
             name: data.name,
