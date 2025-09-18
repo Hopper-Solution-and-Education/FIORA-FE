@@ -20,8 +20,8 @@ interface TierRankProps {
 
 const TierRank = ({ data, nextTierRanks }: TierRankProps) => {
   return (
-    <div className="h-full max-h-[448px] overflow-y-auto">
-      <Table className="w-full table-fixed">
+    <div className="h-full max-h-[448px] overflow-y-auto overflow-x-auto relative">
+      <Table className="w-full min-w-[720px] table-fixed">
         {/* Định nghĩa độ rộng cột */}
         <colgroup>
           {/* No. */}
@@ -34,10 +34,12 @@ const TierRank = ({ data, nextTierRanks }: TierRankProps) => {
 
         <TableHeader>
           <TableRow className="h-14">
-            <TableHead className="hidden sm:table-cell text-center py-3">No.</TableHead>
-            <TableHead className="text-center py-3">Benefit</TableHead>
-            <TableHead className="text-center py-3">Value</TableHead>
-            <TableHead className="text-center py-3">Unit</TableHead>
+            <TableHead className="hidden sm:table-cell text-center py-3 sticky top-0 z-20 bg-white">
+              No.
+            </TableHead>
+            <TableHead className="text-center py-3 sticky top-0 z-20 bg-white">Benefit</TableHead>
+            <TableHead className="text-center py-3 sticky top-0 z-20 bg-white">Value</TableHead>
+            <TableHead className="text-center py-3 sticky top-0 z-20 bg-white">Unit</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -47,9 +49,15 @@ const TierRank = ({ data, nextTierRanks }: TierRankProps) => {
               <TableCell className="hidden sm:table-cell text-center font-bold text-blue-400 py-3">
                 {index + 1}
               </TableCell>
-              <TableCell className="truncate text-left py-3">{item.label}</TableCell>
-              <TableCell className="truncate text-right py-3">{item.value}</TableCell>
-              <TableCell className="truncate text-left py-3">{item.suffix}</TableCell>
+              <TableCell className="whitespace-normal break-words text-left py-3">
+                {item.label}
+              </TableCell>
+              <TableCell className="whitespace-normal break-words text-right py-3">
+                {item.value}
+              </TableCell>
+              <TableCell className="whitespace-normal break-words text-left py-3">
+                {item.suffix}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
