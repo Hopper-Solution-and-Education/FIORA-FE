@@ -27,6 +27,11 @@ export class MembershipCronjobMapper {
 
     append('status', filter.status as any);
     append('typeCronJob', CronJobType.Membership);
+    append('fromTier', filter.fromTier as any);
+    append('toTier', filter.toTier as any);
+    append('email', filter.email as any);
+    append('updatedBy', filter.updatedBy as any);
+
     if (filter.search) params.append('search', filter.search);
     if (filter.fromDate)
       params.append(
