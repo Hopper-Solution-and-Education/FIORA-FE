@@ -3,20 +3,18 @@ import { Session, useSession } from 'next-auth/react';
 import { useNewsData } from '../../hooks/useNewsData';
 import { useNewsUpsert } from '../../hooks/useNewsUpsert';
 import CardList from '../organisms/CardList';
+import Categories from '../organisms/Categories';
 import NewsPageHeader from '../organisms/NewsPageHeader';
 
 const NewsListPage = () => {
   const {
     activeFilters,
-    // filteredNewsList,
     handleLoadMoreNews,
     allCategoriesList,
-    // hasActiveFilters,
     isLoading,
     isFetchingPage,
     allNews,
     endOfNews,
-    // mostViewedNews,
     handleFilterChange,
   } = useNewsData();
   const { categories } = useNewsUpsert();
@@ -34,14 +32,34 @@ const NewsListPage = () => {
         isAdmin={isAdmin}
       />
       <main className="min-h-screen bg-secondary px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl">
-          <CardList
-            newsList={allNews}
-            isLoading={isLoading}
-            isFetchingPage={isFetchingPage}
-            handleLoadMoreNews={handleLoadMoreNews}
-            endOfNews={endOfNews}
-          />
+        <div className="mx-auto max-w-7xl">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+            {/* Cột bên trái: Danh sách bài viết (chiếm 2/3 không gian) */}
+            <div className="lg:col-span-4">
+              <CardList
+                newsList={allNews}
+                isLoading={isLoading}
+                isFetchingPage={isFetchingPage}
+                handleLoadMoreNews={handleLoadMoreNews}
+                endOfNews={endOfNews}
+              />
+            </div>
+
+            {/* Cột bên phải: Sidebar (chiếm 1/3 không gian) */}
+            <div className="lg:col-span-1">
+              {/*
+              'sticky' và 'top-8' giúp sidebar "dính" lại ở phía trên màn hình
+              khi người dùng cuộn trang, một trải nghiệm rất phổ biến và tiện lợi.
+            */}
+              <aside className="sticky top-8">
+                <Categories
+                  activeFilters={activeFilters}
+                  categories={allCategoriesList}
+                  onFilterChange={handleFilterChange}
+                />
+              </aside>
+            </div>
+          </div>
         </div>
       </main>
     </div>

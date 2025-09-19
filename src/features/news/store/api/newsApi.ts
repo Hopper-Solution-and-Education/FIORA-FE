@@ -94,7 +94,6 @@ export const newsApi = createApi({
       invalidatesTags: [{ type: 'News', id: 'LIST' }],
     }),
 
-    // TODO: CHECK VALIDATION FOR OPTIONAL FIELDS
     createNews: builder.mutation<
       { id: string },
       {
@@ -180,21 +179,6 @@ export const newsApi = createApi({
         };
       },
       invalidatesTags: (result, error, { newsId }) => [{ type: 'NewsReactions', id: newsId }],
-      // // Optimistic update
-      // async onQueryStarted({ newsId, tempReactions }, { dispatch, queryFulfilled }) {
-      //   // Optimistically update the reactions list
-      //   const patchResult = dispatch(
-      //     newsApi.util.updateQueryData('getNewsReactions', newsId, (draft) => {
-      //       if (!draft) return;
-      //       draft.splice(0, draft.length, ...tempReactions);
-      //     }),
-      //   );
-      //   try {
-      //     await queryFulfilled;
-      //   } catch {
-      //     patchResult.undo();
-      //   }
-      // },
     }),
 
     // Category endpoints
