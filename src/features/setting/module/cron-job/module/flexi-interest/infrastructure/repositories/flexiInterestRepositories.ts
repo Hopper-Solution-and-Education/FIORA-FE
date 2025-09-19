@@ -112,29 +112,6 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
 
     return { items, total, totalSuccess, totalFailed };
   }
-
-  async getFlexiInterestStatistics() {
-    try {
-      const response = await fetch('http://localhost:3000/api/dashboard/chart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ typeCronJob: 'FLEXI_INTEREST' }),
-      });
-
-      const result = await response.json();
-
-      if (result.status === 200) {
-        return result.data;
-      }
-
-      throw new Error(result.message || 'Failed to fetch flexi interest statistics');
-    } catch (error) {
-      console.error('Error fetching flexi interest statistics:', error);
-      throw error;
-    }
-  }
 }
 
 export const FlexiInterestRepositories = new flexiInterestRepositories();

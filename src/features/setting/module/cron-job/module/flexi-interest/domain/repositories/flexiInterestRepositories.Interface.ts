@@ -5,12 +5,4 @@ export interface IFlexiInterestRepository {
     filter?: any,
     search?: string,
   ): Promise<{ items: any[]; total: number; totalSuccess: number; totalFailed: number }>;
-
-  getFlexiInterestStatistics(): Promise<{
-    tierInterestAmount: Array<{
-      tierName: string;
-      interestAmount: string;
-    }>;
-    totalInterestAmount: string;
-  }>;
 }

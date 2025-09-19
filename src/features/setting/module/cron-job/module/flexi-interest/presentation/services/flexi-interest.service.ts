@@ -7,7 +7,7 @@ export const flexiInterestApi = createApi({
     baseUrl: '/',
     prepareHeaders: (headers) => headers,
   }),
-  tagTypes: ['FlexiInterest', 'MembershipTier'],
+  tagTypes: ['FlexiInterest', 'MembershipTier', 'FlexiInterestChart'],
   endpoints: (builder) => ({
     getFlexiInterest: builder.query<any, { page: number; pageSize: number; filter: string }>({
       query: (params) => ({ url: 'api/flexi-Interest', method: 'GET', params }),
@@ -19,6 +19,15 @@ export const flexiInterestApi = createApi({
       transformResponse: (response: Response<any>) => response.data,
       providesTags: ['MembershipTier'],
     }),
+    getFlexiInterestStatistics: builder.query<any, void>({
+      query: () => ({
+        url: 'api/dashboard/flexi-interest-chart',
+        method: 'GET',
+        params: { typeCronJob: 'FLEXI_INTEREST' },
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+      providesTags: ['FlexiInterestChart'],
+    }),
   }),
 });
 
@@ -27,4 +36,5 @@ export const {
   useLazyGetFlexiInterestQuery,
   useGetMembershipTierQuery,
   useLazyGetMembershipTierQuery,
+  useGetFlexiInterestStatisticsQuery,
 } = flexiInterestApi;
