@@ -1,6 +1,7 @@
 import { USER_ROLES } from '@/shared/constants/featuresFlags';
 import { Session, useSession } from 'next-auth/react';
 import { useNewsData } from '../../hooks/useNewsData';
+import { useNewsUpsert } from '../../hooks/useNewsUpsert';
 import { useGetNewsQuery } from '../../store/api/newsApi';
 import CardList from '../organisms/CardList';
 import NewsPageHeader from '../organisms/NewsPageHeader';
@@ -32,6 +33,7 @@ const NewsListPage = () => {
     // mostViewedNews,
     handleFilterChange,
   } = useNewsData();
+  const { categories } = useNewsUpsert();
 
   const { data: session } = useSession() as { data: Session | null };
 
@@ -39,7 +41,7 @@ const NewsListPage = () => {
   return (
     <div className="w-full px-6 space-y-8 mb-6">
       <NewsPageHeader
-        categories={allCategoriesList}
+        categories={categories}
         activeFilters={activeFilters}
         onFilterChange={handleFilterChange}
         isLoading={isLoading}

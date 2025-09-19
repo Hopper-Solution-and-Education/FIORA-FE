@@ -109,6 +109,8 @@ export const useNewsData = () => {
           : {}),
       };
 
+      console.log('q', q);
+
       try {
         const result = await triggerGetNews(q).unwrap();
         const pageNews = Array.isArray(result?.news) ? result.news : [];
