@@ -6,6 +6,7 @@ import { CURRENCY } from '@/shared/constants';
 import { useMemo } from 'react';
 import { WalletDepositButton, WalletTransferButton, WalletWithdrawButton } from '../atoms';
 import { usePaymentWalletDashboard } from '../hooks';
+import { PercentageMetricCard } from '../molecules';
 
 type PaymentWalletOverviewProps = {
   enableDeposit?: boolean;
@@ -67,11 +68,10 @@ const PaymentWalletOverview = ({
           currency={CURRENCY.FX}
         />
 
-        <MetricCard
+        <PercentageMetricCard
           title="Annual Flexi Interest"
           value={metrics.annualFlexInterest}
           type="income"
-          suffix="%"
         />
 
         <div className="flex justify-end gap-4">
@@ -90,6 +90,7 @@ const PaymentWalletOverview = ({
           value={metrics.totalBalance}
           type="neutral"
           icon="wallet"
+          description="Total FX Balance"
           currency={CURRENCY.FX}
         />
 
@@ -98,6 +99,7 @@ const PaymentWalletOverview = ({
           value={metrics.totalAvailableBalance}
           type="income"
           icon="banknote"
+          description="Total available FX for trading"
           currency={CURRENCY.FX}
         />
 
@@ -106,6 +108,7 @@ const PaymentWalletOverview = ({
           value={metrics.totalFrozen}
           type="expense"
           icon="lock"
+          description="Total FX being processed"
           currency={CURRENCY.FX}
         />
 
@@ -114,6 +117,7 @@ const PaymentWalletOverview = ({
           value={metrics.accumulatedEarn}
           type="income"
           icon="trendingUp"
+          description="Accumulated Reward Earned"
           currency={CURRENCY.FX}
         />
       </div>

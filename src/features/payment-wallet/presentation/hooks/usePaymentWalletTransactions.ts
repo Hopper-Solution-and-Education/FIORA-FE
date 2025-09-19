@@ -1,5 +1,6 @@
 'use client';
 
+import { FilterCriteria } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
 import { useCallback, useMemo } from 'react';
@@ -11,7 +12,7 @@ import {
   setSearchTerm,
 } from '../../slices';
 import { fetchPaymentWalletTransactionsAsyncThunk } from '../../slices/actions';
-import type { FetchPaymentWalletTransactionsRequest, FilterCriteria } from '../../slices/types';
+import type { FetchPaymentWalletTransactionsRequest } from '../../slices/types';
 
 export const usePaymentWalletTransactions = () => {
   const { data: session } = useSession();

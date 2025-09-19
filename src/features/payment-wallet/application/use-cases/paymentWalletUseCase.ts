@@ -23,7 +23,7 @@ class PaymentWalletUseCase {
     private walletRepository: IWalletRepository,
     private membershipBenefitRepository: IMembershipBenefitRepository,
     private tierBenefitRepository: ITierBenefitRepository,
-  ) { }
+  ) {}
 
   async fetchPaymentWallet(userId: string, params: FetchPaymentWalletParams) {
     const { filters, lastCursor, page, pageSize, searchParams } = params;
@@ -175,6 +175,52 @@ class PaymentWalletUseCase {
       totalAvailableBalance,
       totalFrozen,
       accumulatedEarn,
+    };
+  }
+
+  async getPaymentWalletFilterOptions(userId: string, additionalFilters?: any) {
+    // Get filter options for payment wallet transactions
+    const prefetchFilters: Prisma.TransactionWhereInput = {
+      OR: [
+        {
+          fromWalletId: {
+            not: null,
+          },
+        },
+        {
+          toWalletId: {
+            not: null,
+          },
+        },
+      ],
+      userId,
+      ...(additionalFilters || {}),
+    };
+
+    // Get unique transaction types for wallet transactions
+    const types = await this.transactionRepository.findMany({
+      where: prefetchFilters,
+      select: {
+        type: true,
+      },
+      distinct: ['type'],
+    });
+
+    // Get min and max amounts for wallet transactions
+    const amountAggregation = await this.transactionRepository.aggregate({
+      where: prefetchFilters,
+      _min: {
+        baseAmount: true,
+      },
+      _max: {
+        baseAmount: true,
+      },
+    });
+
+    return {
+      types: types.map((t) => t.type),
+      amountMin: amountAggregation._min.baseAmount || 0,
+      amountMax: amountAggregation._max.baseAmount || 10000,
     };
   }
 }
