@@ -424,7 +424,7 @@ class MembershipSettingUseCase {
 
   async updateMembershipThreshold(data: MembershipTierUpdate, userId: string) {
     const FLOOR = 0;
-    const CEILING = 99999999999;
+    const CEILING = 99999999998;
 
     const { axis, oldMin, oldMax, newMin, newMax } = data;
     const { minKey, maxKey } = axisKeys(axis);
@@ -436,6 +436,8 @@ class MembershipSettingUseCase {
 
     const dFloor = new Prisma.Decimal(FLOOR);
     const dCeil = new Prisma.Decimal(CEILING);
+
+    const newValue = dNewMax.sub(dOldMax); // positive value means increased, negative value means decreased
 
     if (dOldMin.lt(dFloor) || dOldMax.gt(dCeil)) {
       throw new BadRequestError(
@@ -540,6 +542,7 @@ class MembershipSettingUseCase {
       }
 
       return await prisma.$transaction(async (tx) => {
+        // update the current tier
         const updated = await tx.membershipTier.updateMany({
           where: { [minKey]: dOldMin, [maxKey]: dOldMax },
           data: { [minKey]: dNewMin, [maxKey]: dNewMax, updatedBy: userId },
@@ -549,9 +552,37 @@ class MembershipSettingUseCase {
           return { updated: 0, snappedNext: 0, snappedPrev: 0 };
         }
 
-        const snapNext = await tx.membershipTier.updateMany({
-          where: { [minKey]: new Prisma.Decimal(nextMinOld) },
-          data: { [minKey]: dNewMax.add(1), updatedBy: userId },
+        // Update the consequent next tier: increase minKey and maxKey by the value of new dNewMax
+        const snapNextMinTier = await tx.membershipTier.updateMany({
+          where: {
+            [minKey]: {
+              gt: new Prisma.Decimal(oldMin),
+              lte: new Prisma.Decimal(CEILING),
+            },
+          },
+          data: {
+            [minKey]: {
+              increment: newValue,
+            },
+            updatedAt: new Date(),
+            updatedBy: userId,
+          },
+        });
+
+        const snapNextMaxTier = await tx.membershipTier.updateMany({
+          where: {
+            [maxKey]: {
+              gt: new Prisma.Decimal(oldMax),
+              lt: new Prisma.Decimal(CEILING),
+            },
+          },
+          data: {
+            [maxKey]: {
+              increment: newValue,
+            },
+            updatedAt: new Date(),
+            updatedBy: userId,
+          },
         });
 
         const snapPrev =
@@ -564,7 +595,7 @@ class MembershipSettingUseCase {
 
         return {
           updated: updated.count,
-          snapNext: snapNext.count,
+          snapNext: snapNextMinTier.count + snapNextMaxTier.count,
           snapPrev: snapPrev.count,
         };
       });
