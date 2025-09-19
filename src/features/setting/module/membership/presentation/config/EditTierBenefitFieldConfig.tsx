@@ -1,6 +1,6 @@
 'use client';
 
-import { InputField } from '@/components/common/forms';
+import { InputField, TextareaField } from '@/components/common/forms';
 import { RadioField } from '@/components/common/forms/radio';
 import { useAppSelector } from '@/store';
 import { useFormContext } from 'react-hook-form';
@@ -36,6 +36,7 @@ const useEditTierBenefitFieldConfig = () => {
       disabled={isSubmitting || isLoadingAddUpdateBenefitTier}
       gridClassName="col-span-6"
     />,
+
     <InputField
       key="unit"
       name="unit"
@@ -44,6 +45,15 @@ const useEditTierBenefitFieldConfig = () => {
       required
       disabled={isSubmitting || isLoadingAddUpdateBenefitTier}
       gridClassName="col-span-6"
+    />,
+
+    <TextareaField
+      key="description"
+      name="description"
+      label="Description"
+      placeholder="Benefit Tier Description"
+      disabled={isSubmitting || isLoadingAddUpdateBenefitTier}
+      gridClassName="col-span-12"
     />,
     <RadioField
       key="mode"
