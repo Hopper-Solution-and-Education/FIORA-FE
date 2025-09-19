@@ -13,17 +13,15 @@ export default function CommonTableSkeletonRow<T>({ columns }: Props<T>) {
     return 'text-center justify-center';
   };
 
-  const skeletonWidths = ['w-20', 'w-24', 'w-16', 'w-24', 'w-20', 'w-16', 'w-20'];
-
   return (
     <TableRow>
-      {columns.map((col, index) => {
+      {columns.map((col) => {
         const alignClass = getAlignClass(col.align);
         const [textAlign, justify] = alignClass.split(' ');
         return (
           <TableCell key={col.key} className={textAlign} style={{ width: col.width }}>
             <div className={`flex ${justify}`}>
-              <Skeleton className={`h-4 ${skeletonWidths[index] || 'w-20'}`} />
+              <Skeleton className={`h-4 w-full`} />
             </div>
           </TableCell>
         );

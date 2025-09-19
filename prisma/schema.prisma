@@ -583,7 +583,7 @@ model UserNotification {
   updatedAt      DateTime     @updatedAt @db.Timestamptz(0)
   createdBy      String?      @db.Uuid
   updatedBy      String?      @db.Uuid
-  Notification   Notification @relation(fields: [notificationId], references: [id])
+  notification   Notification @relation(fields: [notificationId], references: [id])
   User           User         @relation(fields: [userId], references: [id])
 
   @@index([userId])

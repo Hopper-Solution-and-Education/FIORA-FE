@@ -1,6 +1,7 @@
 import { prisma } from '@/config';
 import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { CreateBoxNotificationInput } from '@/features/notification/domain/repositories/notificationRepository.interface';
+import { SessionUser } from '@/shared/types/session';
 import { applyJsonInFilter, normalizeToArray } from '@/shared/utils/filterUtils';
 import { CronJobLog, CronJobStatus, MembershipTier, TypeCronJob } from '@prisma/client';
 
@@ -34,6 +35,7 @@ class DashboardRepository {
         updatedAt: true,
         status: true,
         dynamicValue: true,
+        reason: true,
       },
     });
 
@@ -155,7 +157,7 @@ class DashboardRepository {
 
   async changeCronjob(
     cronjobData: CronJobLog,
-    userId: string,
+    user: SessionUser,
     tier: MembershipTier,
     reason?: string,
   ) {
@@ -173,7 +175,7 @@ class DashboardRepository {
         cronjobData.typeCronJob !== TypeCronJob.MEMBERSHIP
         //  ||  !this.shouldUpdateTier(cronjobData, existing)
       ) {
-        return null;
+        return 404;
       }
 
       const { email, name, id: user_id } = existing.user;
@@ -183,7 +185,7 @@ class DashboardRepository {
       const updatedProgress = await tx.membershipProgress.update({
         where: { id: existing?.id },
         data: {
-          updatedBy: userId,
+          updatedBy: user.id,
           updatedAt: new Date(),
           tierId: tier.id,
           tiersendid: tier.id,
@@ -195,7 +197,7 @@ class DashboardRepository {
       const updatedCronJobLog = await tx.cronJobLog.update({
         where: { id: cronjobData.id },
         data: {
-          updatedBy: userId,
+          updatedBy: user.id,
           updatedAt: new Date(),
           status,
           dynamicValue: {
@@ -213,7 +215,7 @@ class DashboardRepository {
           });
         });
       }
-
+      updatedCronJobLog.updatedBy = user as any;
       return updatedCronJobLog;
     });
   }
