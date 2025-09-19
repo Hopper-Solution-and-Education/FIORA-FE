@@ -14,14 +14,12 @@ interface Props {
   data: ReferralCronjobTableData[];
   loading: boolean;
   className?: string;
-  // Infinite scroll props
-  hasMore: boolean;
-  isLoadingMore: boolean;
-  onLoadMore: () => void;
   // Summary props
   totalItems: number;
   successfulCount: number;
   failedCount: number;
+  // Callback for retry action
+  onRetrySuccess?: () => void;
 }
 
 const STORAGE_KEY = 'referral-cronjob:common-table';
@@ -30,12 +28,10 @@ const ReferralCronjobCommonTable = ({
   data,
   loading,
   className,
-  hasMore,
-  isLoadingMore,
-  onLoadMore,
   totalItems,
   successfulCount,
   failedCount,
+  onRetrySuccess,
 }: Props) => {
   const columns: CommonTableColumn<ReferralCronjobTableData>[] = useMemo(
     () => [
@@ -112,9 +108,13 @@ const ReferralCronjobCommonTable = ({
           <div className="flex items-center justify-center">
             <ReferralActionButton
               status={r.status}
-              onRetry={(id) => {
-                console.log('Retry referral:', id);
-                // TODO: Implement retry logic
+              referralId={r.id}
+              onRetry={(id, amount, reason) => {
+                console.log('Retry referral:', { id, amount, reason });
+                // Refresh data after successful retry
+                if (onRetrySuccess) {
+                  onRetrySuccess();
+                }
               }}
             />
           </div>
@@ -146,20 +146,15 @@ const ReferralCronjobCommonTable = ({
           onColumnConfigChange={setColumnConfig}
           storageKey={STORAGE_KEY}
           loading={loading}
-          hasMore={hasMore}
-          isLoadingMore={isLoadingMore}
-          onLoadMore={onLoadMore}
           className={className}
           leftHeaderNode={<ReferralTopBarAction data={data} />}
           rightHeaderNode={
             <div className="border border-border rounded-md px-3 py-2 bg-background">
               <div className="flex flex-col items-end gap-1">
-                {/* Show count */}
+                {/* Total count */}
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">Show:</span>
-                  <span className="text-sm font-medium">
-                    {data.length.toLocaleString()} / {totalItems.toLocaleString()}
-                  </span>
+                  <span className="text-sm text-gray-600">Total:</span>
+                  <span className="text-sm font-medium">{totalItems.toLocaleString()}</span>
                 </div>
 
                 {/* S|F statistics */}

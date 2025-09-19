@@ -62,7 +62,7 @@ export const settingNavItems: NavItem[] = [
       {
         title: 'Referral',
         url: RouteEnum.CronjobReferral,
-        icon: 'users',
+        icon: 'userPlus',
       },
     ],
   },

@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
+import { useRetryReferral } from '../hooks/useRetryReferral';
 
 interface ReferralActionButtonProps {
   status: string;
   referralId: string;
-  onRetry?: (id: string) => void;
+  onRetry?: (id: string, amount: string, reason: string) => void;
   className?: string;
 }
 
@@ -16,21 +17,43 @@ const ReferralActionButton = ({ status, referralId, onRetry }: ReferralActionBut
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
+  const { retryReferral, isRetrying, error, clearError } = useRetryReferral();
 
   const handleRetry = () => {
+    clearError();
     setIsModalOpen(true);
   };
 
-  const handleConfirm = () => {
-    if (onRetry) {
-      onRetry(referralId);
+  const handleConfirm = async () => {
+    if (!amount.trim() || !reason.trim()) {
+      return;
     }
-    setIsModalOpen(false);
-    setAmount('');
-    setReason('');
+
+    try {
+      const result = await retryReferral({
+        id: referralId,
+        amount: amount.trim(),
+        reason: reason.trim(),
+      });
+
+      if (result) {
+        // Call the parent callback if provided
+        if (onRetry) {
+          onRetry(referralId, amount.trim(), reason.trim());
+        }
+
+        setIsModalOpen(false);
+        setAmount('');
+        setReason('');
+      }
+    } catch (err) {
+      // Error is handled by the hook
+      console.error('Failed to retry referral:', err);
+    }
   };
 
   const handleCancel = () => {
+    clearError();
     setIsModalOpen(false);
     setAmount('');
     setReason('');
@@ -44,7 +67,7 @@ const ReferralActionButton = ({ status, referralId, onRetry }: ReferralActionBut
         variant="ghost"
         onClick={isFail ? handleRetry : undefined}
         disabled={!isFail}
-        className={`h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 ${
+        className={`h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-950 ${
           !isFail ? 'cursor-not-allowed opacity-50' : ''
         }`}
       >
@@ -65,9 +88,15 @@ const ReferralActionButton = ({ status, referralId, onRetry }: ReferralActionBut
         hideConfirm={true}
         renderContent={() => (
           <div className="space-y-6">
+            {error && (
+              <div className="bg-red-50 border border-red-200 dark:bg-red-950 dark:border-red-800 rounded-md p-3">
+                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+              </div>
+            )}
+
             <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Enter Amount <span className="text-red-500">*</span>
+              <label className="text-sm font-medium text-foreground">
+                Enter Amount <span className="text-red-500 dark:text-red-400">*</span>
               </label>
 
               <Input
@@ -75,12 +104,13 @@ const ReferralActionButton = ({ status, referralId, onRetry }: ReferralActionBut
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className="w-full"
+                disabled={isRetrying}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Provide a Reason <span className="text-red-500">*</span>
+              <label className="text-sm font-medium text-foreground">
+                Provide a Reason <span className="text-red-500 dark:text-red-400">*</span>
               </label>
 
               <Textarea
@@ -88,16 +118,19 @@ const ReferralActionButton = ({ status, referralId, onRetry }: ReferralActionBut
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 className="min-h-[80px] resize-none"
+                disabled={isRetrying}
               />
             </div>
 
-            <div className="text-sm text-black space-y-1 mb-4 flex flex-col items-center">
+            <div className="text-sm text-foreground space-y-1 mb-4 flex flex-col items-center">
               <p className="flex items-center gap-1">
-                Click <Icons.arrowLeft className="w-4 h-4 text-blue-600" /> to stay back
+                Click <Icons.arrowLeft className="w-4 h-4 text-blue-600 dark:text-blue-400" /> to
+                stay back
               </p>
 
               <p className="flex items-center gap-1">
-                Or click <Icons.check className="w-4 h-4 text-green-600" /> to confirm
+                Or click <Icons.check className="w-4 h-4 text-green-600 dark:text-green-400" /> to
+                confirm
               </p>
             </div>
           </div>
@@ -108,17 +141,23 @@ const ReferralActionButton = ({ status, referralId, onRetry }: ReferralActionBut
               type="button"
               variant="outline"
               onClick={handleCancel}
-              className="bg-white border-gray-300 hover:bg-gray-50 rounded-lg px-4 py-2 w-full"
+              className="bg-background border-border hover:bg-muted rounded-lg px-4 py-2 w-full"
+              disabled={isRetrying}
             >
-              <Icons.arrowLeft className="w-4 h-4 text-black" />
+              <Icons.arrowLeft className="w-4 h-4 text-foreground" />
             </Button>
 
             <Button
               type="button"
               onClick={handleConfirm}
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 w-full"
+              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg px-4 py-2 w-full"
+              disabled={isRetrying || !amount.trim() || !reason.trim()}
             >
-              <Icons.check className="w-4 h-4 text-white" />
+              {isRetrying ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Icons.check className="w-4 h-4 text-white" />
+              )}
             </Button>
           </div>
         }

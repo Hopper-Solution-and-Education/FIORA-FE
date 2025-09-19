@@ -6,7 +6,7 @@ import ReferralCronjobCommonTable from '@/features/setting/module/cron-job/modul
 import { ReferralCronjobTableData } from '@/features/setting/module/cron-job/module/referral/presentation/types/referral.type';
 import { setTypeOfBenefitFilter } from '@/features/setting/module/cron-job/module/referral/slices';
 import { useAppDispatch } from '@/store';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
 const ReferralCronjobDashboardPage = () => {
   const dispatch = useAppDispatch();
@@ -14,8 +14,6 @@ const ReferralCronjobDashboardPage = () => {
     // Table data
     data,
     loading,
-    isLoadingMore,
-    hasMore,
     totalItems,
 
     // Chart data
@@ -24,13 +22,10 @@ const ReferralCronjobDashboardPage = () => {
 
     // Actions
     fetchData,
-    loadMore,
   } = useReferralCronjobDashboard();
 
-  // Fetch data on component mount
-  useEffect(() => {
-    fetchData();
-  }, []);
+  // Data fetching is handled by useReferralCronjobDashboard hook
+  // No need for additional useEffect here as it causes duplicate API calls
 
   // Calculate statistics dynamically from data
   const statistics = useMemo(() => {
@@ -74,12 +69,10 @@ const ReferralCronjobDashboardPage = () => {
           <ReferralCronjobCommonTable
             data={data}
             loading={loading}
-            hasMore={hasMore}
-            isLoadingMore={isLoadingMore}
-            onLoadMore={loadMore}
             totalItems={statistics.total}
             successfulCount={statistics.successful}
             failedCount={statistics.failed}
+            onRetrySuccess={fetchData}
           />
         </div>
       </div>

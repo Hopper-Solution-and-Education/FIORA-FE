@@ -3,10 +3,8 @@ import { ReferralCronjobTableData } from './referral.type';
 export interface TableState {
   items: ReferralCronjobTableData[];
   loading: boolean;
-  loadingMore: boolean;
   paginationLoading: boolean;
   error: string | null;
-  hasMore: boolean;
   currentPage: number;
   pageSize: number;
   totalPages: number;
@@ -15,21 +13,10 @@ export interface TableState {
 
 export type TableAction =
   | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_LOADING_MORE'; payload: boolean }
   | { type: 'SET_PAGINATION_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | {
       type: 'SET_DATA';
-      payload: {
-        items: ReferralCronjobTableData[];
-        total: number;
-        page: number;
-        pageSize: number;
-        totalPages: number;
-      };
-    }
-  | {
-      type: 'APPEND_DATA';
       payload: {
         items: ReferralCronjobTableData[];
         total: number;
@@ -45,8 +32,6 @@ export const tableReducer = (state: TableState, action: TableAction): TableState
   switch (action.type) {
     case 'SET_LOADING':
       return { ...state, loading: action.payload };
-    case 'SET_LOADING_MORE':
-      return { ...state, loadingMore: action.payload };
     case 'SET_PAGINATION_LOADING':
       return { ...state, paginationLoading: action.payload };
     case 'SET_ERROR':
@@ -59,21 +44,8 @@ export const tableReducer = (state: TableState, action: TableAction): TableState
         currentPage: action.payload.page,
         pageSize: action.payload.pageSize,
         totalPages: action.payload.totalPages,
-        hasMore: action.payload.page < action.payload.totalPages,
         loading: false,
         paginationLoading: false, // Reset pagination loading
-        error: null,
-      };
-    case 'APPEND_DATA':
-      return {
-        ...state,
-        items: [...state.items, ...action.payload.items],
-        total: action.payload.total,
-        currentPage: action.payload.page,
-        pageSize: action.payload.pageSize,
-        totalPages: action.payload.totalPages,
-        hasMore: action.payload.page < action.payload.totalPages,
-        loadingMore: false,
         error: null,
       };
     case 'SET_PAGE':
@@ -88,10 +60,8 @@ export const tableReducer = (state: TableState, action: TableAction): TableState
 export const initialState: TableState = {
   items: [],
   loading: false,
-  loadingMore: false,
   paginationLoading: false,
   error: null,
-  hasMore: false,
   currentPage: 1,
   pageSize: 10,
   totalPages: 1,

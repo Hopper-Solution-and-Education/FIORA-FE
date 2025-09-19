@@ -67,7 +67,8 @@ export const useReferralCronjobDashboard = () => {
         REFERRAL_CRONJOB_TYPES.IGetReferralCronjobsPaginatedUseCase,
       );
 
-      const res = await useCase.execute(1, state.pageSize, {
+      // Load all data without pagination - don't pass page/pageSize
+      const res = await useCase.execute(0, 0, {
         status: filter.status,
         typeOfBenefit: filter.typeOfBenefit,
         emailReferrer: filter.emailReferrer,
@@ -83,9 +84,9 @@ export const useReferralCronjobDashboard = () => {
         payload: {
           items: res.data?.items || [],
           total: res.data?.total || 0,
-          page: res.data?.page || 1,
-          pageSize: res.data?.pageSize || 10,
-          totalPages: res.data?.totalPages || 1,
+          page: 1,
+          pageSize: res.data?.total || 0,
+          totalPages: 1,
         },
       });
     } catch (error) {
@@ -95,49 +96,7 @@ export const useReferralCronjobDashboard = () => {
       dispatchTable({ type: 'SET_LOADING', payload: false });
       isFetching.current = false;
     }
-  }, [filter, state.pageSize]);
-
-  const loadMore = useCallback(async () => {
-    if (isFetching.current || !state.hasMore) return;
-
-    isFetching.current = true;
-    dispatchTable({ type: 'SET_LOADING_MORE', payload: true });
-
-    try {
-      const useCase = referralCronjobContainer.get<IGetReferralCronjobsPaginatedUseCase>(
-        REFERRAL_CRONJOB_TYPES.IGetReferralCronjobsPaginatedUseCase,
-      );
-
-      const nextPage = state.currentPage + 1;
-      const res = await useCase.execute(nextPage, state.pageSize, {
-        status: filter.status,
-        typeOfBenefit: filter.typeOfBenefit,
-        emailReferrer: filter.emailReferrer,
-        emailReferee: filter.emailReferee,
-        updatedBy: filter.updatedBy,
-        search: filter.search,
-        fromDate: filter.fromDate ? filter.fromDate.toISOString() : '',
-        toDate: filter.toDate ? filter.toDate.toISOString() : '',
-      });
-
-      dispatchTable({
-        type: 'APPEND_DATA',
-        payload: {
-          items: res.data?.items || [],
-          total: res.data?.total || 0,
-          page: res.data?.page || nextPage,
-          pageSize: res.data?.pageSize || 10,
-          totalPages: res.data?.totalPages || 1,
-        },
-      });
-    } catch (error) {
-      console.error('Error loading more referral data:', error);
-      dispatchTable({ type: 'SET_ERROR', payload: 'Failed to load more data' });
-    } finally {
-      dispatchTable({ type: 'SET_LOADING_MORE', payload: false });
-      isFetching.current = false;
-    }
-  }, [state.currentPage, state.pageSize, state.hasMore, filter]);
+  }, [filter]);
 
   // Fetch data when filter changes
   useEffect(() => {
@@ -150,8 +109,6 @@ export const useReferralCronjobDashboard = () => {
     // Table data
     data: state.items,
     loading: state.loading,
-    isLoadingMore: state.loadingMore,
-    hasMore: state.hasMore,
     totalItems: state.total,
 
     // Chart data
@@ -160,6 +117,5 @@ export const useReferralCronjobDashboard = () => {
 
     // Actions
     fetchData,
-    loadMore,
   };
 };

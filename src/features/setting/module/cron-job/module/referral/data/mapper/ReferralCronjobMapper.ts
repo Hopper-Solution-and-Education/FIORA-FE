@@ -7,8 +7,14 @@ export class ReferralCronjobMapper {
     filter?: ReferralCronjobFilterRequest,
   ): URLSearchParams {
     const params = new URLSearchParams();
-    params.append('page', page.toString());
-    params.append('pageSize', pageSize.toString());
+
+    // Only append page and pageSize if they are valid (> 0)
+    if (page > 0) {
+      params.append('page', page.toString());
+    }
+    if (pageSize > 0) {
+      params.append('pageSize', pageSize.toString());
+    }
 
     if (filter) {
       if (filter.status && filter.status.length > 0) {
