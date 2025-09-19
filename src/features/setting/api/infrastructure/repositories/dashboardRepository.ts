@@ -2,7 +2,14 @@ import { prisma } from '@/config';
 import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { CreateBoxNotificationInput } from '@/features/notification/domain/repositories/notificationRepository.interface';
 import { applyJsonInFilter, normalizeToArray } from '@/shared/utils/filterUtils';
-import { CronJobLog, CronJobStatus, MembershipTier, TypeCronJob } from '@prisma/client';
+import {
+  CronJobLog,
+  CronJobStatus,
+  MembershipTier,
+  TransactionType,
+  TypeCronJob,
+  WalletType,
+} from '@prisma/client';
 
 class DashboardRepository {
   async getWithFilters(
@@ -102,6 +109,15 @@ class DashboardRepository {
         updatedBy: creatorMap.get(log.updatedBy ?? '') || null,
         createdBy: creatorMap.get(log?.createdBy ?? '') || null,
       };
+    });
+  }
+
+  async getReferralWithFilters(filters: any, skip: number, take: number) {
+    const data = await prisma.transaction.findMany({
+      where: {},
+      include: {
+        CronJobLog: true,
+      },
     });
   }
 
@@ -356,6 +372,89 @@ class DashboardRepository {
       }
       return filters;
     }
+  }
+  async getReferralChart() {
+    const referralKickbackAwait = prisma.cronJobLog.findMany({
+      where: { typeCronJob: TypeCronJob.REFERRAL_KICKBACK },
+      select: {
+        Transaction: {
+          select: {
+            amount: true,
+          },
+        },
+      },
+    });
+
+    const referralBonusAwait = prisma.cronJobLog.findMany({
+      where: { typeCronJob: TypeCronJob.REFERRAL_BONUS },
+      select: {
+        Transaction: {
+          select: {
+            amount: true,
+          },
+        },
+      },
+    });
+
+    const referralCampaignAwait = prisma.cronJobLog.findMany({
+      where: { typeCronJob: TypeCronJob.REFERRAL_CAMPAIGN },
+      select: {
+        Transaction: {
+          select: {
+            amount: true,
+          },
+        },
+      },
+    });
+
+    const [referralKickback, referralBonus, referralCampaign] = await Promise.all([
+      referralKickbackAwait,
+      referralBonusAwait,
+      referralCampaignAwait,
+    ]);
+
+    const referralKickbackValue =
+      Number(referralKickback.reduce((acc, curr) => acc + (curr.Transaction as any)?.amount, 0)) ||
+      0;
+
+    const referralBonusValue =
+      Number(referralBonus.reduce((acc, curr) => acc + (curr.Transaction as any)?.amount, 0)) || 0;
+
+    const referralCampaignValue =
+      Number(referralCampaign.reduce((acc, curr) => acc + (curr.Transaction as any)?.amount, 0)) ||
+      0;
+
+    return { referralKickbackValue, referralBonusValue, referralCampaignValue };
+  }
+
+  async getReferralDashboard(filters?: any) {
+    const benefitNames = ['referral-bonus', 'referral-kickback'];
+
+    const data = await prisma.cronJobLog.findMany({
+      where: {
+        Transaction: {
+          type: TransactionType.Income,
+          currency: 'FX',
+          membershipBenefit: {
+            slug: {
+              in: benefitNames,
+            },
+          },
+          toWallet: {
+            type: WalletType.Referral,
+          },
+        },
+        typeCronJob: {
+          in: [
+            TypeCronJob.REFERRAL_CAMPAIGN,
+            TypeCronJob.REFERRAL_BONUS,
+            TypeCronJob.REFERRAL_KICKBACK,
+          ],
+        },
+      },
+    });
+
+    return data;
   }
 }
 
