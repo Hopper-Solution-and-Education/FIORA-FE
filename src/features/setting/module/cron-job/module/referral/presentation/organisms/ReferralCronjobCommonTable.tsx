@@ -3,8 +3,6 @@ import {
   ColumnConfigMap,
   CommonTableColumn,
 } from '@/components/common/organisms/CommonTable/types';
-import { Icons } from '@/components/Icon';
-import { Button } from '@/components/ui/button';
 import ReferralActionButton from '@/features/setting/module/cron-job/module/referral/presentation/atoms/ReferralActionButton';
 import StatusBadge from '@/features/setting/module/cron-job/module/referral/presentation/atoms/StatusBadge';
 import { ReferralCronjobTableData } from '@/features/setting/module/cron-job/module/referral/presentation/types/referral.type';
@@ -15,12 +13,11 @@ import { ReferralTopBarAction } from '..';
 interface Props {
   data: ReferralCronjobTableData[];
   loading: boolean;
-  paginationLoading?: boolean;
   className?: string;
-  // Pagination props
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
+  // Infinite scroll props
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  onLoadMore: () => void;
   // Summary props
   totalItems: number;
   successfulCount: number;
@@ -32,11 +29,10 @@ const STORAGE_KEY = 'referral-cronjob:common-table';
 const ReferralCronjobCommonTable = ({
   data,
   loading,
-  paginationLoading = false,
   className,
-  currentPage,
-  totalPages,
-  onPageChange,
+  hasMore,
+  isLoadingMore,
+  onLoadMore,
   totalItems,
   successfulCount,
   failedCount,
@@ -139,69 +135,6 @@ const ReferralCronjobCommonTable = ({
 
   const [columnConfig, setColumnConfig] = useState<ColumnConfigMap>(initialConfig);
 
-  // Pagination controls
-  const paginationControls = totalPages > 1 && (
-    <div className="flex items-center justify-center py-4 border-t">
-      <div className="flex items-center space-x-2">
-        {paginationLoading && (
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-            <span>Loading...</span>
-          </div>
-        )}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage <= 1 || paginationLoading}
-        >
-          <Icons.chevronLeft className="h-4 w-4" />
-        </Button>
-
-        {/* Render page numbers */}
-        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-          const pageNum = i + 1;
-          return (
-            <Button
-              key={pageNum}
-              variant={currentPage === pageNum ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => onPageChange(pageNum)}
-              disabled={paginationLoading}
-              className="w-8 h-8 p-0"
-            >
-              {pageNum}
-            </Button>
-          );
-        })}
-
-        {totalPages > 5 && (
-          <>
-            <span className="text-gray-400">...</span>
-            <Button
-              variant={currentPage === totalPages ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => onPageChange(totalPages)}
-              disabled={paginationLoading}
-              className="w-8 h-8 p-0"
-            >
-              {totalPages}
-            </Button>
-          </>
-        )}
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage >= totalPages || paginationLoading}
-        >
-          <Icons.chevronRight className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-0">
       {/* Table container with min-height to prevent layout shift */}
@@ -213,6 +146,9 @@ const ReferralCronjobCommonTable = ({
           onColumnConfigChange={setColumnConfig}
           storageKey={STORAGE_KEY}
           loading={loading}
+          hasMore={hasMore}
+          isLoadingMore={isLoadingMore}
+          onLoadMore={onLoadMore}
           className={className}
           leftHeaderNode={<ReferralTopBarAction data={data} />}
           rightHeaderNode={
@@ -248,9 +184,6 @@ const ReferralCronjobCommonTable = ({
           }
         />
       </div>
-
-      {/* Pagination controls at the bottom */}
-      {paginationControls}
     </div>
   );
 };

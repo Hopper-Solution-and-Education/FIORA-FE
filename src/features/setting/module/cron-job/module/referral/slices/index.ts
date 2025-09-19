@@ -20,10 +20,13 @@ const referralCronjobSlice = createSlice({
     clearFilter: (state) => {
       state.filter = initialState.filter;
     },
+    setTypeOfBenefitFilter: (state, action: PayloadAction<string[]>) => {
+      state.filter.typeOfBenefit = action.payload;
+    },
   },
 });
 
-export const { setLoading, setError, setFilter, setSearch, clearFilter } =
+export const { setLoading, setError, setFilter, setSearch, clearFilter, setTypeOfBenefitFilter } =
   referralCronjobSlice.actions;
 
 export default referralCronjobSlice.reducer;

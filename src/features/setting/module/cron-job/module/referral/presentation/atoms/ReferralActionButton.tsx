@@ -7,11 +7,12 @@ import { useState } from 'react';
 
 interface ReferralActionButtonProps {
   status: string;
+  referralId: string;
   onRetry?: (id: string) => void;
   className?: string;
 }
 
-const ReferralActionButton = ({ status, onRetry }: ReferralActionButtonProps) => {
+const ReferralActionButton = ({ status, referralId, onRetry }: ReferralActionButtonProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
@@ -22,8 +23,7 @@ const ReferralActionButton = ({ status, onRetry }: ReferralActionButtonProps) =>
 
   const handleConfirm = () => {
     if (onRetry) {
-      // TODO: Get the actual referral ID from context or props
-      onRetry('referral-id');
+      onRetry(referralId);
     }
     setIsModalOpen(false);
     setAmount('');

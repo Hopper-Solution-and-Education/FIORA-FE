@@ -1,10 +1,10 @@
 export interface ReferralCronjobFilterState {
-  status?: string[] | null;
-  typeOfBenefit?: string[] | null;
-  emailReferrer?: string[] | null;
-  emailReferee?: string[] | null;
-  updatedBy?: string[] | null;
-  search?: string | null;
+  status: string[];
+  typeOfBenefit: string[];
+  emailReferrer: string[];
+  emailReferee: string[];
+  updatedBy: string[];
+  search: string;
   fromDate: Date | null;
   toDate: Date | null;
 }
@@ -19,12 +19,12 @@ export const initialState: ReferralCronjobState = {
   loading: false,
   error: null,
   filter: {
-    status: null,
-    typeOfBenefit: null,
-    emailReferrer: null,
-    emailReferee: null,
-    updatedBy: null,
-    search: null,
+    status: [],
+    typeOfBenefit: [],
+    emailReferrer: [],
+    emailReferee: [],
+    updatedBy: [],
+    search: '',
     fromDate: null,
     toDate: null,
   },

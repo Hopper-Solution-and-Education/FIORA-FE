@@ -68,12 +68,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     pageSize = '10',
     search = '',
     status = [],
+    typeOfBenefit = [],
+    emailReferrer = [],
+    emailReferee = [],
+    updatedBy = [],
     fromDate = '',
     toDate = '',
   } = req.query;
 
   // Generate mock data
   let mockData = generateMockReferralData();
+
+  // Helper function to normalize array parameters
+  const normalizeArrayParam = (param: any): string[] => {
+    if (Array.isArray(param)) {
+      return param.filter((item) => typeof item === 'string' && item.length > 0);
+    }
+    if (typeof param === 'string' && param.length > 0) {
+      return [param];
+    }
+    return [];
+  };
 
   // Apply filters
   if (search && typeof search === 'string') {
@@ -85,8 +100,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
   }
 
-  if (Array.isArray(status) && status.length > 0) {
-    mockData = mockData.filter((item) => status.includes(item.status));
+  const statusFilter = normalizeArrayParam(status);
+  if (statusFilter.length > 0) {
+    mockData = mockData.filter((item) => statusFilter.includes(item.status));
+  }
+
+  const typeOfBenefitFilter = normalizeArrayParam(typeOfBenefit);
+  if (typeOfBenefitFilter.length > 0) {
+    mockData = mockData.filter((item) => typeOfBenefitFilter.includes(item.typeOfBenefit));
+  }
+
+  const emailReferrerFilter = normalizeArrayParam(emailReferrer);
+  if (emailReferrerFilter.length > 0) {
+    mockData = mockData.filter((item) => emailReferrerFilter.includes(item.emailReferrer));
+  }
+
+  const emailRefereeFilter = normalizeArrayParam(emailReferee);
+  if (emailRefereeFilter.length > 0) {
+    mockData = mockData.filter((item) => emailRefereeFilter.includes(item.emailReferee));
+  }
+
+  const updatedByFilter = normalizeArrayParam(updatedBy);
+  if (updatedByFilter.length > 0) {
+    mockData = mockData.filter((item) => updatedByFilter.includes(item.updatedBy.email));
   }
 
   if (fromDate && typeof fromDate === 'string') {

@@ -9,7 +9,7 @@ const SEARCH_DEBOUNCE_DELAY = 400;
 
 const ReferralSearch = () => {
   const dispatch = useAppDispatch();
-  const searchFromRedux = useAppSelector((state) => state.referralCronjob.filter.search || '');
+  const searchFromRedux = useAppSelector((state) => state.referralCronjob.filter.search);
 
   const [localSearch, setLocalSearch] = useState<string>(searchFromRedux);
 

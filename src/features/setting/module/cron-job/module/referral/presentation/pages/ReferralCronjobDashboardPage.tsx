@@ -3,17 +3,19 @@
 import { useReferralCronjobDashboard } from '@/features/setting/module/cron-job/module/referral/presentation/hooks/useReferralCronjobDashboard';
 import ReferralCronjobChart from '@/features/setting/module/cron-job/module/referral/presentation/organisms/ReferralCronjobChart';
 import ReferralCronjobCommonTable from '@/features/setting/module/cron-job/module/referral/presentation/organisms/ReferralCronjobCommonTable';
+import { ReferralCronjobTableData } from '@/features/setting/module/cron-job/module/referral/presentation/types/referral.type';
+import { setTypeOfBenefitFilter } from '@/features/setting/module/cron-job/module/referral/slices';
+import { useAppDispatch } from '@/store';
 import { useEffect, useMemo } from 'react';
 
 const ReferralCronjobDashboardPage = () => {
+  const dispatch = useAppDispatch();
   const {
     // Table data
     data,
     loading,
-    paginationLoading,
-    currentPage,
-    pageSize,
-    totalPages,
+    isLoadingMore,
+    hasMore,
     totalItems,
 
     // Chart data
@@ -22,7 +24,7 @@ const ReferralCronjobDashboardPage = () => {
 
     // Actions
     fetchData,
-    handlePageChange,
+    loadMore,
   } = useReferralCronjobDashboard();
 
   // Fetch data on component mount
@@ -33,37 +35,48 @@ const ReferralCronjobDashboardPage = () => {
   // Calculate statistics dynamically from data
   const statistics = useMemo(() => {
     const total = totalItems;
-    const successful = data?.filter((item: any) => item.status === 'successful').length || 0;
-    const failed = data?.filter((item: any) => item.status === 'fail').length || 0;
+    const successful =
+      data?.filter((item: ReferralCronjobTableData) => item.status === 'successful').length || 0;
+    const failed =
+      data?.filter((item: ReferralCronjobTableData) => item.status === 'fail').length || 0;
 
     return {
       total,
       successful,
       failed,
-      showCount: pageSize,
     };
-  }, [data, pageSize, totalItems]);
+  }, [data, totalItems]);
+
+  // Handle bar chart click to filter table by typeOfBenefit
+  const handleBarClick = (typeOfBenefit: string) => {
+    dispatch(setTypeOfBenefitFilter([typeOfBenefit]));
+  };
 
   return (
     <section className="sm:px-6 lg:px-8">
       <div className="space-y-6 mb-12">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Cron Job Referral Management</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            Cron Job Referral Management
+          </h1>
         </div>
 
         {/* Chart Section */}
-        <ReferralCronjobChart chartData={chartData} loading={chartLoading} />
+        <ReferralCronjobChart
+          chartData={chartData}
+          loading={chartLoading}
+          onBarClick={handleBarClick}
+        />
 
         {/* Table Section */}
         <div className="border rounded-2xl p-6">
           <ReferralCronjobCommonTable
             data={data}
             loading={loading}
-            paginationLoading={paginationLoading}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
+            hasMore={hasMore}
+            isLoadingMore={isLoadingMore}
+            onLoadMore={loadMore}
             totalItems={statistics.total}
             successfulCount={statistics.successful}
             failedCount={statistics.failed}

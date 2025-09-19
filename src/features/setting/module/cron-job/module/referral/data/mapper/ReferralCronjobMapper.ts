@@ -14,6 +14,18 @@ export class ReferralCronjobMapper {
       if (filter.status && filter.status.length > 0) {
         filter.status.forEach((status) => params.append('status', status));
       }
+      if (filter.typeOfBenefit && filter.typeOfBenefit.length > 0) {
+        filter.typeOfBenefit.forEach((type) => params.append('typeOfBenefit', type));
+      }
+      if (filter.emailReferrer && filter.emailReferrer.length > 0) {
+        filter.emailReferrer.forEach((email) => params.append('emailReferrer', email));
+      }
+      if (filter.emailReferee && filter.emailReferee.length > 0) {
+        filter.emailReferee.forEach((email) => params.append('emailReferee', email));
+      }
+      if (filter.updatedBy && filter.updatedBy.length > 0) {
+        filter.updatedBy.forEach((user) => params.append('updatedBy', user));
+      }
       if (filter.search) {
         params.append('search', filter.search);
       }
@@ -34,6 +46,18 @@ export class ReferralCronjobMapper {
     if (filter) {
       if (filter.status && filter.status.length > 0) {
         filter.status.forEach((status) => params.append('status', status));
+      }
+      if (filter.typeOfBenefit && filter.typeOfBenefit.length > 0) {
+        filter.typeOfBenefit.forEach((type) => params.append('typeOfBenefit', type));
+      }
+      if (filter.emailReferrer && filter.emailReferrer.length > 0) {
+        filter.emailReferrer.forEach((email) => params.append('emailReferrer', email));
+      }
+      if (filter.emailReferee && filter.emailReferee.length > 0) {
+        filter.emailReferee.forEach((email) => params.append('emailReferee', email));
+      }
+      if (filter.updatedBy && filter.updatedBy.length > 0) {
+        filter.updatedBy.forEach((user) => params.append('updatedBy', user));
       }
       if (filter.search) {
         params.append('search', filter.search);

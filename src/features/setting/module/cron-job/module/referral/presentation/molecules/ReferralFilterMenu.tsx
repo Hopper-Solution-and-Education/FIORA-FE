@@ -5,7 +5,6 @@ import { FilterColumn, FilterComponentConfig } from '@/shared/types/filter.types
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
-import { clearFilter } from '../../slices';
 import { ReferralCronjobFilterState } from '../../slices/types';
 import { ReferralCronjobTableData } from '../types/referral.type';
 
@@ -60,12 +59,12 @@ const ReferralFilterMenu = ({ value, onFilterChange, data = [] }: ReferralFilter
   const [localFilter, setLocalFilter] = useState<LocalFilterState>(() => {
     // Initialize local filter from Redux state
     return {
-      status: value.status || [],
-      typeOfBenefit: value.typeOfBenefit || [],
-      emailReferrer: value.emailReferrer || [],
-      emailReferee: value.emailReferee || [],
-      updatedBy: value.updatedBy || [],
-      search: value.search || '',
+      status: value.status,
+      typeOfBenefit: value.typeOfBenefit,
+      emailReferrer: value.emailReferrer,
+      emailReferee: value.emailReferee,
+      updatedBy: value.updatedBy,
+      search: value.search,
       fromDate: value.fromDate,
       toDate: value.toDate,
     };
@@ -108,12 +107,12 @@ const ReferralFilterMenu = ({ value, onFilterChange, data = [] }: ReferralFilter
   // Sync local filter with Redux state changes
   useEffect(() => {
     setLocalFilter({
-      status: reduxFilter.status || [],
-      typeOfBenefit: reduxFilter.typeOfBenefit || [],
-      emailReferrer: reduxFilter.emailReferrer || [],
-      emailReferee: reduxFilter.emailReferee || [],
-      updatedBy: reduxFilter.updatedBy || [],
-      search: reduxFilter.search || '',
+      status: reduxFilter.status,
+      typeOfBenefit: reduxFilter.typeOfBenefit,
+      emailReferrer: reduxFilter.emailReferrer,
+      emailReferee: reduxFilter.emailReferee,
+      updatedBy: reduxFilter.updatedBy,
+      search: reduxFilter.search,
       fromDate: reduxFilter.fromDate,
       toDate: reduxFilter.toDate,
     });
@@ -163,12 +162,12 @@ const ReferralFilterMenu = ({ value, onFilterChange, data = [] }: ReferralFilter
   // Apply filters to Redux state
   const handleApplyFilters = useCallback(() => {
     const newFilter: ReferralCronjobFilterState = {
-      status: localFilter.status.length > 0 ? localFilter.status : null,
-      typeOfBenefit: localFilter.typeOfBenefit.length > 0 ? localFilter.typeOfBenefit : null,
-      emailReferrer: localFilter.emailReferrer.length > 0 ? localFilter.emailReferrer : null,
-      emailReferee: localFilter.emailReferee.length > 0 ? localFilter.emailReferee : null,
-      updatedBy: localFilter.updatedBy.length > 0 ? localFilter.updatedBy : null,
-      search: localFilter.search || null,
+      status: localFilter.status.length > 0 ? localFilter.status : [],
+      typeOfBenefit: localFilter.typeOfBenefit.length > 0 ? localFilter.typeOfBenefit : [],
+      emailReferrer: localFilter.emailReferrer.length > 0 ? localFilter.emailReferrer : [],
+      emailReferee: localFilter.emailReferee.length > 0 ? localFilter.emailReferee : [],
+      updatedBy: localFilter.updatedBy.length > 0 ? localFilter.updatedBy : [],
+      search: localFilter.search || '',
       fromDate: localFilter.fromDate,
       toDate: localFilter.toDate,
     };
@@ -178,9 +177,23 @@ const ReferralFilterMenu = ({ value, onFilterChange, data = [] }: ReferralFilter
 
   // Reset filters
   const handleResetFilters = useCallback(() => {
-    setLocalFilter(getInitialLocalFilterState());
-    dispatch(clearFilter());
-  }, [dispatch]);
+    const resetFilter = getInitialLocalFilterState();
+    setLocalFilter(resetFilter);
+
+    // Apply empty filter to Redux
+    const newFilter: ReferralCronjobFilterState = {
+      status: [],
+      typeOfBenefit: [],
+      emailReferrer: [],
+      emailReferee: [],
+      updatedBy: [],
+      search: '',
+      fromDate: null,
+      toDate: null,
+    };
+
+    onFilterChange(newFilter);
+  }, [onFilterChange]);
 
   // Filter components configuration
   const filterComponents: FilterComponentConfig[] = useMemo(

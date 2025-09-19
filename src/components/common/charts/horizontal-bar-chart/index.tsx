@@ -23,6 +23,7 @@ interface HorizontalBarChartProps {
   height?: number;
   xAxisFormatter?: (value: number) => string;
   tooltipContent?: (props: any) => React.ReactNode;
+  onBarClick?: (item: SimpleBarItem, index: number) => void;
 }
 
 const HorizontalBarChart = ({
@@ -30,6 +31,7 @@ const HorizontalBarChart = ({
   height = 280,
   xAxisFormatter = (value) => value.toLocaleString(),
   tooltipContent,
+  onBarClick,
 }: HorizontalBarChartProps) => {
   const maxValue = Math.max(...data.map((item) => item.value));
 
@@ -43,7 +45,7 @@ const HorizontalBarChart = ({
         textAnchor="end"
         dominantBaseline="middle"
         fontSize="14"
-        fill="#374151"
+        className="fill-gray-600 dark:fill-gray-400"
         style={{ whiteSpace: 'nowrap' }}
       >
         {payload.value}
@@ -85,11 +87,13 @@ const HorizontalBarChart = ({
                 if (props.active && props.payload && props.payload[0]) {
                   const value = props.payload[0].value as number;
                   return (
-                    <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
-                      <p className="font-semibold text-gray-800 mb-1">
+                    <div className="bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg transition-colors duration-200">
+                      <p className="font-semibold text-gray-800 dark:text-gray-200 mb-1">
                         {props.payload[0].payload.name}
                       </p>
-                      <p className="text-sm text-gray-600">Value: {xAxisFormatter(value)}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Value: {xAxisFormatter(value)}
+                      </p>
                     </div>
                   );
                 }
@@ -99,7 +103,12 @@ const HorizontalBarChart = ({
           />
           <Bar radius={[0, 4, 4, 0]} dataKey="value" className="cursor-pointer">
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
+              <Cell
+                key={`cell-${index}`}
+                fill={entry.color}
+                onClick={() => onBarClick?.(entry, index)}
+                style={{ cursor: onBarClick ? 'pointer' : 'default' }}
+              />
             ))}
           </Bar>
         </BarChart>
