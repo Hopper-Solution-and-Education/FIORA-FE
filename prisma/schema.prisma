@@ -461,6 +461,12 @@ model Wallet {
   updatedBy        String?       @db.Uuid
   name             String?       @db.VarChar(50)
   accumulatedEarn  Decimal       @default(0) @db.Decimal(13, 2)
+  accumReward      Decimal       @default(0) @db.Decimal(13, 2)
+  availableReward  Decimal       @default(0) @db.Decimal(13, 2)
+  claimsedReward   Decimal       @default(0) @db.Decimal(13, 2)
+  closingDate      DateTime?     @db.Timestamptz(0)
+  lockedTime       Int           @default(0)
+  openDate         DateTime?     @db.Timestamptz(0)
   fromTransactions Transaction[] @relation("FromWallet")
   toTransactions   Transaction[] @relation("ToWallet")
   user             User          @relation("UserWallet", fields: [userId], references: [id])
@@ -569,16 +575,16 @@ model EmailNotificationLogs {
 }
 
 model UserNotification {
-  id             String        @id @default(uuid()) @db.Uuid
-  userId         String        @db.Uuid
-  notificationId String        @db.Uuid
-  isRead         Boolean       @default(false)
-  createdAt      DateTime      @default(now()) @db.Timestamptz(0)
-  updatedAt      DateTime      @updatedAt @db.Timestamptz(0)
-  createdBy      String?       @db.Uuid
-  updatedBy      String?       @db.Uuid
-  User           User?         @relation(fields: [userId], references: [id])
-  notification   Notification? @relation(fields: [notificationId], references: [id])
+  id             String       @id @default(uuid()) @db.Uuid
+  userId         String       @db.Uuid
+  notificationId String       @db.Uuid
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(0)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(0)
+  createdBy      String?      @db.Uuid
+  updatedBy      String?      @db.Uuid
+  notification   Notification @relation(fields: [notificationId], references: [id])
+  User           User         @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([notificationId])
@@ -732,6 +738,7 @@ model Post {
   createdBy           String                @db.Uuid
   updatedAt           DateTime?             @updatedAt @db.Timestamptz(0)
   updatedBy           String?               @db.Uuid
+  thumbnail           String?               @db.VarChar(500)
   AttachmentRelations AttachmentRelations[]
   Comment             Comment[]
   PostCategory        PostCategory          @relation(fields: [categoryId], references: [id])
@@ -1096,6 +1103,7 @@ enum TypeCronJob {
   REFERRAL_KICKBACK
   CASHBACK
   FLEXI_INTEREST
+  SMART_SAVING_INTEREST
 }
 
 enum KYCType {

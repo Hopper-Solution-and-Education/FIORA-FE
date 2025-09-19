@@ -370,6 +370,7 @@ export enum Messages {
   VERIFY_EXIT = 'Verify already exists',
   GET_SUCCESS = 'Get successfully',
   UPDATE_SUCCESS = 'Update successfully',
+  UPDATE_FAIL = 'Update fail!',
 
   //Email template type
   EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',

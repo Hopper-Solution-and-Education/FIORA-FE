@@ -34,6 +34,7 @@ class DashboardRepository {
         updatedAt: true,
         status: true,
         dynamicValue: true,
+        reason: true,
       },
     });
 
@@ -173,7 +174,7 @@ class DashboardRepository {
         cronjobData.typeCronJob !== TypeCronJob.MEMBERSHIP
         //  ||  !this.shouldUpdateTier(cronjobData, existing)
       ) {
-        return null;
+        return 404;
       }
 
       const { email, name, id: user_id } = existing.user;

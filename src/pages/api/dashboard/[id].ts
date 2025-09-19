@@ -53,8 +53,13 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse, userId: s
       .status(RESPONSE_CODE.NOT_FOUND)
       .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, 'Cron job not found!'));
   }
-  await dashboardRepository.changeCronjob(cronjob, userId, tier, reason);
+  const result = await dashboardRepository.changeCronjob(cronjob, userId, tier, reason);
+  if (result == 404) {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.UPDATE_FAIL));
+  }
   return res
     .status(RESPONSE_CODE.OK)
-    .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_SUCCESS));
+    .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_SUCCESS, result));
 }
