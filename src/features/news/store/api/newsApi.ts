@@ -199,7 +199,7 @@ export const newsApi = createApi({
 
     // Category endpoints
     getNewsCategories: builder.query<PostCategoryResponse[], void>({
-      query: () => ApiEndpointEnum.NewsCategories,
+      query: () => ({ url: ApiEndpointEnum.NewsCategories, method: 'GET' }),
       transformResponse: (response: Response<PostCategoryResponse[]>) => response.data,
       providesTags: ['NewsCategories'],
     }),

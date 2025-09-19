@@ -1,30 +1,16 @@
 import { USER_ROLES } from '@/shared/constants/featuresFlags';
 import { Session, useSession } from 'next-auth/react';
 import { useNewsData } from '../../hooks/useNewsData';
-import { useGetNewsQuery } from '../../store/api/newsApi';
 import CardList from '../organisms/CardList';
 import NewsPageHeader from '../organisms/NewsPageHeader';
 
 const NewsListPage = () => {
-  // Hooks
-  // const { data: categoriesWithPost = [] } = useGetFaqCategoriesWithPostQuery({
-  //   type: PostType.NEWS,
-  //   limit: FAQ_LIST_CONSTANTS.FAQS_PER_CATEGORY,
-  // });
-
-  const { data: newestNewsList = [], isLoading: loading } = useGetNewsQuery({
-    page: 1,
-    limit: 3,
-    orderBy: 'createdAt',
-    orderDirection: 'desc',
-  });
   const {
     activeFilters,
-    expandedCategories,
-    // filteredNews,
+    // filteredNewsList,
     handleLoadMoreNews,
     allCategoriesList,
-    hasActiveFilters,
+    // hasActiveFilters,
     isLoading,
     isFetchingPage,
     allNews,
