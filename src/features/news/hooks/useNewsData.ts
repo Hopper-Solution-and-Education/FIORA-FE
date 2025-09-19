@@ -1,4 +1,3 @@
-import { skipToken } from '@reduxjs/toolkit/query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { NewsQueryParams, NewsResponse } from '../api/types/newsDTO';
 import { PostCategoryResponse } from '../api/types/postCategoryDTO';
@@ -22,11 +21,6 @@ export const useNewsData = () => {
     categories: [],
   });
 
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
-  // const [expandedCategoryNews, setExpandedCategoryNews] = useState<Record<string, NewsResponse[]>>(
-  //   {},
-  // );
-
   // Computed values
   const hasActiveFilters =
     activeFilters.search.trim().length > 0 || activeFilters.categories.length > 0;
@@ -41,6 +35,20 @@ export const useNewsData = () => {
     [],
   );
 
+  // const filteredQueryParams = useMemo(
+  //   () =>
+  //     hasActiveFilters
+  //       ? {
+  //         page: 1,
+  //         limit: 12,
+  //         orderBy: 'createdAt',
+  //         orderDirection: 'desc',
+  //         filters: { search: activeFilters.search, categories: activeFilters.categories },
+  //       }
+  //       : skipToken,
+  //   [hasActiveFilters, activeFilters.search, activeFilters.categories],
+  // );
+
   // API Queries
   const { data: newestResponse, isLoading: isLoadingNewestNewest } = useGetNewsQuery(
     newestQueryParams,
@@ -48,12 +56,12 @@ export const useNewsData = () => {
   );
 
   // const { data: filteredResponse, isLoading: isLoadingFilteredNews } = useGetNewsQuery(
-  //   { ...newestQueryParams, filters: activeFilters },
+  //   filteredQueryParams,
   //   { skip: false },
   // );
 
   const { data: allCategoriesResponse, isLoading: isLoadingAllCategories } =
-    useGetNewsCategoriesQuery(skipToken, { skip: false });
+    useGetNewsCategoriesQuery();
 
   const newestNewsList: NewsResponse[] = useMemo(() => {
     if (typeof newestResponse !== 'undefined' && 'news' in newestResponse) {
@@ -70,8 +78,9 @@ export const useNewsData = () => {
   // }, [filteredResponse]);
 
   const allCategoriesList: PostCategoryResponse[] = useMemo(() => {
-    if (typeof allCategoriesResponse !== 'undefined' && 'news' in allCategoriesResponse) {
-      return allCategoriesResponse.news;
+    console.log('all', allCategoriesResponse);
+    if (typeof allCategoriesResponse !== 'undefined') {
+      return allCategoriesResponse;
     }
     return [];
   }, [allCategoriesResponse]);
@@ -81,8 +90,6 @@ export const useNewsData = () => {
   // Handle filter changes
   const handleFilterChange = useCallback((filters: NewsFilterValues) => {
     setActiveFilters(filters);
-    setExpandedCategories(new Set());
-    // setExpandedCategoryNews({});
   }, []);
 
   const baseQueryParams = useMemo<NewsQueryParams>(
@@ -102,11 +109,15 @@ export const useNewsData = () => {
         ...baseQueryParams,
         page: p,
         limit,
-        // add filters from activeFilters if needed:
-        ...(activeFilters.search ? { search: activeFilters.search } : {}),
-        ...(activeFilters.categories && activeFilters.categories.length
-          ? { categories: activeFilters.categories }
-          : {}),
+        orderBy: 'views',
+        orderDirection: 'asc',
+        filters: JSON.stringify({
+          search: activeFilters.search || '',
+          categories:
+            activeFilters.categories && activeFilters.categories.length
+              ? activeFilters.categories
+              : [],
+        }) as any,
       };
 
       console.log('q', q);
@@ -172,8 +183,8 @@ export const useNewsData = () => {
     // State
     endOfNews,
     activeFilters,
-    expandedCategories,
     allNews,
+    // filteredNewsList,
     isLoading,
     isFetchingPage,
     hasActiveFilters,

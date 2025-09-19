@@ -44,7 +44,7 @@ const CardList = ({
         return;
       }
       const e = entries[0];
-      if (e.isIntersecting && !isFetchingPage) {
+      if (e.isIntersecting && !isFetchingPage && !isLoading) {
         handleLoadMoreNews();
       }
     },

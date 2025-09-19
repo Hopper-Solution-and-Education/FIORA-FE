@@ -1,10 +1,10 @@
 import { Button } from '@/components/ui/button';
+import { NewsDetailResponse } from '@/features/news/api/types/newsDTO';
 import { Pencil, Trash } from 'lucide-react';
 import React from 'react';
-import type { FaqDetail } from '../../domain/entities/models/faqs';
 
 interface FaqHeaderProps {
-  data: FaqDetail;
+  data: NewsDetailResponse;
   canEdit: boolean;
   onEdit?: () => void;
   onDelete?: () => void;

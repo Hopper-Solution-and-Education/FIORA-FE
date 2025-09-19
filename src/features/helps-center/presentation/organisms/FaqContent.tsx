@@ -1,10 +1,10 @@
+import { NewsDetailResponse } from '@/features/news/api/types/newsDTO';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
-import type { FaqDetail } from '../../domain/entities/models/faqs';
 import { ParsedFaqContent } from '../atoms';
 
 interface FaqContentProps {
-  data: FaqDetail;
+  data: NewsDetailResponse;
   maxHeight?: number;
 }
 

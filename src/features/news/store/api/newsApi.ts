@@ -12,7 +12,7 @@ import {
 } from '../../api/types/commentDTO';
 import {
   ListNewsResponse,
-  NewsDetail,
+  NewsDetailResponse,
   NewsQueryParams,
   NewsUpdateRequest,
 } from '../../api/types/newsDTO';
@@ -44,7 +44,7 @@ export const newsApi = createApi({
 
     // News Detail endpoints
     getNewsDetail: builder.query<
-      NewsDetail,
+      NewsDetailResponse,
       {
         id: string;
         include?: string[];
@@ -68,7 +68,7 @@ export const newsApi = createApi({
         const queryString = queryParams.toString();
         return `${ApiEndpointEnum.News}/${id}${queryString ? `?${queryString}` : ''}`;
       },
-      transformResponse: (response: Response<NewsDetail>) => response.data,
+      transformResponse: (response: Response<NewsDetailResponse>) => response.data,
       providesTags: (result, error, params) => [{ type: 'NewsDetails', id: params.id }],
     }),
 
@@ -199,7 +199,7 @@ export const newsApi = createApi({
 
     // Category endpoints
     getNewsCategories: builder.query<PostCategoryResponse[], void>({
-      query: () => ApiEndpointEnum.NewsCategories,
+      query: () => ({ url: ApiEndpointEnum.NewsCategories, method: 'GET' }),
       transformResponse: (response: Response<PostCategoryResponse[]>) => response.data,
       providesTags: ['NewsCategories'],
     }),
