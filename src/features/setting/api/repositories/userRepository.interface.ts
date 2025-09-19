@@ -1,19 +1,10 @@
+import { InfinityParams, InfinityResult } from '@/shared/dtos/base-api-response.dto';
 import { User } from '@prisma/client';
 
-export interface UserInfinityParams {
-  limit?: number;
-  search?: string;
-  page?: string;
-}
 export interface OutputUserInfinity {
-  id?: number;
-  name?: string;
-  email?: string;
-}
-
-export interface UserInfinityResult {
-  users: OutputUserInfinity[];
-  hasMore: boolean;
+  id?: string;
+  name?: string | null;
+  email?: string | null;
 }
 
 export interface IUserRepository {
@@ -21,5 +12,5 @@ export interface IUserRepository {
   findUserByEmail(email: string): Promise<User | null>;
   findUsersByIds(ids: string[]): Promise<User[]>;
   updateUser(id: string, data: Partial<User>): Promise<User>;
-  getUserInfinity(params: UserInfinityParams): Promise<UserInfinityResult>;
+  getUserInfinity(params: InfinityParams): Promise<InfinityResult<OutputUserInfinity>>;
 }

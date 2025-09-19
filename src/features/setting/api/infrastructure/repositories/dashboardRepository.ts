@@ -34,6 +34,7 @@ class DashboardRepository {
         updatedAt: true,
         status: true,
         dynamicValue: true,
+        reason: true,
       },
     });
 
@@ -153,7 +154,12 @@ class DashboardRepository {
     return grouped;
   }
 
-  async changeCronjob(cronjobData: CronJobLog, userId: string, tier: MembershipTier) {
+  async changeCronjob(
+    cronjobData: CronJobLog,
+    userId: string,
+    tier: MembershipTier,
+    reason?: string,
+  ) {
     return await prisma.$transaction(async (tx) => {
       const existing = await tx.membershipProgress.findFirst({
         where: { userId: cronjobData?.createdBy || '' },
@@ -168,7 +174,7 @@ class DashboardRepository {
         cronjobData.typeCronJob !== TypeCronJob.MEMBERSHIP
         //  ||  !this.shouldUpdateTier(cronjobData, existing)
       ) {
-        return null;
+        return 404;
       }
 
       const { email, name, id: user_id } = existing.user;
@@ -197,6 +203,7 @@ class DashboardRepository {
             fromTier: (cronjobData.dynamicValue as any)?.['fromTier'] as string,
             toTier: tier?.id,
           },
+          reason: reason || '',
         },
       });
 
@@ -258,64 +265,16 @@ class DashboardRepository {
     return cronjob;
   }
 
-  async getMembershipChart(
-    filters?: any,
-    // tierFilters?: { fromTier?: string | string[]; toTier?: string | string[] },
-  ) {
-    const cronJobWhere: any = {
-      typeCronJob: 'MEMBERSHIP',
-    };
+  async getMembershipChart(filters?: any) {
+    const cronJobWhere: any = {};
 
-    if (filters) {
-      if (filters.createdAt) {
-        cronJobWhere.createdAt = filters.createdAt;
-      } else {
-        const startOfToday = new Date();
-        startOfToday.setHours(0, 0, 0, 0);
-        const endOfToday = new Date();
-        endOfToday.setHours(23, 59, 59, 999);
-        cronJobWhere.createdAt = {
-          gte: startOfToday,
-          lte: endOfToday,
-        };
-      }
-
-      if (filters.status) {
-        cronJobWhere.status = filters.status;
-      }
-
-      // if (filters.createdBy) {
-      //   cronJobWhere.createdBy = filters.createdBy;
-      // }
-
-      // if (filters.updatedBy) {
-      //   cronJobWhere.updatedBy = filters.updatedBy;
-      // }
-
-      if (filters.typeCronJob) {
-        cronJobWhere.typeCronJob = filters.typeCronJob;
-      }
-
-      if (filters.OR) {
-        cronJobWhere.OR = filters.OR;
-      }
-    } else {
-      const startOfToday = new Date();
-      startOfToday.setHours(0, 0, 0, 0);
-      const endOfToday = new Date();
-      endOfToday.setHours(23, 59, 59, 999);
-      cronJobWhere.createdAt = {
-        gte: startOfToday,
-        lte: endOfToday,
-      };
+    if (filters.typeCronJob) {
+      cronJobWhere.typeCronJob = filters.typeCronJob;
     }
 
-    // if (tierFilters?.fromTier || tierFilters?.toTier) {
-    //   const fromArray = normalizeToArray(tierFilters.fromTier);
-    //   const toArray = normalizeToArray(tierFilters.toTier);
-    //   applyJsonInFilter(cronJobWhere, 'fromTier', fromArray);
-    //   applyJsonInFilter(cronJobWhere, 'toTier', toArray);
-    // }
+    if (filters.OR) {
+      cronJobWhere.OR = filters.OR;
+    }
 
     const cronJobLogs = await prisma.cronJobLog.findMany({
       where: cronJobWhere,
@@ -323,14 +282,9 @@ class DashboardRepository {
         dynamicValue: true,
       },
     });
-
     const tierIds = cronJobLogs
       .map((log) => (log.dynamicValue as any)?.toTier)
       .filter((id): id is string => id !== null && id !== undefined);
-
-    if (tierIds.length === 0) {
-      return { total: 0, items: [] };
-    }
 
     const tierCounts = new Map<string, number>();
     tierIds.forEach((tierId) => {
@@ -338,24 +292,20 @@ class DashboardRepository {
     });
 
     const tiers = await prisma.membershipTier.findMany({
-      where: {
-        id: { in: Array.from(tierCounts.keys()) },
-      },
       select: {
         id: true,
         tierName: true,
       },
     });
 
-    const tierMap = new Map(tiers.map((tier) => [tier.id, tier.tierName]));
-
-    const items = Array.from(tierCounts.entries()).map(([tierId, count]) => ({
-      tierId,
-      tierName: tierMap.get(tierId) || tierId,
-      count,
+    // Build items for all tiers, defaulting count to 0 when absent
+    const items = tiers.map((tier) => ({
+      tierId: tier.id,
+      tierName: tier.tierName,
+      count: tierCounts.get(tier.id) || 0,
     }));
 
-    const total = items.reduce((sum, item) => sum + item.count, 0);
+    const total = tierIds.length;
 
     return { total, items };
   }

@@ -1,5 +1,6 @@
 import { prisma } from '@/config';
 import { Messages } from '@/shared/constants/message';
+import { InfinityParams, InfinityResult } from '@/shared/dtos/base-api-response.dto';
 import { BadRequestError, ConflictError } from '@/shared/lib';
 import { Prisma } from '@prisma/client';
 import { membershipTierRepository } from '../../infrastructure/repositories/membershipTierRepository';
@@ -10,10 +11,9 @@ import {
   MembershipTierCreation,
   MembershipTierUpdate,
   MembershipTierWithBenefit,
+  OutputTierInfinity,
   Range,
   RangeKeys,
-  TierInfinityParams,
-  UserInfinityResult,
 } from '../../repositories/membershipTierRepository';
 import { IUserRepository } from '../../repositories/userRepository.interface';
 
@@ -443,6 +443,11 @@ class MembershipSettingUseCase {
       );
     }
 
+    // Not allowed to update new min to be less than old min
+    if (dNewMin.lt(dOldMin)) {
+      throw new BadRequestError('New min must be greater than old min');
+    }
+
     const targetCount = await prisma.membershipTier.count({
       where: { [minKey]: dOldMin, [maxKey]: dOldMax } as any,
     });
@@ -479,10 +484,10 @@ class MembershipSettingUseCase {
       }),
       prevMaxOld >= 0
         ? prisma.membershipTier.findFirst({
-            where: { [maxKey]: new Prisma.Decimal(prevMaxOld) },
-            select: { [minKey]: true, [maxKey]: true },
-            orderBy: { [minKey]: 'asc' },
-          })
+          where: { [maxKey]: new Prisma.Decimal(prevMaxOld) },
+          select: { [minKey]: true, [maxKey]: true },
+          orderBy: { [minKey]: 'asc' },
+        })
         : Promise.resolve(null),
     ]);
 
@@ -552,9 +557,9 @@ class MembershipSettingUseCase {
         const snapPrev =
           oldMin > 0
             ? await tx.membershipTier.updateMany({
-                where: { [maxKey]: new Prisma.Decimal(prevMaxOld) },
-                data: { [maxKey]: dNewMin.sub(1), updatedBy: userId },
-              })
+              where: { [maxKey]: new Prisma.Decimal(prevMaxOld) },
+              data: { [maxKey]: dNewMin.sub(1), updatedBy: userId },
+            })
             : { count: 0 };
 
         return {
@@ -566,7 +571,7 @@ class MembershipSettingUseCase {
     }
   }
 
-  async getTierInfinity(params: TierInfinityParams): Promise<UserInfinityResult> {
+  async getTierInfinity(params: InfinityParams): Promise<InfinityResult<OutputTierInfinity>> {
     const { limit = 20, search, page } = params;
 
     const whereClause: any = {};
@@ -598,7 +603,7 @@ class MembershipSettingUseCase {
     const actualTiers = hasMore ? tiers.slice(0, limit) : tiers;
     const totalPages = Math.ceil(total / limit);
     return {
-      tiers: actualTiers as any,
+      items: actualTiers as any,
       hasMore: Number(page) < totalPages,
     };
   }

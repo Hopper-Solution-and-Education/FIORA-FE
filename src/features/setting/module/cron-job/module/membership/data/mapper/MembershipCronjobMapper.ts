@@ -12,8 +12,10 @@ export class MembershipCronjobMapper {
     filter?: MembershipCronjobFilterRequest,
   ): URLSearchParams {
     const params = new URLSearchParams();
-    params.append('page', page.toString());
-    params.append('pageSize', pageSize.toString());
+    const safePage = Number.isFinite(page as any) && page ? page : 1;
+    const safePageSize = Number.isFinite(pageSize as any) && pageSize ? pageSize : 10;
+    params.append('page', String(safePage));
+    params.append('pageSize', String(safePageSize));
 
     if (!filter) return params;
 
@@ -45,12 +47,19 @@ export class MembershipCronjobMapper {
   }
 
   static toList(response: MembershipCronjobPaginatedResponse) {
+    const pagination = (response.data as any) || {};
+    const items: MembershipCronjobItem[] = Array.isArray(pagination.items)
+      ? pagination.items
+      : Array.isArray(response.data)
+        ? (response.data as any)
+        : [];
+
     return {
-      data: (response.data as MembershipCronjobItem[]) || [],
-      page: response.page ?? 1,
-      pageSize: response.pageSize ?? 10,
-      totalPage: response.totalPage ?? 1,
-      total: response.total ?? (response.data as MembershipCronjobItem[])?.length ?? 0,
+      data: items || [],
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      totalPage: pagination.totalPage,
+      total: pagination.total ?? (Array.isArray(items) ? items.length : 0),
       statistics: response.statistics ?? undefined,
     };
   }

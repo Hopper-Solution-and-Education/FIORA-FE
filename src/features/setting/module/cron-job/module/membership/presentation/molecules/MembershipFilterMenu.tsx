@@ -5,6 +5,10 @@ import { FilterColumn, FilterComponentConfig } from '@/shared/types/filter.types
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
+import { membershipCronjobContainer } from '../../di/membershipCronjobDashboardDI';
+import { MEMBERSHIP_CRONJOB_TYPES } from '../../di/membershipCronjobDashboardDI.type';
+import { IGetMembershipTiersUseCase } from '../../domain/usecase/GetMembershipTiersUseCase';
+import { IGetMembershipUsersUseCase } from '../../domain/usecase/GetMembershipUsersUseCase';
 import { clearFilter } from '../../slices';
 import { MembershipCronjobFilterState } from '../../slices/types';
 
@@ -38,16 +42,8 @@ const STATUS_OPTIONS = [
   { value: 'FAIL', label: 'FAIL' },
 ];
 
-// Tier filter options - mock data for now
-const TIER_OPTIONS = [
-  { value: 'platinum-qili', label: 'Platinum Qili' },
-  { value: 'gold-qili', label: 'Gold Qili' },
-  { value: 'silver-qili', label: 'Silver Qili' },
-  { value: 'bronze-qili', label: 'Bronze Qili' },
-  { value: 'titan-egg', label: 'Titan Egg' },
-  { value: 'diamond-egg', label: 'Diamond Egg' },
-  { value: 'diamond-dragon', label: 'Diamond Dragon' },
-];
+// Dynamic tier options fetched from API
+const PAGE_SIZE = 20;
 
 interface MembershipFilterMenuProps {
   value: MembershipCronjobFilterState;
@@ -72,6 +68,58 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
       toDate: value.toDate,
     };
   });
+
+  const [tierOptions, setTierOptions] = useState<{ value: string; label: string }[]>([]);
+  const [emailOptions, setEmailOptions] = useState<{ value: string; label: string }[]>([]);
+  const [updatedByOptions, setUpdatedByOptions] = useState<{ value: string; label: string }[]>([]);
+  const [tierPage, setTierPage] = useState(1);
+  const [tierHasMore, setTierHasMore] = useState(true);
+  const [tierLoadingMore, setTierLoadingMore] = useState(false);
+  const [userPage, setUserPage] = useState(1);
+  const [userHasMore, setUserHasMore] = useState(true);
+  const [userLoadingMore, setUserLoadingMore] = useState(false);
+
+  // Do not prefetch options on mount; fetch lazily on dropdown open
+
+  const handleLoadMoreTiers = useCallback(async () => {
+    if (!tierHasMore || tierLoadingMore) return;
+    setTierLoadingMore(true);
+    const next = tierPage + 1;
+    try {
+      const useCase = membershipCronjobContainer.get<IGetMembershipTiersUseCase>(
+        MEMBERSHIP_CRONJOB_TYPES.IGetMembershipTiersUseCase,
+      );
+      const res = await useCase.execute(next, PAGE_SIZE);
+      const items = res.data?.items || [];
+      const options = items.map((t) => ({ value: t.id, label: t.tierName }));
+      setTierOptions((prev) => [...prev, ...options]);
+      setTierHasMore(Boolean(res.data?.hasMore));
+      setTierPage(next);
+    } finally {
+      setTierLoadingMore(false);
+    }
+  }, [tierHasMore, tierLoadingMore, tierPage]);
+
+  const handleLoadMoreUsers = useCallback(async () => {
+    if (!userHasMore || userLoadingMore) return;
+    setUserLoadingMore(true);
+    const next = userPage + 1;
+    try {
+      const useCase = membershipCronjobContainer.get<IGetMembershipUsersUseCase>(
+        MEMBERSHIP_CRONJOB_TYPES.IGetMembershipUsersUseCase,
+      );
+      const res = await useCase.execute(next, PAGE_SIZE);
+      const items = res.data?.items || [];
+      const emailOpts = items.map((u) => ({ value: u.email, label: u.email }));
+      const updatedByOpts = items.map((u) => ({ value: u.id, label: u.email }));
+      setEmailOptions((prev) => [...prev, ...emailOpts]);
+      setUpdatedByOptions((prev) => [...prev, ...updatedByOpts]);
+      setUserHasMore(Boolean(res.data?.hasMore));
+      setUserPage(next);
+    } finally {
+      setUserLoadingMore(false);
+    }
+  }, [userHasMore, userLoadingMore, userPage]);
 
   // Sync local filter with Redux state changes
   useEffect(() => {
@@ -172,11 +220,35 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
         key: 'fromTier',
         component: (
           <MultiSelectFilter
-            options={TIER_OPTIONS}
+            options={tierOptions}
             selectedValues={localFilter.fromTier}
             onChange={(values) => handleLocalFilterChange('fromTier', values)}
             label="From Tier"
             placeholder="Select from tier"
+            onScrollEnd={handleLoadMoreTiers}
+            hasMore={tierHasMore}
+            isLoadingMore={tierLoadingMore}
+            onOpenChange={(open) => {
+              if (open && tierOptions.length === 0 && !tierLoadingMore) {
+                setTierPage(1);
+                setTierHasMore(true);
+                setTierOptions([]);
+                (async () => {
+                  setTierLoadingMore(true);
+                  try {
+                    const useCase = membershipCronjobContainer.get<IGetMembershipTiersUseCase>(
+                      MEMBERSHIP_CRONJOB_TYPES.IGetMembershipTiersUseCase,
+                    );
+                    const res = await useCase.execute(1, PAGE_SIZE);
+                    const items = res.data?.items || [];
+                    setTierOptions(items.map((t) => ({ value: t.id, label: t.tierName })));
+                    setTierHasMore(Boolean(res.data?.hasMore));
+                  } finally {
+                    setTierLoadingMore(false);
+                  }
+                })();
+              }
+            }}
           />
         ),
         column: FilterColumn.LEFT,
@@ -186,11 +258,35 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
         key: 'toTier',
         component: (
           <MultiSelectFilter
-            options={TIER_OPTIONS}
+            options={tierOptions}
             selectedValues={localFilter.toTier}
             onChange={(values) => handleLocalFilterChange('toTier', values)}
             label="To Tier"
             placeholder="Select to tier"
+            onScrollEnd={handleLoadMoreTiers}
+            hasMore={tierHasMore}
+            isLoadingMore={tierLoadingMore}
+            onOpenChange={(open) => {
+              if (open && tierOptions.length === 0 && !tierLoadingMore) {
+                setTierPage(1);
+                setTierHasMore(true);
+                setTierOptions([]);
+                (async () => {
+                  setTierLoadingMore(true);
+                  try {
+                    const useCase = membershipCronjobContainer.get<IGetMembershipTiersUseCase>(
+                      MEMBERSHIP_CRONJOB_TYPES.IGetMembershipTiersUseCase,
+                    );
+                    const res = await useCase.execute(1, PAGE_SIZE);
+                    const items = res.data?.items || [];
+                    setTierOptions(items.map((t) => ({ value: t.id, label: t.tierName })));
+                    setTierHasMore(Boolean(res.data?.hasMore));
+                  } finally {
+                    setTierLoadingMore(false);
+                  }
+                })();
+              }
+            }}
           />
         ),
         column: FilterColumn.LEFT,
@@ -215,11 +311,37 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
         key: 'email',
         component: (
           <MultiSelectFilter
-            options={[]}
+            options={emailOptions}
             selectedValues={localFilter.email}
             onChange={(values) => handleLocalFilterChange('email', values)}
             label="Email"
             placeholder="Select email"
+            onScrollEnd={handleLoadMoreUsers}
+            hasMore={userHasMore}
+            isLoadingMore={userLoadingMore}
+            onOpenChange={(open) => {
+              if (open && emailOptions.length === 0 && !userLoadingMore) {
+                setUserPage(1);
+                setUserHasMore(true);
+                setEmailOptions([]);
+                setUpdatedByOptions([]);
+                (async () => {
+                  setUserLoadingMore(true);
+                  try {
+                    const useCase = membershipCronjobContainer.get<IGetMembershipUsersUseCase>(
+                      MEMBERSHIP_CRONJOB_TYPES.IGetMembershipUsersUseCase,
+                    );
+                    const res = await useCase.execute(1, PAGE_SIZE);
+                    const items = res.data?.items || [];
+                    setEmailOptions(items.map((u) => ({ value: u.email, label: u.email })));
+                    setUpdatedByOptions(items.map((u) => ({ value: u.id, label: u.email })));
+                    setUserHasMore(Boolean(res.data?.hasMore));
+                  } finally {
+                    setUserLoadingMore(false);
+                  }
+                })();
+              }
+            }}
           />
         ),
         column: FilterColumn.RIGHT,
@@ -229,18 +351,56 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
         key: 'updatedBy',
         component: (
           <MultiSelectFilter
-            options={[]}
+            options={updatedByOptions}
             selectedValues={localFilter.updatedBy}
             onChange={(values) => handleLocalFilterChange('updatedBy', values)}
             label="Updated By"
             placeholder="Select updated by"
+            onScrollEnd={handleLoadMoreUsers}
+            hasMore={userHasMore}
+            isLoadingMore={userLoadingMore}
+            onOpenChange={(open) => {
+              if (open && updatedByOptions.length === 0 && !userLoadingMore) {
+                setUserPage(1);
+                setUserHasMore(true);
+                setEmailOptions([]);
+                setUpdatedByOptions([]);
+                (async () => {
+                  setUserLoadingMore(true);
+                  try {
+                    const useCase = membershipCronjobContainer.get<IGetMembershipUsersUseCase>(
+                      MEMBERSHIP_CRONJOB_TYPES.IGetMembershipUsersUseCase,
+                    );
+                    const res = await useCase.execute(1, PAGE_SIZE);
+                    const items = res.data?.items || [];
+                    setEmailOptions(items.map((u) => ({ value: u.email, label: u.email })));
+                    setUpdatedByOptions(items.map((u) => ({ value: u.id, label: u.email })));
+                    setUserHasMore(Boolean(res.data?.hasMore));
+                  } finally {
+                    setUserLoadingMore(false);
+                  }
+                })();
+              }
+            }}
           />
         ),
         column: FilterColumn.RIGHT,
         order: 2,
       },
     ],
-    [localFilter, dateRange, handleLocalFilterChange, handleDateRangeChange],
+    [
+      localFilter,
+      dateRange,
+      handleLocalFilterChange,
+      handleDateRangeChange,
+      tierOptions,
+      emailOptions,
+      updatedByOptions,
+      tierHasMore,
+      tierLoadingMore,
+      userHasMore,
+      userLoadingMore,
+    ],
   );
 
   return (

@@ -15,10 +15,13 @@ export const MembershipStatusBadge = ({ status, className }: MembershipStatusBad
   const normalizedStatus = status.toLowerCase();
   const color =
     STATUS_COLOR[normalizedStatus] ||
-    'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 ';
+    'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
 
   return (
-    <Badge variant="secondary" className={`${color} ${className || ''} font-semibold`}>
+    <Badge
+      variant="secondary"
+      className={`${color} ${className || ''} font-semibold block max-w-fit truncate line-clamp-1`}
+    >
       {status}
     </Badge>
   );

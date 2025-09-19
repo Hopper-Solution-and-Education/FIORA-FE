@@ -42,6 +42,14 @@ export interface IHttpClient {
   put<T>(url: string, body: any, headers?: HeadersInit): Promise<T>;
 
   /**
+   * Gửi yêu cầu PATCH.
+   * @param url Endpoint API.
+   * @param body Dữ liệu gửi đi.
+   * @param headers Header tùy chọn.
+   */
+  patch<T>(url: string, body: any, headers?: HeadersInit): Promise<T>;
+
+  /**
    * Gửi yêu cầu DELETE.
    * @param url Endpoint API.
    * @param headers Header tùy chọn.
@@ -181,6 +189,22 @@ class HttpClient implements IHttpClient {
 
   public put<T>(url: string, body: any, headers: HeadersInit = {}): Promise<T> {
     const options: RequestInit = { method: 'PUT', headers };
+
+    if (body instanceof FormData) {
+      options.body = body;
+      if (headers && (headers as any)['Content-Type']) {
+        delete (headers as any)['Content-Type'];
+      }
+    } else {
+      options.body = JSON.stringify(body);
+      (headers as any)['Content-Type'] = 'application/json';
+    }
+
+    return this.request<T>(url, options);
+  }
+
+  public patch<T>(url: string, body: any, headers: HeadersInit = {}): Promise<T> {
+    const options: RequestInit = { method: 'PATCH', headers };
 
     if (body instanceof FormData) {
       options.body = body;
