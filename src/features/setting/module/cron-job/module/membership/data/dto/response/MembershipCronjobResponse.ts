@@ -32,8 +32,6 @@ export interface MembershipCronjobItem {
   spent?: string;
 }
 
-// The backend returns pagination fields at the root alongside data
-// Example: { status, message, data: [...], totalPage, page, pageSize, total, statistics }
 export type MembershipCronjobPaginatedResponse = _PaginationResponse<MembershipCronjobItem> &
   Partial<{
     statistics: {
