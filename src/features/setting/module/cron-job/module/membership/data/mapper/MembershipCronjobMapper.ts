@@ -21,8 +21,12 @@ export class MembershipCronjobMapper {
 
     const append = (name: string, value?: string | string[] | null) => {
       if (value == null) return;
-      if (Array.isArray(value)) value.forEach((v) => params.append(name, v));
-      else params.append(name, value);
+      if (Array.isArray(value)) {
+        // Join array values with comma for backend
+        params.append(name, value.join(','));
+      } else {
+        params.append(name, value);
+      }
     };
 
     append('status', filter.status as any);
