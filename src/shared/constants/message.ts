@@ -370,4 +370,9 @@ export enum Messages {
 
   //Email template type
   EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
+
+  // Smart Saving
+  GET_SMART_SAVING_SUCCESS = 'Get smart saving list successfully',
+  GET_SMART_SAVING_STATISTICS_SUCCESS = 'Get smart saving statistics successfully',
+  UPDATE_SMART_SAVING_SUCCESS = 'Update smart saving successfully',
 }
