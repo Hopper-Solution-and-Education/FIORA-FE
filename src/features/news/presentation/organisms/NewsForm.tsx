@@ -1,5 +1,6 @@
 'use client';
 
+import CommonEditor from '@/components/common/atoms/CommonEditor';
 import UploadImageField from '@/components/common/forms/upload/UploadImageField';
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -12,7 +13,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { ContentEditor } from '@/features/helps-center/presentation/molecules';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Plus } from 'lucide-react';
 import { useEffect } from 'react';
@@ -20,9 +20,16 @@ import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import type { AnyObject, ObjectSchema } from 'yup';
 import * as yup from 'yup';
-import { NewsUpdateRequest } from '../../api/types/newsDTO';
 
-export type NewsFormValues = NewsUpdateRequest;
+export type NewsFormValues = {
+  title: string;
+  description?: string;
+  content: string;
+  type: string;
+  categoryId: string;
+  userId?: string;
+  thumbnail?: string;
+};
 
 type CategoryOption = { id: string; name: string };
 
@@ -42,12 +49,11 @@ const schema: ObjectSchema<NewsFormValues, AnyObject> = yup
     description: yup.string().optional(),
     content: yup.string().trim().required('Content is required'),
     categoryId: yup.string().trim().required('Category is required'),
-    thumbnail: yup.string().required('Thumbnail is required'),
-    // userId: yup.string().trim().required('userId is required'),
+    thumbnail: yup.string().optional(),
+    userId: yup.string().trim().optional(),
     type: yup.string().trim().required('Post type is required'),
   })
   .required();
-
 const NewsForm = ({
   defaultValues,
   categories,
@@ -230,11 +236,11 @@ const NewsForm = ({
               <FormLabel>
                 Content <span className="text-red-500">*</span>
               </FormLabel>
-              <ContentEditor
-                value={field.value ?? ''}
-                onChange={field.onChange}
+              <CommonEditor
+                content={field.value ?? ''}
+                onChangeContent={field.onChange}
                 disabled={isSubmitting}
-                showPreview
+                output="html"
               />
               <FormMessage />
             </FormItem>

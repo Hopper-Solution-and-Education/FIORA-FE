@@ -28,7 +28,7 @@ export const useNewsData = () => {
   const newestQueryParams = useMemo<NewsQueryParams>(
     () => ({
       page: 1,
-      limit: 12,
+      limit: 10,
       orderBy: 'createdAt',
       orderDirection: 'desc',
     }),
@@ -109,8 +109,8 @@ export const useNewsData = () => {
         ...baseQueryParams,
         page: p,
         limit,
-        orderBy: 'views',
-        orderDirection: 'asc',
+        orderBy: 'createdAt',
+        orderDirection: 'desc',
         filters: JSON.stringify({
           search: activeFilters.search || '',
           categories:
@@ -119,8 +119,6 @@ export const useNewsData = () => {
               : [],
         }) as any,
       };
-
-      console.log('q', q);
 
       try {
         const result = await triggerGetNews(q).unwrap();

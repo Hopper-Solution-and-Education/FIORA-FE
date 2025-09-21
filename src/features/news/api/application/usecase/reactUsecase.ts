@@ -1,7 +1,7 @@
 import { Reaction } from '@prisma/client';
 import { IReactNewsRepository } from '../../domain/repository/reactNewsRepository';
 import { reactNewsRepository } from '../../infrashtructure/repositories/reactNewsRepository';
-import { reactCreationRequest } from '../../types/reactDTO';
+import { ReactCreationRequest } from '../../types/reactDTO';
 class ReactUsecase {
   constructor(private reactRepo: IReactNewsRepository) {}
 
@@ -10,7 +10,7 @@ class ReactUsecase {
     return result;
   }
 
-  async createReact(param: reactCreationRequest): Promise<Reaction> {
+  async createReact(param: ReactCreationRequest): Promise<Reaction> {
     return this.reactRepo.createReact(param);
   }
 }

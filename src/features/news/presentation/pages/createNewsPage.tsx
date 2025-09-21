@@ -2,7 +2,7 @@
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { uploadToFirebase } from '@/shared/lib';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import ConfirmExitDialog from '../../../../components/common/organisms/ConfirmExitDialog';
 import { useNewsUpsert } from '../../hooks/useNewsUpsert';
@@ -13,6 +13,7 @@ import NewsCategoryCreationDialog, {
 import NewsForm, { NewsFormValues } from '../organisms/NewsForm';
 
 const CreateNewsPage = () => {
+  const { id } = useParams() as { id: string };
   const router = useRouter();
   const {
     categories,
@@ -57,6 +58,8 @@ const CreateNewsPage = () => {
     const res = await submit(values);
     if (res) {
       setHasChanges(false);
+
+      // Small delay to ensure layout stability before navigation
       router.push(`/news/details/${res}`);
     }
   };
@@ -120,15 +123,13 @@ const CreateNewsPage = () => {
           onSubmit={handleSubmit}
           onCancel={() => {
             if (hasChanges) {
-              setPendingExit(() => () => router.push('/news'));
+              setPendingExit(() => () => router.push(`/news/details/${id}`));
               setOpenConfirmExitDialog(true);
             } else {
-              router.push('/news');
+              router.push(`/news/details/${id}`);
             }
           }}
           isSubmitting={isSubmitting}
-          onOpenCreateCategoryDialog={handleOpenCreateCategoryDialog}
-          onDirtyChange={handleDirtyChange}
         />
       </div>
 

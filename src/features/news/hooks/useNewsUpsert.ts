@@ -9,6 +9,7 @@ import {
   useGetNewsDetailQuery,
   useUpdateNewsMutation,
 } from '../store/api/newsApi';
+import { useGetUserIdSession } from './useUserSession';
 
 type UseNewsUpsertOptions = {
   newsId?: string;
@@ -28,7 +29,7 @@ export const useNewsUpsert = ({ newsId }: UseNewsUpsertOptions = {}) => {
     isLoading: isNewsLoading,
     error: newsError,
   } = useGetNewsDetailQuery({ id: newsId as string, trackView: false }, { skip: !newsId });
-
+  const userId = useGetUserIdSession();
   const [createNews, { isLoading: isCreating }] = useCreateNewsMutation();
   const [updateNews, { isLoading: isUpdating }] = useUpdateNewsMutation();
   const [createCategory, { isLoading: isCreatingCategory }] = useCreateNewsCategoryMutation();
@@ -62,9 +63,10 @@ export const useNewsUpsert = ({ newsId }: UseNewsUpsertOptions = {}) => {
 
   const submit = async (values: NewsFormValues): Promise<string | undefined> => {
     try {
+      if (!userId || userId === '') {
+        throw new Error('User id is required');
+      }
       if (newsId) {
-        console.log('values update news', values);
-
         await updateNews({
           newsId,
           updateData: {
@@ -73,7 +75,7 @@ export const useNewsUpsert = ({ newsId }: UseNewsUpsertOptions = {}) => {
             content: values.content.trim(),
             categoryId: values.categoryId,
             type: values.type,
-            userId: values.userId,
+            userId: userId,
             thumbnail: values.thumbnail,
           },
         }).unwrap();
@@ -86,7 +88,7 @@ export const useNewsUpsert = ({ newsId }: UseNewsUpsertOptions = {}) => {
         content: values.content.trim(),
         categoryId: values.categoryId,
         type: 'NEWS',
-        userId: values.userId,
+        userId: userId,
         thumbnail: values.thumbnail,
       }).unwrap();
       toast.success('News Created Successfully');

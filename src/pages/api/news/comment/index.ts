@@ -14,7 +14,7 @@ import { commetCreateRequestSchema } from '@/shared/validators/newsValidation';
 import { Post, User } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default (req: NextApiRequest, res: NextApiResponse, userId: string) =>
+export default (req: NextApiRequest, res: NextApiResponse) =>
   errorHandler(
     async (request, response) => {
       switch (request.method) {

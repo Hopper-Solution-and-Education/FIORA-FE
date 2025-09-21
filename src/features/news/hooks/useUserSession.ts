@@ -10,3 +10,8 @@ export const useUserSession = () => {
     isAdmin,
   };
 };
+export const useGetUserIdSession = () => {
+  const { data: session } = useSession() as { data: Session | null };
+  const userId = session?.user?.id;
+  return userId ?? '';
+};

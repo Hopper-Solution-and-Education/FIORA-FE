@@ -1,16 +1,16 @@
 import { Button } from '@/components/ui/button';
+import { NewsDetailResponse } from '@/features/news/api/types/newsDTO';
 import { Pencil, Trash } from 'lucide-react';
 import React from 'react';
-import { FaqDetail } from '../../domain/entities/models/faqs';
 
-interface FaqHeaderProps {
-  data: FaqDetail;
+interface NewsHeaderProps {
+  data: NewsDetailResponse;
   canEdit: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
 }
 
-const FaqHeader: React.FC<FaqHeaderProps> = ({ data, canEdit, onEdit, onDelete }) => {
+const NewsHeader: React.FC<NewsHeaderProps> = ({ data, canEdit, onEdit, onDelete }) => {
   return (
     <>
       {/* Header */}
@@ -49,4 +49,4 @@ const FaqHeader: React.FC<FaqHeaderProps> = ({ data, canEdit, onEdit, onDelete }
   );
 };
 
-export default FaqHeader;
+export default NewsHeader;

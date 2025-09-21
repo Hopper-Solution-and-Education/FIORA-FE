@@ -12,7 +12,7 @@ class CommentNewsRepository implements ICommentNewsRepository {
   async getCommentNews(queryParam: GetCommentRequest): Promise<CommentResponseRepo[]> {
     console.log(queryParam.newsId);
 
-    const skip = (queryParam.page - 1) * queryParam.limit;
+    const skip = (Number(queryParam.page) - 1) * Number(queryParam.limit);
 
     return prisma.comment.findMany({
       where: {
@@ -20,7 +20,7 @@ class CommentNewsRepository implements ICommentNewsRepository {
       },
       skip: skip,
       orderBy: {
-        [queryParam.orderBy]: queryParam.orderDirection,
+        [queryParam.orderBy as string]: queryParam.orderDirection,
       },
       select: {
         id: true,

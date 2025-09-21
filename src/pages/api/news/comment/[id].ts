@@ -1,6 +1,6 @@
 import { accountUsecase } from '@/features/news/api/application/usecase/accountUsecase';
 import { commentUsecase } from '@/features/news/api/application/usecase/commentUsecase';
-import { commentUpdationNews } from '@/features/news/api/types/commentDTO';
+import { CommentUpdationNews } from '@/features/news/api/types/commentDTO';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { UserRole } from '@/shared/constants/userRole';
@@ -11,7 +11,7 @@ import { validateBody, validateVariable } from '@/shared/utils/validate';
 import { commentIdSchema, commetUpdateRequestSchema } from '@/shared/validators/newsValidation';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default (req: NextApiRequest, res: NextApiResponse, userId: string) =>
+export default (req: NextApiRequest, res: NextApiResponse) =>
   errorHandler(
     async (request, response) => {
       switch (request.method) {
@@ -52,7 +52,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse) {
   }
   //parse data
   const commentIdParam = String(id);
-  const param: commentUpdationNews = { content, userId };
+  const param: CommentUpdationNews = { content, userId };
 
   //validation body
   const validationBody = validateBody(commetUpdateRequestSchema, param);

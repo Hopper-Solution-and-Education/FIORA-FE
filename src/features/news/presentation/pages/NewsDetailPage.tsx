@@ -1,16 +1,13 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { notFound, useParams } from 'next/navigation';
 import React from 'react';
-import {
-  ConfirmDeleteDialog,
-  FaqContent,
-  FaqHeader,
-  LoginDialog,
-} from '../../../helps-center/presentation/molecules';
+import { ConfirmDeleteDialog, LoginDialog } from '../../../helps-center/presentation/molecules';
 import { useNewsDetail } from '../../hooks/useNewsDetail';
 import { useUserSession } from '../../hooks/useUserSession';
 import FeedbackSection from '../organisms/FeedbackSection';
 import NewsCommentsSection from '../organisms/NewsCommentsSection';
+import NewsContent from '../organisms/NewsContent';
+import NewsHeader from '../organisms/NewsHeader';
 
 const NewsDetailPage: React.FC = () => {
   const { id } = useParams() as { id: string };
@@ -43,29 +40,31 @@ const NewsDetailPage: React.FC = () => {
   }
 
   return (
-    <section className="container mx-auto px-6 space-y-6">
-      {/* Header Section */}
-      <FaqHeader
-        data={news}
-        canEdit={isAdmin}
-        onEdit={isAdmin ? handleEdit : undefined}
-        onDelete={isAdmin ? handleDelete : undefined}
-      />
-      {/* Content Section */}
-      <FaqContent data={news} />
-      <hr className="my-10 w-1/2 mx-auto" />
-      {/* Feedback Section */}
-      <FeedbackSection
-        newsId={id}
-        setOpenWarningDialog={setOpenWarningDialog}
-        session={session ?? null}
-      />
-      {/* Comments Section */}
-      <NewsCommentsSection
-        newsId={id}
-        setOpenWarningDialog={setOpenWarningDialog}
-        session={session ?? null}
-      />
+    <main className="px-8">
+      <div className="mx-auto space-y-6">
+        {/* Header Section */}
+        <NewsHeader
+          data={news}
+          canEdit={isAdmin}
+          onEdit={isAdmin ? handleEdit : undefined}
+          onDelete={isAdmin ? handleDelete : undefined}
+        />
+        {/* Content Section */}
+        <NewsContent data={news} />
+        <hr className="my-10 w-1/2 mx-auto" />
+        {/* Feedback Section */}
+        <FeedbackSection
+          newsId={id}
+          setOpenWarningDialog={setOpenWarningDialog}
+          session={session ?? null}
+        />
+        {/* Comments Section */}
+        <NewsCommentsSection
+          newsId={id}
+          setOpenWarningDialog={setOpenWarningDialog}
+          session={session ?? null}
+        />
+      </div>
 
       {/* FAQ Delete Confirmation Dialog */}
       <ConfirmDeleteDialog
@@ -81,7 +80,7 @@ const NewsDetailPage: React.FC = () => {
         onClose={() => setOpenWarningDialog(false)}
         callbackUrl={id}
       />
-    </section>
+    </main>
   );
 };
 

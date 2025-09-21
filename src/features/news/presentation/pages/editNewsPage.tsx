@@ -63,6 +63,7 @@ const EditNewsPage: React.FC = () => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (!hasChanges) return;
       e.preventDefault();
+      e.returnValue = '';
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);

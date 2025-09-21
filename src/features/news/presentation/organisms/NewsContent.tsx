@@ -1,17 +1,17 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
-import { FaqDetail } from '../../domain/entities/models/faqs';
-import { ParsedFaqContent } from '../atoms';
+import { NewsDetailResponse } from '../../api/types/newsDTO';
+import ParsedNewsContent from '../atoms/ParsedNewsContent';
 
-interface FaqContentProps {
-  data: FaqDetail;
+interface NewsContentProps {
+  data: NewsDetailResponse;
   maxHeight?: number;
 }
 
 const DEFAULT_MAX_HEIGHT = 500; // pixels
 const BUTTON_ANIMATION_DURATION = 200; // ms
 
-const FaqContent: React.FC<FaqContentProps> = ({ data, maxHeight = DEFAULT_MAX_HEIGHT }) => {
+const NewsContent: React.FC<NewsContentProps> = ({ data, maxHeight = DEFAULT_MAX_HEIGHT }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showToggle, setShowToggle] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -94,7 +94,7 @@ const FaqContent: React.FC<FaqContentProps> = ({ data, maxHeight = DEFAULT_MAX_H
   return (
     <div className="relative">
       <div ref={contentRef} className={getContentClasses()}>
-        <ParsedFaqContent htmlContent={data.content} />
+        <ParsedNewsContent htmlContent={data.content} />
 
         {/* Gradient overlay when content is truncated */}
         {!isExpanded && showToggle && (
@@ -107,4 +107,4 @@ const FaqContent: React.FC<FaqContentProps> = ({ data, maxHeight = DEFAULT_MAX_H
   );
 };
 
-export default FaqContent;
+export default NewsContent;
