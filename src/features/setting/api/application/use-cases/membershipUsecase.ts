@@ -424,7 +424,7 @@ class MembershipSettingUseCase {
 
   async updateMembershipThreshold(data: MembershipTierUpdate, userId: string) {
     const FLOOR = 0;
-    const CEILING = 99999999999;
+    const CEILING = 99999999998;
 
     const { axis, oldMin, oldMax, newMin, newMax } = data;
     const { minKey, maxKey } = axisKeys(axis);
@@ -436,6 +436,8 @@ class MembershipSettingUseCase {
 
     const dFloor = new Prisma.Decimal(FLOOR);
     const dCeil = new Prisma.Decimal(CEILING);
+
+    const newValue = dNewMax.sub(dOldMax); // positive value means increased, negative value means decreased
 
     if (dOldMin.lt(dFloor) || dOldMax.gt(dCeil)) {
       throw new BadRequestError(
@@ -540,19 +542,72 @@ class MembershipSettingUseCase {
       }
 
       return await prisma.$transaction(async (tx) => {
-        const updated = await tx.membershipTier.updateMany({
+        const updateCurrentTierIdsAwaited = tx.membershipTier.findMany({
           where: { [minKey]: dOldMin, [maxKey]: dOldMax },
-          data: { [minKey]: dNewMin, [maxKey]: dNewMax, updatedBy: userId },
+          select: { id: true },
         });
 
-        if (updated.count === 0) {
-          return { updated: 0, snappedNext: 0, snappedPrev: 0 };
+        const updateNextMinTierIdsAwaited = tx.membershipTier.findMany({
+          where: {
+            [minKey]: {
+              gt: new Prisma.Decimal(dOldMin),
+              lte: new Prisma.Decimal(CEILING),
+            },
+          },
+          select: { id: true },
+        });
+
+        const updateNextMaxTierIdsAwaited = tx.membershipTier.findMany({
+          where: {
+            [maxKey]: {
+              gt: new Prisma.Decimal(oldMax),
+              lt: new Prisma.Decimal(CEILING),
+            },
+          },
+          select: { id: true },
+        });
+
+        const [updateCurrentTierIds = [], updateNextMinTierIds = [], updateNextMaxTierIds = []] =
+          await Promise.all([
+            updateCurrentTierIdsAwaited,
+            updateNextMinTierIdsAwaited,
+            updateNextMaxTierIdsAwaited,
+          ]);
+
+        let updatedCurrentTierCount;
+        let updatedNextMinTierCount;
+        let updatedNextMaxTierCount;
+
+        if (updateCurrentTierIds) {
+          updatedCurrentTierCount = await tx.membershipTier.updateMany({
+            where: { id: { in: updateCurrentTierIds.map((tier) => tier.id) } },
+            data: { [minKey]: dNewMin, [maxKey]: dNewMax, updatedBy: userId },
+          });
         }
 
-        const snapNext = await tx.membershipTier.updateMany({
-          where: { [minKey]: new Prisma.Decimal(nextMinOld) },
-          data: { [minKey]: dNewMax.add(1), updatedBy: userId },
-        });
+        if (updateNextMinTierIds) {
+          updatedNextMinTierCount = await tx.membershipTier.updateMany({
+            where: { id: { in: updateNextMinTierIds.map((tier) => tier.id) } },
+            data: {
+              [minKey]: {
+                increment: newValue,
+              },
+              updatedBy: userId,
+            },
+          });
+        }
+
+        if (updateNextMaxTierIds) {
+          updatedNextMaxTierCount = await tx.membershipTier.updateMany({
+            where: { id: { in: updateNextMaxTierIds.map((tier) => tier.id) } },
+            data: {
+              [maxKey]: {
+                increment: newValue,
+              },
+              updatedBy: userId,
+            },
+          });
+        }
 
         const snapPrev =
           oldMin > 0
@@ -563,8 +618,8 @@ class MembershipSettingUseCase {
             : { count: 0 };
 
         return {
-          updated: updated.count,
-          snapNext: snapNext.count,
+          updated: updatedCurrentTierCount,
+          snapNext: (updatedNextMinTierCount?.count ?? 0) + (updatedNextMaxTierCount?.count ?? 0),
           snapPrev: snapPrev.count,
         };
       });

@@ -4,4 +4,8 @@ export interface MembershipCronjobFilterRequest {
   search?: string;
   fromDate?: Date | string;
   toDate?: Date | string;
+  fromTier?: string | string[];
+  toTier?: string | string[];
+  email?: string | string[];
+  updatedBy?: string | string[];
 }

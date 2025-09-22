@@ -1,6 +1,7 @@
+import { TablePaginationProps } from '@/components/common/tables/custom-table/types';
 import { CronJobStatus, TypeCronJob } from '@prisma/client';
 
-export interface DashboardFilterParams {
+export interface DashboardFilterParams extends TablePaginationProps {
   status?: CronJobStatus | CronJobStatus[];
   typeCronJob?: TypeCronJob | TypeCronJob[];
   search?: string;
@@ -11,8 +12,6 @@ export interface DashboardFilterParams {
   createdBy?: string | string[];
   updatedBy?: string | string[];
   page?: number;
-  limit?: number;
-  sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   userIds?: string | string[];
 }
