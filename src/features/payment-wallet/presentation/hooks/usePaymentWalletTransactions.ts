@@ -3,7 +3,7 @@
 import { FilterCriteria } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import {
   clearTransactions,
   clearTransactionsError,
@@ -97,11 +97,24 @@ export const usePaymentWalletTransactions = () => {
     dispatch(clearTransactionsError());
   }, [dispatch]);
 
+  // Auto-fetch transactions on session change
+  useEffect(() => {
+    if (!transactions.length && session?.user?.id) {
+      fetchTransactions();
+    }
+  }, [session?.user?.id, transactions.length, fetchTransactions]);
+
   // Computed values
   const hasTransactions = useMemo(() => transactions.length > 0, [transactions]);
-  const hasNextPage = useMemo(() => pagination?.hasNextPage || false, [pagination]);
-  const hasPreviousPage = useMemo(() => pagination?.hasPreviousPage || false, [pagination]);
-  const totalCount = useMemo(() => pagination?.totalCount || 0, [pagination]);
+  const hasNextPage = useMemo(() => {
+    if (!pagination) return false;
+    return pagination.hasNextPage ?? pagination.page < pagination.totalPage;
+  }, [pagination]);
+  const hasPreviousPage = useMemo(() => {
+    if (!pagination) return false;
+    return pagination.hasPreviousPage ?? pagination.page > 1;
+  }, [pagination]);
+  const totalCount = useMemo(() => pagination?.total || 0, [pagination]);
 
   return {
     // Data

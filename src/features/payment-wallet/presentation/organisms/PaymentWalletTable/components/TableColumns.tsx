@@ -16,7 +16,7 @@ export const usePaymentWalletTableColumns = (): CommonTableColumn<PaymentWalletT
         title: 'No.',
         align: 'center',
         width: 60,
-        render: (row: PaymentWalletTransaction, index?: number) => <span>{(index ?? 0) + 1}</span>,
+        render: (row: PaymentWalletTransaction) => <span>{row.rowNumber || 1}</span>,
       },
       {
         key: 'date',

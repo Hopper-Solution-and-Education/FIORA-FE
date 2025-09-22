@@ -18,7 +18,7 @@ const TableActions = ({ transaction }: TableActionsProps) => {
           <Button
             variant="ghost"
             className="px-3 py-2 hover:bg-gray-200"
-            onClick={() => router.push(`/payment-wallet/details/${transaction.id}`)}
+            onClick={() => router.push(`/transaction/details/${transaction.id}`)}
           >
             <FileText size={18} color="#595959" />
           </Button>

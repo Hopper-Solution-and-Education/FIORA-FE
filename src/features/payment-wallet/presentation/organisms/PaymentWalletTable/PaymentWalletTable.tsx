@@ -36,7 +36,6 @@ const PaymentWalletTable = () => {
     transactionsError,
     hasNextPage,
     loadMoreTransactions,
-    refreshTransactions,
     handleSearch,
     handleFilterChange,
   } = usePaymentWalletTableData();
@@ -54,7 +53,6 @@ const PaymentWalletTable = () => {
   const { leftHeaderNode, rightHeaderNode } = SearchFilterHeader({
     displayDataLength: displayData.length,
     paginationParams,
-    onRefresh: refreshTransactions,
     onSearch: handleSearch,
     onFilterChange: handleFilterChange,
   });

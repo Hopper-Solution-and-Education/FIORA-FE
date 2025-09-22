@@ -29,9 +29,12 @@ export interface PaymentWalletTransaction {
 export interface PaymentWalletPaginatedResponse {
   data: PaymentWalletTransaction[];
   pagination: {
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-    totalCount: number;
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPage: number;
+    hasNextPage?: boolean;
+    hasPreviousPage?: boolean;
     lastCursor?: string;
   };
 }
@@ -69,9 +72,12 @@ export interface PaymentWalletState {
 
   // Pagination
   pagination: {
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-    totalCount: number;
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPage: number;
+    hasNextPage?: boolean;
+    hasPreviousPage?: boolean;
     lastCursor?: string;
   } | null;
 

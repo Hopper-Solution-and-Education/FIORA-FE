@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FilterCriteria } from '@/shared/types/filter.types';
@@ -11,7 +10,6 @@ import PaymentWalletFilterMenu from './PaymentWalletFilterMenu';
 interface SearchFilterHeaderProps {
   displayDataLength: number;
   paginationParams: PaginationParams;
-  onRefresh: () => void;
   onSearch: (searchTerm: string) => void;
   onFilterChange: (newFilter: FilterCriteria) => void;
 }
@@ -19,7 +17,6 @@ interface SearchFilterHeaderProps {
 const SearchFilterHeader = ({
   displayDataLength,
   paginationParams,
-  onRefresh,
   onSearch,
   onFilterChange,
 }: SearchFilterHeaderProps) => {
@@ -59,13 +56,7 @@ const SearchFilterHeader = ({
         </Label>
       </div>
     ),
-    rightHeaderNode: (
-      <div className="flex gap-2">
-        <Button onClick={onRefresh} variant="outline">
-          Refresh
-        </Button>
-      </div>
-    ),
+    rightHeaderNode: null,
   };
 };
 

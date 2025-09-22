@@ -12,7 +12,6 @@ export const usePaymentWalletTableData = () => {
     hasNextPage,
     totalCount,
     loadMoreTransactions,
-    refreshTransactions,
     searchTransactions,
     filterTransactions,
     filterCriteria,
@@ -24,22 +23,28 @@ export const usePaymentWalletTableData = () => {
   // Handle data updates
   useEffect(() => {
     if (transactionsResponse && Array.isArray(transactionsResponse)) {
-      const mappedData = transactionsResponse.map((item: any) => ({
-        id: item.id,
-        createdAt: item.createdAt,
-        type: item.type,
-        amount: item.amount,
-        from: item.from || 'Unknown',
-        to: item.to || 'Unknown',
-        remark: item.description || item.remark || 'No remark',
-        currency: item.currency || CURRENCY.FX,
-      }));
+      setDisplayData((prevDisplayData) => {
+        const startingRowNumber =
+          paginationParams.currentPage === 1 ? 1 : prevDisplayData.length + 1;
 
-      if (paginationParams.currentPage === 1) {
-        setDisplayData(mappedData);
-      } else {
-        setDisplayData((prev) => [...prev, ...mappedData]);
-      }
+        const mappedData = transactionsResponse.map((item: any, index: number) => ({
+          id: item.id,
+          createdAt: item.createdAt,
+          type: item.type,
+          amount: item.amount,
+          from: item.from || 'Unknown',
+          to: item.to || 'Unknown',
+          remark: item.description || item.remark || 'No remark',
+          currency: item.currency || CURRENCY.FX,
+          rowNumber: startingRowNumber + index,
+        }));
+
+        if (paginationParams.currentPage === 1) {
+          return mappedData;
+        } else {
+          return [...prevDisplayData, ...mappedData];
+        }
+      });
 
       setPaginationParams((prev) => ({
         ...prev,
@@ -75,7 +80,6 @@ export const usePaymentWalletTableData = () => {
     transactionsError,
     hasNextPage,
     loadMoreTransactions,
-    refreshTransactions,
     handleSearch,
     handleFilterChange,
     filterCriteria,
