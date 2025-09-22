@@ -17,8 +17,6 @@ export const useMembershipCronjobDashboard = () => {
   const isInitialLoad = useRef(true);
   const isFetching = useRef(false);
 
-  // Chart fetching moved into MembershipCronjobChart component.
-
   const fetchData = useCallback(
     async (page: number, pageSize: number, isLoadMore = false) => {
       if (isFetching.current) return;
@@ -39,6 +37,10 @@ export const useMembershipCronjobDashboard = () => {
           search: filter?.search || '',
           fromDate: filter?.fromDate || '',
           toDate: filter?.toDate || '',
+          fromTier: filter?.fromTier || [],
+          toTier: filter?.toTier || [],
+          email: filter?.email || [],
+          updatedBy: filter?.updatedBy || [],
         });
 
         const list = MembershipCronjobMapper.toList(res);

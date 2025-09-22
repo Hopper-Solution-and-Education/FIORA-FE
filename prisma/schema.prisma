@@ -953,6 +953,16 @@ model CommonSetting {
   updatedBy    String?  @db.Uuid
 }
 
+model ReferralSetting {
+  id                String   @id @db.Uuid
+  bonusFirstAmount  Decimal  @db.Decimal(13, 2)
+  minimumWithdrawal Decimal  @db.Decimal(13, 2)
+  createdAt         DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime @db.Timestamptz(0)
+  createdBy         String?  @db.Uuid
+  updatedBy         String?  @db.Uuid
+}
+
 enum BudgetType {
   Top
   Bot

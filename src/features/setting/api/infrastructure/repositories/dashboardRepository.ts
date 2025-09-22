@@ -106,7 +106,17 @@ class DashboardRepository {
     });
   }
 
-  async getCount(filters: any) {
+  async getCount(
+    filters: any,
+    tierFilters?: { fromTier?: string | string[]; toTier?: string | string[] },
+  ) {
+    if (tierFilters?.fromTier || tierFilters?.toTier) {
+      const fromArray = normalizeToArray(tierFilters.fromTier);
+      const toArray = normalizeToArray(tierFilters.toTier);
+      applyJsonInFilter(filters, 'fromTier', fromArray);
+      applyJsonInFilter(filters, 'toTier', toArray);
+    }
+
     const result = await prisma.cronJobLog.groupBy({
       by: ['status'],
       _count: {
@@ -344,8 +354,8 @@ class DashboardRepository {
       if (statusMatches.length > 0) orClauses.push({ status: { in: statusMatches as any } });
       if (typeMatches.length > 0) orClauses.push({ typeCronJob: { in: typeMatches as any } });
       if (tierIds.length > 0) {
-        orClauses.push({ dynamicValue: { path: ['fromTier'], in: tierIds } });
-        orClauses.push({ dynamicValue: { path: ['toTier'], in: tierIds } });
+        applyJsonInFilter({ OR: orClauses }, 'fromTier', tierIds);
+        applyJsonInFilter({ OR: orClauses }, 'toTier', tierIds);
       }
       if (userIds.length > 0) {
         orClauses.push({ createdBy: { in: userIds } });
