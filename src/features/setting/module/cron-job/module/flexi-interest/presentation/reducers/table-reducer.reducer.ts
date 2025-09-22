@@ -19,7 +19,14 @@ export const tableReducer = (state: TableState, action: TableAction): TableState
     case 'SET_IS_LOADING_MORE':
       return { ...state, isLoadingMore: action.payload };
     case 'SET_EXTRA_DATA':
-      return { ...state, extraData: action.payload };
+      return {
+        ...state,
+        extraData: {
+          ...state.extraData,
+          ...action.payload,
+          currentItemCount: action.payload.currentItemCount + state.extraData.currentItemCount,
+        },
+      };
     default:
       return state;
   }
