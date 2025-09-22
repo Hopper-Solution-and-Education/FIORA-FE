@@ -73,9 +73,11 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
       if (Array.isArray(filter.updateBy)) {
         orFilter.push(
           ...filter.updateBy.map((updateBy: string) => ({
-            dynamicValue: { path: ['adminUpdate'], equals: updateBy },
+            dynamicValue: { path: ['updateBy'], equals: updateBy },
           })),
         );
+      } else {
+        orFilter.push({ dynamicValue: { path: ['updateBy'], equals: filter.updateBy } });
       }
     }
 
@@ -113,7 +115,7 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
         flexiInterestRate: dv?.rate ?? null,
         activeBalance: dv?.walletBalance ?? null,
         flexiInterestAmount: dv?.interestAmount ?? null,
-        updateBy: dv?.adminUpdate ?? 'System',
+        updateBy: dv?.updateBy ?? 'System',
         status: log.status,
         reason: dv?.reason ?? 'None',
       };
