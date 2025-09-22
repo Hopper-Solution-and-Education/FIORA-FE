@@ -167,9 +167,7 @@ class smartSavingRepository implements ISmartSavingRepository {
     },
     cronJobId: string,
     adminId: string,
-  ): Promise<{
-    item: CronJobLog | null;
-  }> {
+  ): Promise<CronJobLog | null> {
     const cronJobSmartSavingData = await this._prisma.cronJobLog.findFirst({
       where: { id: cronJobId },
       select: {
@@ -177,6 +175,9 @@ class smartSavingRepository implements ISmartSavingRepository {
       },
     });
     const smartSavingdata: any = cronJobSmartSavingData?.dynamicValue;
+
+    if (!smartSavingdata || !smartSavingdata.walletId) return null;
+
     const userId = await this._prisma.wallet.findFirst({
       where: { id: smartSavingdata?.walletId },
       select: { userId: true },
@@ -232,7 +233,7 @@ class smartSavingRepository implements ISmartSavingRepository {
       },
     });
 
-    return { item: updateSmartSaving };
+    return updateSmartSaving;
   }
 }
 
