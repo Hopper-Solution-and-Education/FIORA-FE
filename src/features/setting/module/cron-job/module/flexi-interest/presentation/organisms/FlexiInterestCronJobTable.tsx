@@ -116,7 +116,7 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
         key: 'action',
         title: 'Action',
         align: 'center',
-        render: (r) => <FlexiInterestActionButton status={r.status} />,
+        render: (r) => <FlexiInterestActionButton status={r.status} id={r.id} />,
       },
     ],
     [],
