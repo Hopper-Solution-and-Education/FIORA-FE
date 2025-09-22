@@ -69,6 +69,15 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
         orFilter.push({ dynamicValue: { path: ['tierName'], equals: filter.membershipTier } });
       }
     }
+    if (filter?.updateBy) {
+      if (Array.isArray(filter.updateBy)) {
+        orFilter.push(
+          ...filter.updateBy.map((updateBy: string) => ({
+            dynamicValue: { path: ['adminUpdate'], equals: updateBy },
+          })),
+        );
+      }
+    }
 
     if (orFilter.length > 0) {
       if (where.OR) {
@@ -102,11 +111,11 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
         dateTime: log.createdAt,
         membershipTier: dv?.tierName ?? null,
         flexiInterestRate: dv?.rate ?? null,
-        activeBalance: dv?.prevBalance ?? null,
+        activeBalance: dv?.walletBalance ?? null,
         flexiInterestAmount: dv?.interestAmount ?? null,
-        updateBy: 'System',
+        updateBy: dv?.adminUpdate ?? 'System',
         status: log.status,
-        reason: dv?.reason ?? null,
+        reason: dv?.reason ?? 'None',
       };
     });
 

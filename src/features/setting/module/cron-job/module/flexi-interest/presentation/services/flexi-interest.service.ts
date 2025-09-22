@@ -10,7 +10,7 @@ export const flexiInterestApi = createApi({
   tagTypes: ['FlexiInterest', 'MembershipTier', 'FlexiInterestChart'],
   endpoints: (builder) => ({
     getFlexiInterest: builder.query<any, { page: number; pageSize: number; filter: string }>({
-      query: (params) => ({ url: 'api/flexi-Interest', method: 'GET', params }),
+      query: (params) => ({ url: 'api/flexi-interest', method: 'GET', params }),
       transformResponse: (response: Response<any>) => response.data,
       providesTags: ['FlexiInterest'],
     }),
