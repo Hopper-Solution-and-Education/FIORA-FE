@@ -3,14 +3,15 @@ import { notificationUseCase } from '@/features/notification/application/use-cas
 import { CreateBoxNotificationInput } from '@/features/notification/domain/repositories/notificationRepository.interface';
 import { SessionUser } from '@/shared/types/session';
 import { applyJsonInFilter, normalizeToArray } from '@/shared/utils/filterUtils';
-import {
-  CronJobLog,
-  CronJobStatus,
-  MembershipTier,
-  TransactionType,
-  TypeCronJob,
-  WalletType,
-} from '@prisma/client';
+import { formatUnderlineString } from '@/shared/utils/stringHelper';
+import { CronJobLog, CronJobStatus, MembershipTier, Prisma, TypeCronJob } from '@prisma/client';
+
+type DynamicCronJobReferralTypes = {
+  referrerUserId: string;
+  referredUserId: string;
+  bonusAmount: number;
+  typeBenefit: string;
+};
 
 class DashboardRepository {
   async getWithFilters(
@@ -110,15 +111,6 @@ class DashboardRepository {
         updatedBy: creatorMap.get(log.updatedBy ?? '') || null,
         createdBy: creatorMap.get(log?.createdBy ?? '') || null,
       };
-    });
-  }
-
-  async getReferralWithFilters(filters: any, skip: number, take: number) {
-    const data = await prisma.transaction.findMany({
-      where: {},
-      include: {
-        CronJobLog: true,
-      },
     });
   }
 
@@ -384,6 +376,7 @@ class DashboardRepository {
       return filters;
     }
   }
+
   async getReferralChart() {
     const referralKickbackAwait = prisma.cronJobLog.findMany({
       where: { typeCronJob: TypeCronJob.REFERRAL_KICKBACK },
@@ -438,23 +431,131 @@ class DashboardRepository {
     return { referralKickbackValue, referralBonusValue, referralCampaignValue };
   }
 
-  async getReferralDashboard(filters?: any) {
-    const benefitNames = ['referral-bonus', 'referral-kickback'];
+  async getReferralDashboard(
+    filters?: any,
+    skip?: number,
+    take?: number,
+    emailReferralFilters?: any,
+  ) {
+    let where: Prisma.CronJobLogWhereInput = {
+      typeCronJob: {
+        in: [
+          TypeCronJob.REFERRAL_CAMPAIGN,
+          TypeCronJob.REFERRAL_BONUS,
+          TypeCronJob.REFERRAL_KICKBACK,
+        ],
+      },
+      ...filters,
+    };
 
-    const data = await prisma.cronJobLog.findMany({
+    const copyWhere = { ...where };
+
+    const extraWhere: Prisma.CronJobLogWhereInput = {};
+
+    if (emailReferralFilters) {
+      if (emailReferralFilters.referrerEmail) {
+        extraWhere.OR = emailReferralFilters.referrerEmail.map((email: string) => ({
+          dynamicValue: {
+            path: ['referrerUserId'],
+            equals: email,
+          },
+        }));
+      }
+      if (emailReferralFilters.referredEmail) {
+        extraWhere.OR = emailReferralFilters.referredEmail.map((email: string) => ({
+          dynamicValue: {
+            path: ['referredUserId'],
+            equals: email,
+          },
+        }));
+      }
+    }
+
+    if (extraWhere.OR) {
+      // Merge extraWhere with where conditions
+      where = {
+        AND: [where, extraWhere],
+      };
+    }
+
+    const dataResult = prisma.cronJobLog.findMany({
+      where: where,
+      include: {
+        Transaction: true,
+      },
+      skip,
+      take,
+    });
+
+    const totalResult = prisma.cronJobLog.count({
+      where: where,
+    });
+
+    const totalSuccessResult = prisma.cronJobLog.count({
       where: {
-        Transaction: {
-          type: TransactionType.Income,
-          currency: 'FX',
-          membershipBenefit: {
-            slug: {
-              in: benefitNames,
-            },
-          },
-          toWallet: {
-            type: WalletType.Referral,
-          },
-        },
+        ...copyWhere,
+        status: CronJobStatus.SUCCESSFUL,
+      },
+    });
+
+    const totalFailResult = prisma.cronJobLog.count({
+      where: {
+        ...copyWhere,
+        status: CronJobStatus.FAIL,
+      },
+    });
+
+    const [data = [], total = 0, totalSuccess = 0, totalFail = 0] = await Promise.all([
+      dataResult,
+      totalResult,
+      totalSuccessResult,
+      totalFailResult,
+    ]);
+
+    const transferredData =
+      data &&
+      (await Promise.all(
+        data.map(async (item) => {
+          const dynamicValue = item.dynamicValue as DynamicCronJobReferralTypes;
+          const referrerId = dynamicValue.referrerUserId;
+          const referredId = dynamicValue.referredUserId;
+
+          const foundReferrerAwaited = prisma.user.findFirst({
+            where: { id: referrerId },
+          });
+          const foundReferredAwaited = prisma.user.findFirst({
+            where: { id: referredId },
+          });
+
+          const [foundReferrer = null, foundReferred = null] = await Promise.all([
+            foundReferrerAwaited,
+            foundReferredAwaited,
+          ]);
+
+          const amount = Number(dynamicValue.bonusAmount) || 0;
+          const spent = Number(item.Transaction?.amount) || 0;
+
+          return {
+            dateTime: item.executionTime,
+            type: item.typeCronJob,
+            status: item.status,
+            updatedBy: 'System',
+            reason: item.reason,
+            referrerEmail: foundReferrer?.email || 'NaN',
+            referredEmail: foundReferred?.email || 'NaN',
+            amount,
+            spent,
+          };
+        }),
+      ));
+
+    return { data: transferredData, total, totalSuccess, totalFail };
+  }
+
+  // return all necessarily filters metadata for referral dashboard
+  async getReferralDashboardPayloadFilters() {
+    const metadata = await prisma.cronJobLog.findMany({
+      where: {
         typeCronJob: {
           in: [
             TypeCronJob.REFERRAL_CAMPAIGN,
@@ -463,9 +564,59 @@ class DashboardRepository {
           ],
         },
       },
+      select: {
+        updatedBy: true,
+        dynamicValue: true,
+      },
     });
 
-    return data;
+    const updatedBySet = new Set<string>();
+    const emailReferrerSet = new Set<string>();
+    const emailRefereeSet = new Set<string>();
+
+    const transferredMetadata = await Promise.all(
+      metadata.map(async (item) => {
+        const dynamicValue = item.dynamicValue as DynamicCronJobReferralTypes;
+        const updatedBy = item.updatedBy || 'System';
+
+        const foundReferrerAwaited = prisma.user.findFirst({
+          where: { id: dynamicValue.referrerUserId },
+          select: { email: true, id: true },
+        });
+        const foundReferredAwaited = prisma.user.findFirst({
+          where: { id: dynamicValue.referredUserId },
+          select: { email: true, id: true },
+        });
+
+        const [foundReferrer = null, foundReferred = null] = await Promise.all([
+          foundReferrerAwaited,
+          foundReferredAwaited,
+        ]);
+
+        const emailReferrer = foundReferrer?.email || 'NaN';
+        const emailReferee = foundReferred?.email || 'NaN';
+
+        updatedBySet.add(updatedBy);
+        emailReferrerSet.add(emailReferrer);
+        emailRefereeSet.add(emailReferee);
+      }),
+    );
+
+    const typeOfBenefits = [
+      TypeCronJob.REFERRAL_CAMPAIGN,
+      TypeCronJob.REFERRAL_BONUS,
+      TypeCronJob.REFERRAL_KICKBACK,
+    ].map((type) => ({
+      value: type,
+      label: formatUnderlineString(type),
+    }));
+
+    return {
+      updatedBy: Array.from(updatedBySet),
+      emailReferrer: Array.from(emailReferrerSet),
+      emailReferee: Array.from(emailRefereeSet),
+      typeOfBenefits,
+    };
   }
 }
 

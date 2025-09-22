@@ -5,14 +5,17 @@ import { Messages } from '@/shared/constants/message';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { normalizeToArray } from '@/shared/utils/filterUtils';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
+import { TypeCronJob } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId: string) =>
+export default sessionWrapper((req: NextApiRequest, res: NextApiResponse) =>
   errorHandler(
     async (request, response) => {
       switch (request.method) {
+        case 'POST':
+          return POST(request, response);
         case 'GET':
-          return GET(request, response, userId);
+          return GET(request, response);
         default:
           return response
             .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -24,23 +27,39 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
   ),
 );
 
-export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function POST(req: NextApiRequest, res: NextApiResponse) {
   const {
     status,
     updatedBy,
     fromDate,
     toDate,
-    fromTier,
-    toTier,
     search,
+    typeBenefits,
     page = 1,
-    limit = 10,
-  } = req.query as ReferralDashboardFilterParams;
+    pageSize = 10,
+    emailReferrer,
+    emailReferee,
+  } = req.body as ReferralDashboardFilterParams;
 
   const pageNum = Math.max(1, Number(page));
-  const limitNum = Math.min(100, Math.max(1, Number(limit)));
+  const limitNum = Math.min(100, Math.max(1, Number(pageSize)));
 
   const filters: any = {};
+
+  if (typeBenefits) {
+    const validTypeBenefits = [
+      TypeCronJob.REFERRAL_CAMPAIGN,
+      TypeCronJob.REFERRAL_BONUS,
+      TypeCronJob.REFERRAL_KICKBACK,
+    ];
+    const typeBenefitsArray = normalizeToArray(typeBenefits as any).filter((t) =>
+      validTypeBenefits.includes(t as any),
+    );
+    if (typeBenefitsArray.length > 0) {
+      filters.typeCronJob = { in: typeBenefitsArray };
+    }
+  }
+
   if (status) {
     const validStatuses = ['SUCCESSFUL', 'FAIL'];
     const statusArray = normalizeToArray(status as any).filter((s) => validStatuses.includes(s));
@@ -70,41 +89,47 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
         filters.createdAt.lte = toDateObj;
       }
     }
-  } else {
-    filters.createdAt = {
-      gte: new Date(new Date().setHours(0, 0, 0, 0)),
-      lte: new Date(new Date().setHours(23, 59, 59, 999)),
-    };
   }
+
+  const emailReferralFilters = {
+    referrerEmail: emailReferrer,
+    referredEmail: emailReferee,
+  };
 
   const skip = (pageNum - 1) * limitNum;
 
-  const tierFilters = fromTier || toTier ? { fromTier, toTier } : undefined;
-  const searchFilter = await dashboardRepository.searchFilter(search as string);
+  const { data, total, totalSuccess, totalFail } = await dashboardRepository.getReferralDashboard(
+    filters,
+    skip,
+    limitNum,
+    emailReferralFilters,
+  );
 
-  if (searchFilter) {
-    filters.OR = [...(filters.OR ?? []), ...(searchFilter.OR ?? [])];
-  }
-  const [result, counts] = await Promise.all([
-    dashboardRepository.getWithFilters(filters, skip, limitNum, tierFilters),
-    dashboardRepository.getCount(filters),
-  ]);
+  const totalPages = Math.ceil(total / limitNum);
 
-  const { filteredCount, statusCounts } = counts;
-  const totalPages = Math.ceil(filteredCount / limitNum);
   return res.status(RESPONSE_CODE.OK).json({
     status: RESPONSE_CODE.OK,
-    message: Messages.GET_SUCCESS,
-    data: result,
+    message: Messages.GET_LIST_REFERRAL_ITEMS_SUCCESS,
+    data: data,
     totalPage: totalPages,
     page: pageNum,
     pageSize: limitNum,
-    total: filteredCount,
+    total: total,
     statistics: {
       statusCounts: {
-        successful: statusCounts.successful,
-        fail: statusCounts.fail,
+        successful: totalSuccess,
+        fail: totalFail,
       },
     },
+  });
+}
+
+export async function GET(req: NextApiRequest, res: NextApiResponse) {
+  const payloadFilters = await dashboardRepository.getReferralDashboardPayloadFilters();
+
+  return res.status(RESPONSE_CODE.OK).json({
+    status: RESPONSE_CODE.OK,
+    message: Messages.GET_REFERRAL_DASHBOARD_PAYLOAD_FILTERS_SUCCESS,
+    data: payloadFilters,
   });
 }

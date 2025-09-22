@@ -39,7 +39,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       search,
       page = 1,
       pageSize = 10,
-    } = req.query as DashboardFilterParams;
+    } = req.body as DashboardFilterParams;
 
     const pageNum = Math.max(1, Number(page));
     const limitNum = Math.min(100, Math.max(1, Number(pageSize)));
