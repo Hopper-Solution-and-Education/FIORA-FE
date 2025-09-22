@@ -100,7 +100,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     }
     const [result, counts] = await Promise.all([
       dashboardRepository.getWithFilters(filters, skip, limitNum, tierFilters),
-      dashboardRepository.getCount(filters),
+      dashboardRepository.getCount(filters, tierFilters),
     ]);
 
     const { filteredCount, statusCounts } = counts;
