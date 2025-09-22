@@ -59,6 +59,11 @@ export const settingNavItems: NavItem[] = [
         url: RouteEnum.CronjobMembership,
         icon: 'users',
       },
+      {
+        title: 'Saving Interest',
+        url: RouteEnum.CronjobSavingInterest,
+        icon: 'moonStar',
+      },
     ],
   },
 ];

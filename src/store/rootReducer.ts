@@ -15,6 +15,7 @@ import { profileApi } from '@/features/profile/store/api/profileApi';
 import referralTransactionSlice from '@/features/referral/slices';
 import { referralApi } from '@/features/referral/slices/referralApi';
 import membershipCronjobSlice from '@/features/setting/module/cron-job/module/membership/slices';
+import savingInterestSlice from '@/features/setting/module/cron-job/module/saving-interest/slices';
 import landingSettingSlice from '@/features/setting/module/landing/slices';
 import memberShipSettingsSlice from '@/features/setting/module/membership/slices';
 import notificationDashboardSlice from '@/features/setting/module/notification-dashboard/slices';
@@ -57,6 +58,7 @@ const reducer = {
   notificationDashboard: notificationDashboardSlice,
   membershipCronjob: membershipCronjobSlice,
   referralTransaction: referralTransactionSlice,
+  savingInterest: savingInterestSlice,
   email: emailSlice,
 
   // RTK Query API slices
