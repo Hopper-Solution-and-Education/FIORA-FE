@@ -120,6 +120,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogI
         );
     }
 
+    const interestAmountBefore = wallet.frBalanceActive;
     const rawAmount = new Prisma.Decimal(amount);
     let finalAmount = rawAmount;
     let percentValue: Prisma.Decimal | null = null;
@@ -192,14 +193,12 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogI
             tierName: progress?.tier?.tierName,
             tierId: progress?.tierId,
             activeBalance: wallet.frBalanceActive.toString(),
-            interestAmount: wallet.frBalanceActive
-              .mul(percentValue ?? 0)
-              .div(100)
-              .toString(),
+            interestAmount: interestAmountBefore.toString(), //Lấy ví ngay lúc log
             email: user?.email,
-            rate: percentValue,
+            rate: percentValue ? percentValue.toString() : null,
             reason: reason,
             walletId: wallet.id,
+            adminUpdate: adminId ?? null,
           },
         },
       });
