@@ -1,6 +1,7 @@
 import { prisma } from '@/config';
 import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { CreateBoxNotificationInput } from '@/features/notification/domain/repositories/notificationRepository.interface';
+import { SessionUser } from '@/shared/types/session';
 import { applyJsonInFilter, normalizeToArray } from '@/shared/utils/filterUtils';
 import { CronJobLog, CronJobStatus, MembershipTier, TypeCronJob } from '@prisma/client';
 
@@ -105,7 +106,17 @@ class DashboardRepository {
     });
   }
 
-  async getCount(filters: any) {
+  async getCount(
+    filters: any,
+    tierFilters?: { fromTier?: string | string[]; toTier?: string | string[] },
+  ) {
+    if (tierFilters?.fromTier || tierFilters?.toTier) {
+      const fromArray = normalizeToArray(tierFilters.fromTier);
+      const toArray = normalizeToArray(tierFilters.toTier);
+      applyJsonInFilter(filters, 'fromTier', fromArray);
+      applyJsonInFilter(filters, 'toTier', toArray);
+    }
+
     const result = await prisma.cronJobLog.groupBy({
       by: ['status'],
       _count: {
@@ -156,7 +167,7 @@ class DashboardRepository {
 
   async changeCronjob(
     cronjobData: CronJobLog,
-    userId: string,
+    user: SessionUser,
     tier: MembershipTier,
     reason?: string,
   ) {
@@ -184,7 +195,7 @@ class DashboardRepository {
       const updatedProgress = await tx.membershipProgress.update({
         where: { id: existing?.id },
         data: {
-          updatedBy: userId,
+          updatedBy: user.id,
           updatedAt: new Date(),
           tierId: tier.id,
           tiersendid: tier.id,
@@ -196,7 +207,7 @@ class DashboardRepository {
       const updatedCronJobLog = await tx.cronJobLog.update({
         where: { id: cronjobData.id },
         data: {
-          updatedBy: userId,
+          updatedBy: user.id,
           updatedAt: new Date(),
           status,
           dynamicValue: {
@@ -214,7 +225,7 @@ class DashboardRepository {
           });
         });
       }
-
+      updatedCronJobLog.updatedBy = user as any;
       return updatedCronJobLog;
     });
   }
@@ -343,8 +354,8 @@ class DashboardRepository {
       if (statusMatches.length > 0) orClauses.push({ status: { in: statusMatches as any } });
       if (typeMatches.length > 0) orClauses.push({ typeCronJob: { in: typeMatches as any } });
       if (tierIds.length > 0) {
-        orClauses.push({ dynamicValue: { path: ['fromTier'], in: tierIds } });
-        orClauses.push({ dynamicValue: { path: ['toTier'], in: tierIds } });
+        applyJsonInFilter({ OR: orClauses }, 'fromTier', tierIds);
+        applyJsonInFilter({ OR: orClauses }, 'toTier', tierIds);
       }
       if (userIds.length > 0) {
         orClauses.push({ createdBy: { in: userIds } });

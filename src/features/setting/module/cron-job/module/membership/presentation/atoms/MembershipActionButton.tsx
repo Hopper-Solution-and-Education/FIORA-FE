@@ -47,8 +47,11 @@ const MembershipActionButton = ({ id, status, className }: MembershipActionButto
       MEMBERSHIP_CRONJOB_TYPES.IResendMembershipUseCase,
     );
     setIsLoading(true);
+
+    let response = null;
+
     try {
-      await useCase.execute(id, { tierId: selectedTier, reason });
+      response = await useCase.execute(id, { tierId: selectedTier, reason });
     } catch (error) {
       console.error(error);
     } finally {
@@ -57,8 +60,17 @@ const MembershipActionButton = ({ id, status, className }: MembershipActionButto
 
     dispatchTable({
       type: 'UPDATE_ROW',
-      payload: { id, updates: { status: 'SUCCESSFUL', toTier: selectedTierLabel } },
+      payload: {
+        id,
+        updates: {
+          status: 'SUCCESSFUL',
+          toTier: selectedTierLabel,
+          reason,
+          updatedBy: { id: response?.updatedBy?.id || '', email: response?.updatedBy?.email || '' },
+        },
+      },
     });
+
     setIsModalOpen(false);
     setSelectedTier('');
     setReason('');
