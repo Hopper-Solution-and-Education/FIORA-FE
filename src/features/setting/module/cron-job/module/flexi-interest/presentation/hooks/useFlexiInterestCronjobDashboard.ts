@@ -21,6 +21,7 @@ export const useFlexiInterestCronjobDashboard = () => {
     async (page: number, pageSize: number, isLoadMore = false) => {
       // Table đang fetch data thì không fetch tiếp
       if (isFetching.current) return;
+      isFetching.current = true;
 
       // Check đang tải thêm dữ liệu hay fetch lần đầu
       if (isLoadMore) {
@@ -64,9 +65,9 @@ export const useFlexiInterestCronjobDashboard = () => {
         dispatchTable({
           type: 'SET_PAGINATION',
           payload: {
-            current: 1,
-            pageSize: 20,
-            total: 0,
+            current: page,
+            pageSize: pageSize,
+            total: response?.total || 0,
           },
         });
 
@@ -81,7 +82,7 @@ export const useFlexiInterestCronjobDashboard = () => {
         });
 
         // TODO: kiểm tra lại xem còn tải thêm được item không
-        const hasMore = false;
+        const hasMore = page * pageSize < (response?.total || 0);
         dispatchTable({ type: 'SET_HAS_MORE', payload: hasMore });
       } finally {
         if (isLoadMore) {

@@ -66,7 +66,9 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
         title: 'Flexi Interest Rate',
         align: 'right',
         render: (r) => (
-          <span className="text-sm">{r.flexiInterestRate ? r.flexiInterestRate + ' %' : '-'}</span>
+          <span className="text-sm">
+            {r.flexiInterestRate ? r.flexiInterestRate.toString().split('%').join(' %') : '-'}
+          </span>
         ),
       },
       {
@@ -81,7 +83,11 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
         key: 'amount',
         title: 'Flexi Interest Amount',
         align: 'right',
-        render: (r) => <span className="text-sm">{r.flexiInterestAmount || '-'}</span>,
+        render: (r) => (
+          <span className="text-sm">
+            {Math.ceil((r.flexiInterestAmount || 0) * 100) / 100 + ' FX' || '-'}
+          </span>
+        ),
       },
       {
         key: 'status',

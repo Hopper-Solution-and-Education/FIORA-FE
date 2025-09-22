@@ -5,7 +5,7 @@ export type FlexiInterestCronjobTableData = {
   email?: string;
   dateTime: string;
   membershipTier?: string;
-  flexiInterestRate?: number;
+  flexiInterestRate?: number | string;
   activeBalance?: number;
   flexiInterestAmount?: number;
   status: FlexiInterestCronjobTableStatusType;
