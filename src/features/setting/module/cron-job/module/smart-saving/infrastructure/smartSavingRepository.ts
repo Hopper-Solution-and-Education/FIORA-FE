@@ -1,4 +1,5 @@
 import { prisma } from '@/config';
+import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { CronJobLog, CronJobStatus, Currency, TransactionType, TypeCronJob } from '@prisma/client';
 import { ISmartSavingRepository } from '../domain/smartSavingRepository.interface';
 
@@ -169,7 +170,11 @@ class smartSavingRepository implements ISmartSavingRepository {
     adminId: string,
   ): Promise<CronJobLog | null> {
     const cronJobSmartSavingData = await this._prisma.cronJobLog.findFirst({
-      where: { id: cronJobId },
+      where: {
+        id: cronJobId,
+        status: CronJobStatus.FAIL,
+        typeCronJob: TypeCronJob.SMART_SAVING_INTEREST,
+      },
       select: {
         dynamicValue: true,
       },
@@ -232,7 +237,21 @@ class smartSavingRepository implements ISmartSavingRepository {
         },
       },
     });
-
+    try {
+      if (updateSmartSaving) {
+        await notificationUseCase.createBoxNotification({
+          title: 'Retrie Smart Saving Interest',
+          type: 'SMART_SAVING_INTEREST',
+          notifyTo: 'PERSONAL',
+          attachmentId: '',
+          deepLink: '',
+          emails: [smartSavingdata?.email],
+          message: `Your smart saving interest of ${data.amount} ${Currency.FX} has been credited to your wallet.`,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to send notification:', error);
+    }
     return updateSmartSaving;
   }
 }
