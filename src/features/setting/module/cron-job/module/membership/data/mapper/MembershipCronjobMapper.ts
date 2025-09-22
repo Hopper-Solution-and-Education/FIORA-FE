@@ -13,7 +13,7 @@ export class MembershipCronjobMapper {
   ): URLSearchParams {
     const params = new URLSearchParams();
     const safePage = Number.isFinite(page as any) && page ? page : 1;
-    const safePageSize = Number.isFinite(pageSize as any) && pageSize ? pageSize : 10;
+    const safePageSize = Number.isFinite(pageSize as any) && pageSize ? pageSize : 20;
     params.append('page', String(safePage));
     params.append('pageSize', String(safePageSize));
 

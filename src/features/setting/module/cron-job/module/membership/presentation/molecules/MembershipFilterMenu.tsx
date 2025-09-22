@@ -3,7 +3,7 @@ import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import { FilterColumn, FilterComponentConfig } from '@/shared/types/filter.types';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { membershipCronjobContainer } from '../../di/membershipCronjobDashboardDI';
 import { MEMBERSHIP_CRONJOB_TYPES } from '../../di/membershipCronjobDashboardDI.type';
@@ -11,6 +11,8 @@ import { IGetMembershipTiersUseCase } from '../../domain/usecase/GetMembershipTi
 import { IGetMembershipUsersUseCase } from '../../domain/usecase/GetMembershipUsersUseCase';
 import { clearFilter } from '../../slices';
 import { MembershipCronjobFilterState } from '../../slices/types';
+import { DispatchTableContext } from '../context/DispatchTableContext';
+import { TableContext } from '../context/TableContext';
 
 // Local filter state type for managing filter changes before applying
 interface LocalFilterState {
@@ -53,6 +55,8 @@ interface MembershipFilterMenuProps {
 const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuProps) => {
   const dispatch = useAppDispatch();
   const reduxFilter = useAppSelector((state) => state.membershipCronjob.filter);
+  const { table } = useContext(TableContext)!;
+  const { dispatchTable } = useContext(DispatchTableContext)!;
 
   // Local state for managing filter changes before applying
   const [localFilter, setLocalFilter] = useState<LocalFilterState>(() => {
@@ -69,21 +73,20 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
     };
   });
 
-  const [tierOptions, setTierOptions] = useState<{ value: string; label: string }[]>([]);
-  const [emailOptions, setEmailOptions] = useState<{ value: string; label: string }[]>([]);
-  const [updatedByOptions, setUpdatedByOptions] = useState<{ value: string; label: string }[]>([]);
-  const [tierPage, setTierPage] = useState(1);
-  const [tierHasMore, setTierHasMore] = useState(true);
-  const [tierLoadingMore, setTierLoadingMore] = useState(false);
-  const [userPage, setUserPage] = useState(1);
-  const [userHasMore, setUserHasMore] = useState(true);
-  const [userLoadingMore, setUserLoadingMore] = useState(false);
-
-  // Do not prefetch options on mount; fetch lazily on dropdown open
+  // options/state from reducer
+  const tierOptions = table.tierOptions || [];
+  const emailOptions = table.emailOptions || [];
+  const updatedByOptions = table.updatedByOptions || [];
+  const tierPage = table.tierPage || 1;
+  const tierHasMore = table.tierHasMore ?? true;
+  const tierLoadingMore = table.tierLoadingMore ?? false;
+  const userPage = table.userPage || 1;
+  const userHasMore = table.userHasMore ?? true;
+  const userLoadingMore = table.userLoadingMore ?? false;
 
   const handleLoadMoreTiers = useCallback(async () => {
     if (!tierHasMore || tierLoadingMore) return;
-    setTierLoadingMore(true);
+    dispatchTable({ type: 'SET_TIER_OPTION_STATE', payload: { loadingMore: true } });
     const next = tierPage + 1;
     try {
       const useCase = membershipCronjobContainer.get<IGetMembershipTiersUseCase>(
@@ -92,17 +95,20 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
       const res = await useCase.execute(next, PAGE_SIZE);
       const items = res.data?.items || [];
       const options = items.map((t) => ({ value: t.id, label: t.tierName }));
-      setTierOptions((prev) => [...prev, ...options]);
-      setTierHasMore(Boolean(res.data?.hasMore));
-      setTierPage(next);
+
+      dispatchTable({ type: 'APPEND_TIER_OPTIONS', payload: options });
+      dispatchTable({
+        type: 'SET_TIER_OPTION_STATE',
+        payload: { hasMore: Boolean(res.data?.hasMore), page: next },
+      });
     } finally {
-      setTierLoadingMore(false);
+      dispatchTable({ type: 'SET_TIER_OPTION_STATE', payload: { loadingMore: false } });
     }
-  }, [tierHasMore, tierLoadingMore, tierPage]);
+  }, [tierHasMore, tierLoadingMore, tierPage, dispatchTable]);
 
   const handleLoadMoreUsers = useCallback(async () => {
     if (!userHasMore || userLoadingMore) return;
-    setUserLoadingMore(true);
+    dispatchTable({ type: 'SET_USER_OPTION_STATE', payload: { loadingMore: true } });
     const next = userPage + 1;
     try {
       const useCase = membershipCronjobContainer.get<IGetMembershipUsersUseCase>(
@@ -110,16 +116,19 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
       );
       const res = await useCase.execute(next, PAGE_SIZE);
       const items = res.data?.items || [];
-      const emailOpts = items.map((u) => ({ value: u.email, label: u.email }));
+      const emailOpts = items.map((u) => ({ value: u.id, label: u.email }));
       const updatedByOpts = items.map((u) => ({ value: u.id, label: u.email }));
-      setEmailOptions((prev) => [...prev, ...emailOpts]);
-      setUpdatedByOptions((prev) => [...prev, ...updatedByOpts]);
-      setUserHasMore(Boolean(res.data?.hasMore));
-      setUserPage(next);
+
+      dispatchTable({ type: 'APPEND_EMAIL_OPTIONS', payload: emailOpts });
+      dispatchTable({ type: 'APPEND_UPDATED_BY_OPTIONS', payload: updatedByOpts });
+      dispatchTable({
+        type: 'SET_USER_OPTION_STATE',
+        payload: { hasMore: Boolean(res.data?.hasMore), page: next },
+      });
     } finally {
-      setUserLoadingMore(false);
+      dispatchTable({ type: 'SET_USER_OPTION_STATE', payload: { loadingMore: false } });
     }
-  }, [userHasMore, userLoadingMore, userPage]);
+  }, [userHasMore, userLoadingMore, userPage, dispatchTable]);
 
   // Sync local filter with Redux state changes
   useEffect(() => {
@@ -230,21 +239,32 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
             isLoadingMore={tierLoadingMore}
             onOpenChange={(open) => {
               if (open && tierOptions.length === 0 && !tierLoadingMore) {
-                setTierPage(1);
-                setTierHasMore(true);
-                setTierOptions([]);
+                dispatchTable({
+                  type: 'SET_TIER_OPTION_STATE',
+                  payload: { page: 1, hasMore: true },
+                });
+                dispatchTable({ type: 'SET_TIER_OPTIONS', payload: [] });
                 (async () => {
-                  setTierLoadingMore(true);
+                  dispatchTable({ type: 'SET_TIER_OPTION_STATE', payload: { loadingMore: true } });
                   try {
                     const useCase = membershipCronjobContainer.get<IGetMembershipTiersUseCase>(
                       MEMBERSHIP_CRONJOB_TYPES.IGetMembershipTiersUseCase,
                     );
                     const res = await useCase.execute(1, PAGE_SIZE);
                     const items = res.data?.items || [];
-                    setTierOptions(items.map((t) => ({ value: t.id, label: t.tierName })));
-                    setTierHasMore(Boolean(res.data?.hasMore));
+                    dispatchTable({
+                      type: 'SET_TIER_OPTIONS',
+                      payload: items.map((t) => ({ value: t.id, label: t.tierName })),
+                    });
+                    dispatchTable({
+                      type: 'SET_TIER_OPTION_STATE',
+                      payload: { hasMore: Boolean(res.data?.hasMore) },
+                    });
                   } finally {
-                    setTierLoadingMore(false);
+                    dispatchTable({
+                      type: 'SET_TIER_OPTION_STATE',
+                      payload: { loadingMore: false },
+                    });
                   }
                 })();
               }
@@ -268,21 +288,32 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
             isLoadingMore={tierLoadingMore}
             onOpenChange={(open) => {
               if (open && tierOptions.length === 0 && !tierLoadingMore) {
-                setTierPage(1);
-                setTierHasMore(true);
-                setTierOptions([]);
+                dispatchTable({
+                  type: 'SET_TIER_OPTION_STATE',
+                  payload: { page: 1, hasMore: true },
+                });
+                dispatchTable({ type: 'SET_TIER_OPTIONS', payload: [] });
                 (async () => {
-                  setTierLoadingMore(true);
+                  dispatchTable({ type: 'SET_TIER_OPTION_STATE', payload: { loadingMore: true } });
                   try {
                     const useCase = membershipCronjobContainer.get<IGetMembershipTiersUseCase>(
                       MEMBERSHIP_CRONJOB_TYPES.IGetMembershipTiersUseCase,
                     );
                     const res = await useCase.execute(1, PAGE_SIZE);
                     const items = res.data?.items || [];
-                    setTierOptions(items.map((t) => ({ value: t.id, label: t.tierName })));
-                    setTierHasMore(Boolean(res.data?.hasMore));
+                    dispatchTable({
+                      type: 'SET_TIER_OPTIONS',
+                      payload: items.map((t) => ({ value: t.id, label: t.tierName })),
+                    });
+                    dispatchTable({
+                      type: 'SET_TIER_OPTION_STATE',
+                      payload: { hasMore: Boolean(res.data?.hasMore) },
+                    });
                   } finally {
-                    setTierLoadingMore(false);
+                    dispatchTable({
+                      type: 'SET_TIER_OPTION_STATE',
+                      payload: { loadingMore: false },
+                    });
                   }
                 })();
               }
@@ -321,23 +352,37 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
             isLoadingMore={userLoadingMore}
             onOpenChange={(open) => {
               if (open && emailOptions.length === 0 && !userLoadingMore) {
-                setUserPage(1);
-                setUserHasMore(true);
-                setEmailOptions([]);
-                setUpdatedByOptions([]);
+                dispatchTable({
+                  type: 'SET_USER_OPTION_STATE',
+                  payload: { page: 1, hasMore: true },
+                });
+                dispatchTable({ type: 'SET_EMAIL_OPTIONS', payload: [] });
+                dispatchTable({ type: 'SET_UPDATED_BY_OPTIONS', payload: [] });
                 (async () => {
-                  setUserLoadingMore(true);
+                  dispatchTable({ type: 'SET_USER_OPTION_STATE', payload: { loadingMore: true } });
                   try {
                     const useCase = membershipCronjobContainer.get<IGetMembershipUsersUseCase>(
                       MEMBERSHIP_CRONJOB_TYPES.IGetMembershipUsersUseCase,
                     );
                     const res = await useCase.execute(1, PAGE_SIZE);
                     const items = res.data?.items || [];
-                    setEmailOptions(items.map((u) => ({ value: u.email, label: u.email })));
-                    setUpdatedByOptions(items.map((u) => ({ value: u.id, label: u.email })));
-                    setUserHasMore(Boolean(res.data?.hasMore));
+                    dispatchTable({
+                      type: 'SET_EMAIL_OPTIONS',
+                      payload: items.map((u) => ({ value: u.id, label: u.email })),
+                    });
+                    dispatchTable({
+                      type: 'SET_UPDATED_BY_OPTIONS',
+                      payload: items.map((u) => ({ value: u.id, label: u.email })),
+                    });
+                    dispatchTable({
+                      type: 'SET_USER_OPTION_STATE',
+                      payload: { hasMore: Boolean(res.data?.hasMore) },
+                    });
                   } finally {
-                    setUserLoadingMore(false);
+                    dispatchTable({
+                      type: 'SET_USER_OPTION_STATE',
+                      payload: { loadingMore: false },
+                    });
                   }
                 })();
               }
@@ -361,23 +406,37 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
             isLoadingMore={userLoadingMore}
             onOpenChange={(open) => {
               if (open && updatedByOptions.length === 0 && !userLoadingMore) {
-                setUserPage(1);
-                setUserHasMore(true);
-                setEmailOptions([]);
-                setUpdatedByOptions([]);
+                dispatchTable({
+                  type: 'SET_USER_OPTION_STATE',
+                  payload: { page: 1, hasMore: true },
+                });
+                dispatchTable({ type: 'SET_EMAIL_OPTIONS', payload: [] });
+                dispatchTable({ type: 'SET_UPDATED_BY_OPTIONS', payload: [] });
                 (async () => {
-                  setUserLoadingMore(true);
+                  dispatchTable({ type: 'SET_USER_OPTION_STATE', payload: { loadingMore: true } });
                   try {
                     const useCase = membershipCronjobContainer.get<IGetMembershipUsersUseCase>(
                       MEMBERSHIP_CRONJOB_TYPES.IGetMembershipUsersUseCase,
                     );
                     const res = await useCase.execute(1, PAGE_SIZE);
                     const items = res.data?.items || [];
-                    setEmailOptions(items.map((u) => ({ value: u.email, label: u.email })));
-                    setUpdatedByOptions(items.map((u) => ({ value: u.id, label: u.email })));
-                    setUserHasMore(Boolean(res.data?.hasMore));
+                    dispatchTable({
+                      type: 'SET_EMAIL_OPTIONS',
+                      payload: items.map((u) => ({ value: u.id, label: u.email })),
+                    });
+                    dispatchTable({
+                      type: 'SET_UPDATED_BY_OPTIONS',
+                      payload: items.map((u) => ({ value: u.id, label: u.email })),
+                    });
+                    dispatchTable({
+                      type: 'SET_USER_OPTION_STATE',
+                      payload: { hasMore: Boolean(res.data?.hasMore) },
+                    });
                   } finally {
-                    setUserLoadingMore(false);
+                    dispatchTable({
+                      type: 'SET_USER_OPTION_STATE',
+                      payload: { loadingMore: false },
+                    });
                   }
                 })();
               }
@@ -400,6 +459,7 @@ const MembershipFilterMenu = ({ value, onFilterChange }: MembershipFilterMenuPro
       tierLoadingMore,
       userHasMore,
       userLoadingMore,
+      dispatchTable,
     ],
   );
 

@@ -159,8 +159,11 @@ export default function CommonTable<T>({
     <div className={`space-y-4 ${className || ''}`}>
       {renderHeader()}
 
-      <div ref={containerRef} className="rounded-md border max-h-[600px] overflow-auto relative">
-        <Table className="min-w-full table-fixed w-full">
+      <div
+        ref={containerRef}
+        className="rounded-md border max-h-[600px] min-w-[400px] overflow-auto relative"
+      >
+        <Table className="min-w-[400px] table-fixed w-full">
           <TableHeader className="sticky top-0 bg-background">
             <TableRow>
               {shownColumns.map((col) => (
