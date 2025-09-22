@@ -374,4 +374,5 @@ export enum Messages {
   GET_SMART_SAVING_SUCCESS = 'Get smart saving list successfully',
   GET_SMART_SAVING_STATISTICS_SUCCESS = 'Get smart saving statistics successfully',
   UPDATE_SMART_SAVING_SUCCESS = 'Update smart saving successfully',
+  SMART_SAVING_NOT_FOUND = 'Update smart saving failded',
 }

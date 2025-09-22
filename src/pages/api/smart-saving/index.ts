@@ -37,17 +37,35 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
     .json(createResponse(RESPONSE_CODE.OK, Messages.GET_SMART_SAVING_SUCCESS, smartsavingdata));
 }
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const cronJobId = req.query.cronJobId as string;
-  const dataCronJob: {
-    amount: number;
-    reason: string;
-  } = req.body;
-  const updatedData = await smartSavingUsecaseInstance.updateSmartSavingAmount(
-    dataCronJob,
-    cronJobId,
-    userId,
-  );
-  return res
-    .status(RESPONSE_CODE.OK)
-    .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_SMART_SAVING_SUCCESS, updatedData));
+  try {
+    const cronJobId = req.query.id as string;
+    const dataCronJob: {
+      amount: number;
+      reason: string;
+    } = req.body;
+    if (!cronJobId) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_PARAMS_INPUT));
+    }
+    const updatedData = await smartSavingUsecaseInstance.updateSmartSavingAmount(
+      dataCronJob,
+      cronJobId,
+      userId,
+    );
+    console.log('🚀 ~ PUT ~ updatedData:', updatedData);
+
+    if (updatedData === null) {
+      return res
+        .status(RESPONSE_CODE.NOT_FOUND)
+        .json(createResponse(RESPONSE_CODE.NOT_FOUND, Messages.SMART_SAVING_NOT_FOUND));
+    }
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_SMART_SAVING_SUCCESS, updatedData));
+  } catch (error) {
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, (error as Error).message));
+  }
 }

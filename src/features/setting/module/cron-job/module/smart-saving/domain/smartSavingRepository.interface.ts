@@ -23,7 +23,5 @@ export interface ISmartSavingRepository {
     },
     cronJobId: string,
     userId: string,
-  ): Promise<{
-    item: CronJobLog | null;
-  }>;
+  ): Promise<CronJobLog | null>;
 }
