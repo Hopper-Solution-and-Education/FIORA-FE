@@ -69,6 +69,17 @@ class smartSavingRepository implements ISmartSavingRepository {
         orFilter.push({ dynamicValue: { path: ['tierName'], equals: filter.membershipTier } });
       }
     }
+    if (filter?.updateBy) {
+      if (Array.isArray(filter.updateBy)) {
+        orFilter.push(
+          ...filter.updateBy.map((updateBy: string) => ({
+            dynamicValue: { path: ['updateBy'], equals: updateBy },
+          })),
+        );
+      } else {
+        orFilter.push({ dynamicValue: { path: ['updateBy'], equals: filter.updateBy } });
+      }
+    }
 
     if (orFilter.length > 0) {
       if (where.OR) {
@@ -104,7 +115,7 @@ class smartSavingRepository implements ISmartSavingRepository {
         smartSavingRate: dv?.smartSavingRate ?? null,
         activeBalance: dv?.activeBalance ?? null,
         smartSavingAmount: dv?.smartSavingAmount ?? null,
-        updateBy: 'System',
+        updateBy: dv?.updateBy ?? 'System',
         status: log.status,
         reason: dv?.reason ?? null,
       };
@@ -233,7 +244,7 @@ class smartSavingRepository implements ISmartSavingRepository {
           smartSavingRateUnit: smartSavingBenefit?.suffix,
           smartSavingAmountUnit: Currency.FX,
           reason: data.reason,
-          emailAdmin: adminEmail?.email,
+          updateBy: adminEmail?.email,
         },
       },
     });
