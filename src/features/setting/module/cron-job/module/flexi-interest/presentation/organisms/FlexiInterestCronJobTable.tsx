@@ -4,7 +4,7 @@ import {
   CommonTableColumn,
 } from '@/components/common/organisms/CommonTable/types';
 import { formatDateTime } from '@/shared/lib';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { formatCurrency } from '../../utils/format-currency.util';
 import FlexiInterestActionButton from '../atoms/FlexiInterestActionButton';
 import FlexiInterestStatusBadge from '../atoms/FlexiInterestStatusBadge';
@@ -43,6 +43,12 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
   extraData,
   onUpdateRowItem,
 }) => {
+  const getRate = useCallback((rate: string | number) => {
+    if (typeof rate === 'number') return rate + ' %/year';
+    if (rate.includes('%')) return rate.split('%').join(' %');
+    return rate + ' %/year';
+  }, []);
+
   const columns: CommonTableColumn<FlexiInterestCronjobTableData>[] = useMemo(
     () => [
       {
@@ -70,7 +76,7 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
         align: 'right',
         render: (r) => (
           <span className="text-sm">
-            {r.flexiInterestRate ? r.flexiInterestRate.toString().split('%').join(' %') : '-'}
+            {r.flexiInterestRate ? getRate(r.flexiInterestRate as number | string) : '-'}
           </span>
         ),
       },
