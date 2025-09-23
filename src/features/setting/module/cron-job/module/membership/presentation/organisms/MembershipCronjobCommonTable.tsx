@@ -114,7 +114,7 @@ const MembershipCronjobCommonTable = ({
   const initialConfig: ColumnConfigMap = useMemo(() => {
     return columns.reduce((acc, c, idx) => {
       if (c.key) {
-        acc[c.key as string] = { isVisible: true, index: idx, align: c.align };
+        acc[c.key as string] = { isVisible: true, index: idx };
       }
       return acc;
     }, {} as ColumnConfigMap);
