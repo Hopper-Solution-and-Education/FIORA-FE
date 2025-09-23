@@ -33,12 +33,12 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
     updatedBy,
     fromDate,
     toDate,
-    search,
     typeBenefits,
     page = 1,
     pageSize = 10,
     emailReferrer,
     emailReferee,
+    searchParam,
   } = req.body as ReferralDashboardFilterParams;
 
   const pageNum = Math.max(1, Number(page));
@@ -103,6 +103,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
     skip,
     limitNum,
     emailReferralFilters,
+    searchParam,
   );
 
   const totalPages = Math.ceil(total / limitNum);
