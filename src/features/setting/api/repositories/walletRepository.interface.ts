@@ -51,4 +51,5 @@ export interface IWalletRepository {
   findDepositRequestsByPackageFXId(packageFXId: string): Promise<DepositRequest[]>;
   increaseWalletBalance(walletId: string, amount: number): Promise<void>;
   updateDepositRequestCurrency(id: string, currency: string): Promise<DepositRequest>;
+  getFilterOptions(userId: string): Promise<any>;
 }

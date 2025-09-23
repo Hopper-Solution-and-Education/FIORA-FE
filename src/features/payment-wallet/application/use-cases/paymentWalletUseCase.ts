@@ -64,6 +64,53 @@ class PaymentWalletUseCase {
     return transactions;
   }
 
+  async fetchMinMaxWalletAmount(userId: string) {
+    const amountAggregation = await this.transactionRepository.aggregate({
+      where: {
+        OR: [
+          {
+            fromWalletId: {
+              not: null,
+            },
+          },
+          {
+            toWalletId: {
+              not: null,
+            },
+          },
+        ],
+        userId,
+      },
+      _min: {
+        baseAmount: true,
+      },
+      _max: {
+        baseAmount: true,
+      },
+    });
+
+    return {
+      amountMin: amountAggregation._min.baseAmount || 0,
+      amountMax: amountAggregation._max.baseAmount || 10000,
+    };
+  }
+
+  async fetchPaymentWalletOptions(userId: string) {
+    const [filterOptions, amountRange] = await Promise.all([
+      this.walletRepository.getFilterOptions(userId),
+      this.fetchMinMaxWalletAmount(userId),
+    ]);
+
+    return {
+      accounts: filterOptions.accounts ?? [],
+      categories: filterOptions.categories ?? [],
+      partners: filterOptions.partners ?? [],
+      wallets: filterOptions.wallets ?? [],
+      amountMin: amountRange.amountMin,
+      amountMax: amountRange.amountMax,
+    };
+  }
+
   async fetchPaymentWalletDashboardMetrics(userId: string): Promise<any> {
     const foundUserWallet = await this.walletRepository.findWalletByType(
       WalletType.Payment,

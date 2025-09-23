@@ -314,6 +314,34 @@ class WalletRepository implements IWalletRepository {
       data: { currency: currency as any } as Prisma.DepositRequestUpdateInput,
     });
   }
+
+  async getFilterOptions(userId: string) {
+    const [accounts, categories, partners, wallets] = await Promise.all([
+      prisma.account.findMany({
+        where: { userId },
+        select: { name: true },
+      }),
+      prisma.category.findMany({
+        where: { userId },
+        select: { name: true },
+      }),
+      prisma.partner.findMany({
+        where: { userId },
+        select: { name: true },
+      }),
+      prisma.wallet.findMany({
+        where: { userId },
+        select: { type: true },
+      }),
+    ]);
+
+    return {
+      accounts: accounts.map((a) => a.name),
+      categories: categories.map((c) => c.name),
+      partners: partners.map((p) => p.name),
+      wallets: wallets.map((w) => w.type),
+    };
+  }
 }
 
 export const walletRepository = new WalletRepository();
