@@ -66,7 +66,10 @@ const MembershipActionButton = ({ id, status, className }: MembershipActionButto
           status: 'SUCCESSFUL',
           toTier: selectedTierLabel,
           reason,
-          updatedBy: { id: response?.updatedBy?.id || '', email: response?.updatedBy?.email || '' },
+          updatedBy: {
+            id: response?.data?.updatedBy?.id || '',
+            email: response?.data?.updatedBy?.email || '',
+          },
         },
       },
     });
