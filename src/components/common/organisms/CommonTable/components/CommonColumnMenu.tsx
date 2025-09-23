@@ -13,48 +13,26 @@ import {
 import {
   SortableContext,
   sortableKeyboardCoordinates,
-  useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { useMemo } from 'react';
 import { ColumnConfigMap, CommonTableColumn } from '../types';
+import SortableItem from './SortableItem';
 
-interface SortableItemProps {
-  id: string;
-  children: React.ReactNode;
+interface CommonColumnMenuProps<T> extends React.HTMLAttributes<HTMLDivElement> {
+  columns: CommonTableColumn<T>[];
+  config: ColumnConfigMap;
+  onColumnChange: (cfg: ColumnConfigMap) => void;
+  onColumnReset?: () => void;
 }
-
-const SortableItem = ({ id, children }: SortableItemProps) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id,
-  });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 1 : 0,
-  } as React.CSSProperties;
-
-  return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      {children}
-    </div>
-  );
-};
 
 export default function CommonColumnMenu<T>({
   columns,
   config,
-  onChange,
-  onReset,
-}: {
-  columns: CommonTableColumn<T>[];
-  config: ColumnConfigMap;
-  onChange: (cfg: ColumnConfigMap) => void;
-  onReset?: () => void;
-}) {
+  onColumnChange,
+  onColumnReset,
+  ...props
+}: CommonColumnMenuProps<T>) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -94,24 +72,28 @@ export default function CommonColumnMenu<T>({
     updated.forEach((k, idx) => {
       next[k] = { ...next[k], index: idx };
     });
-    onChange(next);
+    onColumnChange(next);
   };
 
   const toggle = (key: string) => {
-    const current = config[key] ?? { isVisible: false, index: shown.length, align: undefined };
+    const current = config[key] ?? {
+      isVisible: false,
+      index: shown.length,
+      alignOverride: undefined,
+    };
     const next: ColumnConfigMap = {
       ...config,
       [key]: { ...current, isVisible: !current.isVisible },
     };
-    onChange(next);
+    onColumnChange(next);
   };
 
   return (
-    <div className="w-56">
+    <div className="w-56" {...props}>
       <div className="flex items-center justify-between mb-2 pb-2 border-b border-border">
         <span className="font-semibold text-base text-foreground">Column Settings</span>
 
-        <button className="p-1 ml-2" onClick={onReset} title="Reset to default">
+        <button className="p-1 ml-2" onClick={onColumnReset} title="Reset to default">
           <Icons.refreshCcw className="w-4 h-4 text-green-600 dark:text-green-400" />
         </button>
       </div>
