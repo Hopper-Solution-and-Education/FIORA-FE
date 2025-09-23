@@ -49,7 +49,6 @@ export const useFlexiInterestCronjobDashboard = () => {
           pageSize,
           filter: JSON.stringify(formattedFilter),
         }).unwrap();
-        console.log('🚀 ~ fetchData ~ response:', response);
 
         const rows: FlexiInterestCronjobTableData[] = response?.items || [];
 
