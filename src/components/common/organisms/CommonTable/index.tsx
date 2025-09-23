@@ -15,7 +15,7 @@ import { useEffect, useMemo } from 'react';
 import CommonColumnMenu from './components/CommonColumnMenu';
 import CommonTableLoadingState from './components/CommonTableLoadingState';
 import { ColumnConfigMap, CommonTableProps } from './types';
-import { loadColumnConfigFromStorage, saveColumnConfigToStorage } from './utils';
+import { getAlignClass, loadColumnConfigFromStorage, saveColumnConfigToStorage } from './utils';
 
 export default function CommonTable<T>({
   data,
@@ -57,7 +57,6 @@ export default function CommonTable<T>({
       });
 
     // Auto-calculate column widths if not specified
-    const totalVisibleColumns = visibleColumns.length;
     const columnsWithWidth = visibleColumns.filter((col) => col.width);
     const columnsWithoutWidth = visibleColumns.filter((col) => !col.width);
 
@@ -67,6 +66,7 @@ export default function CommonTable<T>({
         const width = col.width || '';
         const widthStr = typeof width === 'string' ? width : String(width);
         const percentage = parseFloat(widthStr.replace('%', ''));
+
         return sum + (isNaN(percentage) ? 0 : percentage);
       }, 0);
 
@@ -82,18 +82,13 @@ export default function CommonTable<T>({
     return visibleColumns;
   }, [columns, columnConfig]);
 
-  const getAlignClass = (align?: 'left' | 'center' | 'right') => {
-    if (align === 'left') return 'text-left justify-start';
-    if (align === 'right') return 'text-right justify-end';
-    return 'text-center justify-center';
-  };
-
   const handleConfigChange = (cfg: ColumnConfigMap) => {
     // Normalize config to include all current columns and drop stale ones
     const normalized: ColumnConfigMap = columns.reduce((acc, c, idx) => {
       const entry = cfg[c.key] ?? { isVisible: true, index: idx, align: c.align };
       // keep align from column if not explicitly set
       acc[c.key] = { ...entry, align: entry.align ?? c.align };
+
       return acc;
     }, {} as ColumnConfigMap);
 
@@ -108,6 +103,7 @@ export default function CommonTable<T>({
       const merged = columns.reduce((acc, c, idx) => {
         const entry = loaded[c.key] ?? { isVisible: true, index: idx, align: c.align };
         acc[c.key] = { ...entry, align: entry.align ?? c.align };
+
         return acc;
       }, {} as ColumnConfigMap);
       onColumnConfigChange(merged);
@@ -159,24 +155,15 @@ export default function CommonTable<T>({
     </div>
   );
 
-  const renderLoadingOrEmpty = () => (
-    <CommonTableLoadingState
-      loading={loading}
-      isLoadingMore={isLoadingMore}
-      dataLength={data?.length || 0}
-      hasMore={hasMore}
-      columns={shownColumns}
-      skeletonRows={skeletonRows}
-      loadingMoreRows={loadingMoreRows}
-    />
-  );
-
   return (
     <div className={`space-y-4 ${className || ''}`}>
       {renderHeader()}
 
-      <div ref={containerRef} className="rounded-md border max-h-[600px] overflow-auto relative">
-        <Table className="min-w-full table-fixed w-full">
+      <div
+        ref={containerRef}
+        className="rounded-md border max-h-[600px] min-w-[400px] overflow-auto relative"
+      >
+        <Table className="min-w-[400px] table-fixed w-full">
           <TableHeader className="sticky top-0 bg-background">
             <TableRow>
               {shownColumns.map((col) => (
@@ -196,7 +183,15 @@ export default function CommonTable<T>({
               emptyState ? (
                 emptyState
               ) : (
-                renderLoadingOrEmpty()
+                <CommonTableLoadingState
+                  loading={loading}
+                  isLoadingMore={isLoadingMore}
+                  dataLength={data?.length || 0}
+                  hasMore={hasMore}
+                  columns={shownColumns}
+                  skeletonRows={skeletonRows}
+                  loadingMoreRows={loadingMoreRows}
+                />
               )
             ) : data && data.length > 0 ? (
               <>
@@ -236,6 +231,7 @@ export default function CommonTable<T>({
                     ))}
                   </>
                 )}
+
                 {(hasMore || isLoadingMore) && (
                   <TableRow>
                     <TableCell colSpan={shownColumns.length}>

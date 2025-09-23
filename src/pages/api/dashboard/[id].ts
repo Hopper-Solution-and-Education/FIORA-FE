@@ -14,7 +14,7 @@ export default sessionWrapper(
       async (request, response) => {
         switch (request.method) {
           case 'PATCH':
-            return PATCH(request, response, userId);
+            return PATCH(request, response, user);
           default:
             return response
               .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -26,7 +26,7 @@ export default sessionWrapper(
     ),
 );
 
-export async function PATCH(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function PATCH(req: NextApiRequest, res: NextApiResponse, user: SessionUser) {
   const { id } = req.query;
   const { tierId, reason } = req.body;
 
@@ -53,8 +53,13 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse, userId: s
       .status(RESPONSE_CODE.NOT_FOUND)
       .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, 'Cron job not found!'));
   }
-  await dashboardRepository.changeCronjob(cronjob, userId, tier, reason);
+  const result = await dashboardRepository.changeCronjob(cronjob, user, tier, reason);
+  if (result == 404) {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.UPDATE_FAIL));
+  }
   return res
     .status(RESPONSE_CODE.OK)
-    .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_SUCCESS));
+    .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_SUCCESS, result));
 }

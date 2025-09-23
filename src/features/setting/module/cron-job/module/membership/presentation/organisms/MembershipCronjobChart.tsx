@@ -10,7 +10,6 @@ const MembershipCronjobChart = () => {
   const [data, setData] = useState<{ name: string; count: number }[]>([]);
 
   useEffect(() => {
-    let mounted = true;
     const fetchChart = async () => {
       setLoading(true);
       try {
@@ -19,17 +18,12 @@ const MembershipCronjobChart = () => {
         );
         const res = await useCase.execute(undefined);
         const items = res.data?.items || [];
-        if (mounted) {
-          setData(items.map((it) => ({ name: it.tierName, count: Number(it.count) })));
-        }
+        setData(items.map((it) => ({ name: it.tierName, count: Number(it.count) })));
       } finally {
-        if (mounted) setLoading(false);
+        setLoading(false);
       }
     };
     fetchChart();
-    return () => {
-      mounted = false;
-    };
   }, []);
 
   return (

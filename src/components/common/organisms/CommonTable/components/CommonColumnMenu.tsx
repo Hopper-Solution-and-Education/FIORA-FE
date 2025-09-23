@@ -110,6 +110,7 @@ export default function CommonColumnMenu<T>({
     <div className="w-56">
       <div className="flex items-center justify-between mb-2 pb-2 border-b border-border">
         <span className="font-semibold text-base text-foreground">Column Settings</span>
+
         <button className="p-1 ml-2" onClick={onReset} title="Reset to default">
           <Icons.refreshCcw className="w-4 h-4 text-green-600 dark:text-green-400" />
         </button>
@@ -121,6 +122,7 @@ export default function CommonColumnMenu<T>({
             {shown.map((key) => {
               const column = columns.find((c) => c.key === key);
               const title = column?.title || key;
+
               return (
                 <SortableItem key={key} id={key}>
                   <div
@@ -146,6 +148,7 @@ export default function CommonColumnMenu<T>({
           hidden.map((key) => {
             const column = columns.find((c) => c.key === key);
             const title = column?.title || key;
+
             return (
               <div
                 key={key}
@@ -155,6 +158,7 @@ export default function CommonColumnMenu<T>({
                   <Icons.gripVertical className="w-4 h-4" />
                   <span className="font-normal truncate">{title}</span>
                 </span>
+
                 <Switch
                   checked={false}
                   onCheckedChange={() => toggle(key)}
