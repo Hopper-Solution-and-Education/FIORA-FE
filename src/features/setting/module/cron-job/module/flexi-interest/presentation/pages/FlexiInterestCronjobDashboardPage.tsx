@@ -14,7 +14,7 @@ function FlexiInterestCronjobDashboardPage() {
         <FlexiInterestCronJobChart />
       </div>
       <div className="my-6"></div>
-      <div className="space-y-4 mx-4 border p-4 rounded-2xl">
+      <div className="space-y-4 mx-4 border p-4 rounded-2xl" id="flexi-interest-table-container">
         <FlexiInterestCronJobTable
           extraData={tableData.extraData}
           data={tableData.data}

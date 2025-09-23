@@ -3,7 +3,7 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { createResponse } from './../../../shared/lib/responseUtils/createResponse';
+import { createResponse } from '../../../shared/lib/responseUtils/createResponse';
 
 export default withAuthorization({
   GET: ['Admin'],

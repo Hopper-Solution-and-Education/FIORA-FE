@@ -51,6 +51,17 @@ const FlexiInterestCronJobChart: FC<FlexiInterestCronJobChartProps> = (props) =>
         }),
       );
     }
+
+    setTimeout(() => {
+      const tableContainer = document.getElementById('flexi-interest-table-container');
+      if (tableContainer) {
+        tableContainer.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+          inline: 'nearest',
+        });
+      }
+    }, 100);
   };
 
   const truncateText = (text: string, maxLength: number = 10) => {
