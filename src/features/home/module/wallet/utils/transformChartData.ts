@@ -11,7 +11,7 @@ import { WalletType } from '../domain/enum';
  */
 export function transformWalletsToChartData(
   wallets: Wallet[],
-  frozenAmount: number | null,
+  frozenAmount: number = 0,
 ): TwoSideBarItem[] {
   // Transform each wallet to chart item format
   const items = wallets.map((w) => {
@@ -30,7 +30,7 @@ export function transformWalletsToChartData(
         {
           id: 'frozen',
           name: 'Frozen',
-          positiveValue: frozenAmount ?? 0,
+          positiveValue: frozenAmount,
           negativeValue: 0,
           colorPositive: COLORS.DEPS_DISABLE.LEVEL_1,
         },
@@ -41,7 +41,7 @@ export function transformWalletsToChartData(
   });
 
   // Calculate total balance across all wallets
-  const total = wallets.reduce((sum, w) => sum + w.frBalanceActive, 0);
+  const total = wallets.reduce((sum, w) => sum + w.frBalanceActive, 0) - frozenAmount;
 
   // Create total item with inner bar showing frozen amount
   const totalItem: TwoSideBarItem = {
@@ -54,7 +54,7 @@ export function transformWalletsToChartData(
       {
         id: 'frozen',
         name: 'Frozen',
-        positiveValue: frozenAmount ?? 0,
+        positiveValue: frozenAmount,
         negativeValue: 0,
         colorPositive: COLORS.DEPS_DISABLE.LEVEL_1,
       },
