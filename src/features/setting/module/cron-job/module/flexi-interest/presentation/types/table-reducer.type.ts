@@ -32,4 +32,5 @@ export type TableAction =
         totalSuccess: number;
         totalFailed: number;
       };
-    };
+    }
+  | { type: 'UPDATE_ITEM'; payload: { id: string; data: Partial<FlexiInterestCronjobTableData> } };

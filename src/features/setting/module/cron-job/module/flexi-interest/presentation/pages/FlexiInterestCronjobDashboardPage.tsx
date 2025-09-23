@@ -5,7 +5,7 @@ import FlexiInterestCronJobChart from '../organisms/FlexiInterestCronJobChart';
 import FlexiInterestCronJobTable from '../organisms/FlexiInterestCronJobTable';
 
 function FlexiInterestCronjobDashboardPage() {
-  const { tableData, loadMore, loading } = useFlexiInterestCronjobDashboard();
+  const { tableData, loadMore, loading, updateRowItem } = useFlexiInterestCronjobDashboard();
 
   return (
     <section>
@@ -22,6 +22,7 @@ function FlexiInterestCronjobDashboardPage() {
           hasMore={tableData.hasMore}
           isLoadingMore={tableData.isLoadingMore}
           onLoadMore={loadMore}
+          onUpdateRowItem={updateRowItem}
         />
       </div>
     </section>

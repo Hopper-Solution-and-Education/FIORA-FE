@@ -5,6 +5,7 @@ import {
 } from '@/components/common/organisms/CommonTable/types';
 import { formatDateTime } from '@/shared/lib';
 import React, { useMemo, useState } from 'react';
+import { formatCurrency } from '../../utils/format-currency.util';
 import FlexiInterestActionButton from '../atoms/FlexiInterestActionButton';
 import FlexiInterestStatusBadge from '../atoms/FlexiInterestStatusBadge';
 import FlexiInterestHeaderTopLeft from '../molecules/FlexiInterestHeaderTopLeft';
@@ -27,6 +28,7 @@ interface FlexiInterestCronJobTableProps {
   onLoadMore?: () => void;
   className?: string;
   extraData?: ExtraDataTableType;
+  onUpdateRowItem?: (id: string, data: Partial<FlexiInterestCronjobTableData>) => void;
 }
 
 const STORAGE_KEY = 'flexi-interest-cronjob:table';
@@ -39,6 +41,7 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
   onLoadMore,
   className,
   extraData,
+  onUpdateRowItem,
 }) => {
   const columns: CommonTableColumn<FlexiInterestCronjobTableData>[] = useMemo(
     () => [
@@ -76,7 +79,9 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
         title: 'Active Balance',
         align: 'right',
         render: (r) => (
-          <span className="text-sm">{r.activeBalance ? r.activeBalance + ' FX' : '-'}</span>
+          <span className="text-sm">
+            {r.activeBalance ? formatCurrency(r.activeBalance) + ' FX' : '-'}
+          </span>
         ),
       },
       {
@@ -85,7 +90,9 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
         align: 'right',
         render: (r) => (
           <span className="text-sm">
-            {Math.ceil((r.flexiInterestAmount || 0) * 100) / 100 + ' FX' || '-'}
+            {r.flexiInterestAmount
+              ? formatCurrency((r.flexiInterestAmount as number) || 0) + ' FX'
+              : '-'}
           </span>
         ),
       },
@@ -99,8 +106,8 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
         key: 'updatedBy',
         title: 'Updated By',
         align: 'left',
-        className: 'max-w-[200px] truncate',
-        render: (r) => <span className="text-sm truncate">{r.updateBy}</span>,
+        width: '18%',
+        render: (r) => <span className="text-sm truncate w-full">{r.updateBy}</span>,
       },
       {
         key: 'reason',

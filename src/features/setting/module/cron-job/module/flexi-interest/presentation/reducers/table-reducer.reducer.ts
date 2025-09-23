@@ -27,6 +27,13 @@ export const tableReducer = (state: TableState, action: TableAction): TableState
           currentItemCount: action.payload.currentItemCount + state.extraData.currentItemCount,
         },
       };
+    case 'UPDATE_ITEM':
+      return {
+        ...state,
+        data: state.data.map((item) =>
+          item.id === action.payload.id ? { ...item, ...action.payload.data } : item,
+        ),
+      };
     default:
       return state;
   }

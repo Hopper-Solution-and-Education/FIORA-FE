@@ -104,6 +104,10 @@ export const useFlexiInterestCronjobDashboard = () => {
     await fetchData(next, state.pagination.pageSize, true);
   }, [state.hasMore, state.isLoadingMore, state.pagination, fetchData]);
 
+  const updateRowItem = useCallback((id: string, data: Partial<FlexiInterestCronjobTableData>) => {
+    dispatchTable({ type: 'UPDATE_ITEM', payload: { id, data } });
+  }, []);
+
   // Chạy fetch data lần đầu
   useEffect(() => {
     if (isInitialLoad.current) {
@@ -127,5 +131,6 @@ export const useFlexiInterestCronjobDashboard = () => {
     loading,
     loadMore,
     dispatchTable,
+    updateRowItem,
   };
 };
