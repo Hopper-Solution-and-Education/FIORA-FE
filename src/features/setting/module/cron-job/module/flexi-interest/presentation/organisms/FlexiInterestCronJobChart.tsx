@@ -3,6 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { DEFAULT_CHART_FONT_SIZE, DEFAULT_CHART_TICK_COUNT } from '@/shared/constants/chart';
 import { useCurrencyFormatter } from '@/shared/hooks';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { FC, useMemo } from 'react';
 import {
   Bar,
@@ -15,6 +16,7 @@ import {
 } from 'recharts';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useGetFlexiInterestStatisticsQuery } from '../services/flexi-interest.service';
+import { setFilter } from '../slices';
 import { FlexiInterestStatistics } from '../slices/type';
 
 interface FlexiInterestCronJobChartProps {
@@ -32,6 +34,24 @@ interface FlexiInterestCronJobChartProps {
 const FlexiInterestCronJobChart: FC<FlexiInterestCronJobChartProps> = (props) => {
   const { formatCurrency } = useCurrencyFormatter();
   const isMobile = useIsMobile();
+  const dispatch = useAppDispatch();
+  const { filter } = useAppSelector((state) => state.flexiInterestCronjob);
+
+  const handleBarClick = (data: any) => {
+    if (data && data.name) {
+      dispatch(
+        setFilter({
+          status: null,
+          search: null,
+          email: null,
+          membershipTier: [data.name],
+          updatedBy: null,
+          fromDate: null,
+          toDate: null,
+        }),
+      );
+    }
+  };
 
   const truncateText = (text: string, maxLength: number = 10) => {
     return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
@@ -60,10 +80,14 @@ const FlexiInterestCronJobChart: FC<FlexiInterestCronJobChartProps> = (props) =>
       return null;
     }
 
-    const transformedData = rawData.tierInterestAmount.map((item: any) => ({
-      name: item.tierName,
-      amount: parseFloat(item.interestAmount) || 0,
-    }));
+    const transformedData = rawData.tierInterestAmount.map((item: any) => {
+      const isSelected = filter.membershipTier?.includes(item.tierName);
+      return {
+        name: item.tierName,
+        amount: parseFloat(item.interestAmount) || 0,
+        fill: isSelected ? '#ee4d4dff' : '#FF8383', // Highlight selected bar
+      };
+    });
 
     return {
       chartData: transformedData,
@@ -196,6 +220,8 @@ const FlexiInterestCronJobChart: FC<FlexiInterestCronJobChartProps> = (props) =>
                 filter: 'brightness(1.3) drop-shadow(0 0 5px rgba(0,0,0,0.2))',
                 cursor: 'pointer',
               }}
+              onClick={handleBarClick}
+              cursor={'pointer'}
             />
           </ComposedChart>
         </ResponsiveContainer>
