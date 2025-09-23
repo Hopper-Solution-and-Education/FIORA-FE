@@ -23,7 +23,7 @@ class PaymentWalletUseCase {
     private walletRepository: IWalletRepository,
     private membershipBenefitRepository: IMembershipBenefitRepository,
     private tierBenefitRepository: ITierBenefitRepository,
-  ) {}
+  ) { }
 
   async fetchPaymentWallet(userId: string, params: FetchPaymentWalletParams) {
     const { filters, lastCursor, page, pageSize, searchParams } = params;
@@ -198,13 +198,15 @@ class PaymentWalletUseCase {
     };
 
     // Get unique transaction types for wallet transactions
-    const types = await this.transactionRepository.findMany({
-      where: prefetchFilters,
-      select: {
-        type: true,
+    const types = await this.transactionRepository.findManyTransactions(
+      { ...prefetchFilters },
+      {
+        select: {
+          type: true,
+        },
+        distinct: ['type'],
       },
-      distinct: ['type'],
-    });
+    );
 
     // Get min and max amounts for wallet transactions
     const amountAggregation = await this.transactionRepository.aggregate({
