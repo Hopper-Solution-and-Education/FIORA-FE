@@ -33,9 +33,8 @@ const NewsListPage = () => {
       />
       <main className="min-h-screen bg-secondary px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
-            {/* Cột bên trái: Danh sách bài viết (chiếm 2/3 không gian) */}
-            <div className="lg:col-span-4">
+          <div className="flex flex-col gap-8 lg:flex-row">
+            <div className="w-full lg:w-3/4 flex-grow">
               <CardList
                 newsList={allNews}
                 isLoading={isLoading}
@@ -45,12 +44,7 @@ const NewsListPage = () => {
               />
             </div>
 
-            {/* Cột bên phải: Sidebar (chiếm 1/3 không gian) */}
-            <div className="lg:col-span-1">
-              {/*
-              'sticky' và 'top-8' giúp sidebar "dính" lại ở phía trên màn hình
-              khi người dùng cuộn trang, một trải nghiệm rất phổ biến và tiện lợi.
-            */}
+            <div className="w-full lg:w-1/4 order-first lg:order-last">
               <aside className="sticky top-8">
                 <Categories
                   activeFilters={activeFilters}
@@ -63,23 +57,6 @@ const NewsListPage = () => {
         </div>
       </main>
     </div>
-
-    //   {/* Main Content */}
-    //   {hasActiveFilters ? (
-    //     <FilteredCategoriesSection categoriesWithFaqs={filteredFaqs} isLoading={isLoading} />
-    //   ) : (
-    //     <>
-    //       <h3 className="text-2xl font-bold text-center">FAQ Center</h3>
-    //       <MostViewedSection faqs={mostViewedFaqs} isLoading={isLoading} />
-    //       <CategoriesSection
-    //         categoriesWithFaqs={categoriesWithPost || []}
-    //         expandedCategories={expandedCategories}
-    //         expandedCategoryFaqs={expandedCategoryFaqs}
-    //         onShowMore={handleShowMore}
-    //         isLoading={isLoading}
-    //       />
-    //     </>
-    //   )}
   );
 };
 

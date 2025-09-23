@@ -2,11 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { NewsQueryParams, NewsResponse } from '../api/types/newsDTO';
 import { PostCategoryResponse } from '../api/types/postCategoryDTO';
 import { NewsFilterValues } from '../presentation/organisms/NewsPageHeader';
-import {
-  useGetNewsCategoriesQuery,
-  useGetNewsQuery,
-  useLazyGetNewsQuery,
-} from '../store/api/newsApi';
+import { useGetNewsCategoriesQuery, useLazyGetNewsQuery } from '../store/api/newsApi';
 
 export const useNewsData = () => {
   const [endOfNews, setEndOfNews] = useState(false);
@@ -25,57 +21,8 @@ export const useNewsData = () => {
   const hasActiveFilters =
     activeFilters.search.trim().length > 0 || activeFilters.categories.length > 0;
 
-  const newestQueryParams = useMemo<NewsQueryParams>(
-    () => ({
-      page: 1,
-      limit: 10,
-      orderBy: 'createdAt',
-      orderDirection: 'desc',
-    }),
-    [],
-  );
-
-  // const filteredQueryParams = useMemo(
-  //   () =>
-  //     hasActiveFilters
-  //       ? {
-  //         page: 1,
-  //         limit: 12,
-  //         orderBy: 'createdAt',
-  //         orderDirection: 'desc',
-  //         filters: { search: activeFilters.search, categories: activeFilters.categories },
-  //       }
-  //       : skipToken,
-  //   [hasActiveFilters, activeFilters.search, activeFilters.categories],
-  // );
-
-  // API Queries
-  const { data: newestResponse, isLoading: isLoadingNewestNewest } = useGetNewsQuery(
-    newestQueryParams,
-    { skip: false },
-  );
-
-  // const { data: filteredResponse, isLoading: isLoadingFilteredNews } = useGetNewsQuery(
-  //   filteredQueryParams,
-  //   { skip: false },
-  // );
-
   const { data: allCategoriesResponse, isLoading: isLoadingAllCategories } =
     useGetNewsCategoriesQuery();
-
-  const newestNewsList: NewsResponse[] = useMemo(() => {
-    if (typeof newestResponse !== 'undefined' && 'news' in newestResponse) {
-      return newestResponse.news;
-    }
-    return [];
-  }, [newestResponse]);
-
-  // const filteredNewsList: NewsResponse[] = useMemo(() => {
-  //   if (typeof filteredResponse !== 'undefined' && 'news' in filteredResponse) {
-  //     return filteredResponse.news;
-  //   }
-  //   return [];
-  // }, [filteredResponse]);
 
   const allCategoriesList: PostCategoryResponse[] = useMemo(() => {
     console.log('all', allCategoriesResponse);
@@ -85,11 +32,12 @@ export const useNewsData = () => {
     return [];
   }, [allCategoriesResponse]);
 
-  const isLoading = isLoadingNewestNewest || isLoadingAllCategories;
+  const isLoading = isLoadingAllCategories;
 
   // Handle filter changes
   const handleFilterChange = useCallback((filters: NewsFilterValues) => {
     setActiveFilters(filters);
+    setEndOfNews(false);
   }, []);
 
   const baseQueryParams = useMemo<NewsQueryParams>(

@@ -26,16 +26,6 @@ const CardList = ({
   endOfNews: boolean;
   handleLoadMoreNews: () => void;
 }) => {
-  if (isLoading && newsList.length === 0) {
-    return (
-      <section>
-        <div className="text-center py-8">
-          <Skeleton className="w-full h-10" />
-        </div>
-      </section>
-    );
-  }
-
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const onIntersect: IntersectionObserverCallback = useCallback(
@@ -65,6 +55,16 @@ const CardList = ({
     };
   }, [onIntersect]);
 
+  if (isLoading && newsList.length === 0) {
+    return (
+      <section>
+        <div className="text-center py-8">
+          <Skeleton className="w-full h-10" />
+        </div>
+      </section>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-5">
       {newsList.map((post) => (
@@ -77,7 +77,7 @@ const CardList = ({
 
       {/* Show end message when there are no more posts */}
       {endOfNews && newsList.length > 0 && (
-        <p className="text-center text-slate-500 mt-4">You&apos;ve reached the end! 👋</p>
+        <p className="text-center text-slate-500 mt-4">You&apos;ve reached the end!</p>
       )}
     </div>
   );
