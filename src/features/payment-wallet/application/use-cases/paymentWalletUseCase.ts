@@ -102,10 +102,8 @@ class PaymentWalletUseCase {
     ]);
 
     return {
-      accounts: filterOptions.accounts ?? [],
-      categories: filterOptions.categories ?? [],
-      partners: filterOptions.partners ?? [],
-      wallets: filterOptions.wallets ?? [],
+      fromWallets: filterOptions.fromWallets ?? [],
+      toWallets: filterOptions.toWallets ?? [],
       amountMin: amountRange.amountMin,
       amountMax: amountRange.amountMax,
     };

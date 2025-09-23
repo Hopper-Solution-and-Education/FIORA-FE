@@ -316,30 +316,30 @@ class WalletRepository implements IWalletRepository {
   }
 
   async getFilterOptions(userId: string) {
-    const [accounts, categories, partners, wallets] = await Promise.all([
-      prisma.account.findMany({
-        where: { userId },
-        select: { name: true },
+    const [fromWallets, toWallets] = await Promise.all([
+      prisma.transaction.findMany({
+        where: { userId, fromWalletId: { not: null } },
+        include: { fromWallet: true },
       }),
-      prisma.category.findMany({
-        where: { userId },
-        select: { name: true },
-      }),
-      prisma.partner.findMany({
-        where: { userId },
-        select: { name: true },
-      }),
-      prisma.wallet.findMany({
-        where: { userId },
-        select: { type: true },
+      prisma.transaction.findMany({
+        where: { userId, toWalletId: { not: null } },
+        include: { toWallet: true },
       }),
     ]);
 
     return {
-      accounts: accounts.map((a) => a.name),
-      categories: categories.map((c) => c.name),
-      partners: partners.map((p) => p.name),
-      wallets: wallets.map((w) => w.type),
+      fromWallets: fromWallets.map((a) => {
+        return {
+          label: a.fromWallet?.name || a.fromWallet?.type,
+          value: a.fromWallet?.id,
+        };
+      }),
+      toWallets: toWallets.map((c) => {
+        return {
+          label: c.toWallet?.name || c.toWallet?.type,
+          value: c.toWallet?.id,
+        };
+      }),
     };
   }
 }
