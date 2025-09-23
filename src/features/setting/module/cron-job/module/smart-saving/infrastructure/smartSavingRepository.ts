@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
+import { notificationRepository } from '@/features/notification/infrastructure/repositories/notificationRepository';
 import { CronJobLog, CronJobStatus, Currency, TransactionType, TypeCronJob } from '@prisma/client';
 import { ISmartSavingRepository } from '../domain/smartSavingRepository.interface';
 
@@ -239,7 +239,7 @@ class smartSavingRepository implements ISmartSavingRepository {
     });
     try {
       if (updateSmartSaving) {
-        await notificationUseCase.createBoxNotification({
+        await notificationRepository.createBoxNotification({
           title: 'Retrie Smart Saving Interest',
           type: 'SMART_SAVING_INTEREST',
           notifyTo: 'PERSONAL',
