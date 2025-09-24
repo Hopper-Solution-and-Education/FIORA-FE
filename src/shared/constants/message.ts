@@ -358,6 +358,10 @@ export enum Messages {
   KYC_NOT_FOUND = 'Kyc not found',
   KYC_CHECK = 'Kyc is used',
   KYC_NOT_MATCH = 'Kyc not match',
+  BLOCK_USER_SUCCESS = 'Block user successfully',
+  BLOCK_USER_FAILED = 'Block user failed',
+  USER_BLOCKED_SIGNIN_ERROR = 'Account has been blocked. Please contact support.',
+  USER_NOT_FOUND = 'User not found',
 
   //Common
   DELETE_SUCCESS = 'Delete successfully',

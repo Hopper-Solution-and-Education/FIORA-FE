@@ -59,3 +59,19 @@ export const accountUpdateBody = Joi.object({
     'string.pattern.base': 'Account icon url is invalid',
   }),
 });
+
+export const validateBlockUserId = Joi.object({
+  blockUserId: Joi.string().uuid().required().messages({
+    'string.empty': 'blockUserId id is required',
+    'string.uuid': 'blockUserId id must be a valid UUID',
+    'any.required': 'blockUserId id is required',
+  }),
+});
+
+export const validateAssignUserId = Joi.object({
+  assignUserId: Joi.string().uuid().required().messages({
+    'string.empty': 'AssignUserId id is required',
+    'string.uuid': 'AssignUserId id must be a valid UUID',
+    'any.required': 'AssignUserId id is required',
+  }),
+});

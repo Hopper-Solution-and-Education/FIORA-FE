@@ -87,3 +87,21 @@ export interface BankAccountFormData {
 export interface IdentificationDocumentProps {
   isVerified: boolean;
 }
+
+export interface UserBlocked {
+  id: string;
+  email: string;
+  name: string | null;
+  isBlocked: boolean | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface UserRole {
+  id: string;
+  email: string;
+  name: string | null;
+  UserRole: UserRole;
+  createdAt: Date;
+  updatedAt: Date;
+}

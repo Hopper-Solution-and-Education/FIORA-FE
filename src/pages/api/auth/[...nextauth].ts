@@ -1,4 +1,5 @@
 import { createDefaultCategories } from '@/features/auth/application/use-cases/defaultCategories';
+import { Messages } from '@/shared/constants/message';
 import { Prisma, PrismaClient, UserRole } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import NextAuth, { NextAuthOptions } from 'next-auth';
@@ -32,10 +33,16 @@ export const authOptions: NextAuthOptions = {
             image: true,
             password: true,
             role: true,
+            isBlocked: true,
           },
         });
 
         if (user && user.password && bcrypt.compareSync(credentials.password, user.password)) {
+          // Check if user is blocked
+          if (user.isBlocked) {
+            throw new Error(Messages.USER_BLOCKED_SIGNIN_ERROR);
+          }
+
           return {
             id: user.id,
             name: user.name,
@@ -68,6 +75,7 @@ export const authOptions: NextAuthOptions = {
               email: true,
               image: true,
               role: true,
+              isBlocked: true,
             },
           });
 
@@ -85,6 +93,7 @@ export const authOptions: NextAuthOptions = {
                 email: true,
                 image: true,
                 role: true,
+                isBlocked: true,
               },
             });
 
@@ -114,6 +123,10 @@ export const authOptions: NextAuthOptions = {
               console.error('Failed to create default categories for Google user:', dbUser.id);
             }
           } else {
+            if (dbUser.isBlocked) {
+              throw new Error(Messages.USER_BLOCKED_SIGNIN_ERROR);
+            }
+
             await prisma.user.update({
               where: { email: profile.email },
               data: {
