@@ -8,8 +8,8 @@ import type {
   ReferralUser,
   ReferralUsersResponse,
 } from '../types';
+import type { ReferralTransactionFilterState } from '../types/transaction.type';
 import { mapEarnings, mapReferralItem, mapTransactions, toQueryString } from '../utils';
-import type { ReferralTransactionFilterState } from './types';
 
 // Re-export types for convenience
 export type { GetReferralUsersParams, ReferralStats, ReferralUser, ReferralUsersResponse };

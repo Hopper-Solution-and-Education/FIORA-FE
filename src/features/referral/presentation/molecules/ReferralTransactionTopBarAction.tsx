@@ -1,7 +1,7 @@
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback } from 'react';
 import { setFilter } from '../../slices';
-import { ReferralTransactionFilterState } from '../../slices/types';
+import { ReferralTransactionFilterState } from '../../types/transaction.type';
 import ReferralTransactionFilterMenu from '../organisms/ReferralTransactionFilterMenu';
 import ReferralTransactionSearch from './ReferralTransactionSearch';
 

@@ -5,7 +5,7 @@ import { useLazyGetReferralTransactionsPaginatedQuery } from '../../slices/refer
 import {
   initialReferralTransactionTableState,
   referralTransactionTableReducer,
-} from '../types/tableReducer.type';
+} from '../../types/tableReducer.type';
 
 export const useReferralTransactionDashboard = () => {
   const dispatch = useAppDispatch();

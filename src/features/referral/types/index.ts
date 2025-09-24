@@ -1,4 +1,7 @@
-import { TransactionMembershipBenefit } from '@/features/home/module/transaction/types';
+﻿import { TransactionMembershipBenefit } from '@/features/home/module/transaction/types';
+
+export const REFERRAL_TRANSACTION_TYPES = ['Income', 'Transfer'] as const;
+export type ReferralTransactionType = (typeof REFERRAL_TRANSACTION_TYPES)[number];
 
 export interface ReferralStats {
   totalInvited: number;
@@ -55,7 +58,7 @@ export interface ReferralEarnings {
 export interface ReferralTransaction {
   id: string;
   date: string;
-  type: 'Income' | 'Transfer';
+  type: ReferralTransactionType;
   amount: string;
   from: string;
   to: string;
@@ -76,7 +79,7 @@ export interface ReferralSetting {
 
 // Transaction filters for API
 export interface TransactionFilters {
-  type?: string[];
+  type?: ReferralTransactionType[];
   search?: string;
   fromDate?: Date;
   toDate?: Date;
