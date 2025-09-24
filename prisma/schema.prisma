@@ -223,7 +223,7 @@ model Transaction {
   fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
   fromCategory        Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
   fromWallet          Wallet?              @relation("FromWallet", fields: [fromWalletId], references: [id])
-  MembershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
+  membershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
   partner             Partner?             @relation("PartnerTransactions", fields: [partnerId], references: [id])
   toAccount           Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Cascade)
   toCategory          Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
@@ -511,24 +511,24 @@ model DepositRequest {
 }
 
 model Notification {
-  id               String                  @id @default(uuid()) @db.Uuid
-  attachmentId     String?                 @db.Uuid
-  message          String
-  deepLink         String?
-  createdAt        DateTime                @default(now()) @db.Timestamptz(0)
-  updatedAt        DateTime                @updatedAt @db.Timestamptz(0)
-  createdBy        String?                 @db.Uuid
-  updatedBy        String?                 @db.Uuid
-  channel          ChannelType
-  emails           String[]
-  title            String
-  emailTemplateId  String?                 @db.Uuid
-  notifyTo         NotificationType
-  type             String
-  Attachment       Attachment[]
-  emailLogs        EmailNotificationLogs[]
-  emailTemplate    EmailTemplate?          @relation(fields: [emailTemplateId], references: [id])
-  UserNotification UserNotification[]
+  id                String                  @id @default(uuid()) @db.Uuid
+  attachmentId      String?                 @db.Uuid
+  message           String
+  deepLink          String?
+  createdAt         DateTime                @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime                @updatedAt @db.Timestamptz(0)
+  createdBy         String?                 @db.Uuid
+  updatedBy         String?                 @db.Uuid
+  channel           ChannelType
+  emails            String[]
+  title             String
+  emailTemplateId   String?                 @db.Uuid
+  notifyTo          NotificationType
+  type              String
+  Attachment        Attachment[]
+  emailLogs         EmailNotificationLogs[]
+  emailTemplate     EmailTemplate?          @relation(fields: [emailTemplateId], references: [id])
+  userNotifications UserNotification[]
 
   @@index([attachmentId])
 }
@@ -643,7 +643,7 @@ model MembershipProgress {
   updatedAt      DateTime        @updatedAt @db.Timestamptz(0)
   tierId         String?         @db.Uuid
   tiersendid     String?         @db.Uuid
-  MembershipTier MembershipTier? @relation(fields: [tierId], references: [id], onDelete: Cascade)
+  tier           MembershipTier? @relation(fields: [tierId], references: [id], onDelete: Cascade)
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -1006,6 +1006,12 @@ enum AccountType {
   Invest
 }
 
+enum Currency {
+  VND
+  USD
+  FX
+}
+
 enum TransactionType {
   Expense
   Income
@@ -1049,6 +1055,14 @@ enum DepositRequestStatus {
   Requested
   Rejected
   Approved
+}
+
+enum NotificationToType {
+  ALL
+  USER
+  ADMIN
+  CS
+  PERSONAL
 }
 
 enum PostType {
@@ -1127,18 +1141,4 @@ enum ReferralStatus {
   INVITED
   REGISTERED
   eKYC_COMPLETED
-}
-
-enum Currency {
-  VND
-  USD
-  FX
-}
-
-enum NotificationToType {
-  ALL
-  USER
-  ADMIN
-  CS
-  PERSONAL
 }
