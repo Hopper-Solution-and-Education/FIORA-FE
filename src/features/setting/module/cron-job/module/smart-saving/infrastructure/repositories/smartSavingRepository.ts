@@ -1,10 +1,24 @@
 import { prisma } from '@/config';
 import { notificationRepository } from '@/features/notification/infrastructure/repositories/notificationRepository';
-import { CronJobLog, CronJobStatus, Currency, TransactionType, TypeCronJob } from '@prisma/client';
+import {
+  CronJobLog,
+  CronJobStatus,
+  Currency,
+  TransactionType,
+  TypeCronJob,
+  UserRole,
+} from '@prisma/client';
 import { ISmartSavingRepository } from '../../domain/smartSavingRepository.interface';
 
 class smartSavingRepository implements ISmartSavingRepository {
   constructor(private _prisma = prisma) {}
+  gétSmartSavingFilerOptions(): Promise<{
+    emailOptions: { id: string; email: string }[];
+    tierNameOptions: { id: string; tierName: string }[];
+    updateByOptions: { id: string; email: string }[];
+  }> {
+    throw new Error('Method not implemented.');
+  }
   async getSmartSavingPaginated(
     page: number,
     pageSize: number,
@@ -263,32 +277,75 @@ class smartSavingRepository implements ISmartSavingRepository {
     return updateSmartSaving;
   }
 
-  async gétSmartSavingFilerOptions() {
-    const dataSmartSaving = await this._prisma.cronJobLog.findMany({
-      where: { typeCronJob: TypeCronJob.SMART_SAVING_INTEREST },
+  async getSmartSavingFilerOptions(): Promise<{
+    emailOptions: { id: string; email: string }[];
+    tierNameOptions: { id: string; tierName: string | null }[];
+    updateByOptions: { id: string; email: string }[];
+  }> {
+    // const dataSmartSaving = await this._prisma.cronJobLog.findMany({
+    //   where: { typeCronJob: TypeCronJob.SMART_SAVING_INTEREST },
+    //   select: {
+    //     dynamicValue: true,
+    //   },
+    // });
+    // // emailOptions
+    // const emailOptions: { id: string; email: string }[] = dataSmartSaving
+    //   .map((log) => {
+    //     const dv: any = log.dynamicValue;
+    //     if (dv?.userId && dv?.email) {
+    //       return { id: String(dv.userId), email: String(dv.email) };
+    //     }
+    //     return null;
+    //   })
+    //   .filter((item): item is { id: string; email: string } => item !== null);
+
+    // // tierNameOptions
+    // const tierNameOptions: { id: string; tierName: string }[] = dataSmartSaving
+    //   .map((log) => {
+    //     const dv: any = log.dynamicValue;
+    //     if (dv?.tierId && dv?.tierName) {
+    //       return { id: String(dv.tierId), tierName: String(dv.tierName) };
+    //     }
+    //     return null;
+    //   })
+    //   .filter((item): item is { id: string; tierName: string } => item !== null);
+    // const updateByIds = (
+    //   await this._prisma.cronJobLog.findMany({
+    //     where: { typeCronJob: TypeCronJob.SMART_SAVING_INTEREST },
+    //     select: { updatedBy: true },
+    //   })
+    // )
+    //   .map((log) => log.updatedBy)
+    //   .filter((id): id is string => !!id); // bỏ null
+
+    // const updateByOptions = await this._prisma.user.findMany({
+    //   where: { id: { in: updateByIds } },
+    //   select: { id: true, email: true },
+    // });
+    const emailOptions = await prisma.user.findMany({
       select: {
-        dynamicValue: true,
+        id: true,
+        email: true,
       },
     });
-    const emailOptions = dataSmartSaving.map((log) => {
-      const dv: any = log.dynamicValue;
-      return {
-        email: dv?.email ?? null,
-        userId: dv?.userId ?? null,
-      };
+    const tierNameOptions = await prisma.membershipTier.findMany({
+      select: {
+        id: true,
+        tierName: true,
+      },
     });
-    const tierNameOptions = dataSmartSaving.map((log) => {
-      const dv: any = log.dynamicValue;
-      return dv?.email && dv?.userId ? [dv.userId, { email: dv.email, userId: dv.userId }] : null;
+    const updatedBy = await prisma.user.findMany({
+      where: { role: UserRole.Admin },
+      select: {
+        id: true,
+        email: true,
+      },
     });
-    const updateByOptions = dataSmartSaving.map((log) => {
-      const dv: any = log.dynamicValue;
-      return {
-        email: dv?.updateBy ?? null,
-        userId: dv?.updateById ?? null,
-      };
-    });
-    return {};
+    return {
+      emailOptions: emailOptions,
+      tierNameOptions: tierNameOptions,
+      updateByOptions: updatedBy,
+    };
   }
 }
 

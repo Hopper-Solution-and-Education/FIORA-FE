@@ -25,7 +25,12 @@ export default withAuthorization({
   }
 });
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
-  return;
+  const filterOptions = await smartSavingUsecaseInstance.getSmartSavingFilerOptions();
+  return res
+    .status(RESPONSE_CODE.OK)
+    .json(
+      createResponse(RESPONSE_CODE.OK, Messages.GET_SMART_SAVING_SUCCESS_OPTIONS, filterOptions),
+    );
 }
 
 export async function POSt(req: NextApiRequest, res: NextApiResponse) {
