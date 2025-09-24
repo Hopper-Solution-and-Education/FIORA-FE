@@ -9,6 +9,8 @@ export interface TableState {
   pageSize: number;
   totalPages: number;
   total: number;
+  hasMore: boolean;
+  isLoadingMore: boolean;
 }
 
 export type TableAction =
@@ -25,8 +27,11 @@ export type TableAction =
         totalPages: number;
       };
     }
+  | { type: 'APPEND_DATA'; payload: ReferralCronjobTableData[] }
   | { type: 'SET_PAGE'; payload: number }
-  | { type: 'SET_PAGE_SIZE'; payload: number };
+  | { type: 'SET_PAGE_SIZE'; payload: number }
+  | { type: 'SET_HAS_MORE'; payload: boolean }
+  | { type: 'SET_IS_LOADING_MORE'; payload: boolean };
 
 export const tableReducer = (state: TableState, action: TableAction): TableState => {
   switch (action.type) {
@@ -48,10 +53,16 @@ export const tableReducer = (state: TableState, action: TableAction): TableState
         paginationLoading: false, // Reset pagination loading
         error: null,
       };
+    case 'APPEND_DATA':
+      return { ...state, items: [...state.items, ...action.payload] };
     case 'SET_PAGE':
       return { ...state, currentPage: action.payload };
     case 'SET_PAGE_SIZE':
       return { ...state, pageSize: action.payload, currentPage: 1 };
+    case 'SET_HAS_MORE':
+      return { ...state, hasMore: action.payload };
+    case 'SET_IS_LOADING_MORE':
+      return { ...state, isLoadingMore: action.payload };
     default:
       return state;
   }
@@ -66,4 +77,6 @@ export const initialState: TableState = {
   pageSize: 10,
   totalPages: 1,
   total: 0,
+  hasMore: true,
+  isLoadingMore: false,
 };

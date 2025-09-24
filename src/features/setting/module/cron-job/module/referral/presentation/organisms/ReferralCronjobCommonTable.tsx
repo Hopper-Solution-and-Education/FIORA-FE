@@ -18,6 +18,10 @@ interface Props {
   totalItems: number;
   successfulCount: number;
   failedCount: number;
+  // Load more props
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
   // Callback for retry action
   onRetrySuccess?: () => void;
 }
@@ -31,6 +35,9 @@ const ReferralCronjobCommonTable = ({
   totalItems,
   successfulCount,
   failedCount,
+  hasMore,
+  isLoadingMore,
+  onLoadMore,
   onRetrySuccess,
 }: Props) => {
   const columns: CommonTableColumn<ReferralCronjobTableData>[] = useMemo(
@@ -146,6 +153,9 @@ const ReferralCronjobCommonTable = ({
           onColumnConfigChange={setColumnConfig}
           storageKey={STORAGE_KEY}
           loading={loading}
+          hasMore={hasMore}
+          isLoadingMore={isLoadingMore}
+          onLoadMore={onLoadMore}
           className={className}
           leftHeaderNode={<ReferralTopBarAction data={data} />}
           rightHeaderNode={

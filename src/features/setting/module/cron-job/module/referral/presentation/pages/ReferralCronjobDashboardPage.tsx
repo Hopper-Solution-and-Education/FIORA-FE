@@ -15,6 +15,8 @@ const ReferralCronjobDashboardPage = () => {
     data,
     loading,
     totalItems,
+    hasMore,
+    isLoadingMore,
 
     // Chart data
     chartData,
@@ -22,6 +24,7 @@ const ReferralCronjobDashboardPage = () => {
 
     // Actions
     fetchData,
+    loadMore,
   } = useReferralCronjobDashboard();
 
   // Data fetching is handled by useReferralCronjobDashboard hook
@@ -72,7 +75,10 @@ const ReferralCronjobDashboardPage = () => {
             totalItems={statistics.total}
             successfulCount={statistics.successful}
             failedCount={statistics.failed}
-            onRetrySuccess={fetchData}
+            hasMore={hasMore}
+            isLoadingMore={isLoadingMore}
+            onLoadMore={loadMore}
+            onRetrySuccess={() => fetchData(1, 10, false)}
           />
         </div>
       </div>
