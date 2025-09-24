@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { HTMLAttributes, ReactNode } from 'react';
 
 export type TableAlign = 'left' | 'center' | 'right';
 
@@ -18,12 +18,15 @@ export interface CommonTableColumn<T> {
 export interface ColumnVisibilityConfig {
   isVisible: boolean;
   index: number;
-  align?: TableAlign;
+
+  // alignOverride: runtime/user preference that overrides column.align (schema default)
+  // If undefined, fall back to the column's default align.
+  alignOverride?: TableAlign;
 }
 
 export type ColumnConfigMap = Record<ColumnKey, ColumnVisibilityConfig>;
 
-export interface CommonTableProps<T> {
+export interface CommonTableProps<T> extends HTMLAttributes<HTMLDivElement> {
   data: T[];
   columns: CommonTableColumn<T>[];
   columnConfig: ColumnConfigMap;
@@ -39,4 +42,5 @@ export interface CommonTableProps<T> {
   emptyState?: ReactNode;
   skeletonRows?: number;
   loadingMoreRows?: number;
+  columnConfigMenuProps?: React.HTMLAttributes<HTMLDivElement>;
 }

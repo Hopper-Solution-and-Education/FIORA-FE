@@ -15,7 +15,7 @@ import { useEffect, useMemo } from 'react';
 import CommonColumnMenu from './components/CommonColumnMenu';
 import CommonTableLoadingState from './components/CommonTableLoadingState';
 import { ColumnConfigMap, CommonTableProps } from './types';
-import { loadColumnConfigFromStorage, saveColumnConfigToStorage } from './utils';
+import { getAlignClass, loadColumnConfigFromStorage, saveColumnConfigToStorage } from './utils';
 
 export default function CommonTable<T>({
   data,
@@ -33,6 +33,8 @@ export default function CommonTable<T>({
   className,
   onColumnConfigChange,
   onLoadMore,
+  columnConfigMenuProps,
+  ...props
 }: CommonTableProps<T>) {
   const { containerRef, sentinelRef } = useCommonInfiniteScroll({
     onLoadMore: onLoadMore || (() => {}),
@@ -44,7 +46,7 @@ export default function CommonTable<T>({
     // Merge runtime columns with config to ensure every column has a config entry
     const mergedConfig: ColumnConfigMap = columns.reduce((acc, c, idx) => {
       const existing = columnConfig[c.key];
-      acc[c.key] = existing ?? { isVisible: true, index: idx, align: c.align };
+      acc[c.key] = existing ?? { isVisible: true, index: idx, alignOverride: c.align };
       return acc;
     }, {} as ColumnConfigMap);
 
@@ -57,7 +59,6 @@ export default function CommonTable<T>({
       });
 
     // Auto-calculate column widths if not specified
-    const totalVisibleColumns = visibleColumns.length;
     const columnsWithWidth = visibleColumns.filter((col) => col.width);
     const columnsWithoutWidth = visibleColumns.filter((col) => !col.width);
 
@@ -67,6 +68,7 @@ export default function CommonTable<T>({
         const width = col.width || '';
         const widthStr = typeof width === 'string' ? width : String(width);
         const percentage = parseFloat(widthStr.replace('%', ''));
+
         return sum + (isNaN(percentage) ? 0 : percentage);
       }, 0);
 
@@ -82,18 +84,13 @@ export default function CommonTable<T>({
     return visibleColumns;
   }, [columns, columnConfig]);
 
-  const getAlignClass = (align?: 'left' | 'center' | 'right') => {
-    if (align === 'left') return 'text-left justify-start';
-    if (align === 'right') return 'text-right justify-end';
-    return 'text-center justify-center';
-  };
-
   const handleConfigChange = (cfg: ColumnConfigMap) => {
     // Normalize config to include all current columns and drop stale ones
     const normalized: ColumnConfigMap = columns.reduce((acc, c, idx) => {
-      const entry = cfg[c.key] ?? { isVisible: true, index: idx, align: c.align };
+      const entry = cfg[c.key] ?? { isVisible: true, index: idx, alignOverride: c.align };
       // keep align from column if not explicitly set
-      acc[c.key] = { ...entry, align: entry.align ?? c.align };
+      acc[c.key] = { ...entry, alignOverride: entry.alignOverride ?? c.align };
+
       return acc;
     }, {} as ColumnConfigMap);
 
@@ -106,8 +103,9 @@ export default function CommonTable<T>({
     const loaded = loadColumnConfigFromStorage(storageKey);
     if (loaded && onColumnConfigChange) {
       const merged = columns.reduce((acc, c, idx) => {
-        const entry = loaded[c.key] ?? { isVisible: true, index: idx, align: c.align };
-        acc[c.key] = { ...entry, align: entry.align ?? c.align };
+        const entry = loaded[c.key] ?? { isVisible: true, index: idx, alignOverride: c.align };
+        acc[c.key] = { ...entry, alignOverride: entry.alignOverride ?? c.align };
+
         return acc;
       }, {} as ColumnConfigMap);
       onColumnConfigChange(merged);
@@ -142,15 +140,16 @@ export default function CommonTable<T>({
               <CommonColumnMenu
                 columns={columns}
                 config={columnConfig}
-                onChange={handleConfigChange}
-                onReset={() =>
+                onColumnChange={handleConfigChange}
+                onColumnReset={() =>
                   handleConfigChange(
                     columns.reduce((acc, c, idx) => {
-                      acc[c.key] = { isVisible: true, index: idx, align: c.align };
+                      acc[c.key] = { isVisible: true, index: idx, alignOverride: c.align };
                       return acc;
                     }, {} as ColumnConfigMap),
                   )
                 }
+                {...columnConfigMenuProps}
               />
             </PopoverContent>
           </Popover>
@@ -159,30 +158,21 @@ export default function CommonTable<T>({
     </div>
   );
 
-  const renderLoadingOrEmpty = () => (
-    <CommonTableLoadingState
-      loading={loading}
-      isLoadingMore={isLoadingMore}
-      dataLength={data?.length || 0}
-      hasMore={hasMore}
-      columns={shownColumns}
-      skeletonRows={skeletonRows}
-      loadingMoreRows={loadingMoreRows}
-    />
-  );
-
   return (
-    <div className={`space-y-4 ${className || ''}`}>
+    <div className={`common-table space-y-4 ${className || ''}`} {...props}>
       {renderHeader()}
 
-      <div ref={containerRef} className="rounded-md border max-h-[600px] overflow-auto relative">
-        <Table className="min-w-full table-fixed w-full">
+      <div
+        ref={containerRef}
+        className="common-table-wrapper rounded-md border max-h-[600px] min-w-[400px] overflow-auto relative"
+      >
+        <Table className="min-w-[400px] table-fixed w-full">
           <TableHeader className="sticky top-0 bg-background">
             <TableRow>
               {shownColumns.map((col) => (
                 <TableHead
                   key={col.key}
-                  className={`${getAlignClass(col.align)} truncate p-3 ${col.headClassName || ''}`}
+                  className={`${getAlignClass(columnConfig[col.key]?.alignOverride ?? col.align)} truncate p-3 ${col.headClassName || ''}`}
                   style={{ width: col.width }}
                 >
                   {col.title}
@@ -196,7 +186,15 @@ export default function CommonTable<T>({
               emptyState ? (
                 emptyState
               ) : (
-                renderLoadingOrEmpty()
+                <CommonTableLoadingState
+                  loading={loading}
+                  isLoadingMore={isLoadingMore}
+                  dataLength={data?.length || 0}
+                  hasMore={hasMore}
+                  columns={shownColumns}
+                  skeletonRows={skeletonRows}
+                  loadingMoreRows={loadingMoreRows}
+                />
               )
             ) : data && data.length > 0 ? (
               <>
@@ -211,7 +209,7 @@ export default function CommonTable<T>({
                         <div
                           className={cn(
                             'flex p-3 overflow-hidden text-ellipsis',
-                            getAlignClass(col.align),
+                            getAlignClass(columnConfig[col.key]?.alignOverride ?? col.align),
                           )}
                         >
                           {col.render ? col.render(item) : (item as any)[col.key]}
@@ -236,6 +234,7 @@ export default function CommonTable<T>({
                     ))}
                   </>
                 )}
+
                 {(hasMore || isLoadingMore) && (
                   <TableRow>
                     <TableCell colSpan={shownColumns.length}>
