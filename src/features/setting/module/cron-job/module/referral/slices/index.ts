@@ -18,7 +18,32 @@ const referralCronjobSlice = createSlice({
       state.filter.search = action.payload;
     },
     clearFilter: (state) => {
-      state.filter = initialState.filter;
+      // Reset to today's date when clearing filters
+      const today = new Date();
+      const startOfDay = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        0,
+        0,
+        0,
+        0,
+      );
+      const endOfDay = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        23,
+        59,
+        59,
+        999,
+      );
+
+      state.filter = {
+        ...initialState.filter,
+        fromDate: startOfDay,
+        toDate: endOfDay,
+      };
     },
     setTypeOfBenefitFilter: (state, action: PayloadAction<string[]>) => {
       state.filter.typeOfBenefit = action.payload;

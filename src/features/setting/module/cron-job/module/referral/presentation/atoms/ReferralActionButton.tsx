@@ -65,10 +65,12 @@ const ReferralActionButton = ({ status, referralId, onRetry }: ReferralActionBut
       <Button
         size="sm"
         variant="ghost"
-        onClick={undefined} // Tạm thời disable action
-        disabled={true} // Disable tất cả actions
-        className="h-8 w-8 p-0 cursor-not-allowed opacity-50 text-gray-400"
-        title="Action temporarily disabled"
+        onClick={isFail ? handleRetry : undefined}
+        disabled={!isFail}
+        className={`h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-950 ${
+          !isFail ? 'cursor-not-allowed opacity-50' : ''
+        }`}
+        title={isFail ? 'Retry failed referral' : 'Only failed referrals can be retried'}
       >
         <Icons.edit className="w-4 h-4" />
       </Button>
