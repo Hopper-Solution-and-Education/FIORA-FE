@@ -6,3 +6,12 @@ export function generateRefCode(length = 6) {
   }
   return result;
 }
+
+// utils function to format underline with space and capitalize first letter
+export function formatUnderlineString(input: string): string {
+  return input
+    .split('_') // split by underscore
+    .filter(Boolean) // remove empty parts (in case of double "__")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}

@@ -366,7 +366,13 @@ export enum Messages {
   VERIFY_EXIT = 'Verify already exists',
   GET_SUCCESS = 'Get successfully',
   UPDATE_SUCCESS = 'Update successfully',
+  UPDATE_FAIL = 'Update fail!',
 
   //Email template type
   EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
+
+  // Referral Chart
+  GET_REFERRAL_CHART_SUCCESS = 'Get referral chart successfully',
+  GET_LIST_REFERRAL_ITEMS_SUCCESS = 'Get list referral items successfully',
+  GET_REFERRAL_DASHBOARD_PAYLOAD_FILTERS_SUCCESS = 'Get referral dashboard payload filters successfully',
 }

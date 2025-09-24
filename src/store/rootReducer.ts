@@ -13,6 +13,7 @@ import walletSlice from '@/features/home/module/wallet/slices';
 import landingSlices from '@/features/landing/slices';
 import { profileApi } from '@/features/profile/store/api/profileApi';
 import membershipCronjobSlice from '@/features/setting/module/cron-job/module/membership/slices';
+import referralCronjobSlice from '@/features/setting/module/cron-job/module/referral/slices';
 import landingSettingSlice from '@/features/setting/module/landing/slices';
 import memberShipSettingsSlice from '@/features/setting/module/membership/slices';
 import notificationDashboardSlice from '@/features/setting/module/notification-dashboard/slices';
@@ -54,6 +55,7 @@ const reducer = {
   budgetDetail: budgetDetailSlice,
   notificationDashboard: notificationDashboardSlice,
   membershipCronjob: membershipCronjobSlice,
+  referralCronjob: referralCronjobSlice,
   email: emailSlice,
 
   // RTK Query API slices

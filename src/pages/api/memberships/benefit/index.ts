@@ -2,7 +2,7 @@ import { membershipBenefitService } from '@/features/setting/api/application/use
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createErrorResponse } from '@/shared/lib';
-import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { MembershipBenefitCreatePayload } from '@/shared/types/membership-benefit';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { validateBody } from '@/shared/utils/validate';
@@ -28,54 +28,30 @@ export default withAuthorization({
 });
 
 async function processMembershipBenefit(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  try {
-    const payload = req.body as MembershipBenefitCreatePayload;
-    const { error } = validateBody(membershipBenefitCreateSchema, req.body);
-    if (error) {
-      return res
-        .status(RESPONSE_CODE.BAD_REQUEST)
-        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
-    }
-    const newBenefit = await membershipBenefitService.processMembershipBenefit(payload, userId);
-
+  const payload = req.body as MembershipBenefitCreatePayload;
+  const { error } = validateBody(membershipBenefitCreateSchema, req.body);
+  if (error) {
     return res
-      .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, newBenefit.message, newBenefit.data));
-  } catch (error) {
-    return res
-      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createError(
-          res,
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error instanceof Error ? error.message : Messages.INTERNAL_ERROR,
-        ),
-      );
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
   }
+  const newBenefit = await membershipBenefitService.processMembershipBenefit(payload, userId);
+
+  return res
+    .status(RESPONSE_CODE.CREATED)
+    .json(createResponse(RESPONSE_CODE.CREATED, newBenefit.message, newBenefit.data));
 }
 
 async function deleteMembershipBenefit(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    const { id } = req.query;
+  const { id } = req.query;
 
-    if (!id || typeof id !== 'string') {
-      return res.status(RESPONSE_CODE.BAD_REQUEST).json({ error: 'Missing or invalid ID' });
-    }
-
-    const deleted = await membershipBenefitService.delete(id);
-
-    return res
-      .status(RESPONSE_CODE.OK)
-      .json(createResponse(RESPONSE_CODE.OK, 'Deleted successfully', deleted));
-  } catch (error) {
-    return res
-      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(
-        createError(
-          res,
-          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
-          error instanceof Error ? error.message : Messages.INTERNAL_ERROR,
-        ),
-      );
+  if (!id || typeof id !== 'string') {
+    return res.status(RESPONSE_CODE.BAD_REQUEST).json({ error: 'Missing or invalid ID' });
   }
+
+  const deleted = await membershipBenefitService.delete(id);
+
+  return res
+    .status(RESPONSE_CODE.OK)
+    .json(createResponse(RESPONSE_CODE.OK, 'Deleted successfully', deleted));
 }

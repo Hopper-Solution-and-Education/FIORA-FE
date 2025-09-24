@@ -90,20 +90,20 @@ const MembershipCronjobCommonTable = ({
         ),
       },
       {
+        key: 'reason',
+        title: 'Reason',
+        align: 'left',
+        width: '16%',
+        render: (r) => <span className="text-sm block truncate">{r.reason || '-'}</span>,
+      },
+      {
         key: 'action',
         title: 'Action',
         align: 'center',
         width: '8%',
         render: (r) => (
           <div className="flex items-center justify-center">
-            <MembershipActionButton
-              status={r.status}
-              toTier={r.toTier}
-              onRetry={(id) => {
-                console.log('Retry membership:', id);
-                // TODO: Implement retry logic
-              }}
-            />
+            <MembershipActionButton id={r.id} status={r.status} />
           </div>
         ),
       },
@@ -114,7 +114,7 @@ const MembershipCronjobCommonTable = ({
   const initialConfig: ColumnConfigMap = useMemo(() => {
     return columns.reduce((acc, c, idx) => {
       if (c.key) {
-        acc[c.key as string] = { isVisible: true, index: idx, align: c.align };
+        acc[c.key as string] = { isVisible: true, index: idx };
       }
       return acc;
     }, {} as ColumnConfigMap);
