@@ -6,7 +6,7 @@ import { transactionRepository } from '@/features/transaction/infrastructure/rep
 import { CURRENCY, DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
-import { BadRequestError, ConflictError, NotFoundError } from '@/shared/lib';
+import { BadRequestError, NotFoundError } from '@/shared/lib';
 import { FilterObject } from '@/shared/types/filter.types';
 import { SessionUser } from '@/shared/types/session';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
@@ -43,10 +43,9 @@ class WalletUseCase {
     private _transactionRepository: ITransactionRepository = transactionRepository,
     private _accountRepository: IAccountRepository = accountRepository,
     private _currencyRepository: ICurrencySettingRepository = currencySettingRepository,
-    // private _notificationUsecase = notificationUseCase,
     private _userUseCase = userUseCase,
     private _notificationUsecase = notificationUseCase,
-  ) { }
+  ) {}
 
   async createWallet(data: Prisma.WalletUncheckedCreateInput) {
     return this._walletRepository.createWallet(data);
@@ -80,6 +79,7 @@ class WalletUseCase {
   async getAllPackageFX() {
     return this._walletRepository.findAllPackageFX();
   }
+
   async getPackageFXPaginated({
     sortBy,
     page,
@@ -129,6 +129,7 @@ class WalletUseCase {
       throw err;
     }
   }
+
   async updatePackageFX(
     id: string,
     data: {
@@ -142,7 +143,7 @@ class WalletUseCase {
 
     const depositRequests = await this._walletRepository.findDepositRequestsByPackageFXId(id);
     if (depositRequests.some((req) => req.status === 'Requested')) {
-      throw new Error(Messages.PACKAGE_FX_HAS_ACTIVE_DEPOSIT_REQUEST);
+      throw new BadRequestError(Messages.PACKAGE_FX_HAS_ACTIVE_DEPOSIT_REQUEST);
     }
 
     // Xử lý giữ lại các attachment cũ nếu không bị remove
@@ -179,12 +180,12 @@ class WalletUseCase {
 
   async deletePackageFX(id: string) {
     const found = await this._walletRepository.getPackageFXById(id);
-    if (!found) throw new Error(Messages.PACKAGE_FX_NOT_FOUND);
+    if (!found) throw new NotFoundError(Messages.PACKAGE_FX_NOT_FOUND);
     const depositRequests = await this._walletRepository.findDepositRequestsByPackageFXId(id);
     if (depositRequests.length > 0) {
       const hasActiveRequests = depositRequests.some((req: any) => req.status === 'Requested');
       if (hasActiveRequests) {
-        throw new Error(Messages.PACKAGE_FX_HAS_ACTIVE_DEPOSIT_REQUEST);
+        throw new BadRequestError(Messages.PACKAGE_FX_HAS_ACTIVE_DEPOSIT_REQUEST);
       }
     }
     return this._walletRepository.deletePackageFX(id);
@@ -210,7 +211,7 @@ class WalletUseCase {
 
     const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
     if (!packageFX) {
-      throw new BadRequestError(Messages.PACKAGE_FX_NOT_FOUND);
+      throw new NotFoundError('PackageFX not found');
     }
 
     let attachmentId: string | undefined;
@@ -219,7 +220,7 @@ class WalletUseCase {
     if (attachmentData) {
       // Validate attachment size
       if (attachmentData.size > ATTACHMENT_CONSTANTS.MAX_FILE_SIZE) {
-        throw new ConflictError(
+        throw new BadRequestError(
           `File size exceeds maximum limit of ${ATTACHMENT_CONSTANTS.MAX_FILE_SIZE / (1024 * 1024)}MB`,
         );
       }
@@ -237,7 +238,7 @@ class WalletUseCase {
     const foundCurrency = await this._currencyRepository.findFirstCurrency({
       name: currency,
     });
-    if (!foundCurrency) throw new Error(Messages.CURRENCY_NOT_FOUND);
+    if (!foundCurrency) throw new BadRequestError(Messages.CURRENCY_NOT_FOUND);
 
     const depositRequest = await this._walletRepository.createDepositRequest({
       userId,
@@ -297,7 +298,7 @@ class WalletUseCase {
 
       attempts++;
       if (attempts > MAX_REF_CODE_ATTEMPTS) {
-        throw new Error(Messages.COULD_NOT_GENERATE_UNIQUE_REF_CODE);
+        throw new BadRequestError(Messages.COULD_NOT_GENERATE_UNIQUE_REF_CODE);
       }
     } while (await this._walletRepository.isDepositRefCodeExists(refCode));
 
@@ -358,116 +359,186 @@ class WalletUseCase {
     newStatus: DepositRequestStatus,
     remark?: string,
     currency: string = 'VND',
-    // user?: SessionUser,
   ) {
     const depositRequest = await this._walletRepository.findDepositRequestById(id);
 
     if (!depositRequest) return null;
 
+    // Precompute values during Approve branch to avoid duplicate queries later (notifications)
+    let precomputedFxAmount: number | undefined;
     if (newStatus === DepositRequestStatus.Approved) {
+      // Guard: only allow Approve when current status is Requested (pending)
+      this.validateStatusTransition(depositRequest.status, newStatus);
+
       const { userId, packageFXId } = depositRequest;
       const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
-
       if (!packageFX) throw new NotFoundError(Messages.PACKAGE_FX_NOT_FOUND);
+
       const amount = Number(packageFX.fxAmount);
+      precomputedFxAmount = amount;
+      const txCurrency = await this.getTransactionCurrency(id, depositRequest.currency, currency);
+      const paymentAccount = await this.ensurePaymentAccount(userId);
+      const paymentWallet = await this.ensurePaymentWallet(userId);
 
-      // Update currency for depositRequest if not set
-      if (!depositRequest.currency && currency) {
-        await this._walletRepository.updateDepositRequestCurrency(id, currency);
-      }
-      let txCurrency = depositRequest.currency || currency;
-      if (!txCurrency) throw new BadRequestError(Messages.CURRENCY_IS_REQUIRED);
-      // If FX, treat as USD
-      if (txCurrency === 'FX') txCurrency = 'USD';
-
-      // Find root Payment Account (parentId: null, any currency)
-      let paymentAccount = await this._accountRepository.findByCondition({
+      await this.createApprovalTransfers({
         userId,
-        type: 'Payment',
-        parentId: null,
-      });
-      if (!paymentAccount) {
-        // Default to VND if creating new
-        paymentAccount = await this._accountRepository.create({
-          userId,
-          type: 'Payment',
-          currency: 'VND',
-          name: 'Payment Account',
-          icon: 'dollarSign',
-          balance: 0,
-        });
-      }
-
-      let paymentWallet = await this._walletRepository.findWalletByType(WalletType.Payment, userId);
-      if (!paymentWallet) {
-        paymentWallet = await this._walletRepository.createWallet({
-          userId,
-          type: WalletType.Payment,
-          icon: WALLET_TYPE_ICONS[WalletType.Payment],
-          ...DEFAULT_WALLET_FIELDS,
-        });
-      }
-      // convert amount to base currency
-      const baseTransactionAmount = await convertCurrency(
         amount,
-        DEFAULT_BASE_CURRENCY,
-        CURRENCY.FX,
-      );
-
-      // convert from txCurrency (packageFX) to base currency
-      const amountConvert = await convertCurrency(amount, DEFAULT_BASE_CURRENCY, txCurrency);
-
-      // create transaction from payment account (for record, still use txCurrency)
-      await this._transactionRepository.createTransaction({
-        userId,
-        fromAccountId: paymentAccount.id,
-        toWalletId: paymentWallet.id,
-        amount: amountConvert,
-        currency: txCurrency,
-        type: TransactionType.Transfer,
-        createdBy: userId,
-        baseAmount: baseTransactionAmount,
-        baseCurrency: DEFAULT_BASE_CURRENCY,
-        remark: `Deposit request approved`,
-        isMarked: true,
+        txCurrency,
+        paymentAccountId: paymentAccount.id,
+        paymentAccountCurrency: paymentAccount.currency!,
+        paymentWalletId: paymentWallet.id,
       });
-
-      const deductAmount = await convertCurrency(amount, CURRENCY.USD, paymentAccount.currency!);
-      if (deductAmount > 0) {
-        await this._accountRepository.update(paymentAccount.id, {
-          balance: {
-            decrement: deductAmount,
-          },
-          baseAmount: {
-            decrement: amount,
-          },
-          baseCurrency: DEFAULT_BASE_CURRENCY,
-          updatedBy: userId,
-        });
-      }
-
-      await this._walletRepository.increaseWalletBalance(paymentWallet.id, amount);
     }
 
-    // Update deposit request status
+    // Persist new status last, after side effects succeed (transaction + balances)
     const updatedDepositRequest = await this._walletRepository.updateDepositRequestStatus(
       id,
       newStatus,
       remark,
     );
 
-    // Get user info for notification using user usecase
-    const userInfo = await this._userUseCase.getUserById(depositRequest.userId);
-    if (!userInfo) return updatedDepositRequest;
+    await this.notifyDepositStatus(depositRequest, newStatus, remark, precomputedFxAmount);
 
-    // Create email notification for user based on status using email templates
-    // Resolve recipient and display name (fallback to email if name is missing)
+    return updatedDepositRequest;
+  }
+
+  // private helper
+  // Ensure state transition is valid according to business rules
+  private validateStatusTransition(
+    currentStatus: DepositRequestStatus,
+    newStatus: DepositRequestStatus,
+  ) {
+    if (
+      newStatus === DepositRequestStatus.Approved &&
+      currentStatus !== DepositRequestStatus.Requested
+    ) {
+      throw new BadRequestError('Deposit request is not in pending status');
+    }
+  }
+
+  // Idempotently ensure there is a root Payment Account for the user (create if missing)
+  private async ensurePaymentAccount(userId: string) {
+    let paymentAccount = await this._accountRepository.findByCondition({
+      userId,
+      type: 'Payment',
+      parentId: null,
+    });
+
+    if (!paymentAccount) {
+      paymentAccount = await this._accountRepository.create({
+        userId,
+        type: 'Payment',
+        currency: 'VND',
+        name: 'Payment Account',
+        icon: 'dollarSign',
+        balance: 0,
+      });
+    }
+
+    return paymentAccount;
+  }
+
+  // Idempotently ensure there is a Payment Wallet for the user (create if missing)
+  private async ensurePaymentWallet(userId: string) {
+    let paymentWallet = await this._walletRepository.findWalletByType(WalletType.Payment, userId);
+
+    if (!paymentWallet) {
+      paymentWallet = await this._walletRepository.createWallet({
+        userId,
+        type: WalletType.Payment,
+        icon: WALLET_TYPE_ICONS[WalletType.Payment],
+        ...DEFAULT_WALLET_FIELDS,
+      });
+    }
+
+    return paymentWallet;
+  }
+
+  // Resolve transaction currency: update DB if missing, normalize 'FX' -> 'USD'
+  private async getTransactionCurrency(
+    depositRequestId: string,
+    existingCurrency: string | null | undefined,
+    fallbackCurrency: string | undefined,
+  ) {
+    if (!existingCurrency && fallbackCurrency) {
+      await this._walletRepository.updateDepositRequestCurrency(depositRequestId, fallbackCurrency);
+    }
+    let txCurrency = existingCurrency || fallbackCurrency;
+
+    if (!txCurrency) throw new BadRequestError(Messages.CURRENCY_IS_REQUIRED);
+    if (txCurrency === 'FX') txCurrency = 'USD';
+
+    return txCurrency;
+  }
+
+  // Execute money movement for approval: create transaction, deduct account, increase wallet
+  private async createApprovalTransfers({
+    userId,
+    amount,
+    txCurrency,
+    paymentAccountId,
+    paymentAccountCurrency,
+    paymentWalletId,
+  }: {
+    userId: string;
+    amount: number;
+    txCurrency: string;
+    paymentAccountId: string;
+    paymentAccountCurrency: string;
+    paymentWalletId: string;
+  }) {
+    const baseTransactionAmount = await convertCurrency(amount, DEFAULT_BASE_CURRENCY, CURRENCY.FX);
+    const amountConvert = await convertCurrency(amount, DEFAULT_BASE_CURRENCY, txCurrency);
+
+    await this._transactionRepository.createTransaction({
+      userId,
+      fromAccountId: paymentAccountId,
+      toWalletId: paymentWalletId,
+      amount: amountConvert,
+      currency: txCurrency,
+      type: TransactionType.Transfer,
+      createdBy: userId,
+      baseAmount: baseTransactionAmount,
+      baseCurrency: DEFAULT_BASE_CURRENCY,
+      remark: `Deposit request approved`,
+      isMarked: true,
+    });
+
+    const deductAmount = await convertCurrency(amount, CURRENCY.USD, paymentAccountCurrency);
+
+    if (deductAmount > 0) {
+      await this._accountRepository.update(paymentAccountId, {
+        balance: { decrement: deductAmount },
+        baseAmount: { decrement: amount },
+        baseCurrency: DEFAULT_BASE_CURRENCY,
+        updatedBy: userId,
+      });
+    }
+
+    await this._walletRepository.increaseWalletBalance(paymentWalletId, amount);
+  }
+
+  // Notify user via in-app + email template (reuses precomputed FX amount when available)
+  private async notifyDepositStatus(
+    depositRequest: { userId: string; packageFXId: string },
+    newStatus: DepositRequestStatus,
+    remark?: string,
+    precomputedFxAmount?: number,
+  ) {
+    const userInfo = await this._userUseCase.getUserById(depositRequest.userId);
+    if (!userInfo) return;
+
     const userEmail = userInfo.email;
     const recipient = userEmail;
     const displayName = userInfo.name || userEmail;
 
+    const fxAmount =
+      precomputedFxAmount ??
+      Number(
+        (await this._walletRepository.getPackageFXById(depositRequest.packageFXId))?.fxAmount || 0,
+      );
+
     if (newStatus === DepositRequestStatus.Approved) {
-      // Send legacy in-app notification (kept for backward compatibility)
       await this._notificationUsecase.createBoxNotification({
         title: 'Deposit Request Approved',
         type: 'DEPOSIT_APPROVED',
@@ -477,12 +548,6 @@ class WalletUseCase {
         emails: [userInfo.email],
       });
 
-      // Load FX amount to populate template variable {{fx_amount}}
-      const fxAmount = Number(
-        (await this._walletRepository.getPackageFXById(depositRequest.packageFXId))?.fxAmount || 0,
-      );
-
-      // Build template variables matching WalletApproveEmailPart
       const emailPart: WalletApproveEmailPart = {
         user_id: depositRequest.userId,
         recipient,
@@ -491,7 +556,6 @@ class WalletUseCase {
         fx_amount: fxAmount,
       };
 
-      // Send email using the approved template ID
       await this._notificationUsecase.sendNotificationWithTemplate(
         DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID,
         [emailPart],
@@ -500,7 +564,6 @@ class WalletUseCase {
         'Deposit Request Approved',
       );
     } else if (newStatus === DepositRequestStatus.Rejected) {
-      // Send legacy in-app notification (kept for backward compatibility)
       await this._notificationUsecase.createBoxNotification({
         title: 'Deposit Request Rejected',
         type: 'DEPOSIT_REJECTED',
@@ -510,12 +573,6 @@ class WalletUseCase {
         emails: [userInfo.email],
       });
 
-      // Load FX amount to populate template variable {{fx_amount}}
-      const fxAmount = Number(
-        (await this._walletRepository.getPackageFXById(depositRequest.packageFXId))?.fxAmount || 0,
-      );
-
-      // Build template variables matching WalletRejectEmailPart (includes {{rejection_reason}})
       const emailPart: WalletRejectEmailPart = {
         user_id: depositRequest.userId,
         recipient,
@@ -525,7 +582,6 @@ class WalletUseCase {
         rejection_reason: remark || 'No reason provided',
       };
 
-      // Send email using the rejected template ID
       await this._notificationUsecase.sendNotificationWithTemplate(
         DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID,
         [emailPart],
@@ -534,8 +590,6 @@ class WalletUseCase {
         'Deposit Request Rejected',
       );
     }
-
-    return updatedDepositRequest;
   }
 }
 
