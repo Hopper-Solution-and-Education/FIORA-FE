@@ -1,7 +1,7 @@
 import { prisma } from '@/config';
 import { notificationRepository } from '@/features/notification/infrastructure/repositories/notificationRepository';
 import { CronJobLog, CronJobStatus, Currency, TransactionType, TypeCronJob } from '@prisma/client';
-import { ISmartSavingRepository } from '../domain/smartSavingRepository.interface';
+import { ISmartSavingRepository } from '../../domain/smartSavingRepository.interface';
 
 class smartSavingRepository implements ISmartSavingRepository {
   constructor(private _prisma = prisma) {}
@@ -47,40 +47,36 @@ class smartSavingRepository implements ISmartSavingRepository {
         lte: new Date(filter.toDate + 'T23:59:59.999Z'),
       };
     }
+    console.log('🚀 ~ getSmartSavingPaginated ~ filter?.email:', filter?.email);
+
     if (filter?.email) {
       if (Array.isArray(filter.email)) {
         orFilter.push(
           ...filter.email.map((email: string) => ({
-            dynamicValue: { path: ['email'], equals: email },
+            dynamicValue: { path: ['userId'], equals: email },
           })),
         );
       } else {
-        where.dynamicValue = { path: ['email'], equals: filter.email };
+        where.dynamicValue = { path: ['userId'], equals: filter.email };
       }
     }
-    if (filter?.membershipTier) {
-      if (Array.isArray(filter.membershipTier)) {
+    if (filter?.tierName) {
+      if (Array.isArray(filter.tierName)) {
         orFilter.push(
-          ...filter.membershipTier.map((tierName: string) => ({
-            dynamicValue: { path: ['tierName'], equals: tierName },
+          ...filter.tierName.map((tierName: string) => ({
+            dynamicValue: { path: ['tierId'], equals: tierName },
           })),
         );
       } else {
-        orFilter.push({ dynamicValue: { path: ['tierName'], equals: filter.membershipTier } });
-      }
-    }
-    if (filter?.updateBy) {
-      if (Array.isArray(filter.updateBy)) {
-        orFilter.push(
-          ...filter.updateBy.map((updateBy: string) => ({
-            dynamicValue: { path: ['updateBy'], equals: updateBy },
-          })),
-        );
-      } else {
-        orFilter.push({ dynamicValue: { path: ['updateBy'], equals: filter.updateBy } });
+        orFilter.push({ dynamicValue: { path: ['tierId'], equals: filter.tierName } });
       }
     }
 
+    if (filter?.emailUpdateBy) {
+      where.updatedBy = {
+        in: Array.isArray(filter.emailUpdateBy) ? filter.emailUpdateBy : [filter.emailUpdateBy],
+      };
+    }
     if (orFilter.length > 0) {
       if (where.OR) {
         where.OR = [...where.OR, ...orFilter];
@@ -118,6 +114,7 @@ class smartSavingRepository implements ISmartSavingRepository {
         updateBy: dv?.updateBy ?? 'System',
         status: log.status,
         reason: dv?.reason ?? null,
+        userId: dv?.userId ?? null,
       };
     });
 
@@ -264,6 +261,34 @@ class smartSavingRepository implements ISmartSavingRepository {
       console.error('Failed to send notification:', error);
     }
     return updateSmartSaving;
+  }
+
+  async gétSmartSavingFilerOptions() {
+    const dataSmartSaving = await this._prisma.cronJobLog.findMany({
+      where: { typeCronJob: TypeCronJob.SMART_SAVING_INTEREST },
+      select: {
+        dynamicValue: true,
+      },
+    });
+    const emailOptions = dataSmartSaving.map((log) => {
+      const dv: any = log.dynamicValue;
+      return {
+        email: dv?.email ?? null,
+        userId: dv?.userId ?? null,
+      };
+    });
+    const tierNameOptions = dataSmartSaving.map((log) => {
+      const dv: any = log.dynamicValue;
+      return dv?.email && dv?.userId ? [dv.userId, { email: dv.email, userId: dv.userId }] : null;
+    });
+    const updateByOptions = dataSmartSaving.map((log) => {
+      const dv: any = log.dynamicValue;
+      return {
+        email: dv?.updateBy ?? null,
+        userId: dv?.updateById ?? null,
+      };
+    });
+    return {};
   }
 }
 

@@ -1,4 +1,5 @@
 import { smartSavingUsecaseInstance } from '@/features/setting/module/cron-job/module/smart-saving/application/smartSavingUsecase';
+import { SmartSavingDashboardFilterParams } from '@/features/setting/module/cron-job/module/smart-saving/infrastructure/types/dashboardtTpe';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
@@ -6,12 +7,15 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { createResponse } from '../../../shared/lib/responseUtils/createResponse';
 
 export default withAuthorization({
-  GET: ['Admin'],
+  POST: ['Admin'],
   PUT: ['Admin'],
+  GET: ['Admin'],
 })((request: NextApiRequest, response: NextApiResponse, userId: string) => {
   switch (request.method) {
     case 'GET':
       return GET(request, response);
+    case 'POST':
+      return POSt(request, response);
     case 'PUT':
       return PUT(request, response, userId);
     default:
@@ -20,17 +24,33 @@ export default withAuthorization({
         .json({ error: Messages.METHOD_NOT_ALLOWED });
   }
 });
-
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
-  const { page = 1, pagesize = 20, search = '', filter } = req.query;
-  const filterConverted = typeof filter === 'string' ? JSON.parse(filter) : {};
-  console.log('🚀 ~ GET ~ filterConverted:', filterConverted);
+  return;
+}
+
+export async function POSt(req: NextApiRequest, res: NextApiResponse) {
+  const {
+    page = 1,
+    pageSize = 20,
+    search = '',
+    status,
+    fromDate,
+    toDate,
+    emailUpdateBy,
+    email,
+    tierName,
+  } = req.body as SmartSavingDashboardFilterParams;
 
   const smartsavingdata = await smartSavingUsecaseInstance.getSmartSavingPaginated({
-    page: Number(page),
-    pageSize: Number(pagesize),
-    filter: filterConverted,
-    search: String(search),
+    page,
+    pageSize,
+    search,
+    status,
+    fromDate,
+    toDate,
+    emailUpdateBy,
+    email,
+    tierName,
   });
   return res
     .status(RESPONSE_CODE.OK)

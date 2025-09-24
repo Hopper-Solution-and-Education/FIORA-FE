@@ -1,19 +1,37 @@
 import { ISmartSavingRepository } from '../domain/smartSavingRepository.interface';
-import { smartSavingRepositoryInstance } from '../infrastructure/smartSavingRepository';
+import { smartSavingRepositoryInstance } from '../infrastructure/repositories/smartSavingRepository';
 
 class SmartSavingtUsecases {
   constructor(private _smartSaving: ISmartSavingRepository = smartSavingRepositoryInstance) {}
   async getSmartSavingPaginated({
-    page = 1,
-    pageSize = 20,
-    filter = {},
-    search = '',
+    page,
+    pageSize,
+    search,
+    status,
+    fromDate,
+    toDate,
+    emailUpdateBy,
+    email,
+    tierName,
   }: {
-    page?: number;
-    pageSize?: number;
-    filter?: Record<string, any>;
+    page: number;
+    pageSize: number;
     search?: string;
+    status?: string | string[];
+    emailUpdateBy?: string | string[];
+    email?: string | string[];
+    tierName?: string | string[];
+    fromDate?: string;
+    toDate?: string;
   }) {
+    const filter = {
+      status,
+      fromDate,
+      toDate,
+      emailUpdateBy,
+      email,
+      tierName,
+    };
     const { items, total, totalSuccess, totalFailed } =
       await this._smartSaving.getSmartSavingPaginated(page, pageSize, filter, search);
     return {
