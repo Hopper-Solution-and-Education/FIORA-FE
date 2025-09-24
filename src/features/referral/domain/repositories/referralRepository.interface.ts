@@ -1,4 +1,4 @@
-import type { Prisma, Referral, Transaction, Wallet } from '@prisma/client';
+import type { Prisma, PrismaClient, Referral, Transaction, Wallet } from '@prisma/client';
 import type {
   PaginatedTransactionResponse,
   ReferralDashboardSummary,
@@ -47,7 +47,7 @@ export interface IReferralRepository {
 }
 
 export const createReferralRepository: (
-  deps?: Partial<{ prisma: any }>,
+  deps?: Partial<{ prisma: PrismaClient }>,
 ) => IReferralRepository = () => {
   // Implemented in infrastructure layer
   throw new Error('Not implemented');
