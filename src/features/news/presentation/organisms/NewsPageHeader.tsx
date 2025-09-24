@@ -17,6 +17,7 @@ interface NewsPageHeaderProps {
   categories: PostCategoryResponse[];
   activeFilters: NewsFilterValues;
   onFilterChange: (filters: NewsFilterValues) => void;
+  onFilterReset?: () => void;
   isLoading: boolean;
   isAdmin: boolean;
 }

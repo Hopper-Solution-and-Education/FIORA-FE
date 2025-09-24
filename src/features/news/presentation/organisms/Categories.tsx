@@ -11,9 +11,16 @@ const Categories = ({ categories, onFilterChange, activeFilters }: NewsPageHeade
   return (
     <div className="w-full rounded-xl bg-background p-5 shadow-sm">
       <h3 className="text-lg font-bold text-foreground mb-4 pb-3 border-b border-slate-200">
-        Chuyên mục
+        Categories
       </h3>
       <div className="flex flex-col gap-1">
+        <button
+          key={`reset-all-categories-${Math.random() * 1000}`}
+          onClick={() => onFilterChange({ categories: [], search: '' })}
+          className="block rounded-md px-3 py-2 text-sm text-foreground font-medium transition-colors hover:bg-slate-100 hover:text-slate-900"
+        >
+          All Categories
+        </button>
         {categories.map((category) => (
           <button
             key={category.id}
