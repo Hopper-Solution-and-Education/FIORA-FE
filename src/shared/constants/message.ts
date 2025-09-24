@@ -376,4 +376,5 @@ export enum Messages {
   GET_SMART_SAVING_STATISTICS_SUCCESS = 'Get smart saving statistics successfully',
   UPDATE_SMART_SAVING_SUCCESS = 'Update smart saving successfully',
   SMART_SAVING_NOT_FOUND = 'Update smart saving failded',
+  SMART_SAVING_AMOUNT_MUST_BE_POSITIVE = 'Smart saving amount must be a positive number',
 }

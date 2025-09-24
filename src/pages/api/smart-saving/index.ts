@@ -48,6 +48,13 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
         .status(RESPONSE_CODE.BAD_REQUEST)
         .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_PARAMS_INPUT));
     }
+    if (req.body.amount <= 0) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(
+          createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.SMART_SAVING_AMOUNT_MUST_BE_POSITIVE),
+        );
+    }
     const updatedData = await smartSavingUsecaseInstance.updateSmartSavingAmount(
       dataCronJob,
       cronJobId,
