@@ -24,4 +24,9 @@ export interface ISmartSavingRepository {
     cronJobId: string,
     userId: string,
   ): Promise<CronJobLog | null>;
+  gétSmartSavingFilerOptions(): Promise<{
+    emailOptions: string[];
+    tierNameOptions: string[];
+    updateByOptions: string[];
+  }>;
 }
