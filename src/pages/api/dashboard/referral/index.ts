@@ -3,12 +3,17 @@ import { ReferralDashboardFilterParams } from '@/features/setting/api/infrastruc
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
+import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { normalizeToArray } from '@/shared/utils/filterUtils';
-import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { TypeCronJob } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default sessionWrapper((req: NextApiRequest, res: NextApiResponse) =>
+export default withAuthorization({
+  GET: ['Admin'],
+  POST: ['Admin'],
+  PUT: ['Admin'],
+  DELETE: ['Admin'],
+})((req: NextApiRequest, res: NextApiResponse) =>
   errorHandler(
     async (request, response) => {
       switch (request.method) {
