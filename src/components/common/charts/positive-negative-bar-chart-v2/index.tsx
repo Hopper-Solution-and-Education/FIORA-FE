@@ -178,6 +178,7 @@ const PositiveAndNegativeBarChartV2 = (props: PositiveAndNegativeBarChartV2Props
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 Showing {mainBarCount} of {data.length} items
               </span>
+
               {data.length > 5 && (
                 <TooltipProvider>
                   <TooltipShadcn>
@@ -206,6 +207,7 @@ const PositiveAndNegativeBarChartV2 = (props: PositiveAndNegativeBarChartV2Props
                         )}
                       </Button>
                     </TooltipTrigger>
+
                     <TooltipContent>
                       <span>{showAll ? 'Show Less' : 'View All'}</span>
                     </TooltipContent>
