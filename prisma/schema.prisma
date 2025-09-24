@@ -217,8 +217,10 @@ model Transaction {
   isMarked            Boolean              @default(false)
   isExpired           Boolean              @default(false)
   membershipBenefitId String?              @db.Uuid
+  commonId            String?              @db.Uuid
   CronJobLog          CronJobLog[]         @relation("CronJobLogTransactions")
   productsRelation    ProductTransaction[] @relation("ProductTransactions")
+  CommonSetting       CommonSetting?       @relation(fields: [commonId], references: [id])
   currencyExchange    CurrencyExchange?    @relation(fields: [currencyId], references: [id])
   fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
   fromCategory        Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
@@ -944,13 +946,14 @@ model Referral {
 }
 
 model CommonSetting {
-  id           String   @id @db.Uuid
-  name         String   @db.VarChar(30)
+  id           String        @id @db.Uuid
+  name         String        @db.VarChar(30)
   dynamicValue Json
-  createdAt    DateTime @default(now()) @db.Timestamptz(0)
-  createdBy    String?  @db.Uuid
-  updatedAt    DateTime @db.Timestamptz(0)
-  updatedBy    String?  @db.Uuid
+  createdAt    DateTime      @default(now()) @db.Timestamptz(0)
+  createdBy    String?       @db.Uuid
+  updatedAt    DateTime      @db.Timestamptz(0)
+  updatedBy    String?       @db.Uuid
+  Transaction  Transaction[]
 }
 
 model ReferralSetting {
