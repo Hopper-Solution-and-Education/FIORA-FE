@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { initialState, ReferralTransactionFilterState } from './types';
+import { initialState, ReferralTransactionFilterState } from '../types/transaction.type';
 
 const referralTransactionSlice = createSlice({
   name: 'referralTransaction',

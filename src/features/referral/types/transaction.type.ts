@@ -1,5 +1,7 @@
+﻿import type { ReferralTransactionType } from '.';
+
 export interface ReferralTransactionFilterState {
-  type?: string[] | null;
+  type?: ReferralTransactionType[] | null;
   search?: string | null;
   fromDate: Date | null;
   toDate: Date | null;

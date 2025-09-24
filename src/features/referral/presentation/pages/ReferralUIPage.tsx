@@ -1,14 +1,17 @@
-'use client';
+﻿'use client';
 
+import { useAppDispatch, useAppSelector } from '@/store';
 import { DollarSign, Home, TrendingUp } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { setFilter } from '../../slices';
 import {
   useGetReferralEarningsQuery,
   useInviteByEmailsMutation,
   useLazyGetReferralUsersQuery,
   useWithdrawMutation,
 } from '../../slices/referralApi';
+import type { ReferralTransactionType } from '../../types';
 import { ReferralStatsCard } from '../atoms';
 import {
   ReferralCodeCard,
@@ -29,6 +32,9 @@ const formatNumber = (value: string | number | undefined | null) => {
 const DEFAULT_REFEREE_PARAMS = { page: 1, limit: 50 } as const;
 
 const ReferralUIPage = () => {
+  const dispatch = useAppDispatch();
+  const filter = useAppSelector((state) => state.referralTransaction.filter);
+
   const { data: earnings, isLoading: earningsLoading } = useGetReferralEarningsQuery();
 
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -48,11 +54,35 @@ const ReferralUIPage = () => {
     return Number.isNaN(parsed) ? 0 : parsed;
   }, [earnings?.remainingBalance]);
 
+  const activeType = useMemo<ReferralTransactionType | null>(() => {
+    return Array.isArray(filter.type) && filter.type.length === 1 ? filter.type[0] : null;
+  }, [filter.type]);
+
+  const isIncomeFilterActive = activeType === 'Income';
+  const isTransferFilterActive = activeType === 'Transfer';
+
+  const handleTransactionFilterChange = useCallback(
+    (transactionType: ReferralTransactionType) => {
+      const shouldClear =
+        Array.isArray(filter.type) &&
+        filter.type.length === 1 &&
+        filter.type[0] === transactionType;
+
+      dispatch(
+        setFilter({
+          ...filter,
+          type: shouldClear ? null : [transactionType],
+        }),
+      );
+    },
+    [dispatch, filter],
+  );
+
   const handleInvite = useCallback(
     async (emails: string[]) => {
       try {
         const response = await inviteByEmails({ emails }).unwrap();
-        console.log('🚀 ~ ReferralUIPage ~ response:', response);
+        console.log('dYs? ~ ReferralUIPage ~ response:', response);
         const created = Array.isArray(response?.created) ? response.created : [];
         const duplicates = Array.isArray(response?.duplicates) ? response.duplicates : [];
 
@@ -153,6 +183,8 @@ const ReferralUIPage = () => {
           icon={<TrendingUp className="h-5 w-5" />}
           isLoading={earningsLoading}
           tone="green"
+          onClick={() => handleTransactionFilterChange('Income')}
+          isActive={isIncomeFilterActive}
         />
         <ReferralStatsCard
           title="Total Claims"
@@ -162,6 +194,8 @@ const ReferralUIPage = () => {
           icon={<DollarSign className="h-5 w-5" />}
           isLoading={earningsLoading}
           tone="gray"
+          onClick={() => handleTransactionFilterChange('Transfer')}
+          isActive={isTransferFilterActive}
         />
         <ReferralStatsCard
           title="Remaining Balance"

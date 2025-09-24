@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import DateRangeFilter from '@/components/common/filters/DateRangeFilter';
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
@@ -8,11 +8,12 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { clearFilter } from '../../slices';
-import { ReferralTransactionFilterState } from '../../slices/types';
+import { REFERRAL_TRANSACTION_TYPES, ReferralTransactionType } from '../../types';
+import { ReferralTransactionFilterState } from '../../types/transaction.type';
 
 // Local filter state type for managing filter changes before applying
 interface LocalFilterState {
-  type: string[];
+  type: ReferralTransactionType[];
   search: string;
   fromDate: Date | null;
   toDate: Date | null;
@@ -27,10 +28,10 @@ const getInitialLocalFilterState = (): LocalFilterState => ({
 });
 
 // Transaction type filter options
-const TYPE_OPTIONS = [
-  { value: 'Income', label: 'Income' },
-  { value: 'Transfer', label: 'Transfer' },
-];
+const TYPE_OPTIONS = REFERRAL_TRANSACTION_TYPES.map((value) => ({
+  value,
+  label: value,
+}));
 
 interface ReferralTransactionFilterMenuProps {
   value: ReferralTransactionFilterState;
@@ -84,12 +85,15 @@ const ReferralTransactionFilterMenu = ({
   }, [localFilter]);
 
   // Handle local filter changes
-  const handleLocalFilterChange = useCallback((key: keyof LocalFilterState, newValue: any) => {
-    setLocalFilter((prev) => ({
-      ...prev,
-      [key]: newValue,
-    }));
-  }, []);
+  const handleLocalFilterChange = useCallback(
+    <K extends keyof LocalFilterState>(key: K, newValue: LocalFilterState[K]) => {
+      setLocalFilter((prev) => ({
+        ...prev,
+        [key]: newValue,
+      }));
+    },
+    [],
+  );
 
   // Handle date range change
   const handleDateRangeChange = useCallback((dateRange: DateRange | undefined) => {
@@ -128,7 +132,9 @@ const ReferralTransactionFilterMenu = ({
           <MultiSelectFilter
             options={TYPE_OPTIONS}
             selectedValues={localFilter.type}
-            onChange={(values) => handleLocalFilterChange('type', values)}
+            onChange={(values) =>
+              handleLocalFilterChange('type', values as ReferralTransactionType[])
+            }
             label="Transaction Type"
             placeholder="Select type"
           />
@@ -153,7 +159,7 @@ const ReferralTransactionFilterMenu = ({
         order: 0,
       },
     ],
-    [localFilter, dateRange, handleLocalFilterChange, handleDateRangeChange],
+    [localFilter.type, dateRange, handleLocalFilterChange, handleDateRangeChange],
   );
 
   return (

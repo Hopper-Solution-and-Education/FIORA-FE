@@ -1,4 +1,4 @@
-import { ReferralTransaction } from '../../types';
+import { ReferralTransaction } from '.';
 
 export interface ReferralTransactionTableState {
   data: ReferralTransaction[];
