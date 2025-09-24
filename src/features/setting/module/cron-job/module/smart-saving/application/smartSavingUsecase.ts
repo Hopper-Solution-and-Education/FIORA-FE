@@ -57,5 +57,8 @@ class SmartSavingtUsecases {
   ) {
     return await this._smartSaving.updateSmartSavingAmount(CronJobLdata, cronJobId, adminId);
   }
+  async getSmartSavingFilerOptions() {
+    return await this._smartSaving.getSmartSavingFilerOptions();
+  }
 }
 export const smartSavingUsecaseInstance = new SmartSavingtUsecases();
