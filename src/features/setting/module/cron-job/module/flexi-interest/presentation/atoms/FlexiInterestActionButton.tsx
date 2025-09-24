@@ -11,6 +11,7 @@ interface FlexiInterestActionButtonProps {
   initialAmount?: string;
   onRetry?: (id: string, amount: string, reason: string) => void;
   className?: string;
+  onUpdateRowItem?: (id: string, data: Partial<any>) => void;
 }
 
 const FlexiInterestActionButton = ({
@@ -19,6 +20,7 @@ const FlexiInterestActionButton = ({
   initialAmount,
   onRetry,
   className,
+  onUpdateRowItem,
 }: FlexiInterestActionButtonProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [amount, setAmount] = useState(initialAmount || '');
@@ -45,7 +47,7 @@ const FlexiInterestActionButton = ({
       onRetry(id, amount, reason);
     }
     try {
-      const response = await fetch(`/api/flexi-Interest?id=${id}`, {
+      const response = await fetch(`/api/flexi-interest?id=${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -65,6 +67,8 @@ const FlexiInterestActionButton = ({
 
       if (response.ok) {
         alert('Update success!');
+        // Gọi callback để update row ngay trong UIDF
+        onUpdateRowItem?.(id, result.data.data);
       } else {
         alert('Update failed: ' + (result?.error || 'Unknown error'));
       }
