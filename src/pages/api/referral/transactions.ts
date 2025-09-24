@@ -1,3 +1,4 @@
+﻿import { ReferralTransactionType } from '@/features/referral';
 import { referralUseCase } from '@/features/referral/application/use-cases/referralUseCase';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
@@ -24,7 +25,9 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
 
       // Parse filter parameters
       const filters = {
-        type: type ? (Array.isArray(type) ? type : [type]) : undefined,
+        type: type
+          ? ((Array.isArray(type) ? type : [type]) as ReferralTransactionType[])
+          : undefined,
         search: search as string | undefined,
         fromDate: fromDate ? new Date(fromDate as string) : undefined,
         toDate: toDate ? new Date(toDate as string) : undefined,
