@@ -38,11 +38,11 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       typeCronJob,
       search,
       page = 1,
-      limit = 10,
-    } = req.query as DashboardFilterParams;
+      pageSize = 10,
+    } = req.body as DashboardFilterParams;
 
     const pageNum = Math.max(1, Number(page));
-    const limitNum = Math.min(100, Math.max(1, Number(limit)));
+    const limitNum = Math.min(100, Math.max(1, Number(pageSize)));
 
     const filters: any = {};
     if (typeCronJob) {
@@ -100,7 +100,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     }
     const [result, counts] = await Promise.all([
       dashboardRepository.getWithFilters(filters, skip, limitNum, tierFilters),
-      dashboardRepository.getCount(filters),
+      dashboardRepository.getCount(filters, tierFilters),
     ]);
 
     const { filteredCount, statusCounts } = counts;

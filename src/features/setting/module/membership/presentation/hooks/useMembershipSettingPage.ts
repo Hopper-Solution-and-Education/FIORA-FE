@@ -23,6 +23,7 @@ export const useMembershipSettingPage = () => {
         label: benefit.name,
         suffix: benefit.suffix,
         value: Number(benefit.value) || 0,
+        description: benefit.description,
       })) ?? [];
     return fields;
   }, [selectedMembership?.tierBenefits]);

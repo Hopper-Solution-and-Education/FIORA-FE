@@ -7,6 +7,7 @@ export type MembershipCronjobTableData = {
   balance: string;
   toTier: string;
   status: string;
+  reason?: string;
   updatedBy: {
     id: string;
     email: string;
