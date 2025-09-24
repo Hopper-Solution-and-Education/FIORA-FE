@@ -1,4 +1,4 @@
-﻿import { ReferralTransactionType } from '@/features/referral';
+import { ReferralTransactionType } from '@/features/referral';
 import { referralUseCase } from '@/features/referral/application/use-cases/referralUseCase';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
