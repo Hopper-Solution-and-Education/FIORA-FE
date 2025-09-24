@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { ReferralCronjobFilterState } from '../../slices/types';
+import { useReferralFilterOptions } from '../hooks/useReferralFilterOptions';
 import { ReferralCronjobTableData } from '../types/referral.type';
 
 // Local filter state type for managing filter changes before applying
@@ -54,6 +55,11 @@ interface ReferralFilterMenuProps {
 const ReferralFilterMenu = ({ value, onFilterChange, data = [] }: ReferralFilterMenuProps) => {
   const dispatch = useAppDispatch();
   const reduxFilter = useAppSelector((state) => state.referralCronjob.filter);
+  const {
+    filterOptions,
+    loading: filterOptionsLoading,
+    loadFilterOptions,
+  } = useReferralFilterOptions();
 
   // Local state for managing filter changes before applying
   const [localFilter, setLocalFilter] = useState<LocalFilterState>(() => {
@@ -70,39 +76,10 @@ const ReferralFilterMenu = ({ value, onFilterChange, data = [] }: ReferralFilter
     };
   });
 
-  // Extract unique email values from data for filter options
-  const emailReferrerOptions = useMemo(() => {
-    const uniqueEmails = Array.from(new Set(data.map((item) => item.emailReferrer)))
-      .filter((email) => email) // Remove empty/null values
-      .sort();
-
-    return uniqueEmails.map((email) => ({
-      value: email,
-      label: email,
-    }));
-  }, [data]);
-
-  const emailRefereeOptions = useMemo(() => {
-    const uniqueEmails = Array.from(new Set(data.map((item) => item.emailReferee)))
-      .filter((email) => email) // Remove empty/null values
-      .sort();
-
-    return uniqueEmails.map((email) => ({
-      value: email,
-      label: email,
-    }));
-  }, [data]);
-
-  const updatedByOptions = useMemo(() => {
-    const uniqueUpdatedBy = Array.from(new Set(data.map((item) => item.updatedBy.email)))
-      .filter((email) => email) // Remove empty/null values
-      .sort();
-
-    return uniqueUpdatedBy.map((email) => ({
-      value: email,
-      label: email,
-    }));
-  }, [data]);
+  // Use filter options from API instead of extracting from local data
+  const emailReferrerOptions = filterOptions.emailReferrer;
+  const emailRefereeOptions = filterOptions.emailReferee;
+  const updatedByOptions = filterOptions.updatedBy;
 
   // Sync local filter with Redux state changes
   useEffect(() => {
@@ -236,6 +213,11 @@ const ReferralFilterMenu = ({ value, onFilterChange, data = [] }: ReferralFilter
             onChange={(values) => handleLocalFilterChange('emailReferrer', values)}
             label="Email Referrer"
             placeholder="Select email referrer"
+            onOpenChange={(open) => {
+              if (open) {
+                loadFilterOptions();
+              }
+            }}
           />
         ),
         column: FilterColumn.LEFT,
@@ -265,6 +247,11 @@ const ReferralFilterMenu = ({ value, onFilterChange, data = [] }: ReferralFilter
             onChange={(values) => handleLocalFilterChange('emailReferee', values)}
             label="Email Referee"
             placeholder="Select email referee"
+            onOpenChange={(open) => {
+              if (open) {
+                loadFilterOptions();
+              }
+            }}
           />
         ),
         column: FilterColumn.RIGHT,
@@ -279,6 +266,11 @@ const ReferralFilterMenu = ({ value, onFilterChange, data = [] }: ReferralFilter
             onChange={(values) => handleLocalFilterChange('updatedBy', values)}
             label="Updated By"
             placeholder="Select updated by"
+            onOpenChange={(open) => {
+              if (open) {
+                loadFilterOptions();
+              }
+            }}
           />
         ),
         column: FilterColumn.RIGHT,
@@ -293,6 +285,7 @@ const ReferralFilterMenu = ({ value, onFilterChange, data = [] }: ReferralFilter
       emailReferrerOptions,
       emailRefereeOptions,
       updatedByOptions,
+      loadFilterOptions,
     ],
   );
 

@@ -2,13 +2,15 @@ import { httpClient } from '@/config';
 import { Container } from 'inversify';
 import { IReferralCronjobDashboardApi, ReferralCronjobDashboardApi } from '../data/api';
 import { IReferralCronjobRepository, ReferralCronjobRepository } from '../data/repository';
-import { REFERRAL_CRONJOB_TYPES } from './referralCronjobDashboardDI.type';
 import {
   GetReferralChartDataUseCase,
   GetReferralCronjobsPaginatedUseCase,
+  GetReferralFilterOptionsUseCase,
   IGetReferralChartDataUseCase,
   IGetReferralCronjobsPaginatedUseCase,
+  IGetReferralFilterOptionsUseCase,
 } from '../domain';
+import { REFERRAL_CRONJOB_TYPES } from './referralCronjobDashboardDI.type';
 
 const referralCronjobContainer = new Container();
 
@@ -38,6 +40,11 @@ referralCronjobContainer
 referralCronjobContainer
   .bind<IGetReferralChartDataUseCase>(REFERRAL_CRONJOB_TYPES.IGetReferralChartDataUseCase)
   .to(GetReferralChartDataUseCase)
+  .inSingletonScope();
+
+referralCronjobContainer
+  .bind<IGetReferralFilterOptionsUseCase>(REFERRAL_CRONJOB_TYPES.IGetReferralFilterOptionsUseCase)
+  .to(GetReferralFilterOptionsUseCase)
   .inSingletonScope();
 
 export { referralCronjobContainer };

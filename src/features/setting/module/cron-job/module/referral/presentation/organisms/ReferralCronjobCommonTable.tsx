@@ -43,15 +43,15 @@ const ReferralCronjobCommonTable = ({
   const columns: CommonTableColumn<ReferralCronjobTableData>[] = useMemo(
     () => [
       {
-        key: 'id',
-        title: 'ID',
-        align: 'left',
-        width: '8%',
-        render: (r) => (
-          <span className="text-sm text-blue-600 cursor-pointer hover:underline">
-            {r.id.padStart(6, '0')}
-          </span>
-        ),
+        key: 'no',
+        title: 'No.',
+        align: 'center',
+        width: '6%',
+        render: (r: ReferralCronjobTableData) => {
+          // Calculate row number based on current data index
+          const index = data.findIndex((item) => item.id === r.id);
+          return <span className="text-sm font-medium">{index + 1}</span>;
+        },
       },
       {
         key: 'emailReferrer',
@@ -128,13 +128,13 @@ const ReferralCronjobCommonTable = ({
         ),
       },
     ],
-    [],
+    [data, onRetrySuccess],
   );
 
   const initialConfig: ColumnConfigMap = useMemo(() => {
     return columns.reduce((acc, c, idx) => {
       if (c.key) {
-        acc[c.key as string] = { isVisible: true, index: idx, align: c.align };
+        acc[c.key as string] = { isVisible: true, index: idx };
       }
       return acc;
     }, {} as ColumnConfigMap);

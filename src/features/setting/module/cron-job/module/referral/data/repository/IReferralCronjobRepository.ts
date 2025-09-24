@@ -10,4 +10,6 @@ export interface IReferralCronjobRepository {
   ): Promise<ReferralCronjobPaginatedResponse>;
 
   getReferralChartData(filter?: ReferralCronjobFilterRequest): Promise<ReferralChartResponse>;
+
+  getReferralFilterOptions(): Promise<any>;
 }

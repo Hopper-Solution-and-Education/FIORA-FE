@@ -22,11 +22,10 @@ export class ReferralCronjobDashboardApi implements IReferralCronjobDashboardApi
     pageSize: number,
     filter?: ReferralCronjobFilterRequest,
   ): Promise<ReferralCronjobPaginatedResponse> {
-    const searchParams = ReferralCronjobMapper.toSearchParams(page, pageSize, filter);
     const baseUrl = routeConfig(ApiEndpointEnum.CronjobDashboardReferral);
-    const url = `${baseUrl}?${searchParams.toString()}`;
+    const body = ReferralCronjobMapper.toPostBody(page, pageSize, filter);
 
-    return this.httpClient.get(url);
+    return this.httpClient.post(baseUrl, body);
   }
 
   async getReferralChartData(
@@ -37,6 +36,11 @@ export class ReferralCronjobDashboardApi implements IReferralCronjobDashboardApi
     const url = `${baseUrl}?${searchParams.toString()}`;
 
     return this.httpClient.get(url);
+  }
+
+  async getReferralFilterOptions(): Promise<any> {
+    const baseUrl = routeConfig(ApiEndpointEnum.CronjobDashboardReferral);
+    return this.httpClient.get(baseUrl);
   }
 }
 
