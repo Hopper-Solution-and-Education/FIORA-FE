@@ -32,8 +32,9 @@ export const usePaymentWalletTableData = () => {
           createdAt: item.createdAt,
           type: item.type,
           amount: item.amount,
-          from: item.from || 'Unknown',
-          to: item.to || 'Unknown',
+          // Prefer wallet names from nested objects; fall back to flat fields or 'Unknown'
+          from: item?.fromWallet?.name ?? item?.from ?? 'Unknown',
+          to: item?.toWallet?.name ?? item?.to ?? 'Unknown',
           remark: item.description || item.remark || 'No remark',
           currency: item.currency || CURRENCY.FX,
           rowNumber: startingRowNumber + index,

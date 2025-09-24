@@ -1,24 +1,27 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import LucieIcon from '@/features/home/module/category/components/LucieIcon';
 import { cn } from '@/lib/utils';
+import { CURRENCY } from '@/shared/constants';
+import { useCurrencyFormatter } from '@/shared/hooks';
 import { isImageUrl } from '@/shared/utils';
 import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
 import Image from 'next/image';
 
-interface MetricCardProps {
+interface SmallMetricCardProps {
   title: string;
   value: number;
   type: 'income' | 'expense' | 'total' | 'neutral';
   description?: string;
   icon?: string | React.ReactNode;
   className?: string;
+  currency?: string;
   trend?: {
     value: string;
     isPositive: boolean;
   };
 }
 
-const MetricCard = ({
+const SmallMetricCard = ({
   title,
   value,
   type,
@@ -26,7 +29,9 @@ const MetricCard = ({
   icon,
   className,
   trend,
-}: MetricCardProps) => {
+  currency,
+}: SmallMetricCardProps) => {
+  const { formatCurrency } = useCurrencyFormatter();
   const getCardColor = () => {
     switch (type) {
       case 'income':
@@ -105,7 +110,9 @@ const MetricCard = ({
         {renderIconOrImage(icon)}
       </CardHeader>
       <CardContent className="pt-0 pb-2">
-        <div className={cn('text-xl sm:text-2xl font-bold', getCardColor())}>{value}%</div>
+        <div className={cn('text-xl sm:text-2xl font-bold', getCardColor())}>
+          {formatCurrency(value, currency || CURRENCY.FX)}
+        </div>
         {(description || trend) && (
           <div className="mt-1 flex items-center text-[10px] sm:text-xs">
             {description && <p className="text-muted-foreground">{description}</p>}
@@ -122,4 +129,4 @@ const MetricCard = ({
   );
 };
 
-export default MetricCard;
+export default SmallMetricCard;

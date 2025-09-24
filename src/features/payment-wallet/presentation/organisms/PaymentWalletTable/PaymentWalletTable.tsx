@@ -6,7 +6,6 @@ import { useRef, useState } from 'react';
 import {
   EmptyState,
   ErrorDisplay,
-  LoadingIndicator,
   SearchFilterHeader,
   usePaymentWalletTableColumns,
 } from './components';
@@ -57,10 +56,7 @@ const PaymentWalletTable = () => {
     onFilterChange: handleFilterChange,
   });
 
-  // Loading state for initial load
-  if (transactionsLoading && displayData.length === 0) {
-    return <LoadingIndicator isLoading={true} hasData={false} />;
-  }
+  // Let CommonTable render skeleton rows on initial load instead of a spinner
 
   return (
     <div className="space-y-4">
@@ -75,7 +71,7 @@ const PaymentWalletTable = () => {
         isLoadingMore={transactionsLoading && displayData.length > 0}
         onLoadMore={loadMoreTransactions}
         className="min-h-[400px]"
-        emptyState={<EmptyState />}
+        emptyState={transactionsLoading && displayData.length === 0 ? undefined : <EmptyState />}
         leftHeaderNode={leftHeaderNode}
         rightHeaderNode={rightHeaderNode}
       />
@@ -85,11 +81,7 @@ const PaymentWalletTable = () => {
         className="target-div w-full h-full min-h-5 flex justify-center items-center"
         ref={toggleRef}
       >
-        <LoadingIndicator
-          isLoading={transactionsLoading}
-          hasData={displayData.length > 0}
-          isLoadingMore={true}
-        />
+        {/* Sentinel for intersection observer (no spinner; skeleton rows handled in table) */}
       </div>
 
       <ErrorDisplay error={transactionsError} />

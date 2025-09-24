@@ -1,12 +1,12 @@
 'use client';
 
-import { Loading } from '@/components/common/atoms';
 import MetricCard from '@/components/common/metric/MetricCard';
 import { CURRENCY } from '@/shared/constants';
 import { useMemo } from 'react';
 import { WalletDepositButton, WalletTransferButton, WalletWithdrawButton } from '../atoms';
 import { usePaymentWalletDashboard } from '../hooks';
-import { PercentageMetricCard } from '../molecules';
+import { PercentageMetricCard, SmallMetricCard } from '../molecules';
+import PaymentWalletOverviewSkeleton from './PaymentWalletOverviewSkeleton';
 
 type PaymentWalletOverviewProps = {
   enableDeposit?: boolean;
@@ -45,22 +45,20 @@ const PaymentWalletOverview = ({
     };
   }, [dashboardMetrics]);
 
-  if (dashboardLoading) {
-    return <Loading />;
-  }
+  if (dashboardLoading) return <PaymentWalletOverviewSkeleton />;
 
   return (
     <div className="space-y-6">
       {/* Top Row - Main Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <MetricCard
+        <SmallMetricCard
           title="Total FX Moved In"
           value={metrics.totalFXMovedIn}
           type="income"
           icon="banknoteArrowUp"
           currency={CURRENCY.FX}
         />
-        <MetricCard
+        <SmallMetricCard
           title="Total FX Moved Out"
           value={metrics.totalFXMovedOut}
           type="expense"
