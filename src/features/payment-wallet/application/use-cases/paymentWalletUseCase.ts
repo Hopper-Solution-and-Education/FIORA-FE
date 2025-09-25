@@ -31,13 +31,19 @@ class PaymentWalletUseCase {
     const prefetchFilters: Prisma.TransactionWhereInput = {
       OR: [
         {
-          fromWalletId: {
-            not: null,
+          fromWallet: {
+            type: WalletType.Payment,
+            id: {
+              not: undefined,
+            },
           },
         },
         {
-          toWalletId: {
-            not: null,
+          toWallet: {
+            type: WalletType.Payment,
+            id: {
+              not: undefined,
+            },
           },
         },
       ],
