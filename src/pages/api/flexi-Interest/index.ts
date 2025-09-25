@@ -150,12 +150,12 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogI
           ),
         );
     }
-    const rateBenefit = await prisma.tierBenefit.findFirst({
-      where: {
-        benefitId: membershipBenefit.id,
-        ...(membershipProgress?.tierId && { tierId: membershipProgress.tierId }),
-      },
-    });
+    // const rateBenefit = await prisma.tierBenefit.findFirst({
+    //   where: {
+    //     benefitId: membershipBenefit.id,
+    //     ...(membershipProgress?.tierId && { tierId: membershipProgress.tierId }),
+    //   },
+    // });
     const rawAmount = new Prisma.Decimal(amount);
     let percentValue: Prisma.Decimal | null = null;
 
@@ -217,7 +217,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogI
             tierId: progress?.tierId,
             interestAmount: rawAmount.toString(),
             email: user?.email,
-            rate: rateBenefit?.value ?? null,
+            rate: percentValue ?? null,
             reason,
             walletId: wallet.id,
             updatedBy: admin?.email ?? null,
