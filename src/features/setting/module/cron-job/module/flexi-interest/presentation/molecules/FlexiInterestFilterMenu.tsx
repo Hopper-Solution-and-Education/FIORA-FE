@@ -14,8 +14,8 @@ const initialLocalFilterState: FlexiInterestCronjobFilterState = {
   tierName: [],
   search: null,
   emailUpdateBy: [],
-  fromDate: new Date().toISOString().split('T')[0],
-  toDate: new Date().toISOString().split('T')[0],
+  fromDate: null,
+  toDate: null,
 };
 
 // Status filter options
@@ -118,7 +118,11 @@ const FlexiInterestFilterMenu: FC<FlexiInterestFilterMenuProps> = ({
 
   // Reset filters
   const handleResetFilters = useCallback(() => {
-    setLocalFilter(initialLocalFilterState);
+    setLocalFilter({
+      ...initialLocalFilterState,
+      fromDate: null,
+      toDate: null,
+    });
     dispatch(clearFilter());
   }, [dispatch]);
 
@@ -159,9 +163,10 @@ const FlexiInterestFilterMenu: FC<FlexiInterestFilterMenuProps> = ({
             <Label>From Date</Label>
             <DateTimePicker
               hideTime
-              max={localFilter.toDate as Date | undefined}
-              value={localFilter.fromDate as Date | undefined}
+              max={(localFilter.toDate as Date | undefined) ?? undefined}
+              value={(localFilter.fromDate as Date | undefined) ?? undefined}
               onChange={(values) => handleLocalFilterChange('fromDate', values)}
+              onDayClick={(values) => handleLocalFilterChange('fromDate', values)}
             />
           </div>
         ),
@@ -203,9 +208,10 @@ const FlexiInterestFilterMenu: FC<FlexiInterestFilterMenuProps> = ({
             <Label>To Date</Label>
             <DateTimePicker
               hideTime
-              min={localFilter.fromDate as Date | undefined}
-              value={localFilter.toDate as Date | undefined}
+              min={(localFilter.fromDate as Date | undefined) ?? undefined}
+              value={(localFilter.toDate as Date | undefined) ?? undefined}
               onChange={(values) => handleLocalFilterChange('toDate', values)}
+              onDayClick={(values) => handleLocalFilterChange('toDate', values)}
             />
           </div>
         ),

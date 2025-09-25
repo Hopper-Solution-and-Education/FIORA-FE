@@ -1,5 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { FlexiInterestCronjobFilterState, FlexiInterestCronjobState, FlexiInterestStatistics } from './type';
+import {
+  FlexiInterestCronjobFilterState,
+  FlexiInterestCronjobState,
+  FlexiInterestStatistics,
+} from './type';
 
 export const initialState: FlexiInterestCronjobState = {
   loading: false,
@@ -8,10 +12,10 @@ export const initialState: FlexiInterestCronjobState = {
     status: null,
     search: null,
     email: null,
-    membershipTier: null,
-    updatedBy: null,
-    fromDate: null,
-    toDate: null,
+    tierName: null,
+    emailUpdateBy: null,
+    fromDate: new Date(),
+    toDate: new Date(),
   },
   statistics: null,
 };
@@ -33,18 +37,29 @@ const flexiInterestCronjobSlice = createSlice({
       state.filter.search = action.payload;
     },
     clearFilter: (state) => {
-      state.filter = initialState.filter;
+      state.filter = {
+        ...initialState.filter,
+        fromDate: null,
+        toDate: null,
+      };
     },
     setStatistics: (state, action: PayloadAction<FlexiInterestStatistics>) => {
       state.statistics = action.payload;
     },
     clearStatistics: (state) => {
       state.statistics = null;
-    }
+    },
   },
 });
 
-export const { setLoading, setError, setFilter, setSearch, clearFilter, setStatistics, clearStatistics } =
-  flexiInterestCronjobSlice.actions;
+export const {
+  setLoading,
+  setError,
+  setFilter,
+  setSearch,
+  clearFilter,
+  setStatistics,
+  clearStatistics,
+} = flexiInterestCronjobSlice.actions;
 
 export default flexiInterestCronjobSlice.reducer;
