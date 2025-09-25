@@ -3,6 +3,7 @@ import { SmartSavingDashboardFilterParams } from '@/features/setting/module/cron
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
+import { logger } from '@sentry/nextjs';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createResponse } from '../../../shared/lib/responseUtils/createResponse';
 
@@ -68,18 +69,25 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       amount: number;
       reason: string;
     } = req.body;
+    logger.info('🚀 ~ PUT ~ dataCronJob:', dataCronJob);
     if (!cronJobId) {
       return res
         .status(RESPONSE_CODE.BAD_REQUEST)
         .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_PARAMS_INPUT));
     }
-    if (req.body.amount <= 0) {
+    if (!dataCronJob.amount || !dataCronJob.reason) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.MISSSING_SMART_REQUEST_BODY));
+    }
+    if (dataCronJob.amount <= 0) {
       return res
         .status(RESPONSE_CODE.BAD_REQUEST)
         .json(
           createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.SMART_SAVING_AMOUNT_MUST_BE_POSITIVE),
         );
     }
+
     const updatedData = await smartSavingUsecaseInstance.updateSmartSavingAmount(
       dataCronJob,
       cronJobId,

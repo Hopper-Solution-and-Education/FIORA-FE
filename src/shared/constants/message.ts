@@ -378,4 +378,5 @@ export enum Messages {
   UPDATE_SMART_SAVING_SUCCESS = 'Update smart saving successfully',
   SMART_SAVING_NOT_FOUND = 'Update smart saving failded',
   SMART_SAVING_AMOUNT_MUST_BE_POSITIVE = 'Smart saving amount must be a positive number',
+  MISSSING_SMART_REQUEST_BODY = 'Request body is missing',
 }
