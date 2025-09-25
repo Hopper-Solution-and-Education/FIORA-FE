@@ -12,6 +12,9 @@ import { useMemo, useState } from 'react';
 interface Props {
   data: SavingInterestTableData[];
   loading: boolean;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
   className?: string;
   // Callback for retry action
   onRetrySuccess?: () => void;
@@ -19,32 +22,29 @@ interface Props {
 
 const STORAGE_KEY = 'saving-interest-cronjob:common-table';
 
-const SavingInterestCommonTable = ({ data, loading, className, onRetrySuccess }: Props) => {
+const SavingInterestCommonTable = ({
+  data,
+  loading,
+  hasMore,
+  isLoadingMore,
+  onLoadMore,
+  className,
+  onRetrySuccess,
+}: Props) => {
   const columns: CommonTableColumn<SavingInterestTableData>[] = useMemo(
     () => [
-      {
-        key: 'id',
-        title: 'ID',
-        align: 'left',
-        width: '8%',
-        render: (r) => (
-          <span className="text-sm text-blue-600 cursor-pointer hover:underline">
-            {r.id.padStart(6, '0')}
-          </span>
-        ),
-      },
       {
         key: 'email',
         title: 'Email',
         align: 'left',
-        width: '15%',
+        width: '18%',
         render: (r) => <span className="text-sm text-gray-900 dark:text-gray-100">{r.email}</span>,
       },
       {
         key: 'executionTime',
         title: 'Datetime',
         align: 'left',
-        width: '12%',
+        width: '14%',
         render: (r) => (
           <span className="text-sm text-gray-900 dark:text-gray-100">
             {new Date(r.executionTime).toLocaleDateString('en-GB')},{' '}
@@ -56,7 +56,7 @@ const SavingInterestCommonTable = ({ data, loading, className, onRetrySuccess }:
         key: 'membershipTier',
         title: 'Membership Tier',
         align: 'left',
-        width: '15%',
+        width: '16%',
         render: (r) => (
           <span className="text-sm text-gray-900 dark:text-gray-100">{r.membershipTier}</span>
         ),
@@ -99,7 +99,7 @@ const SavingInterestCommonTable = ({ data, loading, className, onRetrySuccess }:
         key: 'updatedBy',
         title: 'Updated By',
         align: 'left',
-        width: '10%',
+        width: '12%',
         render: (r) => (
           <span className="text-sm text-gray-900 dark:text-gray-100">{r.updatedBy.email}</span>
         ),
@@ -181,6 +181,9 @@ const SavingInterestCommonTable = ({ data, loading, className, onRetrySuccess }:
           onColumnConfigChange={setColumnConfig}
           storageKey={STORAGE_KEY}
           loading={loading}
+          hasMore={hasMore}
+          isLoadingMore={isLoadingMore}
+          onLoadMore={onLoadMore}
           className={className}
           leftHeaderNode={<SavingInterestTopBarAction data={data} />}
           rightHeaderNode={

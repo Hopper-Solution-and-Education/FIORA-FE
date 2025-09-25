@@ -72,7 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     mockData = mockData.filter((item) => new Date(item.executionTime) <= to);
   }
 
-  // Apply pagination - if no page/pageSize provided, return all data
+  // Apply pagination - use default pagination if not provided
   const total = mockData.length;
 
   let paginatedData;
@@ -81,7 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   let pageSizeNum;
 
   if (!page || !pageSize || page === '0' || pageSize === '0') {
-    // Return all data if no pagination parameters or page/pageSize is 0
+    // Return all data if no pagination parameters or page/pageSize is 0 (backwards compatibility)
     paginatedData = mockData;
     totalPages = 1;
     pageNum = 1;

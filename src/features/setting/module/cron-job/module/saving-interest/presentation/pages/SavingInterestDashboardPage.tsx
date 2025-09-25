@@ -10,9 +10,12 @@ const SavingInterestDashboardPage = () => {
   const dispatch = useAppDispatch();
   const {
     // Table data
+    tableData,
     data,
     loading,
     totalItems,
+    hasMore,
+    isLoadingMore,
 
     // Chart data
     chartData,
@@ -20,6 +23,7 @@ const SavingInterestDashboardPage = () => {
 
     // Actions
     fetchData,
+    loadMore,
   } = useSavingInterestDashboard();
 
   // Data fetching is handled by useSavingInterestDashboard hook
@@ -49,7 +53,14 @@ const SavingInterestDashboardPage = () => {
 
         {/* Table Section */}
         <div className="border rounded-2xl p-6">
-          <SavingInterestCommonTable data={data} loading={loading} onRetrySuccess={fetchData} />
+          <SavingInterestCommonTable
+            data={tableData.data}
+            loading={loading}
+            hasMore={tableData.hasMore}
+            isLoadingMore={tableData.isLoadingMore}
+            onLoadMore={loadMore}
+            onRetrySuccess={fetchData}
+          />
         </div>
       </div>
     </section>

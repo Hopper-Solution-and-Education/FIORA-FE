@@ -1,54 +1,47 @@
 export interface TableState {
-  items: any[];
-  loading: boolean;
-  error: string | null;
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
+  data: any[];
+  pagination: {
+    current: number;
+    pageSize: number;
+    total: number;
+  };
+  hasMore: boolean;
+  isLoadingMore: boolean;
 }
 
 export const initialState: TableState = {
-  items: [],
-  loading: false,
-  error: null,
-  total: 0,
-  page: 1,
-  pageSize: 10,
-  totalPages: 0,
+  data: [],
+  pagination: {
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  },
+  hasMore: true,
+  isLoadingMore: false,
 };
 
 export type TableAction =
-  | { type: 'SET_LOADING'; payload: boolean }
-  | {
-      type: 'SET_DATA';
-      payload: { items: any[]; total: number; page: number; pageSize: number; totalPages: number };
-    }
-  | { type: 'SET_ERROR'; payload: string }
+  | { type: 'SET_DATA'; payload: any[] }
+  | { type: 'APPEND_DATA'; payload: any[] }
+  | { type: 'SET_PAGINATION'; payload: { current: number; pageSize: number; total: number } }
   | { type: 'SET_PAGE'; payload: number }
-  | { type: 'RESET' };
+  | { type: 'SET_HAS_MORE'; payload: boolean }
+  | { type: 'SET_IS_LOADING_MORE'; payload: boolean };
 
 export const tableReducer = (state: TableState, action: TableAction): TableState => {
   switch (action.type) {
-    case 'SET_LOADING':
-      return { ...state, loading: action.payload };
     case 'SET_DATA':
-      return {
-        ...state,
-        items: action.payload.items,
-        total: action.payload.total,
-        page: action.payload.page,
-        pageSize: action.payload.pageSize,
-        totalPages: action.payload.totalPages,
-        loading: false,
-        error: null,
-      };
-    case 'SET_ERROR':
-      return { ...state, error: action.payload, loading: false };
+      return { ...state, data: action.payload };
+    case 'APPEND_DATA':
+      return { ...state, data: [...state.data, ...action.payload] };
+    case 'SET_PAGINATION':
+      return { ...state, pagination: action.payload };
     case 'SET_PAGE':
-      return { ...state, page: action.payload };
-    case 'RESET':
-      return initialState;
+      return { ...state, pagination: { ...state.pagination, current: action.payload } };
+    case 'SET_HAS_MORE':
+      return { ...state, hasMore: action.payload };
+    case 'SET_IS_LOADING_MORE':
+      return { ...state, isLoadingMore: action.payload };
     default:
       return state;
   }

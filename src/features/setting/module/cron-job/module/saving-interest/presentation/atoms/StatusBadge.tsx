@@ -14,13 +14,19 @@ const StatusBadge = ({ status }: StatusBadgeProps) => {
     }
   };
 
+  // Capitalize first letter of status
+  const capitalizeFirstLetter = (str: string) => {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+
   return (
     <span
       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
         status,
       )}`}
     >
-      {status}
+      {capitalizeFirstLetter(status)}
     </span>
   );
 };

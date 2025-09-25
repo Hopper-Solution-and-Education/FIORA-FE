@@ -13,9 +13,11 @@ export const useSavingInterestDashboard = () => {
   const [state, dispatchTable] = useReducer(tableReducer, initialState);
   const [chartData, setChartData] = useState<SavingInterestChartItem[]>([]);
   const [chartLoading, setChartLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const isFetching = useRef(false);
   const isChartDataFetched = useRef(false);
+  const isInitialLoad = useRef(true);
 
   const fetchChartData = useCallback(async () => {
     if (isChartDataFetched.current) return;
@@ -55,59 +57,110 @@ export const useSavingInterestDashboard = () => {
     fetchChartData();
   }, []);
 
-  const fetchData = useCallback(async () => {
-    if (isFetching.current) return;
+  const fetchData = useCallback(
+    async (page: number, pageSize: number, isLoadMore = false) => {
+      if (isFetching.current) return;
 
-    isFetching.current = true;
-    dispatchTable({ type: 'SET_LOADING', payload: true });
+      isFetching.current = true;
 
-    try {
-      const useCase = savingInterestContainer.get<IGetSavingInterestPaginatedUseCase>(
-        SAVING_INTEREST_TYPES.IGetSavingInterestPaginatedUseCase,
-      );
+      // Set loading state
+      if (isLoadMore) {
+        dispatchTable({ type: 'SET_IS_LOADING_MORE', payload: true });
+      } else {
+        setLoading(true);
+      }
 
-      // Load all data without pagination - don't pass page/pageSize
-      const res = await useCase.execute(0, 0, {
-        status: filterState.status,
-        membershipTier: filterState.membershipTier,
-        email: filterState.email,
-        updatedBy: filterState.updatedBy,
-        search: filterState.search,
-        fromDate: filterState.fromDate ? filterState.fromDate.toISOString() : '',
-        toDate: filterState.toDate ? filterState.toDate.toISOString() : '',
-      });
+      try {
+        const useCase = savingInterestContainer.get<IGetSavingInterestPaginatedUseCase>(
+          SAVING_INTEREST_TYPES.IGetSavingInterestPaginatedUseCase,
+        );
 
-      dispatchTable({
-        type: 'SET_DATA',
-        payload: {
-          items: res.items || [],
-          total: res.total || 0,
-          page: 1,
-          pageSize: res.total || 0,
-          totalPages: 1,
-        },
-      });
-    } catch (error) {
-      console.error('Error fetching saving interest data:', error);
-      dispatchTable({ type: 'SET_ERROR', payload: 'Failed to fetch data' });
-    } finally {
-      dispatchTable({ type: 'SET_LOADING', payload: false });
-      isFetching.current = false;
+        const res = await useCase.execute(page, pageSize, {
+          status: filterState.status,
+          membershipTier: filterState.membershipTier,
+          email: filterState.email,
+          updatedBy: filterState.updatedBy,
+          search: filterState.search,
+          fromDate: filterState.fromDate ? filterState.fromDate.toISOString() : '',
+          toDate: filterState.toDate ? filterState.toDate.toISOString() : '',
+        });
+
+        const hasMore = page < (res.totalPages || 1);
+
+        if (isLoadMore) {
+          // Append data for load more
+          dispatchTable({
+            type: 'APPEND_DATA',
+            payload: res.items || [],
+          });
+          dispatchTable({ type: 'SET_PAGE', payload: page });
+          dispatchTable({ type: 'SET_HAS_MORE', payload: hasMore });
+        } else {
+          // Set initial data
+          dispatchTable({
+            type: 'SET_DATA',
+            payload: res.items || [],
+          });
+          dispatchTable({
+            type: 'SET_PAGINATION',
+            payload: {
+              current: page,
+              pageSize,
+              total: res.total || 0,
+            },
+          });
+          dispatchTable({ type: 'SET_HAS_MORE', payload: hasMore });
+        }
+      } catch (error) {
+        console.error('Error fetching saving interest data:', error);
+      } finally {
+        if (isLoadMore) {
+          dispatchTable({ type: 'SET_IS_LOADING_MORE', payload: false });
+        } else {
+          setLoading(false);
+        }
+        isFetching.current = false;
+      }
+    },
+    [filterState],
+  );
+
+  // Initial data fetch
+  useEffect(() => {
+    if (isInitialLoad.current) {
+      fetchData(1, state.pagination.pageSize, false);
+      isInitialLoad.current = false;
     }
-  }, [filterState]);
+  }, [fetchData]);
 
   // Fetch data when filter changes
   useEffect(() => {
-    // Reset data when filter changes and fetch fresh data
-    dispatchTable({ type: 'SET_PAGE', payload: 1 });
-    fetchData();
+    if (!isInitialLoad.current) {
+      dispatchTable({ type: 'SET_PAGE', payload: 1 });
+      dispatchTable({ type: 'SET_DATA', payload: [] });
+      dispatchTable({ type: 'SET_HAS_MORE', payload: true });
+      fetchData(1, state.pagination.pageSize, false);
+    }
   }, [filterState, fetchData]);
 
+  // Load more function
+  const loadMore = useCallback(async () => {
+    if (!state.hasMore || state.isLoadingMore || isFetching.current) return;
+    const nextPage = state.pagination.current + 1;
+    await fetchData(nextPage, state.pagination.pageSize, true);
+  }, [state.hasMore, state.isLoadingMore, state.pagination, fetchData]);
+
   return {
-    // Table data
-    data: state.items,
-    loading: state.loading,
-    totalItems: state.total,
+    // Table data (match Membership structure)
+    tableData: state,
+    loading,
+    loadMore,
+
+    // Legacy support
+    data: state.data,
+    totalItems: state.pagination.total,
+    hasMore: state.hasMore,
+    isLoadingMore: state.isLoadingMore,
 
     // Chart data
     chartData,
