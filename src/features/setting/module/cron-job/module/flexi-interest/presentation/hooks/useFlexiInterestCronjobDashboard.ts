@@ -34,14 +34,20 @@ export const useFlexiInterestCronjobDashboard = () => {
         const localFilter = { ...filter };
 
         if (localFilter.fromDate) {
-          localFilter.fromDate = new Date(localFilter.fromDate).toISOString().split('T')[0];
+          const formatDate = new Date(localFilter.fromDate);
+          formatDate.setHours(0, 0, 0, 0);
+          localFilter.fromDate = formatDate.toISOString();
         }
 
         if (localFilter.toDate) {
-          localFilter.toDate = new Date(localFilter.toDate).toISOString().split('T')[0];
+          const formatDate = new Date(localFilter.toDate);
+          formatDate.setHours(23, 59, 59, 99);
+          localFilter.toDate = formatDate.toISOString();
         }
 
         const formattedFilter = formatObjUtil(localFilter);
+
+        console.log(formattedFilter);
 
         // TODO: Call API lấy data
         const response = await triggerGetFlexiInterest({

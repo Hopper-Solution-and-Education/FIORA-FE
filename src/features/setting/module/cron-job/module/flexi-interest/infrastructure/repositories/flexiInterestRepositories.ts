@@ -23,16 +23,16 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
     }
     if (filter?.fromDate && filter?.toDate) {
       where.createdAt = {
-        gte: new Date(filter.fromDate + 'T00:00:00.000Z'),
-        lte: new Date(filter.toDate + 'T23:59:59.999Z'),
+        gte: new Date(filter.fromDate),
+        lte: new Date(filter.toDate),
       };
     } else if (filter?.fromDate) {
       where.createdAt = {
-        gte: new Date(filter.fromDate + 'T00:00:00.000Z'),
+        gte: new Date(filter.fromDate),
       };
     } else if (filter?.toDate) {
       where.createdAt = {
-        lte: new Date(filter.toDate + 'T23:59:59.999Z'),
+        lte: new Date(filter.toDate),
       };
     }
     if (filter?.email) {
