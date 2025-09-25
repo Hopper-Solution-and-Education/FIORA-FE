@@ -10,7 +10,7 @@ import Image from 'next/image';
 interface MetricCardProps {
   title: string;
   value: number;
-  type: 'income' | 'expense' | 'total';
+  type: 'income' | 'expense' | 'total' | 'default';
   description?: string;
   icon?: string | React.ReactNode;
   className?: string;
@@ -19,6 +19,7 @@ interface MetricCardProps {
     value: string;
     isPositive: boolean;
   };
+  classNameCustomCardColor?: string;
 }
 
 const MetricCard = ({
@@ -30,6 +31,7 @@ const MetricCard = ({
   className,
   trend,
   currency,
+  classNameCustomCardColor,
 }: MetricCardProps) => {
   const { formatCurrency } = useCurrencyFormatter();
   const getCardColor = () => {
@@ -95,7 +97,12 @@ const MetricCard = ({
           </div>
         );
       }
-      return <LucieIcon icon={iconValue} className={cn('w-4 h-4', getCardColor())} />;
+      return (
+        <LucieIcon
+          icon={iconValue}
+          className={cn('w-4 h-4', getCardColor(), classNameCustomCardColor)}
+        />
+      );
     }
 
     return iconValue;
@@ -108,7 +115,9 @@ const MetricCard = ({
         {renderIconOrImage(icon)}
       </CardHeader>
       <CardContent>
-        <div className={cn('text-xl sm:text-2xl font-bold', getCardColor())}>
+        <div
+          className={cn('text-xl sm:text-2xl font-bold', getCardColor(), classNameCustomCardColor)}
+        >
           {formatCurrency(value, currency || CURRENCY.FX)}
         </div>
         {(description || trend) && (

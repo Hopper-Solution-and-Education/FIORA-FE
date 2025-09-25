@@ -577,8 +577,8 @@ model UserNotification {
   updatedAt      DateTime     @updatedAt @db.Timestamptz(0)
   createdBy      String?      @db.Uuid
   updatedBy      String?      @db.Uuid
-  User           User?         @relation(fields: [userId], references: [id])
-  notification   Notification? @relation(fields: [notificationId], references: [id])
+  notification   Notification @relation(fields: [notificationId], references: [id])
+  User           User         @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([notificationId])
@@ -732,6 +732,7 @@ model Post {
   createdBy           String                @db.Uuid
   updatedAt           DateTime?             @updatedAt @db.Timestamptz(0)
   updatedBy           String?               @db.Uuid
+  thumbnail           String?               @db.VarChar(500)
   AttachmentRelations AttachmentRelations[]
   Comment             Comment[]
   PostCategory        PostCategory          @relation(fields: [categoryId], references: [id])
@@ -1096,6 +1097,7 @@ enum TypeCronJob {
   REFERRAL_KICKBACK
   CASHBACK
   FLEXI_INTEREST
+  SMART_SAVING_INTEREST
 }
 
 enum KYCType {

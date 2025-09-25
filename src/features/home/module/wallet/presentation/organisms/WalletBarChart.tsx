@@ -8,11 +8,14 @@ import { CURRENCY } from '@/shared/constants';
 import { COLORS } from '@/shared/constants/chart';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppSelector } from '@/store';
+import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import { WalletType } from '../../domain/enum';
 import { filterWallets, transformWalletsToChartData } from '../../utils';
 
 const WalletBarChart = () => {
+  const router = useRouter();
+
   const { wallets, loading, filterCriteria, frozenAmount } = useAppSelector(
     (state) => state.wallet,
   );
@@ -28,6 +31,12 @@ const WalletBarChart = () => {
     () => transformWalletsToChartData(filteredWallets, frozenAmount),
     [filteredWallets, frozenAmount],
   );
+
+  const handleDisplayWalletDetail = (item: any) => {
+    if (item?.id) {
+      router.push(`/wallet/${item.id}`);
+    }
+  };
 
   if (loading) {
     return <ChartSkeleton />;
@@ -57,6 +66,7 @@ const WalletBarChart = () => {
       showTotal={false}
       currency={CURRENCY.FX}
       labelFormatter={(value) => formatCurrency(value, CURRENCY.FX)}
+      callback={handleDisplayWalletDetail}
       legendItems={[
         { name: 'Positive', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
         { name: 'Negative', color: COLORS.DEPS_DANGER.LEVEL_1 },
