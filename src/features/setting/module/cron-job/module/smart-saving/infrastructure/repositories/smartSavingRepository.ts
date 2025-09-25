@@ -281,46 +281,6 @@ class smartSavingRepository implements ISmartSavingRepository {
     tierNameOptions: { id: string; tierName: string | null }[];
     updateByOptions: { id: string; email: string }[];
   }> {
-    // const dataSmartSaving = await this._prisma.cronJobLog.findMany({
-    //   where: { typeCronJob: TypeCronJob.SMART_SAVING_INTEREST },
-    //   select: {
-    //     dynamicValue: true,
-    //   },
-    // });
-    // // emailOptions
-    // const emailOptions: { id: string; email: string }[] = dataSmartSaving
-    //   .map((log) => {
-    //     const dv: any = log.dynamicValue;
-    //     if (dv?.userId && dv?.email) {
-    //       return { id: String(dv.userId), email: String(dv.email) };
-    //     }
-    //     return null;
-    //   })
-    //   .filter((item): item is { id: string; email: string } => item !== null);
-
-    // // tierNameOptions
-    // const tierNameOptions: { id: string; tierName: string }[] = dataSmartSaving
-    //   .map((log) => {
-    //     const dv: any = log.dynamicValue;
-    //     if (dv?.tierId && dv?.tierName) {
-    //       return { id: String(dv.tierId), tierName: String(dv.tierName) };
-    //     }
-    //     return null;
-    //   })
-    //   .filter((item): item is { id: string; tierName: string } => item !== null);
-    // const updateByIds = (
-    //   await this._prisma.cronJobLog.findMany({
-    //     where: { typeCronJob: TypeCronJob.SMART_SAVING_INTEREST },
-    //     select: { updatedBy: true },
-    //   })
-    // )
-    //   .map((log) => log.updatedBy)
-    //   .filter((id): id is string => !!id); // bỏ null
-
-    // const updateByOptions = await this._prisma.user.findMany({
-    //   where: { id: { in: updateByIds } },
-    //   select: { id: true, email: true },
-    // });
     const emailOptions = await prisma.user.findMany({
       select: {
         id: true,
