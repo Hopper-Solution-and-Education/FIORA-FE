@@ -407,20 +407,20 @@ class DashboardRepository {
       referralCampaignAwait,
     ]);
 
-    const referralKickbackValue =
-      Number(
-        referralKickback.reduce((acc, curr) => acc + (curr.dynamicValue as any)?.bonusAmount, 0),
-      ) || 0;
+    const referralKickbackValue = referralKickback.reduce(
+      (acc, curr) => acc + Number((curr.dynamicValue as any)?.bonusAmount),
+      0,
+    );
 
-    const referralBonusValue =
-      Number(
-        referralBonus.reduce((acc, curr) => acc + (curr.dynamicValue as any)?.bonusAmount, 0),
-      ) || 0;
+    const referralBonusValue = referralBonus.reduce(
+      (acc, curr) => acc + Number((curr.dynamicValue as any)?.bonusAmount),
+      0,
+    );
 
-    const referralCampaignValue =
-      Number(
-        referralCampaign.reduce((acc, curr) => acc + (curr.dynamicValue as any)?.bonusAmount, 0),
-      ) || 0;
+    const referralCampaignValue = referralCampaign.reduce(
+      (acc, curr) => acc + Number((curr.dynamicValue as any)?.bonusAmount),
+      0,
+    );
 
     return { referralKickbackValue, referralBonusValue, referralCampaignValue };
   }
@@ -525,6 +525,15 @@ class DashboardRepository {
           foundReferredAwaited,
         ]);
 
+        let updatedByEmail = null;
+
+        if (item.updatedBy) {
+          updatedByEmail = await prisma.user.findFirst({
+            where: { id: item.updatedBy },
+            select: { email: true },
+          });
+        }
+
         const amount = Number(dynamicValue.bonusAmount) || 0;
         const spent = Number(item.Transaction?.amount) || 0;
 
@@ -533,7 +542,7 @@ class DashboardRepository {
           dateTime: item.executionTime,
           type: item.typeCronJob,
           status: item.status,
-          updatedBy: item.updatedBy,
+          updatedBy: updatedByEmail?.email || null,
           reason: item.reason || 'NaN',
           referrerEmail: foundReferrer?.email || 'NaN',
           referredEmail: foundReferred?.email || 'NaN',
@@ -613,6 +622,7 @@ class DashboardRepository {
     }
 
     const updatedBy = userId;
+
     const updatedDynamicJobValue = {
       ...(cronJobFound.dynamicValue as DynamicCronJobReferralTypes),
       bonusAmount: amount,
@@ -625,6 +635,7 @@ class DashboardRepository {
         updatedBy: updatedBy,
         reason: reason,
         updatedAt: new Date(),
+        status: CronJobStatus.SUCCESSFUL,
       },
     });
 
