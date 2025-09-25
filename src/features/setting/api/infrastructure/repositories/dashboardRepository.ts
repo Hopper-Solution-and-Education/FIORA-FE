@@ -407,20 +407,20 @@ class DashboardRepository {
       referralCampaignAwait,
     ]);
 
-    const referralKickbackValue =
-      Number(
-        referralKickback.reduce((acc, curr) => acc + (curr.dynamicValue as any)?.bonusAmount, 0),
-      ) || 0;
+    const referralKickbackValue = referralKickback.reduce(
+      (acc, curr) => acc + Number((curr.dynamicValue as any)?.bonusAmount),
+      0,
+    );
 
-    const referralBonusValue =
-      Number(
-        referralBonus.reduce((acc, curr) => acc + (curr.dynamicValue as any)?.bonusAmount, 0),
-      ) || 0;
+    const referralBonusValue = referralBonus.reduce(
+      (acc, curr) => acc + Number((curr.dynamicValue as any)?.bonusAmount),
+      0,
+    );
 
-    const referralCampaignValue =
-      Number(
-        referralCampaign.reduce((acc, curr) => acc + (curr.dynamicValue as any)?.bonusAmount, 0),
-      ) || 0;
+    const referralCampaignValue = referralCampaign.reduce(
+      (acc, curr) => acc + Number((curr.dynamicValue as any)?.bonusAmount),
+      0,
+    );
 
     return { referralKickbackValue, referralBonusValue, referralCampaignValue };
   }
